@@ -131,6 +131,9 @@ func (c *Client) addOperationGetPolicyMiddlewares(stack *middleware.Stack, optio
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -154,13 +157,6 @@ func (c *Client) addOperationGetPolicyMiddlewares(stack *middleware.Stack, optio
 	}
 	return nil
 }
-
-// GetPolicyAPIClient is a client that implements the GetPolicy operation.
-type GetPolicyAPIClient interface {
-	GetPolicy(context.Context, *GetPolicyInput, ...func(*Options)) (*GetPolicyOutput, error)
-}
-
-var _ GetPolicyAPIClient = (*Client)(nil)
 
 // PolicyExistsWaiterOptions are waiter options for PolicyExistsWaiter
 type PolicyExistsWaiterOptions struct {
@@ -276,7 +272,13 @@ func (w *PolicyExistsWaiter) WaitForOutput(ctx context.Context, params *GetPolic
 		}
 
 		out, err := w.client.GetPolicy(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -332,6 +334,13 @@ func policyExistsStateRetryable(ctx context.Context, input *GetPolicyInput, outp
 
 	return true, nil
 }
+
+// GetPolicyAPIClient is a client that implements the GetPolicy operation.
+type GetPolicyAPIClient interface {
+	GetPolicy(context.Context, *GetPolicyInput, ...func(*Options)) (*GetPolicyOutput, error)
+}
+
+var _ GetPolicyAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetPolicy(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

@@ -144,6 +144,9 @@ func (c *Client) addOperationDeleteInventoryMiddlewares(stack *middleware.Stack,
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addIdempotencyToken_opDeleteInventoryMiddleware(stack, options); err != nil {
 		return err
 	}

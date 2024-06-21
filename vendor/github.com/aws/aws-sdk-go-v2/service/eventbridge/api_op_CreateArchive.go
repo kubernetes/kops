@@ -154,6 +154,9 @@ func (c *Client) addOperationCreateArchiveMiddlewares(stack *middleware.Stack, o
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCreateArchiveValidationMiddleware(stack); err != nil {
 		return err
 	}

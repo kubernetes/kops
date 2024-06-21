@@ -150,6 +150,9 @@ func (c *Client) addOperationGetParametersByPathMiddlewares(stack *middleware.St
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetParametersByPathValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -173,14 +176,6 @@ func (c *Client) addOperationGetParametersByPathMiddlewares(stack *middleware.St
 	}
 	return nil
 }
-
-// GetParametersByPathAPIClient is a client that implements the
-// GetParametersByPath operation.
-type GetParametersByPathAPIClient interface {
-	GetParametersByPath(context.Context, *GetParametersByPathInput, ...func(*Options)) (*GetParametersByPathOutput, error)
-}
-
-var _ GetParametersByPathAPIClient = (*Client)(nil)
 
 // GetParametersByPathPaginatorOptions is the paginator options for
 // GetParametersByPath
@@ -247,6 +242,9 @@ func (p *GetParametersByPathPaginator) NextPage(ctx context.Context, optFns ...f
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetParametersByPath(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -265,6 +263,14 @@ func (p *GetParametersByPathPaginator) NextPage(ctx context.Context, optFns ...f
 
 	return result, nil
 }
+
+// GetParametersByPathAPIClient is a client that implements the
+// GetParametersByPath operation.
+type GetParametersByPathAPIClient interface {
+	GetParametersByPath(context.Context, *GetParametersByPathInput, ...func(*Options)) (*GetParametersByPathOutput, error)
+}
+
+var _ GetParametersByPathAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetParametersByPath(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

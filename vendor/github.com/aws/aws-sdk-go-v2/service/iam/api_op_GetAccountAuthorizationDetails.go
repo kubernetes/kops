@@ -163,6 +163,9 @@ func (c *Client) addOperationGetAccountAuthorizationDetailsMiddlewares(stack *mi
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetAccountAuthorizationDetails(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -183,14 +186,6 @@ func (c *Client) addOperationGetAccountAuthorizationDetailsMiddlewares(stack *mi
 	}
 	return nil
 }
-
-// GetAccountAuthorizationDetailsAPIClient is a client that implements the
-// GetAccountAuthorizationDetails operation.
-type GetAccountAuthorizationDetailsAPIClient interface {
-	GetAccountAuthorizationDetails(context.Context, *GetAccountAuthorizationDetailsInput, ...func(*Options)) (*GetAccountAuthorizationDetailsOutput, error)
-}
-
-var _ GetAccountAuthorizationDetailsAPIClient = (*Client)(nil)
 
 // GetAccountAuthorizationDetailsPaginatorOptions is the paginator options for
 // GetAccountAuthorizationDetails
@@ -266,6 +261,9 @@ func (p *GetAccountAuthorizationDetailsPaginator) NextPage(ctx context.Context, 
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetAccountAuthorizationDetails(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -284,6 +282,14 @@ func (p *GetAccountAuthorizationDetailsPaginator) NextPage(ctx context.Context, 
 
 	return result, nil
 }
+
+// GetAccountAuthorizationDetailsAPIClient is a client that implements the
+// GetAccountAuthorizationDetails operation.
+type GetAccountAuthorizationDetailsAPIClient interface {
+	GetAccountAuthorizationDetails(context.Context, *GetAccountAuthorizationDetailsInput, ...func(*Options)) (*GetAccountAuthorizationDetailsOutput, error)
+}
+
+var _ GetAccountAuthorizationDetailsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetAccountAuthorizationDetails(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

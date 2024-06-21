@@ -161,6 +161,9 @@ func (c *Client) addOperationListServerCertificatesMiddlewares(stack *middleware
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListServerCertificates(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -181,14 +184,6 @@ func (c *Client) addOperationListServerCertificatesMiddlewares(stack *middleware
 	}
 	return nil
 }
-
-// ListServerCertificatesAPIClient is a client that implements the
-// ListServerCertificates operation.
-type ListServerCertificatesAPIClient interface {
-	ListServerCertificates(context.Context, *ListServerCertificatesInput, ...func(*Options)) (*ListServerCertificatesOutput, error)
-}
-
-var _ ListServerCertificatesAPIClient = (*Client)(nil)
 
 // ListServerCertificatesPaginatorOptions is the paginator options for
 // ListServerCertificates
@@ -262,6 +257,9 @@ func (p *ListServerCertificatesPaginator) NextPage(ctx context.Context, optFns .
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListServerCertificates(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -280,6 +278,14 @@ func (p *ListServerCertificatesPaginator) NextPage(ctx context.Context, optFns .
 
 	return result, nil
 }
+
+// ListServerCertificatesAPIClient is a client that implements the
+// ListServerCertificates operation.
+type ListServerCertificatesAPIClient interface {
+	ListServerCertificates(context.Context, *ListServerCertificatesInput, ...func(*Options)) (*ListServerCertificatesOutput, error)
+}
+
+var _ ListServerCertificatesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListServerCertificates(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

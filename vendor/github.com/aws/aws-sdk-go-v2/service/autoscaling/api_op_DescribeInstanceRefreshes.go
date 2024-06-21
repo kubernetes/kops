@@ -139,6 +139,9 @@ func (c *Client) addOperationDescribeInstanceRefreshesMiddlewares(stack *middlew
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeInstanceRefreshesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -162,14 +165,6 @@ func (c *Client) addOperationDescribeInstanceRefreshesMiddlewares(stack *middlew
 	}
 	return nil
 }
-
-// DescribeInstanceRefreshesAPIClient is a client that implements the
-// DescribeInstanceRefreshes operation.
-type DescribeInstanceRefreshesAPIClient interface {
-	DescribeInstanceRefreshes(context.Context, *DescribeInstanceRefreshesInput, ...func(*Options)) (*DescribeInstanceRefreshesOutput, error)
-}
-
-var _ DescribeInstanceRefreshesAPIClient = (*Client)(nil)
 
 // DescribeInstanceRefreshesPaginatorOptions is the paginator options for
 // DescribeInstanceRefreshes
@@ -237,6 +232,9 @@ func (p *DescribeInstanceRefreshesPaginator) NextPage(ctx context.Context, optFn
 	}
 	params.MaxRecords = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeInstanceRefreshes(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -255,6 +253,14 @@ func (p *DescribeInstanceRefreshesPaginator) NextPage(ctx context.Context, optFn
 
 	return result, nil
 }
+
+// DescribeInstanceRefreshesAPIClient is a client that implements the
+// DescribeInstanceRefreshes operation.
+type DescribeInstanceRefreshesAPIClient interface {
+	DescribeInstanceRefreshes(context.Context, *DescribeInstanceRefreshesInput, ...func(*Options)) (*DescribeInstanceRefreshesOutput, error)
+}
+
+var _ DescribeInstanceRefreshesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeInstanceRefreshes(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

@@ -127,6 +127,9 @@ func (c *Client) addOperationDeleteServiceLinkedRoleMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteServiceLinkedRoleValidationMiddleware(stack); err != nil {
 		return err
 	}

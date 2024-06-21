@@ -154,6 +154,9 @@ func (c *Client) addOperationListOpenIDConnectProviderTagsMiddlewares(stack *mid
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListOpenIDConnectProviderTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -177,14 +180,6 @@ func (c *Client) addOperationListOpenIDConnectProviderTagsMiddlewares(stack *mid
 	}
 	return nil
 }
-
-// ListOpenIDConnectProviderTagsAPIClient is a client that implements the
-// ListOpenIDConnectProviderTags operation.
-type ListOpenIDConnectProviderTagsAPIClient interface {
-	ListOpenIDConnectProviderTags(context.Context, *ListOpenIDConnectProviderTagsInput, ...func(*Options)) (*ListOpenIDConnectProviderTagsOutput, error)
-}
-
-var _ ListOpenIDConnectProviderTagsAPIClient = (*Client)(nil)
 
 // ListOpenIDConnectProviderTagsPaginatorOptions is the paginator options for
 // ListOpenIDConnectProviderTags
@@ -260,6 +255,9 @@ func (p *ListOpenIDConnectProviderTagsPaginator) NextPage(ctx context.Context, o
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListOpenIDConnectProviderTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -278,6 +276,14 @@ func (p *ListOpenIDConnectProviderTagsPaginator) NextPage(ctx context.Context, o
 
 	return result, nil
 }
+
+// ListOpenIDConnectProviderTagsAPIClient is a client that implements the
+// ListOpenIDConnectProviderTags operation.
+type ListOpenIDConnectProviderTagsAPIClient interface {
+	ListOpenIDConnectProviderTags(context.Context, *ListOpenIDConnectProviderTagsInput, ...func(*Options)) (*ListOpenIDConnectProviderTagsOutput, error)
+}
+
+var _ ListOpenIDConnectProviderTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListOpenIDConnectProviderTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

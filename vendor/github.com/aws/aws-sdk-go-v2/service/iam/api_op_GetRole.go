@@ -131,6 +131,9 @@ func (c *Client) addOperationGetRoleMiddlewares(stack *middleware.Stack, options
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetRoleValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -154,13 +157,6 @@ func (c *Client) addOperationGetRoleMiddlewares(stack *middleware.Stack, options
 	}
 	return nil
 }
-
-// GetRoleAPIClient is a client that implements the GetRole operation.
-type GetRoleAPIClient interface {
-	GetRole(context.Context, *GetRoleInput, ...func(*Options)) (*GetRoleOutput, error)
-}
-
-var _ GetRoleAPIClient = (*Client)(nil)
 
 // RoleExistsWaiterOptions are waiter options for RoleExistsWaiter
 type RoleExistsWaiterOptions struct {
@@ -276,7 +272,13 @@ func (w *RoleExistsWaiter) WaitForOutput(ctx context.Context, params *GetRoleInp
 		}
 
 		out, err := w.client.GetRole(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -332,6 +334,13 @@ func roleExistsStateRetryable(ctx context.Context, input *GetRoleInput, output *
 
 	return true, nil
 }
+
+// GetRoleAPIClient is a client that implements the GetRole operation.
+type GetRoleAPIClient interface {
+	GetRole(context.Context, *GetRoleInput, ...func(*Options)) (*GetRoleOutput, error)
+}
+
+var _ GetRoleAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetRole(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

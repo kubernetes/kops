@@ -155,6 +155,9 @@ func (c *Client) addOperationListServerCertificateTagsMiddlewares(stack *middlew
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListServerCertificateTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -178,14 +181,6 @@ func (c *Client) addOperationListServerCertificateTagsMiddlewares(stack *middlew
 	}
 	return nil
 }
-
-// ListServerCertificateTagsAPIClient is a client that implements the
-// ListServerCertificateTags operation.
-type ListServerCertificateTagsAPIClient interface {
-	ListServerCertificateTags(context.Context, *ListServerCertificateTagsInput, ...func(*Options)) (*ListServerCertificateTagsOutput, error)
-}
-
-var _ ListServerCertificateTagsAPIClient = (*Client)(nil)
 
 // ListServerCertificateTagsPaginatorOptions is the paginator options for
 // ListServerCertificateTags
@@ -260,6 +255,9 @@ func (p *ListServerCertificateTagsPaginator) NextPage(ctx context.Context, optFn
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListServerCertificateTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -278,6 +276,14 @@ func (p *ListServerCertificateTagsPaginator) NextPage(ctx context.Context, optFn
 
 	return result, nil
 }
+
+// ListServerCertificateTagsAPIClient is a client that implements the
+// ListServerCertificateTags operation.
+type ListServerCertificateTagsAPIClient interface {
+	ListServerCertificateTags(context.Context, *ListServerCertificateTagsInput, ...func(*Options)) (*ListServerCertificateTagsOutput, error)
+}
+
+var _ ListServerCertificateTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListServerCertificateTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

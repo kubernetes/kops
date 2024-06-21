@@ -150,6 +150,9 @@ func (c *Client) addOperationListMFADeviceTagsMiddlewares(stack *middleware.Stac
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListMFADeviceTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -173,14 +176,6 @@ func (c *Client) addOperationListMFADeviceTagsMiddlewares(stack *middleware.Stac
 	}
 	return nil
 }
-
-// ListMFADeviceTagsAPIClient is a client that implements the ListMFADeviceTags
-// operation.
-type ListMFADeviceTagsAPIClient interface {
-	ListMFADeviceTags(context.Context, *ListMFADeviceTagsInput, ...func(*Options)) (*ListMFADeviceTagsOutput, error)
-}
-
-var _ ListMFADeviceTagsAPIClient = (*Client)(nil)
 
 // ListMFADeviceTagsPaginatorOptions is the paginator options for ListMFADeviceTags
 type ListMFADeviceTagsPaginatorOptions struct {
@@ -253,6 +248,9 @@ func (p *ListMFADeviceTagsPaginator) NextPage(ctx context.Context, optFns ...fun
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListMFADeviceTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -271,6 +269,14 @@ func (p *ListMFADeviceTagsPaginator) NextPage(ctx context.Context, optFns ...fun
 
 	return result, nil
 }
+
+// ListMFADeviceTagsAPIClient is a client that implements the ListMFADeviceTags
+// operation.
+type ListMFADeviceTagsAPIClient interface {
+	ListMFADeviceTags(context.Context, *ListMFADeviceTagsInput, ...func(*Options)) (*ListMFADeviceTagsOutput, error)
+}
+
+var _ ListMFADeviceTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListMFADeviceTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

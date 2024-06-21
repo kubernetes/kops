@@ -126,6 +126,9 @@ func (c *Client) addOperationDescribeMaintenanceWindowsForTargetMiddlewares(stac
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeMaintenanceWindowsForTargetValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -149,14 +152,6 @@ func (c *Client) addOperationDescribeMaintenanceWindowsForTargetMiddlewares(stac
 	}
 	return nil
 }
-
-// DescribeMaintenanceWindowsForTargetAPIClient is a client that implements the
-// DescribeMaintenanceWindowsForTarget operation.
-type DescribeMaintenanceWindowsForTargetAPIClient interface {
-	DescribeMaintenanceWindowsForTarget(context.Context, *DescribeMaintenanceWindowsForTargetInput, ...func(*Options)) (*DescribeMaintenanceWindowsForTargetOutput, error)
-}
-
-var _ DescribeMaintenanceWindowsForTargetAPIClient = (*Client)(nil)
 
 // DescribeMaintenanceWindowsForTargetPaginatorOptions is the paginator options
 // for DescribeMaintenanceWindowsForTarget
@@ -225,6 +220,9 @@ func (p *DescribeMaintenanceWindowsForTargetPaginator) NextPage(ctx context.Cont
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeMaintenanceWindowsForTarget(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -243,6 +241,14 @@ func (p *DescribeMaintenanceWindowsForTargetPaginator) NextPage(ctx context.Cont
 
 	return result, nil
 }
+
+// DescribeMaintenanceWindowsForTargetAPIClient is a client that implements the
+// DescribeMaintenanceWindowsForTarget operation.
+type DescribeMaintenanceWindowsForTargetAPIClient interface {
+	DescribeMaintenanceWindowsForTarget(context.Context, *DescribeMaintenanceWindowsForTargetInput, ...func(*Options)) (*DescribeMaintenanceWindowsForTargetOutput, error)
+}
+
+var _ DescribeMaintenanceWindowsForTargetAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeMaintenanceWindowsForTarget(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

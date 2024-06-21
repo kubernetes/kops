@@ -121,6 +121,9 @@ func (c *Client) addOperationDescribeTrustStoreRevocationsMiddlewares(stack *mid
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeTrustStoreRevocationsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -144,14 +147,6 @@ func (c *Client) addOperationDescribeTrustStoreRevocationsMiddlewares(stack *mid
 	}
 	return nil
 }
-
-// DescribeTrustStoreRevocationsAPIClient is a client that implements the
-// DescribeTrustStoreRevocations operation.
-type DescribeTrustStoreRevocationsAPIClient interface {
-	DescribeTrustStoreRevocations(context.Context, *DescribeTrustStoreRevocationsInput, ...func(*Options)) (*DescribeTrustStoreRevocationsOutput, error)
-}
-
-var _ DescribeTrustStoreRevocationsAPIClient = (*Client)(nil)
 
 // DescribeTrustStoreRevocationsPaginatorOptions is the paginator options for
 // DescribeTrustStoreRevocations
@@ -219,6 +214,9 @@ func (p *DescribeTrustStoreRevocationsPaginator) NextPage(ctx context.Context, o
 	}
 	params.PageSize = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeTrustStoreRevocations(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -237,6 +235,14 @@ func (p *DescribeTrustStoreRevocationsPaginator) NextPage(ctx context.Context, o
 
 	return result, nil
 }
+
+// DescribeTrustStoreRevocationsAPIClient is a client that implements the
+// DescribeTrustStoreRevocations operation.
+type DescribeTrustStoreRevocationsAPIClient interface {
+	DescribeTrustStoreRevocations(context.Context, *DescribeTrustStoreRevocationsInput, ...func(*Options)) (*DescribeTrustStoreRevocationsOutput, error)
+}
+
+var _ DescribeTrustStoreRevocationsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeTrustStoreRevocations(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

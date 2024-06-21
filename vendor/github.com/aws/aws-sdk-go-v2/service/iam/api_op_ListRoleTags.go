@@ -149,6 +149,9 @@ func (c *Client) addOperationListRoleTagsMiddlewares(stack *middleware.Stack, op
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListRoleTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -172,13 +175,6 @@ func (c *Client) addOperationListRoleTagsMiddlewares(stack *middleware.Stack, op
 	}
 	return nil
 }
-
-// ListRoleTagsAPIClient is a client that implements the ListRoleTags operation.
-type ListRoleTagsAPIClient interface {
-	ListRoleTags(context.Context, *ListRoleTagsInput, ...func(*Options)) (*ListRoleTagsOutput, error)
-}
-
-var _ ListRoleTagsAPIClient = (*Client)(nil)
 
 // ListRoleTagsPaginatorOptions is the paginator options for ListRoleTags
 type ListRoleTagsPaginatorOptions struct {
@@ -251,6 +247,9 @@ func (p *ListRoleTagsPaginator) NextPage(ctx context.Context, optFns ...func(*Op
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListRoleTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -269,6 +268,13 @@ func (p *ListRoleTagsPaginator) NextPage(ctx context.Context, optFns ...func(*Op
 
 	return result, nil
 }
+
+// ListRoleTagsAPIClient is a client that implements the ListRoleTags operation.
+type ListRoleTagsAPIClient interface {
+	ListRoleTags(context.Context, *ListRoleTagsInput, ...func(*Options)) (*ListRoleTagsOutput, error)
+}
+
+var _ ListRoleTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListRoleTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

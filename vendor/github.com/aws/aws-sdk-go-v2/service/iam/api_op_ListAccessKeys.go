@@ -158,6 +158,9 @@ func (c *Client) addOperationListAccessKeysMiddlewares(stack *middleware.Stack, 
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListAccessKeys(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -178,14 +181,6 @@ func (c *Client) addOperationListAccessKeysMiddlewares(stack *middleware.Stack, 
 	}
 	return nil
 }
-
-// ListAccessKeysAPIClient is a client that implements the ListAccessKeys
-// operation.
-type ListAccessKeysAPIClient interface {
-	ListAccessKeys(context.Context, *ListAccessKeysInput, ...func(*Options)) (*ListAccessKeysOutput, error)
-}
-
-var _ ListAccessKeysAPIClient = (*Client)(nil)
 
 // ListAccessKeysPaginatorOptions is the paginator options for ListAccessKeys
 type ListAccessKeysPaginatorOptions struct {
@@ -258,6 +253,9 @@ func (p *ListAccessKeysPaginator) NextPage(ctx context.Context, optFns ...func(*
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListAccessKeys(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -276,6 +274,14 @@ func (p *ListAccessKeysPaginator) NextPage(ctx context.Context, optFns ...func(*
 
 	return result, nil
 }
+
+// ListAccessKeysAPIClient is a client that implements the ListAccessKeys
+// operation.
+type ListAccessKeysAPIClient interface {
+	ListAccessKeys(context.Context, *ListAccessKeysInput, ...func(*Options)) (*ListAccessKeysOutput, error)
+}
+
+var _ ListAccessKeysAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListAccessKeys(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

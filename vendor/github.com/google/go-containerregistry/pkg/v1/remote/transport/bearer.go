@@ -49,7 +49,7 @@ func Exchange(ctx context.Context, reg name.Registry, auth authn.Authenticator, 
 	if err != nil {
 		return nil, err
 	}
-	authcfg, err := auth.Authorization()
+	authcfg, err := authn.Authorization(ctx, auth)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (bt *bearerTransport) RoundTrip(in *http.Request) (*http.Response, error) {
 // The basic token exchange is attempted first, falling back to the oauth flow.
 // If the IdentityToken is set, this indicates that we should start with the oauth flow.
 func (bt *bearerTransport) refresh(ctx context.Context) error {
-	auth, err := bt.basic.Authorization()
+	auth, err := authn.Authorization(ctx, bt.basic)
 	if err != nil {
 		return err
 	}
@@ -295,7 +295,7 @@ func canonicalAddress(host, scheme string) (address string) {
 
 // https://docs.docker.com/registry/spec/auth/oauth/
 func (bt *bearerTransport) refreshOauth(ctx context.Context) ([]byte, error) {
-	auth, err := bt.basic.Authorization()
+	auth, err := authn.Authorization(ctx, bt.basic)
 	if err != nil {
 		return nil, err
 	}

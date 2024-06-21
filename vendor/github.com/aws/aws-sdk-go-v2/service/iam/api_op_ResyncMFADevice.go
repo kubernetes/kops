@@ -138,6 +138,9 @@ func (c *Client) addOperationResyncMFADeviceMiddlewares(stack *middleware.Stack,
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpResyncMFADeviceValidationMiddleware(stack); err != nil {
 		return err
 	}

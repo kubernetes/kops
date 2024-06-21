@@ -122,6 +122,9 @@ func (c *Client) addOperationListCidrBlocksMiddlewares(stack *middleware.Stack, 
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListCidrBlocksValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -145,14 +148,6 @@ func (c *Client) addOperationListCidrBlocksMiddlewares(stack *middleware.Stack, 
 	}
 	return nil
 }
-
-// ListCidrBlocksAPIClient is a client that implements the ListCidrBlocks
-// operation.
-type ListCidrBlocksAPIClient interface {
-	ListCidrBlocks(context.Context, *ListCidrBlocksInput, ...func(*Options)) (*ListCidrBlocksOutput, error)
-}
-
-var _ ListCidrBlocksAPIClient = (*Client)(nil)
 
 // ListCidrBlocksPaginatorOptions is the paginator options for ListCidrBlocks
 type ListCidrBlocksPaginatorOptions struct {
@@ -217,6 +212,9 @@ func (p *ListCidrBlocksPaginator) NextPage(ctx context.Context, optFns ...func(*
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListCidrBlocks(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -235,6 +233,14 @@ func (p *ListCidrBlocksPaginator) NextPage(ctx context.Context, optFns ...func(*
 
 	return result, nil
 }
+
+// ListCidrBlocksAPIClient is a client that implements the ListCidrBlocks
+// operation.
+type ListCidrBlocksAPIClient interface {
+	ListCidrBlocks(context.Context, *ListCidrBlocksInput, ...func(*Options)) (*ListCidrBlocksOutput, error)
+}
+
+var _ ListCidrBlocksAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListCidrBlocks(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

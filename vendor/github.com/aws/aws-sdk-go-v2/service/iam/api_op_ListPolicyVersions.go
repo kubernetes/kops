@@ -151,6 +151,9 @@ func (c *Client) addOperationListPolicyVersionsMiddlewares(stack *middleware.Sta
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListPolicyVersionsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -174,14 +177,6 @@ func (c *Client) addOperationListPolicyVersionsMiddlewares(stack *middleware.Sta
 	}
 	return nil
 }
-
-// ListPolicyVersionsAPIClient is a client that implements the ListPolicyVersions
-// operation.
-type ListPolicyVersionsAPIClient interface {
-	ListPolicyVersions(context.Context, *ListPolicyVersionsInput, ...func(*Options)) (*ListPolicyVersionsOutput, error)
-}
-
-var _ ListPolicyVersionsAPIClient = (*Client)(nil)
 
 // ListPolicyVersionsPaginatorOptions is the paginator options for
 // ListPolicyVersions
@@ -255,6 +250,9 @@ func (p *ListPolicyVersionsPaginator) NextPage(ctx context.Context, optFns ...fu
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListPolicyVersions(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -273,6 +271,14 @@ func (p *ListPolicyVersionsPaginator) NextPage(ctx context.Context, optFns ...fu
 
 	return result, nil
 }
+
+// ListPolicyVersionsAPIClient is a client that implements the ListPolicyVersions
+// operation.
+type ListPolicyVersionsAPIClient interface {
+	ListPolicyVersions(context.Context, *ListPolicyVersionsInput, ...func(*Options)) (*ListPolicyVersionsOutput, error)
+}
+
+var _ ListPolicyVersionsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListPolicyVersions(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

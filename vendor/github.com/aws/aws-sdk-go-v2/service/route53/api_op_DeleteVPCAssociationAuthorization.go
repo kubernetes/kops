@@ -126,6 +126,9 @@ func (c *Client) addOperationDeleteVPCAssociationAuthorizationMiddlewares(stack 
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteVPCAssociationAuthorizationValidationMiddleware(stack); err != nil {
 		return err
 	}

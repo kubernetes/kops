@@ -156,6 +156,9 @@ func (c *Client) addOperationListQueryLoggingConfigsMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListQueryLoggingConfigs(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -179,14 +182,6 @@ func (c *Client) addOperationListQueryLoggingConfigsMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// ListQueryLoggingConfigsAPIClient is a client that implements the
-// ListQueryLoggingConfigs operation.
-type ListQueryLoggingConfigsAPIClient interface {
-	ListQueryLoggingConfigs(context.Context, *ListQueryLoggingConfigsInput, ...func(*Options)) (*ListQueryLoggingConfigsOutput, error)
-}
-
-var _ ListQueryLoggingConfigsAPIClient = (*Client)(nil)
 
 // ListQueryLoggingConfigsPaginatorOptions is the paginator options for
 // ListQueryLoggingConfigs
@@ -261,6 +256,9 @@ func (p *ListQueryLoggingConfigsPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListQueryLoggingConfigs(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -279,6 +277,14 @@ func (p *ListQueryLoggingConfigsPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// ListQueryLoggingConfigsAPIClient is a client that implements the
+// ListQueryLoggingConfigs operation.
+type ListQueryLoggingConfigsAPIClient interface {
+	ListQueryLoggingConfigs(context.Context, *ListQueryLoggingConfigsInput, ...func(*Options)) (*ListQueryLoggingConfigsOutput, error)
+}
+
+var _ ListQueryLoggingConfigsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListQueryLoggingConfigs(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

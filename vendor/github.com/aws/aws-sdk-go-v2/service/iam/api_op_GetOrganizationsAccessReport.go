@@ -195,6 +195,9 @@ func (c *Client) addOperationGetOrganizationsAccessReportMiddlewares(stack *midd
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetOrganizationsAccessReportValidationMiddleware(stack); err != nil {
 		return err
 	}

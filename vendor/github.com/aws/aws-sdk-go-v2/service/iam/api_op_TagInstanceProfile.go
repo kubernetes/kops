@@ -139,6 +139,9 @@ func (c *Client) addOperationTagInstanceProfileMiddlewares(stack *middleware.Sta
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpTagInstanceProfileValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -184,6 +184,9 @@ func (c *Client) addOperationListEntitiesForPolicyMiddlewares(stack *middleware.
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListEntitiesForPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -207,14 +210,6 @@ func (c *Client) addOperationListEntitiesForPolicyMiddlewares(stack *middleware.
 	}
 	return nil
 }
-
-// ListEntitiesForPolicyAPIClient is a client that implements the
-// ListEntitiesForPolicy operation.
-type ListEntitiesForPolicyAPIClient interface {
-	ListEntitiesForPolicy(context.Context, *ListEntitiesForPolicyInput, ...func(*Options)) (*ListEntitiesForPolicyOutput, error)
-}
-
-var _ ListEntitiesForPolicyAPIClient = (*Client)(nil)
 
 // ListEntitiesForPolicyPaginatorOptions is the paginator options for
 // ListEntitiesForPolicy
@@ -288,6 +283,9 @@ func (p *ListEntitiesForPolicyPaginator) NextPage(ctx context.Context, optFns ..
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListEntitiesForPolicy(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -306,6 +304,14 @@ func (p *ListEntitiesForPolicyPaginator) NextPage(ctx context.Context, optFns ..
 
 	return result, nil
 }
+
+// ListEntitiesForPolicyAPIClient is a client that implements the
+// ListEntitiesForPolicy operation.
+type ListEntitiesForPolicyAPIClient interface {
+	ListEntitiesForPolicy(context.Context, *ListEntitiesForPolicyInput, ...func(*Options)) (*ListEntitiesForPolicyOutput, error)
+}
+
+var _ ListEntitiesForPolicyAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListEntitiesForPolicy(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

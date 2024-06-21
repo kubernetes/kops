@@ -2657,6 +2657,15 @@ type AdvancedMachineFeatures struct {
 	// EnableUefiNetworking: Whether to enable UEFI networking for instance
 	// creation.
 	EnableUefiNetworking bool `json:"enableUefiNetworking,omitempty"`
+	// PerformanceMonitoringUnit: Type of Performance Monitoring Unit requested on
+	// instance.
+	//
+	// Possible values:
+	//   "ARCHITECTURAL" - Architecturally defined non-LLC events.
+	//   "ENHANCED" - Most documented core/L2 and LLC events.
+	//   "PERFORMANCE_MONITORING_UNIT_UNSPECIFIED"
+	//   "STANDARD" - Most documented core/L2 events.
+	PerformanceMonitoringUnit string `json:"performanceMonitoringUnit,omitempty"`
 	// ThreadsPerCore: The number of threads per physical core. To disable
 	// simultaneous multithreading (SMT) set this to 1. If unset, the maximum
 	// number of threads supported per core by the underlying processor is assumed.
@@ -7639,16 +7648,25 @@ func (s *Condition) MarshalJSON() ([]byte, error) {
 
 // ConfidentialInstanceConfig: A set of Confidential Instance options.
 type ConfidentialInstanceConfig struct {
+	// ConfidentialInstanceType: Defines the type of technology used by the
+	// confidential instance.
+	//
+	// Possible values:
+	//   "CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED" - No type specified. Do not use
+	// this value.
+	//   "SEV" - AMD Secure Encrypted Virtualization.
+	//   "SEV_SNP" - AMD Secure Encrypted Virtualization - Secure Nested Paging.
+	ConfidentialInstanceType string `json:"confidentialInstanceType,omitempty"`
 	// EnableConfidentialCompute: Defines whether the instance should have
 	// confidential compute enabled.
 	EnableConfidentialCompute bool `json:"enableConfidentialCompute,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "EnableConfidentialCompute")
+	// ForceSendFields is a list of field names (e.g. "ConfidentialInstanceType")
 	// to unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "EnableConfidentialCompute") to
+	// NullFields is a list of field names (e.g. "ConfidentialInstanceType") to
 	// include in API requests with the JSON null value. By default, fields with
 	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -39156,6 +39174,10 @@ type Scheduling struct {
 	// other resources. This field is for use by internal tools that use the public
 	// API.
 	LocationHint string `json:"locationHint,omitempty"`
+	// MaxRunDuration: Specifies the max run duration for the given instance. If
+	// specified, the instance termination action will be performed at the end of
+	// the run duration.
+	MaxRunDuration *Duration `json:"maxRunDuration,omitempty"`
 	// MinNodeCpus: The minimum number of virtual CPUs this instance will consume
 	// when running on a sole-tenant node.
 	MinNodeCpus int64 `json:"minNodeCpus,omitempty"`
@@ -39176,7 +39198,8 @@ type Scheduling struct {
 	// instance to be restarted, set the automaticRestart flag to true. Your
 	// instance may be restarted more than once, and it may be restarted outside
 	// the window of maintenance events.
-	OnHostMaintenance string `json:"onHostMaintenance,omitempty"`
+	OnHostMaintenance    string                          `json:"onHostMaintenance,omitempty"`
+	OnInstanceStopAction *SchedulingOnInstanceStopAction `json:"onInstanceStopAction,omitempty"`
 	// Preemptible: Defines whether the instance is preemptible. This can only be
 	// set during instance creation or while the instance is stopped and therefore,
 	// in a `TERMINATED` state. See Instance Life Cycle for more information on the
@@ -39189,6 +39212,10 @@ type Scheduling struct {
 	//   "STANDARD" - Standard provisioning with user controlled runtime, no
 	// discounts.
 	ProvisioningModel string `json:"provisioningModel,omitempty"`
+	// TerminationTime: Specifies the timestamp, when the instance will be
+	// terminated, in RFC3339 text format. If specified, the instance termination
+	// action will be performed at the termination time.
+	TerminationTime string `json:"terminationTime,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "AutomaticRestart") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -39237,6 +39264,31 @@ type SchedulingNodeAffinity struct {
 
 func (s *SchedulingNodeAffinity) MarshalJSON() ([]byte, error) {
 	type NoMethod SchedulingNodeAffinity
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// SchedulingOnInstanceStopAction: Defines the behaviour for instances with the
+// instance_termination_action STOP.
+type SchedulingOnInstanceStopAction struct {
+	// DiscardLocalSsd: If true, the contents of any attached Local SSD disks will
+	// be discarded else, the Local SSD data will be preserved when the instance is
+	// stopped at the end of the run duration/termination time.
+	DiscardLocalSsd bool `json:"discardLocalSsd,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DiscardLocalSsd") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DiscardLocalSsd") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SchedulingOnInstanceStopAction) MarshalJSON() ([]byte, error) {
+	type NoMethod SchedulingOnInstanceStopAction
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
@@ -53006,8 +53058,10 @@ type WeightedBackendService struct {
 	// routeAction) . The selection of a backend service is determined only for new
 	// traffic. Once a user's request has been directed to a backend service,
 	// subsequent requests are sent to the same backend service as determined by
-	// the backend service's session affinity policy. The value must be from 0 to
-	// 1000.
+	// the backend service's session affinity policy. Don't configure session
+	// affinity if you're using weighted traffic splitting. If you do, the weighted
+	// traffic splitting configuration takes precedence. The value must be from 0
+	// to 1000.
 	Weight int64 `json:"weight,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "BackendService") to
 	// unconditionally include in API requests. By default, fields with empty or

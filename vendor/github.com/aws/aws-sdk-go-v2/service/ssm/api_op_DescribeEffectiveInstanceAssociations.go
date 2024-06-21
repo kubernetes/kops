@@ -118,6 +118,9 @@ func (c *Client) addOperationDescribeEffectiveInstanceAssociationsMiddlewares(st
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeEffectiveInstanceAssociationsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -141,14 +144,6 @@ func (c *Client) addOperationDescribeEffectiveInstanceAssociationsMiddlewares(st
 	}
 	return nil
 }
-
-// DescribeEffectiveInstanceAssociationsAPIClient is a client that implements the
-// DescribeEffectiveInstanceAssociations operation.
-type DescribeEffectiveInstanceAssociationsAPIClient interface {
-	DescribeEffectiveInstanceAssociations(context.Context, *DescribeEffectiveInstanceAssociationsInput, ...func(*Options)) (*DescribeEffectiveInstanceAssociationsOutput, error)
-}
-
-var _ DescribeEffectiveInstanceAssociationsAPIClient = (*Client)(nil)
 
 // DescribeEffectiveInstanceAssociationsPaginatorOptions is the paginator options
 // for DescribeEffectiveInstanceAssociations
@@ -217,6 +212,9 @@ func (p *DescribeEffectiveInstanceAssociationsPaginator) NextPage(ctx context.Co
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeEffectiveInstanceAssociations(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -235,6 +233,14 @@ func (p *DescribeEffectiveInstanceAssociationsPaginator) NextPage(ctx context.Co
 
 	return result, nil
 }
+
+// DescribeEffectiveInstanceAssociationsAPIClient is a client that implements the
+// DescribeEffectiveInstanceAssociations operation.
+type DescribeEffectiveInstanceAssociationsAPIClient interface {
+	DescribeEffectiveInstanceAssociations(context.Context, *DescribeEffectiveInstanceAssociationsInput, ...func(*Options)) (*DescribeEffectiveInstanceAssociationsOutput, error)
+}
+
+var _ DescribeEffectiveInstanceAssociationsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeEffectiveInstanceAssociations(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

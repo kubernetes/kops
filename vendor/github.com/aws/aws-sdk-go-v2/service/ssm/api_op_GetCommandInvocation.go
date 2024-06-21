@@ -257,6 +257,9 @@ func (c *Client) addOperationGetCommandInvocationMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetCommandInvocationValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -280,14 +283,6 @@ func (c *Client) addOperationGetCommandInvocationMiddlewares(stack *middleware.S
 	}
 	return nil
 }
-
-// GetCommandInvocationAPIClient is a client that implements the
-// GetCommandInvocation operation.
-type GetCommandInvocationAPIClient interface {
-	GetCommandInvocation(context.Context, *GetCommandInvocationInput, ...func(*Options)) (*GetCommandInvocationOutput, error)
-}
-
-var _ GetCommandInvocationAPIClient = (*Client)(nil)
 
 // CommandExecutedWaiterOptions are waiter options for CommandExecutedWaiter
 type CommandExecutedWaiterOptions struct {
@@ -404,7 +399,13 @@ func (w *CommandExecutedWaiter) WaitForOutput(ctx context.Context, params *GetCo
 		}
 
 		out, err := w.client.GetCommandInvocation(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -587,6 +588,14 @@ func commandExecutedStateRetryable(ctx context.Context, input *GetCommandInvocat
 
 	return true, nil
 }
+
+// GetCommandInvocationAPIClient is a client that implements the
+// GetCommandInvocation operation.
+type GetCommandInvocationAPIClient interface {
+	GetCommandInvocation(context.Context, *GetCommandInvocationInput, ...func(*Options)) (*GetCommandInvocationOutput, error)
+}
+
+var _ GetCommandInvocationAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetCommandInvocation(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

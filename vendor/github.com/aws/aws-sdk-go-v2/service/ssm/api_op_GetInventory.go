@@ -127,6 +127,9 @@ func (c *Client) addOperationGetInventoryMiddlewares(stack *middleware.Stack, op
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetInventoryValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -150,13 +153,6 @@ func (c *Client) addOperationGetInventoryMiddlewares(stack *middleware.Stack, op
 	}
 	return nil
 }
-
-// GetInventoryAPIClient is a client that implements the GetInventory operation.
-type GetInventoryAPIClient interface {
-	GetInventory(context.Context, *GetInventoryInput, ...func(*Options)) (*GetInventoryOutput, error)
-}
-
-var _ GetInventoryAPIClient = (*Client)(nil)
 
 // GetInventoryPaginatorOptions is the paginator options for GetInventory
 type GetInventoryPaginatorOptions struct {
@@ -222,6 +218,9 @@ func (p *GetInventoryPaginator) NextPage(ctx context.Context, optFns ...func(*Op
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetInventory(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -240,6 +239,13 @@ func (p *GetInventoryPaginator) NextPage(ctx context.Context, optFns ...func(*Op
 
 	return result, nil
 }
+
+// GetInventoryAPIClient is a client that implements the GetInventory operation.
+type GetInventoryAPIClient interface {
+	GetInventory(context.Context, *GetInventoryInput, ...func(*Options)) (*GetInventoryOutput, error)
+}
+
+var _ GetInventoryAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetInventory(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

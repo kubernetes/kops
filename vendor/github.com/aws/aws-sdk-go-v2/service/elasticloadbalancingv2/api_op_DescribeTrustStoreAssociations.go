@@ -117,6 +117,9 @@ func (c *Client) addOperationDescribeTrustStoreAssociationsMiddlewares(stack *mi
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeTrustStoreAssociationsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -140,14 +143,6 @@ func (c *Client) addOperationDescribeTrustStoreAssociationsMiddlewares(stack *mi
 	}
 	return nil
 }
-
-// DescribeTrustStoreAssociationsAPIClient is a client that implements the
-// DescribeTrustStoreAssociations operation.
-type DescribeTrustStoreAssociationsAPIClient interface {
-	DescribeTrustStoreAssociations(context.Context, *DescribeTrustStoreAssociationsInput, ...func(*Options)) (*DescribeTrustStoreAssociationsOutput, error)
-}
-
-var _ DescribeTrustStoreAssociationsAPIClient = (*Client)(nil)
 
 // DescribeTrustStoreAssociationsPaginatorOptions is the paginator options for
 // DescribeTrustStoreAssociations
@@ -215,6 +210,9 @@ func (p *DescribeTrustStoreAssociationsPaginator) NextPage(ctx context.Context, 
 	}
 	params.PageSize = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeTrustStoreAssociations(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -233,6 +231,14 @@ func (p *DescribeTrustStoreAssociationsPaginator) NextPage(ctx context.Context, 
 
 	return result, nil
 }
+
+// DescribeTrustStoreAssociationsAPIClient is a client that implements the
+// DescribeTrustStoreAssociations operation.
+type DescribeTrustStoreAssociationsAPIClient interface {
+	DescribeTrustStoreAssociations(context.Context, *DescribeTrustStoreAssociationsInput, ...func(*Options)) (*DescribeTrustStoreAssociationsOutput, error)
+}
+
+var _ DescribeTrustStoreAssociationsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeTrustStoreAssociations(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

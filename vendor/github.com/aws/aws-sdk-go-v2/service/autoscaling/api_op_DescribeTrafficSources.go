@@ -137,6 +137,9 @@ func (c *Client) addOperationDescribeTrafficSourcesMiddlewares(stack *middleware
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeTrafficSourcesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -160,14 +163,6 @@ func (c *Client) addOperationDescribeTrafficSourcesMiddlewares(stack *middleware
 	}
 	return nil
 }
-
-// DescribeTrafficSourcesAPIClient is a client that implements the
-// DescribeTrafficSources operation.
-type DescribeTrafficSourcesAPIClient interface {
-	DescribeTrafficSources(context.Context, *DescribeTrafficSourcesInput, ...func(*Options)) (*DescribeTrafficSourcesOutput, error)
-}
-
-var _ DescribeTrafficSourcesAPIClient = (*Client)(nil)
 
 // DescribeTrafficSourcesPaginatorOptions is the paginator options for
 // DescribeTrafficSources
@@ -233,6 +228,9 @@ func (p *DescribeTrafficSourcesPaginator) NextPage(ctx context.Context, optFns .
 	}
 	params.MaxRecords = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.DescribeTrafficSources(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -251,6 +249,14 @@ func (p *DescribeTrafficSourcesPaginator) NextPage(ctx context.Context, optFns .
 
 	return result, nil
 }
+
+// DescribeTrafficSourcesAPIClient is a client that implements the
+// DescribeTrafficSources operation.
+type DescribeTrafficSourcesAPIClient interface {
+	DescribeTrafficSources(context.Context, *DescribeTrafficSourcesInput, ...func(*Options)) (*DescribeTrafficSourcesOutput, error)
+}
+
+var _ DescribeTrafficSourcesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeTrafficSources(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

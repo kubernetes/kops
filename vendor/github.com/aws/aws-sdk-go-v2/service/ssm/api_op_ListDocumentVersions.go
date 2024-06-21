@@ -118,6 +118,9 @@ func (c *Client) addOperationListDocumentVersionsMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListDocumentVersionsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -141,14 +144,6 @@ func (c *Client) addOperationListDocumentVersionsMiddlewares(stack *middleware.S
 	}
 	return nil
 }
-
-// ListDocumentVersionsAPIClient is a client that implements the
-// ListDocumentVersions operation.
-type ListDocumentVersionsAPIClient interface {
-	ListDocumentVersions(context.Context, *ListDocumentVersionsInput, ...func(*Options)) (*ListDocumentVersionsOutput, error)
-}
-
-var _ ListDocumentVersionsAPIClient = (*Client)(nil)
 
 // ListDocumentVersionsPaginatorOptions is the paginator options for
 // ListDocumentVersions
@@ -215,6 +210,9 @@ func (p *ListDocumentVersionsPaginator) NextPage(ctx context.Context, optFns ...
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListDocumentVersions(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -233,6 +231,14 @@ func (p *ListDocumentVersionsPaginator) NextPage(ctx context.Context, optFns ...
 
 	return result, nil
 }
+
+// ListDocumentVersionsAPIClient is a client that implements the
+// ListDocumentVersions operation.
+type ListDocumentVersionsAPIClient interface {
+	ListDocumentVersions(context.Context, *ListDocumentVersionsInput, ...func(*Options)) (*ListDocumentVersionsOutput, error)
+}
+
+var _ ListDocumentVersionsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListDocumentVersions(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

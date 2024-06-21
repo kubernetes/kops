@@ -151,6 +151,9 @@ func (c *Client) addOperationGetGroupMiddlewares(stack *middleware.Stack, option
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetGroupValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -174,13 +177,6 @@ func (c *Client) addOperationGetGroupMiddlewares(stack *middleware.Stack, option
 	}
 	return nil
 }
-
-// GetGroupAPIClient is a client that implements the GetGroup operation.
-type GetGroupAPIClient interface {
-	GetGroup(context.Context, *GetGroupInput, ...func(*Options)) (*GetGroupOutput, error)
-}
-
-var _ GetGroupAPIClient = (*Client)(nil)
 
 // GetGroupPaginatorOptions is the paginator options for GetGroup
 type GetGroupPaginatorOptions struct {
@@ -253,6 +249,9 @@ func (p *GetGroupPaginator) NextPage(ctx context.Context, optFns ...func(*Option
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.GetGroup(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -271,6 +270,13 @@ func (p *GetGroupPaginator) NextPage(ctx context.Context, optFns ...func(*Option
 
 	return result, nil
 }
+
+// GetGroupAPIClient is a client that implements the GetGroup operation.
+type GetGroupAPIClient interface {
+	GetGroup(context.Context, *GetGroupInput, ...func(*Options)) (*GetGroupOutput, error)
+}
+
+var _ GetGroupAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetGroup(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

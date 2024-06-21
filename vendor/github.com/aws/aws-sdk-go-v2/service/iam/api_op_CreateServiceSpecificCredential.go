@@ -140,6 +140,9 @@ func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *m
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCreateServiceSpecificCredentialValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -161,6 +161,9 @@ func (c *Client) addOperationListKeyPoliciesMiddlewares(stack *middleware.Stack,
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListKeyPoliciesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -184,14 +187,6 @@ func (c *Client) addOperationListKeyPoliciesMiddlewares(stack *middleware.Stack,
 	}
 	return nil
 }
-
-// ListKeyPoliciesAPIClient is a client that implements the ListKeyPolicies
-// operation.
-type ListKeyPoliciesAPIClient interface {
-	ListKeyPolicies(context.Context, *ListKeyPoliciesInput, ...func(*Options)) (*ListKeyPoliciesOutput, error)
-}
-
-var _ ListKeyPoliciesAPIClient = (*Client)(nil)
 
 // ListKeyPoliciesPaginatorOptions is the paginator options for ListKeyPolicies
 type ListKeyPoliciesPaginatorOptions struct {
@@ -263,6 +258,9 @@ func (p *ListKeyPoliciesPaginator) NextPage(ctx context.Context, optFns ...func(
 	}
 	params.Limit = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListKeyPolicies(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -281,6 +279,14 @@ func (p *ListKeyPoliciesPaginator) NextPage(ctx context.Context, optFns ...func(
 
 	return result, nil
 }
+
+// ListKeyPoliciesAPIClient is a client that implements the ListKeyPolicies
+// operation.
+type ListKeyPoliciesAPIClient interface {
+	ListKeyPolicies(context.Context, *ListKeyPoliciesInput, ...func(*Options)) (*ListKeyPoliciesOutput, error)
+}
+
+var _ ListKeyPoliciesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListKeyPolicies(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

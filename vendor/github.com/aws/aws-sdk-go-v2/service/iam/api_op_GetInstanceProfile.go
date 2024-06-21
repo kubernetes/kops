@@ -124,6 +124,9 @@ func (c *Client) addOperationGetInstanceProfileMiddlewares(stack *middleware.Sta
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetInstanceProfileValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -147,14 +150,6 @@ func (c *Client) addOperationGetInstanceProfileMiddlewares(stack *middleware.Sta
 	}
 	return nil
 }
-
-// GetInstanceProfileAPIClient is a client that implements the GetInstanceProfile
-// operation.
-type GetInstanceProfileAPIClient interface {
-	GetInstanceProfile(context.Context, *GetInstanceProfileInput, ...func(*Options)) (*GetInstanceProfileOutput, error)
-}
-
-var _ GetInstanceProfileAPIClient = (*Client)(nil)
 
 // InstanceProfileExistsWaiterOptions are waiter options for
 // InstanceProfileExistsWaiter
@@ -273,7 +268,13 @@ func (w *InstanceProfileExistsWaiter) WaitForOutput(ctx context.Context, params 
 		}
 
 		out, err := w.client.GetInstanceProfile(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -324,6 +325,14 @@ func instanceProfileExistsStateRetryable(ctx context.Context, input *GetInstance
 
 	return true, nil
 }
+
+// GetInstanceProfileAPIClient is a client that implements the GetInstanceProfile
+// operation.
+type GetInstanceProfileAPIClient interface {
+	GetInstanceProfile(context.Context, *GetInstanceProfileInput, ...func(*Options)) (*GetInstanceProfileOutput, error)
+}
+
+var _ GetInstanceProfileAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetInstanceProfile(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

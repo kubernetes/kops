@@ -22,6 +22,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
 
 	"github.com/google/go-containerregistry/pkg/logs"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -36,6 +38,9 @@ import (
 var layoutFile = `{
     "imageLayoutVersion": "1.0.0"
 }`
+
+// renameMutex guards os.Rename calls in AppendImage on Windows only.
+var renameMutex sync.Mutex
 
 // AppendImage writes a v1.Image to the Path and updates
 // the index.json to reference it.
@@ -259,6 +264,11 @@ func (l Path) writeBlob(hash v1.Hash, size int64, rc io.ReadCloser, renamer func
 	}
 
 	renamePath := l.path("blobs", finalHash.Algorithm, finalHash.Hex)
+
+	if runtime.GOOS == "windows" {
+		renameMutex.Lock()
+		defer renameMutex.Unlock()
+	}
 	return os.Rename(w.Name(), renamePath)
 }
 

@@ -47,7 +47,7 @@ type fetcher struct {
 func makeFetcher(ctx context.Context, target resource, o *options) (*fetcher, error) {
 	auth := o.auth
 	if o.keychain != nil {
-		kauth, err := o.keychain.Resolve(target)
+		kauth, err := authn.Resolve(ctx, o.keychain, target)
 		if err != nil {
 			return nil, err
 		}

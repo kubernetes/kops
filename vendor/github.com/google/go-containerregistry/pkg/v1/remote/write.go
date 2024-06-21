@@ -76,7 +76,7 @@ type writer struct {
 func makeWriter(ctx context.Context, repo name.Repository, ls []v1.Layer, o *options) (*writer, error) {
 	auth := o.auth
 	if o.keychain != nil {
-		kauth, err := o.keychain.Resolve(repo)
+		kauth, err := authn.Resolve(ctx, o.keychain, repo)
 		if err != nil {
 			return nil, err
 		}

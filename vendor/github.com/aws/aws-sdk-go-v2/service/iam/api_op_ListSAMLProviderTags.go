@@ -154,6 +154,9 @@ func (c *Client) addOperationListSAMLProviderTagsMiddlewares(stack *middleware.S
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListSAMLProviderTagsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -177,14 +180,6 @@ func (c *Client) addOperationListSAMLProviderTagsMiddlewares(stack *middleware.S
 	}
 	return nil
 }
-
-// ListSAMLProviderTagsAPIClient is a client that implements the
-// ListSAMLProviderTags operation.
-type ListSAMLProviderTagsAPIClient interface {
-	ListSAMLProviderTags(context.Context, *ListSAMLProviderTagsInput, ...func(*Options)) (*ListSAMLProviderTagsOutput, error)
-}
-
-var _ ListSAMLProviderTagsAPIClient = (*Client)(nil)
 
 // ListSAMLProviderTagsPaginatorOptions is the paginator options for
 // ListSAMLProviderTags
@@ -258,6 +253,9 @@ func (p *ListSAMLProviderTagsPaginator) NextPage(ctx context.Context, optFns ...
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListSAMLProviderTags(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -276,6 +274,14 @@ func (p *ListSAMLProviderTagsPaginator) NextPage(ctx context.Context, optFns ...
 
 	return result, nil
 }
+
+// ListSAMLProviderTagsAPIClient is a client that implements the
+// ListSAMLProviderTags operation.
+type ListSAMLProviderTagsAPIClient interface {
+	ListSAMLProviderTags(context.Context, *ListSAMLProviderTagsInput, ...func(*Options)) (*ListSAMLProviderTagsOutput, error)
+}
+
+var _ ListSAMLProviderTagsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListSAMLProviderTags(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

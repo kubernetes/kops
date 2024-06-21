@@ -362,6 +362,9 @@ func (c *Client) addOperationSimulatePrincipalPolicyMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpSimulatePrincipalPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -385,14 +388,6 @@ func (c *Client) addOperationSimulatePrincipalPolicyMiddlewares(stack *middlewar
 	}
 	return nil
 }
-
-// SimulatePrincipalPolicyAPIClient is a client that implements the
-// SimulatePrincipalPolicy operation.
-type SimulatePrincipalPolicyAPIClient interface {
-	SimulatePrincipalPolicy(context.Context, *SimulatePrincipalPolicyInput, ...func(*Options)) (*SimulatePrincipalPolicyOutput, error)
-}
-
-var _ SimulatePrincipalPolicyAPIClient = (*Client)(nil)
 
 // SimulatePrincipalPolicyPaginatorOptions is the paginator options for
 // SimulatePrincipalPolicy
@@ -467,6 +462,9 @@ func (p *SimulatePrincipalPolicyPaginator) NextPage(ctx context.Context, optFns 
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.SimulatePrincipalPolicy(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -485,6 +483,14 @@ func (p *SimulatePrincipalPolicyPaginator) NextPage(ctx context.Context, optFns 
 
 	return result, nil
 }
+
+// SimulatePrincipalPolicyAPIClient is a client that implements the
+// SimulatePrincipalPolicy operation.
+type SimulatePrincipalPolicyAPIClient interface {
+	SimulatePrincipalPolicy(context.Context, *SimulatePrincipalPolicyInput, ...func(*Options)) (*SimulatePrincipalPolicyOutput, error)
+}
+
+var _ SimulatePrincipalPolicyAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opSimulatePrincipalPolicy(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

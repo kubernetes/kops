@@ -12,7 +12,7 @@ import (
 )
 
 // Accepts an Elastic IP address transfer. For more information, see [Accept a transferred Elastic IP address] in the
-// Amazon Virtual Private Cloud User Guide.
+// Amazon VPC User Guide.
 //
 // [Accept a transferred Elastic IP address]: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-eips.html#using-instance-addressing-eips-transfer-accept
 func (c *Client) AcceptAddressTransfer(ctx context.Context, params *AcceptAddressTransferInput, optFns ...func(*Options)) (*AcceptAddressTransferOutput, error) {
@@ -119,6 +119,9 @@ func (c *Client) addOperationAcceptAddressTransferMiddlewares(stack *middleware.
 		return err
 	}
 	if err = addTimeOffsetBuild(stack, c); err != nil {
+		return err
+	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
 	if err = addOpAcceptAddressTransferValidationMiddleware(stack); err != nil {

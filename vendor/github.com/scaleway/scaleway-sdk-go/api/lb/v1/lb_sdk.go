@@ -54,6 +54,13 @@ func (enum ACLActionRedirectRedirectType) String() string {
 	return string(enum)
 }
 
+func (enum ACLActionRedirectRedirectType) Values() []ACLActionRedirectRedirectType {
+	return []ACLActionRedirectRedirectType{
+		"location",
+		"scheme",
+	}
+}
+
 func (enum ACLActionRedirectRedirectType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -83,6 +90,14 @@ func (enum ACLActionType) String() string {
 		return "allow"
 	}
 	return string(enum)
+}
+
+func (enum ACLActionType) Values() []ACLActionType {
+	return []ACLActionType{
+		"allow",
+		"deny",
+		"redirect",
+	}
 }
 
 func (enum ACLActionType) MarshalJSON() ([]byte, error) {
@@ -118,6 +133,16 @@ func (enum ACLHTTPFilter) String() string {
 	return string(enum)
 }
 
+func (enum ACLHTTPFilter) Values() []ACLHTTPFilter {
+	return []ACLHTTPFilter{
+		"acl_http_filter_none",
+		"path_begin",
+		"path_end",
+		"regex",
+		"http_header_match",
+	}
+}
+
 func (enum ACLHTTPFilter) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -149,6 +174,16 @@ func (enum BackendServerStatsHealthCheckStatus) String() string {
 		return "unknown"
 	}
 	return string(enum)
+}
+
+func (enum BackendServerStatsHealthCheckStatus) Values() []BackendServerStatsHealthCheckStatus {
+	return []BackendServerStatsHealthCheckStatus{
+		"unknown",
+		"neutral",
+		"failed",
+		"passed",
+		"condpass",
+	}
 }
 
 func (enum BackendServerStatsHealthCheckStatus) MarshalJSON() ([]byte, error) {
@@ -183,6 +218,15 @@ func (enum BackendServerStatsServerState) String() string {
 	return string(enum)
 }
 
+func (enum BackendServerStatsServerState) Values() []BackendServerStatsServerState {
+	return []BackendServerStatsServerState{
+		"stopped",
+		"starting",
+		"running",
+		"stopping",
+	}
+}
+
 func (enum BackendServerStatsServerState) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -212,6 +256,14 @@ func (enum CertificateStatus) String() string {
 		return "pending"
 	}
 	return string(enum)
+}
+
+func (enum CertificateStatus) Values() []CertificateStatus {
+	return []CertificateStatus{
+		"pending",
+		"ready",
+		"error",
+	}
 }
 
 func (enum CertificateStatus) MarshalJSON() ([]byte, error) {
@@ -244,6 +296,13 @@ func (enum CertificateType) String() string {
 	return string(enum)
 }
 
+func (enum CertificateType) Values() []CertificateType {
+	return []CertificateType{
+		"letsencryt",
+		"custom",
+	}
+}
+
 func (enum CertificateType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -273,6 +332,14 @@ func (enum ForwardPortAlgorithm) String() string {
 		return "roundrobin"
 	}
 	return string(enum)
+}
+
+func (enum ForwardPortAlgorithm) Values() []ForwardPortAlgorithm {
+	return []ForwardPortAlgorithm{
+		"roundrobin",
+		"leastconn",
+		"first",
+	}
 }
 
 func (enum ForwardPortAlgorithm) MarshalJSON() ([]byte, error) {
@@ -308,6 +375,18 @@ func (enum InstanceStatus) String() string {
 		return "unknown"
 	}
 	return string(enum)
+}
+
+func (enum InstanceStatus) Values() []InstanceStatus {
+	return []InstanceStatus{
+		"unknown",
+		"ready",
+		"pending",
+		"stopped",
+		"error",
+		"locked",
+		"migrating",
+	}
 }
 
 func (enum InstanceStatus) MarshalJSON() ([]byte, error) {
@@ -349,6 +428,22 @@ func (enum LBStatus) String() string {
 	return string(enum)
 }
 
+func (enum LBStatus) Values() []LBStatus {
+	return []LBStatus{
+		"unknown",
+		"ready",
+		"pending",
+		"stopped",
+		"error",
+		"locked",
+		"migrating",
+		"to_create",
+		"creating",
+		"to_delete",
+		"deleting",
+	}
+}
+
 func (enum LBStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -379,6 +474,15 @@ func (enum LBTypeStock) String() string {
 		return "unknown"
 	}
 	return string(enum)
+}
+
+func (enum LBTypeStock) Values() []LBTypeStock {
+	return []LBTypeStock{
+		"unknown",
+		"low_stock",
+		"out_of_stock",
+		"available",
+	}
 }
 
 func (enum LBTypeStock) MarshalJSON() ([]byte, error) {
@@ -413,6 +517,15 @@ func (enum ListACLRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListACLRequestOrderBy) Values() []ListACLRequestOrderBy {
+	return []ListACLRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListACLRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -443,6 +556,15 @@ func (enum ListBackendsRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListBackendsRequestOrderBy) Values() []ListBackendsRequestOrderBy {
+	return []ListBackendsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListBackendsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -477,6 +599,15 @@ func (enum ListCertificatesRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListCertificatesRequestOrderBy) Values() []ListCertificatesRequestOrderBy {
+	return []ListCertificatesRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListCertificatesRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -509,6 +640,15 @@ func (enum ListFrontendsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListFrontendsRequestOrderBy) Values() []ListFrontendsRequestOrderBy {
+	return []ListFrontendsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListFrontendsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -538,6 +678,14 @@ func (enum ListIPsRequestIPType) String() string {
 		return "all"
 	}
 	return string(enum)
+}
+
+func (enum ListIPsRequestIPType) Values() []ListIPsRequestIPType {
+	return []ListIPsRequestIPType{
+		"all",
+		"ipv4",
+		"ipv6",
+	}
 }
 
 func (enum ListIPsRequestIPType) MarshalJSON() ([]byte, error) {
@@ -572,6 +720,15 @@ func (enum ListLBsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListLBsRequestOrderBy) Values() []ListLBsRequestOrderBy {
+	return []ListLBsRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListLBsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -602,6 +759,13 @@ func (enum ListPrivateNetworksRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListPrivateNetworksRequestOrderBy) Values() []ListPrivateNetworksRequestOrderBy {
+	return []ListPrivateNetworksRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+	}
+}
+
 func (enum ListPrivateNetworksRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -630,6 +794,13 @@ func (enum ListRoutesRequestOrderBy) String() string {
 		return "created_at_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListRoutesRequestOrderBy) Values() []ListRoutesRequestOrderBy {
+	return []ListRoutesRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+	}
 }
 
 func (enum ListRoutesRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -664,6 +835,15 @@ func (enum ListSubscriberRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListSubscriberRequestOrderBy) Values() []ListSubscriberRequestOrderBy {
+	return []ListSubscriberRequestOrderBy{
+		"created_at_asc",
+		"created_at_desc",
+		"name_asc",
+		"name_desc",
+	}
+}
+
 func (enum ListSubscriberRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -692,6 +872,13 @@ func (enum OnMarkedDownAction) String() string {
 		return "on_marked_down_action_none"
 	}
 	return string(enum)
+}
+
+func (enum OnMarkedDownAction) Values() []OnMarkedDownAction {
+	return []OnMarkedDownAction{
+		"on_marked_down_action_none",
+		"shutdown_sessions",
+	}
 }
 
 func (enum OnMarkedDownAction) MarshalJSON() ([]byte, error) {
@@ -726,6 +913,15 @@ func (enum PrivateNetworkStatus) String() string {
 	return string(enum)
 }
 
+func (enum PrivateNetworkStatus) Values() []PrivateNetworkStatus {
+	return []PrivateNetworkStatus{
+		"unknown",
+		"ready",
+		"pending",
+		"error",
+	}
+}
+
 func (enum PrivateNetworkStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -754,6 +950,13 @@ func (enum Protocol) String() string {
 		return "tcp"
 	}
 	return string(enum)
+}
+
+func (enum Protocol) Values() []Protocol {
+	return []Protocol{
+		"tcp",
+		"http",
+	}
 }
 
 func (enum Protocol) MarshalJSON() ([]byte, error) {
@@ -790,6 +993,17 @@ func (enum ProxyProtocol) String() string {
 	return string(enum)
 }
 
+func (enum ProxyProtocol) Values() []ProxyProtocol {
+	return []ProxyProtocol{
+		"proxy_protocol_unknown",
+		"proxy_protocol_none",
+		"proxy_protocol_v1",
+		"proxy_protocol_v2",
+		"proxy_protocol_v2_ssl",
+		"proxy_protocol_v2_ssl_cn",
+	}
+}
+
 func (enum ProxyProtocol) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -822,6 +1036,15 @@ func (enum SSLCompatibilityLevel) String() string {
 	return string(enum)
 }
 
+func (enum SSLCompatibilityLevel) Values() []SSLCompatibilityLevel {
+	return []SSLCompatibilityLevel{
+		"ssl_compatibility_level_unknown",
+		"ssl_compatibility_level_intermediate",
+		"ssl_compatibility_level_modern",
+		"ssl_compatibility_level_old",
+	}
+}
+
 func (enum SSLCompatibilityLevel) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -851,6 +1074,14 @@ func (enum StickySessionsType) String() string {
 		return "none"
 	}
 	return string(enum)
+}
+
+func (enum StickySessionsType) Values() []StickySessionsType {
+	return []StickySessionsType{
+		"none",
+		"cookie",
+		"table",
+	}
 }
 
 func (enum StickySessionsType) MarshalJSON() ([]byte, error) {
@@ -1907,7 +2138,7 @@ type CreateLBRequest struct {
 	// Deprecated: IPID: ID of an existing flexible IP address to attach to the Load Balancer.
 	IPID *string `json:"ip_id,omitempty"`
 
-	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to lb. Default value is `false` (do not assign).
+	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to the Load Balancer. Default value is `true` (assign).
 	AssignFlexibleIP *bool `json:"assign_flexible_ip,omitempty"`
 
 	// AssignFlexibleIPv6: defines whether to automatically assign a flexible public IPv6 to the Load Balancer. Default value is `false` (do not assign).
@@ -3433,7 +3664,7 @@ type ZonedAPICreateLBRequest struct {
 	// Deprecated: IPID: ID of an existing flexible IP address to attach to the Load Balancer.
 	IPID *string `json:"ip_id,omitempty"`
 
-	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to lb. Default value is `false` (do not assign).
+	// AssignFlexibleIP: defines whether to automatically assign a flexible public IP to the Load Balancer. Default value is `true` (assign).
 	AssignFlexibleIP *bool `json:"assign_flexible_ip,omitempty"`
 
 	// AssignFlexibleIPv6: defines whether to automatically assign a flexible public IPv6 to the Load Balancer. Default value is `false` (do not assign).

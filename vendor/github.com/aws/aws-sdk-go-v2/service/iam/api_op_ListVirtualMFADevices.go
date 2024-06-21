@@ -149,6 +149,9 @@ func (c *Client) addOperationListVirtualMFADevicesMiddlewares(stack *middleware.
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListVirtualMFADevices(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -169,14 +172,6 @@ func (c *Client) addOperationListVirtualMFADevicesMiddlewares(stack *middleware.
 	}
 	return nil
 }
-
-// ListVirtualMFADevicesAPIClient is a client that implements the
-// ListVirtualMFADevices operation.
-type ListVirtualMFADevicesAPIClient interface {
-	ListVirtualMFADevices(context.Context, *ListVirtualMFADevicesInput, ...func(*Options)) (*ListVirtualMFADevicesOutput, error)
-}
-
-var _ ListVirtualMFADevicesAPIClient = (*Client)(nil)
 
 // ListVirtualMFADevicesPaginatorOptions is the paginator options for
 // ListVirtualMFADevices
@@ -250,6 +245,9 @@ func (p *ListVirtualMFADevicesPaginator) NextPage(ctx context.Context, optFns ..
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListVirtualMFADevices(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -268,6 +266,14 @@ func (p *ListVirtualMFADevicesPaginator) NextPage(ctx context.Context, optFns ..
 
 	return result, nil
 }
+
+// ListVirtualMFADevicesAPIClient is a client that implements the
+// ListVirtualMFADevices operation.
+type ListVirtualMFADevicesAPIClient interface {
+	ListVirtualMFADevices(context.Context, *ListVirtualMFADevicesInput, ...func(*Options)) (*ListVirtualMFADevicesOutput, error)
+}
+
+var _ ListVirtualMFADevicesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListVirtualMFADevices(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

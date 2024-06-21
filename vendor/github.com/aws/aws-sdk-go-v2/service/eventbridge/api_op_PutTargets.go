@@ -216,6 +216,9 @@ func (c *Client) addOperationPutTargetsMiddlewares(stack *middleware.Stack, opti
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpPutTargetsValidationMiddleware(stack); err != nil {
 		return err
 	}

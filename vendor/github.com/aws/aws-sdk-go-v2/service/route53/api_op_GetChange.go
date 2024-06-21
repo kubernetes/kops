@@ -124,6 +124,9 @@ func (c *Client) addOperationGetChangeMiddlewares(stack *middleware.Stack, optio
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetChangeValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -150,13 +153,6 @@ func (c *Client) addOperationGetChangeMiddlewares(stack *middleware.Stack, optio
 	}
 	return nil
 }
-
-// GetChangeAPIClient is a client that implements the GetChange operation.
-type GetChangeAPIClient interface {
-	GetChange(context.Context, *GetChangeInput, ...func(*Options)) (*GetChangeOutput, error)
-}
-
-var _ GetChangeAPIClient = (*Client)(nil)
 
 // ResourceRecordSetsChangedWaiterOptions are waiter options for
 // ResourceRecordSetsChangedWaiter
@@ -276,7 +272,13 @@ func (w *ResourceRecordSetsChangedWaiter) WaitForOutput(ctx context.Context, par
 		}
 
 		out, err := w.client.GetChange(ctx, params, func(o *Options) {
+			baseOpts := []func(*Options){
+				addIsWaiterUserAgent,
+			}
 			o.APIOptions = append(o.APIOptions, apiOptions...)
+			for _, opt := range baseOpts {
+				opt(o)
+			}
 			for _, opt := range options.ClientOptions {
 				opt(o)
 			}
@@ -333,6 +335,13 @@ func resourceRecordSetsChangedStateRetryable(ctx context.Context, input *GetChan
 
 	return true, nil
 }
+
+// GetChangeAPIClient is a client that implements the GetChange operation.
+type GetChangeAPIClient interface {
+	GetChange(context.Context, *GetChangeInput, ...func(*Options)) (*GetChangeOutput, error)
+}
+
+var _ GetChangeAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opGetChange(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

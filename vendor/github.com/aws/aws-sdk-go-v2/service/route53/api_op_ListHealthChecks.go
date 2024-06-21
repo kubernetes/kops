@@ -150,6 +150,9 @@ func (c *Client) addOperationListHealthChecksMiddlewares(stack *middleware.Stack
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opListHealthChecks(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -170,14 +173,6 @@ func (c *Client) addOperationListHealthChecksMiddlewares(stack *middleware.Stack
 	}
 	return nil
 }
-
-// ListHealthChecksAPIClient is a client that implements the ListHealthChecks
-// operation.
-type ListHealthChecksAPIClient interface {
-	ListHealthChecks(context.Context, *ListHealthChecksInput, ...func(*Options)) (*ListHealthChecksOutput, error)
-}
-
-var _ ListHealthChecksAPIClient = (*Client)(nil)
 
 // ListHealthChecksPaginatorOptions is the paginator options for ListHealthChecks
 type ListHealthChecksPaginatorOptions struct {
@@ -245,6 +240,9 @@ func (p *ListHealthChecksPaginator) NextPage(ctx context.Context, optFns ...func
 	}
 	params.MaxItems = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListHealthChecks(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -263,6 +261,14 @@ func (p *ListHealthChecksPaginator) NextPage(ctx context.Context, optFns ...func
 
 	return result, nil
 }
+
+// ListHealthChecksAPIClient is a client that implements the ListHealthChecks
+// operation.
+type ListHealthChecksAPIClient interface {
+	ListHealthChecks(context.Context, *ListHealthChecksInput, ...func(*Options)) (*ListHealthChecksOutput, error)
+}
+
+var _ ListHealthChecksAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListHealthChecks(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

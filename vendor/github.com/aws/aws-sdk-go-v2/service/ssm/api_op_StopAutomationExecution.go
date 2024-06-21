@@ -106,6 +106,9 @@ func (c *Client) addOperationStopAutomationExecutionMiddlewares(stack *middlewar
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpStopAutomationExecutionValidationMiddleware(stack); err != nil {
 		return err
 	}

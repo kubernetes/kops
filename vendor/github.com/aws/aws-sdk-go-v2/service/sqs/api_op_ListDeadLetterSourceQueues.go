@@ -137,6 +137,9 @@ func (c *Client) addOperationListDeadLetterSourceQueuesMiddlewares(stack *middle
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListDeadLetterSourceQueuesValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -160,14 +163,6 @@ func (c *Client) addOperationListDeadLetterSourceQueuesMiddlewares(stack *middle
 	}
 	return nil
 }
-
-// ListDeadLetterSourceQueuesAPIClient is a client that implements the
-// ListDeadLetterSourceQueues operation.
-type ListDeadLetterSourceQueuesAPIClient interface {
-	ListDeadLetterSourceQueues(context.Context, *ListDeadLetterSourceQueuesInput, ...func(*Options)) (*ListDeadLetterSourceQueuesOutput, error)
-}
-
-var _ ListDeadLetterSourceQueuesAPIClient = (*Client)(nil)
 
 // ListDeadLetterSourceQueuesPaginatorOptions is the paginator options for
 // ListDeadLetterSourceQueues
@@ -236,6 +231,9 @@ func (p *ListDeadLetterSourceQueuesPaginator) NextPage(ctx context.Context, optF
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListDeadLetterSourceQueues(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -254,6 +252,14 @@ func (p *ListDeadLetterSourceQueuesPaginator) NextPage(ctx context.Context, optF
 
 	return result, nil
 }
+
+// ListDeadLetterSourceQueuesAPIClient is a client that implements the
+// ListDeadLetterSourceQueues operation.
+type ListDeadLetterSourceQueuesAPIClient interface {
+	ListDeadLetterSourceQueues(context.Context, *ListDeadLetterSourceQueuesInput, ...func(*Options)) (*ListDeadLetterSourceQueuesOutput, error)
+}
+
+var _ ListDeadLetterSourceQueuesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListDeadLetterSourceQueues(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

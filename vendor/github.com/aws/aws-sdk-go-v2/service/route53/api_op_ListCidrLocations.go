@@ -122,6 +122,9 @@ func (c *Client) addOperationListCidrLocationsMiddlewares(stack *middleware.Stac
 	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
+	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListCidrLocationsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -145,14 +148,6 @@ func (c *Client) addOperationListCidrLocationsMiddlewares(stack *middleware.Stac
 	}
 	return nil
 }
-
-// ListCidrLocationsAPIClient is a client that implements the ListCidrLocations
-// operation.
-type ListCidrLocationsAPIClient interface {
-	ListCidrLocations(context.Context, *ListCidrLocationsInput, ...func(*Options)) (*ListCidrLocationsOutput, error)
-}
-
-var _ ListCidrLocationsAPIClient = (*Client)(nil)
 
 // ListCidrLocationsPaginatorOptions is the paginator options for ListCidrLocations
 type ListCidrLocationsPaginatorOptions struct {
@@ -217,6 +212,9 @@ func (p *ListCidrLocationsPaginator) NextPage(ctx context.Context, optFns ...fun
 	}
 	params.MaxResults = limit
 
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
 	result, err := p.client.ListCidrLocations(ctx, &params, optFns...)
 	if err != nil {
 		return nil, err
@@ -235,6 +233,14 @@ func (p *ListCidrLocationsPaginator) NextPage(ctx context.Context, optFns ...fun
 
 	return result, nil
 }
+
+// ListCidrLocationsAPIClient is a client that implements the ListCidrLocations
+// operation.
+type ListCidrLocationsAPIClient interface {
+	ListCidrLocations(context.Context, *ListCidrLocationsInput, ...func(*Options)) (*ListCidrLocationsOutput, error)
+}
+
+var _ ListCidrLocationsAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opListCidrLocations(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

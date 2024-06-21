@@ -61,6 +61,15 @@ func (enum ContactEmailStatus) String() string {
 	return string(enum)
 }
 
+func (enum ContactEmailStatus) Values() []ContactEmailStatus {
+	return []ContactEmailStatus{
+		"email_status_unknown",
+		"validated",
+		"not_validated",
+		"invalid_email",
+	}
+}
+
 func (enum ContactEmailStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -103,6 +112,19 @@ func (enum ContactExtensionFRMode) String() string {
 		return "mode_unknown"
 	}
 	return string(enum)
+}
+
+func (enum ContactExtensionFRMode) Values() []ContactExtensionFRMode {
+	return []ContactExtensionFRMode{
+		"mode_unknown",
+		"individual",
+		"company_identification_code",
+		"duns",
+		"local",
+		"association",
+		"trademark",
+		"code_auth_afnic",
+	}
 }
 
 func (enum ContactExtensionFRMode) MarshalJSON() ([]byte, error) {
@@ -173,6 +195,31 @@ func (enum ContactExtensionNLLegalForm) String() string {
 	return string(enum)
 }
 
+func (enum ContactExtensionNLLegalForm) Values() []ContactExtensionNLLegalForm {
+	return []ContactExtensionNLLegalForm{
+		"legal_form_unknown",
+		"other",
+		"non_dutch_eu_company",
+		"non_dutch_legal_form_enterprise_subsidiary",
+		"limited_company",
+		"limited_company_in_formation",
+		"cooperative",
+		"limited_partnership",
+		"sole_company",
+		"european_economic_interest_group",
+		"religious_entity",
+		"partnership",
+		"public_company",
+		"mutual_benefit_company",
+		"residential",
+		"shipping_company",
+		"foundation",
+		"association",
+		"trading_partnership",
+		"natural_person",
+	}
+}
+
 func (enum ContactExtensionNLLegalForm) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -211,6 +258,16 @@ func (enum ContactLegalForm) String() string {
 	return string(enum)
 }
 
+func (enum ContactLegalForm) Values() []ContactLegalForm {
+	return []ContactLegalForm{
+		"legal_form_unknown",
+		"individual",
+		"corporate",
+		"association",
+		"other",
+	}
+}
+
 func (enum ContactLegalForm) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -243,6 +300,14 @@ func (enum ContactStatus) String() string {
 		return "status_unknown"
 	}
 	return string(enum)
+}
+
+func (enum ContactStatus) Values() []ContactStatus {
+	return []ContactStatus{
+		"status_unknown",
+		"active",
+		"pending",
+	}
 }
 
 func (enum ContactStatus) MarshalJSON() ([]byte, error) {
@@ -281,6 +346,16 @@ func (enum DNSZoneStatus) String() string {
 		return "unknown"
 	}
 	return string(enum)
+}
+
+func (enum DNSZoneStatus) Values() []DNSZoneStatus {
+	return []DNSZoneStatus{
+		"unknown",
+		"active",
+		"pending",
+		"error",
+		"locked",
+	}
 }
 
 func (enum DNSZoneStatus) MarshalJSON() ([]byte, error) {
@@ -337,6 +412,24 @@ func (enum DSRecordAlgorithm) String() string {
 	return string(enum)
 }
 
+func (enum DSRecordAlgorithm) Values() []DSRecordAlgorithm {
+	return []DSRecordAlgorithm{
+		"rsamd5",
+		"dh",
+		"dsa",
+		"rsasha1",
+		"dsa_nsec3_sha1",
+		"rsasha1_nsec3_sha1",
+		"rsasha256",
+		"rsasha512",
+		"ecc_gost",
+		"ecdsap256sha256",
+		"ecdsap384sha384",
+		"ed25519",
+		"ed448",
+	}
+}
+
 func (enum DSRecordAlgorithm) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -371,6 +464,15 @@ func (enum DSRecordDigestType) String() string {
 		return "sha_1"
 	}
 	return string(enum)
+}
+
+func (enum DSRecordDigestType) Values() []DSRecordDigestType {
+	return []DSRecordDigestType{
+		"sha_1",
+		"sha_256",
+		"gost_r_34_11_94",
+		"sha_384",
+	}
 }
 
 func (enum DSRecordDigestType) MarshalJSON() ([]byte, error) {
@@ -411,6 +513,16 @@ func (enum DomainFeatureStatus) String() string {
 	return string(enum)
 }
 
+func (enum DomainFeatureStatus) Values() []DomainFeatureStatus {
+	return []DomainFeatureStatus{
+		"feature_status_unknown",
+		"enabling",
+		"enabled",
+		"disabling",
+		"disabled",
+	}
+}
+
 func (enum DomainFeatureStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -449,6 +561,17 @@ func (enum DomainRegistrationStatusTransferStatus) String() string {
 		return "status_unknown"
 	}
 	return string(enum)
+}
+
+func (enum DomainRegistrationStatusTransferStatus) Values() []DomainRegistrationStatusTransferStatus {
+	return []DomainRegistrationStatusTransferStatus{
+		"status_unknown",
+		"pending",
+		"waiting_vote",
+		"rejected",
+		"processing",
+		"done",
+	}
 }
 
 func (enum DomainRegistrationStatusTransferStatus) MarshalJSON() ([]byte, error) {
@@ -507,6 +630,25 @@ func (enum DomainStatus) String() string {
 	return string(enum)
 }
 
+func (enum DomainStatus) Values() []DomainStatus {
+	return []DomainStatus{
+		"status_unknown",
+		"active",
+		"creating",
+		"create_error",
+		"renewing",
+		"renew_error",
+		"xfering",
+		"xfer_error",
+		"expired",
+		"expiring",
+		"updating",
+		"checking",
+		"locked",
+		"deleting",
+	}
+}
+
 func (enum DomainStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -543,6 +685,15 @@ func (enum HostStatus) String() string {
 	return string(enum)
 }
 
+func (enum HostStatus) Values() []HostStatus {
+	return []HostStatus{
+		"unknown_status",
+		"active",
+		"updating",
+		"deleting",
+	}
+}
+
 func (enum HostStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -573,6 +724,13 @@ func (enum LinkedProduct) String() string {
 		return "unknown_product"
 	}
 	return string(enum)
+}
+
+func (enum LinkedProduct) Values() []LinkedProduct {
+	return []LinkedProduct{
+		"unknown_product",
+		"vpc",
+	}
 }
 
 func (enum LinkedProduct) MarshalJSON() ([]byte, error) {
@@ -610,6 +768,15 @@ func (enum ListContactsRequestRole) String() string {
 	return string(enum)
 }
 
+func (enum ListContactsRequestRole) Values() []ListContactsRequestRole {
+	return []ListContactsRequestRole{
+		"unknown_role",
+		"owner",
+		"administrative",
+		"technical",
+	}
+}
+
 func (enum ListContactsRequestRole) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -640,6 +807,13 @@ func (enum ListDNSZoneRecordsRequestOrderBy) String() string {
 		return "name_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListDNSZoneRecordsRequestOrderBy) Values() []ListDNSZoneRecordsRequestOrderBy {
+	return []ListDNSZoneRecordsRequestOrderBy{
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListDNSZoneRecordsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -686,6 +860,19 @@ func (enum ListDNSZonesRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListDNSZonesRequestOrderBy) Values() []ListDNSZonesRequestOrderBy {
+	return []ListDNSZonesRequestOrderBy{
+		"domain_asc",
+		"domain_desc",
+		"subdomain_asc",
+		"subdomain_desc",
+		"created_at_asc",
+		"created_at_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+	}
+}
+
 func (enum ListDNSZonesRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -718,6 +905,13 @@ func (enum ListDomainsRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListDomainsRequestOrderBy) Values() []ListDomainsRequestOrderBy {
+	return []ListDomainsRequestOrderBy{
+		"domain_asc",
+		"domain_desc",
+	}
+}
+
 func (enum ListDomainsRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -748,6 +942,13 @@ func (enum ListRenewableDomainsRequestOrderBy) String() string {
 		return "domain_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListRenewableDomainsRequestOrderBy) Values() []ListRenewableDomainsRequestOrderBy {
+	return []ListRenewableDomainsRequestOrderBy{
+		"domain_asc",
+		"domain_desc",
+	}
 }
 
 func (enum ListRenewableDomainsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -794,6 +995,19 @@ func (enum ListTasksRequestOrderBy) String() string {
 	return string(enum)
 }
 
+func (enum ListTasksRequestOrderBy) Values() []ListTasksRequestOrderBy {
+	return []ListTasksRequestOrderBy{
+		"domain_desc",
+		"domain_asc",
+		"type_asc",
+		"type_desc",
+		"status_asc",
+		"status_desc",
+		"updated_at_asc",
+		"updated_at_desc",
+	}
+}
+
 func (enum ListTasksRequestOrderBy) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -824,6 +1038,13 @@ func (enum ListTldsRequestOrderBy) String() string {
 		return "name_asc"
 	}
 	return string(enum)
+}
+
+func (enum ListTldsRequestOrderBy) Values() []ListTldsRequestOrderBy {
+	return []ListTldsRequestOrderBy{
+		"name_asc",
+		"name_desc",
+	}
 }
 
 func (enum ListTldsRequestOrderBy) MarshalJSON() ([]byte, error) {
@@ -858,6 +1079,13 @@ func (enum RawFormat) String() string {
 	return string(enum)
 }
 
+func (enum RawFormat) Values() []RawFormat {
+	return []RawFormat{
+		"unknown_raw_format",
+		"bind",
+	}
+}
+
 func (enum RawFormat) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -890,6 +1118,14 @@ func (enum RecordHTTPServiceConfigStrategy) String() string {
 		return "random"
 	}
 	return string(enum)
+}
+
+func (enum RecordHTTPServiceConfigStrategy) Values() []RecordHTTPServiceConfigStrategy {
+	return []RecordHTTPServiceConfigStrategy{
+		"random",
+		"hashed",
+		"all",
+	}
 }
 
 func (enum RecordHTTPServiceConfigStrategy) MarshalJSON() ([]byte, error) {
@@ -960,6 +1196,31 @@ func (enum RecordType) String() string {
 	return string(enum)
 }
 
+func (enum RecordType) Values() []RecordType {
+	return []RecordType{
+		"unknown",
+		"A",
+		"AAAA",
+		"CNAME",
+		"TXT",
+		"SRV",
+		"TLSA",
+		"MX",
+		"NS",
+		"PTR",
+		"CAA",
+		"ALIAS",
+		"LOC",
+		"SSHFP",
+		"HINFO",
+		"RP",
+		"URI",
+		"DS",
+		"NAPTR",
+		"DNAME",
+	}
+}
+
 func (enum RecordType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -994,6 +1255,15 @@ func (enum RenewableDomainStatus) String() string {
 		return "unknown"
 	}
 	return string(enum)
+}
+
+func (enum RenewableDomainStatus) Values() []RenewableDomainStatus {
+	return []RenewableDomainStatus{
+		"unknown",
+		"renewable",
+		"late_reneweable",
+		"not_renewable",
+	}
 }
 
 func (enum RenewableDomainStatus) MarshalJSON() ([]byte, error) {
@@ -1034,6 +1304,16 @@ func (enum SSLCertificateStatus) String() string {
 	return string(enum)
 }
 
+func (enum SSLCertificateStatus) Values() []SSLCertificateStatus {
+	return []SSLCertificateStatus{
+		"unknown",
+		"new",
+		"pending",
+		"success",
+		"error",
+	}
+}
+
 func (enum SSLCertificateStatus) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
 }
@@ -1072,6 +1352,17 @@ func (enum TaskStatus) String() string {
 		return "unavailable"
 	}
 	return string(enum)
+}
+
+func (enum TaskStatus) Values() []TaskStatus {
+	return []TaskStatus{
+		"unavailable",
+		"new",
+		"waiting_payment",
+		"pending",
+		"success",
+		"error",
+	}
 }
 
 func (enum TaskStatus) MarshalJSON() ([]byte, error) {
@@ -1148,6 +1439,35 @@ func (enum TaskType) String() string {
 		return "unknown"
 	}
 	return string(enum)
+}
+
+func (enum TaskType) Values() []TaskType {
+	return []TaskType{
+		"unknown",
+		"create_domain",
+		"create_external_domain",
+		"renew_domain",
+		"transfer_domain",
+		"trade_domain",
+		"lock_domain_transfer",
+		"unlock_domain_transfer",
+		"enable_dnssec",
+		"disable_dnssec",
+		"update_domain",
+		"update_contact",
+		"delete_domain",
+		"cancel_task",
+		"generate_ssl_certificate",
+		"renew_ssl_certificate",
+		"send_message",
+		"delete_domain_expired",
+		"delete_external_domain",
+		"create_host",
+		"update_host",
+		"delete_host",
+		"move_project",
+		"transfer_online_domain",
+	}
 }
 
 func (enum TaskType) MarshalJSON() ([]byte, error) {
