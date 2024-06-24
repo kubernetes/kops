@@ -59,7 +59,7 @@ If you think you have found a bug please follow the instructions below.
 - Note the version of kOps you are running (from `kops version`), and the command line options you are using.
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new).
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
-- Feel free to reach out to the kOps community on [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media).
+- Feel free to reach out to the kOps community on [kubernetes slack](https://kubernetes.slack.com/messages/kops-dev/).
 
 
 ### Features
