@@ -1,4 +1,4 @@
-# sourced from https://github.com/aws/amazon-eks-pod-identity-webhook/tree/b19c295a269ad9de50b10e3a9cdc9ec1f7d48a19/deploy
+# sourced from https://github.com/aws/amazon-eks-pod-identity-webhook/tree/96f297fd31d16b3be7c814018e25a42302c23500/deploy
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -170,6 +170,9 @@ webhooks:
       operator: NotIn
       values:
       - kube-apiserver
+    - key: eks.amazonaws.com/skip-pod-identity-webhook
+      operator: DoesNotExist
+      values: []
   rules:
   - operations: [ "CREATE" ]
     apiGroups: [""]
