@@ -75,13 +75,13 @@ type PutScalingPolicyInput struct {
 	//
 	// Default: None
 	//
-	// [Scaling cooldowns for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html
+	// [Scaling cooldowns for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html
 	Cooldown *int32
 
 	// Indicates whether the scaling policy is enabled or disabled. The default is
-	// enabled. For more information, see [Disabling a scaling policy for an Auto Scaling group]in the Amazon EC2 Auto Scaling User Guide.
+	// enabled. For more information, see [Disable a scaling policy for an Auto Scaling group]in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Disabling a scaling policy for an Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enable-disable-scaling-policy.html
+	// [Disable a scaling policy for an Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enable-disable-scaling-policy.html
 	Enabled *bool
 
 	//  Not needed if the default instance warmup is defined for the group.

@@ -204,6 +204,7 @@ type ListObjectsV2Input struct {
 }
 
 func (in *ListObjectsV2Input) bindEndpointParams(p *EndpointParameters) {
+
 	p.Bucket = in.Bucket
 	p.Prefix = in.Prefix
 

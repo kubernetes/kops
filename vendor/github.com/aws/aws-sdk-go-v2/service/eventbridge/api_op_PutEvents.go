@@ -61,6 +61,7 @@ type PutEventsInput struct {
 }
 
 func (in *PutEventsInput) bindEndpointParams(p *EndpointParameters) {
+
 	p.EndpointId = in.EndpointId
 
 }

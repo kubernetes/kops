@@ -48,7 +48,7 @@ type ExecutePolicyInput struct {
 	// Valid only if the policy type is SimpleScaling . For more information, see [Scaling cooldowns for Amazon EC2 Auto Scaling] in
 	// the Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Scaling cooldowns for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html
+	// [Scaling cooldowns for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html
 	HonorCooldown *bool
 
 	// The metric value to compare to BreachThreshold . This enables you to execute a

@@ -31,6 +31,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"k8s.io/klog/v2"
+
+	"k8s.io/cloud-provider-aws/pkg/providers/v1/config"
+	"k8s.io/cloud-provider-aws/pkg/providers/v1/iface"
 )
 
 // FakeAWSServices is an fake AWS session used for testing
@@ -151,7 +154,7 @@ func (s *FakeAWSServices) countCall(service string, api string, resourceID strin
 }
 
 // Compute returns a fake EC2 client
-func (s *FakeAWSServices) Compute(region string) (EC2, error) {
+func (s *FakeAWSServices) Compute(region string) (iface.EC2, error) {
 	return s.ec2, nil
 }
 
@@ -171,7 +174,7 @@ func (s *FakeAWSServices) Autoscaling(region string) (ASG, error) {
 }
 
 // Metadata returns a fake EC2Metadata client
-func (s *FakeAWSServices) Metadata() (EC2Metadata, error) {
+func (s *FakeAWSServices) Metadata() (config.EC2Metadata, error) {
 	return s.metadata, nil
 }
 
@@ -182,7 +185,7 @@ func (s *FakeAWSServices) KeyManagement(region string) (KMS, error) {
 
 // FakeEC2 is a fake EC2 client used for testing
 type FakeEC2 interface {
-	EC2
+	iface.EC2
 	CreateSubnet(*ec2.Subnet) (*ec2.CreateSubnetOutput, error)
 	RemoveSubnets()
 	CreateRouteTable(*ec2.RouteTable) (*ec2.CreateRouteTableOutput, error)
@@ -818,6 +821,7 @@ func contains(haystack []*string, needle string) bool {
 
 // DescribeNetworkInterfaces returns list of ENIs for testing
 func (ec2i *FakeEC2Impl) DescribeNetworkInterfaces(input *ec2.DescribeNetworkInterfacesInput) (*ec2.DescribeNetworkInterfacesOutput, error) {
+	fargateNodeNamePrefix := "fargate-"
 	networkInterface := []*ec2.NetworkInterface{
 		{
 			PrivateIpAddress: aws.String("1.2.3.4"),

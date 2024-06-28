@@ -22,7 +22,7 @@ import (
 // If you try to schedule your action in the past, Amazon EC2 Auto Scaling returns
 // an error message.
 //
-// [Scheduled scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/schedule_time.html
+// [Scheduled scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scheduled-scaling.html
 func (c *Client) PutScheduledUpdateGroupAction(ctx context.Context, params *PutScheduledUpdateGroupActionInput, optFns ...func(*Options)) (*PutScheduledUpdateGroupActionOutput, error) {
 	if params == nil {
 		params = &PutScheduledUpdateGroupActionInput{}

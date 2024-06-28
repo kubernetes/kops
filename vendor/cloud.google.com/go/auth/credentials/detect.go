@@ -80,9 +80,11 @@ func DetectDefault(opts *DetectOptions) (*auth.Credentials, error) {
 		return readCredentialsFile(opts.CredentialsFile, opts)
 	}
 	if filename := os.Getenv(credsfile.GoogleAppCredsEnvVar); filename != "" {
-		if creds, err := readCredentialsFile(filename, opts); err == nil {
-			return creds, err
+		creds, err := readCredentialsFile(filename, opts)
+		if err != nil {
+			return nil, err
 		}
+		return creds, nil
 	}
 
 	fileName := credsfile.GetWellKnownFileName()
@@ -92,7 +94,7 @@ func DetectDefault(opts *DetectOptions) (*auth.Credentials, error) {
 
 	if OnGCE() {
 		return auth.NewCredentials(&auth.CredentialsOptions{
-			TokenProvider: computeTokenProvider(opts.EarlyTokenRefresh, opts.Scopes...),
+			TokenProvider: computeTokenProvider(opts),
 			ProjectIDProvider: auth.CredentialsPropertyFunc(func(context.Context) (string, error) {
 				return metadata.ProjectID()
 			}),
@@ -116,8 +118,13 @@ type DetectOptions struct {
 	// Optional.
 	Subject string
 	// EarlyTokenRefresh configures how early before a token expires that it
-	// should be refreshed.
+	// should be refreshed. Once the token’s time until expiration has entered
+	// this refresh window the token is considered valid but stale. If unset,
+	// the default value is 3 minutes and 45 seconds. Optional.
 	EarlyTokenRefresh time.Duration
+	// DisableAsyncRefresh configures a synchronous workflow that refreshes
+	// stale tokens while blocking. The default is false. Optional.
+	DisableAsyncRefresh bool
 	// AuthHandlerOptions configures an authorization handler and other options
 	// for 3LO flows. It is required, and only used, for client credential
 	// flows.

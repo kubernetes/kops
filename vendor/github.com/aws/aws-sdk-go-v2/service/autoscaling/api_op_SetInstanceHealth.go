@@ -12,9 +12,9 @@ import (
 
 // Sets the health status of the specified instance.
 //
-// For more information, see [Health checks for Auto Scaling instances] in the Amazon EC2 Auto Scaling User Guide.
+// For more information, see [Health checks for instances in an Auto Scaling group] in the Amazon EC2 Auto Scaling User Guide.
 //
-// [Health checks for Auto Scaling instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html
+// [Health checks for instances in an Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html
 func (c *Client) SetInstanceHealth(ctx context.Context, params *SetInstanceHealthInput, optFns ...func(*Options)) (*SetInstanceHealthOutput, error) {
 	if params == nil {
 		params = &SetInstanceHealthInput{}
@@ -49,10 +49,10 @@ type SetInstanceHealthInput struct {
 	// this to False , to have the call not respect the grace period associated with
 	// the group.
 	//
-	// For more information about the health check grace period, see [CreateAutoScalingGroup] in the Amazon
-	// EC2 Auto Scaling API Reference.
+	// For more information about the health check grace period, see [Set the health check grace period for an Auto Scaling group] in the Amazon
+	// EC2 Auto Scaling User Guide.
 	//
-	// [CreateAutoScalingGroup]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CreateAutoScalingGroup.html
+	// [Set the health check grace period for an Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html
 	ShouldRespectGracePeriod *bool
 
 	noSmithyDocumentSerde

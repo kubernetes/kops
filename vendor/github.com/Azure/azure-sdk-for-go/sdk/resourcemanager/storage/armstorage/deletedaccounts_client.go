@@ -46,7 +46,7 @@ func NewDeletedAccountsClient(subscriptionID string, credential azcore.TokenCred
 // Get - Get properties of specified deleted account resource.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2023-01-01
+// Generated from API version 2023-05-01
 //   - deletedAccountName - Name of the deleted storage account.
 //   - location - The location of the deleted storage account.
 //   - options - DeletedAccountsClientGetOptions contains the optional parameters for the DeletedAccountsClient.Get method.
@@ -92,7 +92,7 @@ func (client *DeletedAccountsClient) getCreateRequest(ctx context.Context, delet
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2023-01-01")
+	reqQP.Set("api-version", "2023-05-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -109,7 +109,7 @@ func (client *DeletedAccountsClient) getHandleResponse(resp *http.Response) (Del
 
 // NewListPager - Lists deleted accounts under the subscription.
 //
-// Generated from API version 2023-01-01
+// Generated from API version 2023-05-01
 //   - options - DeletedAccountsClientListOptions contains the optional parameters for the DeletedAccountsClient.NewListPager
 //     method.
 func (client *DeletedAccountsClient) NewListPager(options *DeletedAccountsClientListOptions) *runtime.Pager[DeletedAccountsClientListResponse] {
@@ -147,7 +147,7 @@ func (client *DeletedAccountsClient) listCreateRequest(ctx context.Context, opti
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2023-01-01")
+	reqQP.Set("api-version", "2023-05-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil

@@ -27,7 +27,7 @@ import (
 // User Guide.
 //
 // [Quotas for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html
-// [Launch configurations]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchConfiguration.html
+// [Launch configurations]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html
 // [Launch templates]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html
 func (c *Client) CreateLaunchConfiguration(ctx context.Context, params *CreateLaunchConfigurationInput, optFns ...func(*Options)) (*CreateLaunchConfigurationOutput, error) {
 	if params == nil {
@@ -60,13 +60,13 @@ type CreateLaunchConfigurationInput struct {
 	// assign a public IPv4 address on the subnet.
 	//
 	// If you specify true , each instance in the Auto Scaling group receives a unique
-	// public IPv4 address. For more information, see [Launching Auto Scaling instances in a VPC]in the Amazon EC2 Auto Scaling
+	// public IPv4 address. For more information, see [Provide network connectivity for your Auto Scaling instances using Amazon VPC]in the Amazon EC2 Auto Scaling
 	// User Guide.
 	//
 	// If you specify this property, you must specify at least one subnet for
 	// VPCZoneIdentifier when you create your group.
 	//
-	// [Launching Auto Scaling instances in a VPC]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html
+	// [Provide network connectivity for your Auto Scaling instances using Amazon VPC]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html
 	AssociatePublicIpAddress *bool
 
 	// The block device mapping entries that define the block devices to attach to the
@@ -93,7 +93,7 @@ type CreateLaunchConfigurationInput struct {
 	//
 	// The default value is false .
 	//
-	// [Amazon EBS-optimized instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html
+	// [Amazon EBS-optimized instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html
 	EbsOptimized *bool
 
 	// The name or the Amazon Resource Name (ARN) of the instance profile associated
@@ -104,11 +104,11 @@ type CreateLaunchConfigurationInput struct {
 	IamInstanceProfile *string
 
 	// The ID of the Amazon Machine Image (AMI) that was assigned during registration.
-	// For more information, see [Finding a Linux AMI]in the Amazon EC2 User Guide for Linux Instances.
+	// For more information, see [Find a Linux AMI]in the Amazon EC2 User Guide for Linux Instances.
 	//
 	// If you specify InstanceId , an ImageId is not required.
 	//
-	// [Finding a Linux AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
+	// [Find a Linux AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
 	ImageId *string
 
 	// The ID of the instance to use to create the launch configuration. The new
@@ -118,9 +118,9 @@ type CreateLaunchConfigurationInput struct {
 	// To create a launch configuration with a block device mapping or override any
 	// other instance attributes, specify them as part of the same request.
 	//
-	// For more information, see [Creating a launch configuration using an EC2 instance] in the Amazon EC2 Auto Scaling User Guide.
+	// For more information, see [Create a launch configuration] in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Creating a launch configuration using an EC2 instance]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-lc-with-instanceID.html
+	// [Create a launch configuration]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html
 	InstanceId *string
 
 	// Controls whether instances in this group are launched with detailed ( true ) or
@@ -130,10 +130,10 @@ type CreateLaunchConfigurationInput struct {
 	//
 	// When detailed monitoring is enabled, Amazon CloudWatch generates metrics every
 	// minute and your account is charged a fee. When you disable detailed monitoring,
-	// CloudWatch generates metrics every 5 minutes. For more information, see [Configure Monitoring for Auto Scaling Instances]in the
+	// CloudWatch generates metrics every 5 minutes. For more information, see [Configure monitoring for Auto Scaling instances]in the
 	// Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Configure Monitoring for Auto Scaling Instances]: https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html
+	// [Configure monitoring for Auto Scaling instances]: https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html
 	InstanceMonitoring *types.InstanceMonitoring
 
 	// Specifies the instance type of the EC2 instance. For information about
@@ -152,31 +152,28 @@ type CreateLaunchConfigurationInput struct {
 	// [User provided kernels]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedKernels.html
 	KernelId *string
 
-	// The name of the key pair. For more information, see [Amazon EC2 key pairs and Linux instances] in the Amazon EC2 User
+	// The name of the key pair. For more information, see [Amazon EC2 key pairs and Amazon EC2 instances] in the Amazon EC2 User
 	// Guide for Linux Instances.
 	//
-	// [Amazon EC2 key pairs and Linux instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
+	// [Amazon EC2 key pairs and Amazon EC2 instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
 	KeyName *string
 
-	// The metadata options for the instances. For more information, see [Configuring the Instance Metadata Options] in the
+	// The metadata options for the instances. For more information, see [Configure the instance metadata options] in the
 	// Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Configuring the Instance Metadata Options]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds
+	// [Configure the instance metadata options]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds
 	MetadataOptions *types.InstanceMetadataOptions
 
 	// The tenancy of the instance, either default or dedicated . An instance with
 	// dedicated tenancy runs on isolated, single-tenant hardware and can only be
 	// launched into a VPC. To launch dedicated instances into a shared tenancy VPC (a
 	// VPC with the instance placement tenancy attribute set to default ), you must set
-	// the value of this property to dedicated . For more information, see [Configuring instance tenancy with Amazon EC2 Auto Scaling] in the
-	// Amazon EC2 Auto Scaling User Guide.
+	// the value of this property to dedicated .
 	//
 	// If you specify PlacementTenancy , you must specify at least one subnet for
 	// VPCZoneIdentifier when you create your group.
 	//
 	// Valid values: default | dedicated
-	//
-	// [Configuring instance tenancy with Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-dedicated-instances.html
 	PlacementTenancy *string
 
 	// The ID of the RAM disk to select.
@@ -188,10 +185,10 @@ type CreateLaunchConfigurationInput struct {
 	RamdiskId *string
 
 	// A list that contains the security group IDs to assign to the instances in the
-	// Auto Scaling group. For more information, see [Control traffic to resources using security groups]in the Amazon Virtual Private
+	// Auto Scaling group. For more information, see [Control traffic to your Amazon Web Services resources using security groups]in the Amazon Virtual Private
 	// Cloud User Guide.
 	//
-	// [Control traffic to resources using security groups]: https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_SecurityGroups.html
+	// [Control traffic to your Amazon Web Services resources using security groups]: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html
 	SecurityGroups []string
 
 	// The maximum hourly price to be paid for any Spot Instance launched to fulfill

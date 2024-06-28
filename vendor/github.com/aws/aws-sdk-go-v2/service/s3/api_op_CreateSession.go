@@ -117,6 +117,7 @@ type CreateSessionInput struct {
 }
 
 func (in *CreateSessionInput) bindEndpointParams(p *EndpointParameters) {
+
 	p.Bucket = in.Bucket
 	p.DisableS3ExpressSessionAuth = ptr.Bool(true)
 }

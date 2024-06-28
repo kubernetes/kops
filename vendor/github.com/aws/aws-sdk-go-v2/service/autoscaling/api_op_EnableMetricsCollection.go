@@ -93,9 +93,9 @@ type EnableMetricsCollectionInput struct {
 	// If you specify Granularity and don't specify any metrics, all metrics are
 	// enabled.
 	//
-	// For more information, see [Auto Scaling group metrics] in the Amazon EC2 Auto Scaling User Guide.
+	// For more information, see [Amazon CloudWatch metrics for Amazon EC2 Auto Scaling] in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Auto Scaling group metrics]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-cloudwatch-monitoring.html#as-group-metrics
+	// [Amazon CloudWatch metrics for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-metrics.html
 	Metrics []string
 
 	noSmithyDocumentSerde

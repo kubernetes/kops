@@ -16,9 +16,9 @@ import (
 // underlying alarm action, but does not delete the alarm, even if it no longer has
 // an associated action.
 //
-// For more information, see [Deleting a scaling policy] in the Amazon EC2 Auto Scaling User Guide.
+// For more information, see [Delete a scaling policy] in the Amazon EC2 Auto Scaling User Guide.
 //
-// [Deleting a scaling policy]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/deleting-scaling-policy.html
+// [Delete a scaling policy]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/deleting-scaling-policy.html
 func (c *Client) DeletePolicy(ctx context.Context, params *DeletePolicyInput, optFns ...func(*Options)) (*DeletePolicyOutput, error) {
 	if params == nil {
 		params = &DeletePolicyInput{}

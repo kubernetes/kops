@@ -369,7 +369,7 @@ type LocalUsersClientListKeysResponse struct {
 
 // LocalUsersClientListResponse contains the response from method LocalUsersClient.NewListPager.
 type LocalUsersClientListResponse struct {
-	// List storage account local users.
+	// List of local users requested, and if paging is required, a URL to the next page of local users.
 	LocalUsers
 }
 
@@ -394,6 +394,23 @@ type ManagementPoliciesClientDeleteResponse struct {
 type ManagementPoliciesClientGetResponse struct {
 	// The Get Storage Account ManagementPolicies operation response.
 	ManagementPolicy
+}
+
+// NetworkSecurityPerimeterConfigurationsClientGetResponse contains the response from method NetworkSecurityPerimeterConfigurationsClient.Get.
+type NetworkSecurityPerimeterConfigurationsClientGetResponse struct {
+	// The Network Security Perimeter configuration resource.
+	NetworkSecurityPerimeterConfiguration
+}
+
+// NetworkSecurityPerimeterConfigurationsClientListResponse contains the response from method NetworkSecurityPerimeterConfigurationsClient.NewListPager.
+type NetworkSecurityPerimeterConfigurationsClientListResponse struct {
+	// Result of the List Network Security Perimeter configuration operation.
+	NetworkSecurityPerimeterConfigurationList
+}
+
+// NetworkSecurityPerimeterConfigurationsClientReconcileResponse contains the response from method NetworkSecurityPerimeterConfigurationsClient.BeginReconcile.
+type NetworkSecurityPerimeterConfigurationsClientReconcileResponse struct {
+	// placeholder for future response values
 }
 
 // ObjectReplicationPoliciesClientCreateOrUpdateResponse contains the response from method ObjectReplicationPoliciesClient.CreateOrUpdate.
@@ -548,6 +565,47 @@ type TableServicesClientListResponse struct {
 type TableServicesClientSetServicePropertiesResponse struct {
 	// The properties of a storage account’s Table service.
 	TableServiceProperties
+}
+
+// TaskAssignmentInstancesReportClientListResponse contains the response from method TaskAssignmentInstancesReportClient.NewListPager.
+type TaskAssignmentInstancesReportClientListResponse struct {
+	// Fetch Storage Tasks Run Summary.
+	TaskReportSummary
+}
+
+// TaskAssignmentsClientCreateResponse contains the response from method TaskAssignmentsClient.BeginCreate.
+type TaskAssignmentsClientCreateResponse struct {
+	// The storage task assignment.
+	TaskAssignment
+}
+
+// TaskAssignmentsClientDeleteResponse contains the response from method TaskAssignmentsClient.BeginDelete.
+type TaskAssignmentsClientDeleteResponse struct {
+	// placeholder for future response values
+}
+
+// TaskAssignmentsClientGetResponse contains the response from method TaskAssignmentsClient.Get.
+type TaskAssignmentsClientGetResponse struct {
+	// The storage task assignment.
+	TaskAssignment
+}
+
+// TaskAssignmentsClientListResponse contains the response from method TaskAssignmentsClient.NewListPager.
+type TaskAssignmentsClientListResponse struct {
+	// List of storage task assignments for the storage account
+	TaskAssignmentsList
+}
+
+// TaskAssignmentsClientUpdateResponse contains the response from method TaskAssignmentsClient.BeginUpdate.
+type TaskAssignmentsClientUpdateResponse struct {
+	// The storage task assignment.
+	TaskAssignment
+}
+
+// TaskAssignmentsInstancesReportClientListResponse contains the response from method TaskAssignmentsInstancesReportClient.NewListPager.
+type TaskAssignmentsInstancesReportClientListResponse struct {
+	// Fetch Storage Tasks Run Summary.
+	TaskReportSummary
 }
 
 // UsagesClientListByLocationResponse contains the response from method UsagesClient.NewListByLocationPager.

@@ -243,6 +243,9 @@ type AccountProperties struct {
 	// for this property.
 	DefaultToOAuthAuthentication *bool
 
+	// Enables extended group support with local users feature, if set to true
+	EnableExtendedGroups *bool
+
 	// Allows https traffic only to storage service if sets to true.
 	EnableHTTPSTrafficOnly *bool
 
@@ -268,7 +271,7 @@ type AccountProperties struct {
 	// Set the minimum TLS version to be permitted on requests to storage. The default interpretation is TLS 1.0 for this property.
 	MinimumTLSVersion *MinimumTLSVersion
 
-	// Allow or disallow public network access to Storage Account. Value is optional but if passed in, must be 'Enabled' or 'Disabled'.
+	// Allow, disallow, or let Network Security Perimeter configuration to evaluate public network access to Storage Account.
 	PublicNetworkAccess *PublicNetworkAccess
 
 	// Maintains information about the network routing choice opted by the user for data transfer
@@ -393,6 +396,9 @@ type AccountPropertiesCreateParameters struct {
 	// for this property.
 	DefaultToOAuthAuthentication *bool
 
+	// Enables extended group support with local users feature, if set to true
+	EnableExtendedGroups *bool
+
 	// Allows https traffic only to storage service if sets to true. The default value is true since API version 2019-04-01.
 	EnableHTTPSTrafficOnly *bool
 
@@ -427,7 +433,9 @@ type AccountPropertiesCreateParameters struct {
 	// Network rule set
 	NetworkRuleSet *NetworkRuleSet
 
-	// Allow or disallow public network access to Storage Account. Value is optional but if passed in, must be 'Enabled' or 'Disabled'.
+	// Allow, disallow, or let Network Security Perimeter configuration to evaluate public network access to Storage Account.
+	// Value is optional but if passed in, must be 'Enabled', 'Disabled' or
+	// 'SecuredByPerimeter'.
 	PublicNetworkAccess *PublicNetworkAccess
 
 	// Maintains information about the network routing choice opted by the user for data transfer
@@ -478,6 +486,9 @@ type AccountPropertiesUpdateParameters struct {
 	// for this property.
 	DefaultToOAuthAuthentication *bool
 
+	// Enables extended group support with local users feature, if set to true
+	EnableExtendedGroups *bool
+
 	// Allows https traffic only to storage service if sets to true.
 	EnableHTTPSTrafficOnly *bool
 
@@ -506,7 +517,9 @@ type AccountPropertiesUpdateParameters struct {
 	// Network rule set
 	NetworkRuleSet *NetworkRuleSet
 
-	// Allow or disallow public network access to Storage Account. Value is optional but if passed in, must be 'Enabled' or 'Disabled'.
+	// Allow, disallow, or let Network Security Perimeter configuration to evaluate public network access to Storage Account.
+	// Value is optional but if passed in, must be 'Enabled', 'Disabled' or
+	// 'SecuredByPerimeter'.
 	PublicNetworkAccess *PublicNetworkAccess
 
 	// Maintains information about the network routing choice opted by the user for data transfer
@@ -1320,6 +1333,35 @@ type ErrorResponseBody struct {
 	Message *string
 }
 
+// ExecutionTarget - Target helps provide filter parameters for the objects in the storage account and forms the execution
+// context for the storage task
+type ExecutionTarget struct {
+	// List of object prefixes to be excluded from task execution. If there is a conflict between include and exclude prefixes,
+	// the exclude prefix will be the determining factor
+	ExcludePrefix []*string
+
+	// Required list of object prefixes to be included for task execution
+	Prefix []*string
+}
+
+// ExecutionTrigger - Execution trigger for storage task assignment
+type ExecutionTrigger struct {
+	// REQUIRED; The trigger parameters of the storage task assignment execution
+	Parameters *TriggerParameters
+
+	// REQUIRED; The trigger type of the storage task assignment execution
+	Type *TriggerType
+}
+
+// ExecutionTriggerUpdate - Execution trigger update for storage task assignment
+type ExecutionTriggerUpdate struct {
+	// The trigger parameters of the storage task assignment execution
+	Parameters *TriggerParametersUpdate
+
+	// The trigger type of the storage task assignment execution
+	Type *TriggerType
+}
+
 // ExtendedLocation - The complex type of the extended location.
 type ExtendedLocation struct {
 	// The name of the extended location.
@@ -1865,6 +1907,15 @@ type LocalUserKeys struct {
 
 // LocalUserProperties - The Storage Account Local User properties.
 type LocalUserProperties struct {
+	// Indicates whether ACL authorization is allowed for this user. Set it to false to disallow using ACL authorization.
+	AllowACLAuthorization *bool
+
+	// Supplementary group membership. Only applicable for local users enabled for NFSv3 access.
+	ExtendedGroups []*int32
+
+	// An identifier for associating a group of users.
+	GroupID *int32
+
 	// Indicates whether ssh key exists. Set it to false to remove existing SSH key.
 	HasSSHKey *bool
 
@@ -1877,6 +1928,9 @@ type LocalUserProperties struct {
 	// Optional, local user home directory.
 	HomeDirectory *string
 
+	// Indicates if the local user is enabled for access with NFSv3 protocol.
+	IsNFSv3Enabled *bool
+
 	// The permission scopes of the local user.
 	PermissionScopes []*PermissionScope
 
@@ -1885,6 +1939,9 @@ type LocalUserProperties struct {
 
 	// READ-ONLY; A unique Security Identifier that is generated by the server.
 	Sid *string
+
+	// READ-ONLY; A unique Identifier that is generated by the server.
+	UserID *int32
 }
 
 // LocalUserRegeneratePasswordResult - The secrets of Storage Account Local User.
@@ -1894,10 +1951,14 @@ type LocalUserRegeneratePasswordResult struct {
 	SSHPassword *string
 }
 
-// LocalUsers - List storage account local users.
+// LocalUsers - List of local users requested, and if paging is required, a URL to the next page of local users.
 type LocalUsers struct {
-	// The local users associated with the storage account.
+	// The list of local users associated with the storage account.
 	Value []*LocalUser
+
+	// READ-ONLY; Request URL that can be used to query next page of local users. Returned when total number of requested local
+	// users exceeds the maximum page size.
+	NextLink *string
 }
 
 // ManagementPolicy - The Get Storage Account ManagementPolicies operation response.
@@ -2095,6 +2156,123 @@ type NetworkRuleSet struct {
 	VirtualNetworkRules []*VirtualNetworkRule
 }
 
+// NetworkSecurityPerimeter related information
+type NetworkSecurityPerimeter struct {
+	// The ARM identifier of the resource
+	ID *string
+
+	// Location of the resource
+	Location *string
+
+	// Guid of the resource
+	PerimeterGUID *string
+}
+
+// NetworkSecurityPerimeterConfiguration - The Network Security Perimeter configuration resource.
+type NetworkSecurityPerimeterConfiguration struct {
+	// READ-ONLY; Fully qualified resource ID for the resource. E.g. "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}"
+	ID *string
+
+	// READ-ONLY; The name of the resource
+	Name *string
+
+	// READ-ONLY; Properties of the Network Security Perimeter Configuration
+	Properties *NetworkSecurityPerimeterConfigurationProperties
+
+	// READ-ONLY; Azure Resource Manager metadata containing createdBy and modifiedBy information.
+	SystemData *SystemData
+
+	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
+	Type *string
+}
+
+// NetworkSecurityPerimeterConfigurationList - Result of the List Network Security Perimeter configuration operation.
+type NetworkSecurityPerimeterConfigurationList struct {
+	// The URI that can be used to request the next set of paged results.
+	NextLink *string
+
+	// READ-ONLY; A collection of Network Security Perimeter configurations
+	Value []*NetworkSecurityPerimeterConfiguration
+}
+
+// NetworkSecurityPerimeterConfigurationProperties - Properties of the Network Security Perimeter Configuration
+type NetworkSecurityPerimeterConfigurationProperties struct {
+	// READ-ONLY; NetworkSecurityPerimeter related information
+	NetworkSecurityPerimeter *NetworkSecurityPerimeter
+
+	// READ-ONLY; Network Security Perimeter profile
+	Profile *NetworkSecurityPerimeterConfigurationPropertiesProfile
+
+	// READ-ONLY; List of Provisioning Issues if any
+	ProvisioningIssues []*ProvisioningIssue
+
+	// READ-ONLY; Provisioning state of Network Security Perimeter configuration propagation
+	ProvisioningState *NetworkSecurityPerimeterConfigurationProvisioningState
+
+	// READ-ONLY; Information about resource association
+	ResourceAssociation *NetworkSecurityPerimeterConfigurationPropertiesResourceAssociation
+}
+
+// NetworkSecurityPerimeterConfigurationPropertiesProfile - Network Security Perimeter profile
+type NetworkSecurityPerimeterConfigurationPropertiesProfile struct {
+	// List of Access Rules
+	AccessRules []*NspAccessRule
+
+	// Current access rules version
+	AccessRulesVersion *float32
+
+	// Diagnostic settings version
+	DiagnosticSettingsVersion *float32
+
+	// Enabled logging categories
+	EnabledLogCategories []*string
+
+	// Name of the resource
+	Name *string
+}
+
+// NetworkSecurityPerimeterConfigurationPropertiesResourceAssociation - Information about resource association
+type NetworkSecurityPerimeterConfigurationPropertiesResourceAssociation struct {
+	// Access Mode of the resource association
+	AccessMode *ResourceAssociationAccessMode
+
+	// Name of the resource association
+	Name *string
+}
+
+// NspAccessRule - Information of Access Rule in Network Security Perimeter profile
+type NspAccessRule struct {
+	// Name of the resource
+	Name *string
+
+	// READ-ONLY; Properties of Access Rule
+	Properties *NspAccessRuleProperties
+}
+
+// NspAccessRuleProperties - Properties of Access Rule
+type NspAccessRuleProperties struct {
+	// Address prefixes in the CIDR format for inbound rules
+	AddressPrefixes []*string
+
+	// Direction of Access Rule
+	Direction *NspAccessRuleDirection
+
+	// Subscriptions for inbound rules
+	Subscriptions []*NspAccessRulePropertiesSubscriptionsItem
+
+	// READ-ONLY; FQDN for outbound rules
+	FullyQualifiedDomainNames []*string
+
+	// READ-ONLY; NetworkSecurityPerimeters for inbound rules
+	NetworkSecurityPerimeters []*NetworkSecurityPerimeter
+}
+
+// NspAccessRulePropertiesSubscriptionsItem - Subscription for inbound rule
+type NspAccessRulePropertiesSubscriptionsItem struct {
+	// The ARM identifier of subscription
+	ID *string
+}
+
 // ObjectReplicationPolicies - List storage account object replication policies.
 type ObjectReplicationPolicies struct {
 	// The replication policy between two storage accounts.
@@ -2205,8 +2383,8 @@ type OperationProperties struct {
 }
 
 type PermissionScope struct {
-	// REQUIRED; The permissions for the local user. Possible values include: Read (r), Write (w), Delete (d), List (l), and Create
-	// (c).
+	// REQUIRED; The permissions for the local user. Possible values include: Read (r), Write (w), Delete (d), List (l), Create
+	// (c), Modify Ownership (o), and Modify Permissions (p).
 	Permissions *string
 
 	// REQUIRED; The name of resource, normally the container name or the file share name, used by the local user.
@@ -2318,6 +2496,27 @@ type ProtocolSettings struct {
 	Smb *SmbSetting
 }
 
+// ProvisioningIssue - Describes provisioning issue for given NetworkSecurityPerimeterConfiguration
+type ProvisioningIssue struct {
+	// Name of the issue
+	Name *string
+
+	// READ-ONLY; Properties of provisioning issue
+	Properties *ProvisioningIssueProperties
+}
+
+// ProvisioningIssueProperties - Properties of provisioning issue
+type ProvisioningIssueProperties struct {
+	// Description of the issue
+	Description *string
+
+	// Type of issue
+	IssueType *IssueType
+
+	// Severity of the issue.
+	Severity *Severity
+}
+
 // ProxyResource - The resource model definition for a Azure Resource Manager proxy resource. It will not have tags and a
 // location
 type ProxyResource struct {
@@ -2326,6 +2525,22 @@ type ProxyResource struct {
 
 	// READ-ONLY; The name of the resource
 	Name *string
+
+	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
+	Type *string
+}
+
+// ProxyResourceAutoGenerated - The resource model definition for a Azure Resource Manager proxy resource. It will not have
+// tags and a location
+type ProxyResourceAutoGenerated struct {
+	// READ-ONLY; Fully qualified resource ID for the resource. E.g. "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}"
+	ID *string
+
+	// READ-ONLY; The name of the resource
+	Name *string
+
+	// READ-ONLY; Azure Resource Manager metadata containing createdBy and modifiedBy information.
+	SystemData *SystemData
 
 	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
 	Type *string
@@ -2396,6 +2611,21 @@ type ResourceAccessRule struct {
 
 	// Tenant Id
 	TenantID *string
+}
+
+// ResourceAutoGenerated - Common fields that are returned in the response for all Azure Resource Manager resources
+type ResourceAutoGenerated struct {
+	// READ-ONLY; Fully qualified resource ID for the resource. E.g. "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}"
+	ID *string
+
+	// READ-ONLY; The name of the resource
+	Name *string
+
+	// READ-ONLY; Azure Resource Manager metadata containing createdBy and modifiedBy information.
+	SystemData *SystemData
+
+	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
+	Type *string
 }
 
 // RestorePolicyProperties - The blob service properties for blob restore policy
@@ -2505,7 +2735,9 @@ type SSHPublicKey struct {
 
 // SasPolicy assigned to the storage account.
 type SasPolicy struct {
-	// REQUIRED; The SAS expiration action. Can only be Log.
+	// REQUIRED; The SAS Expiration Action defines the action to be performed when sasPolicy.sasExpirationPeriod is violated.
+	// The 'Log' action can be used for audit purposes and the 'Block' action can be used to block
+	// and deny the usage of SAS tokens that do not adhere to the sas policy expiration period.
 	ExpirationAction *ExpirationAction
 
 	// REQUIRED; The SAS expiration period, DD.HH:MM:SS.
@@ -2727,6 +2959,198 @@ type TagProperty struct {
 	Upn *string
 }
 
+// TaskAssignment - The storage task assignment.
+type TaskAssignment struct {
+	// REQUIRED; Properties of the storage task assignment.
+	Properties *TaskAssignmentProperties
+
+	// READ-ONLY; Fully qualified resource ID for the resource. Ex - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}
+	ID *string
+
+	// READ-ONLY; The name of the resource
+	Name *string
+
+	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
+	Type *string
+}
+
+// TaskAssignmentExecutionContext - Execution context of the storage task assignment.
+type TaskAssignmentExecutionContext struct {
+	// REQUIRED; Execution trigger of the storage task assignment
+	Trigger *ExecutionTrigger
+
+	// Execution target of the storage task assignment
+	Target *ExecutionTarget
+}
+
+// TaskAssignmentProperties - Properties of the storage task assignment.
+type TaskAssignmentProperties struct {
+	// REQUIRED; Text that describes the purpose of the storage task assignment
+	Description *string
+
+	// REQUIRED; Whether the storage task assignment is enabled or not
+	Enabled *bool
+
+	// REQUIRED; The storage task assignment execution context
+	ExecutionContext *TaskAssignmentExecutionContext
+
+	// REQUIRED; The storage task assignment report
+	Report *TaskAssignmentReport
+
+	// REQUIRED; Id of the corresponding storage task
+	TaskID *string
+
+	// Run status of storage task assignment
+	RunStatus *TaskReportProperties
+
+	// READ-ONLY; Represents the provisioning state of the storage task assignment.
+	ProvisioningState *ProvisioningState
+}
+
+// TaskAssignmentReport - The storage task assignment report
+type TaskAssignmentReport struct {
+	// REQUIRED; The container prefix for the location of storage task assignment report
+	Prefix *string
+}
+
+// TaskAssignmentUpdateExecutionContext - Execution context of the storage task assignment update.
+type TaskAssignmentUpdateExecutionContext struct {
+	// Execution target of the storage task assignment
+	Target *ExecutionTarget
+
+	// Execution trigger of the storage task assignment
+	Trigger *ExecutionTriggerUpdate
+}
+
+// TaskAssignmentUpdateParameters - Parameters of the storage task assignment update request
+type TaskAssignmentUpdateParameters struct {
+	// Properties of the storage task assignment.
+	Properties *TaskAssignmentUpdateProperties
+}
+
+// TaskAssignmentUpdateProperties - Properties of the storage task update assignment.
+type TaskAssignmentUpdateProperties struct {
+	// Text that describes the purpose of the storage task assignment
+	Description *string
+
+	// Whether the storage task assignment is enabled or not
+	Enabled *bool
+
+	// The storage task assignment execution context
+	ExecutionContext *TaskAssignmentUpdateExecutionContext
+
+	// The storage task assignment report
+	Report *TaskAssignmentUpdateReport
+
+	// Run status of storage task assignment
+	RunStatus *TaskReportProperties
+
+	// READ-ONLY; Represents the provisioning state of the storage task assignment.
+	ProvisioningState *ProvisioningState
+
+	// READ-ONLY; Id of the corresponding storage task
+	TaskID *string
+}
+
+// TaskAssignmentUpdateReport - The storage task assignment report
+type TaskAssignmentUpdateReport struct {
+	// The prefix of the storage task assignment report
+	Prefix *string
+}
+
+// TaskAssignmentsList - List of storage task assignments for the storage account
+type TaskAssignmentsList struct {
+	// READ-ONLY; Request URL that can be used to query next page of storage task assignments. Returned when total number of requested
+	// storage task assignments exceed maximum page size.
+	NextLink *string
+
+	// READ-ONLY; Gets the list of storage task assignments and their properties.
+	Value []*TaskAssignment
+}
+
+// TaskReportInstance - Storage Tasks run report instance
+type TaskReportInstance struct {
+	// Storage task execution report for a run instance.
+	Properties *TaskReportProperties
+
+	// READ-ONLY; Fully qualified resource ID for the resource. Ex - /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{resourceType}/{resourceName}
+	ID *string
+
+	// READ-ONLY; The name of the resource
+	Name *string
+
+	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
+	Type *string
+}
+
+// TaskReportProperties - Storage task execution report for a run instance.
+type TaskReportProperties struct {
+	// READ-ONLY; End time of the run instance. Filter options such as startTime gt '2023-06-26T20:51:24.4494016Z' and other comparison
+	// operators can be used as described for DateTime properties in
+	// https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#supported-comparison-operators
+	FinishTime *string
+
+	// READ-ONLY; Total number of objects where task operation failed when was attempted. Filter options such as objectFailedCount
+	// eq 0 and other comparison operators can be used as described for Numerical properties
+	// in https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#supported-comparison-operators
+	ObjectFailedCount *string
+
+	// READ-ONLY; Total number of objects that meet the storage tasks condition and were operated upon. Filter options such as
+	// objectsOperatedOnCount ge 100 and other comparison operators can be used as described for
+	// Numerical properties in https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#supported-comparison-operators
+	ObjectsOperatedOnCount *string
+
+	// READ-ONLY; Total number of objects where task operation succeeded when was attempted.Filter options such as objectsSucceededCount
+	// gt 150 and other comparison operators can be used as described for Numerical
+	// properties in https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#supported-comparison-operators
+	ObjectsSucceededCount *string
+
+	// READ-ONLY; Total number of objects that meet the condition as defined in the storage task assignment execution context.
+	// Filter options such as objectsTargetedCount gt 50 and other comparison operators can be
+	// used as described for Numerical properties in https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#supported-comparison-operators
+	ObjectsTargetedCount *string
+
+	// READ-ONLY; Represents the overall result of the execution for the run instance
+	RunResult *RunResult
+
+	// READ-ONLY; Represents the status of the execution.
+	RunStatusEnum *RunStatusEnum
+
+	// READ-ONLY; Well known Azure Storage error code that represents the error encountered during execution of the run instance.
+	RunStatusError *string
+
+	// READ-ONLY; Start time of the run instance. Filter options such as startTime gt '2023-06-26T20:51:24.4494016Z' and other
+	// comparison operators can be used as described for DateTime properties in
+	// https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#supported-comparison-operators
+	StartTime *string
+
+	// READ-ONLY; Represents the Storage Account Id where the storage task definition was applied and executed.
+	StorageAccountID *string
+
+	// READ-ONLY; Full path to the verbose report stored in the reporting container as specified in the assignment execution context
+	// for the storage account.
+	SummaryReportPath *string
+
+	// READ-ONLY; Represents the Storage Task Assignment Id associated with the storage task that provided an execution context.
+	TaskAssignmentID *string
+
+	// READ-ONLY; Storage Task Arm Id.
+	TaskID *string
+
+	// READ-ONLY; Storage Task Version
+	TaskVersion *string
+}
+
+// TaskReportSummary - Fetch Storage Tasks Run Summary.
+type TaskReportSummary struct {
+	// READ-ONLY; Request URL that can be used to query next page of storage task run results summary. Returned when the number
+	// of run instances and summary reports exceed maximum page size.
+	NextLink *string
+
+	// READ-ONLY; Gets storage tasks run result summary.
+	Value []*TaskReportInstance
+}
+
 // TrackedResource - The resource model definition for an Azure Resource Manager tracked top level resource which has 'tags'
 // and a 'location'
 type TrackedResource struct {
@@ -2744,6 +3168,54 @@ type TrackedResource struct {
 
 	// READ-ONLY; The type of the resource. E.g. "Microsoft.Compute/virtualMachines" or "Microsoft.Storage/storageAccounts"
 	Type *string
+}
+
+// TriggerParameters - The trigger parameters update for the storage task assignment execution
+type TriggerParameters struct {
+	// When to end task execution. This is a required field when ExecutionTrigger.properties.type is 'OnSchedule'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'RunOnce'
+	EndBy *time.Time
+
+	// Run interval of task execution. This is a required field when ExecutionTrigger.properties.type is 'OnSchedule'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'RunOnce'
+	Interval *int32
+
+	// Run interval unit of task execution. This is a required field when ExecutionTrigger.properties.type is 'OnSchedule'; this
+	// property should not be present when ExecutionTrigger.properties.type is
+	// 'RunOnce'
+	IntervalUnit *string
+
+	// When to start task execution. This is a required field when ExecutionTrigger.properties.type is 'OnSchedule'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'RunOnce'
+	StartFrom *time.Time
+
+	// When to start task execution. This is an optional field when ExecutionTrigger.properties.type is 'RunOnce'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'OnSchedule'
+	StartOn *time.Time
+}
+
+// TriggerParametersUpdate - The trigger parameters update for the storage task assignment execution
+type TriggerParametersUpdate struct {
+	// When to end task execution. This is a mutable field when ExecutionTrigger.properties.type is 'OnSchedule'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'RunOnce'
+	EndBy *time.Time
+
+	// Run interval of task execution. This is a mutable field when ExecutionTrigger.properties.type is 'OnSchedule'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'RunOnce'
+	Interval *int32
+
+	// Run interval unit of task execution. This is a mutable field when ExecutionTrigger.properties.type is 'OnSchedule'; this
+	// property should not be present when ExecutionTrigger.properties.type is
+	// 'RunOnce'
+	IntervalUnit *string
+
+	// When to start task execution. This is a mutable field when ExecutionTrigger.properties.type is 'OnSchedule'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'RunOnce'
+	StartFrom *time.Time
+
+	// When to start task execution. This is a mutable field when ExecutionTrigger.properties.type is 'RunOnce'; this property
+	// should not be present when ExecutionTrigger.properties.type is 'OnSchedule'
+	StartOn *time.Time
 }
 
 // UpdateHistoryProperty - An update history of the ImmutabilityPolicy of a blob container.
