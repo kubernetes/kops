@@ -16,12 +16,12 @@ import (
 //
 // This configuration overwrites any existing configuration.
 //
-// For more information, see [Getting Amazon SNS notifications when your Auto Scaling group scales] in the Amazon EC2 Auto Scaling User Guide.
+// For more information, see [Amazon SNS notification options for Amazon EC2 Auto Scaling] in the Amazon EC2 Auto Scaling User Guide.
 //
 // If you exceed your maximum limit of SNS topics, which is 10 per Auto Scaling
 // group, the call fails.
 //
-// [Getting Amazon SNS notifications when your Auto Scaling group scales]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ASGettingNotifications.html
+// [Amazon SNS notification options for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-sns-notifications.html
 func (c *Client) PutNotificationConfiguration(ctx context.Context, params *PutNotificationConfigurationInput, optFns ...func(*Options)) (*PutNotificationConfigurationOutput, error) {
 	if params == nil {
 		params = &PutNotificationConfigurationInput{}

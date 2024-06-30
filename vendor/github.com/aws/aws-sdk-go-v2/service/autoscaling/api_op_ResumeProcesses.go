@@ -13,9 +13,9 @@ import (
 // Resumes the specified suspended auto scaling processes, or all suspended
 // process, for the specified Auto Scaling group.
 //
-// For more information, see [Suspending and resuming scaling processes] in the Amazon EC2 Auto Scaling User Guide.
+// For more information, see [Suspend and resume Amazon EC2 Auto Scaling processes] in the Amazon EC2 Auto Scaling User Guide.
 //
-// [Suspending and resuming scaling processes]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html
+// [Suspend and resume Amazon EC2 Auto Scaling processes]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html
 func (c *Client) ResumeProcesses(ctx context.Context, params *ResumeProcessesInput, optFns ...func(*Options)) (*ResumeProcessesOutput, error) {
 	if params == nil {
 		params = &ResumeProcessesInput{}

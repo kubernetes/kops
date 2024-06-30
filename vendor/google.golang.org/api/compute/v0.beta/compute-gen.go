@@ -2681,6 +2681,15 @@ type AdvancedMachineFeatures struct {
 	// EnableUefiNetworking: Whether to enable UEFI networking for instance
 	// creation.
 	EnableUefiNetworking bool `json:"enableUefiNetworking,omitempty"`
+	// PerformanceMonitoringUnit: Type of Performance Monitoring Unit requested on
+	// instance.
+	//
+	// Possible values:
+	//   "ARCHITECTURAL" - Architecturally defined non-LLC events.
+	//   "ENHANCED" - Most documented core/L2 and LLC events.
+	//   "PERFORMANCE_MONITORING_UNIT_UNSPECIFIED"
+	//   "STANDARD" - Most documented core/L2 events.
+	PerformanceMonitoringUnit string `json:"performanceMonitoringUnit,omitempty"`
 	// ThreadsPerCore: The number of threads per physical core. To disable
 	// simultaneous multithreading (SMT) set this to 1. If unset, the maximum
 	// number of threads supported per core by the underlying processor is assumed.
@@ -56542,8 +56551,10 @@ type WeightedBackendService struct {
 	// routeAction) . The selection of a backend service is determined only for new
 	// traffic. Once a user's request has been directed to a backend service,
 	// subsequent requests are sent to the same backend service as determined by
-	// the backend service's session affinity policy. The value must be from 0 to
-	// 1000.
+	// the backend service's session affinity policy. Don't configure session
+	// affinity if you're using weighted traffic splitting. If you do, the weighted
+	// traffic splitting configuration takes precedence. The value must be from 0
+	// to 1000.
 	Weight int64 `json:"weight,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "BackendService") to
 	// unconditionally include in API requests. By default, fields with empty or

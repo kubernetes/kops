@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240510",
+  "revision": "20240608",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -4244,10 +4244,16 @@
             "CHANNEL_EXPERIMENTAL",
             "CHANNEL_STANDARD"
           ],
+          "enumDeprecated": [
+            false,
+            false,
+            true,
+            false
+          ],
           "enumDescriptions": [
             "Default value.",
             "Gateway API support is disabled",
-            "Gateway API support is enabled, experimental CRDs are installed",
+            "Deprecated: use CHANNEL_STANDARD instead. Gateway API support is enabled, experimental CRDs are installed",
             "Gateway API support is enabled, standard CRDs are installed"
           ],
           "type": "string"
@@ -5040,7 +5046,8 @@
               "DEPLOYMENT",
               "STATEFULSET",
               "CADVISOR",
-              "KUBELET"
+              "KUBELET",
+              "DCGM"
             ],
             "enumDescriptions": [
               "Default value. This shouldn't be used.",
@@ -5055,7 +5062,8 @@
               "Deployment",
               "Statefulset",
               "CADVISOR",
-              "KUBELET"
+              "KUBELET",
+              "NVIDIA Data Center GPU Manager (DCGM)"
             ],
             "type": "string"
           },

@@ -392,7 +392,14 @@ type LocalUsersClientListKeysOptions struct {
 
 // LocalUsersClientListOptions contains the optional parameters for the LocalUsersClient.NewListPager method.
 type LocalUsersClientListOptions struct {
-	// placeholder for future optional parameters
+	// Optional. When specified, only local user names starting with the filter will be listed.
+	Filter *string
+
+	// Optional, when specified, will list local users enabled for the specific protocol. Lists all users by default.
+	Include *ListLocalUserIncludeParam
+
+	// Optional, specifies the maximum number of local users that will be included in the list response.
+	Maxpagesize *int32
 }
 
 // LocalUsersClientRegeneratePasswordOptions contains the optional parameters for the LocalUsersClient.RegeneratePassword
@@ -414,6 +421,25 @@ type ManagementPoliciesClientDeleteOptions struct {
 
 // ManagementPoliciesClientGetOptions contains the optional parameters for the ManagementPoliciesClient.Get method.
 type ManagementPoliciesClientGetOptions struct {
+	// placeholder for future optional parameters
+}
+
+// NetworkSecurityPerimeterConfigurationsClientBeginReconcileOptions contains the optional parameters for the NetworkSecurityPerimeterConfigurationsClient.BeginReconcile
+// method.
+type NetworkSecurityPerimeterConfigurationsClientBeginReconcileOptions struct {
+	// Resumes the LRO from the provided token.
+	ResumeToken string
+}
+
+// NetworkSecurityPerimeterConfigurationsClientGetOptions contains the optional parameters for the NetworkSecurityPerimeterConfigurationsClient.Get
+// method.
+type NetworkSecurityPerimeterConfigurationsClientGetOptions struct {
+	// placeholder for future optional parameters
+}
+
+// NetworkSecurityPerimeterConfigurationsClientListOptions contains the optional parameters for the NetworkSecurityPerimeterConfigurationsClient.NewListPager
+// method.
+type NetworkSecurityPerimeterConfigurationsClientListOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -569,6 +595,59 @@ type TableServicesClientListOptions struct {
 // method.
 type TableServicesClientSetServicePropertiesOptions struct {
 	// placeholder for future optional parameters
+}
+
+// TaskAssignmentInstancesReportClientListOptions contains the optional parameters for the TaskAssignmentInstancesReportClient.NewListPager
+// method.
+type TaskAssignmentInstancesReportClientListOptions struct {
+	// Optional. When specified, it can be used to query using reporting properties. See Constructing Filter Strings
+	// [https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#constructing-filter-strings] for
+	// details.
+	Filter *string
+
+	// Optional, specifies the maximum number of storage task assignment instances to be included in the list response.
+	Maxpagesize *int32
+}
+
+// TaskAssignmentsClientBeginCreateOptions contains the optional parameters for the TaskAssignmentsClient.BeginCreate method.
+type TaskAssignmentsClientBeginCreateOptions struct {
+	// Resumes the LRO from the provided token.
+	ResumeToken string
+}
+
+// TaskAssignmentsClientBeginDeleteOptions contains the optional parameters for the TaskAssignmentsClient.BeginDelete method.
+type TaskAssignmentsClientBeginDeleteOptions struct {
+	// Resumes the LRO from the provided token.
+	ResumeToken string
+}
+
+// TaskAssignmentsClientBeginUpdateOptions contains the optional parameters for the TaskAssignmentsClient.BeginUpdate method.
+type TaskAssignmentsClientBeginUpdateOptions struct {
+	// Resumes the LRO from the provided token.
+	ResumeToken string
+}
+
+// TaskAssignmentsClientGetOptions contains the optional parameters for the TaskAssignmentsClient.Get method.
+type TaskAssignmentsClientGetOptions struct {
+	// placeholder for future optional parameters
+}
+
+// TaskAssignmentsClientListOptions contains the optional parameters for the TaskAssignmentsClient.NewListPager method.
+type TaskAssignmentsClientListOptions struct {
+	// Optional, specifies the maximum number of storage task assignment Ids to be included in the list response.
+	Maxpagesize *int32
+}
+
+// TaskAssignmentsInstancesReportClientListOptions contains the optional parameters for the TaskAssignmentsInstancesReportClient.NewListPager
+// method.
+type TaskAssignmentsInstancesReportClientListOptions struct {
+	// Optional. When specified, it can be used to query using reporting properties. See Constructing Filter Strings
+	// [https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#constructing-filter-strings] for
+	// details.
+	Filter *string
+
+	// Optional, specifies the maximum number of storage task assignment instances to be included in the list response.
+	Maxpagesize *int32
 }
 
 // UsagesClientListByLocationOptions contains the optional parameters for the UsagesClient.NewListByLocationPager method.

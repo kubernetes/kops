@@ -735,6 +735,7 @@ type CopyObjectInput struct {
 }
 
 func (in *CopyObjectInput) bindEndpointParams(p *EndpointParameters) {
+
 	p.Bucket = in.Bucket
 	p.CopySource = in.CopySource
 	p.Key = in.Key

@@ -10,7 +10,7 @@ package armstorage
 
 const (
 	moduleName    = "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
-	moduleVersion = "v1.5.0"
+	moduleVersion = "v1.6.0"
 )
 
 // AccessTier - Required for storage accounts where kind = BlobStorage. The access tier is used for billing. The 'Premium'
@@ -19,6 +19,7 @@ const (
 type AccessTier string
 
 const (
+	AccessTierCold    AccessTier = "Cold"
 	AccessTierCool    AccessTier = "Cool"
 	AccessTierHot     AccessTier = "Hot"
 	AccessTierPremium AccessTier = "Premium"
@@ -27,6 +28,7 @@ const (
 // PossibleAccessTierValues returns the possible values for the AccessTier const type.
 func PossibleAccessTierValues() []AccessTier {
 	return []AccessTier{
+		AccessTierCold,
 		AccessTierCool,
 		AccessTierHot,
 		AccessTierPremium,
@@ -331,16 +333,20 @@ func PossibleEncryptionScopeStateValues() []EncryptionScopeState {
 	}
 }
 
-// ExpirationAction - The SAS expiration action. Can only be Log.
+// ExpirationAction - The SAS Expiration Action defines the action to be performed when sasPolicy.sasExpirationPeriod is violated.
+// The 'Log' action can be used for audit purposes and the 'Block' action can be used to block
+// and deny the usage of SAS tokens that do not adhere to the sas policy expiration period.
 type ExpirationAction string
 
 const (
-	ExpirationActionLog ExpirationAction = "Log"
+	ExpirationActionBlock ExpirationAction = "Block"
+	ExpirationActionLog   ExpirationAction = "Log"
 )
 
 // PossibleExpirationActionValues returns the possible values for the ExpirationAction const type.
 func PossibleExpirationActionValues() []ExpirationAction {
 	return []ExpirationAction{
+		ExpirationActionBlock,
 		ExpirationActionLog,
 	}
 }
@@ -478,6 +484,22 @@ const (
 func PossibleInventoryRuleTypeValues() []InventoryRuleType {
 	return []InventoryRuleType{
 		InventoryRuleTypeInventory,
+	}
+}
+
+// IssueType - Type of issue
+type IssueType string
+
+const (
+	IssueTypeConfigurationPropagationFailure IssueType = "ConfigurationPropagationFailure"
+	IssueTypeUnknown                         IssueType = "Unknown"
+)
+
+// PossibleIssueTypeValues returns the possible values for the IssueType const type.
+func PossibleIssueTypeValues() []IssueType {
+	return []IssueType{
+		IssueTypeConfigurationPropagationFailure,
+		IssueTypeUnknown,
 	}
 }
 
@@ -697,6 +719,19 @@ func PossibleListEncryptionScopesIncludeValues() []ListEncryptionScopesInclude {
 	}
 }
 
+type ListLocalUserIncludeParam string
+
+const (
+	ListLocalUserIncludeParamNfsv3 ListLocalUserIncludeParam = "nfsv3"
+)
+
+// PossibleListLocalUserIncludeParamValues returns the possible values for the ListLocalUserIncludeParam const type.
+func PossibleListLocalUserIncludeParamValues() []ListLocalUserIncludeParam {
+	return []ListLocalUserIncludeParam{
+		ListLocalUserIncludeParamNfsv3,
+	}
+}
+
 type ManagementPolicyName string
 
 const (
@@ -769,6 +804,7 @@ const (
 	MinimumTLSVersionTLS10 MinimumTLSVersion = "TLS1_0"
 	MinimumTLSVersionTLS11 MinimumTLSVersion = "TLS1_1"
 	MinimumTLSVersionTLS12 MinimumTLSVersion = "TLS1_2"
+	MinimumTLSVersionTLS13 MinimumTLSVersion = "TLS1_3"
 )
 
 // PossibleMinimumTLSVersionValues returns the possible values for the MinimumTLSVersion const type.
@@ -777,6 +813,7 @@ func PossibleMinimumTLSVersionValues() []MinimumTLSVersion {
 		MinimumTLSVersionTLS10,
 		MinimumTLSVersionTLS11,
 		MinimumTLSVersionTLS12,
+		MinimumTLSVersionTLS13,
 	}
 }
 
@@ -791,6 +828,45 @@ const (
 func PossibleNameValues() []Name {
 	return []Name{
 		NameAccessTimeTracking,
+	}
+}
+
+// NetworkSecurityPerimeterConfigurationProvisioningState - Provisioning state of Network Security Perimeter configuration
+// propagation
+type NetworkSecurityPerimeterConfigurationProvisioningState string
+
+const (
+	NetworkSecurityPerimeterConfigurationProvisioningStateAccepted  NetworkSecurityPerimeterConfigurationProvisioningState = "Accepted"
+	NetworkSecurityPerimeterConfigurationProvisioningStateCanceled  NetworkSecurityPerimeterConfigurationProvisioningState = "Canceled"
+	NetworkSecurityPerimeterConfigurationProvisioningStateDeleting  NetworkSecurityPerimeterConfigurationProvisioningState = "Deleting"
+	NetworkSecurityPerimeterConfigurationProvisioningStateFailed    NetworkSecurityPerimeterConfigurationProvisioningState = "Failed"
+	NetworkSecurityPerimeterConfigurationProvisioningStateSucceeded NetworkSecurityPerimeterConfigurationProvisioningState = "Succeeded"
+)
+
+// PossibleNetworkSecurityPerimeterConfigurationProvisioningStateValues returns the possible values for the NetworkSecurityPerimeterConfigurationProvisioningState const type.
+func PossibleNetworkSecurityPerimeterConfigurationProvisioningStateValues() []NetworkSecurityPerimeterConfigurationProvisioningState {
+	return []NetworkSecurityPerimeterConfigurationProvisioningState{
+		NetworkSecurityPerimeterConfigurationProvisioningStateAccepted,
+		NetworkSecurityPerimeterConfigurationProvisioningStateCanceled,
+		NetworkSecurityPerimeterConfigurationProvisioningStateDeleting,
+		NetworkSecurityPerimeterConfigurationProvisioningStateFailed,
+		NetworkSecurityPerimeterConfigurationProvisioningStateSucceeded,
+	}
+}
+
+// NspAccessRuleDirection - Direction of Access Rule
+type NspAccessRuleDirection string
+
+const (
+	NspAccessRuleDirectionInbound  NspAccessRuleDirection = "Inbound"
+	NspAccessRuleDirectionOutbound NspAccessRuleDirection = "Outbound"
+)
+
+// PossibleNspAccessRuleDirectionValues returns the possible values for the NspAccessRuleDirection const type.
+func PossibleNspAccessRuleDirectionValues() []NspAccessRuleDirection {
+	return []NspAccessRuleDirection{
+		NspAccessRuleDirectionInbound,
+		NspAccessRuleDirectionOutbound,
 	}
 }
 
@@ -918,17 +994,27 @@ func PossiblePrivateEndpointServiceConnectionStatusValues() []PrivateEndpointSer
 type ProvisioningState string
 
 const (
-	ProvisioningStateCreating     ProvisioningState = "Creating"
-	ProvisioningStateResolvingDNS ProvisioningState = "ResolvingDNS"
-	ProvisioningStateSucceeded    ProvisioningState = "Succeeded"
+	ProvisioningStateCanceled                       ProvisioningState = "Canceled"
+	ProvisioningStateCreating                       ProvisioningState = "Creating"
+	ProvisioningStateDeleting                       ProvisioningState = "Deleting"
+	ProvisioningStateFailed                         ProvisioningState = "Failed"
+	ProvisioningStateResolvingDNS                   ProvisioningState = "ResolvingDNS"
+	ProvisioningStateSucceeded                      ProvisioningState = "Succeeded"
+	ProvisioningStateValidateSubscriptionQuotaBegin ProvisioningState = "ValidateSubscriptionQuotaBegin"
+	ProvisioningStateValidateSubscriptionQuotaEnd   ProvisioningState = "ValidateSubscriptionQuotaEnd"
 )
 
 // PossibleProvisioningStateValues returns the possible values for the ProvisioningState const type.
 func PossibleProvisioningStateValues() []ProvisioningState {
 	return []ProvisioningState{
+		ProvisioningStateCanceled,
 		ProvisioningStateCreating,
+		ProvisioningStateDeleting,
+		ProvisioningStateFailed,
 		ProvisioningStateResolvingDNS,
 		ProvisioningStateSucceeded,
+		ProvisioningStateValidateSubscriptionQuotaBegin,
+		ProvisioningStateValidateSubscriptionQuotaEnd,
 	}
 }
 
@@ -950,13 +1036,15 @@ func PossiblePublicAccessValues() []PublicAccess {
 	}
 }
 
-// PublicNetworkAccess - Allow or disallow public network access to Storage Account. Value is optional but if passed in, must
-// be 'Enabled' or 'Disabled'.
+// PublicNetworkAccess - Allow, disallow, or let Network Security Perimeter configuration to evaluate public network access
+// to Storage Account. Value is optional but if passed in, must be 'Enabled', 'Disabled' or
+// 'SecuredByPerimeter'.
 type PublicNetworkAccess string
 
 const (
-	PublicNetworkAccessDisabled PublicNetworkAccess = "Disabled"
-	PublicNetworkAccessEnabled  PublicNetworkAccess = "Enabled"
+	PublicNetworkAccessDisabled           PublicNetworkAccess = "Disabled"
+	PublicNetworkAccessEnabled            PublicNetworkAccess = "Enabled"
+	PublicNetworkAccessSecuredByPerimeter PublicNetworkAccess = "SecuredByPerimeter"
 )
 
 // PossiblePublicNetworkAccessValues returns the possible values for the PublicNetworkAccess const type.
@@ -964,6 +1052,7 @@ func PossiblePublicNetworkAccessValues() []PublicNetworkAccess {
 	return []PublicNetworkAccess{
 		PublicNetworkAccessDisabled,
 		PublicNetworkAccessEnabled,
+		PublicNetworkAccessSecuredByPerimeter,
 	}
 }
 
@@ -999,6 +1088,24 @@ func PossibleReasonCodeValues() []ReasonCode {
 	return []ReasonCode{
 		ReasonCodeNotAvailableForSubscription,
 		ReasonCodeQuotaID,
+	}
+}
+
+// ResourceAssociationAccessMode - Access Mode of the resource association
+type ResourceAssociationAccessMode string
+
+const (
+	ResourceAssociationAccessModeAudit    ResourceAssociationAccessMode = "Audit"
+	ResourceAssociationAccessModeEnforced ResourceAssociationAccessMode = "Enforced"
+	ResourceAssociationAccessModeLearning ResourceAssociationAccessMode = "Learning"
+)
+
+// PossibleResourceAssociationAccessModeValues returns the possible values for the ResourceAssociationAccessMode const type.
+func PossibleResourceAssociationAccessModeValues() []ResourceAssociationAccessMode {
+	return []ResourceAssociationAccessMode{
+		ResourceAssociationAccessModeAudit,
+		ResourceAssociationAccessModeEnforced,
+		ResourceAssociationAccessModeLearning,
 	}
 }
 
@@ -1047,6 +1154,38 @@ const (
 func PossibleRuleTypeValues() []RuleType {
 	return []RuleType{
 		RuleTypeLifecycle,
+	}
+}
+
+// RunResult - Represents the overall result of the execution for the run instance
+type RunResult string
+
+const (
+	RunResultFailed    RunResult = "Failed"
+	RunResultSucceeded RunResult = "Succeeded"
+)
+
+// PossibleRunResultValues returns the possible values for the RunResult const type.
+func PossibleRunResultValues() []RunResult {
+	return []RunResult{
+		RunResultFailed,
+		RunResultSucceeded,
+	}
+}
+
+// RunStatusEnum - Represents the status of the execution.
+type RunStatusEnum string
+
+const (
+	RunStatusEnumFinished   RunStatusEnum = "Finished"
+	RunStatusEnumInProgress RunStatusEnum = "InProgress"
+)
+
+// PossibleRunStatusEnumValues returns the possible values for the RunStatusEnum const type.
+func PossibleRunStatusEnumValues() []RunStatusEnum {
+	return []RunStatusEnum{
+		RunStatusEnumFinished,
+		RunStatusEnumInProgress,
 	}
 }
 
@@ -1150,6 +1289,22 @@ func PossibleServicesValues() []Services {
 	}
 }
 
+// Severity - Severity of the issue.
+type Severity string
+
+const (
+	SeverityError   Severity = "Error"
+	SeverityWarning Severity = "Warning"
+)
+
+// PossibleSeverityValues returns the possible values for the Severity const type.
+func PossibleSeverityValues() []Severity {
+	return []Severity{
+		SeverityError,
+		SeverityWarning,
+	}
+}
+
 // ShareAccessTier - Access tier for specific share. GpV2 account can choose between TransactionOptimized (default), Hot,
 // and Cool. FileStorage account can choose Premium.
 type ShareAccessTier string
@@ -1246,6 +1401,22 @@ func PossibleStorageAccountExpandValues() []StorageAccountExpand {
 	return []StorageAccountExpand{
 		StorageAccountExpandBlobRestoreStatus,
 		StorageAccountExpandGeoReplicationStats,
+	}
+}
+
+// TriggerType - The trigger type of the storage task assignment execution
+type TriggerType string
+
+const (
+	TriggerTypeOnSchedule TriggerType = "OnSchedule"
+	TriggerTypeRunOnce    TriggerType = "RunOnce"
+)
+
+// PossibleTriggerTypeValues returns the possible values for the TriggerType const type.
+func PossibleTriggerTypeValues() []TriggerType {
+	return []TriggerType{
+		TriggerTypeOnSchedule,
+		TriggerTypeRunOnce,
 	}
 }
 

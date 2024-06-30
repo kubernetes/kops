@@ -403,6 +403,7 @@ type UploadPartCopyInput struct {
 }
 
 func (in *UploadPartCopyInput) bindEndpointParams(p *EndpointParameters) {
+
 	p.Bucket = in.Bucket
 	p.DisableS3ExpressSessionAuth = ptr.Bool(true)
 }

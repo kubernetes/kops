@@ -247,6 +247,7 @@ type DeleteObjectsInput struct {
 }
 
 func (in *DeleteObjectsInput) bindEndpointParams(p *EndpointParameters) {
+
 	p.Bucket = in.Bucket
 
 }

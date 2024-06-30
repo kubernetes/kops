@@ -11,6 +11,6 @@
 //
 // For more information, see the [Amazon EC2 Auto Scaling User Guide] and the [Amazon EC2 Auto Scaling API Reference].
 //
-// [Amazon EC2 Auto Scaling User Guide]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/
+// [Amazon EC2 Auto Scaling User Guide]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/what-is-amazon-ec2-auto-scaling.html
 // [Amazon EC2 Auto Scaling API Reference]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/Welcome.html
 package autoscaling

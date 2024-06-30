@@ -18,7 +18,7 @@ import (
 //
 // For more information, see [Manual scaling] in the Amazon EC2 Auto Scaling User Guide.
 //
-// [Manual scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-manual-scaling.html
+// [Manual scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-manually.html
 func (c *Client) SetDesiredCapacity(ctx context.Context, params *SetDesiredCapacityInput, optFns ...func(*Options)) (*SetDesiredCapacityOutput, error) {
 	if params == nil {
 		params = &SetDesiredCapacityInput{}

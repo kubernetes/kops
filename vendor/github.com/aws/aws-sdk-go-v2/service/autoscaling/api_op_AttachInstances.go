@@ -22,9 +22,9 @@ import (
 // attached to your Auto Scaling group, the instances are also registered with the
 // target groups.
 //
-// For more information, see [Attach EC2 instances to your Auto Scaling group] in the Amazon EC2 Auto Scaling User Guide.
+// For more information, see [Detach or attach instances] in the Amazon EC2 Auto Scaling User Guide.
 //
-// [Attach EC2 instances to your Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/attach-instance-asg.html
+// [Detach or attach instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-detach-attach-instances.html
 func (c *Client) AttachInstances(ctx context.Context, params *AttachInstancesInput, optFns ...func(*Options)) (*AttachInstancesOutput, error) {
 	if params == nil {
 		params = &AttachInstancesInput{}

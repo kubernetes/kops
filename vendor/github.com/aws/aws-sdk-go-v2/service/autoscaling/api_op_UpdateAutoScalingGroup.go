@@ -92,7 +92,7 @@ type UpdateAutoScalingGroupInput struct {
 	// one starting due to simple scaling policies. For more information, see [Scaling cooldowns for Amazon EC2 Auto Scaling]in the
 	// Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Scaling cooldowns for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html
+	// [Scaling cooldowns for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html
 	DefaultCooldown *int32
 
 	// The amount of time, in seconds, until a new instance is considered to have
@@ -123,7 +123,7 @@ type UpdateAutoScalingGroupInput struct {
 
 	// The unit of measurement for the value specified for desired capacity. Amazon
 	// EC2 Auto Scaling supports DesiredCapacityType for attribute-based instance type
-	// selection only. For more information, see [Creating an Auto Scaling group using attribute-based instance type selection]in the Amazon EC2 Auto Scaling User
+	// selection only. For more information, see [Create a mixed instances group using attribute-based instance type selection]in the Amazon EC2 Auto Scaling User
 	// Guide.
 	//
 	// By default, Amazon EC2 Auto Scaling specifies units , which translates into
@@ -131,7 +131,7 @@ type UpdateAutoScalingGroupInput struct {
 	//
 	// Valid values: units | vcpu | memory-mib
 	//
-	// [Creating an Auto Scaling group using attribute-based instance type selection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html
+	// [Create a mixed instances group using attribute-based instance type selection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html
 	DesiredCapacityType *string
 
 	// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
@@ -147,12 +147,12 @@ type UpdateAutoScalingGroupInput struct {
 	// A comma-separated value string of one or more health check types.
 	//
 	// The valid values are EC2 , ELB , and VPC_LATTICE . EC2 is the default health
-	// check and cannot be disabled. For more information, see [Health checks for Auto Scaling instances]in the Amazon EC2 Auto
+	// check and cannot be disabled. For more information, see [Health checks for instances in an Auto Scaling group]in the Amazon EC2 Auto
 	// Scaling User Guide.
 	//
 	// Only specify EC2 if you must clear a value that was previously set.
 	//
-	// [Health checks for Auto Scaling instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html
+	// [Health checks for instances in an Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html
 	HealthCheckType *string
 
 	// An instance maintenance policy. For more information, see [Set instance maintenance policy] in the Amazon EC2
@@ -199,10 +199,10 @@ type UpdateAutoScalingGroupInput struct {
 
 	// Indicates whether newly launched instances are protected from termination by
 	// Amazon EC2 Auto Scaling when scaling in. For more information about preventing
-	// instances from terminating on scale in, see [Using instance scale-in protection]in the Amazon EC2 Auto Scaling User
+	// instances from terminating on scale in, see [Use instance scale-in protection]in the Amazon EC2 Auto Scaling User
 	// Guide.
 	//
-	// [Using instance scale-in protection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html
+	// [Use instance scale-in protection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html
 	NewInstancesProtectedFromScaleIn *bool
 
 	// The name of an existing placement group into which to launch your instances.
@@ -224,14 +224,14 @@ type UpdateAutoScalingGroupInput struct {
 
 	// A policy or a list of policies that are used to select the instances to
 	// terminate. The policies are executed in the order that you list them. For more
-	// information, see [Work with Amazon EC2 Auto Scaling termination policies]in the Amazon EC2 Auto Scaling User Guide.
+	// information, see [Configure termination policies for Amazon EC2 Auto Scaling]in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid values: Default | AllocationStrategy | ClosestToNextInstanceHour |
 	// NewestInstance | OldestInstance | OldestLaunchConfiguration |
 	// OldestLaunchTemplate |
 	// arn:aws:lambda:region:account-id:function:my-function:my-alias
 	//
-	// [Work with Amazon EC2 Auto Scaling termination policies]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html
+	// [Configure termination policies for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html
 	TerminationPolicies []string
 
 	// A comma-separated list of subnet IDs for a virtual private cloud (VPC). If you
