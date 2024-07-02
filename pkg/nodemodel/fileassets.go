@@ -116,7 +116,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 			case kops.CloudProviderAWS:
 				binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
 				if binaryLocation == nil {
-					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
+					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.29.0")
 				}
 
 				u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))

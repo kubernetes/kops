@@ -4,7 +4,7 @@ filestores:
 # Manually constructed; there is a .sha256 file available for each asset
 
 files:
-- name: v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
-  sha256: 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a
-- name: v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
-  sha256: b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481
+- name: v1.29.0/linux/amd64/ecr-credential-provider-linux-amd64
+  sha256: 0d97641c8977fe775cb18f9e6f40acd99ef2570543b55e5c13dec320dcaa8ee3
+- name: v1.29.0/linux/arm64/ecr-credential-provider-linux-arm64
+  sha256: 8313d0744b7e5cfaccb7aa1327c5260471eb9463bc769f87df6f45dee84b8c44

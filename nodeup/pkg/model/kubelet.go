@@ -459,12 +459,21 @@ func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContex
 	}
 
 	{
+
 		configContent := `apiVersion: kubelet.config.k8s.io/v1
 kind: CredentialProviderConfig
 providers:
   - name: ecr-credential-provider
     matchImages:
-      - "*.dkr.ecr.*.amazonaws.com"
+`
+		containerd := b.NodeupConfig.ContainerdConfig
+		if containerd.UseECRCredentialsForMirrors {
+			for name := range containerd.RegistryMirrors {
+				configContent += `      - "` + name + `"
+`
+			}
+		}
+		configContent += `      - "*.dkr.ecr.*.amazonaws.com"
       - "*.dkr.ecr.*.amazonaws.com.cn"
       - "*.dkr.ecr-fips.*.amazonaws.com"
       - "*.dkr.ecr.us-iso-east-1.c2s.ic.gov"
@@ -473,6 +482,9 @@ providers:
     apiVersion: credentialprovider.kubelet.k8s.io/v1
     args:
       - get-credentials
+    env:
+      - name: AWS_REGION
+        value: ` + b.Cloud.Region() + `
 `
 
 		t := &nodetasks.File{

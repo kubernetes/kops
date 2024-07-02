@@ -994,6 +994,10 @@ spec:
                     description: State directory for execution state files (default
                       "/run/containerd").
                     type: string
+                  useECRCredentialsForMirrors:
+                    description: Enables Kubelet ECR Credential helper to pass credentials
+                      to containerd mirrors, to use ECR as a pull-through cache
+                    type: boolean
                   version:
                     description: Version used to pick the containerd package.
                     type: string
