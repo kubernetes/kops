@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"golang.org/x/net/ipv4"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -31,6 +32,7 @@ type Protocol int
 
 const (
 	ProtocolIPIP Protocol = 4
+	ProtocolICMP Protocol = 1
 )
 
 // FirewallModelBuilder configures firewall network objects
@@ -135,9 +137,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 	udpRanges := []portRange{{From: 1, To: 65535}}
 	protocols := []Protocol{}
 
-	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
-		// Block the etcd peer port
-		tcpBlocked[2382] = true
+	if b.Cluster.Spec.Networking.Cilium != nil {
+		protocols = append(protocols, ProtocolICMP)
+		if b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+			tcpBlocked[2382] = true
+		}
 	}
 
 	if b.Cluster.Spec.Networking.Calico != nil {
@@ -192,22 +196,33 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 			}
 			for _, protocol := range protocols {
 				awsName := strconv.Itoa(int(protocol))
-				name := awsName
+
 				switch protocol {
 				case ProtocolIPIP:
-					name = "ipip"
+					awsName = "ipip"
+					t := &awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", awsName, suffix)),
+						Lifecycle:     b.Lifecycle,
+						SecurityGroup: masterGroup.Task,
+						SourceGroup:   nodeGroup.Task,
+						Protocol:      fi.PtrTo(awsName),
+					}
+					AddDirectionalGroupRule(c, t)
+				case ProtocolICMP:
+					awsName = "icmp"
+					t := &awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", awsName, suffix)),
+						Lifecycle:     b.Lifecycle,
+						SecurityGroup: masterGroup.Task,
+						SourceGroup:   nodeGroup.Task,
+						FromPort:      fi.PtrTo(int64(ipv4.ICMPTypeEcho)),
+						Protocol:      fi.PtrTo(awsName),
+						ToPort:        fi.PtrTo(int64(ipv4.ICMPTypeEcho)),
+					}
+					AddDirectionalGroupRule(c, t)
 				default:
 					klog.Warningf("unknown protocol %q - naming by number", awsName)
 				}
-
-				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
-					Lifecycle:     b.Lifecycle,
-					SecurityGroup: masterGroup.Task,
-					SourceGroup:   nodeGroup.Task,
-					Protocol:      fi.PtrTo(awsName),
-				}
-				AddDirectionalGroupRule(c, t)
 			}
 		}
 	}

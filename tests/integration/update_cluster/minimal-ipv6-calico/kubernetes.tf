@@ -1140,21 +1140,21 @@ resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-egress-a
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-4-0to0-masters-minimal-ipv6-example-com" {
-  from_port                = 0
-  protocol                 = "4"
-  security_group_id        = aws_security_group.masters-minimal-ipv6-example-com.id
-  source_security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
-  to_port                  = 65535
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-all-0to0-nodes-minimal-ipv6-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.nodes-minimal-ipv6-example-com.id
   source_security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
   to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-nodes-minimal-ipv6-example-com-ingress-ipip-0to0-masters-minimal-ipv6-example-com" {
+  from_port                = 0
+  protocol                 = "ipip"
+  security_group_id        = aws_security_group.masters-minimal-ipv6-example-com.id
+  source_security_group_id = aws_security_group.nodes-minimal-ipv6-example-com.id
+  to_port                  = 65535
   type                     = "ingress"
 }
 

@@ -1297,6 +1297,15 @@ resource "aws_security_group_rule" "from-nodes-privatecilium-example-com-ingress
   type                     = "ingress"
 }
 
+resource "aws_security_group_rule" "from-nodes-privatecilium-example-com-ingress-icmp-8to8-masters-privatecilium-example-com" {
+  from_port                = 8
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.masters-privatecilium-example-com.id
+  source_security_group_id = aws_security_group.nodes-privatecilium-example-com.id
+  to_port                  = 8
+  type                     = "ingress"
+}
+
 resource "aws_security_group_rule" "from-nodes-privatecilium-example-com-ingress-tcp-1to2379-masters-privatecilium-example-com" {
   from_port                = 1
   protocol                 = "tcp"

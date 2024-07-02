@@ -1310,21 +1310,21 @@ resource "aws_security_group_rule" "from-nodes-privatecalico-example-com-egress-
   type              = "egress"
 }
 
-resource "aws_security_group_rule" "from-nodes-privatecalico-example-com-ingress-4-0to0-masters-privatecalico-example-com" {
-  from_port                = 0
-  protocol                 = "4"
-  security_group_id        = aws_security_group.masters-privatecalico-example-com.id
-  source_security_group_id = aws_security_group.nodes-privatecalico-example-com.id
-  to_port                  = 65535
-  type                     = "ingress"
-}
-
 resource "aws_security_group_rule" "from-nodes-privatecalico-example-com-ingress-all-0to0-nodes-privatecalico-example-com" {
   from_port                = 0
   protocol                 = "-1"
   security_group_id        = aws_security_group.nodes-privatecalico-example-com.id
   source_security_group_id = aws_security_group.nodes-privatecalico-example-com.id
   to_port                  = 0
+  type                     = "ingress"
+}
+
+resource "aws_security_group_rule" "from-nodes-privatecalico-example-com-ingress-ipip-0to0-masters-privatecalico-example-com" {
+  from_port                = 0
+  protocol                 = "ipip"
+  security_group_id        = aws_security_group.masters-privatecalico-example-com.id
+  source_security_group_id = aws_security_group.nodes-privatecalico-example-com.id
+  to_port                  = 65535
   type                     = "ingress"
 }
 
