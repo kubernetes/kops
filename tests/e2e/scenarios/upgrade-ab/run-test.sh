@@ -137,10 +137,9 @@ sleep 120s
 
 ${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
 
-"${KOPS_B}" rolling-update cluster
-"${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
+"${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m -v 4
 
-"${KOPS_B}" validate cluster
+"${KOPS_B}" validate cluster -v 4
 
 # Verify kubeconfig-a still works
 kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
