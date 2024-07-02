@@ -145,6 +145,18 @@ func (t *Tester) setSkipRegexFlag() error {
 		// ref: https://github.com/kubernetes/kops/issues/16349
 		// ref: https://github.com/kubernetes/kubernetes/issues/123255
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
+
+		if k8sVersion.Minor <= 26 {
+			// Prow jobs are being migrated to community-owned EKS clusters.
+			// The e2e.test binaries from older k/k builds dont have new enough aws-sdk-go versions to authenticate from EKS pods.
+			// This disables tests that depend on e2e.test's aws-sdk-go.
+			//
+			// > Couldn't create a new PD in zone "ap-northeast-1c", sleeping 5 seconds: NoCredentialProviders: no valid providers in chain. Deprecated.
+			//
+			// We can remove this once we remove the old upgrade jobs.
+			// Example: https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest/1808210907088556032
+			skipRegex += "|\\[Driver:.aws\\].\\[Testpattern:.Pre-provisioned.PV|\\[Driver:.aws\\].\\[Testpattern:.Inline-volume"
+		}
 	}
 
 	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
