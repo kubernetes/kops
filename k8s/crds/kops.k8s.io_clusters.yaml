@@ -1601,11 +1601,20 @@ spec:
                     - type: string
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
+                  disruption:
+                    properties:
+                      consolidateAfter:
+                        type: string
+                      consolidationPolicy:
+                        type: string
+                      expireAfter:
+                        type: string
+                    type: object
                   enabled:
                     type: boolean
                   image:
                     type: string
-                  logEncoding:
+                  logFormat:
                     type: string
                   logLevel:
                     type: string
