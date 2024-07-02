@@ -58,13 +58,13 @@ Networking:
   serviceClusterIPRange: 100.64.0.0/13
 NvidiaGPU:
   enabled: true
-  package: nvidia-headless-515-server
+  package: nvidia-driver-535
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
   nvidiaGPU:
     enabled: true
-    package: nvidia-headless-515-server
+    package: nvidia-driver-535
   runc:
     version: 1.1.5
   version: 1.6.20
