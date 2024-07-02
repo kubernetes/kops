@@ -96,7 +96,7 @@ Because the state on each of the Nodes may differ from the state in etcd, it is 
 kops rolling-update cluster --force --yes
 ```
 
-For more information and troubleshooting, please check the [etcd-manager documentation](https://github.com/kubernetes-sigs/etcdadm/etcd-manager).
+For more information and troubleshooting, please check the [etcd-manager documentation](https://github.com/kubernetes-sigs/etcdadm/tree/master/etcd-manager).
 
 ## Etcd Volume Encryption
 
