@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build-linux-amd64:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
@@ -48,7 +48,7 @@ jobs:
         make kops examples test
 
   build-windows-amd64:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       with:
@@ -65,7 +65,7 @@ jobs:
         make kops examples test-windows
 
   verify:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
