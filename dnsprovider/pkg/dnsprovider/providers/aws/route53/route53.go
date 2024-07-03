@@ -25,7 +25,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/util/pkg/awslog"
 )
@@ -47,12 +51,53 @@ func init() {
 func newRoute53() (*Interface, error) {
 	ctx := context.TODO()
 
+	imdsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithClientLogMode(aws.LogRetries),
+		awslog.WithAWSLogger(),
+		awsconfig.WithRetryer(func() aws.Retryer {
+			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
+		}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load default aws config for IMDS client: %w", err)
+	}
+	imdsClient := imds.NewFromConfig(imdsCfg)
+
+	var region string
+	imdsRegionResp, err := imdsClient.GetRegion(ctx, &imds.GetRegionInput{})
+	if err != nil {
+		klog.V(4).Infof("Unable to discover region by IMDS, using SDK defaults: %s", err)
+	} else {
+		region = imdsRegionResp.Region
+	}
+
+	stsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithClientLogMode(aws.LogRetries),
+		awslog.WithAWSLogger(),
+		awsconfig.WithRetryer(func() aws.Retryer {
+			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
+		}),
+		awsconfig.WithRegion(region),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load default aws config for STS client: %w", err)
+	}
+
 	cfg, err := awsconfig.LoadDefaultConfig(ctx,
 		awsconfig.WithClientLogMode(aws.LogRetries),
 		awslog.WithAWSLogger(),
 		awsconfig.WithRetryer(func() aws.Retryer {
 			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
-		}))
+		}),
+		awsconfig.WithAssumeRoleCredentialOptions(func(aro *stscreds.AssumeRoleOptions) {
+			// Ensure the STS client has a region configured, if discovered by IMDS
+			aro.Client = sts.NewFromConfig(stsCfg)
+		}),
+		awsconfig.WithEC2IMDSRegion(func(o *awsconfig.UseEC2IMDSRegion) {
+			o.Client = imdsClient
+		}),
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to load default aws config: %w", err)
 	}
