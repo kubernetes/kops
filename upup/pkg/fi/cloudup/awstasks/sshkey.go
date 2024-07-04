@@ -54,7 +54,7 @@ func (e *SSHKey) CompareWithID() *string {
 }
 
 func (e *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	return e.find(c.Context(), cloud)
 }

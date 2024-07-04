@@ -100,7 +100,7 @@ func (e *SecurityGroup) Find(c *fi.CloudupContext) (*SecurityGroup, error) {
 
 func (e *SecurityGroup) findEc2(c *fi.CloudupContext) (*ec2types.SecurityGroup, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 	request := &ec2.DescribeSecurityGroupsInput{}
 
 	if fi.ValueOf(e.ID) != "" {
@@ -332,7 +332,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 		return nil, nil
 	}
 
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	request := &ec2.DescribeSecurityGroupRulesInput{
 		Filters: []ec2types.Filter{

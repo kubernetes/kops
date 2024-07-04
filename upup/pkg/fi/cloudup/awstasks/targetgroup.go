@@ -212,7 +212,7 @@ func (e *TargetGroup) findTargetGroupByARN(ctx context.Context, cloud awsup.AWSC
 
 func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	var targetGroupInfo *awsup.TargetGroupInfo
 

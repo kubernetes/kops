@@ -56,7 +56,7 @@ func (e *IAMRolePolicy) Find(c *fi.CloudupContext) (*IAMRolePolicy, error) {
 	ctx := c.Context()
 	var actual IAMRolePolicy
 
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	// Handle policy overrides
 	if e.ExternalPolicies != nil {

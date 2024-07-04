@@ -67,7 +67,7 @@ func findInternetGateway(ctx context.Context, cloud awsup.AWSCloud, request *ec2
 
 func (e *InternetGateway) Find(c *fi.CloudupContext) (*InternetGateway, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	request := &ec2.DescribeInternetGatewaysInput{}
 

@@ -62,7 +62,7 @@ func (e *NatGateway) CompareWithID() *string {
 
 func (e *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 	var ngw *ec2types.NatGateway
 	actual := &NatGateway{}
 
@@ -130,7 +130,7 @@ func (e *NatGateway) Find(c *fi.CloudupContext) (*NatGateway, error) {
 
 func (e *NatGateway) findNatGateway(c *fi.CloudupContext) (*ec2types.NatGateway, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	id := e.ID
 

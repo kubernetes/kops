@@ -171,7 +171,7 @@ func (e *NetworkLoadBalancer) getHostedZoneId() *string {
 
 func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	allLoadBalancers, err := awsup.ListELBV2LoadBalancers(ctx, cloud)
 	if err != nil {
@@ -354,7 +354,7 @@ func (e *NetworkLoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, err
 
 	var addresses []string
 
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 	cluster := c.T.Cluster
 
 	{

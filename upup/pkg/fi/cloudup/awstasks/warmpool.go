@@ -69,7 +69,7 @@ func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudup
 // Find is used to discover the ASG in the cloud provider.
 func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 	svc := cloud.Autoscaling()
 	warmPool, err := svc.DescribeWarmPool(ctx, &autoscaling.DescribeWarmPoolInput{
 		AutoScalingGroupName: e.AutoscalingGroup.Name,

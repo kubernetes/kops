@@ -58,7 +58,7 @@ type SecurityGroupRule struct {
 
 func (e *SecurityGroupRule) Find(c *fi.CloudupContext) (*SecurityGroupRule, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	if e.SecurityGroup == nil || e.SecurityGroup.ID == nil {
 		return nil, nil

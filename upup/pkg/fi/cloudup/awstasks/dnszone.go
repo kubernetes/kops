@@ -54,7 +54,7 @@ func (e *DNSZone) CompareWithID() *string {
 }
 
 func (e *DNSZone) Find(c *fi.CloudupContext) (*DNSZone, error) {
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	z, err := e.findExisting(c.Context(), cloud)
 	if err != nil {

@@ -144,7 +144,7 @@ func (e *AutoscalingGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi
 func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error) {
 	ctx := c.Context()
 
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	g, err := findAutoscalingGroup(ctx, cloud, fi.ValueOf(e.Name))
 	if err != nil {
@@ -199,7 +199,7 @@ func (e *AutoscalingGroup) Find(c *fi.CloudupContext) (*AutoscalingGroup, error)
 			}
 		}
 		if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-			apiLBDesc, err := c.T.Cloud.(awsup.AWSCloud).FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
+			apiLBDesc, err := awsup.GetCloud(c).FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
 			if err != nil {
 				return nil, err
 			}
@@ -360,7 +360,7 @@ func findAutoscalingGroup(ctx context.Context, cloud awsup.AWSCloud, name string
 
 func (e *AutoscalingGroup) Normalize(c *fi.CloudupContext) error {
 	sort.Strings(e.Metrics)
-	c.T.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	awsup.GetCloud(c).AddTags(e.Name, e.Tags)
 
 	return nil
 }
