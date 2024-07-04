@@ -40,7 +40,7 @@ type IAMInstanceProfileRole struct {
 
 func (e *IAMInstanceProfileRole) Find(c *fi.CloudupContext) (*IAMInstanceProfileRole, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	if e.Role == nil || e.Role.ID == nil {
 		klog.V(2).Infof("Role/RoleID not set")

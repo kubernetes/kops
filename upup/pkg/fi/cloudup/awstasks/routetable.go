@@ -52,7 +52,7 @@ func (e *RouteTable) CompareWithID() *string {
 
 func (e *RouteTable) Find(c *fi.CloudupContext) (*RouteTable, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	var rt *ec2types.RouteTable
 	var err error

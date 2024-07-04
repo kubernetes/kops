@@ -215,7 +215,7 @@ func (e *ClassicLoadBalancer) getHostedZoneId() *string {
 
 func (e *ClassicLoadBalancer) Find(c *fi.CloudupContext) (*ClassicLoadBalancer, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.Name))
 	if err != nil {

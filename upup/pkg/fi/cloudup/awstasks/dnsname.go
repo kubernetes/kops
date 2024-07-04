@@ -53,7 +53,7 @@ type DNSTarget interface {
 
 func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	if e.Zone == nil || e.Zone.ZoneID == nil {
 		klog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.ValueOf(e.ResourceName))

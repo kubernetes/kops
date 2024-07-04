@@ -57,7 +57,7 @@ func (e *NetworkLoadBalancerListener) CompareWithID() *string {
 func (e *NetworkLoadBalancerListener) Find(c *fi.CloudupContext) (*NetworkLoadBalancerListener, error) {
 	ctx := c.Context()
 
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	if e.NetworkLoadBalancer == nil {
 		return nil, fi.RequiredField("NetworkLoadBalancer")

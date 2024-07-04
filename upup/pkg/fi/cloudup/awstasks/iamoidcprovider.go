@@ -53,7 +53,7 @@ func (e *IAMOIDCProvider) CompareWithID() *string {
 
 func (e *IAMOIDCProvider) Find(c *fi.CloudupContext) (*IAMOIDCProvider, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	response, err := cloud.IAM().ListOpenIDConnectProviders(ctx, &iam.ListOpenIDConnectProvidersInput{})
 	if err != nil {

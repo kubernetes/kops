@@ -188,6 +188,17 @@ type AWSCloud interface {
 	AccountInfo(ctx context.Context) (string, string, error)
 }
 
+// GetCloud returns the AWSCloud in the CloudupContext.
+// It panics if the CloudupContext has not been initialized with an AWSCloud.
+func GetCloud(c *fi.CloudupContext) AWSCloud {
+	awsCloud, ok := c.T.Cloud.(AWSCloud)
+	if ok {
+		return awsCloud
+	}
+	klog.Fatalf("cannot find instance of AWSCloud in context")
+	return nil
+}
+
 type awsCloudImplementation struct {
 	ec2         *ec2.Client
 	iam         *iam.Client

@@ -56,7 +56,7 @@ func (e *EBSVolume) CompareWithID() *string {
 
 func (e *EBSVolume) Find(c *fi.CloudupContext) (*EBSVolume, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	filters := cloud.BuildFilters(e.Name)
 	request := &ec2.DescribeVolumesInput{
@@ -102,7 +102,7 @@ func (e *EBSVolume) Find(c *fi.CloudupContext) (*EBSVolume, error) {
 }
 
 func (e *EBSVolume) Normalize(c *fi.CloudupContext) error {
-	c.T.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	awsup.GetCloud(c).AddTags(e.Name, e.Tags)
 	return nil
 }
 

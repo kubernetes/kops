@@ -130,7 +130,7 @@ func (o *LaunchSpec) find(svc spotinst.LaunchSpecService, oceanID string) (*aws.
 var _ fi.CloudupHasCheckExisting = &LaunchSpec{}
 
 func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	ocean, err := o.Ocean.find(cloud.Spotinst().Ocean())
 	if err != nil {

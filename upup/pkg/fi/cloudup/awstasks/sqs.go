@@ -56,7 +56,7 @@ func (q *SQS) CompareWithID() *string {
 
 func (q *SQS) Find(c *fi.CloudupContext) (*SQS, error) {
 	ctx := c.Context()
-	cloud := c.T.Cloud.(awsup.AWSCloud)
+	cloud := awsup.GetCloud(c)
 
 	if q.Name == nil {
 		return nil, nil
