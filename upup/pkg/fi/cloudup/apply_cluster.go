@@ -127,11 +127,6 @@ type ApplyClusterCmd struct {
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.CloudupTask
 
-	// ImageAssets are the image assets we use (output).
-	ImageAssets []*assets.ImageAsset
-	// FileAssets are the file assets we use (output).
-	FileAssets []*assets.FileAsset
-
 	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
 	AdditionalObjects kubemanifest.ObjectList
 
@@ -139,7 +134,13 @@ type ApplyClusterCmd struct {
 	DeletionProcessing fi.DeletionProcessingMode
 }
 
-func (c *ApplyClusterCmd) Run(ctx context.Context) error {
+// ApplyResults holds information about an ApplyClusterCmd operation.
+type ApplyResults struct {
+	// AssetBuilder holds the initialized AssetBuilder, listing all the image and file assets.
+	AssetBuilder *assets.AssetBuilder
+}
+
+func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	if c.TargetName == TargetTerraform {
 		found := false
 		for _, cp := range TerraformCloudProviders {
@@ -149,16 +150,16 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			}
 		}
 		if !found {
-			return fmt.Errorf("cloud provider %v does not support the terraform target", c.Cloud.ProviderID())
+			return nil, fmt.Errorf("cloud provider %v does not support the terraform target", c.Cloud.ProviderID())
 		}
 		if c.Cloud.ProviderID() == kops.CloudProviderDO && !featureflag.DOTerraform.Enabled() {
-			return fmt.Errorf("DO Terraform requires the DOTerraform feature flag to be enabled")
+			return nil, fmt.Errorf("DO Terraform requires the DOTerraform feature flag to be enabled")
 		}
 	}
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(ctx, metav1.ListOptions{})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		var instanceGroups []*kops.InstanceGroup
 		for i := range list.Items {
@@ -170,7 +171,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if c.AdditionalObjects == nil {
 		additionalObjects, err := c.Clientset.AddonsFor(c.Cluster).List(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		// We use the nil object to mean "uninitialized"
 		if additionalObjects == nil {
@@ -224,7 +225,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 
 	default:
-		return fmt.Errorf("unknown phase %q", c.Phase)
+		return nil, fmt.Errorf("unknown phase %q", c.Phase)
 	}
 	if c.GetAssets {
 		networkLifecycle = fi.LifecycleIgnore
@@ -235,24 +236,24 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	assetBuilder := assets.NewAssetBuilder(c.Clientset.VFSContext(), c.Cluster.Spec.Assets, c.Cluster.Spec.KubernetesVersion, c.GetAssets)
 	err = c.upgradeSpecs(ctx, assetBuilder)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = c.validateKopsVersion()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = c.validateKubernetesVersion()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cluster := c.Cluster
 
 	configBase, err := c.Clientset.VFSContext().BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
-		return fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
+		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
 	}
 
 	if !c.AllowKopsDowngrade {
@@ -261,7 +262,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			kopsVersionUpdated := strings.TrimSpace(string(kopsVersionUpdatedBytes))
 			version, err := semver.Parse(kopsVersionUpdated)
 			if err != nil {
-				return fmt.Errorf("error parsing last kops version updated: %v", err)
+				return nil, fmt.Errorf("error parsing last kops version updated: %v", err)
 			}
 			if version.GT(semver.MustParse(kopsbase.Version)) {
 				fmt.Printf("\n")
@@ -272,10 +273,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 				fmt.Printf("\n")
 				fmt.Printf("%s\n", starline)
 				fmt.Printf("\n")
-				return fmt.Errorf("kops version older than last used to update the cluster")
+				return nil, fmt.Errorf("kops version older than last used to update the cluster")
 			}
 		} else if err != os.ErrNotExist {
-			return fmt.Errorf("error reading last kops version used to update: %v", err)
+			return nil, fmt.Errorf("error reading last kops version used to update: %v", err)
 		}
 	}
 
@@ -283,14 +284,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	err = validation.DeepValidate(c.Cluster, c.InstanceGroups, true, c.Clientset.VFSContext(), cloud)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if cluster.Spec.KubernetesVersion == "" {
-		return fmt.Errorf("KubernetesVersion not set")
+		return nil, fmt.Errorf("KubernetesVersion not set")
 	}
 	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() {
-		return fmt.Errorf("DNSZone not set")
+		return nil, fmt.Errorf("DNSZone not set")
 	}
 
 	l := &Loader{}
@@ -298,23 +299,23 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	keyStore, err := c.Clientset.KeyStore(cluster)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	sshCredentialStore, err := c.Clientset.SSHCredentialStore(cluster)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	secretStore, err := c.Clientset.SecretStore(cluster)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	addonsClient := c.Clientset.AddonsFor(cluster)
 	addons, err := addonsClient.List(ctx)
 	if err != nil {
-		return fmt.Errorf("error fetching addons: %v", err)
+		return nil, fmt.Errorf("error fetching addons: %v", err)
 	}
 
 	// Normalize k8s version
@@ -353,13 +354,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if fi.ValueOf(c.Cluster.Spec.EncryptionConfig) {
 		secret, err := secretStore.FindSecret("encryptionconfig")
 		if err != nil {
-			return fmt.Errorf("could not load encryptionconfig secret: %v", err)
+			return nil, fmt.Errorf("could not load encryptionconfig secret: %v", err)
 		}
 		if secret == nil {
 			fmt.Println("")
 			fmt.Println("You have encryptionConfig enabled, but no encryptionconfig secret has been set.")
 			fmt.Println("See `kops create secret encryptionconfig -h` and https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/")
-			return fmt.Errorf("could not find encryptionconfig secret")
+			return nil, fmt.Errorf("could not find encryptionconfig secret")
 		}
 		hashBytes := sha256.Sum256(secret.Data)
 		encryptionConfigSecretHash = base64.URLEncoding.EncodeToString(hashBytes[:])
@@ -369,19 +370,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if ciliumSpec != nil && ciliumSpec.EnableEncryption && ciliumSpec.EncryptionType == kops.CiliumEncryptionTypeIPSec {
 		secret, err := secretStore.FindSecret("ciliumpassword")
 		if err != nil {
-			return fmt.Errorf("could not load the ciliumpassword secret: %w", err)
+			return nil, fmt.Errorf("could not load the ciliumpassword secret: %w", err)
 		}
 		if secret == nil {
 			fmt.Println("")
 			fmt.Println("You have cilium encryption enabled, but no ciliumpassword secret has been set.")
 			fmt.Println("See `kops create secret ciliumpassword -h`")
-			return fmt.Errorf("could not find ciliumpassword secret")
+			return nil, fmt.Errorf("could not find ciliumpassword secret")
 		}
 	}
 
 	fileAssets := &nodemodel.FileAssets{Cluster: cluster}
 	if err := fileAssets.AddFileAssets(assetBuilder); err != nil {
-		return err
+		return nil, err
 	}
 
 	project := ""
@@ -391,7 +392,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	{
 		keys, err := sshCredentialStore.FindSSHPublicKeys()
 		if err != nil {
-			return fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
+			return nil, fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
 		}
 
 		for _, k := range keys {
@@ -420,7 +421,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	case kops.CloudProviderDO:
 		{
 			if len(sshPublicKeys) == 0 && (c.Cluster.Spec.SSHKeyName == nil || *c.Cluster.Spec.SSHKeyName == "") {
-				return fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with DigitalOcean (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 		}
 	case kops.CloudProviderAWS:
@@ -429,52 +430,52 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 			accountID, partition, err := awsCloud.AccountInfo(ctx)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			modelContext.AWSAccountID = accountID
 			modelContext.AWSPartition = partition
 
 			if len(sshPublicKeys) > 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			}
 		}
 
 	case kops.CloudProviderAzure:
 		{
 			if !featureflag.Azure.Enabled() {
-				return fmt.Errorf("azure support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Azure")
+				return nil, fmt.Errorf("azure support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Azure")
 			}
 
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with AzureCloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with AzureCloud (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			if len(sshPublicKeys) != 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AzureCloud; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AzureCloud; please delete a key using `kops delete secret`")
 			}
 		}
 	case kops.CloudProviderOpenstack:
 		{
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with Openstack (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			if len(sshPublicKeys) != 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Openstack; please delete a key using `kops delete secret`")
 			}
 		}
 
 	case kops.CloudProviderScaleway:
 		{
 			if !featureflag.Scaleway.Enabled() {
-				return fmt.Errorf("Scaleway support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=Scaleway")
+				return nil, fmt.Errorf("Scaleway support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=Scaleway")
 			}
 
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with Scaleway (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+				return nil, fmt.Errorf("SSH public key must be specified when running with Scaleway (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 			if len(sshPublicKeys) != 1 {
-				return fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Scaleway; please delete a key using `kops delete secret`")
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Scaleway; please delete a key using `kops delete secret`")
 			}
 
 			scwCloud := cloud.(scaleway.ScwCloud)
@@ -482,7 +483,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		}
 
 	default:
-		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
+		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
 	}
 
 	modelContext.SSHPublicKeys = sshPublicKeys
@@ -491,7 +492,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	if cluster.PublishesDNSRecords() {
 		err = validateDNS(cluster, cloud)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -502,7 +503,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, fileAssets.Assets, encryptionConfigSecretHash)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		KopsModelContext:    modelContext,
@@ -514,12 +515,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 	{
 		templates, err := templates.LoadTemplates(ctx, cluster, models.NewAssetPath("cloudup/resources"))
 		if err != nil {
-			return fmt.Errorf("error loading templates: %v", err)
+			return nil, fmt.Errorf("error loading templates: %v", err)
 		}
 
 		err = tf.AddTo(templates.TemplateFunctions, secretStore)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
@@ -686,12 +687,12 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 			)
 
 		default:
-			return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
+			return nil, fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
 		}
 	}
 	c.TaskMap, err = l.BuildTasks(ctx, c.LifecycleOverrides)
 	if err != nil {
-		return fmt.Errorf("error building tasks: %v", err)
+		return nil, fmt.Errorf("error building tasks: %v", err)
 	}
 
 	var target fi.CloudupTarget
@@ -716,7 +717,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		case kops.CloudProviderScaleway:
 			target = scaleway.NewScwAPITarget(cloud.(scaleway.ScwCloud))
 		default:
-			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.GetCloudProvider())
+			return nil, fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.GetCloudProvider())
 		}
 
 	case TargetTerraform:
@@ -725,22 +726,22 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 		// We include a few "util" variables in the TF output
 		if err := tf.AddOutputVariable("region", terraformWriter.LiteralFromStringValue(cloud.Region())); err != nil {
-			return err
+			return nil, err
 		}
 
 		if project != "" {
 			if err := tf.AddOutputVariable("project", terraformWriter.LiteralFromStringValue(project)); err != nil {
-				return err
+				return nil, err
 			}
 		}
 		if scwZone != "" {
 			if err := tf.AddOutputVariable("zone", terraformWriter.LiteralFromStringValue(scwZone)); err != nil {
-				return err
+				return nil, err
 			}
 		}
 
 		if err := tf.AddOutputVariable("cluster_name", terraformWriter.LiteralFromStringValue(cluster.ObjectMeta.Name)); err != nil {
-			return err
+			return nil, err
 		}
 
 		target = tf
@@ -762,20 +763,20 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 		shouldPrecreateDNS = false
 
 	default:
-		return fmt.Errorf("unsupported target type %q", c.TargetName)
+		return nil, fmt.Errorf("unsupported target type %q", c.TargetName)
 	}
 	c.Target = target
 
 	if target.DefaultCheckExisting() {
 		c.TaskMap, err = l.FindDeletions(cloud, c.LifecycleOverrides)
 		if err != nil {
-			return fmt.Errorf("error finding deletions: %w", err)
+			return nil, fmt.Errorf("error finding deletions: %w", err)
 		}
 	}
 
 	context, err := fi.NewCloudupContext(ctx, deletionProcessingMode, target, cluster, cloud, keyStore, secretStore, configBase, c.TaskMap)
 	if err != nil {
-		return fmt.Errorf("error building context: %v", err)
+		return nil, fmt.Errorf("error building context: %v", err)
 	}
 
 	var options fi.RunTasksOptions
@@ -787,7 +788,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	err = context.RunTasks(options)
 	if err != nil {
-		return fmt.Errorf("error running tasks: %v", err)
+		return nil, fmt.Errorf("error running tasks: %v", err)
 	}
 
 	if !cluster.PublishesDNSRecords() {
@@ -802,13 +803,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) error {
 
 	err = target.Finish(c.TaskMap) // This will finish the apply, and print the changes
 	if err != nil {
-		return fmt.Errorf("error closing target: %v", err)
+		return nil, fmt.Errorf("error closing target: %v", err)
 	}
 
-	c.ImageAssets = assetBuilder.ImageAssets
-	c.FileAssets = assetBuilder.FileAssets
+	applyResults := &ApplyResults{
+		AssetBuilder: assetBuilder,
+	}
 
-	return nil
+	return applyResults, nil
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted

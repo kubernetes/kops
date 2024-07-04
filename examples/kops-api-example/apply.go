@@ -37,8 +37,7 @@ func apply(vfsContext *vfs.VFSContext, ctx context.Context) error {
 		Clientset:  clientset,
 		TargetName: cloudup.TargetDirect,
 	}
-	err = applyCmd.Run(ctx)
-	if err != nil {
+	if _, err = applyCmd.Run(ctx); err != nil {
 		return err
 	}
 
