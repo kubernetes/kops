@@ -21,6 +21,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 
 	addonsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/assets"
@@ -35,7 +36,7 @@ import (
 // The value corresponds to the name of the addon.
 const KopsAddonLabelKey = "addon.kops.k8s.io/name"
 
-func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelContext, assetBuilder *assets.AssetBuilder, manifest []byte, serviceAccounts map[string]iam.Subject) ([]byte, error) {
+func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelContext, assetBuilder *assets.AssetBuilder, manifest []byte, serviceAccounts map[types.NamespacedName]iam.Subject) ([]byte, error) {
 	name := fi.ValueOf(addon.Name)
 
 	{
@@ -78,7 +79,7 @@ func RemapAddonManifest(addon *addonsapi.AddonSpec, context *model.KopsModelCont
 	return manifest, nil
 }
 
-func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList, serviceAccounts map[string]iam.Subject) error {
+func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest.ObjectList, serviceAccounts map[types.NamespacedName]iam.Subject) error {
 	if !context.UseServiceAccountExternalPermissions() {
 		return nil
 	}
@@ -92,7 +93,10 @@ func addServiceAccountRole(context *model.KopsModelContext, objects kubemanifest
 		if err := object.Reparse(podSpec, "spec", "template", "spec"); err != nil {
 			return fmt.Errorf("failed to parse spec.template.spec from Deployment: %v", err)
 		}
-		sa := podSpec.ServiceAccountName
+		sa := types.NamespacedName{
+			Name:      podSpec.ServiceAccountName,
+			Namespace: object.GetNamespace(),
+		}
 		subject := serviceAccounts[sa]
 		if subject == nil {
 			continue
