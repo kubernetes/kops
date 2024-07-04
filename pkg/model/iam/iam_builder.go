@@ -352,8 +352,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	b.addNodeupPermissions(p, r.warmPool)
 
-	var err error
-	if p, err = b.AddS3Permissions(p); err != nil {
+	if err := b.AddS3Permissions(p); err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
@@ -391,8 +390,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addKopsControllerIPAMPermissions(p)
 	}
 
-	var err error
-	if p, err = b.AddS3Permissions(p); err != nil {
+	if err := b.AddS3Permissions(p); err != nil {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
@@ -450,8 +448,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
 	if !b.Cluster.UsesNoneDNS() {
-		var err error
-		if p, err = b.AddS3Permissions(p); err != nil {
+		if err := b.AddS3Permissions(p); err != nil {
 			return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 		}
 	}
@@ -486,9 +483,10 @@ func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	return p, nil
 }
 
-// AddS3Permissions builds an IAM Policy, with statements granting tailored
-// access to S3 assets, depending on the instance group or service-account role
-func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
+// AddS3Permissions add S3 permissions to an IAM Policy.
+// The permissions grant granting tailored access to S3 assets,
+// depending on the instance group or service-account role
+func (b *PolicyBuilder) AddS3Permissions(p *Policy) error {
 	// For S3 IAM permissions we grant permissions to subtrees, so find the parents;
 	// we don't need to grant mypath and mypath/child.
 	var roots []string
@@ -535,7 +533,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 	for _, root := range roots {
 		vfsPath, err := vfs.Context.BuildVfsPath(root)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse VFS path %q: %v", root, err)
+			return fmt.Errorf("cannot parse VFS path %q: %v", root, err)
 		}
 
 		switch path := vfsPath.(type) {
@@ -546,7 +544,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			s3Buckets.Insert(path.Bucket())
 
 			if err := b.buildS3GetStatements(p, iamS3Path); err != nil {
-				return nil, err
+				return err
 			}
 
 		case *vfs.MemFSPath:
@@ -564,13 +562,13 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		default:
 			// We could implement this approach, but it seems better to
 			// get all clouds using cluster-readable storage
-			return nil, fmt.Errorf("path is not cluster readable: %v", root)
+			return fmt.Errorf("path is not cluster readable: %v", root)
 		}
 	}
 
 	writeablePaths, err := WriteableVFSPaths(b.Cluster, b.Role)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, vfsPath := range writeablePaths {
@@ -590,7 +588,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 			b.buildS3WriteStatements(p, iamS3path)
 			s3Buckets.Insert("placeholder-read-bucket")
 		default:
-			return nil, fmt.Errorf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
+			return fmt.Errorf("unknown writeable path, can't apply IAM policy: %q", vfsPath)
 		}
 	}
 
@@ -610,7 +608,7 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 		})
 	}
 
-	return p, nil
+	return nil
 }
 
 func (b *PolicyBuilder) buildS3WriteStatements(p *Policy, iamS3Path string) {
