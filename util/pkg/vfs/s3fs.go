@@ -77,6 +77,15 @@ func newS3Path(s3Context *S3Context, scheme string, bucket string, key string, s
 	}
 }
 
+func (p *S3Path) Region(ctx context.Context) (string, error) {
+	bucketDetails, err := p.getBucketDetails(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return bucketDetails.region, nil
+}
+
 func (p *S3Path) Path() string {
 	return p.scheme + "://" + p.bucket + "/" + p.key
 }
