@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
@@ -325,7 +326,7 @@ type Addon struct {
 	BuildPrune bool
 }
 
-func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) (*AddonList, map[string]iam.Subject, error) {
+func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) (*AddonList, map[types.NamespacedName]iam.Subject, error) {
 	addons := &AddonList{}
 
 	serviceAccountRoles := []iam.Subject{}
@@ -1213,7 +1214,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	serviceAccounts := make(map[string]iam.Subject)
+	serviceAccounts := make(map[types.NamespacedName]iam.Subject)
 
 	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS && b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer != nil {
 		awsModelContext := &awsmodel.AWSModelContext{
@@ -1228,7 +1229,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				return nil, nil, err
 			}
 			sa, _ := serviceAccountRole.ServiceAccount()
-			serviceAccounts[sa.Name] = serviceAccountRole
+			serviceAccounts[sa] = serviceAccountRole
 		}
 	}
 	return addons, serviceAccounts, nil
