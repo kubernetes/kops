@@ -497,7 +497,8 @@ func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
 		DeletionProcessing: fi.DeletionProcessingModeDeleteIfNotDeferrred,
 	}
 
-	return applyCmd.Run(c.Ctx)
+	_, err := applyCmd.Run(c.Ctx)
+	return err
 }
 
 func (c *RollingUpdateCluster) maybeValidate(operation string, validateCount int, group *cloudinstances.CloudInstanceGroup) error {

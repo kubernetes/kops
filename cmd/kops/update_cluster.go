@@ -305,14 +305,15 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		DeletionProcessing: deletionProcessing,
 	}
 
-	if err := applyCmd.Run(ctx); err != nil {
+	applyResults, err := applyCmd.Run(ctx)
+	if err != nil {
 		return results, err
 	}
 
 	results.Target = applyCmd.Target
 	results.TaskMap = applyCmd.TaskMap
-	results.ImageAssets = applyCmd.ImageAssets
-	results.FileAssets = applyCmd.FileAssets
+	results.ImageAssets = applyResults.AssetBuilder.ImageAssets
+	results.FileAssets = applyResults.AssetBuilder.FileAssets
 	results.Cluster = cluster
 
 	if isDryrun && !c.GetAssets {
