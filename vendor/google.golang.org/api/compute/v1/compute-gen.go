@@ -7817,6 +7817,91 @@ func (s *CorsPolicy) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
+// CustomErrorResponsePolicy: Specifies the custom error response policy that
+// must be applied when the backend service or backend bucket responds with an
+// error.
+type CustomErrorResponsePolicy struct {
+	// ErrorResponseRules: Specifies rules for returning error responses. In a
+	// given policy, if you specify rules for both a range of error codes as well
+	// as rules for specific error codes then rules with specific error codes have
+	// a higher priority. For example, assume that you configure a rule for 401
+	// (Un-authorized) code, and another for all 4 series error codes (4XX). If the
+	// backend service returns a 401, then the rule for 401 will be applied.
+	// However if the backend service returns a 403, the rule for 4xx takes effect.
+	ErrorResponseRules []*CustomErrorResponsePolicyCustomErrorResponseRule `json:"errorResponseRules,omitempty"`
+	// ErrorService: The full or partial URL to the BackendBucket resource that
+	// contains the custom error content. Examples are: -
+	// https://www.googleapis.com/compute/v1/projects/project/global/backendBuckets/myBackendBucket
+	// - compute/v1/projects/project/global/backendBuckets/myBackendBucket -
+	// global/backendBuckets/myBackendBucket If errorService is not specified at
+	// lower levels like pathMatcher, pathRule and routeRule, an errorService
+	// specified at a higher level in the UrlMap will be used. If
+	// UrlMap.defaultCustomErrorResponsePolicy contains one or more
+	// errorResponseRules[], it must specify errorService. If load balancer cannot
+	// reach the backendBucket, a simple Not Found Error will be returned, with the
+	// original response code (or overrideResponseCode if configured). errorService
+	// is not supported for internal or regional HTTP/HTTPS load balancers.
+	ErrorService string `json:"errorService,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ErrorResponseRules") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ErrorResponseRules") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *CustomErrorResponsePolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod CustomErrorResponsePolicy
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
+// CustomErrorResponsePolicyCustomErrorResponseRule: Specifies the mapping
+// between the response code that will be returned along with the custom error
+// content and the response code returned by the backend service.
+type CustomErrorResponsePolicyCustomErrorResponseRule struct {
+	// MatchResponseCodes: Valid values include: - A number between 400 and 599:
+	// For example 401 or 503, in which case the load balancer applies the policy
+	// if the error code exactly matches this value. - 5xx: Load Balancer will
+	// apply the policy if the backend service responds with any response code in
+	// the range of 500 to 599. - 4xx: Load Balancer will apply the policy if the
+	// backend service responds with any response code in the range of 400 to 499.
+	// Values must be unique within matchResponseCodes and across all
+	// errorResponseRules of CustomErrorResponsePolicy.
+	MatchResponseCodes []string `json:"matchResponseCodes,omitempty"`
+	// OverrideResponseCode: The HTTP status code returned with the response
+	// containing the custom error content. If overrideResponseCode is not
+	// supplied, the same response code returned by the original backend bucket or
+	// backend service is returned to the client.
+	OverrideResponseCode int64 `json:"overrideResponseCode,omitempty"`
+	// Path: The full path to a file within backendBucket . For example:
+	// /errors/defaultError.html path must start with a leading slash. path cannot
+	// have trailing slashes. If the file is not available in backendBucket or the
+	// load balancer cannot reach the BackendBucket, a simple Not Found Error is
+	// returned to the client. The value must be from 1 to 1024 characters
+	Path string `json:"path,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "MatchResponseCodes") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "MatchResponseCodes") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *CustomErrorResponsePolicyCustomErrorResponseRule) MarshalJSON() ([]byte, error) {
+	type NoMethod CustomErrorResponsePolicyCustomErrorResponseRule
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+}
+
 type CustomerEncryptionKey struct {
 	// KmsKeyName: The name of the encryption key that is stored in Google Cloud
 	// KMS. For example: "kmsKeyName":
@@ -14361,6 +14446,32 @@ func (s *HttpRouteAction) MarshalJSON() ([]byte, error) {
 // request and the corresponding routing action that load balancing proxies
 // perform.
 type HttpRouteRule struct {
+	// CustomErrorResponsePolicy: customErrorResponsePolicy specifies how the Load
+	// Balancer returns error responses when BackendServiceor BackendBucket
+	// responds with an error. If a policy for an error code is not configured for
+	// the RouteRule, a policy for the error code configured in
+	// pathMatcher.defaultCustomErrorResponsePolicy is applied. If one is not
+	// specified in pathMatcher.defaultCustomErrorResponsePolicy, the policy
+	// configured in UrlMap.defaultCustomErrorResponsePolicy takes effect. For
+	// example, consider a UrlMap with the following configuration: -
+	// UrlMap.defaultCustomErrorResponsePolicy are configured with policies for 5xx
+	// and 4xx errors - A RouteRule for /coming_soon/ is configured for the error
+	// code 404. If the request is for www.myotherdomain.com and a 404 is
+	// encountered, the policy under UrlMap.defaultCustomErrorResponsePolicy takes
+	// effect. If a 404 response is encountered for the request
+	// www.example.com/current_events/, the pathMatcher's policy takes effect. If
+	// however, the request for www.example.com/coming_soon/ encounters a 404, the
+	// policy in RouteRule.customErrorResponsePolicy takes effect. If any of the
+	// requests in this example encounter a 500 error code, the policy at
+	// UrlMap.defaultCustomErrorResponsePolicy takes effect. When used in
+	// conjunction with routeRules.routeAction.retryPolicy, retries take
+	// precedence. Only once all retries are exhausted, the
+	// customErrorResponsePolicy is applied. While attempting a retry, if load
+	// balancer is successful in reaching the service, the
+	// customErrorResponsePolicy is ignored and the response from the service is
+	// returned to the client. customErrorResponsePolicy is supported only for
+	// global external Application Load Balancers.
+	CustomErrorResponsePolicy *CustomErrorResponsePolicy `json:"customErrorResponsePolicy,omitempty"`
 	// Description: The short description conveying the intent of this routeRule.
 	// The description can have a maximum length of 1024 characters.
 	Description string `json:"description,omitempty"`
@@ -14415,15 +14526,15 @@ type HttpRouteRule struct {
 	// routeAction must not be set. Not supported when the URL map is bound to a
 	// target gRPC proxy.
 	UrlRedirect *HttpRedirectAction `json:"urlRedirect,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with empty or
+	// ForceSendFields is a list of field names (e.g. "CustomErrorResponsePolicy")
+	// to unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Description") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "CustomErrorResponsePolicy") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -18851,10 +18962,11 @@ type InstanceProperties struct {
 	// Labels: Labels to apply to instances that are created from these properties.
 	Labels map[string]string `json:"labels,omitempty"`
 	// MachineType: The machine type to use for instances that are created from
-	// these properties. This field only accept machine types name. e.g.
-	// n2-standard-4 and does not accept machine type full or partial url. e.g.
-	// projects/my-l7ilb-project/zones/us-central1-a/machineTypes/n2-standard-4
-	// will throw INTERNAL_ERROR.
+	// these properties. This field only accepts a machine type name, for example
+	// `n2-standard-4`. If you use the machine type full or partial URL, for
+	// example
+	// `projects/my-l7ilb-project/zones/us-central1-a/machineTypes/n2-standard-4`,
+	// the request will result in an `INTERNAL_ERROR`.
 	MachineType string `json:"machineType,omitempty"`
 	// Metadata: The metadata key/value pairs to assign to instances that are
 	// created from these properties. These pairs can consist of custom metadata or
@@ -31498,6 +31610,33 @@ func (s *PacketMirroringsScopedListWarningData) MarshalJSON() ([]byte, error) {
 // from the longest-matched rule will serve the URL. If no rule was matched,
 // the default service is used.
 type PathMatcher struct {
+	// DefaultCustomErrorResponsePolicy: defaultCustomErrorResponsePolicy specifies
+	// how the Load Balancer returns error responses when BackendServiceor
+	// BackendBucket responds with an error. This policy takes effect at the
+	// PathMatcher level and applies only when no policy has been defined for the
+	// error code at lower levels like RouteRule and PathRule within this
+	// PathMatcher. If an error code does not have a policy defined in
+	// defaultCustomErrorResponsePolicy, then a policy defined for the error code
+	// in UrlMap.defaultCustomErrorResponsePolicy takes effect. For example,
+	// consider a UrlMap with the following configuration: -
+	// UrlMap.defaultCustomErrorResponsePolicy is configured with policies for 5xx
+	// and 4xx errors - A RouteRule for /coming_soon/ is configured for the error
+	// code 404. If the request is for www.myotherdomain.com and a 404 is
+	// encountered, the policy under UrlMap.defaultCustomErrorResponsePolicy takes
+	// effect. If a 404 response is encountered for the request
+	// www.example.com/current_events/, the pathMatcher's policy takes effect. If
+	// however, the request for www.example.com/coming_soon/ encounters a 404, the
+	// policy in RouteRule.customErrorResponsePolicy takes effect. If any of the
+	// requests in this example encounter a 500 error code, the policy at
+	// UrlMap.defaultCustomErrorResponsePolicy takes effect. When used in
+	// conjunction with pathMatcher.defaultRouteAction.retryPolicy, retries take
+	// precedence. Only once all retries are exhausted, the
+	// defaultCustomErrorResponsePolicy is applied. While attempting a retry, if
+	// load balancer is successful in reaching the service, the
+	// defaultCustomErrorResponsePolicy is ignored and the response from the
+	// service is returned to the client. defaultCustomErrorResponsePolicy is
+	// supported only for global external Application Load Balancers.
+	DefaultCustomErrorResponsePolicy *CustomErrorResponsePolicy `json:"defaultCustomErrorResponsePolicy,omitempty"`
 	// DefaultRouteAction: defaultRouteAction takes effect when none of the
 	// pathRules or routeRules match. The load balancer performs advanced routing
 	// actions, such as URL rewrites and header transformations, before forwarding
@@ -31560,16 +31699,18 @@ type PathMatcher struct {
 	// evaluated in order of priority, from the lowest to highest number. Within a
 	// given pathMatcher, you can set only one of pathRules or routeRules.
 	RouteRules []*HttpRouteRule `json:"routeRules,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "DefaultRouteAction") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g.
+	// "DefaultCustomErrorResponsePolicy") to unconditionally include in API
+	// requests. By default, fields with empty or default values are omitted from
+	// API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "DefaultRouteAction") to include
-	// in API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	// NullFields is a list of field names (e.g.
+	// "DefaultCustomErrorResponsePolicy") to include in API requests with the JSON
+	// null value. By default, fields with empty values are omitted from API
+	// requests. See https://pkg.go.dev/google.golang.org/api#hdr-NullFields for
+	// more details.
 	NullFields []string `json:"-"`
 }
 
@@ -31581,6 +31722,27 @@ func (s *PathMatcher) MarshalJSON() ([]byte, error) {
 // PathRule: A path-matching rule for a URL. If matched, will use the specified
 // BackendService to handle the traffic arriving at this URL.
 type PathRule struct {
+	// CustomErrorResponsePolicy: customErrorResponsePolicy specifies how the Load
+	// Balancer returns error responses when BackendServiceor BackendBucket
+	// responds with an error. If a policy for an error code is not configured for
+	// the PathRule, a policy for the error code configured in
+	// pathMatcher.defaultCustomErrorResponsePolicy is applied. If one is not
+	// specified in pathMatcher.defaultCustomErrorResponsePolicy, the policy
+	// configured in UrlMap.defaultCustomErrorResponsePolicy takes effect. For
+	// example, consider a UrlMap with the following configuration: -
+	// UrlMap.defaultCustomErrorResponsePolicy are configured with policies for 5xx
+	// and 4xx errors - A PathRule for /coming_soon/ is configured for the error
+	// code 404. If the request is for www.myotherdomain.com and a 404 is
+	// encountered, the policy under UrlMap.defaultCustomErrorResponsePolicy takes
+	// effect. If a 404 response is encountered for the request
+	// www.example.com/current_events/, the pathMatcher's policy takes effect. If
+	// however, the request for www.example.com/coming_soon/ encounters a 404, the
+	// policy in PathRule.customErrorResponsePolicy takes effect. If any of the
+	// requests in this example encounter a 500 error code, the policy at
+	// UrlMap.defaultCustomErrorResponsePolicy takes effect.
+	// customErrorResponsePolicy is supported only for global external Application
+	// Load Balancers.
+	CustomErrorResponsePolicy *CustomErrorResponsePolicy `json:"customErrorResponsePolicy,omitempty"`
 	// Paths: The list of path patterns to match. Each must start with / and the
 	// only place a * is allowed is at the end following a /. The string fed to the
 	// path matcher does not include any text after the first ? or #, and those
@@ -31609,15 +31771,15 @@ type PathRule struct {
 	// routeAction must not be set. Not supported when the URL map is bound to a
 	// target gRPC proxy.
 	UrlRedirect *HttpRedirectAction `json:"urlRedirect,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "Paths") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "CustomErrorResponsePolicy")
+	// to unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Paths") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "CustomErrorResponsePolicy") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -37018,10 +37180,15 @@ type Route struct {
 	// NextHopIlb: The URL to a forwarding rule of type
 	// loadBalancingScheme=INTERNAL that should handle matching packets or the IP
 	// address of the forwarding Rule. For example, the following are all valid
-	// URLs: - 10.128.0.56 -
+	// URLs: -
 	// https://www.googleapis.com/compute/v1/projects/project/regions/region
 	// /forwardingRules/forwardingRule -
-	// regions/region/forwardingRules/forwardingRule
+	// regions/region/forwardingRules/forwardingRule If an IP address is provided,
+	// must specify an IPv4 address in dot-decimal notation or an IPv6 address in
+	// RFC 4291 format. For example, the following are all valid IP addresses: -
+	// 10.128.0.56 - 2001:db8::2d9:51:0:0 - 2001:db8:0:0:2d9:51:0:0 IPv6 addresses
+	// will be displayed using RFC 5952 compressed format (e.g.
+	// 2001:db8::2d9:51:0:0). Should never be an IPv4-mapped IPv6 address.
 	NextHopIlb string `json:"nextHopIlb,omitempty"`
 	// NextHopInstance: The URL to an instance that should handle matching packets.
 	// You can specify this as a full or partial URL. For example:
@@ -38379,12 +38546,12 @@ type RouterNatRule struct {
 	// Match: CEL expression that specifies the match condition that egress traffic
 	// from a VM is evaluated against. If it evaluates to true, the corresponding
 	// `action` is enforced. The following examples are valid match expressions for
-	// public NAT: "inIpRange(destination.ip, '1.1.0.0/16') ||
-	// inIpRange(destination.ip, '2.2.0.0/16')" "destination.ip == '1.1.0.1' ||
-	// destination.ip == '8.8.8.8'" The following example is a valid match
-	// expression for private NAT: "nexthop.hub ==
+	// public NAT: `inIpRange(destination.ip, '1.1.0.0/16') ||
+	// inIpRange(destination.ip, '2.2.0.0/16')` `destination.ip == '1.1.0.1' ||
+	// destination.ip == '8.8.8.8'` The following example is a valid match
+	// expression for private NAT: `nexthop.hub ==
 	// '//networkconnectivity.googleapis.com/projects/my-project/locations/global/hu
-	// bs/hub-1'"
+	// bs/hub-1'`
 	Match string `json:"match,omitempty"`
 	// RuleNumber: An integer uniquely identifying a rule in the list. The rule
 	// number must be a positive value between 0 and 65000, and must be unique
@@ -38487,9 +38654,17 @@ func (s *RouterNatSubnetworkToNat) MarshalJSON() ([]byte, error) {
 }
 
 type RouterStatus struct {
-	// BestRoutes: Best routes for this router's network.
+	// BestRoutes: A list of the best dynamic routes for this Cloud Router's
+	// Virtual Private Cloud (VPC) network in the same region as this Cloud Router.
+	// Lists all of the best routes per prefix that are programmed into this
+	// region's VPC data plane. When global dynamic routing mode is turned on in
+	// the VPC network, this list can include cross-region dynamic routes from
+	// Cloud Routers in other regions.
 	BestRoutes []*Route `json:"bestRoutes,omitempty"`
-	// BestRoutesForRouter: Best routes learned by this router.
+	// BestRoutesForRouter: A list of the best BGP routes learned by this Cloud
+	// Router. It is possible that routes listed might not be programmed into the
+	// data plane, if the Google Cloud control plane finds a more optimal route for
+	// a prefix than a route learned by this Cloud Router.
 	BestRoutesForRouter []*Route                     `json:"bestRoutesForRouter,omitempty"`
 	BgpPeerStatus       []*RouterStatusBgpPeerStatus `json:"bgpPeerStatus,omitempty"`
 	NatStatus           []*RouterStatusNatStatus     `json:"natStatus,omitempty"`
@@ -39833,9 +40008,15 @@ type SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdConfi
 	AutoDeployExpirationSec             int64   `json:"autoDeployExpirationSec,omitempty"`
 	AutoDeployImpactedBaselineThreshold float64 `json:"autoDeployImpactedBaselineThreshold,omitempty"`
 	AutoDeployLoadThreshold             float64 `json:"autoDeployLoadThreshold,omitempty"`
+	DetectionAbsoluteQps                float64 `json:"detectionAbsoluteQps,omitempty"`
+	DetectionLoadThreshold              float64 `json:"detectionLoadThreshold,omitempty"`
+	DetectionRelativeToBaselineQps      float64 `json:"detectionRelativeToBaselineQps,omitempty"`
 	// Name: The name must be 1-63 characters long, and comply with RFC1035. The
 	// name must be unique within the security policy.
 	Name string `json:"name,omitempty"`
+	// TrafficGranularityConfigs: Configuration options for enabling Adaptive
+	// Protection to operate on specified granular traffic units.
+	TrafficGranularityConfigs []*SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdConfigTrafficGranularityConfig `json:"trafficGranularityConfigs,omitempty"`
 	// ForceSendFields is a list of field names (e.g.
 	// "AutoDeployConfidenceThreshold") to unconditionally include in API requests.
 	// By default, fields with empty or default values are omitted from API
@@ -39860,6 +40041,9 @@ func (s *SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdC
 		AutoDeployConfidenceThreshold       gensupport.JSONFloat64 `json:"autoDeployConfidenceThreshold"`
 		AutoDeployImpactedBaselineThreshold gensupport.JSONFloat64 `json:"autoDeployImpactedBaselineThreshold"`
 		AutoDeployLoadThreshold             gensupport.JSONFloat64 `json:"autoDeployLoadThreshold"`
+		DetectionAbsoluteQps                gensupport.JSONFloat64 `json:"detectionAbsoluteQps"`
+		DetectionLoadThreshold              gensupport.JSONFloat64 `json:"detectionLoadThreshold"`
+		DetectionRelativeToBaselineQps      gensupport.JSONFloat64 `json:"detectionRelativeToBaselineQps"`
 		*NoMethod
 	}
 	s1.NoMethod = (*NoMethod)(s)
@@ -39869,7 +40053,45 @@ func (s *SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdC
 	s.AutoDeployConfidenceThreshold = float64(s1.AutoDeployConfidenceThreshold)
 	s.AutoDeployImpactedBaselineThreshold = float64(s1.AutoDeployImpactedBaselineThreshold)
 	s.AutoDeployLoadThreshold = float64(s1.AutoDeployLoadThreshold)
+	s.DetectionAbsoluteQps = float64(s1.DetectionAbsoluteQps)
+	s.DetectionLoadThreshold = float64(s1.DetectionLoadThreshold)
+	s.DetectionRelativeToBaselineQps = float64(s1.DetectionRelativeToBaselineQps)
 	return nil
+}
+
+// SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdConfigT
+// rafficGranularityConfig: Configurations to specifc granular traffic units
+// processed by Adaptive Protection.
+type SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdConfigTrafficGranularityConfig struct {
+	// EnableEachUniqueValue: If enabled, traffic matching each unique value for
+	// the specified type constitutes a separate traffic unit. It can only be set
+	// to true if `value` is empty.
+	EnableEachUniqueValue bool `json:"enableEachUniqueValue,omitempty"`
+	// Type: Type of this configuration.
+	//
+	// Possible values:
+	//   "HTTP_HEADER_HOST"
+	//   "HTTP_PATH"
+	//   "UNSPECIFIED_TYPE"
+	Type string `json:"type,omitempty"`
+	// Value: Requests that match this value constitute a granular traffic unit.
+	Value string `json:"value,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "EnableEachUniqueValue") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "EnableEachUniqueValue") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s *SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdConfigTrafficGranularityConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod SecurityPolicyAdaptiveProtectionConfigLayer7DdosDefenseConfigThresholdConfigTrafficGranularityConfig
+	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
 }
 
 type SecurityPolicyAdvancedOptionsConfig struct {
@@ -43918,7 +44140,9 @@ type StoragePool struct {
 	// pool disks' exclusive use.
 	//   "UNSPECIFIED"
 	PerformanceProvisioningType string `json:"performanceProvisioningType,omitempty"`
-	// PoolProvisionedCapacityGb: Size, in GiB, of the storage pool.
+	// PoolProvisionedCapacityGb: Size, in GiB, of the storage pool. For more
+	// information about the size limits, see
+	// https://cloud.google.com/compute/docs/disks/storage-pools.
 	PoolProvisionedCapacityGb int64 `json:"poolProvisionedCapacityGb,omitempty,string"`
 	// PoolProvisionedIops: Provisioned IOPS of the storage pool. Only relevant if
 	// the storage pool type is hyperdisk-balanced.
@@ -44515,8 +44739,10 @@ type StoragePoolResourceStatus struct {
 	// bytes written to the disks in the pool, in contrast to the capacity of those
 	// disks.
 	PoolUsedCapacityBytes int64 `json:"poolUsedCapacityBytes,omitempty,string"`
-	// PoolUsedIops: Sum of all the disks' provisioned IOPS, minus some amount that
-	// is allowed per disk that is not counted towards pool's IOPS capacity.
+	// PoolUsedIops: [Output Only] Sum of all the disks' provisioned IOPS, minus
+	// some amount that is allowed per disk that is not counted towards pool's IOPS
+	// capacity. For more information, see
+	// https://cloud.google.com/compute/docs/disks/storage-pools.
 	PoolUsedIops int64 `json:"poolUsedIops,omitempty,string"`
 	// PoolUsedThroughput: [Output Only] Sum of all the disks' provisioned
 	// throughput in MB/s.
@@ -50290,6 +50516,30 @@ func (s *UpcomingMaintenance) MarshalJSON() ([]byte, error) {
 type UrlMap struct {
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text format.
 	CreationTimestamp string `json:"creationTimestamp,omitempty"`
+	// DefaultCustomErrorResponsePolicy: defaultCustomErrorResponsePolicy specifies
+	// how the Load Balancer returns error responses when BackendServiceor
+	// BackendBucket responds with an error. This policy takes effect at the load
+	// balancer level and applies only when no policy has been defined for the
+	// error code at lower levels like PathMatcher, RouteRule and PathRule within
+	// this UrlMap. For example, consider a UrlMap with the following
+	// configuration: - defaultCustomErrorResponsePolicy containing policies for
+	// responding to 5xx and 4xx errors - A PathMatcher configured for
+	// *.example.com has defaultCustomErrorResponsePolicy for 4xx. If a request for
+	// http://www.example.com/ encounters a 404, the policy in
+	// pathMatcher.defaultCustomErrorResponsePolicy will be enforced. When the
+	// request for http://www.example.com/ encounters a 502, the policy in
+	// UrlMap.defaultCustomErrorResponsePolicy will be enforced. When a request
+	// that does not match any host in *.example.com such as
+	// http://www.myotherexample.com/, encounters a 404,
+	// UrlMap.defaultCustomErrorResponsePolicy takes effect. When used in
+	// conjunction with defaultRouteAction.retryPolicy, retries take precedence.
+	// Only once all retries are exhausted, the defaultCustomErrorResponsePolicy is
+	// applied. While attempting a retry, if load balancer is successful in
+	// reaching the service, the defaultCustomErrorResponsePolicy is ignored and
+	// the response from the service is returned to the client.
+	// defaultCustomErrorResponsePolicy is supported only for global external
+	// Application Load Balancers.
+	DefaultCustomErrorResponsePolicy *CustomErrorResponsePolicy `json:"defaultCustomErrorResponsePolicy,omitempty"`
 	// DefaultRouteAction: defaultRouteAction takes effect when none of the
 	// hostRules match. The load balancer performs advanced routing actions, such
 	// as URL rewrites and header transformations, before forwarding the request to

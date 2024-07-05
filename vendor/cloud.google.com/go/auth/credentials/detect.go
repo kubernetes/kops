@@ -37,6 +37,9 @@ const (
 	googleAuthURL  = "https://accounts.google.com/o/oauth2/auth"
 	googleTokenURL = "https://oauth2.googleapis.com/token"
 
+	// GoogleMTLSTokenURL is Google's default OAuth2.0 mTLS endpoint.
+	GoogleMTLSTokenURL = "https://oauth2.mtls.googleapis.com/token"
+
 	// Help on default credentials
 	adcSetupURL = "https://cloud.google.com/docs/authentication/external/set-up-adc"
 )
