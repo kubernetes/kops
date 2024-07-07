@@ -1,5 +1,6 @@
 module k8s.io/kops
 
+// This should be kept in sync with cloudbuild.yaml and the other go.mod files
 go 1.22.5
 
 require (
