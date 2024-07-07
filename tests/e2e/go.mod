@@ -19,7 +19,7 @@ require (
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kops v1.28.2
 	k8s.io/release v0.16.4
-	sigs.k8s.io/boskos v0.0.0-20230524062849-a7ef97ee445d
+	sigs.k8s.io/boskos v0.0.0-20240624145324-1e4de26c366a
 	sigs.k8s.io/kubetest2 v0.0.0-20231218114518-71238a9645df
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -93,6 +93,7 @@ require (
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220228164355-396b2034c795 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/bombsimon/logrusr/v4 v4.1.0 // indirect
 	github.com/buildkite/agent/v3 v3.49.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220119192733-fe33c00cee21 // indirect
@@ -300,11 +301,12 @@ require (
 	k8s.io/cloud-provider-gcp/providers v0.28.2 // indirect
 	k8s.io/component-base v0.30.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20240430033511-f0e62f92d13f // indirect
-	k8s.io/test-infra v0.0.0-20220913174101-46ac1a6cf806 // indirect
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0 // indirect
 	sigs.k8s.io/bom v0.5.2-0.20230519223618-1ebaa9ce375f // indirect
+	sigs.k8s.io/controller-runtime v0.18.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/promo-tools/v3 v3.6.0 // indirect
+	sigs.k8s.io/prow v0.0.0-20240619181241-cfb8754e0459 // indirect
 	sigs.k8s.io/release-sdk v0.10.3 // indirect
 	sigs.k8s.io/release-utils v0.7.7 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
