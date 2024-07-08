@@ -154,9 +154,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 
 			if len(b.SSHPublicKeys) > 0 {
+				sshUsername := "admin"
+				if strings.Contains(ig.Spec.Image, "ubuntu") {
+					sshUsername = "ubuntu"
+				}
 				var gFmtKeys []string
 				for _, key := range b.SSHPublicKeys {
-					gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+					gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", sshUsername, key))
 				}
 
 				t.Metadata["ssh-keys"] = fi.NewStringResource(strings.Join(gFmtKeys, "\n"))
