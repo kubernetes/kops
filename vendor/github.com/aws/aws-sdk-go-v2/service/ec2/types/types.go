@@ -990,7 +990,31 @@ type ByoipCidr struct {
 	// [Local Zones]: https://docs.aws.amazon.com/local-zones/latest/ug/how-local-zones-work.html
 	NetworkBorderGroup *string
 
-	// The state of the address pool.
+	// The state of the address range.
+	//
+	//   - advertised : The address range is being advertised to the internet by Amazon
+	//   Web Services.
+	//
+	//   - deprovisioned : The address range is deprovisioned.
+	//
+	//   - failed-deprovision : The request to deprovision the address range was
+	//   unsuccessful. Ensure that all EIPs from the range have been deallocated and try
+	//   again.
+	//
+	//   - failed-provision : The request to provision the address range was
+	//   unsuccessful.
+	//
+	//   - pending-deprovision : You’ve submitted a request to deprovision an address
+	//   range and it's pending.
+	//
+	//   - pending-provision : You’ve submitted a request to provision an address range
+	//   and it's pending.
+	//
+	//   - provisioned : The address range is provisioned and can be advertised. The
+	//   range is not currently advertised.
+	//
+	//   - provisioned-not-publicly-advertisable : The address range is provisioned and
+	//   cannot be advertised.
 	State ByoipCidrState
 
 	// Upon success, contains the ID of the address pool. Otherwise, contains an error
@@ -7288,7 +7312,7 @@ type InstanceRequirements struct {
 	//
 	// The parameter accepts an integer, which Amazon EC2 interprets as a percentage.
 	//
-	// If you set DesiredCapacityType to vcpu or memory-mib , the price protection
+	// If you set TargetCapacityUnitType to vcpu or memory-mib , the price protection
 	// threshold is based on the per vCPU or per memory price instead of the per
 	// instance price.
 	//
@@ -7647,7 +7671,7 @@ type InstanceRequirementsRequest struct {
 	//
 	// The parameter accepts an integer, which Amazon EC2 interprets as a percentage.
 	//
-	// If you set DesiredCapacityType to vcpu or memory-mib , the price protection
+	// If you set TargetCapacityUnitType to vcpu or memory-mib , the price protection
 	// threshold is based on the per vCPU or per memory price instead of the per
 	// instance price.
 	//
@@ -8375,8 +8399,12 @@ type IpamDiscoveredPublicAddress struct {
 	// The resource discovery ID.
 	IpamResourceDiscoveryId *string
 
-	// The network border group that the resource that the IP address is assigned to
-	// is in.
+	// The Availability Zone (AZ) or Local Zone (LZ) network border group that the
+	// resource that the IP address is assigned to is in. Defaults to an AZ network
+	// border group. For more information on available Local Zones, see [Local Zone availability]in the Amazon
+	// EC2 User Guide.
+	//
+	// [Local Zone availability]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-byoip.html#byoip-zone-avail
 	NetworkBorderGroup *string
 
 	// The description of the network interface that IP address is assigned to.
@@ -8420,6 +8448,9 @@ type IpamDiscoveredPublicAddress struct {
 // the resource.
 type IpamDiscoveredResourceCidr struct {
 
+	// The Availability Zone ID.
+	AvailabilityZoneId *string
+
 	// The percentage of IP address space in use. To convert the decimal to a
 	// percentage, multiply the decimal by 100. Note the following:
 	//
@@ -8438,6 +8469,9 @@ type IpamDiscoveredResourceCidr struct {
 
 	// The resource discovery ID.
 	IpamResourceDiscoveryId *string
+
+	// For elastic IP addresses, this is the status of an attached network interface.
+	NetworkInterfaceAttachmentStatus IpamNetworkInterfaceAttachmentStatus
 
 	// The resource CIDR.
 	ResourceCidr *string
@@ -8591,13 +8625,13 @@ type IpamPool struct {
 	IpamScopeType IpamScopeType
 
 	// The locale of the IPAM pool. In IPAM, the locale is the Amazon Web Services
-	// Region where you want to make an IPAM pool available for allocations. Only
-	// resources in the same Region as the locale of the pool can get IP address
-	// allocations from the pool. You can only allocate a CIDR for a VPC, for example,
-	// from an IPAM pool that shares a locale with the VPC’s Region. Note that once you
-	// choose a Locale for a pool, you cannot modify it. If you choose an Amazon Web
-	// Services Region for locale that has not been configured as an operating Region
-	// for the IPAM, you'll get an error.
+	// Region or, for IPAM IPv4 pools in the public scope, the network border group for
+	// an Amazon Web Services Local Zone where you want to make an IPAM pool available
+	// for allocations ([supported Local Zones] ). If you choose an Amazon Web Services Region for locale that
+	// has not been configured as an operating Region for the IPAM, you'll get an
+	// error.
+	//
+	// [supported Local Zones]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-byoip.html#byoip-zone-avail
 	Locale *string
 
 	// The Amazon Web Services account ID of the owner of the IPAM pool.
@@ -8786,6 +8820,9 @@ type IpamPublicAddressTags struct {
 
 // The CIDR for an IPAM resource.
 type IpamResourceCidr struct {
+
+	// The Availability Zone ID.
+	AvailabilityZoneId *string
 
 	// The compliance status of the IPAM resource. For more information on compliance
 	// statuses, see [Monitor CIDR usage by resource]in the Amazon VPC IPAM User Guide.

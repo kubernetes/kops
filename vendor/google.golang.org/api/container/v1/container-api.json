@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240608",
+  "revision": "20240619",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2592,14 +2592,14 @@
       "properties": {
         "maxPodsPerNode": {
           "$ref": "MaxPodsConstraint",
-          "description": "The maximum number of pods per node which use this pod network"
+          "description": "The maximum number of pods per node which use this pod network."
         },
         "secondaryPodRange": {
-          "description": "The name of the secondary range on the subnet which provides IP address for this pod range",
+          "description": "The name of the secondary range on the subnet which provides IP address for this pod range.",
           "type": "string"
         },
         "subnetwork": {
-          "description": "Name of the subnetwork where the additional pod network belongs",
+          "description": "Name of the subnetwork where the additional pod network belongs.",
           "type": "string"
         }
       },
@@ -2675,6 +2675,10 @@
         "networkPolicyConfig": {
           "$ref": "NetworkPolicyConfig",
           "description": "Configuration for NetworkPolicy. This only tracks whether the addon is enabled or not on the Master, it does not track whether network policy is enabled for the nodes."
+        },
+        "rayOperatorConfig": {
+          "$ref": "RayOperatorConfig",
+          "description": "Optional. Configuration for Ray Operator addon."
         },
         "statefulHaConfig": {
           "$ref": "StatefulHAConfig",
@@ -6268,6 +6272,47 @@
           "format": "double",
           "readOnly": true,
           "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "RayClusterLoggingConfig": {
+      "description": "RayClusterLoggingConfig specifies configuration of Ray logging.",
+      "id": "RayClusterLoggingConfig",
+      "properties": {
+        "enabled": {
+          "description": "Enable log collection for Ray clusters.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "RayClusterMonitoringConfig": {
+      "description": "RayClusterMonitoringConfig specifies monitoring configuration for Ray clusters.",
+      "id": "RayClusterMonitoringConfig",
+      "properties": {
+        "enabled": {
+          "description": "Enable metrics collection for Ray clusters.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "RayOperatorConfig": {
+      "description": "Configuration options for the Ray Operator add-on.",
+      "id": "RayOperatorConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the Ray Operator addon is enabled for this cluster.",
+          "type": "boolean"
+        },
+        "rayClusterLoggingConfig": {
+          "$ref": "RayClusterLoggingConfig",
+          "description": "Optional. Logging configuration for Ray clusters."
+        },
+        "rayClusterMonitoringConfig": {
+          "$ref": "RayClusterMonitoringConfig",
+          "description": "Optional. Monitoring configuration for Ray clusters."
         }
       },
       "type": "object"

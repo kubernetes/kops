@@ -1876,6 +1876,9 @@ type AttachPrivateNetworkRequest struct {
 	// Deprecated: IpamConfig: for internal use only.
 	// Precisely one of StaticConfig, DHCPConfig, IpamConfig must be set.
 	IpamConfig *PrivateNetworkIpamConfig `json:"ipam_config,omitempty"`
+
+	// IpamIDs: iPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network. In the future, it will be possible to specify multiple IPs in this field (IPv4 and IPv6), for now only one ID of an IPv4 address is expected. When null, a new private IP address is created for the Load Balancer on this Private Network.
+	IpamIDs []string `json:"ipam_ids"`
 }
 
 // CreateACLRequest: Add an ACL to a Load Balancer frontend.
@@ -3402,6 +3405,9 @@ type ZonedAPIAttachPrivateNetworkRequest struct {
 	// Deprecated: IpamConfig: for internal use only.
 	// Precisely one of StaticConfig, DHCPConfig, IpamConfig must be set.
 	IpamConfig *PrivateNetworkIpamConfig `json:"ipam_config,omitempty"`
+
+	// IpamIDs: iPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network. In the future, it will be possible to specify multiple IPs in this field (IPv4 and IPv6), for now only one ID of an IPv4 address is expected. When null, a new private IP address is created for the Load Balancer on this Private Network.
+	IpamIDs []string `json:"ipam_ids"`
 }
 
 // ZonedAPICreateACLRequest: Add an ACL to a Load Balancer frontend.

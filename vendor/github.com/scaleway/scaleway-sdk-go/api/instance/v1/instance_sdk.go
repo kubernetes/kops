@@ -1234,9 +1234,9 @@ type Bootscript struct {
 	// Title: bootscript title.
 	Title string `json:"title"`
 
-	// Arch: bootscript architecture.
+	// Architecture: bootscript architecture.
 	// Default value: unknown_arch
-	Arch Arch `json:"arch"`
+	Architecture Arch `json:"architecture"`
 
 	// Zone: zone in which the bootscript is located.
 	Zone scw.Zone `json:"zone"`
@@ -3883,6 +3883,7 @@ type UpdateServerRequest struct {
 	// CommercialType: warning: This field has some restrictions:
 	// - Cannot be changed if the Instance is not in `stopped` state.
 	// - Cannot be changed if the Instance is in a placement group.
+	// - Cannot be changed from/to a Windows offer to/from a Linux offer.
 	// - Local storage requirements of the target commercial_types must be fulfilled (i.e. if an Instance has 80GB of local storage, it can be changed into a GP1-XS, which has a maximum of 150GB, but it cannot be changed into a DEV1-S, which has only 20GB).
 	CommercialType *string `json:"commercial_type,omitempty"`
 

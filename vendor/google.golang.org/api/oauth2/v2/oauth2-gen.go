@@ -233,9 +233,9 @@ type Tokeninfo struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Tokeninfo) MarshalJSON() ([]byte, error) {
+func (s Tokeninfo) MarshalJSON() ([]byte, error) {
 	type NoMethod Tokeninfo
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type Userinfo struct {
@@ -280,9 +280,9 @@ type Userinfo struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Userinfo) MarshalJSON() ([]byte, error) {
+func (s Userinfo) MarshalJSON() ([]byte, error) {
 	type NoMethod Userinfo
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type TokeninfoCall struct {
