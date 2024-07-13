@@ -53,9 +53,10 @@ var (
 	ErrUnsupportedAlgorithm = errors.New("go-jose/go-jose: unknown/unsupported algorithm")
 
 	// ErrUnsupportedKeyType indicates that the given key type/format is not
-	// supported. This occurs when trying to instantiate an encrypter and passing
-	// it a key of an unrecognized type or with unsupported parameters, such as
-	// an RSA private key with more than two primes.
+	// supported. This occurs when parsing a JWK with an unsupported key type (kty),
+	// or instantiating a signer or encrypter with an unsupported key type in Go
+	// (e.g. *dsa.PrivateKey), or a key type in Go that doesn't match the requested
+	// algorithm.
 	ErrUnsupportedKeyType = errors.New("go-jose/go-jose: unsupported key type/format")
 
 	// ErrInvalidKeySize indicates that the given key is not the correct size

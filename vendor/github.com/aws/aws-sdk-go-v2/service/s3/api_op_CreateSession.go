@@ -124,7 +124,7 @@ func (in *CreateSessionInput) bindEndpointParams(p *EndpointParameters) {
 
 type CreateSessionOutput struct {
 
-	// The established temporary security credentials for the created session..
+	// The established temporary security credentials for the created session.
 	//
 	// This member is required.
 	Credentials *types.SessionCredentials

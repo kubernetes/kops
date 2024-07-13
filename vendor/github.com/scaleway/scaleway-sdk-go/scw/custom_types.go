@@ -448,3 +448,15 @@ func EncodeJSONObject(v JSONObject, escape EscapeMode) (string, error) {
 
 	panic(fmt.Sprintf("EncodeJSONObject called with unknown EscapeMode, %v", escape))
 }
+
+// Decimal is a representation of a decimal value, such as 2.5.
+// Comparable to language-native decimal formats, such as Java's BigDecimal or
+// Python's decimal.Decimal.
+// Lookup protobuf google.type.Decimal for details.
+type Decimal string
+
+var _ fmt.Stringer = (*Decimal)(nil)
+
+func (d Decimal) String() string {
+	return string(d)
+}

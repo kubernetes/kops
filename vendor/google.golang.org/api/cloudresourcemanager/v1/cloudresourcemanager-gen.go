@@ -238,9 +238,9 @@ type Ancestor struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Ancestor) MarshalJSON() ([]byte, error) {
+func (s Ancestor) MarshalJSON() ([]byte, error) {
 	type NoMethod Ancestor
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AuditConfig: Specifies the audit configuration for a service. The
@@ -279,9 +279,9 @@ type AuditConfig struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AuditConfig) MarshalJSON() ([]byte, error) {
+func (s AuditConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditConfig
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AuditLogConfig: Provides the configuration for logging a type of
@@ -314,9 +314,9 @@ type AuditLogConfig struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AuditLogConfig) MarshalJSON() ([]byte, error) {
+func (s AuditLogConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditLogConfig
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Binding: Associates `members`, or principals, with a `role`.
@@ -413,9 +413,9 @@ type Binding struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Binding) MarshalJSON() ([]byte, error) {
+func (s Binding) MarshalJSON() ([]byte, error) {
 	type NoMethod Binding
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // BooleanConstraint: A `Constraint` that is either enforced or not. For
@@ -467,9 +467,9 @@ type BooleanPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *BooleanPolicy) MarshalJSON() ([]byte, error) {
+func (s BooleanPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod BooleanPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ClearOrgPolicyRequest: The request sent to the ClearOrgPolicy method.
@@ -492,9 +492,9 @@ type ClearOrgPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ClearOrgPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s ClearOrgPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod ClearOrgPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CloudresourcemanagerGoogleCloudResourcemanagerV2alpha1FolderOperation:
@@ -528,9 +528,9 @@ type CloudresourcemanagerGoogleCloudResourcemanagerV2alpha1FolderOperation struc
 	NullFields []string `json:"-"`
 }
 
-func (s *CloudresourcemanagerGoogleCloudResourcemanagerV2alpha1FolderOperation) MarshalJSON() ([]byte, error) {
+func (s CloudresourcemanagerGoogleCloudResourcemanagerV2alpha1FolderOperation) MarshalJSON() ([]byte, error) {
 	type NoMethod CloudresourcemanagerGoogleCloudResourcemanagerV2alpha1FolderOperation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CloudresourcemanagerGoogleCloudResourcemanagerV2beta1FolderOperation:
@@ -564,9 +564,9 @@ type CloudresourcemanagerGoogleCloudResourcemanagerV2beta1FolderOperation struct
 	NullFields []string `json:"-"`
 }
 
-func (s *CloudresourcemanagerGoogleCloudResourcemanagerV2beta1FolderOperation) MarshalJSON() ([]byte, error) {
+func (s CloudresourcemanagerGoogleCloudResourcemanagerV2beta1FolderOperation) MarshalJSON() ([]byte, error) {
 	type NoMethod CloudresourcemanagerGoogleCloudResourcemanagerV2beta1FolderOperation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Constraint: A `Constraint` describes a way in which a resource's
@@ -621,9 +621,9 @@ type Constraint struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Constraint) MarshalJSON() ([]byte, error) {
+func (s Constraint) MarshalJSON() ([]byte, error) {
 	type NoMethod Constraint
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CreateFolderMetadata: Metadata pertaining to the Folder creation process.
@@ -646,9 +646,9 @@ type CreateFolderMetadata struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CreateFolderMetadata) MarshalJSON() ([]byte, error) {
+func (s CreateFolderMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod CreateFolderMetadata
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CreateProjectMetadata: A status object which is used as the `metadata` field
@@ -676,9 +676,9 @@ type CreateProjectMetadata struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *CreateProjectMetadata) MarshalJSON() ([]byte, error) {
+func (s CreateProjectMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod CreateProjectMetadata
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CreateTagBindingMetadata: Runtime operation information for creating a
@@ -776,9 +776,9 @@ type Expr struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Expr) MarshalJSON() ([]byte, error) {
+func (s Expr) MarshalJSON() ([]byte, error) {
 	type NoMethod Expr
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // FolderOperation: Metadata describing a long running folder operation
@@ -811,9 +811,9 @@ type FolderOperation struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FolderOperation) MarshalJSON() ([]byte, error) {
+func (s FolderOperation) MarshalJSON() ([]byte, error) {
 	type NoMethod FolderOperation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // FolderOperationError: A classification of the Folder Operation error.
@@ -853,9 +853,9 @@ type FolderOperationError struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *FolderOperationError) MarshalJSON() ([]byte, error) {
+func (s FolderOperationError) MarshalJSON() ([]byte, error) {
 	type NoMethod FolderOperationError
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GetAncestryRequest: The request sent to the GetAncestry method.
@@ -884,9 +884,9 @@ type GetAncestryResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GetAncestryResponse) MarshalJSON() ([]byte, error) {
+func (s GetAncestryResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod GetAncestryResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GetEffectiveOrgPolicyRequest: The request sent to the GetEffectiveOrgPolicy
@@ -907,9 +907,9 @@ type GetEffectiveOrgPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GetEffectiveOrgPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s GetEffectiveOrgPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GetEffectiveOrgPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GetIamPolicyRequest: Request message for `GetIamPolicy` method.
@@ -930,9 +930,9 @@ type GetIamPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GetIamPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s GetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GetIamPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GetOrgPolicyRequest: The request sent to the GetOrgPolicy method.
@@ -952,9 +952,9 @@ type GetOrgPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GetOrgPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s GetOrgPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod GetOrgPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GetPolicyOptions: Encapsulates settings provided to GetIamPolicy.
@@ -984,9 +984,9 @@ type GetPolicyOptions struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GetPolicyOptions) MarshalJSON() ([]byte, error) {
+func (s GetPolicyOptions) MarshalJSON() ([]byte, error) {
 	type NoMethod GetPolicyOptions
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Lien: A Lien represents an encumbrance on the actions that can be performed
@@ -1031,9 +1031,9 @@ type Lien struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Lien) MarshalJSON() ([]byte, error) {
+func (s Lien) MarshalJSON() ([]byte, error) {
 	type NoMethod Lien
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListAvailableOrgPolicyConstraintsRequest: The request sent to the
@@ -1061,9 +1061,9 @@ type ListAvailableOrgPolicyConstraintsRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListAvailableOrgPolicyConstraintsRequest) MarshalJSON() ([]byte, error) {
+func (s ListAvailableOrgPolicyConstraintsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod ListAvailableOrgPolicyConstraintsRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListAvailableOrgPolicyConstraintsResponse: The response returned from the
@@ -1093,9 +1093,9 @@ type ListAvailableOrgPolicyConstraintsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListAvailableOrgPolicyConstraintsResponse) MarshalJSON() ([]byte, error) {
+func (s ListAvailableOrgPolicyConstraintsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListAvailableOrgPolicyConstraintsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListConstraint: A `Constraint` that allows or disallows a list of string
@@ -1123,9 +1123,9 @@ type ListConstraint struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListConstraint) MarshalJSON() ([]byte, error) {
+func (s ListConstraint) MarshalJSON() ([]byte, error) {
 	type NoMethod ListConstraint
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListLiensResponse: The response message for Liens.ListLiens.
@@ -1151,9 +1151,9 @@ type ListLiensResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListLiensResponse) MarshalJSON() ([]byte, error) {
+func (s ListLiensResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListLiensResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListOrgPoliciesRequest: The request sent to the ListOrgPolicies method.
@@ -1179,9 +1179,9 @@ type ListOrgPoliciesRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListOrgPoliciesRequest) MarshalJSON() ([]byte, error) {
+func (s ListOrgPoliciesRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod ListOrgPoliciesRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListOrgPoliciesResponse: The response returned from the `ListOrgPolicies`
@@ -1209,9 +1209,9 @@ type ListOrgPoliciesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListOrgPoliciesResponse) MarshalJSON() ([]byte, error) {
+func (s ListOrgPoliciesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListOrgPoliciesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListPolicy: Used in `policy_type` to specify how `list_policy` behaves at
@@ -1324,9 +1324,9 @@ type ListPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListPolicy) MarshalJSON() ([]byte, error) {
+func (s ListPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod ListPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListProjectsResponse: A page of the response received from the ListProjects
@@ -1361,9 +1361,9 @@ type ListProjectsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListProjectsResponse) MarshalJSON() ([]byte, error) {
+func (s ListProjectsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListProjectsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // MoveFolderMetadata: Metadata pertaining to the folder move process.
@@ -1388,9 +1388,9 @@ type MoveFolderMetadata struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *MoveFolderMetadata) MarshalJSON() ([]byte, error) {
+func (s MoveFolderMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod MoveFolderMetadata
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // MoveProjectMetadata: A status object which is used as the `metadata` field
@@ -1440,9 +1440,9 @@ type Operation struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Operation) MarshalJSON() ([]byte, error) {
+func (s Operation) MarshalJSON() ([]byte, error) {
 	type NoMethod Operation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // OrgPolicy: Defines a Cloud Organization `Policy` which is used to specify
@@ -1495,9 +1495,9 @@ type OrgPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *OrgPolicy) MarshalJSON() ([]byte, error) {
+func (s OrgPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod OrgPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Organization: The root node in the resource hierarchy to which a particular
@@ -1544,9 +1544,9 @@ type Organization struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Organization) MarshalJSON() ([]byte, error) {
+func (s Organization) MarshalJSON() ([]byte, error) {
 	type NoMethod Organization
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // OrganizationOwner: The entity that owns an Organization. The lifetime of the
@@ -1569,9 +1569,9 @@ type OrganizationOwner struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *OrganizationOwner) MarshalJSON() ([]byte, error) {
+func (s OrganizationOwner) MarshalJSON() ([]byte, error) {
 	type NoMethod OrganizationOwner
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Policy: An Identity and Access Management (IAM) policy, which specifies
@@ -1661,9 +1661,9 @@ type Policy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Policy) MarshalJSON() ([]byte, error) {
+func (s Policy) MarshalJSON() ([]byte, error) {
 	type NoMethod Policy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Project: A Project is a high-level Google Cloud Platform entity. It is a
@@ -1732,9 +1732,9 @@ type Project struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Project) MarshalJSON() ([]byte, error) {
+func (s Project) MarshalJSON() ([]byte, error) {
 	type NoMethod Project
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ProjectCreationStatus: A status object which is used as the `metadata` field
@@ -1762,9 +1762,9 @@ type ProjectCreationStatus struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ProjectCreationStatus) MarshalJSON() ([]byte, error) {
+func (s ProjectCreationStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod ProjectCreationStatus
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ResourceId: A container to reference an id for any resource type. A
@@ -1792,9 +1792,9 @@ type ResourceId struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ResourceId) MarshalJSON() ([]byte, error) {
+func (s ResourceId) MarshalJSON() ([]byte, error) {
 	type NoMethod ResourceId
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // RestoreDefault: Ignores policies set above this resource and restores the
@@ -1843,9 +1843,9 @@ type SearchOrganizationsRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SearchOrganizationsRequest) MarshalJSON() ([]byte, error) {
+func (s SearchOrganizationsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SearchOrganizationsRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SearchOrganizationsResponse: The response returned from the
@@ -1876,9 +1876,9 @@ type SearchOrganizationsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SearchOrganizationsResponse) MarshalJSON() ([]byte, error) {
+func (s SearchOrganizationsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod SearchOrganizationsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SetIamPolicyRequest: Request message for `SetIamPolicy` method.
@@ -1905,9 +1905,9 @@ type SetIamPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SetIamPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SetOrgPolicyRequest: The request sent to the SetOrgPolicyRequest method.
@@ -1927,9 +1927,9 @@ type SetOrgPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SetOrgPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s SetOrgPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SetOrgPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Status: The `Status` type defines a logical error model that is suitable for
@@ -1961,9 +1961,9 @@ type Status struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Status) MarshalJSON() ([]byte, error) {
+func (s Status) MarshalJSON() ([]byte, error) {
 	type NoMethod Status
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TestIamPermissionsRequest: Request message for `TestIamPermissions` method.
@@ -1986,9 +1986,9 @@ type TestIamPermissionsRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
+func (s TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod TestIamPermissionsRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TestIamPermissionsResponse: Response message for `TestIamPermissions`
@@ -2013,9 +2013,9 @@ type TestIamPermissionsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
+func (s TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod TestIamPermissionsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // UndeleteFolderMetadata: A status object which is used as the `metadata`

@@ -3,46 +3,9 @@
 
 // Code generated from semantic convention specification. DO NOT EDIT.
 
-package semconv // import "go.opentelemetry.io/otel/semconv/v1.25.0"
+package semconv // import "go.opentelemetry.io/otel/semconv/v1.24.0"
 
 const (
-
-	// ContainerCPUTime is the metric conforming to the "container.cpu.time"
-	// semantic conventions. It represents the total CPU time consumed.
-	// Instrument: counter
-	// Unit: s
-	// Stability: Experimental
-	ContainerCPUTimeName        = "container.cpu.time"
-	ContainerCPUTimeUnit        = "s"
-	ContainerCPUTimeDescription = "Total CPU time consumed"
-
-	// ContainerMemoryUsage is the metric conforming to the
-	// "container.memory.usage" semantic conventions. It represents the memory
-	// usage of the container.
-	// Instrument: counter
-	// Unit: By
-	// Stability: Experimental
-	ContainerMemoryUsageName        = "container.memory.usage"
-	ContainerMemoryUsageUnit        = "By"
-	ContainerMemoryUsageDescription = "Memory usage of the container."
-
-	// ContainerDiskIo is the metric conforming to the "container.disk.io" semantic
-	// conventions. It represents the disk bytes for the container.
-	// Instrument: counter
-	// Unit: By
-	// Stability: Experimental
-	ContainerDiskIoName        = "container.disk.io"
-	ContainerDiskIoUnit        = "By"
-	ContainerDiskIoDescription = "Disk bytes for the container."
-
-	// ContainerNetworkIo is the metric conforming to the "container.network.io"
-	// semantic conventions. It represents the network bytes for the container.
-	// Instrument: counter
-	// Unit: By
-	// Stability: Experimental
-	ContainerNetworkIoName        = "container.network.io"
-	ContainerNetworkIoUnit        = "By"
-	ContainerNetworkIoDescription = "Network bytes for the container."
 
 	// DBClientConnectionsUsage is the metric conforming to the
 	// "db.client.connections.usage" semantic conventions. It represents the number
@@ -137,22 +100,12 @@ const (
 	DBClientConnectionsUseTimeUnit        = "ms"
 	DBClientConnectionsUseTimeDescription = "The time between borrowing a connection and returning it to the pool"
 
-	// DNSLookupDuration is the metric conforming to the "dns.lookup.duration"
-	// semantic conventions. It represents the measures the time taken to perform a
-	// DNS lookup.
-	// Instrument: histogram
-	// Unit: s
-	// Stability: Experimental
-	DNSLookupDurationName        = "dns.lookup.duration"
-	DNSLookupDurationUnit        = "s"
-	DNSLookupDurationDescription = "Measures the time taken to perform a DNS lookup."
-
 	// AspnetcoreRoutingMatchAttempts is the metric conforming to the
 	// "aspnetcore.routing.match_attempts" semantic conventions. It represents the
 	// number of requests that were attempted to be matched to an endpoint.
 	// Instrument: counter
 	// Unit: {match_attempt}
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreRoutingMatchAttemptsName        = "aspnetcore.routing.match_attempts"
 	AspnetcoreRoutingMatchAttemptsUnit        = "{match_attempt}"
 	AspnetcoreRoutingMatchAttemptsDescription = "Number of requests that were attempted to be matched to an endpoint."
@@ -162,7 +115,7 @@ const (
 	// number of exceptions caught by exception handling middleware.
 	// Instrument: counter
 	// Unit: {exception}
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreDiagnosticsExceptionsName        = "aspnetcore.diagnostics.exceptions"
 	AspnetcoreDiagnosticsExceptionsUnit        = "{exception}"
 	AspnetcoreDiagnosticsExceptionsDescription = "Number of exceptions caught by exception handling middleware."
@@ -173,7 +126,7 @@ const (
 	// that hold a rate limiting lease.
 	// Instrument: updowncounter
 	// Unit: {request}
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreRateLimitingActiveRequestLeasesName        = "aspnetcore.rate_limiting.active_request_leases"
 	AspnetcoreRateLimitingActiveRequestLeasesUnit        = "{request}"
 	AspnetcoreRateLimitingActiveRequestLeasesDescription = "Number of requests that are currently active on the server that hold a rate limiting lease."
@@ -184,7 +137,7 @@ const (
 	// server.
 	// Instrument: histogram
 	// Unit: s
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreRateLimitingRequestLeaseDurationName        = "aspnetcore.rate_limiting.request_lease.duration"
 	AspnetcoreRateLimitingRequestLeaseDurationUnit        = "s"
 	AspnetcoreRateLimitingRequestLeaseDurationDescription = "The duration of rate limiting lease held by requests on the server."
@@ -195,7 +148,7 @@ const (
 	// limiting lease.
 	// Instrument: histogram
 	// Unit: s
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreRateLimitingRequestTimeInQueueName        = "aspnetcore.rate_limiting.request.time_in_queue"
 	AspnetcoreRateLimitingRequestTimeInQueueUnit        = "s"
 	AspnetcoreRateLimitingRequestTimeInQueueDescription = "The time the request spent in a queue waiting to acquire a rate limiting lease."
@@ -206,7 +159,7 @@ const (
 	// acquire a rate limiting lease.
 	// Instrument: updowncounter
 	// Unit: {request}
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreRateLimitingQueuedRequestsName        = "aspnetcore.rate_limiting.queued_requests"
 	AspnetcoreRateLimitingQueuedRequestsUnit        = "{request}"
 	AspnetcoreRateLimitingQueuedRequestsDescription = "Number of requests that are currently queued, waiting to acquire a rate limiting lease."
@@ -216,17 +169,69 @@ const (
 	// number of requests that tried to acquire a rate limiting lease.
 	// Instrument: counter
 	// Unit: {request}
-	// Stability: Stable
+	// Stability: Experimental
 	AspnetcoreRateLimitingRequestsName        = "aspnetcore.rate_limiting.requests"
 	AspnetcoreRateLimitingRequestsUnit        = "{request}"
 	AspnetcoreRateLimitingRequestsDescription = "Number of requests that tried to acquire a rate limiting lease."
+
+	// DNSLookupDuration is the metric conforming to the "dns.lookup.duration"
+	// semantic conventions. It represents the measures the time taken to perform a
+	// DNS lookup.
+	// Instrument: histogram
+	// Unit: s
+	// Stability: Experimental
+	DNSLookupDurationName        = "dns.lookup.duration"
+	DNSLookupDurationUnit        = "s"
+	DNSLookupDurationDescription = "Measures the time taken to perform a DNS lookup."
+
+	// HTTPClientOpenConnections is the metric conforming to the
+	// "http.client.open_connections" semantic conventions. It represents the
+	// number of outbound HTTP connections that are currently active or idle on the
+	// client.
+	// Instrument: updowncounter
+	// Unit: {connection}
+	// Stability: Experimental
+	HTTPClientOpenConnectionsName        = "http.client.open_connections"
+	HTTPClientOpenConnectionsUnit        = "{connection}"
+	HTTPClientOpenConnectionsDescription = "Number of outbound HTTP connections that are currently active or idle on the client."
+
+	// HTTPClientConnectionDuration is the metric conforming to the
+	// "http.client.connection.duration" semantic conventions. It represents the
+	// duration of the successfully established outbound HTTP connections.
+	// Instrument: histogram
+	// Unit: s
+	// Stability: Experimental
+	HTTPClientConnectionDurationName        = "http.client.connection.duration"
+	HTTPClientConnectionDurationUnit        = "s"
+	HTTPClientConnectionDurationDescription = "The duration of the successfully established outbound HTTP connections."
+
+	// HTTPClientActiveRequests is the metric conforming to the
+	// "http.client.active_requests" semantic conventions. It represents the number
+	// of active HTTP requests.
+	// Instrument: updowncounter
+	// Unit: {request}
+	// Stability: Experimental
+	HTTPClientActiveRequestsName        = "http.client.active_requests"
+	HTTPClientActiveRequestsUnit        = "{request}"
+	HTTPClientActiveRequestsDescription = "Number of active HTTP requests."
+
+	// HTTPClientRequestTimeInQueue is the metric conforming to the
+	// "http.client.request.time_in_queue" semantic conventions. It represents the
+	// amount of time requests spent on a queue waiting for an available
+	// connection.
+	// Instrument: histogram
+	// Unit: s
+	// Stability: Experimental
+	HTTPClientRequestTimeInQueueName        = "http.client.request.time_in_queue"
+	HTTPClientRequestTimeInQueueUnit        = "s"
+	HTTPClientRequestTimeInQueueDescription = "The amount of time requests spent on a queue waiting for an available connection."
 
 	// KestrelActiveConnections is the metric conforming to the
 	// "kestrel.active_connections" semantic conventions. It represents the number
 	// of connections that are currently active on the server.
 	// Instrument: updowncounter
 	// Unit: {connection}
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelActiveConnectionsName        = "kestrel.active_connections"
 	KestrelActiveConnectionsUnit        = "{connection}"
 	KestrelActiveConnectionsDescription = "Number of connections that are currently active on the server."
@@ -236,7 +241,7 @@ const (
 	// duration of connections on the server.
 	// Instrument: histogram
 	// Unit: s
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelConnectionDurationName        = "kestrel.connection.duration"
 	KestrelConnectionDurationUnit        = "s"
 	KestrelConnectionDurationDescription = "The duration of connections on the server."
@@ -246,7 +251,7 @@ const (
 	// number of connections rejected by the server.
 	// Instrument: counter
 	// Unit: {connection}
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelRejectedConnectionsName        = "kestrel.rejected_connections"
 	KestrelRejectedConnectionsUnit        = "{connection}"
 	KestrelRejectedConnectionsDescription = "Number of connections rejected by the server."
@@ -256,7 +261,7 @@ const (
 	// of connections that are currently queued and are waiting to start.
 	// Instrument: updowncounter
 	// Unit: {connection}
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelQueuedConnectionsName        = "kestrel.queued_connections"
 	KestrelQueuedConnectionsUnit        = "{connection}"
 	KestrelQueuedConnectionsDescription = "Number of connections that are currently queued and are waiting to start."
@@ -267,7 +272,7 @@ const (
 	// currently queued and are waiting to start.
 	// Instrument: updowncounter
 	// Unit: {request}
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelQueuedRequestsName        = "kestrel.queued_requests"
 	KestrelQueuedRequestsUnit        = "{request}"
 	KestrelQueuedRequestsDescription = "Number of HTTP requests on multiplexed connections (HTTP/2 and HTTP/3) that are currently queued and are waiting to start."
@@ -277,7 +282,7 @@ const (
 	// number of connections that are currently upgraded (WebSockets). .
 	// Instrument: updowncounter
 	// Unit: {connection}
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelUpgradedConnectionsName        = "kestrel.upgraded_connections"
 	KestrelUpgradedConnectionsUnit        = "{connection}"
 	KestrelUpgradedConnectionsDescription = "Number of connections that are currently upgraded (WebSockets). ."
@@ -287,7 +292,7 @@ const (
 	// duration of TLS handshakes on the server.
 	// Instrument: histogram
 	// Unit: s
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelTLSHandshakeDurationName        = "kestrel.tls_handshake.duration"
 	KestrelTLSHandshakeDurationUnit        = "s"
 	KestrelTLSHandshakeDurationDescription = "The duration of TLS handshakes on the server."
@@ -297,7 +302,7 @@ const (
 	// number of TLS handshakes that are currently in progress on the server.
 	// Instrument: updowncounter
 	// Unit: {handshake}
-	// Stability: Stable
+	// Stability: Experimental
 	KestrelActiveTLSHandshakesName        = "kestrel.active_tls_handshakes"
 	KestrelActiveTLSHandshakesUnit        = "{handshake}"
 	KestrelActiveTLSHandshakesDescription = "Number of TLS handshakes that are currently in progress on the server."
@@ -307,7 +312,7 @@ const (
 	// duration of connections on the server.
 	// Instrument: histogram
 	// Unit: s
-	// Stability: Stable
+	// Stability: Experimental
 	SignalrServerConnectionDurationName        = "signalr.server.connection.duration"
 	SignalrServerConnectionDurationUnit        = "s"
 	SignalrServerConnectionDurationDescription = "The duration of connections on the server."
@@ -317,7 +322,7 @@ const (
 	// number of connections that are currently active on the server.
 	// Instrument: updowncounter
 	// Unit: {connection}
-	// Stability: Stable
+	// Stability: Experimental
 	SignalrServerActiveConnectionsName        = "signalr.server.active_connections"
 	SignalrServerActiveConnectionsUnit        = "{connection}"
 	SignalrServerActiveConnectionsDescription = "Number of connections that are currently active on the server."
@@ -475,37 +480,6 @@ const (
 	HTTPClientResponseBodySizeName        = "http.client.response.body.size"
 	HTTPClientResponseBodySizeUnit        = "By"
 	HTTPClientResponseBodySizeDescription = "Size of HTTP client response bodies."
-
-	// HTTPClientOpenConnections is the metric conforming to the
-	// "http.client.open_connections" semantic conventions. It represents the
-	// number of outbound HTTP connections that are currently active or idle on the
-	// client.
-	// Instrument: updowncounter
-	// Unit: {connection}
-	// Stability: Experimental
-	HTTPClientOpenConnectionsName        = "http.client.open_connections"
-	HTTPClientOpenConnectionsUnit        = "{connection}"
-	HTTPClientOpenConnectionsDescription = "Number of outbound HTTP connections that are currently active or idle on the client."
-
-	// HTTPClientConnectionDuration is the metric conforming to the
-	// "http.client.connection.duration" semantic conventions. It represents the
-	// duration of the successfully established outbound HTTP connections.
-	// Instrument: histogram
-	// Unit: s
-	// Stability: Experimental
-	HTTPClientConnectionDurationName        = "http.client.connection.duration"
-	HTTPClientConnectionDurationUnit        = "s"
-	HTTPClientConnectionDurationDescription = "The duration of the successfully established outbound HTTP connections."
-
-	// HTTPClientActiveRequests is the metric conforming to the
-	// "http.client.active_requests" semantic conventions. It represents the number
-	// of active HTTP requests.
-	// Instrument: updowncounter
-	// Unit: {request}
-	// Stability: Experimental
-	HTTPClientActiveRequestsName        = "http.client.active_requests"
-	HTTPClientActiveRequestsUnit        = "{request}"
-	HTTPClientActiveRequestsDescription = "Number of active HTTP requests."
 
 	// JvmMemoryInit is the metric conforming to the "jvm.memory.init" semantic
 	// conventions. It represents the measure of initial memory requested.
@@ -699,15 +673,15 @@ const (
 	MessagingReceiveDurationUnit        = "s"
 	MessagingReceiveDurationDescription = "Measures the duration of receive operation."
 
-	// MessagingProcessDuration is the metric conforming to the
-	// "messaging.process.duration" semantic conventions. It represents the
-	// measures the duration of process operation.
+	// MessagingDeliverDuration is the metric conforming to the
+	// "messaging.deliver.duration" semantic conventions. It represents the
+	// measures the duration of deliver operation.
 	// Instrument: histogram
 	// Unit: s
 	// Stability: Experimental
-	MessagingProcessDurationName        = "messaging.process.duration"
-	MessagingProcessDurationUnit        = "s"
-	MessagingProcessDurationDescription = "Measures the duration of process operation."
+	MessagingDeliverDurationName        = "messaging.deliver.duration"
+	MessagingDeliverDurationUnit        = "s"
+	MessagingDeliverDurationDescription = "Measures the duration of deliver operation."
 
 	// MessagingPublishMessages is the metric conforming to the
 	// "messaging.publish.messages" semantic conventions. It represents the
@@ -729,112 +703,15 @@ const (
 	MessagingReceiveMessagesUnit        = "{message}"
 	MessagingReceiveMessagesDescription = "Measures the number of received messages."
 
-	// MessagingProcessMessages is the metric conforming to the
-	// "messaging.process.messages" semantic conventions. It represents the
-	// measures the number of processed messages.
+	// MessagingDeliverMessages is the metric conforming to the
+	// "messaging.deliver.messages" semantic conventions. It represents the
+	// measures the number of delivered messages.
 	// Instrument: counter
 	// Unit: {message}
 	// Stability: Experimental
-	MessagingProcessMessagesName        = "messaging.process.messages"
-	MessagingProcessMessagesUnit        = "{message}"
-	MessagingProcessMessagesDescription = "Measures the number of processed messages."
-
-	// ProcessCPUTime is the metric conforming to the "process.cpu.time" semantic
-	// conventions. It represents the total CPU seconds broken down by different
-	// states.
-	// Instrument: counter
-	// Unit: s
-	// Stability: Experimental
-	ProcessCPUTimeName        = "process.cpu.time"
-	ProcessCPUTimeUnit        = "s"
-	ProcessCPUTimeDescription = "Total CPU seconds broken down by different states."
-
-	// ProcessCPUUtilization is the metric conforming to the
-	// "process.cpu.utilization" semantic conventions. It represents the difference
-	// in process.cpu.time since the last measurement, divided by the elapsed time
-	// and number of CPUs available to the process.
-	// Instrument: gauge
-	// Unit: 1
-	// Stability: Experimental
-	ProcessCPUUtilizationName        = "process.cpu.utilization"
-	ProcessCPUUtilizationUnit        = "1"
-	ProcessCPUUtilizationDescription = "Difference in process.cpu.time since the last measurement, divided by the elapsed time and number of CPUs available to the process."
-
-	// ProcessMemoryUsage is the metric conforming to the "process.memory.usage"
-	// semantic conventions. It represents the amount of physical memory in use.
-	// Instrument: updowncounter
-	// Unit: By
-	// Stability: Experimental
-	ProcessMemoryUsageName        = "process.memory.usage"
-	ProcessMemoryUsageUnit        = "By"
-	ProcessMemoryUsageDescription = "The amount of physical memory in use."
-
-	// ProcessMemoryVirtual is the metric conforming to the
-	// "process.memory.virtual" semantic conventions. It represents the amount of
-	// committed virtual memory.
-	// Instrument: updowncounter
-	// Unit: By
-	// Stability: Experimental
-	ProcessMemoryVirtualName        = "process.memory.virtual"
-	ProcessMemoryVirtualUnit        = "By"
-	ProcessMemoryVirtualDescription = "The amount of committed virtual memory."
-
-	// ProcessDiskIo is the metric conforming to the "process.disk.io" semantic
-	// conventions. It represents the disk bytes transferred.
-	// Instrument: counter
-	// Unit: By
-	// Stability: Experimental
-	ProcessDiskIoName        = "process.disk.io"
-	ProcessDiskIoUnit        = "By"
-	ProcessDiskIoDescription = "Disk bytes transferred."
-
-	// ProcessNetworkIo is the metric conforming to the "process.network.io"
-	// semantic conventions. It represents the network bytes transferred.
-	// Instrument: counter
-	// Unit: By
-	// Stability: Experimental
-	ProcessNetworkIoName        = "process.network.io"
-	ProcessNetworkIoUnit        = "By"
-	ProcessNetworkIoDescription = "Network bytes transferred."
-
-	// ProcessThreadCount is the metric conforming to the "process.thread.count"
-	// semantic conventions. It represents the process threads count.
-	// Instrument: updowncounter
-	// Unit: {thread}
-	// Stability: Experimental
-	ProcessThreadCountName        = "process.thread.count"
-	ProcessThreadCountUnit        = "{thread}"
-	ProcessThreadCountDescription = "Process threads count."
-
-	// ProcessOpenFileDescriptorCount is the metric conforming to the
-	// "process.open_file_descriptor.count" semantic conventions. It represents the
-	// number of file descriptors in use by the process.
-	// Instrument: updowncounter
-	// Unit: {count}
-	// Stability: Experimental
-	ProcessOpenFileDescriptorCountName        = "process.open_file_descriptor.count"
-	ProcessOpenFileDescriptorCountUnit        = "{count}"
-	ProcessOpenFileDescriptorCountDescription = "Number of file descriptors in use by the process."
-
-	// ProcessContextSwitches is the metric conforming to the
-	// "process.context_switches" semantic conventions. It represents the number of
-	// times the process has been context switched.
-	// Instrument: counter
-	// Unit: {count}
-	// Stability: Experimental
-	ProcessContextSwitchesName        = "process.context_switches"
-	ProcessContextSwitchesUnit        = "{count}"
-	ProcessContextSwitchesDescription = "Number of times the process has been context switched."
-
-	// ProcessPagingFaults is the metric conforming to the "process.paging.faults"
-	// semantic conventions. It represents the number of page faults the process
-	// has made.
-	// Instrument: counter
-	// Unit: {fault}
-	// Stability: Experimental
-	ProcessPagingFaultsName        = "process.paging.faults"
-	ProcessPagingFaultsUnit        = "{fault}"
-	ProcessPagingFaultsDescription = "Number of page faults the process has made."
+	MessagingDeliverMessagesName        = "messaging.deliver.messages"
+	MessagingDeliverMessagesUnit        = "{message}"
+	MessagingDeliverMessagesDescription = "Measures the number of delivered messages."
 
 	// RPCServerDuration is the metric conforming to the "rpc.server.duration"
 	// semantic conventions. It represents the measures the duration of inbound
@@ -1161,25 +1038,25 @@ const (
 	SystemNetworkConnectionsName = "system.network.connections"
 	SystemNetworkConnectionsUnit = "{connection}"
 
-	// SystemProcessCount is the metric conforming to the "system.process.count"
-	// semantic conventions. It represents the total number of processes in each
-	// state.
+	// SystemProcessesCount is the metric conforming to the
+	// "system.processes.count" semantic conventions. It represents the total
+	// number of processes in each state.
 	// Instrument: updowncounter
 	// Unit: {process}
 	// Stability: Experimental
-	SystemProcessCountName        = "system.process.count"
-	SystemProcessCountUnit        = "{process}"
-	SystemProcessCountDescription = "Total number of processes in each state"
+	SystemProcessesCountName        = "system.processes.count"
+	SystemProcessesCountUnit        = "{process}"
+	SystemProcessesCountDescription = "Total number of processes in each state"
 
-	// SystemProcessCreated is the metric conforming to the
-	// "system.process.created" semantic conventions. It represents the total
+	// SystemProcessesCreated is the metric conforming to the
+	// "system.processes.created" semantic conventions. It represents the total
 	// number of processes created over uptime of the host.
 	// Instrument: counter
 	// Unit: {process}
 	// Stability: Experimental
-	SystemProcessCreatedName        = "system.process.created"
-	SystemProcessCreatedUnit        = "{process}"
-	SystemProcessCreatedDescription = "Total number of processes created over uptime of the host"
+	SystemProcessesCreatedName        = "system.processes.created"
+	SystemProcessesCreatedUnit        = "{process}"
+	SystemProcessesCreatedDescription = "Total number of processes created over uptime of the host"
 
 	// SystemLinuxMemoryAvailable is the metric conforming to the
 	// "system.linux.memory.available" semantic conventions. It represents an

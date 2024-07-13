@@ -391,9 +391,9 @@ type AuditConfig struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AuditConfig) MarshalJSON() ([]byte, error) {
+func (s AuditConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditConfig
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AuditLogConfig: Provides the configuration for logging a type of
@@ -426,9 +426,9 @@ type AuditLogConfig struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *AuditLogConfig) MarshalJSON() ([]byte, error) {
+func (s AuditLogConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod AuditLogConfig
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Binding: Associates `members`, or principals, with a `role`.
@@ -525,9 +525,9 @@ type Binding struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Binding) MarshalJSON() ([]byte, error) {
+func (s Binding) MarshalJSON() ([]byte, error) {
 	type NoMethod Binding
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // CancelOperationRequest: The request message for Operations.CancelOperation.
@@ -562,9 +562,9 @@ type EndpointMatcher struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EndpointMatcher) MarshalJSON() ([]byte, error) {
+func (s EndpointMatcher) MarshalJSON() ([]byte, error) {
 	type NoMethod EndpointMatcher
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EndpointMatcherMetadataLabelMatcher: The matcher that is based on node
@@ -609,9 +609,9 @@ type EndpointMatcherMetadataLabelMatcher struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EndpointMatcherMetadataLabelMatcher) MarshalJSON() ([]byte, error) {
+func (s EndpointMatcherMetadataLabelMatcher) MarshalJSON() ([]byte, error) {
 	type NoMethod EndpointMatcherMetadataLabelMatcher
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EndpointMatcherMetadataLabelMatcherMetadataLabels: Defines a name-pair value
@@ -635,9 +635,9 @@ type EndpointMatcherMetadataLabelMatcherMetadataLabels struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EndpointMatcherMetadataLabelMatcherMetadataLabels) MarshalJSON() ([]byte, error) {
+func (s EndpointMatcherMetadataLabelMatcherMetadataLabels) MarshalJSON() ([]byte, error) {
 	type NoMethod EndpointMatcherMetadataLabelMatcherMetadataLabels
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // EndpointPolicy: EndpointPolicy is a resource that helps apply desired
@@ -708,9 +708,9 @@ type EndpointPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *EndpointPolicy) MarshalJSON() ([]byte, error) {
+func (s EndpointPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod EndpointPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Expr: Represents a textual expression in the Common Expression Language
@@ -756,9 +756,9 @@ type Expr struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Expr) MarshalJSON() ([]byte, error) {
+func (s Expr) MarshalJSON() ([]byte, error) {
 	type NoMethod Expr
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ExtensionChain: A single extension chain wrapper that contains the match
@@ -791,9 +791,9 @@ type ExtensionChain struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ExtensionChain) MarshalJSON() ([]byte, error) {
+func (s ExtensionChain) MarshalJSON() ([]byte, error) {
 	type NoMethod ExtensionChain
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ExtensionChainExtension: A single extension in the chain to execute for the
@@ -871,9 +871,9 @@ type ExtensionChainExtension struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ExtensionChainExtension) MarshalJSON() ([]byte, error) {
+func (s ExtensionChainExtension) MarshalJSON() ([]byte, error) {
 	type NoMethod ExtensionChainExtension
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ExtensionChainMatchCondition: Conditions under which this chain is invoked
@@ -897,9 +897,9 @@ type ExtensionChainMatchCondition struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ExtensionChainMatchCondition) MarshalJSON() ([]byte, error) {
+func (s ExtensionChainMatchCondition) MarshalJSON() ([]byte, error) {
 	type NoMethod ExtensionChainMatchCondition
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Gateway: Gateway represents the configuration for a proxy, typically a load
@@ -1013,9 +1013,9 @@ type Gateway struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Gateway) MarshalJSON() ([]byte, error) {
+func (s Gateway) MarshalJSON() ([]byte, error) {
 	type NoMethod Gateway
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRoute: GrpcRoute is the resource defining how gRPC traffic routed by a
@@ -1086,9 +1086,9 @@ type GrpcRoute struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRoute) MarshalJSON() ([]byte, error) {
+func (s GrpcRoute) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRoute
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteDestination: The destination to which traffic will be routed.
@@ -1119,9 +1119,9 @@ type GrpcRouteDestination struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteDestination) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteDestination) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteDestination
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteFaultInjectionPolicy: The specification for fault injection
@@ -1148,9 +1148,9 @@ type GrpcRouteFaultInjectionPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteFaultInjectionPolicy) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteFaultInjectionPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteFaultInjectionPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteFaultInjectionPolicyAbort: Specification of how client requests are
@@ -1175,9 +1175,9 @@ type GrpcRouteFaultInjectionPolicyAbort struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteFaultInjectionPolicyAbort) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteFaultInjectionPolicyAbort) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteFaultInjectionPolicyAbort
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteFaultInjectionPolicyDelay: Specification of how client requests are
@@ -1201,9 +1201,9 @@ type GrpcRouteFaultInjectionPolicyDelay struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteFaultInjectionPolicyDelay) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteFaultInjectionPolicyDelay) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteFaultInjectionPolicyDelay
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteHeaderMatch: A match against a collection of headers.
@@ -1234,9 +1234,9 @@ type GrpcRouteHeaderMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteHeaderMatch) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteHeaderMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteHeaderMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteMethodMatch: Specifies a match against a method.
@@ -1273,9 +1273,9 @@ type GrpcRouteMethodMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteMethodMatch) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteMethodMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteMethodMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteRetryPolicy: The specifications for retries.
@@ -1307,9 +1307,9 @@ type GrpcRouteRetryPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteRetryPolicy) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteRetryPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteRetryPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteRouteAction: Specifies how to route matched traffic.
@@ -1357,9 +1357,9 @@ type GrpcRouteRouteAction struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteRouteAction) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteRouteAction) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteRouteAction
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteRouteMatch: Criteria for matching traffic. A RouteMatch will be
@@ -1383,9 +1383,9 @@ type GrpcRouteRouteMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteRouteMatch) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteRouteMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteRouteMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteRouteRule: Describes how to route traffic.
@@ -1411,9 +1411,9 @@ type GrpcRouteRouteRule struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteRouteRule) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteRouteRule) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteRouteRule
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // GrpcRouteStatefulSessionAffinityPolicy: The specification for cookie-based
@@ -1442,9 +1442,9 @@ type GrpcRouteStatefulSessionAffinityPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *GrpcRouteStatefulSessionAffinityPolicy) MarshalJSON() ([]byte, error) {
+func (s GrpcRouteStatefulSessionAffinityPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod GrpcRouteStatefulSessionAffinityPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRoute: HttpRoute is the resource defining how HTTP traffic should be
@@ -1512,9 +1512,9 @@ type HttpRoute struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRoute) MarshalJSON() ([]byte, error) {
+func (s HttpRoute) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRoute
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteCorsPolicy: The Specification for allowing client side cross-origin
@@ -1559,9 +1559,9 @@ type HttpRouteCorsPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteCorsPolicy) MarshalJSON() ([]byte, error) {
+func (s HttpRouteCorsPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteCorsPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteDestination: Specifications of a destination to which the request
@@ -1604,9 +1604,9 @@ type HttpRouteDestination struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteDestination) MarshalJSON() ([]byte, error) {
+func (s HttpRouteDestination) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteDestination
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteFaultInjectionPolicy: The specification for fault injection
@@ -1633,9 +1633,9 @@ type HttpRouteFaultInjectionPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteFaultInjectionPolicy) MarshalJSON() ([]byte, error) {
+func (s HttpRouteFaultInjectionPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteFaultInjectionPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteFaultInjectionPolicyAbort: Specification of how client requests are
@@ -1660,9 +1660,9 @@ type HttpRouteFaultInjectionPolicyAbort struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteFaultInjectionPolicyAbort) MarshalJSON() ([]byte, error) {
+func (s HttpRouteFaultInjectionPolicyAbort) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteFaultInjectionPolicyAbort
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteFaultInjectionPolicyDelay: Specification of how client requests are
@@ -1686,9 +1686,9 @@ type HttpRouteFaultInjectionPolicyDelay struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteFaultInjectionPolicyDelay) MarshalJSON() ([]byte, error) {
+func (s HttpRouteFaultInjectionPolicyDelay) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteFaultInjectionPolicyDelay
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteHeaderMatch: Specifies how to select a route rule based on HTTP
@@ -1731,9 +1731,9 @@ type HttpRouteHeaderMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteHeaderMatch) MarshalJSON() ([]byte, error) {
+func (s HttpRouteHeaderMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteHeaderMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteHeaderMatchIntegerRange: Represents an integer value range.
@@ -1755,9 +1755,9 @@ type HttpRouteHeaderMatchIntegerRange struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteHeaderMatchIntegerRange) MarshalJSON() ([]byte, error) {
+func (s HttpRouteHeaderMatchIntegerRange) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteHeaderMatchIntegerRange
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteHeaderModifier: The specification for modifying HTTP header in HTTP
@@ -1784,9 +1784,9 @@ type HttpRouteHeaderModifier struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteHeaderModifier) MarshalJSON() ([]byte, error) {
+func (s HttpRouteHeaderModifier) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteHeaderModifier
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteHttpDirectResponse: Static HTTP response object to be returned.
@@ -1812,9 +1812,9 @@ type HttpRouteHttpDirectResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteHttpDirectResponse) MarshalJSON() ([]byte, error) {
+func (s HttpRouteHttpDirectResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteHttpDirectResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteQueryParameterMatch: Specifications to match a query parameter in
@@ -1848,9 +1848,9 @@ type HttpRouteQueryParameterMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteQueryParameterMatch) MarshalJSON() ([]byte, error) {
+func (s HttpRouteQueryParameterMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteQueryParameterMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteRedirect: The specification for redirecting traffic.
@@ -1903,9 +1903,9 @@ type HttpRouteRedirect struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteRedirect) MarshalJSON() ([]byte, error) {
+func (s HttpRouteRedirect) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRedirect
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteRequestMirrorPolicy: Specifies the policy on how requests are
@@ -1932,9 +1932,9 @@ type HttpRouteRequestMirrorPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteRequestMirrorPolicy) MarshalJSON() ([]byte, error) {
+func (s HttpRouteRequestMirrorPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRequestMirrorPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 func (s *HttpRouteRequestMirrorPolicy) UnmarshalJSON(data []byte) error {
@@ -1985,9 +1985,9 @@ type HttpRouteRetryPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteRetryPolicy) MarshalJSON() ([]byte, error) {
+func (s HttpRouteRetryPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRetryPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteRouteAction: The specifications for routing traffic and applying
@@ -2059,9 +2059,9 @@ type HttpRouteRouteAction struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteRouteAction) MarshalJSON() ([]byte, error) {
+func (s HttpRouteRouteAction) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRouteAction
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteRouteMatch: RouteMatch defines specifications used to match
@@ -2103,9 +2103,9 @@ type HttpRouteRouteMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteRouteMatch) MarshalJSON() ([]byte, error) {
+func (s HttpRouteRouteMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRouteMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteRouteRule: Specifies how to match traffic and how to route traffic
@@ -2133,9 +2133,9 @@ type HttpRouteRouteRule struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteRouteRule) MarshalJSON() ([]byte, error) {
+func (s HttpRouteRouteRule) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteRouteRule
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteStatefulSessionAffinityPolicy: The specification for cookie-based
@@ -2164,9 +2164,9 @@ type HttpRouteStatefulSessionAffinityPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteStatefulSessionAffinityPolicy) MarshalJSON() ([]byte, error) {
+func (s HttpRouteStatefulSessionAffinityPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteStatefulSessionAffinityPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // HttpRouteURLRewrite: The specification for modifying the URL of the request,
@@ -2192,9 +2192,9 @@ type HttpRouteURLRewrite struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *HttpRouteURLRewrite) MarshalJSON() ([]byte, error) {
+func (s HttpRouteURLRewrite) MarshalJSON() ([]byte, error) {
 	type NoMethod HttpRouteURLRewrite
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LbRouteExtension: `LbRouteExtension` is a resource that lets you control
@@ -2265,9 +2265,9 @@ type LbRouteExtension struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LbRouteExtension) MarshalJSON() ([]byte, error) {
+func (s LbRouteExtension) MarshalJSON() ([]byte, error) {
 	type NoMethod LbRouteExtension
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // LbTrafficExtension: `LbTrafficExtension` is a resource that lets the
@@ -2338,9 +2338,9 @@ type LbTrafficExtension struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *LbTrafficExtension) MarshalJSON() ([]byte, error) {
+func (s LbTrafficExtension) MarshalJSON() ([]byte, error) {
 	type NoMethod LbTrafficExtension
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListEndpointPoliciesResponse: Response returned by the ListEndpointPolicies
@@ -2369,9 +2369,9 @@ type ListEndpointPoliciesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListEndpointPoliciesResponse) MarshalJSON() ([]byte, error) {
+func (s ListEndpointPoliciesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListEndpointPoliciesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListGatewaysResponse: Response returned by the ListGateways method.
@@ -2401,9 +2401,9 @@ type ListGatewaysResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListGatewaysResponse) MarshalJSON() ([]byte, error) {
+func (s ListGatewaysResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListGatewaysResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListGrpcRoutesResponse: Response returned by the ListGrpcRoutes method.
@@ -2431,9 +2431,9 @@ type ListGrpcRoutesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListGrpcRoutesResponse) MarshalJSON() ([]byte, error) {
+func (s ListGrpcRoutesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListGrpcRoutesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListHttpRoutesResponse: Response returned by the ListHttpRoutes method.
@@ -2461,9 +2461,9 @@ type ListHttpRoutesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListHttpRoutesResponse) MarshalJSON() ([]byte, error) {
+func (s ListHttpRoutesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListHttpRoutesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListLbRouteExtensionsResponse: Message for response to listing
@@ -2492,9 +2492,9 @@ type ListLbRouteExtensionsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListLbRouteExtensionsResponse) MarshalJSON() ([]byte, error) {
+func (s ListLbRouteExtensionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListLbRouteExtensionsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListLbTrafficExtensionsResponse: Message for response to listing
@@ -2523,9 +2523,9 @@ type ListLbTrafficExtensionsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListLbTrafficExtensionsResponse) MarshalJSON() ([]byte, error) {
+func (s ListLbTrafficExtensionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListLbTrafficExtensionsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListLocationsResponse: The response message for Locations.ListLocations.
@@ -2551,9 +2551,9 @@ type ListLocationsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListLocationsResponse) MarshalJSON() ([]byte, error) {
+func (s ListLocationsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListLocationsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListMeshesResponse: Response returned by the ListMeshes method.
@@ -2581,9 +2581,9 @@ type ListMeshesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListMeshesResponse) MarshalJSON() ([]byte, error) {
+func (s ListMeshesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListMeshesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListOperationsResponse: The response message for Operations.ListOperations.
@@ -2609,9 +2609,9 @@ type ListOperationsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListOperationsResponse) MarshalJSON() ([]byte, error) {
+func (s ListOperationsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListOperationsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListServiceBindingsResponse: Response returned by the ListServiceBindings
@@ -2640,9 +2640,9 @@ type ListServiceBindingsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListServiceBindingsResponse) MarshalJSON() ([]byte, error) {
+func (s ListServiceBindingsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListServiceBindingsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListServiceLbPoliciesResponse: Response returned by the
@@ -2671,9 +2671,9 @@ type ListServiceLbPoliciesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListServiceLbPoliciesResponse) MarshalJSON() ([]byte, error) {
+func (s ListServiceLbPoliciesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListServiceLbPoliciesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListTcpRoutesResponse: Response returned by the ListTcpRoutes method.
@@ -2701,9 +2701,9 @@ type ListTcpRoutesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListTcpRoutesResponse) MarshalJSON() ([]byte, error) {
+func (s ListTcpRoutesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListTcpRoutesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ListTlsRoutesResponse: Response returned by the ListTlsRoutes method.
@@ -2731,9 +2731,9 @@ type ListTlsRoutesResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ListTlsRoutesResponse) MarshalJSON() ([]byte, error) {
+func (s ListTlsRoutesResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod ListTlsRoutesResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Location: A resource that represents a Google Cloud location.
@@ -2769,9 +2769,9 @@ type Location struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Location) MarshalJSON() ([]byte, error) {
+func (s Location) MarshalJSON() ([]byte, error) {
 	type NoMethod Location
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Mesh: Mesh represents a logical configuration grouping for workload to
@@ -2827,9 +2827,9 @@ type Mesh struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Mesh) MarshalJSON() ([]byte, error) {
+func (s Mesh) MarshalJSON() ([]byte, error) {
 	type NoMethod Mesh
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Operation: This resource represents a long-running operation that is the
@@ -2874,9 +2874,9 @@ type Operation struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Operation) MarshalJSON() ([]byte, error) {
+func (s Operation) MarshalJSON() ([]byte, error) {
 	type NoMethod Operation
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // OperationMetadata: Represents the metadata of the long-running operation.
@@ -2912,9 +2912,9 @@ type OperationMetadata struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *OperationMetadata) MarshalJSON() ([]byte, error) {
+func (s OperationMetadata) MarshalJSON() ([]byte, error) {
 	type NoMethod OperationMetadata
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Policy: An Identity and Access Management (IAM) policy, which specifies
@@ -3004,9 +3004,9 @@ type Policy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Policy) MarshalJSON() ([]byte, error) {
+func (s Policy) MarshalJSON() ([]byte, error) {
 	type NoMethod Policy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ServiceBinding: ServiceBinding is the resource that defines a Service
@@ -3049,9 +3049,9 @@ type ServiceBinding struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ServiceBinding) MarshalJSON() ([]byte, error) {
+func (s ServiceBinding) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceBinding
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ServiceLbPolicy: ServiceLbPolicy holds global load balancing and traffic
@@ -3110,9 +3110,9 @@ type ServiceLbPolicy struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ServiceLbPolicy) MarshalJSON() ([]byte, error) {
+func (s ServiceLbPolicy) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceLbPolicy
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ServiceLbPolicyAutoCapacityDrain: Option to specify if an unhealthy IG/NEG
@@ -3137,9 +3137,9 @@ type ServiceLbPolicyAutoCapacityDrain struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ServiceLbPolicyAutoCapacityDrain) MarshalJSON() ([]byte, error) {
+func (s ServiceLbPolicyAutoCapacityDrain) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceLbPolicyAutoCapacityDrain
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // ServiceLbPolicyFailoverConfig: Option to specify health based failover
@@ -3165,9 +3165,9 @@ type ServiceLbPolicyFailoverConfig struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *ServiceLbPolicyFailoverConfig) MarshalJSON() ([]byte, error) {
+func (s ServiceLbPolicyFailoverConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod ServiceLbPolicyFailoverConfig
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // SetIamPolicyRequest: Request message for `SetIamPolicy` method.
@@ -3194,9 +3194,9 @@ type SetIamPolicyRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
+func (s SetIamPolicyRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod SetIamPolicyRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // Status: The `Status` type defines a logical error model that is suitable for
@@ -3228,9 +3228,9 @@ type Status struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Status) MarshalJSON() ([]byte, error) {
+func (s Status) MarshalJSON() ([]byte, error) {
 	type NoMethod Status
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TcpRoute: TcpRoute is the resource defining how TCP traffic should be routed
@@ -3281,9 +3281,9 @@ type TcpRoute struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TcpRoute) MarshalJSON() ([]byte, error) {
+func (s TcpRoute) MarshalJSON() ([]byte, error) {
 	type NoMethod TcpRoute
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TcpRouteRouteAction: The specifications for routing traffic and applying
@@ -3317,9 +3317,9 @@ type TcpRouteRouteAction struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TcpRouteRouteAction) MarshalJSON() ([]byte, error) {
+func (s TcpRouteRouteAction) MarshalJSON() ([]byte, error) {
 	type NoMethod TcpRouteRouteAction
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TcpRouteRouteDestination: Describe the destination for traffic to be routed
@@ -3350,9 +3350,9 @@ type TcpRouteRouteDestination struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TcpRouteRouteDestination) MarshalJSON() ([]byte, error) {
+func (s TcpRouteRouteDestination) MarshalJSON() ([]byte, error) {
 	type NoMethod TcpRouteRouteDestination
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TcpRouteRouteMatch: RouteMatch defines the predicate used to match requests
@@ -3382,9 +3382,9 @@ type TcpRouteRouteMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TcpRouteRouteMatch) MarshalJSON() ([]byte, error) {
+func (s TcpRouteRouteMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod TcpRouteRouteMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TcpRouteRouteRule: Specifies how to match traffic and how to route traffic
@@ -3409,9 +3409,9 @@ type TcpRouteRouteRule struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TcpRouteRouteRule) MarshalJSON() ([]byte, error) {
+func (s TcpRouteRouteRule) MarshalJSON() ([]byte, error) {
 	type NoMethod TcpRouteRouteRule
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TestIamPermissionsRequest: Request message for `TestIamPermissions` method.
@@ -3434,9 +3434,9 @@ type TestIamPermissionsRequest struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
+func (s TestIamPermissionsRequest) MarshalJSON() ([]byte, error) {
 	type NoMethod TestIamPermissionsRequest
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TestIamPermissionsResponse: Response message for `TestIamPermissions`
@@ -3461,9 +3461,9 @@ type TestIamPermissionsResponse struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
+func (s TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
 	type NoMethod TestIamPermissionsResponse
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TlsRoute: TlsRoute defines how traffic should be routed based on SNI and
@@ -3487,7 +3487,7 @@ type TlsRoute struct {
 	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the TlsRoute resource. It matches pattern
+	// Name: Identifier. Name of the TlsRoute resource. It matches pattern
 	// `projects/*/locations/global/tlsRoutes/tls_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. At
@@ -3514,9 +3514,9 @@ type TlsRoute struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TlsRoute) MarshalJSON() ([]byte, error) {
+func (s TlsRoute) MarshalJSON() ([]byte, error) {
 	type NoMethod TlsRoute
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TlsRouteRouteAction: The specifications for routing traffic and applying
@@ -3543,9 +3543,9 @@ type TlsRouteRouteAction struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TlsRouteRouteAction) MarshalJSON() ([]byte, error) {
+func (s TlsRouteRouteAction) MarshalJSON() ([]byte, error) {
 	type NoMethod TlsRouteRouteAction
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TlsRouteRouteDestination: Describe the destination for traffic to be routed
@@ -3571,9 +3571,9 @@ type TlsRouteRouteDestination struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TlsRouteRouteDestination) MarshalJSON() ([]byte, error) {
+func (s TlsRouteRouteDestination) MarshalJSON() ([]byte, error) {
 	type NoMethod TlsRouteRouteDestination
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TlsRouteRouteMatch: RouteMatch defines the predicate used to match requests
@@ -3604,9 +3604,9 @@ type TlsRouteRouteMatch struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TlsRouteRouteMatch) MarshalJSON() ([]byte, error) {
+func (s TlsRouteRouteMatch) MarshalJSON() ([]byte, error) {
 	type NoMethod TlsRouteRouteMatch
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TlsRouteRouteRule: Specifies how to match traffic and how to route traffic
@@ -3630,9 +3630,9 @@ type TlsRouteRouteRule struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TlsRouteRouteRule) MarshalJSON() ([]byte, error) {
+func (s TlsRouteRouteRule) MarshalJSON() ([]byte, error) {
 	type NoMethod TlsRouteRouteRule
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // TrafficPortSelector: Specification of a port-based selector.
@@ -3655,9 +3655,9 @@ type TrafficPortSelector struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *TrafficPortSelector) MarshalJSON() ([]byte, error) {
+func (s TrafficPortSelector) MarshalJSON() ([]byte, error) {
 	type NoMethod TrafficPortSelector
-	return gensupport.MarshalJSON(NoMethod(*s), s.ForceSendFields, s.NullFields)
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 type ProjectsLocationsGetCall struct {
@@ -13331,7 +13331,7 @@ type ProjectsLocationsTlsRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single TlsRoute.
 //
-//   - name: Name of the TlsRoute resource. It matches pattern
+//   - name: Identifier. Name of the TlsRoute resource. It matches pattern
 //     `projects/*/locations/global/tlsRoutes/tls_route_name>`.
 func (r *ProjectsLocationsTlsRoutesService) Patch(name string, tlsroute *TlsRoute) *ProjectsLocationsTlsRoutesPatchCall {
 	c := &ProjectsLocationsTlsRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}

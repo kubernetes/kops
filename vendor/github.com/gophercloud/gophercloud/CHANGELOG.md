@@ -1,3 +1,9 @@
+## v1.13.0 (2024-07-08)
+
+* [GH-3044](https://github.com/gophercloud/gophercloud/pull/3044) [v1] Add ci jobs for openstack caracal
+* [GH-3073](https://github.com/gophercloud/gophercloud/pull/3073) [v1] Adding missing QoS field for router
+* [GH-3080](https://github.com/gophercloud/gophercloud/pull/3080) [networking]: add BGP VPNs support (backport to 1.x)
+
 ## v1.12.0 (2024-05-27)
 
 * [GH-2979](https://github.com/gophercloud/gophercloud/pull/2979) [v1] CI backports

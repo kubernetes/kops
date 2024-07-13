@@ -2452,7 +2452,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the TlsRoute resource. It matches pattern `projects/*/locations/global/tlsRoutes/tls_route_name\u003e`.",
+                      "description": "Identifier. Name of the TlsRoute resource. It matches pattern `projects/*/locations/global/tlsRoutes/tls_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tlsRoutes/[^/]+$",
                       "required": true,
@@ -2483,7 +2483,7 @@
       }
     }
   },
-  "revision": "20240613",
+  "revision": "20240626",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -4748,7 +4748,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the TlsRoute resource. It matches pattern `projects/*/locations/global/tlsRoutes/tls_route_name\u003e`.",
+          "description": "Identifier. Name of the TlsRoute resource. It matches pattern `projects/*/locations/global/tlsRoutes/tls_route_name\u003e`.",
           "type": "string"
         },
         "rules": {

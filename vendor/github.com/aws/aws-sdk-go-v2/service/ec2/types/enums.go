@@ -2542,6 +2542,7 @@ type HostTenancy string
 
 // Enum values for HostTenancy
 const (
+	HostTenancyDefault   HostTenancy = "default"
 	HostTenancyDedicated HostTenancy = "dedicated"
 	HostTenancyHost      HostTenancy = "host"
 )
@@ -2552,6 +2553,7 @@ const (
 // The ordering of this slice is not guaranteed to be stable across updates.
 func (HostTenancy) Values() []HostTenancy {
 	return []HostTenancy{
+		"default",
 		"dedicated",
 		"host",
 	}
@@ -4978,6 +4980,26 @@ func (IpamManagementState) Values() []IpamManagementState {
 		"managed",
 		"unmanaged",
 		"ignored",
+	}
+}
+
+type IpamNetworkInterfaceAttachmentStatus string
+
+// Enum values for IpamNetworkInterfaceAttachmentStatus
+const (
+	IpamNetworkInterfaceAttachmentStatusAvailable IpamNetworkInterfaceAttachmentStatus = "available"
+	IpamNetworkInterfaceAttachmentStatusInUse     IpamNetworkInterfaceAttachmentStatus = "in-use"
+)
+
+// Values returns all known values for IpamNetworkInterfaceAttachmentStatus. Note
+// that this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (IpamNetworkInterfaceAttachmentStatus) Values() []IpamNetworkInterfaceAttachmentStatus {
+	return []IpamNetworkInterfaceAttachmentStatus{
+		"available",
+		"in-use",
 	}
 }
 

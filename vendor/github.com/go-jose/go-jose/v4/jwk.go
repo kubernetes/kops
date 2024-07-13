@@ -174,7 +174,11 @@ func (k JSONWebKey) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
+var errUnsupportedJWK = errors.New("go-jose/go-jose: unsupported json web key")
+
 // UnmarshalJSON reads a key from its JSON representation.
+//
+// Returns ErrUnsupportedKeyType for unrecognized or unsupported "kty" header values.
 func (k *JSONWebKey) UnmarshalJSON(data []byte) (err error) {
 	var raw rawJSONWebKey
 	err = json.Unmarshal(data, &raw)
@@ -228,7 +232,7 @@ func (k *JSONWebKey) UnmarshalJSON(data []byte) (err error) {
 		}
 		key, err = raw.symmetricKey()
 	case "OKP":
-		if raw.Crv == "Ed25519" && raw.X != nil {
+		if raw.Crv == "Ed25519" {
 			if raw.D != nil {
 				key, err = raw.edPrivateKey()
 				if err == nil {
@@ -238,15 +242,25 @@ func (k *JSONWebKey) UnmarshalJSON(data []byte) (err error) {
 				key, err = raw.edPublicKey()
 				keyPub = key
 			}
-		} else {
-			err = fmt.Errorf("go-jose/go-jose: unknown curve %s'", raw.Crv)
 		}
-	default:
-		err = fmt.Errorf("go-jose/go-jose: unknown json web key type '%s'", raw.Kty)
+	case "":
+		// kty MUST be present
+		err = fmt.Errorf("go-jose/go-jose: missing json web key type")
 	}
 
 	if err != nil {
 		return
+	}
+
+	if key == nil {
+		// RFC 7517:
+		// 5.  JWK Set Format
+		// ...
+		//     Implementations SHOULD ignore JWKs within a JWK Set that use "kty"
+		//     (key type) values that are not understood by them, that are missing
+		//     required members, or for which values are out of the supported
+		//     ranges.
+		return ErrUnsupportedKeyType
 	}
 
 	if certPub != nil && keyPub != nil {
@@ -346,6 +360,35 @@ func (s *JSONWebKeySet) Key(kid string) []JSONWebKey {
 	}
 
 	return keys
+}
+
+func (s *JSONWebKeySet) UnmarshalJSON(data []byte) (err error) {
+	s.Keys = nil
+
+	type rawJSONWebKeySet struct {
+		Keys []json.RawMessage `json:"keys"`
+	}
+
+	var rs rawJSONWebKeySet
+	err = json.Unmarshal(data, &rs)
+	if err != nil {
+		return err
+	}
+
+	for _, rk := range rs.Keys {
+		var k JSONWebKey
+		err = json.Unmarshal(rk, &k)
+		if err != nil {
+			// Skip key and continue unmarshalling the rest of the JWK Set
+			if !errors.Is(err, ErrUnsupportedKeyType) {
+				return err
+			}
+		} else {
+			s.Keys = append(s.Keys, k)
+		}
+	}
+
+	return nil
 }
 
 const rsaThumbprintTemplate = `{"e":"%s","kty":"RSA","n":"%s"}`
@@ -779,7 +822,13 @@ func (key rawJSONWebKey) symmetricKey() ([]byte, error) {
 	return key.K.bytes(), nil
 }
 
-func tryJWKS(key interface{}, headers ...Header) interface{} {
+var (
+	// ErrJWKSKidNotFound is returned when a JWKS does not contain a JWK with a
+	// key ID which matches one in the provided tokens headers.
+	ErrJWKSKidNotFound = errors.New("go-jose/go-jose: JWK with matching kid not found in JWK Set")
+)
+
+func tryJWKS(key interface{}, headers ...Header) (interface{}, error) {
 	var jwks JSONWebKeySet
 
 	switch jwksType := key.(type) {
@@ -788,9 +837,11 @@ func tryJWKS(key interface{}, headers ...Header) interface{} {
 	case JSONWebKeySet:
 		jwks = jwksType
 	default:
-		return key
+		// If the specified key is not a JWKS, return as is.
+		return key, nil
 	}
 
+	// Determine the KID to search for from the headers.
 	var kid string
 	for _, header := range headers {
 		if header.KeyID != "" {
@@ -799,14 +850,17 @@ func tryJWKS(key interface{}, headers ...Header) interface{} {
 		}
 	}
 
+	// If no KID is specified in the headers, reject.
 	if kid == "" {
-		return key
+		return nil, ErrJWKSKidNotFound
 	}
 
+	// Find the JWK with the matching KID. If no JWK with the specified KID is
+	// found, reject.
 	keys := jwks.Key(kid)
 	if len(keys) == 0 {
-		return key
+		return nil, ErrJWKSKidNotFound
 	}
 
-	return keys[0].Key
+	return keys[0].Key, nil
 }

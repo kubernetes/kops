@@ -3,190 +3,33 @@
 
 // Code generated from semantic convention specification. DO NOT EDIT.
 
-package semconv // import "go.opentelemetry.io/otel/semconv/v1.25.0"
+package semconv // import "go.opentelemetry.io/otel/semconv/v1.26.0"
 
 import "go.opentelemetry.io/otel/attribute"
 
-// Attributes for Events represented using Log Records.
+// The Android platform on which the Android application is running.
 const (
-	// EventNameKey is the attribute Key conforming to the "event.name"
-	// semantic conventions. It represents the identifies the class / type of
-	// event.
-	//
-	// Type: string
-	// RequirementLevel: Required
-	// Stability: experimental
-	// Examples: 'browser.mouse.click', 'device.app.lifecycle'
-	// Note: Event names are subject to the same rules as [attribute
-	// names](https://github.com/open-telemetry/opentelemetry-specification/tree/v1.31.0/specification/common/attribute-naming.md).
-	// Notably, event names are namespaced to avoid collisions and provide a
-	// clean separation of semantics for events in separate domains like
-	// browser, mobile, and kubernetes.
-	EventNameKey = attribute.Key("event.name")
-)
-
-// EventName returns an attribute KeyValue conforming to the "event.name"
-// semantic conventions. It represents the identifies the class / type of
-// event.
-func EventName(val string) attribute.KeyValue {
-	return EventNameKey.String(val)
-}
-
-// The attributes described in this section are rather generic. They may be
-// used in any Log Record they apply to.
-const (
-	// LogRecordUIDKey is the attribute Key conforming to the "log.record.uid"
-	// semantic conventions. It represents a unique identifier for the Log
-	// Record.
+	// AndroidOSAPILevelKey is the attribute Key conforming to the
+	// "android.os.api_level" semantic conventions. It represents the uniquely
+	// identifies the framework API revision offered by a version
+	// (`os.version`) of the android operating system. More information can be
+	// found
+	// [here](https://developer.android.com/guide/topics/manifest/uses-sdk-element#APILevels).
 	//
 	// Type: string
 	// RequirementLevel: Optional
 	// Stability: experimental
-	// Examples: '01ARZ3NDEKTSV4RRFFQ69G5FAV'
-	// Note: If an id is provided, other log records with the same id will be
-	// considered duplicates and can be removed safely. This means, that two
-	// distinguishable log records MUST have different values.
-	// The id MAY be an [Universally Unique Lexicographically Sortable
-	// Identifier (ULID)](https://github.com/ulid/spec), but other identifiers
-	// (e.g. UUID) may be used as needed.
-	LogRecordUIDKey = attribute.Key("log.record.uid")
+	// Examples: '33', '32'
+	AndroidOSAPILevelKey = attribute.Key("android.os.api_level")
 )
 
-// LogRecordUID returns an attribute KeyValue conforming to the
-// "log.record.uid" semantic conventions. It represents a unique identifier for
-// the Log Record.
-func LogRecordUID(val string) attribute.KeyValue {
-	return LogRecordUIDKey.String(val)
-}
-
-// Describes Log attributes
-const (
-	// LogIostreamKey is the attribute Key conforming to the "log.iostream"
-	// semantic conventions. It represents the stream associated with the log.
-	// See below for a list of well-known values.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	LogIostreamKey = attribute.Key("log.iostream")
-)
-
-var (
-	// Logs from stdout stream
-	LogIostreamStdout = LogIostreamKey.String("stdout")
-	// Events from stderr stream
-	LogIostreamStderr = LogIostreamKey.String("stderr")
-)
-
-// A file to which log was emitted.
-const (
-	// LogFileNameKey is the attribute Key conforming to the "log.file.name"
-	// semantic conventions. It represents the basename of the file.
-	//
-	// Type: string
-	// RequirementLevel: Recommended
-	// Stability: experimental
-	// Examples: 'audit.log'
-	LogFileNameKey = attribute.Key("log.file.name")
-
-	// LogFileNameResolvedKey is the attribute Key conforming to the
-	// "log.file.name_resolved" semantic conventions. It represents the
-	// basename of the file, with symlinks resolved.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'uuid.log'
-	LogFileNameResolvedKey = attribute.Key("log.file.name_resolved")
-
-	// LogFilePathKey is the attribute Key conforming to the "log.file.path"
-	// semantic conventions. It represents the full path to the file.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '/var/log/mysql/audit.log'
-	LogFilePathKey = attribute.Key("log.file.path")
-
-	// LogFilePathResolvedKey is the attribute Key conforming to the
-	// "log.file.path_resolved" semantic conventions. It represents the full
-	// path to the file, with symlinks resolved.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '/var/lib/docker/uuid.log'
-	LogFilePathResolvedKey = attribute.Key("log.file.path_resolved")
-)
-
-// LogFileName returns an attribute KeyValue conforming to the
-// "log.file.name" semantic conventions. It represents the basename of the
-// file.
-func LogFileName(val string) attribute.KeyValue {
-	return LogFileNameKey.String(val)
-}
-
-// LogFileNameResolved returns an attribute KeyValue conforming to the
-// "log.file.name_resolved" semantic conventions. It represents the basename of
-// the file, with symlinks resolved.
-func LogFileNameResolved(val string) attribute.KeyValue {
-	return LogFileNameResolvedKey.String(val)
-}
-
-// LogFilePath returns an attribute KeyValue conforming to the
-// "log.file.path" semantic conventions. It represents the full path to the
-// file.
-func LogFilePath(val string) attribute.KeyValue {
-	return LogFilePathKey.String(val)
-}
-
-// LogFilePathResolved returns an attribute KeyValue conforming to the
-// "log.file.path_resolved" semantic conventions. It represents the full path
-// to the file, with symlinks resolved.
-func LogFilePathResolved(val string) attribute.KeyValue {
-	return LogFilePathResolvedKey.String(val)
-}
-
-// Describes Database attributes
-const (
-	// PoolNameKey is the attribute Key conforming to the "pool.name" semantic
-	// conventions. It represents the name of the connection pool; unique
-	// within the instrumented application. In case the connection pool
-	// implementation doesn't provide a name, instrumentation should use a
-	// combination of `server.address` and `server.port` attributes formatted
-	// as `server.address:server.port`.
-	//
-	// Type: string
-	// RequirementLevel: Required
-	// Stability: experimental
-	// Examples: 'myDataSource'
-	PoolNameKey = attribute.Key("pool.name")
-
-	// StateKey is the attribute Key conforming to the "state" semantic
-	// conventions. It represents the state of a connection in the pool
-	//
-	// Type: Enum
-	// RequirementLevel: Required
-	// Stability: experimental
-	// Examples: 'idle'
-	StateKey = attribute.Key("state")
-)
-
-var (
-	// idle
-	StateIdle = StateKey.String("idle")
-	// used
-	StateUsed = StateKey.String("used")
-)
-
-// PoolName returns an attribute KeyValue conforming to the "pool.name"
-// semantic conventions. It represents the name of the connection pool; unique
-// within the instrumented application. In case the connection pool
-// implementation doesn't provide a name, instrumentation should use a
-// combination of `server.address` and `server.port` attributes formatted as
-// `server.address:server.port`.
-func PoolName(val string) attribute.KeyValue {
-	return PoolNameKey.String(val)
+// AndroidOSAPILevel returns an attribute KeyValue conforming to the
+// "android.os.api_level" semantic conventions. It represents the uniquely
+// identifies the framework API revision offered by a version (`os.version`) of
+// the android operating system. More information can be found
+// [here](https://developer.android.com/guide/topics/manifest/uses-sdk-element#APILevels).
+func AndroidOSAPILevel(val string) attribute.KeyValue {
+	return AndroidOSAPILevelKey.String(val)
 }
 
 // ASP.NET Core attributes
@@ -215,13 +58,22 @@ const (
 	// Examples: 'Contoso.MyHandler'
 	AspnetcoreDiagnosticsHandlerTypeKey = attribute.Key("aspnetcore.diagnostics.handler.type")
 
+	// AspnetcoreDiagnosticsExceptionResultKey is the attribute Key conforming
+	// to the "aspnetcore.diagnostics.exception.result" semantic conventions.
+	// It represents the aSP.NET Core exception middleware handling result
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'handled', 'unhandled'
+	AspnetcoreDiagnosticsExceptionResultKey = attribute.Key("aspnetcore.diagnostics.exception.result")
+
 	// AspnetcoreRateLimitingPolicyKey is the attribute Key conforming to the
 	// "aspnetcore.rate_limiting.policy" semantic conventions. It represents
 	// the rate limiting policy name.
 	//
 	// Type: string
-	// RequirementLevel: ConditionallyRequired (if the matched endpoint for the
-	// request had a rate-limiting policy.)
+	// RequirementLevel: Optional
 	// Stability: stable
 	// Examples: 'fixed', 'sliding', 'token'
 	AspnetcoreRateLimitingPolicyKey = attribute.Key("aspnetcore.rate_limiting.policy")
@@ -231,8 +83,7 @@ const (
 	// the flag indicating if request was handled by the application pipeline.
 	//
 	// Type: boolean
-	// RequirementLevel: ConditionallyRequired (if and only if the request was
-	// not handled.)
+	// RequirementLevel: Optional
 	// Stability: stable
 	// Examples: True
 	AspnetcoreRequestIsUnhandledKey = attribute.Key("aspnetcore.request.is_unhandled")
@@ -242,11 +93,20 @@ const (
 	// value that indicates whether the matched route is a fallback route.
 	//
 	// Type: boolean
-	// RequirementLevel: ConditionallyRequired (If and only if a route was
-	// successfully matched.)
+	// RequirementLevel: Optional
 	// Stability: stable
 	// Examples: True
 	AspnetcoreRoutingIsFallbackKey = attribute.Key("aspnetcore.routing.is_fallback")
+
+	// AspnetcoreRoutingMatchStatusKey is the attribute Key conforming to the
+	// "aspnetcore.routing.match_status" semantic conventions. It represents
+	// the match result - success or failure
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'success', 'failure'
+	AspnetcoreRoutingMatchStatusKey = attribute.Key("aspnetcore.routing.match_status")
 )
 
 var (
@@ -258,6 +118,24 @@ var (
 	AspnetcoreRateLimitingResultGlobalLimiter = AspnetcoreRateLimitingResultKey.String("global_limiter")
 	// Lease request was canceled
 	AspnetcoreRateLimitingResultRequestCanceled = AspnetcoreRateLimitingResultKey.String("request_canceled")
+)
+
+var (
+	// Exception was handled by the exception handling middleware
+	AspnetcoreDiagnosticsExceptionResultHandled = AspnetcoreDiagnosticsExceptionResultKey.String("handled")
+	// Exception was not handled by the exception handling middleware
+	AspnetcoreDiagnosticsExceptionResultUnhandled = AspnetcoreDiagnosticsExceptionResultKey.String("unhandled")
+	// Exception handling was skipped because the response had started
+	AspnetcoreDiagnosticsExceptionResultSkipped = AspnetcoreDiagnosticsExceptionResultKey.String("skipped")
+	// Exception handling didn't run because the request was aborted
+	AspnetcoreDiagnosticsExceptionResultAborted = AspnetcoreDiagnosticsExceptionResultKey.String("aborted")
+)
+
+var (
+	// Match succeeded
+	AspnetcoreRoutingMatchStatusSuccess = AspnetcoreRoutingMatchStatusKey.String("success")
+	// Match failed
+	AspnetcoreRoutingMatchStatusFailure = AspnetcoreRoutingMatchStatusKey.String("failure")
 )
 
 // AspnetcoreDiagnosticsHandlerType returns an attribute KeyValue conforming
@@ -290,448 +168,24 @@ func AspnetcoreRoutingIsFallback(val bool) attribute.KeyValue {
 	return AspnetcoreRoutingIsFallbackKey.Bool(val)
 }
 
-// SignalR attributes
+// Generic attributes for AWS services.
 const (
-	// SignalrConnectionStatusKey is the attribute Key conforming to the
-	// "signalr.connection.status" semantic conventions. It represents the
-	// signalR HTTP connection closure status.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: stable
-	// Examples: 'app_shutdown', 'timeout'
-	SignalrConnectionStatusKey = attribute.Key("signalr.connection.status")
-
-	// SignalrTransportKey is the attribute Key conforming to the
-	// "signalr.transport" semantic conventions. It represents the [SignalR
-	// transport
-	// type](https://github.com/dotnet/aspnetcore/blob/main/src/SignalR/docs/specs/TransportProtocols.md)
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: stable
-	// Examples: 'web_sockets', 'long_polling'
-	SignalrTransportKey = attribute.Key("signalr.transport")
-)
-
-var (
-	// The connection was closed normally
-	SignalrConnectionStatusNormalClosure = SignalrConnectionStatusKey.String("normal_closure")
-	// The connection was closed due to a timeout
-	SignalrConnectionStatusTimeout = SignalrConnectionStatusKey.String("timeout")
-	// The connection was closed because the app is shutting down
-	SignalrConnectionStatusAppShutdown = SignalrConnectionStatusKey.String("app_shutdown")
-)
-
-var (
-	// ServerSentEvents protocol
-	SignalrTransportServerSentEvents = SignalrTransportKey.String("server_sent_events")
-	// LongPolling protocol
-	SignalrTransportLongPolling = SignalrTransportKey.String("long_polling")
-	// WebSockets protocol
-	SignalrTransportWebSockets = SignalrTransportKey.String("web_sockets")
-)
-
-// Describes JVM buffer metric attributes.
-const (
-	// JvmBufferPoolNameKey is the attribute Key conforming to the
-	// "jvm.buffer.pool.name" semantic conventions. It represents the name of
-	// the buffer pool.
-	//
-	// Type: string
-	// RequirementLevel: Recommended
-	// Stability: experimental
-	// Examples: 'mapped', 'direct'
-	// Note: Pool names are generally obtained via
-	// [BufferPoolMXBean#getName()](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/BufferPoolMXBean.html#getName()).
-	JvmBufferPoolNameKey = attribute.Key("jvm.buffer.pool.name")
-)
-
-// JvmBufferPoolName returns an attribute KeyValue conforming to the
-// "jvm.buffer.pool.name" semantic conventions. It represents the name of the
-// buffer pool.
-func JvmBufferPoolName(val string) attribute.KeyValue {
-	return JvmBufferPoolNameKey.String(val)
-}
-
-// Describes JVM memory metric attributes.
-const (
-	// JvmMemoryPoolNameKey is the attribute Key conforming to the
-	// "jvm.memory.pool.name" semantic conventions. It represents the name of
-	// the memory pool.
-	//
-	// Type: string
-	// RequirementLevel: Recommended
-	// Stability: stable
-	// Examples: 'G1 Old Gen', 'G1 Eden space', 'G1 Survivor Space'
-	// Note: Pool names are generally obtained via
-	// [MemoryPoolMXBean#getName()](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()).
-	JvmMemoryPoolNameKey = attribute.Key("jvm.memory.pool.name")
-
-	// JvmMemoryTypeKey is the attribute Key conforming to the
-	// "jvm.memory.type" semantic conventions. It represents the type of
-	// memory.
-	//
-	// Type: Enum
-	// RequirementLevel: Recommended
-	// Stability: stable
-	// Examples: 'heap', 'non_heap'
-	JvmMemoryTypeKey = attribute.Key("jvm.memory.type")
-)
-
-var (
-	// Heap memory
-	JvmMemoryTypeHeap = JvmMemoryTypeKey.String("heap")
-	// Non-heap memory
-	JvmMemoryTypeNonHeap = JvmMemoryTypeKey.String("non_heap")
-)
-
-// JvmMemoryPoolName returns an attribute KeyValue conforming to the
-// "jvm.memory.pool.name" semantic conventions. It represents the name of the
-// memory pool.
-func JvmMemoryPoolName(val string) attribute.KeyValue {
-	return JvmMemoryPoolNameKey.String(val)
-}
-
-// Attributes for process CPU metrics.
-const (
-	// ProcessCPUStateKey is the attribute Key conforming to the
-	// "process.cpu.state" semantic conventions. It represents the CPU state
-	// for this data point. A process SHOULD be characterized _either_ by data
-	// points with no `state` labels, _or only_ data points with `state`
-	// labels.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	ProcessCPUStateKey = attribute.Key("process.cpu.state")
-)
-
-var (
-	// system
-	ProcessCPUStateSystem = ProcessCPUStateKey.String("system")
-	// user
-	ProcessCPUStateUser = ProcessCPUStateKey.String("user")
-	// wait
-	ProcessCPUStateWait = ProcessCPUStateKey.String("wait")
-)
-
-// Describes System metric attributes
-const (
-	// SystemDeviceKey is the attribute Key conforming to the "system.device"
-	// semantic conventions. It represents the device identifier
+	// AWSRequestIDKey is the attribute Key conforming to the "aws.request_id"
+	// semantic conventions. It represents the AWS request ID as returned in
+	// the response headers `x-amz-request-id` or `x-amz-requestid`.
 	//
 	// Type: string
 	// RequirementLevel: Optional
 	// Stability: experimental
-	// Examples: '(identifier)'
-	SystemDeviceKey = attribute.Key("system.device")
+	// Examples: '79b9da39-b7ae-508a-a6bc-864b2829c622', 'C9ER4AJX75574TDJ'
+	AWSRequestIDKey = attribute.Key("aws.request_id")
 )
 
-// SystemDevice returns an attribute KeyValue conforming to the
-// "system.device" semantic conventions. It represents the device identifier
-func SystemDevice(val string) attribute.KeyValue {
-	return SystemDeviceKey.String(val)
-}
-
-// Describes System CPU metric attributes
-const (
-	// SystemCPULogicalNumberKey is the attribute Key conforming to the
-	// "system.cpu.logical_number" semantic conventions. It represents the
-	// logical CPU number [0..n-1]
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 1
-	SystemCPULogicalNumberKey = attribute.Key("system.cpu.logical_number")
-
-	// SystemCPUStateKey is the attribute Key conforming to the
-	// "system.cpu.state" semantic conventions. It represents the CPU state for
-	// this data point. A system's CPU SHOULD be characterized *either* by data
-	// points with no `state` labels, *or only* data points with `state`
-	// labels.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'idle', 'interrupt'
-	SystemCPUStateKey = attribute.Key("system.cpu.state")
-)
-
-var (
-	// user
-	SystemCPUStateUser = SystemCPUStateKey.String("user")
-	// system
-	SystemCPUStateSystem = SystemCPUStateKey.String("system")
-	// nice
-	SystemCPUStateNice = SystemCPUStateKey.String("nice")
-	// idle
-	SystemCPUStateIdle = SystemCPUStateKey.String("idle")
-	// iowait
-	SystemCPUStateIowait = SystemCPUStateKey.String("iowait")
-	// interrupt
-	SystemCPUStateInterrupt = SystemCPUStateKey.String("interrupt")
-	// steal
-	SystemCPUStateSteal = SystemCPUStateKey.String("steal")
-)
-
-// SystemCPULogicalNumber returns an attribute KeyValue conforming to the
-// "system.cpu.logical_number" semantic conventions. It represents the logical
-// CPU number [0..n-1]
-func SystemCPULogicalNumber(val int) attribute.KeyValue {
-	return SystemCPULogicalNumberKey.Int(val)
-}
-
-// Describes System Memory metric attributes
-const (
-	// SystemMemoryStateKey is the attribute Key conforming to the
-	// "system.memory.state" semantic conventions. It represents the memory
-	// state
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'free', 'cached'
-	SystemMemoryStateKey = attribute.Key("system.memory.state")
-)
-
-var (
-	// used
-	SystemMemoryStateUsed = SystemMemoryStateKey.String("used")
-	// free
-	SystemMemoryStateFree = SystemMemoryStateKey.String("free")
-	// shared
-	SystemMemoryStateShared = SystemMemoryStateKey.String("shared")
-	// buffers
-	SystemMemoryStateBuffers = SystemMemoryStateKey.String("buffers")
-	// cached
-	SystemMemoryStateCached = SystemMemoryStateKey.String("cached")
-)
-
-// Describes System Memory Paging metric attributes
-const (
-	// SystemPagingDirectionKey is the attribute Key conforming to the
-	// "system.paging.direction" semantic conventions. It represents the paging
-	// access direction
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'in'
-	SystemPagingDirectionKey = attribute.Key("system.paging.direction")
-
-	// SystemPagingStateKey is the attribute Key conforming to the
-	// "system.paging.state" semantic conventions. It represents the memory
-	// paging state
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'free'
-	SystemPagingStateKey = attribute.Key("system.paging.state")
-
-	// SystemPagingTypeKey is the attribute Key conforming to the
-	// "system.paging.type" semantic conventions. It represents the memory
-	// paging type
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'minor'
-	SystemPagingTypeKey = attribute.Key("system.paging.type")
-)
-
-var (
-	// in
-	SystemPagingDirectionIn = SystemPagingDirectionKey.String("in")
-	// out
-	SystemPagingDirectionOut = SystemPagingDirectionKey.String("out")
-)
-
-var (
-	// used
-	SystemPagingStateUsed = SystemPagingStateKey.String("used")
-	// free
-	SystemPagingStateFree = SystemPagingStateKey.String("free")
-)
-
-var (
-	// major
-	SystemPagingTypeMajor = SystemPagingTypeKey.String("major")
-	// minor
-	SystemPagingTypeMinor = SystemPagingTypeKey.String("minor")
-)
-
-// Describes Filesystem metric attributes
-const (
-	// SystemFilesystemModeKey is the attribute Key conforming to the
-	// "system.filesystem.mode" semantic conventions. It represents the
-	// filesystem mode
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'rw, ro'
-	SystemFilesystemModeKey = attribute.Key("system.filesystem.mode")
-
-	// SystemFilesystemMountpointKey is the attribute Key conforming to the
-	// "system.filesystem.mountpoint" semantic conventions. It represents the
-	// filesystem mount path
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '/mnt/data'
-	SystemFilesystemMountpointKey = attribute.Key("system.filesystem.mountpoint")
-
-	// SystemFilesystemStateKey is the attribute Key conforming to the
-	// "system.filesystem.state" semantic conventions. It represents the
-	// filesystem state
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'used'
-	SystemFilesystemStateKey = attribute.Key("system.filesystem.state")
-
-	// SystemFilesystemTypeKey is the attribute Key conforming to the
-	// "system.filesystem.type" semantic conventions. It represents the
-	// filesystem type
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'ext4'
-	SystemFilesystemTypeKey = attribute.Key("system.filesystem.type")
-)
-
-var (
-	// used
-	SystemFilesystemStateUsed = SystemFilesystemStateKey.String("used")
-	// free
-	SystemFilesystemStateFree = SystemFilesystemStateKey.String("free")
-	// reserved
-	SystemFilesystemStateReserved = SystemFilesystemStateKey.String("reserved")
-)
-
-var (
-	// fat32
-	SystemFilesystemTypeFat32 = SystemFilesystemTypeKey.String("fat32")
-	// exfat
-	SystemFilesystemTypeExfat = SystemFilesystemTypeKey.String("exfat")
-	// ntfs
-	SystemFilesystemTypeNtfs = SystemFilesystemTypeKey.String("ntfs")
-	// refs
-	SystemFilesystemTypeRefs = SystemFilesystemTypeKey.String("refs")
-	// hfsplus
-	SystemFilesystemTypeHfsplus = SystemFilesystemTypeKey.String("hfsplus")
-	// ext4
-	SystemFilesystemTypeExt4 = SystemFilesystemTypeKey.String("ext4")
-)
-
-// SystemFilesystemMode returns an attribute KeyValue conforming to the
-// "system.filesystem.mode" semantic conventions. It represents the filesystem
-// mode
-func SystemFilesystemMode(val string) attribute.KeyValue {
-	return SystemFilesystemModeKey.String(val)
-}
-
-// SystemFilesystemMountpoint returns an attribute KeyValue conforming to
-// the "system.filesystem.mountpoint" semantic conventions. It represents the
-// filesystem mount path
-func SystemFilesystemMountpoint(val string) attribute.KeyValue {
-	return SystemFilesystemMountpointKey.String(val)
-}
-
-// Describes Network metric attributes
-const (
-	// SystemNetworkStateKey is the attribute Key conforming to the
-	// "system.network.state" semantic conventions. It represents a stateless
-	// protocol MUST NOT set this attribute
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'close_wait'
-	SystemNetworkStateKey = attribute.Key("system.network.state")
-)
-
-var (
-	// close
-	SystemNetworkStateClose = SystemNetworkStateKey.String("close")
-	// close_wait
-	SystemNetworkStateCloseWait = SystemNetworkStateKey.String("close_wait")
-	// closing
-	SystemNetworkStateClosing = SystemNetworkStateKey.String("closing")
-	// delete
-	SystemNetworkStateDelete = SystemNetworkStateKey.String("delete")
-	// established
-	SystemNetworkStateEstablished = SystemNetworkStateKey.String("established")
-	// fin_wait_1
-	SystemNetworkStateFinWait1 = SystemNetworkStateKey.String("fin_wait_1")
-	// fin_wait_2
-	SystemNetworkStateFinWait2 = SystemNetworkStateKey.String("fin_wait_2")
-	// last_ack
-	SystemNetworkStateLastAck = SystemNetworkStateKey.String("last_ack")
-	// listen
-	SystemNetworkStateListen = SystemNetworkStateKey.String("listen")
-	// syn_recv
-	SystemNetworkStateSynRecv = SystemNetworkStateKey.String("syn_recv")
-	// syn_sent
-	SystemNetworkStateSynSent = SystemNetworkStateKey.String("syn_sent")
-	// time_wait
-	SystemNetworkStateTimeWait = SystemNetworkStateKey.String("time_wait")
-)
-
-// Describes System Process metric attributes
-const (
-	// SystemProcessStatusKey is the attribute Key conforming to the
-	// "system.process.status" semantic conventions. It represents the process
-	// state, e.g., [Linux Process State
-	// Codes](https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES)
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'running'
-	SystemProcessStatusKey = attribute.Key("system.process.status")
-)
-
-var (
-	// running
-	SystemProcessStatusRunning = SystemProcessStatusKey.String("running")
-	// sleeping
-	SystemProcessStatusSleeping = SystemProcessStatusKey.String("sleeping")
-	// stopped
-	SystemProcessStatusStopped = SystemProcessStatusKey.String("stopped")
-	// defunct
-	SystemProcessStatusDefunct = SystemProcessStatusKey.String("defunct")
-)
-
-// The Android platform on which the Android application is running.
-const (
-	// AndroidOSAPILevelKey is the attribute Key conforming to the
-	// "android.os.api_level" semantic conventions. It represents the uniquely
-	// identifies the framework API revision offered by a version
-	// (`os.version`) of the android operating system. More information can be
-	// found
-	// [here](https://developer.android.com/guide/topics/manifest/uses-sdk-element#APILevels).
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '33', '32'
-	AndroidOSAPILevelKey = attribute.Key("android.os.api_level")
-)
-
-// AndroidOSAPILevel returns an attribute KeyValue conforming to the
-// "android.os.api_level" semantic conventions. It represents the uniquely
-// identifies the framework API revision offered by a version (`os.version`) of
-// the android operating system. More information can be found
-// [here](https://developer.android.com/guide/topics/manifest/uses-sdk-element#APILevels).
-func AndroidOSAPILevel(val string) attribute.KeyValue {
-	return AndroidOSAPILevelKey.String(val)
+// AWSRequestID returns an attribute KeyValue conforming to the
+// "aws.request_id" semantic conventions. It represents the AWS request ID as
+// returned in the response headers `x-amz-request-id` or `x-amz-requestid`.
+func AWSRequestID(val string) attribute.KeyValue {
+	return AWSRequestIDKey.String(val)
 }
 
 // Attributes for AWS DynamoDB.
@@ -1144,6 +598,462 @@ func AWSDynamoDBTableNames(val ...string) attribute.KeyValue {
 // of the `TotalSegments` request parameter.
 func AWSDynamoDBTotalSegments(val int) attribute.KeyValue {
 	return AWSDynamoDBTotalSegmentsKey.Int(val)
+}
+
+// Attributes for AWS Elastic Container Service (ECS).
+const (
+	// AWSECSTaskIDKey is the attribute Key conforming to the "aws.ecs.task.id"
+	// semantic conventions. It represents the ID of a running ECS task. The ID
+	// MUST be extracted from `task.arn`.
+	//
+	// Type: string
+	// RequirementLevel: ConditionallyRequired (If and only if `task.arn` is
+	// populated.)
+	// Stability: experimental
+	// Examples: '10838bed-421f-43ef-870a-f43feacbbb5b',
+	// '23ebb8ac-c18f-46c6-8bbe-d55d0e37cfbd'
+	AWSECSTaskIDKey = attribute.Key("aws.ecs.task.id")
+
+	// AWSECSClusterARNKey is the attribute Key conforming to the
+	// "aws.ecs.cluster.arn" semantic conventions. It represents the ARN of an
+	// [ECS
+	// cluster](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/clusters.html).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'arn:aws:ecs:us-west-2:123456789123:cluster/my-cluster'
+	AWSECSClusterARNKey = attribute.Key("aws.ecs.cluster.arn")
+
+	// AWSECSContainerARNKey is the attribute Key conforming to the
+	// "aws.ecs.container.arn" semantic conventions. It represents the Amazon
+	// Resource Name (ARN) of an [ECS container
+	// instance](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_instances.html).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples:
+	// 'arn:aws:ecs:us-west-1:123456789123:container/32624152-9086-4f0e-acae-1a75b14fe4d9'
+	AWSECSContainerARNKey = attribute.Key("aws.ecs.container.arn")
+
+	// AWSECSLaunchtypeKey is the attribute Key conforming to the
+	// "aws.ecs.launchtype" semantic conventions. It represents the [launch
+	// type](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html)
+	// for an ECS task.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	AWSECSLaunchtypeKey = attribute.Key("aws.ecs.launchtype")
+
+	// AWSECSTaskARNKey is the attribute Key conforming to the
+	// "aws.ecs.task.arn" semantic conventions. It represents the ARN of a
+	// running [ECS
+	// task](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-account-settings.html#ecs-resource-ids).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples:
+	// 'arn:aws:ecs:us-west-1:123456789123:task/10838bed-421f-43ef-870a-f43feacbbb5b',
+	// 'arn:aws:ecs:us-west-1:123456789123:task/my-cluster/task-id/23ebb8ac-c18f-46c6-8bbe-d55d0e37cfbd'
+	AWSECSTaskARNKey = attribute.Key("aws.ecs.task.arn")
+
+	// AWSECSTaskFamilyKey is the attribute Key conforming to the
+	// "aws.ecs.task.family" semantic conventions. It represents the family
+	// name of the [ECS task
+	// definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html)
+	// used to create the ECS task.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'opentelemetry-family'
+	AWSECSTaskFamilyKey = attribute.Key("aws.ecs.task.family")
+
+	// AWSECSTaskRevisionKey is the attribute Key conforming to the
+	// "aws.ecs.task.revision" semantic conventions. It represents the revision
+	// for the task definition used to create the ECS task.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '8', '26'
+	AWSECSTaskRevisionKey = attribute.Key("aws.ecs.task.revision")
+)
+
+var (
+	// ec2
+	AWSECSLaunchtypeEC2 = AWSECSLaunchtypeKey.String("ec2")
+	// fargate
+	AWSECSLaunchtypeFargate = AWSECSLaunchtypeKey.String("fargate")
+)
+
+// AWSECSTaskID returns an attribute KeyValue conforming to the
+// "aws.ecs.task.id" semantic conventions. It represents the ID of a running
+// ECS task. The ID MUST be extracted from `task.arn`.
+func AWSECSTaskID(val string) attribute.KeyValue {
+	return AWSECSTaskIDKey.String(val)
+}
+
+// AWSECSClusterARN returns an attribute KeyValue conforming to the
+// "aws.ecs.cluster.arn" semantic conventions. It represents the ARN of an [ECS
+// cluster](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/clusters.html).
+func AWSECSClusterARN(val string) attribute.KeyValue {
+	return AWSECSClusterARNKey.String(val)
+}
+
+// AWSECSContainerARN returns an attribute KeyValue conforming to the
+// "aws.ecs.container.arn" semantic conventions. It represents the Amazon
+// Resource Name (ARN) of an [ECS container
+// instance](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_instances.html).
+func AWSECSContainerARN(val string) attribute.KeyValue {
+	return AWSECSContainerARNKey.String(val)
+}
+
+// AWSECSTaskARN returns an attribute KeyValue conforming to the
+// "aws.ecs.task.arn" semantic conventions. It represents the ARN of a running
+// [ECS
+// task](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-account-settings.html#ecs-resource-ids).
+func AWSECSTaskARN(val string) attribute.KeyValue {
+	return AWSECSTaskARNKey.String(val)
+}
+
+// AWSECSTaskFamily returns an attribute KeyValue conforming to the
+// "aws.ecs.task.family" semantic conventions. It represents the family name of
+// the [ECS task
+// definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html)
+// used to create the ECS task.
+func AWSECSTaskFamily(val string) attribute.KeyValue {
+	return AWSECSTaskFamilyKey.String(val)
+}
+
+// AWSECSTaskRevision returns an attribute KeyValue conforming to the
+// "aws.ecs.task.revision" semantic conventions. It represents the revision for
+// the task definition used to create the ECS task.
+func AWSECSTaskRevision(val string) attribute.KeyValue {
+	return AWSECSTaskRevisionKey.String(val)
+}
+
+// Attributes for AWS Elastic Kubernetes Service (EKS).
+const (
+	// AWSEKSClusterARNKey is the attribute Key conforming to the
+	// "aws.eks.cluster.arn" semantic conventions. It represents the ARN of an
+	// EKS cluster.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'arn:aws:ecs:us-west-2:123456789123:cluster/my-cluster'
+	AWSEKSClusterARNKey = attribute.Key("aws.eks.cluster.arn")
+)
+
+// AWSEKSClusterARN returns an attribute KeyValue conforming to the
+// "aws.eks.cluster.arn" semantic conventions. It represents the ARN of an EKS
+// cluster.
+func AWSEKSClusterARN(val string) attribute.KeyValue {
+	return AWSEKSClusterARNKey.String(val)
+}
+
+// Attributes for AWS Logs.
+const (
+	// AWSLogGroupARNsKey is the attribute Key conforming to the
+	// "aws.log.group.arns" semantic conventions. It represents the Amazon
+	// Resource Name(s) (ARN) of the AWS log group(s).
+	//
+	// Type: string[]
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples:
+	// 'arn:aws:logs:us-west-1:123456789012:log-group:/aws/my/group:*'
+	// Note: See the [log group ARN format
+	// documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format).
+	AWSLogGroupARNsKey = attribute.Key("aws.log.group.arns")
+
+	// AWSLogGroupNamesKey is the attribute Key conforming to the
+	// "aws.log.group.names" semantic conventions. It represents the name(s) of
+	// the AWS log group(s) an application is writing to.
+	//
+	// Type: string[]
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '/aws/lambda/my-function', 'opentelemetry-service'
+	// Note: Multiple log groups must be supported for cases like
+	// multi-container applications, where a single application has sidecar
+	// containers, and each write to their own log group.
+	AWSLogGroupNamesKey = attribute.Key("aws.log.group.names")
+
+	// AWSLogStreamARNsKey is the attribute Key conforming to the
+	// "aws.log.stream.arns" semantic conventions. It represents the ARN(s) of
+	// the AWS log stream(s).
+	//
+	// Type: string[]
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples:
+	// 'arn:aws:logs:us-west-1:123456789012:log-group:/aws/my/group:log-stream:logs/main/10838bed-421f-43ef-870a-f43feacbbb5b'
+	// Note: See the [log stream ARN format
+	// documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/iam-access-control-overview-cwl.html#CWL_ARN_Format).
+	// One log group can contain several log streams, so these ARNs necessarily
+	// identify both a log group and a log stream.
+	AWSLogStreamARNsKey = attribute.Key("aws.log.stream.arns")
+
+	// AWSLogStreamNamesKey is the attribute Key conforming to the
+	// "aws.log.stream.names" semantic conventions. It represents the name(s)
+	// of the AWS log stream(s) an application is writing to.
+	//
+	// Type: string[]
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'logs/main/10838bed-421f-43ef-870a-f43feacbbb5b'
+	AWSLogStreamNamesKey = attribute.Key("aws.log.stream.names")
+)
+
+// AWSLogGroupARNs returns an attribute KeyValue conforming to the
+// "aws.log.group.arns" semantic conventions. It represents the Amazon Resource
+// Name(s) (ARN) of the AWS log group(s).
+func AWSLogGroupARNs(val ...string) attribute.KeyValue {
+	return AWSLogGroupARNsKey.StringSlice(val)
+}
+
+// AWSLogGroupNames returns an attribute KeyValue conforming to the
+// "aws.log.group.names" semantic conventions. It represents the name(s) of the
+// AWS log group(s) an application is writing to.
+func AWSLogGroupNames(val ...string) attribute.KeyValue {
+	return AWSLogGroupNamesKey.StringSlice(val)
+}
+
+// AWSLogStreamARNs returns an attribute KeyValue conforming to the
+// "aws.log.stream.arns" semantic conventions. It represents the ARN(s) of the
+// AWS log stream(s).
+func AWSLogStreamARNs(val ...string) attribute.KeyValue {
+	return AWSLogStreamARNsKey.StringSlice(val)
+}
+
+// AWSLogStreamNames returns an attribute KeyValue conforming to the
+// "aws.log.stream.names" semantic conventions. It represents the name(s) of
+// the AWS log stream(s) an application is writing to.
+func AWSLogStreamNames(val ...string) attribute.KeyValue {
+	return AWSLogStreamNamesKey.StringSlice(val)
+}
+
+// Attributes for AWS Lambda.
+const (
+	// AWSLambdaInvokedARNKey is the attribute Key conforming to the
+	// "aws.lambda.invoked_arn" semantic conventions. It represents the full
+	// invoked ARN as provided on the `Context` passed to the function
+	// (`Lambda-Runtime-Invoked-Function-ARN` header on the
+	// `/runtime/invocation/next` applicable).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'arn:aws:lambda:us-east-1:123456:function:myfunction:myalias'
+	// Note: This may be different from `cloud.resource_id` if an alias is
+	// involved.
+	AWSLambdaInvokedARNKey = attribute.Key("aws.lambda.invoked_arn")
+)
+
+// AWSLambdaInvokedARN returns an attribute KeyValue conforming to the
+// "aws.lambda.invoked_arn" semantic conventions. It represents the full
+// invoked ARN as provided on the `Context` passed to the function
+// (`Lambda-Runtime-Invoked-Function-ARN` header on the
+// `/runtime/invocation/next` applicable).
+func AWSLambdaInvokedARN(val string) attribute.KeyValue {
+	return AWSLambdaInvokedARNKey.String(val)
+}
+
+// Attributes for AWS S3.
+const (
+	// AWSS3BucketKey is the attribute Key conforming to the "aws.s3.bucket"
+	// semantic conventions. It represents the S3 bucket name the request
+	// refers to. Corresponds to the `--bucket` parameter of the [S3
+	// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html)
+	// operations.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'some-bucket-name'
+	// Note: The `bucket` attribute is applicable to all S3 operations that
+	// reference a bucket, i.e. that require the bucket name as a mandatory
+	// parameter.
+	// This applies to almost all S3 operations except `list-buckets`.
+	AWSS3BucketKey = attribute.Key("aws.s3.bucket")
+
+	// AWSS3CopySourceKey is the attribute Key conforming to the
+	// "aws.s3.copy_source" semantic conventions. It represents the source
+	// object (in the form `bucket`/`key`) for the copy operation.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'someFile.yml'
+	// Note: The `copy_source` attribute applies to S3 copy operations and
+	// corresponds to the `--copy-source` parameter
+	// of the [copy-object operation within the S3
+	// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html).
+	// This applies in particular to the following operations:
+	//
+	// -
+	// [copy-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html)
+	// -
+	// [upload-part-copy](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html)
+	AWSS3CopySourceKey = attribute.Key("aws.s3.copy_source")
+
+	// AWSS3DeleteKey is the attribute Key conforming to the "aws.s3.delete"
+	// semantic conventions. It represents the delete request container that
+	// specifies the objects to be deleted.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples:
+	// 'Objects=[{Key=string,VersionID=string},{Key=string,VersionID=string}],Quiet=boolean'
+	// Note: The `delete` attribute is only applicable to the
+	// [delete-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html)
+	// operation.
+	// The `delete` attribute corresponds to the `--delete` parameter of the
+	// [delete-objects operation within the S3
+	// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-objects.html).
+	AWSS3DeleteKey = attribute.Key("aws.s3.delete")
+
+	// AWSS3KeyKey is the attribute Key conforming to the "aws.s3.key" semantic
+	// conventions. It represents the S3 object key the request refers to.
+	// Corresponds to the `--key` parameter of the [S3
+	// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html)
+	// operations.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'someFile.yml'
+	// Note: The `key` attribute is applicable to all object-related S3
+	// operations, i.e. that require the object key as a mandatory parameter.
+	// This applies in particular to the following operations:
+	//
+	// -
+	// [copy-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/copy-object.html)
+	// -
+	// [delete-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/delete-object.html)
+	// -
+	// [get-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-object.html)
+	// -
+	// [head-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/head-object.html)
+	// -
+	// [put-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-object.html)
+	// -
+	// [restore-object](https://docs.aws.amazon.com/cli/latest/reference/s3api/restore-object.html)
+	// -
+	// [select-object-content](https://docs.aws.amazon.com/cli/latest/reference/s3api/select-object-content.html)
+	// -
+	// [abort-multipart-upload](https://docs.aws.amazon.com/cli/latest/reference/s3api/abort-multipart-upload.html)
+	// -
+	// [complete-multipart-upload](https://docs.aws.amazon.com/cli/latest/reference/s3api/complete-multipart-upload.html)
+	// -
+	// [create-multipart-upload](https://docs.aws.amazon.com/cli/latest/reference/s3api/create-multipart-upload.html)
+	// -
+	// [list-parts](https://docs.aws.amazon.com/cli/latest/reference/s3api/list-parts.html)
+	// -
+	// [upload-part](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html)
+	// -
+	// [upload-part-copy](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html)
+	AWSS3KeyKey = attribute.Key("aws.s3.key")
+
+	// AWSS3PartNumberKey is the attribute Key conforming to the
+	// "aws.s3.part_number" semantic conventions. It represents the part number
+	// of the part being uploaded in a multipart-upload operation. This is a
+	// positive integer between 1 and 10,000.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 3456
+	// Note: The `part_number` attribute is only applicable to the
+	// [upload-part](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html)
+	// and
+	// [upload-part-copy](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html)
+	// operations.
+	// The `part_number` attribute corresponds to the `--part-number` parameter
+	// of the
+	// [upload-part operation within the S3
+	// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html).
+	AWSS3PartNumberKey = attribute.Key("aws.s3.part_number")
+
+	// AWSS3UploadIDKey is the attribute Key conforming to the
+	// "aws.s3.upload_id" semantic conventions. It represents the upload ID
+	// that identifies the multipart upload.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'dfRtDYWFbkRONycy.Yxwh66Yjlx.cph0gtNBtJ'
+	// Note: The `upload_id` attribute applies to S3 multipart-upload
+	// operations and corresponds to the `--upload-id` parameter
+	// of the [S3
+	// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html)
+	// multipart operations.
+	// This applies in particular to the following operations:
+	//
+	// -
+	// [abort-multipart-upload](https://docs.aws.amazon.com/cli/latest/reference/s3api/abort-multipart-upload.html)
+	// -
+	// [complete-multipart-upload](https://docs.aws.amazon.com/cli/latest/reference/s3api/complete-multipart-upload.html)
+	// -
+	// [list-parts](https://docs.aws.amazon.com/cli/latest/reference/s3api/list-parts.html)
+	// -
+	// [upload-part](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part.html)
+	// -
+	// [upload-part-copy](https://docs.aws.amazon.com/cli/latest/reference/s3api/upload-part-copy.html)
+	AWSS3UploadIDKey = attribute.Key("aws.s3.upload_id")
+)
+
+// AWSS3Bucket returns an attribute KeyValue conforming to the
+// "aws.s3.bucket" semantic conventions. It represents the S3 bucket name the
+// request refers to. Corresponds to the `--bucket` parameter of the [S3
+// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html)
+// operations.
+func AWSS3Bucket(val string) attribute.KeyValue {
+	return AWSS3BucketKey.String(val)
+}
+
+// AWSS3CopySource returns an attribute KeyValue conforming to the
+// "aws.s3.copy_source" semantic conventions. It represents the source object
+// (in the form `bucket`/`key`) for the copy operation.
+func AWSS3CopySource(val string) attribute.KeyValue {
+	return AWSS3CopySourceKey.String(val)
+}
+
+// AWSS3Delete returns an attribute KeyValue conforming to the
+// "aws.s3.delete" semantic conventions. It represents the delete request
+// container that specifies the objects to be deleted.
+func AWSS3Delete(val string) attribute.KeyValue {
+	return AWSS3DeleteKey.String(val)
+}
+
+// AWSS3Key returns an attribute KeyValue conforming to the "aws.s3.key"
+// semantic conventions. It represents the S3 object key the request refers to.
+// Corresponds to the `--key` parameter of the [S3
+// API](https://docs.aws.amazon.com/cli/latest/reference/s3api/index.html)
+// operations.
+func AWSS3Key(val string) attribute.KeyValue {
+	return AWSS3KeyKey.String(val)
+}
+
+// AWSS3PartNumber returns an attribute KeyValue conforming to the
+// "aws.s3.part_number" semantic conventions. It represents the part number of
+// the part being uploaded in a multipart-upload operation. This is a positive
+// integer between 1 and 10,000.
+func AWSS3PartNumber(val int) attribute.KeyValue {
+	return AWSS3PartNumberKey.Int(val)
+}
+
+// AWSS3UploadID returns an attribute KeyValue conforming to the
+// "aws.s3.upload_id" semantic conventions. It represents the upload ID that
+// identifies the multipart upload.
+func AWSS3UploadID(val string) attribute.KeyValue {
+	return AWSS3UploadIDKey.String(val)
 }
 
 // The web browser attributes
@@ -1810,7 +1720,7 @@ const (
 	// K8S defines a link to the container registry repository with digest
 	// `"imageID": "registry.azurecr.io
 	// /namespace/service/dockerfile@sha256:bdeabd40c3a8a492eaf9e8e44d0ebbb84bac7ee25ac0cf8a7159d25f62555625"`.
-	// The ID is assinged by the container runtime and can vary in different
+	// The ID is assigned by the container runtime and can vary in different
 	// environments. Consider using `oci.manifest.digest` if it is important to
 	// identify the same image in different environments/runtimes.
 	ContainerImageIDKey = attribute.Key("container.image.id")
@@ -1963,367 +1873,108 @@ func ContainerRuntime(val string) attribute.KeyValue {
 	return ContainerRuntimeKey.String(val)
 }
 
-// The attributes used to describe telemetry in the context of databases.
+// This group defines the attributes used to describe telemetry in the context
+// of databases.
 const (
-	// DBCassandraConsistencyLevelKey is the attribute Key conforming to the
-	// "db.cassandra.consistency_level" semantic conventions. It represents the
-	// consistency level of the query. Based on consistency values from
-	// [CQL](https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html).
+	// DBClientConnectionsPoolNameKey is the attribute Key conforming to the
+	// "db.client.connections.pool.name" semantic conventions. It represents
+	// the name of the connection pool; unique within the instrumented
+	// application. In case the connection pool implementation doesn't provide
+	// a name, instrumentation should use a combination of `server.address` and
+	// `server.port` attributes formatted as `server.address:server.port`.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'myDataSource'
+	DBClientConnectionsPoolNameKey = attribute.Key("db.client.connections.pool.name")
+
+	// DBClientConnectionsStateKey is the attribute Key conforming to the
+	// "db.client.connections.state" semantic conventions. It represents the
+	// state of a connection in the pool
 	//
 	// Type: Enum
 	// RequirementLevel: Optional
 	// Stability: experimental
-	DBCassandraConsistencyLevelKey = attribute.Key("db.cassandra.consistency_level")
+	// Examples: 'idle'
+	DBClientConnectionsStateKey = attribute.Key("db.client.connections.state")
 
-	// DBCassandraCoordinatorDCKey is the attribute Key conforming to the
-	// "db.cassandra.coordinator.dc" semantic conventions. It represents the
-	// data center of the coordinating node for a query.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'us-west-2'
-	DBCassandraCoordinatorDCKey = attribute.Key("db.cassandra.coordinator.dc")
-
-	// DBCassandraCoordinatorIDKey is the attribute Key conforming to the
-	// "db.cassandra.coordinator.id" semantic conventions. It represents the ID
-	// of the coordinating node for a query.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'be13faa2-8574-4d71-926d-27f16cf8a7af'
-	DBCassandraCoordinatorIDKey = attribute.Key("db.cassandra.coordinator.id")
-
-	// DBCassandraIdempotenceKey is the attribute Key conforming to the
-	// "db.cassandra.idempotence" semantic conventions. It represents the
-	// whether or not the query is idempotent.
-	//
-	// Type: boolean
-	// RequirementLevel: Optional
-	// Stability: experimental
-	DBCassandraIdempotenceKey = attribute.Key("db.cassandra.idempotence")
-
-	// DBCassandraPageSizeKey is the attribute Key conforming to the
-	// "db.cassandra.page_size" semantic conventions. It represents the fetch
-	// size used for paging, i.e. how many rows will be returned at once.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 5000
-	DBCassandraPageSizeKey = attribute.Key("db.cassandra.page_size")
-
-	// DBCassandraSpeculativeExecutionCountKey is the attribute Key conforming
-	// to the "db.cassandra.speculative_execution_count" semantic conventions.
-	// It represents the number of times a query was speculatively executed.
-	// Not set or `0` if the query was not executed speculatively.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 0, 2
-	DBCassandraSpeculativeExecutionCountKey = attribute.Key("db.cassandra.speculative_execution_count")
-
-	// DBCassandraTableKey is the attribute Key conforming to the
-	// "db.cassandra.table" semantic conventions. It represents the name of the
-	// primary Cassandra table that the operation is acting upon, including the
-	// keyspace name (if applicable).
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'mytable'
-	// Note: This mirrors the db.sql.table attribute but references cassandra
-	// rather than sql. It is not recommended to attempt any client-side
-	// parsing of `db.statement` just to get this property, but it should be
-	// set if it is provided by the library being instrumented. If the
-	// operation is acting upon an anonymous table, or more than one table,
-	// this value MUST NOT be set.
-	DBCassandraTableKey = attribute.Key("db.cassandra.table")
-
-	// DBCosmosDBClientIDKey is the attribute Key conforming to the
-	// "db.cosmosdb.client_id" semantic conventions. It represents the unique
-	// Cosmos client instance id.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '3ba4827d-4422-483f-b59f-85b74211c11d'
-	DBCosmosDBClientIDKey = attribute.Key("db.cosmosdb.client_id")
-
-	// DBCosmosDBConnectionModeKey is the attribute Key conforming to the
-	// "db.cosmosdb.connection_mode" semantic conventions. It represents the
-	// cosmos client connection mode.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	DBCosmosDBConnectionModeKey = attribute.Key("db.cosmosdb.connection_mode")
-
-	// DBCosmosDBContainerKey is the attribute Key conforming to the
-	// "db.cosmosdb.container" semantic conventions. It represents the cosmos
-	// DB container name.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'anystring'
-	DBCosmosDBContainerKey = attribute.Key("db.cosmosdb.container")
-
-	// DBCosmosDBOperationTypeKey is the attribute Key conforming to the
-	// "db.cosmosdb.operation_type" semantic conventions. It represents the
-	// cosmosDB Operation Type.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	DBCosmosDBOperationTypeKey = attribute.Key("db.cosmosdb.operation_type")
-
-	// DBCosmosDBRequestChargeKey is the attribute Key conforming to the
-	// "db.cosmosdb.request_charge" semantic conventions. It represents the rU
-	// consumed for that operation
-	//
-	// Type: double
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 46.18, 1.0
-	DBCosmosDBRequestChargeKey = attribute.Key("db.cosmosdb.request_charge")
-
-	// DBCosmosDBRequestContentLengthKey is the attribute Key conforming to the
-	// "db.cosmosdb.request_content_length" semantic conventions. It represents
-	// the request payload size in bytes
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	DBCosmosDBRequestContentLengthKey = attribute.Key("db.cosmosdb.request_content_length")
-
-	// DBCosmosDBStatusCodeKey is the attribute Key conforming to the
-	// "db.cosmosdb.status_code" semantic conventions. It represents the cosmos
-	// DB status code.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 200, 201
-	DBCosmosDBStatusCodeKey = attribute.Key("db.cosmosdb.status_code")
-
-	// DBCosmosDBSubStatusCodeKey is the attribute Key conforming to the
-	// "db.cosmosdb.sub_status_code" semantic conventions. It represents the
-	// cosmos DB sub status code.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 1000, 1002
-	DBCosmosDBSubStatusCodeKey = attribute.Key("db.cosmosdb.sub_status_code")
-
-	// DBElasticsearchClusterNameKey is the attribute Key conforming to the
-	// "db.elasticsearch.cluster.name" semantic conventions. It represents the
-	// represents the identifier of an Elasticsearch cluster.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'e9106fc68e3044f0b1475b04bf4ffd5f'
-	DBElasticsearchClusterNameKey = attribute.Key("db.elasticsearch.cluster.name")
-
-	// DBInstanceIDKey is the attribute Key conforming to the "db.instance.id"
-	// semantic conventions. It represents an identifier (address, unique name,
-	// or any other identifier) of the database instance that is executing
-	// queries or mutations on the current connection. This is useful in cases
-	// where the database is running in a clustered environment and the
-	// instrumentation is able to record the node executing the query. The
-	// client may obtain this value in databases like MySQL using queries like
-	// `select @@hostname`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'mysql-e26b99z.example.com'
-	DBInstanceIDKey = attribute.Key("db.instance.id")
-
-	// DBMongoDBCollectionKey is the attribute Key conforming to the
-	// "db.mongodb.collection" semantic conventions. It represents the MongoDB
-	// collection being accessed within the database stated in `db.name`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'customers', 'products'
-	DBMongoDBCollectionKey = attribute.Key("db.mongodb.collection")
-
-	// DBMSSQLInstanceNameKey is the attribute Key conforming to the
-	// "db.mssql.instance_name" semantic conventions. It represents the
-	// Microsoft SQL Server [instance
-	// name](https://docs.microsoft.com/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15)
-	// connecting to. This name is used to determine the port of a named
-	// instance.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'MSSQLSERVER'
-	// Note: If setting a `db.mssql.instance_name`, `server.port` is no longer
-	// required (but still recommended if non-standard).
-	DBMSSQLInstanceNameKey = attribute.Key("db.mssql.instance_name")
-
-	// DBNameKey is the attribute Key conforming to the "db.name" semantic
-	// conventions. It represents the this attribute is used to report the name
-	// of the database being accessed. For commands that switch the database,
-	// this should be set to the target database (even if the command fails).
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'customers', 'main'
-	// Note: In some SQL databases, the database name to be used is called
-	// "schema name". In case there are multiple layers that could be
-	// considered for database name (e.g. Oracle instance name and schema
-	// name), the database name to be used is the more specific layer (e.g.
-	// Oracle schema name).
-	DBNameKey = attribute.Key("db.name")
-
-	// DBOperationKey is the attribute Key conforming to the "db.operation"
-	// semantic conventions. It represents the name of the operation being
-	// executed, e.g. the [MongoDB command
-	// name](https://docs.mongodb.com/manual/reference/command/#database-operations)
-	// such as `findAndModify`, or the SQL keyword.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'findAndModify', 'HMSET', 'SELECT'
-	// Note: When setting this to an SQL keyword, it is not recommended to
-	// attempt any client-side parsing of `db.statement` just to get this
-	// property, but it should be set if the operation name is provided by the
-	// library being instrumented. If the SQL statement has an ambiguous
-	// operation, or performs more than one operation, this value may be
-	// omitted.
-	DBOperationKey = attribute.Key("db.operation")
-
-	// DBRedisDBIndexKey is the attribute Key conforming to the
-	// "db.redis.database_index" semantic conventions. It represents the index
-	// of the database being accessed as used in the [`SELECT`
-	// command](https://redis.io/commands/select), provided as an integer. To
-	// be used instead of the generic `db.name` attribute.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 0, 1, 15
-	DBRedisDBIndexKey = attribute.Key("db.redis.database_index")
-
-	// DBSQLTableKey is the attribute Key conforming to the "db.sql.table"
-	// semantic conventions. It represents the name of the primary table that
-	// the operation is acting upon, including the database name (if
-	// applicable).
+	// DBCollectionNameKey is the attribute Key conforming to the
+	// "db.collection.name" semantic conventions. It represents the name of a
+	// collection (table, container) within the database.
 	//
 	// Type: string
 	// RequirementLevel: Optional
 	// Stability: experimental
 	// Examples: 'public.users', 'customers'
-	// Note: It is not recommended to attempt any client-side parsing of
-	// `db.statement` just to get this property, but it should be set if it is
-	// provided by the library being instrumented. If the operation is acting
-	// upon an anonymous table, or more than one table, this value MUST NOT be
-	// set.
-	DBSQLTableKey = attribute.Key("db.sql.table")
+	// Note: If the collection name is parsed from the query, it SHOULD match
+	// the value provided in the query and may be qualified with the schema and
+	// database name.
+	// It is RECOMMENDED to capture the value as provided by the application
+	// without attempting to do any case normalization.
+	DBCollectionNameKey = attribute.Key("db.collection.name")
 
-	// DBStatementKey is the attribute Key conforming to the "db.statement"
-	// semantic conventions. It represents the database statement being
-	// executed.
+	// DBNamespaceKey is the attribute Key conforming to the "db.namespace"
+	// semantic conventions. It represents the name of the database, fully
+	// qualified within the server address and port.
 	//
 	// Type: string
 	// RequirementLevel: Optional
 	// Stability: experimental
-	// Examples: 'SELECT * FROM wuser_table', 'SET mykey "WuValue"'
-	DBStatementKey = attribute.Key("db.statement")
+	// Examples: 'customers', 'test.users'
+	// Note: If a database system has multiple namespace components, they
+	// SHOULD be concatenated (potentially using database system specific
+	// conventions) from most general to most specific namespace component, and
+	// more specific namespaces SHOULD NOT be captured without the more general
+	// namespaces, to ensure that "startswith" queries for the more general
+	// namespaces will be valid.
+	// Semantic conventions for individual database systems SHOULD document
+	// what `db.namespace` means in the context of that system.
+	// It is RECOMMENDED to capture the value as provided by the application
+	// without attempting to do any case normalization.
+	DBNamespaceKey = attribute.Key("db.namespace")
+
+	// DBOperationNameKey is the attribute Key conforming to the
+	// "db.operation.name" semantic conventions. It represents the name of the
+	// operation or command being executed.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'findAndModify', 'HMSET', 'SELECT'
+	// Note: It is RECOMMENDED to capture the value as provided by the
+	// application without attempting to do any case normalization.
+	DBOperationNameKey = attribute.Key("db.operation.name")
+
+	// DBQueryTextKey is the attribute Key conforming to the "db.query.text"
+	// semantic conventions. It represents the database query being executed.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'SELECT * FROM wuser_table where username = ?', 'SET mykey
+	// "WuValue"'
+	DBQueryTextKey = attribute.Key("db.query.text")
 
 	// DBSystemKey is the attribute Key conforming to the "db.system" semantic
-	// conventions. It represents an identifier for the database management
-	// system (DBMS) product being used. See below for a list of well-known
-	// identifiers.
+	// conventions. It represents the database management system (DBMS) product
+	// as identified by the client instrumentation.
 	//
 	// Type: Enum
 	// RequirementLevel: Optional
 	// Stability: experimental
+	// Note: The actual DBMS may differ from the one identified by the client.
+	// For example, when using PostgreSQL client libraries to connect to a
+	// CockroachDB, the `db.system` is set to `postgresql` based on the
+	// instrumentation's best knowledge.
 	DBSystemKey = attribute.Key("db.system")
-
-	// DBUserKey is the attribute Key conforming to the "db.user" semantic
-	// conventions. It represents the username for accessing the database.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'readonly_user', 'reporting_user'
-	DBUserKey = attribute.Key("db.user")
 )
 
 var (
-	// all
-	DBCassandraConsistencyLevelAll = DBCassandraConsistencyLevelKey.String("all")
-	// each_quorum
-	DBCassandraConsistencyLevelEachQuorum = DBCassandraConsistencyLevelKey.String("each_quorum")
-	// quorum
-	DBCassandraConsistencyLevelQuorum = DBCassandraConsistencyLevelKey.String("quorum")
-	// local_quorum
-	DBCassandraConsistencyLevelLocalQuorum = DBCassandraConsistencyLevelKey.String("local_quorum")
-	// one
-	DBCassandraConsistencyLevelOne = DBCassandraConsistencyLevelKey.String("one")
-	// two
-	DBCassandraConsistencyLevelTwo = DBCassandraConsistencyLevelKey.String("two")
-	// three
-	DBCassandraConsistencyLevelThree = DBCassandraConsistencyLevelKey.String("three")
-	// local_one
-	DBCassandraConsistencyLevelLocalOne = DBCassandraConsistencyLevelKey.String("local_one")
-	// any
-	DBCassandraConsistencyLevelAny = DBCassandraConsistencyLevelKey.String("any")
-	// serial
-	DBCassandraConsistencyLevelSerial = DBCassandraConsistencyLevelKey.String("serial")
-	// local_serial
-	DBCassandraConsistencyLevelLocalSerial = DBCassandraConsistencyLevelKey.String("local_serial")
-)
-
-var (
-	// Gateway (HTTP) connections mode
-	DBCosmosDBConnectionModeGateway = DBCosmosDBConnectionModeKey.String("gateway")
-	// Direct connection
-	DBCosmosDBConnectionModeDirect = DBCosmosDBConnectionModeKey.String("direct")
-)
-
-var (
-	// invalid
-	DBCosmosDBOperationTypeInvalid = DBCosmosDBOperationTypeKey.String("Invalid")
-	// create
-	DBCosmosDBOperationTypeCreate = DBCosmosDBOperationTypeKey.String("Create")
-	// patch
-	DBCosmosDBOperationTypePatch = DBCosmosDBOperationTypeKey.String("Patch")
-	// read
-	DBCosmosDBOperationTypeRead = DBCosmosDBOperationTypeKey.String("Read")
-	// read_feed
-	DBCosmosDBOperationTypeReadFeed = DBCosmosDBOperationTypeKey.String("ReadFeed")
-	// delete
-	DBCosmosDBOperationTypeDelete = DBCosmosDBOperationTypeKey.String("Delete")
-	// replace
-	DBCosmosDBOperationTypeReplace = DBCosmosDBOperationTypeKey.String("Replace")
-	// execute
-	DBCosmosDBOperationTypeExecute = DBCosmosDBOperationTypeKey.String("Execute")
-	// query
-	DBCosmosDBOperationTypeQuery = DBCosmosDBOperationTypeKey.String("Query")
-	// head
-	DBCosmosDBOperationTypeHead = DBCosmosDBOperationTypeKey.String("Head")
-	// head_feed
-	DBCosmosDBOperationTypeHeadFeed = DBCosmosDBOperationTypeKey.String("HeadFeed")
-	// upsert
-	DBCosmosDBOperationTypeUpsert = DBCosmosDBOperationTypeKey.String("Upsert")
-	// batch
-	DBCosmosDBOperationTypeBatch = DBCosmosDBOperationTypeKey.String("Batch")
-	// query_plan
-	DBCosmosDBOperationTypeQueryPlan = DBCosmosDBOperationTypeKey.String("QueryPlan")
-	// execute_javascript
-	DBCosmosDBOperationTypeExecuteJavascript = DBCosmosDBOperationTypeKey.String("ExecuteJavaScript")
+	// idle
+	DBClientConnectionsStateIdle = DBClientConnectionsStateKey.String("idle")
+	// used
+	DBClientConnectionsStateUsed = DBClientConnectionsStateKey.String("used")
 )
 
 var (
@@ -2433,6 +2084,132 @@ var (
 	DBSystemTrino = DBSystemKey.String("trino")
 )
 
+// DBClientConnectionsPoolName returns an attribute KeyValue conforming to
+// the "db.client.connections.pool.name" semantic conventions. It represents
+// the name of the connection pool; unique within the instrumented application.
+// In case the connection pool implementation doesn't provide a name,
+// instrumentation should use a combination of `server.address` and
+// `server.port` attributes formatted as `server.address:server.port`.
+func DBClientConnectionsPoolName(val string) attribute.KeyValue {
+	return DBClientConnectionsPoolNameKey.String(val)
+}
+
+// DBCollectionName returns an attribute KeyValue conforming to the
+// "db.collection.name" semantic conventions. It represents the name of a
+// collection (table, container) within the database.
+func DBCollectionName(val string) attribute.KeyValue {
+	return DBCollectionNameKey.String(val)
+}
+
+// DBNamespace returns an attribute KeyValue conforming to the
+// "db.namespace" semantic conventions. It represents the name of the database,
+// fully qualified within the server address and port.
+func DBNamespace(val string) attribute.KeyValue {
+	return DBNamespaceKey.String(val)
+}
+
+// DBOperationName returns an attribute KeyValue conforming to the
+// "db.operation.name" semantic conventions. It represents the name of the
+// operation or command being executed.
+func DBOperationName(val string) attribute.KeyValue {
+	return DBOperationNameKey.String(val)
+}
+
+// DBQueryText returns an attribute KeyValue conforming to the
+// "db.query.text" semantic conventions. It represents the database query being
+// executed.
+func DBQueryText(val string) attribute.KeyValue {
+	return DBQueryTextKey.String(val)
+}
+
+// This group defines attributes for Cassandra.
+const (
+	// DBCassandraConsistencyLevelKey is the attribute Key conforming to the
+	// "db.cassandra.consistency_level" semantic conventions. It represents the
+	// consistency level of the query. Based on consistency values from
+	// [CQL](https://docs.datastax.com/en/cassandra-oss/3.0/cassandra/dml/dmlConfigConsistency.html).
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	DBCassandraConsistencyLevelKey = attribute.Key("db.cassandra.consistency_level")
+
+	// DBCassandraCoordinatorDCKey is the attribute Key conforming to the
+	// "db.cassandra.coordinator.dc" semantic conventions. It represents the
+	// data center of the coordinating node for a query.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'us-west-2'
+	DBCassandraCoordinatorDCKey = attribute.Key("db.cassandra.coordinator.dc")
+
+	// DBCassandraCoordinatorIDKey is the attribute Key conforming to the
+	// "db.cassandra.coordinator.id" semantic conventions. It represents the ID
+	// of the coordinating node for a query.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'be13faa2-8574-4d71-926d-27f16cf8a7af'
+	DBCassandraCoordinatorIDKey = attribute.Key("db.cassandra.coordinator.id")
+
+	// DBCassandraIdempotenceKey is the attribute Key conforming to the
+	// "db.cassandra.idempotence" semantic conventions. It represents the
+	// whether or not the query is idempotent.
+	//
+	// Type: boolean
+	// RequirementLevel: Optional
+	// Stability: experimental
+	DBCassandraIdempotenceKey = attribute.Key("db.cassandra.idempotence")
+
+	// DBCassandraPageSizeKey is the attribute Key conforming to the
+	// "db.cassandra.page_size" semantic conventions. It represents the fetch
+	// size used for paging, i.e. how many rows will be returned at once.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 5000
+	DBCassandraPageSizeKey = attribute.Key("db.cassandra.page_size")
+
+	// DBCassandraSpeculativeExecutionCountKey is the attribute Key conforming
+	// to the "db.cassandra.speculative_execution_count" semantic conventions.
+	// It represents the number of times a query was speculatively executed.
+	// Not set or `0` if the query was not executed speculatively.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 0, 2
+	DBCassandraSpeculativeExecutionCountKey = attribute.Key("db.cassandra.speculative_execution_count")
+)
+
+var (
+	// all
+	DBCassandraConsistencyLevelAll = DBCassandraConsistencyLevelKey.String("all")
+	// each_quorum
+	DBCassandraConsistencyLevelEachQuorum = DBCassandraConsistencyLevelKey.String("each_quorum")
+	// quorum
+	DBCassandraConsistencyLevelQuorum = DBCassandraConsistencyLevelKey.String("quorum")
+	// local_quorum
+	DBCassandraConsistencyLevelLocalQuorum = DBCassandraConsistencyLevelKey.String("local_quorum")
+	// one
+	DBCassandraConsistencyLevelOne = DBCassandraConsistencyLevelKey.String("one")
+	// two
+	DBCassandraConsistencyLevelTwo = DBCassandraConsistencyLevelKey.String("two")
+	// three
+	DBCassandraConsistencyLevelThree = DBCassandraConsistencyLevelKey.String("three")
+	// local_one
+	DBCassandraConsistencyLevelLocalOne = DBCassandraConsistencyLevelKey.String("local_one")
+	// any
+	DBCassandraConsistencyLevelAny = DBCassandraConsistencyLevelKey.String("any")
+	// serial
+	DBCassandraConsistencyLevelSerial = DBCassandraConsistencyLevelKey.String("serial")
+	// local_serial
+	DBCassandraConsistencyLevelLocalSerial = DBCassandraConsistencyLevelKey.String("local_serial")
+)
+
 // DBCassandraCoordinatorDC returns an attribute KeyValue conforming to the
 // "db.cassandra.coordinator.dc" semantic conventions. It represents the data
 // center of the coordinating node for a query.
@@ -2469,26 +2246,121 @@ func DBCassandraSpeculativeExecutionCount(val int) attribute.KeyValue {
 	return DBCassandraSpeculativeExecutionCountKey.Int(val)
 }
 
-// DBCassandraTable returns an attribute KeyValue conforming to the
-// "db.cassandra.table" semantic conventions. It represents the name of the
-// primary Cassandra table that the operation is acting upon, including the
-// keyspace name (if applicable).
-func DBCassandraTable(val string) attribute.KeyValue {
-	return DBCassandraTableKey.String(val)
-}
+// This group defines attributes for Azure Cosmos DB.
+const (
+	// DBCosmosDBClientIDKey is the attribute Key conforming to the
+	// "db.cosmosdb.client_id" semantic conventions. It represents the unique
+	// Cosmos client instance id.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '3ba4827d-4422-483f-b59f-85b74211c11d'
+	DBCosmosDBClientIDKey = attribute.Key("db.cosmosdb.client_id")
+
+	// DBCosmosDBConnectionModeKey is the attribute Key conforming to the
+	// "db.cosmosdb.connection_mode" semantic conventions. It represents the
+	// cosmos client connection mode.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	DBCosmosDBConnectionModeKey = attribute.Key("db.cosmosdb.connection_mode")
+
+	// DBCosmosDBOperationTypeKey is the attribute Key conforming to the
+	// "db.cosmosdb.operation_type" semantic conventions. It represents the
+	// cosmosDB Operation Type.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	DBCosmosDBOperationTypeKey = attribute.Key("db.cosmosdb.operation_type")
+
+	// DBCosmosDBRequestChargeKey is the attribute Key conforming to the
+	// "db.cosmosdb.request_charge" semantic conventions. It represents the rU
+	// consumed for that operation
+	//
+	// Type: double
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 46.18, 1.0
+	DBCosmosDBRequestChargeKey = attribute.Key("db.cosmosdb.request_charge")
+
+	// DBCosmosDBRequestContentLengthKey is the attribute Key conforming to the
+	// "db.cosmosdb.request_content_length" semantic conventions. It represents
+	// the request payload size in bytes
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	DBCosmosDBRequestContentLengthKey = attribute.Key("db.cosmosdb.request_content_length")
+
+	// DBCosmosDBStatusCodeKey is the attribute Key conforming to the
+	// "db.cosmosdb.status_code" semantic conventions. It represents the cosmos
+	// DB status code.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 200, 201
+	DBCosmosDBStatusCodeKey = attribute.Key("db.cosmosdb.status_code")
+
+	// DBCosmosDBSubStatusCodeKey is the attribute Key conforming to the
+	// "db.cosmosdb.sub_status_code" semantic conventions. It represents the
+	// cosmos DB sub status code.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1000, 1002
+	DBCosmosDBSubStatusCodeKey = attribute.Key("db.cosmosdb.sub_status_code")
+)
+
+var (
+	// Gateway (HTTP) connections mode
+	DBCosmosDBConnectionModeGateway = DBCosmosDBConnectionModeKey.String("gateway")
+	// Direct connection
+	DBCosmosDBConnectionModeDirect = DBCosmosDBConnectionModeKey.String("direct")
+)
+
+var (
+	// invalid
+	DBCosmosDBOperationTypeInvalid = DBCosmosDBOperationTypeKey.String("Invalid")
+	// create
+	DBCosmosDBOperationTypeCreate = DBCosmosDBOperationTypeKey.String("Create")
+	// patch
+	DBCosmosDBOperationTypePatch = DBCosmosDBOperationTypeKey.String("Patch")
+	// read
+	DBCosmosDBOperationTypeRead = DBCosmosDBOperationTypeKey.String("Read")
+	// read_feed
+	DBCosmosDBOperationTypeReadFeed = DBCosmosDBOperationTypeKey.String("ReadFeed")
+	// delete
+	DBCosmosDBOperationTypeDelete = DBCosmosDBOperationTypeKey.String("Delete")
+	// replace
+	DBCosmosDBOperationTypeReplace = DBCosmosDBOperationTypeKey.String("Replace")
+	// execute
+	DBCosmosDBOperationTypeExecute = DBCosmosDBOperationTypeKey.String("Execute")
+	// query
+	DBCosmosDBOperationTypeQuery = DBCosmosDBOperationTypeKey.String("Query")
+	// head
+	DBCosmosDBOperationTypeHead = DBCosmosDBOperationTypeKey.String("Head")
+	// head_feed
+	DBCosmosDBOperationTypeHeadFeed = DBCosmosDBOperationTypeKey.String("HeadFeed")
+	// upsert
+	DBCosmosDBOperationTypeUpsert = DBCosmosDBOperationTypeKey.String("Upsert")
+	// batch
+	DBCosmosDBOperationTypeBatch = DBCosmosDBOperationTypeKey.String("Batch")
+	// query_plan
+	DBCosmosDBOperationTypeQueryPlan = DBCosmosDBOperationTypeKey.String("QueryPlan")
+	// execute_javascript
+	DBCosmosDBOperationTypeExecuteJavascript = DBCosmosDBOperationTypeKey.String("ExecuteJavaScript")
+)
 
 // DBCosmosDBClientID returns an attribute KeyValue conforming to the
 // "db.cosmosdb.client_id" semantic conventions. It represents the unique
 // Cosmos client instance id.
 func DBCosmosDBClientID(val string) attribute.KeyValue {
 	return DBCosmosDBClientIDKey.String(val)
-}
-
-// DBCosmosDBContainer returns an attribute KeyValue conforming to the
-// "db.cosmosdb.container" semantic conventions. It represents the cosmos DB
-// container name.
-func DBCosmosDBContainer(val string) attribute.KeyValue {
-	return DBCosmosDBContainerKey.String(val)
 }
 
 // DBCosmosDBRequestCharge returns an attribute KeyValue conforming to the
@@ -2519,6 +2391,30 @@ func DBCosmosDBSubStatusCode(val int) attribute.KeyValue {
 	return DBCosmosDBSubStatusCodeKey.Int(val)
 }
 
+// This group defines attributes for Elasticsearch.
+const (
+	// DBElasticsearchClusterNameKey is the attribute Key conforming to the
+	// "db.elasticsearch.cluster.name" semantic conventions. It represents the
+	// represents the identifier of an Elasticsearch cluster.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'e9106fc68e3044f0b1475b04bf4ffd5f'
+	DBElasticsearchClusterNameKey = attribute.Key("db.elasticsearch.cluster.name")
+
+	// DBElasticsearchNodeNameKey is the attribute Key conforming to the
+	// "db.elasticsearch.node.name" semantic conventions. It represents the
+	// represents the human-readable identifier of the node/instance to which a
+	// request was routed.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'instance-0000000001'
+	DBElasticsearchNodeNameKey = attribute.Key("db.elasticsearch.node.name")
+)
+
 // DBElasticsearchClusterName returns an attribute KeyValue conforming to
 // the "db.elasticsearch.cluster.name" semantic conventions. It represents the
 // represents the identifier of an Elasticsearch cluster.
@@ -2526,78 +2422,12 @@ func DBElasticsearchClusterName(val string) attribute.KeyValue {
 	return DBElasticsearchClusterNameKey.String(val)
 }
 
-// DBInstanceID returns an attribute KeyValue conforming to the
-// "db.instance.id" semantic conventions. It represents an identifier (address,
-// unique name, or any other identifier) of the database instance that is
-// executing queries or mutations on the current connection. This is useful in
-// cases where the database is running in a clustered environment and the
-// instrumentation is able to record the node executing the query. The client
-// may obtain this value in databases like MySQL using queries like `select
-// @@hostname`.
-func DBInstanceID(val string) attribute.KeyValue {
-	return DBInstanceIDKey.String(val)
-}
-
-// DBMongoDBCollection returns an attribute KeyValue conforming to the
-// "db.mongodb.collection" semantic conventions. It represents the MongoDB
-// collection being accessed within the database stated in `db.name`.
-func DBMongoDBCollection(val string) attribute.KeyValue {
-	return DBMongoDBCollectionKey.String(val)
-}
-
-// DBMSSQLInstanceName returns an attribute KeyValue conforming to the
-// "db.mssql.instance_name" semantic conventions. It represents the Microsoft
-// SQL Server [instance
-// name](https://docs.microsoft.com/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15)
-// connecting to. This name is used to determine the port of a named instance.
-func DBMSSQLInstanceName(val string) attribute.KeyValue {
-	return DBMSSQLInstanceNameKey.String(val)
-}
-
-// DBName returns an attribute KeyValue conforming to the "db.name" semantic
-// conventions. It represents the this attribute is used to report the name of
-// the database being accessed. For commands that switch the database, this
-// should be set to the target database (even if the command fails).
-func DBName(val string) attribute.KeyValue {
-	return DBNameKey.String(val)
-}
-
-// DBOperation returns an attribute KeyValue conforming to the
-// "db.operation" semantic conventions. It represents the name of the operation
-// being executed, e.g. the [MongoDB command
-// name](https://docs.mongodb.com/manual/reference/command/#database-operations)
-// such as `findAndModify`, or the SQL keyword.
-func DBOperation(val string) attribute.KeyValue {
-	return DBOperationKey.String(val)
-}
-
-// DBRedisDBIndex returns an attribute KeyValue conforming to the
-// "db.redis.database_index" semantic conventions. It represents the index of
-// the database being accessed as used in the [`SELECT`
-// command](https://redis.io/commands/select), provided as an integer. To be
-// used instead of the generic `db.name` attribute.
-func DBRedisDBIndex(val int) attribute.KeyValue {
-	return DBRedisDBIndexKey.Int(val)
-}
-
-// DBSQLTable returns an attribute KeyValue conforming to the "db.sql.table"
-// semantic conventions. It represents the name of the primary table that the
-// operation is acting upon, including the database name (if applicable).
-func DBSQLTable(val string) attribute.KeyValue {
-	return DBSQLTableKey.String(val)
-}
-
-// DBStatement returns an attribute KeyValue conforming to the
-// "db.statement" semantic conventions. It represents the database statement
-// being executed.
-func DBStatement(val string) attribute.KeyValue {
-	return DBStatementKey.String(val)
-}
-
-// DBUser returns an attribute KeyValue conforming to the "db.user" semantic
-// conventions. It represents the username for accessing the database.
-func DBUser(val string) attribute.KeyValue {
-	return DBUserKey.String(val)
+// DBElasticsearchNodeName returns an attribute KeyValue conforming to the
+// "db.elasticsearch.node.name" semantic conventions. It represents the
+// represents the human-readable identifier of the node/instance to which a
+// request was routed.
+func DBElasticsearchNodeName(val string) attribute.KeyValue {
+	return DBElasticsearchNodeNameKey.String(val)
 }
 
 // Attributes for software deployments.
@@ -2633,497 +2463,30 @@ func DeploymentEnvironment(val string) attribute.KeyValue {
 	return DeploymentEnvironmentKey.String(val)
 }
 
-// "Describes deprecated db attributes."
+// Attributes that represents an occurrence of a lifecycle transition on the
+// Android platform.
 const (
-	// DBConnectionStringKey is the attribute Key conforming to the
-	// "db.connection_string" semantic conventions. It represents the
-	// deprecated, use `server.address`, `server.port` attributes instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'Server=(localdb)\\v11.0;Integrated Security=true;'
-	DBConnectionStringKey = attribute.Key("db.connection_string")
-
-	// DBElasticsearchNodeNameKey is the attribute Key conforming to the
-	// "db.elasticsearch.node.name" semantic conventions. It represents the
-	// deprecated, use `db.instance.id` instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'instance-0000000001'
-	DBElasticsearchNodeNameKey = attribute.Key("db.elasticsearch.node.name")
-
-	// DBJDBCDriverClassnameKey is the attribute Key conforming to the
-	// "db.jdbc.driver_classname" semantic conventions. It represents the
-	// removed, no replacement at this time.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'org.postgresql.Driver',
-	// 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
-	DBJDBCDriverClassnameKey = attribute.Key("db.jdbc.driver_classname")
-)
-
-// DBConnectionString returns an attribute KeyValue conforming to the
-// "db.connection_string" semantic conventions. It represents the deprecated,
-// use `server.address`, `server.port` attributes instead.
-func DBConnectionString(val string) attribute.KeyValue {
-	return DBConnectionStringKey.String(val)
-}
-
-// DBElasticsearchNodeName returns an attribute KeyValue conforming to the
-// "db.elasticsearch.node.name" semantic conventions. It represents the
-// deprecated, use `db.instance.id` instead.
-func DBElasticsearchNodeName(val string) attribute.KeyValue {
-	return DBElasticsearchNodeNameKey.String(val)
-}
-
-// DBJDBCDriverClassname returns an attribute KeyValue conforming to the
-// "db.jdbc.driver_classname" semantic conventions. It represents the removed,
-// no replacement at this time.
-func DBJDBCDriverClassname(val string) attribute.KeyValue {
-	return DBJDBCDriverClassnameKey.String(val)
-}
-
-// Describes deprecated HTTP attributes.
-const (
-	// HTTPFlavorKey is the attribute Key conforming to the "http.flavor"
-	// semantic conventions. It represents the deprecated, use
-	// `network.protocol.name` instead.
+	// AndroidStateKey is the attribute Key conforming to the "android.state"
+	// semantic conventions. It represents the deprecated use the
+	// `device.app.lifecycle` event definition including `android.state` as a
+	// payload field instead.
 	//
 	// Type: Enum
 	// RequirementLevel: Optional
 	// Stability: experimental
-	HTTPFlavorKey = attribute.Key("http.flavor")
-
-	// HTTPMethodKey is the attribute Key conforming to the "http.method"
-	// semantic conventions. It represents the deprecated, use
-	// `http.request.method` instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'GET', 'POST', 'HEAD'
-	HTTPMethodKey = attribute.Key("http.method")
-
-	// HTTPRequestContentLengthKey is the attribute Key conforming to the
-	// "http.request_content_length" semantic conventions. It represents the
-	// deprecated, use `http.request.header.content-length` instead.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 3495
-	HTTPRequestContentLengthKey = attribute.Key("http.request_content_length")
-
-	// HTTPResponseContentLengthKey is the attribute Key conforming to the
-	// "http.response_content_length" semantic conventions. It represents the
-	// deprecated, use `http.response.header.content-length` instead.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 3495
-	HTTPResponseContentLengthKey = attribute.Key("http.response_content_length")
-
-	// HTTPSchemeKey is the attribute Key conforming to the "http.scheme"
-	// semantic conventions. It represents the deprecated, use `url.scheme`
-	// instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'http', 'https'
-	HTTPSchemeKey = attribute.Key("http.scheme")
-
-	// HTTPStatusCodeKey is the attribute Key conforming to the
-	// "http.status_code" semantic conventions. It represents the deprecated,
-	// use `http.response.status_code` instead.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 200
-	HTTPStatusCodeKey = attribute.Key("http.status_code")
-
-	// HTTPTargetKey is the attribute Key conforming to the "http.target"
-	// semantic conventions. It represents the deprecated, use `url.path` and
-	// `url.query` instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '/search?q=OpenTelemetry#SemConv'
-	HTTPTargetKey = attribute.Key("http.target")
-
-	// HTTPURLKey is the attribute Key conforming to the "http.url" semantic
-	// conventions. It represents the deprecated, use `url.full` instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'https://www.foo.bar/search?q=OpenTelemetry#SemConv'
-	HTTPURLKey = attribute.Key("http.url")
-
-	// HTTPUserAgentKey is the attribute Key conforming to the
-	// "http.user_agent" semantic conventions. It represents the deprecated,
-	// use `user_agent.original` instead.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'CERN-LineMode/2.15 libwww/2.17b3', 'Mozilla/5.0 (iPhone; CPU
-	// iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)
-	// Version/14.1.2 Mobile/15E148 Safari/604.1'
-	HTTPUserAgentKey = attribute.Key("http.user_agent")
+	// Note: The Android lifecycle states are defined in [Activity lifecycle
+	// callbacks](https://developer.android.com/guide/components/activities/activity-lifecycle#lc),
+	// and from which the `OS identifiers` are derived.
+	AndroidStateKey = attribute.Key("android.state")
 )
 
 var (
-	// HTTP/1.0
-	HTTPFlavorHTTP10 = HTTPFlavorKey.String("1.0")
-	// HTTP/1.1
-	HTTPFlavorHTTP11 = HTTPFlavorKey.String("1.1")
-	// HTTP/2
-	HTTPFlavorHTTP20 = HTTPFlavorKey.String("2.0")
-	// HTTP/3
-	HTTPFlavorHTTP30 = HTTPFlavorKey.String("3.0")
-	// SPDY protocol
-	HTTPFlavorSPDY = HTTPFlavorKey.String("SPDY")
-	// QUIC protocol
-	HTTPFlavorQUIC = HTTPFlavorKey.String("QUIC")
-)
-
-// HTTPMethod returns an attribute KeyValue conforming to the "http.method"
-// semantic conventions. It represents the deprecated, use
-// `http.request.method` instead.
-func HTTPMethod(val string) attribute.KeyValue {
-	return HTTPMethodKey.String(val)
-}
-
-// HTTPRequestContentLength returns an attribute KeyValue conforming to the
-// "http.request_content_length" semantic conventions. It represents the
-// deprecated, use `http.request.header.content-length` instead.
-func HTTPRequestContentLength(val int) attribute.KeyValue {
-	return HTTPRequestContentLengthKey.Int(val)
-}
-
-// HTTPResponseContentLength returns an attribute KeyValue conforming to the
-// "http.response_content_length" semantic conventions. It represents the
-// deprecated, use `http.response.header.content-length` instead.
-func HTTPResponseContentLength(val int) attribute.KeyValue {
-	return HTTPResponseContentLengthKey.Int(val)
-}
-
-// HTTPScheme returns an attribute KeyValue conforming to the "http.scheme"
-// semantic conventions. It represents the deprecated, use `url.scheme`
-// instead.
-func HTTPScheme(val string) attribute.KeyValue {
-	return HTTPSchemeKey.String(val)
-}
-
-// HTTPStatusCode returns an attribute KeyValue conforming to the
-// "http.status_code" semantic conventions. It represents the deprecated, use
-// `http.response.status_code` instead.
-func HTTPStatusCode(val int) attribute.KeyValue {
-	return HTTPStatusCodeKey.Int(val)
-}
-
-// HTTPTarget returns an attribute KeyValue conforming to the "http.target"
-// semantic conventions. It represents the deprecated, use `url.path` and
-// `url.query` instead.
-func HTTPTarget(val string) attribute.KeyValue {
-	return HTTPTargetKey.String(val)
-}
-
-// HTTPURL returns an attribute KeyValue conforming to the "http.url"
-// semantic conventions. It represents the deprecated, use `url.full` instead.
-func HTTPURL(val string) attribute.KeyValue {
-	return HTTPURLKey.String(val)
-}
-
-// HTTPUserAgent returns an attribute KeyValue conforming to the
-// "http.user_agent" semantic conventions. It represents the deprecated, use
-// `user_agent.original` instead.
-func HTTPUserAgent(val string) attribute.KeyValue {
-	return HTTPUserAgentKey.String(val)
-}
-
-// Describes deprecated messaging attributes.
-const (
-	// MessagingKafkaDestinationPartitionKey is the attribute Key conforming to
-	// the "messaging.kafka.destination.partition" semantic conventions. It
-	// represents the "Deprecated, use `messaging.destination.partition.id`
-	// instead."
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 2
-	MessagingKafkaDestinationPartitionKey = attribute.Key("messaging.kafka.destination.partition")
-)
-
-// MessagingKafkaDestinationPartition returns an attribute KeyValue
-// conforming to the "messaging.kafka.destination.partition" semantic
-// conventions. It represents the "Deprecated, use
-// `messaging.destination.partition.id` instead."
-func MessagingKafkaDestinationPartition(val int) attribute.KeyValue {
-	return MessagingKafkaDestinationPartitionKey.Int(val)
-}
-
-// These attributes may be used for any network related operation.
-const (
-	// NetHostNameKey is the attribute Key conforming to the "net.host.name"
-	// semantic conventions. It represents the deprecated, use
-	// `server.address`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'example.com'
-	NetHostNameKey = attribute.Key("net.host.name")
-
-	// NetHostPortKey is the attribute Key conforming to the "net.host.port"
-	// semantic conventions. It represents the deprecated, use `server.port`.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 8080
-	NetHostPortKey = attribute.Key("net.host.port")
-
-	// NetPeerNameKey is the attribute Key conforming to the "net.peer.name"
-	// semantic conventions. It represents the deprecated, use `server.address`
-	// on client spans and `client.address` on server spans.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'example.com'
-	NetPeerNameKey = attribute.Key("net.peer.name")
-
-	// NetPeerPortKey is the attribute Key conforming to the "net.peer.port"
-	// semantic conventions. It represents the deprecated, use `server.port` on
-	// client spans and `client.port` on server spans.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 8080
-	NetPeerPortKey = attribute.Key("net.peer.port")
-
-	// NetProtocolNameKey is the attribute Key conforming to the
-	// "net.protocol.name" semantic conventions. It represents the deprecated,
-	// use `network.protocol.name`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'amqp', 'http', 'mqtt'
-	NetProtocolNameKey = attribute.Key("net.protocol.name")
-
-	// NetProtocolVersionKey is the attribute Key conforming to the
-	// "net.protocol.version" semantic conventions. It represents the
-	// deprecated, use `network.protocol.version`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '3.1.1'
-	NetProtocolVersionKey = attribute.Key("net.protocol.version")
-
-	// NetSockFamilyKey is the attribute Key conforming to the
-	// "net.sock.family" semantic conventions. It represents the deprecated,
-	// use `network.transport` and `network.type`.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	NetSockFamilyKey = attribute.Key("net.sock.family")
-
-	// NetSockHostAddrKey is the attribute Key conforming to the
-	// "net.sock.host.addr" semantic conventions. It represents the deprecated,
-	// use `network.local.address`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '/var/my.sock'
-	NetSockHostAddrKey = attribute.Key("net.sock.host.addr")
-
-	// NetSockHostPortKey is the attribute Key conforming to the
-	// "net.sock.host.port" semantic conventions. It represents the deprecated,
-	// use `network.local.port`.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 8080
-	NetSockHostPortKey = attribute.Key("net.sock.host.port")
-
-	// NetSockPeerAddrKey is the attribute Key conforming to the
-	// "net.sock.peer.addr" semantic conventions. It represents the deprecated,
-	// use `network.peer.address`.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '192.168.0.1'
-	NetSockPeerAddrKey = attribute.Key("net.sock.peer.addr")
-
-	// NetSockPeerNameKey is the attribute Key conforming to the
-	// "net.sock.peer.name" semantic conventions. It represents the deprecated,
-	// no replacement at this time.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: '/var/my.sock'
-	NetSockPeerNameKey = attribute.Key("net.sock.peer.name")
-
-	// NetSockPeerPortKey is the attribute Key conforming to the
-	// "net.sock.peer.port" semantic conventions. It represents the deprecated,
-	// use `network.peer.port`.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 65531
-	NetSockPeerPortKey = attribute.Key("net.sock.peer.port")
-
-	// NetTransportKey is the attribute Key conforming to the "net.transport"
-	// semantic conventions. It represents the deprecated, use
-	// `network.transport`.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	NetTransportKey = attribute.Key("net.transport")
-)
-
-var (
-	// IPv4 address
-	NetSockFamilyInet = NetSockFamilyKey.String("inet")
-	// IPv6 address
-	NetSockFamilyInet6 = NetSockFamilyKey.String("inet6")
-	// Unix domain socket path
-	NetSockFamilyUnix = NetSockFamilyKey.String("unix")
-)
-
-var (
-	// ip_tcp
-	NetTransportTCP = NetTransportKey.String("ip_tcp")
-	// ip_udp
-	NetTransportUDP = NetTransportKey.String("ip_udp")
-	// Named or anonymous pipe
-	NetTransportPipe = NetTransportKey.String("pipe")
-	// In-process communication
-	NetTransportInProc = NetTransportKey.String("inproc")
-	// Something else (non IP-based)
-	NetTransportOther = NetTransportKey.String("other")
-)
-
-// NetHostName returns an attribute KeyValue conforming to the
-// "net.host.name" semantic conventions. It represents the deprecated, use
-// `server.address`.
-func NetHostName(val string) attribute.KeyValue {
-	return NetHostNameKey.String(val)
-}
-
-// NetHostPort returns an attribute KeyValue conforming to the
-// "net.host.port" semantic conventions. It represents the deprecated, use
-// `server.port`.
-func NetHostPort(val int) attribute.KeyValue {
-	return NetHostPortKey.Int(val)
-}
-
-// NetPeerName returns an attribute KeyValue conforming to the
-// "net.peer.name" semantic conventions. It represents the deprecated, use
-// `server.address` on client spans and `client.address` on server spans.
-func NetPeerName(val string) attribute.KeyValue {
-	return NetPeerNameKey.String(val)
-}
-
-// NetPeerPort returns an attribute KeyValue conforming to the
-// "net.peer.port" semantic conventions. It represents the deprecated, use
-// `server.port` on client spans and `client.port` on server spans.
-func NetPeerPort(val int) attribute.KeyValue {
-	return NetPeerPortKey.Int(val)
-}
-
-// NetProtocolName returns an attribute KeyValue conforming to the
-// "net.protocol.name" semantic conventions. It represents the deprecated, use
-// `network.protocol.name`.
-func NetProtocolName(val string) attribute.KeyValue {
-	return NetProtocolNameKey.String(val)
-}
-
-// NetProtocolVersion returns an attribute KeyValue conforming to the
-// "net.protocol.version" semantic conventions. It represents the deprecated,
-// use `network.protocol.version`.
-func NetProtocolVersion(val string) attribute.KeyValue {
-	return NetProtocolVersionKey.String(val)
-}
-
-// NetSockHostAddr returns an attribute KeyValue conforming to the
-// "net.sock.host.addr" semantic conventions. It represents the deprecated, use
-// `network.local.address`.
-func NetSockHostAddr(val string) attribute.KeyValue {
-	return NetSockHostAddrKey.String(val)
-}
-
-// NetSockHostPort returns an attribute KeyValue conforming to the
-// "net.sock.host.port" semantic conventions. It represents the deprecated, use
-// `network.local.port`.
-func NetSockHostPort(val int) attribute.KeyValue {
-	return NetSockHostPortKey.Int(val)
-}
-
-// NetSockPeerAddr returns an attribute KeyValue conforming to the
-// "net.sock.peer.addr" semantic conventions. It represents the deprecated, use
-// `network.peer.address`.
-func NetSockPeerAddr(val string) attribute.KeyValue {
-	return NetSockPeerAddrKey.String(val)
-}
-
-// NetSockPeerName returns an attribute KeyValue conforming to the
-// "net.sock.peer.name" semantic conventions. It represents the deprecated, no
-// replacement at this time.
-func NetSockPeerName(val string) attribute.KeyValue {
-	return NetSockPeerNameKey.String(val)
-}
-
-// NetSockPeerPort returns an attribute KeyValue conforming to the
-// "net.sock.peer.port" semantic conventions. It represents the deprecated, use
-// `network.peer.port`.
-func NetSockPeerPort(val int) attribute.KeyValue {
-	return NetSockPeerPortKey.Int(val)
-}
-
-// Deprecated system attributes.
-const (
-	// SystemProcessesStatusKey is the attribute Key conforming to the
-	// "system.processes.status" semantic conventions. It represents the
-	// deprecated, use `system.process.status` instead.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'running'
-	SystemProcessesStatusKey = attribute.Key("system.processes.status")
-)
-
-var (
-	// running
-	SystemProcessesStatusRunning = SystemProcessesStatusKey.String("running")
-	// sleeping
-	SystemProcessesStatusSleeping = SystemProcessesStatusKey.String("sleeping")
-	// stopped
-	SystemProcessesStatusStopped = SystemProcessesStatusKey.String("stopped")
-	// defunct
-	SystemProcessesStatusDefunct = SystemProcessesStatusKey.String("defunct")
+	// Any time before Activity.onResume() or, if the app has no Activity, Context.startService() has been called in the app for the first time
+	AndroidStateCreated = AndroidStateKey.String("created")
+	// Any time after Activity.onPause() or, if the app has no Activity, Context.stopService() has been called when the app was in the foreground state
+	AndroidStateBackground = AndroidStateKey.String("background")
+	// Any time after Activity.onResume() or, if the app has no Activity, Context.startService() has been called when the app was in either the created or background states
+	AndroidStateForeground = AndroidStateKey.String("foreground")
 )
 
 // These attributes may be used to describe the receiver of a network
@@ -3393,8 +2756,13 @@ const (
 	// Stability: stable
 	// Examples: 'timeout', 'java.net.UnknownHostException',
 	// 'server_certificate_invalid', '500'
-	// Note: The `error.type` SHOULD be predictable and SHOULD have low
+	// Note: The `error.type` SHOULD be predictable, and SHOULD have low
 	// cardinality.
+	//
+	// When `error.type` is set to a type (e.g., an exception type), its
+	// canonical class name identifying the type within the artifact SHOULD be
+	// used.
+	//
 	// Instrumentations SHOULD document the list of errors they report.
 	//
 	// The cardinality of `error.type` within one instrumentation library
@@ -3422,6 +2790,31 @@ var (
 	// A fallback error value to be used when the instrumentation doesn't define a custom value
 	ErrorTypeOther = ErrorTypeKey.String("_OTHER")
 )
+
+// Attributes for Events represented using Log Records.
+const (
+	// EventNameKey is the attribute Key conforming to the "event.name"
+	// semantic conventions. It represents the identifies the class / type of
+	// event.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'browser.mouse.click', 'device.app.lifecycle'
+	// Note: Event names are subject to the same rules as [attribute
+	// names](https://github.com/open-telemetry/opentelemetry-specification/tree/v1.33.0/specification/common/attribute-naming.md).
+	// Notably, event names are namespaced to avoid collisions and provide a
+	// clean separation of semantics for events in separate domains like
+	// browser, mobile, and kubernetes.
+	EventNameKey = attribute.Key("event.name")
+)
+
+// EventName returns an attribute KeyValue conforming to the "event.name"
+// semantic conventions. It represents the identifies the class / type of
+// event.
+func EventName(val string) attribute.KeyValue {
+	return EventNameKey.String(val)
+}
 
 // The shared attributes used to report a single exception associated with a
 // span or log.
@@ -3451,7 +2844,7 @@ const (
 	// will escape, if one checks for an active exception just before ending
 	// the span,
 	// as done in the [example for recording span
-	// exceptions](#recording-an-exception).
+	// exceptions](https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-spans/#recording-an-exception).
 	//
 	// It follows that an exception may still escape the scope of the span
 	// even if the `exception.escaped` attribute was not set or set to false,
@@ -4126,6 +3519,337 @@ func GCPGceInstanceName(val string) attribute.KeyValue {
 	return GCPGceInstanceNameKey.String(val)
 }
 
+// The attributes used to describe telemetry in the context of LLM (Large
+// Language Models) requests and responses.
+const (
+	// GenAiCompletionKey is the attribute Key conforming to the
+	// "gen_ai.completion" semantic conventions. It represents the full
+	// response received from the LLM.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: "[{'role': 'assistant', 'content': 'The capital of France is
+	// Paris.'}]"
+	// Note: It's RECOMMENDED to format completions as JSON string matching
+	// [OpenAI messages
+	// format](https://platform.openai.com/docs/guides/text-generation)
+	GenAiCompletionKey = attribute.Key("gen_ai.completion")
+
+	// GenAiPromptKey is the attribute Key conforming to the "gen_ai.prompt"
+	// semantic conventions. It represents the full prompt sent to an LLM.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: "[{'role': 'user', 'content': 'What is the capital of
+	// France?'}]"
+	// Note: It's RECOMMENDED to format prompts as JSON string matching [OpenAI
+	// messages
+	// format](https://platform.openai.com/docs/guides/text-generation)
+	GenAiPromptKey = attribute.Key("gen_ai.prompt")
+
+	// GenAiRequestMaxTokensKey is the attribute Key conforming to the
+	// "gen_ai.request.max_tokens" semantic conventions. It represents the
+	// maximum number of tokens the LLM generates for a request.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 100
+	GenAiRequestMaxTokensKey = attribute.Key("gen_ai.request.max_tokens")
+
+	// GenAiRequestModelKey is the attribute Key conforming to the
+	// "gen_ai.request.model" semantic conventions. It represents the name of
+	// the LLM a request is being made to.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'gpt-4'
+	GenAiRequestModelKey = attribute.Key("gen_ai.request.model")
+
+	// GenAiRequestTemperatureKey is the attribute Key conforming to the
+	// "gen_ai.request.temperature" semantic conventions. It represents the
+	// temperature setting for the LLM request.
+	//
+	// Type: double
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 0.0
+	GenAiRequestTemperatureKey = attribute.Key("gen_ai.request.temperature")
+
+	// GenAiRequestTopPKey is the attribute Key conforming to the
+	// "gen_ai.request.top_p" semantic conventions. It represents the top_p
+	// sampling setting for the LLM request.
+	//
+	// Type: double
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1.0
+	GenAiRequestTopPKey = attribute.Key("gen_ai.request.top_p")
+
+	// GenAiResponseFinishReasonsKey is the attribute Key conforming to the
+	// "gen_ai.response.finish_reasons" semantic conventions. It represents the
+	// array of reasons the model stopped generating tokens, corresponding to
+	// each generation received.
+	//
+	// Type: string[]
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'stop'
+	GenAiResponseFinishReasonsKey = attribute.Key("gen_ai.response.finish_reasons")
+
+	// GenAiResponseIDKey is the attribute Key conforming to the
+	// "gen_ai.response.id" semantic conventions. It represents the unique
+	// identifier for the completion.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'chatcmpl-123'
+	GenAiResponseIDKey = attribute.Key("gen_ai.response.id")
+
+	// GenAiResponseModelKey is the attribute Key conforming to the
+	// "gen_ai.response.model" semantic conventions. It represents the name of
+	// the LLM a response was generated from.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'gpt-4-0613'
+	GenAiResponseModelKey = attribute.Key("gen_ai.response.model")
+
+	// GenAiSystemKey is the attribute Key conforming to the "gen_ai.system"
+	// semantic conventions. It represents the Generative AI product as
+	// identified by the client instrumentation.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'openai'
+	// Note: The actual GenAI product may differ from the one identified by the
+	// client. For example, when using OpenAI client libraries to communicate
+	// with Mistral, the `gen_ai.system` is set to `openai` based on the
+	// instrumentation's best knowledge.
+	GenAiSystemKey = attribute.Key("gen_ai.system")
+
+	// GenAiUsageCompletionTokensKey is the attribute Key conforming to the
+	// "gen_ai.usage.completion_tokens" semantic conventions. It represents the
+	// number of tokens used in the LLM response (completion).
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 180
+	GenAiUsageCompletionTokensKey = attribute.Key("gen_ai.usage.completion_tokens")
+
+	// GenAiUsagePromptTokensKey is the attribute Key conforming to the
+	// "gen_ai.usage.prompt_tokens" semantic conventions. It represents the
+	// number of tokens used in the LLM prompt.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 100
+	GenAiUsagePromptTokensKey = attribute.Key("gen_ai.usage.prompt_tokens")
+)
+
+var (
+	// OpenAI
+	GenAiSystemOpenai = GenAiSystemKey.String("openai")
+)
+
+// GenAiCompletion returns an attribute KeyValue conforming to the
+// "gen_ai.completion" semantic conventions. It represents the full response
+// received from the LLM.
+func GenAiCompletion(val string) attribute.KeyValue {
+	return GenAiCompletionKey.String(val)
+}
+
+// GenAiPrompt returns an attribute KeyValue conforming to the
+// "gen_ai.prompt" semantic conventions. It represents the full prompt sent to
+// an LLM.
+func GenAiPrompt(val string) attribute.KeyValue {
+	return GenAiPromptKey.String(val)
+}
+
+// GenAiRequestMaxTokens returns an attribute KeyValue conforming to the
+// "gen_ai.request.max_tokens" semantic conventions. It represents the maximum
+// number of tokens the LLM generates for a request.
+func GenAiRequestMaxTokens(val int) attribute.KeyValue {
+	return GenAiRequestMaxTokensKey.Int(val)
+}
+
+// GenAiRequestModel returns an attribute KeyValue conforming to the
+// "gen_ai.request.model" semantic conventions. It represents the name of the
+// LLM a request is being made to.
+func GenAiRequestModel(val string) attribute.KeyValue {
+	return GenAiRequestModelKey.String(val)
+}
+
+// GenAiRequestTemperature returns an attribute KeyValue conforming to the
+// "gen_ai.request.temperature" semantic conventions. It represents the
+// temperature setting for the LLM request.
+func GenAiRequestTemperature(val float64) attribute.KeyValue {
+	return GenAiRequestTemperatureKey.Float64(val)
+}
+
+// GenAiRequestTopP returns an attribute KeyValue conforming to the
+// "gen_ai.request.top_p" semantic conventions. It represents the top_p
+// sampling setting for the LLM request.
+func GenAiRequestTopP(val float64) attribute.KeyValue {
+	return GenAiRequestTopPKey.Float64(val)
+}
+
+// GenAiResponseFinishReasons returns an attribute KeyValue conforming to
+// the "gen_ai.response.finish_reasons" semantic conventions. It represents the
+// array of reasons the model stopped generating tokens, corresponding to each
+// generation received.
+func GenAiResponseFinishReasons(val ...string) attribute.KeyValue {
+	return GenAiResponseFinishReasonsKey.StringSlice(val)
+}
+
+// GenAiResponseID returns an attribute KeyValue conforming to the
+// "gen_ai.response.id" semantic conventions. It represents the unique
+// identifier for the completion.
+func GenAiResponseID(val string) attribute.KeyValue {
+	return GenAiResponseIDKey.String(val)
+}
+
+// GenAiResponseModel returns an attribute KeyValue conforming to the
+// "gen_ai.response.model" semantic conventions. It represents the name of the
+// LLM a response was generated from.
+func GenAiResponseModel(val string) attribute.KeyValue {
+	return GenAiResponseModelKey.String(val)
+}
+
+// GenAiUsageCompletionTokens returns an attribute KeyValue conforming to
+// the "gen_ai.usage.completion_tokens" semantic conventions. It represents the
+// number of tokens used in the LLM response (completion).
+func GenAiUsageCompletionTokens(val int) attribute.KeyValue {
+	return GenAiUsageCompletionTokensKey.Int(val)
+}
+
+// GenAiUsagePromptTokens returns an attribute KeyValue conforming to the
+// "gen_ai.usage.prompt_tokens" semantic conventions. It represents the number
+// of tokens used in the LLM prompt.
+func GenAiUsagePromptTokens(val int) attribute.KeyValue {
+	return GenAiUsagePromptTokensKey.Int(val)
+}
+
+// Attributes for GraphQL.
+const (
+	// GraphqlDocumentKey is the attribute Key conforming to the
+	// "graphql.document" semantic conventions. It represents the GraphQL
+	// document being executed.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'query findBookByID { bookByID(id: ?) { name } }'
+	// Note: The value may be sanitized to exclude sensitive information.
+	GraphqlDocumentKey = attribute.Key("graphql.document")
+
+	// GraphqlOperationNameKey is the attribute Key conforming to the
+	// "graphql.operation.name" semantic conventions. It represents the name of
+	// the operation being executed.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'findBookByID'
+	GraphqlOperationNameKey = attribute.Key("graphql.operation.name")
+
+	// GraphqlOperationTypeKey is the attribute Key conforming to the
+	// "graphql.operation.type" semantic conventions. It represents the type of
+	// the operation being executed.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'query', 'mutation', 'subscription'
+	GraphqlOperationTypeKey = attribute.Key("graphql.operation.type")
+)
+
+var (
+	// GraphQL query
+	GraphqlOperationTypeQuery = GraphqlOperationTypeKey.String("query")
+	// GraphQL mutation
+	GraphqlOperationTypeMutation = GraphqlOperationTypeKey.String("mutation")
+	// GraphQL subscription
+	GraphqlOperationTypeSubscription = GraphqlOperationTypeKey.String("subscription")
+)
+
+// GraphqlDocument returns an attribute KeyValue conforming to the
+// "graphql.document" semantic conventions. It represents the GraphQL document
+// being executed.
+func GraphqlDocument(val string) attribute.KeyValue {
+	return GraphqlDocumentKey.String(val)
+}
+
+// GraphqlOperationName returns an attribute KeyValue conforming to the
+// "graphql.operation.name" semantic conventions. It represents the name of the
+// operation being executed.
+func GraphqlOperationName(val string) attribute.KeyValue {
+	return GraphqlOperationNameKey.String(val)
+}
+
+// Attributes for the Android platform on which the Android application is
+// running.
+const (
+	// HerokuAppIDKey is the attribute Key conforming to the "heroku.app.id"
+	// semantic conventions. It represents the unique identifier for the
+	// application
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '2daa2797-e42b-4624-9322-ec3f968df4da'
+	HerokuAppIDKey = attribute.Key("heroku.app.id")
+
+	// HerokuReleaseCommitKey is the attribute Key conforming to the
+	// "heroku.release.commit" semantic conventions. It represents the commit
+	// hash for the current release
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'e6134959463efd8966b20e75b913cafe3f5ec'
+	HerokuReleaseCommitKey = attribute.Key("heroku.release.commit")
+
+	// HerokuReleaseCreationTimestampKey is the attribute Key conforming to the
+	// "heroku.release.creation_timestamp" semantic conventions. It represents
+	// the time and date the release was created
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '2022-10-23T18:00:42Z'
+	HerokuReleaseCreationTimestampKey = attribute.Key("heroku.release.creation_timestamp")
+)
+
+// HerokuAppID returns an attribute KeyValue conforming to the
+// "heroku.app.id" semantic conventions. It represents the unique identifier
+// for the application
+func HerokuAppID(val string) attribute.KeyValue {
+	return HerokuAppIDKey.String(val)
+}
+
+// HerokuReleaseCommit returns an attribute KeyValue conforming to the
+// "heroku.release.commit" semantic conventions. It represents the commit hash
+// for the current release
+func HerokuReleaseCommit(val string) attribute.KeyValue {
+	return HerokuReleaseCommitKey.String(val)
+}
+
+// HerokuReleaseCreationTimestamp returns an attribute KeyValue conforming
+// to the "heroku.release.creation_timestamp" semantic conventions. It
+// represents the time and date the release was created
+func HerokuReleaseCreationTimestamp(val string) attribute.KeyValue {
+	return HerokuReleaseCreationTimestampKey.String(val)
+}
+
 // A host is defined as a computing instance. For example, physical servers,
 // virtual machines, switches or disk array.
 const (
@@ -4667,6 +4391,141 @@ func HTTPRoute(val string) attribute.KeyValue {
 	return HTTPRouteKey.String(val)
 }
 
+// Java Virtual machine related attributes.
+const (
+	// JvmBufferPoolNameKey is the attribute Key conforming to the
+	// "jvm.buffer.pool.name" semantic conventions. It represents the name of
+	// the buffer pool.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'mapped', 'direct'
+	// Note: Pool names are generally obtained via
+	// [BufferPoolMXBean#getName()](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/BufferPoolMXBean.html#getName()).
+	JvmBufferPoolNameKey = attribute.Key("jvm.buffer.pool.name")
+
+	// JvmGcActionKey is the attribute Key conforming to the "jvm.gc.action"
+	// semantic conventions. It represents the name of the garbage collector
+	// action.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'end of minor GC', 'end of major GC'
+	// Note: Garbage collector action is generally obtained via
+	// [GarbageCollectionNotificationInfo#getGcAction()](https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcAction()).
+	JvmGcActionKey = attribute.Key("jvm.gc.action")
+
+	// JvmGcNameKey is the attribute Key conforming to the "jvm.gc.name"
+	// semantic conventions. It represents the name of the garbage collector.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'G1 Young Generation', 'G1 Old Generation'
+	// Note: Garbage collector name is generally obtained via
+	// [GarbageCollectionNotificationInfo#getGcName()](https://docs.oracle.com/en/java/javase/11/docs/api/jdk.management/com/sun/management/GarbageCollectionNotificationInfo.html#getGcName()).
+	JvmGcNameKey = attribute.Key("jvm.gc.name")
+
+	// JvmMemoryPoolNameKey is the attribute Key conforming to the
+	// "jvm.memory.pool.name" semantic conventions. It represents the name of
+	// the memory pool.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'G1 Old Gen', 'G1 Eden space', 'G1 Survivor Space'
+	// Note: Pool names are generally obtained via
+	// [MemoryPoolMXBean#getName()](https://docs.oracle.com/en/java/javase/11/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html#getName()).
+	JvmMemoryPoolNameKey = attribute.Key("jvm.memory.pool.name")
+
+	// JvmMemoryTypeKey is the attribute Key conforming to the
+	// "jvm.memory.type" semantic conventions. It represents the type of
+	// memory.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'heap', 'non_heap'
+	JvmMemoryTypeKey = attribute.Key("jvm.memory.type")
+
+	// JvmThreadDaemonKey is the attribute Key conforming to the
+	// "jvm.thread.daemon" semantic conventions. It represents the whether the
+	// thread is daemon or not.
+	//
+	// Type: boolean
+	// RequirementLevel: Optional
+	// Stability: stable
+	JvmThreadDaemonKey = attribute.Key("jvm.thread.daemon")
+
+	// JvmThreadStateKey is the attribute Key conforming to the
+	// "jvm.thread.state" semantic conventions. It represents the state of the
+	// thread.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'runnable', 'blocked'
+	JvmThreadStateKey = attribute.Key("jvm.thread.state")
+)
+
+var (
+	// Heap memory
+	JvmMemoryTypeHeap = JvmMemoryTypeKey.String("heap")
+	// Non-heap memory
+	JvmMemoryTypeNonHeap = JvmMemoryTypeKey.String("non_heap")
+)
+
+var (
+	// A thread that has not yet started is in this state
+	JvmThreadStateNew = JvmThreadStateKey.String("new")
+	// A thread executing in the Java virtual machine is in this state
+	JvmThreadStateRunnable = JvmThreadStateKey.String("runnable")
+	// A thread that is blocked waiting for a monitor lock is in this state
+	JvmThreadStateBlocked = JvmThreadStateKey.String("blocked")
+	// A thread that is waiting indefinitely for another thread to perform a particular action is in this state
+	JvmThreadStateWaiting = JvmThreadStateKey.String("waiting")
+	// A thread that is waiting for another thread to perform an action for up to a specified waiting time is in this state
+	JvmThreadStateTimedWaiting = JvmThreadStateKey.String("timed_waiting")
+	// A thread that has exited is in this state
+	JvmThreadStateTerminated = JvmThreadStateKey.String("terminated")
+)
+
+// JvmBufferPoolName returns an attribute KeyValue conforming to the
+// "jvm.buffer.pool.name" semantic conventions. It represents the name of the
+// buffer pool.
+func JvmBufferPoolName(val string) attribute.KeyValue {
+	return JvmBufferPoolNameKey.String(val)
+}
+
+// JvmGcAction returns an attribute KeyValue conforming to the
+// "jvm.gc.action" semantic conventions. It represents the name of the garbage
+// collector action.
+func JvmGcAction(val string) attribute.KeyValue {
+	return JvmGcActionKey.String(val)
+}
+
+// JvmGcName returns an attribute KeyValue conforming to the "jvm.gc.name"
+// semantic conventions. It represents the name of the garbage collector.
+func JvmGcName(val string) attribute.KeyValue {
+	return JvmGcNameKey.String(val)
+}
+
+// JvmMemoryPoolName returns an attribute KeyValue conforming to the
+// "jvm.memory.pool.name" semantic conventions. It represents the name of the
+// memory pool.
+func JvmMemoryPoolName(val string) attribute.KeyValue {
+	return JvmMemoryPoolNameKey.String(val)
+}
+
+// JvmThreadDaemon returns an attribute KeyValue conforming to the
+// "jvm.thread.daemon" semantic conventions. It represents the whether the
+// thread is daemon or not.
+func JvmThreadDaemon(val bool) attribute.KeyValue {
+	return JvmThreadDaemonKey.Bool(val)
+}
+
 // Kubernetes resource attributes.
 const (
 	// K8SClusterNameKey is the attribute Key conforming to the
@@ -4733,8 +4592,17 @@ const (
 	// Type: int
 	// RequirementLevel: Optional
 	// Stability: experimental
-	// Examples: 0, 2
 	K8SContainerRestartCountKey = attribute.Key("k8s.container.restart_count")
+
+	// K8SContainerStatusLastTerminatedReasonKey is the attribute Key
+	// conforming to the "k8s.container.status.last_terminated_reason" semantic
+	// conventions. It represents the last terminated reason of the Container.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'Evicted', 'Error'
+	K8SContainerStatusLastTerminatedReasonKey = attribute.Key("k8s.container.status.last_terminated_reason")
 
 	// K8SCronJobNameKey is the attribute Key conforming to the
 	// "k8s.cronjob.name" semantic conventions. It represents the name of the
@@ -4931,6 +4799,13 @@ func K8SContainerRestartCount(val int) attribute.KeyValue {
 	return K8SContainerRestartCountKey.Int(val)
 }
 
+// K8SContainerStatusLastTerminatedReason returns an attribute KeyValue
+// conforming to the "k8s.container.status.last_terminated_reason" semantic
+// conventions. It represents the last terminated reason of the Container.
+func K8SContainerStatusLastTerminatedReason(val string) attribute.KeyValue {
+	return K8SContainerStatusLastTerminatedReasonKey.String(val)
+}
+
 // K8SCronJobName returns an attribute KeyValue conforming to the
 // "k8s.cronjob.name" semantic conventions. It represents the name of the
 // CronJob.
@@ -5044,6 +4919,120 @@ func K8SStatefulSetUID(val string) attribute.KeyValue {
 	return K8SStatefulSetUIDKey.String(val)
 }
 
+// Log attributes
+const (
+	// LogIostreamKey is the attribute Key conforming to the "log.iostream"
+	// semantic conventions. It represents the stream associated with the log.
+	// See below for a list of well-known values.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	LogIostreamKey = attribute.Key("log.iostream")
+)
+
+var (
+	// Logs from stdout stream
+	LogIostreamStdout = LogIostreamKey.String("stdout")
+	// Events from stderr stream
+	LogIostreamStderr = LogIostreamKey.String("stderr")
+)
+
+// Attributes for a file to which log was emitted.
+const (
+	// LogFileNameKey is the attribute Key conforming to the "log.file.name"
+	// semantic conventions. It represents the basename of the file.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'audit.log'
+	LogFileNameKey = attribute.Key("log.file.name")
+
+	// LogFileNameResolvedKey is the attribute Key conforming to the
+	// "log.file.name_resolved" semantic conventions. It represents the
+	// basename of the file, with symlinks resolved.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'uuid.log'
+	LogFileNameResolvedKey = attribute.Key("log.file.name_resolved")
+
+	// LogFilePathKey is the attribute Key conforming to the "log.file.path"
+	// semantic conventions. It represents the full path to the file.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '/var/log/mysql/audit.log'
+	LogFilePathKey = attribute.Key("log.file.path")
+
+	// LogFilePathResolvedKey is the attribute Key conforming to the
+	// "log.file.path_resolved" semantic conventions. It represents the full
+	// path to the file, with symlinks resolved.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '/var/lib/docker/uuid.log'
+	LogFilePathResolvedKey = attribute.Key("log.file.path_resolved")
+)
+
+// LogFileName returns an attribute KeyValue conforming to the
+// "log.file.name" semantic conventions. It represents the basename of the
+// file.
+func LogFileName(val string) attribute.KeyValue {
+	return LogFileNameKey.String(val)
+}
+
+// LogFileNameResolved returns an attribute KeyValue conforming to the
+// "log.file.name_resolved" semantic conventions. It represents the basename of
+// the file, with symlinks resolved.
+func LogFileNameResolved(val string) attribute.KeyValue {
+	return LogFileNameResolvedKey.String(val)
+}
+
+// LogFilePath returns an attribute KeyValue conforming to the
+// "log.file.path" semantic conventions. It represents the full path to the
+// file.
+func LogFilePath(val string) attribute.KeyValue {
+	return LogFilePathKey.String(val)
+}
+
+// LogFilePathResolved returns an attribute KeyValue conforming to the
+// "log.file.path_resolved" semantic conventions. It represents the full path
+// to the file, with symlinks resolved.
+func LogFilePathResolved(val string) attribute.KeyValue {
+	return LogFilePathResolvedKey.String(val)
+}
+
+// The generic attributes that may be used in any Log Record.
+const (
+	// LogRecordUIDKey is the attribute Key conforming to the "log.record.uid"
+	// semantic conventions. It represents a unique identifier for the Log
+	// Record.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '01ARZ3NDEKTSV4RRFFQ69G5FAV'
+	// Note: If an id is provided, other log records with the same id will be
+	// considered duplicates and can be removed safely. This means, that two
+	// distinguishable log records MUST have different values.
+	// The id MAY be an [Universally Unique Lexicographically Sortable
+	// Identifier (ULID)](https://github.com/ulid/spec), but other identifiers
+	// (e.g. UUID) may be used as needed.
+	LogRecordUIDKey = attribute.Key("log.record.uid")
+)
+
+// LogRecordUID returns an attribute KeyValue conforming to the
+// "log.record.uid" semantic conventions. It represents a unique identifier for
+// the Log Record.
+func LogRecordUID(val string) attribute.KeyValue {
+	return LogRecordUIDKey.String(val)
+}
+
 // Attributes describing telemetry around messaging systems and messaging
 // activities.
 const (
@@ -5064,14 +5053,14 @@ const (
 	MessagingBatchMessageCountKey = attribute.Key("messaging.batch.message_count")
 
 	// MessagingClientIDKey is the attribute Key conforming to the
-	// "messaging.client_id" semantic conventions. It represents a unique
+	// "messaging.client.id" semantic conventions. It represents a unique
 	// identifier for the client that consumes or produces a message.
 	//
 	// Type: string
 	// RequirementLevel: Optional
 	// Stability: experimental
 	// Examples: 'client-5', 'myhost@8742@s8083jm'
-	MessagingClientIDKey = attribute.Key("messaging.client_id")
+	MessagingClientIDKey = attribute.Key("messaging.client.id")
 
 	// MessagingDestinationAnonymousKey is the attribute Key conforming to the
 	// "messaging.destination.anonymous" semantic conventions. It represents a
@@ -5158,85 +5147,6 @@ const (
 	// SHOULD uniquely identify the broker.
 	MessagingDestinationPublishNameKey = attribute.Key("messaging.destination_publish.name")
 
-	// MessagingEventhubsConsumerGroupKey is the attribute Key conforming to
-	// the "messaging.eventhubs.consumer.group" semantic conventions. It
-	// represents the name of the consumer group the event consumer is
-	// associated with.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'indexer'
-	MessagingEventhubsConsumerGroupKey = attribute.Key("messaging.eventhubs.consumer.group")
-
-	// MessagingEventhubsMessageEnqueuedTimeKey is the attribute Key conforming
-	// to the "messaging.eventhubs.message.enqueued_time" semantic conventions.
-	// It represents the UTC epoch seconds at which the message has been
-	// accepted and stored in the entity.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 1701393730
-	MessagingEventhubsMessageEnqueuedTimeKey = attribute.Key("messaging.eventhubs.message.enqueued_time")
-
-	// MessagingGCPPubsubMessageOrderingKeyKey is the attribute Key conforming
-	// to the "messaging.gcp_pubsub.message.ordering_key" semantic conventions.
-	// It represents the ordering key for a given message. If the attribute is
-	// not present, the message does not have an ordering key.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'ordering_key'
-	MessagingGCPPubsubMessageOrderingKeyKey = attribute.Key("messaging.gcp_pubsub.message.ordering_key")
-
-	// MessagingKafkaConsumerGroupKey is the attribute Key conforming to the
-	// "messaging.kafka.consumer.group" semantic conventions. It represents the
-	// name of the Kafka Consumer Group that is handling the message. Only
-	// applies to consumers, not producers.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'my-group'
-	MessagingKafkaConsumerGroupKey = attribute.Key("messaging.kafka.consumer.group")
-
-	// MessagingKafkaMessageKeyKey is the attribute Key conforming to the
-	// "messaging.kafka.message.key" semantic conventions. It represents the
-	// message keys in Kafka are used for grouping alike messages to ensure
-	// they're processed on the same partition. They differ from
-	// `messaging.message.id` in that they're not unique. If the key is `null`,
-	// the attribute MUST NOT be set.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'myKey'
-	// Note: If the key type is not string, it's string representation has to
-	// be supplied for the attribute. If the key has no unambiguous, canonical
-	// string form, don't include its value.
-	MessagingKafkaMessageKeyKey = attribute.Key("messaging.kafka.message.key")
-
-	// MessagingKafkaMessageOffsetKey is the attribute Key conforming to the
-	// "messaging.kafka.message.offset" semantic conventions. It represents the
-	// offset of a record in the corresponding Kafka partition.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 42
-	MessagingKafkaMessageOffsetKey = attribute.Key("messaging.kafka.message.offset")
-
-	// MessagingKafkaMessageTombstoneKey is the attribute Key conforming to the
-	// "messaging.kafka.message.tombstone" semantic conventions. It represents
-	// a boolean that is true if the message is a tombstone.
-	//
-	// Type: boolean
-	// RequirementLevel: Optional
-	// Stability: experimental
-	MessagingKafkaMessageTombstoneKey = attribute.Key("messaging.kafka.message.tombstone")
-
 	// MessagingMessageBodySizeKey is the attribute Key conforming to the
 	// "messaging.message.body.size" semantic conventions. It represents the
 	// size of the message body in bytes.
@@ -5285,16 +5195,264 @@ const (
 	// Examples: '452a7c7c7c7048c2f887f61572b18fc2'
 	MessagingMessageIDKey = attribute.Key("messaging.message.id")
 
-	// MessagingOperationKey is the attribute Key conforming to the
-	// "messaging.operation" semantic conventions. It represents a string
-	// identifying the kind of messaging operation.
+	// MessagingOperationNameKey is the attribute Key conforming to the
+	// "messaging.operation.name" semantic conventions. It represents the
+	// system-specific name of the messaging operation.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'ack', 'nack', 'send'
+	MessagingOperationNameKey = attribute.Key("messaging.operation.name")
+
+	// MessagingOperationTypeKey is the attribute Key conforming to the
+	// "messaging.operation.type" semantic conventions. It represents a string
+	// identifying the type of the messaging operation.
 	//
 	// Type: Enum
 	// RequirementLevel: Optional
 	// Stability: experimental
 	// Note: If a custom value is used, it MUST be of low cardinality.
-	MessagingOperationKey = attribute.Key("messaging.operation")
+	MessagingOperationTypeKey = attribute.Key("messaging.operation.type")
 
+	// MessagingSystemKey is the attribute Key conforming to the
+	// "messaging.system" semantic conventions. It represents the messaging
+	// system as identified by the client instrumentation.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Note: The actual messaging system may differ from the one known by the
+	// client. For example, when using Kafka client libraries to communicate
+	// with Azure Event Hubs, the `messaging.system` is set to `kafka` based on
+	// the instrumentation's best knowledge.
+	MessagingSystemKey = attribute.Key("messaging.system")
+)
+
+var (
+	// One or more messages are provided for publishing to an intermediary. If a single message is published, the context of the "Publish" span can be used as the creation context and no "Create" span needs to be created
+	MessagingOperationTypePublish = MessagingOperationTypeKey.String("publish")
+	// A message is created. "Create" spans always refer to a single message and are used to provide a unique creation context for messages in batch publishing scenarios
+	MessagingOperationTypeCreate = MessagingOperationTypeKey.String("create")
+	// One or more messages are requested by a consumer. This operation refers to pull-based scenarios, where consumers explicitly call methods of messaging SDKs to receive messages
+	MessagingOperationTypeReceive = MessagingOperationTypeKey.String("receive")
+	// One or more messages are delivered to or processed by a consumer
+	MessagingOperationTypeDeliver = MessagingOperationTypeKey.String("process")
+	// One or more messages are settled
+	MessagingOperationTypeSettle = MessagingOperationTypeKey.String("settle")
+)
+
+var (
+	// Apache ActiveMQ
+	MessagingSystemActivemq = MessagingSystemKey.String("activemq")
+	// Amazon Simple Queue Service (SQS)
+	MessagingSystemAWSSqs = MessagingSystemKey.String("aws_sqs")
+	// Azure Event Grid
+	MessagingSystemEventgrid = MessagingSystemKey.String("eventgrid")
+	// Azure Event Hubs
+	MessagingSystemEventhubs = MessagingSystemKey.String("eventhubs")
+	// Azure Service Bus
+	MessagingSystemServicebus = MessagingSystemKey.String("servicebus")
+	// Google Cloud Pub/Sub
+	MessagingSystemGCPPubsub = MessagingSystemKey.String("gcp_pubsub")
+	// Java Message Service
+	MessagingSystemJms = MessagingSystemKey.String("jms")
+	// Apache Kafka
+	MessagingSystemKafka = MessagingSystemKey.String("kafka")
+	// RabbitMQ
+	MessagingSystemRabbitmq = MessagingSystemKey.String("rabbitmq")
+	// Apache RocketMQ
+	MessagingSystemRocketmq = MessagingSystemKey.String("rocketmq")
+)
+
+// MessagingBatchMessageCount returns an attribute KeyValue conforming to
+// the "messaging.batch.message_count" semantic conventions. It represents the
+// number of messages sent, received, or processed in the scope of the batching
+// operation.
+func MessagingBatchMessageCount(val int) attribute.KeyValue {
+	return MessagingBatchMessageCountKey.Int(val)
+}
+
+// MessagingClientID returns an attribute KeyValue conforming to the
+// "messaging.client.id" semantic conventions. It represents a unique
+// identifier for the client that consumes or produces a message.
+func MessagingClientID(val string) attribute.KeyValue {
+	return MessagingClientIDKey.String(val)
+}
+
+// MessagingDestinationAnonymous returns an attribute KeyValue conforming to
+// the "messaging.destination.anonymous" semantic conventions. It represents a
+// boolean that is true if the message destination is anonymous (could be
+// unnamed or have auto-generated name).
+func MessagingDestinationAnonymous(val bool) attribute.KeyValue {
+	return MessagingDestinationAnonymousKey.Bool(val)
+}
+
+// MessagingDestinationName returns an attribute KeyValue conforming to the
+// "messaging.destination.name" semantic conventions. It represents the message
+// destination name
+func MessagingDestinationName(val string) attribute.KeyValue {
+	return MessagingDestinationNameKey.String(val)
+}
+
+// MessagingDestinationPartitionID returns an attribute KeyValue conforming
+// to the "messaging.destination.partition.id" semantic conventions. It
+// represents the identifier of the partition messages are sent to or received
+// from, unique within the `messaging.destination.name`.
+func MessagingDestinationPartitionID(val string) attribute.KeyValue {
+	return MessagingDestinationPartitionIDKey.String(val)
+}
+
+// MessagingDestinationTemplate returns an attribute KeyValue conforming to
+// the "messaging.destination.template" semantic conventions. It represents the
+// low cardinality representation of the messaging destination name
+func MessagingDestinationTemplate(val string) attribute.KeyValue {
+	return MessagingDestinationTemplateKey.String(val)
+}
+
+// MessagingDestinationTemporary returns an attribute KeyValue conforming to
+// the "messaging.destination.temporary" semantic conventions. It represents a
+// boolean that is true if the message destination is temporary and might not
+// exist anymore after messages are processed.
+func MessagingDestinationTemporary(val bool) attribute.KeyValue {
+	return MessagingDestinationTemporaryKey.Bool(val)
+}
+
+// MessagingDestinationPublishAnonymous returns an attribute KeyValue
+// conforming to the "messaging.destination_publish.anonymous" semantic
+// conventions. It represents a boolean that is true if the publish message
+// destination is anonymous (could be unnamed or have auto-generated name).
+func MessagingDestinationPublishAnonymous(val bool) attribute.KeyValue {
+	return MessagingDestinationPublishAnonymousKey.Bool(val)
+}
+
+// MessagingDestinationPublishName returns an attribute KeyValue conforming
+// to the "messaging.destination_publish.name" semantic conventions. It
+// represents the name of the original destination the message was published to
+func MessagingDestinationPublishName(val string) attribute.KeyValue {
+	return MessagingDestinationPublishNameKey.String(val)
+}
+
+// MessagingMessageBodySize returns an attribute KeyValue conforming to the
+// "messaging.message.body.size" semantic conventions. It represents the size
+// of the message body in bytes.
+func MessagingMessageBodySize(val int) attribute.KeyValue {
+	return MessagingMessageBodySizeKey.Int(val)
+}
+
+// MessagingMessageConversationID returns an attribute KeyValue conforming
+// to the "messaging.message.conversation_id" semantic conventions. It
+// represents the conversation ID identifying the conversation to which the
+// message belongs, represented as a string. Sometimes called "Correlation ID".
+func MessagingMessageConversationID(val string) attribute.KeyValue {
+	return MessagingMessageConversationIDKey.String(val)
+}
+
+// MessagingMessageEnvelopeSize returns an attribute KeyValue conforming to
+// the "messaging.message.envelope.size" semantic conventions. It represents
+// the size of the message body and metadata in bytes.
+func MessagingMessageEnvelopeSize(val int) attribute.KeyValue {
+	return MessagingMessageEnvelopeSizeKey.Int(val)
+}
+
+// MessagingMessageID returns an attribute KeyValue conforming to the
+// "messaging.message.id" semantic conventions. It represents a value used by
+// the messaging system as an identifier for the message, represented as a
+// string.
+func MessagingMessageID(val string) attribute.KeyValue {
+	return MessagingMessageIDKey.String(val)
+}
+
+// MessagingOperationName returns an attribute KeyValue conforming to the
+// "messaging.operation.name" semantic conventions. It represents the
+// system-specific name of the messaging operation.
+func MessagingOperationName(val string) attribute.KeyValue {
+	return MessagingOperationNameKey.String(val)
+}
+
+// This group describes attributes specific to Apache Kafka.
+const (
+	// MessagingKafkaConsumerGroupKey is the attribute Key conforming to the
+	// "messaging.kafka.consumer.group" semantic conventions. It represents the
+	// name of the Kafka Consumer Group that is handling the message. Only
+	// applies to consumers, not producers.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'my-group'
+	MessagingKafkaConsumerGroupKey = attribute.Key("messaging.kafka.consumer.group")
+
+	// MessagingKafkaMessageKeyKey is the attribute Key conforming to the
+	// "messaging.kafka.message.key" semantic conventions. It represents the
+	// message keys in Kafka are used for grouping alike messages to ensure
+	// they're processed on the same partition. They differ from
+	// `messaging.message.id` in that they're not unique. If the key is `null`,
+	// the attribute MUST NOT be set.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'myKey'
+	// Note: If the key type is not string, it's string representation has to
+	// be supplied for the attribute. If the key has no unambiguous, canonical
+	// string form, don't include its value.
+	MessagingKafkaMessageKeyKey = attribute.Key("messaging.kafka.message.key")
+
+	// MessagingKafkaMessageOffsetKey is the attribute Key conforming to the
+	// "messaging.kafka.message.offset" semantic conventions. It represents the
+	// offset of a record in the corresponding Kafka partition.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 42
+	MessagingKafkaMessageOffsetKey = attribute.Key("messaging.kafka.message.offset")
+
+	// MessagingKafkaMessageTombstoneKey is the attribute Key conforming to the
+	// "messaging.kafka.message.tombstone" semantic conventions. It represents
+	// a boolean that is true if the message is a tombstone.
+	//
+	// Type: boolean
+	// RequirementLevel: Optional
+	// Stability: experimental
+	MessagingKafkaMessageTombstoneKey = attribute.Key("messaging.kafka.message.tombstone")
+)
+
+// MessagingKafkaConsumerGroup returns an attribute KeyValue conforming to
+// the "messaging.kafka.consumer.group" semantic conventions. It represents the
+// name of the Kafka Consumer Group that is handling the message. Only applies
+// to consumers, not producers.
+func MessagingKafkaConsumerGroup(val string) attribute.KeyValue {
+	return MessagingKafkaConsumerGroupKey.String(val)
+}
+
+// MessagingKafkaMessageKey returns an attribute KeyValue conforming to the
+// "messaging.kafka.message.key" semantic conventions. It represents the
+// message keys in Kafka are used for grouping alike messages to ensure they're
+// processed on the same partition. They differ from `messaging.message.id` in
+// that they're not unique. If the key is `null`, the attribute MUST NOT be
+// set.
+func MessagingKafkaMessageKey(val string) attribute.KeyValue {
+	return MessagingKafkaMessageKeyKey.String(val)
+}
+
+// MessagingKafkaMessageOffset returns an attribute KeyValue conforming to
+// the "messaging.kafka.message.offset" semantic conventions. It represents the
+// offset of a record in the corresponding Kafka partition.
+func MessagingKafkaMessageOffset(val int) attribute.KeyValue {
+	return MessagingKafkaMessageOffsetKey.Int(val)
+}
+
+// MessagingKafkaMessageTombstone returns an attribute KeyValue conforming
+// to the "messaging.kafka.message.tombstone" semantic conventions. It
+// represents a boolean that is true if the message is a tombstone.
+func MessagingKafkaMessageTombstone(val bool) attribute.KeyValue {
+	return MessagingKafkaMessageTombstoneKey.Bool(val)
+}
+
+// This group describes attributes specific to RabbitMQ.
+const (
 	// MessagingRabbitmqDestinationRoutingKeyKey is the attribute Key
 	// conforming to the "messaging.rabbitmq.destination.routing_key" semantic
 	// conventions. It represents the rabbitMQ message routing key.
@@ -5314,7 +5472,24 @@ const (
 	// Stability: experimental
 	// Examples: 123
 	MessagingRabbitmqMessageDeliveryTagKey = attribute.Key("messaging.rabbitmq.message.delivery_tag")
+)
 
+// MessagingRabbitmqDestinationRoutingKey returns an attribute KeyValue
+// conforming to the "messaging.rabbitmq.destination.routing_key" semantic
+// conventions. It represents the rabbitMQ message routing key.
+func MessagingRabbitmqDestinationRoutingKey(val string) attribute.KeyValue {
+	return MessagingRabbitmqDestinationRoutingKeyKey.String(val)
+}
+
+// MessagingRabbitmqMessageDeliveryTag returns an attribute KeyValue
+// conforming to the "messaging.rabbitmq.message.delivery_tag" semantic
+// conventions. It represents the rabbitMQ message delivery tag
+func MessagingRabbitmqMessageDeliveryTag(val int) attribute.KeyValue {
+	return MessagingRabbitmqMessageDeliveryTagKey.Int(val)
+}
+
+// This group describes attributes specific to RocketMQ.
+const (
 	// MessagingRocketmqClientGroupKey is the attribute Key conforming to the
 	// "messaging.rocketmq.client_group" semantic conventions. It represents
 	// the name of the RocketMQ producer/consumer group that is handling the
@@ -5409,72 +5584,6 @@ const (
 	// Stability: experimental
 	// Examples: 'myNamespace'
 	MessagingRocketmqNamespaceKey = attribute.Key("messaging.rocketmq.namespace")
-
-	// MessagingServicebusDestinationSubscriptionNameKey is the attribute Key
-	// conforming to the "messaging.servicebus.destination.subscription_name"
-	// semantic conventions. It represents the name of the subscription in the
-	// topic messages are received from.
-	//
-	// Type: string
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 'mySubscription'
-	MessagingServicebusDestinationSubscriptionNameKey = attribute.Key("messaging.servicebus.destination.subscription_name")
-
-	// MessagingServicebusDispositionStatusKey is the attribute Key conforming
-	// to the "messaging.servicebus.disposition_status" semantic conventions.
-	// It represents the describes the [settlement
-	// type](https://learn.microsoft.com/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock).
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	MessagingServicebusDispositionStatusKey = attribute.Key("messaging.servicebus.disposition_status")
-
-	// MessagingServicebusMessageDeliveryCountKey is the attribute Key
-	// conforming to the "messaging.servicebus.message.delivery_count" semantic
-	// conventions. It represents the number of deliveries that have been
-	// attempted for this message.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 2
-	MessagingServicebusMessageDeliveryCountKey = attribute.Key("messaging.servicebus.message.delivery_count")
-
-	// MessagingServicebusMessageEnqueuedTimeKey is the attribute Key
-	// conforming to the "messaging.servicebus.message.enqueued_time" semantic
-	// conventions. It represents the UTC epoch seconds at which the message
-	// has been accepted and stored in the entity.
-	//
-	// Type: int
-	// RequirementLevel: Optional
-	// Stability: experimental
-	// Examples: 1701393730
-	MessagingServicebusMessageEnqueuedTimeKey = attribute.Key("messaging.servicebus.message.enqueued_time")
-
-	// MessagingSystemKey is the attribute Key conforming to the
-	// "messaging.system" semantic conventions. It represents an identifier for
-	// the messaging system being used. See below for a list of well-known
-	// identifiers.
-	//
-	// Type: Enum
-	// RequirementLevel: Optional
-	// Stability: experimental
-	MessagingSystemKey = attribute.Key("messaging.system")
-)
-
-var (
-	// One or more messages are provided for publishing to an intermediary. If a single message is published, the context of the "Publish" span can be used as the creation context and no "Create" span needs to be created
-	MessagingOperationPublish = MessagingOperationKey.String("publish")
-	// A message is created. "Create" spans always refer to a single message and are used to provide a unique creation context for messages in batch publishing scenarios
-	MessagingOperationCreate = MessagingOperationKey.String("create")
-	// One or more messages are requested by a consumer. This operation refers to pull-based scenarios, where consumers explicitly call methods of messaging SDKs to receive messages
-	MessagingOperationReceive = MessagingOperationKey.String("receive")
-	// One or more messages are delivered to or processed by a consumer
-	MessagingOperationDeliver = MessagingOperationKey.String("process")
-	// One or more messages are settled
-	MessagingOperationSettle = MessagingOperationKey.String("settle")
 )
 
 var (
@@ -5494,208 +5603,6 @@ var (
 	// Transaction message
 	MessagingRocketmqMessageTypeTransaction = MessagingRocketmqMessageTypeKey.String("transaction")
 )
-
-var (
-	// Message is completed
-	MessagingServicebusDispositionStatusComplete = MessagingServicebusDispositionStatusKey.String("complete")
-	// Message is abandoned
-	MessagingServicebusDispositionStatusAbandon = MessagingServicebusDispositionStatusKey.String("abandon")
-	// Message is sent to dead letter queue
-	MessagingServicebusDispositionStatusDeadLetter = MessagingServicebusDispositionStatusKey.String("dead_letter")
-	// Message is deferred
-	MessagingServicebusDispositionStatusDefer = MessagingServicebusDispositionStatusKey.String("defer")
-)
-
-var (
-	// Apache ActiveMQ
-	MessagingSystemActivemq = MessagingSystemKey.String("activemq")
-	// Amazon Simple Queue Service (SQS)
-	MessagingSystemAWSSqs = MessagingSystemKey.String("aws_sqs")
-	// Azure Event Grid
-	MessagingSystemEventgrid = MessagingSystemKey.String("eventgrid")
-	// Azure Event Hubs
-	MessagingSystemEventhubs = MessagingSystemKey.String("eventhubs")
-	// Azure Service Bus
-	MessagingSystemServicebus = MessagingSystemKey.String("servicebus")
-	// Google Cloud Pub/Sub
-	MessagingSystemGCPPubsub = MessagingSystemKey.String("gcp_pubsub")
-	// Java Message Service
-	MessagingSystemJms = MessagingSystemKey.String("jms")
-	// Apache Kafka
-	MessagingSystemKafka = MessagingSystemKey.String("kafka")
-	// RabbitMQ
-	MessagingSystemRabbitmq = MessagingSystemKey.String("rabbitmq")
-	// Apache RocketMQ
-	MessagingSystemRocketmq = MessagingSystemKey.String("rocketmq")
-)
-
-// MessagingBatchMessageCount returns an attribute KeyValue conforming to
-// the "messaging.batch.message_count" semantic conventions. It represents the
-// number of messages sent, received, or processed in the scope of the batching
-// operation.
-func MessagingBatchMessageCount(val int) attribute.KeyValue {
-	return MessagingBatchMessageCountKey.Int(val)
-}
-
-// MessagingClientID returns an attribute KeyValue conforming to the
-// "messaging.client_id" semantic conventions. It represents a unique
-// identifier for the client that consumes or produces a message.
-func MessagingClientID(val string) attribute.KeyValue {
-	return MessagingClientIDKey.String(val)
-}
-
-// MessagingDestinationAnonymous returns an attribute KeyValue conforming to
-// the "messaging.destination.anonymous" semantic conventions. It represents a
-// boolean that is true if the message destination is anonymous (could be
-// unnamed or have auto-generated name).
-func MessagingDestinationAnonymous(val bool) attribute.KeyValue {
-	return MessagingDestinationAnonymousKey.Bool(val)
-}
-
-// MessagingDestinationName returns an attribute KeyValue conforming to the
-// "messaging.destination.name" semantic conventions. It represents the message
-// destination name
-func MessagingDestinationName(val string) attribute.KeyValue {
-	return MessagingDestinationNameKey.String(val)
-}
-
-// MessagingDestinationPartitionID returns an attribute KeyValue conforming
-// to the "messaging.destination.partition.id" semantic conventions. It
-// represents the identifier of the partition messages are sent to or received
-// from, unique within the `messaging.destination.name`.
-func MessagingDestinationPartitionID(val string) attribute.KeyValue {
-	return MessagingDestinationPartitionIDKey.String(val)
-}
-
-// MessagingDestinationTemplate returns an attribute KeyValue conforming to
-// the "messaging.destination.template" semantic conventions. It represents the
-// low cardinality representation of the messaging destination name
-func MessagingDestinationTemplate(val string) attribute.KeyValue {
-	return MessagingDestinationTemplateKey.String(val)
-}
-
-// MessagingDestinationTemporary returns an attribute KeyValue conforming to
-// the "messaging.destination.temporary" semantic conventions. It represents a
-// boolean that is true if the message destination is temporary and might not
-// exist anymore after messages are processed.
-func MessagingDestinationTemporary(val bool) attribute.KeyValue {
-	return MessagingDestinationTemporaryKey.Bool(val)
-}
-
-// MessagingDestinationPublishAnonymous returns an attribute KeyValue
-// conforming to the "messaging.destination_publish.anonymous" semantic
-// conventions. It represents a boolean that is true if the publish message
-// destination is anonymous (could be unnamed or have auto-generated name).
-func MessagingDestinationPublishAnonymous(val bool) attribute.KeyValue {
-	return MessagingDestinationPublishAnonymousKey.Bool(val)
-}
-
-// MessagingDestinationPublishName returns an attribute KeyValue conforming
-// to the "messaging.destination_publish.name" semantic conventions. It
-// represents the name of the original destination the message was published to
-func MessagingDestinationPublishName(val string) attribute.KeyValue {
-	return MessagingDestinationPublishNameKey.String(val)
-}
-
-// MessagingEventhubsConsumerGroup returns an attribute KeyValue conforming
-// to the "messaging.eventhubs.consumer.group" semantic conventions. It
-// represents the name of the consumer group the event consumer is associated
-// with.
-func MessagingEventhubsConsumerGroup(val string) attribute.KeyValue {
-	return MessagingEventhubsConsumerGroupKey.String(val)
-}
-
-// MessagingEventhubsMessageEnqueuedTime returns an attribute KeyValue
-// conforming to the "messaging.eventhubs.message.enqueued_time" semantic
-// conventions. It represents the UTC epoch seconds at which the message has
-// been accepted and stored in the entity.
-func MessagingEventhubsMessageEnqueuedTime(val int) attribute.KeyValue {
-	return MessagingEventhubsMessageEnqueuedTimeKey.Int(val)
-}
-
-// MessagingGCPPubsubMessageOrderingKey returns an attribute KeyValue
-// conforming to the "messaging.gcp_pubsub.message.ordering_key" semantic
-// conventions. It represents the ordering key for a given message. If the
-// attribute is not present, the message does not have an ordering key.
-func MessagingGCPPubsubMessageOrderingKey(val string) attribute.KeyValue {
-	return MessagingGCPPubsubMessageOrderingKeyKey.String(val)
-}
-
-// MessagingKafkaConsumerGroup returns an attribute KeyValue conforming to
-// the "messaging.kafka.consumer.group" semantic conventions. It represents the
-// name of the Kafka Consumer Group that is handling the message. Only applies
-// to consumers, not producers.
-func MessagingKafkaConsumerGroup(val string) attribute.KeyValue {
-	return MessagingKafkaConsumerGroupKey.String(val)
-}
-
-// MessagingKafkaMessageKey returns an attribute KeyValue conforming to the
-// "messaging.kafka.message.key" semantic conventions. It represents the
-// message keys in Kafka are used for grouping alike messages to ensure they're
-// processed on the same partition. They differ from `messaging.message.id` in
-// that they're not unique. If the key is `null`, the attribute MUST NOT be
-// set.
-func MessagingKafkaMessageKey(val string) attribute.KeyValue {
-	return MessagingKafkaMessageKeyKey.String(val)
-}
-
-// MessagingKafkaMessageOffset returns an attribute KeyValue conforming to
-// the "messaging.kafka.message.offset" semantic conventions. It represents the
-// offset of a record in the corresponding Kafka partition.
-func MessagingKafkaMessageOffset(val int) attribute.KeyValue {
-	return MessagingKafkaMessageOffsetKey.Int(val)
-}
-
-// MessagingKafkaMessageTombstone returns an attribute KeyValue conforming
-// to the "messaging.kafka.message.tombstone" semantic conventions. It
-// represents a boolean that is true if the message is a tombstone.
-func MessagingKafkaMessageTombstone(val bool) attribute.KeyValue {
-	return MessagingKafkaMessageTombstoneKey.Bool(val)
-}
-
-// MessagingMessageBodySize returns an attribute KeyValue conforming to the
-// "messaging.message.body.size" semantic conventions. It represents the size
-// of the message body in bytes.
-func MessagingMessageBodySize(val int) attribute.KeyValue {
-	return MessagingMessageBodySizeKey.Int(val)
-}
-
-// MessagingMessageConversationID returns an attribute KeyValue conforming
-// to the "messaging.message.conversation_id" semantic conventions. It
-// represents the conversation ID identifying the conversation to which the
-// message belongs, represented as a string. Sometimes called "Correlation ID".
-func MessagingMessageConversationID(val string) attribute.KeyValue {
-	return MessagingMessageConversationIDKey.String(val)
-}
-
-// MessagingMessageEnvelopeSize returns an attribute KeyValue conforming to
-// the "messaging.message.envelope.size" semantic conventions. It represents
-// the size of the message body and metadata in bytes.
-func MessagingMessageEnvelopeSize(val int) attribute.KeyValue {
-	return MessagingMessageEnvelopeSizeKey.Int(val)
-}
-
-// MessagingMessageID returns an attribute KeyValue conforming to the
-// "messaging.message.id" semantic conventions. It represents a value used by
-// the messaging system as an identifier for the message, represented as a
-// string.
-func MessagingMessageID(val string) attribute.KeyValue {
-	return MessagingMessageIDKey.String(val)
-}
-
-// MessagingRabbitmqDestinationRoutingKey returns an attribute KeyValue
-// conforming to the "messaging.rabbitmq.destination.routing_key" semantic
-// conventions. It represents the rabbitMQ message routing key.
-func MessagingRabbitmqDestinationRoutingKey(val string) attribute.KeyValue {
-	return MessagingRabbitmqDestinationRoutingKeyKey.String(val)
-}
-
-// MessagingRabbitmqMessageDeliveryTag returns an attribute KeyValue
-// conforming to the "messaging.rabbitmq.message.delivery_tag" semantic
-// conventions. It represents the rabbitMQ message delivery tag
-func MessagingRabbitmqMessageDeliveryTag(val int) attribute.KeyValue {
-	return MessagingRabbitmqMessageDeliveryTagKey.Int(val)
-}
 
 // MessagingRocketmqClientGroup returns an attribute KeyValue conforming to
 // the "messaging.rocketmq.client_group" semantic conventions. It represents
@@ -5752,6 +5659,139 @@ func MessagingRocketmqNamespace(val string) attribute.KeyValue {
 	return MessagingRocketmqNamespaceKey.String(val)
 }
 
+// This group describes attributes specific to GCP Pub/Sub.
+const (
+	// MessagingGCPPubsubMessageAckDeadlineKey is the attribute Key conforming
+	// to the "messaging.gcp_pubsub.message.ack_deadline" semantic conventions.
+	// It represents the ack deadline in seconds set for the modify ack
+	// deadline request.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 10
+	MessagingGCPPubsubMessageAckDeadlineKey = attribute.Key("messaging.gcp_pubsub.message.ack_deadline")
+
+	// MessagingGCPPubsubMessageAckIDKey is the attribute Key conforming to the
+	// "messaging.gcp_pubsub.message.ack_id" semantic conventions. It
+	// represents the ack id for a given message.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'ack_id'
+	MessagingGCPPubsubMessageAckIDKey = attribute.Key("messaging.gcp_pubsub.message.ack_id")
+
+	// MessagingGCPPubsubMessageDeliveryAttemptKey is the attribute Key
+	// conforming to the "messaging.gcp_pubsub.message.delivery_attempt"
+	// semantic conventions. It represents the delivery attempt for a given
+	// message.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 2
+	MessagingGCPPubsubMessageDeliveryAttemptKey = attribute.Key("messaging.gcp_pubsub.message.delivery_attempt")
+
+	// MessagingGCPPubsubMessageOrderingKeyKey is the attribute Key conforming
+	// to the "messaging.gcp_pubsub.message.ordering_key" semantic conventions.
+	// It represents the ordering key for a given message. If the attribute is
+	// not present, the message does not have an ordering key.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'ordering_key'
+	MessagingGCPPubsubMessageOrderingKeyKey = attribute.Key("messaging.gcp_pubsub.message.ordering_key")
+)
+
+// MessagingGCPPubsubMessageAckDeadline returns an attribute KeyValue
+// conforming to the "messaging.gcp_pubsub.message.ack_deadline" semantic
+// conventions. It represents the ack deadline in seconds set for the modify
+// ack deadline request.
+func MessagingGCPPubsubMessageAckDeadline(val int) attribute.KeyValue {
+	return MessagingGCPPubsubMessageAckDeadlineKey.Int(val)
+}
+
+// MessagingGCPPubsubMessageAckID returns an attribute KeyValue conforming
+// to the "messaging.gcp_pubsub.message.ack_id" semantic conventions. It
+// represents the ack id for a given message.
+func MessagingGCPPubsubMessageAckID(val string) attribute.KeyValue {
+	return MessagingGCPPubsubMessageAckIDKey.String(val)
+}
+
+// MessagingGCPPubsubMessageDeliveryAttempt returns an attribute KeyValue
+// conforming to the "messaging.gcp_pubsub.message.delivery_attempt" semantic
+// conventions. It represents the delivery attempt for a given message.
+func MessagingGCPPubsubMessageDeliveryAttempt(val int) attribute.KeyValue {
+	return MessagingGCPPubsubMessageDeliveryAttemptKey.Int(val)
+}
+
+// MessagingGCPPubsubMessageOrderingKey returns an attribute KeyValue
+// conforming to the "messaging.gcp_pubsub.message.ordering_key" semantic
+// conventions. It represents the ordering key for a given message. If the
+// attribute is not present, the message does not have an ordering key.
+func MessagingGCPPubsubMessageOrderingKey(val string) attribute.KeyValue {
+	return MessagingGCPPubsubMessageOrderingKeyKey.String(val)
+}
+
+// This group describes attributes specific to Azure Service Bus.
+const (
+	// MessagingServicebusDestinationSubscriptionNameKey is the attribute Key
+	// conforming to the "messaging.servicebus.destination.subscription_name"
+	// semantic conventions. It represents the name of the subscription in the
+	// topic messages are received from.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'mySubscription'
+	MessagingServicebusDestinationSubscriptionNameKey = attribute.Key("messaging.servicebus.destination.subscription_name")
+
+	// MessagingServicebusDispositionStatusKey is the attribute Key conforming
+	// to the "messaging.servicebus.disposition_status" semantic conventions.
+	// It represents the describes the [settlement
+	// type](https://learn.microsoft.com/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock).
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	MessagingServicebusDispositionStatusKey = attribute.Key("messaging.servicebus.disposition_status")
+
+	// MessagingServicebusMessageDeliveryCountKey is the attribute Key
+	// conforming to the "messaging.servicebus.message.delivery_count" semantic
+	// conventions. It represents the number of deliveries that have been
+	// attempted for this message.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 2
+	MessagingServicebusMessageDeliveryCountKey = attribute.Key("messaging.servicebus.message.delivery_count")
+
+	// MessagingServicebusMessageEnqueuedTimeKey is the attribute Key
+	// conforming to the "messaging.servicebus.message.enqueued_time" semantic
+	// conventions. It represents the UTC epoch seconds at which the message
+	// has been accepted and stored in the entity.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1701393730
+	MessagingServicebusMessageEnqueuedTimeKey = attribute.Key("messaging.servicebus.message.enqueued_time")
+)
+
+var (
+	// Message is completed
+	MessagingServicebusDispositionStatusComplete = MessagingServicebusDispositionStatusKey.String("complete")
+	// Message is abandoned
+	MessagingServicebusDispositionStatusAbandon = MessagingServicebusDispositionStatusKey.String("abandon")
+	// Message is sent to dead letter queue
+	MessagingServicebusDispositionStatusDeadLetter = MessagingServicebusDispositionStatusKey.String("dead_letter")
+	// Message is deferred
+	MessagingServicebusDispositionStatusDefer = MessagingServicebusDispositionStatusKey.String("defer")
+)
+
 // MessagingServicebusDestinationSubscriptionName returns an attribute
 // KeyValue conforming to the
 // "messaging.servicebus.destination.subscription_name" semantic conventions.
@@ -5775,6 +5815,47 @@ func MessagingServicebusMessageDeliveryCount(val int) attribute.KeyValue {
 // been accepted and stored in the entity.
 func MessagingServicebusMessageEnqueuedTime(val int) attribute.KeyValue {
 	return MessagingServicebusMessageEnqueuedTimeKey.Int(val)
+}
+
+// This group describes attributes specific to Azure Event Hubs.
+const (
+	// MessagingEventhubsConsumerGroupKey is the attribute Key conforming to
+	// the "messaging.eventhubs.consumer.group" semantic conventions. It
+	// represents the name of the consumer group the event consumer is
+	// associated with.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'indexer'
+	MessagingEventhubsConsumerGroupKey = attribute.Key("messaging.eventhubs.consumer.group")
+
+	// MessagingEventhubsMessageEnqueuedTimeKey is the attribute Key conforming
+	// to the "messaging.eventhubs.message.enqueued_time" semantic conventions.
+	// It represents the UTC epoch seconds at which the message has been
+	// accepted and stored in the entity.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1701393730
+	MessagingEventhubsMessageEnqueuedTimeKey = attribute.Key("messaging.eventhubs.message.enqueued_time")
+)
+
+// MessagingEventhubsConsumerGroup returns an attribute KeyValue conforming
+// to the "messaging.eventhubs.consumer.group" semantic conventions. It
+// represents the name of the consumer group the event consumer is associated
+// with.
+func MessagingEventhubsConsumerGroup(val string) attribute.KeyValue {
+	return MessagingEventhubsConsumerGroupKey.String(val)
+}
+
+// MessagingEventhubsMessageEnqueuedTime returns an attribute KeyValue
+// conforming to the "messaging.eventhubs.message.enqueued_time" semantic
+// conventions. It represents the UTC epoch seconds at which the message has
+// been accepted and stored in the entity.
+func MessagingEventhubsMessageEnqueuedTime(val int) attribute.KeyValue {
+	return MessagingEventhubsMessageEnqueuedTimeKey.Int(val)
 }
 
 // These attributes may be used for any network related operation.
@@ -6133,6 +6214,26 @@ func OciManifestDigest(val string) attribute.KeyValue {
 	return OciManifestDigestKey.String(val)
 }
 
+// Attributes used by the OpenTracing Shim layer.
+const (
+	// OpentracingRefTypeKey is the attribute Key conforming to the
+	// "opentracing.ref_type" semantic conventions. It represents the
+	// parent-child Reference type
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Note: The causal relationship between a child Span and a parent Span.
+	OpentracingRefTypeKey = attribute.Key("opentracing.ref_type")
+)
+
+var (
+	// The parent Span depends on the child Span in some capacity
+	OpentracingRefTypeChildOf = OpentracingRefTypeKey.String("child_of")
+	// The parent Span doesn't depend in any way on the result of the child Span
+	OpentracingRefTypeFollowsFrom = OpentracingRefTypeKey.String("follows_from")
+)
+
 // The operating system (OS) on which the process represented by this resource
 // is running.
 const (
@@ -6241,6 +6342,105 @@ func OSVersion(val string) attribute.KeyValue {
 	return OSVersionKey.String(val)
 }
 
+// Attributes reserved for OpenTelemetry
+const (
+	// OTelStatusCodeKey is the attribute Key conforming to the
+	// "otel.status_code" semantic conventions. It represents the name of the
+	// code, either "OK" or "ERROR". MUST NOT be set if the status code is
+	// UNSET.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	OTelStatusCodeKey = attribute.Key("otel.status_code")
+
+	// OTelStatusDescriptionKey is the attribute Key conforming to the
+	// "otel.status_description" semantic conventions. It represents the
+	// description of the Status if it has a value, otherwise not set.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'resource not found'
+	OTelStatusDescriptionKey = attribute.Key("otel.status_description")
+)
+
+var (
+	// The operation has been validated by an Application developer or Operator to have completed successfully
+	OTelStatusCodeOk = OTelStatusCodeKey.String("OK")
+	// The operation contains an error
+	OTelStatusCodeError = OTelStatusCodeKey.String("ERROR")
+)
+
+// OTelStatusDescription returns an attribute KeyValue conforming to the
+// "otel.status_description" semantic conventions. It represents the
+// description of the Status if it has a value, otherwise not set.
+func OTelStatusDescription(val string) attribute.KeyValue {
+	return OTelStatusDescriptionKey.String(val)
+}
+
+// Attributes used by non-OTLP exporters to represent OpenTelemetry Scope's
+// concepts.
+const (
+	// OTelScopeNameKey is the attribute Key conforming to the
+	// "otel.scope.name" semantic conventions. It represents the name of the
+	// instrumentation scope - (`InstrumentationScope.Name` in OTLP).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'io.opentelemetry.contrib.mongodb'
+	OTelScopeNameKey = attribute.Key("otel.scope.name")
+
+	// OTelScopeVersionKey is the attribute Key conforming to the
+	// "otel.scope.version" semantic conventions. It represents the version of
+	// the instrumentation scope - (`InstrumentationScope.Version` in OTLP).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: '1.0.0'
+	OTelScopeVersionKey = attribute.Key("otel.scope.version")
+)
+
+// OTelScopeName returns an attribute KeyValue conforming to the
+// "otel.scope.name" semantic conventions. It represents the name of the
+// instrumentation scope - (`InstrumentationScope.Name` in OTLP).
+func OTelScopeName(val string) attribute.KeyValue {
+	return OTelScopeNameKey.String(val)
+}
+
+// OTelScopeVersion returns an attribute KeyValue conforming to the
+// "otel.scope.version" semantic conventions. It represents the version of the
+// instrumentation scope - (`InstrumentationScope.Version` in OTLP).
+func OTelScopeVersion(val string) attribute.KeyValue {
+	return OTelScopeVersionKey.String(val)
+}
+
+// Operations that access some remote service.
+const (
+	// PeerServiceKey is the attribute Key conforming to the "peer.service"
+	// semantic conventions. It represents the
+	// [`service.name`](/docs/resource/README.md#service) of the remote
+	// service. SHOULD be equal to the actual `service.name` resource attribute
+	// of the remote service if any.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'AuthTokenCache'
+	PeerServiceKey = attribute.Key("peer.service")
+)
+
+// PeerService returns an attribute KeyValue conforming to the
+// "peer.service" semantic conventions. It represents the
+// [`service.name`](/docs/resource/README.md#service) of the remote service.
+// SHOULD be equal to the actual `service.name` resource attribute of the
+// remote service if any.
+func PeerService(val string) attribute.KeyValue {
+	return PeerServiceKey.String(val)
+}
+
 // An operating system process.
 const (
 	// ProcessCommandKey is the attribute Key conforming to the
@@ -6282,6 +6482,26 @@ const (
 	// Examples: 'C:\\cmd\\otecol --config="my directory\\config.yaml"'
 	ProcessCommandLineKey = attribute.Key("process.command_line")
 
+	// ProcessContextSwitchTypeKey is the attribute Key conforming to the
+	// "process.context_switch_type" semantic conventions. It represents the
+	// specifies whether the context switches for this data point were
+	// voluntary or involuntary.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	ProcessContextSwitchTypeKey = attribute.Key("process.context_switch_type")
+
+	// ProcessCreationTimeKey is the attribute Key conforming to the
+	// "process.creation.time" semantic conventions. It represents the date and
+	// time the process was created, in ISO 8601 format.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '2023-11-21T09:25:34.853Z'
+	ProcessCreationTimeKey = attribute.Key("process.creation.time")
+
 	// ProcessExecutableNameKey is the attribute Key conforming to the
 	// "process.executable.name" semantic conventions. It represents the name
 	// of the process executable. On Linux based systems, can be set to the
@@ -6306,6 +6526,46 @@ const (
 	// Examples: '/usr/bin/cmd/otelcol'
 	ProcessExecutablePathKey = attribute.Key("process.executable.path")
 
+	// ProcessExitCodeKey is the attribute Key conforming to the
+	// "process.exit.code" semantic conventions. It represents the exit code of
+	// the process.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 127
+	ProcessExitCodeKey = attribute.Key("process.exit.code")
+
+	// ProcessExitTimeKey is the attribute Key conforming to the
+	// "process.exit.time" semantic conventions. It represents the date and
+	// time the process exited, in ISO 8601 format.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '2023-11-21T09:26:12.315Z'
+	ProcessExitTimeKey = attribute.Key("process.exit.time")
+
+	// ProcessGroupLeaderPIDKey is the attribute Key conforming to the
+	// "process.group_leader.pid" semantic conventions. It represents the PID
+	// of the process's group leader. This is also the process group ID (PGID)
+	// of the process.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 23
+	ProcessGroupLeaderPIDKey = attribute.Key("process.group_leader.pid")
+
+	// ProcessInteractiveKey is the attribute Key conforming to the
+	// "process.interactive" semantic conventions. It represents the whether
+	// the process is connected to an interactive shell.
+	//
+	// Type: boolean
+	// RequirementLevel: Optional
+	// Stability: experimental
+	ProcessInteractiveKey = attribute.Key("process.interactive")
+
 	// ProcessOwnerKey is the attribute Key conforming to the "process.owner"
 	// semantic conventions. It represents the username of the user that owns
 	// the process.
@@ -6315,6 +6575,16 @@ const (
 	// Stability: experimental
 	// Examples: 'root'
 	ProcessOwnerKey = attribute.Key("process.owner")
+
+	// ProcessPagingFaultTypeKey is the attribute Key conforming to the
+	// "process.paging.fault_type" semantic conventions. It represents the type
+	// of page fault for this data point. Type `major` is for major/hard page
+	// faults, and `minor` is for minor/soft page faults.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	ProcessPagingFaultTypeKey = attribute.Key("process.paging.fault_type")
 
 	// ProcessParentPIDKey is the attribute Key conforming to the
 	// "process.parent_pid" semantic conventions. It represents the parent
@@ -6334,6 +6604,26 @@ const (
 	// Stability: experimental
 	// Examples: 1234
 	ProcessPIDKey = attribute.Key("process.pid")
+
+	// ProcessRealUserIDKey is the attribute Key conforming to the
+	// "process.real_user.id" semantic conventions. It represents the real user
+	// ID (RUID) of the process.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1000
+	ProcessRealUserIDKey = attribute.Key("process.real_user.id")
+
+	// ProcessRealUserNameKey is the attribute Key conforming to the
+	// "process.real_user.name" semantic conventions. It represents the
+	// username of the real user of the process.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'operator'
+	ProcessRealUserNameKey = attribute.Key("process.real_user.name")
 
 	// ProcessRuntimeDescriptionKey is the attribute Key conforming to the
 	// "process.runtime.description" semantic conventions. It represents an
@@ -6367,6 +6657,83 @@ const (
 	// Stability: experimental
 	// Examples: '14.0.2'
 	ProcessRuntimeVersionKey = attribute.Key("process.runtime.version")
+
+	// ProcessSavedUserIDKey is the attribute Key conforming to the
+	// "process.saved_user.id" semantic conventions. It represents the saved
+	// user ID (SUID) of the process.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1002
+	ProcessSavedUserIDKey = attribute.Key("process.saved_user.id")
+
+	// ProcessSavedUserNameKey is the attribute Key conforming to the
+	// "process.saved_user.name" semantic conventions. It represents the
+	// username of the saved user.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'operator'
+	ProcessSavedUserNameKey = attribute.Key("process.saved_user.name")
+
+	// ProcessSessionLeaderPIDKey is the attribute Key conforming to the
+	// "process.session_leader.pid" semantic conventions. It represents the PID
+	// of the process's session leader. This is also the session ID (SID) of
+	// the process.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 14
+	ProcessSessionLeaderPIDKey = attribute.Key("process.session_leader.pid")
+
+	// ProcessUserIDKey is the attribute Key conforming to the
+	// "process.user.id" semantic conventions. It represents the effective user
+	// ID (EUID) of the process.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1001
+	ProcessUserIDKey = attribute.Key("process.user.id")
+
+	// ProcessUserNameKey is the attribute Key conforming to the
+	// "process.user.name" semantic conventions. It represents the username of
+	// the effective user of the process.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'root'
+	ProcessUserNameKey = attribute.Key("process.user.name")
+
+	// ProcessVpidKey is the attribute Key conforming to the "process.vpid"
+	// semantic conventions. It represents the virtual process identifier.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 12
+	// Note: The process ID within a PID namespace. This is not necessarily
+	// unique across all processes on the host but it is unique within the
+	// process namespace that the process exists within.
+	ProcessVpidKey = attribute.Key("process.vpid")
+)
+
+var (
+	// voluntary
+	ProcessContextSwitchTypeVoluntary = ProcessContextSwitchTypeKey.String("voluntary")
+	// involuntary
+	ProcessContextSwitchTypeInvoluntary = ProcessContextSwitchTypeKey.String("involuntary")
+)
+
+var (
+	// major
+	ProcessPagingFaultTypeMajor = ProcessPagingFaultTypeKey.String("major")
+	// minor
+	ProcessPagingFaultTypeMinor = ProcessPagingFaultTypeKey.String("minor")
 )
 
 // ProcessCommand returns an attribute KeyValue conforming to the
@@ -6399,6 +6766,13 @@ func ProcessCommandLine(val string) attribute.KeyValue {
 	return ProcessCommandLineKey.String(val)
 }
 
+// ProcessCreationTime returns an attribute KeyValue conforming to the
+// "process.creation.time" semantic conventions. It represents the date and
+// time the process was created, in ISO 8601 format.
+func ProcessCreationTime(val string) attribute.KeyValue {
+	return ProcessCreationTimeKey.String(val)
+}
+
 // ProcessExecutableName returns an attribute KeyValue conforming to the
 // "process.executable.name" semantic conventions. It represents the name of
 // the process executable. On Linux based systems, can be set to the `Name` in
@@ -6415,6 +6789,35 @@ func ProcessExecutableName(val string) attribute.KeyValue {
 // `GetProcessImageFileNameW`.
 func ProcessExecutablePath(val string) attribute.KeyValue {
 	return ProcessExecutablePathKey.String(val)
+}
+
+// ProcessExitCode returns an attribute KeyValue conforming to the
+// "process.exit.code" semantic conventions. It represents the exit code of the
+// process.
+func ProcessExitCode(val int) attribute.KeyValue {
+	return ProcessExitCodeKey.Int(val)
+}
+
+// ProcessExitTime returns an attribute KeyValue conforming to the
+// "process.exit.time" semantic conventions. It represents the date and time
+// the process exited, in ISO 8601 format.
+func ProcessExitTime(val string) attribute.KeyValue {
+	return ProcessExitTimeKey.String(val)
+}
+
+// ProcessGroupLeaderPID returns an attribute KeyValue conforming to the
+// "process.group_leader.pid" semantic conventions. It represents the PID of
+// the process's group leader. This is also the process group ID (PGID) of the
+// process.
+func ProcessGroupLeaderPID(val int) attribute.KeyValue {
+	return ProcessGroupLeaderPIDKey.Int(val)
+}
+
+// ProcessInteractive returns an attribute KeyValue conforming to the
+// "process.interactive" semantic conventions. It represents the whether the
+// process is connected to an interactive shell.
+func ProcessInteractive(val bool) attribute.KeyValue {
+	return ProcessInteractiveKey.Bool(val)
 }
 
 // ProcessOwner returns an attribute KeyValue conforming to the
@@ -6435,6 +6838,20 @@ func ProcessParentPID(val int) attribute.KeyValue {
 // semantic conventions. It represents the process identifier (PID).
 func ProcessPID(val int) attribute.KeyValue {
 	return ProcessPIDKey.Int(val)
+}
+
+// ProcessRealUserID returns an attribute KeyValue conforming to the
+// "process.real_user.id" semantic conventions. It represents the real user ID
+// (RUID) of the process.
+func ProcessRealUserID(val int) attribute.KeyValue {
+	return ProcessRealUserIDKey.Int(val)
+}
+
+// ProcessRealUserName returns an attribute KeyValue conforming to the
+// "process.real_user.name" semantic conventions. It represents the username of
+// the real user of the process.
+func ProcessRealUserName(val string) attribute.KeyValue {
+	return ProcessRealUserNameKey.String(val)
 }
 
 // ProcessRuntimeDescription returns an attribute KeyValue conforming to the
@@ -6460,6 +6877,70 @@ func ProcessRuntimeName(val string) attribute.KeyValue {
 func ProcessRuntimeVersion(val string) attribute.KeyValue {
 	return ProcessRuntimeVersionKey.String(val)
 }
+
+// ProcessSavedUserID returns an attribute KeyValue conforming to the
+// "process.saved_user.id" semantic conventions. It represents the saved user
+// ID (SUID) of the process.
+func ProcessSavedUserID(val int) attribute.KeyValue {
+	return ProcessSavedUserIDKey.Int(val)
+}
+
+// ProcessSavedUserName returns an attribute KeyValue conforming to the
+// "process.saved_user.name" semantic conventions. It represents the username
+// of the saved user.
+func ProcessSavedUserName(val string) attribute.KeyValue {
+	return ProcessSavedUserNameKey.String(val)
+}
+
+// ProcessSessionLeaderPID returns an attribute KeyValue conforming to the
+// "process.session_leader.pid" semantic conventions. It represents the PID of
+// the process's session leader. This is also the session ID (SID) of the
+// process.
+func ProcessSessionLeaderPID(val int) attribute.KeyValue {
+	return ProcessSessionLeaderPIDKey.Int(val)
+}
+
+// ProcessUserID returns an attribute KeyValue conforming to the
+// "process.user.id" semantic conventions. It represents the effective user ID
+// (EUID) of the process.
+func ProcessUserID(val int) attribute.KeyValue {
+	return ProcessUserIDKey.Int(val)
+}
+
+// ProcessUserName returns an attribute KeyValue conforming to the
+// "process.user.name" semantic conventions. It represents the username of the
+// effective user of the process.
+func ProcessUserName(val string) attribute.KeyValue {
+	return ProcessUserNameKey.String(val)
+}
+
+// ProcessVpid returns an attribute KeyValue conforming to the
+// "process.vpid" semantic conventions. It represents the virtual process
+// identifier.
+func ProcessVpid(val int) attribute.KeyValue {
+	return ProcessVpidKey.Int(val)
+}
+
+// Attributes for process CPU
+const (
+	// ProcessCPUStateKey is the attribute Key conforming to the
+	// "process.cpu.state" semantic conventions. It represents the CPU state of
+	// the process.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	ProcessCPUStateKey = attribute.Key("process.cpu.state")
+)
+
+var (
+	// system
+	ProcessCPUStateSystem = ProcessCPUStateKey.String("system")
+	// user
+	ProcessCPUStateUser = ProcessCPUStateKey.String("user")
+	// wait
+	ProcessCPUStateWait = ProcessCPUStateKey.String("wait")
+)
 
 // Attributes for remote procedure calls.
 const (
@@ -6527,6 +7008,45 @@ const (
 	// Stability: experimental
 	// Examples: '2.0', '1.0'
 	RPCJsonrpcVersionKey = attribute.Key("rpc.jsonrpc.version")
+
+	// RPCMessageCompressedSizeKey is the attribute Key conforming to the
+	// "rpc.message.compressed_size" semantic conventions. It represents the
+	// compressed size of the message in bytes.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	RPCMessageCompressedSizeKey = attribute.Key("rpc.message.compressed_size")
+
+	// RPCMessageIDKey is the attribute Key conforming to the "rpc.message.id"
+	// semantic conventions. It represents the mUST be calculated as two
+	// different counters starting from `1` one for sent messages and one for
+	// received message.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Note: This way we guarantee that the values will be consistent between
+	// different implementations.
+	RPCMessageIDKey = attribute.Key("rpc.message.id")
+
+	// RPCMessageTypeKey is the attribute Key conforming to the
+	// "rpc.message.type" semantic conventions. It represents the whether this
+	// is a received or sent message.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	RPCMessageTypeKey = attribute.Key("rpc.message.type")
+
+	// RPCMessageUncompressedSizeKey is the attribute Key conforming to the
+	// "rpc.message.uncompressed_size" semantic conventions. It represents the
+	// uncompressed size of the message in bytes.
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	RPCMessageUncompressedSizeKey = attribute.Key("rpc.message.uncompressed_size")
 
 	// RPCMethodKey is the attribute Key conforming to the "rpc.method"
 	// semantic conventions. It represents the name of the (logical) method
@@ -6642,6 +7162,13 @@ var (
 )
 
 var (
+	// sent
+	RPCMessageTypeSent = RPCMessageTypeKey.String("SENT")
+	// received
+	RPCMessageTypeReceived = RPCMessageTypeKey.String("RECEIVED")
+)
+
+var (
 	// gRPC
 	RPCSystemGRPC = RPCSystemKey.String("grpc")
 	// Java RMI
@@ -6684,6 +7211,28 @@ func RPCJsonrpcRequestID(val string) attribute.KeyValue {
 // doesn't specify this, the value can be omitted.
 func RPCJsonrpcVersion(val string) attribute.KeyValue {
 	return RPCJsonrpcVersionKey.String(val)
+}
+
+// RPCMessageCompressedSize returns an attribute KeyValue conforming to the
+// "rpc.message.compressed_size" semantic conventions. It represents the
+// compressed size of the message in bytes.
+func RPCMessageCompressedSize(val int) attribute.KeyValue {
+	return RPCMessageCompressedSizeKey.Int(val)
+}
+
+// RPCMessageID returns an attribute KeyValue conforming to the
+// "rpc.message.id" semantic conventions. It represents the mUST be calculated
+// as two different counters starting from `1` one for sent messages and one
+// for received message.
+func RPCMessageID(val int) attribute.KeyValue {
+	return RPCMessageIDKey.Int(val)
+}
+
+// RPCMessageUncompressedSize returns an attribute KeyValue conforming to
+// the "rpc.message.uncompressed_size" semantic conventions. It represents the
+// uncompressed size of the message in bytes.
+func RPCMessageUncompressedSize(val int) attribute.KeyValue {
+	return RPCMessageUncompressedSizeKey.Int(val)
 }
 
 // RPCMethod returns an attribute KeyValue conforming to the "rpc.method"
@@ -6815,9 +7364,9 @@ const (
 	// Note: MUST be the same for all instances of horizontally scaled
 	// services. If the value was not specified, SDKs MUST fallback to
 	// `unknown_service:` concatenated with
-	// [`process.executable.name`](process.md#process), e.g.
-	// `unknown_service:bash`. If `process.executable.name` is not available,
-	// the value MUST be set to `unknown_service`.
+	// [`process.executable.name`](process.md), e.g. `unknown_service:bash`. If
+	// `process.executable.name` is not available, the value MUST be set to
+	// `unknown_service`.
 	ServiceNameKey = attribute.Key("service.name")
 
 	// ServiceNamespaceKey is the attribute Key conforming to the
@@ -6924,6 +7473,48 @@ func SessionPreviousID(val string) attribute.KeyValue {
 	return SessionPreviousIDKey.String(val)
 }
 
+// SignalR attributes
+const (
+	// SignalrConnectionStatusKey is the attribute Key conforming to the
+	// "signalr.connection.status" semantic conventions. It represents the
+	// signalR HTTP connection closure status.
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'app_shutdown', 'timeout'
+	SignalrConnectionStatusKey = attribute.Key("signalr.connection.status")
+
+	// SignalrTransportKey is the attribute Key conforming to the
+	// "signalr.transport" semantic conventions. It represents the [SignalR
+	// transport
+	// type](https://github.com/dotnet/aspnetcore/blob/main/src/SignalR/docs/specs/TransportProtocols.md)
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: stable
+	// Examples: 'web_sockets', 'long_polling'
+	SignalrTransportKey = attribute.Key("signalr.transport")
+)
+
+var (
+	// The connection was closed normally
+	SignalrConnectionStatusNormalClosure = SignalrConnectionStatusKey.String("normal_closure")
+	// The connection was closed due to a timeout
+	SignalrConnectionStatusTimeout = SignalrConnectionStatusKey.String("timeout")
+	// The connection was closed because the app is shutting down
+	SignalrConnectionStatusAppShutdown = SignalrConnectionStatusKey.String("app_shutdown")
+)
+
+var (
+	// ServerSentEvents protocol
+	SignalrTransportServerSentEvents = SignalrTransportKey.String("server_sent_events")
+	// LongPolling protocol
+	SignalrTransportLongPolling = SignalrTransportKey.String("long_polling")
+	// WebSockets protocol
+	SignalrTransportWebSockets = SignalrTransportKey.String("web_sockets")
+)
+
 // These attributes may be used to describe the sender of a network
 // exchange/packet. These should be used when there is no client/server
 // relationship between the two sides, or when that relationship is unknown.
@@ -6971,6 +7562,297 @@ func SourceAddress(val string) attribute.KeyValue {
 func SourcePort(val int) attribute.KeyValue {
 	return SourcePortKey.Int(val)
 }
+
+// Describes System attributes
+const (
+	// SystemDeviceKey is the attribute Key conforming to the "system.device"
+	// semantic conventions. It represents the device identifier
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '(identifier)'
+	SystemDeviceKey = attribute.Key("system.device")
+)
+
+// SystemDevice returns an attribute KeyValue conforming to the
+// "system.device" semantic conventions. It represents the device identifier
+func SystemDevice(val string) attribute.KeyValue {
+	return SystemDeviceKey.String(val)
+}
+
+// Describes System CPU attributes
+const (
+	// SystemCPULogicalNumberKey is the attribute Key conforming to the
+	// "system.cpu.logical_number" semantic conventions. It represents the
+	// logical CPU number [0..n-1]
+	//
+	// Type: int
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 1
+	SystemCPULogicalNumberKey = attribute.Key("system.cpu.logical_number")
+
+	// SystemCPUStateKey is the attribute Key conforming to the
+	// "system.cpu.state" semantic conventions. It represents the state of the
+	// CPU
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'idle', 'interrupt'
+	SystemCPUStateKey = attribute.Key("system.cpu.state")
+)
+
+var (
+	// user
+	SystemCPUStateUser = SystemCPUStateKey.String("user")
+	// system
+	SystemCPUStateSystem = SystemCPUStateKey.String("system")
+	// nice
+	SystemCPUStateNice = SystemCPUStateKey.String("nice")
+	// idle
+	SystemCPUStateIdle = SystemCPUStateKey.String("idle")
+	// iowait
+	SystemCPUStateIowait = SystemCPUStateKey.String("iowait")
+	// interrupt
+	SystemCPUStateInterrupt = SystemCPUStateKey.String("interrupt")
+	// steal
+	SystemCPUStateSteal = SystemCPUStateKey.String("steal")
+)
+
+// SystemCPULogicalNumber returns an attribute KeyValue conforming to the
+// "system.cpu.logical_number" semantic conventions. It represents the logical
+// CPU number [0..n-1]
+func SystemCPULogicalNumber(val int) attribute.KeyValue {
+	return SystemCPULogicalNumberKey.Int(val)
+}
+
+// Describes System Memory attributes
+const (
+	// SystemMemoryStateKey is the attribute Key conforming to the
+	// "system.memory.state" semantic conventions. It represents the memory
+	// state
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'free', 'cached'
+	SystemMemoryStateKey = attribute.Key("system.memory.state")
+)
+
+var (
+	// used
+	SystemMemoryStateUsed = SystemMemoryStateKey.String("used")
+	// free
+	SystemMemoryStateFree = SystemMemoryStateKey.String("free")
+	// shared
+	SystemMemoryStateShared = SystemMemoryStateKey.String("shared")
+	// buffers
+	SystemMemoryStateBuffers = SystemMemoryStateKey.String("buffers")
+	// cached
+	SystemMemoryStateCached = SystemMemoryStateKey.String("cached")
+)
+
+// Describes System Memory Paging attributes
+const (
+	// SystemPagingDirectionKey is the attribute Key conforming to the
+	// "system.paging.direction" semantic conventions. It represents the paging
+	// access direction
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'in'
+	SystemPagingDirectionKey = attribute.Key("system.paging.direction")
+
+	// SystemPagingStateKey is the attribute Key conforming to the
+	// "system.paging.state" semantic conventions. It represents the memory
+	// paging state
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'free'
+	SystemPagingStateKey = attribute.Key("system.paging.state")
+
+	// SystemPagingTypeKey is the attribute Key conforming to the
+	// "system.paging.type" semantic conventions. It represents the memory
+	// paging type
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'minor'
+	SystemPagingTypeKey = attribute.Key("system.paging.type")
+)
+
+var (
+	// in
+	SystemPagingDirectionIn = SystemPagingDirectionKey.String("in")
+	// out
+	SystemPagingDirectionOut = SystemPagingDirectionKey.String("out")
+)
+
+var (
+	// used
+	SystemPagingStateUsed = SystemPagingStateKey.String("used")
+	// free
+	SystemPagingStateFree = SystemPagingStateKey.String("free")
+)
+
+var (
+	// major
+	SystemPagingTypeMajor = SystemPagingTypeKey.String("major")
+	// minor
+	SystemPagingTypeMinor = SystemPagingTypeKey.String("minor")
+)
+
+// Describes Filesystem attributes
+const (
+	// SystemFilesystemModeKey is the attribute Key conforming to the
+	// "system.filesystem.mode" semantic conventions. It represents the
+	// filesystem mode
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'rw, ro'
+	SystemFilesystemModeKey = attribute.Key("system.filesystem.mode")
+
+	// SystemFilesystemMountpointKey is the attribute Key conforming to the
+	// "system.filesystem.mountpoint" semantic conventions. It represents the
+	// filesystem mount path
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '/mnt/data'
+	SystemFilesystemMountpointKey = attribute.Key("system.filesystem.mountpoint")
+
+	// SystemFilesystemStateKey is the attribute Key conforming to the
+	// "system.filesystem.state" semantic conventions. It represents the
+	// filesystem state
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'used'
+	SystemFilesystemStateKey = attribute.Key("system.filesystem.state")
+
+	// SystemFilesystemTypeKey is the attribute Key conforming to the
+	// "system.filesystem.type" semantic conventions. It represents the
+	// filesystem type
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'ext4'
+	SystemFilesystemTypeKey = attribute.Key("system.filesystem.type")
+)
+
+var (
+	// used
+	SystemFilesystemStateUsed = SystemFilesystemStateKey.String("used")
+	// free
+	SystemFilesystemStateFree = SystemFilesystemStateKey.String("free")
+	// reserved
+	SystemFilesystemStateReserved = SystemFilesystemStateKey.String("reserved")
+)
+
+var (
+	// fat32
+	SystemFilesystemTypeFat32 = SystemFilesystemTypeKey.String("fat32")
+	// exfat
+	SystemFilesystemTypeExfat = SystemFilesystemTypeKey.String("exfat")
+	// ntfs
+	SystemFilesystemTypeNtfs = SystemFilesystemTypeKey.String("ntfs")
+	// refs
+	SystemFilesystemTypeRefs = SystemFilesystemTypeKey.String("refs")
+	// hfsplus
+	SystemFilesystemTypeHfsplus = SystemFilesystemTypeKey.String("hfsplus")
+	// ext4
+	SystemFilesystemTypeExt4 = SystemFilesystemTypeKey.String("ext4")
+)
+
+// SystemFilesystemMode returns an attribute KeyValue conforming to the
+// "system.filesystem.mode" semantic conventions. It represents the filesystem
+// mode
+func SystemFilesystemMode(val string) attribute.KeyValue {
+	return SystemFilesystemModeKey.String(val)
+}
+
+// SystemFilesystemMountpoint returns an attribute KeyValue conforming to
+// the "system.filesystem.mountpoint" semantic conventions. It represents the
+// filesystem mount path
+func SystemFilesystemMountpoint(val string) attribute.KeyValue {
+	return SystemFilesystemMountpointKey.String(val)
+}
+
+// Describes Network attributes
+const (
+	// SystemNetworkStateKey is the attribute Key conforming to the
+	// "system.network.state" semantic conventions. It represents a stateless
+	// protocol MUST NOT set this attribute
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'close_wait'
+	SystemNetworkStateKey = attribute.Key("system.network.state")
+)
+
+var (
+	// close
+	SystemNetworkStateClose = SystemNetworkStateKey.String("close")
+	// close_wait
+	SystemNetworkStateCloseWait = SystemNetworkStateKey.String("close_wait")
+	// closing
+	SystemNetworkStateClosing = SystemNetworkStateKey.String("closing")
+	// delete
+	SystemNetworkStateDelete = SystemNetworkStateKey.String("delete")
+	// established
+	SystemNetworkStateEstablished = SystemNetworkStateKey.String("established")
+	// fin_wait_1
+	SystemNetworkStateFinWait1 = SystemNetworkStateKey.String("fin_wait_1")
+	// fin_wait_2
+	SystemNetworkStateFinWait2 = SystemNetworkStateKey.String("fin_wait_2")
+	// last_ack
+	SystemNetworkStateLastAck = SystemNetworkStateKey.String("last_ack")
+	// listen
+	SystemNetworkStateListen = SystemNetworkStateKey.String("listen")
+	// syn_recv
+	SystemNetworkStateSynRecv = SystemNetworkStateKey.String("syn_recv")
+	// syn_sent
+	SystemNetworkStateSynSent = SystemNetworkStateKey.String("syn_sent")
+	// time_wait
+	SystemNetworkStateTimeWait = SystemNetworkStateKey.String("time_wait")
+)
+
+// Describes System Process attributes
+const (
+	// SystemProcessStatusKey is the attribute Key conforming to the
+	// "system.process.status" semantic conventions. It represents the process
+	// state, e.g., [Linux Process State
+	// Codes](https://man7.org/linux/man-pages/man1/ps.1.html#PROCESS_STATE_CODES)
+	//
+	// Type: Enum
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'running'
+	SystemProcessStatusKey = attribute.Key("system.process.status")
+)
+
+var (
+	// running
+	SystemProcessStatusRunning = SystemProcessStatusKey.String("running")
+	// sleeping
+	SystemProcessStatusSleeping = SystemProcessStatusKey.String("sleeping")
+	// stopped
+	SystemProcessStatusStopped = SystemProcessStatusKey.String("stopped")
+	// defunct
+	SystemProcessStatusDefunct = SystemProcessStatusKey.String("defunct")
+)
 
 // Attributes for telemetry SDK.
 const (
@@ -7861,6 +8743,17 @@ const (
 	// with no trailing period.
 	URLSubdomainKey = attribute.Key("url.subdomain")
 
+	// URLTemplateKey is the attribute Key conforming to the "url.template"
+	// semantic conventions. It represents the low-cardinality template of an
+	// [absolute path
+	// reference](https://www.rfc-editor.org/rfc/rfc3986#section-4.2).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '/users/{id}', '/users/:id', '/users?id={id}'
+	URLTemplateKey = attribute.Key("url.template")
+
 	// URLTopLevelDomainKey is the attribute Key conforming to the
 	// "url.top_level_domain" semantic conventions. It represents the effective
 	// top level domain (eTLD), also known as the domain suffix, is the last
@@ -7956,6 +8849,14 @@ func URLSubdomain(val string) attribute.KeyValue {
 	return URLSubdomainKey.String(val)
 }
 
+// URLTemplate returns an attribute KeyValue conforming to the
+// "url.template" semantic conventions. It represents the low-cardinality
+// template of an [absolute path
+// reference](https://www.rfc-editor.org/rfc/rfc3986#section-4.2).
+func URLTemplate(val string) attribute.KeyValue {
+	return URLTemplateKey.String(val)
+}
+
 // URLTopLevelDomain returns an attribute KeyValue conforming to the
 // "url.top_level_domain" semantic conventions. It represents the effective top
 // level domain (eTLD), also known as the domain suffix, is the last part of
@@ -8035,4 +8936,61 @@ func UserAgentOriginal(val string) attribute.KeyValue {
 // user-agent extracted from original. Usually refers to the browser's version
 func UserAgentVersion(val string) attribute.KeyValue {
 	return UserAgentVersionKey.String(val)
+}
+
+// The attributes used to describe the packaged software running the
+// application code.
+const (
+	// WebEngineDescriptionKey is the attribute Key conforming to the
+	// "webengine.description" semantic conventions. It represents the
+	// additional description of the web engine (e.g. detailed version and
+	// edition information).
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'WildFly Full 21.0.0.Final (WildFly Core 13.0.1.Final) -
+	// 2.2.2.Final'
+	WebEngineDescriptionKey = attribute.Key("webengine.description")
+
+	// WebEngineNameKey is the attribute Key conforming to the "webengine.name"
+	// semantic conventions. It represents the name of the web engine.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: 'WildFly'
+	WebEngineNameKey = attribute.Key("webengine.name")
+
+	// WebEngineVersionKey is the attribute Key conforming to the
+	// "webengine.version" semantic conventions. It represents the version of
+	// the web engine.
+	//
+	// Type: string
+	// RequirementLevel: Optional
+	// Stability: experimental
+	// Examples: '21.0.0'
+	WebEngineVersionKey = attribute.Key("webengine.version")
+)
+
+// WebEngineDescription returns an attribute KeyValue conforming to the
+// "webengine.description" semantic conventions. It represents the additional
+// description of the web engine (e.g. detailed version and edition
+// information).
+func WebEngineDescription(val string) attribute.KeyValue {
+	return WebEngineDescriptionKey.String(val)
+}
+
+// WebEngineName returns an attribute KeyValue conforming to the
+// "webengine.name" semantic conventions. It represents the name of the web
+// engine.
+func WebEngineName(val string) attribute.KeyValue {
+	return WebEngineNameKey.String(val)
+}
+
+// WebEngineVersion returns an attribute KeyValue conforming to the
+// "webengine.version" semantic conventions. It represents the version of the
+// web engine.
+func WebEngineVersion(val string) attribute.KeyValue {
+	return WebEngineVersionKey.String(val)
 }

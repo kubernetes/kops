@@ -709,5 +709,5 @@ func Put(ref name.Reference, t Taggable, options ...Option) error {
 	if err != nil {
 		return err
 	}
-	return newPusher(o).Push(o.context, ref, t)
+	return newPusher(o).Put(o.context, ref, t)
 }
