@@ -1169,7 +1169,6 @@ go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/v1.20.0
 go.opentelemetry.io/otel/semconv/v1.21.0
 go.opentelemetry.io/otel/semconv/v1.24.0
-go.opentelemetry.io/otel/semconv/v1.25.0
 go.opentelemetry.io/otel/semconv/v1.26.0
 # go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.28.0
 ## explicit; go 1.21
