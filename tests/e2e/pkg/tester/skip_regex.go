@@ -104,8 +104,11 @@ func (t *Tester) setSkipRegexFlag() error {
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
-		// https://github.com/kubernetes/kubernetes/issues/121018
-		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod|Services.should.function.for.service.endpoints.using.hostNetwork"
+		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod"
+		if k8sVersion.Minor < 31 {
+			// https://github.com/kubernetes/kubernetes/issues/121018
+			skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
+		}
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "gce" {
@@ -144,7 +147,9 @@ func (t *Tester) setSkipRegexFlag() error {
 		// Dedicated job testing this: https://testgrid.k8s.io/kops-misc#kops-aws-k28-hostname-bug123255
 		// ref: https://github.com/kubernetes/kops/issues/16349
 		// ref: https://github.com/kubernetes/kubernetes/issues/123255
-		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
+		if k8sVersion.Minor < 31 {
+			skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
+		}
 
 		if k8sVersion.Minor <= 26 {
 			// Prow jobs are being migrated to community-owned EKS clusters.
