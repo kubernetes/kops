@@ -347,7 +347,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			if cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig != nil {
 				priorities = cluster.Spec.ClusterAutoscaler.CustomPriorityExpanderConfig
 			} else {
-				for name, spec := range tf.GetNodeInstanceGroups() {
+				igNames := maps.SortedKeys(tf.GetNodeInstanceGroups())
+				for _, name := range igNames {
+					spec := tf.GetNodeInstanceGroups()[name]
 					if spec.Autoscale != nil {
 						priorities[strconv.Itoa(int(spec.AutoscalePriority))] = append(priorities[strconv.Itoa(int(spec.AutoscalePriority))], fmt.Sprintf("%s.%s", name, tf.ClusterName()))
 					}
