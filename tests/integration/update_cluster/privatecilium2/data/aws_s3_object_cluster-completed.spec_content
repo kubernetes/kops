@@ -214,6 +214,8 @@ spec:
       enableUnreachableRoutes: false
       hubble:
         enabled: true
+        metrics:
+        - drop
       identityAllocationMode: crd
       identityChangeGracePeriod: 5s
       ingress:

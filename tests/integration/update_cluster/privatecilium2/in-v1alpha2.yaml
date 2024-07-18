@@ -39,6 +39,8 @@ spec:
         sharedLoadBalancerServiceName: private-ingress
       hubble:
         enabled: true
+        metrics:
+        - drop
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
