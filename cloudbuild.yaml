@@ -5,7 +5,7 @@ options:
   machineType: 'N1_HIGHCPU_8'
 steps:
 # Push the images
-- name: 'docker.io/library/golang:1.22.4-bookworm'
+- name: 'docker.io/library/golang:1.22.5-bookworm'
   id: images
   entrypoint: make
   env:
@@ -21,7 +21,7 @@ steps:
   - dns-controller-push
   - kube-apiserver-healthcheck-push
 # Push the artifacts
-- name: 'docker.io/library/golang:1.22.4-bookworm'
+- name: 'docker.io/library/golang:1.22.5-bookworm'
   id: artifacts
   entrypoint: make
   env:
@@ -36,7 +36,7 @@ steps:
   args:
   - gcs-upload-and-tag
 # Build cloudbuild artifacts (for attestation)
-- name: 'docker.io/library/golang:1.22.4-bookworm'
+- name: 'docker.io/library/golang:1.22.5-bookworm'
   id: cloudbuild-artifacts
   entrypoint: make
   env:
