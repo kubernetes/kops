@@ -39,7 +39,10 @@ spec:
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    amazonvpc: {}
+    amazonvpc:
+      imageName: image:123
+      initImageName: initimage:123
+      networkPolicyAgentImage: networkpolicyagentimage:123
   nodeTerminationHandler:
     enabled: true
     enableRebalanceDraining: true

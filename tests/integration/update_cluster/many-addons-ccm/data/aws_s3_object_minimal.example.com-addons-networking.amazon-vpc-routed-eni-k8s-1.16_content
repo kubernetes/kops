@@ -514,7 +514,7 @@ spec:
               fieldPath: metadata.name
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.18.1
+        image: image:123
         livenessProbe:
           exec:
             command:
@@ -570,7 +570,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.1.1
+        image: networkpolicyagentimage:123
         name: aws-eks-nodeagent
         resources:
           requests:
@@ -596,7 +596,7 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.18.1
+        image: initimage:123
         name: aws-vpc-cni-init
         resources:
           requests:
