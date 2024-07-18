@@ -4856,6 +4856,10 @@ spec:
                         description: InitImageName is the init container image name
                           to use.
                         type: string
+                      networkPolicyAgentImage:
+                        description: NetworkPolicyAgentImage is the container image
+                          to use for the network policy agent
+                        type: string
                     type: object
                   calico:
                     description: CalicoNetworkingSpec declares that we want Calico
