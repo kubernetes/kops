@@ -316,6 +316,8 @@ type AmazonVPCNetworkingSpec struct {
 	Image string `json:"image,omitempty"`
 	// InitImage is the init container image name to use.
 	InitImage string `json:"initImage,omitempty"`
+	// NetworkPolicyAgentImage is the container image to use for the network policy agent
+	NetworkPolicyAgentImage string `json:"networkPolicyAgentImage,omitempty"`
 	// Env is a list of environment variables to set in the container.
 	Env []EnvVar `json:"env,omitempty"`
 }
