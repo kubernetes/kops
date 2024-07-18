@@ -120,7 +120,7 @@ func TestCreateTokenV1(t *testing.T) {
 	}
 	t.Logf("decoded: %+v", decoded)
 
-	signatureDate := time.Now().Format("20060102") // This might fail if we cross midnight, it seems very unlikely
+	signatureDate := time.Now().UTC().Format("20060102")
 
 	amzSignature := ""
 	amzSignedHeaders := ""
@@ -269,7 +269,7 @@ func TestCreateTokenV2(t *testing.T) {
 		t.Errorf("unexpected http method: got %q, want %q", decoded.Method, want)
 	}
 
-	signatureDate := time.Now().Format("20060102") // This might fail if we cross midnight, it seems very unlikely
+	signatureDate := time.Now().UTC().Format("20060102")
 
 	amzSignature := ""
 	amzSignedHeaders := ""
