@@ -1146,6 +1146,9 @@ type ClusterAutoscalerConfig struct {
 	// BalanceSimilarNodeGroups makes the cluster autoscaler treat similar node groups as one.
 	// Default: false
 	BalanceSimilarNodeGroups *bool `json:"balanceSimilarNodeGroups,omitempty"`
+	// EmitPerNodegroupMetrics If true, publishes the node groups min and max metrics count set on the cluster autoscaler.
+	// Default: false
+	EmitPerNodegroupMetrics *bool `json:"emitPerNodegroupMetrics,omitempty"`
 	// AWSUseStaticInstanceList makes the cluster autoscaler to use statically defined set of AWS EC2 Instance List.
 	// Default: false
 	AWSUseStaticInstanceList *bool `json:"awsUseStaticInstanceList,omitempty"`

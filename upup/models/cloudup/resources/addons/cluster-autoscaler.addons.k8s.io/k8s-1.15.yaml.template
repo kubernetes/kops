@@ -333,6 +333,7 @@ spec:
           command:
             - ./cluster-autoscaler
             - --balance-similar-node-groups={{ .BalanceSimilarNodeGroups }}
+            - --emit-per-nodegroup-metrics={{ .EmitPerNodegroupMetrics }}
             - --cloud-provider={{ GetCloudProvider }}
             {{ if (eq GetCloudProvider "aws") }}
             - --aws-use-static-instance-list={{ .AWSUseStaticInstanceList }}

@@ -2557,6 +2557,7 @@ func autoConvert_v1alpha3_ClusterAutoscalerConfig_To_kops_ClusterAutoscalerConfi
 	out.Enabled = in.Enabled
 	out.Expander = in.Expander
 	out.BalanceSimilarNodeGroups = in.BalanceSimilarNodeGroups
+	out.EmitPerNodegroupMetrics = in.EmitPerNodegroupMetrics
 	out.AWSUseStaticInstanceList = in.AWSUseStaticInstanceList
 	out.IgnoreDaemonSetsUtilization = in.IgnoreDaemonSetsUtilization
 	out.ScaleDownUtilizationThreshold = in.ScaleDownUtilizationThreshold
@@ -2587,6 +2588,7 @@ func autoConvert_kops_ClusterAutoscalerConfig_To_v1alpha3_ClusterAutoscalerConfi
 	out.Enabled = in.Enabled
 	out.Expander = in.Expander
 	out.BalanceSimilarNodeGroups = in.BalanceSimilarNodeGroups
+	out.EmitPerNodegroupMetrics = in.EmitPerNodegroupMetrics
 	out.AWSUseStaticInstanceList = in.AWSUseStaticInstanceList
 	out.IgnoreDaemonSetsUtilization = in.IgnoreDaemonSetsUtilization
 	out.ScaleDownUtilizationThreshold = in.ScaleDownUtilizationThreshold
