@@ -45,14 +45,7 @@ type Taggable interface {
 
 // Write pushes the provided img to the specified image reference.
 func Write(ref name.Reference, img v1.Image, options ...Option) (rerr error) {
-	o, err := makeOptions(options...)
-	if err != nil {
-		return err
-	}
-	if o.progress != nil {
-		defer func() { o.progress.Close(rerr) }()
-	}
-	return newPusher(o).Push(o.context, ref, img)
+	return Push(ref, img, options...)
 }
 
 // writer writes the elements of an image to a remote image reference.
@@ -656,14 +649,7 @@ func scopesForUploadingImage(repo name.Repository, layers []v1.Layer) []string {
 // WriteIndex will attempt to push all of the referenced manifests before
 // attempting to push the ImageIndex, to retain referential integrity.
 func WriteIndex(ref name.Reference, ii v1.ImageIndex, options ...Option) (rerr error) {
-	o, err := makeOptions(options...)
-	if err != nil {
-		return err
-	}
-	if o.progress != nil {
-		defer func() { o.progress.Close(rerr) }()
-	}
-	return newPusher(o).Push(o.context, ref, ii)
+	return Push(ref, ii, options...)
 }
 
 // WriteLayer uploads the provided Layer to the specified repo.
@@ -710,4 +696,16 @@ func Put(ref name.Reference, t Taggable, options ...Option) error {
 		return err
 	}
 	return newPusher(o).Put(o.context, ref, t)
+}
+
+// Push uploads the given Taggable to the specified reference.
+func Push(ref name.Reference, t Taggable, options ...Option) (rerr error) {
+	o, err := makeOptions(options...)
+	if err != nil {
+		return err
+	}
+	if o.progress != nil {
+		defer func() { o.progress.Close(rerr) }()
+	}
+	return newPusher(o).Push(o.context, ref, t)
 }
