@@ -83,6 +83,9 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
 	if cas.BalanceSimilarNodeGroups == nil {
 		cas.BalanceSimilarNodeGroups = fi.PtrTo(false)
 	}
+	if cas.EmitPerNodegroupMetrics == nil {
+		cas.EmitPerNodegroupMetrics = fi.PtrTo(false)
+	}
 	if cas.AWSUseStaticInstanceList == nil {
 		cas.AWSUseStaticInstanceList = fi.PtrTo(false)
 	}
