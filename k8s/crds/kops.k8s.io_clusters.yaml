@@ -769,6 +769,11 @@ spec:
                       CustomPriorityExpanderConfig overides the priority-expander ConfigMap with the provided configuration. Any InstanceGroup configuration will be ignored if this is set.
                       This could be useful in order to use regex on priorities configuration
                     type: object
+                  emitPerNodegroupMetrics:
+                    description: |-
+                      EmitPerNodegroupMetrics If true, publishes the node groups min and max metrics count set on the cluster autoscaler.
+                      Default: false
+                    type: boolean
                   enabled:
                     description: |-
                       Enabled enables the cluster autoscaler.

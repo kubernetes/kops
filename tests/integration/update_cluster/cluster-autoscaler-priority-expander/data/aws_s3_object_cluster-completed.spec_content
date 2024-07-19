@@ -27,6 +27,7 @@ spec:
     awsUseStaticInstanceList: false
     balanceSimilarNodeGroups: false
     createPriorityExpanderConfig: true
+    emitPerNodegroupMetrics: false
     enabled: true
     expander: priority
     ignoreDaemonSetsUtilization: false
