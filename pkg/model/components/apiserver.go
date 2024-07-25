@@ -185,6 +185,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 		if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found {
 			c.FeatureGates["InTreePluginAWSUnregister"] = "true"
+		} else if b.IsKubernetesGTE("1.31") {
+			delete(c.FeatureGates, "InTreePluginAWSUnregister")
 		}
 
 		if _, found := c.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
