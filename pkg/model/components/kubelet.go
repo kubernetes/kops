@@ -178,6 +178,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 		if _, found := clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found {
 			clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
+		} else if b.IsKubernetesGTE("1.31") {
+			delete(clusterSpec.Kubelet.FeatureGates, "InTreePluginAWSUnregister")
 		}
 	}
 
