@@ -290,7 +290,7 @@ func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 		StorageType:     StorageType(s.StorageType),
 		CPUType:         CPUType(s.CPUType),
 		Architecture:    Architecture(s.Architecture),
-		IncludedTraffic: s.IncludedTraffic,
+		IncludedTraffic: s.IncludedTraffic, // nolint:staticcheck // Field is deprecated, but we still need to map it as long as it is available
 		DeprecatableResource: DeprecatableResource{
 			DeprecationFromSchema(s.Deprecation),
 		},
@@ -305,6 +305,11 @@ func ServerTypeFromSchema(s schema.ServerType) *ServerType {
 			Monthly: Price{
 				Net:   price.PriceMonthly.Net,
 				Gross: price.PriceMonthly.Gross,
+			},
+			IncludedTraffic: price.IncludedTraffic,
+			PerTBTraffic: Price{
+				Net:   price.PricePerTBTraffic.Net,
+				Gross: price.PricePerTBTraffic.Gross,
 			},
 		})
 	}
@@ -471,6 +476,11 @@ func LoadBalancerTypeFromSchema(s schema.LoadBalancerType) *LoadBalancerType {
 			Monthly: Price{
 				Net:   price.PriceMonthly.Net,
 				Gross: price.PriceMonthly.Gross,
+			},
+			IncludedTraffic: price.IncludedTraffic,
+			PerTBTraffic: Price{
+				Net:   price.PricePerTBTraffic.Net,
+				Gross: price.PricePerTBTraffic.Gross,
 			},
 		})
 	}
@@ -701,8 +711,8 @@ func PricingFromSchema(s schema.Pricing) Pricing {
 			PerTB: Price{
 				Currency: s.Currency,
 				VATRate:  s.VATRate,
-				Net:      s.Traffic.PricePerTB.Net,
-				Gross:    s.Traffic.PricePerTB.Gross,
+				Net:      s.Traffic.PricePerTB.Net,   // nolint:staticcheck // Field is deprecated, but we still need to map it as long as it is available
+				Gross:    s.Traffic.PricePerTB.Gross, // nolint:staticcheck // Field is deprecated, but we still need to map it as long as it is available
 			},
 		},
 		ServerBackup: ServerBackupPricing{
@@ -768,6 +778,13 @@ func PricingFromSchema(s schema.Pricing) Pricing {
 					Net:      price.PriceMonthly.Net,
 					Gross:    price.PriceMonthly.Gross,
 				},
+				IncludedTraffic: price.IncludedTraffic,
+				PerTBTraffic: Price{
+					Currency: s.Currency,
+					VATRate:  s.VATRate,
+					Net:      price.PricePerTBTraffic.Net,
+					Gross:    price.PricePerTBTraffic.Gross,
+				},
 			})
 		}
 		p.ServerTypes = append(p.ServerTypes, ServerTypePricing{
@@ -794,6 +811,13 @@ func PricingFromSchema(s schema.Pricing) Pricing {
 					VATRate:  s.VATRate,
 					Net:      price.PriceMonthly.Net,
 					Gross:    price.PriceMonthly.Gross,
+				},
+				IncludedTraffic: price.IncludedTraffic,
+				PerTBTraffic: Price{
+					Currency: s.Currency,
+					VATRate:  s.VATRate,
+					Net:      price.PricePerTBTraffic.Net,
+					Gross:    price.PricePerTBTraffic.Gross,
 				},
 			})
 		}

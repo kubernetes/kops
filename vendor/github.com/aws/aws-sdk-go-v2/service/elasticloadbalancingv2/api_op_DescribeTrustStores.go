@@ -11,7 +11,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Describes all trust stores for a given account by trust store arn’s or name.
+// Describes all trust stores for the specified account.
 func (c *Client) DescribeTrustStores(ctx context.Context, params *DescribeTrustStoresInput, optFns ...func(*Options)) (*DescribeTrustStoresOutput, error) {
 	if params == nil {
 		params = &DescribeTrustStoresInput{}

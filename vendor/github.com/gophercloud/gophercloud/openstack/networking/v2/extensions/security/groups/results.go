@@ -25,6 +25,9 @@ type SecGroup struct {
 	// traffic entering and leaving the group.
 	Rules []rules.SecGroupRule `json:"security_group_rules"`
 
+	// Indicates if the security group is stateful or stateless.
+	Stateful bool `json:"stateful"`
+
 	// TenantID is the project owner of the security group.
 	TenantID string `json:"tenant_id"`
 

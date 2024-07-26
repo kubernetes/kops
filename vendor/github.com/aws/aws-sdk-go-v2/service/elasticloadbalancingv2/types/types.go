@@ -714,6 +714,9 @@ type MutualAuthenticationAttributes struct {
 	// The Amazon Resource Name (ARN) of the trust store.
 	TrustStoreArn *string
 
+	// Indicates a shared trust stores association status.
+	TrustStoreAssociationStatus TrustStoreAssociationStatusEnum
+
 	noSmithyDocumentSerde
 }
 

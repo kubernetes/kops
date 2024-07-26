@@ -11,8 +11,8 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Describes the revocation files in use by the specified trust store arn, or
-// revocation ID.
+// Describes the revocation files in use by the specified trust store or
+// revocation files.
 func (c *Client) DescribeTrustStoreRevocations(ctx context.Context, params *DescribeTrustStoreRevocationsInput, optFns ...func(*Options)) (*DescribeTrustStoreRevocationsOutput, error) {
 	if params == nil {
 		params = &DescribeTrustStoreRevocationsInput{}

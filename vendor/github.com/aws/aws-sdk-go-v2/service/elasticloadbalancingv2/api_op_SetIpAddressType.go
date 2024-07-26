@@ -37,6 +37,11 @@ type SetIpAddressTypeInput struct {
 	// dualstack-without-public-ipv4 (for IPv6 only public addresses, with private IPv4
 	// and IPv6 addresses).
 	//
+	// Note: Application Load Balancer authentication only supports IPv4 addresses
+	// when connecting to an Identity Provider (IdP) or Amazon Cognito endpoint.
+	// Without a public IPv4 address the load balancer cannot complete the
+	// authentication process, resulting in HTTP 500 errors.
+	//
 	// [Network Load Balancers] The IP address type. The possible values are ipv4 (for
 	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses). You can’t
 	// specify dualstack for a load balancer with a UDP or TCP_UDP listener.

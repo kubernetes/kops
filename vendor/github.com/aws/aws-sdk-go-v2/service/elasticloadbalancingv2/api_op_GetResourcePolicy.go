@@ -6,55 +6,40 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Update the ca certificate bundle for the specified trust store.
-func (c *Client) ModifyTrustStore(ctx context.Context, params *ModifyTrustStoreInput, optFns ...func(*Options)) (*ModifyTrustStoreOutput, error) {
+// Retrieves the resource policy for a specified resource.
+func (c *Client) GetResourcePolicy(ctx context.Context, params *GetResourcePolicyInput, optFns ...func(*Options)) (*GetResourcePolicyOutput, error) {
 	if params == nil {
-		params = &ModifyTrustStoreInput{}
+		params = &GetResourcePolicyInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "ModifyTrustStore", params, optFns, c.addOperationModifyTrustStoreMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "GetResourcePolicy", params, optFns, c.addOperationGetResourcePolicyMiddlewares)
 	if err != nil {
 		return nil, err
 	}
 
-	out := result.(*ModifyTrustStoreOutput)
+	out := result.(*GetResourcePolicyOutput)
 	out.ResultMetadata = metadata
 	return out, nil
 }
 
-type ModifyTrustStoreInput struct {
+type GetResourcePolicyInput struct {
 
-	// The Amazon S3 bucket for the ca certificates bundle.
+	// The Amazon Resource Name (ARN) of the resource.
 	//
 	// This member is required.
-	CaCertificatesBundleS3Bucket *string
-
-	// The Amazon S3 path for the ca certificates bundle.
-	//
-	// This member is required.
-	CaCertificatesBundleS3Key *string
-
-	// The Amazon Resource Name (ARN) of the trust store.
-	//
-	// This member is required.
-	TrustStoreArn *string
-
-	// The Amazon S3 object version for the ca certificates bundle. If undefined the
-	// current version is used.
-	CaCertificatesBundleS3ObjectVersion *string
+	ResourceArn *string
 
 	noSmithyDocumentSerde
 }
 
-type ModifyTrustStoreOutput struct {
+type GetResourcePolicyOutput struct {
 
-	// Information about the modified trust store.
-	TrustStores []types.TrustStore
+	// The content of the resource policy.
+	Policy *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
@@ -62,19 +47,19 @@ type ModifyTrustStoreOutput struct {
 	noSmithyDocumentSerde
 }
 
-func (c *Client) addOperationModifyTrustStoreMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationGetResourcePolicyMiddlewares(stack *middleware.Stack, options Options) (err error) {
 	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Serialize.Add(&awsAwsquery_serializeOpModifyTrustStore{}, middleware.After)
+	err = stack.Serialize.Add(&awsAwsquery_serializeOpGetResourcePolicy{}, middleware.After)
 	if err != nil {
 		return err
 	}
-	err = stack.Deserialize.Add(&awsAwsquery_deserializeOpModifyTrustStore{}, middleware.After)
+	err = stack.Deserialize.Add(&awsAwsquery_deserializeOpGetResourcePolicy{}, middleware.After)
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "ModifyTrustStore"); err != nil {
+	if err := addProtocolFinalizerMiddlewares(stack, options, "GetResourcePolicy"); err != nil {
 		return fmt.Errorf("add protocol finalizers: %v", err)
 	}
 
@@ -123,10 +108,10 @@ func (c *Client) addOperationModifyTrustStoreMiddlewares(stack *middleware.Stack
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
-	if err = addOpModifyTrustStoreValidationMiddleware(stack); err != nil {
+	if err = addOpGetResourcePolicyValidationMiddleware(stack); err != nil {
 		return err
 	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opModifyTrustStore(options.Region), middleware.Before); err != nil {
+	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetResourcePolicy(options.Region), middleware.Before); err != nil {
 		return err
 	}
 	if err = addRecursionDetection(stack); err != nil {
@@ -147,10 +132,10 @@ func (c *Client) addOperationModifyTrustStoreMiddlewares(stack *middleware.Stack
 	return nil
 }
 
-func newServiceMetadataMiddleware_opModifyTrustStore(region string) *awsmiddleware.RegisterServiceMetadata {
+func newServiceMetadataMiddleware_opGetResourcePolicy(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		OperationName: "ModifyTrustStore",
+		OperationName: "GetResourcePolicy",
 	}
 }

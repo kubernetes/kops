@@ -5200,8 +5200,9 @@ type BackendService struct {
 	// this backend service. Not supported when the backend service is referenced
 	// by a URL map that is bound to target gRPC proxy that has
 	// validateForProxyless field set to true. Instead, use maxStreamDuration.
-	TimeoutSec int64                   `json:"timeoutSec,omitempty"`
-	UsedBy     []*BackendServiceUsedBy `json:"usedBy,omitempty"`
+	TimeoutSec int64 `json:"timeoutSec,omitempty"`
+	// UsedBy: [Output Only] List of resources referencing given backend service.
+	UsedBy []*BackendServiceUsedBy `json:"usedBy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
@@ -6277,6 +6278,9 @@ func (s BackendServiceReference) MarshalJSON() ([]byte, error) {
 }
 
 type BackendServiceUsedBy struct {
+	// Reference: [Output Only] Server-defined URL for resources referencing given
+	// BackendService like UrlMaps, TargetTcpProxies, TargetSslProxies and
+	// ForwardingRule.
 	Reference string `json:"reference,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Reference") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -7110,6 +7114,7 @@ type Commitment struct {
 	//   "COMPUTE_OPTIMIZED_C3D"
 	//   "COMPUTE_OPTIMIZED_H3"
 	//   "GENERAL_PURPOSE"
+	//   "GENERAL_PURPOSE_C4"
 	//   "GENERAL_PURPOSE_E2"
 	//   "GENERAL_PURPOSE_N2"
 	//   "GENERAL_PURPOSE_N2D"
@@ -16101,10 +16106,16 @@ type InstanceGroupManager struct {
 	// AutoHealingPolicies: The autohealing policy for this managed instance group.
 	// You can specify only one value.
 	AutoHealingPolicies []*InstanceGroupManagerAutoHealingPolicy `json:"autoHealingPolicies,omitempty"`
-	// BaseInstanceName: The base instance name to use for instances in this group.
-	// The value must be 1-58 characters long. Instances are named by appending a
-	// hyphen and a random four-character string to the base instance name. The
-	// base instance name must comply with RFC1035.
+	// BaseInstanceName: The base instance name is a prefix that you want to attach
+	// to the names of all VMs in a MIG. The maximum character length is 58 and the
+	// name must comply with RFC1035 format. When a VM is created in the group, the
+	// MIG appends a hyphen and a random four-character string to the base instance
+	// name. If you want the MIG to assign sequential numbers instead of a random
+	// string, then end the base instance name with a hyphen followed by one or
+	// more hash symbols. The hash symbols indicate the number of digits. For
+	// example, a base instance name of "vm-###" results in "vm-001" as a VM name.
+	// @pattern a-z
+	// (([-a-z0-9]{0,57})|([-a-z0-9]{0,52}-#{1,10}(\\[[0-9]{1,10}\\])?))
 	BaseInstanceName string `json:"baseInstanceName,omitempty"`
 	// CreationTimestamp: [Output Only] The creation timestamp for this managed
 	// instance group in RFC3339 text format.
@@ -39331,6 +39342,10 @@ type Scheduling struct {
 	// set to true so an instance is automatically restarted if it is terminated by
 	// Compute Engine.
 	AutomaticRestart *bool `json:"automaticRestart,omitempty"`
+	// AvailabilityDomain: Specifies the availability domain to place the instance
+	// in. The value must be a number between 1 and the number of availability
+	// domains specified in the spread placement policy attached to the instance.
+	AvailabilityDomain int64 `json:"availabilityDomain,omitempty"`
 	// InstanceTerminationAction: Specifies the termination action for the
 	// instance.
 	//
@@ -51952,8 +51967,9 @@ type VpnGateway struct {
 	// SelfLink: [Output Only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
 	// StackType: The stack type for this VPN gateway to identify the IP protocols
-	// that are enabled. Possible values are: IPV4_ONLY, IPV4_IPV6. If not
-	// specified, IPV4_ONLY will be used.
+	// that are enabled. Possible values are: IPV4_ONLY, IPV4_IPV6, IPV6_ONLY. If
+	// not specified, IPV4_ONLY is used if the gateway IP version is IPV4, or
+	// IPV4_IPV6 if the gateway IP version is IPV6.
 	//
 	// Possible values:
 	//   "IPV4_IPV6" - Enable VPN gateway with both IPv4 and IPv6 protocols.

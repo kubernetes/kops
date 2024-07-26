@@ -1,3 +1,7 @@
+# v1.34.0 (2024-07-25)
+
+* **Feature**: This release adds support for sharing trust stores across accounts and organizations through integration with AWS Resource Access Manager.
+
 # v1.33.3 (2024-07-10.2)
 
 * **Dependency Update**: Updated to the latest SDK module versions

@@ -10393,6 +10393,123 @@ func (c *FirewallPoliciesAddAssociationCall) Do(opts ...googleapi.CallOption) (*
 	return ret, nil
 }
 
+type FirewallPoliciesAddPacketMirroringRuleCall struct {
+	s                  *Service
+	firewallPolicy     string
+	firewallpolicyrule *FirewallPolicyRule
+	urlParams_         gensupport.URLParams
+	ctx_               context.Context
+	header_            http.Header
+}
+
+// AddPacketMirroringRule: Inserts a packet mirroring rule into a firewall
+// policy.
+//
+// - firewallPolicy: Name of the firewall policy to update.
+func (r *FirewallPoliciesService) AddPacketMirroringRule(firewallPolicy string, firewallpolicyrule *FirewallPolicyRule) *FirewallPoliciesAddPacketMirroringRuleCall {
+	c := &FirewallPoliciesAddPacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.firewallPolicy = firewallPolicy
+	c.firewallpolicyrule = firewallpolicyrule
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported ( 00000000-0000-0000-0000-000000000000).
+func (c *FirewallPoliciesAddPacketMirroringRuleCall) RequestId(requestId string) *FirewallPoliciesAddPacketMirroringRuleCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *FirewallPoliciesAddPacketMirroringRuleCall) Fields(s ...googleapi.Field) *FirewallPoliciesAddPacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *FirewallPoliciesAddPacketMirroringRuleCall) Context(ctx context.Context) *FirewallPoliciesAddPacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *FirewallPoliciesAddPacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FirewallPoliciesAddPacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.firewallpolicyrule)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "locations/global/firewallPolicies/{firewallPolicy}/addPacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.firewallPolicies.addPacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *FirewallPoliciesAddPacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 type FirewallPoliciesAddRuleCall struct {
 	s                  *Service
 	firewallPolicy     string
@@ -11062,6 +11179,123 @@ func (c *FirewallPoliciesGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Po
 		return nil, gensupport.WrapError(err)
 	}
 	ret := &Policy{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type FirewallPoliciesGetPacketMirroringRuleCall struct {
+	s              *Service
+	firewallPolicy string
+	urlParams_     gensupport.URLParams
+	ifNoneMatch_   string
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// GetPacketMirroringRule: Gets a packet mirroring rule of the specified
+// priority.
+//
+//   - firewallPolicy: Name of the firewall policy to which the queried rule
+//     belongs.
+func (r *FirewallPoliciesService) GetPacketMirroringRule(firewallPolicy string) *FirewallPoliciesGetPacketMirroringRuleCall {
+	c := &FirewallPoliciesGetPacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.firewallPolicy = firewallPolicy
+	return c
+}
+
+// Priority sets the optional parameter "priority": The priority of the rule to
+// get from the firewall policy.
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) Priority(priority int64) *FirewallPoliciesGetPacketMirroringRuleCall {
+	c.urlParams_.Set("priority", fmt.Sprint(priority))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) Fields(s ...googleapi.Field) *FirewallPoliciesGetPacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) IfNoneMatch(entityTag string) *FirewallPoliciesGetPacketMirroringRuleCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) Context(ctx context.Context) *FirewallPoliciesGetPacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "locations/global/firewallPolicies/{firewallPolicy}/getPacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.firewallPolicies.getPacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *FirewallPolicyRule.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *FirewallPoliciesGetPacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*FirewallPolicyRule, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &FirewallPolicyRule{
 		ServerResponse: googleapi.ServerResponse{
 			Header:         res.Header,
 			HTTPStatusCode: res.StatusCode,
@@ -11861,6 +12095,130 @@ func (c *FirewallPoliciesPatchCall) Do(opts ...googleapi.CallOption) (*Operation
 	return ret, nil
 }
 
+type FirewallPoliciesPatchPacketMirroringRuleCall struct {
+	s                  *Service
+	firewallPolicy     string
+	firewallpolicyrule *FirewallPolicyRule
+	urlParams_         gensupport.URLParams
+	ctx_               context.Context
+	header_            http.Header
+}
+
+// PatchPacketMirroringRule: Patches a packet mirroring rule of the specified
+// priority.
+//
+// - firewallPolicy: Name of the firewall policy to update.
+func (r *FirewallPoliciesService) PatchPacketMirroringRule(firewallPolicy string, firewallpolicyrule *FirewallPolicyRule) *FirewallPoliciesPatchPacketMirroringRuleCall {
+	c := &FirewallPoliciesPatchPacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.firewallPolicy = firewallPolicy
+	c.firewallpolicyrule = firewallpolicyrule
+	return c
+}
+
+// Priority sets the optional parameter "priority": The priority of the rule to
+// patch.
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) Priority(priority int64) *FirewallPoliciesPatchPacketMirroringRuleCall {
+	c.urlParams_.Set("priority", fmt.Sprint(priority))
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported ( 00000000-0000-0000-0000-000000000000).
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) RequestId(requestId string) *FirewallPoliciesPatchPacketMirroringRuleCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) Fields(s ...googleapi.Field) *FirewallPoliciesPatchPacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) Context(ctx context.Context) *FirewallPoliciesPatchPacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.firewallpolicyrule)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "locations/global/firewallPolicies/{firewallPolicy}/patchPacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.firewallPolicies.patchPacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *FirewallPoliciesPatchPacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 type FirewallPoliciesPatchRuleCall struct {
 	s                  *Service
 	firewallPolicy     string
@@ -12070,6 +12428,124 @@ func (c *FirewallPoliciesRemoveAssociationCall) doRequest(alt string) (*http.Res
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
 // whether the returned error was because http.StatusNotModified was returned.
 func (c *FirewallPoliciesRemoveAssociationCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type FirewallPoliciesRemovePacketMirroringRuleCall struct {
+	s              *Service
+	firewallPolicy string
+	urlParams_     gensupport.URLParams
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// RemovePacketMirroringRule: Deletes a packet mirroring rule of the specified
+// priority.
+//
+// - firewallPolicy: Name of the firewall policy to update.
+func (r *FirewallPoliciesService) RemovePacketMirroringRule(firewallPolicy string) *FirewallPoliciesRemovePacketMirroringRuleCall {
+	c := &FirewallPoliciesRemovePacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.firewallPolicy = firewallPolicy
+	return c
+}
+
+// Priority sets the optional parameter "priority": The priority of the rule to
+// remove from the firewall policy.
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) Priority(priority int64) *FirewallPoliciesRemovePacketMirroringRuleCall {
+	c.urlParams_.Set("priority", fmt.Sprint(priority))
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported ( 00000000-0000-0000-0000-000000000000).
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) RequestId(requestId string) *FirewallPoliciesRemovePacketMirroringRuleCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) Fields(s ...googleapi.Field) *FirewallPoliciesRemovePacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) Context(ctx context.Context) *FirewallPoliciesRemovePacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "locations/global/firewallPolicies/{firewallPolicy}/removePacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.firewallPolicies.removePacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *FirewallPoliciesRemovePacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
 	if res != nil && res.StatusCode == http.StatusNotModified {
@@ -49613,6 +50089,143 @@ func (c *NetworkFirewallPoliciesAddAssociationCall) Do(opts ...googleapi.CallOpt
 	return ret, nil
 }
 
+type NetworkFirewallPoliciesAddPacketMirroringRuleCall struct {
+	s                  *Service
+	project            string
+	firewallPolicy     string
+	firewallpolicyrule *FirewallPolicyRule
+	urlParams_         gensupport.URLParams
+	ctx_               context.Context
+	header_            http.Header
+}
+
+// AddPacketMirroringRule: Inserts a packet mirroring rule into a firewall
+// policy.
+//
+// - firewallPolicy: Name of the firewall policy to update.
+// - project: Project ID for this request.
+func (r *NetworkFirewallPoliciesService) AddPacketMirroringRule(project string, firewallPolicy string, firewallpolicyrule *FirewallPolicyRule) *NetworkFirewallPoliciesAddPacketMirroringRuleCall {
+	c := &NetworkFirewallPoliciesAddPacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.firewallPolicy = firewallPolicy
+	c.firewallpolicyrule = firewallpolicyrule
+	return c
+}
+
+// MaxPriority sets the optional parameter "maxPriority": When rule.priority is
+// not specified, auto choose a unused priority between minPriority and
+// maxPriority>. This field is exclusive with rule.priority.
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) MaxPriority(maxPriority int64) *NetworkFirewallPoliciesAddPacketMirroringRuleCall {
+	c.urlParams_.Set("maxPriority", fmt.Sprint(maxPriority))
+	return c
+}
+
+// MinPriority sets the optional parameter "minPriority": When rule.priority is
+// not specified, auto choose a unused priority between minPriority and
+// maxPriority>. This field is exclusive with rule.priority.
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) MinPriority(minPriority int64) *NetworkFirewallPoliciesAddPacketMirroringRuleCall {
+	c.urlParams_.Set("minPriority", fmt.Sprint(minPriority))
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported ( 00000000-0000-0000-0000-000000000000).
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) RequestId(requestId string) *NetworkFirewallPoliciesAddPacketMirroringRuleCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) Fields(s ...googleapi.Field) *NetworkFirewallPoliciesAddPacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) Context(ctx context.Context) *NetworkFirewallPoliciesAddPacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.firewallpolicyrule)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/global/firewallPolicies/{firewallPolicy}/addPacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":        c.project,
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkFirewallPolicies.addPacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *NetworkFirewallPoliciesAddPacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 type NetworkFirewallPoliciesAddRuleCall struct {
 	s                  *Service
 	project            string
@@ -50334,6 +50947,127 @@ func (c *NetworkFirewallPoliciesGetIamPolicyCall) Do(opts ...googleapi.CallOptio
 	return ret, nil
 }
 
+type NetworkFirewallPoliciesGetPacketMirroringRuleCall struct {
+	s              *Service
+	project        string
+	firewallPolicy string
+	urlParams_     gensupport.URLParams
+	ifNoneMatch_   string
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// GetPacketMirroringRule: Gets a packet mirroring rule of the specified
+// priority.
+//
+//   - firewallPolicy: Name of the firewall policy to which the queried rule
+//     belongs.
+//   - project: Project ID for this request.
+func (r *NetworkFirewallPoliciesService) GetPacketMirroringRule(project string, firewallPolicy string) *NetworkFirewallPoliciesGetPacketMirroringRuleCall {
+	c := &NetworkFirewallPoliciesGetPacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.firewallPolicy = firewallPolicy
+	return c
+}
+
+// Priority sets the optional parameter "priority": The priority of the rule to
+// get from the firewall policy.
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) Priority(priority int64) *NetworkFirewallPoliciesGetPacketMirroringRuleCall {
+	c.urlParams_.Set("priority", fmt.Sprint(priority))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) Fields(s ...googleapi.Field) *NetworkFirewallPoliciesGetPacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) IfNoneMatch(entityTag string) *NetworkFirewallPoliciesGetPacketMirroringRuleCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) Context(ctx context.Context) *NetworkFirewallPoliciesGetPacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/global/firewallPolicies/{firewallPolicy}/getPacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":        c.project,
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkFirewallPolicies.getPacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *FirewallPolicyRule.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *NetworkFirewallPoliciesGetPacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*FirewallPolicyRule, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &FirewallPolicyRule{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 type NetworkFirewallPoliciesGetRuleCall struct {
 	s              *Service
 	project        string
@@ -50899,6 +51633,134 @@ func (c *NetworkFirewallPoliciesPatchCall) Do(opts ...googleapi.CallOption) (*Op
 	return ret, nil
 }
 
+type NetworkFirewallPoliciesPatchPacketMirroringRuleCall struct {
+	s                  *Service
+	project            string
+	firewallPolicy     string
+	firewallpolicyrule *FirewallPolicyRule
+	urlParams_         gensupport.URLParams
+	ctx_               context.Context
+	header_            http.Header
+}
+
+// PatchPacketMirroringRule: Patches a packet mirroring rule of the specified
+// priority.
+//
+// - firewallPolicy: Name of the firewall policy to update.
+// - project: Project ID for this request.
+func (r *NetworkFirewallPoliciesService) PatchPacketMirroringRule(project string, firewallPolicy string, firewallpolicyrule *FirewallPolicyRule) *NetworkFirewallPoliciesPatchPacketMirroringRuleCall {
+	c := &NetworkFirewallPoliciesPatchPacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.firewallPolicy = firewallPolicy
+	c.firewallpolicyrule = firewallpolicyrule
+	return c
+}
+
+// Priority sets the optional parameter "priority": The priority of the rule to
+// patch.
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) Priority(priority int64) *NetworkFirewallPoliciesPatchPacketMirroringRuleCall {
+	c.urlParams_.Set("priority", fmt.Sprint(priority))
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported ( 00000000-0000-0000-0000-000000000000).
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) RequestId(requestId string) *NetworkFirewallPoliciesPatchPacketMirroringRuleCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) Fields(s ...googleapi.Field) *NetworkFirewallPoliciesPatchPacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) Context(ctx context.Context) *NetworkFirewallPoliciesPatchPacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.firewallpolicyrule)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/global/firewallPolicies/{firewallPolicy}/patchPacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":        c.project,
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkFirewallPolicies.patchPacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *NetworkFirewallPoliciesPatchPacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 type NetworkFirewallPoliciesPatchRuleCall struct {
 	s                  *Service
 	project            string
@@ -51116,6 +51978,128 @@ func (c *NetworkFirewallPoliciesRemoveAssociationCall) doRequest(alt string) (*h
 // error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
 // whether the returned error was because http.StatusNotModified was returned.
 func (c *NetworkFirewallPoliciesRemoveAssociationCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type NetworkFirewallPoliciesRemovePacketMirroringRuleCall struct {
+	s              *Service
+	project        string
+	firewallPolicy string
+	urlParams_     gensupport.URLParams
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// RemovePacketMirroringRule: Deletes a packet mirroring rule of the specified
+// priority.
+//
+// - firewallPolicy: Name of the firewall policy to update.
+// - project: Project ID for this request.
+func (r *NetworkFirewallPoliciesService) RemovePacketMirroringRule(project string, firewallPolicy string) *NetworkFirewallPoliciesRemovePacketMirroringRuleCall {
+	c := &NetworkFirewallPoliciesRemovePacketMirroringRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.firewallPolicy = firewallPolicy
+	return c
+}
+
+// Priority sets the optional parameter "priority": The priority of the rule to
+// remove from the firewall policy.
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) Priority(priority int64) *NetworkFirewallPoliciesRemovePacketMirroringRuleCall {
+	c.urlParams_.Set("priority", fmt.Sprint(priority))
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server will know to ignore the request if it has already
+// been completed. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported ( 00000000-0000-0000-0000-000000000000).
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) RequestId(requestId string) *NetworkFirewallPoliciesRemovePacketMirroringRuleCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) Fields(s ...googleapi.Field) *NetworkFirewallPoliciesRemovePacketMirroringRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) Context(ctx context.Context) *NetworkFirewallPoliciesRemovePacketMirroringRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/global/firewallPolicies/{firewallPolicy}/removePacketMirroringRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":        c.project,
+		"firewallPolicy": c.firewallPolicy,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkFirewallPolicies.removePacketMirroringRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *NetworkFirewallPoliciesRemovePacketMirroringRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
 	gensupport.SetOptions(c.urlParams_, opts...)
 	res, err := c.doRequest("json")
 	if res != nil && res.StatusCode == http.StatusNotModified {

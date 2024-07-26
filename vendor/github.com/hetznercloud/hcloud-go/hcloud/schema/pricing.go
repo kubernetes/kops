@@ -2,12 +2,14 @@ package schema
 
 // Pricing defines the schema for pricing information.
 type Pricing struct {
-	Currency          string                    `json:"currency"`
-	VATRate           string                    `json:"vat_rate"`
-	Image             PricingImage              `json:"image"`
-	FloatingIP        PricingFloatingIP         `json:"floating_ip"`
-	FloatingIPs       []PricingFloatingIPType   `json:"floating_ips"`
-	PrimaryIPs        []PricingPrimaryIP        `json:"primary_ips"`
+	Currency    string                  `json:"currency"`
+	VATRate     string                  `json:"vat_rate"`
+	Image       PricingImage            `json:"image"`
+	FloatingIP  PricingFloatingIP       `json:"floating_ip"`
+	FloatingIPs []PricingFloatingIPType `json:"floating_ips"`
+	PrimaryIPs  []PricingPrimaryIP      `json:"primary_ips"`
+	// Deprecated: [Pricing.Traffic] is deprecated and will report 0 after 2024-08-05.
+	// Use traffic pricing from [Pricing.ServerTypes] or [Pricing.LoadBalancerTypes] instead.
 	Traffic           PricingTraffic            `json:"traffic"`
 	ServerBackup      PricingServerBackup       `json:"server_backup"`
 	ServerTypes       []PricingServerType       `json:"server_types"`
@@ -72,6 +74,9 @@ type PricingServerTypePrice struct {
 	Location     string `json:"location"`
 	PriceHourly  Price  `json:"price_hourly"`
 	PriceMonthly Price  `json:"price_monthly"`
+
+	IncludedTraffic   uint64 `json:"included_traffic"`
+	PricePerTBTraffic Price  `json:"price_per_tb_traffic"`
 }
 
 // PricingLoadBalancerType defines the schema of pricing information for a Load Balancer type.
@@ -87,6 +92,9 @@ type PricingLoadBalancerTypePrice struct {
 	Location     string `json:"location"`
 	PriceHourly  Price  `json:"price_hourly"`
 	PriceMonthly Price  `json:"price_monthly"`
+
+	IncludedTraffic   uint64 `json:"included_traffic"`
+	PricePerTBTraffic Price  `json:"price_per_tb_traffic"`
 }
 
 // PricingGetResponse defines the schema of the response when retrieving pricing information.

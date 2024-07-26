@@ -83,6 +83,9 @@ type Subnet struct {
 	// DNS name servers used by hosts in this subnet.
 	DNSNameservers []string `json:"dns_nameservers"`
 
+	//  Specifies whether the fixed IP addresses are published to the DNS.
+	DNSPublishFixedIP bool `json:"dns_publish_fixed_ip"`
+
 	// Service types associated with the subnet.
 	ServiceTypes []string `json:"service_types"`
 
