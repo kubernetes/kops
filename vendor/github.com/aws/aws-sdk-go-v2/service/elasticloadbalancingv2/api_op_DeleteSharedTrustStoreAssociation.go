@@ -6,75 +6,61 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
-	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Update the ca certificate bundle for the specified trust store.
-func (c *Client) ModifyTrustStore(ctx context.Context, params *ModifyTrustStoreInput, optFns ...func(*Options)) (*ModifyTrustStoreOutput, error) {
+// Deletes a shared trust store association.
+func (c *Client) DeleteSharedTrustStoreAssociation(ctx context.Context, params *DeleteSharedTrustStoreAssociationInput, optFns ...func(*Options)) (*DeleteSharedTrustStoreAssociationOutput, error) {
 	if params == nil {
-		params = &ModifyTrustStoreInput{}
+		params = &DeleteSharedTrustStoreAssociationInput{}
 	}
 
-	result, metadata, err := c.invokeOperation(ctx, "ModifyTrustStore", params, optFns, c.addOperationModifyTrustStoreMiddlewares)
+	result, metadata, err := c.invokeOperation(ctx, "DeleteSharedTrustStoreAssociation", params, optFns, c.addOperationDeleteSharedTrustStoreAssociationMiddlewares)
 	if err != nil {
 		return nil, err
 	}
 
-	out := result.(*ModifyTrustStoreOutput)
+	out := result.(*DeleteSharedTrustStoreAssociationOutput)
 	out.ResultMetadata = metadata
 	return out, nil
 }
 
-type ModifyTrustStoreInput struct {
+type DeleteSharedTrustStoreAssociationInput struct {
 
-	// The Amazon S3 bucket for the ca certificates bundle.
+	// The Amazon Resource Name (ARN) of the resource.
 	//
 	// This member is required.
-	CaCertificatesBundleS3Bucket *string
-
-	// The Amazon S3 path for the ca certificates bundle.
-	//
-	// This member is required.
-	CaCertificatesBundleS3Key *string
+	ResourceArn *string
 
 	// The Amazon Resource Name (ARN) of the trust store.
 	//
 	// This member is required.
 	TrustStoreArn *string
 
-	// The Amazon S3 object version for the ca certificates bundle. If undefined the
-	// current version is used.
-	CaCertificatesBundleS3ObjectVersion *string
-
 	noSmithyDocumentSerde
 }
 
-type ModifyTrustStoreOutput struct {
-
-	// Information about the modified trust store.
-	TrustStores []types.TrustStore
-
+type DeleteSharedTrustStoreAssociationOutput struct {
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
 
 	noSmithyDocumentSerde
 }
 
-func (c *Client) addOperationModifyTrustStoreMiddlewares(stack *middleware.Stack, options Options) (err error) {
+func (c *Client) addOperationDeleteSharedTrustStoreAssociationMiddlewares(stack *middleware.Stack, options Options) (err error) {
 	if err := stack.Serialize.Add(&setOperationInputMiddleware{}, middleware.After); err != nil {
 		return err
 	}
-	err = stack.Serialize.Add(&awsAwsquery_serializeOpModifyTrustStore{}, middleware.After)
+	err = stack.Serialize.Add(&awsAwsquery_serializeOpDeleteSharedTrustStoreAssociation{}, middleware.After)
 	if err != nil {
 		return err
 	}
-	err = stack.Deserialize.Add(&awsAwsquery_deserializeOpModifyTrustStore{}, middleware.After)
+	err = stack.Deserialize.Add(&awsAwsquery_deserializeOpDeleteSharedTrustStoreAssociation{}, middleware.After)
 	if err != nil {
 		return err
 	}
-	if err := addProtocolFinalizerMiddlewares(stack, options, "ModifyTrustStore"); err != nil {
+	if err := addProtocolFinalizerMiddlewares(stack, options, "DeleteSharedTrustStoreAssociation"); err != nil {
 		return fmt.Errorf("add protocol finalizers: %v", err)
 	}
 
@@ -123,10 +109,10 @@ func (c *Client) addOperationModifyTrustStoreMiddlewares(stack *middleware.Stack
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
-	if err = addOpModifyTrustStoreValidationMiddleware(stack); err != nil {
+	if err = addOpDeleteSharedTrustStoreAssociationValidationMiddleware(stack); err != nil {
 		return err
 	}
-	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opModifyTrustStore(options.Region), middleware.Before); err != nil {
+	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteSharedTrustStoreAssociation(options.Region), middleware.Before); err != nil {
 		return err
 	}
 	if err = addRecursionDetection(stack); err != nil {
@@ -147,10 +133,10 @@ func (c *Client) addOperationModifyTrustStoreMiddlewares(stack *middleware.Stack
 	return nil
 }
 
-func newServiceMetadataMiddleware_opModifyTrustStore(region string) *awsmiddleware.RegisterServiceMetadata {
+func newServiceMetadataMiddleware_opDeleteSharedTrustStoreAssociation(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{
 		Region:        region,
 		ServiceID:     ServiceID,
-		OperationName: "ModifyTrustStore",
+		OperationName: "DeleteSharedTrustStoreAssociation",
 	}
 }

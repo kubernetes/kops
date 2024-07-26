@@ -20,7 +20,9 @@ type ServerType struct {
 	StorageType  StorageType
 	CPUType      CPUType
 	Architecture Architecture
-	// IncludedTraffic is the free traffic per month in bytes
+
+	// Deprecated: [ServerType.IncludedTraffic] is deprecated and will always report 0 after 2024-08-05.
+	// Use [ServerType.Pricings] instead to get the included traffic for each location.
 	IncludedTraffic int64
 	Pricings        []ServerTypeLocationPricing
 	DeprecatableResource

@@ -3014,6 +3014,9 @@ type AllocationResourceStatusSpecificSKUAllocation struct {
 	// SourceInstanceTemplateId: ID of the instance template used to populate
 	// reservation properties.
 	SourceInstanceTemplateId string `json:"sourceInstanceTemplateId,omitempty"`
+	// Utilizations: Per service utilization breakdown. The Key is the Google Cloud
+	// managed service name.
+	Utilizations map[string]string `json:"utilizations,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "SourceInstanceTemplateId")
 	// to unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -4671,6 +4674,7 @@ type Backend struct {
 	//
 	// Possible values:
 	//   "CONNECTION" - Balance based on the number of simultaneous connections.
+	//   "CUSTOM_METRICS" - Based on custom defined and reported metrics.
 	//   "RATE" - Balance based on requests per second (RPS).
 	//   "UTILIZATION" - Balance based on the backend utilization.
 	BalancingMode string `json:"balancingMode,omitempty"`
@@ -4685,6 +4689,9 @@ type Backend struct {
 	// includes backends such as global internet NEGs, regional serverless NEGs,
 	// and PSC NEGs.
 	CapacityScaler float64 `json:"capacityScaler,omitempty"`
+	// CustomMetrics: List of custom metrics that are used for CUSTOM_METRICS
+	// BalancingMode and WEIGHTED_ROUND_ROBIN BackendService locality_lb_policy.
+	CustomMetrics []*BackendCustomMetric `json:"customMetrics,omitempty"`
 	// Description: An optional description of this resource. Provide this property
 	// when you create the resource.
 	Description string `json:"description,omitempty"`
@@ -5226,6 +5233,57 @@ func (s BackendBucketListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// BackendCustomMetric: Custom Metrics are used for CUSTOM_METRICS
+// balancing_mode and WEIGHTED_ROUND_ROBIN BackendService locality_lb_policy.
+type BackendCustomMetric struct {
+	// DryRun: If true, the metric data is collected and reported to Cloud
+	// Monitoring, but is not used for load balancing.
+	DryRun bool `json:"dryRun,omitempty"`
+	// MaxUtilization: Optional parameter to define a target utilization for the
+	// Custom Metrics balancing mode. The valid range is [0.0, 1.0].
+	MaxUtilization float64 `json:"maxUtilization,omitempty"`
+	// Name: Name of a custom utilization signal. The name must be 1-24 characters
+	// long, and comply with RFC1035. Specifically, the name must be 1-24
+	// characters long and match the regular expression a-z ([-a-z0-9]*[a-z0-9])?
+	// which means the first character must be a lowercase letter, and all
+	// following characters must be a dash, lowercase letter, or digit, except the
+	// last character, which cannot be a dash. For usage guidelines, see Custom
+	// Metrics balancing mode. This field can only be used for a global or regional
+	// backend service with the loadBalancingScheme set to EXTERNAL_MANAGED,
+	// INTERNAL_MANAGED INTERNAL_SELF_MANAGED.
+	Name string `json:"name,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DryRun") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DryRun") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendCustomMetric) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendCustomMetric
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+func (s *BackendCustomMetric) UnmarshalJSON(data []byte) error {
+	type NoMethod BackendCustomMetric
+	var s1 struct {
+		MaxUtilization gensupport.JSONFloat64 `json:"maxUtilization"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxUtilization = float64(s1.MaxUtilization)
+	return nil
+}
+
 // BackendService: Represents a Backend Service resource. A backend service
 // defines how Google Cloud load balancers distribute traffic. The backend
 // service configuration contains a set of values, such as the protocol used to
@@ -5476,6 +5534,11 @@ type BackendService struct {
 	// replies, as long as every instance either reported a valid weight or had
 	// UNAVAILABLE_WEIGHT. Otherwise, Load Balancing remains equal-weight. This
 	// option is only supported in Network Load Balancing.
+	//   "WEIGHTED_ROUND_ROBIN" - Per-endpoint weighted round-robin Load Balancing
+	// using weights computed from Backend reported Custom Metrics. If set, the
+	// Backend Service responses are expected to contain non-standard HTTP response
+	// header field X-Endpoint-Load-Metrics. The reported metrics to use for
+	// computing the weights are specified via the backends[].customMetrics fields.
 	LocalityLbPolicy string `json:"localityLbPolicy,omitempty"`
 	// LogConfig: This field denotes the logging options for the load balancer
 	// traffic served by this backend service. If logging is enabled, logs will be
@@ -5641,8 +5704,9 @@ type BackendService struct {
 	// this backend service. Not supported when the backend service is referenced
 	// by a URL map that is bound to target gRPC proxy that has
 	// validateForProxyless field set to true. Instead, use maxStreamDuration.
-	TimeoutSec int64                   `json:"timeoutSec,omitempty"`
-	UsedBy     []*BackendServiceUsedBy `json:"usedBy,omitempty"`
+	TimeoutSec int64 `json:"timeoutSec,omitempty"`
+	// UsedBy: [Output Only] List of resources referencing given backend service.
+	UsedBy []*BackendServiceUsedBy `json:"usedBy,omitempty"`
 	// VpcNetworkScope: The network scope of the backends that can be added to the
 	// backend service. This field can be either GLOBAL_VPC_NETWORK or
 	// REGIONAL_VPC_NETWORK. A backend service with the VPC scope set to
@@ -6775,6 +6839,11 @@ type BackendServiceLocalityLoadBalancingPolicyConfigPolicy struct {
 	// replies, as long as every instance either reported a valid weight or had
 	// UNAVAILABLE_WEIGHT. Otherwise, Load Balancing remains equal-weight. This
 	// option is only supported in Network Load Balancing.
+	//   "WEIGHTED_ROUND_ROBIN" - Per-endpoint weighted round-robin Load Balancing
+	// using weights computed from Backend reported Custom Metrics. If set, the
+	// Backend Service responses are expected to contain non-standard HTTP response
+	// header field X-Endpoint-Load-Metrics. The reported metrics to use for
+	// computing the weights are specified via the backends[].customMetrics fields.
 	Name string `json:"name,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -6971,6 +7040,9 @@ func (s BackendServiceReference) MarshalJSON() ([]byte, error) {
 }
 
 type BackendServiceUsedBy struct {
+	// Reference: [Output Only] Server-defined URL for resources referencing given
+	// BackendService like UrlMaps, TargetTcpProxies, TargetSslProxies and
+	// ForwardingRule.
 	Reference string `json:"reference,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Reference") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -7960,6 +8032,10 @@ type Commitment struct {
 	Category string `json:"category,omitempty"`
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text format.
 	CreationTimestamp string `json:"creationTimestamp,omitempty"`
+	// CustomEndTimestamp: [Input Only] Optional, specifies the CUD end time
+	// requested by the customer in RFC3339 text format. Needed when the customer
+	// wants CUD's end date is later than the start date + term duration.
+	CustomEndTimestamp string `json:"customEndTimestamp,omitempty"`
 	// Description: An optional description of this resource. Provide this property
 	// when you create the resource.
 	Description string `json:"description,omitempty"`
@@ -8401,6 +8477,11 @@ type CommitmentResourceStatus struct {
 	// CancellationInformation: [Output Only] An optional, contains all the needed
 	// information of cancellation.
 	CancellationInformation *CommitmentResourceStatusCancellationInformation `json:"cancellationInformation,omitempty"`
+	// CustomTermEligibilityEndTimestamp: [Output Only] Indicates the end time of
+	// customer's eligibility to send custom term requests in RFC3339 text format.
+	// Term extension requests that (not the end time in the request) after this
+	// time will be rejected.
+	CustomTermEligibilityEndTimestamp string `json:"customTermEligibilityEndTimestamp,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "CancellationInformation") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -18813,10 +18894,16 @@ type InstanceGroupManager struct {
 	// AutoHealingPolicies: The autohealing policy for this managed instance group.
 	// You can specify only one value.
 	AutoHealingPolicies []*InstanceGroupManagerAutoHealingPolicy `json:"autoHealingPolicies,omitempty"`
-	// BaseInstanceName: The base instance name to use for instances in this group.
-	// The value must be 1-58 characters long. Instances are named by appending a
-	// hyphen and a random four-character string to the base instance name. The
-	// base instance name must comply with RFC1035.
+	// BaseInstanceName: The base instance name is a prefix that you want to attach
+	// to the names of all VMs in a MIG. The maximum character length is 58 and the
+	// name must comply with RFC1035 format. When a VM is created in the group, the
+	// MIG appends a hyphen and a random four-character string to the base instance
+	// name. If you want the MIG to assign sequential numbers instead of a random
+	// string, then end the base instance name with a hyphen followed by one or
+	// more hash symbols. The hash symbols indicate the number of digits. For
+	// example, a base instance name of "vm-###" results in "vm-001" as a VM name.
+	// @pattern a-z
+	// (([-a-z0-9]{0,57})|([-a-z0-9]{0,52}-#{1,10}(\\[[0-9]{1,10}\\])?))
 	BaseInstanceName string `json:"baseInstanceName,omitempty"`
 	// CreationTimestamp: [Output Only] The creation timestamp for this managed
 	// instance group in RFC3339 text format.
@@ -30649,10 +30736,6 @@ type NetworkEndpoint struct {
 	// sends packets. Only valid for network endpoint groups created with
 	// GCE_VM_IP_PORTMAP endpoint type.
 	ClientDestinationPort int64 `json:"clientDestinationPort,omitempty"`
-	// ClientPort: Represents the port number to which PSC consumer sends packets.
-	// Only valid for network endpoint groups created with CLIENT_PORT_PER_ENDPOINT
-	// mapping mode.
-	ClientPort int64 `json:"clientPort,omitempty"`
 	// Fqdn: Optional fully qualified domain name of network endpoint. This can
 	// only be specified when NetworkEndpointGroup.network_endpoint_type is
 	// NON_GCP_FQDN_PORT.
@@ -30715,15 +30798,6 @@ type NetworkEndpointGroup struct {
 	// AppEngine: Only valid when networkEndpointType is SERVERLESS. Only one of
 	// cloudRun, appEngine or cloudFunction may be set.
 	AppEngine *NetworkEndpointGroupAppEngine `json:"appEngine,omitempty"`
-	// ClientPortMappingMode: Only valid when networkEndpointType is GCE_VM_IP_PORT
-	// and the NEG is regional.
-	//
-	// Possible values:
-	//   "CLIENT_PORT_PER_ENDPOINT" - For each endpoint there is exactly one client
-	// port.
-	//   "PORT_MAPPING_DISABLED" - NEG should not be used for mapping client port
-	// to destination.
-	ClientPortMappingMode string `json:"clientPortMappingMode,omitempty"`
 	// CloudFunction: Only valid when networkEndpointType is SERVERLESS. Only one
 	// of cloudRun, appEngine or cloudFunction may be set.
 	CloudFunction *NetworkEndpointGroupCloudFunction `json:"cloudFunction,omitempty"`
@@ -43354,6 +43428,7 @@ type ResourcePolicy struct {
 	// VmMaintenancePolicy: Resource policy applicable to VMs for infrastructure
 	// maintenance.
 	VmMaintenancePolicy *ResourcePolicyVmMaintenancePolicy `json:"vmMaintenancePolicy,omitempty"`
+	WorkloadPolicy      *ResourcePolicyWorkloadPolicy      `json:"workloadPolicy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
@@ -44172,6 +44247,32 @@ func (s ResourcePolicyWeeklyCycleDayOfWeek) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// ResourcePolicyWorkloadPolicy: Represents the workload policy.
+type ResourcePolicyWorkloadPolicy struct {
+	// Possible values:
+	//   "HIGH_AVAILABILITY" - VMs will be provisioned in such a way which provides
+	// high availability.
+	//   "HIGH_THROUGHPUT" - VMs will be provisioned in such a way which provides
+	// high throughput.
+	Type string `json:"type,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Type") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Type") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s ResourcePolicyWorkloadPolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod ResourcePolicyWorkloadPolicy
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // ResourceStatus: Contains output only fields. Use this sub-message for actual
 // values set on Instance attributes as compared to the value requested by the
 // user (intent) in their instance CRUD calls.
@@ -44249,11 +44350,9 @@ func (s ResourceStatusLastInstanceTerminationDetails) MarshalJSON() ([]byte, err
 }
 
 type ResourceStatusScheduling struct {
-	// AvailabilityDomain: Specifies the availability domain (AD), which this
-	// instance should be scheduled on. The AD belongs to the spread
-	// GroupPlacementPolicy resource policy that has been assigned to the instance.
-	// Specify a value between 1-max count of availability domains in your
-	// GroupPlacementPolicy. See go/placement-policy-extension for more details.
+	// AvailabilityDomain: Specifies the availability domain to place the instance
+	// in. The value must be a number between 1 and the number of availability
+	// domains specified in the spread placement policy attached to the instance.
 	AvailabilityDomain int64 `json:"availabilityDomain,omitempty"`
 	// TerminationTimestamp: Time in future when the instance will be terminated in
 	// RFC3339 text format.
@@ -47276,11 +47375,9 @@ type Scheduling struct {
 	// set to true so an instance is automatically restarted if it is terminated by
 	// Compute Engine.
 	AutomaticRestart *bool `json:"automaticRestart,omitempty"`
-	// AvailabilityDomain: Specifies the availability domain (AD), which this
-	// instance should be scheduled on. The AD belongs to the spread
-	// GroupPlacementPolicy resource policy that has been assigned to the instance.
-	// Specify a value between 1-max count of availability domains in your
-	// GroupPlacementPolicy. See go/placement-policy-extension for more details.
+	// AvailabilityDomain: Specifies the availability domain to place the instance
+	// in. The value must be a number between 1 and the number of availability
+	// domains specified in the spread placement policy attached to the instance.
 	AvailabilityDomain int64 `json:"availabilityDomain,omitempty"`
 	// CurrentCpus: Current number of vCPUs available for VM. 0 or unset means
 	// default vCPUs of the current machine type.
@@ -61637,8 +61734,9 @@ type VpnGateway struct {
 	// SelfLink: [Output Only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
 	// StackType: The stack type for this VPN gateway to identify the IP protocols
-	// that are enabled. Possible values are: IPV4_ONLY, IPV4_IPV6. If not
-	// specified, IPV4_ONLY will be used.
+	// that are enabled. Possible values are: IPV4_ONLY, IPV4_IPV6, IPV6_ONLY. If
+	// not specified, IPV4_ONLY is used if the gateway IP version is IPV4, or
+	// IPV4_IPV6 if the gateway IP version is IPV6.
 	//
 	// Possible values:
 	//   "IPV4_IPV6" - Enable VPN gateway with both IPv4 and IPv6 protocols.

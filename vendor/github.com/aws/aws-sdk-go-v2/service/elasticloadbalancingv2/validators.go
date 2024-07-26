@@ -230,6 +230,26 @@ func (m *validateOpDeleteRule) HandleInitialize(ctx context.Context, in middlewa
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDeleteSharedTrustStoreAssociation struct {
+}
+
+func (*validateOpDeleteSharedTrustStoreAssociation) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDeleteSharedTrustStoreAssociation) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DeleteSharedTrustStoreAssociationInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDeleteSharedTrustStoreAssociationInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDeleteTargetGroup struct {
 }
 
@@ -425,6 +445,26 @@ func (m *validateOpDescribeTrustStoreRevocations) HandleInitialize(ctx context.C
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpDescribeTrustStoreRevocationsInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpGetResourcePolicy struct {
+}
+
+func (*validateOpGetResourcePolicy) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpGetResourcePolicy) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*GetResourcePolicyInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpGetResourcePolicyInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -794,6 +834,10 @@ func addOpDeleteRuleValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeleteRule{}, middleware.After)
 }
 
+func addOpDeleteSharedTrustStoreAssociationValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDeleteSharedTrustStoreAssociation{}, middleware.After)
+}
+
 func addOpDeleteTargetGroupValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeleteTargetGroup{}, middleware.After)
 }
@@ -832,6 +876,10 @@ func addOpDescribeTrustStoreAssociationsValidationMiddleware(stack *middleware.S
 
 func addOpDescribeTrustStoreRevocationsValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDescribeTrustStoreRevocations{}, middleware.After)
+}
+
+func addOpGetResourcePolicyValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpGetResourcePolicy{}, middleware.After)
 }
 
 func addOpGetTrustStoreCaCertificatesBundleValidationMiddleware(stack *middleware.Stack) error {
@@ -1318,6 +1366,24 @@ func validateOpDeleteRuleInput(v *DeleteRuleInput) error {
 	}
 }
 
+func validateOpDeleteSharedTrustStoreAssociationInput(v *DeleteSharedTrustStoreAssociationInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DeleteSharedTrustStoreAssociationInput"}
+	if v.TrustStoreArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("TrustStoreArn"))
+	}
+	if v.ResourceArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ResourceArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpDeleteTargetGroupInput(v *DeleteTargetGroupInput) error {
 	if v == nil {
 		return nil
@@ -1472,6 +1538,21 @@ func validateOpDescribeTrustStoreRevocationsInput(v *DescribeTrustStoreRevocatio
 	invalidParams := smithy.InvalidParamsError{Context: "DescribeTrustStoreRevocationsInput"}
 	if v.TrustStoreArn == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("TrustStoreArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpGetResourcePolicyInput(v *GetResourcePolicyInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "GetResourcePolicyInput"}
+	if v.ResourceArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ResourceArn"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
