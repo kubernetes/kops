@@ -2,7 +2,7 @@
 
 When launching into a shared VPC, kOps will reuse the VPC and Internet Gateway. If you are not using an Internet Gateway or NAT Gateway you can tell kOps to ignore egress. By default, kOps creates a new subnet per zone and a new route table, but you can instead use a shared subnet (see [below](#shared-subnets)).
 
-1. Use `kops create cluster` with the `--vpc` argument for your existing VPC:
+1. Use `kops create cluster` with the `--network-id` argument for your existing VPC:
 
   ```shell
   export KOPS_STATE_STORE=s3://<somes3bucket>
@@ -10,7 +10,7 @@ When launching into a shared VPC, kOps will reuse the VPC and Internet Gateway. 
   export VPC_ID=vpc-12345678 # replace with your VPC id
   export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
 
-  kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID}
+  kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --network-id=${VPC_ID}
   ```
 
 2. Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
@@ -108,7 +108,7 @@ spec:
   kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --subnets=${SUBNET_IDS}
   ```
 
-  `--vpc` is optional when specifying `--subnets`. When creating a cluster with a 
+  `--network-id` is optional when specifying `--subnets`. When creating a cluster with a 
   private topology and shared subnets, the utility subnets should be specified similarly with `--utility-subnets`.
 
 2. Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
