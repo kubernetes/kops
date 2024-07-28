@@ -2103,6 +2103,11 @@ func (in *GCESpec) DeepCopyInto(out *GCESpec) {
 		*out = new(PDCSIDriver)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.StartupScript != nil {
+		in, out := &in.StartupScript, &out.StartupScript
+		*out = new(bool)
+		**out = **in
+	}
 	if in.BinariesLocation != nil {
 		in, out := &in.BinariesLocation, &out.BinariesLocation
 		*out = new(string)

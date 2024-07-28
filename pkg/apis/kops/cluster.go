@@ -246,6 +246,8 @@ type GCESpec struct {
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// PDCSIDriver is the config for the PD CSI driver.
 	PDCSIDriver *PDCSIDriver `json:"pdCSIDriver,omitempty"`
+	// StartupScript specifies enables using startup-script instead of user-data metadata.
+	StartupScript *bool `json:"startupScript,omitempty"`
 
 	// BinariesLocation is the location of the GCE cloud provider binaries.
 	BinariesLocation *string `json:"binariesLocation,omitempty"`
