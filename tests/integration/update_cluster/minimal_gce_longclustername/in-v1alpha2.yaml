@@ -26,6 +26,7 @@ spec:
     name: events
   cloudConfig:
     gceServiceAccount: default
+    gceStartupScript: true
   iam:
     legacy: false
   kubelet:
