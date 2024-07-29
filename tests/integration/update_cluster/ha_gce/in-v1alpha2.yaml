@@ -32,7 +32,8 @@ spec:
       name: c
     memoryRequest: 100Mi
     name: events
-  gceServiceAccount: default
+  cloudConfig:
+    gceServiceAccount: default
   iam:
     legacy: false
   kubelet:
