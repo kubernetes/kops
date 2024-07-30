@@ -149,10 +149,8 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 			kcm.FeatureGates = make(map[string]string)
 		}
 
-		if _, found := kcm.FeatureGates["InTreePluginAWSUnregister"]; !found {
+		if _, found := kcm.FeatureGates["InTreePluginAWSUnregister"]; !found && b.IsKubernetesGTE("1.31") {
 			kcm.FeatureGates["InTreePluginAWSUnregister"] = "true"
-		} else if b.IsKubernetesGTE("1.31") {
-			delete(kcm.FeatureGates, "InTreePluginAWSUnregister")
 		}
 
 		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {

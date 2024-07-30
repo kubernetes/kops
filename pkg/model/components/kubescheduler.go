@@ -63,10 +63,8 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 			config.FeatureGates = make(map[string]string)
 		}
 
-		if _, found := config.FeatureGates["InTreePluginAWSUnregister"]; !found {
+		if _, found := config.FeatureGates["InTreePluginAWSUnregister"]; !found && b.IsKubernetesGTE("1.31") {
 			config.FeatureGates["InTreePluginAWSUnregister"] = "true"
-		} else if b.IsKubernetesGTE("1.31") {
-			delete(clusterSpec.Kubelet.FeatureGates, "InTreePluginAWSUnregister")
 		}
 
 		if _, found := config.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
