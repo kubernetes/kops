@@ -172,14 +172,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if clusterSpec.CloudProvider.AWS != nil {
-		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
-			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
+		if _, found := clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found && b.IsKubernetesLT("1.31") {
+			clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 
-		if _, found := clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found {
-			clusterSpec.Kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
-		} else if b.IsKubernetesGTE("1.31") {
-			delete(clusterSpec.Kubelet.FeatureGates, "InTreePluginAWSUnregister")
+		if _, found := clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
+			clusterSpec.Kubelet.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 	}
 
