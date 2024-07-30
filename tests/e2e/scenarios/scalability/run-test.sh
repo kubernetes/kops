@@ -27,7 +27,7 @@ fi
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
 
 if [[ -z "${K8S_VERSION:-}" ]]; then
-  K8S_VERSION="$(curl -s -L https://dl.k8s.io/release/stable.txt)"
+  K8S_VERSION="$(curl -s -L https://dl.k8s.io/release/latest.txt)"
 fi
 
 # A temp patch for kubetest2 https://github.com/kubernetes-sigs/kubetest2/pull/256
@@ -125,7 +125,6 @@ KUBETEST2_ARGS=()
 KUBETEST2_ARGS+=("-v=2")
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
-KUBETEST2_ARGS+=("--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 
@@ -172,6 +171,8 @@ fi
 
 kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --up \
+  --build \
+  --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
   --kubernetes-version="${K8S_VERSION}" \
   --create-args="${create_args[*]}" \
   --test=clusterloader2 \
