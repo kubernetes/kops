@@ -472,7 +472,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-
     provisioning_model  = "STANDARD"
   }
   service_account {
-    email  = google_service_account.control-plane.email
+    email  = "default"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/devstorage.read_write", "https://www.googleapis.com/auth/ndev.clouddns.readwrite"]
   }
   tags = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
@@ -524,7 +524,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-with-a-very-very-
     provisioning_model  = "STANDARD"
   }
   service_account {
-    email  = google_service_account.node.email
+    email  = "default"
     scopes = ["https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/devstorage.read_only"]
   }
   tags = ["minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node"]
@@ -541,32 +541,6 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-with-a-very-very-very
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   region        = "us-test1"
   stack_type    = "IPV4_ONLY"
-}
-
-resource "google_project_iam_binding" "serviceaccount-control-plane" {
-  members = ["serviceAccount:control-plane-minimal-g-96dqvi@testproject.iam.gserviceaccount.com"]
-  project = "testproject"
-  role    = "roles/container.serviceAgent"
-}
-
-resource "google_project_iam_binding" "serviceaccount-nodes" {
-  members = ["serviceAccount:node-minimal-gce-with-a-96dqvi@testproject.iam.gserviceaccount.com"]
-  project = "testproject"
-  role    = "roles/compute.viewer"
-}
-
-resource "google_service_account" "control-plane" {
-  account_id   = "control-plane-minimal-g-96dqvi"
-  description  = "kubernetes control-plane instances"
-  display_name = "control-plane"
-  project      = "testproject"
-}
-
-resource "google_service_account" "node" {
-  account_id   = "node-minimal-gce-with-a-96dqvi"
-  description  = "kubernetes worker nodes"
-  display_name = "node"
-  project      = "testproject"
 }
 
 terraform {
