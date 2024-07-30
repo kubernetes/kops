@@ -17,9 +17,11 @@ limitations under the License.
 package loader
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
@@ -81,7 +83,17 @@ func (l *OptionsLoader) Build(userConfig interface{}) (interface{}, error) {
 
 		iteration++
 		if iteration > maxIterations {
-			return nil, fmt.Errorf("options did not converge after %d iterations", maxIterations)
+			optionsJson, err := json.MarshalIndent(options, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal options to json: %w", err)
+			}
+			nextOptionsJson, err := json.MarshalIndent(nextOptions, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal nextOptions to json: %w", err)
+			}
+			dmp := diffmatchpatch.New()
+			diff := dmp.DiffMain(string(optionsJson), string(nextOptionsJson), true)
+			return nil, fmt.Errorf("options did not converge after %d iterations: %v", maxIterations, dmp.DiffPrettyText(diff))
 		}
 
 		options = nextOptions
