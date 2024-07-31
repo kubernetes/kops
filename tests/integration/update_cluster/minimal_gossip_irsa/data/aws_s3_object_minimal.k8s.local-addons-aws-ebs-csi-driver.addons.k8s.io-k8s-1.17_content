@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-controller
   namespace: kube-system
@@ -33,7 +33,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-controller-sa
   namespace: kube-system
@@ -51,7 +51,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-node-sa
   namespace: kube-system
@@ -68,7 +68,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-external-attacher-role
 rules:
@@ -127,7 +127,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-node-role
 rules:
@@ -146,6 +146,12 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csinodes
+  verbs:
+  - get
 
 ---
 
@@ -159,7 +165,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-external-provisioner-role
 rules:
@@ -172,6 +178,7 @@ rules:
   - list
   - watch
   - create
+  - patch
   - delete
 - apiGroups:
   - ""
@@ -238,6 +245,12 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - volumeattributesclasses
+  verbs:
+  - get
 
 ---
 
@@ -251,7 +264,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-external-resizer-role
 rules:
@@ -306,6 +319,14 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - volumeattributesclasses
+  verbs:
+  - get
+  - list
+  - watch
 
 ---
 
@@ -319,7 +340,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-external-snapshotter-role
 rules:
@@ -359,6 +380,7 @@ rules:
   - volumesnapshotcontents/status
   verbs:
   - update
+  - patch
 
 ---
 
@@ -372,7 +394,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-attacher-binding
 roleRef:
@@ -396,7 +418,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-node-getter-binding
 roleRef:
@@ -420,7 +442,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-provisioner-binding
 roleRef:
@@ -444,7 +466,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-resizer-binding
 roleRef:
@@ -468,7 +490,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-snapshotter-binding
 roleRef:
@@ -492,7 +514,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-leases-role
   namespace: kube-system
@@ -521,7 +543,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-leases-rolebinding
   namespace: kube-system
@@ -568,7 +590,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-node
   namespace: kube-system
@@ -587,7 +609,7 @@ spec:
         app.kubernetes.io/component: csi-driver
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/name: aws-ebs-csi-driver
-        app.kubernetes.io/version: v1.30.0
+        app.kubernetes.io/version: v1.33.0
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -624,7 +646,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.30.0
+        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.33.0
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -671,7 +693,7 @@ spec:
           value: /csi/csi.sock
         - name: DRIVER_REG_SOCK_PATH
           value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.10.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.11.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
@@ -701,7 +723,7 @@ spec:
           name: probe-dir
       - args:
         - --csi-address=/csi/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.12.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.13.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         name: liveness-probe
         resources:
@@ -726,6 +748,7 @@ spec:
         runAsNonRoot: false
         runAsUser: 0
       serviceAccountName: ebs-csi-node-sa
+      terminationGracePeriodSeconds: 30
       tolerations:
       - operator: Exists
       volumes:
@@ -764,7 +787,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs-csi-controller
   namespace: kube-system
@@ -788,7 +811,7 @@ spec:
         app.kubernetes.io/component: csi-driver
         app.kubernetes.io/instance: aws-ebs-csi-driver
         app.kubernetes.io/name: aws-ebs-csi-driver
-        app.kubernetes.io/version: v1.30.0
+        app.kubernetes.io/version: v1.33.0
         kops.k8s.io/managed-by: kops
     spec:
       affinity:
@@ -866,7 +889,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.30.0
+        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.33.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -901,6 +924,8 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
@@ -918,6 +943,7 @@ spec:
         - --kube-api-qps=20
         - --kube-api-burst=100
         - --worker-threads=100
+        - --retry-interval-max=30m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -925,7 +951,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v4.0.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v5.0.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         name: csi-provisioner
         resources:
@@ -937,6 +963,8 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
@@ -951,6 +979,7 @@ spec:
         - --kube-api-qps=20
         - --kube-api-burst=100
         - --worker-threads=100
+        - --retry-interval-max=5m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -958,7 +987,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.5.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.6.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         name: csi-attacher
         resources:
@@ -996,7 +1025,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.2.1
+        image: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.3.0
         imagePullPolicy: IfNotPresent
         name: volumemodifier
         resources:
@@ -1008,6 +1037,8 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
@@ -1023,6 +1054,7 @@ spec:
         - --kube-api-qps=20
         - --kube-api-burst=100
         - --workers=100
+        - --retry-interval-max=30m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -1030,7 +1062,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.10.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.11.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         name: csi-resizer
         resources:
@@ -1042,6 +1074,8 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /var/lib/csi/sockets/pluginproxy/
           name: socket-dir
@@ -1055,7 +1089,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.k8s.local
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.12.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.13.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         name: liveness-probe
         resources:
@@ -1129,7 +1163,7 @@ metadata:
     app.kubernetes.io/instance: aws-ebs-csi-driver
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-ebs-csi-driver
-    app.kubernetes.io/version: v1.30.0
+    app.kubernetes.io/version: v1.33.0
     k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   name: ebs.csi.aws.com
 spec:
