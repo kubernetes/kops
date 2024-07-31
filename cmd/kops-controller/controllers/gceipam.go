@@ -134,7 +134,8 @@ func (r *GCEIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 
 		ipv6Address := ipv6Addresses[0]
-		if err := patchNodePodCIDRs(r.coreV1Client, ctx, node, ipv6Address); err != nil {
+		podCIDRs := []string{ipv6Address}
+		if err := patchNodePodCIDRs(r.coreV1Client, ctx, node, podCIDRs); err != nil {
 			return ctrl.Result{}, err
 		}
 	}

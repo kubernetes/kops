@@ -143,7 +143,8 @@ func (r *AWSIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 
 		ipv6Address := aws.ToString(eni.NetworkInterfaces[0].Ipv6Prefixes[0].Ipv6Prefix)
-		if err := patchNodePodCIDRs(r.coreV1Client, ctx, node, ipv6Address); err != nil {
+		podCIDRs := []string{ipv6Address}
+		if err := patchNodePodCIDRs(r.coreV1Client, ctx, node, podCIDRs); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
@@ -162,26 +163,28 @@ type nodePatchSpec struct {
 	PodCIDRs []string `json:"podCIDRs,omitempty"`
 }
 
-// patchNodePodCIDRs patches the node podCIDR to the specified value.
-func patchNodePodCIDRs(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, cidr string) error {
-	klog.Infof("assigning cidr %q to node %q", cidr, node.ObjectMeta.Name)
+// patchNodePodCIDRs patches the node podCIDRs to the specified value(s).
+func patchNodePodCIDRs(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, podCIDRs []string) error {
+	klog.Infof("assigning podCIDRs %v to node %q", podCIDRs, node.ObjectMeta.Name)
 	nodePatchSpec := &nodePatchSpec{
-		PodCIDR:  cidr,
-		PodCIDRs: []string{cidr},
+		PodCIDRs: podCIDRs,
+	}
+	if len(podCIDRs) > 0 {
+		nodePatchSpec.PodCIDR = podCIDRs[0]
 	}
 	nodePatch := &nodePatch{
 		Spec: nodePatchSpec,
 	}
 	nodePatchJson, err := json.Marshal(nodePatch)
 	if err != nil {
-		return fmt.Errorf("error building node patch: %v", err)
+		return fmt.Errorf("building node patch: %w", err)
 	}
 
 	klog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
 
 	_, err = client.Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, nodePatchJson, metav1.PatchOptions{})
 	if err != nil {
-		return fmt.Errorf("error applying patch to node: %v", err)
+		return fmt.Errorf("applying patch to node: %w", err)
 	}
 
 	return nil
