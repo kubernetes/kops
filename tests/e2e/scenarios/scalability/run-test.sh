@@ -27,7 +27,7 @@ fi
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
 
 if [[ -z "${K8S_VERSION:-}" ]]; then
-  K8S_VERSION="$(curl -s -L https://dl.k8s.io/release/stable.txt)"
+  K8S_VERSION="$(curl -s -L https://dl.k8s.io/release/latest.txt)"
 fi
 
 # A temp patch for kubetest2 https://github.com/kubernetes-sigs/kubetest2/pull/256
