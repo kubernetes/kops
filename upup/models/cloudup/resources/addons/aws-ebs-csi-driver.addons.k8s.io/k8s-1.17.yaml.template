@@ -1,6 +1,8 @@
 # helm template aws-ebs-csi-driver . -n kube-system \
 #   --set controller.volumeModificationFeature.enabled=true \
-#   --set sidecars.snapshotter.forceEnable=true
+#   --set sidecars.snapshotter.forceEnable=true \
+#   --set controller.enableMetrics=true \
+#   --no-hooks
 
 {{ with .CloudProvider.AWS.EBSCSIDriver }}
 ---
@@ -93,6 +95,9 @@ rules:
 - apiGroups: ["storage.k8s.io"]
   resources: ["volumeattachments"]
   verbs: ["get", "list", "watch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["csinodes"]
+  verbs: ["get"]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrole-provisioner.yaml
 kind: ClusterRole
@@ -107,7 +112,7 @@ metadata:
 rules:
 - apiGroups: [ "" ]
   resources: [ "persistentvolumes" ]
-  verbs: [ "get", "list", "watch", "create", "delete" ]
+  verbs: [ "get", "list", "watch", "create", "patch", "delete" ]
 - apiGroups: [ "" ]
   resources: [ "persistentvolumeclaims" ]
   verbs: [ "get", "list", "watch", "update" ]
@@ -132,6 +137,9 @@ rules:
 - apiGroups: [ "storage.k8s.io" ]
   resources: [ "volumeattachments" ]
   verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "storage.k8s.io" ]
+  resources: [ "volumeattributesclasses" ]
+  verbs: [ "get" ]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrole-resizer.yaml
 kind: ClusterRole
@@ -167,6 +175,9 @@ rules:
 - apiGroups: [ "" ]
   resources: [ "pods" ]
   verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "storage.k8s.io" ]
+  resources: [ "volumeattributesclasses" ]
+  verbs: [ "get", "list", "watch" ]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrole-snapshotter.yaml
 kind: ClusterRole
@@ -197,7 +208,7 @@ rules:
   verbs: [ "create", "get", "list", "watch", "update", "delete", "patch" ]
 - apiGroups: [ "snapshot.storage.k8s.io" ]
   resources: [ "volumesnapshotcontents/status" ]
-  verbs: [ "update" ]
+  verbs: [ "update", "patch" ]
 ---
 # Source: aws-ebs-csi-driver/templates/clusterrolebinding-attacher.yaml
 kind: ClusterRoleBinding
@@ -406,6 +417,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: ebs-csi-node-sa
+      terminationGracePeriodSeconds: 30
       priorityClassName: system-node-critical
       tolerations:
       - operator: Exists
@@ -480,7 +492,7 @@ spec:
             exec:
               command: ["/bin/aws-ebs-csi-driver", "pre-stop-hook"]
       - name: node-driver-registrar
-        image: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.10.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.11.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --csi-address=$(ADDRESS)
@@ -517,7 +529,7 @@ spec:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
       - name: liveness-probe
-        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.12.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.13.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --csi-address=/csi/csi.sock
@@ -759,8 +771,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
       - name: csi-provisioner
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v4.0.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v5.0.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --timeout=60s
@@ -773,6 +787,7 @@ spec:
         - --kube-api-qps={{ or .KubeAPIQPS "20" }}
         - --kube-api-burst={{ or .KubeAPIBurst "100" }}
         - --worker-threads=100
+        - --retry-interval-max=30m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -788,8 +803,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
       - name: csi-attacher
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.5.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.6.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --timeout=60s
@@ -799,6 +816,7 @@ spec:
         - --kube-api-qps=20
         - --kube-api-burst=100
         - --worker-threads=100
+        - --retry-interval-max=5m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -815,8 +833,10 @@ spec:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
       {{ if HasSnapshotController }}
+          seccompProfile:
+            type: RuntimeDefault
       - name: csi-snapshotter
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-snapshotter/csi-snapshotter:v7.0.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-snapshotter/csi-snapshotter:v8.0.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --csi-address=$(ADDRESS)
@@ -825,6 +845,7 @@ spec:
         - --kube-api-qps=20
         - --kube-api-burst=100
         - --worker-threads=100
+        - --retry-interval-max=30m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -840,9 +861,11 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
     {{ end }}
       - name: volumemodifier
-        image: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.2.1
+        image: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.3.0
         imagePullPolicy: IfNotPresent
         args:
         - --timeout=60s
@@ -872,8 +895,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
       - name: csi-resizer
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.10.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.11.1-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --timeout=60s
@@ -884,6 +909,7 @@ spec:
         - --kube-api-qps=20
         - --kube-api-burst=100
         - --workers=100
+        - --retry-interval-max=30m
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -899,8 +925,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          seccompProfile:
+            type: RuntimeDefault
       - name: liveness-probe
-        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.12.0-eks-1-29-5
+        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.13.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         args:
         - --csi-address=/csi/csi.sock
