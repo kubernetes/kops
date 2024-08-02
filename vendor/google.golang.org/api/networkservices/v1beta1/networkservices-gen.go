@@ -168,6 +168,7 @@ type ProjectsService struct {
 
 func NewProjectsLocationsService(s *Service) *ProjectsLocationsService {
 	rs := &ProjectsLocationsService{s: s}
+	rs.AuthzExtensions = NewProjectsLocationsAuthzExtensionsService(s)
 	rs.EndpointPolicies = NewProjectsLocationsEndpointPoliciesService(s)
 	rs.Gateways = NewProjectsLocationsGatewaysService(s)
 	rs.GrpcRoutes = NewProjectsLocationsGrpcRoutesService(s)
@@ -185,6 +186,8 @@ func NewProjectsLocationsService(s *Service) *ProjectsLocationsService {
 
 type ProjectsLocationsService struct {
 	s *Service
+
+	AuthzExtensions *ProjectsLocationsAuthzExtensionsService
 
 	EndpointPolicies *ProjectsLocationsEndpointPoliciesService
 
@@ -209,6 +212,15 @@ type ProjectsLocationsService struct {
 	TcpRoutes *ProjectsLocationsTcpRoutesService
 
 	TlsRoutes *ProjectsLocationsTlsRoutesService
+}
+
+func NewProjectsLocationsAuthzExtensionsService(s *Service) *ProjectsLocationsAuthzExtensionsService {
+	rs := &ProjectsLocationsAuthzExtensionsService{s: s}
+	return rs
+}
+
+type ProjectsLocationsAuthzExtensionsService struct {
+	s *Service
 }
 
 func NewProjectsLocationsEndpointPoliciesService(s *Service) *ProjectsLocationsEndpointPoliciesService {
@@ -395,6 +407,103 @@ func (s AuditLogConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// AuthzExtension: `AuthzExtension` is a resource that allows traffic
+// forwarding to a callout backend to make an authorization decision.
+type AuthzExtension struct {
+	// Authority: Required. The `:authority` header in the gRPC request sent from
+	// Envoy to the extension service.
+	Authority string `json:"authority,omitempty"`
+	// CreateTime: Output only. The timestamp when the resource was created.
+	CreateTime string `json:"createTime,omitempty"`
+	// Description: Optional. A human-readable description of the resource.
+	Description string `json:"description,omitempty"`
+	// FailOpen: Optional. Determines how the proxy behaves if the call to the
+	// extension fails or times out. When set to `TRUE`, request or response
+	// processing continues without error. Any subsequent extensions in the
+	// extension chain are also executed. When set to `FALSE` or the default
+	// setting of `FALSE` is used, one of the following happens: * If response
+	// headers have not been delivered to the downstream client, a generic 500
+	// error is returned to the client. The error response can be tailored by
+	// configuring a custom error response in the load balancer. * If response
+	// headers have been delivered, then the HTTP stream to the downstream client
+	// is reset.
+	FailOpen bool `json:"failOpen,omitempty"`
+	// ForwardHeaders: Optional. List of the HTTP headers to forward to the
+	// extension (from the client). If omitted, all headers are sent. Each element
+	// is a string indicating the header name.
+	ForwardHeaders []string `json:"forwardHeaders,omitempty"`
+	// Labels: Optional. Set of labels associated with the `AuthzExtension`
+	// resource. The format must comply with the requirements for labels
+	// (/compute/docs/labeling-resources#requirements) for Google Cloud resources.
+	Labels map[string]string `json:"labels,omitempty"`
+	// LoadBalancingScheme: Required. All backend services and forwarding rules
+	// referenced by this extension must share the same load balancing scheme.
+	// Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. For more
+	// information, refer to Choosing a load balancer
+	// (https://cloud.google.com/load-balancing/docs/backend-service).
+	//
+	// Possible values:
+	//   "LOAD_BALANCING_SCHEME_UNSPECIFIED" - Default value. Do not use.
+	//   "INTERNAL_MANAGED" - Signifies that this is used for Internal HTTP(S) Load
+	// Balancing.
+	//   "EXTERNAL_MANAGED" - Signifies that this is used for External Managed
+	// HTTP(S) Load Balancing.
+	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
+	// Metadata: Optional. The metadata provided here is included as part of the
+	// `metadata_context` (of type `google.protobuf.Struct`) in the
+	// `ProcessingRequest` message sent to the extension server. The metadata is
+	// available under the namespace `com.google.authz_extension.`. The following
+	// variables are supported in the metadata Struct: `{forwarding_rule_id}` -
+	// substituted with the forwarding rule's fully qualified resource name.
+	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
+	// Name: Required. Identifier. Name of the `AuthzExtension` resource in the
+	// following format:
+	// `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`.
+	Name string `json:"name,omitempty"`
+	// Service: Required. The reference to the service that runs the extension.
+	// Currently only callout extensions are supported here. To configure a callout
+	// extension, `service` must be a fully-qualified reference to a backend
+	// service
+	// (https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in
+	// the format:
+	// `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/ba
+	// ckendServices/{backendService}` or
+	// `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServi
+	// ces/{backendService}`.
+	Service string `json:"service,omitempty"`
+	// Timeout: Required. Specifies the timeout for each individual message on the
+	// stream. The timeout must be between 10-10000 milliseconds.
+	Timeout string `json:"timeout,omitempty"`
+	// UpdateTime: Output only. The timestamp when the resource was updated.
+	UpdateTime string `json:"updateTime,omitempty"`
+	// WireFormat: Optional. The format of communication supported by the callout
+	// extension. If not specified, the default is `EXT_PROC_GRPC`.
+	//
+	// Possible values:
+	//   "WIRE_FORMAT_UNSPECIFIED" - Not specified.
+	//   "EXT_PROC_GRPC" - The extension service uses ExtProc GRPC API.
+	WireFormat string `json:"wireFormat,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "Authority") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Authority") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AuthzExtension) MarshalJSON() ([]byte, error) {
+	type NoMethod AuthzExtension
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // Binding: Associates `members`, or principals, with a `role`.
 type Binding struct {
 	// Condition: The condition that is associated with this binding. If the
@@ -562,7 +671,7 @@ type EndpointPolicy struct {
 	// Labels: Optional. Set of label tags associated with the EndpointPolicy
 	// resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the EndpointPolicy resource. It matches pattern
+	// Name: Identifier. Name of the EndpointPolicy resource. It matches pattern
 	// `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.
 	Name string `json:"name,omitempty"`
 	// ServerTlsPolicy: Optional. A URL referring to ServerTlsPolicy resource.
@@ -844,7 +953,7 @@ type Gateway struct {
 	IpVersion string `json:"ipVersion,omitempty"`
 	// Labels: Optional. Set of label tags associated with the Gateway resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the Gateway resource. It matches pattern
+	// Name: Identifier. Name of the Gateway resource. It matches pattern
 	// `projects/*/locations/*/gateways/`.
 	Name string `json:"name,omitempty"`
 	// Network: Optional. The relative resource name identifying the VPC network
@@ -949,7 +1058,7 @@ type GrpcRoute struct {
 	// Each mesh reference should match the pattern:
 	// `projects/*/locations/global/meshes/`
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the GrpcRoute resource. It matches pattern
+	// Name: Identifier. Name of the GrpcRoute resource. It matches pattern
 	// `projects/*/locations/global/grpcRoutes/`
 	Name string `json:"name,omitempty"`
 	// Rules: Required. A list of detailed rules defining how to route traffic.
@@ -1377,7 +1486,7 @@ type HttpRoute struct {
 	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the HttpRoute resource. It matches pattern
+	// Name: Identifier. Name of the HttpRoute resource. It matches pattern
 	// `projects/*/locations/global/httpRoutes/http_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. Rules
@@ -2234,6 +2343,37 @@ func (s LbTrafficExtension) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// ListAuthzExtensionsResponse: Message for response to listing
+// `AuthzExtension` resources.
+type ListAuthzExtensionsResponse struct {
+	// AuthzExtensions: The list of `AuthzExtension` resources.
+	AuthzExtensions []*AuthzExtension `json:"authzExtensions,omitempty"`
+	// NextPageToken: A token identifying a page of results that the server
+	// returns.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+	// Unreachable: Locations that could not be reached.
+	Unreachable []string `json:"unreachable,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "AuthzExtensions") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "AuthzExtensions") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s ListAuthzExtensionsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListAuthzExtensionsResponse
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // ListEndpointPoliciesResponse: Response returned by the ListEndpointPolicies
 // method.
 type ListEndpointPoliciesResponse struct {
@@ -2695,7 +2835,7 @@ type Mesh struct {
 	InterceptionPort int64 `json:"interceptionPort,omitempty"`
 	// Labels: Optional. Set of label tags associated with the Mesh resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the Mesh resource. It matches pattern
+	// Name: Identifier. Name of the Mesh resource. It matches pattern
 	// `projects/*/locations/global/meshes/`.
 	Name string `json:"name,omitempty"`
 	// SelfLink: Output only. Server-defined URL of this resource
@@ -2983,7 +3123,7 @@ type ServiceBinding struct {
 	// Labels: Optional. Set of label tags associated with the ServiceBinding
 	// resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the ServiceBinding resource. It matches pattern
+	// Name: Identifier. Name of the ServiceBinding resource. It matches pattern
 	// `projects/*/locations/global/serviceBindings/service_binding_name`.
 	Name string `json:"name,omitempty"`
 	// Service: Required. The full Service Directory Service name of the format
@@ -3217,7 +3357,7 @@ type TcpRoute struct {
 	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the TcpRoute resource. It matches pattern
+	// Name: Identifier. Name of the TcpRoute resource. It matches pattern
 	// `projects/*/locations/global/tcpRoutes/tcp_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. At
@@ -3883,6 +4023,645 @@ func (c *ProjectsLocationsListCall) Pages(ctx context.Context, f func(*ListLocat
 	}
 }
 
+type ProjectsLocationsAuthzExtensionsCreateCall struct {
+	s              *Service
+	parent         string
+	authzextension *AuthzExtension
+	urlParams_     gensupport.URLParams
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// Create: Creates a new `AuthzExtension` resource in a given project and
+// location.
+//
+//   - parent: The parent resource of the `AuthzExtension` resource. Must be in
+//     the format `projects/{project}/locations/{location}`.
+func (r *ProjectsLocationsAuthzExtensionsService) Create(parent string, authzextension *AuthzExtension) *ProjectsLocationsAuthzExtensionsCreateCall {
+	c := &ProjectsLocationsAuthzExtensionsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.authzextension = authzextension
+	return c
+}
+
+// AuthzExtensionId sets the optional parameter "authzExtensionId": Required.
+// User-provided ID of the `AuthzExtension` resource to be created.
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) AuthzExtensionId(authzExtensionId string) *ProjectsLocationsAuthzExtensionsCreateCall {
+	c.urlParams_.Set("authzExtensionId", authzExtensionId)
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server can ignore the request if it has already been
+// completed. The server guarantees that for at least 60 minutes since the
+// first request. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, ignores the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) RequestId(requestId string) *ProjectsLocationsAuthzExtensionsCreateCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) Fields(s ...googleapi.Field) *ProjectsLocationsAuthzExtensionsCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) Context(ctx context.Context) *ProjectsLocationsAuthzExtensionsCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.authzextension)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+parent}/authzExtensions")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "networkservices.projects.locations.authzExtensions.create" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsAuthzExtensionsCreateCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type ProjectsLocationsAuthzExtensionsDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes the specified `AuthzExtension` resource.
+//
+//   - name: The name of the `AuthzExtension` resource to delete. Must be in the
+//     format
+//     `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`
+//     .
+func (r *ProjectsLocationsAuthzExtensionsService) Delete(name string) *ProjectsLocationsAuthzExtensionsDeleteCall {
+	c := &ProjectsLocationsAuthzExtensionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server can ignore the request if it has already been
+// completed. The server guarantees that for at least 60 minutes after the
+// first request. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, ignores the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
+func (c *ProjectsLocationsAuthzExtensionsDeleteCall) RequestId(requestId string) *ProjectsLocationsAuthzExtensionsDeleteCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsAuthzExtensionsDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsAuthzExtensionsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsAuthzExtensionsDeleteCall) Context(ctx context.Context) *ProjectsLocationsAuthzExtensionsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsAuthzExtensionsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsAuthzExtensionsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "networkservices.projects.locations.authzExtensions.delete" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsAuthzExtensionsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type ProjectsLocationsAuthzExtensionsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets details of the specified `AuthzExtension` resource.
+//
+//   - name: A name of the `AuthzExtension` resource to get. Must be in the
+//     format
+//     `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`
+//     .
+func (r *ProjectsLocationsAuthzExtensionsService) Get(name string) *ProjectsLocationsAuthzExtensionsGetCall {
+	c := &ProjectsLocationsAuthzExtensionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsAuthzExtensionsGetCall) Fields(s ...googleapi.Field) *ProjectsLocationsAuthzExtensionsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *ProjectsLocationsAuthzExtensionsGetCall) IfNoneMatch(entityTag string) *ProjectsLocationsAuthzExtensionsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsAuthzExtensionsGetCall) Context(ctx context.Context) *ProjectsLocationsAuthzExtensionsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsAuthzExtensionsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsAuthzExtensionsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "networkservices.projects.locations.authzExtensions.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *AuthzExtension.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsAuthzExtensionsGetCall) Do(opts ...googleapi.CallOption) (*AuthzExtension, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &AuthzExtension{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+type ProjectsLocationsAuthzExtensionsListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists `AuthzExtension` resources in a given project and location.
+//
+//   - parent: The project and location from which the `AuthzExtension` resources
+//     are listed, specified in the following format:
+//     `projects/{project}/locations/{location}`.
+func (r *ProjectsLocationsAuthzExtensionsService) List(parent string) *ProjectsLocationsAuthzExtensionsListCall {
+	c := &ProjectsLocationsAuthzExtensionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// Filter sets the optional parameter "filter": Filtering results.
+func (c *ProjectsLocationsAuthzExtensionsListCall) Filter(filter string) *ProjectsLocationsAuthzExtensionsListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Hint for how to order the
+// results.
+func (c *ProjectsLocationsAuthzExtensionsListCall) OrderBy(orderBy string) *ProjectsLocationsAuthzExtensionsListCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": Requested page size. The
+// server might return fewer items than requested. If unspecified, the server
+// picks an appropriate default.
+func (c *ProjectsLocationsAuthzExtensionsListCall) PageSize(pageSize int64) *ProjectsLocationsAuthzExtensionsListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A token identifying a
+// page of results that the server returns.
+func (c *ProjectsLocationsAuthzExtensionsListCall) PageToken(pageToken string) *ProjectsLocationsAuthzExtensionsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsAuthzExtensionsListCall) Fields(s ...googleapi.Field) *ProjectsLocationsAuthzExtensionsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *ProjectsLocationsAuthzExtensionsListCall) IfNoneMatch(entityTag string) *ProjectsLocationsAuthzExtensionsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsAuthzExtensionsListCall) Context(ctx context.Context) *ProjectsLocationsAuthzExtensionsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsAuthzExtensionsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsAuthzExtensionsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+parent}/authzExtensions")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "networkservices.projects.locations.authzExtensions.list" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListAuthzExtensionsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsAuthzExtensionsListCall) Do(opts ...googleapi.CallOption) (*ListAuthzExtensionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListAuthzExtensionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsAuthzExtensionsListCall) Pages(ctx context.Context, f func(*ListAuthzExtensionsResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+type ProjectsLocationsAuthzExtensionsPatchCall struct {
+	s              *Service
+	name           string
+	authzextension *AuthzExtension
+	urlParams_     gensupport.URLParams
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// Patch: Updates the parameters of the specified `AuthzExtension` resource.
+//
+//   - name: Identifier. Name of the `AuthzExtension` resource in the following
+//     format:
+//     `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`
+//     .
+func (r *ProjectsLocationsAuthzExtensionsService) Patch(name string, authzextension *AuthzExtension) *ProjectsLocationsAuthzExtensionsPatchCall {
+	c := &ProjectsLocationsAuthzExtensionsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.authzextension = authzextension
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so that if you must retry
+// your request, the server can ignore the request if it has already been
+// completed. The server guarantees that for at least 60 minutes since the
+// first request. For example, consider a situation where you make an initial
+// request and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the same
+// request ID was received, and if so, ignores the second request. This
+// prevents clients from accidentally creating duplicate commitments. The
+// request ID must be a valid UUID with the exception that zero UUID is not
+// supported (00000000-0000-0000-0000-000000000000).
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) RequestId(requestId string) *ProjectsLocationsAuthzExtensionsPatchCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": Required. Used to
+// specify the fields to be overwritten in the `AuthzExtension` resource by the
+// update. The fields specified in the update_mask are relative to the
+// resource, not the full request. A field is overwritten if it is in the mask.
+// If the user does not specify a mask, then all fields are overwritten.
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) UpdateMask(updateMask string) *ProjectsLocationsAuthzExtensionsPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) Fields(s ...googleapi.Field) *ProjectsLocationsAuthzExtensionsPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) Context(ctx context.Context) *ProjectsLocationsAuthzExtensionsPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.authzextension)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "networkservices.projects.locations.authzExtensions.patch" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsAuthzExtensionsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 type ProjectsLocationsEndpointPoliciesCreateCall struct {
 	s              *Service
 	parent         string
@@ -4353,7 +5132,7 @@ type ProjectsLocationsEndpointPoliciesPatchCall struct {
 
 // Patch: Updates the parameters of a single EndpointPolicy.
 //
-//   - name: Name of the EndpointPolicy resource. It matches pattern
+//   - name: Identifier. Name of the EndpointPolicy resource. It matches pattern
 //     `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.
 func (r *ProjectsLocationsEndpointPoliciesService) Patch(name string, endpointpolicy *EndpointPolicy) *ProjectsLocationsEndpointPoliciesPatchCall {
 	c := &ProjectsLocationsEndpointPoliciesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -4925,7 +5704,7 @@ type ProjectsLocationsGatewaysPatchCall struct {
 
 // Patch: Updates the parameters of a single Gateway.
 //
-//   - name: Name of the Gateway resource. It matches pattern
+//   - name: Identifier. Name of the Gateway resource. It matches pattern
 //     `projects/*/locations/*/gateways/`.
 func (r *ProjectsLocationsGatewaysService) Patch(name string, gateway *Gateway) *ProjectsLocationsGatewaysPatchCall {
 	c := &ProjectsLocationsGatewaysPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -5496,7 +6275,7 @@ type ProjectsLocationsGrpcRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single GrpcRoute.
 //
-//   - name: Name of the GrpcRoute resource. It matches pattern
+//   - name: Identifier. Name of the GrpcRoute resource. It matches pattern
 //     `projects/*/locations/global/grpcRoutes/`.
 func (r *ProjectsLocationsGrpcRoutesService) Patch(name string, grpcroute *GrpcRoute) *ProjectsLocationsGrpcRoutesPatchCall {
 	c := &ProjectsLocationsGrpcRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -6068,7 +6847,7 @@ type ProjectsLocationsHttpRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single HttpRoute.
 //
-//   - name: Name of the HttpRoute resource. It matches pattern
+//   - name: Identifier. Name of the HttpRoute resource. It matches pattern
 //     `projects/*/locations/global/httpRoutes/http_route_name>`.
 func (r *ProjectsLocationsHttpRoutesService) Patch(name string, httproute *HttpRoute) *ProjectsLocationsHttpRoutesPatchCall {
 	c := &ProjectsLocationsHttpRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7921,7 +8700,7 @@ type ProjectsLocationsMeshesPatchCall struct {
 
 // Patch: Updates the parameters of a single Mesh.
 //
-//   - name: Name of the Mesh resource. It matches pattern
+//   - name: Identifier. Name of the Mesh resource. It matches pattern
 //     `projects/*/locations/global/meshes/`.
 func (r *ProjectsLocationsMeshesService) Patch(name string, mesh *Mesh) *ProjectsLocationsMeshesPatchCall {
 	c := &ProjectsLocationsMeshesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -10336,7 +11115,7 @@ type ProjectsLocationsTcpRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single TcpRoute.
 //
-//   - name: Name of the TcpRoute resource. It matches pattern
+//   - name: Identifier. Name of the TcpRoute resource. It matches pattern
 //     `projects/*/locations/global/tcpRoutes/tcp_route_name>`.
 func (r *ProjectsLocationsTcpRoutesService) Patch(name string, tcproute *TcpRoute) *ProjectsLocationsTcpRoutesPatchCall {
 	c := &ProjectsLocationsTcpRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}

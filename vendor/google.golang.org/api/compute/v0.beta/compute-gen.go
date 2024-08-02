@@ -2694,6 +2694,10 @@ type AdvancedMachineFeatures struct {
 	// simultaneous multithreading (SMT) set this to 1. If unset, the maximum
 	// number of threads supported per core by the underlying processor is assumed.
 	ThreadsPerCore int64 `json:"threadsPerCore,omitempty"`
+	// TurboMode: Turbo frequency mode to use for the instance. Supported modes
+	// include: * ALL_CORE_MAX Using empty string or not setting this field will
+	// use the platform-specific default turbo mode.
+	TurboMode string `json:"turboMode,omitempty"`
 	// VisibleCoreCount: The number of physical cores to expose to an instance.
 	// Multiply by the number of threads per core to compute the total number of
 	// virtual CPUs to expose to the instance. If unset, the number of cores is
@@ -2838,6 +2842,34 @@ func (s AllocationAggregateReservationReservedResourceInfoAccelerator) MarshalJS
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+type AllocationReservationSharingPolicy struct {
+	// ServiceShareType: Sharing config for all Google Cloud services.
+	//
+	// Possible values:
+	//   "ALLOW_ALL" - Allow all Google Cloud managed services to share
+	// reservations.
+	//   "DISALLOW_ALL" - [Default] Disallow sharing with all Google Cloud
+	// services.
+	//   "SERVICE_SHARE_TYPE_UNSPECIFIED"
+	ServiceShareType string `json:"serviceShareType,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ServiceShareType") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ServiceShareType") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AllocationReservationSharingPolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod AllocationReservationSharingPolicy
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // AllocationResourceStatus: [Output Only] Contains output only fields.
 type AllocationResourceStatus struct {
 	// SpecificSkuAllocation: Allocation Properties of this reservation.
@@ -2866,6 +2898,9 @@ type AllocationResourceStatusSpecificSKUAllocation struct {
 	// SourceInstanceTemplateId: ID of the instance template used to populate
 	// reservation properties.
 	SourceInstanceTemplateId string `json:"sourceInstanceTemplateId,omitempty"`
+	// Utilizations: Per service utilization breakdown. The Key is the Google Cloud
+	// managed service name.
+	Utilizations map[string]string `json:"utilizations,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "SourceInstanceTemplateId")
 	// to unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -5156,11 +5191,13 @@ type BackendService struct {
 	// - A regional backend service with the service_protocol set to HTTP, HTTPS,
 	// or HTTP2, and load_balancing_scheme set to INTERNAL_MANAGED. - A global
 	// backend service with the load_balancing_scheme set to INTERNAL_SELF_MANAGED,
-	// INTERNAL_MANAGED, or EXTERNAL_MANAGED. If sessionAffinity is not NONE, and
-	// this field is not set to MAGLEV or RING_HASH, session affinity settings will
-	// not take effect. Only ROUND_ROBIN and RING_HASH are supported when the
-	// backend service is referenced by a URL map that is bound to target gRPC
-	// proxy that has validateForProxyless field set to true.
+	// INTERNAL_MANAGED, or EXTERNAL_MANAGED. If sessionAffinity is not
+	// configured—that is, if session affinity remains at the default value of
+	// NONE—then the default value for localityLbPolicy is ROUND_ROBIN. If
+	// session affinity is set to a value other than NONE, then the default value
+	// for localityLbPolicy is MAGLEV. Only ROUND_ROBIN and RING_HASH are supported
+	// when the backend service is referenced by a URL map that is bound to target
+	// gRPC proxy that has validateForProxyless field set to true.
 	//
 	// Possible values:
 	//   "INVALID_LB_POLICY"
@@ -17408,7 +17445,7 @@ type InstanceGroupManager struct {
 	// more hash symbols. The hash symbols indicate the number of digits. For
 	// example, a base instance name of "vm-###" results in "vm-001" as a VM name.
 	// @pattern a-z
-	// (([-a-z0-9]{0,57})|([-a-z0-9]{0,52}-#{1,10}(\\[[0-9]{1,10}\\])?))
+	// (([-a-z0-9]{0,57})|([-a-z0-9]{0,51}-#{1,10}(\\[[0-9]{1,10}\\])?))
 	BaseInstanceName string `json:"baseInstanceName,omitempty"`
 	// CreationTimestamp: [Output Only] The creation timestamp for this managed
 	// instance group in RFC3339 text format.
@@ -17836,24 +17873,21 @@ func (s InstanceGroupManagerAutoHealingPolicy) MarshalJSON() ([]byte, error) {
 }
 
 type InstanceGroupManagerInstanceFlexibilityPolicy struct {
-	// InstanceSelectionLists: Named instance selections configuring properties
-	// that the group will use when creating new VMs.
-	InstanceSelectionLists map[string]InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection `json:"instanceSelectionLists,omitempty"`
 	// InstanceSelections: Named instance selections configuring properties that
 	// the group will use when creating new VMs.
 	InstanceSelections map[string]InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection `json:"instanceSelections,omitempty"`
 	// ProvisioningModelMix: Provisioning model configuration used by this managed
 	// instance group to create instances.
 	ProvisioningModelMix *InstanceGroupManagerInstanceFlexibilityPolicyProvisioningModelMix `json:"provisioningModelMix,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "InstanceSelectionLists") to
+	// ForceSendFields is a list of field names (e.g. "InstanceSelections") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "InstanceSelectionLists") to
-	// include in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "InstanceSelections") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -26412,9 +26446,6 @@ type ManagedInstance struct {
 	// Instance: [Output Only] The URL of the instance. The URL can exist even if
 	// the instance has not yet been created.
 	Instance string `json:"instance,omitempty"`
-	// InstanceFlexibilityOverride: [Output Only] The overrides to instance
-	// properties resulting from InstanceFlexibilityPolicy.
-	InstanceFlexibilityOverride *ManagedInstanceInstanceFlexibilityOverride `json:"instanceFlexibilityOverride,omitempty"`
 	// InstanceHealth: [Output Only] Health state of the instance per health-check.
 	InstanceHealth []*ManagedInstanceInstanceHealth `json:"instanceHealth,omitempty"`
 	// InstanceStatus: [Output Only] The status of the instance. This field is
@@ -26503,27 +26534,6 @@ type ManagedInstanceAllInstancesConfig struct {
 
 func (s ManagedInstanceAllInstancesConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod ManagedInstanceAllInstancesConfig
-	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
-}
-
-type ManagedInstanceInstanceFlexibilityOverride struct {
-	// MachineType: The machine type to be used for this instance.
-	MachineType string `json:"machineType,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "MachineType") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
-	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "MachineType") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
-	NullFields []string `json:"-"`
-}
-
-func (s ManagedInstanceInstanceFlexibilityOverride) MarshalJSON() ([]byte, error) {
-	type NoMethod ManagedInstanceInstanceFlexibilityOverride
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -29518,6 +29528,26 @@ func (s NetworkPerformanceConfig) MarshalJSON() ([]byte, error) {
 // network, and a flag indicating the type of routing behavior to enforce
 // network-wide.
 type NetworkRoutingConfig struct {
+	// BgpAlwaysCompareMed: Enable comparison of Multi-Exit Discriminators (MED)
+	// across routes with different neighbor ASNs when using the STANDARD BGP best
+	// path selection algorithm.
+	BgpAlwaysCompareMed bool `json:"bgpAlwaysCompareMed,omitempty"`
+	// BgpBestPathSelectionMode: The BGP best path selection algorithm to be
+	// employed within this network for dynamic routes learned by Cloud Routers.
+	// Can be LEGACY (default) or STANDARD.
+	//
+	// Possible values:
+	//   "LEGACY"
+	//   "STANDARD"
+	BgpBestPathSelectionMode string `json:"bgpBestPathSelectionMode,omitempty"`
+	// BgpInterRegionCost: Allows to define a preferred approach for handling
+	// inter-region cost in the selection process when using the STANDARD BGP best
+	// path selection algorithm. Can be DEFAULT or ADD_COST_TO_MED.
+	//
+	// Possible values:
+	//   "ADD_COST_TO_MED"
+	//   "DEFAULT"
+	BgpInterRegionCost string `json:"bgpInterRegionCost,omitempty"`
 	// RoutingMode: The network-wide routing mode to use. If set to REGIONAL, this
 	// network's Cloud Routers will only advertise routes with subnets of this
 	// network in the same region as the router. If set to GLOBAL, this network's
@@ -29528,15 +29558,15 @@ type NetworkRoutingConfig struct {
 	//   "GLOBAL"
 	//   "REGIONAL"
 	RoutingMode string `json:"routingMode,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "RoutingMode") to
+	// ForceSendFields is a list of field names (e.g. "BgpAlwaysCompareMed") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "RoutingMode") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "BgpAlwaysCompareMed") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -29619,6 +29649,9 @@ type NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy struct {
 	DisplayName string `json:"displayName,omitempty"`
 	// Name: [Output Only] The name of the firewall policy.
 	Name string `json:"name,omitempty"`
+	// Priority: [Output only] Priority of firewall policy association. Not
+	// applicable for type=HIERARCHY.
+	Priority int64 `json:"priority,omitempty"`
 	// Rules: The rules that apply to the network.
 	Rules []*FirewallPolicyRule `json:"rules,omitempty"`
 	// ShortName: [Output Only] The short name of the firewall policy.
@@ -29628,6 +29661,7 @@ type NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy struct {
 	// Possible values:
 	//   "HIERARCHY"
 	//   "NETWORK"
+	//   "SYSTEM"
 	//   "UNSPECIFIED"
 	Type string `json:"type,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "DisplayName") to
@@ -37812,6 +37846,10 @@ type Reservation struct {
 	// must be a dash, lowercase letter, or digit, except the last character, which
 	// cannot be a dash.
 	Name string `json:"name,omitempty"`
+	// ReservationSharingPolicy: Specify the reservation sharing policy. If
+	// unspecified, the reservation will not be shared with Google Cloud managed
+	// services.
+	ReservationSharingPolicy *AllocationReservationSharingPolicy `json:"reservationSharingPolicy,omitempty"`
 	// ResourcePolicies: Resource policies to be added to this reservation. The key
 	// is defined by user, and the value is resource policy url. This is to define
 	// placement policy with reservation.
@@ -39503,6 +39541,10 @@ type Route struct {
 	// You can specify this as a full or partial URL. For example:
 	// https://www.googleapis.com/compute/v1/projects/project/zones/zone/instances/
 	NextHopInstance string `json:"nextHopInstance,omitempty"`
+	// NextHopInterRegionCost: [Output only] Internal fixed region-to-region cost
+	// that Google Cloud calculates based on factors such as network performance,
+	// distance, and available bandwidth between regions.
+	NextHopInterRegionCost int64 `json:"nextHopInterRegionCost,omitempty"`
 	// NextHopInterconnectAttachment: [Output Only] The URL to an
 	// InterconnectAttachment which is the next hop for the route. This field will
 	// only be populated for the dynamic routes generated by Cloud Router with a
@@ -39515,9 +39557,20 @@ type Route struct {
 	// addresses will be displayed using RFC 5952 compressed format (e.g.
 	// 2001:db8::2d9:51:0:0). Should never be an IPv4-mapped IPv6 address.
 	NextHopIp string `json:"nextHopIp,omitempty"`
+	// NextHopMed: [Output Only] Multi-Exit Discriminator, a BGP route metric that
+	// indicates the desirability of a particular route in a network.
+	NextHopMed int64 `json:"nextHopMed,omitempty"`
 	// NextHopNetwork: The URL of the local network if it should handle matching
 	// packets.
 	NextHopNetwork string `json:"nextHopNetwork,omitempty"`
+	// NextHopOrigin: [Output Only] Indicates the origin of the route. Can be IGP
+	// (Interior Gateway Protocol), EGP (Exterior Gateway Protocol), or INCOMPLETE.
+	//
+	// Possible values:
+	//   "EGP"
+	//   "IGP"
+	//   "INCOMPLETE"
+	NextHopOrigin string `json:"nextHopOrigin,omitempty"`
 	// NextHopPeering: [Output Only] The network peering name that should handle
 	// matching packets, which should conform to RFC1035.
 	NextHopPeering string `json:"nextHopPeering,omitempty"`
@@ -50530,8 +50583,10 @@ type TargetHttpsProxy struct {
 	AuthorizationPolicy string `json:"authorizationPolicy,omitempty"`
 	// CertificateMap: URL of a certificate map that identifies a certificate map
 	// associated with the given target proxy. This field can only be set for
-	// global target proxies. If set, sslCertificates will be ignored. Accepted
-	// format is //certificatemanager.googleapis.com/projects/{project
+	// Global external Application Load Balancer or Classic Application Load
+	// Balancer. For other products use Certificate Manager Certificates instead.
+	// If set, sslCertificates will be ignored. Accepted format is
+	// //certificatemanager.googleapis.com/projects/{project
 	// }/locations/{location}/certificateMaps/{resourceName}.
 	CertificateMap string `json:"certificateMap,omitempty"`
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text format.
@@ -50621,9 +50676,19 @@ type TargetHttpsProxy struct {
 	ServerTlsPolicy string `json:"serverTlsPolicy,omitempty"`
 	// SslCertificates: URLs to SslCertificate resources that are used to
 	// authenticate connections between users and the load balancer. At least one
-	// SSL certificate must be specified. Currently, you may specify up to 15 SSL
-	// certificates. sslCertificates do not apply when the load balancing scheme is
-	// set to INTERNAL_SELF_MANAGED.
+	// SSL certificate must be specified. SslCertificates do not apply when the
+	// load balancing scheme is set to INTERNAL_SELF_MANAGED. The URLs should refer
+	// to a SSL Certificate resource or Certificate Manager Certificate resource.
+	// Mixing Classic Certificates and Certificate Manager Certificates is not
+	// allowed. Certificate Manager Certificates must include the
+	// certificatemanager API. Certificate Manager Certificates are not supported
+	// by Global external Application Load Balancer or Classic Application Load
+	// Balancer, use certificate_map instead. Currently, you may specify up to 15
+	// Classic SSL Certificates. Certificate Manager Certificates accepted formats
+	// are: - //certificatemanager.googleapis.com/projects/{project}/locations/{
+	// location}/certificates/{resourceName}. -
+	// https://certificatemanager.googleapis.com/v1alpha1/projects/{project
+	// }/locations/{location}/certificates/{resourceName}.
 	SslCertificates []string `json:"sslCertificates,omitempty"`
 	// SslPolicy: URL of SslPolicy resource that will be associated with the
 	// TargetHttpsProxy resource. If not set, the TargetHttpsProxy resource has no
@@ -53874,12 +53939,12 @@ type UrlMap struct {
 	// defaultRouteAction is also specified, advanced routing actions, such as URL
 	// rewrites, take effect before sending the request to the backend. However, if
 	// defaultService is specified, defaultRouteAction cannot contain any
-	// weightedBackendServices. Conversely, if routeAction specifies any
-	// weightedBackendServices, service must not be specified. If defaultService is
-	// specified, then set either defaultUrlRedirect , or
-	// defaultRouteAction.weightedBackendService Don't set both. defaultService has
-	// no effect when the URL map is bound to a target gRPC proxy that has the
-	// validateForProxyless field set to true.
+	// defaultRouteAction.weightedBackendServices. Conversely, if
+	// defaultRouteAction specifies any defaultRouteAction.weightedBackendServices,
+	// defaultService must not be specified. If defaultService is specified, then
+	// set either defaultUrlRedirect , or defaultRouteAction.weightedBackendService
+	// Don't set both. defaultService has no effect when the URL map is bound to a
+	// target gRPC proxy that has the validateForProxyless field set to true.
 	DefaultService string `json:"defaultService,omitempty"`
 	// DefaultUrlRedirect: When none of the specified hostRules match, the request
 	// is redirected to a URL specified by defaultUrlRedirect. If

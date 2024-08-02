@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.3](https://github.com/googleapis/google-cloud-go/compare/auth/v0.7.2...auth/v0.7.3) (2024-08-01)
+
+
+### Bug Fixes
+
+* **auth/oauth2adapt:** Update dependencies ([257c40b](https://github.com/googleapis/google-cloud-go/commit/257c40bd6d7e59730017cf32bda8823d7a232758))
+* **auth:** Disable automatic universe domain check for MDS ([#10620](https://github.com/googleapis/google-cloud-go/issues/10620)) ([7cea5ed](https://github.com/googleapis/google-cloud-go/commit/7cea5edd5a0c1e6bca558696f5607879141910e8))
+* **auth:** Update dependencies ([257c40b](https://github.com/googleapis/google-cloud-go/commit/257c40bd6d7e59730017cf32bda8823d7a232758))
+
 ## [0.7.2](https://github.com/googleapis/google-cloud-go/compare/auth/v0.7.1...auth/v0.7.2) (2024-07-22)
 
 

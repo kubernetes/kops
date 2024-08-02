@@ -1,3 +1,10 @@
+# v4.0.4
+
+## Fixed
+
+ - Reverted "Allow unmarshalling JSONWebKeySets with unsupported key types" as a
+   breaking change. See #136 / #137.
+
 # v4.0.3
 
 ## Changed

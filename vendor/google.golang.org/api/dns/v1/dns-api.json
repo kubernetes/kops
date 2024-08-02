@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20240531",
+  "revision": "20240719",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2893,6 +2893,10 @@
           "format": "int32",
           "type": "integer"
         },
+        "internetHealthChecksPerManagedZone": {
+          "format": "int32",
+          "type": "integer"
+        },
         "itemsPerRoutingPolicy": {
           "description": "Maximum allowed number of items per routing policy.",
           "format": "int32",
@@ -3009,6 +3013,10 @@
         "geo": {
           "$ref": "RRSetRoutingPolicyGeoPolicy"
         },
+        "healthCheck": {
+          "description": "The selfLink attribute of the HealthCheck resource to use for this RRSetRoutingPolicy. https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks",
+          "type": "string"
+        },
         "kind": {
           "default": "dns#rRSetRoutingPolicy",
           "type": "string"
@@ -3080,6 +3088,13 @@
       "description": "HealthCheckTargets describes endpoints to health-check when responding to Routing Policy queries. Only the healthy endpoints will be included in the response.",
       "id": "RRSetRoutingPolicyHealthCheckTargets",
       "properties": {
+        "externalEndpoints": {
+          "description": "The Internet IP addresses to be health checked. The format matches the format of ResourceRecordSet.rrdata as defined in RFC 1035 (section 5) and RFC 1034 (section 3.6.1)",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "internalLoadBalancers": {
           "description": "Configuration for internal load balancers to be health checked.",
           "items": {

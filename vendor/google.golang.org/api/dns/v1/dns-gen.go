@@ -1844,7 +1844,8 @@ type Quota struct {
 	GkeClustersPerPolicy int64 `json:"gkeClustersPerPolicy,omitempty"`
 	// GkeClustersPerResponsePolicy: Maximum allowed number of GKE clusters per
 	// response policy.
-	GkeClustersPerResponsePolicy int64 `json:"gkeClustersPerResponsePolicy,omitempty"`
+	GkeClustersPerResponsePolicy       int64 `json:"gkeClustersPerResponsePolicy,omitempty"`
+	InternetHealthChecksPerManagedZone int64 `json:"internetHealthChecksPerManagedZone,omitempty"`
 	// ItemsPerRoutingPolicy: Maximum allowed number of items per routing policy.
 	ItemsPerRoutingPolicy int64  `json:"itemsPerRoutingPolicy,omitempty"`
 	Kind                  string `json:"kind,omitempty"`
@@ -1923,7 +1924,11 @@ func (s Quota) MarshalJSON() ([]byte, error) {
 // that is returned dynamically with the response varying based on configured
 // properties such as geolocation or by weighted random selection.
 type RRSetRoutingPolicy struct {
-	Geo           *RRSetRoutingPolicyGeoPolicy           `json:"geo,omitempty"`
+	Geo *RRSetRoutingPolicyGeoPolicy `json:"geo,omitempty"`
+	// HealthCheck: The selfLink attribute of the HealthCheck resource to use for
+	// this RRSetRoutingPolicy.
+	// https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks
+	HealthCheck   string                                 `json:"healthCheck,omitempty"`
 	Kind          string                                 `json:"kind,omitempty"`
 	PrimaryBackup *RRSetRoutingPolicyPrimaryBackupPolicy `json:"primaryBackup,omitempty"`
 	Wrr           *RRSetRoutingPolicyWrrPolicy           `json:"wrr,omitempty"`
@@ -2017,18 +2022,22 @@ func (s RRSetRoutingPolicyGeoPolicyGeoPolicyItem) MarshalJSON() ([]byte, error) 
 // to health-check when responding to Routing Policy queries. Only the healthy
 // endpoints will be included in the response.
 type RRSetRoutingPolicyHealthCheckTargets struct {
+	// ExternalEndpoints: The Internet IP addresses to be health checked. The
+	// format matches the format of ResourceRecordSet.rrdata as defined in RFC 1035
+	// (section 5) and RFC 1034 (section 3.6.1)
+	ExternalEndpoints []string `json:"externalEndpoints,omitempty"`
 	// InternalLoadBalancers: Configuration for internal load balancers to be
 	// health checked.
 	InternalLoadBalancers []*RRSetRoutingPolicyLoadBalancerTarget `json:"internalLoadBalancers,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "InternalLoadBalancers") to
+	// ForceSendFields is a list of field names (e.g. "ExternalEndpoints") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "InternalLoadBalancers") to
-	// include in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ExternalEndpoints") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }

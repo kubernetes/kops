@@ -177,6 +177,188 @@
             }
           },
           "resources": {
+            "authzExtensions": {
+              "methods": {
+                "create": {
+                  "description": "Creates a new `AuthzExtension` resource in a given project and location.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/authzExtensions",
+                  "httpMethod": "POST",
+                  "id": "networkservices.projects.locations.authzExtensions.create",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "authzExtensionId": {
+                      "description": "Required. User-provided ID of the `AuthzExtension` resource to be created.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The parent resource of the `AuthzExtension` resource. Must be in the format `projects/{project}/locations/{location}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, ignores the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+parent}/authzExtensions",
+                  "request": {
+                    "$ref": "AuthzExtension"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "delete": {
+                  "description": "Deletes the specified `AuthzExtension` resource.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/authzExtensions/{authzExtensionsId}",
+                  "httpMethod": "DELETE",
+                  "id": "networkservices.projects.locations.authzExtensions.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the `AuthzExtension` resource to delete. Must be in the format `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/authzExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, ignores the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+name}",
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "get": {
+                  "description": "Gets details of the specified `AuthzExtension` resource.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/authzExtensions/{authzExtensionsId}",
+                  "httpMethod": "GET",
+                  "id": "networkservices.projects.locations.authzExtensions.get",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. A name of the `AuthzExtension` resource to get. Must be in the format `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/authzExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+name}",
+                  "response": {
+                    "$ref": "AuthzExtension"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "list": {
+                  "description": "Lists `AuthzExtension` resources in a given project and location.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/authzExtensions",
+                  "httpMethod": "GET",
+                  "id": "networkservices.projects.locations.authzExtensions.list",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "filter": {
+                      "description": "Optional. Filtering results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "orderBy": {
+                      "description": "Optional. Hint for how to order the results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Optional. Requested page size. The server might return fewer items than requested. If unspecified, the server picks an appropriate default.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "Optional. A token identifying a page of results that the server returns.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The project and location from which the `AuthzExtension` resources are listed, specified in the following format: `projects/{project}/locations/{location}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+parent}/authzExtensions",
+                  "response": {
+                    "$ref": "ListAuthzExtensionsResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "patch": {
+                  "description": "Updates the parameters of the specified `AuthzExtension` resource.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/authzExtensions/{authzExtensionsId}",
+                  "httpMethod": "PATCH",
+                  "id": "networkservices.projects.locations.authzExtensions.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. Identifier. Name of the `AuthzExtension` resource in the following format: `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/authzExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, ignores the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Required. Used to specify the fields to be overwritten in the `AuthzExtension` resource by the update. The fields specified in the update_mask are relative to the resource, not the full request. A field is overwritten if it is in the mask. If the user does not specify a mask, then all fields are overwritten.",
+                      "format": "google-fieldmask",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+name}",
+                  "request": {
+                    "$ref": "AuthzExtension"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              }
+            },
             "endpointPolicies": {
               "methods": {
                 "create": {
@@ -308,7 +490,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
+                      "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/endpointPolicies/[^/]+$",
                       "required": true,
@@ -465,7 +647,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
+                      "description": "Identifier. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/gateways/[^/]+$",
                       "required": true,
@@ -622,7 +804,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
+                      "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/grpcRoutes/[^/]+$",
                       "required": true,
@@ -779,7 +961,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
+                      "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/httpRoutes/[^/]+$",
                       "required": true,
@@ -1300,7 +1482,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
+                      "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/meshes/[^/]+$",
                       "required": true,
@@ -1947,7 +2129,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
+                      "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tcpRoutes/[^/]+$",
                       "required": true,
@@ -2135,7 +2317,7 @@
       }
     }
   },
-  "revision": "20240707",
+  "revision": "20240721",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -2180,6 +2362,98 @@
             "Admin reads. Example: CloudIAM getIamPolicy",
             "Data writes. Example: CloudSQL Users create",
             "Data reads. Example: CloudSQL Users list"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "AuthzExtension": {
+      "description": "`AuthzExtension` is a resource that allows traffic forwarding to a callout backend to make an authorization decision.",
+      "id": "AuthzExtension",
+      "properties": {
+        "authority": {
+          "description": "Required. The `:authority` header in the gRPC request sent from Envoy to the extension service.",
+          "type": "string"
+        },
+        "createTime": {
+          "description": "Output only. The timestamp when the resource was created.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional. A human-readable description of the resource.",
+          "type": "string"
+        },
+        "failOpen": {
+          "description": "Optional. Determines how the proxy behaves if the call to the extension fails or times out. When set to `TRUE`, request or response processing continues without error. Any subsequent extensions in the extension chain are also executed. When set to `FALSE` or the default setting of `FALSE` is used, one of the following happens: * If response headers have not been delivered to the downstream client, a generic 500 error is returned to the client. The error response can be tailored by configuring a custom error response in the load balancer. * If response headers have been delivered, then the HTTP stream to the downstream client is reset.",
+          "type": "boolean"
+        },
+        "forwardHeaders": {
+          "description": "Optional. List of the HTTP headers to forward to the extension (from the client). If omitted, all headers are sent. Each element is a string indicating the header name.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional. Set of labels associated with the `AuthzExtension` resource. The format must comply with [the requirements for labels](/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
+          "type": "object"
+        },
+        "loadBalancingScheme": {
+          "description": "Required. All backend services and forwarding rules referenced by this extension must share the same load balancing scheme. Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. For more information, refer to [Choosing a load balancer](https://cloud.google.com/load-balancing/docs/backend-service).",
+          "enum": [
+            "LOAD_BALANCING_SCHEME_UNSPECIFIED",
+            "INTERNAL_MANAGED",
+            "EXTERNAL_MANAGED"
+          ],
+          "enumDescriptions": [
+            "Default value. Do not use.",
+            "Signifies that this is used for Internal HTTP(S) Load Balancing.",
+            "Signifies that this is used for External Managed HTTP(S) Load Balancing."
+          ],
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "description": "Properties of the object.",
+            "type": "any"
+          },
+          "description": "Optional. The metadata provided here is included as part of the `metadata_context` (of type `google.protobuf.Struct`) in the `ProcessingRequest` message sent to the extension server. The metadata is available under the namespace `com.google.authz_extension.`. The following variables are supported in the metadata Struct: `{forwarding_rule_id}` - substituted with the forwarding rule's fully qualified resource name.",
+          "type": "object"
+        },
+        "name": {
+          "description": "Required. Identifier. Name of the `AuthzExtension` resource in the following format: `projects/{project}/locations/{location}/authzExtensions/{authz_extension}`.",
+          "type": "string"
+        },
+        "service": {
+          "description": "Required. The reference to the service that runs the extension. Currently only callout extensions are supported here. To configure a callout extension, `service` must be a fully-qualified reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in the format: `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/backendServices/{backendService}` or `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServices/{backendService}`.",
+          "type": "string"
+        },
+        "timeout": {
+          "description": "Required. Specifies the timeout for each individual message on the stream. The timeout must be between 10-10000 milliseconds.",
+          "format": "google-duration",
+          "type": "string"
+        },
+        "updateTime": {
+          "description": "Output only. The timestamp when the resource was updated.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "wireFormat": {
+          "description": "Optional. The format of communication supported by the callout extension. If not specified, the default is `EXT_PROC_GRPC`.",
+          "enum": [
+            "WIRE_FORMAT_UNSPECIFIED",
+            "EXT_PROC_GRPC"
+          ],
+          "enumDescriptions": [
+            "Not specified.",
+            "The extension service uses ExtProc GRPC API."
           ],
           "type": "string"
         }
@@ -2265,7 +2539,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
+          "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
           "type": "string"
         },
         "serverTlsPolicy": {
@@ -2483,7 +2757,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
+          "description": "Identifier. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
           "type": "string"
         },
         "network": {
@@ -2581,7 +2855,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
+          "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
           "type": "string"
         },
         "rules": {
@@ -2878,7 +3152,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
+          "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
           "type": "string"
         },
         "rules": {
@@ -3535,6 +3809,31 @@
       },
       "type": "object"
     },
+    "ListAuthzExtensionsResponse": {
+      "description": "Message for response to listing `AuthzExtension` resources.",
+      "id": "ListAuthzExtensionsResponse",
+      "properties": {
+        "authzExtensions": {
+          "description": "The list of `AuthzExtension` resources.",
+          "items": {
+            "$ref": "AuthzExtension"
+          },
+          "type": "array"
+        },
+        "nextPageToken": {
+          "description": "A token identifying a page of results that the server returns.",
+          "type": "string"
+        },
+        "unreachable": {
+          "description": "Locations that could not be reached.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "ListEndpointPoliciesResponse": {
       "description": "Response returned by the ListEndpointPolicies method.",
       "id": "ListEndpointPoliciesResponse",
@@ -3865,7 +4164,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
+          "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
           "type": "string"
         },
         "selfLink": {
@@ -4057,7 +4356,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the ServiceBinding resource. It matches pattern `projects/*/locations/global/serviceBindings/service_binding_name`.",
+          "description": "Identifier. Name of the ServiceBinding resource. It matches pattern `projects/*/locations/global/serviceBindings/service_binding_name`.",
           "type": "string"
         },
         "service": {
@@ -4240,7 +4539,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
+          "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
           "type": "string"
         },
         "rules": {

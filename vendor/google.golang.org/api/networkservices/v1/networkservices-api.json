@@ -581,7 +581,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
+                      "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/endpointPolicies/[^/]+$",
                       "required": true,
@@ -738,7 +738,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
+                      "description": "Identifier. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/gateways/[^/]+$",
                       "required": true,
@@ -895,7 +895,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
+                      "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/grpcRoutes/[^/]+$",
                       "required": true,
@@ -1052,7 +1052,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
+                      "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/httpRoutes/[^/]+$",
                       "required": true,
@@ -1573,7 +1573,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
+                      "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/meshes/[^/]+$",
                       "required": true,
@@ -2220,7 +2220,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
+                      "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tcpRoutes/[^/]+$",
                       "required": true,
@@ -2408,7 +2408,7 @@
       }
     }
   },
-  "revision": "20240707",
+  "revision": "20240721",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -2581,7 +2581,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
+          "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
           "type": "string"
         },
         "serverTlsPolicy": {
@@ -2799,7 +2799,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
+          "description": "Identifier. Name of the Gateway resource. It matches pattern `projects/*/locations/*/gateways/`.",
           "type": "string"
         },
         "network": {
@@ -2897,7 +2897,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
+          "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
           "type": "string"
         },
         "rules": {
@@ -3194,7 +3194,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
+          "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
           "type": "string"
         },
         "rules": {
@@ -4181,7 +4181,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
+          "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
           "type": "string"
         },
         "selfLink": {
@@ -4330,7 +4330,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Required. Name of the ServiceBinding resource. It matches pattern `projects/*/locations/global/serviceBindings/service_binding_name`.",
+          "description": "Identifier. Name of the ServiceBinding resource. It matches pattern `projects/*/locations/global/serviceBindings/service_binding_name`.",
           "type": "string"
         },
         "service": {
@@ -4513,7 +4513,7 @@
           "type": "array"
         },
         "name": {
-          "description": "Required. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
+          "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
           "type": "string"
         },
         "rules": {
