@@ -43,6 +43,25 @@ func TestSetClusterFields(t *testing.T) {
 	}{
 		{
 			Fields: []string{
+				"spec.kubeAPIserver.featureGates=ServiceTrafficDistribution=false",
+			},
+			Input: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubeAPIServer: &kops.KubeAPIServerConfig{},
+				},
+			},
+			Output: kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubeAPIServer: &kops.KubeAPIServerConfig{
+						FeatureGates: map[string]string{
+							"ServiceTrafficDistribution": "false",
+						},
+					},
+				},
+			},
+		},
+		{
+			Fields: []string{
 				"spec.kubernetesVersion=1.8.2",
 				"spec.kubelet.authorizationMode=Webhook",
 				"spec.kubelet.authenticationTokenWebhook=true",
