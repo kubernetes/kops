@@ -17,6 +17,35 @@
 set -e
 set -x
 
+# special processing for ASG force a delete and wait for it to go away
+delete_asg_with_timeout() {
+    local ASG_NAME=$1
+    local TIMEOUT=900  # 15 minutes in seconds
+    local INTERVAL=10  # Check every 10 seconds
+
+    echo "Deleting Auto Scaling Group: $ASG_NAME"
+    if aws autoscaling delete-auto-scaling-group --auto-scaling-group-name "$ASG_NAME" --force-delete; then
+        echo "Deletion command succeeded. Waiting for ASG to be deleted..."
+
+        local end_time=$((SECONDS + TIMEOUT))
+
+        while [ $SECONDS -lt $end_time ]; do
+            if ! aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG_NAME" --query "AutoScalingGroups[*].AutoScalingGroupName" --output text 2>/dev/null; then
+                echo "Auto Scaling Group $ASG_NAME has been deleted."
+                return 0
+            fi
+            echo "ASG still exists. Waiting..."
+            sleep $INTERVAL
+        done
+
+        echo "Timeout reached. ASG $ASG_NAME may not have been fully deleted within 15 minutes."
+        return 1
+    else
+        echo "Failed to initiate deletion of Auto Scaling Group $ASG_NAME."
+        return 1
+    fi
+}
+
 make test-e2e-install
 
 # Default cluster name
@@ -147,6 +176,7 @@ fi
 
 if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
   KUBETEST2_ARGS+=("--down")
+  delete_asg_with_timeout "$CLUSTER_NAME"
 fi
 
 # this is used as a label to select kube-proxy pods on kops for kube-proxy service 
