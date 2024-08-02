@@ -2156,31 +2156,6 @@ func (s OperationMetadata) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// PatchServiceAccountKeyRequest: The service account key patch request.
-type PatchServiceAccountKeyRequest struct {
-	// ServiceAccountKey: Required. The service account key to update.
-	ServiceAccountKey *ServiceAccountKey `json:"serviceAccountKey,omitempty"`
-	// UpdateMask: Required. The update mask to apply to the service account key.
-	// Only the following fields are eligible for patching: - contact - description
-	UpdateMask string `json:"updateMask,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "ServiceAccountKey") to
-	// unconditionally include in API requests. By default, fields with empty or
-	// default values are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
-	// details.
-	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "ServiceAccountKey") to include in
-	// API requests with the JSON null value. By default, fields with empty values
-	// are omitted from API requests. See
-	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
-	NullFields []string `json:"-"`
-}
-
-func (s PatchServiceAccountKeyRequest) MarshalJSON() ([]byte, error) {
-	type NoMethod PatchServiceAccountKeyRequest
-	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
-}
-
 // PatchServiceAccountRequest: The service account patch request. You can patch
 // only the `display_name` and `description` fields. You must use the
 // `update_mask` field to specify which of these fields you want to patch. Only
@@ -2784,16 +2759,6 @@ func (s ServiceAccount) MarshalJSON() ([]byte, error) {
 // Public keys for all service accounts are also published at the OAuth2
 // Service Account API.
 type ServiceAccountKey struct {
-	// Contact: Optional. A user provided email address as the point of contact for
-	// this service account key. Must be an email address. Limit 64 characters.
-	Contact string `json:"contact,omitempty"`
-	// Creator: Output only. The cloud identity that created this service account
-	// key. Populated automatically when the key is created and not editable by the
-	// user.
-	Creator string `json:"creator,omitempty"`
-	// Description: Optional. A user provided description of this service account
-	// key.
-	Description string `json:"description,omitempty"`
 	// DisableReason: Output only. optional. If the key is disabled, it may have a
 	// DisableReason describing why it was disabled.
 	//
@@ -2870,13 +2835,13 @@ type ServiceAccountKey struct {
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
-	// ForceSendFields is a list of field names (e.g. "Contact") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "DisableReason") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Contact") to include in API
+	// NullFields is a list of field names (e.g. "DisableReason") to include in API
 	// requests with the JSON null value. By default, fields with empty values are
 	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
@@ -6967,10 +6932,13 @@ type OrganizationsRolesDeleteCall struct {
 // changes occur immediately: * You cannot bind a principal to the custom role
 // in an IAM Policy. * Existing bindings to the custom role are not changed,
 // but they have no effect. * By default, the response from ListRoles does not
-// include the custom role. You have 7 days to undelete the custom role. After
-// 7 days, the following changes occur: * The custom role is permanently
-// deleted and cannot be recovered. * If an IAM policy contains a binding to
-// the custom role, the binding is permanently removed.
+// include the custom role. A deleted custom role still counts toward the
+// custom role limit (/iam/quotas#limits) until it is permanently deleted. You
+// have 7 days to undelete the custom role. After 7 days, the following changes
+// occur: * The custom role is permanently deleted and cannot be recovered. *
+// If an IAM policy contains a binding to the custom role, the binding is
+// permanently removed. * The custom role no longer counts toward your custom
+// role limit.
 //
 //   - name: The `name` parameter's value depends on the target resource for the
 //     request, namely projects
@@ -11739,10 +11707,13 @@ type ProjectsRolesDeleteCall struct {
 // changes occur immediately: * You cannot bind a principal to the custom role
 // in an IAM Policy. * Existing bindings to the custom role are not changed,
 // but they have no effect. * By default, the response from ListRoles does not
-// include the custom role. You have 7 days to undelete the custom role. After
-// 7 days, the following changes occur: * The custom role is permanently
-// deleted and cannot be recovered. * If an IAM policy contains a binding to
-// the custom role, the binding is permanently removed.
+// include the custom role. A deleted custom role still counts toward the
+// custom role limit (/iam/quotas#limits) until it is permanently deleted. You
+// have 7 days to undelete the custom role. After 7 days, the following changes
+// occur: * The custom role is permanently deleted and cannot be recovered. *
+// If an IAM policy contains a binding to the custom role, the binding is
+// permanently removed. * The custom role no longer counts toward your custom
+// role limit.
 //
 //   - name: The `name` parameter's value depends on the target resource for the
 //     request, namely projects
@@ -14781,109 +14752,6 @@ func (c *ProjectsServiceAccountsKeysListCall) Do(opts ...googleapi.CallOption) (
 		return nil, gensupport.WrapError(err)
 	}
 	ret := &ListServiceAccountKeysResponse{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
-type ProjectsServiceAccountsKeysPatchCall struct {
-	s                             *Service
-	name                          string
-	patchserviceaccountkeyrequest *PatchServiceAccountKeyRequest
-	urlParams_                    gensupport.URLParams
-	ctx_                          context.Context
-	header_                       http.Header
-}
-
-// Patch: Patches a ServiceAccountKey.
-//
-//   - name: The resource name of the service account key in the following format
-//     `projects/{PROJECT_ID}/serviceAccounts/{ACCOUNT}/keys/{key}`.
-func (r *ProjectsServiceAccountsKeysService) Patch(name string, patchserviceaccountkeyrequest *PatchServiceAccountKeyRequest) *ProjectsServiceAccountsKeysPatchCall {
-	c := &ProjectsServiceAccountsKeysPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	c.patchserviceaccountkeyrequest = patchserviceaccountkeyrequest
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
-// details.
-func (c *ProjectsServiceAccountsKeysPatchCall) Fields(s ...googleapi.Field) *ProjectsServiceAccountsKeysPatchCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method.
-func (c *ProjectsServiceAccountsKeysPatchCall) Context(ctx context.Context) *ProjectsServiceAccountsKeysPatchCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns a http.Header that can be modified by the caller to add
-// headers to the request.
-func (c *ProjectsServiceAccountsKeysPatchCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsServiceAccountsKeysPatchCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.patchserviceaccountkeyrequest)
-	if err != nil {
-		return nil, err
-	}
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:patch")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "iam.projects.serviceAccounts.keys.patch" call.
-// Any non-2xx status code is an error. Response headers are in either
-// *ServiceAccountKey.ServerResponse.Header or (if a response was returned at
-// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified was
-// returned.
-func (c *ProjectsServiceAccountsKeysPatchCall) Do(opts ...googleapi.CallOption) (*ServiceAccountKey, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, gensupport.WrapError(&googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		})
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, gensupport.WrapError(err)
-	}
-	ret := &ServiceAccountKey{
 		ServerResponse: googleapi.ServerResponse{
 			Header:         res.Header,
 			HTTPStatusCode: res.StatusCode,

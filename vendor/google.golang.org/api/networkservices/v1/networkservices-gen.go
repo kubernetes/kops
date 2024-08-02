@@ -671,7 +671,7 @@ type EndpointPolicy struct {
 	// Labels: Optional. Set of label tags associated with the EndpointPolicy
 	// resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the EndpointPolicy resource. It matches pattern
+	// Name: Identifier. Name of the EndpointPolicy resource. It matches pattern
 	// `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.
 	Name string `json:"name,omitempty"`
 	// ServerTlsPolicy: Optional. A URL referring to ServerTlsPolicy resource.
@@ -953,7 +953,7 @@ type Gateway struct {
 	IpVersion string `json:"ipVersion,omitempty"`
 	// Labels: Optional. Set of label tags associated with the Gateway resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the Gateway resource. It matches pattern
+	// Name: Identifier. Name of the Gateway resource. It matches pattern
 	// `projects/*/locations/*/gateways/`.
 	Name string `json:"name,omitempty"`
 	// Network: Optional. The relative resource name identifying the VPC network
@@ -1058,7 +1058,7 @@ type GrpcRoute struct {
 	// Each mesh reference should match the pattern:
 	// `projects/*/locations/global/meshes/`
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the GrpcRoute resource. It matches pattern
+	// Name: Identifier. Name of the GrpcRoute resource. It matches pattern
 	// `projects/*/locations/global/grpcRoutes/`
 	Name string `json:"name,omitempty"`
 	// Rules: Required. A list of detailed rules defining how to route traffic.
@@ -1486,7 +1486,7 @@ type HttpRoute struct {
 	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the HttpRoute resource. It matches pattern
+	// Name: Identifier. Name of the HttpRoute resource. It matches pattern
 	// `projects/*/locations/global/httpRoutes/http_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. Rules
@@ -2804,7 +2804,7 @@ type Mesh struct {
 	InterceptionPort int64 `json:"interceptionPort,omitempty"`
 	// Labels: Optional. Set of label tags associated with the Mesh resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the Mesh resource. It matches pattern
+	// Name: Identifier. Name of the Mesh resource. It matches pattern
 	// `projects/*/locations/global/meshes/`.
 	Name string `json:"name,omitempty"`
 	// SelfLink: Output only. Server-defined URL of this resource
@@ -3020,7 +3020,7 @@ type ServiceBinding struct {
 	// Labels: Optional. Set of label tags associated with the ServiceBinding
 	// resource.
 	Labels map[string]string `json:"labels,omitempty"`
-	// Name: Required. Name of the ServiceBinding resource. It matches pattern
+	// Name: Identifier. Name of the ServiceBinding resource. It matches pattern
 	// `projects/*/locations/global/serviceBindings/service_binding_name`.
 	Name string `json:"name,omitempty"`
 	// Service: Required. The full Service Directory Service name of the format
@@ -3254,7 +3254,7 @@ type TcpRoute struct {
 	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
-	// Name: Required. Name of the TcpRoute resource. It matches pattern
+	// Name: Identifier. Name of the TcpRoute resource. It matches pattern
 	// `projects/*/locations/global/tcpRoutes/tcp_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. At
@@ -5413,7 +5413,7 @@ type ProjectsLocationsEndpointPoliciesPatchCall struct {
 
 // Patch: Updates the parameters of a single EndpointPolicy.
 //
-//   - name: Name of the EndpointPolicy resource. It matches pattern
+//   - name: Identifier. Name of the EndpointPolicy resource. It matches pattern
 //     `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.
 func (r *ProjectsLocationsEndpointPoliciesService) Patch(name string, endpointpolicy *EndpointPolicy) *ProjectsLocationsEndpointPoliciesPatchCall {
 	c := &ProjectsLocationsEndpointPoliciesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -5985,7 +5985,7 @@ type ProjectsLocationsGatewaysPatchCall struct {
 
 // Patch: Updates the parameters of a single Gateway.
 //
-//   - name: Name of the Gateway resource. It matches pattern
+//   - name: Identifier. Name of the Gateway resource. It matches pattern
 //     `projects/*/locations/*/gateways/`.
 func (r *ProjectsLocationsGatewaysService) Patch(name string, gateway *Gateway) *ProjectsLocationsGatewaysPatchCall {
 	c := &ProjectsLocationsGatewaysPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -6556,7 +6556,7 @@ type ProjectsLocationsGrpcRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single GrpcRoute.
 //
-//   - name: Name of the GrpcRoute resource. It matches pattern
+//   - name: Identifier. Name of the GrpcRoute resource. It matches pattern
 //     `projects/*/locations/global/grpcRoutes/`.
 func (r *ProjectsLocationsGrpcRoutesService) Patch(name string, grpcroute *GrpcRoute) *ProjectsLocationsGrpcRoutesPatchCall {
 	c := &ProjectsLocationsGrpcRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7128,7 +7128,7 @@ type ProjectsLocationsHttpRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single HttpRoute.
 //
-//   - name: Name of the HttpRoute resource. It matches pattern
+//   - name: Identifier. Name of the HttpRoute resource. It matches pattern
 //     `projects/*/locations/global/httpRoutes/http_route_name>`.
 func (r *ProjectsLocationsHttpRoutesService) Patch(name string, httproute *HttpRoute) *ProjectsLocationsHttpRoutesPatchCall {
 	c := &ProjectsLocationsHttpRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -8981,7 +8981,7 @@ type ProjectsLocationsMeshesPatchCall struct {
 
 // Patch: Updates the parameters of a single Mesh.
 //
-//   - name: Name of the Mesh resource. It matches pattern
+//   - name: Identifier. Name of the Mesh resource. It matches pattern
 //     `projects/*/locations/global/meshes/`.
 func (r *ProjectsLocationsMeshesService) Patch(name string, mesh *Mesh) *ProjectsLocationsMeshesPatchCall {
 	c := &ProjectsLocationsMeshesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -11396,7 +11396,7 @@ type ProjectsLocationsTcpRoutesPatchCall struct {
 
 // Patch: Updates the parameters of a single TcpRoute.
 //
-//   - name: Name of the TcpRoute resource. It matches pattern
+//   - name: Identifier. Name of the TcpRoute resource. It matches pattern
 //     `projects/*/locations/global/tcpRoutes/tcp_route_name>`.
 func (r *ProjectsLocationsTcpRoutesService) Patch(name string, tcproute *TcpRoute) *ProjectsLocationsTcpRoutesPatchCall {
 	c := &ProjectsLocationsTcpRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}

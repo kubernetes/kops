@@ -4464,7 +4464,8 @@ func (c *Cloud) UpdateLoadBalancer(ctx context.Context, clusterName string, serv
 
 	err = c.ensureLoadBalancerInstances(aws.StringValue(lb.LoadBalancerName), lb.Instances, instances)
 	if err != nil {
-		return nil
+		klog.Warningf("Error registering/deregistering instances with the load balancer: %q", err)
+		return err
 	}
 
 	err = c.updateInstanceSecurityGroupsForLoadBalancer(lb, instances, service.Annotations)
