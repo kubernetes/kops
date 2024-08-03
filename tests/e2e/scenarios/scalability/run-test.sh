@@ -101,6 +101,7 @@ create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=400")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 create_args+=("--set spec.kubeAPIServer.logLevel=2")
+create_args+=("--set spec.kubeAPIServer.featureGates=ServiceTrafficDistribution=false")
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
@@ -119,10 +120,10 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
-
 # Note that these arguments for kubetest2
 KUBETEST2_ARGS=()
 KUBETEST2_ARGS+=("-v=2")
+KUBETEST2_ARGS+=("--max-nodes-to-dump=${MAX_NODES_TO_DUMP:-5}")
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt")
