@@ -64,7 +64,7 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--node-size=t3a.medium,t3.medium,t2.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c4.large,c7a.large,r5a.large,r6a.large,m7a.large")
   create_args+=("--node-volume-size=20")
   create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
-  create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id}")
+  create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}")
 fi
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
