@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+  - hakman
+  - dims
+  - hakuna-matatah
+reviewers:
+  - hakman
+  - dims
+  - hakuna-matatah
