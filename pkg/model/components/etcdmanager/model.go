@@ -171,7 +171,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230925
+    image: us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-slim:f1ea649
     resources:
       requests:
         cpu: 100m
