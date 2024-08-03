@@ -24,7 +24,7 @@ spec:
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcdadm/etcd-manager-slim:v3.0.20230925
+    image: us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-slim:f1ea649
     name: etcd-manager
     resources:
       requests:
