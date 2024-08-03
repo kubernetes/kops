@@ -107,7 +107,7 @@ create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--set spec.kubeProxy.featureGates=ServiceTrafficDistribution=false")
-create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
+create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns=none")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
@@ -127,14 +127,13 @@ KUBETEST2_ARGS+=("-v=2")
 KUBETEST2_ARGS+=("--max-nodes-to-dump=${MAX_NODES_TO_DUMP:-5}")
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
-KUBETEST2_ARGS+=("--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt")
+KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   KUBETEST2_ARGS+=("--boskos-resource-type=scalability-scale-project")
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=pd-ssd")
-  KUBETEST2_ARGS+=("--max-nodes-to-dump=10")
 fi
 
 # More time for bigger clusters
