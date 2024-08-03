@@ -106,6 +106,7 @@ create_args+=("--set spec.kubeAPIServer.featureGates=ServiceTrafficDistribution=
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
+create_args+=("--set spec.kubeProxy.featureGates=ServiceTrafficDistribution=false")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-101}")
 # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
 create_args+=("--dns=none")
