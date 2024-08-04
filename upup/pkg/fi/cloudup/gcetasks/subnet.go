@@ -299,7 +299,7 @@ type terraformSubnetRange struct {
 	CIDR string `cty:"ip_cidr_range"`
 }
 
-func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		// Not terraform owned / managed

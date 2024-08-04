@@ -27,6 +27,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/util/pkg/reflectutils"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -136,7 +137,7 @@ func (c *Context[T]) RunTasks(options RunTasksOptions) error {
 // it is typically called after we have checked the existing state of the Task and determined that is different
 // from the desired state.
 func (c *Context[T]) Render(a, e, changes Task[T]) error {
-	typeContextPtr := reflect.TypeOf((*Context[T])(nil))
+	// typeContextPtr := reflect.TypeOf((*Context[T])(nil))
 	var lifecycle Lifecycle
 	if hl, ok := e.(HasLifecycle); ok {
 		lifecycle = hl.GetLifecycle()
@@ -192,60 +193,73 @@ func (c *Context[T]) Render(a, e, changes Task[T]) error {
 	}
 
 	v := reflect.ValueOf(e)
-	vType := v.Type()
+	// vType := v.Type()
 
-	targetType := reflect.ValueOf(c.Target).Type()
+	// targetType := reflect.ValueOf(c.Target).Type()
 
-	var renderer *reflect.Method
+	var renderer *reflect.Value
 	var rendererArgs []reflect.Value
+	rendererName := ""
 
-	for i := 0; i < vType.NumMethod(); i++ {
-		method := vType.Method(i)
-		if !strings.HasPrefix(method.Name, "Render") {
+	renderMethodNames := []string{"Render"}
+
+	targetTypeName := fmt.Sprintf("%T", c.Target)
+	switch targetTypeName {
+	case "Foo":
+
+	default:
+		panic(fmt.Sprintf("targetType %q is not recognized", targetTypeName))
+	}
+	for _, methodName := range renderMethodNames {
+		method := reflectutils.GetMethodByName(v, methodName)
+		if method.IsZero() {
 			continue
 		}
 		match := true
 
-		var args []reflect.Value
-		for j := 0; j < method.Type.NumIn(); j++ {
-			arg := method.Type.In(j)
-			if arg.ConvertibleTo(vType) {
-				continue
-			}
-			if arg.ConvertibleTo(typeContextPtr) {
-				args = append(args, reflect.ValueOf(c))
-				continue
-			}
-			if arg.ConvertibleTo(targetType) {
-				args = append(args, reflect.ValueOf(c.Target))
-				continue
-			}
-			match = false
-			break
-		}
+		// var args []reflect.Value
+		// for j := 0; j < method.Type.NumIn(); j++ {
+		// 	arg := method.Type.In(j)
+		// 	if arg.ConvertibleTo(vType) {
+		// 		continue
+		// 	}
+		// 	if arg.ConvertibleTo(typeContextPtr) {
+		// 		args = append(args, reflect.ValueOf(c))
+		// 		continue
+		// 	}
+		// 	if arg.ConvertibleTo(targetType) {
+		// 		args = append(args, reflect.ValueOf(c.Target))
+		// 		continue
+		// 	}
+		// 	match = false
+		// 	break
+		// }
 		if match {
 			if renderer != nil {
-				if method.Name == "Render" {
+				if methodName == "Render" {
 					continue
 				}
-				if renderer.Name != "Render" {
+				if rendererName != "Render" {
 					return fmt.Errorf("found multiple Render methods that could be involved on %T", e)
 				}
 			}
 			renderer = &method
-			rendererArgs = args
+			rendererName = methodName
+			// rendererArgs = args
 		}
 
 	}
 	if renderer == nil {
 		return fmt.Errorf("could not find Render method on type %T (target %T)", e, c.Target)
 	}
+
+	rendererArgs = append(rendererArgs, reflect.ValueOf(c))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(e))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(changes))
-	klog.V(11).Infof("Calling method %s on %T", renderer.Name, e)
-	m := v.MethodByName(renderer.Name)
-	rv := m.Call(rendererArgs)
+	klog.V(11).Infof("Calling method %s on %T", rendererName, e)
+	// m := v.MethodByName(renderer.Name)
+	rv := (*renderer).Call(rendererArgs)
 	var rvErr error
 	if !rv[0].IsNil() {
 		rvErr = rv[0].Interface().(error)
