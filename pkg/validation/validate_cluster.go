@@ -346,7 +346,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 				Status:   getNodeReadyStatus(node),
 			}
 
-			ready := isNodeReady(node)
+			ready := IsNodeReady(node)
 			if ready {
 				readyNodes = append(readyNodes, *node)
 			}

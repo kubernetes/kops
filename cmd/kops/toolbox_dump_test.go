@@ -64,6 +64,19 @@ func TestTruncateNodeList(t *testing.T) {
 			},
 		},
 		{
+			name: "truncate-with-failed-node",
+			input: []corev1.Node{
+				makeNode(),
+				makeNode(),
+				makeNode(),
+				makeFailedNode(),
+			},
+			max: 1,
+			expected: []corev1.Node{
+				makeFailedNode(),
+			},
+		},
+		{
 			name: "less than zero",
 			input: []corev1.Node{
 				makeNode(),
@@ -92,6 +105,14 @@ func TestTruncateNodeList(t *testing.T) {
 
 func makeControlPlaneNode() corev1.Node {
 	return corev1.Node{
+		Status: corev1.NodeStatus{
+			Conditions: []corev1.NodeCondition{
+				{
+					Type:   corev1.NodeReady,
+					Status: corev1.ConditionTrue,
+				},
+			},
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"node-role.kubernetes.io/control-plane": "",
@@ -102,6 +123,32 @@ func makeControlPlaneNode() corev1.Node {
 
 func makeNode() corev1.Node {
 	return corev1.Node{
+		Status: corev1.NodeStatus{
+			Conditions: []corev1.NodeCondition{
+				{
+					Type:   corev1.NodeReady,
+					Status: corev1.ConditionTrue,
+				},
+			},
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				"node-role.kubernetes.io/node": "",
+			},
+		},
+	}
+}
+
+func makeFailedNode() corev1.Node {
+	return corev1.Node{
+		Status: corev1.NodeStatus{
+			Conditions: []corev1.NodeCondition{
+				{
+					Type:   corev1.NodeReady,
+					Status: corev1.ConditionFalse,
+				},
+			},
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"node-role.kubernetes.io/node": "",

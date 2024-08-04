@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/pkg/dump"
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
+	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -286,9 +287,12 @@ func truncateNodeList(nodes *corev1.NodeList, max int) error {
 	if max < 0 {
 		return errors.New("--max-nodes must be greater than zero")
 	}
-	// Move control plane nodes to the start of the list and truncate the remainder
+	// Move control plane nodes or failed nodes to the start of the list and truncate the remainder
 	slices.SortFunc[[]corev1.Node](nodes.Items, func(a corev1.Node, e corev1.Node) int {
 		if role := util.GetNodeRole(&a); role == "control-plane" || role == "apiserver" {
+			return -1
+		}
+		if !validation.IsNodeReady(&a) {
 			return -1
 		}
 		return 1
