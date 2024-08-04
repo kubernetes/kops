@@ -26,6 +26,8 @@ if [[ -z "${CLUSTER_NAME:-}" ]]; then
 fi
 echo "CLUSTER_NAME=${CLUSTER_NAME}"
 
+# testing 1.2.3...
+
 if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
 fi
