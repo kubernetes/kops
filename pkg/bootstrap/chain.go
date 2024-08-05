@@ -44,6 +44,9 @@ func (v *ChainVerifier) VerifyToken(ctx context.Context, rawRequest *http.Reques
 		if err == ErrNotThisVerifier {
 			continue
 		}
+		if err == ErrAlreadyExists {
+			return nil, ErrAlreadyExists
+		}
 		klog.Infof("failed to verify token: %v", err)
 	}
 	return nil, fmt.Errorf("unable to verify token")
