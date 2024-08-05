@@ -699,6 +699,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		Authenticator: authenticator,
 		CAs:           []byte(bootConfig.ConfigServer.CACertificates),
 	}
+	defer client.Close()
 
 	var merr error
 	for _, server := range bootConfig.ConfigServer.Servers {
