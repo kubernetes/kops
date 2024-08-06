@@ -30,6 +30,7 @@ spec:
   clusterAutoscaler:
     awsUseStaticInstanceList: false
     balanceSimilarNodeGroups: false
+    emitPerNodegroupMetrics: false
     enabled: true
     expander: random
     ignoreDaemonSetsUtilization: false

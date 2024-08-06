@@ -935,6 +935,11 @@ func (in *ClusterAutoscalerConfig) DeepCopyInto(out *ClusterAutoscalerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EmitPerNodegroupMetrics != nil {
+		in, out := &in.EmitPerNodegroupMetrics, &out.EmitPerNodegroupMetrics
+		*out = new(bool)
+		**out = **in
+	}
 	if in.AWSUseStaticInstanceList != nil {
 		in, out := &in.AWSUseStaticInstanceList, &out.AWSUseStaticInstanceList
 		*out = new(bool)
