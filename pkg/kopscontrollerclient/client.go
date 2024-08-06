@@ -125,3 +125,9 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 
 	return json.NewDecoder(response.Body).Decode(resp)
 }
+
+func (b *Client) Close() {
+	if b.httpClient != nil {
+		b.httpClient.CloseIdleConnections()
+	}
+}
