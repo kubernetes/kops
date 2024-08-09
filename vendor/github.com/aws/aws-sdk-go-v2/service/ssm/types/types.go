@@ -2397,12 +2397,15 @@ type InstanceInformation struct {
 	// The IP address of the managed node.
 	IPAddress *string
 
-	// The Identity and Access Management (IAM) role assigned to the on-premises
-	// Systems Manager managed node. This call doesn't return the IAM role for Amazon
-	// Elastic Compute Cloud (Amazon EC2) instances. To retrieve the IAM role for an
-	// EC2 instance, use the Amazon EC2 DescribeInstances operation. For information,
-	// see [DescribeInstances]in the Amazon EC2 API Reference or [describe-instances] in the Amazon Web Services CLI Command
-	// Reference.
+	// The role assigned to an Amazon EC2 instance configured with a Systems Manager
+	// Quick Setup host management configuration or the role assigned to an on-premises
+	// managed node.
+	//
+	// This call doesn't return the IAM role for unmanaged Amazon EC2 instances
+	// (instances not configured for Systems Manager). To retrieve the role for an
+	// unmanaged instance, use the Amazon EC2 DescribeInstances operation. For
+	// information, see [DescribeInstances]in the Amazon EC2 API Reference or [describe-instances] in the Amazon Web Services
+	// CLI Command Reference.
 	//
 	// [DescribeInstances]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
 	// [describe-instances]: https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html
@@ -2725,7 +2728,7 @@ type InstanceProperty struct {
 	// The version of SSM Agent running on your managed node.
 	AgentVersion *string
 
-	// The CPU architecture of the node. For example, x86_64.
+	// The CPU architecture of the node. For example, x86_64 .
 	Architecture *string
 
 	// Status information about the aggregated associations.
@@ -3438,9 +3441,19 @@ type MaintenanceWindowRunCommandParameters struct {
 	// The parameters for the RUN_COMMAND task execution.
 	Parameters map[string][]string
 
-	// The Amazon Resource Name (ARN) of the Identity and Access Management (IAM)
-	// service role to use to publish Amazon Simple Notification Service (Amazon SNS)
-	// notifications for maintenance window Run Command tasks.
+	// The Amazon Resource Name (ARN) of the IAM service role for Amazon Web Services
+	// Systems Manager to assume when running a maintenance window task. If you do not
+	// specify a service role ARN, Systems Manager uses a service-linked role in your
+	// account. If no appropriate service-linked role for Systems Manager exists in
+	// your account, it is created when you run RegisterTaskWithMaintenanceWindow .
+	//
+	// However, for an improved security posture, we strongly recommend creating a
+	// custom policy and custom service role for running your maintenance window tasks.
+	// The policy can be crafted to provide only the permissions needed for your
+	// particular maintenance window tasks. For more information, see [Setting up maintenance windows]in the in the
+	// Amazon Web Services Systems Manager User Guide.
+	//
+	// [Setting up maintenance windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
 	ServiceRoleArn *string
 
 	// If this time is reached and the command hasn't already started running, it
@@ -3571,9 +3584,19 @@ type MaintenanceWindowTask struct {
 	// parallel.
 	Priority int32
 
-	// The Amazon Resource Name (ARN) of the Identity and Access Management (IAM)
-	// service role to use to publish Amazon Simple Notification Service (Amazon SNS)
-	// notifications for maintenance window Run Command tasks.
+	// The Amazon Resource Name (ARN) of the IAM service role for Amazon Web Services
+	// Systems Manager to assume when running a maintenance window task. If you do not
+	// specify a service role ARN, Systems Manager uses a service-linked role in your
+	// account. If no appropriate service-linked role for Systems Manager exists in
+	// your account, it is created when you run RegisterTaskWithMaintenanceWindow .
+	//
+	// However, for an improved security posture, we strongly recommend creating a
+	// custom policy and custom service role for running your maintenance window tasks.
+	// The policy can be crafted to provide only the permissions needed for your
+	// particular maintenance window tasks. For more information, see [Setting up maintenance windows]in the in the
+	// Amazon Web Services Systems Manager User Guide.
+	//
+	// [Setting up maintenance windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
 	ServiceRoleArn *string
 
 	// The targets (either managed nodes or tags). Managed nodes are specified using
@@ -4539,9 +4562,9 @@ type PatchBaselineIdentity struct {
 	// The name of the patch baseline.
 	BaselineName *string
 
-	// Whether this is the default baseline. Amazon Web Services Systems Manager
-	// supports creating multiple default patch baselines. For example, you can create
-	// a default patch baseline for each operating system.
+	// Indicates whether this is the default baseline. Amazon Web Services Systems
+	// Manager supports creating multiple default patch baselines. For example, you can
+	// create a default patch baseline for each operating system.
 	DefaultBaseline bool
 
 	// Defines the operating system the patch baseline applies to. The default value
@@ -4694,15 +4717,23 @@ type PatchRule struct {
 
 	// The number of days after the release date of each patch matched by the rule
 	// that the patch is marked as approved in the patch baseline. For example, a value
-	// of 7 means that patches are approved seven days after they are released. Not
-	// supported on Debian Server or Ubuntu Server.
+	// of 7 means that patches are approved seven days after they are released.
+	//
+	// This parameter is marked as not required, but your request must include a value
+	// for either ApproveAfterDays or ApproveUntilDate .
+	//
+	// Not supported for Debian Server or Ubuntu Server.
 	ApproveAfterDays *int32
 
 	// The cutoff date for auto approval of released patches. Any patches released on
-	// or before this date are installed automatically. Not supported on Debian Server
-	// or Ubuntu Server.
+	// or before this date are installed automatically.
 	//
 	// Enter dates in the format YYYY-MM-DD . For example, 2021-12-31 .
+	//
+	// This parameter is marked as not required, but your request must include a value
+	// for either ApproveUntilDate or ApproveAfterDays .
+	//
+	// Not supported for Debian Server or Ubuntu Server.
 	ApproveUntilDate *string
 
 	// A compliance severity level for all approved patches in a patch baseline.

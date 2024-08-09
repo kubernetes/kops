@@ -1,5 +1,10 @@
 # Change Log
 
+## [v1.120.0] - 2024-08-08
+
+- #708 - @markusthoemmes - APPS-9201 Add `UpdateAllSourceVersions` parameter to update app calls
+- #706 - @andrewsomething - database: Add Size to DatabaseReplica struct
+
 ## [v1.119.0] - 2024-07-24
 
 - #704 - @ElanHasson - APPS-9133 - Add support for OPENSEARCH as a database engine option
