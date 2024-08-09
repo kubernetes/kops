@@ -204,11 +204,12 @@ metadata:
 ```
 
 
-|| Label | Description                                                                            | Default |
-|---|----------------------------------------------------------------------------------------|---|
-| `spotinst.io/strategy-cluster-spread-nodes-by` | Specify how Ocean will spread the nodes across markets by this value [vcpu,count].     | `count` |
+| Label                                                           | Description                                                                            | Default |
+|-----------------------------------------------------------------|----------------------------------------------------------------------------------------|---|
+| `spotinst.io/strategy-cluster-spread-nodes-by`                  | Specify how Ocean will spread the nodes across markets by this value [vcpu,count].     | `count` |
 | `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.      | `balanced` |
-| `spotinst.io/resource-tag-specification-volumes` | Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags. | `false` |
+| `spotinst.io/resource-tag-specification-volumes`                | Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags. | `false` |
+
 ## Documentation
 
 If you're new to [Spot](https://spot.io/) and want to get started, please checkout our [Getting Started](https://docs.spot.io/connect-your-cloud-provider/) guide, available on the [Spot Documentation](https://docs.spot.io/) website.
