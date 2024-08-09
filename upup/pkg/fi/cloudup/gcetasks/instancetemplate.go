@@ -441,8 +441,8 @@ func matches(l, r *compute.InstanceTemplate) bool {
 		if klog.V(10).Enabled() {
 			ls := fi.DebugAsJsonStringIndent(normalizedL)
 			rs := fi.DebugAsJsonStringIndent(normalizedR)
-			klog.V(10).Infof("Not equal")
-			klog.V(10).Infof(diff.FormatDiff(ls, rs))
+			klog.V(10).Info("Not equal")
+			klog.V(10).Info(diff.FormatDiff(ls, rs))
 		}
 		return false
 	}

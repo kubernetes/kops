@@ -165,7 +165,7 @@ func CreateValidScalewayProfile() (*scw.Profile, error) {
 		} else {
 			errMsg += " in a Scaleway profile or as an environment variable"
 		}
-		return nil, fmt.Errorf(errMsg)
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
 	return &profile, nil
