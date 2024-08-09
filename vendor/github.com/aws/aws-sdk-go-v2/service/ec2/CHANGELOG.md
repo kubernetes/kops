@@ -1,3 +1,7 @@
+# v1.174.0 (2024-08-08)
+
+* **Feature**: Launch of private IPv6 addressing for VPCs and Subnets. VPC IPAM supports the planning and monitoring of private IPv6 usage.
+
 # v1.173.0 (2024-07-25)
 
 * **Feature**: EC2 Fleet now supports using custom identifiers to reference Amazon Machine Images (AMI) in launch requests that are configured to choose from a diversified list of instance types.

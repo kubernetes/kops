@@ -3799,6 +3799,214 @@ func (c *BackendBucketsListCall) Pages(ctx context.Context, f func(*BackendBucke
 	}
 }
 
+type BackendBucketsListUsableCall struct {
+	s            *Service
+	project      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListUsable: Retrieves a list of all usable backend buckets in the specified
+// project.
+//
+// - project: Project ID for this request.
+func (r *BackendBucketsService) ListUsable(project string) *BackendBucketsListUsableCall {
+	c := &BackendBucketsListUsableCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. Most Compute resources support two
+// types of filter expressions: expressions that support regular expressions
+// and expressions that follow API improvement proposal AIP-160. These two
+// types of filter expressions cannot be mixed in one request. If you want to
+// use AIP-160, your expression must specify the field name, an operator, and
+// the value that you want to use for filtering. The value must be a string, a
+// number, or a boolean. The operator must be either `=`, `!=`, `>`, `<`, `<=`,
+// `>=` or `:`. For example, if you are filtering Compute Engine instances, you
+// can exclude instances named `example-instance` by specifying `name !=
+// example-instance`. The `:*` comparison can be used to test whether a key has
+// been defined. For example, to find all objects with `owner` label use: ```
+// labels.owner:* ``` You can also filter nested fields. For example, you could
+// specify `scheduling.automaticRestart = false` to include instances only if
+// they are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels. To filter on multiple
+// expressions, provide each separate expression within parentheses. For
+// example: ``` (scheduling.automaticRestart = true) (cpuPlatform = "Intel
+// Skylake") ``` By default, each expression is an `AND` expression. However,
+// you can include `AND` and `OR` expressions explicitly. For example: ```
+// (cpuPlatform = "Intel Skylake") OR (cpuPlatform = "Intel Broadwell") AND
+// (scheduling.automaticRestart = true) ``` If you want to use a regular
+// expression, use the `eq` (equal) or `ne` (not equal) operator against a
+// single un-parenthesized expression with or without quotes or against
+// multiple parenthesized expressions. Examples: `fieldname eq unquoted
+// literal` `fieldname eq 'single quoted literal'` `fieldname eq "double quoted
+// literal" `(fieldname1 eq literal) (fieldname2 ne "literal")` The literal
+// value is interpreted as a regular expression using Google RE2 library
+// syntax. The literal value must match the entire field. For example, to
+// filter for instances that do not end with name "instance", you would use
+// `name ne .*instance`. You cannot combine constraints on multiple fields
+// using regular expressions.
+func (c *BackendBucketsListUsableCall) Filter(filter string) *BackendBucketsListUsableCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum number of
+// results per page that should be returned. If the number of available results
+// is larger than `maxResults`, Compute Engine returns a `nextPageToken` that
+// can be used to get the next page of results in subsequent list requests.
+// Acceptable values are `0` to `500`, inclusive. (Default: `500`)
+func (c *BackendBucketsListUsableCall) MaxResults(maxResults int64) *BackendBucketsListUsableCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by a
+// certain order. By default, results are returned in alphanumerical order
+// based on the resource name. You can also sort results in descending order
+// based on the creation timestamp using `orderBy="creationTimestamp desc".
+// This sorts results based on the `creationTimestamp` field in reverse
+// chronological order (newest result first). Use this to sort resources like
+// operations so that the newest operation is returned first. Currently, only
+// sorting by `name` or `creationTimestamp desc` is supported.
+func (c *BackendBucketsListUsableCall) OrderBy(orderBy string) *BackendBucketsListUsableCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page token to
+// use. Set `pageToken` to the `nextPageToken` returned by a previous list
+// request to get the next page of results.
+func (c *BackendBucketsListUsableCall) PageToken(pageToken string) *BackendBucketsListUsableCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ReturnPartialSuccess sets the optional parameter "returnPartialSuccess":
+// Opt-in for partial success behavior which provides partial results in case
+// of failure. The default value is false. For example, when partial success
+// behavior is enabled, aggregatedList for a single zone scope either returns
+// all resources in the zone or no resources, with an error code.
+func (c *BackendBucketsListUsableCall) ReturnPartialSuccess(returnPartialSuccess bool) *BackendBucketsListUsableCall {
+	c.urlParams_.Set("returnPartialSuccess", fmt.Sprint(returnPartialSuccess))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *BackendBucketsListUsableCall) Fields(s ...googleapi.Field) *BackendBucketsListUsableCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *BackendBucketsListUsableCall) IfNoneMatch(entityTag string) *BackendBucketsListUsableCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *BackendBucketsListUsableCall) Context(ctx context.Context) *BackendBucketsListUsableCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *BackendBucketsListUsableCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *BackendBucketsListUsableCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/global/backendBuckets/listUsable")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.backendBuckets.listUsable" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *BackendBucketListUsable.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *BackendBucketsListUsableCall) Do(opts ...googleapi.CallOption) (*BackendBucketListUsable, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &BackendBucketListUsable{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *BackendBucketsListUsableCall) Pages(ctx context.Context, f func(*BackendBucketListUsable) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 type BackendBucketsPatchCall struct {
 	s             *Service
 	project       string
@@ -19613,22 +19821,23 @@ func (c *GlobalOperationsAggregatedListCall) Pages(ctx context.Context, f func(*
 }
 
 type GlobalOperationsDeleteCall struct {
-	s          *Service
-	project    string
-	operation  string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
+	s           *Service
+	project     string
+	operationid string
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
 }
 
 // Delete: Deletes the specified Operations resource.
 //
-// - operation: Name of the Operations resource to delete.
-// - project: Project ID for this request.
-func (r *GlobalOperationsService) Delete(project string, operation string) *GlobalOperationsDeleteCall {
+//   - operation: Name of the Operations resource to delete, or its unique
+//     numeric identifier.
+//   - project: Project ID for this request.
+func (r *GlobalOperationsService) Delete(project string, operationid string) *GlobalOperationsDeleteCall {
 	c := &GlobalOperationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -19669,7 +19878,7 @@ func (c *GlobalOperationsDeleteCall) doRequest(alt string) (*http.Response, erro
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project":   c.project,
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -19691,7 +19900,7 @@ func (c *GlobalOperationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 type GlobalOperationsGetCall struct {
 	s            *Service
 	project      string
-	operation    string
+	operationid  string
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
@@ -19700,12 +19909,13 @@ type GlobalOperationsGetCall struct {
 
 // Get: Retrieves the specified Operations resource.
 //
-// - operation: Name of the Operations resource to return.
-// - project: Project ID for this request.
-func (r *GlobalOperationsService) Get(project string, operation string) *GlobalOperationsGetCall {
+//   - operation: Name of the Operations resource to return, or its unique
+//     numeric identifier.
+//   - project: Project ID for this request.
+func (r *GlobalOperationsService) Get(project string, operationid string) *GlobalOperationsGetCall {
 	c := &GlobalOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -19757,7 +19967,7 @@ func (c *GlobalOperationsGetCall) doRequest(alt string) (*http.Response, error) 
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project":   c.project,
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -20007,12 +20217,12 @@ func (c *GlobalOperationsListCall) Pages(ctx context.Context, f func(*OperationL
 }
 
 type GlobalOperationsWaitCall struct {
-	s          *Service
-	project    string
-	operation  string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
+	s           *Service
+	project     string
+	operationid string
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
 }
 
 // Wait: Waits for the specified Operation resource to return as `DONE` or for
@@ -20027,12 +20237,13 @@ type GlobalOperationsWaitCall struct {
 // actually done when the method returns. Be prepared to retry if the operation
 // is not `DONE`.
 //
-// - operation: Name of the Operations resource to return.
-// - project: Project ID for this request.
-func (r *GlobalOperationsService) Wait(project string, operation string) *GlobalOperationsWaitCall {
+//   - operation: Name of the Operations resource to return, or its unique
+//     numeric identifier.
+//   - project: Project ID for this request.
+func (r *GlobalOperationsService) Wait(project string, operationid string) *GlobalOperationsWaitCall {
 	c := &GlobalOperationsWaitCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -20073,7 +20284,7 @@ func (c *GlobalOperationsWaitCall) doRequest(alt string) (*http.Response, error)
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project":   c.project,
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -20116,19 +20327,20 @@ func (c *GlobalOperationsWaitCall) Do(opts ...googleapi.CallOption) (*Operation,
 }
 
 type GlobalOrganizationOperationsDeleteCall struct {
-	s          *Service
-	operation  string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
+	s           *Service
+	operationid string
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
 }
 
 // Delete: Deletes the specified Operations resource.
 //
-// - operation: Name of the Operations resource to delete.
-func (r *GlobalOrganizationOperationsService) Delete(operation string) *GlobalOrganizationOperationsDeleteCall {
+//   - operation: Name of the Operations resource to delete, or its unique
+//     numeric identifier.
+func (r *GlobalOrganizationOperationsService) Delete(operationid string) *GlobalOrganizationOperationsDeleteCall {
 	c := &GlobalOrganizationOperationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -20174,7 +20386,7 @@ func (c *GlobalOrganizationOperationsDeleteCall) doRequest(alt string) (*http.Re
 	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -20195,7 +20407,7 @@ func (c *GlobalOrganizationOperationsDeleteCall) Do(opts ...googleapi.CallOption
 
 type GlobalOrganizationOperationsGetCall struct {
 	s            *Service
-	operation    string
+	operationid  string
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
@@ -20205,10 +20417,11 @@ type GlobalOrganizationOperationsGetCall struct {
 // Get: Retrieves the specified Operations resource. Gets a list of operations
 // by making a `list()` request.
 //
-// - operation: Name of the Operations resource to return.
-func (r *GlobalOrganizationOperationsService) Get(operation string) *GlobalOrganizationOperationsGetCall {
+//   - operation: Name of the Operations resource to return, or its unique
+//     numeric identifier.
+func (r *GlobalOrganizationOperationsService) Get(operationid string) *GlobalOrganizationOperationsGetCall {
 	c := &GlobalOrganizationOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -20265,7 +20478,7 @@ func (c *GlobalOrganizationOperationsGetCall) doRequest(alt string) (*http.Respo
 	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -40577,7 +40790,7 @@ type InstantSnapshotGroupsGetCall struct {
 // Get: returns the specified InstantSnapshotGroup resource in the specified
 // zone.
 //
-// - instantSnapshotGroup: Name of the instantSnapshotGroup resource to return.
+// - instantSnapshotGroup: Name of the InstantSnapshotGroup resource to return.
 // - project: Project ID for this request.
 // - zone: The name of the zone for this request.
 func (r *InstantSnapshotGroupsService) Get(project string, zone string, instantSnapshotGroup string) *InstantSnapshotGroupsGetCall {

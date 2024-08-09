@@ -8290,6 +8290,10 @@ type Ipam struct {
 	// The description for the IPAM.
 	Description *string
 
+	// Enable this option to use your own GUA ranges as private IPv6 addresses. This
+	// option is disabled by default.
+	EnablePrivateGua *bool
+
 	// The Amazon Resource Name (ARN) of the IPAM.
 	IpamArn *string
 
@@ -8520,6 +8524,11 @@ type IpamDiscoveredResourceCidr struct {
 
 	// The Availability Zone ID.
 	AvailabilityZoneId *string
+
+	// The source that allocated the IP address space. byoip or amazon indicates
+	// public IP address space allocated by Amazon or space that you have allocated
+	// with Bring your own IP (BYOIP). none indicates private space.
+	IpSource IpamResourceCidrIpSource
 
 	// The percentage of IP address space in use. To convert the decimal to a
 	// percentage, multiply the decimal by 100. Note the following:
@@ -17071,6 +17080,16 @@ type SubnetIpv6CidrBlockAssociation struct {
 	// The ID of the association.
 	AssociationId *string
 
+	// The source that allocated the IP address space. byoip or amazon indicates
+	// public IP address space allocated by Amazon or space that you have allocated
+	// with Bring your own IP (BYOIP). none indicates private space.
+	IpSource IpSource
+
+	// Public IPv6 addresses are those advertised on the internet from Amazon Web
+	// Services. Private IP addresses are not and cannot be advertised on the internet
+	// from Amazon Web Services.
+	Ipv6AddressAttribute Ipv6AddressAttribute
+
 	// The IPv6 CIDR block.
 	Ipv6CidrBlock *string
 
@@ -19789,6 +19808,16 @@ type VpcIpv6CidrBlockAssociation struct {
 
 	// The association ID for the IPv6 CIDR block.
 	AssociationId *string
+
+	// The source that allocated the IP address space. byoip or amazon indicates
+	// public IP address space allocated by Amazon or space that you have allocated
+	// with Bring your own IP (BYOIP). none indicates private space.
+	IpSource IpSource
+
+	// Public IPv6 addresses are those advertised on the internet from Amazon Web
+	// Services. Private IP addresses are not and cannot be advertised on the internet
+	// from Amazon Web Services.
+	Ipv6AddressAttribute Ipv6AddressAttribute
 
 	// The IPv6 CIDR block.
 	Ipv6CidrBlock *string

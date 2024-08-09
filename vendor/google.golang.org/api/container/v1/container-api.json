@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240708",
+  "revision": "20240722",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -4109,7 +4109,7 @@
       "id": "EnterpriseConfig",
       "properties": {
         "clusterTier": {
-          "description": "Output only. cluster_tier specifies the premium tier of the cluster.",
+          "description": "Output only. cluster_tier indicates the effective tier of the cluster.",
           "enum": [
             "CLUSTER_TIER_UNSPECIFIED",
             "STANDARD",

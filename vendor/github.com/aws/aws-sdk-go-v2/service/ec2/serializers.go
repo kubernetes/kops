@@ -52511,6 +52511,11 @@ func awsEc2query_serializeOpDocumentCreateIpamInput(v *CreateIpamInput, value qu
 		objectKey.Boolean(*v.DryRun)
 	}
 
+	if v.EnablePrivateGua != nil {
+		objectKey := object.Key("EnablePrivateGua")
+		objectKey.Boolean(*v.EnablePrivateGua)
+	}
+
 	if v.OperatingRegions != nil {
 		objectKey := object.FlatKey("OperatingRegion")
 		if err := awsEc2query_serializeDocumentAddIpamOperatingRegionSet(v.OperatingRegions, objectKey); err != nil {
@@ -65956,6 +65961,11 @@ func awsEc2query_serializeOpDocumentModifyIpamInput(v *ModifyIpamInput, value qu
 	if v.DryRun != nil {
 		objectKey := object.Key("DryRun")
 		objectKey.Boolean(*v.DryRun)
+	}
+
+	if v.EnablePrivateGua != nil {
+		objectKey := object.Key("EnablePrivateGua")
+		objectKey.Boolean(*v.EnablePrivateGua)
 	}
 
 	if v.IpamId != nil {

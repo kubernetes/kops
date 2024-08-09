@@ -2846,9 +2846,9 @@ type AdvancedMachineFeatures struct {
 	// simultaneous multithreading (SMT) set this to 1. If unset, the maximum
 	// number of threads supported per core by the underlying processor is assumed.
 	ThreadsPerCore int64 `json:"threadsPerCore,omitempty"`
-	// TurboMode: Turbo mode to use for the instance. Supported modes include: *
-	// ALL_CORE_MAX Using empty string or not setting this field will use the
-	// default turbo mode.
+	// TurboMode: Turbo frequency mode to use for the instance. Supported modes
+	// include: * ALL_CORE_MAX Using empty string or not setting this field will
+	// use the platform-specific default turbo mode.
 	TurboMode string `json:"turboMode,omitempty"`
 	// VisibleCoreCount: The number of physical cores to expose to an instance.
 	// Multiply by the number of threads per core to compute the total number of
@@ -4880,6 +4880,8 @@ type BackendBucket struct {
 	// SelfLinkWithId: [Output Only] Server-defined URL for this resource with the
 	// resource id.
 	SelfLinkWithId string `json:"selfLinkWithId,omitempty"`
+	// UsedBy: [Output Only] List of resources referencing that backend bucket.
+	UsedBy []*BackendBucketUsedBy `json:"usedBy,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
@@ -5269,6 +5271,181 @@ func (s BackendBucketListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+type BackendBucketListUsable struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the server.
+	Id string `json:"id,omitempty"`
+	// Items: A list of BackendBucket resources.
+	Items []*BackendBucket `json:"items,omitempty"`
+	// Kind: [Output Only] Type of resource. Always compute#usableBackendBucketList
+	// for lists of usable backend buckets.
+	Kind string `json:"kind,omitempty"`
+	// NextPageToken: [Output Only] This token allows you to get the next page of
+	// results for list requests. If the number of results is larger than
+	// maxResults, use the nextPageToken as a value for the query parameter
+	// pageToken in the next list request. Subsequent list requests will have their
+	// own nextPageToken to continue paging through the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+	// SelfLink: [Output Only] Server-defined URL for this resource.
+	SelfLink string `json:"selfLink,omitempty"`
+	// Warning: [Output Only] Informational warning message.
+	Warning *BackendBucketListUsableWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "Id") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Id") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendBucketListUsable) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendBucketListUsable
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// BackendBucketListUsableWarning: [Output Only] Informational warning message.
+type BackendBucketListUsableWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example, Compute
+	// Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED" - Warning about failed cleanup of transient changes made
+	// by a failed operation.
+	//   "DEPRECATED_RESOURCE_USED" - A link to a deprecated resource was created.
+	//   "DEPRECATED_TYPE_USED" - When deploying and at least one of the resources
+	// has a type marked as deprecated
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE" - The user created a boot disk that is
+	// larger than image size.
+	//   "EXPERIMENTAL_TYPE_USED" - When deploying and at least one of the
+	// resources has a type marked as experimental
+	//   "EXTERNAL_API_WARNING" - Warning that is present in an external api call
+	//   "FIELD_VALUE_OVERRIDEN" - Warning that value of a field has been
+	// overridden. Deprecated unused field.
+	//   "INJECTED_KERNELS_DEPRECATED" - The operation involved use of an injected
+	// kernel, which is deprecated.
+	//   "INVALID_HEALTH_CHECK_FOR_DYNAMIC_WIEGHTED_LB" - A WEIGHTED_MAGLEV backend
+	// service is associated with a health check that is not of type
+	// HTTP/HTTPS/HTTP2.
+	//   "LARGE_DEPLOYMENT_WARNING" - When deploying a deployment with a
+	// exceedingly large number of resources
+	//   "LIST_OVERHEAD_QUOTA_EXCEED" - Resource can't be retrieved due to list
+	// overhead quota exceed which captures the amount of resources filtered out by
+	// user-defined list filter.
+	//   "MISSING_TYPE_DEPENDENCY" - A resource depends on a missing type
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED" - The route's nextHopIp address is not
+	// assigned to an instance on the network.
+	//   "NEXT_HOP_CANNOT_IP_FORWARD" - The route's next hop instance cannot ip
+	// forward.
+	//   "NEXT_HOP_INSTANCE_HAS_NO_IPV6_INTERFACE" - The route's nextHopInstance
+	// URL refers to an instance that does not have an ipv6 interface on the same
+	// network as the route.
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND" - The route's nextHopInstance URL refers to
+	// an instance that does not exist.
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK" - The route's nextHopInstance URL
+	// refers to an instance that is not on the same network as the route.
+	//   "NEXT_HOP_NOT_RUNNING" - The route's next hop instance does not have a
+	// status of RUNNING.
+	//   "NOT_CRITICAL_ERROR" - Error which is not critical. We decided to continue
+	// the process despite the mentioned error.
+	//   "NO_RESULTS_ON_PAGE" - No results are present on a particular list page.
+	//   "PARTIAL_SUCCESS" - Success is reported, but some results may be missing
+	// due to errors
+	//   "REQUIRED_TOS_AGREEMENT" - The user attempted to use a resource that
+	// requires a TOS they have not accepted.
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING" - Warning that a resource is
+	// in use.
+	//   "RESOURCE_NOT_DELETED" - One or more of the resources set to auto-delete
+	// could not be deleted because they were in use.
+	//   "SCHEMA_VALIDATION_IGNORED" - When a resource schema validation is
+	// ignored.
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE" - Instance template used in instance
+	// group manager is valid as such, but its application does not make a lot of
+	// sense, because it allows only single instance in instance group.
+	//   "UNDECLARED_PROPERTIES" - When undeclared properties in the schema are
+	// present
+	//   "UNREACHABLE" - A given scope cannot be reached.
+	Code string `json:"code,omitempty"`
+	// Data: [Output Only] Metadata about this warning in key: value format. For
+	// example: "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*BackendBucketListUsableWarningData `json:"data,omitempty"`
+	// Message: [Output Only] A human-readable description of the warning code.
+	Message string `json:"message,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Code") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Code") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendBucketListUsableWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendBucketListUsableWarning
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+type BackendBucketListUsableWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning being
+	// returned. For example, for warnings where there are no results in a list
+	// request for a particular zone, this key might be scope and the key value
+	// might be the zone name. Other examples might be a key indicating a
+	// deprecated resource and a suggested replacement, or a warning about invalid
+	// network settings (for example, if an instance attempts to perform IP
+	// forwarding but is not enabled for IP forwarding).
+	Key string `json:"key,omitempty"`
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Key") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Key") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendBucketListUsableWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendBucketListUsableWarningData
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+type BackendBucketUsedBy struct {
+	// Reference: [Output Only] Server-defined URL for UrlMaps referencing that
+	// BackendBucket.
+	Reference string `json:"reference,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Reference") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Reference") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendBucketUsedBy) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendBucketUsedBy
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // BackendCustomMetric: Custom Metrics are used for CUSTOM_METRICS
 // balancing_mode and WEIGHTED_ROUND_ROBIN BackendService locality_lb_policy.
 type BackendCustomMetric struct {
@@ -5535,11 +5712,13 @@ type BackendService struct {
 	// - A regional backend service with the service_protocol set to HTTP, HTTPS,
 	// or HTTP2, and load_balancing_scheme set to INTERNAL_MANAGED. - A global
 	// backend service with the load_balancing_scheme set to INTERNAL_SELF_MANAGED,
-	// INTERNAL_MANAGED, or EXTERNAL_MANAGED. If sessionAffinity is not NONE, and
-	// this field is not set to MAGLEV or RING_HASH, session affinity settings will
-	// not take effect. Only ROUND_ROBIN and RING_HASH are supported when the
-	// backend service is referenced by a URL map that is bound to target gRPC
-	// proxy that has validateForProxyless field set to true.
+	// INTERNAL_MANAGED, or EXTERNAL_MANAGED. If sessionAffinity is not
+	// configured—that is, if session affinity remains at the default value of
+	// NONE—then the default value for localityLbPolicy is ROUND_ROBIN. If
+	// session affinity is set to a value other than NONE, then the default value
+	// for localityLbPolicy is MAGLEV. Only ROUND_ROBIN and RING_HASH are supported
+	// when the backend service is referenced by a URL map that is bound to target
+	// gRPC proxy that has validateForProxyless field set to true.
 	//
 	// Possible values:
 	//   "INVALID_LB_POLICY"
@@ -5741,6 +5920,9 @@ type BackendService struct {
 	// by a URL map that is bound to target gRPC proxy that has
 	// validateForProxyless field set to true. Instead, use maxStreamDuration.
 	TimeoutSec int64 `json:"timeoutSec,omitempty"`
+	// TlsSettings: Configuration for Backend Authenticated TLS and mTLS. May only
+	// be specified when the backend protocol is SSL, HTTPS or HTTP2.
+	TlsSettings *BackendServiceTlsSettings `json:"tlsSettings,omitempty"`
 	// UsedBy: [Output Only] List of resources referencing given backend service.
 	UsedBy []*BackendServiceUsedBy `json:"usedBy,omitempty"`
 	// VpcNetworkScope: The network scope of the backends that can be added to the
@@ -7072,6 +7254,75 @@ type BackendServiceReference struct {
 
 func (s BackendServiceReference) MarshalJSON() ([]byte, error) {
 	type NoMethod BackendServiceReference
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+type BackendServiceTlsSettings struct {
+	// AuthenticationConfig: Reference to the BackendAuthenticationConfig resource
+	// from the networksecurity.googleapis.com namespace. Can be used in
+	// authenticating TLS connections to the backend, as specified by the
+	// authenticationMode field. Can only be specified if authenticationMode is not
+	// NONE.
+	AuthenticationConfig string `json:"authenticationConfig,omitempty"`
+	// Sni: Server Name Indication - see RFC3546 section 3.1. If set, the load
+	// balancer sends this string as the SNI hostname in the TLS connection to the
+	// backend, and requires that this string match a Subject Alternative Name
+	// (SAN) in the backend's server certificate. With a Regional Internet NEG
+	// backend, if the SNI is specified here, the load balancer uses it regardless
+	// of whether the Regional Internet NEG is specified with FQDN or IP address
+	// and port. When both sni and subjectAltNames[] are specified, the load
+	// balancer matches the backend certificate's SAN only to subjectAltNames[].
+	Sni string `json:"sni,omitempty"`
+	// SubjectAltNames: A list of Subject Alternative Names (SANs) that the Load
+	// Balancer verifies during a TLS handshake with the backend. When the server
+	// presents its X.509 certificate to the Load Balancer, the Load Balancer
+	// inspects the certificate's SAN field, and requires that at least one SAN
+	// match one of the subjectAltNames in the list. This field is limited to 5
+	// entries. When both sni and subjectAltNames[] are specified, the load
+	// balancer matches the backend certificate's SAN only to subjectAltNames[].
+	SubjectAltNames []*BackendServiceTlsSettingsSubjectAltName `json:"subjectAltNames,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "AuthenticationConfig") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "AuthenticationConfig") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendServiceTlsSettings) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendServiceTlsSettings
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// BackendServiceTlsSettingsSubjectAltName: A Subject Alternative Name that the
+// load balancer matches against the SAN field in the TLS certificate provided
+// by the backend, specified as either a DNS name or a URI, in accordance with
+// RFC 5280 4.2.1.6
+type BackendServiceTlsSettingsSubjectAltName struct {
+	// DnsName: The SAN specified as a DNS Name.
+	DnsName string `json:"dnsName,omitempty"`
+	// UniformResourceIdentifier: The SAN specified as a URI.
+	UniformResourceIdentifier string `json:"uniformResourceIdentifier,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "DnsName") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DnsName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BackendServiceTlsSettingsSubjectAltName) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendServiceTlsSettingsSubjectAltName
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -18939,7 +19190,7 @@ type InstanceGroupManager struct {
 	// more hash symbols. The hash symbols indicate the number of digits. For
 	// example, a base instance name of "vm-###" results in "vm-001" as a VM name.
 	// @pattern a-z
-	// (([-a-z0-9]{0,57})|([-a-z0-9]{0,52}-#{1,10}(\\[[0-9]{1,10}\\])?))
+	// (([-a-z0-9]{0,57})|([-a-z0-9]{0,51}-#{1,10}(\\[[0-9]{1,10}\\])?))
 	BaseInstanceName string `json:"baseInstanceName,omitempty"`
 	// CreationTimestamp: [Output Only] The creation timestamp for this managed
 	// instance group in RFC3339 text format.
@@ -19824,6 +20075,9 @@ type InstanceGroupManagerResizeRequest struct {
 	// capacity. When unset, the request starts provisioning immediately, or fails
 	// if immediate provisioning is not possible.
 	QueuingPolicy *QueuingPolicy `json:"queuingPolicy,omitempty"`
+	// Region: [Output Only] The URL of a region where the resize request is
+	// located. Populated only for regional resize requests.
+	Region string `json:"region,omitempty"`
 	// RequestedRunDuration: Requested run duration for instances that will be
 	// created by this request. At the end of the run duration instance will be
 	// deleted.
@@ -23721,6 +23975,16 @@ type InstantSnapshot struct {
 	// InstantSnapshot was taken from the current or a previous instance of a given
 	// disk name.
 	SourceDiskId string `json:"sourceDiskId,omitempty"`
+	// SourceInstantSnapshotGroup: [Output Only] URL of the source instant snapshot
+	// this instant snapshot is part of. Note that the source instant snapshot
+	// group must be in the same zone/region as the instant snapshot to be created.
+	// This can be a full or valid partial URL.
+	SourceInstantSnapshotGroup string `json:"sourceInstantSnapshotGroup,omitempty"`
+	// SourceInstantSnapshotGroupId: [Output Only] The ID value of the source
+	// instant snapshot group this InstantSnapshot is part of. This value may be
+	// used to determine whether the InstantSnapshot was created as part of an
+	// InstantSnapshotGroup creation.
+	SourceInstantSnapshotGroupId string `json:"sourceInstantSnapshotGroupId,omitempty"`
 	// Status: [Output Only] The status of the instantSnapshot. This can be
 	// CREATING, DELETING, FAILED, or READY.
 	//
@@ -23914,6 +24178,9 @@ func (s InstantSnapshotAggregatedListWarningData) MarshalJSON() ([]byte, error) 
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// InstantSnapshotGroup: Represents an InstantSnapshotGroup resource. An
+// instant snapshot group is a set of instant snapshots that represents a point
+// in time state of a consistency group.
 type InstantSnapshotGroup struct {
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text format.
 	CreationTimestamp string `json:"creationTimestamp,omitempty"`
@@ -23943,7 +24210,8 @@ type InstantSnapshotGroup struct {
 	SelfLink string `json:"selfLink,omitempty"`
 	// SelfLinkWithId: [Output Only] Server-defined URL for this resource's
 	// resource id.
-	SelfLinkWithId string `json:"selfLinkWithId,omitempty"`
+	SelfLinkWithId         string `json:"selfLinkWithId,omitempty"`
+	SourceConsistencyGroup string `json:"sourceConsistencyGroup,omitempty"`
 	// Status: [Output Only]
 	//
 	// Possible values:
@@ -46304,6 +46572,10 @@ type RouterNat struct {
 	// Name: Unique name of this Nat service. The name must be 1-63 characters long
 	// and comply with RFC1035.
 	Name string `json:"name,omitempty"`
+	// Nat64subnetworks: List of Subnetwork resources whose traffic should be
+	// translated by NAT64 Gateway. It is used only when LIST_OF_IPV6_SUBNETWORKS
+	// is selected for the SubnetworkIpRangeToNat64Option above.
+	Nat64subnetworks []*RouterNatSubnetworkToNat64 `json:"nat64subnetworks,omitempty"`
 	// NatIpAllocateOption: Specify the NatIpAllocateOption, which can take one of
 	// the following values: - MANUAL_ONLY: Uses only Nat IP addresses provided by
 	// customers. When there are not enough specified Nat IPs, the Nat service
@@ -46341,6 +46613,22 @@ type RouterNat struct {
 	//   "LIST_OF_SUBNETWORKS" - A list of Subnetworks are allowed to Nat
 	// (specified in the field subnetwork below)
 	SourceSubnetworkIpRangesToNat string `json:"sourceSubnetworkIpRangesToNat,omitempty"`
+	// SourceSubnetworkIpRangesToNat64: Specify the Nat option for NAT64, which can
+	// take one of the following values: - ALL_IPV6_SUBNETWORKS: All of the IP
+	// ranges in every Subnetwork are allowed to Nat. - LIST_OF_IPV6_SUBNETWORKS: A
+	// list of Subnetworks are allowed to Nat (specified in the field
+	// nat64_subnetwork below) The default is NAT64_OPTION_UNSPECIFIED. Note that
+	// if this field contains NAT64_ALL_V6_SUBNETWORKS no other Router.Nat section
+	// in this region can also enable NAT64 for any Subnetworks in this network.
+	// Other Router.Nat sections can still be present to enable NAT44 only.
+	//
+	// Possible values:
+	//   "ALL_IPV6_SUBNETWORKS" - NAT64 is enabled for all the IPv6 subnet ranges.
+	// In dual stack subnets, NAT64 will only be enabled for IPv6-only VMs.
+	//   "LIST_OF_IPV6_SUBNETWORKS" - NAT64 is enabled for a list of IPv6 subnet
+	// ranges. In dual stack subnets, NAT64 will only be enabled for IPv6-only VMs.
+	// If this option is used, the nat64_subnetworks field must be specified.
+	SourceSubnetworkIpRangesToNat64 string `json:"sourceSubnetworkIpRangesToNat64,omitempty"`
 	// Subnetworks: A list of Subnetwork resources whose traffic should be
 	// translated by NAT Gateway. It is used only when LIST_OF_SUBNETWORKS is
 	// selected for the SubnetworkIpRangeToNatOption above.
@@ -46528,6 +46816,28 @@ type RouterNatSubnetworkToNat struct {
 
 func (s RouterNatSubnetworkToNat) MarshalJSON() ([]byte, error) {
 	type NoMethod RouterNatSubnetworkToNat
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// RouterNatSubnetworkToNat64: Specifies a subnetwork to enable NAT64.
+type RouterNatSubnetworkToNat64 struct {
+	// Name: URL for the subnetwork resource that will use NAT64.
+	Name string `json:"name,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Name") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Name") to include in API requests
+	// with the JSON null value. By default, fields with empty values are omitted
+	// from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s RouterNatSubnetworkToNat64) MarshalJSON() ([]byte, error) {
+	type NoMethod RouterNatSubnetworkToNat64
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -47836,21 +48146,6 @@ type Scheduling struct {
 	// terminated, in RFC3339 text format. If specified, the instance termination
 	// action will be performed at the termination time.
 	TerminationTime string `json:"terminationTime,omitempty"`
-	// WindowsLicenseOptimizationMode: Represents the Windows Server License
-	// Optimization Mode of the VM. If unspecified, the default mode is `OFF`.
-	//
-	// Possible values:
-	//   "AUTO" - "Automatically maximize savings and minimize performance impact
-	// by matching license optimization mode to current CPU utilization.
-	//   "BALANCED" - Significant license cost savings via moderate throttles (40%
-	// baseline, 10 minute maximum burst at full utilization).
-	//   "COST_OPTIMIZED" - Maximum license cost savings via restrictive throttles
-	// (20% baseline, 3.75 minute maximum burst at full utilization).
-	//   "OFF" - No license cost savings with maximum CPU performance.
-	//   "PERFORMANCE" - Moderate license cost savings via least restrictive
-	// throttles (60% baseline, 22.5 minute maximum burst at full utilization).
-	//   "UNSPECIFIED" - Unspecified license optimization mode defaults to `OFF`.
-	WindowsLicenseOptimizationMode string `json:"windowsLicenseOptimizationMode,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "AutomaticRestart") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -57135,8 +57430,10 @@ type TargetHttpsProxy struct {
 	AuthorizationPolicy string `json:"authorizationPolicy,omitempty"`
 	// CertificateMap: URL of a certificate map that identifies a certificate map
 	// associated with the given target proxy. This field can only be set for
-	// global target proxies. If set, sslCertificates will be ignored. Accepted
-	// format is //certificatemanager.googleapis.com/projects/{project
+	// Global external Application Load Balancer or Classic Application Load
+	// Balancer. For other products use Certificate Manager Certificates instead.
+	// If set, sslCertificates will be ignored. Accepted format is
+	// //certificatemanager.googleapis.com/projects/{project
 	// }/locations/{location}/certificateMaps/{resourceName}.
 	CertificateMap string `json:"certificateMap,omitempty"`
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text format.
@@ -57229,9 +57526,19 @@ type TargetHttpsProxy struct {
 	ServerTlsPolicy string `json:"serverTlsPolicy,omitempty"`
 	// SslCertificates: URLs to SslCertificate resources that are used to
 	// authenticate connections between users and the load balancer. At least one
-	// SSL certificate must be specified. Currently, you may specify up to 15 SSL
-	// certificates. sslCertificates do not apply when the load balancing scheme is
-	// set to INTERNAL_SELF_MANAGED.
+	// SSL certificate must be specified. SslCertificates do not apply when the
+	// load balancing scheme is set to INTERNAL_SELF_MANAGED. The URLs should refer
+	// to a SSL Certificate resource or Certificate Manager Certificate resource.
+	// Mixing Classic Certificates and Certificate Manager Certificates is not
+	// allowed. Certificate Manager Certificates must include the
+	// certificatemanager API. Certificate Manager Certificates are not supported
+	// by Global external Application Load Balancer or Classic Application Load
+	// Balancer, use certificate_map instead. Currently, you may specify up to 15
+	// Classic SSL Certificates. Certificate Manager Certificates accepted formats
+	// are: - //certificatemanager.googleapis.com/projects/{project}/locations/{
+	// location}/certificates/{resourceName}. -
+	// https://certificatemanager.googleapis.com/v1alpha1/projects/{project
+	// }/locations/{location}/certificates/{resourceName}.
 	SslCertificates []string `json:"sslCertificates,omitempty"`
 	// SslPolicy: URL of SslPolicy resource that will be associated with the
 	// TargetHttpsProxy resource. If not set, the TargetHttpsProxy resource has no
@@ -60681,12 +60988,12 @@ type UrlMap struct {
 	// defaultRouteAction is also specified, advanced routing actions, such as URL
 	// rewrites, take effect before sending the request to the backend. However, if
 	// defaultService is specified, defaultRouteAction cannot contain any
-	// weightedBackendServices. Conversely, if routeAction specifies any
-	// weightedBackendServices, service must not be specified. If defaultService is
-	// specified, then set either defaultUrlRedirect , or
-	// defaultRouteAction.weightedBackendService Don't set both. defaultService has
-	// no effect when the URL map is bound to a target gRPC proxy that has the
-	// validateForProxyless field set to true.
+	// defaultRouteAction.weightedBackendServices. Conversely, if
+	// defaultRouteAction specifies any defaultRouteAction.weightedBackendServices,
+	// defaultService must not be specified. If defaultService is specified, then
+	// set either defaultUrlRedirect , or defaultRouteAction.weightedBackendService
+	// Don't set both. defaultService has no effect when the URL map is bound to a
+	// target gRPC proxy that has the validateForProxyless field set to true.
 	DefaultService string `json:"defaultService,omitempty"`
 	// DefaultUrlRedirect: When none of the specified hostRules match, the request
 	// is redirected to a URL specified by defaultUrlRedirect. If

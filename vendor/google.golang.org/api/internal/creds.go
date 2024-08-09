@@ -302,14 +302,3 @@ func baseTransport() *http.Transport {
 		ExpectContinueTimeout: 1 * time.Second,
 	}
 }
-
-// ErrUniverseNotMatch composes an error string from the provided universe
-// domain sources (DialSettings and Credentials, respectively).
-func ErrUniverseNotMatch(settingsUD, credsUD string) error {
-	return fmt.Errorf(
-		"the configured universe domain (%q) does not match the universe "+
-			"domain found in the credentials (%q). If you haven't configured "+
-			"WithUniverseDomain explicitly, \"googleapis.com\" is the default",
-		settingsUD,
-		credsUD)
-}

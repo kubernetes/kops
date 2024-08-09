@@ -2080,7 +2080,7 @@ type Empty struct {
 
 // EnterpriseConfig: EnterpriseConfig is the cluster enterprise configuration.
 type EnterpriseConfig struct {
-	// ClusterTier: Output only. cluster_tier specifies the premium tier of the
+	// ClusterTier: Output only. cluster_tier indicates the effective tier of the
 	// cluster.
 	//
 	// Possible values:

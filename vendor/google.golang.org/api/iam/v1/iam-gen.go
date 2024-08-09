@@ -2431,7 +2431,7 @@ type QueryGrantableRolesRequest struct {
 	// `//cloudresourcemanager.googleapis.com/projects/my-project`.
 	FullResourceName string `json:"fullResourceName,omitempty"`
 	// PageSize: Optional limit on the number of roles to include in the response.
-	// The default is 300, and the maximum is 1,000.
+	// The default is 300, and the maximum is 2,000.
 	PageSize int64 `json:"pageSize,omitempty"`
 	// PageToken: Optional pagination token returned in an earlier
 	// QueryGrantableRolesResponse.
@@ -6933,12 +6933,12 @@ type OrganizationsRolesDeleteCall struct {
 // in an IAM Policy. * Existing bindings to the custom role are not changed,
 // but they have no effect. * By default, the response from ListRoles does not
 // include the custom role. A deleted custom role still counts toward the
-// custom role limit (/iam/quotas#limits) until it is permanently deleted. You
-// have 7 days to undelete the custom role. After 7 days, the following changes
-// occur: * The custom role is permanently deleted and cannot be recovered. *
-// If an IAM policy contains a binding to the custom role, the binding is
-// permanently removed. * The custom role no longer counts toward your custom
-// role limit.
+// custom role limit (https://cloud.google.com/iam/help/limits) until it is
+// permanently deleted. You have 7 days to undelete the custom role. After 7
+// days, the following changes occur: * The custom role is permanently deleted
+// and cannot be recovered. * If an IAM policy contains a binding to the custom
+// role, the binding is permanently removed. * The custom role no longer counts
+// toward your custom role limit.
 //
 //   - name: The `name` parameter's value depends on the target resource for the
 //     request, namely projects
@@ -11708,12 +11708,12 @@ type ProjectsRolesDeleteCall struct {
 // in an IAM Policy. * Existing bindings to the custom role are not changed,
 // but they have no effect. * By default, the response from ListRoles does not
 // include the custom role. A deleted custom role still counts toward the
-// custom role limit (/iam/quotas#limits) until it is permanently deleted. You
-// have 7 days to undelete the custom role. After 7 days, the following changes
-// occur: * The custom role is permanently deleted and cannot be recovered. *
-// If an IAM policy contains a binding to the custom role, the binding is
-// permanently removed. * The custom role no longer counts toward your custom
-// role limit.
+// custom role limit (https://cloud.google.com/iam/help/limits) until it is
+// permanently deleted. You have 7 days to undelete the custom role. After 7
+// days, the following changes occur: * The custom role is permanently deleted
+// and cannot be recovered. * If an IAM policy contains a binding to the custom
+// role, the binding is permanently removed. * The custom role no longer counts
+// toward your custom role limit.
 //
 //   - name: The `name` parameter's value depends on the target resource for the
 //     request, namely projects
