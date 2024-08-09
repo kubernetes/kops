@@ -110,9 +110,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				},
 			}
 
-			// Use "user-data" instead of "startup-script", for compatibility with cloud-init
 			if startupScript != nil {
-				t.Metadata["user-data"] = startupScript
+				if !fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.UseStartupScript) {
+					// Use "user-data" instead of "startup-script", for compatibility with cloud-init
+					t.Metadata["user-data"] = startupScript
+				} else {
+					t.Metadata["startup-script"] = startupScript
+				}
 			}
 
 			if ig.Spec.Role == kops.InstanceGroupRoleNode {

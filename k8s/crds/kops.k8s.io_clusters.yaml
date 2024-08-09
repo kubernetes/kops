@@ -440,6 +440,10 @@ spec:
                     description: GCEServiceAccount specifies the service account with
                       which the GCE VM runs
                     type: string
+                  gceUseStartupScript:
+                    description: GCEUseStartupScript specifies enables using startup-script
+                      instead of user-data metadata.
+                    type: boolean
                   gcpPDCSIDriver:
                     description: GCPPDCSIDriver is the config for the GCP PD CSI driver
                     properties:

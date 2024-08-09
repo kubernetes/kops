@@ -24,6 +24,7 @@ spec:
         enabled: true
       project: testProject
       serviceAccount: gce-sa
+      useStartupScript: true
   configStore:
     base: memfs://clusters.example.com/minimal.example.com
   etcdClusters:

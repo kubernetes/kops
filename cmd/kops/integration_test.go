@@ -72,6 +72,8 @@ type integrationTest struct {
 	// nth is true if we should check for files created by nth queue processor add on
 	nth          bool
 	nthRebalance bool
+	// enable GCE startup script
+	startupScript bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -84,6 +86,11 @@ func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 		nth:            true,
 		sshKey:         true,
 	}
+}
+
+func (i *integrationTest) withStartupScript() *integrationTest {
+	i.startupScript = true
+	return i
 }
 
 func (i *integrationTest) withVersion(version string) *integrationTest {
@@ -421,6 +428,7 @@ func TestMinimalGCEPublicLoadBalancer(t *testing.T) {
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").
+		withStartupScript().
 		withAddons(
 			dnsControllerAddon,
 			gcpCCMAddon,
@@ -1661,8 +1669,14 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 
 	expectedFilenames := i.expectTerraformFilenames
 
+	prefix := "google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
+	if !i.startupScript {
+		expectedFilenames = append(expectedFilenames, prefix+"user-data")
+	} else {
+		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
+	}
+
 	expectedFilenames = append(expectedFilenames,
-		"google_compute_instance_template_nodes-"+gce.SafeClusterName(i.clusterName)+"_metadata_user-data",
 		"aws_s3_object_cluster-completed.spec_content",
 		"aws_s3_object_etcd-cluster-spec-events_content",
 		"aws_s3_object_etcd-cluster-spec-main_content",
@@ -1679,12 +1693,17 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
-		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
 
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-events-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-main-master-"+zone+"_content")
 		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-master-"+zone+"_content")
-		expectedFilenames = append(expectedFilenames, prefix+"user-data")
+
+		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
+		if !i.startupScript {
+			expectedFilenames = append(expectedFilenames, prefix+"user-data")
+		} else {
+			expectedFilenames = append(expectedFilenames, prefix+"startup-script")
+		}
 	}
 
 	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)

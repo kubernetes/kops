@@ -736,6 +736,11 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.GCEUseStartupScript != nil {
+		in, out := &in.GCEUseStartupScript, &out.GCEUseStartupScript
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DisableSecurityGroupIngress != nil {
 		in, out := &in.DisableSecurityGroupIngress, &out.DisableSecurityGroupIngress
 		*out = new(bool)

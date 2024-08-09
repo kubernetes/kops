@@ -14,6 +14,7 @@ spec:
   channel: stable
   cloudConfig:
     gceServiceAccount: gce-sa
+    gceUseStartupScript: true
     gcpPDCSIDriver:
       enabled: true
     multizone: true

@@ -199,6 +199,12 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			}
 			out.CloudProvider.GCE.ServiceAccount = in.CloudConfig.GCEServiceAccount
 		}
+		if in.CloudConfig.GCEUseStartupScript != nil {
+			if out.CloudProvider.GCE == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "gceStartupScript"), "GCE Startup Script supports only GCE")
+			}
+			out.CloudProvider.GCE.UseStartupScript = in.CloudConfig.GCEUseStartupScript
+		}
 		if in.CloudConfig.DisableSecurityGroupIngress != nil {
 			if out.CloudProvider.AWS == nil {
 				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "disableSecurityGroupIngress"), "disableSecurityGroupIngress supports only AWS")
@@ -520,6 +526,12 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 				out.CloudConfig = &CloudConfiguration{}
 			}
 			out.CloudConfig.GCEServiceAccount = gce.ServiceAccount
+		}
+		if gce.UseStartupScript != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			out.CloudConfig.GCEUseStartupScript = gce.UseStartupScript
 		}
 		if gce.PDCSIDriver != nil {
 			if out.CloudConfig == nil {
