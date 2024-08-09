@@ -392,6 +392,7 @@ type DatabaseReplica struct {
 	PrivateNetworkUUID string              `json:"private_network_uuid,omitempty"`
 	Tags               []string            `json:"tags,omitempty"`
 	StorageSizeMib     uint64              `json:"storage_size_mib,omitempty"`
+	Size               string              `json:"size"`
 }
 
 // DatabasePool represents a database connection pool

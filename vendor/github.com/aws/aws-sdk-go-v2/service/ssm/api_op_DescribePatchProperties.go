@@ -23,6 +23,8 @@ import (
 //
 // AMAZON_LINUX_2 Valid properties: PRODUCT | CLASSIFICATION | SEVERITY
 //
+// AMAZON_LINUX_2023 Valid properties: PRODUCT | CLASSIFICATION | SEVERITY
+//
 // CENTOS Valid properties: PRODUCT | CLASSIFICATION | SEVERITY
 //
 // DEBIAN Valid properties: PRODUCT | PRIORITY

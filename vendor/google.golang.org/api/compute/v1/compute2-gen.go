@@ -17076,22 +17076,23 @@ func (c *GlobalOperationsAggregatedListCall) Pages(ctx context.Context, f func(*
 }
 
 type GlobalOperationsDeleteCall struct {
-	s          *Service
-	project    string
-	operation  string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
+	s           *Service
+	project     string
+	operationid string
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
 }
 
 // Delete: Deletes the specified Operations resource.
 //
-// - operation: Name of the Operations resource to delete.
-// - project: Project ID for this request.
-func (r *GlobalOperationsService) Delete(project string, operation string) *GlobalOperationsDeleteCall {
+//   - operation: Name of the Operations resource to delete, or its unique
+//     numeric identifier.
+//   - project: Project ID for this request.
+func (r *GlobalOperationsService) Delete(project string, operationid string) *GlobalOperationsDeleteCall {
 	c := &GlobalOperationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -17132,7 +17133,7 @@ func (c *GlobalOperationsDeleteCall) doRequest(alt string) (*http.Response, erro
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project":   c.project,
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -17154,7 +17155,7 @@ func (c *GlobalOperationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 type GlobalOperationsGetCall struct {
 	s            *Service
 	project      string
-	operation    string
+	operationid  string
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
@@ -17163,12 +17164,13 @@ type GlobalOperationsGetCall struct {
 
 // Get: Retrieves the specified Operations resource.
 //
-// - operation: Name of the Operations resource to return.
-// - project: Project ID for this request.
-func (r *GlobalOperationsService) Get(project string, operation string) *GlobalOperationsGetCall {
+//   - operation: Name of the Operations resource to return, or its unique
+//     numeric identifier.
+//   - project: Project ID for this request.
+func (r *GlobalOperationsService) Get(project string, operationid string) *GlobalOperationsGetCall {
 	c := &GlobalOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -17220,7 +17222,7 @@ func (c *GlobalOperationsGetCall) doRequest(alt string) (*http.Response, error) 
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project":   c.project,
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -17470,12 +17472,12 @@ func (c *GlobalOperationsListCall) Pages(ctx context.Context, f func(*OperationL
 }
 
 type GlobalOperationsWaitCall struct {
-	s          *Service
-	project    string
-	operation  string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
+	s           *Service
+	project     string
+	operationid string
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
 }
 
 // Wait: Waits for the specified Operation resource to return as `DONE` or for
@@ -17490,12 +17492,13 @@ type GlobalOperationsWaitCall struct {
 // actually done when the method returns. Be prepared to retry if the operation
 // is not `DONE`.
 //
-// - operation: Name of the Operations resource to return.
-// - project: Project ID for this request.
-func (r *GlobalOperationsService) Wait(project string, operation string) *GlobalOperationsWaitCall {
+//   - operation: Name of the Operations resource to return, or its unique
+//     numeric identifier.
+//   - project: Project ID for this request.
+func (r *GlobalOperationsService) Wait(project string, operationid string) *GlobalOperationsWaitCall {
 	c := &GlobalOperationsWaitCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -17536,7 +17539,7 @@ func (c *GlobalOperationsWaitCall) doRequest(alt string) (*http.Response, error)
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project":   c.project,
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -17579,19 +17582,20 @@ func (c *GlobalOperationsWaitCall) Do(opts ...googleapi.CallOption) (*Operation,
 }
 
 type GlobalOrganizationOperationsDeleteCall struct {
-	s          *Service
-	operation  string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
+	s           *Service
+	operationid string
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
 }
 
 // Delete: Deletes the specified Operations resource.
 //
-// - operation: Name of the Operations resource to delete.
-func (r *GlobalOrganizationOperationsService) Delete(operation string) *GlobalOrganizationOperationsDeleteCall {
+//   - operation: Name of the Operations resource to delete, or its unique
+//     numeric identifier.
+func (r *GlobalOrganizationOperationsService) Delete(operationid string) *GlobalOrganizationOperationsDeleteCall {
 	c := &GlobalOrganizationOperationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -17637,7 +17641,7 @@ func (c *GlobalOrganizationOperationsDeleteCall) doRequest(alt string) (*http.Re
 	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
@@ -17658,7 +17662,7 @@ func (c *GlobalOrganizationOperationsDeleteCall) Do(opts ...googleapi.CallOption
 
 type GlobalOrganizationOperationsGetCall struct {
 	s            *Service
-	operation    string
+	operationid  string
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
@@ -17668,10 +17672,11 @@ type GlobalOrganizationOperationsGetCall struct {
 // Get: Retrieves the specified Operations resource. Gets a list of operations
 // by making a `list()` request.
 //
-// - operation: Name of the Operations resource to return.
-func (r *GlobalOrganizationOperationsService) Get(operation string) *GlobalOrganizationOperationsGetCall {
+//   - operation: Name of the Operations resource to return, or its unique
+//     numeric identifier.
+func (r *GlobalOrganizationOperationsService) Get(operationid string) *GlobalOrganizationOperationsGetCall {
 	c := &GlobalOrganizationOperationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.operation = operation
+	c.operationid = operationid
 	return c
 }
 
@@ -17728,7 +17733,7 @@ func (c *GlobalOrganizationOperationsGetCall) doRequest(alt string) (*http.Respo
 	}
 	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
-		"operation": c.operation,
+		"operation": c.operationid,
 	})
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }

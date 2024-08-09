@@ -93,6 +93,7 @@ var _ = strings.Replace
 var _ = context.Canceled
 var _ = internaloption.WithDefaultEndpoint
 var _ = internal.Version
+var _ = gax.Version
 
 const apiId = "storage:v1"
 const apiName = "storage"

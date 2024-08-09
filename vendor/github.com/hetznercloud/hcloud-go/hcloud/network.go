@@ -19,9 +19,10 @@ type NetworkZone string
 
 // List of available Network Zones.
 const (
-	NetworkZoneEUCentral NetworkZone = "eu-central"
-	NetworkZoneUSEast    NetworkZone = "us-east"
-	NetworkZoneUSWest    NetworkZone = "us-west"
+	NetworkZoneEUCentral   NetworkZone = "eu-central"
+	NetworkZoneUSEast      NetworkZone = "us-east"
+	NetworkZoneUSWest      NetworkZone = "us-west"
+	NetworkZoneAPSouthEast NetworkZone = "ap-southeast"
 )
 
 // NetworkSubnetType specifies a type of a subnet.
