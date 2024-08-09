@@ -2266,8 +2266,8 @@ func (in *GCESpec) DeepCopyInto(out *GCESpec) {
 		*out = new(PDCSIDriver)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.StartupScript != nil {
-		in, out := &in.StartupScript, &out.StartupScript
+	if in.UseStartupScript != nil {
+		in, out := &in.UseStartupScript, &out.UseStartupScript
 		*out = new(bool)
 		**out = **in
 	}

@@ -111,7 +111,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 
 			if startupScript != nil {
-				if !fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.StartupScript) {
+				if !fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.UseStartupScript) {
 					// Use "user-data" instead of "startup-script", for compatibility with cloud-init
 					t.Metadata["user-data"] = startupScript
 				} else {

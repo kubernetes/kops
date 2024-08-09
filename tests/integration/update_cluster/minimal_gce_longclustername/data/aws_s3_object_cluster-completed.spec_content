@@ -11,7 +11,7 @@ spec:
   channel: stable
   cloudConfig:
     gceServiceAccount: default
-    gceStartupScript: true
+    gceUseStartupScript: true
     gcpPDCSIDriver:
       enabled: true
     manageStorageClasses: true

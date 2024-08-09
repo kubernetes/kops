@@ -949,9 +949,9 @@ type CloudConfiguration struct {
 	// GCEServiceAccount specifies the service account with which the GCE VM runs
 	// +k8s:conversion-gen=false
 	GCEServiceAccount string `json:"gceServiceAccount,omitempty"`
-	// GCEStartupScript specifies enables using startup-script instead of user-data metadata.
+	// GCEUseStartupScript specifies enables using startup-script instead of user-data metadata.
 	// +k8s:conversion-gen=false
-	GCEStartupScript *bool `json:"gceStartupScript,omitempty"`
+	GCEUseStartupScript *bool `json:"gceUseStartupScript,omitempty"`
 	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
 	// of an AWS Security Group for each load balancer provisioned for a Service (AWS only).
 	// +k8s:conversion-gen=false

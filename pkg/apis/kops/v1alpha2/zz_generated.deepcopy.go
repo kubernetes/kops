@@ -736,8 +736,8 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.GCEStartupScript != nil {
-		in, out := &in.GCEStartupScript, &out.GCEStartupScript
+	if in.GCEUseStartupScript != nil {
+		in, out := &in.GCEUseStartupScript, &out.GCEUseStartupScript
 		*out = new(bool)
 		**out = **in
 	}

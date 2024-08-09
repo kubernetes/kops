@@ -4176,7 +4176,7 @@ func autoConvert_v1alpha3_GCESpec_To_kops_GCESpec(in *GCESpec, out *kops.GCESpec
 	} else {
 		out.PDCSIDriver = nil
 	}
-	out.StartupScript = in.StartupScript
+	out.UseStartupScript = in.UseStartupScript
 	out.BinariesLocation = in.BinariesLocation
 	return nil
 }
@@ -4201,7 +4201,7 @@ func autoConvert_kops_GCESpec_To_v1alpha3_GCESpec(in *kops.GCESpec, out *GCESpec
 	} else {
 		out.PDCSIDriver = nil
 	}
-	out.StartupScript = in.StartupScript
+	out.UseStartupScript = in.UseStartupScript
 	out.BinariesLocation = in.BinariesLocation
 	return nil
 }
