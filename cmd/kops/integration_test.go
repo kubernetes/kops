@@ -193,7 +193,7 @@ func (i integrationTest) withDefaultAddons24() *integrationTest {
 	)
 }
 
-// withDefaultAddons24 adds the default addons for an AWS cluster running k8s 1.30
+// withDefaultAddons30 adds the default addons for an AWS cluster running k8s 1.30
 func (i integrationTest) withDefaultAddons30() *integrationTest {
 	return i.withAddons(
 		awsCCMAddon,
