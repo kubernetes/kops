@@ -127,7 +127,7 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 			if err != nil {
 				//  print warning message and continue like the task succeeded
 				if _, ok := err.(*ExistsAndWarnIfChangesError); ok {
-					klog.Warningf(err.Error())
+					klog.Warning(err.Error())
 					ts.done = true
 					ts.lastError = nil
 					progress = true

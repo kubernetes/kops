@@ -37,7 +37,7 @@ func checkParse(t *testing.T, s string, expect map[string]string, shouldErr bool
 		if shouldErr {
 			return
 		}
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 
 	for k, v := range expect {
