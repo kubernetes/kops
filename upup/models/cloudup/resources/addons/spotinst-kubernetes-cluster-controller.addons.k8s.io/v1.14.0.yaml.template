@@ -1,67 +1,265 @@
+#helm upgrade --install --wait ocean-controller spot/ocean-kubernetes-controller \
+#--namespace "kube-system" --create-namespace \
+#--set spotinst.account="${SPOTINST_ACCOUNT}" \
+#--set spotinst.clusterIdentifier="prefeat.yehiel.ek8s.com" \
+#--set spotinst.token="${SPOTINST_TOKEN}" --set spotinst.disableAutoUpdate="true"  --dry-run > helmdrupdry.yam
+# Source: ocean-kubernetes-controller/templates/configmap.yaml
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: spotinst-kubernetes-cluster-controller-config
+  name: ocean-controller-ocean-kubernetes-controller
   namespace: kube-system
+  labels:
+    helm.sh/chart: ocean-kubernetes-controller-0.1.50
+    app.kubernetes.io/name: ocean-kubernetes-controller
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "2.0.64"
+    app.kubernetes.io/managed-by: Helm
 data:
   spotinst.cluster-identifier: {{ ClusterName }}
+  base-url: ""
+  proxy-url: ""
+  leader-election: "true"
+  disable-auto-update: "true"
+  enable-csr-approval: "true"
+  fluent-bit.conf: |
+    [SERVICE]
+        Parsers_File parsers.conf
+        Flush        60
+        Daemon       Off
+
+    [INPUT]
+        Name            tail
+        Path            /var/log/controller.logs
+        Parser          json
+        Buffer_Max_Size 2MB
+        Skip_Long_Lines On
+        Skip_Empty_Lines On
+        Refresh_Interval 10
+
+    [FILTER]
+        Name       modify
+        Match      *
+        Add        ctrlPod ${POD_NAMESPACE}/${POD_NAME}
+
+    # rename msg -> message , level -> l
+    [FILTER]
+        Name       modify
+        Match      *
+        Rename     msg message
+        Rename     level l
+
+    # info -> INFO
+    [FILTER]
+        Name       modify
+        Match      *
+
+        Condition Key_Value_Equals l info
+        SET l INFO
+
+    # debug -> INFO
+    [FILTER]
+        Name       modify
+        Match      *
+
+        Condition Key_Value_Equals l debug
+        SET l INFO
+
+    # trace -> TRACE
+    [FILTER]
+        Name       modify
+        Match      *
+
+        Condition Key_Value_Equals l trace
+        SET l TRACE
+
+    # error -> ERROR
+    [FILTER]
+        Name       modify
+        Match      *
+
+        Condition Key_Value_Equals l error
+        SET l ERROR
+
+    # nest all fields under log key
+    [FILTER]
+        Name       nest
+        Match      *
+        Operation  nest
+        Wildcard   *
+        Nest_Under log
+
+    # stringify log field
+    [FILTER]
+        Name Lua
+        Match *
+        call parse
+        code function stringify(obj) result = {} for key, value in pairs(obj) do table.insert(result, string.format("\"%s\":%q", key, value)) end result = "{" .. table.concat(result, ",") .. "}" return result end function parse(tag, timestamp, record) new_record = record new_record["log"] = stringify(record["log"]) return 1, timestamp, new_record end
+
+    [OUTPUT]
+        Name        http
+        Match       *
+        Format      json
+        Host        api.spotinst.io
+        Port        443
+        TLS         true
+        URI         /logs/${CLUSTER_IDENTIFIER}?accountId=${SPOTINST_ACCOUNT}
+        Header      Authorization Bearer ${SPOTINST_TOKEN}
+        Retry_Limit no_retries
+  parsers.conf: |
+    [PARSER]
+        Name        json
+        Format      json
 ---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ocean-controller-metrics-server
+  namespace: kube-system
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: ocean-kubernetes-controller/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ocean-controller-ocean-kubernetes-controller
+  namespace: kube-system
+  labels:
+    helm.sh/chart: ocean-kubernetes-controller-0.1.50
+    app.kubernetes.io/name: ocean-kubernetes-controller
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "2.0.64"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: ocean-kubernetes-controller/templates/secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: spotinst-kubernetes-cluster-controller
+  name: ocean-controller-ocean-kubernetes-controller
   namespace: kube-system
+  labels:
+    helm.sh/chart: ocean-kubernetes-controller-0.1.50
+    app.kubernetes.io/name: ocean-kubernetes-controller
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "2.0.64"
+    app.kubernetes.io/managed-by: Helm
 type: Opaque
 data:
   token: {{ SpotinstTokenBase64 }}
   account: {{ SpotinstAccountBase64 }}
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: spotinst-kubernetes-cluster-controller
-  namespace: kube-system
----
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/clusterrole-aggregated-reader.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: spotinst-kubernetes-cluster-controller
+  name: system:metrics-server-aggregated-reader
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
 rules:
-  # ----------------------------------------------------------------------------
-  # feature: ocean/readonly
-  # ----------------------------------------------------------------------------
-- apiGroups: [""]
-  resources: ["pods", "nodes", "services", "namespaces", "replicationcontrollers", "limitranges", "events", "persistentvolumes", "persistentvolumeclaims"]
-  verbs: ["get", "list"]
-- apiGroups: ["apps"]
-  resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
-  verbs: ["get", "list"]
-- apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
-  verbs: ["get", "list"]
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["get", "list"]
-- apiGroups: ["extensions"]
-  resources: ["replicasets", "daemonsets"]
-  verbs: ["get", "list"]
-- apiGroups: ["policy"]
-  resources: ["poddisruptionbudgets"]
-  verbs: ["get", "list"]
-- apiGroups: ["metrics.k8s.io"]
-  resources: ["pods"]
-  verbs: ["get", "list"]
-- apiGroups: ["autoscaling"]
-  resources: ["horizontalpodautoscalers"]
-  verbs: ["get", "list"]
-- apiGroups: ["apiextensions.k8s.io"]
-  resources: ["customresourcedefinitions"]
-  verbs: ["get", "list"]
-- nonResourceURLs: ["/version/", "/version"]
-  verbs: ["get"]
-  # ----------------------------------------------------------------------------
-  # feature: ocean/draining
-  # ----------------------------------------------------------------------------
+  - apiGroups:
+      - metrics.k8s.io
+    resources:
+      - pods
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:ocean-controller-metrics-server
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - nodes/metrics
+    verbs:
+    - get
+  - apiGroups:
+    - ""
+    resources:
+      - pods
+      - nodes
+      - namespaces
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: ocean-kubernetes-controller/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ocean-controller-ocean-kubernetes-controller
+  labels:
+    helm.sh/chart: ocean-kubernetes-controller-0.1.50
+    app.kubernetes.io/name: ocean-kubernetes-controller
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "2.0.64"
+    app.kubernetes.io/managed-by: Helm
+rules:
+# ---------------------------------------------------------------------------
+# feature: ocean/readonly
+# ---------------------------------------------------------------------------
+- apiGroups: [ "" ]
+  resources: [ "pods", "nodes", "services", "namespaces", "replicationcontrollers", "limitranges", "events", "persistentvolumes", "persistentvolumeclaims" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "apps" ]
+  resources: [ "deployments", "daemonsets", "statefulsets", "replicasets" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "storage.k8s.io" ]
+  resources: [ "storageclasses" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "batch" ]
+  resources: [ "jobs", "cronjobs" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "policy" ]
+  resources: [ "poddisruptionbudgets" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "metrics.k8s.io" ]
+  resources: [ "pods" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "autoscaling" ]
+  resources: [ "horizontalpodautoscalers" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "autoscaling.k8s.io" ]
+  resources: [ "verticalpodautoscalers" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "apiextensions.k8s.io" ]
+  resources: [ "customresourcedefinitions" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "node.k8s.io" ]
+  resources: [ "runtimeclasses" ]
+  verbs: [ "get", "list", "watch" ]
+- nonResourceURLs: [ "/version/", "/version" ]
+  verbs: [ "get" ]
+# ---------------------------------------------------------------------------
+# feature: ocean/draining
+# ---------------------------------------------------------------------------
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["patch", "update"]
@@ -71,18 +269,18 @@ rules:
 - apiGroups: [""]
   resources: ["pods/eviction"]
   verbs: ["create"]
-  # ----------------------------------------------------------------------------
-  # feature: ocean/cleanup
-  # ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# feature: ocean/cleanup
+# ---------------------------------------------------------------------------
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["delete"]
-  # ----------------------------------------------------------------------------
-  # feature: ocean/csr-approval
-  # ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# feature: ocean/csr-approval
+# ---------------------------------------------------------------------------
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests"]
-  verbs: ["get", "list", "create", "delete"]
+  verbs: ["get", "list", "delete", "create", "watch"]
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests/approval"]
   verbs: ["patch", "update"]
@@ -90,25 +288,11 @@ rules:
   resources: ["signers"]
   resourceNames: ["kubernetes.io/kubelet-serving", "kubernetes.io/kube-apiserver-client-kubelet"]
   verbs: ["approve"]
-  # ----------------------------------------------------------------------------
-  # feature: ocean/auto-update
-  # ----------------------------------------------------------------------------
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["clusterroles"]
-  resourceNames: ["spotinst-kubernetes-cluster-controller"]
-  verbs: ["patch", "update", "escalate"]
-- apiGroups: ["apps"]
-  resources: ["deployments"]
-  resourceNames: ["spotinst-kubernetes-cluster-controller"]
-  verbs: ["patch", "update"]
-  # ----------------------------------------------------------------------------
-  # feature: ocean/apply
-  # ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# feature: ocean/apply
+# ---------------------------------------------------------------------------
 - apiGroups: ["apps"]
   resources: ["deployments", "daemonsets"]
-  verbs: ["get", "list", "patch", "update", "create", "delete"]
-- apiGroups: ["extensions"]
-  resources: ["daemonsets"]
   verbs: ["get", "list", "patch", "update", "create", "delete"]
 - apiGroups: [""]
   resources: ["pods"]
@@ -116,51 +300,411 @@ rules:
 - apiGroups: ["batch"]
   resources: ["jobs"]
   verbs: ["get", "list", "patch", "update", "create", "delete"]
-  # ----------------------------------------------------------------------------
-  # feature: wave
-  # ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# feature: wave
+# ---------------------------------------------------------------------------
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications"]
-  verbs: ["get", "list", "patch", "update", "create", "delete"]
+  verbs: ["get", "list", "watch", "patch", "update", "create", "delete"]
 - apiGroups: ["wave.spot.io"]
   resources: ["sparkapplications", "wavecomponents", "waveenvironments"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "watch"]
 - apiGroups: ["bigdata.spot.io"]
   resources: ["bigdataenvironments"]
-  verbs: ["get", "list", "patch", "update", "create", "delete"]
+  verbs: ["get", "list", "watch", "patch", "update", "create", "delete"]
+# ---------------------------------------------------------------------------
+# feature: automatic right-sizing
+# ---------------------------------------------------------------------------
+- apiGroups: ["autoscaling.k8s.io"]
+  resources: ["verticalpodautoscalers", "verticalpodautoscalers/status"]
+  verbs: ["get", "list", "watch", "patch", "update", "create", "delete"]
+# ---------------------------------------------------------------------------
+# feature: controller/leader-election (high-availability)
+# ---------------------------------------------------------------------------
+- apiGroups: [ "coordination.k8s.io" ]
+  resources: [ "leases" ]
+  verbs: [ "get","list","patch","update","create","delete" ]
+# ---------------------------------------------------------------------------
+# feature: controller/report-events
+# ---------------------------------------------------------------------------
+- apiGroups: [ "" ]
+  resources: [ "events" ]
+  verbs: [ "create" ]
 ---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/clusterrolebinding-auth-delegator.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: spotinst-kubernetes-cluster-controller
+  name: ocean-controller-metrics-server:system:auth-delegator
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: spotinst-kubernetes-cluster-controller
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: ocean-controller-metrics-server
+    namespace: kube-system
+---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:ocean-controller-metrics-server
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:ocean-controller-metrics-server
+subjects:
+  - kind: ServiceAccount
+    name: ocean-controller-metrics-server
+    namespace: kube-system
+---
+# Source: ocean-kubernetes-controller/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ocean-controller-ocean-kubernetes-controller
+  labels:
+    helm.sh/chart: ocean-kubernetes-controller-0.1.50
+    app.kubernetes.io/name: ocean-kubernetes-controller
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "2.0.64"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ocean-controller-ocean-kubernetes-controller
 subjects:
 - kind: ServiceAccount
-  name: spotinst-kubernetes-cluster-controller
+  name: ocean-controller-ocean-kubernetes-controller
   namespace: kube-system
 ---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ocean-controller-metrics-server-auth-reader
+  namespace: kube-system
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - kind: ServiceAccount
+    name: ocean-controller-metrics-server
+    namespace: kube-system
+---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocean-controller-metrics-server
+  namespace: kube-system
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+  selector:
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
-  name: spotinst-kubernetes-cluster-controller
+  name: ocean-controller-metrics-server
   namespace: kube-system
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+      app.kubernetes.io/name: metrics-server
+      app.kubernetes.io/instance: ocean-controller
   template:
     metadata:
       labels:
-        k8s-addon: spotinst-kubernetes-cluster-controller.addons.k8s.io
+        app.kubernetes.io/name: metrics-server
+        app.kubernetes.io/instance: ocean-controller
     spec:
-      priorityClassName: system-cluster-critical
+      schedulerName:
+      serviceAccountName: ocean-controller-metrics-server
+      priorityClassName: "system-cluster-critical"
+      containers:
+        - name: metrics-server
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          image: registry.k8s.io/metrics-server/metrics-server:v0.6.4
+          imagePullPolicy: IfNotPresent
+          args:
+            - --secure-port=10250
+            - --cert-dir=/tmp
+            - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+            - --kubelet-use-node-status-port
+            - --metric-resolution=15s
+            - --logtostderr
+          ports:
+          - name: https
+            protocol: TCP
+            containerPort: 10250
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /livez
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 0
+            periodSeconds: 10
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+# Source: ocean-kubernetes-controller/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-controller-ocean-kubernetes-controller
+  namespace: kube-system
+  labels:
+    helm.sh/chart: ocean-kubernetes-controller-0.1.50
+    app.kubernetes.io/name: ocean-kubernetes-controller
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "2.0.64"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ocean-kubernetes-controller
+      app.kubernetes.io/instance: ocean-controller
+  template:
+    metadata:
+      annotations:
+        # This will restart the deployment in case of configmap/secret/cluster-role changes
+        checksum/config: d146b6a8151086cb334ef1af56120cba4cdcdadda5bcc074ab896a3546c1bca9
+        checksum/secret: 2c775f3e9eda8df303c9c21994dd6b33e0d5f449177922512e82b3b2b39f6912
+        checksum/cluster-role: 918fabb02092038e7c388ff0d7628be9fd78a9a8dd56fb3cb9675641660c46c6
+        kubectl.kubernetes.io/default-container: ocean-kubernetes-controller
+      labels:
+        app.kubernetes.io/name: ocean-kubernetes-controller
+        app.kubernetes.io/instance: ocean-controller
+    spec:
+      serviceAccountName: ocean-controller-ocean-kubernetes-controller
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      priorityClassName: "system-node-critical"
+      containers:
+        - name: ocean-kubernetes-controller
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          image: us-docker.pkg.dev/spotit-today/container-labs/spotinst-kubernetes-controller:v2.0.64
+          imagePullPolicy: IfNotPresent
+          args:
+          - --log_to_file
+          - --log_file=/var/log/controller.logs
+          - --log_file_max_size=1
+          env:
+          - name: SPOTINST_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: token
+          - name: SPOTINST_ACCOUNT
+            valueFrom:
+              secretKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: account
+          - name: SPOTINST_LEADER_ELECTION_ENABLED
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: leader-election
+                optional: true
+          - name: CLUSTER_IDENTIFIER
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: spotinst.cluster-identifier
+          - name: BASE_SPOTINST_URL
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: base-url
+                optional: true
+          - name: HTTPS_PROXY
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: proxy-url
+                optional: true
+          - name: DISABLE_AUTO_UPDATE
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: disable-auto-update
+                optional: true
+          - name: ENABLE_CSR_APPROVAL
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: enable-csr-approval
+                optional: true
+          - name: USER_ENV_CERTIFICATES
+            valueFrom:
+              secretKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller-ca-bundle
+                key: userEnvCertificates.pem
+                optional: true
+          - name: POD_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          ports:
+          - name: metrics
+            containerPort: 9080
+          - name: readiness
+            containerPort: 9081
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: readiness
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: readiness
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+          - name: logs
+            mountPath: /var/log
+          resources:
+        - name: log-shipper
+          image: ghcr.io/fluent/fluent-bit:3.0.7
+          imagePullPolicy: IfNotPresent
+          command:
+          - /fluent-bit/bin/fluent-bit
+          - -c
+          - /tmp/fluent-bit.conf
+          - -q
+          env:
+          - name: SPOTINST_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: token
+                optional: true
+          - name: SPOTINST_ACCOUNT
+            valueFrom:
+              secretKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: account
+                optional: true
+          - name: CLUSTER_IDENTIFIER
+            valueFrom:
+              configMapKeyRef:
+                name: ocean-controller-ocean-kubernetes-controller
+                key: spotinst.cluster-identifier
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          volumeMounts:
+          - name: logs
+            mountPath: /var/log
+          - name: fluentbit-config
+            mountPath: /tmp/fluent-bit.conf
+            subPath: fluent-bit.conf
+          - name: fluentbit-config
+            mountPath: /tmp/parsers.conf
+            subPath: parsers.conf
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: fluentbit-config
+        configMap:
+          name: ocean-controller-ocean-kubernetes-controller
+          items:
+          - key: fluent-bit.conf
+            path: fluent-bit.conf
+          - key: parsers.conf
+            path: parsers.conf
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -176,113 +720,6 @@ spec:
               matchExpressions:
               - key: node-role.kubernetes.io/master
                 operator: Exists
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 50
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: k8s-addon
-                  operator: In
-                  values:
-                  - spotinst-kubernetes-cluster-controller.addons.k8s.io
-              topologyKey: kubernetes.io/hostname
-      containers:
-      - name: spotinst-kubernetes-cluster-controller
-        imagePullPolicy: Always
-        image: gcr.io/spotinst-artifacts/kubernetes-cluster-controller:1.0.97
-        livenessProbe:
-          httpGet:
-            path: /healthcheck
-            port: 4401
-          initialDelaySeconds: 300
-          periodSeconds: 20
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /healthcheck
-            port: 4401
-          initialDelaySeconds: 20
-          periodSeconds: 20
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
-        env:
-        - name: SPOTINST_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: spotinst-kubernetes-cluster-controller
-              key: token
-              optional: true
-        - name: SPOTINST_ACCOUNT
-          valueFrom:
-            secretKeyRef:
-              name: spotinst-kubernetes-cluster-controller
-              key: account
-              optional: true
-        - name: SPOTINST_TOKEN_LEGACY
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: spotinst.token
-              optional: true
-        - name: SPOTINST_ACCOUNT_LEGACY
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: spotinst.account
-              optional: true
-        - name: CLUSTER_IDENTIFIER
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: spotinst.cluster-identifier
-        - name: DISABLE_AUTO_UPDATE
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: disable-auto-update
-              optional: true
-        - name: ENABLE_CSR_APPROVAL
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: enable-csr-approval
-              optional: true
-        - name: PROXY_URL
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: proxy-url
-              optional: true
-        - name: BASE_SPOTINST_URL
-          valueFrom:
-            configMapKeyRef:
-              name: spotinst-kubernetes-cluster-controller-config
-              key: base-url
-              optional: true
-        - name: USER_ENV_CERTIFICATES
-          valueFrom:
-            secretKeyRef:
-              name: spotinst-kubernetes-cluster-controller-ca-bundle
-              key: userEnvCertificates.pem
-              optional: true
-        - name: POD_ID
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.uid
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-      serviceAccountName: spotinst-kubernetes-cluster-controller
-      dnsPolicy: Default
       tolerations:
       - key: node.kubernetes.io/not-ready
         effect: NoExecute
@@ -296,3 +733,35 @@ spec:
         operator: Exists
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: ocean-kubernetes-controller
+            app.kubernetes.io/instance: ocean-controller
+---
+# Source: ocean-kubernetes-controller/charts/metrics-server/templates/apiservice.yaml
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1beta1.metrics.k8s.io
+  labels:
+    helm.sh/chart: metrics-server-3.11.0
+    app.kubernetes.io/name: metrics-server
+    app.kubernetes.io/instance: ocean-controller
+    app.kubernetes.io/version: "0.6.4"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  group: metrics.k8s.io
+  groupPriorityMinimum: 100
+  insecureSkipTLSVerify: true
+  service:
+    name: ocean-controller-metrics-server
+    namespace: kube-system
+    port: 443
+  version: v1beta1
+  versionPriority: 100

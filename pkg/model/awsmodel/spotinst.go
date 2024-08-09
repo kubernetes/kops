@@ -218,6 +218,12 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 	if aws := b.Cluster.Spec.CloudProvider.AWS; aws != nil {
 		group.Product = aws.SpotinstProduct
 		group.Orientation = aws.SpotinstOrientation
+		nth := aws.NodeTerminationHandler
+		if nth != nil && nth.Enabled != nil && *nth.Enabled {
+			return fmt.Errorf("can't build elastigroup while nodeTerminationHandler flag is on. " +
+				"using nodeTerminationHandler will interfere with Ocean Kubernetes controller .\n" +
+				"Please add the following configuration to cluster config \n nodeTerminationHandler:\n   enabled: false ")
+		}
 	}
 
 	// Strategy.
