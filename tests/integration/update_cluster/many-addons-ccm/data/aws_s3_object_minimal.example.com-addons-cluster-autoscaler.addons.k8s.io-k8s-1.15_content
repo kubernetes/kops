@@ -327,6 +327,7 @@ spec:
       - command:
         - ./cluster-autoscaler
         - --balance-similar-node-groups=false
+        - --emit-per-nodegroup-metrics=false
         - --cloud-provider=aws
         - --aws-use-static-instance-list=false
         - --expander=random

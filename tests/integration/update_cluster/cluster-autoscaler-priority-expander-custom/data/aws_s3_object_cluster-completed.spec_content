@@ -34,6 +34,7 @@ spec:
       - .*low.*
       "100":
       - .*high.*
+    emitPerNodegroupMetrics: false
     enabled: true
     expander: priority
     ignoreDaemonSetsUtilization: false
