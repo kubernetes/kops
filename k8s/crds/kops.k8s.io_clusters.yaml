@@ -746,9 +746,9 @@ spec:
                       useful in order to use regex on priorities configuration
                     type: object
                   emitPerNodegroupMetrics:
-                    description: |-
-                      EmitPerNodegroupMetrics If true, publishes the node groups min and max metrics count set on the cluster autoscaler.
-                      Default: false
+                    description: 'EmitPerNodegroupMetrics If true, publishes the node
+                      groups min and max metrics count set on the cluster autoscaler.
+                      Default: false'
                     type: boolean
                   enabled:
                     description: 'Enabled enables the cluster autoscaler. Default:
