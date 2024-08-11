@@ -327,6 +327,7 @@ spec:
       - command:
         - ./cluster-autoscaler
         - --balance-similar-node-groups=false
+        - --emit-per-nodegroup-metrics=false
         - --cloud-provider=gce
         - --expander=random
         - --nodes=1:1:https://www.googleapis.com/compute/v1/projects/testproject/zones/us-test1-a/instanceGroups/a-nodes-minimal-example-com
