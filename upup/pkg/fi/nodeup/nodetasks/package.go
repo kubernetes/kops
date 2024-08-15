@@ -42,8 +42,8 @@ type Package struct {
 	Hash         *string `json:"hash,omitempty"`
 	PreventStart *bool   `json:"preventStart,omitempty"`
 
-	// Healthy is true if the package installation did not fail
-	Healthy *bool `json:"healthy,omitempty"`
+	// Broken is true if the package installation failed
+	Broken bool `json:"healthy,omitempty"`
 
 	// Additional dependencies that must be installed before this package.
 	// These will actually be passed together with this package to rpm/dpkg,
@@ -160,7 +160,7 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 	}
 
 	installed := false
-	var healthy *bool
+	broken := false
 	installedVersion := ""
 	for _, line := range strings.Split(string(output), "\n") {
 		if line == "" {
@@ -178,11 +178,10 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 		case "ii":
 			installed = true
 			installedVersion = version
-			healthy = fi.PtrTo(true)
 		case "iF", "iU":
 			installed = true
 			installedVersion = version
-			healthy = fi.PtrTo(false)
+			broken = true
 		case "rc":
 			// removed
 			installed = false
@@ -205,7 +204,7 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 	return &Package{
 		Name:    e.Name,
 		Version: fi.PtrTo(installedVersion),
-		Healthy: healthy,
+		Broken:  broken,
 	}, nil
 }
 
@@ -224,7 +223,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 	}
 
 	installed := false
-	var healthy *bool
+	broken := false
 	installedVersion := ""
 	for _, line := range strings.Split(string(output), "\n") {
 		if line == "" {
@@ -243,7 +242,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 		installed = true
 		installedVersion = tokens[1]
 		// If we implement unhealthy; be sure to implement repair in Render
-		healthy = fi.PtrTo(true)
+		broken = false
 	}
 
 	if c.T.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal || !installed {
@@ -253,7 +252,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 	return &Package{
 		Name:    e.Name,
 		Version: fi.PtrTo(installedVersion),
-		Healthy: healthy,
+		Broken:  broken,
 	}, nil
 }
 
@@ -349,7 +348,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
 		}
 	} else {
-		if changes.Healthy != nil {
+		if a.Broken {
 			if d.IsDebianFamily() {
 				args := []string{"dpkg", "--configure", "-a"}
 				klog.Infof("package is not healthy; running command %s", args)
@@ -359,7 +358,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 					return fmt.Errorf("error running `dpkg --configure -a`: %v: %s", err, string(output))
 				}
 
-				changes.Healthy = nil
+				changes.Broken = false
 			} else if d.IsRHELFamily() {
 				// Not set on TagOSFamilyRHEL, we can't currently reach here anyway...
 				return fmt.Errorf("package repair not supported on RHEL/CentOS")
