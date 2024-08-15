@@ -25,6 +25,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"syscall"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -344,8 +345,17 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		klog.Infof("running command %s", args)
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = env
-		output, err := cmd.CombinedOutput()
-		if err != nil {
+
+		cmd.Stdin = nil
+		cmd.Stdout = nil
+		cmd.Stderr = nil
+		cmd.ExtraFiles = nil
+		cmd.SysProcAttr = &syscall.SysProcAttr{
+			Setsid: true,
+		}
+
+		if err := cmd.Run(); err != nil {
+			output := "TODO"
 			return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
 		}
 	} else {
