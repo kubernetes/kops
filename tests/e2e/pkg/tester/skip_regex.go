@@ -105,7 +105,7 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
 		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod"
-		if k8sVersion.Minor < 31 {
+		if k8sVersion.Minor < 32 {
 			// https://github.com/kubernetes/kubernetes/issues/121018
 			skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 		}
@@ -147,7 +147,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		// Dedicated job testing this: https://testgrid.k8s.io/kops-misc#kops-aws-k28-hostname-bug123255
 		// ref: https://github.com/kubernetes/kops/issues/16349
 		// ref: https://github.com/kubernetes/kubernetes/issues/123255
-		if k8sVersion.Minor < 31 {
+		if k8sVersion.Minor < 32 {
 			skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 		}
 
