@@ -9719,7 +9719,7 @@ metadata:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/managed-by: kops
-    app.kubernetes.io/name: webhook
+    app.kubernetes.io/name: cert-manager
     app.kubernetes.io/version: v1.12.10
   name: cert-manager-webhook
   namespace: kube-system
