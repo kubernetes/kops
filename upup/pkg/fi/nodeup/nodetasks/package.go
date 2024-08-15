@@ -324,7 +324,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		var args []string
 		env := os.Environ()
 		if d.IsDebianFamily() {
-			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
+			args = []string{"apt-get", "install", "--yes", "--fix-broken", "--no-install-recommends"}
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
 		} else if d.IsRHELFamily() {
 
