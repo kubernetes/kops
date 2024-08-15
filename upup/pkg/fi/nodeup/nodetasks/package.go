@@ -346,6 +346,22 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		cmd.Env = env
 		output, err := cmd.CombinedOutput()
 		if err != nil {
+			// This is a bit of a hack, but if we get an error that says we need to run dpkg configure, we run it.
+			// The typical cause is that we install a package that kills nodeup,
+			// also killing apt-get, and then apt-get is in a bad state.
+			// Typical error looks like this:
+			// exit status 100: E: dpkg was interrupted, you must manually run 'dpkg --configure -a' to correct the problem.
+			if strings.Contains(string(output), "dpkg --configure -a") {
+				klog.Warningf("found error requiring dpkg repair: %q", string(output))
+				args := []string{"dpkg", "--configure", "-a"}
+				klog.Infof("running command %s", args)
+				cmd := exec.Command(args[0], args[1:]...)
+				dpkgOutput, err := cmd.CombinedOutput()
+				if err != nil {
+					return fmt.Errorf("error running `dpkg --configure -a`: %v: %s", err, string(dpkgOutput))
+				}
+				// Note that we still return an error, because our package installation failed; we will retry.
+			}
 			return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
 		}
 	} else {
