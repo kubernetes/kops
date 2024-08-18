@@ -120,14 +120,12 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: 09f06376ef7bfcb706ec648daadae641bf9650d7ab10b6b58d7cd33c0c224867
+    manifestHash: b73e89841f52e80393b7bcb1018baf4a873bba432f404d8a52da098e9d455486
     name: karpenter.sh
     prune:
       kinds:
       - kind: ConfigMap
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
-        namespaces:
-        - kube-system
       - kind: Service
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
         namespaces:

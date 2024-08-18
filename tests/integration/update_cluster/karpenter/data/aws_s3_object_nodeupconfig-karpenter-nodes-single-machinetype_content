@@ -42,6 +42,7 @@ KubeletConfig:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   nodeLabels:
+    foo: bar
     karpenter.sh/provisioner-name: karpenter-nodes-single-machinetype
     node-role.kubernetes.io/node: ""
   podInfraContainerImage: registry.k8s.io/pause:3.9

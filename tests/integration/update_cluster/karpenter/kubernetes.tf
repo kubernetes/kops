@@ -594,6 +594,7 @@ resource "aws_launch_template" "karpenter-nodes-default-minimal-example-com" {
       "KubernetesCluster"                                                           = "minimal.example.com"
       "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
       "aws-node-termination-handler/managed"                                        = ""
+      "k8s.io/cluster-autoscaler/node-template/label/foo"                           = "baz"
       "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
       "k8s.io/role/node"                                                            = "1"
@@ -607,6 +608,7 @@ resource "aws_launch_template" "karpenter-nodes-default-minimal-example-com" {
       "KubernetesCluster"                                                           = "minimal.example.com"
       "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
       "aws-node-termination-handler/managed"                                        = ""
+      "k8s.io/cluster-autoscaler/node-template/label/foo"                           = "baz"
       "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
       "k8s.io/role/node"                                                            = "1"
@@ -618,6 +620,7 @@ resource "aws_launch_template" "karpenter-nodes-default-minimal-example-com" {
     "KubernetesCluster"                                                           = "minimal.example.com"
     "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
     "aws-node-termination-handler/managed"                                        = ""
+    "k8s.io/cluster-autoscaler/node-template/label/foo"                           = "baz"
     "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
     "k8s.io/role/node"                                                            = "1"
@@ -633,10 +636,21 @@ resource "aws_launch_template" "karpenter-nodes-single-machinetype-minimal-examp
     ebs {
       delete_on_termination = true
       encrypted             = true
-      iops                  = 3000
-      throughput            = 125
-      volume_size           = 128
+      iops                  = 4000
+      kms_key_id            = "arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      throughput            = 200
+      volume_size           = 200
       volume_type           = "gp3"
+    }
+  }
+  block_device_mappings {
+    device_name = "/dev/xvdd"
+    ebs {
+      delete_on_termination = true
+      encrypted             = true
+      kms_key_id            = "arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      volume_size           = 20
+      volume_type           = "gp2"
     }
   }
   iam_instance_profile {
@@ -669,6 +683,7 @@ resource "aws_launch_template" "karpenter-nodes-single-machinetype-minimal-examp
       "KubernetesCluster"                                                           = "minimal.example.com"
       "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
       "aws-node-termination-handler/managed"                                        = ""
+      "k8s.io/cluster-autoscaler/node-template/label/foo"                           = "bar"
       "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
       "k8s.io/role/node"                                                            = "1"
@@ -682,6 +697,7 @@ resource "aws_launch_template" "karpenter-nodes-single-machinetype-minimal-examp
       "KubernetesCluster"                                                           = "minimal.example.com"
       "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
       "aws-node-termination-handler/managed"                                        = ""
+      "k8s.io/cluster-autoscaler/node-template/label/foo"                           = "bar"
       "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
       "k8s.io/role/node"                                                            = "1"
@@ -693,6 +709,7 @@ resource "aws_launch_template" "karpenter-nodes-single-machinetype-minimal-examp
     "KubernetesCluster"                                                           = "minimal.example.com"
     "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
     "aws-node-termination-handler/managed"                                        = ""
+    "k8s.io/cluster-autoscaler/node-template/label/foo"                           = "bar"
     "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
     "k8s.io/role/node"                                                            = "1"

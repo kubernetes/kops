@@ -46,6 +46,7 @@ KubeletConfig:
   logLevel: 2
   maxPods: 50
   nodeLabels:
+    foo: baz
     karpenter.sh/provisioner-name: karpenter-nodes-default
     node-role.kubernetes.io/node: ""
   podInfraContainerImage: registry.k8s.io/pause:3.9
