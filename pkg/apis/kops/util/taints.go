@@ -19,24 +19,29 @@ package util
 import (
 	"fmt"
 	"strings"
+
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
-// parseTaint takes a string and returns a map of its value
+// ParseTaint takes a string and returns a core/v1.Taint
 // it mimics the function from https://github.com/kubernetes/kubernetes/blob/master/pkg/util/taints/taints.go
-// but returns a map instead of a v1.Taint
-func ParseTaint(st string) (map[string]string, error) {
-	taint := make(map[string]string)
+func ParseTaint(st string) (v1.Taint, error) {
+	var taint v1.Taint
 
 	var key string
 	var value string
-	var effect string
+	var effect v1.TaintEffect
 
 	parts := strings.Split(st, ":")
 	switch len(parts) {
 	case 1:
 		key = parts[0]
 	case 2:
-		effect = parts[1]
+		effect = v1.TaintEffect(parts[1])
+		if effect != v1.TaintEffectNoSchedule && effect != v1.TaintEffectPreferNoSchedule && effect != v1.TaintEffectNoExecute {
+			return taint, fmt.Errorf("invalid taint effect: %v, unsupported taint effect", effect)
+		}
 
 		partsKV := strings.Split(parts[0], "=")
 		if len(partsKV) > 2 {
@@ -45,14 +50,21 @@ func ParseTaint(st string) (map[string]string, error) {
 		key = partsKV[0]
 		if len(partsKV) == 2 {
 			value = partsKV[1]
+			if errs := validation.IsValidLabelValue(value); len(errs) > 0 {
+				return taint, fmt.Errorf("invalid taint spec: %v, %s", st, strings.Join(errs, "; "))
+			}
 		}
 	default:
 		return taint, fmt.Errorf("invalid taint spec: %v", st)
 	}
 
-	taint["key"] = key
-	taint["value"] = value
-	taint["effect"] = effect
+	if errs := validation.IsQualifiedName(key); len(errs) > 0 {
+		return taint, fmt.Errorf("invalid taint spec: %v, %s", st, strings.Join(errs, "; "))
+	}
+
+	taint.Key = key
+	taint.Value = value
+	taint.Effect = effect
 
 	return taint, nil
 }

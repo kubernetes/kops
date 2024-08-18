@@ -3821,82 +3821,11 @@ spec:
         - key: CriticalAddonsOnly
           operator: Exists
 
-{{ range $name, $spec := GetNodeInstanceGroups }}
-{{ if eq $spec.Manager "Karpenter" }}
+{{ range $name, $ig := GetNodeInstanceGroups }}
+{{ if eq $ig.Spec.Manager "Karpenter" }}
 ---
-apiVersion: karpenter.k8s.aws/v1alpha1
-kind: AWSNodeTemplate
-metadata:
-  name: {{ $name }}
-spec:
-  subnetSelector:
-    kops.k8s.io/instance-group/{{ $name }}: "*"
-    kubernetes.io/cluster/{{ ClusterName }}: "*"
-  launchTemplate: {{ $name }}.{{ ClusterName }}
+{{ KarpenterEC2NodeClass $ig }}
 ---
-apiVersion: karpenter.sh/v1alpha5
-kind: Provisioner
-metadata:
-  name: {{ $name }}
-spec:
-  consolidation:
-    enabled: true
-{{ with $spec.Kubelet }}
-{{ if or .MaxPods .SystemReserved .KubeReserved }}
-  kubeletConfiguration:
-    {{ if .MaxPods }}
-    maxPods: {{ .MaxPods }}
-    {{ end }}
-    {{ if .SystemReserved }}
-    systemReserved:
-      {{ range $key, $val := .SystemReserved}}
-      {{ $key }}: "{{ $val }}"
-      {{ end }}
-    {{ end }}
-    {{ if .KubeReserved }}
-    kubeReserved:
-      {{ range $key, $val := .KubeReserved}}
-      {{ $key }}: "{{ $val }}"
-      {{ end }}
-    {{ end }}
-{{ end }}
-{{ end }}
-  requirements:
-    - key: karpenter.sh/capacity-type
-      operator: In
-      values: ["spot", "on-demand"]
-    - key: kubernetes.io/arch
-      operator: In
-      values: ["{{ ArchitectureOfAMI $spec.Image }}"]
-    - key: "node.kubernetes.io/instance-type"
-      operator: In
-      values:
-      {{ range $type := KarpenterInstanceTypes $spec }}
-      - {{ $type }}
-      {{ end }}
-{{ with $spec.Taints }}
-  taints:
-    {{ range $taintString := $spec.Taints }}
-    {{ $taint := ParseTaint $taintString }}
-  - key: {{ $taint.key }}
-    effect: {{ $taint.effect }}
-    {{ if $taint.value }}
-    value: "{{ $taint.value }}"
-    {{ end }}
-    {{ end }}
-{{ end }}
-{{ if $.ExternalCloudControllerManager }}
-  startupTaints:
-    - key: node.cloudprovider.kubernetes.io/uninitialized
-      effect: NoSchedule
-{{ end }}
-{{ with $spec.NodeLabels }}
-  labels:
-  {{ range $key, $value := . }}
-    {{ $key }}: "{{ $value }}"
-  {{ end }}
-{{ end }}
-  providerRef:
-    name: {{ $name }}
+{{ KarpenterNodePool $ig }}
 {{ end }}
 {{ end }}

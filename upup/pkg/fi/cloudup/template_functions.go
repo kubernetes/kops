@@ -57,6 +57,8 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/awsmodel"
+	"k8s.io/kops/pkg/model/components/karpenter"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/resources/spotinst"
@@ -349,9 +351,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			} else {
 				igNames := maps.SortedKeys(tf.GetNodeInstanceGroups())
 				for _, name := range igNames {
-					spec := tf.GetNodeInstanceGroups()[name]
-					if spec.Autoscale != nil {
-						priorities[strconv.Itoa(int(spec.AutoscalePriority))] = append(priorities[strconv.Itoa(int(spec.AutoscalePriority))], fmt.Sprintf("%s.%s", name, tf.ClusterName()))
+					ig := tf.GetNodeInstanceGroups()[name]
+					if ig.Spec.Autoscale != nil {
+						priorities[strconv.Itoa(int(ig.Spec.AutoscalePriority))] = append(priorities[strconv.Itoa(int(ig.Spec.AutoscalePriority))], fmt.Sprintf("%s.%s", name, tf.ClusterName()))
 					}
 				}
 			}
@@ -384,15 +386,46 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		dest["EnableSQSTerminationDraining"] = func() bool { return cluster.Spec.CloudProvider.AWS.NodeTerminationHandler.IsQueueMode() }
 	}
 
-	dest["ArchitectureOfAMI"] = tf.architectureOfAMI
-
-	dest["ParseTaint"] = util.ParseTaint
-
 	dest["KarpenterEnabled"] = func() bool {
 		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
 	}
-	dest["KarpenterInstanceTypes"] = func(ig kops.InstanceGroupSpec) ([]string, error) {
-		return karpenterInstanceTypes(tf.cloud.(awsup.AWSCloud), ig)
+
+	dest["KarpenterEC2NodeClass"] = func(ig kops.InstanceGroup) (string, error) {
+		karpenter := karpenter.KarpenterModelBuilder{AWSModelContext: awsmodel.AWSModelContext{KopsModelContext: &tf.KopsModelContext}}
+
+		cloud := tf.cloud.(awsup.AWSCloud)
+		image, err := cloud.ResolveImage(ig.Spec.Image)
+		if err != nil {
+			return "", fmt.Errorf("failed to resolve image for instance group %s, %v", ig.Name, err)
+		}
+
+		nodeClass, err := karpenter.EC2NodeClass(&ig, image)
+		if err != nil {
+			return "", err
+		}
+		return tf.ToYAML(nodeClass), nil
+	}
+	dest["KarpenterNodePool"] = func(ig kops.InstanceGroup) (string, error) {
+		karpenter := karpenter.KarpenterModelBuilder{AWSModelContext: awsmodel.AWSModelContext{KopsModelContext: &tf.KopsModelContext}}
+
+		cloud := tf.cloud.(awsup.AWSCloud)
+
+		instanceTypes, err := karpenterInstanceTypes(cloud, ig.Spec)
+		if err != nil {
+			return "", err
+		}
+
+		image, err := cloud.ResolveImage(ig.Spec.Image)
+		if err != nil {
+			return "", fmt.Errorf("failed to resolve image for instance group %s, %v", ig.Name, err)
+		}
+		arch := tf.architectureOfAMI(fi.ValueOf(image.ImageId))
+
+		nodePool, err := karpenter.NodePool(&ig, []string{arch}, instanceTypes)
+		if err != nil {
+			return "", err
+		}
+		return tf.ToYAML(nodePool), nil
 	}
 
 	dest["PodIdentityWebhookConfigMapData"] = tf.podIdentityWebhookConfigMapData
@@ -927,11 +960,11 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 }
 
 // GetNodeInstanceGroups returns a map containing the defined instance groups of role "Node".
-func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGroupSpec {
-	nodegroups := make(map[string]kops.InstanceGroupSpec)
+func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGroup {
+	nodegroups := make(map[string]kops.InstanceGroup)
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			nodegroups[ig.ObjectMeta.Name] = ig.Spec
+			nodegroups[ig.ObjectMeta.Name] = *ig
 		}
 	}
 	return nodegroups
