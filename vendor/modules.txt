@@ -508,7 +508,7 @@ github.com/docker/distribution/registry/client/auth/challenge
 github.com/docker/distribution/registry/client/transport
 github.com/docker/distribution/registry/storage/cache
 github.com/docker/distribution/registry/storage/cache/memory
-# github.com/docker/docker v25.0.6+incompatible
+# github.com/docker/docker v27.1.1+incompatible
 ## explicit
 github.com/docker/docker/api/types/filters
 github.com/docker/docker/api/types/registry
@@ -806,7 +806,7 @@ github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-sockaddr v1.0.6
 ## explicit; go 1.19
 github.com/hashicorp/go-sockaddr
-# github.com/hashicorp/golang-lru v0.5.4
+# github.com/hashicorp/golang-lru v1.0.2
 ## explicit; go 1.12
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.1-vault-5
@@ -888,7 +888,7 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-localereader v0.0.1
 ## explicit
 github.com/mattn/go-localereader
-# github.com/mattn/go-runewidth v0.0.14
+# github.com/mattn/go-runewidth v0.0.15
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
 # github.com/miekg/dns v1.1.59
@@ -960,6 +960,10 @@ github.com/oklog/ulid
 # github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 ## explicit
 github.com/oliveagle/jsonpath
+# github.com/onsi/ginkgo/v2 v2.20.0
+## explicit; go 1.20
+# github.com/onsi/gomega v1.34.1
+## explicit; go 1.20
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
@@ -1028,8 +1032,8 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/rivo/uniseg v0.2.0
-## explicit; go 1.12
+# github.com/rivo/uniseg v0.4.4
+## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
