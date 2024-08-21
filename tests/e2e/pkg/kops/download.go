@@ -28,7 +28,7 @@ import (
 
 // DownloadKops will download the kops binary from the version marker URL
 // Returning the URL to use for KOPS_BASE_URL
-// Example markerURL: https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
+// Example markerURL: https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt
 func DownloadKops(markerURL, downloadPath string) (string, error) {
 	var b bytes.Buffer
 	if err := util.HTTPGETWithHeaders(markerURL, nil, &b); err != nil {

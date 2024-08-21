@@ -11,15 +11,15 @@ After each successful merge to a release branch, the build is made available thr
 
 | branch | marker |
 |--------|--------|
-| https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt | master branch |
+| https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt | master branch |
 | https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.21/latest-ci.txt | kOps 1.21 release branch |
 | https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/release-1.22/latest-ci.txt | kOps 1.22 release branch |
 
 You can create a cluster using these markers using the following scripts:
 
 ```sh
-marker="https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
-export KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+marker="https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt"
+export KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt)"
 wget -q "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
 chmod +x ./kops
 ./kops version
@@ -34,7 +34,7 @@ When a PR builds successfully, you can test the PR using the following script:
 ```sh
 pr=13208
 sha=$(curl -s -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/kubernetes/kops/pulls/${pr} | jq -r .head.sha )
-export KOPS_BASE_URL="https://storage.googleapis.com/kops-ci/pulls/pull-kops-e2e-kubernetes-aws/pull-${sha}"
+export KOPS_BASE_URL="https://storage.googleapis.com/k8s-staging-kops/pulls/pull-kops-aws-distro-debian12/pull-${sha}"
 wget -q "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
 chmod +x ./kops
 ./kops version

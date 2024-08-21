@@ -27,7 +27,7 @@ test-e2e-aws-simple-1-20: test-e2e-install
 		-v 2 \
 		--build --up --down \
 		--cloud-provider=aws \
-		--kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+		--kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt \
 		--kubernetes-version=https://dl.k8s.io/release/stable-1.20.txt \
 		--template-path=tests/e2e/templates/simple.yaml.tmpl \
 		--test=kops \
