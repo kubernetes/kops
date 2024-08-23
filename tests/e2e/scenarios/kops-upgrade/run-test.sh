@@ -34,7 +34,7 @@ ${KUBETEST2} \
 	--create-args="--networking calico"
 
 export KOPS_BASE_URL
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt)"
+KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt)"
 KOPS=$(kops-download-from-base)
 
 "${KOPS}" update cluster

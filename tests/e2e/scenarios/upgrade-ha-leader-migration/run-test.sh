@@ -30,7 +30,7 @@ fi
 
 # for periodic job, let kubetest2 fetch latest kops. Otherwise let kubetest2 build.
 if [[ "${JOB_TYPE-}" == "periodic" ]]; then
-	KUBETEST2="${KUBETEST2} --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt"
+	KUBETEST2="${KUBETEST2} --kops-version-marker=https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt"
 else
 	KUBETEST2="${KUBETEST2} --build"
 fi
