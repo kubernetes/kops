@@ -1613,12 +1613,12 @@ func createEtcdCluster(etcdCluster string, controlPlanes []*api.InstanceGroup, e
 func addCiliumNetwork(cluster *api.Cluster) {
 	cilium := &api.CiliumNetworkingSpec{}
 	cluster.Spec.Networking.Cilium = cilium
-	cilium.EnableNodePort = true
+	// cilium.EnableNodePort = true
 	if cluster.Spec.KubeProxy == nil {
 		cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
 	}
-	enabled := false
-	cluster.Spec.KubeProxy.Enabled = &enabled
+	// enabled := false
+	// cluster.Spec.KubeProxy.Enabled = &enabled
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
