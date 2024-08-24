@@ -305,7 +305,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 	// See https://github.com/kubernetes/kops/issues/10206 for details.
 	// TODO: nodeupScript.SetSysctls = setSysctls()
 
-	nodeupScript.CloudProvider = string(cluster.Spec.GetCloudProvider())
+	nodeupScript.CloudProvider = string(cluster.GetCloudProvider())
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {

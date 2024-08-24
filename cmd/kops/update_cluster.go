@@ -493,7 +493,7 @@ func completeUpdateClusterTarget(f commandutils.Factory, options *UpdateClusterO
 			cloudup.TargetDryRun,
 		}
 		for _, cp := range cloudup.TerraformCloudProviders {
-			if cluster.Spec.GetCloudProvider() == cp {
+			if cluster.GetCloudProvider() == cp {
 				completions = append(completions, cloudup.TargetTerraform)
 			}
 		}

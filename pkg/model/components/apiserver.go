@@ -37,8 +37,8 @@ type KubeAPIServerOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
 // BuildOptions is responsible for filling in the default settings for the kube apiserver
-func (b *KubeAPIServerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
-	clusterSpec := &o.Spec
+func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
+	clusterSpec := &cluster.Spec
 	if clusterSpec.KubeAPIServer == nil {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
@@ -97,7 +97,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 	c.Image = image
 
-	switch clusterSpec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		c.CloudProvider = "aws"
 	case kops.CloudProviderGCE:
@@ -113,7 +113,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	case kops.CloudProviderScaleway:
 		c.CloudProvider = "external"
 	default:
-		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.GetCloudProvider())
+		return fmt.Errorf("unknown cloudprovider %q", cluster.GetCloudProvider())
 	}
 
 	if clusterSpec.ExternalCloudControllerManager != nil {

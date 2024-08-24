@@ -427,8 +427,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	}
 
 	if b.IsKubernetesLT("1.26") &&
-		(b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS ||
-			b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE) {
+		(b.Cluster.GetCloudProvider() == kops.CloudProviderAWS ||
+			b.Cluster.GetCloudProvider() == kops.CloudProviderGCE) {
 		// AWS and GCE KCM-to-CCM leader migration
 		key := "leader-migration.rbac.addons.k8s.io"
 
@@ -701,7 +701,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	}
 
 	if fi.ValueOf(b.Cluster.Spec.CloudConfig.ManageStorageClasses) {
-		if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
+		if b.Cluster.GetCloudProvider() == kops.CloudProviderAWS {
 			key := "storage-aws.addons.k8s.io"
 
 			{
@@ -718,7 +718,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderDO {
 		key := "digitalocean-cloud-controller.addons.k8s.io"
 
 		{
@@ -748,7 +748,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderHetzner {
 		{
 			key := "hcloud-cloud-controller.addons.k8s.io"
 			id := "k8s-1.22"
@@ -775,7 +775,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
 		if fi.ValueOf(b.Cluster.Spec.CloudConfig.ManageStorageClasses) {
 			key := "storage-gce.addons.k8s.io"
 
@@ -806,7 +806,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderScaleway {
 		{
 			key := "scaleway-cloud-controller.addons.k8s.io"
 			id := "k8s-1.24"
@@ -852,7 +852,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	// The metadata-proxy daemonset conceals node metadata endpoints in GCE.
 	// It will land on nodes labeled cloud.google.com/metadata-proxy-ready=true
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE && b.Cluster.IsKubernetesLT("1.29") {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE && b.Cluster.IsKubernetesLT("1.29") {
 		key := "metadata-proxy.addons.k8s.io"
 
 		{
@@ -868,7 +868,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderGCE {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
 		{
 			key := "gcp-cloud-controller.addons.k8s.io"
 			useBuiltin := !b.hasExternalAddon(key)
@@ -1110,7 +1110,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderOpenstack {
 		{
 			key := "storage-openstack.addons.k8s.io"
 
@@ -1142,7 +1142,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderAWS {
 
 		{
 			key := "aws-cloud-controller.addons.k8s.io"
@@ -1217,7 +1217,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	serviceAccounts := make(map[types.NamespacedName]iam.Subject)
 
-	if b.Cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS && b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer != nil {
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderAWS && b.Cluster.Spec.KubeAPIServer.ServiceAccountIssuer != nil {
 		awsModelContext := &awsmodel.AWSModelContext{
 			KopsModelContext: b.KopsModelContext,
 		}

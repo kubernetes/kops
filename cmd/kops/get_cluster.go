@@ -219,7 +219,7 @@ func clusterOutputTable(clusters []*kopsapi.Cluster, out io.Writer) error {
 		return c.ObjectMeta.Name
 	})
 	t.AddColumn("CLOUD", func(c *kopsapi.Cluster) string {
-		return string(c.Spec.GetCloudProvider())
+		return string(c.GetCloudProvider())
 	})
 	t.AddColumn("ZONES", func(c *kopsapi.Cluster) string {
 		zones := sets.NewString()

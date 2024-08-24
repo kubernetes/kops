@@ -236,7 +236,7 @@ func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
 
 		awsNoProxy := "169.254.169.254"
 
-		if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS && !strings.Contains(cluster.Spec.Networking.EgressProxy.ProxyExcludes, awsNoProxy) {
+		if cluster.GetCloudProvider() == kops.CloudProviderAWS && !strings.Contains(cluster.Spec.Networking.EgressProxy.ProxyExcludes, awsNoProxy) {
 			egressSlice = append(egressSlice, awsNoProxy)
 		}
 

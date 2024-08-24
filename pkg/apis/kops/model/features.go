@@ -41,7 +41,7 @@ func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 // UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
 func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 	if cluster.UsesLegacyGossip() {
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderGCE:
 			// We can use cloud-discovery here.
 		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO:

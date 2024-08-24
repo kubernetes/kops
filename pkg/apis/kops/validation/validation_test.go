@@ -189,7 +189,8 @@ func TestValidateSubnets(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		cluster := &kops.ClusterSpec{
+		cluster := &kops.Cluster{}
+		cluster.Spec = kops.ClusterSpec{
 			CloudProvider: kops.CloudProviderSpec{
 				AWS: &kops.AWSSpec{},
 			},
@@ -198,8 +199,8 @@ func TestValidateSubnets(t *testing.T) {
 				Subnets:     g.Input,
 			},
 		}
-		_, ipNet, _ := net.ParseCIDR(cluster.Networking.NetworkCIDR)
-		errs := validateSubnets(cluster, cluster.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet}, nil, nil)
+		_, ipNet, _ := net.ParseCIDR(cluster.Spec.Networking.NetworkCIDR)
+		errs := validateSubnets(cluster, cluster.Spec.Networking.Subnets, field.NewPath("subnets"), true, &cloudProviderConstraints{}, []*net.IPNet{ipNet}, nil, nil)
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
@@ -1652,7 +1653,9 @@ func Test_Validate_Nvidia_Cluster(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateNvidiaConfig(&g.Input, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"), true)
+		cluster := &kops.Cluster{}
+		cluster.Spec = g.Input
+		errs := validateNvidiaConfig(cluster, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"), true)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
@@ -1701,7 +1704,9 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateNvidiaConfig(&g.Input, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"), false)
+		cluster := &kops.Cluster{}
+		cluster.Spec = g.Input
+		errs := validateNvidiaConfig(cluster, g.Input.Containerd.NvidiaGPU, field.NewPath("containerd", "nvidiaGPU"), false)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }

@@ -513,7 +513,7 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 	// See https://github.com/kubernetes/kops/issues/10206 for details.
 	// nodeupScript.SetSysctls = setSysctls()
 
-	nodeupScript.CloudProvider = string(cluster.Spec.GetCloudProvider())
+	nodeupScript.CloudProvider = string(cluster.GetCloudProvider())
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {

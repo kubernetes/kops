@@ -150,7 +150,7 @@ func ValidateCluster(c *kops.Cluster, strict bool, vfsContext *vfs.VFSContext) f
 	{
 
 		var k8sCloudProvider string
-		switch c.Spec.GetCloudProvider() {
+		switch c.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			k8sCloudProvider = "aws"
 		case kops.CloudProviderGCE:
@@ -275,7 +275,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		errs := CrossValidateInstanceGroup(g, c, cloud, strict)
 
 		// Additional cloud-specific validation rules
-		if c.Spec.GetCloudProvider() != kops.CloudProviderAWS && len(g.Spec.Volumes) > 0 {
+		if c.GetCloudProvider() != kops.CloudProviderAWS && len(g.Spec.Volumes) > 0 {
 			errs = append(errs, field.Forbidden(field.NewPath("spec", "volumes"), "instancegroup volumes are only available with aws at present"))
 		}
 

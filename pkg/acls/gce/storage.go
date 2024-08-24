@@ -36,7 +36,7 @@ var _ acls.ACLStrategy = &gcsAclStrategy{}
 
 // GetACL returns the ACL to use if this is a google cloud storage path
 func (s *gcsAclStrategy) GetACL(ctx context.Context, p vfs.Path, cluster *kops.Cluster) (vfs.ACL, error) {
-	if cluster.Spec.GetCloudProvider() != kops.CloudProviderGCE {
+	if cluster.GetCloudProvider() != kops.CloudProviderGCE {
 		return nil, nil
 	}
 	gcsPath, ok := p.(*vfs.GSPath)

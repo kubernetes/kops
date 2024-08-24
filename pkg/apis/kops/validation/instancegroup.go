@@ -239,7 +239,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	}
 
 	if g.Spec.Role == kops.InstanceGroupRoleAPIServer {
-		if cluster.Spec.GetCloudProvider() != kops.CloudProviderAWS {
+		if cluster.GetCloudProvider() != kops.CloudProviderAWS {
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer role only supported on AWS"))
 		}
 		if cluster.UsesNoneDNS() {
@@ -262,7 +262,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
+	if cluster.GetCloudProvider() == kops.CloudProviderAWS {
 		if g.Spec.RootVolume != nil && g.Spec.RootVolume.Type != nil {
 			allErrs = append(allErrs, IsValidValue(field.NewPath("spec", "rootVolume", "type"), g.Spec.RootVolume.Type, []string{"standard", "gp3", "gp2", "io1", "io2"})...)
 		}
@@ -292,7 +292,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	}
 
 	if g.Spec.Containerd != nil {
-		allErrs = append(allErrs, validateContainerdConfig(&cluster.Spec, g.Spec.Containerd, field.NewPath("spec", "containerd"), false)...)
+		allErrs = append(allErrs, validateContainerdConfig(cluster, g.Spec.Containerd, field.NewPath("spec", "containerd"), false)...)
 	}
 
 	return allErrs

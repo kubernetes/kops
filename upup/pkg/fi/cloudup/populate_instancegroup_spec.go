@@ -144,7 +144,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
 				return nil, fmt.Errorf("invalid dedicated instance type: %s", ig.Spec.MachineType)
@@ -198,7 +198,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		igNvidia = true
 	}
 
-	switch cluster.Spec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		if clusterNvidia || igNvidia {
 			mt, err := awsup.GetMachineTypeInfo(cloud.(awsup.AWSCloud), ec2types.InstanceType(ig.Spec.MachineType))
@@ -304,7 +304,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 // defaultMachineType returns the default MachineType for the instance group, based on the cloudprovider
 func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
-	switch cluster.Spec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS:
 		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
 			return "", nil
@@ -379,6 +379,6 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		}
 	}
 
-	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.GetCloudProvider(), ig.Spec.Role)
+	klog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.GetCloudProvider(), ig.Spec.Role)
 	return "", nil
 }

@@ -28,6 +28,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
+// AlphaLabelCloudProvider lets us experiment with a cloud provider,
+// before adding it to the API.
+const AlphaLabelCloudProvider = "alpha.kops.k8s.io/cloud"
+
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -946,20 +950,25 @@ func (c *ClusterSpec) IsKopsControllerIPAM() bool {
 	return c.IsIPv6Only()
 }
 
-func (c *ClusterSpec) GetCloudProvider() CloudProviderID {
-	if c.CloudProvider.AWS != nil {
+func (c *Cluster) GetCloudProvider() CloudProviderID {
+	if c.Labels[AlphaLabelCloudProvider] == "metal" {
+		return CloudProviderMetal
+	}
+
+	spec := c.Spec
+	if spec.CloudProvider.AWS != nil {
 		return CloudProviderAWS
-	} else if c.CloudProvider.Azure != nil {
+	} else if spec.CloudProvider.Azure != nil {
 		return CloudProviderAzure
-	} else if c.CloudProvider.DO != nil {
+	} else if spec.CloudProvider.DO != nil {
 		return CloudProviderDO
-	} else if c.CloudProvider.GCE != nil {
+	} else if spec.CloudProvider.GCE != nil {
 		return CloudProviderGCE
-	} else if c.CloudProvider.Hetzner != nil {
+	} else if spec.CloudProvider.Hetzner != nil {
 		return CloudProviderHetzner
-	} else if c.CloudProvider.Openstack != nil {
+	} else if spec.CloudProvider.Openstack != nil {
 		return CloudProviderOpenstack
-	} else if c.CloudProvider.Scaleway != nil {
+	} else if spec.CloudProvider.Scaleway != nil {
 		return CloudProviderScaleway
 	}
 	return ""

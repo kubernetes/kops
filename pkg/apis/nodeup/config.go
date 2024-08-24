@@ -237,7 +237,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	bootConfig := BootConfig{
-		CloudProvider:     cluster.Spec.GetCloudProvider(),
+		CloudProvider:     cluster.GetCloudProvider(),
 		ClusterName:       cluster.ObjectMeta.Name,
 		InstanceGroupName: instanceGroup.ObjectMeta.Name,
 		InstanceGroupRole: role,
