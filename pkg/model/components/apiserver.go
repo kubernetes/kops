@@ -34,11 +34,11 @@ type KubeAPIServerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
 // BuildOptions is responsible for filling in the default settings for the kube apiserver
-func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KubeAPIServerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	if clusterSpec.KubeAPIServer == nil {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}

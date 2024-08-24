@@ -26,11 +26,11 @@ type DefaultsOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &DefaultsOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &DefaultsOptionsBuilder{}
 
 // BuildOptions is responsible for cluster options
-func (b *DefaultsOptionsBuilder) BuildOptions(o interface{}) error {
-	options := o.(*kops.ClusterSpec)
+func (b *DefaultsOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	options := &o.Spec
 
 	if options.ClusterDNSDomain == "" {
 		options.ClusterDNSDomain = "cluster.local"

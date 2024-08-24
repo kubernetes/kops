@@ -26,10 +26,10 @@ type AWSOptionsBuilder struct {
 	OptionsContext *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &AWSOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &AWSOptionsBuilder{}
 
-func (b *AWSOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *AWSOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	aws := clusterSpec.CloudProvider.AWS
 	if aws == nil {
 		return nil

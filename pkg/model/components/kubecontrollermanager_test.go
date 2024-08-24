@@ -55,7 +55,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 			},
 		}
 
-		err := kcm.BuildOptions(&c.Spec)
+		err := kcm.BuildOptions(c)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions %s", err)
 		}
@@ -82,7 +82,7 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 
 	c.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration = time.Minute * 5
 
-	err := kcm.BuildOptions(&c.Spec)
+	err := kcm.BuildOptions(c)
 	if err != nil {
 		t.Fatalf("unexpected error from BuildOptions %s", err)
 	}
@@ -156,7 +156,7 @@ func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
 				ClusterCIDR: tc.ClusterCIDR,
 			}
 
-			err := kcm.BuildOptions(&c.Spec)
+			err := kcm.BuildOptions(c)
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.ExpectedMaskSize, c.Spec.KubeControllerManager.NodeCIDRMaskSize)

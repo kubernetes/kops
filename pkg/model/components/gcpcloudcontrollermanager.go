@@ -27,10 +27,10 @@ type GCPCloudControllerManagerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = (*GCPCloudControllerManagerOptionsBuilder)(nil)
+var _ loader.ClusterOptionsBuilder = (*GCPCloudControllerManagerOptionsBuilder)(nil)
 
-func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface{}) error {
-	clusterSpec := options.(*kops.ClusterSpec)
+func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options *kops.Cluster) error {
+	clusterSpec := &options.Spec
 
 	if clusterSpec.GetCloudProvider() != kops.CloudProviderGCE {
 		return nil

@@ -29,10 +29,10 @@ type KubeProxyOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KubeProxyOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KubeProxyOptionsBuilder{}
 
-func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KubeProxyOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	if clusterSpec.KubeProxy == nil {
 		clusterSpec.KubeProxy = &kops.KubeProxyConfig{}
 	}

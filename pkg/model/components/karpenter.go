@@ -26,10 +26,10 @@ type KarpenterOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KarpenterOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KarpenterOptionsBuilder{}
 
-func (b *KarpenterOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KarpenterOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	c := clusterSpec.Karpenter
 	if c == nil {
 		return nil

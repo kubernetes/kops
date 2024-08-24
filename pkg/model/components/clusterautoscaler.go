@@ -28,10 +28,10 @@ type ClusterAutoscalerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &ClusterAutoscalerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &ClusterAutoscalerOptionsBuilder{}
 
-func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	cas := clusterSpec.ClusterAutoscaler
 	if cas == nil || !fi.ValueOf(cas.Enabled) {
 		return nil

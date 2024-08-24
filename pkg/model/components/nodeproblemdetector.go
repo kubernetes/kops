@@ -28,10 +28,10 @@ type NodeProblemDetectorOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &NodeProblemDetectorOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &NodeProblemDetectorOptionsBuilder{}
 
-func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	if clusterSpec.NodeProblemDetector == nil {
 		return nil
 	}

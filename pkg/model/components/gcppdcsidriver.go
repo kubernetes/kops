@@ -27,10 +27,10 @@ type GCPPDCSIDriverOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &GCPPDCSIDriverOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &GCPPDCSIDriverOptionsBuilder{}
 
-func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
-	gce := o.(*kops.ClusterSpec).CloudProvider.GCE
+func (b *GCPPDCSIDriverOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	gce := o.Spec.CloudProvider.GCE
 	if gce == nil {
 		return nil
 	}

@@ -34,11 +34,11 @@ type EtcdManagerOptionsBuilder struct {
 	*components.OptionsContext
 }
 
-var _ loader.OptionsBuilder = &EtcdManagerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &EtcdManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used to create etcd manager manifest
-func (b *EtcdManagerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *EtcdManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 
 	for i := range clusterSpec.EtcdClusters {
 		etcdCluster := &clusterSpec.EtcdClusters[i]

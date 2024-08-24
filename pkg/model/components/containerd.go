@@ -27,11 +27,11 @@ type ContainerdOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &ContainerdOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &ContainerdOptionsBuilder{}
 
 // BuildOptions is responsible for filling in the default setting for containerd daemon
-func (b *ContainerdOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 
 	if clusterSpec.Containerd == nil {
 		clusterSpec.Containerd = &kops.ContainerdConfig{}

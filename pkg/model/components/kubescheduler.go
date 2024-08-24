@@ -27,10 +27,10 @@ type KubeSchedulerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KubeSchedulerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KubeSchedulerOptionsBuilder{}
 
-func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KubeSchedulerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	if clusterSpec.KubeScheduler == nil {
 		clusterSpec.KubeScheduler = &kops.KubeSchedulerConfig{}
 	}

@@ -29,11 +29,11 @@ type KubeDnsOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KubeDnsOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KubeDnsOptionsBuilder{}
 
 // BuildOptions fills in the kubedns model
-func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KubeDnsOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 
 	if clusterSpec.KubeDNS == nil {
 		clusterSpec.KubeDNS = &kops.KubeDNSConfig{}

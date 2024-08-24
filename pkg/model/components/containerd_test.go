@@ -59,7 +59,7 @@ func Test_Build_Containerd_Supported_Version(t *testing.T) {
 			},
 		}
 
-		err = ob.BuildOptions(&c.Spec)
+		err = ob.BuildOptions(c)
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)
 		}

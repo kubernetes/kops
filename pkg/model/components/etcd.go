@@ -26,15 +26,15 @@ type EtcdOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &EtcdOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &EtcdOptionsBuilder{}
 
 const (
 	DefaultEtcd3Version_1_22 = "3.5.13"
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
-func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
-	spec := o.(*kops.ClusterSpec)
+func (b *EtcdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	spec := &o.Spec
 
 	for i := range spec.EtcdClusters {
 		c := &spec.EtcdClusters[i]

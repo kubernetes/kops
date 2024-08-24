@@ -38,11 +38,11 @@ type KubeControllerManagerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KubeControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used to create kubernetes controller manager manifest
-func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	if clusterSpec.KubeControllerManager == nil {
 		clusterSpec.KubeControllerManager = &kops.KubeControllerManagerConfig{}
 	}

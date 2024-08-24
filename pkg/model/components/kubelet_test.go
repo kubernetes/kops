@@ -52,7 +52,7 @@ func buildOptions(cluster *kops.Cluster) error {
 		},
 	}
 
-	err = builder.BuildOptions(&cluster.Spec)
+	err = builder.BuildOptions(cluster)
 	if err != nil {
 		return nil
 	}

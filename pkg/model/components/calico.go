@@ -26,10 +26,10 @@ type CalicoOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &CalicoOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &CalicoOptionsBuilder{}
 
-func (b *CalicoOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *CalicoOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	c := clusterSpec.Networking.Calico
 	if c == nil {
 		return nil

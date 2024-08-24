@@ -30,10 +30,10 @@ type OpenStackOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &OpenStackOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &OpenStackOptionsBuilder{}
 
-func (b *OpenStackOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *OpenStackOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	openstack := clusterSpec.CloudProvider.Openstack
 
 	if openstack == nil {

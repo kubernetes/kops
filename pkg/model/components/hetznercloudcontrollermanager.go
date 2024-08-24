@@ -27,11 +27,11 @@ type HetznerCloudControllerManagerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &HetznerCloudControllerManagerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &HetznerCloudControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used for the Hetzner cloud controller manager manifest
-func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *HetznerCloudControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 
 	if clusterSpec.GetCloudProvider() != kops.CloudProviderHetzner {
 		return nil
