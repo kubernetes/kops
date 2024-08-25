@@ -1,38 +1,39 @@
 // For format details, see https://containers.dev
 {
-    "name": "Kops environment from dev container",
-    // Image to pull when not building from scratch. See .devcontainer/build/devcontainer.json
-    // and .github/devcontainer-build-and-push.yml for the instructions on how this image is built
-    "image": "debian:bullseye",
-    // "image": "registry.k8s.io/build-image/kube-cross:v1.30.0-go1.22.0-bullseye.0",
-    // Setup the go environment and mount into the dev container at the expected location
-    "workspaceFolder": "/go/src/k8s.io/kops",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/go/src/k8s.io/kops,type=bind,consistency=cached",
-    // Ensure that the host machine has enough resources to build and test Kops
-    "hostRequirements": {
-        "cpus": 4
-    },
-    // Copy over welcome message and install pyyaml
-    "onCreateCommand": "bash .devcontainer/setup.sh",
-    // for Kubernetes testing, suppress extraneous forwarding messages
-    "otherPortsAttributes": {
-        "onAutoForward": "silent"
-    },
-    "remoteUser": "root",
-    // Configure tool-specific properties.
-    // "customizations": {
-    // },
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [],
+  "name": "Kops environment from dev container",
+  // Image to pull when not building from scratch. See .devcontainer/build/devcontainer.json
+  // and .github/devcontainer-build-and-push.yml for the instructions on how this image is built
+  "image": "debian:bookworm",
+  // "image": "registry.k8s.io/build-image/kube-cross:v1.30.0-go1.22.0-bullseye.0",
+  // Setup the go environment and mount into the dev container at the expected location
+  "workspaceFolder": "/go/src/k8s.io/kops",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/go/src/k8s.io/kops,type=bind,consistency=cached",
+  // Ensure that the host machine has enough resources to build and test Kops
+  "hostRequirements": {
+    "cpus": 4
+  },
+  // Copy over welcome message and install pyyaml
+  "onCreateCommand": "bash .devcontainer/setup.sh",
+  // for Kubernetes testing, suppress extraneous forwarding messages
+  "otherPortsAttributes": {
+    "onAutoForward": "silent"
+  },
+  "remoteUser": "root",
+  // Configure tool-specific properties.
+  // "customizations": {
+  // },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
 
-    // Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/github-cli:1": {
-			"installDirectlyFromGitHubRelease": true,
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers/features/go:1": {
-			"version": "latest"
-		}
-	}
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest"
+    }
+  }
 }
