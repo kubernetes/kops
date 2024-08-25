@@ -34,6 +34,12 @@ const (
 	// The specified certificate does not exist.
 	ErrCodeCertificateNotFoundException = "CertificateNotFound"
 
+	// ErrCodeDeleteAssociationSameAccountException for service response error code
+	// "DeleteAssociationSameAccount".
+	//
+	// The specified association cannot be within the same account.
+	ErrCodeDeleteAssociationSameAccountException = "DeleteAssociationSameAccount"
+
 	// ErrCodeDuplicateListenerException for service response error code
 	// "DuplicateListener".
 	//
@@ -156,6 +162,12 @@ const (
 	// A specified resource is in use.
 	ErrCodeResourceInUseException = "ResourceInUse"
 
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFound".
+	//
+	// The specified resource does not exist.
+	ErrCodeResourceNotFoundException = "ResourceNotFound"
+
 	// ErrCodeRevocationContentNotFoundException for service response error code
 	// "RevocationContentNotFound".
 	//
@@ -275,6 +287,12 @@ const (
 	// across all listeners. If a target group is used by multiple actions for a
 	// load balancer, it is counted as only one use.
 	ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException = "TooManyUniqueTargetGroupsPerLoadBalancer"
+
+	// ErrCodeTrustStoreAssociationNotFoundException for service response error code
+	// "AssociationNotFound".
+	//
+	// The specified association does not exist.
+	ErrCodeTrustStoreAssociationNotFoundException = "AssociationNotFound"
 
 	// ErrCodeTrustStoreInUseException for service response error code
 	// "TrustStoreInUse".

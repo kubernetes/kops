@@ -266,6 +266,10 @@ type DecoderConfig struct {
 	// defaults to "mapstructure"
 	TagName string
 
+	// The option of the value in the tag that indicates a field should
+	// be squashed. This defaults to "squash".
+	SquashTagOption string
+
 	// IgnoreUntaggedFields ignores all struct fields without explicit
 	// TagName, comparable to `mapstructure:"-"` as default behaviour.
 	IgnoreUntaggedFields bool
@@ -283,7 +287,8 @@ type DecoderConfig struct {
 // structure. The top-level Decode method is just a convenience that sets
 // up the most basic Decoder.
 type Decoder struct {
-	config *DecoderConfig
+	config           *DecoderConfig
+	cachedDecodeHook func(from reflect.Value, to reflect.Value) (interface{}, error)
 }
 
 // Metadata contains information about decoding a structure that
@@ -401,12 +406,19 @@ func NewDecoder(config *DecoderConfig) (*Decoder, error) {
 		config.TagName = "mapstructure"
 	}
 
+	if config.SquashTagOption == "" {
+		config.SquashTagOption = "squash"
+	}
+
 	if config.MatchName == nil {
 		config.MatchName = strings.EqualFold
 	}
 
 	result := &Decoder{
 		config: config,
+	}
+	if config.DecodeHook != nil {
+		result.cachedDecodeHook = cachedDecodeHook(config.DecodeHook)
 	}
 
 	return result, nil
@@ -462,10 +474,10 @@ func (d *Decoder) decode(name string, input interface{}, outVal reflect.Value) e
 		return nil
 	}
 
-	if d.config.DecodeHook != nil {
+	if d.cachedDecodeHook != nil {
 		// We have a DecodeHook, so let's pre-process the input.
 		var err error
-		input, err = DecodeHookExec(d.config.DecodeHook, inputVal, outVal)
+		input, err = d.cachedDecodeHook(inputVal, outVal)
 		if err != nil {
 			return fmt.Errorf("error decoding '%s': %w", name, err)
 		}
@@ -973,7 +985,7 @@ func (d *Decoder) decodeMapFromStruct(name string, dataVal reflect.Value, val re
 			}
 
 			// If "squash" is specified in the tag, we squash the field down.
-			squash = squash || strings.Index(tagValue[index+1:], "squash") != -1
+			squash = squash || strings.Contains(tagValue[index+1:], d.config.SquashTagOption)
 			if squash {
 				// When squashing, the embedded type can be a pointer to a struct.
 				if v.Kind() == reflect.Ptr && v.Elem().Kind() == reflect.Struct {
@@ -1351,7 +1363,7 @@ func (d *Decoder) decodeStructFromMap(name string, dataVal, val reflect.Value) e
 			// We always parse the tags cause we're looking for other tags too
 			tagParts := strings.Split(fieldType.Tag.Get(d.config.TagName), ",")
 			for _, tag := range tagParts[1:] {
-				if tag == "squash" {
+				if tag == d.config.SquashTagOption {
 					squash = true
 					break
 				}
@@ -1363,10 +1375,15 @@ func (d *Decoder) decodeStructFromMap(name string, dataVal, val reflect.Value) e
 			}
 
 			if squash {
-				if fieldVal.Kind() != reflect.Struct {
-					errs = append(errs, fmt.Errorf("%s: unsupported type for squash: %s", fieldType.Name, fieldVal.Kind()))
-				} else {
+				switch fieldVal.Kind() {
+				case reflect.Struct:
 					structs = append(structs, fieldVal)
+				case reflect.Interface:
+					if !fieldVal.IsNil() {
+						structs = append(structs, fieldVal.Elem().Elem())
+					}
+				default:
+					errs = append(errs, fmt.Errorf("%s: unsupported type for squash: %s", fieldType.Name, fieldVal.Kind()))
 				}
 				continue
 			}

@@ -60,7 +60,7 @@ func (name KubernetesInstanceID) MapToAWSInstanceID() (InstanceID, error) {
 	s := string(name)
 
 	if !strings.HasPrefix(s, "aws://") {
-		// Assume a bare aws volume id (vol-1234...)
+		// Assume a bare aws instance id (i-1234...)
 		// Build a URL with an empty host (AZ)
 		s = "aws://" + "/" + "/" + s
 	}
@@ -79,7 +79,7 @@ func (name KubernetesInstanceID) MapToAWSInstanceID() (InstanceID, error) {
 		awsID = tokens[len(tokens)-1]
 	}
 
-	// We sanity check the resulting volume; the two known formats are
+	// We sanity check the resulting instance ID; the two known formats are
 	// i-12345678 and i-12345678abcdef01
 	if awsID == "" || !(awsInstanceRegMatch.MatchString(awsID) || variant.IsVariantNode(awsID)) {
 		return "", fmt.Errorf("Invalid format for AWS instance (%s)", name)

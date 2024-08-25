@@ -1277,6 +1277,8 @@ type Cluster struct {
 	SatisfiesPzi bool `json:"satisfiesPzi,omitempty"`
 	// SatisfiesPzs: Output only. Reserved for future use.
 	SatisfiesPzs bool `json:"satisfiesPzs,omitempty"`
+	// SecretManagerConfig: Secret CSI driver configuration.
+	SecretManagerConfig *SecretManagerConfig `json:"secretManagerConfig,omitempty"`
 	// SecurityPostureConfig: Enable/Disable Security Posture API features for the
 	// cluster.
 	SecurityPostureConfig *SecurityPostureConfig `json:"securityPostureConfig,omitempty"`
@@ -1611,6 +1613,8 @@ type ClusterUpdate struct {
 	// DesiredResourceUsageExportConfig: The desired configuration for exporting
 	// resource usage.
 	DesiredResourceUsageExportConfig *ResourceUsageExportConfig `json:"desiredResourceUsageExportConfig,omitempty"`
+	// DesiredSecretManagerConfig: Enable/Disable Secret Manager Config.
+	DesiredSecretManagerConfig *SecretManagerConfig `json:"desiredSecretManagerConfig,omitempty"`
 	// DesiredSecurityPostureConfig: Enable/Disable Security Posture API features
 	// for the cluster.
 	DesiredSecurityPostureConfig *SecurityPostureConfig `json:"desiredSecurityPostureConfig,omitempty"`
@@ -3966,6 +3970,8 @@ type NodeConfig struct {
 	// Spot: Spot flag for enabling Spot VM, which is a rebrand of the existing
 	// preemptible flag.
 	Spot bool `json:"spot,omitempty"`
+	// StoragePools: List of Storage Pools where boot disks are provisioned.
+	StoragePools []string `json:"storagePools,omitempty"`
 	// Tags: The list of instance tags applied to all nodes. Tags are used to
 	// identify valid sources or targets for network firewalls and are specified by
 	// the client during cluster or node pool creation. Each tag within the list
@@ -5497,6 +5503,29 @@ func (s SecondaryBootDisk) MarshalJSON() ([]byte, error) {
 type SecondaryBootDiskUpdateStrategy struct {
 }
 
+// SecretManagerConfig: SecretManagerConfig is config for secret manager
+// enablement.
+type SecretManagerConfig struct {
+	// Enabled: Enable/Disable Secret Manager Config.
+	Enabled bool `json:"enabled,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Enabled") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s SecretManagerConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod SecretManagerConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // SecurityBulletinEvent: SecurityBulletinEvent is a notification sent to
 // customers when a security bulletin has been posted that they are vulnerable
 // to.
@@ -6715,6 +6744,9 @@ type UpdateNodePoolRequest struct {
 	// attached to the nodes for managing Compute Engine firewalls using Network
 	// Firewall Policies. Existing tags will be replaced with new values.
 	ResourceManagerTags *ResourceManagerTags `json:"resourceManagerTags,omitempty"`
+	// StoragePools: List of Storage Pools where boot disks are provisioned.
+	// Existing Storage Pools will be replaced with storage-pools.
+	StoragePools []string `json:"storagePools,omitempty"`
 	// Tags: The desired network tags to be applied to all nodes in the node pool.
 	// If this field is not present, the tags will not be changed. Otherwise, the
 	// existing network tags will be *replaced* with the provided tags.

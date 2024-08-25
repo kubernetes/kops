@@ -9,21 +9,6 @@ type EC2 interface {
 	// Query EC2 for instances matching the filter
 	DescribeInstances(request *ec2.DescribeInstancesInput) ([]*ec2.Instance, error)
 
-	// Attach a volume to an instance
-	AttachVolume(*ec2.AttachVolumeInput) (*ec2.VolumeAttachment, error)
-	// Detach a volume from an instance it is attached to
-	DetachVolume(request *ec2.DetachVolumeInput) (resp *ec2.VolumeAttachment, err error)
-	// Lists volumes
-	DescribeVolumes(request *ec2.DescribeVolumesInput) ([]*ec2.Volume, error)
-	// Create an EBS volume
-	CreateVolume(request *ec2.CreateVolumeInput) (resp *ec2.Volume, err error)
-	// Delete an EBS volume
-	DeleteVolume(*ec2.DeleteVolumeInput) (*ec2.DeleteVolumeOutput, error)
-
-	ModifyVolume(*ec2.ModifyVolumeInput) (*ec2.ModifyVolumeOutput, error)
-
-	DescribeVolumeModifications(*ec2.DescribeVolumesModificationsInput) ([]*ec2.VolumeModification, error)
-
 	DescribeSecurityGroups(request *ec2.DescribeSecurityGroupsInput) ([]*ec2.SecurityGroup, error)
 
 	CreateSecurityGroup(*ec2.CreateSecurityGroupInput) (*ec2.CreateSecurityGroupOutput, error)

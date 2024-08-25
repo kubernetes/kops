@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.0
   name: clusters.kops.k8s.io
 spec:
   group: kops.k8s.io
@@ -1805,7 +1805,6 @@ spec:
                       to determine whether to authorize the request.
                     type: string
                   basicAuthFile:
-                    description: 'TODO: Remove unused BasicAuthFile'
                     type: string
                   bindAddress:
                     description: BindAddress is the binding address for the secure
@@ -2139,7 +2138,6 @@ spec:
                     format: int32
                     type: integer
                   tlsCertFile:
-                    description: 'TODO: Remove unused TLSCertFile'
                     type: string
                   tlsCipherSuites:
                     description: TLSCipherSuites indicates the allowed TLS cipher
@@ -2151,10 +2149,8 @@ spec:
                     description: TLSMinVersion indicates the minimum TLS version allowed
                     type: string
                   tlsPrivateKeyFile:
-                    description: 'TODO: Remove unused TLSPrivateKeyFile'
                     type: string
                   tokenAuthFile:
-                    description: 'TODO: Remove unused TokenAuthFile'
                     type: string
                 type: object
               kubeControllerManager:
@@ -2813,7 +2809,7 @@ spec:
                                         pod labels will be ignored. The default value is empty.
                                         The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                         Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                        This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                        This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                       items:
                                         type: string
                                       type: array
@@ -2828,7 +2824,7 @@ spec:
                                         pod labels will be ignored. The default value is empty.
                                         The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                         Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                        This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                        This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                       items:
                                         type: string
                                       type: array
@@ -2995,7 +2991,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                     Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -3010,7 +3006,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                     Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -3175,7 +3171,7 @@ spec:
                                         pod labels will be ignored. The default value is empty.
                                         The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                         Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                        This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                        This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                       items:
                                         type: string
                                       type: array
@@ -3190,7 +3186,7 @@ spec:
                                         pod labels will be ignored. The default value is empty.
                                         The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                         Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                        This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                        This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                       items:
                                         type: string
                                       type: array
@@ -3357,7 +3353,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                     Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -3372,7 +3368,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                     Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -4308,7 +4304,6 @@ spec:
                       type: string
                     type: array
                   tlsCertFile:
-                    description: 'TODO: Remove unused TLSCertFile'
                     type: string
                   tlsCipherSuites:
                     description: TLSCipherSuites indicates the allowed TLS cipher
@@ -4320,7 +4315,6 @@ spec:
                     description: TLSMinVersion indicates the minimum TLS version allowed
                     type: string
                   tlsPrivateKeyFile:
-                    description: 'TODO: Remove unused TLSPrivateKeyFile'
                     type: string
                   topologyManagerPolicy:
                     description: TopologyManagerPolicy determines the allocation policy
@@ -4763,7 +4757,6 @@ spec:
                       type: string
                     type: array
                   tlsCertFile:
-                    description: 'TODO: Remove unused TLSCertFile'
                     type: string
                   tlsCipherSuites:
                     description: TLSCipherSuites indicates the allowed TLS cipher
@@ -4775,7 +4768,6 @@ spec:
                     description: TLSMinVersion indicates the minimum TLS version allowed
                     type: string
                   tlsPrivateKeyFile:
-                    description: 'TODO: Remove unused TLSPrivateKeyFile'
                     type: string
                   topologyManagerPolicy:
                     description: TopologyManagerPolicy determines the allocation policy

@@ -100,18 +100,12 @@ func credsNewAuth(ctx context.Context, settings *DialSettings) (*google.Credenti
 		aud = settings.DefaultAudience
 	}
 
-	tokenURL, oauth2Client, err := GetOAuth2Configuration(ctx, settings)
-	if err != nil {
-		return nil, err
-	}
 	creds, err := credentials.DetectDefault(&credentials.DetectOptions{
 		Scopes:           scopes,
 		Audience:         aud,
 		CredentialsFile:  settings.CredentialsFile,
 		CredentialsJSON:  settings.CredentialsJSON,
 		UseSelfSignedJWT: useSelfSignedJWT,
-		TokenURL:         tokenURL,
-		Client:           oauth2Client,
 	})
 	if err != nil {
 		return nil, err

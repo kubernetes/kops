@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.9.1](https://github.com/googleapis/google-cloud-go/compare/auth/v0.9.0...auth/v0.9.1) (2024-08-22)
+
+
+### Bug Fixes
+
+* **auth:** Setting expireEarly to default when the value is 0 ([#10732](https://github.com/googleapis/google-cloud-go/issues/10732)) ([5e67869](https://github.com/googleapis/google-cloud-go/commit/5e67869a31e9e8ecb4eeebd2cfa11a761c3b1948))
+
+## [0.9.0](https://github.com/googleapis/google-cloud-go/compare/auth/v0.8.1...auth/v0.9.0) (2024-08-16)
+
+
+### Features
+
+* **auth:** Auth library can talk to S2A over mTLS ([#10634](https://github.com/googleapis/google-cloud-go/issues/10634)) ([5250a13](https://github.com/googleapis/google-cloud-go/commit/5250a13ec95b8d4eefbe0158f82857ff2189cb45))
+
+## [0.8.1](https://github.com/googleapis/google-cloud-go/compare/auth/v0.8.0...auth/v0.8.1) (2024-08-13)
+
+
+### Bug Fixes
+
+* **auth:** Make default client creation more lenient ([#10669](https://github.com/googleapis/google-cloud-go/issues/10669)) ([1afb9ee](https://github.com/googleapis/google-cloud-go/commit/1afb9ee1ee9de9810722800018133304a0ca34d1)), refs [#10638](https://github.com/googleapis/google-cloud-go/issues/10638)
+
+## [0.8.0](https://github.com/googleapis/google-cloud-go/compare/auth/v0.7.3...auth/v0.8.0) (2024-08-07)
+
+
+### Features
+
+* **auth:** Adds support for X509 workload identity federation ([#10373](https://github.com/googleapis/google-cloud-go/issues/10373)) ([5d07505](https://github.com/googleapis/google-cloud-go/commit/5d075056cbe27bb1da4072a26070c41f8999eb9b))
+
 ## [0.7.3](https://github.com/googleapis/google-cloud-go/compare/auth/v0.7.2...auth/v0.7.3) (2024-08-01)
 
 
