@@ -105,10 +105,6 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
 		skipRegex += "|Services.should.respect.internalTrafficPolicy=Local.Pod.and.Node,.to.Pod"
-		if k8sVersion.Minor < 32 {
-			// https://github.com/kubernetes/kubernetes/issues/121018
-			skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
-		}
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "gce" {
@@ -143,14 +139,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "aws" {
-		// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
-		// Dedicated job testing this: https://testgrid.k8s.io/kops-misc#kops-aws-k28-hostname-bug123255
-		// ref: https://github.com/kubernetes/kops/issues/16349
-		// ref: https://github.com/kubernetes/kubernetes/issues/123255
-		if k8sVersion.Minor < 32 {
-			skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
-		}
-
 		if k8sVersion.Minor <= 26 {
 			// Prow jobs are being migrated to community-owned EKS clusters.
 			// The e2e.test binaries from older k/k builds dont have new enough aws-sdk-go versions to authenticate from EKS pods.
@@ -162,6 +150,15 @@ func (t *Tester) setSkipRegexFlag() error {
 			// Example: https://prow.k8s.io/view/gs/kubernetes-jenkins/logs/e2e-kops-aws-upgrade-k125-ko128-to-k126-kolatest/1808210907088556032
 			skipRegex += "|\\[Driver:.aws\\].\\[Testpattern:.Pre-provisioned.PV|\\[Driver:.aws\\].\\[Testpattern:.Inline-volume"
 		}
+	}
+
+	// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
+	// Dedicated job testing this: https://testgrid.k8s.io/kops-misc#kops-aws-k28-hostname-bug123255
+	// ref: https://github.com/kubernetes/kops/issues/16349
+	// ref: https://github.com/kubernetes/kubernetes/issues/123255
+	// ref: https://github.com/kubernetes/kubernetes/issues/121018
+	if k8sVersion.Minor < 32 {
+		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
 	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
