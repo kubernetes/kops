@@ -69,8 +69,7 @@ func (c *AutoScaling) AttachInstancesRequest(input *AttachInstancesInput) (req *
 // groups attached to your Auto Scaling group, the instances are also registered
 // with the target groups.
 //
-// For more information, see Attach EC2 instances to your Auto Scaling group
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/attach-instance-asg.html)
+// For more information, see Detach or attach instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-detach-attach-instances.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -969,7 +968,7 @@ func (c *AutoScaling) CreateLaunchConfigurationRequest(input *CreateLaunchConfig
 // about updating this limit, see Quotas for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
-// For more information, see Launch configurations (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchConfiguration.html)
+// For more information, see Launch configurations (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Amazon EC2 Auto Scaling configures instances launched as part of an Auto
@@ -1534,7 +1533,7 @@ func (c *AutoScaling) DeletePolicyRequest(input *DeletePolicyInput) (req *reques
 // the underlying alarm action, but does not delete the alarm, even if it no
 // longer has an associated action.
 //
-// For more information, see Deleting a scaling policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/deleting-scaling-policy.html)
+// For more information, see Delete a scaling policy (https://docs.aws.amazon.com/autoscaling/ec2/userguide/deleting-scaling-policy.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -3599,8 +3598,8 @@ func (c *AutoScaling) DescribeScalingActivitiesRequest(input *DescribeScalingAct
 // Gets information about the scaling activities in the account and Region.
 //
 // When scaling events occur, you see a record of the scaling activity in the
-// scaling activities. For more information, see Verifying a scaling activity
-// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html)
+// scaling activities. For more information, see Verify a scaling activity for
+// an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // If the scaling event succeeds, the value of the StatusCode element in the
@@ -4120,8 +4119,8 @@ func (c *AutoScaling) DescribeTerminationPolicyTypesRequest(input *DescribeTermi
 //
 // Describes the termination policies supported by Amazon EC2 Auto Scaling.
 //
-// For more information, see Work with Amazon EC2 Auto Scaling termination policies
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
+// For more information, see Configure termination policies for Amazon EC2 Auto
+// Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -4510,8 +4509,7 @@ func (c *AutoScaling) DetachInstancesRequest(input *DetachInstancesInput) (req *
 // attached to the Auto Scaling group, the instances are deregistered from the
 // target groups.
 //
-// For more information, see Detach EC2 instances from your Auto Scaling group
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/detach-instance-asg.html)
+// For more information, see Detach or attach instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-detach-attach-instances.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -5521,8 +5519,8 @@ func (c *AutoScaling) PutNotificationConfigurationRequest(input *PutNotification
 //
 // This configuration overwrites any existing configuration.
 //
-// For more information, see Getting Amazon SNS notifications when your Auto
-// Scaling group scales (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ASGettingNotifications.html)
+// For more information, see Amazon SNS notification options for Amazon EC2
+// Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-sns-notifications.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // If you exceed your maximum limit of SNS topics, which is 10 per Auto Scaling
@@ -5723,7 +5721,7 @@ func (c *AutoScaling) PutScheduledUpdateGroupActionRequest(input *PutScheduledUp
 //
 // Creates or updates a scheduled scaling action for an Auto Scaling group.
 //
-// For more information, see Scheduled scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/schedule_time.html)
+// For more information, see Scheduled scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scheduled-scaling.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // You can view the scheduled actions for an Auto Scaling group using the DescribeScheduledActions
@@ -5825,19 +5823,17 @@ func (c *AutoScaling) PutWarmPoolRequest(input *PutWarmPoolInput) (req *request.
 // Creates or updates a warm pool for the specified Auto Scaling group. A warm
 // pool is a pool of pre-initialized EC2 instances that sits alongside the Auto
 // Scaling group. Whenever your application needs to scale out, the Auto Scaling
-// group can draw on the warm pool to meet its new desired capacity. For more
-// information and example configurations, see Warm pools for Amazon EC2 Auto
-// Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
-// in the Amazon EC2 Auto Scaling User Guide.
+// group can draw on the warm pool to meet its new desired capacity.
 //
 // This operation must be called from the Region in which the Auto Scaling group
-// was created. This operation cannot be called on an Auto Scaling group that
-// has a mixed instances policy or a launch template or launch configuration
-// that requests Spot Instances.
+// was created.
 //
 // You can view the instances in the warm pool using the DescribeWarmPool API
 // call. If you are no longer using a warm pool, you can delete it by calling
 // the DeleteWarmPool API.
+//
+// For more information, see Warm pools for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html)
+// in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6036,7 +6032,8 @@ func (c *AutoScaling) ResumeProcessesRequest(input *ScalingProcessQuery) (req *r
 // Resumes the specified suspended auto scaling processes, or all suspended
 // process, for the specified Auto Scaling group.
 //
-// For more information, see Suspending and resuming scaling processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html)
+// For more information, see Suspend and resume Amazon EC2 Auto Scaling processes
+// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -6245,7 +6242,7 @@ func (c *AutoScaling) SetDesiredCapacityRequest(input *SetDesiredCapacityInput) 
 // that is lower than the current size of the group, the Auto Scaling group
 // uses its termination policy to determine which instances to terminate.
 //
-// For more information, see Manual scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-manual-scaling.html)
+// For more information, see Manual scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-manually.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -6333,7 +6330,8 @@ func (c *AutoScaling) SetInstanceHealthRequest(input *SetInstanceHealthInput) (r
 //
 // Sets the health status of the specified instance.
 //
-// For more information, see Health checks for Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+// For more information, see Health checks for instances in an Auto Scaling
+// group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -6417,9 +6415,7 @@ func (c *AutoScaling) SetInstanceProtectionRequest(input *SetInstanceProtectionI
 // Updates the instance protection settings of the specified instances. This
 // operation cannot be called on instances in a warm pool.
 //
-// For more information about preventing instances that are part of an Auto
-// Scaling group from terminating on scale in, see Using instance scale-in protection
-// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
+// For more information, see Use instance scale-in protection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // If you exceed your maximum limit of instance IDs, which is 50 per Auto Scaling
@@ -6630,7 +6626,7 @@ func (c *AutoScaling) SuspendProcessesRequest(input *ScalingProcessQuery) (req *
 //
 // If you suspend either the Launch or Terminate process types, it can prevent
 // other process types from functioning properly. For more information, see
-// Suspending and resuming scaling processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html)
+// Suspend and resume Amazon EC2 Auto Scaling processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // To resume processes that have been suspended, call the ResumeProcesses API.
@@ -6731,7 +6727,7 @@ func (c *AutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *Terminat
 // Zones. If you decrement the desired capacity, your Auto Scaling group can
 // become unbalanced between Availability Zones. Amazon EC2 Auto Scaling tries
 // to rebalance the group, and rebalancing might terminate instances in other
-// zones. For more information, see Rebalancing activities (https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html#AutoScalingBehavior.InstanceUsage)
+// zones. For more information, see Manual scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-manually.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -8218,7 +8214,7 @@ type CreateAutoScalingGroupInput struct {
 	//
 	// The amount of time, in seconds, between one scaling activity ending and another
 	// one starting due to simple scaling policies. For more information, see Scaling
-	// cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
+	// cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Default: 300 seconds
@@ -8256,8 +8252,8 @@ type CreateAutoScalingGroupInput struct {
 
 	// The unit of measurement for the value specified for desired capacity. Amazon
 	// EC2 Auto Scaling supports DesiredCapacityType for attribute-based instance
-	// type selection only. For more information, see Creating an Auto Scaling group
-	// using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
+	// type selection only. For more information, see Create a mixed instances group
+	// using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// By default, Amazon EC2 Auto Scaling specifies units, which translates into
@@ -8281,7 +8277,7 @@ type CreateAutoScalingGroupInput struct {
 	//
 	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
 	// check and cannot be disabled. For more information, see Health checks for
-	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// instances in an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Only specify EC2 if you must clear a value that was previously set.
@@ -8291,8 +8287,8 @@ type CreateAutoScalingGroupInput struct {
 	// Amazon EC2 Auto Scaling uses the configuration values from the specified
 	// instance to create a new launch configuration. To get the instance ID, use
 	// the Amazon EC2 DescribeInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
-	// API operation. For more information, see Creating an Auto Scaling group using
-	// an EC2 instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
+	// API operation. For more information, see Create an Auto Scaling group using
+	// parameters from an existing instance (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-from-instance.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceId *string `min:"1" type:"string"`
 
@@ -8316,8 +8312,8 @@ type CreateAutoScalingGroupInput struct {
 	// or InstanceId).
 	//
 	// The launch template that is specified must be configured for use with an
-	// Auto Scaling group. For more information, see Creating a launch template
-	// for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
+	// Auto Scaling group. For more information, see Create a launch template for
+	// an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `type:"structure"`
 
@@ -8333,7 +8329,7 @@ type CreateAutoScalingGroupInput struct {
 	// The maximum amount of time, in seconds, that an instance can be in service.
 	// The default is null. If specified, the value must be either 0 or a number
 	// equal to or greater than 86,400 seconds (1 day). For more information, see
-	// Replacing Auto Scaling instances based on maximum instance lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
+	// Replace Auto Scaling instances based on maximum instance lifetime (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MaxInstanceLifetime *int64 `type:"integer"`
 
@@ -8360,7 +8356,7 @@ type CreateAutoScalingGroupInput struct {
 
 	// Indicates whether newly launched instances are protected from termination
 	// by Amazon EC2 Auto Scaling when scaling in. For more information about preventing
-	// instances from terminating on scale in, see Using instance scale-in protection
+	// instances from terminating on scale in, see Use instance scale-in protection
 	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	NewInstancesProtectedFromScaleIn *bool `type:"boolean"`
@@ -8404,7 +8400,7 @@ type CreateAutoScalingGroupInput struct {
 
 	// A policy or a list of policies that are used to select the instance to terminate.
 	// These policies are executed in the order that you list them. For more information,
-	// see Work with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
+	// see Configure termination policies for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid values: Default | AllocationStrategy | ClosestToNextInstanceHour |
@@ -8732,8 +8728,8 @@ type CreateLaunchConfigurationInput struct {
 	// the option to assign a public IPv4 address on the subnet.
 	//
 	// If you specify true, each instance in the Auto Scaling group receives a unique
-	// public IPv4 address. For more information, see Launching Auto Scaling instances
-	// in a VPC (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html)
+	// public IPv4 address. For more information, see Provide network connectivity
+	// for your Auto Scaling instances using Amazon VPC (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// If you specify this property, you must specify at least one subnet for VPCZoneIdentifier
@@ -8759,7 +8755,7 @@ type CreateLaunchConfigurationInput struct {
 	// This optimization is not available with all instance types. Additional fees
 	// are incurred when you enable EBS optimization for an instance type that is
 	// not EBS-optimized by default. For more information, see Amazon EBS-optimized
-	// instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html)
+	// instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	//
 	// The default value is false.
@@ -8773,7 +8769,7 @@ type CreateLaunchConfigurationInput struct {
 	IamInstanceProfile *string `min:"1" type:"string"`
 
 	// The ID of the Amazon Machine Image (AMI) that was assigned during registration.
-	// For more information, see Finding a Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
+	// For more information, see Find a Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	//
 	// If you specify InstanceId, an ImageId is not required.
@@ -8786,8 +8782,7 @@ type CreateLaunchConfigurationInput struct {
 	// To create a launch configuration with a block device mapping or override
 	// any other instance attributes, specify them as part of the same request.
 	//
-	// For more information, see Creating a launch configuration using an EC2 instance
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-lc-with-instanceID.html)
+	// For more information, see Create a launch configuration (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceId *string `min:"1" type:"string"`
 
@@ -8799,7 +8794,7 @@ type CreateLaunchConfigurationInput struct {
 	// When detailed monitoring is enabled, Amazon CloudWatch generates metrics
 	// every minute and your account is charged a fee. When you disable detailed
 	// monitoring, CloudWatch generates metrics every 5 minutes. For more information,
-	// see Configure Monitoring for Auto Scaling Instances (https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html)
+	// see Configure monitoring for Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceMonitoring *InstanceMonitoring `type:"structure"`
 
@@ -8818,7 +8813,7 @@ type CreateLaunchConfigurationInput struct {
 	KernelId *string `min:"1" type:"string"`
 
 	// The name of the key pair. For more information, see Amazon EC2 key pairs
-	// and Linux instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
+	// and Amazon EC2 instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	KeyName *string `min:"1" type:"string"`
 
@@ -8828,8 +8823,8 @@ type CreateLaunchConfigurationInput struct {
 	// LaunchConfigurationName is a required field
 	LaunchConfigurationName *string `min:"1" type:"string" required:"true"`
 
-	// The metadata options for the instances. For more information, see Configuring
-	// the Instance Metadata Options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
+	// The metadata options for the instances. For more information, see Configure
+	// the instance metadata options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MetadataOptions *InstanceMetadataOptions `type:"structure"`
 
@@ -8837,9 +8832,7 @@ type CreateLaunchConfigurationInput struct {
 	// dedicated tenancy runs on isolated, single-tenant hardware and can only be
 	// launched into a VPC. To launch dedicated instances into a shared tenancy
 	// VPC (a VPC with the instance placement tenancy attribute set to default),
-	// you must set the value of this property to dedicated. For more information,
-	// see Configuring instance tenancy with Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-dedicated-instances.html)
-	// in the Amazon EC2 Auto Scaling User Guide.
+	// you must set the value of this property to dedicated.
 	//
 	// If you specify PlacementTenancy, you must specify at least one subnet for
 	// VPCZoneIdentifier when you create your group.
@@ -8855,8 +8848,8 @@ type CreateLaunchConfigurationInput struct {
 	RamdiskId *string `min:"1" type:"string"`
 
 	// A list that contains the security group IDs to assign to the instances in
-	// the Auto Scaling group. For more information, see Control traffic to resources
-	// using security groups (https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_SecurityGroups.html)
+	// the Auto Scaling group. For more information, see Control traffic to your
+	// Amazon Web Services resources using security groups (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html)
 	// in the Amazon Virtual Private Cloud User Guide.
 	SecurityGroups []*string `type:"list"`
 
@@ -11984,7 +11977,7 @@ type DesiredConfiguration struct {
 
 	// Describes the launch template and the version of the launch template that
 	// Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+	// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	LaunchTemplate *LaunchTemplateSpecification `type:"structure"`
 
@@ -12474,7 +12467,8 @@ type DisableMetricsCollectionInput struct {
 	//
 	// If you omit this property, all metrics are disabled.
 	//
-	// For more information, see Auto Scaling group metrics (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-cloudwatch-monitoring.html#as-group-metrics)
+	// For more information, see Amazon CloudWatch metrics for Amazon EC2 Auto Scaling
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-metrics.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Metrics []*string `type:"list"`
 }
@@ -12558,9 +12552,9 @@ type Ebs struct {
 
 	// Specifies whether the volume should be encrypted. Encrypted EBS volumes can
 	// only be attached to instances that support Amazon EBS encryption. For more
-	// information, see Supported instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#EBSEncryption_supported_instances).
-	// If your AMI uses encrypted volumes, you can also only launch it on supported
-	// instance types.
+	// information, see Requirements for Amazon EBS encryption (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-encryption-requirements.html)
+	// in the Amazon EBS User Guide. If your AMI uses encrypted volumes, you can
+	// also only launch it on supported instance types.
 	//
 	// If you are creating a volume from a snapshot, you cannot create an unencrypted
 	// volume from an encrypted snapshot. Also, you cannot specify a KMS key ID
@@ -12588,7 +12582,7 @@ type Ebs struct {
 	//    * io1: 100-64,000 IOPS
 	//
 	// For io1 volumes, we guarantee 64,000 IOPS only for Instances built on the
-	// Nitro System (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
+	// Amazon Web Services Nitro System (https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-nitro-instances.html).
 	// Other instance families guarantee performance up to 32,000 IOPS.
 	//
 	// Iops is supported when the volume type is gp3 or io1 and required only when
@@ -12619,8 +12613,8 @@ type Ebs struct {
 	// the size of the snapshot.
 	VolumeSize *int64 `min:"1" type:"integer"`
 
-	// The volume type. For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-	// in the Amazon EC2 User Guide for Linux Instances.
+	// The volume type. For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html)
+	// in the Amazon EBS User Guide.
 	//
 	// Valid values: standard | io1 | gp2 | st1 | sc1 | gp3
 	VolumeType *string `min:"1" type:"string"`
@@ -12772,7 +12766,8 @@ type EnableMetricsCollectionInput struct {
 	// If you specify Granularity and don't specify any metrics, all metrics are
 	// enabled.
 	//
-	// For more information, see Auto Scaling group metrics (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-cloudwatch-monitoring.html#as-group-metrics)
+	// For more information, see Amazon CloudWatch metrics for Amazon EC2 Auto Scaling
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-metrics.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Metrics []*string `type:"list"`
 }
@@ -12906,7 +12901,8 @@ type EnabledMetric struct {
 	//
 	//    * GroupAndWarmPoolTotalCapacity
 	//
-	// For more information, see Auto Scaling group metrics (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-cloudwatch-monitoring.html#as-group-metrics)
+	// For more information, see Amazon CloudWatch metrics for Amazon EC2 Auto Scaling
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-metrics.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Metric *string `min:"1" type:"string"`
 }
@@ -13060,7 +13056,7 @@ type ExecutePolicyInput struct {
 	// complete before executing the policy.
 	//
 	// Valid only if the policy type is SimpleScaling. For more information, see
-	// Scaling cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
+	// Scaling cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	HonorCooldown *bool `type:"boolean"`
 
@@ -13951,7 +13947,8 @@ type Instance struct {
 	LaunchTemplate *LaunchTemplateSpecification `type:"structure"`
 
 	// A description of the current lifecycle state. The Quarantined state is not
-	// used. For information about lifecycle states, see Instance lifecycle (https://docs.aws.amazon.com/autoscaling/ec2/userguide/AutoScalingGroupLifecycle.html)
+	// used. For more information, see Amazon EC2 Auto Scaling instance lifecycle
+	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-lifecycle.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// LifecycleState is a required field
@@ -14080,7 +14077,7 @@ type InstanceDetails struct {
 	LaunchTemplate *LaunchTemplateSpecification `type:"structure"`
 
 	// The lifecycle state for the instance. The Quarantined state is not used.
-	// For information about lifecycle states, see Instance lifecycle (https://docs.aws.amazon.com/autoscaling/ec2/userguide/AutoScalingGroupLifecycle.html)
+	// For more information, see Amazon EC2 Auto Scaling instance lifecycle (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-lifecycle.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid values: Pending | Pending:Wait | Pending:Proceed | Quarantined | InService
@@ -14255,8 +14252,8 @@ func (s *InstanceMaintenancePolicy) SetMinHealthyPercentage(v int64) *InstanceMa
 	return s
 }
 
-// The metadata options for the instances. For more information, see Configuring
-// the Instance Metadata Options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
+// The metadata options for the instances. For more information, see Configure
+// the instance metadata options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
 // in the Amazon EC2 Auto Scaling User Guide.
 type InstanceMetadataOptions struct {
 	_ struct{} `type:"structure"`
@@ -14690,8 +14687,8 @@ func (s *InstanceRefreshWarmPoolProgress) SetPercentageComplete(v int64) *Instan
 // You must specify VCpuCount and MemoryMiB. All other attributes are optional.
 // Any unspecified optional attribute is set to its default.
 //
-// For more information, see Creating an Auto Scaling group using attribute-based
-// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
+// For more information, see Create a mixed instances group using attribute-based
+// instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
 // in the Amazon EC2 Auto Scaling User Guide. For help determining which instance
 // types match your attributes before you apply them to your Auto Scaling group,
 // see Preview instance types with specified attributes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements)
@@ -15366,14 +15363,15 @@ type LaunchConfiguration struct {
 	// IPv4 address on the subnet. If the instance is launched into a nondefault
 	// subnet, the default is not to assign a public IPv4 address, unless you enabled
 	// the option to assign a public IPv4 address on the subnet. For more information,
-	// see Launching Auto Scaling instances in a VPC (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html)
+	// see Provide network connectivity for your Auto Scaling instances using Amazon
+	// VPC (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	AssociatePublicIpAddress *bool `type:"boolean"`
 
 	// The block device mapping entries that define the block devices to attach
 	// to the instances at launch. By default, the block devices specified in the
 	// block device mapping for the AMI are used. For more information, see Block
-	// Device Mapping (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html)
+	// device mappings (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	BlockDeviceMappings []*BlockDeviceMapping `type:"list"`
 
@@ -15389,9 +15387,9 @@ type LaunchConfiguration struct {
 	CreatedTime *time.Time `type:"timestamp" required:"true"`
 
 	// Specifies whether the launch configuration is optimized for EBS I/O (true)
-	// or not (false). For more information, see Amazon EBS-Optimized Instances
-	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html) in
-	// the Amazon EC2 User Guide for Linux Instances.
+	// or not (false). For more information, see Amazon EBS-optimized instances
+	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html)
+	// in the Amazon EC2 User Guide for Linux Instances.
 	EbsOptimized *bool `type:"boolean"`
 
 	// The name or the Amazon Resource Name (ARN) of the instance profile associated
@@ -15411,7 +15409,7 @@ type LaunchConfiguration struct {
 	// Controls whether instances in this group are launched with detailed (true)
 	// or basic (false) monitoring.
 	//
-	// For more information, see Configure Monitoring for Auto Scaling Instances
+	// For more information, see Configure monitoring for Auto Scaling instances
 	// (https://docs.aws.amazon.com/autoscaling/latest/userguide/enable-as-instance-metrics.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	InstanceMonitoring *InstanceMonitoring `type:"structure"`
@@ -15428,7 +15426,7 @@ type LaunchConfiguration struct {
 
 	// The name of the key pair.
 	//
-	// For more information, see Amazon EC2 Key Pairs (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
+	// For more information, see Amazon EC2 key pairs and Amazon EC2 instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	KeyName *string `min:"1" type:"string"`
 
@@ -15440,33 +15438,29 @@ type LaunchConfiguration struct {
 	// LaunchConfigurationName is a required field
 	LaunchConfigurationName *string `min:"1" type:"string" required:"true"`
 
-	// The metadata options for the instances. For more information, see Configuring
-	// the Instance Metadata Options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
+	// The metadata options for the instances. For more information, see Configure
+	// the instance metadata options (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-config.html#launch-configurations-imds)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	MetadataOptions *InstanceMetadataOptions `type:"structure"`
 
 	// The tenancy of the instance, either default or dedicated. An instance with
 	// dedicated tenancy runs on isolated, single-tenant hardware and can only be
 	// launched into a VPC.
-	//
-	// For more information, see Configuring instance tenancy with Amazon EC2 Auto
-	// Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-dedicated-instances.html)
-	// in the Amazon EC2 Auto Scaling User Guide.
 	PlacementTenancy *string `min:"1" type:"string"`
 
 	// The ID of the RAM disk associated with the AMI.
 	RamdiskId *string `min:"1" type:"string"`
 
 	// A list that contains the security groups to assign to the instances in the
-	// Auto Scaling group. For more information, see Security Groups for Your VPC
-	// (https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_SecurityGroups.html)
+	// Auto Scaling group. For more information, see Control traffic to your Amazon
+	// Web Services resources using security groups (https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html)
 	// in the Amazon Virtual Private Cloud User Guide.
 	SecurityGroups []*string `type:"list"`
 
 	// The maximum hourly price to be paid for any Spot Instance launched to fulfill
 	// the request. Spot Instances are launched when the price you specify exceeds
 	// the current Spot price. For more information, see Requesting Spot Instances
-	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-launch-spot-instances.html)
+	// for fault-tolerant and flexible applications (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-template-spot-instances.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	SpotPrice *string `min:"1" type:"string"`
 
@@ -15722,7 +15716,7 @@ type LaunchTemplateOverrides struct {
 	// The instance type, such as m3.xlarge. You must specify an instance type that
 	// is supported in your requested Region and Availability Zones. For more information,
 	// see Instance types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
+	// in the Amazon EC2 User Guide for Linux Instances.
 	//
 	// You can specify up to 40 instance types per Auto Scaling group.
 	InstanceType *string `min:"1" type:"string"`
@@ -15748,8 +15742,8 @@ type LaunchTemplateOverrides struct {
 	// For example, if there are two units remaining to fulfill capacity, and Amazon
 	// EC2 Auto Scaling can only launch an instance with a WeightedCapacity of five
 	// units, the instance is launched, and the desired capacity is exceeded by
-	// three units. For more information, see Configuring instance weighting for
-	// Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups-instance-weighting.html)
+	// three units. For more information, see Configure an Auto Scaling group to
+	// use instance weights (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-mixed-instances-groups-instance-weighting.html)
 	// in the Amazon EC2 Auto Scaling User Guide. Value must be in the range of
 	// 1–999.
 	//
@@ -15834,7 +15828,7 @@ func (s *LaunchTemplateOverrides) SetWeightedCapacity(v string) *LaunchTemplateO
 
 // Describes the launch template and the version of the launch template that
 // Amazon EC2 Auto Scaling uses to launch Amazon EC2 instances. For more information
-// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/LaunchTemplates.html)
+// about launch templates, see Launch templates (https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
 // in the Amazon EC2 Auto Scaling User Guide.
 type LaunchTemplateSpecification struct {
 	_ struct{} `type:"structure"`
@@ -16087,7 +16081,7 @@ type LifecycleHookSpecification struct {
 
 	// The ARN of the IAM role that allows the Auto Scaling group to publish to
 	// the specified notification target. For information about creating this role,
-	// see Configure a notification target for a lifecycle hook (https://docs.aws.amazon.com/autoscaling/ec2/userguide/prepare-for-lifecycle-notifications.html#lifecycle-hook-notification-target)
+	// see Prepare to add a lifecycle hook to your Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/prepare-for-lifecycle-notifications.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid only if the notification target is an Amazon SNS topic or an Amazon
@@ -17240,14 +17234,21 @@ type PredictiveScalingConfiguration struct {
 	//
 	// The following are possible values:
 	//
-	//    * HonorMaxCapacity - Amazon EC2 Auto Scaling cannot scale out capacity
-	//    higher than the maximum capacity. The maximum capacity is enforced as
-	//    a hard limit.
+	//    * HonorMaxCapacity - Amazon EC2 Auto Scaling can't increase the maximum
+	//    capacity of the group when the forecast capacity is close to or exceeds
+	//    the maximum capacity.
 	//
-	//    * IncreaseMaxCapacity - Amazon EC2 Auto Scaling can scale out capacity
-	//    higher than the maximum capacity when the forecast capacity is close to
-	//    or exceeds the maximum capacity. The upper limit is determined by the
-	//    forecasted capacity and the value for MaxCapacityBuffer.
+	//    * IncreaseMaxCapacity - Amazon EC2 Auto Scaling can increase the maximum
+	//    capacity of the group when the forecast capacity is close to or exceeds
+	//    the maximum capacity. The upper limit is determined by the forecasted
+	//    capacity and the value for MaxCapacityBuffer.
+	//
+	// Use caution when allowing the maximum capacity to be automatically increased.
+	// This can lead to more instances being launched than intended if the increased
+	// maximum capacity is not monitored and managed. The increased maximum capacity
+	// then becomes the new normal maximum capacity for the Auto Scaling group until
+	// you manually update it. The maximum capacity does not automatically decrease
+	// back to the original maximum.
 	MaxCapacityBreachBehavior *string `type:"string" enum:"PredictiveScalingMaxCapacityBreachBehavior"`
 
 	// The size of the capacity buffer to use when the forecast capacity is close
@@ -17977,7 +17978,7 @@ func (s *PredictiveScalingPredefinedScalingMetric) SetResourceLabel(v string) *P
 
 // Describes a process type.
 //
-// For more information, see Scaling processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types)
+// For more information, see Types of processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types)
 // in the Amazon EC2 Auto Scaling User Guide.
 type ProcessType struct {
 	_ struct{} `type:"structure"`
@@ -18335,14 +18336,14 @@ type PutScalingPolicyInput struct {
 	// cooldown.
 	//
 	// Valid only if the policy type is SimpleScaling. For more information, see
-	// Scaling cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
+	// Scaling cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Default: None
 	Cooldown *int64 `type:"integer"`
 
 	// Indicates whether the scaling policy is enabled or disabled. The default
-	// is enabled. For more information, see Disabling a scaling policy for an Auto
+	// is enabled. For more information, see Disable a scaling policy for an Auto
 	// Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enable-disable-scaling-policy.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	Enabled *bool `type:"boolean"`
@@ -19122,7 +19123,7 @@ type RefreshPreferences struct {
 	// number must be unique. To replace all instances in the Auto Scaling group,
 	// the last number in the array must be 100.
 	//
-	// For usage examples, see Adding checkpoints to an instance refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-adding-checkpoints-instance-refresh.html)
+	// For usage examples, see Add checkpoints to an instance refresh (https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-adding-checkpoints-instance-refresh.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	CheckpointPercentages []*int64 `type:"list"`
 
@@ -20132,9 +20133,9 @@ type SetInstanceHealthInput struct {
 	// Set this to False, to have the call not respect the grace period associated
 	// with the group.
 	//
-	// For more information about the health check grace period, see CreateAutoScalingGroup
-	// (https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CreateAutoScalingGroup.html)
-	// in the Amazon EC2 Auto Scaling API Reference.
+	// For more information about the health check grace period, see Set the health
+	// check grace period for an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html)
+	// in the Amazon EC2 Auto Scaling User Guide.
 	ShouldRespectGracePeriod *bool `type:"boolean"`
 }
 
@@ -20590,7 +20591,7 @@ func (s SuspendProcessesOutput) GoString() string {
 
 // Describes an auto scaling process that has been suspended.
 //
-// For more information, see Scaling processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types)
+// For more information, see Types of processes (https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types)
 // in the Amazon EC2 Auto Scaling User Guide.
 type SuspendedProcess struct {
 	_ struct{} `type:"structure"`
@@ -21442,7 +21443,7 @@ type UpdateAutoScalingGroupInput struct {
 	//
 	// The amount of time, in seconds, between one scaling activity ending and another
 	// one starting due to simple scaling policies. For more information, see Scaling
-	// cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html)
+	// cooldowns for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-scaling-cooldowns.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	DefaultCooldown *int64 `type:"integer"`
 
@@ -21474,8 +21475,8 @@ type UpdateAutoScalingGroupInput struct {
 
 	// The unit of measurement for the value specified for desired capacity. Amazon
 	// EC2 Auto Scaling supports DesiredCapacityType for attribute-based instance
-	// type selection only. For more information, see Creating an Auto Scaling group
-	// using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-instance-type-requirements.html)
+	// type selection only. For more information, see Create a mixed instances group
+	// using attribute-based instance type selection (https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// By default, Amazon EC2 Auto Scaling specifies units, which translates into
@@ -21497,7 +21498,7 @@ type UpdateAutoScalingGroupInput struct {
 	//
 	// The valid values are EC2, ELB, and VPC_LATTICE. EC2 is the default health
 	// check and cannot be disabled. For more information, see Health checks for
-	// Auto Scaling instances (https://docs.aws.amazon.com/autoscaling/ec2/userguide/healthcheck.html)
+	// instances in an Auto Scaling group (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Only specify EC2 if you must clear a value that was previously set.
@@ -21544,7 +21545,7 @@ type UpdateAutoScalingGroupInput struct {
 
 	// Indicates whether newly launched instances are protected from termination
 	// by Amazon EC2 Auto Scaling when scaling in. For more information about preventing
-	// instances from terminating on scale in, see Using instance scale-in protection
+	// instances from terminating on scale in, see Use instance scale-in protection
 	// (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	NewInstancesProtectedFromScaleIn *bool `type:"boolean"`
@@ -21566,7 +21567,7 @@ type UpdateAutoScalingGroupInput struct {
 
 	// A policy or a list of policies that are used to select the instances to terminate.
 	// The policies are executed in the order that you list them. For more information,
-	// see Work with Amazon EC2 Auto Scaling termination policies (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
+	// see Configure termination policies for Amazon EC2 Auto Scaling (https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-termination-policies.html)
 	// in the Amazon EC2 Auto Scaling User Guide.
 	//
 	// Valid values: Default | AllocationStrategy | ClosestToNextInstanceHour |

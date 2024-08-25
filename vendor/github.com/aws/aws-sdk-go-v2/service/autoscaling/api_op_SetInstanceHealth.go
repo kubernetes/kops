@@ -12,9 +12,9 @@ import (
 
 // Sets the health status of the specified instance.
 //
-// For more information, see [Health checks for instances in an Auto Scaling group] in the Amazon EC2 Auto Scaling User Guide.
+// For more information, see [Set up a custom health check for your Auto Scaling group] in the Amazon EC2 Auto Scaling User Guide.
 //
-// [Health checks for instances in an Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-health-checks.html
+// [Set up a custom health check for your Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/set-up-a-custom-health-check.html
 func (c *Client) SetInstanceHealth(ctx context.Context, params *SetInstanceHealthInput, optFns ...func(*Options)) (*SetInstanceHealthOutput, error) {
 	if params == nil {
 		params = &SetInstanceHealthInput{}

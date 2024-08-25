@@ -113,21 +113,6 @@ type AccessKey struct {
 // This data type is used as a response element in the GetAccessKeyLastUsed operation.
 type AccessKeyLastUsed struct {
 
-	// The date and time, in [ISO 8601 date-time format], when the access key was most recently used. This field
-	// is null in the following situations:
-	//
-	//   - The user does not have an access key.
-	//
-	//   - An access key exists but has not been used since IAM began tracking this
-	//   information.
-	//
-	//   - There is no sign-in data associated with the user.
-	//
-	// [ISO 8601 date-time format]: http://www.iso.org/iso/iso8601
-	//
-	// This member is required.
-	LastUsedDate *time.Time
-
 	// The Amazon Web Services Region where this access key was most recently used.
 	// The value for this field is "N/A" in the following situations:
 	//
@@ -158,6 +143,19 @@ type AccessKeyLastUsed struct {
 	//
 	// This member is required.
 	ServiceName *string
+
+	// The date and time, in [ISO 8601 date-time format], when the access key was most recently used. This field
+	// is null in the following situations:
+	//
+	//   - The user does not have an access key.
+	//
+	//   - An access key exists but has not been used since IAM began tracking this
+	//   information.
+	//
+	//   - There is no sign-in data associated with the user.
+	//
+	// [ISO 8601 date-time format]: http://www.iso.org/iso/iso8601
+	LastUsedDate *time.Time
 
 	noSmithyDocumentSerde
 }

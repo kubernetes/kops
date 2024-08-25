@@ -1,3 +1,9 @@
+# v1.35.0 (2024-08-15)
+
+* **Feature**: Make the LastUsedDate field in the GetAccessKeyLastUsed response optional. This may break customers who only call the API for access keys with a valid LastUsedDate. This fixes a deserialization issue for access keys without a LastUsedDate, because the field was marked as required but could be null.
+* **Dependency Update**: Bump minimum Go version to 1.21.
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.34.3 (2024-07-10.2)
 
 * **Dependency Update**: Updated to the latest SDK module versions

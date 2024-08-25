@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"k8s.io/client-go/pkg/version"
+	"k8s.io/klog/v2"
 
 	"k8s.io/cloud-provider-aws/pkg/providers/v1/config"
 	"k8s.io/cloud-provider-aws/pkg/providers/v1/iface"
@@ -208,6 +209,20 @@ func (p *awsSDKProvider) Metadata() (config.EC2Metadata, error) {
 	}
 	client := ec2metadata.New(sess)
 	p.addAPILoggingHandlers(&client.Handlers)
+
+	identity, err := client.GetInstanceIdentityDocument()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get instance identity document: %v", err)
+	}
+	klog.InfoS("instance metadata identity",
+		"region", identity.Region,
+		"availability-zone", identity.AvailabilityZone,
+		"instance-type", identity.InstanceType,
+		"architecture", identity.Architecture,
+		"instance-id", identity.InstanceID,
+		"private-ip", identity.PrivateIP,
+		"account-id", identity.AccountID,
+		"image-id", identity.ImageID)
 	return client, nil
 }
 

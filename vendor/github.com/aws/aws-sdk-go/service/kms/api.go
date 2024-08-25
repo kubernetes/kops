@@ -807,6 +807,7 @@ func (c *KMS) CreateCustomKeyStoreRequest(input *CreateCustomKeyStoreInput) (req
 //     for Amazon VPC endpoint service connectivity for an external key store.
 //
 //   - XksProxyInvalidResponseException
+//
 //     KMS cannot interpret the response it received from the external key store
 //     proxy. The problem might be a poorly constructed response, but it could also
 //     be a transient network issue. If you see this error repeatedly, report it
@@ -1107,11 +1108,15 @@ func (c *KMS) CreateKeyRequest(input *CreateKeyInput) (req *request.Request, out
 // Asymmetric KMS keys contain an RSA key pair, Elliptic Curve (ECC) key pair,
 // or an SM2 key pair (China Regions only). The private key in an asymmetric
 // KMS key never leaves KMS unencrypted. However, you can use the GetPublicKey
-// operation to download the public key so it can be used outside of KMS. KMS
-// keys with RSA or SM2 key pairs can be used to encrypt or decrypt data or
-// sign and verify messages (but not both). KMS keys with ECC key pairs can
-// be used only to sign and verify messages. For information about asymmetric
-// KMS keys, see Asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
+// operation to download the public key so it can be used outside of KMS. Each
+// KMS key can have only one key usage. KMS keys with RSA key pairs can be used
+// to encrypt and decrypt data or sign and verify messages (but not both). KMS
+// keys with NIST-recommended ECC key pairs can be used to sign and verify messages
+// or derive shared secrets (but not both). KMS keys with ECC_SECG_P256K1 can
+// be used only to sign and verify messages. KMS keys with SM2 key pairs (China
+// Regions only) can be used to either encrypt and decrypt data, sign and verify
+// messages, or derive shared secrets (you must choose one key usage type).
+// For information about asymmetric KMS keys, see Asymmetric KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html)
 // in the Key Management Service Developer Guide.
 //
 // # HMAC KMS key
@@ -1554,7 +1559,8 @@ func (c *KMS) DecryptRequest(input *DecryptInput) (req *request.Request, output 
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -2063,6 +2069,219 @@ func (c *KMS) DeleteImportedKeyMaterial(input *DeleteImportedKeyMaterialInput) (
 // for more information on using Contexts.
 func (c *KMS) DeleteImportedKeyMaterialWithContext(ctx aws.Context, input *DeleteImportedKeyMaterialInput, opts ...request.Option) (*DeleteImportedKeyMaterialOutput, error) {
 	req, out := c.DeleteImportedKeyMaterialRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeriveSharedSecret = "DeriveSharedSecret"
+
+// DeriveSharedSecretRequest generates a "aws/request.Request" representing the
+// client's request for the DeriveSharedSecret operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeriveSharedSecret for more information on using the DeriveSharedSecret
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeriveSharedSecretRequest method.
+//	req, resp := client.DeriveSharedSecretRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/DeriveSharedSecret
+func (c *KMS) DeriveSharedSecretRequest(input *DeriveSharedSecretInput) (req *request.Request, output *DeriveSharedSecretOutput) {
+	op := &request.Operation{
+		Name:       opDeriveSharedSecret,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeriveSharedSecretInput{}
+	}
+
+	output = &DeriveSharedSecretOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeriveSharedSecret API operation for AWS Key Management Service.
+//
+// Derives a shared secret using a key agreement algorithm.
+//
+// You must use an asymmetric NIST-recommended elliptic curve (ECC) or SM2 (China
+// Regions only) KMS key pair with a KeyUsage value of KEY_AGREEMENT to call
+// DeriveSharedSecret.
+//
+// DeriveSharedSecret uses the Elliptic Curve Cryptography Cofactor Diffie-Hellman
+// Primitive (https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar3.pdf#page=60)
+// (ECDH) to establish a key agreement between two peers by deriving a shared
+// secret from their elliptic curve public-private key pairs. You can use the
+// raw shared secret that DeriveSharedSecret returns to derive a symmetric key
+// that can encrypt and decrypt data that is sent between the two peers, or
+// that can generate and verify HMACs. KMS recommends that you follow NIST recommendations
+// for key derivation (https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Cr2.pdf)
+// when using the raw shared secret to derive a symmetric key.
+//
+// The following workflow demonstrates how to establish key agreement over an
+// insecure communication channel using DeriveSharedSecret.
+//
+// Alice calls CreateKey to create an asymmetric KMS key pair with a KeyUsage
+// value of KEY_AGREEMENT.
+//
+// The asymmetric KMS key must use a NIST-recommended elliptic curve (ECC) or
+// SM2 (China Regions only) key spec.
+//
+// Bob creates an elliptic curve key pair.
+//
+// Bob can call CreateKey to create an asymmetric KMS key pair or generate a
+// key pair outside of KMS. Bob's key pair must use the same NIST-recommended
+// elliptic curve (ECC) or SM2 (China Regions ony) curve as Alice.
+//
+// Alice and Bob exchange their public keys through an insecure communication
+// channel (like the internet).
+//
+// Use GetPublicKey to download the public key of your asymmetric KMS key pair.
+//
+// KMS strongly recommends verifying that the public key you receive came from
+// the expected party before using it to derive a shared secret.
+//
+// Alice calls DeriveSharedSecret.
+//
+// KMS uses the private key from the KMS key pair generated in Step 1, Bob's
+// public key, and the Elliptic Curve Cryptography Cofactor Diffie-Hellman Primitive
+// to derive the shared secret. The private key in your KMS key pair never leaves
+// KMS unencrypted. DeriveSharedSecret returns the raw shared secret.
+//
+// Bob uses the Elliptic Curve Cryptography Cofactor Diffie-Hellman Primitive
+// to calculate the same raw secret using his private key and Alice's public
+// key.
+//
+// To derive a shared secret you must provide a key agreement algorithm, the
+// private key of the caller's asymmetric NIST-recommended elliptic curve or
+// SM2 (China Regions only) KMS key pair, and the public key from your peer's
+// NIST-recommended elliptic curve or SM2 (China Regions only) key pair. The
+// public key can be from another asymmetric KMS key pair or from a key pair
+// generated outside of KMS, but both key pairs must be on the same elliptic
+// curve.
+//
+// The KMS key that you use for this operation must be in a compatible key state.
+// For details, see Key states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+// in the Key Management Service Developer Guide.
+//
+// Cross-account use: Yes. To perform this operation with a KMS key in a different
+// Amazon Web Services account, specify the key ARN or alias ARN in the value
+// of the KeyId parameter.
+//
+// Required permissions: kms:DeriveSharedSecret (https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
+// (key policy)
+//
+// Related operations:
+//
+//   - CreateKey
+//
+//   - GetPublicKey
+//
+//   - DescribeKey
+//
+// Eventual consistency: The KMS API follows an eventual consistency model.
+// For more information, see KMS eventual consistency (https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Key Management Service's
+// API operation DeriveSharedSecret for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     The request was rejected because the specified entity or resource could not
+//     be found.
+//
+//   - DisabledException
+//     The request was rejected because the specified KMS key is not enabled.
+//
+//   - KeyUnavailableException
+//     The request was rejected because the specified KMS key was not available.
+//     You can retry the request.
+//
+//   - DependencyTimeoutException
+//     The system timed out while trying to fulfill the request. You can retry the
+//     request.
+//
+//   - InvalidGrantTokenException
+//     The request was rejected because the specified grant token is not valid.
+//
+//   - InvalidKeyUsageException
+//     The request was rejected for one of the following reasons:
+//
+//   - The KeyUsage value of the KMS key is incompatible with the API operation.
+//
+//   - The encryption algorithm or signing algorithm specified for the operation
+//     is incompatible with the type of key material in the KMS key (KeySpec).
+//
+//     For encrypting, decrypting, re-encrypting, and generating data keys, the
+//     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
+//     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
+//     of a KMS key, use the DescribeKey operation.
+//
+//     To find the encryption or signing algorithms supported for a particular KMS
+//     key, use the DescribeKey operation.
+//
+//   - InternalException
+//     The request was rejected because an internal exception occurred. The request
+//     can be retried.
+//
+//   - InvalidStateException
+//     The request was rejected because the state of the specified resource is not
+//     valid for this request.
+//
+//     This exceptions means one of the following:
+//
+//   - The key state of the KMS key is not compatible with the operation. To
+//     find the key state, use the DescribeKey operation. For more information
+//     about which key states are compatible with each KMS operation, see Key
+//     states of KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Key Management Service Developer Guide .
+//
+//   - For cryptographic operations on KMS keys in custom key stores, this
+//     exception represents a general failure with many possible causes. To identify
+//     the cause, see the error message that accompanies the exception.
+//
+//   - DryRunOperationException
+//     The request was rejected because the DryRun parameter was specified.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kms-2014-11-01/DeriveSharedSecret
+func (c *KMS) DeriveSharedSecret(input *DeriveSharedSecretInput) (*DeriveSharedSecretOutput, error) {
+	req, out := c.DeriveSharedSecretRequest(input)
+	return out, req.Send()
+}
+
+// DeriveSharedSecretWithContext is the same as DeriveSharedSecret with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeriveSharedSecret for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *KMS) DeriveSharedSecretWithContext(ctx aws.Context, input *DeriveSharedSecretInput, opts ...request.Option) (*DeriveSharedSecretOutput, error) {
+	req, out := c.DeriveSharedSecretRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3326,7 +3545,8 @@ func (c *KMS) EncryptRequest(input *EncryptInput) (req *request.Request, output 
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -3554,7 +3774,8 @@ func (c *KMS) GenerateDataKeyRequest(input *GenerateDataKeyInput) (req *request.
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -3772,7 +3993,8 @@ func (c *KMS) GenerateDataKeyPairRequest(input *GenerateDataKeyPairInput) (req *
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -3969,7 +4191,8 @@ func (c *KMS) GenerateDataKeyPairWithoutPlaintextRequest(input *GenerateDataKeyP
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -4178,7 +4401,8 @@ func (c *KMS) GenerateDataKeyWithoutPlaintextRequest(input *GenerateDataKeyWitho
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -4343,7 +4567,8 @@ func (c *KMS) GenerateMacRequest(input *GenerateMacInput) (req *request.Request,
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -5089,7 +5314,8 @@ func (c *KMS) GetPublicKeyRequest(input *GetPublicKeyInput) (req *request.Reques
 //     The type of key material in the public key, such as RSA_4096 or ECC_NIST_P521.
 //
 //   - KeyUsage (https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-KeyUsage):
-//     Whether the key is used for encryption or signing.
+//     Whether the key is used for encryption, signing, or deriving a shared
+//     secret.
 //
 //   - EncryptionAlgorithms (https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-EncryptionAlgorithms)
 //     or SigningAlgorithms (https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-SigningAlgorithms):
@@ -5170,7 +5396,8 @@ func (c *KMS) GetPublicKeyRequest(input *GetPublicKeyInput) (req *request.Reques
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -7082,7 +7309,8 @@ func (c *KMS) ReEncryptRequest(input *ReEncryptInput) (req *request.Request, out
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -8134,7 +8362,8 @@ func (c *KMS) SignRequest(input *SignInput) (req *request.Request, output *SignO
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -8939,6 +9168,7 @@ func (c *KMS) UpdateCustomKeyStoreRequest(input *UpdateCustomKeyStoreInput) (req
 //     for Amazon VPC endpoint service connectivity for an external key store.
 //
 //   - XksProxyInvalidResponseException
+//
 //     KMS cannot interpret the response it received from the external key store
 //     proxy. The problem might be a poorly constructed response, but it could also
 //     be a transient network issue. If you see this error repeatedly, report it
@@ -9412,7 +9642,8 @@ func (c *KMS) VerifyRequest(input *VerifyInput) (req *request.Request, output *V
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -9576,7 +9807,8 @@ func (c *KMS) VerifyMacRequest(input *VerifyMacInput) (req *request.Request, out
 //     For encrypting, decrypting, re-encrypting, and generating data keys, the
 //     KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 //     KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+//     codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+//     agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 //     of a KMS key, use the DescribeKey operation.
 //
 //     To find the encryption or signing algorithms supported for a particular KMS
@@ -11140,15 +11372,18 @@ type CreateKeyInput struct {
 	//
 	//    * HMAC keys (symmetric) HMAC_224 HMAC_256 HMAC_384 HMAC_512
 	//
-	//    * Asymmetric RSA key pairs RSA_2048 RSA_3072 RSA_4096
+	//    * Asymmetric RSA key pairs (encryption and decryption -or- signing and
+	//    verification) RSA_2048 RSA_3072 RSA_4096
 	//
-	//    * Asymmetric NIST-recommended elliptic curve key pairs ECC_NIST_P256 (secp256r1)
-	//    ECC_NIST_P384 (secp384r1) ECC_NIST_P521 (secp521r1)
+	//    * Asymmetric NIST-recommended elliptic curve key pairs (signing and verification
+	//    -or- deriving shared secrets) ECC_NIST_P256 (secp256r1) ECC_NIST_P384
+	//    (secp384r1) ECC_NIST_P521 (secp521r1)
 	//
-	//    * Other asymmetric elliptic curve key pairs ECC_SECG_P256K1 (secp256k1),
-	//    commonly used for cryptocurrencies.
+	//    * Other asymmetric elliptic curve key pairs (signing and verification)
+	//    ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
 	//
-	//    * SM2 key pairs (China Regions only) SM2
+	//    * SM2 key pairs (encryption and decryption -or- signing and verification
+	//    -or- deriving shared secrets) SM2 (China Regions only)
 	KeySpec *string `type:"string" enum:"KeySpec"`
 
 	// Determines the cryptographic operations (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations)
@@ -11163,13 +11398,16 @@ type CreateKeyInput struct {
 	//
 	//    * For HMAC KMS keys (symmetric), specify GENERATE_VERIFY_MAC.
 	//
-	//    * For asymmetric KMS keys with RSA key material, specify ENCRYPT_DECRYPT
+	//    * For asymmetric KMS keys with RSA key pairs, specify ENCRYPT_DECRYPT
 	//    or SIGN_VERIFY.
 	//
-	//    * For asymmetric KMS keys with ECC key material, specify SIGN_VERIFY.
+	//    * For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
+	//    specify SIGN_VERIFY or KEY_AGREEMENT.
 	//
-	//    * For asymmetric KMS keys with SM2 key material (China Regions only),
-	//    specify ENCRYPT_DECRYPT or SIGN_VERIFY.
+	//    * For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY.
+	//
+	//    * For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
+	//    ENCRYPT_DECRYPT, SIGN_VERIFY, or KEY_AGREEMENT.
 	KeyUsage *string `type:"string" enum:"KeyUsageType"`
 
 	// Creates a multi-Region primary key that you can replicate into other Amazon
@@ -12553,6 +12791,282 @@ func (s *DependencyTimeoutException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *DependencyTimeoutException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+type DeriveSharedSecretInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks if your request will succeed. DryRun is an optional parameter.
+	//
+	// To learn more about how to use this parameter, see Testing your KMS API calls
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html)
+	// in the Key Management Service Developer Guide.
+	DryRun *bool `type:"boolean"`
+
+	// A list of grant tokens.
+	//
+	// Use a grant token when your permission to call this operation comes from
+	// a new grant that has not yet achieved eventual consistency. For more information,
+	// see Grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token)
+	// and Using a grant token (https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token)
+	// in the Key Management Service Developer Guide.
+	GrantTokens []*string `type:"list"`
+
+	// Specifies the key agreement algorithm used to derive the shared secret. The
+	// only valid value is ECDH.
+	//
+	// KeyAgreementAlgorithm is a required field
+	KeyAgreementAlgorithm *string `type:"string" required:"true" enum:"KeyAgreementAlgorithmSpec"`
+
+	// Identifies an asymmetric NIST-recommended ECC or SM2 (China Regions only)
+	// KMS key. KMS uses the private key in the specified key pair to derive the
+	// shared secret. The key usage of the KMS key must be KEY_AGREEMENT. To find
+	// the KeyUsage of a KMS key, use the DescribeKey operation.
+	//
+	// To specify a KMS key, use its key ID, key ARN, alias name, or alias ARN.
+	// When using an alias name, prefix it with "alias/". To specify a KMS key in
+	// a different Amazon Web Services account, you must use the key ARN or alias
+	// ARN.
+	//
+	// For example:
+	//
+	//    * Key ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+	//
+	//    * Key ARN: arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+	//
+	//    * Alias name: alias/ExampleAlias
+	//
+	//    * Alias ARN: arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias
+	//
+	// To get the key ID and key ARN for a KMS key, use ListKeys or DescribeKey.
+	// To get the alias name and alias ARN, use ListAliases.
+	//
+	// KeyId is a required field
+	KeyId *string `min:"1" type:"string" required:"true"`
+
+	// Specifies the public key in your peer's NIST-recommended elliptic curve (ECC)
+	// or SM2 (China Regions only) key pair.
+	//
+	// The public key must be a DER-encoded X.509 public key, also known as SubjectPublicKeyInfo
+	// (SPKI), as defined in RFC 5280 (https://tools.ietf.org/html/rfc5280).
+	//
+	// GetPublicKey returns the public key of an asymmetric KMS key pair in the
+	// required DER-encoded format.
+	//
+	// If you use Amazon Web Services CLI version 1 (https://docs.aws.amazon.com/cli/v1/userguide/cli-chap-welcome.html),
+	// you must provide the DER-encoded X.509 public key in a file. Otherwise, the
+	// Amazon Web Services CLI Base64-encodes the public key a second time, resulting
+	// in a ValidationException.
+	//
+	// You can specify the public key as binary data in a file using fileb (fileb://<path-to-file>)
+	// or in-line using a Base64 encoded string.
+	// PublicKey is automatically base64 encoded/decoded by the SDK.
+	//
+	// PublicKey is a required field
+	PublicKey []byte `min:"1" type:"blob" required:"true"`
+
+	// A signed attestation document (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc)
+	// from an Amazon Web Services Nitro enclave and the encryption algorithm to
+	// use with the enclave's public key. The only valid encryption algorithm is
+	// RSAES_OAEP_SHA_256.
+	//
+	// This parameter only supports attestation documents for Amazon Web Services
+	// Nitro Enclaves. To call DeriveSharedSecret for an Amazon Web Services Nitro
+	// Enclaves, use the Amazon Web Services Nitro Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// to generate the attestation document and then use the Recipient parameter
+	// from any Amazon Web Services SDK to provide the attestation document for
+	// the enclave.
+	//
+	// When you use this parameter, instead of returning a plaintext copy of the
+	// shared secret, KMS encrypts the plaintext shared secret under the public
+	// key in the attestation document, and returns the resulting ciphertext in
+	// the CiphertextForRecipient field in the response. This ciphertext can be
+	// decrypted only with the private key in the enclave. The CiphertextBlob field
+	// in the response contains the encrypted shared secret derived from the KMS
+	// key specified by the KeyId parameter and public key specified by the PublicKey
+	// parameter. The SharedSecret field in the response is null or empty.
+	//
+	// For information about the interaction between KMS and Amazon Web Services
+	// Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	Recipient *RecipientInfo `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeriveSharedSecretInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeriveSharedSecretInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeriveSharedSecretInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeriveSharedSecretInput"}
+	if s.KeyAgreementAlgorithm == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyAgreementAlgorithm"))
+	}
+	if s.KeyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyId"))
+	}
+	if s.KeyId != nil && len(*s.KeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KeyId", 1))
+	}
+	if s.PublicKey == nil {
+		invalidParams.Add(request.NewErrParamRequired("PublicKey"))
+	}
+	if s.PublicKey != nil && len(s.PublicKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublicKey", 1))
+	}
+	if s.Recipient != nil {
+		if err := s.Recipient.Validate(); err != nil {
+			invalidParams.AddNested("Recipient", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeriveSharedSecretInput) SetDryRun(v bool) *DeriveSharedSecretInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetGrantTokens sets the GrantTokens field's value.
+func (s *DeriveSharedSecretInput) SetGrantTokens(v []*string) *DeriveSharedSecretInput {
+	s.GrantTokens = v
+	return s
+}
+
+// SetKeyAgreementAlgorithm sets the KeyAgreementAlgorithm field's value.
+func (s *DeriveSharedSecretInput) SetKeyAgreementAlgorithm(v string) *DeriveSharedSecretInput {
+	s.KeyAgreementAlgorithm = &v
+	return s
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *DeriveSharedSecretInput) SetKeyId(v string) *DeriveSharedSecretInput {
+	s.KeyId = &v
+	return s
+}
+
+// SetPublicKey sets the PublicKey field's value.
+func (s *DeriveSharedSecretInput) SetPublicKey(v []byte) *DeriveSharedSecretInput {
+	s.PublicKey = v
+	return s
+}
+
+// SetRecipient sets the Recipient field's value.
+func (s *DeriveSharedSecretInput) SetRecipient(v *RecipientInfo) *DeriveSharedSecretInput {
+	s.Recipient = v
+	return s
+}
+
+type DeriveSharedSecretOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The plaintext shared secret encrypted with the public key in the attestation
+	// document.
+	//
+	// This field is included in the response only when the Recipient parameter
+	// in the request includes a valid attestation document from an Amazon Web Services
+	// Nitro enclave. For information about the interaction between KMS and Amazon
+	// Web Services Nitro Enclaves, see How Amazon Web Services Nitro Enclaves uses
+	// KMS (https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+	// in the Key Management Service Developer Guide.
+	// CiphertextForRecipient is automatically base64 encoded/decoded by the SDK.
+	CiphertextForRecipient []byte `min:"1" type:"blob"`
+
+	// Identifies the key agreement algorithm used to derive the shared secret.
+	KeyAgreementAlgorithm *string `type:"string" enum:"KeyAgreementAlgorithmSpec"`
+
+	// Identifies the KMS key used to derive the shared secret.
+	KeyId *string `min:"1" type:"string"`
+
+	// The source of the key material for the specified KMS key.
+	//
+	// When this value is AWS_KMS, KMS created the key material. When this value
+	// is EXTERNAL, the key material was imported or the KMS key doesn't have any
+	// key material.
+	//
+	// The only valid values for DeriveSharedSecret are AWS_KMS and EXTERNAL. DeriveSharedSecret
+	// does not support KMS keys with a KeyOrigin value of AWS_CLOUDHSM or EXTERNAL_KEY_STORE.
+	KeyOrigin *string `type:"string" enum:"OriginType"`
+
+	// The raw secret derived from the specified key agreement algorithm, private
+	// key in the asymmetric KMS key, and your peer's public key.
+	//
+	// If the response includes the CiphertextForRecipient field, the SharedSecret
+	// field is null or empty.
+	//
+	// SharedSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by DeriveSharedSecretOutput's
+	// String and GoString methods.
+	//
+	// SharedSecret is automatically base64 encoded/decoded by the SDK.
+	SharedSecret []byte `min:"1" type:"blob" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeriveSharedSecretOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeriveSharedSecretOutput) GoString() string {
+	return s.String()
+}
+
+// SetCiphertextForRecipient sets the CiphertextForRecipient field's value.
+func (s *DeriveSharedSecretOutput) SetCiphertextForRecipient(v []byte) *DeriveSharedSecretOutput {
+	s.CiphertextForRecipient = v
+	return s
+}
+
+// SetKeyAgreementAlgorithm sets the KeyAgreementAlgorithm field's value.
+func (s *DeriveSharedSecretOutput) SetKeyAgreementAlgorithm(v string) *DeriveSharedSecretOutput {
+	s.KeyAgreementAlgorithm = &v
+	return s
+}
+
+// SetKeyId sets the KeyId field's value.
+func (s *DeriveSharedSecretOutput) SetKeyId(v string) *DeriveSharedSecretOutput {
+	s.KeyId = &v
+	return s
+}
+
+// SetKeyOrigin sets the KeyOrigin field's value.
+func (s *DeriveSharedSecretOutput) SetKeyOrigin(v string) *DeriveSharedSecretOutput {
+	s.KeyOrigin = &v
+	return s
+}
+
+// SetSharedSecret sets the SharedSecret field's value.
+func (s *DeriveSharedSecretOutput) SetSharedSecret(v []byte) *DeriveSharedSecretOutput {
+	s.SharedSecret = v
+	return s
 }
 
 type DescribeCustomKeyStoresInput struct {
@@ -14006,9 +14520,11 @@ type GenerateDataKeyPairInput struct {
 	// RSAES_OAEP_SHA_256.
 	//
 	// This parameter only supports attestation documents for Amazon Web Services
-	// Nitro Enclaves. To include this parameter, use the Amazon Web Services Nitro
-	// Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
-	// or any Amazon Web Services SDK.
+	// Nitro Enclaves. To call DeriveSharedSecret for an Amazon Web Services Nitro
+	// Enclaves, use the Amazon Web Services Nitro Enclaves SDK (https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk)
+	// to generate the attestation document and then use the Recipient parameter
+	// from any Amazon Web Services SDK to provide the attestation document for
+	// the enclave.
 	//
 	// When you use this parameter, instead of returning a plaintext copy of the
 	// private data key, KMS encrypts the plaintext private data key under the public
@@ -15479,6 +15995,10 @@ type GetPublicKeyOutput struct {
 	// is ENCRYPT_DECRYPT.
 	EncryptionAlgorithms []*string `type:"list" enum:"EncryptionAlgorithmSpec"`
 
+	// The key agreement algorithm used to derive a shared secret. This field is
+	// present only when the KMS key has a KeyUsage value of KEY_AGREEMENT.
+	KeyAgreementAlgorithms []*string `type:"list" enum:"KeyAgreementAlgorithmSpec"`
+
 	// The Amazon Resource Name (key ARN (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN))
 	// of the asymmetric KMS key from which the public key was downloaded.
 	KeyId *string `min:"1" type:"string"`
@@ -15486,11 +16006,11 @@ type GetPublicKeyOutput struct {
 	// The type of the of the public key that was downloaded.
 	KeySpec *string `type:"string" enum:"KeySpec"`
 
-	// The permitted use of the public key. Valid values are ENCRYPT_DECRYPT or
-	// SIGN_VERIFY.
+	// The permitted use of the public key. Valid values for asymmetric key pairs
+	// are ENCRYPT_DECRYPT, SIGN_VERIFY, and KEY_AGREEMENT.
 	//
-	// This information is critical. If a public key with SIGN_VERIFY key usage
-	// encrypts data outside of KMS, the ciphertext cannot be decrypted.
+	// This information is critical. For example, if a public key with SIGN_VERIFY
+	// key usage encrypts data outside of KMS, the ciphertext cannot be decrypted.
 	KeyUsage *string `type:"string" enum:"KeyUsageType"`
 
 	// The exported public key.
@@ -15536,6 +16056,12 @@ func (s *GetPublicKeyOutput) SetCustomerMasterKeySpec(v string) *GetPublicKeyOut
 // SetEncryptionAlgorithms sets the EncryptionAlgorithms field's value.
 func (s *GetPublicKeyOutput) SetEncryptionAlgorithms(v []*string) *GetPublicKeyOutput {
 	s.EncryptionAlgorithms = v
+	return s
+}
+
+// SetKeyAgreementAlgorithms sets the KeyAgreementAlgorithms field's value.
+func (s *GetPublicKeyOutput) SetKeyAgreementAlgorithms(v []*string) *GetPublicKeyOutput {
+	s.KeyAgreementAlgorithms = v
 	return s
 }
 
@@ -16592,7 +17118,8 @@ func (s *InvalidImportTokenException) RequestID() string {
 // For encrypting, decrypting, re-encrypting, and generating data keys, the
 // KeyUsage must be ENCRYPT_DECRYPT. For signing and verifying messages, the
 // KeyUsage must be SIGN_VERIFY. For generating and verifying message authentication
-// codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. To find the KeyUsage
+// codes (MACs), the KeyUsage must be GENERATE_VERIFY_MAC. For deriving key
+// agreement secrets, the KeyUsage must be KEY_AGREEMENT. To find the KeyUsage
 // of a KMS key, use the DescribeKey operation.
 //
 // To find the encryption or signing algorithms supported for a particular KMS
@@ -17041,6 +17568,9 @@ type KeyMetadata struct {
 	// only when Origin is EXTERNAL, otherwise this value is omitted.
 	ExpirationModel *string `type:"string" enum:"ExpirationModelType"`
 
+	// The key agreement algorithm used to derive a shared secret.
+	KeyAgreementAlgorithms []*string `type:"list" enum:"KeyAgreementAlgorithmSpec"`
+
 	// The globally unique identifier for the KMS key.
 	//
 	// KeyId is a required field
@@ -17218,6 +17748,12 @@ func (s *KeyMetadata) SetEncryptionAlgorithms(v []*string) *KeyMetadata {
 // SetExpirationModel sets the ExpirationModel field's value.
 func (s *KeyMetadata) SetExpirationModel(v string) *KeyMetadata {
 	s.ExpirationModel = &v
+	return s
+}
+
+// SetKeyAgreementAlgorithms sets the KeyAgreementAlgorithms field's value.
+func (s *KeyMetadata) SetKeyAgreementAlgorithms(v []*string) *KeyMetadata {
+	s.KeyAgreementAlgorithms = v
 	return s
 }
 
@@ -22678,6 +23214,9 @@ const (
 
 	// AlgorithmSpecRsaAesKeyWrapSha256 is a AlgorithmSpec enum value
 	AlgorithmSpecRsaAesKeyWrapSha256 = "RSA_AES_KEY_WRAP_SHA_256"
+
+	// AlgorithmSpecSm2pke is a AlgorithmSpec enum value
+	AlgorithmSpecSm2pke = "SM2PKE"
 )
 
 // AlgorithmSpec_Values returns all elements of the AlgorithmSpec enum
@@ -22688,6 +23227,7 @@ func AlgorithmSpec_Values() []string {
 		AlgorithmSpecRsaesOaepSha256,
 		AlgorithmSpecRsaAesKeyWrapSha1,
 		AlgorithmSpecRsaAesKeyWrapSha256,
+		AlgorithmSpecSm2pke,
 	}
 }
 
@@ -23019,6 +23559,9 @@ const (
 
 	// GrantOperationVerifyMac is a GrantOperation enum value
 	GrantOperationVerifyMac = "VerifyMac"
+
+	// GrantOperationDeriveSharedSecret is a GrantOperation enum value
+	GrantOperationDeriveSharedSecret = "DeriveSharedSecret"
 )
 
 // GrantOperation_Values returns all elements of the GrantOperation enum
@@ -23040,6 +23583,19 @@ func GrantOperation_Values() []string {
 		GrantOperationGenerateDataKeyPairWithoutPlaintext,
 		GrantOperationGenerateMac,
 		GrantOperationVerifyMac,
+		GrantOperationDeriveSharedSecret,
+	}
+}
+
+const (
+	// KeyAgreementAlgorithmSpecEcdh is a KeyAgreementAlgorithmSpec enum value
+	KeyAgreementAlgorithmSpecEcdh = "ECDH"
+)
+
+// KeyAgreementAlgorithmSpec_Values returns all elements of the KeyAgreementAlgorithmSpec enum
+func KeyAgreementAlgorithmSpec_Values() []string {
+	return []string{
+		KeyAgreementAlgorithmSpecEcdh,
 	}
 }
 
@@ -23180,6 +23736,9 @@ const (
 
 	// KeyUsageTypeGenerateVerifyMac is a KeyUsageType enum value
 	KeyUsageTypeGenerateVerifyMac = "GENERATE_VERIFY_MAC"
+
+	// KeyUsageTypeKeyAgreement is a KeyUsageType enum value
+	KeyUsageTypeKeyAgreement = "KEY_AGREEMENT"
 )
 
 // KeyUsageType_Values returns all elements of the KeyUsageType enum
@@ -23188,6 +23747,7 @@ func KeyUsageType_Values() []string {
 		KeyUsageTypeSignVerify,
 		KeyUsageTypeEncryptDecrypt,
 		KeyUsageTypeGenerateVerifyMac,
+		KeyUsageTypeKeyAgreement,
 	}
 }
 
@@ -23344,6 +23904,9 @@ const (
 
 	// WrappingKeySpecRsa4096 is a WrappingKeySpec enum value
 	WrappingKeySpecRsa4096 = "RSA_4096"
+
+	// WrappingKeySpecSm2 is a WrappingKeySpec enum value
+	WrappingKeySpecSm2 = "SM2"
 )
 
 // WrappingKeySpec_Values returns all elements of the WrappingKeySpec enum
@@ -23352,6 +23915,7 @@ func WrappingKeySpec_Values() []string {
 		WrappingKeySpecRsa2048,
 		WrappingKeySpecRsa3072,
 		WrappingKeySpecRsa4096,
+		WrappingKeySpecSm2,
 	}
 }
 

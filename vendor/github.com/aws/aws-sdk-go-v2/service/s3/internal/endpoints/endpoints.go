@@ -253,6 +253,15 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname: "s3.dualstack.ap-southeast-4.amazonaws.com",
 			},
 			endpoints.EndpointKey{
+				Region: "ap-southeast-5",
+			}: endpoints.Endpoint{},
+			endpoints.EndpointKey{
+				Region:  "ap-southeast-5",
+				Variant: endpoints.DualStackVariant,
+			}: {
+				Hostname: "s3.dualstack.ap-southeast-5.amazonaws.com",
+			},
+			endpoints.EndpointKey{
 				Region: "aws-global",
 			}: endpoints.Endpoint{
 				Hostname:          "s3.amazonaws.com",

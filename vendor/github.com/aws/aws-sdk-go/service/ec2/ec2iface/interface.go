@@ -364,6 +364,10 @@ type EC2API interface {
 	CreateIpamWithContext(aws.Context, *ec2.CreateIpamInput, ...request.Option) (*ec2.CreateIpamOutput, error)
 	CreateIpamRequest(*ec2.CreateIpamInput) (*request.Request, *ec2.CreateIpamOutput)
 
+	CreateIpamExternalResourceVerificationToken(*ec2.CreateIpamExternalResourceVerificationTokenInput) (*ec2.CreateIpamExternalResourceVerificationTokenOutput, error)
+	CreateIpamExternalResourceVerificationTokenWithContext(aws.Context, *ec2.CreateIpamExternalResourceVerificationTokenInput, ...request.Option) (*ec2.CreateIpamExternalResourceVerificationTokenOutput, error)
+	CreateIpamExternalResourceVerificationTokenRequest(*ec2.CreateIpamExternalResourceVerificationTokenInput) (*request.Request, *ec2.CreateIpamExternalResourceVerificationTokenOutput)
+
 	CreateIpamPool(*ec2.CreateIpamPoolInput) (*ec2.CreateIpamPoolOutput, error)
 	CreateIpamPoolWithContext(aws.Context, *ec2.CreateIpamPoolInput, ...request.Option) (*ec2.CreateIpamPoolOutput, error)
 	CreateIpamPoolRequest(*ec2.CreateIpamPoolInput) (*request.Request, *ec2.CreateIpamPoolOutput)
@@ -667,6 +671,10 @@ type EC2API interface {
 	DeleteIpam(*ec2.DeleteIpamInput) (*ec2.DeleteIpamOutput, error)
 	DeleteIpamWithContext(aws.Context, *ec2.DeleteIpamInput, ...request.Option) (*ec2.DeleteIpamOutput, error)
 	DeleteIpamRequest(*ec2.DeleteIpamInput) (*request.Request, *ec2.DeleteIpamOutput)
+
+	DeleteIpamExternalResourceVerificationToken(*ec2.DeleteIpamExternalResourceVerificationTokenInput) (*ec2.DeleteIpamExternalResourceVerificationTokenOutput, error)
+	DeleteIpamExternalResourceVerificationTokenWithContext(aws.Context, *ec2.DeleteIpamExternalResourceVerificationTokenInput, ...request.Option) (*ec2.DeleteIpamExternalResourceVerificationTokenOutput, error)
+	DeleteIpamExternalResourceVerificationTokenRequest(*ec2.DeleteIpamExternalResourceVerificationTokenInput) (*request.Request, *ec2.DeleteIpamExternalResourceVerificationTokenOutput)
 
 	DeleteIpamPool(*ec2.DeleteIpamPoolInput) (*ec2.DeleteIpamPoolOutput, error)
 	DeleteIpamPoolWithContext(aws.Context, *ec2.DeleteIpamPoolInput, ...request.Option) (*ec2.DeleteIpamPoolOutput, error)
@@ -1281,6 +1289,10 @@ type EC2API interface {
 	DescribeIpamByoasnWithContext(aws.Context, *ec2.DescribeIpamByoasnInput, ...request.Option) (*ec2.DescribeIpamByoasnOutput, error)
 	DescribeIpamByoasnRequest(*ec2.DescribeIpamByoasnInput) (*request.Request, *ec2.DescribeIpamByoasnOutput)
 
+	DescribeIpamExternalResourceVerificationTokens(*ec2.DescribeIpamExternalResourceVerificationTokensInput) (*ec2.DescribeIpamExternalResourceVerificationTokensOutput, error)
+	DescribeIpamExternalResourceVerificationTokensWithContext(aws.Context, *ec2.DescribeIpamExternalResourceVerificationTokensInput, ...request.Option) (*ec2.DescribeIpamExternalResourceVerificationTokensOutput, error)
+	DescribeIpamExternalResourceVerificationTokensRequest(*ec2.DescribeIpamExternalResourceVerificationTokensInput) (*request.Request, *ec2.DescribeIpamExternalResourceVerificationTokensOutput)
+
 	DescribeIpamPools(*ec2.DescribeIpamPoolsInput) (*ec2.DescribeIpamPoolsOutput, error)
 	DescribeIpamPoolsWithContext(aws.Context, *ec2.DescribeIpamPoolsInput, ...request.Option) (*ec2.DescribeIpamPoolsOutput, error)
 	DescribeIpamPoolsRequest(*ec2.DescribeIpamPoolsInput) (*request.Request, *ec2.DescribeIpamPoolsOutput)
@@ -1643,6 +1655,10 @@ type EC2API interface {
 
 	DescribeTagsPages(*ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool) error
 	DescribeTagsPagesWithContext(aws.Context, *ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool, ...request.Option) error
+
+	DescribeTrafficMirrorFilterRules(*ec2.DescribeTrafficMirrorFilterRulesInput) (*ec2.DescribeTrafficMirrorFilterRulesOutput, error)
+	DescribeTrafficMirrorFilterRulesWithContext(aws.Context, *ec2.DescribeTrafficMirrorFilterRulesInput, ...request.Option) (*ec2.DescribeTrafficMirrorFilterRulesOutput, error)
+	DescribeTrafficMirrorFilterRulesRequest(*ec2.DescribeTrafficMirrorFilterRulesInput) (*request.Request, *ec2.DescribeTrafficMirrorFilterRulesOutput)
 
 	DescribeTrafficMirrorFilters(*ec2.DescribeTrafficMirrorFiltersInput) (*ec2.DescribeTrafficMirrorFiltersOutput, error)
 	DescribeTrafficMirrorFiltersWithContext(aws.Context, *ec2.DescribeTrafficMirrorFiltersInput, ...request.Option) (*ec2.DescribeTrafficMirrorFiltersOutput, error)

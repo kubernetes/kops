@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240722",
+  "revision": "20240730",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -3394,6 +3394,10 @@
           "readOnly": true,
           "type": "boolean"
         },
+        "secretManagerConfig": {
+          "$ref": "SecretManagerConfig",
+          "description": "Secret CSI driver configuration."
+        },
         "securityPostureConfig": {
           "$ref": "SecurityPostureConfig",
           "description": "Enable/Disable Security Posture API features for the cluster."
@@ -3759,6 +3763,10 @@
         "desiredResourceUsageExportConfig": {
           "$ref": "ResourceUsageExportConfig",
           "description": "The desired configuration for exporting resource usage."
+        },
+        "desiredSecretManagerConfig": {
+          "$ref": "SecretManagerConfig",
+          "description": "Enable/Disable Secret Manager Config."
         },
         "desiredSecurityPostureConfig": {
           "$ref": "SecurityPostureConfig",
@@ -5482,6 +5490,13 @@
           "description": "Spot flag for enabling Spot VM, which is a rebrand of the existing preemptible flag.",
           "type": "boolean"
         },
+        "storagePools": {
+          "description": "List of Storage Pools where boot disks are provisioned.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "tags": {
           "description": "The list of instance tags applied to all nodes. Tags are used to identify valid sources or targets for network firewalls and are specified by the client during cluster or node pool creation. Each tag within the list must comply with RFC1035.",
           "items": {
@@ -6621,6 +6636,17 @@
       "properties": {},
       "type": "object"
     },
+    "SecretManagerConfig": {
+      "description": "SecretManagerConfig is config for secret manager enablement.",
+      "id": "SecretManagerConfig",
+      "properties": {
+        "enabled": {
+          "description": "Enable/Disable Secret Manager Config.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "SecurityBulletinEvent": {
       "description": "SecurityBulletinEvent is a notification sent to customers when a security bulletin has been posted that they are vulnerable to.",
       "id": "SecurityBulletinEvent",
@@ -7580,6 +7606,13 @@
         "resourceManagerTags": {
           "$ref": "ResourceManagerTags",
           "description": "Desired resource manager tag keys and values to be attached to the nodes for managing Compute Engine firewalls using Network Firewall Policies. Existing tags will be replaced with new values."
+        },
+        "storagePools": {
+          "description": "List of Storage Pools where boot disks are provisioned. Existing Storage Pools will be replaced with storage-pools.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "tags": {
           "$ref": "NetworkTags",
