@@ -398,11 +398,11 @@ func getFilters(commandline *cli.CommandLineInterface, region string, zones []st
 	flags := commandline.Flags
 	var cpuArch ec2types.ArchitectureType
 	if v, ok := flags[cpuArchitecture]; ok {
-		cpuArch = ec2types.ArchitectureType(v.(string))
+		cpuArch = ec2types.ArchitectureType(*commandline.StringMe(v))
 	}
 	var uc ec2types.UsageClassType
 	if v, ok := flags[usageClass]; ok {
-		uc = ec2types.UsageClassType(v.(string))
+		uc = ec2types.UsageClassType(*commandline.StringMe(v))
 	}
 	return selector.Filters{
 		VCpusRange:             commandline.Int32RangeMe(flags[vcpus]),
