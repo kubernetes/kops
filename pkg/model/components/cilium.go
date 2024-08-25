@@ -30,10 +30,10 @@ type CiliumOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &CiliumOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &CiliumOptionsBuilder{}
 
-func (b *CiliumOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	c := clusterSpec.Networking.Cilium
 	if c == nil {
 		return nil

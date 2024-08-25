@@ -31,10 +31,10 @@ type DiscoveryOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &DiscoveryOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &DiscoveryOptionsBuilder{}
 
-func (b *DiscoveryOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *DiscoveryOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 
 	if clusterSpec.KubeAPIServer == nil {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}

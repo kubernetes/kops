@@ -28,10 +28,10 @@ type NodeTerminationHandlerOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &NodeTerminationHandlerOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &NodeTerminationHandlerOptionsBuilder{}
 
-func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	if clusterSpec.CloudProvider.AWS == nil {
 		return nil
 	}

@@ -28,14 +28,12 @@ type NetworkingOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &NetworkingOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &NetworkingOptionsBuilder{}
 
-func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
-
-	options := o.(*kops.ClusterSpec)
-	if options.Kubelet == nil {
-		options.Kubelet = &kops.KubeletConfigSpec{}
+func (b *NetworkingOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
+	if clusterSpec.Kubelet == nil {
+		clusterSpec.Kubelet = &kops.KubeletConfigSpec{}
 	}
 
 	networking := &clusterSpec.Networking

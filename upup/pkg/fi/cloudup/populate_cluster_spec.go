@@ -306,7 +306,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		AssetBuilder:      c.assetBuilder,
 	}
 
-	var codeModels []loader.OptionsBuilder
+	var codeModels []loader.ClusterOptionsBuilder
 	{
 		{
 			// Note: DefaultOptionsBuilder comes first
@@ -340,27 +340,23 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 	}
 
 	specBuilder := &SpecBuilder{
-		OptionsLoader: loader.NewOptionsLoader(codeModels),
+		OptionsLoader: loader.NewClusterOptionsLoader(codeModels),
 	}
 
-	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec)
+	completed, err := specBuilder.BuildCompleteSpec(cluster)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
 
 	// TODO: This should not be needed...
-	completed.Networking.Topology = c.InputCluster.Spec.Networking.Topology
+	completed.Spec.Networking.Topology = c.InputCluster.Spec.Networking.Topology
 	// completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
-	fullCluster := &kopsapi.Cluster{}
-	*fullCluster = *cluster
-	fullCluster.Spec = *completed
-
-	if errs := validation.ValidateCluster(fullCluster, true, clientset.VFSContext()); len(errs) != 0 {
+	if errs := validation.ValidateCluster(completed, true, clientset.VFSContext()); len(errs) != 0 {
 		return fmt.Errorf("completed cluster failed validation: %v", errs.ToAggregate())
 	}
 
-	c.fullCluster = fullCluster
+	c.fullCluster = completed
 	return nil
 }
 

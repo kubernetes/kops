@@ -45,7 +45,7 @@ func Test_Build_Scheduler(t *testing.T) {
 			},
 		}
 
-		err = ks.BuildOptions(&c.Spec)
+		err = ks.BuildOptions(c)
 
 		if err != nil {
 			t.Fatalf("unexpected error from BuildOptions: %v", err)

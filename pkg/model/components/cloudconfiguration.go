@@ -27,10 +27,10 @@ type CloudConfigurationOptionsBuilder struct {
 	Context *OptionsContext
 }
 
-var _ loader.OptionsBuilder = &CloudConfigurationOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &CloudConfigurationOptionsBuilder{}
 
-func (b *CloudConfigurationOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *CloudConfigurationOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 	c := clusterSpec.CloudConfig
 	if c == nil {
 		c = &kops.CloudConfiguration{}

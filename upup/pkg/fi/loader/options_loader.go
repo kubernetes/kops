@@ -21,30 +21,35 @@ import (
 	"reflect"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 const maxIterations = 10
 
-type OptionsLoader struct {
-	Builders []OptionsBuilder
+type OptionsLoader[T any] struct {
+	Builders []OptionsBuilder[T]
 }
 
-type OptionsBuilder interface {
-	BuildOptions(options interface{}) error
+type OptionsBuilder[T any] interface {
+	BuildOptions(options T) error
 }
 
-func NewOptionsLoader(builders []OptionsBuilder) *OptionsLoader {
-	l := &OptionsLoader{}
-	l.Builders = builders
+type ClusterOptionsBuilder OptionsBuilder[*kops.Cluster]
+
+func NewClusterOptionsLoader(builders []ClusterOptionsBuilder) *OptionsLoader[*kops.Cluster] {
+	l := &OptionsLoader[*kops.Cluster]{}
+	for _, b := range builders {
+		l.Builders = append(l.Builders, b)
+	}
 	return l
 }
 
 // iterate performs a single iteration of all the templates, executing each template in order
-func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (interface{}, error) {
+func (l *OptionsLoader[T]) iterate(userConfig T, current T) (T, error) {
 	t := reflect.TypeOf(current).Elem()
 
-	next := reflect.New(t).Interface()
+	next := reflect.New(t).Interface().(T)
 
 	// Copy the current state before applying rules; they act as defaults
 	reflectutils.JSONMergeStruct(next, current)
@@ -54,7 +59,8 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 
 		err := t.BuildOptions(next)
 		if err != nil {
-			return nil, err
+			var defaultT T
+			return defaultT, err
 		}
 	}
 
@@ -66,13 +72,14 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 
 // Build executes the options configuration templates, until they converge
 // It bails out after maxIterations
-func (l *OptionsLoader) Build(userConfig interface{}) (interface{}, error) {
+func (l *OptionsLoader[T]) Build(userConfig T) (T, error) {
+	var defaultT T
 	options := userConfig
 	iteration := 0
 	for {
 		nextOptions, err := l.iterate(userConfig, options)
 		if err != nil {
-			return nil, err
+			return defaultT, err
 		}
 
 		if reflect.DeepEqual(options, nextOptions) {
@@ -81,7 +88,7 @@ func (l *OptionsLoader) Build(userConfig interface{}) (interface{}, error) {
 
 		iteration++
 		if iteration > maxIterations {
-			return nil, fmt.Errorf("options did not converge after %d iterations", maxIterations)
+			return defaultT, fmt.Errorf("options did not converge after %d iterations", maxIterations)
 		}
 
 		options = nextOptions

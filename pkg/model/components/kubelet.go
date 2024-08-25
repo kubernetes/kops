@@ -34,11 +34,11 @@ type KubeletOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &KubeletOptionsBuilder{}
 
 // BuildOptions is responsible for filling the defaults for the kubelet
-func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
-	clusterSpec := o.(*kops.ClusterSpec)
+func (b *KubeletOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	clusterSpec := &o.Spec
 
 	if clusterSpec.Kubelet == nil {
 		clusterSpec.Kubelet = &kops.KubeletConfigSpec{}

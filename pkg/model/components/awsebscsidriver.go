@@ -27,10 +27,10 @@ type AWSEBSCSIDriverOptionsBuilder struct {
 	*OptionsContext
 }
 
-var _ loader.OptionsBuilder = &AWSEBSCSIDriverOptionsBuilder{}
+var _ loader.ClusterOptionsBuilder = &AWSEBSCSIDriverOptionsBuilder{}
 
-func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o interface{}) error {
-	aws := o.(*kops.ClusterSpec).CloudProvider.AWS
+func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o *kops.Cluster) error {
+	aws := o.Spec.CloudProvider.AWS
 	if aws == nil {
 		return nil
 	}
