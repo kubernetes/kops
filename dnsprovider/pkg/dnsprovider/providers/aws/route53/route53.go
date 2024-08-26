@@ -67,6 +67,8 @@ func newRoute53() (*Interface, error) {
 	imdsRegionResp, err := imdsClient.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil {
 		klog.V(4).Infof("Unable to discover region by IMDS, using SDK defaults: %s", err)
+		// Don't use imdsClient if it's erroring (we're probably not running on EC2 here, e.g. kops update)
+		imdsClient = nil
 	} else {
 		region = imdsRegionResp.Region
 	}
@@ -83,7 +85,7 @@ func newRoute53() (*Interface, error) {
 		return nil, fmt.Errorf("failed to load default aws config for STS client: %w", err)
 	}
 
-	cfg, err := awsconfig.LoadDefaultConfig(ctx,
+	awsOptions := []func(*awsconfig.LoadOptions) error{
 		awsconfig.WithClientLogMode(aws.LogRetries),
 		awslog.WithAWSLogger(),
 		awsconfig.WithRetryer(func() aws.Retryer {
@@ -93,11 +95,15 @@ func newRoute53() (*Interface, error) {
 			// Ensure the STS client has a region configured, if discovered by IMDS
 			aro.Client = sts.NewFromConfig(stsCfg)
 		}),
-		awsconfig.WithEC2IMDSRegion(func(o *awsconfig.UseEC2IMDSRegion) {
-			o.Client = imdsClient
-		}),
-	)
+	}
 
+	if imdsClient != nil {
+		awsOptions = append(awsOptions, awsconfig.WithEC2IMDSRegion(func(o *awsconfig.UseEC2IMDSRegion) {
+			o.Client = imdsClient
+		}))
+	}
+
+	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load default aws config: %w", err)
 	}
