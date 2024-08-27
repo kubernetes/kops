@@ -42,12 +42,12 @@ func (b *KubeAPIServerBuilder) addHealthcheckSidecar(ctx context.Context, pod *c
 
 	data, err := p.ReadFile(ctx)
 	if err != nil {
-		return fmt.Errorf("error reading kube-apiserver-healthcheck manifest %s: %v", manifest.Path, err)
+		return fmt.Errorf("error reading kube-apiserver-healthcheck manifest %s: %w", p, err)
 	}
 
 	sidecar := &corev1.Pod{}
 	if err := yaml.Unmarshal(data, sidecar); err != nil {
-		return fmt.Errorf("error parsing kube-apiserver-healthcheck manifest %s: %v", manifest.Path, err)
+		return fmt.Errorf("error parsing kube-apiserver-healthcheck manifest %s: %w", p, err)
 	}
 
 	// Quick-and-dirty merge of the fields we care about
