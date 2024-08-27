@@ -419,7 +419,27 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	if out.API.IsEmpty() {
 		out.LegacyAPI = nil
 	}
-	out.LegacyCloudProvider = string(in.GetCloudProvider())
+	if in.CloudProvider.AWS != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderAWS)
+	}
+	if in.CloudProvider.Azure != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderAzure)
+	}
+	if in.CloudProvider.DO != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderDO)
+	}
+	if in.CloudProvider.GCE != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderGCE)
+	}
+	if in.CloudProvider.Hetzner != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderHetzner)
+	}
+	if in.CloudProvider.Openstack != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderOpenstack)
+	}
+	if in.CloudProvider.Scaleway != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderScaleway)
+	}
 	switch kops.CloudProviderID(out.LegacyCloudProvider) {
 	case kops.CloudProviderAWS:
 		aws := in.CloudProvider.AWS

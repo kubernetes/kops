@@ -406,7 +406,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		AdditionalObjects: c.AdditionalObjects,
 	}
 
-	switch cluster.Spec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		{
 			gceCloud := cloud.(gce.GCECloud)
@@ -483,7 +483,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		}
 
 	default:
-		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.GetCloudProvider())
+		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.GetCloudProvider())
 	}
 
 	modelContext.SSHPublicKeys = sshPublicKeys
@@ -562,7 +562,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			&model.ConfigBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 		)
 
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderAWS:
 			awsModelContext := &awsmodel.AWSModelContext{
 				KopsModelContext: modelContext,
@@ -687,7 +687,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			)
 
 		default:
-			return nil, fmt.Errorf("unknown cloudprovider %q", cluster.Spec.GetCloudProvider())
+			return nil, fmt.Errorf("unknown cloudprovider %q", cluster.GetCloudProvider())
 		}
 	}
 	c.TaskMap, err = l.BuildTasks(ctx, c.LifecycleOverrides)
@@ -701,7 +701,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	deletionProcessingMode := c.DeletionProcessing
 	switch c.TargetName {
 	case TargetDirect:
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderGCE:
 			target = gce.NewGCEAPITarget(cloud.(gce.GCECloud))
 		case kops.CloudProviderAWS:
@@ -717,7 +717,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		case kops.CloudProviderScaleway:
 			target = scaleway.NewScwAPITarget(cloud.(scaleway.ScwCloud))
 		default:
-			return nil, fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.GetCloudProvider())
+			return nil, fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.GetCloudProvider())
 		}
 
 	case TargetTerraform:

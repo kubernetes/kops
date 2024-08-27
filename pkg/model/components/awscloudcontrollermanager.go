@@ -32,10 +32,10 @@ type AWSCloudControllerManagerOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &AWSCloudControllerManagerOptionsBuilder{}
 
 // BuildOptions generates the configurations used for the AWS cloud controller manager manifest
-func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
-	clusterSpec := &o.Spec
+func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
+	clusterSpec := &cluster.Spec
 
-	if clusterSpec.GetCloudProvider() != kops.CloudProviderAWS {
+	if cluster.GetCloudProvider() != kops.CloudProviderAWS {
 		return nil
 	}
 

@@ -84,7 +84,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 
 		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
 
-		cloudProvider := c.Cluster.Spec.GetCloudProvider()
+		cloudProvider := c.Cluster.GetCloudProvider()
 		if ok := model.UseExternalKubeletCredentialProvider(*kubernetesVersion, cloudProvider); ok {
 			switch cloudProvider {
 			case kops.CloudProviderGCE:
@@ -186,7 +186,7 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 // This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
 func needsMounterAsset(c *kops.Cluster) bool {
 	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
-	switch c.Spec.GetCloudProvider() {
+	switch c.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		return true
 	default:

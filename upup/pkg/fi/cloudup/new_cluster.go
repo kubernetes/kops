@@ -372,7 +372,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.ServiceAccountIssuerDiscovery = &api.ServiceAccountIssuerDiscoveryConfig{
 			DiscoveryStore: discoveryPath.Join(cluster.Name).Path(),
 		}
-		if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
+		if cluster.GetCloudProvider() == api.CloudProviderAWS {
 			cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider = true
 			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.PtrTo(true)
 		}
@@ -489,7 +489,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 
 		if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
-			switch cluster.Spec.GetCloudProvider() {
+			switch cluster.GetCloudProvider() {
 			case api.CloudProviderAWS:
 				if _, ok := awsDedicatedInstanceExceptions[g.Spec.MachineType]; ok {
 					return nil, fmt.Errorf("invalid dedicated instance type: %s", g.Spec.MachineType)
@@ -546,7 +546,7 @@ func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) erro
 	ctx := context.TODO()
 	cluster.Spec.Networking.NetworkID = opt.NetworkID
 
-	switch cluster.Spec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case api.CloudProviderAWS:
 		if cluster.Spec.Networking.NetworkID == "" && len(opt.SubnetIDs) > 0 {
 			awsCloud := cloud.(awsup.AWSCloud)
@@ -635,7 +635,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 
 	var zoneToSubnetProviderID map[string]string
 
-	switch cluster.Spec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case api.CloudProviderGCE:
 		// On GCE, subnets are regional - we create one per region, not per zone
 		for _, zoneName := range allZones.List() {
@@ -853,7 +853,7 @@ func getOpenstackZoneToSubnetProviderID(cluster *api.Cluster, zones []string, su
 }
 
 func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
-	cloudProvider := cluster.Spec.GetCloudProvider()
+	cloudProvider := cluster.GetCloudProvider()
 
 	var controlPlanes []*api.InstanceGroup
 
@@ -1023,7 +1023,7 @@ func trimCommonPrefix(names []string) []string {
 }
 
 func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
-	cloudProvider := cluster.Spec.GetCloudProvider()
+	cloudProvider := cluster.GetCloudProvider()
 
 	var nodes []*api.InstanceGroup
 
@@ -1160,7 +1160,7 @@ func setupKarpenterNodes(cluster *api.Cluster) ([]*api.InstanceGroup, error) {
 }
 
 func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
-	cloudProvider := cluster.Spec.GetCloudProvider()
+	cloudProvider := cluster.GetCloudProvider()
 
 	var nodes []*api.InstanceGroup
 
@@ -1305,7 +1305,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		var zoneToSubnetProviderID map[string]string
 		var err error
 		if len(opt.Zones) > 0 && len(opt.UtilitySubnetIDs) > 0 {
-			switch cluster.Spec.GetCloudProvider() {
+			switch cluster.GetCloudProvider() {
 			case api.CloudProviderAWS:
 				zoneToSubnetProviderID, err = getAWSZoneToSubnetProviderID(cluster.Spec.Networking.NetworkID, opt.Zones[0][:len(opt.Zones[0])-1], opt.UtilitySubnetIDs)
 				if err != nil {
@@ -1341,7 +1341,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 		}
 
 		addUtilitySubnets := true
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case api.CloudProviderGCE:
 			// GCE does not need utility subnets
 			addUtilitySubnets = false
@@ -1388,12 +1388,12 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 					}
 				}
 			}
-			if cluster.Spec.GetCloudProvider() == api.CloudProviderGCE {
+			if cluster.GetCloudProvider() == api.CloudProviderGCE {
 				bastionGroup.Spec.Zones = allZones.List()
 			}
 
 			if cluster.IsKubernetesLT("1.27") {
-				if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
+				if cluster.GetCloudProvider() == api.CloudProviderAWS {
 					bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
 						HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
 						HTTPTokens:              fi.PtrTo("required"),
@@ -1411,7 +1411,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 	if opt.IPv6 {
 		cluster.Spec.Networking.NonMasqueradeCIDR = "::/0"
 		cluster.Spec.ExternalCloudControllerManager = &api.CloudControllerManagerConfig{}
-		if cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
+		if cluster.GetCloudProvider() == api.CloudProviderAWS {
 			for i := range cluster.Spec.Networking.Subnets {
 				cluster.Spec.Networking.Subnets[i].IPv6CIDR = fmt.Sprintf("/64#%x", i)
 			}
@@ -1451,7 +1451,7 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 
 func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	// Populate the API access, so that it can be discoverable
-	klog.Infof("Cloud Provider ID: %q", cluster.Spec.GetCloudProvider())
+	klog.Infof("Cloud Provider ID: %q", cluster.GetCloudProvider())
 	if opt.APILoadBalancerType != "" || opt.APISSLCertificate != "" {
 		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 	} else {
@@ -1487,7 +1487,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.API.LoadBalancer.SSLCertificate = opt.APISSLCertificate
 	}
 
-	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && cluster.Spec.GetCloudProvider() == api.CloudProviderAWS {
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && cluster.GetCloudProvider() == api.CloudProviderAWS {
 		switch opt.APILoadBalancerClass {
 		case "classic":
 			klog.Warning("AWS Classic Load Balancer support for API is deprecated and should not be used for newly created clusters")
@@ -1629,14 +1629,14 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 	}
 
 	if channel != nil {
-		image := channel.FindImage(cluster.Spec.GetCloudProvider(), *kubernetesVersion, architecture)
+		image := channel.FindImage(cluster.GetCloudProvider(), *kubernetesVersion, architecture)
 		if image != nil {
 			return image.Name, nil
 		}
 	}
 
 	if kubernetesVersion.LT(semver.MustParse("1.27.0")) {
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case api.CloudProviderDO:
 			return defaultDOImageFocal, nil
 		case api.CloudProviderHetzner:
@@ -1645,7 +1645,7 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 			return defaultScalewayImageFocal, nil
 		}
 	} else {
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case api.CloudProviderDO:
 			return defaultDOImageJammy, nil
 		case api.CloudProviderHetzner:
@@ -1655,7 +1655,7 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 		}
 	}
 
-	return "", fmt.Errorf("unable to determine default image for cloud provider %q and architecture %q", cluster.Spec.GetCloudProvider(), architecture)
+	return "", fmt.Errorf("unable to determine default image for cloud provider %q and architecture %q", cluster.GetCloudProvider(), architecture)
 }
 
 func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Architecture, error) {

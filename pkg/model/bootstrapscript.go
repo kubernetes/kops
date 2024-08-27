@@ -148,7 +148,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderOpenstack {
+	if cluster.GetCloudProvider() == kops.CloudProviderOpenstack {
 
 		osEnvs := []string{
 			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
@@ -185,7 +185,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderDO {
+	if cluster.GetCloudProvider() == kops.CloudProviderDO {
 		if b.ig.IsControlPlane() {
 			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
 			if doToken != "" {
@@ -194,14 +194,14 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
+	if cluster.GetCloudProvider() == kops.CloudProviderHetzner && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
 		hcloudToken := os.Getenv("HCLOUD_TOKEN")
 		if hcloudToken != "" {
 			env["HCLOUD_TOKEN"] = hcloudToken
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAWS {
+	if cluster.GetCloudProvider() == kops.CloudProviderAWS {
 		region, err := awsup.FindRegion(cluster)
 		if err != nil {
 			return nil, err
@@ -213,7 +213,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderAzure {
+	if cluster.GetCloudProvider() == kops.CloudProviderAzure {
 		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
 		if azureEnv != "" {
@@ -221,7 +221,7 @@ func (b *BootstrapScript) buildEnvironmentVariables() (map[string]string, error)
 		}
 	}
 
-	if cluster.Spec.GetCloudProvider() == kops.CloudProviderScaleway && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
+	if cluster.GetCloudProvider() == kops.CloudProviderScaleway && (b.ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
 		profile, err := scaleway.CreateValidScalewayProfile()
 		if err != nil {
 			return nil, err
@@ -356,7 +356,7 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 	// See https://github.com/kubernetes/kops/issues/10206 for details.
 	nodeupScript.SetSysctls = setSysctls()
 
-	nodeupScript.CloudProvider = string(c.T.Cluster.Spec.GetCloudProvider())
+	nodeupScript.CloudProvider = string(c.T.Cluster.GetCloudProvider())
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {

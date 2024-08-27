@@ -293,6 +293,14 @@ const (
 	CloudProviderOpenstack CloudProviderID = "openstack"
 	CloudProviderAzure     CloudProviderID = "azure"
 	CloudProviderScaleway  CloudProviderID = "scaleway"
+
+	// Experimental cloud providers
+	CloudProviderMetal CloudProviderID = "metal"
+
+	// If you add any cloud providers here, you must add them to:
+	// * Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec
+	// * cluster.GetCloudProvider()
+	// * type CloudProviderSpec
 )
 
 // FindImage returns the image for the cloudprovider, or nil if none found

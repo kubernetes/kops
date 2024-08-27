@@ -316,7 +316,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	// Set API server address to an IP from the cluster network CIDR
 	var controlPlaneIPs []string
-	switch cluster.Spec.GetCloudProvider() {
+	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
 		// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
 		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
@@ -359,7 +359,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		// If we do have a fixed IP, we use it (on some clouds, initially)
 		// This covers the clouds in UseKopsControllerForNodeConfig which use kops-controller for node config,
 		// but don't have a specialized discovery mechanism for finding kops-controller etc.
-		switch cluster.Spec.GetCloudProvider() {
+		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO:
 			bootConfig.APIServerIPs = controlPlaneIPs
 		}

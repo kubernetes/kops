@@ -443,7 +443,7 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 
 	// GCE often re-uses names, so we delete the node object to prevent the new instance from using the cordoned Node object
 	// Scaleway has the same behavior
-	if (c.Cluster.Spec.GetCloudProvider() == api.CloudProviderGCE || c.Cluster.Spec.GetCloudProvider() == api.CloudProviderScaleway) &&
+	if (c.Cluster.GetCloudProvider() == api.CloudProviderGCE || c.Cluster.GetCloudProvider() == api.CloudProviderScaleway) &&
 		!isBastion && !c.CloudOnly {
 		if u.Node == nil {
 			klog.Warningf("no kubernetes Node associated with %s, skipping node deletion", instanceID)
@@ -473,11 +473,11 @@ func (c *RollingUpdateCluster) drainTerminateAndWait(u *cloudinstances.CloudInst
 }
 
 func (c *RollingUpdateCluster) reconcileInstanceGroup() error {
-	if c.Cluster.Spec.GetCloudProvider() != api.CloudProviderOpenstack &&
-		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderHetzner &&
-		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderScaleway &&
-		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderDO &&
-		c.Cluster.Spec.GetCloudProvider() != api.CloudProviderAzure {
+	if c.Cluster.GetCloudProvider() != api.CloudProviderOpenstack &&
+		c.Cluster.GetCloudProvider() != api.CloudProviderHetzner &&
+		c.Cluster.GetCloudProvider() != api.CloudProviderScaleway &&
+		c.Cluster.GetCloudProvider() != api.CloudProviderDO &&
+		c.Cluster.GetCloudProvider() != api.CloudProviderAzure {
 		return nil
 	}
 	rto := fi.RunTasksOptions{}

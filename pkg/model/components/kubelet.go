@@ -37,8 +37,8 @@ type KubeletOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &KubeletOptionsBuilder{}
 
 // BuildOptions is responsible for filling the defaults for the kubelet
-func (b *KubeletOptionsBuilder) BuildOptions(o *kops.Cluster) error {
-	clusterSpec := &o.Spec
+func (b *KubeletOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
+	clusterSpec := &cluster.Spec
 
 	if clusterSpec.Kubelet == nil {
 		clusterSpec.Kubelet = &kops.KubeletConfigSpec{}
@@ -113,7 +113,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		clusterSpec.ControlPlaneKubelet.HairpinMode = "none"
 	}
 
-	cloudProvider := clusterSpec.GetCloudProvider()
+	cloudProvider := cluster.GetCloudProvider()
 
 	clusterSpec.Kubelet.CgroupRoot = "/"
 

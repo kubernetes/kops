@@ -32,8 +32,8 @@ type KubeDnsOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &KubeDnsOptionsBuilder{}
 
 // BuildOptions fills in the kubedns model
-func (b *KubeDnsOptionsBuilder) BuildOptions(o *kops.Cluster) error {
-	clusterSpec := &o.Spec
+func (b *KubeDnsOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
+	clusterSpec := &cluster.Spec
 
 	if clusterSpec.KubeDNS == nil {
 		clusterSpec.KubeDNS = &kops.KubeDNSConfig{}
@@ -74,7 +74,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		clusterSpec.KubeDNS.MemoryLimit = &defaultMemoryLimit
 	}
 
-	if clusterSpec.IsIPv6Only() && clusterSpec.GetCloudProvider() == kops.CloudProviderAWS {
+	if clusterSpec.IsIPv6Only() && cluster.GetCloudProvider() == kops.CloudProviderAWS {
 		if len(clusterSpec.KubeDNS.UpstreamNameservers) == 0 {
 			clusterSpec.KubeDNS.UpstreamNameservers = []string{"fd00:ec2::253"}
 		}
