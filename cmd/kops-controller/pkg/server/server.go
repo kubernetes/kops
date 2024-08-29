@@ -210,6 +210,12 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if model.UseChallengeCallback(kops.CloudProviderID(s.opt.Cloud)) {
+		if id.ChallengeEndpoint == "" {
+			klog.Infof("cannot determine endpoint for bootstrap callback challenge from %q", r.RemoteAddr)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte("callback failed"))
+			return
+		}
 		if err := s.challengeClient.DoCallbackChallenge(ctx, s.opt.ClusterName, id.ChallengeEndpoint, req); err != nil {
 			klog.Infof("bootstrap %s callback challenge failed: %v", r.RemoteAddr, err)
 			w.WriteHeader(http.StatusBadRequest)
