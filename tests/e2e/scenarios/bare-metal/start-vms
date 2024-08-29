@@ -33,7 +33,10 @@ fi
 # Build software we need
 cd ${REPO_ROOT}/tools/metal/dhcp
 go build -o ${WORKDIR}/dhcp .
-# Give permission to listen on ports < 1024 (some of like a partial suid binary)
+cd ${REPO_ROOT}/tools/metal/storage
+go build -o ${WORKDIR}/storage .
+
+# Give permission to listen on ports < 1024 (sort of like a partial suid binary)
 sudo setcap cap_net_bind_service=ep ${WORKDIR}/dhcp
 
 # Install software we need
@@ -80,7 +83,7 @@ bridge_name=br0
 if (! ip link show ${bridge_name}); then
   # Create the bridge and assign an IP
   sudo ip link add ${bridge_name} type bridge
-  sudo ip address add 10.123.45.0/24 dev ${bridge_name}
+  sudo ip address add 10.123.45.1/24 dev ${bridge_name}
 
   # Enable packets from one VM on the bridge to another
   sudo iptables -A FORWARD -i ${bridge_name} -o ${bridge_name} -j ACCEPT
@@ -116,6 +119,28 @@ EOF
 
   systemctl --user daemon-reload
   systemctl --user enable --now qemu-dhcp.service
+}
+
+function start_storage() {
+  mkdir -p ~/.config/systemd/user
+  cat <<EOF > ~/.config/systemd/user/qemu-storage.service
+[Unit]
+Description=qemu-storage
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/environment
+Type=exec
+WorkingDirectory=${WORKDIR}/
+ExecStart=${WORKDIR}/storage --http-listen=10.123.45.1:8443
+Restart=always
+
+[Install]
+WantedBy=default.target
+EOF
+
+  systemctl --user daemon-reload
+  systemctl --user enable --now qemu-storage.service
 }
 
 function run_vm() {
@@ -201,6 +226,7 @@ EOF
 
 
 start_dhcp
+start_storage
 
 # Note: not all mac addresses are valid; 52:54:00 is the prefix reserved for qemu
 run_vm vm0 52:54:00:44:55:0a

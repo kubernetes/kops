@@ -28,11 +28,12 @@ ip link || true
 
 ip addr || true
 
-iptables --list-rules || true
-iptables -t nat --list-rules || true
+sudo iptables --list-rules || true
+sudo iptables -t nat --list-rules || true
 
 
 journalctl --no-pager --user -xeu qemu-dhcp.service || true
+journalctl --no-pager --user -xeu qemu-storage.service || true
 journalctl --no-pager --user -xeu qemu-vm0.service || true
 journalctl --no-pager --user -xeu qemu-vm1.service || true
 journalctl --no-pager --user -xeu qemu-vm2.service || true
