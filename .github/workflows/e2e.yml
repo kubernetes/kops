@@ -1,0 +1,31 @@
+---
+name: e2e
+
+'on':
+  - push
+  - pull_request
+
+env:
+  GOPROXY: https://proxy.golang.org
+  GOPATH: ${{ github.workspace }}/go
+
+permissions:
+  contents: read
+
+jobs:
+  tests-e2e-scenarios-bare-metal:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/kops
+
+      - name: Set up go
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        with:
+          go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
+
+      - name: tests/e2e/scenarios/bare-metal/run-test
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
+        run: |
+          tests/e2e/scenarios/bare-metal/run-test

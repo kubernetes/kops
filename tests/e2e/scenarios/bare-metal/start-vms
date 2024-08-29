@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+
+# Copyright 2024 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
+
+WORKDIR=${REPO_ROOT}/.build
+
+# Create SSH keys
+mkdir -p ${WORKDIR}/.ssh
+if [[ ! -f ${WORKDIR}/.ssh/id_ed25519 ]]; then
+  ssh-keygen -t ed25519 -f ${WORKDIR}/.ssh/id_ed25519 -N ""
+fi
+
+# Build software we need
+cd ${REPO_ROOT}/tools/metal/dhcp
+go build -o ${WORKDIR}/dhcp .
+# Give permission to listen on ports < 1024 (some of like a partial suid binary)
+sudo setcap cap_net_bind_service=ep ${WORKDIR}/dhcp
+
+# Install software we need
+if ! genisoimage --version; then
+  echo "Installing genisoimage"
+  sudo apt-get install --yes genisoimage
+fi
+if ! qemu-img --version; then
+  echo "Installing qemu-img (via qemu-utils)"
+  sudo apt-get install --yes qemu-utils
+fi
+if ! qemu-system-x86_64 --version; then
+  echo "Installing qemu-system-x86_64 (via qemu-system-x86)"
+  sudo apt-get install --yes qemu-system-x86
+fi
+
+# Enable KVM on github actions
+if [[ "${USER}" == "runner" ]]; then
+  if [[ ! -e /dev/kvm ]]; then
+    echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger --name-match=kvm
+  fi
+  ls -l /dev/kvm
+
+  sudo usermod -a -G kvm $USER
+  sudo chmod 666 /dev/kvm
+  ls -l /dev/kvm
+
+  # Ensure IP forwarding is enabled (github actions only, for now)
+  sudo sysctl net.ipv4.ip_forward
+  sudo sysctl -w net.ipv4.ip_forward=1
+fi
+
+# Download boot disk
+cd ${WORKDIR}
+if [[ ! -f debian-12-generic-amd64-20240702-1796.qcow2 ]]; then
+  echo "Downloading debian-12-generic-amd64-20240702-1796.qcow2"
+  wget --no-verbose -N https://cloud.debian.org/images/cloud/bookworm/20240702-1796/debian-12-generic-amd64-20240702-1796.qcow2
+fi
+
+# Create bridge
+bridge_name=br0
+if (! ip link show ${bridge_name}); then
+  # Create the bridge and assign an IP
+  sudo ip link add ${bridge_name} type bridge
+  sudo ip address add 10.123.45.0/24 dev ${bridge_name}
+
+  # Enable packets from one VM on the bridge to another
+  sudo iptables -A FORWARD -i ${bridge_name} -o ${bridge_name} -j ACCEPT
+
+  # Enable packets from a VM to reach the real internet via NAT
+  sudo iptables -t nat -A POSTROUTING -s 10.123.45.0/24 ! -o ${bridge_name} -j MASQUERADE
+  sudo iptables -A FORWARD -o ${bridge_name} -m state --state RELATED,ESTABLISHED -j ACCEPT
+  sudo iptables -A FORWARD -i ${bridge_name} ! -o ${bridge_name} -j ACCEPT
+  
+  # Bring up the bridge
+  sudo ip link set dev ${bridge_name} up
+fi
+
+
+
+function start_dhcp() {
+  mkdir -p ~/.config/systemd/user
+  cat <<EOF > ~/.config/systemd/user/qemu-dhcp.service
+[Unit]
+Description=qemu-dhcp
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/environment
+Type=exec
+WorkingDirectory=${WORKDIR}/
+ExecStart=${WORKDIR}/dhcp
+Restart=always
+
+[Install]
+WantedBy=default.target
+EOF
+
+  systemctl --user daemon-reload
+  systemctl --user enable --now qemu-dhcp.service
+}
+
+function run_vm() {
+  vm_name=$1
+  mac=$2
+
+  mkdir ${WORKDIR}/${vm_name}/
+  cd ${WORKDIR}/${vm_name}
+  PUBKEY=$(cat ${WORKDIR}/.ssh/id_ed25519.pub)
+
+  cat <<EOF > user-data
+#cloud-config
+users:
+  - name: my_user 
+    groups: adm, cdrom, sudo, dip, plugdev, lxd
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${PUBKEY}
+  - name: root
+    ssh_authorized_keys:
+      - ${PUBKEY}
+
+hostname: ${vm_name}
+
+manage_etc_hosts: true
+
+locale: en_US.UTF-8
+timezone: Europe/Berlin
+EOF
+
+  cat <<EOF > meta-data
+instance-id: ${vm_name}
+local-hostname: cloudimg
+EOF
+
+  genisoimage  -output seed.iso -volid cidata -joliet -rock user-data meta-data
+
+  qemu-img create -b ../debian-12-generic-amd64-20240702-1796.qcow2 -F qcow2 -f qcow2 root.qcow2 20G
+
+  # TODO: Create tuntap with user $(whoami) - might need less sudo?
+  sudo ip tuntap add dev tap-${vm_name} mode tap
+  sudo ip link set dev tap-${vm_name} master ${bridge_name}
+  sudo ip link set dev tap-${vm_name} up
+  
+  # Create a per-user systemd unit file to run this VM
+  # Great guide to qemu options here: https://wiki.gentoo.org/wiki/QEMU/Options
+  mkdir -p ~/.config/systemd/user
+  cat <<EOF > ~/.config/systemd/user/qemu-${vm_name}.service
+[Unit]
+Description=qemu-${vm_name}
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/environment
+Type=exec
+WorkingDirectory=${WORKDIR}/${vm_name}/
+ExecStart=qemu-system-x86_64 \
+   -machine type=q35,accel=kvm \
+   -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 \
+   -m 1024 \
+   -cpu host \
+   -smp 4 \
+   -nographic \
+   -netdev tap,ifname=tap-${vm_name},id=net0,script=no,downscript=no \
+   -device virtio-net-pci,netdev=net0,mac=${mac} \
+   -device virtio-scsi-pci,id=scsi0 \
+   -drive file=root.qcow2,id=hdd0,if=none \
+   -device scsi-hd,drive=hdd0,bus=scsi0.0 \
+   -drive id=cdrom0,if=none,format=raw,readonly=on,file=seed.iso \
+   -device scsi-cd,bus=scsi0.0,drive=cdrom0
+Restart=always
+
+[Install]
+WantedBy=default.target
+EOF
+
+  # TODO: better monitor qemu with e.g. `-serial mon:stdio -append 'console=ttyS0'`
+
+  systemctl --user daemon-reload
+  systemctl --user enable --now qemu-${vm_name}.service
+}
+
+
+start_dhcp
+
+# Note: not all mac addresses are valid; 52:54:00 is the prefix reserved for qemu
+run_vm vm0 52:54:00:44:55:0a
+run_vm vm1 52:54:00:44:55:0b
+run_vm vm2 52:54:00:44:55:0c
