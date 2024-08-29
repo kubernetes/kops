@@ -20,17 +20,19 @@ set -o pipefail
 set -o xtrace
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
-
 cd ${REPO_ROOT}
 
 systemctl disable --user qemu-vm0 || true
 systemctl disable --user qemu-vm1 || true
 systemctl disable --user qemu-vm2 || true
+systemctl disable --user qemu-dhcp || true
+systemctl disable --user qemu-storage || true
 
 systemctl stop --user qemu-vm0 || true
 systemctl stop --user qemu-vm1 || true
 systemctl stop --user qemu-vm2 || true
+systemctl stop --user qemu-dhcp || true
+systemctl stop --user qemu-storage || true
 
 sudo ip link del dev tap-vm0 || true
 sudo ip link del dev tap-vm1 || true

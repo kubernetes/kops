@@ -24,10 +24,10 @@ cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
 
 function cleanup() {
   echo "running dump-artifacts"
-  ./dump-artifacts || true
+  ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/dump-artifacts || true
 
   echo "running cleanup"
-  ./cleanup || true
+  ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/cleanup || true
 }
 
 trap cleanup EXIT
@@ -46,3 +46,22 @@ ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 r
 ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.11 uptime
 ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.12 uptime
 
+cd ${REPO_ROOT}
+
+# Set up the AWS credentials
+export AWS_SECRET_ACCESS_KEY=secret
+export AWS_ACCESS_KEY_ID=accesskey
+export AWS_ENDPOINT_URL=http://10.123.45.1:8443
+export AWS_REGION=us-east-1
+
+export S3_ENDPOINT=${AWS_ENDPOINT_URL}
+export S3_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+export S3_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
+# Create the state-store bucket in our mock s3 server
+export KOPS_STATE_STORE=s3://kops-state-store/
+aws --version
+aws --endpoint-url=${S3_ENDPOINT} --debug s3 mb s3://kops-state-store
+
+# List clusters (there should not be any yet)
+go run ./cmd/kops get cluster || true
