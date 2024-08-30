@@ -300,14 +300,17 @@ func defaultClusterName(cloudProvider string) (string, error) {
 		jobName = jobName[:79]
 	}
 	if jobType == "presubmit" {
-		jobName = fmt.Sprintf("e2e-pr%s.%s.%s", pullNumber, jobName, suffix)
+		jobName = fmt.Sprintf("e2e-pr%s.%s", pullNumber, jobName)
 	} else {
-		jobName = fmt.Sprintf("e2e-%s.%s", jobName, suffix)
+		jobName = fmt.Sprintf("e2e-%s", jobName)
 	}
-	if len(jobName) > 63 && cloudProvider == "gce" { // GCP has char limit of 64
-		jobName = jobName[:63]
+
+	// GCP has char limit of 64
+	gcpLimit := 63 - (len(suffix) + 1) // 1 for the dot
+	if len(jobName) > gcpLimit && cloudProvider == "gce" {
+		jobName = jobName[:gcpLimit]
 	}
-	return jobName, nil
+	return fmt.Sprintf("%v.%v", jobName, suffix), nil
 }
 
 // stateStore returns the kops state store to use
