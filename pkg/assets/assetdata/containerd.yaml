@@ -2,6 +2,8 @@ filestores:
 - base: https://github.com/containerd/containerd/releases/download/
 
 # Manually constructed; there is a .sha256sum file available
+# e.g. curl -L https://github.com/containerd/containerd/releases/download/v1.7.16/containerd-1.7.16-linux-amd64.tar.gz.sha256sum
+
 
 files:
 - name: v1.6.20/containerd-1.6.20-linux-amd64.tar.gz
@@ -14,3 +16,7 @@ files:
 - name: v1.7.13/containerd-1.7.13-linux-arm64.tar.gz
   sha256: 118759e398f35337109592b4d237538872dc12a207d38832b9d04515d0acbc4d
 
+- name: v1.7.16/containerd-1.7.16-linux-amd64.tar.gz
+  sha256: 4f4f2c3c7d14fd59a404961a3a3341303c2fdeeba0e78808c209f606e828f99c
+- name: v1.7.16/containerd-1.7.16-linux-arm64.tar.gz
+  sha256: 2d4373de40a6f58cd0f29377c0257b35697a987248e6268520586996771d7a75
