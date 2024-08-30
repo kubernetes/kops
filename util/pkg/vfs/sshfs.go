@@ -189,66 +189,80 @@ func (p *SSHPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) er
 	}
 
 	// Note from here on in we have to close f and delete or rename the temp file
-
-	_, err = io.Copy(f, data)
-
-	if closeErr := f.Close(); err == nil {
-		err = closeErr
-	}
-
-	if err == nil {
-		if acl != nil {
-			sshACL, ok := acl.(*SSHAcl)
-			if !ok {
-				err = fmt.Errorf("unexpected acl type %T", acl)
-			} else {
-				err = sftpClient.Chmod(tempfile, sshACL.Mode)
-				if err != nil {
-					err = fmt.Errorf("error during chmod of %q: %w", tempfile, err)
-				}
+	shouldClose := true
+	defer func() {
+		if shouldClose {
+			// Something went wrong; try to close the temp file
+			if err := f.Close(); err != nil {
+				klog.Warningf("unable to close temp file %q: %v", tempfile, err)
 			}
 		}
+	}()
+
+	deleteTempFile := true
+	defer func() {
+		if deleteTempFile {
+			// Something went wrong; try to remove the temp file
+			if err := sftpClient.Remove(tempfile); err != nil {
+				klog.Warningf("unable to remove temp file %q: %v", tempfile, err)
+			}
+		}
+	}()
+	if _, err := io.Copy(f, data); err != nil {
+		return fmt.Errorf("writing to sftp temp file: %w", err)
 	}
 
-	if err == nil {
-		// posix rename will replace the destination (normal sftp rename does not)
-		usePosixRename := true
-		if usePosixRename {
-			err = sftpClient.Rename(tempfile, p.path)
-			if err != nil {
-				err = fmt.Errorf("error renaming file %q -> %q (with posix rename): %w", tempfile, p.path, err)
-			}
+	shouldClose = false
+	if err := f.Close(); err != nil {
+		return err
+	}
+
+	if acl != nil {
+		sshACL, ok := acl.(*SSHAcl)
+		if !ok {
+			return fmt.Errorf("unexpected acl type %T", acl)
 		} else {
-			var session *ssh.Session
-			session, err = p.client.NewSession()
+			err = sftpClient.Chmod(tempfile, sshACL.Mode)
 			if err != nil {
-				err = fmt.Errorf("error creating session for rename: %w", err)
-			} else {
-				defer session.Close()
-
-				cmd := "mv " + tempfile + " " + p.path
-				if p.sudo {
-					cmd = "sudo " + cmd
-				}
-				err = session.Run(cmd)
-				if err != nil {
-					err = fmt.Errorf("error renaming file %q -> %q (with %q): %w", tempfile, p.path, cmd, err)
-				}
+				return fmt.Errorf("error during chmod of %q: %w", tempfile, err)
 			}
 		}
-
 	}
 
-	if err == nil {
-		return nil
+	// posix rename will replace the destination (normal sftp rename does not)
+	usePosixRename := true
+	if usePosixRename {
+		// posix rename fails if destination exists, try to delete just in case
+		if err := sftpClient.Remove(p.path); err != nil {
+			if os.IsNotExist(err) {
+				// expected when file does not exist already
+			} else {
+				return fmt.Errorf("removing destination sftp file %q before rename: %w", p.path, err)
+			}
+		}
+		if err := sftpClient.Rename(tempfile, p.path); err != nil {
+			return fmt.Errorf("renaming sftp file %q -> %q (with posix rename): %w", tempfile, p.path, err)
+		}
+		deleteTempFile = false
+	} else {
+		var session *ssh.Session
+		session, err = p.client.NewSession()
+		if err != nil {
+			return fmt.Errorf("creating session for rename: %w", err)
+		}
+		defer session.Close()
+
+		cmd := "mv " + tempfile + " " + p.path
+		if p.sudo {
+			cmd = "sudo " + cmd
+		}
+		if err := session.Run(cmd); err != nil {
+			return fmt.Errorf("renaming file %q -> %q (with %q): %w", tempfile, p.path, cmd, err)
+		}
+		deleteTempFile = false
 	}
 
-	// Something went wrong; try to remove the temp file
-	if removeErr := sftpClient.Remove(tempfile); removeErr != nil {
-		klog.Warningf("unable to remove temp file %q: %v", tempfile, removeErr)
-	}
-
-	return err
+	return nil
 }
 
 // To prevent concurrent creates on the same file while maintaining atomicity of writes,
