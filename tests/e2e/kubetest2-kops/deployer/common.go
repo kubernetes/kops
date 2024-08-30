@@ -51,6 +51,12 @@ func (d *deployer) initialize() error {
 
 	switch d.CloudProvider {
 	case "aws":
+		if d.SSHPrivateKeyPath == "" {
+			d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
+		}
+		if d.SSHPublicKeyPath == "" {
+			d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
+		}
 		if d.SSHPrivateKeyPath == "" || d.SSHPublicKeyPath == "" {
 			publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
 			if err != nil {
@@ -90,6 +96,12 @@ func (d *deployer) initialize() error {
 			d.GCPProject = resource.Name
 			klog.V(1).Infof("Got project %s from boskos", d.GCPProject)
 
+			if d.SSHPrivateKeyPath == "" {
+				d.SSHPrivateKeyPath = os.Getenv("GCE_SSH_PRIVATE_KEY_FILE")
+			}
+			if d.SSHPublicKeyPath == "" {
+				d.SSHPublicKeyPath = os.Getenv("GCE_SSH_PUBLIC_KEY_FILE")
+			}
 			if d.SSHPrivateKeyPath == "" && d.SSHPublicKeyPath == "" {
 				privateKey, publicKey, err := gce.SetupSSH(d.GCPProject)
 				if err != nil {
@@ -98,11 +110,14 @@ func (d *deployer) initialize() error {
 				d.SSHPrivateKeyPath = privateKey
 				d.SSHPublicKeyPath = publicKey
 			}
+
 			d.createBucket = true
 		} else if d.SSHPrivateKeyPath == "" && os.Getenv("KUBE_SSH_KEY_PATH") != "" {
 			d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
 		}
 	}
+
+	klog.V(1).Infof("Using SSH keypair: [%s,%s]", d.SSHPrivateKeyPath, d.SSHPublicKeyPath)
 
 	if d.commonOptions.ShouldBuild() {
 		if err := d.verifyBuildFlags(); err != nil {
@@ -113,6 +128,8 @@ func (d *deployer) initialize() error {
 	if d.SSHUser == "" {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
 	}
+	klog.V(1).Infof("Using SSH user: [%s]", d.SSHUser)
+
 	if d.TerraformVersion != "" {
 		t, err := target.NewTerraform(d.TerraformVersion)
 		if err != nil {
