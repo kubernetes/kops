@@ -762,6 +762,10 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				ClusterName: tf.ClusterName(),
 			}
 
+		case kops.CloudProviderMetal:
+			// Use crypto public/private keys for Metal
+			config.Server.PKI = &pkibootstrap.Options{}
+
 		default:
 			return "", fmt.Errorf("unsupported cloud provider %s", cluster.GetCloudProvider())
 		}

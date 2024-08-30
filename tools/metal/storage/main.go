@@ -22,9 +22,9 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore"
 	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore/testobjectstore"
@@ -90,7 +90,7 @@ func (s *S3Server) ListAllMyBuckets(ctx context.Context, req *s3Request, r *List
 
 	for _, bucket := range s.store.ListBuckets(ctx) {
 		output.Buckets = append(output.Buckets, s3model.Bucket{
-			CreationDate: bucket.CreationDate.Format(time.RFC3339),
+			CreationDate: bucket.CreationDate.Format(s3TimeFormat),
 			Name:         bucket.Name,
 		})
 	}
@@ -107,6 +107,11 @@ func (s *S3Server) ServeRequest(ctx context.Context, w http.ResponseWriter, r *h
 
 	tokens := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
 
+	values, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return fmt.Errorf("failed to parse query: %w", err)
+	}
+
 	req := &s3Request{
 		w: w,
 		r: r,
@@ -121,7 +126,9 @@ func (s *S3Server) ServeRequest(ctx context.Context, w http.ResponseWriter, r *h
 		switch r.Method {
 		case http.MethodGet:
 			return s.ListObjectsV2(ctx, req, &ListObjectsV2Input{
-				Bucket: bucket,
+				Bucket:    bucket,
+				Delimiter: values.Get("delimiter"),
+				Prefix:    values.Get("prefix"),
 			})
 		case http.MethodPut:
 			return s.CreateBucket(ctx, req, &CreateBucketInput{
@@ -136,10 +143,22 @@ func (s *S3Server) ServeRequest(ctx context.Context, w http.ResponseWriter, r *h
 
 	if len(tokens) > 1 {
 		bucket := tokens[0]
-		return s.GetObject(ctx, req, &GetObjectInput{
-			Bucket: bucket,
-			Key:    strings.TrimPrefix(r.URL.Path, "/"+bucket+"/"),
-		})
+		key := strings.TrimPrefix(r.URL.Path, "/"+bucket+"/")
+		switch r.Method {
+		case http.MethodGet:
+			return s.GetObject(ctx, req, &GetObjectInput{
+				Bucket: bucket,
+				Key:    key,
+			})
+		case http.MethodPut:
+			return s.PutObject(ctx, req, &PutObjectInput{
+				Bucket: bucket,
+				Key:    key,
+			})
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return nil
+		}
 	}
 
 	return fmt.Errorf("unhandled path %q", r.URL.Path)
@@ -147,7 +166,12 @@ func (s *S3Server) ServeRequest(ctx context.Context, w http.ResponseWriter, r *h
 
 type ListObjectsV2Input struct {
 	Bucket string
+
+	Delimiter string
+	Prefix    string
 }
+
+const s3TimeFormat = "2006-01-02T15:04:05.000Z"
 
 func (s *S3Server) ListObjectsV2(ctx context.Context, req *s3Request, input *ListObjectsV2Input) error {
 	bucket, err := s.store.GetBucket(ctx, input.Bucket)
@@ -168,12 +192,17 @@ func (s *S3Server) ListObjectsV2(ctx context.Context, req *s3Request, input *Lis
 	}
 
 	for _, object := range objects {
+		if input.Prefix != "" && !strings.HasPrefix(object.Key, input.Prefix) {
+			continue
+		}
+		// TODO: support delimiter
 		output.Contents = append(output.Contents, s3model.Object{
 			Key:          object.Key,
-			LastModified: object.LastModified.Format(time.RFC3339),
+			LastModified: object.LastModified.Format(s3TimeFormat),
 			Size:         object.Size,
 		})
 	}
+	output.KeyCount = len(output.Contents)
 
 	return req.writeXML(ctx, output)
 }
@@ -230,6 +259,31 @@ func (s *S3Server) GetObject(ctx context.Context, req *s3Request, input *GetObje
 	}
 
 	return object.WriteTo(req.w)
+}
+
+type PutObjectInput struct {
+	Bucket string
+	Key    string
+}
+
+func (s *S3Server) PutObject(ctx context.Context, req *s3Request, input *PutObjectInput) error {
+	log := klog.FromContext(ctx)
+
+	bucket, err := s.store.GetBucket(ctx, input.Bucket)
+	if err != nil {
+		return fmt.Errorf("failed to get bucket %q: %w", input.Bucket, err)
+	}
+	if bucket == nil {
+		return req.writeError(ctx, http.StatusNotFound, nil)
+	}
+
+	objectInfo, err := bucket.PutObject(ctx, input.Key, req.r.Body)
+	if err != nil {
+		return fmt.Errorf("failed to create object %q in bucket %q: %w", input.Key, input.Bucket, err)
+	}
+	log.Info("object created", "object", objectInfo)
+
+	return nil
 }
 
 type s3Request struct {

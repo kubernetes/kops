@@ -18,6 +18,8 @@ package testobjectstore
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -117,6 +119,28 @@ func (m *TestBucket) GetObject(ctx context.Context, key string) (objectstore.Obj
 		return nil, nil
 	}
 	return obj, nil
+}
+
+func (m *TestBucket) PutObject(ctx context.Context, key string, r io.Reader) (*objectstore.ObjectInfo, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	b, err := io.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("reading data: %w", err)
+	}
+
+	info := objectstore.ObjectInfo{
+		Key:          key,
+		LastModified: time.Now().UTC(),
+		Size:         int64(len(b)),
+	}
+
+	m.objects[key] = &TestObject{
+		data: b,
+		info: info,
+	}
+	return &info, nil
 }
 
 type TestObject struct {

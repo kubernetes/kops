@@ -122,6 +122,10 @@ func (b *MasterVolumeBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				}
 			case kops.CloudProviderScaleway:
 				b.addScalewayVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+
+			case kops.CloudProviderMetal:
+				// Nothing special to do for Metal (yet)
+
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.GetCloudProvider())
 			}

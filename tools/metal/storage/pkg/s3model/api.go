@@ -49,14 +49,14 @@ type ListBucketResult struct {
 }
 
 type Object struct {
-	ChecksumAlgorithm string        `xml:"ChecksumAlgorithm"`
-	ETag              string        `xml:"ETag"`
-	Key               string        `xml:"Key"`
-	LastModified      string        `xml:"LastModified"`
-	Owner             Owner         `xml:"Owner"`
-	RestoreStatus     RestoreStatus `xml:"RestoreStatus"`
-	Size              int64         `xml:"Size"`
-	StorageClass      string        `xml:"StorageClass"`
+	ChecksumAlgorithm string         `xml:"ChecksumAlgorithm"`
+	ETag              string         `xml:"ETag"`
+	Key               string         `xml:"Key"`
+	LastModified      string         `xml:"LastModified"`
+	Owner             *Owner         `xml:"Owner"`
+	RestoreStatus     *RestoreStatus `xml:"RestoreStatus"`
+	Size              int64          `xml:"Size"`
+	StorageClass      string         `xml:"StorageClass"`
 }
 type Owner struct {
 	DisplayName string `xml:"DisplayName"`
@@ -64,6 +64,6 @@ type Owner struct {
 }
 
 type RestoreStatus struct {
-	IsRestoreInProgress bool   `xml:"IsRestoreInProgress"`
-	RestoreExpiryDate   string `xml:"RestoreExpiryDate"`
+	IsRestoreInProgress bool    `xml:"IsRestoreInProgress"`
+	RestoreExpiryDate   *string `xml:"RestoreExpiryDate"`
 }

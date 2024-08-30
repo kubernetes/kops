@@ -94,7 +94,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 		authenticator = a
 
-	case "metal":
+	case kops.CloudProviderMetal:
 		a, err := pkibootstrap.NewAuthenticatorFromFile("/etc/kubernetes/kops/pki/machine/private.pem")
 		if err != nil {
 			return err
