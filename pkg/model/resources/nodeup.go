@@ -24,13 +24,19 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/textproto"
+	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 )
@@ -341,4 +347,199 @@ func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentTyp
 	}
 
 	return nil
+}
+
+func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (map[string]string, error) {
+	env := make(map[string]string)
+
+	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
+		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
+	}
+
+	if os.Getenv("S3_ENDPOINT") != "" {
+		if ig.IsControlPlane() {
+			env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+			env["S3_REGION"] = os.Getenv("S3_REGION")
+			env["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+			env["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderOpenstack {
+
+		osEnvs := []string{
+			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+			"OS_DOMAIN_NAME", "OS_DOMAIN_ID",
+			"OS_AUTH_URL",
+			"OS_REGION_NAME",
+		}
+
+		appCreds := os.Getenv("OS_APPLICATION_CREDENTIAL_ID") != "" && os.Getenv("OS_APPLICATION_CREDENTIAL_SECRET") != ""
+		if appCreds {
+			osEnvs = append(osEnvs,
+				"OS_APPLICATION_CREDENTIAL_ID",
+				"OS_APPLICATION_CREDENTIAL_SECRET",
+			)
+		} else {
+			klog.Warning("exporting username and password. Consider using application credentials instead.")
+			osEnvs = append(osEnvs,
+				"OS_USERNAME",
+				"OS_PASSWORD",
+			)
+		}
+
+		// credentials needed always in control-plane and when using gossip also in nodes
+		passEnvs := false
+		if ig.IsControlPlane() || cluster.UsesLegacyGossip() {
+			passEnvs = true
+		}
+		// Pass in required credentials when using user-defined swift endpoint
+		if os.Getenv("OS_AUTH_URL") != "" && passEnvs {
+			for _, envVar := range osEnvs {
+				env[envVar] = fmt.Sprintf("'%s'", os.Getenv(envVar))
+			}
+		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderDO {
+		if ig.IsControlPlane() {
+			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
+			if doToken != "" {
+				env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
+			}
+		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderHetzner && (ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
+		hcloudToken := os.Getenv("HCLOUD_TOKEN")
+		if hcloudToken != "" {
+			env["HCLOUD_TOKEN"] = hcloudToken
+		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderAWS {
+		region, err := awsup.FindRegion(cluster)
+		if err != nil {
+			return nil, err
+		}
+		if region == "" {
+			klog.Warningf("unable to determine cluster region")
+		} else {
+			env["AWS_REGION"] = region
+		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderAzure {
+		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
+		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
+		if azureEnv != "" {
+			env["AZURE_ENVIRONMENT"] = os.Getenv("AZURE_ENVIRONMENT")
+		}
+	}
+
+	if cluster.GetCloudProvider() == kops.CloudProviderScaleway && (ig.IsControlPlane() || cluster.UsesLegacyGossip()) {
+		profile, err := scaleway.CreateValidScalewayProfile()
+		if err != nil {
+			return nil, err
+		}
+		env["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
+		env["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
+		env["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
+	}
+
+	return env, nil
+}
+
+func (b *NodeUpScript) WithEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) {
+	b.EnvironmentVariables = func() (string, error) {
+		env, err := buildEnvironmentVariables(cluster, ig)
+		if err != nil {
+			return "", err
+		}
+
+		// Sort keys to have a stable sequence of "export xx=xxx"" statements
+		var keys []string
+		for k := range env {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		var b bytes.Buffer
+		for _, k := range keys {
+			b.WriteString(fmt.Sprintf("export %s=%s\n", k, env[k]))
+		}
+		return b.String(), nil
+	}
+
+}
+
+func createProxyEnv(ps *kops.EgressProxySpec) (string, error) {
+	var buffer bytes.Buffer
+
+	if ps != nil && ps.HTTPProxy.Host != "" {
+		var httpProxyURL string
+
+		// TODO double check that all the code does this
+		// TODO move this into a validate so we can enforce the string syntax
+		if !strings.HasPrefix(ps.HTTPProxy.Host, "http://") {
+			httpProxyURL = "http://"
+		}
+
+		if ps.HTTPProxy.Port != 0 {
+			httpProxyURL += ps.HTTPProxy.Host + ":" + strconv.Itoa(ps.HTTPProxy.Port)
+		} else {
+			httpProxyURL += ps.HTTPProxy.Host
+		}
+
+		// Set env variables for base environment
+		buffer.WriteString(`{` + "\n")
+		buffer.WriteString(`  echo "http_proxy=` + httpProxyURL + `"` + "\n")
+		buffer.WriteString(`  echo "https_proxy=` + httpProxyURL + `"` + "\n")
+		buffer.WriteString(`  echo "no_proxy=` + ps.ProxyExcludes + `"` + "\n")
+		buffer.WriteString(`  echo "NO_PROXY=` + ps.ProxyExcludes + `"` + "\n")
+		buffer.WriteString(`} >> /etc/environment` + "\n")
+
+		// Load the proxy environment variables
+		buffer.WriteString("while read -r in; do export \"${in?}\"; done < /etc/environment\n")
+
+		// Set env variables for package manager depending on OS Distribution (N/A for Flatcar)
+		// Note: Nodeup will source the `/etc/environment` file within docker config in the correct location
+		buffer.WriteString("case $(cat /proc/version) in\n")
+		buffer.WriteString("*[Dd]ebian* | *[Uu]buntu*)\n")
+		buffer.WriteString(`  echo "Acquire::http::Proxy \"` + httpProxyURL + `\";" > /etc/apt/apt.conf.d/30proxy ;;` + "\n")
+		buffer.WriteString("*[Rr]ed[Hh]at*)\n")
+		buffer.WriteString(`  echo "proxy=` + httpProxyURL + `" >> /etc/yum.conf ;;` + "\n")
+		buffer.WriteString("esac\n")
+
+		// Set env variables for systemd
+		buffer.WriteString(`echo "DefaultEnvironment=\"http_proxy=` + httpProxyURL + `\" \"https_proxy=` + httpProxyURL + `\"`)
+		buffer.WriteString(` \"NO_PROXY=` + ps.ProxyExcludes + `\" \"no_proxy=` + ps.ProxyExcludes + `\""`)
+		buffer.WriteString(" >> /etc/systemd/system.conf\n")
+
+		// Restart stuff
+		buffer.WriteString("systemctl daemon-reload\n")
+		buffer.WriteString("systemctl daemon-reexec\n")
+	}
+	return buffer.String(), nil
+}
+
+func (b *NodeUpScript) WithProxyEnv(cluster *kops.Cluster) {
+	b.ProxyEnv = func() (string, error) {
+		return createProxyEnv(cluster.Spec.Networking.EgressProxy)
+	}
+}
+
+// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
+// See https://github.com/kubernetes/kops/issues/10206 for details.
+func (s *NodeUpScript) WithSysctls() {
+	var b bytes.Buffer
+
+	// Based on https://github.com/kubernetes/kops/issues/10206#issuecomment-766852332
+	b.WriteString("sysctl -w net.core.rmem_max=16777216 || true\n")
+	b.WriteString("sysctl -w net.core.wmem_max=16777216 || true\n")
+	b.WriteString("sysctl -w net.ipv4.tcp_rmem='4096 87380 16777216' || true\n")
+	b.WriteString("sysctl -w net.ipv4.tcp_wmem='4096 87380 16777216' || true\n")
+
+	s.SetSysctls = b.String()
 }

@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -36,17 +37,20 @@ import (
 )
 
 func Test_ProxyFunc(t *testing.T) {
-	b := &BootstrapScript{}
-	ps := &kops.EgressProxySpec{
+	cluster := &kops.Cluster{}
+	cluster.Spec.Networking.EgressProxy = &kops.EgressProxySpec{
 		HTTPProxy: kops.HTTPProxy{
 			Host: "example.com",
 			Port: 80,
 		},
 	}
 
-	script, err := b.createProxyEnv(ps)
+	nodeupScript := &resources.NodeUpScript{}
+	nodeupScript.WithProxyEnv(cluster)
+
+	script, err := nodeupScript.ProxyEnv()
 	if err != nil {
-		t.Fatalf("createProxyEnv failed: %v", err)
+		t.Fatalf("ProxyEnv failed: %v", err)
 	}
 	if script == "" {
 		t.Fatalf("script cannot be empty")
@@ -56,14 +60,14 @@ func Test_ProxyFunc(t *testing.T) {
 		t.Fatalf("script not setting http_proxy properly")
 	}
 
-	ps.ProxyExcludes = "www.google.com,www.kubernetes.io"
+	cluster.Spec.Networking.EgressProxy.ProxyExcludes = "www.google.com,www.kubernetes.io"
 
-	script, err = b.createProxyEnv(ps)
+	script, err = nodeupScript.ProxyEnv()
 	if err != nil {
-		t.Fatalf("createProxyEnv failed: %v", err)
+		t.Fatalf("ProxyEnv failed: %v", err)
 	}
 
-	if !strings.Contains(script, "no_proxy="+ps.ProxyExcludes) {
+	if !strings.Contains(script, "no_proxy="+cluster.Spec.Networking.EgressProxy.ProxyExcludes) {
 		t.Fatalf("script not setting no_proxy properly")
 	}
 }
