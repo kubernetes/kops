@@ -482,6 +482,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			scwZone = scwCloud.Zone()
 		}
 
+	case kops.CloudProviderMetal:
+		// Metal is a special case, we don't need to do anything here (yet)
+
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.GetCloudProvider())
 	}
@@ -685,6 +688,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
+
+		case kops.CloudProviderMetal:
+			// No special builders for bare metal (yet)
 
 		default:
 			return nil, fmt.Errorf("unknown cloudprovider %q", cluster.GetCloudProvider())

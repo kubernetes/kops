@@ -61,7 +61,17 @@ export S3_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 # Create the state-store bucket in our mock s3 server
 export KOPS_STATE_STORE=s3://kops-state-store/
 aws --version
-aws --endpoint-url=${S3_ENDPOINT} --debug s3 mb s3://kops-state-store
+aws --endpoint-url=${S3_ENDPOINT} s3 mb s3://kops-state-store
 
 # List clusters (there should not be any yet)
 go run ./cmd/kops get cluster || true
+
+# Create a cluster
+go run ./cmd/kops create cluster --cloud=metal metal.k8s.local --zones main
+
+# List clusters
+go run ./cmd/kops get cluster
+
+# List instance groups
+go run ./cmd/kops get ig --name metal.k8s.local
+go run ./cmd/kops get ig --name metal.k8s.local -oyaml

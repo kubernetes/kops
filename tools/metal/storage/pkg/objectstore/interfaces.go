@@ -18,6 +18,7 @@ package objectstore
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"time"
 )
@@ -43,6 +44,9 @@ type Bucket interface {
 	// GetObject returns the object with the given key.
 	// If the object does not exist, it returns (nil, nil).
 	GetObject(ctx context.Context, key string) (Object, error)
+
+	// PutObject creates the object with the given key.
+	PutObject(ctx context.Context, key string, r io.Reader) (*ObjectInfo, error)
 
 	// ListObjects returns the list of objects in the bucket.
 	ListObjects(ctx context.Context) ([]ObjectInfo, error)

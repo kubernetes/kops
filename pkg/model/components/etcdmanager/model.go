@@ -525,6 +525,11 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane),
 			}
 			config.VolumeNameTag = fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, instanceGroupName)
+
+		case kops.CloudProviderMetal:
+			config.VolumeProvider = "external"
+			// TODO: Use static configuration here?
+
 		default:
 			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.GetCloudProvider())
 		}

@@ -359,7 +359,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cloud = osCloud
 	case api.CloudProviderScaleway:
 		cluster.Spec.CloudProvider.Scaleway = &api.ScalewaySpec{}
-
+	case api.CloudProviderMetal:
+		if cluster.Labels == nil {
+			cluster.Labels = make(map[string]string)
+		}
+		cluster.Labels[api.AlphaLabelCloudProvider] = string(api.CloudProviderMetal)
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider %s", opt.CloudProvider)
 	}
@@ -1652,6 +1656,8 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 			return defaultHetznerImageJammy, nil
 		case api.CloudProviderScaleway:
 			return defaultScalewayImageJammy, nil
+		case api.CloudProviderMetal:
+			return "dummy-metal-image", nil
 		}
 	}
 

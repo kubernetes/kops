@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/metal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
@@ -193,6 +194,12 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 
 			cloud = scwCloud
 		}
+	case kops.CloudProviderMetal:
+		metalCloud, err := metal.NewCloud()
+		if err != nil {
+			return nil, fmt.Errorf("error initializing Metal cloud: %w", err)
+		}
+		cloud = metalCloud
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.GetCloudProvider())
 	}
