@@ -477,41 +477,9 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 	nodeupScript.NodeUpAssets = nodeUpAssets
 	nodeupScript.BootConfig = bootConfig
 
-	{
-		nodeupScript.EnvironmentVariables = func() (string, error) {
-			env := make(map[string]string)
-
-			// TODO: Support the full set of environment variables?
-			// env, err := b.buildEnvironmentVariables()
-			// if err != nil {
-			// 	return "", err
-			// }
-
-			// Sort keys to have a stable sequence of "export xx=xxx"" statements
-			var keys []string
-			for k := range env {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-
-			var b bytes.Buffer
-			for _, k := range keys {
-				b.WriteString(fmt.Sprintf("export %s=%s\n", k, env[k]))
-			}
-			return b.String(), nil
-		}
-
-		nodeupScript.ProxyEnv = func() (string, error) {
-			return "", nil
-			// TODO: Support proxy?
-			// return b.createProxyEnv(cluster.Spec.Networking.EgressProxy)
-		}
-	}
-
-	// TODO: Support sysctls?
-	// By setting some sysctls early, we avoid broken configurations that prevent nodeup download.
-	// See https://github.com/kubernetes/kops/issues/10206 for details.
-	// nodeupScript.SetSysctls = setSysctls()
+	nodeupScript.WithEnvironmentVariables(cluster, ig)
+	nodeupScript.WithProxyEnv(cluster)
+	nodeupScript.WithSysctls()
 
 	nodeupScript.CloudProvider = string(cluster.GetCloudProvider())
 
