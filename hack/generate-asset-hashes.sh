@@ -80,9 +80,10 @@ EOF
 
 generate_k8s_hashes 1.25 16
 generate_k8s_hashes 1.26 15
-generate_k8s_hashes 1.27 13
-generate_k8s_hashes 1.28 9
-generate_k8s_hashes 1.29 4
-generate_k8s_hashes 1.30 0
+generate_k8s_hashes 1.27 16
+generate_k8s_hashes 1.28 13
+generate_k8s_hashes 1.29 8
+generate_k8s_hashes 1.30 4
+generate_k8s_hashes 1.31 0
 
-generate_runc_hashes 1.1 12
+generate_runc_hashes 1.1 13
