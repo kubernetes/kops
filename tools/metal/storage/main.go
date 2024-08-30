@@ -146,6 +146,12 @@ func (s *S3Server) ServeRequest(ctx context.Context, w http.ResponseWriter, r *h
 		key := strings.TrimPrefix(r.URL.Path, "/"+bucket+"/")
 		switch r.Method {
 		case http.MethodGet:
+			if values.Has("acl") {
+				return s.GetObjectACL(ctx, req, &GetObjectACLInput{
+					Bucket: bucket,
+					Key:    key,
+				})
+			}
 			return s.GetObject(ctx, req, &GetObjectInput{
 				Bucket: bucket,
 				Key:    key,
@@ -174,12 +180,15 @@ type ListObjectsV2Input struct {
 const s3TimeFormat = "2006-01-02T15:04:05.000Z"
 
 func (s *S3Server) ListObjectsV2(ctx context.Context, req *s3Request, input *ListObjectsV2Input) error {
-	bucket, err := s.store.GetBucket(ctx, input.Bucket)
+	bucket, _, err := s.store.GetBucket(ctx, input.Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to get bucket %q: %w", input.Bucket, err)
 	}
 	if bucket == nil {
-		return fmt.Errorf("bucket %q not found", input.Bucket)
+		return req.writeError(ctx, http.StatusNotFound, &s3model.Error{
+			Code:    "NoSuchBucket",
+			Message: "The specified bucket does not exist",
+		})
 	}
 
 	objects, err := bucket.ListObjects(ctx)
@@ -238,12 +247,15 @@ type GetObjectInput struct {
 }
 
 func (s *S3Server) GetObject(ctx context.Context, req *s3Request, input *GetObjectInput) error {
-	bucket, err := s.store.GetBucket(ctx, input.Bucket)
+	bucket, _, err := s.store.GetBucket(ctx, input.Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to get bucket %q: %w", input.Bucket, err)
 	}
 	if bucket == nil {
-		return req.writeError(ctx, http.StatusNotFound, nil)
+		return req.writeError(ctx, http.StatusNotFound, &s3model.Error{
+			Code:    "NoSuchBucket",
+			Message: "The specified bucket does not exist",
+		})
 	}
 
 	object, err := bucket.GetObject(ctx, input.Key)
@@ -261,6 +273,55 @@ func (s *S3Server) GetObject(ctx context.Context, req *s3Request, input *GetObje
 	return object.WriteTo(req.w)
 }
 
+type GetObjectACLInput struct {
+	Bucket string
+	Key    string
+}
+
+func (s *S3Server) GetObjectACL(ctx context.Context, req *s3Request, input *GetObjectACLInput) error {
+	bucket, bucketInfo, err := s.store.GetBucket(ctx, input.Bucket)
+	if err != nil {
+		return fmt.Errorf("failed to get bucket %q: %w", input.Bucket, err)
+	}
+	if bucket == nil {
+		return req.writeError(ctx, http.StatusNotFound, &s3model.Error{
+			Code:    "NoSuchBucket",
+			Message: "The specified bucket does not exist",
+		})
+	}
+
+	object, err := bucket.GetObject(ctx, input.Key)
+	if err != nil {
+		return fmt.Errorf("failed to get object %q in bucket %q: %w", input.Key, input.Bucket, err)
+	}
+
+	if object == nil {
+		return req.writeError(ctx, http.StatusNotFound, &s3model.Error{
+			Code:    "NoSuchKey",
+			Message: "The specified key does not exist.",
+		})
+	}
+
+	owner := bucketInfo.Owner
+
+	output := &s3model.ObjectACLResult{
+		Owner: &s3model.Owner{
+			ID: owner,
+		},
+		Grants: []*s3model.Grant{
+			{
+				Grantee: &s3model.Grantee{
+					ID:   owner,
+					Type: "CanonicalUser",
+				},
+				Permission: "FULL_CONTROL",
+			},
+		},
+	}
+
+	return req.writeXML(ctx, output)
+}
+
 type PutObjectInput struct {
 	Bucket string
 	Key    string
@@ -269,12 +330,15 @@ type PutObjectInput struct {
 func (s *S3Server) PutObject(ctx context.Context, req *s3Request, input *PutObjectInput) error {
 	log := klog.FromContext(ctx)
 
-	bucket, err := s.store.GetBucket(ctx, input.Bucket)
+	bucket, _, err := s.store.GetBucket(ctx, input.Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to get bucket %q: %w", input.Bucket, err)
 	}
 	if bucket == nil {
-		return req.writeError(ctx, http.StatusNotFound, nil)
+		return req.writeError(ctx, http.StatusNotFound, &s3model.Error{
+			Code:    "NoSuchBucket",
+			Message: "The specified bucket does not exist",
+		})
 	}
 
 	objectInfo, err := bucket.PutObject(ctx, input.Key, req.r.Body)

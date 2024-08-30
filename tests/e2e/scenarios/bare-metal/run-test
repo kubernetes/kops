@@ -20,7 +20,12 @@ set -o pipefail
 set -o xtrace
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
-cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
+cd ${REPO_ROOT}
+
+BINDIR=${REPO_ROOT}/.build/bin
+go build -o ${BINDIR}/kops ./cmd/kops
+
+KOPS=${BINDIR}/kops
 
 function cleanup() {
   echo "running dump-artifacts"
@@ -32,7 +37,7 @@ function cleanup() {
 
 trap cleanup EXIT
 
-./start-vms
+${REPO_ROOT}/tests/e2e/scenarios/bare-metal/start-vms
 
 echo "Waiting 30 seconds for VMs to start"
 sleep 30
@@ -64,14 +69,25 @@ aws --version
 aws --endpoint-url=${S3_ENDPOINT} s3 mb s3://kops-state-store
 
 # List clusters (there should not be any yet)
-go run ./cmd/kops get cluster || true
+${KOPS} get cluster || true
 
 # Create a cluster
-go run ./cmd/kops create cluster --cloud=metal metal.k8s.local --zones main
+${KOPS} create cluster --cloud=metal metal.k8s.local --zones main
+
+# Set the IP ingress, required for metal cloud
+# TODO: is this the best option?
+${KOPS} edit cluster metal.k8s.local  --set spec.api.publicName=10.123.45.10
 
 # List clusters
-go run ./cmd/kops get cluster
+${KOPS} get cluster
+${KOPS} get cluster -oyaml
 
 # List instance groups
-go run ./cmd/kops get ig --name metal.k8s.local
-go run ./cmd/kops get ig --name metal.k8s.local -oyaml
+${KOPS} get ig --name metal.k8s.local
+${KOPS} get ig --name metal.k8s.local -oyaml
+
+# Apply basic configuration
+${KOPS} update cluster metal.k8s.local
+${KOPS} update cluster metal.k8s.local --yes --admin
+
+echo "Test successful"

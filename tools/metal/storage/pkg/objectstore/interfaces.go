@@ -28,7 +28,7 @@ type ObjectStore interface {
 
 	// GetBucket returns the bucket with the given name.
 	// If the bucket does not exist, it returns (nil, nil).
-	GetBucket(ctx context.Context, name string) (Bucket, error)
+	GetBucket(ctx context.Context, name string) (Bucket, *BucketInfo, error)
 
 	// CreateBucket creates the bucket with the given name.
 	// If the bucket already exist, it returns codes.AlreadyExists.
@@ -38,6 +38,9 @@ type ObjectStore interface {
 type BucketInfo struct {
 	Name         string
 	CreationDate time.Time
+
+	// Owner is the AWS ID of the bucket owner.
+	Owner string
 }
 
 type Bucket interface {

@@ -54,15 +54,21 @@ func (m *TestObjectStore) ListBuckets(ctx context.Context) []objectstore.BucketI
 	return buckets
 }
 
-func (m *TestObjectStore) GetBucket(ctx context.Context, bucketName string) (objectstore.Bucket, error) {
+func (m *TestObjectStore) GetBucket(ctx context.Context, bucketName string) (objectstore.Bucket, *objectstore.BucketInfo, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	bucket := m.buckets[bucketName]
 	if bucket == nil {
-		return nil, nil
+		return nil, nil, nil
 	}
-	return bucket, nil
+	return bucket, &bucket.info, nil
+}
+
+// getOwnerID returns the owner ID for the given context.
+// This is a fake implementation for testing purposes.
+func getOwnerID(ctx context.Context) string {
+	return "fake-owner"
 }
 
 func (m *TestObjectStore) CreateBucket(ctx context.Context, bucketName string) (*objectstore.BucketInfo, error) {
@@ -83,7 +89,8 @@ func (m *TestObjectStore) CreateBucket(ctx context.Context, bucketName string) (
 	bucket = &TestBucket{
 		info: objectstore.BucketInfo{
 			Name:         bucketName,
-			CreationDate: time.Now(),
+			CreationDate: time.Now().UTC(),
+			Owner:        getOwnerID(ctx),
 		},
 		objects: make(map[string]*TestObject),
 	}

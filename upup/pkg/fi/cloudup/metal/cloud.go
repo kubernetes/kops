@@ -18,8 +18,10 @@ package metal
 
 import (
 	"fmt"
+	"net"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -84,9 +86,31 @@ func (c *Cloud) Region() string {
 
 // FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
 func (c *Cloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
-	return nil, fmt.Errorf("method metal.Cloud::FindClusterStatus not implemented")
+	// etcdStatus, err := findEtcdStatus(c, cluster)
+	// if err != nil {
+	//      return nil, err
+	// }
+	klog.Warningf("method metal.Cloud::FindClusterStatus stub-implemented")
+	return &kops.ClusterStatus{
+		// EtcdClusters: etcdStatus,
+	}, nil
 }
 
 func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	return nil, fmt.Errorf("method metal.Cloud::GetApiIngressStatus not implemented")
+	var ret []fi.ApiIngressStatus
+	publicName := cluster.Spec.API.PublicName
+	if publicName == "" {
+		return ret, fmt.Errorf("spec.api.publicName must be set for bare metal")
+	}
+	ip := net.ParseIP(publicName)
+	if ip == nil {
+		ret = append(ret, fi.ApiIngressStatus{
+			Hostname: publicName,
+		})
+	} else {
+		ret = append(ret, fi.ApiIngressStatus{
+			IP: publicName,
+		})
+	}
+	return ret, nil
 }

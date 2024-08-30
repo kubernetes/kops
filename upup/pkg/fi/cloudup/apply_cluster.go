@@ -59,6 +59,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/metal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -722,6 +723,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
 		case kops.CloudProviderScaleway:
 			target = scaleway.NewScwAPITarget(cloud.(scaleway.ScwCloud))
+		case kops.CloudProviderMetal:
+			target = metal.NewAPITarget(cloud.(*metal.Cloud), nil)
 		default:
 			return nil, fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.GetCloudProvider())
 		}
