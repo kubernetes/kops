@@ -360,6 +360,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	case api.CloudProviderScaleway:
 		cluster.Spec.CloudProvider.Scaleway = &api.ScalewaySpec{}
 	case api.CloudProviderMetal:
+		if !featureflag.Metal.Enabled() {
+			return nil, fmt.Errorf("bare-metal support requires the Metal feature flag to be enabled")
+		}
 		if cluster.Labels == nil {
 			cluster.Labels = make(map[string]string)
 		}
