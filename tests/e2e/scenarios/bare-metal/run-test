@@ -53,6 +53,9 @@ ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 r
 
 cd ${REPO_ROOT}
 
+# Enable feature flag for bare metal
+export KOPS_FEATURE_FLAGS=Metal
+
 # Set up the AWS credentials
 export AWS_SECRET_ACCESS_KEY=secret
 export AWS_ACCESS_KEY_ID=accesskey
@@ -89,5 +92,12 @@ ${KOPS} get ig --name metal.k8s.local -oyaml
 # Apply basic configuration
 ${KOPS} update cluster metal.k8s.local
 ${KOPS} update cluster metal.k8s.local --yes --admin
+
+# Start an SSH agent; enroll assumes SSH connectivity to the VMs with the key in the agent
+eval $(ssh-agent)
+ssh-add ${REPO_ROOT}/.build/.ssh/id_ed25519
+
+# Enroll the control-plane VM
+${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group control-plane-main --host 10.123.45.10 --v=8
 
 echo "Test successful"

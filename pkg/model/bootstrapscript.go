@@ -124,11 +124,9 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) 
 	return bootConfig, nil
 }
 
-// ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
-// template file, substituting in specific env vars & cluster spec configuration
-func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
+func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup) []string {
 	keypairs := []string{"kubernetes-ca", "etcd-clients-ca"}
-	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
 		k := etcdCluster.Name
 		keypairs = append(keypairs, "etcd-manager-ca-"+k, "etcd-peers-ca-"+k)
 		if k != "events" && k != "main" {
@@ -142,7 +140,17 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 
 	if ig.IsBastion() {
 		keypairs = nil
+	}
 
+	return keypairs
+}
+
+// ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
+// template file, substituting in specific env vars & cluster spec configuration
+func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup) (fi.Resource, error) {
+	keypairNames := KeypairNamesForInstanceGroup(b.Cluster, ig)
+
+	if ig.IsBastion() {
 		// Bastions can have AdditionalUserData, but if there isn't any skip this part
 		if len(ig.Spec.AdditionalUserData) == 0 {
 			return nil, nil
@@ -150,7 +158,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 	}
 
 	caTasks := map[string]*fitasks.Keypair{}
-	for _, keypair := range keypairs {
+	for _, keypair := range keypairNames {
 		caTaskObject, found := c.Tasks["Keypair/"+keypair]
 		if !found {
 			return nil, fmt.Errorf("keypair/%s task not found", keypair)
