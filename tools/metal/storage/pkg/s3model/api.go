@@ -67,3 +67,18 @@ type RestoreStatus struct {
 	IsRestoreInProgress bool    `xml:"IsRestoreInProgress"`
 	RestoreExpiryDate   *string `xml:"RestoreExpiryDate"`
 }
+
+type ObjectACLResult struct {
+	Owner  *Owner   `xml:"Owner"`
+	Grants []*Grant `xml:"Grant"`
+}
+
+type Grant struct {
+	Grantee    *Grantee `xml:"Grantee"`
+	Permission string   `xml:"Permission"`
+}
+
+type Grantee struct {
+	ID   string `xml:"ID"`
+	Type string `xml:"Type"`
+}
