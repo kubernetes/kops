@@ -22,18 +22,33 @@ set -o xtrace
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd ${REPO_ROOT}
 
-ip route || true
+if [[ -z "${ARTIFACTS:-}" ]]; then
+  echo "ARTIFACTS is not set; skipping dump-artifacts"
+  exit 0
+fi
 
-ip link || true
+mkdir -p ${ARTIFACTS}/networking/
+ip route 2>&1 > ${ARTIFACTS}/networking/ip-route || true
 
-ip addr || true
+ip link 2>&1 > ${ARTIFACTS}/networking/ip-link || true
 
-sudo iptables --list-rules || true
-sudo iptables -t nat --list-rules || true
+ip addr 2>&1 > ${ARTIFACTS}/networking/ip-addr || true
 
+sudo iptables --list-rules 2>&1 > ${ARTIFACTS}/networking/iptables-rules || true
+sudo iptables -t nat --list-rules 2>&1 > ${ARTIFACTS}/networking/iptables-nat-rules || true
 
-journalctl --no-pager --user -xeu qemu-dhcp.service || true
-journalctl --no-pager --user -xeu qemu-storage.service || true
-journalctl --no-pager --user -xeu qemu-vm0.service || true
-journalctl --no-pager --user -xeu qemu-vm1.service || true
-journalctl --no-pager --user -xeu qemu-vm2.service || true
+mkdir -p ${ARTIFACTS}/logs/
+journalctl --no-pager --user -xeu qemu-dhcp.service 2>&1 > ${ARTIFACTS}/logs/qemu-dhcp.service || true
+journalctl --no-pager --user -xeu qemu-storage.service 2>&1 > ${ARTIFACTS}/logs/qemu-storage.service || true
+journalctl --no-pager --user -xeu qemu-vm0.service 2>&1 > ${ARTIFACTS}/logs/qemu-vm0.service || true
+journalctl --no-pager --user -xeu qemu-vm1.service 2>&1 > ${ARTIFACTS}/logs/qemu-vm1.service || true
+journalctl --no-pager --user -xeu qemu-vm2.service 2>&1 > ${ARTIFACTS}/logs/qemu-vm2.service || true
+
+# TODO: Replace this with toolbox dump
+mkdir -p ${ARTIFACTS}/vms/
+for vm in 0 1 2; do
+  ip="10.123.45.1${vm}"
+  vm_name="vm${vm}"
+  mkdir -p ${ARTIFACTS}/vms/${vm_name}/logs/
+  scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10:/var/log/etcd* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
+done
