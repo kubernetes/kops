@@ -1,6 +1,9 @@
+# helm template --release-name cilium cilium/cilium \
+# --version 1.16.1 \
+# --namespace kube-system \
+# --values helm-values.yaml
 {{ with .Networking.Cilium }}
 {{ $semver := (trimPrefix "v" .Version) }}
-{{ $healthPort := (ternary 9879 9876 (semverCompare ">=1.11.6" $semver)) }}
 {{ $operatorHealthPort := 9234 }}
 {{- if CiliumSecret }}
 apiVersion: v1
@@ -39,7 +42,7 @@ metadata:
   name: cilium-config
   namespace: kube-system
 data:
-  agent-health-port: "{{ $healthPort }}"
+  agent-health-port: "9879"
 
 {{- if .EtcdManaged }}
   kvstore: etcd
@@ -224,10 +227,6 @@ data:
   # [0] http://docs.cilium.io/en/stable/policy/language/#dns-based
   # [1] http://docs.cilium.io/en/stable/install/upgrade/#changes-that-may-require-action
   tofqdns-enable-poller: "{{- if .ToFQDNsEnablePoller -}}true{{- else -}}false{{- end -}}"
-  {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
-  # wait-bpf-mount makes init container wait until bpf filesystem is mounted
-  wait-bpf-mount: "false"
-  {{- end }}
   # Enable fetching of container-runtime specific metadata
   #
   # By default, the Kubernetes pod and namespace labels are retrieved and
@@ -429,6 +428,9 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumbgppeeringpolicies
+  - ciliumbgpnodeconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgppeerconfigs
   - ciliumclusterwideenvoyconfigs
   - ciliumclusterwidenetworkpolicies
   - ciliumegressgatewaypolicies
@@ -479,11 +481,10 @@ rules:
 - apiGroups:
   - cilium.io
   resources:
-  - ciliumnetworkpolicies/status
-  - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints/status
   - ciliumendpoints
   - ciliuml2announcementpolicies/status
+  - ciliumbgpnodeconfigs/status
   verbs:
   - patch
 ---
@@ -556,6 +557,10 @@ rules:
   - get
   - list
   - watch
+  - create
+  - update
+  - delete
+  - patch
 - apiGroups:
   - cilium.io
   resources:
@@ -620,6 +625,9 @@ rules:
   resources:
   - ciliumendpointslices
   - ciliumenvoyconfigs
+  - ciliumbgppeerconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgpnodeconfigs
   verbs:
   - create
   - update
@@ -646,6 +654,11 @@ rules:
   resourceNames:
   - ciliumloadbalancerippools.cilium.io
   - ciliumbgppeeringpolicies.cilium.io
+  - ciliumbgpclusterconfigs.cilium.io
+  - ciliumbgppeerconfigs.cilium.io
+  - ciliumbgpadvertisements.cilium.io
+  - ciliumbgpnodeconfigs.cilium.io
+  - ciliumbgpnodeconfigoverrides.cilium.io
   - ciliumclusterwideenvoyconfigs.cilium.io
   - ciliumclusterwidenetworkpolicies.cilium.io
   - ciliumegressgatewaypolicies.cilium.io
@@ -666,6 +679,9 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumpodippools
+  - ciliumbgppeeringpolicies
+  - ciliumbgpclusterconfigs
+  - ciliumbgpnodeconfigoverrides
   verbs:
   - get
   - list
@@ -959,6 +975,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .AgentPrometheusPort }}"
         {{ end }}
+        container.apparmor.security.beta.kubernetes.io/cilium-agent: "unconfined"
+        container.apparmor.security.beta.kubernetes.io/clean-cilium-state: "unconfined"
+        container.apparmor.security.beta.kubernetes.io/mount-cgroup: "unconfined"
+        container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: "unconfined"
         {{- range $key, $value := .AgentPodAnnotations }}
         {{ $key }}: "{{ $value }}"
         {{- end }}
@@ -989,7 +1009,7 @@ spec:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: {{ $healthPort }}
+            port: 9879
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -997,11 +1017,12 @@ spec:
           failureThreshold: 105
           periodSeconds: 2
           successThreshold: 1
+          initialDelaySeconds: 5
         livenessProbe:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: {{ $healthPort }}
+            port: 9879
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -1018,7 +1039,7 @@ spec:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: {{ $healthPort }}
+            port: 9879
             scheme: HTTP
             httpHeaders:
             - name: "brief"
@@ -1081,10 +1102,10 @@ spec:
                   # dependencies on anything that is part of the startup script
                   # itself, and can be safely run multiple times per node (e.g. in
                   # case of a restart).
-                  if [[ "$(iptables-save | grep -c AWS-SNAT-CHAIN)" != "0" ]];
+                  if [[ "$(iptables-save | grep -E -c 'AWS-SNAT-CHAIN|AWS-CONNMARK-CHAIN')" != "0" ]];
                   then
                       echo 'Deleting iptables rules created by the AWS CNI VPC plugin'
-                      iptables-save | grep -v AWS-SNAT-CHAIN | iptables-restore
+                      iptables-save | grep -E -v 'AWS-SNAT-CHAIN|AWS-CONNMARK-CHAIN' | iptables-restore
                   fi
                   echo 'Done!'
           {{- end }}
@@ -1112,21 +1133,42 @@ spec:
         {{- end }}
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+              - CHOWN
+              - KILL
+              - NET_ADMIN
+              - NET_RAW
+              - IPC_LOCK
+              - SYS_MODULE
+              - SYS_ADMIN
+              - SYS_RESOURCE
+              - DAC_OVERRIDE
+              - FOWNER
+              - SETGID
+              - SETUID
+            drop:
+              - ALL
         volumeMounts:
+        # Unprivileged containers need to mount /proc/sys/net from the host
+        # to have write access
+        - mountPath: /host/proc/sys/net
+          name: host-proc-sys-net
+        # Unprivileged containers need to mount /proc/sys/kernel from the host
+        # to have write access
+        - mountPath: /host/proc/sys/kernel
+          name: host-proc-sys-kernel
         - name: bpf-maps
           mountPath: /sys/fs/bpf
-          {{- if semverCompare ">=1.10.4 || ~1.9.10" $semver }}
-          mountPropagation: Bidirectional
-          {{- end }}
+          # Unprivileged containers can't set mount propagation to bidirectional
+          # in this case we will mount the bpf fs from an init container that
+          # is privileged and set the mount propagation from host to container
+          # in Cilium.
+          mountPropagation: HostToContainer
         - name: cilium-cgroup
           mountPath: /run/cilium/cgroupv2
         - name: cilium-run
           mountPath: /var/run/cilium
-          {{- if not (semverCompare "~1.11.15 || ~1.12.8 || >=1.13.1" $semver) }}
-        - name: cni-path
-          mountPath: /host/opt/cni/bin
-          {{- end }}
         - name: etc-cni-netd
           mountPath: /host/etc/cni/net.d
 {{ if .EtcdManaged }}
@@ -1173,7 +1215,7 @@ spec:
           for i in {1..5}; do \
             [ -S /var/run/cilium/monitor1_2.sock ] && break || sleep 10;\
             done; \
-          cilium monitor --type=agent
+          cilium-dbg monitor
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - name: cilium-run
@@ -1184,7 +1226,7 @@ spec:
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         command:
-        - cilium
+        - cilium-dbg
         - build-config
         env:
         - name: K8S_NODE_NAME
@@ -1234,7 +1276,13 @@ spec:
           mountPath: /hostbin
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+              - SYS_ADMIN
+              - SYS_CHROOT
+              - SYS_PTRACE
+            drop:
+              - ALL
       - name: apply-sysctl-overwrites
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
@@ -1260,7 +1308,32 @@ spec:
           mountPath: /hostbin
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+              - SYS_CHROOT
+              - SYS_PTRACE
+            drop:
+              - ALL
+      # Mount the bpf fs if it is not mounted. We will perform this task
+      # from a privileged container because the mount propagation bidirectional
+      # only works from privileged containers.
+      - name: mount-bpf-fs
+        image: "quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39"
+        imagePullPolicy: IfNotPresent
+        args:
+        - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
+        command:
+        - /bin/bash
+        - -c
+        - --
+        terminationMessagePolicy: FallbackToLogsOnError
+        securityContext:
           privileged: true
+        volumeMounts:
+        - name: bpf-maps
+          mountPath: /sys/fs/bpf
+          mountPropagation: Bidirectional
       - name: clean-cilium-state
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
@@ -1279,34 +1352,36 @@ spec:
               name: cilium-config
               key: clean-cilium-bpf-state
               optional: true
+        - name: WRITE_CNI_CONF_WHEN_READY
+          valueFrom:
+            configMapKeyRef:
+              name: cilium-config
+              key: write-cni-conf-when-ready
+              optional: true
         - name: KUBERNETES_SERVICE_HOST
           value: "{{ APIInternalName }}"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        {{- if not (semverCompare ">=1.10.4 || ~1.9.10" $semver) }}
-        - name: CILIUM_WAIT_BPF_MOUNT
-          valueFrom:
-            configMapKeyRef:
-              key: wait-bpf-mount
-              name: cilium-config
-              optional: true
-        {{- end }}
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+              - NET_ADMIN
+              - SYS_MODULE
+              - SYS_ADMIN
+              - SYS_RESOURCE
+            drop:
+              - ALL
         volumeMounts:
         - name: bpf-maps
           mountPath: /sys/fs/bpf
-          {{- if semverCompare ">=1.10.4 || ~1.9.10" $semver }}
           mountPropagation: HostToContainer
-          {{- end }}
           # Required to mount cgroup filesystem from the host to cilium agent pod
         - name: cilium-cgroup
           mountPath: /run/cilium/cgroupv2
           mountPropagation: HostToContainer
         - name: cilium-run
           mountPath: /var/run/cilium
-      {{- if semverCompare "~1.11.15 || ~1.12.8 || >=1.13.1" $semver }}
       # Install the CNI binaries in an InitContainer so we don't have a writable host mount in the agent
       - name: install-cni-binaries
         image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
@@ -1320,13 +1395,12 @@ spec:
         securityContext:
           capabilities:
             drop:
-            - ALL
+              - ALL
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
           - name: cni-path
             mountPath: /host/opt/cni/bin
-      {{- end }}
       restartPolicy: Always
       priorityClassName: system-node-critical
 {{ if ContainerdSELinuxEnabled }}
@@ -1430,6 +1504,14 @@ spec:
         secret:
           secretName: cilium-ipsec-keys
 {{ end }}
+      - name: host-proc-sys-net
+        hostPath:
+          path: /proc/sys/net
+          type: Directory
+      - name: host-proc-sys-kernel
+        hostPath:
+          path: /proc/sys/kernel
+          type: Directory
 {{ if WithDefaultBool .Hubble.Enabled false }}
       - name: hubble-tls
         projected:
@@ -1439,6 +1521,13 @@ spec:
           - secret:
               name: hubble-server-certs
               optional: true
+              items:
+              - key: tls.crt
+                path: server.crt
+              - key: tls.key
+                path: server.key
+              - key: ca.crt
+                path: client-ca.crt
 {{ end }}
 ---
 apiVersion: apps/v1
@@ -1518,9 +1607,9 @@ spec:
           value: "443"
         {{ if .EnablePrometheusMetrics }}
         ports:
-        - containerPort: 6942
-          hostPort: 6942
-          name: prometheus
+        - name: prometheus
+          containerPort: 9963
+          hostPort: 9963
           protocol: TCP
         {{ end }}
         resources:
@@ -1531,11 +1620,21 @@ spec:
           httpGet:
             host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
             path: /healthz
-            port: {{ $operatorHealthPort }}
+            port: 9234
             scheme: HTTP
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            host: '{{- if IsIPv6Only -}}::1{{- else -}}127.0.0.1{{- end -}}'
+            path: /healthz
+            port: 9234
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 5
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /tmp/cilium/config-map
@@ -1649,11 +1748,22 @@ spec:
             - name: grpc
               containerPort: 4245
           readinessProbe:
-            tcpSocket:
-              port: grpc
+            grpc:
+              port: 4222
+            timeoutSeconds: 3
           livenessProbe:
-            tcpSocket:
-              port: grpc
+            grpc:
+              port: 4222
+            timeoutSeconds: 10
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 12
+          startupProbe:
+            grpc:
+              port: 4222
+            initialDelaySeconds: 10
+            failureThreshold: 20
+            periodSeconds: 3
           terminationMessagePolicy: FallbackToLogsOnError
           volumeMounts:
           - name: config
@@ -1672,7 +1782,7 @@ spec:
       restartPolicy: Always
       serviceAccount: hubble-relay
       serviceAccountName: hubble-relay
-      terminationGracePeriodSeconds: 0
+      terminationGracePeriodSeconds: 1
       topologySpreadConstraints:
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"

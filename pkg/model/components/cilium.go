@@ -40,7 +40,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.Version == "" {
-		c.Version = "v1.15.6"
+		c.Version = "v1.16.1"
 	}
 
 	if c.EnableEndpointHealthChecking == nil {

@@ -1137,7 +1137,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.15.0",
+				Version: "v1.16.0",
 				Ingress: &kops.CiliumIngressSpec{
 					Enabled:                 fi.PtrTo(true),
 					DefaultLoadBalancerMode: "bad-value",
@@ -1147,7 +1147,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.15.0",
+				Version: "v1.16.0",
 				Ingress: &kops.CiliumIngressSpec{
 					Enabled:                 fi.PtrTo(true),
 					DefaultLoadBalancerMode: "dedicated",
@@ -1156,7 +1156,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
-				Version: "v1.15.0",
+				Version: "v1.16.0",
 				Hubble: &kops.HubbleSpec{
 					Enabled: fi.PtrTo(true),
 				},
