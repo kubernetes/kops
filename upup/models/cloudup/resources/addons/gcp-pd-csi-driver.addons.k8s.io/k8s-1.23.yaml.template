@@ -667,6 +667,10 @@ spec:
           name: udev-socket
         - mountPath: /sys
           name: sys
+{{ if KopsFeatureEnabled "SELinuxMount" }}
+        - name: etc-selinux
+          mountPath: /etc/selinux
+{{ end }}
       hostNetwork: true
       nodeSelector: null
       priorityClassName: csi-gce-pd-node
@@ -706,6 +710,12 @@ spec:
           path: /sys
           type: Directory
         name: sys
+{{ if KopsFeatureEnabled "SELinuxMount" }}
+      - name: etc-selinux
+        hostPath:
+          path: /etc/selinux
+          type: DirectoryOrCreate
+{{ end }}
 ---
 apiVersion: storage.k8s.io/v1
 kind: CSIDriver
@@ -714,3 +724,6 @@ metadata:
 spec:
   attachRequired: true
   podInfoOnMount: false
+{{ if KopsFeatureEnabled "SELinuxMount" }}
+  seLinuxMount: true
+{{ end }}
