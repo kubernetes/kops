@@ -51,4 +51,5 @@ for vm in 0 1 2; do
   vm_name="vm${vm}"
   mkdir -p ${ARTIFACTS}/vms/${vm_name}/logs/
   scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10:/var/log/etcd* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10 journalctl --no-pager -u kubelet 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/journal-kubelet.service || true
 done
