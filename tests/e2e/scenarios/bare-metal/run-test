@@ -81,6 +81,9 @@ ${KOPS} create cluster --cloud=metal metal.k8s.local --zones main
 # TODO: is this the best option?
 ${KOPS} edit cluster metal.k8s.local  --set spec.api.publicName=10.123.45.10
 
+# Use latest etcd-manager image (while we're adding features)
+${KOPS} edit cluster metal.k8s.local --set 'spec.etcdClusters[*].manager.image=us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-static:latest'
+
 # List clusters
 ${KOPS} get cluster
 ${KOPS} get cluster -oyaml
@@ -99,5 +102,8 @@ ssh-add ${REPO_ROOT}/.build/.ssh/id_ed25519
 
 # Enroll the control-plane VM
 ${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group control-plane-main --host 10.123.45.10 --v=8
+
+echo "Waiting 60 seconds for kube to start"
+sleep 60
 
 echo "Test successful"
