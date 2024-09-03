@@ -528,7 +528,24 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 		case kops.CloudProviderMetal:
 			config.VolumeProvider = "external"
-			// TODO: Use static configuration here?
+			config.BackupStore = "file:///mnt/disks/backups"
+			config.VolumeTag = []string{
+				fmt.Sprintf("%s--%s--", b.Cluster.Name, etcdCluster.Name),
+			}
+
+			staticConfig := &StaticConfig{
+				EtcdVersion: etcdCluster.Version,
+			}
+			staticConfig.Nodes = append(staticConfig.Nodes, StaticConfigNode{
+				ID: fmt.Sprintf("%s--%s--%d", b.Cluster.Name, etcdCluster.Name, 0),
+				// TODO: Support multiple control-plane nodes (will be interesting!)
+				IP: []string{"127.0.0.1"},
+			})
+			b, err := json.Marshal(staticConfig)
+			if err != nil {
+				return nil, fmt.Errorf("building static config: %w", err)
+			}
+			config.StaticConfig = string(b)
 
 		default:
 			return nil, fmt.Errorf("CloudProvider %q not supported with etcd-manager", b.Cluster.GetCloudProvider())
@@ -653,6 +670,19 @@ type config struct {
 	VolumeNameTag         string   `flag:"volume-name-tag"`
 	DNSSuffix             string   `flag:"dns-suffix"`
 	NetworkCIDR           *string  `flag:"network-cidr"`
+
+	// StaticConfig enables running with a fixed etcd cluster configuration.
+	StaticConfig string `flag:"static-config"`
+}
+
+type StaticConfig struct {
+	EtcdVersion string             `json:"etcdVersion,omitempty"`
+	Nodes       []StaticConfigNode `json:"nodes,omitempty"`
+}
+
+type StaticConfigNode struct {
+	ID string   `json:"id,omitempty"`
+	IP []string `json:"ip,omitempty"`
 }
 
 // SelectorForCluster returns the selector that should be used to select our pods (from services)
