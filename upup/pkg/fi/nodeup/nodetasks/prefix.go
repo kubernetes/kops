@@ -25,10 +25,10 @@ import (
 	"path"
 	"strings"
 
-	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -128,7 +128,7 @@ func getInstanceMetadataList(ctx context.Context, category string) ([]string, er
 	metadata := imds.NewFromConfig(cfg)
 	resp, err := metadata.GetMetadata(ctx, &imds.GetMetadataInput{Path: category})
 	if err != nil {
-		var awsErr *awshttp.ResponseError
+		var awsErr *smithyhttp.ResponseError
 		if errors.As(err, &awsErr) && awsErr.HTTPStatusCode() == http.StatusNotFound {
 			return nil, nil
 		} else {
