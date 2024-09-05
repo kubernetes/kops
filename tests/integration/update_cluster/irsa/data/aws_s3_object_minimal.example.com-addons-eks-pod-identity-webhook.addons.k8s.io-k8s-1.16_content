@@ -130,14 +130,14 @@ spec:
         - --sts-regional-endpoint
         - --aws-default-region=us-test-1
         - --v=5
-        image: amazon/amazon-eks-pod-identity-webhook:v0.4.0
+        image: amazon/amazon-eks-pod-identity-webhook:v0.5.7
         name: pod-identity-webhook
         readinessProbe:
           failureThreshold: 3
           httpGet:
             path: /healthz
-            port: 9999
-            scheme: HTTP
+            port: 443
+            scheme: HTTPS
           initialDelaySeconds: 5
           periodSeconds: 5
           successThreshold: 1
