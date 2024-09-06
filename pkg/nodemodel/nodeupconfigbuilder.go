@@ -319,7 +319,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	var controlPlaneIPs []string
 	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
-		// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
+		// Use a private IP address that belongs to the cluster network CIDR, or any IPv6 addresses (some additional addresses may be FQDNs or public IPs)
 		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
 			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
 				cidr, err := netip.ParsePrefix(networkCIDR)
@@ -330,7 +330,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 				if err != nil {
 					continue
 				}
-				if cidr.Contains(ip) {
+				if cidr.Contains(ip) || ip.Is6() {
 					controlPlaneIPs = append(controlPlaneIPs, additionalIP)
 				}
 			}
