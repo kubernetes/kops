@@ -145,6 +145,7 @@ func (r *GCEIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 func (r *GCEIPAMReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("gce_ipam").
 		For(&corev1.Node{}).
 		Complete(r)
 }

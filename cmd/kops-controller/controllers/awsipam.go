@@ -154,6 +154,7 @@ func (r *AWSIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 func (r *AWSIPAMReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("aws_ipam").
 		For(&corev1.Node{}).
 		Complete(r)
 }
