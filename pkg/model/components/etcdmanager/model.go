@@ -539,7 +539,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			staticConfig.Nodes = append(staticConfig.Nodes, StaticConfigNode{
 				ID: fmt.Sprintf("%s--%s--%d", b.Cluster.Name, etcdCluster.Name, 0),
 				// TODO: Support multiple control-plane nodes (will be interesting!)
-				IP: []string{"127.0.0.1"},
+				IP: []string{"node0" + "." + etcdCluster.Name + "." + b.Cluster.Name},
 			})
 			b, err := json.Marshal(staticConfig)
 			if err != nil {

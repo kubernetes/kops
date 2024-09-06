@@ -50,7 +50,10 @@ for vm in 0 1 2; do
   ip="10.123.45.1${vm}"
   vm_name="vm${vm}"
   mkdir -p ${ARTIFACTS}/vms/${vm_name}/logs/
-  scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10:/var/log/etcd* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
-  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10 journalctl --no-pager -u kubelet 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kubelet.service || true
-  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10 journalctl --no-pager -u kops-configuration 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kops-configuration.service || true
+  mkdir -p ${ARTIFACTS}/vms/${vm_name}/manifests/
+  scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip}:/var/log/etcd* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
+  scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip}:/var/log/kube* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
+  scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip}:/etc/kubernetes/manifests/* ${ARTIFACTS}/vms/${vm_name}/manifests/ || true
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kubelet 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kubelet.service || true
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kops-configuration 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kops-configuration.service || true
 done
