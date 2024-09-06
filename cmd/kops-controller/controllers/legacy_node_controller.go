@@ -158,6 +158,7 @@ func (r *LegacyNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 func (r *LegacyNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("legacy_node").
 		For(&corev1.Node{}).
 		Complete(r)
 }
