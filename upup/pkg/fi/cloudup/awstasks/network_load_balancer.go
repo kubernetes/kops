@@ -379,6 +379,9 @@ func (e *NetworkLoadBalancer) FindAddresses(c *fi.CloudupContext) ([]string, err
 					if fi.ValueOf(ni.PrivateIpAddress) != "" {
 						addresses = append(addresses, fi.ValueOf(ni.PrivateIpAddress))
 					}
+					for _, v6 := range ni.Ipv6Addresses {
+						addresses = append(addresses, fi.ValueOf(v6.Ipv6Address))
+					}
 				}
 			}
 		}
