@@ -211,10 +211,18 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 
 		// look for a bastion instance and use it if exists
+		// Prefer a bastion load balancer if exists
 		bastionAddress := ""
-		for _, instance := range d.Instances {
-			if strings.Contains(instance.Name, "bastion") {
-				bastionAddress = instance.PublicAddresses[0]
+		for _, lb := range d.LoadBalancers {
+			if strings.Contains(lb.Name, "bastion") && lb.DNSName != "" {
+				bastionAddress = lb.DNSName
+			}
+		}
+		if bastionAddress == "" {
+			for _, instance := range d.Instances {
+				if strings.Contains(instance.Name, "bastion") {
+					bastionAddress = instance.PublicAddresses[0]
+				}
 			}
 		}
 		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir)

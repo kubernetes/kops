@@ -1502,6 +1502,14 @@ func DumpELB(op *resources.DumpOperation, r *resources.Resource) error {
 	data["type"] = TypeLoadBalancer
 	data["raw"] = r.Obj
 	op.Dump.Resources = append(op.Dump.Resources, data)
+
+	if lb, ok := r.Obj.(elbv2types.LoadBalancer); ok {
+		op.Dump.LoadBalancers = append(op.Dump.LoadBalancers, &resources.LoadBalancer{
+			Name:    fi.ValueOf(lb.LoadBalancerName),
+			DNSName: fi.ValueOf(lb.DNSName),
+		})
+
+	}
 	return nil
 }
 
