@@ -752,9 +752,13 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 			Bucket:   p.Bucket(),
 			Key:      p.Key(),
 			Content:  content,
-			SSE:      &sseVal,
-			Acl:      &aclVal,
 			Provider: terraformWriter.LiteralTokens("aws", "files"),
+		}
+		if sseVal != "" {
+			tf.SSE = &sseVal
+		}
+		if aclVal != "" {
+			tf.Acl = &aclVal
 		}
 		return w.RenderResource("aws_s3_object", name, tf)
 	}
