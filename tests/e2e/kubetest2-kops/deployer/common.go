@@ -131,7 +131,7 @@ func (d *deployer) initialize() error {
 	klog.V(1).Infof("Using SSH user: [%s]", d.SSHUser)
 
 	if d.TerraformVersion != "" {
-		t, err := target.NewTerraform(d.TerraformVersion)
+		t, err := target.NewTerraform(d.TerraformVersion, d.ArtifactsDir)
 		if err != nil {
 			return err
 		}
