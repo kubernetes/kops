@@ -595,20 +595,82 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 
 	useHealthcheckProxy := b.findHealthcheckManifest() != nil
 
-	probeAction := &v1.HTTPGetAction{
-		Host: "127.0.0.1",
-		Path: "/healthz",
-		Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+	livenessProbe := &v1.Probe{
+		ProbeHandler: v1.ProbeHandler{
+			HTTPGet: &v1.HTTPGetAction{
+				Host: "127.0.0.1",
+				Path: "/livez",
+				Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+			},
+		},
+		InitialDelaySeconds: 10,
+		TimeoutSeconds:      15,
+		FailureThreshold:    8,
+		PeriodSeconds:       10,
+	}
+
+	readinessProbe := &v1.Probe{
+		ProbeHandler: v1.ProbeHandler{
+			HTTPGet: &v1.HTTPGetAction{
+				Host: "127.0.0.1",
+				Path: "/healthz",
+				Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+			},
+		},
+		InitialDelaySeconds: 0,
+		TimeoutSeconds:      15,
+		FailureThreshold:    3,
+		PeriodSeconds:       1,
+	}
+
+	startupProbe := &v1.Probe{
+		ProbeHandler: v1.ProbeHandler{
+			HTTPGet: &v1.HTTPGetAction{
+				Host: "127.0.0.1",
+				Path: "/livez",
+				Port: intstr.FromInt(wellknownports.KubeAPIServerHealthCheck),
+			},
+		},
+		InitialDelaySeconds: 10,
+		TimeoutSeconds:      5 * 60,
+		FailureThreshold:    5 * 60 / 10,
+		PeriodSeconds:       10,
+	}
+
+	allProbes := []*v1.Probe{
+		startupProbe,
+		livenessProbe,
+		readinessProbe,
 	}
 
 	insecurePort := fi.ValueOf(kubeAPIServer.InsecurePort)
 	if useHealthcheckProxy {
 		// kube-apiserver-healthcheck sidecar container runs on port 3990
 	} else if insecurePort != 0 {
-		probeAction.Port = intstr.FromInt(int(insecurePort))
+		for _, probe := range allProbes {
+			probe.HTTPGet.Port = intstr.FromInt(int(insecurePort))
+		}
 	} else if kubeAPIServer.SecurePort != 0 {
-		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
-		probeAction.Scheme = v1.URISchemeHTTPS
+		for _, probe := range allProbes {
+			probe.HTTPGet.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
+			probe.HTTPGet.Scheme = v1.URISchemeHTTPS
+		}
+	}
+
+	if b.IsKubernetesLT("1.31") {
+		// Compatibility: Use the old healthz probe for older clusters
+		for _, probe := range allProbes {
+			probe.HTTPGet.Path = "/healthz"
+		}
+
+		// Compatibility: Don't use startup probe / readiness probe
+		startupProbe = nil
+		readinessProbe = nil
+
+		// Compatibility: use old livenessProbe values
+		livenessProbe.FailureThreshold = 0
+		livenessProbe.PeriodSeconds = 0
+		livenessProbe.InitialDelaySeconds = 45
 	}
 
 	resourceRequests := v1.ResourceList{}
@@ -635,16 +697,12 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	image := b.RemapImage(kubeAPIServer.Image)
 
 	container := &v1.Container{
-		Name:  "kube-apiserver",
-		Image: image,
-		Env:   proxy.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy),
-		LivenessProbe: &v1.Probe{
-			ProbeHandler: v1.ProbeHandler{
-				HTTPGet: probeAction,
-			},
-			InitialDelaySeconds: 45,
-			TimeoutSeconds:      15,
-		},
+		Name:           "kube-apiserver",
+		Image:          image,
+		Env:            proxy.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy),
+		LivenessProbe:  livenessProbe,
+		ReadinessProbe: readinessProbe,
+		StartupProbe:   startupProbe,
 		Ports: []v1.ContainerPort{
 			{
 				Name:          "https",
