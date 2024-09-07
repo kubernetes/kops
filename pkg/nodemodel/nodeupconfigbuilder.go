@@ -19,6 +19,7 @@ package nodemodel
 import (
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"os"
 	"path"
@@ -318,14 +319,18 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	var controlPlaneIPs []string
 	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
-		// Use a private IP address that belongs to the cluster network CIDR (some additional addresses may be FQDNs or public IPs)
+		// Use a private IP address that belongs to the cluster network CIDR, or any IPv6 addresses (some additional addresses may be FQDNs or public IPs)
 		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
 			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
-				_, cidr, err := net.ParseCIDR(networkCIDR)
+				cidr, err := netip.ParsePrefix(networkCIDR)
 				if err != nil {
 					return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
 				}
-				if cidr.Contains(net.ParseIP(additionalIP)) {
+				ip, err := netip.ParseAddr(additionalIP)
+				if err != nil {
+					continue
+				}
+				if cidr.Contains(ip) || ip.Is6() {
 					controlPlaneIPs = append(controlPlaneIPs, additionalIP)
 				}
 			}
@@ -336,11 +341,15 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		// Note that on GCE subnets have IP ranges, networks do not
 		for _, apiserverIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
 			for _, subnet := range cluster.Spec.Networking.Subnets {
-				_, cidr, err := net.ParseCIDR(subnet.CIDR)
+				cidr, err := netip.ParsePrefix(subnet.CIDR)
 				if err != nil {
 					return nil, nil, fmt.Errorf("failed to parse subnet CIDR %q: %w", subnet.CIDR, err)
 				}
-				if cidr.Contains(net.ParseIP(apiserverIP)) {
+				ip, err := netip.ParseAddr(apiserverIP)
+				if err != nil {
+					continue
+				}
+				if cidr.Contains(ip) {
 					controlPlaneIPs = append(controlPlaneIPs, apiserverIP)
 				}
 			}
