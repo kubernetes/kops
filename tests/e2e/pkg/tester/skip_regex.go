@@ -137,15 +137,20 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.be.mountable.when.non-attachable"
 		// The in-tree driver and its E2E tests use `topology.kubernetes.io/zone` but the CSI driver uses `topology.gke.io/zone`
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
-	}
 
-	if cluster.Spec.LegacyCloudProvider == "gce" {
 		// this tests assumes a custom config for containerd:
 		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
 		// ref: https://github.com/kubernetes/kubernetes/pull/104803
 		skipRegex += "|RuntimeClass.should.run"
 		// https://github.com/kubernetes/kubernetes/pull/108694
 		skipRegex += "|Metadata.Concealment"
+
+		if k8sVersion.Minor >= 31 {
+			// Most e2e framework code for the in-tree provider has been removed but some test cases remain
+			// https://github.com/kubernetes/kubernetes/pull/124519
+			// https://github.com/kubernetes/test-infra/pull/33222
+			skipRegex += "\\[sig-cloud-provider-gcp\\]"
+		}
 	}
 
 	if k8sVersion.Minor >= 22 {
