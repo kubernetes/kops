@@ -26,7 +26,7 @@ NETWORKING="amazonvpc"
 OVERRIDES="${OVERRIDES-} --set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
 OVERRIDES="${OVERRIDES} --master-size=t3.medium --node-size=t3.medium" # Use amd64 because LBC's E2E suite uses single-arch amd64 test images
-OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE:-099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20231208}"
+OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE:-099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20240906}"
 
 # shellcheck disable=SC2034
 ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
