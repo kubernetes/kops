@@ -22,7 +22,10 @@ set -o xtrace
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd ${REPO_ROOT}
 
-BINDIR=${REPO_ROOT}/.build/bin
+WORKDIR=${REPO_ROOT}/.build/
+
+BINDIR=${WORKDIR}/bin
+mkdir -p "${BINDIR}"
 go build -o ${BINDIR}/kops ./cmd/kops
 
 KOPS=${BINDIR}/kops
@@ -37,10 +40,17 @@ function cleanup() {
 
 trap cleanup EXIT
 
+# Create the directory that will back our mock s3 storage
+rm -rf ${WORKDIR}/s3
+mkdir -p ${WORKDIR}/s3/
+
+# Start our VMs
 ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/start-vms
 
-echo "Waiting 30 seconds for VMs to start"
-sleep 30
+. hack/dev-build-metal.sh
+
+echo "Waiting 10 seconds for VMs to start"
+sleep 10
 
 # Remove from known-hosts in case of reuse
 ssh-keygen -f ~/.ssh/known_hosts -R 10.123.45.10 || true
@@ -69,7 +79,7 @@ export S3_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 # Create the state-store bucket in our mock s3 server
 export KOPS_STATE_STORE=s3://kops-state-store/
 aws --version
-aws --endpoint-url=${S3_ENDPOINT} s3 mb s3://kops-state-store
+aws s3 ls s3://kops-state-store || aws s3 mb s3://kops-state-store
 
 # List clusters (there should not be any yet)
 ${KOPS} get cluster || true

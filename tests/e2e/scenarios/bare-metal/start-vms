@@ -23,6 +23,8 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
 
 WORKDIR=${REPO_ROOT}/.build
+BINDIR=${WORKDIR}/bin
+mkdir -p $BINDIR
 
 # Create SSH keys
 mkdir -p ${WORKDIR}/.ssh
@@ -32,12 +34,12 @@ fi
 
 # Build software we need
 cd ${REPO_ROOT}/tools/metal/dhcp
-go build -o ${WORKDIR}/dhcp .
+go build -o ${BINDIR}/dhcp .
 cd ${REPO_ROOT}/tools/metal/storage
-go build -o ${WORKDIR}/storage .
+go build -o ${BINDIR}/storage .
 
 # Give permission to listen on ports < 1024 (sort of like a partial suid binary)
-sudo setcap cap_net_bind_service=ep ${WORKDIR}/dhcp
+sudo setcap cap_net_bind_service=ep ${BINDIR}/dhcp
 
 # Install software we need
 if ! genisoimage --version; then
@@ -110,7 +112,7 @@ After=network.target
 EnvironmentFile=/etc/environment
 Type=exec
 WorkingDirectory=${WORKDIR}/
-ExecStart=${WORKDIR}/dhcp
+ExecStart=${BINDIR}/dhcp
 Restart=always
 
 [Install]
@@ -120,6 +122,7 @@ EOF
   systemctl --user daemon-reload
   systemctl --user enable --now qemu-dhcp.service
 }
+
 
 function start_storage() {
   mkdir -p ~/.config/systemd/user
@@ -132,7 +135,7 @@ After=network.target
 EnvironmentFile=/etc/environment
 Type=exec
 WorkingDirectory=${WORKDIR}/
-ExecStart=${WORKDIR}/storage --http-listen=10.123.45.1:8443
+ExecStart=${BINDIR}/storage --http-listen=10.123.45.1:8443 --storage-dir=${WORKDIR}/s3/
 Restart=always
 
 [Install]
