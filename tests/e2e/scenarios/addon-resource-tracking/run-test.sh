@@ -28,7 +28,7 @@ function haveds() {
 # Start a cluster with an old version of channel
 
 export KOPS_BASE_URL
-KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.26.5"
+KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.29.2"
 KOPS=$(kops-download-from-base)
 
 # Start with a cluster running nodeTerminationHandler
@@ -37,7 +37,7 @@ ARGS="${ARGS} --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enable
 
 ${KUBETEST2} \
     --up \
-    --kubernetes-version="1.26.6" \
+    --kubernetes-version="1.29.8" \
     --kops-binary-path="${KOPS}" \
     --create-args="$ARGS"
 
