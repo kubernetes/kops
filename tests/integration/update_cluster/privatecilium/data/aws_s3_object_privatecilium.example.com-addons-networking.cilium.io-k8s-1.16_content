@@ -632,6 +632,7 @@ spec:
             - SETUID
             drop:
             - ALL
+          privileged: true
         startupProbe:
           failureThreshold: 105
           httpGet:
@@ -750,6 +751,7 @@ spec:
             - SYS_PTRACE
             drop:
             - ALL
+          privileged: true
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /hostproc
@@ -809,6 +811,7 @@ spec:
             - SYS_RESOURCE
             drop:
             - ALL
+          privileged: true
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /sys/fs/bpf
