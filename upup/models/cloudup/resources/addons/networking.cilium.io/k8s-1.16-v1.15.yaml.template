@@ -256,6 +256,7 @@ data:
   enable-node-port: "{{ .EnableNodePort }}"
   kube-proxy-replacement: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
 
+  operator-api-serve-addr: "{{- if IsIPv6Only -}}[::1]{{- else -}}127.0.0.1{{- end -}}:9234"
   {{ with .IPAM }}
   ipam: {{ . }}
   {{ if eq . "eni" }}
