@@ -1133,6 +1133,7 @@ spec:
         {{- end }}
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
+          privileged: true
           capabilities:
             add:
               - CHOWN
@@ -1308,6 +1309,7 @@ spec:
           mountPath: /hostbin
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
+          privileged: true
           capabilities:
             add:
               - SYS_ADMIN
@@ -1364,6 +1366,7 @@ spec:
           value: "443"
         terminationMessagePolicy: FallbackToLogsOnError
         securityContext:
+          privileged: true
           capabilities:
             add:
               - NET_ADMIN
