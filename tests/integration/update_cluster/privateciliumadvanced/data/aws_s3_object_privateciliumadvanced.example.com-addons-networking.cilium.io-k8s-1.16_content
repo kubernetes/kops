@@ -75,6 +75,7 @@ data:
   kvstore-opt: '{"etcd.config": "/var/lib/etcd-config/etcd.config"}'
   monitor-aggregation: medium
   nodes-gc-interval: 5m0s
+  operator-api-serve-addr: 127.0.0.1:9234
   preallocate-bpf-maps: "false"
   remove-cilium-node-taints: "true"
   routing-mode: native

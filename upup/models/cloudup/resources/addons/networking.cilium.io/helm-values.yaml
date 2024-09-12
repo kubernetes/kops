@@ -27,3 +27,7 @@ updateStrategy:
   rollingUpdate: null
 monitor:
   enabled: true
+ipv4:
+  enabled: false
+ipv6:
+  enabled: true
