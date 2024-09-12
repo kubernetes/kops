@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -43,7 +44,7 @@ func New() *TestObjectStore {
 
 var _ objectstore.ObjectStore = &TestObjectStore{}
 
-func (m *TestObjectStore) ListBuckets(ctx context.Context) []objectstore.BucketInfo {
+func (m *TestObjectStore) ListBuckets(ctx context.Context) ([]objectstore.BucketInfo, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -51,7 +52,7 @@ func (m *TestObjectStore) ListBuckets(ctx context.Context) []objectstore.BucketI
 	for _, bucket := range m.buckets {
 		buckets = append(buckets, bucket.info)
 	}
-	return buckets
+	return buckets, nil
 }
 
 func (m *TestObjectStore) GetBucket(ctx context.Context, bucketName string) (objectstore.Bucket, *objectstore.BucketInfo, error) {
@@ -157,8 +158,13 @@ type TestObject struct {
 
 var _ objectstore.Object = &TestObject{}
 
-func (o *TestObject) WriteTo(w http.ResponseWriter) error {
-	_, err := w.Write(o.data)
+func (o *TestObject) WriteTo(r *http.Request, w http.ResponseWriter) error {
+	w.Header().Set("Content-Length", strconv.Itoa(len(o.data)))
+	w.WriteHeader(http.StatusOK)
+	if r.Method != http.MethodHead {
+		_, err := w.Write(o.data)
 
-	return err
+		return err
+	}
+	return nil
 }

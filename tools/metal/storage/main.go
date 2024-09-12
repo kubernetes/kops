@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore"
-	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore/testobjectstore"
+	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/objectstore/fsobjectstore"
 	"github.com/kubernetes/kops/tools/metal/dhcp/pkg/s3model"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -47,13 +47,22 @@ func run(ctx context.Context) error {
 
 	httpListen := ""
 	flag.StringVar(&httpListen, "http-listen", httpListen, "endpoint on which to serve HTTP requests")
+
+	storageDir := ""
+	flag.StringVar(&storageDir, "storage-dir", storageDir, "directory in which to store data")
+
 	flag.Parse()
 
 	if httpListen == "" {
 		return fmt.Errorf("must specify http-listen flag")
 	}
 
-	store := testobjectstore.New()
+	if storageDir == "" {
+		return fmt.Errorf("must specify storage-dir flag")
+	}
+
+	// store := testobjectstore.New()
+	store := fsobjectstore.New(storageDir)
 
 	s3Server := &S3Server{
 		store: store,
@@ -88,7 +97,12 @@ type S3Server struct {
 func (s *S3Server) ListAllMyBuckets(ctx context.Context, req *s3Request, r *ListAllMyBucketsInput) error {
 	output := &s3model.ListAllMyBucketsResult{}
 
-	for _, bucket := range s.store.ListBuckets(ctx) {
+	buckets, err := s.store.ListBuckets(ctx)
+	if err != nil {
+		return fmt.Errorf("listing buckets: %w", err)
+	}
+
+	for _, bucket := range buckets {
 		output.Buckets = append(output.Buckets, s3model.Bucket{
 			CreationDate: bucket.CreationDate.Format(s3TimeFormat),
 			Name:         bucket.Name,
@@ -156,6 +170,12 @@ func (s *S3Server) ServeRequest(ctx context.Context, w http.ResponseWriter, r *h
 				Bucket: bucket,
 				Key:    key,
 			})
+		case http.MethodHead:
+			// GetObject can handle req.Method == HEAD
+			return s.GetObject(ctx, req, &GetObjectInput{
+				Bucket: bucket,
+				Key:    key,
+			})
 		case http.MethodPut:
 			return s.PutObject(ctx, req, &PutObjectInput{
 				Bucket: bucket,
@@ -180,6 +200,8 @@ type ListObjectsV2Input struct {
 const s3TimeFormat = "2006-01-02T15:04:05.000Z"
 
 func (s *S3Server) ListObjectsV2(ctx context.Context, req *s3Request, input *ListObjectsV2Input) error {
+	log := klog.FromContext(ctx)
+
 	bucket, _, err := s.store.GetBucket(ctx, input.Bucket)
 	if err != nil {
 		return fmt.Errorf("failed to get bucket %q: %w", input.Bucket, err)
@@ -200,9 +222,20 @@ func (s *S3Server) ListObjectsV2(ctx context.Context, req *s3Request, input *Lis
 		Name: input.Bucket,
 	}
 
+	prefixes := make(map[string]bool)
 	for _, object := range objects {
+		log.V(4).Info("found candidate object", "obj", object)
 		if input.Prefix != "" && !strings.HasPrefix(object.Key, input.Prefix) {
 			continue
+		}
+		if input.Delimiter != "" {
+			afterPrefix := object.Key[len(input.Prefix):]
+
+			tokens := strings.SplitN(afterPrefix, input.Delimiter, 2)
+			if len(tokens) == 2 {
+				prefixes[input.Prefix+tokens[0]+input.Delimiter] = true
+				continue
+			}
 		}
 		// TODO: support delimiter
 		output.Contents = append(output.Contents, s3model.Object{
@@ -211,7 +244,18 @@ func (s *S3Server) ListObjectsV2(ctx context.Context, req *s3Request, input *Lis
 			Size:         object.Size,
 		})
 	}
+
+	if input.Delimiter != "" {
+		for prefix := range prefixes {
+			output.CommonPrefixes = append(output.CommonPrefixes, s3model.CommonPrefix{
+				Prefix: prefix,
+			})
+		}
+		output.Delimiter = input.Delimiter
+	}
+	output.Prefix = input.Prefix
 	output.KeyCount = len(output.Contents)
+	output.IsTruncated = false
 
 	return req.writeXML(ctx, output)
 }
@@ -270,7 +314,7 @@ func (s *S3Server) GetObject(ctx context.Context, req *s3Request, input *GetObje
 		})
 	}
 
-	return object.WriteTo(req.w)
+	return object.WriteTo(req.r, req.w)
 }
 
 type GetObjectACLInput struct {

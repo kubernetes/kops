@@ -34,18 +34,22 @@ type Bucket struct {
 }
 
 type ListBucketResult struct {
-	IsTruncated           bool     `xml:"IsTruncated"`
-	Contents              []Object `xml:"Contents"`
-	Name                  string   `xml:"Name"`
-	Prefix                string   `xml:"Prefix"`
-	Delimiter             string   `xml:"Delimiter"`
-	MaxKeys               int      `xml:"MaxKeys"`
-	CommonPrefixes        []string `xml:"CommonPrefixes>Prefix"`
-	EncodingType          string   `xml:"EncodingType"`
-	KeyCount              int      `xml:"KeyCount"`
-	ContinuationToken     string   `xml:"ContinuationToken"`
-	NextContinuationToken string   `xml:"NextContinuationToken"`
-	StartAfter            string   `xml:"StartAfter"`
+	IsTruncated           bool           `xml:"IsTruncated"`
+	Contents              []Object       `xml:"Contents"`
+	Name                  string         `xml:"Name"`
+	Prefix                string         `xml:"Prefix"`
+	Delimiter             string         `xml:"Delimiter"`
+	MaxKeys               int            `xml:"MaxKeys"`
+	CommonPrefixes        []CommonPrefix `xml:"CommonPrefixes"`
+	EncodingType          string         `xml:"EncodingType"`
+	KeyCount              int            `xml:"KeyCount"`
+	ContinuationToken     string         `xml:"ContinuationToken"`
+	NextContinuationToken string         `xml:"NextContinuationToken"`
+	StartAfter            string         `xml:"StartAfter"`
+}
+
+type CommonPrefix struct {
+	Prefix string `xml:"Prefix"`
 }
 
 type Object struct {

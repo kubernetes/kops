@@ -24,7 +24,7 @@ import (
 )
 
 type ObjectStore interface {
-	ListBuckets(ctx context.Context) []BucketInfo
+	ListBuckets(ctx context.Context) ([]BucketInfo, error)
 
 	// GetBucket returns the bucket with the given name.
 	// If the bucket does not exist, it returns (nil, nil).
@@ -62,5 +62,5 @@ type ObjectInfo struct {
 }
 
 type Object interface {
-	WriteTo(w http.ResponseWriter) error
+	WriteTo(req *http.Request, w http.ResponseWriter) error
 }
