@@ -62,6 +62,7 @@ data:
   kube-proxy-replacement: "false"
   monitor-aggregation: medium
   nodes-gc-interval: 5m0s
+  operator-api-serve-addr: '[::1]:9234'
   preallocate-bpf-maps: "false"
   remove-cilium-node-taints: "true"
   routing-mode: native
@@ -135,6 +136,9 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumbgppeeringpolicies
+  - ciliumbgpnodeconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgppeerconfigs
   - ciliumclusterwideenvoyconfigs
   - ciliumclusterwidenetworkpolicies
   - ciliumegressgatewaypolicies
@@ -184,11 +188,10 @@ rules:
 - apiGroups:
   - cilium.io
   resources:
-  - ciliumnetworkpolicies/status
-  - ciliumclusterwidenetworkpolicies/status
   - ciliumendpoints/status
   - ciliumendpoints
   - ciliuml2announcementpolicies/status
+  - ciliumbgpnodeconfigs/status
   verbs:
   - patch
 
@@ -260,6 +263,10 @@ rules:
   - get
   - list
   - watch
+  - create
+  - update
+  - delete
+  - patch
 - apiGroups:
   - cilium.io
   resources:
@@ -318,6 +325,9 @@ rules:
   resources:
   - ciliumendpointslices
   - ciliumenvoyconfigs
+  - ciliumbgppeerconfigs
+  - ciliumbgpadvertisements
+  - ciliumbgpnodeconfigs
   verbs:
   - create
   - update
@@ -340,6 +350,11 @@ rules:
   resourceNames:
   - ciliumloadbalancerippools.cilium.io
   - ciliumbgppeeringpolicies.cilium.io
+  - ciliumbgpclusterconfigs.cilium.io
+  - ciliumbgppeerconfigs.cilium.io
+  - ciliumbgpadvertisements.cilium.io
+  - ciliumbgpnodeconfigs.cilium.io
+  - ciliumbgpnodeconfigoverrides.cilium.io
   - ciliumclusterwideenvoyconfigs.cilium.io
   - ciliumclusterwidenetworkpolicies.cilium.io
   - ciliumegressgatewaypolicies.cilium.io
@@ -364,6 +379,9 @@ rules:
   resources:
   - ciliumloadbalancerippools
   - ciliumpodippools
+  - ciliumbgppeeringpolicies
+  - ciliumbgpclusterconfigs
+  - ciliumbgpnodeconfigoverrides
   verbs:
   - get
   - list
@@ -499,6 +517,11 @@ spec:
       kubernetes.io/cluster-service: "true"
   template:
     metadata:
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites: unconfined
+        container.apparmor.security.beta.kubernetes.io/cilium-agent: unconfined
+        container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
+        container.apparmor.security.beta.kubernetes.io/mount-cgroup: unconfined
       creationTimestamp: null
       labels:
         app.kubernetes.io/name: cilium-agent
@@ -550,7 +573,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.15.6
+        image: quay.io/cilium/cilium:v1.16.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -590,6 +613,22 @@ spec:
             cpu: 25m
             memory: 128Mi
         securityContext:
+          capabilities:
+            add:
+            - CHOWN
+            - KILL
+            - NET_ADMIN
+            - NET_RAW
+            - IPC_LOCK
+            - SYS_MODULE
+            - SYS_ADMIN
+            - SYS_RESOURCE
+            - DAC_OVERRIDE
+            - FOWNER
+            - SETGID
+            - SETUID
+            drop:
+            - ALL
           privileged: true
         startupProbe:
           failureThreshold: 105
@@ -601,12 +640,17 @@ spec:
             path: /healthz
             port: 9879
             scheme: HTTP
+          initialDelaySeconds: 5
           periodSeconds: 2
           successThreshold: 1
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
+        - mountPath: /host/proc/sys/net
+          name: host-proc-sys-net
+        - mountPath: /host/proc/sys/kernel
+          name: host-proc-sys-kernel
         - mountPath: /sys/fs/bpf
-          mountPropagation: Bidirectional
+          mountPropagation: HostToContainer
           name: bpf-maps
         - mountPath: /run/cilium/cgroupv2
           name: cilium-cgroup
@@ -630,7 +674,7 @@ spec:
       hostNetwork: true
       initContainers:
       - command:
-        - cilium
+        - cilium-dbg
         - build-config
         env:
         - name: K8S_NODE_NAME
@@ -647,7 +691,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.15.6
+        image: quay.io/cilium/cilium:v1.16.1
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -666,11 +710,17 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.15.6
+        image: quay.io/cilium/cilium:v1.16.1
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - SYS_ADMIN
+            - SYS_CHROOT
+            - SYS_PTRACE
+            drop:
+            - ALL
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
         - mountPath: /hostproc
@@ -687,10 +737,17 @@ spec:
         env:
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.15.6
+        image: quay.io/cilium/cilium:v1.16.1
         imagePullPolicy: IfNotPresent
         name: apply-sysctl-overwrites
         securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+            - SYS_CHROOT
+            - SYS_PTRACE
+            drop:
+            - ALL
           privileged: true
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
@@ -698,6 +755,22 @@ spec:
           name: hostproc
         - mountPath: /hostbin
           name: cni-path
+      - args:
+        - mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf
+        command:
+        - /bin/bash
+        - -c
+        - --
+        image: quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39
+        imagePullPolicy: IfNotPresent
+        name: mount-bpf-fs
+        securityContext:
+          privileged: true
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - mountPath: /sys/fs/bpf
+          mountPropagation: Bidirectional
+          name: bpf-maps
       - command:
         - /init-container.sh
         env:
@@ -713,14 +786,28 @@ spec:
               key: clean-cilium-bpf-state
               name: cilium-config
               optional: true
+        - name: WRITE_CNI_CONF_WHEN_READY
+          valueFrom:
+            configMapKeyRef:
+              key: write-cni-conf-when-ready
+              name: cilium-config
+              optional: true
         - name: KUBERNETES_SERVICE_HOST
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.15.6
+        image: quay.io/cilium/cilium:v1.16.1
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_MODULE
+            - SYS_ADMIN
+            - SYS_RESOURCE
+            drop:
+            - ALL
           privileged: true
         terminationMessagePolicy: FallbackToLogsOnError
         volumeMounts:
@@ -734,7 +821,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cilium/cilium:v1.15.6
+        image: quay.io/cilium/cilium:v1.16.1
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -811,6 +898,14 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
+      - hostPath:
+          path: /proc/sys/net
+          type: Directory
+        name: host-proc-sys-net
+      - hostPath:
+          path: /proc/sys/kernel
+          type: Directory
+        name: host-proc-sys-kernel
   updateStrategy:
     type: OnDelete
 
@@ -889,7 +984,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.15.6
+        image: quay.io/cilium/operator:v1.16.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -901,6 +996,16 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
         name: cilium-operator
+        readinessProbe:
+          failureThreshold: 5
+          httpGet:
+            host: ::1
+            path: /healthz
+            port: 9234
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
         resources:
           requests:
             cpu: 25m

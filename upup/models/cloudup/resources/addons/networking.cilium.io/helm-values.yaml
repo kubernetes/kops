@@ -1,0 +1,33 @@
+# This file is only used to help generate the .yaml.template file
+hubble:
+  metrics:
+    enabled: [drop]
+  relay:
+    enabled: true
+ingressController:
+  enabled: true
+  secretsNamespace:
+    create: false
+serviceAccounts:
+  envoy:
+    create: false
+envoy:
+  enabled: false
+envoyConfig:
+  secretsNamespace:
+    create: false
+gatewayAPI:
+  secretsNamespace:
+    create: false
+bgpControlPlane:
+  secretsNamespace:
+    create: false
+updateStrategy:
+  type: OnDelete
+  rollingUpdate: null
+monitor:
+  enabled: true
+ipv4:
+  enabled: false
+ipv6:
+  enabled: true
