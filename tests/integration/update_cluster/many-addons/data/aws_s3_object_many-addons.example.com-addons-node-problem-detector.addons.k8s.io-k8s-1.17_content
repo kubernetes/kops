@@ -69,7 +69,7 @@ spec:
         - /node-problem-detector
         - --logtostderr
         - --config.system-log-monitor=/config/kernel-monitor.json,/config/systemd-monitor.json
-        - --config.custom-plugin-monitor=/config/kernel-monitor-counter.json,/config/systemd-monitor-counter.json,/config/health-checker-containerd.json,/config/health-checker-kubelet.json
+        - --config.custom-plugin-monitor=/config/kernel-monitor-counter.json,/config/systemd-monitor-counter.json
         - --config.system-stats-monitor=/config/system-stats-monitor.json
         env:
         - name: NODE_NAME
