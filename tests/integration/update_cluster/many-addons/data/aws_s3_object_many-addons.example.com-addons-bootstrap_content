@@ -163,7 +163,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: node-problem-detector.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: c5efa7accf480cced0a3610be297e7109361d2a8c101e3dce086d256ec7e706f
+    manifestHash: 94b31d90ea983e0cb64dc233c11174684a0b0fb18ea9cd7cbc93013881e1a230
     name: node-problem-detector.addons.k8s.io
     prune:
       kinds:
