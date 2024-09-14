@@ -41,6 +41,7 @@ import (
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityhetzner "k8s.io/kops/pkg/nodeidentity/hetzner"
+	nodeidentitymetal "k8s.io/kops/pkg/nodeidentity/metal"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	nodeidentityscw "k8s.io/kops/pkg/nodeidentity/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -305,6 +306,12 @@ func addNodeController(ctx context.Context, mgr manager.Manager, vfsContext *vfs
 		identifier, err = nodeidentityscw.New(opt.CacheNodeidentityInfo)
 		if err != nil {
 			return fmt.Errorf("error building identifier: %w", err)
+		}
+
+	case "metal":
+		identifier, err = nodeidentitymetal.New()
+		if err != nil {
+			return fmt.Errorf("error building metal node identifier: %w", err)
 		}
 
 	case "":
