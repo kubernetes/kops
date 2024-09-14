@@ -399,14 +399,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests {
-		match := false
-		for _, r := range manifest.Roles {
-			if r == role {
-				match = true
-			}
-		}
-
-		if !match {
+		if !manifest.AppliesToRole(role) {
 			continue
 		}
 

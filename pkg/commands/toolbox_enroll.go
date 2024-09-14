@@ -190,7 +190,7 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 	}
 
 	// Build the bootstrap data for this node.
-	bootstrapData, err := buildBootstrapData(ctx, clientset, fullCluster, fullInstanceGroup, wellKnownAddresses)
+	bootstrapData, err := buildBootstrapData(ctx, clientset, fullCluster, fullInstanceGroup, assetBuilder, wellKnownAddresses)
 	if err != nil {
 		return fmt.Errorf("building bootstrap data: %w", err)
 	}
@@ -475,12 +475,9 @@ type bootstrapData struct {
 	configFiles  map[string][]byte
 }
 
-func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, ig *kops.InstanceGroup, wellknownAddresses model.WellKnownAddresses) (*bootstrapData, error) {
+func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, ig *kops.InstanceGroup, assetBuilder *assets.AssetBuilder, wellknownAddresses model.WellKnownAddresses) (*bootstrapData, error) {
 	bootstrapData := &bootstrapData{}
 	bootstrapData.configFiles = make(map[string][]byte)
-
-	getAssets := false
-	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), cluster.Spec.Assets, cluster.Spec.KubernetesVersion, getAssets)
 
 	encryptionConfigSecretHash := ""
 	// TODO: Support encryption config?
@@ -563,6 +560,15 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 
 		p := filepath.Join("/etc/kubernetes/kops/config", "igconfig", bootConfig.InstanceGroupRole.ToLowerString(), ig.Name, "nodeupconfig.yaml")
 		bootstrapData.configFiles[p] = nodeupConfigBytes
+
+		// Copy any static manifests we need on the control plane
+		for _, staticManifest := range assetBuilder.StaticManifests {
+			if !staticManifest.AppliesToRole(bootConfig.InstanceGroupRole) {
+				continue
+			}
+			p := filepath.Join("/etc/kubernetes/kops/config", staticManifest.Path)
+			bootstrapData.configFiles[p] = staticManifest.Contents
+		}
 	}
 
 	nodeupScriptBytes, err := fi.ResourceAsBytes(nodeupScriptResource)
