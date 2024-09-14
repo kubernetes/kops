@@ -149,14 +149,10 @@ func run() error {
 		}
 		cloudProvider = scwCloudProvider
 
+	} else if cloud == "metal" {
+		cloudProvider = nil
 	} else {
 		klog.Errorf("Unknown cloud %q", cloud)
-		os.Exit(1)
-	}
-
-	internalIP := cloudProvider.InstanceInternalIP()
-	if internalIP == nil {
-		klog.Errorf("Cannot determine internal IP")
 		os.Exit(1)
 	}
 
@@ -182,6 +178,10 @@ func run() error {
 	protokube.RootFS = rootfs
 
 	if gossip {
+		if cloudProvider == nil {
+			return fmt.Errorf("gossip not supported with cloudprovider %q", cloud)
+		}
+
 		dnsTarget := &gossipdns.HostsFile{
 			Path: path.Join(rootfs, "etc/hosts"),
 		}
@@ -244,7 +244,6 @@ func run() error {
 		NodeName:                  nodeName,
 		Channels:                  channels,
 		InternalDNSSuffix:         dnsInternalSuffix,
-		InternalIP:                internalIP,
 		Kubernetes:                protokube.NewKubernetesContext(),
 		Master:                    master,
 	}

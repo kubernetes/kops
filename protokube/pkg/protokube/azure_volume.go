@@ -19,7 +19,6 @@ package protokube
 import (
 	"context"
 	"fmt"
-	"net"
 
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
@@ -33,7 +32,6 @@ type client interface {
 	ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]*network.Interface, error)
 	GetName() string
 	GetTags() (map[string]string, error)
-	GetInternalIP() net.IP
 }
 
 var _ client = &gossipazure.Client{}
@@ -44,7 +42,6 @@ type AzureCloudProvider struct {
 
 	clusterTag string
 	instanceID string
-	internalIP net.IP
 }
 
 var _ CloudProvider = &AzureCloudProvider{}
@@ -68,26 +65,16 @@ func NewAzureCloudProvider() (*AzureCloudProvider, error) {
 	if instanceID == "" {
 		return nil, fmt.Errorf("empty name")
 	}
-	internalIP := client.GetInternalIP()
-	if internalIP == nil {
-		return nil, fmt.Errorf("error querying internal IP")
-	}
 	return &AzureCloudProvider{
 		client:     client,
 		clusterTag: clusterTag,
 		instanceID: instanceID,
-		internalIP: internalIP,
 	}, nil
 }
 
 // InstanceID implements CloudProvider InstanceID.
 func (a *AzureCloudProvider) InstanceID() string {
 	return a.instanceID
-}
-
-// InstanceInternalIP implements CloudProvider InstanceInternalIP.
-func (a *AzureCloudProvider) InstanceInternalIP() net.IP {
-	return a.internalIP
 }
 
 // GossipSeeds implements CloudProvider GossipSeeds.

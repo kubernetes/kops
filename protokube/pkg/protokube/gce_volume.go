@@ -18,7 +18,6 @@ package protokube
 
 import (
 	"fmt"
-	"net"
 	"strings"
 
 	"cloud.google.com/go/compute/metadata"
@@ -38,7 +37,6 @@ type GCECloudProvider struct {
 	region       string
 	clusterName  string
 	instanceName string
-	internalIP   net.IP
 }
 
 var _ CloudProvider = &GCECloudProvider{}
@@ -66,11 +64,6 @@ func NewGCECloudProvider() (*GCECloudProvider, error) {
 // Project returns the current GCE project
 func (a *GCECloudProvider) Project() string {
 	return a.project
-}
-
-// InstanceInternalIP implements CloudProvider InstanceInternalIP
-func (a *GCECloudProvider) InstanceInternalIP() net.IP {
-	return a.internalIP
 }
 
 func (a *GCECloudProvider) discoverTags() error {
@@ -114,22 +107,6 @@ func (a *GCECloudProvider) discoverTags() error {
 			return fmt.Errorf("instance name metadata was empty")
 		}
 		klog.Infof("Found instanceName=%q", a.instanceName)
-	}
-
-	// Internal IP
-	{
-		internalIP, err := metadata.InternalIP()
-		if err != nil {
-			return fmt.Errorf("error querying InternalIP from GCE: %v", err)
-		}
-		if internalIP == "" {
-			return fmt.Errorf("InternalIP from metadata was empty")
-		}
-		a.internalIP = net.ParseIP(internalIP)
-		if a.internalIP == nil {
-			return fmt.Errorf("InternalIP from metadata was not parseable(%q)", internalIP)
-		}
-		klog.Infof("Found internalIP=%q", a.internalIP)
 	}
 
 	return nil

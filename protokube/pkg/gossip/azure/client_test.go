@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"net"
 	"os"
 	"reflect"
 	"testing"
@@ -64,23 +63,5 @@ func TestUnmarshalMetadata(t *testing.T) {
 	}
 	if a, e := ipAddrs[0].PublicIPAddress, "52.136.124.5"; a != e {
 		t.Errorf("expected public IP address %s, but got %s", e, a)
-	}
-}
-
-func TestGetInternalIP(t *testing.T) {
-	data, err := os.ReadFile("testdata/metadata.json")
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-	metadata, err := unmarshalInstanceMetadata(data)
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-	c := Client{
-		metadata: metadata,
-	}
-
-	if a, e := c.GetInternalIP(), net.ParseIP("172.16.32.8"); !a.Equal(e) {
-		t.Errorf("expected internal address %s, but got %s", e, a)
 	}
 }

@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -42,7 +41,6 @@ type AWSCloudProvider struct {
 	deviceMap  map[string]string
 	ec2        ec2.DescribeInstancesAPIClient
 	instanceId string
-	internalIP net.IP
 	imdsClient *imds.Client
 	zone       string
 }
@@ -98,10 +96,6 @@ func NewAWSCloudProvider() (*AWSCloudProvider, error) {
 	return a, nil
 }
 
-func (a *AWSCloudProvider) InstanceInternalIP() net.IP {
-	return a.internalIP
-}
-
 func (a *AWSCloudProvider) discoverTags(ctx context.Context) error {
 	instance, err := a.describeInstance(ctx)
 	if err != nil {
@@ -119,14 +113,6 @@ func (a *AWSCloudProvider) discoverTags(ctx context.Context) error {
 	}
 
 	a.clusterTag = clusterID
-
-	a.internalIP = net.ParseIP(aws.ToString(instance.Ipv6Address))
-	if a.internalIP == nil {
-		a.internalIP = net.ParseIP(aws.ToString(instance.PrivateIpAddress))
-	}
-	if a.internalIP == nil {
-		return fmt.Errorf("Internal IP not found on this instance (%q)", a.instanceId)
-	}
 
 	return nil
 }

@@ -18,7 +18,6 @@ package protokube
 
 import (
 	"fmt"
-	"net"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	ipam "github.com/scaleway/scaleway-sdk-go/api/ipam/v1alpha1"
@@ -35,7 +34,6 @@ import (
 type ScwCloudProvider struct {
 	scwClient *scw.Client
 	server    *instance.Server
-	serverIP  net.IP
 }
 
 var _ CloudProvider = &ScwCloudProvider{}
@@ -101,22 +99,9 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 		return nil, fmt.Errorf("expected at least 1 IP attached to the server %s", server.ID)
 	}
 
-	var ipToReturn string
-	for _, ipFound := range ips.IPs {
-		if ipFound.Address.IP.IsPrivate() == true {
-			ipToReturn = ipFound.Address.IP.String()
-			break
-		}
-	}
-	if ipToReturn == "" {
-		ipToReturn = ips.IPs[0].Address.IP.String()
-	}
-	klog.V(4).Infof("Found first private net IP of the running server: %q", ipToReturn)
-
 	s := &ScwCloudProvider{
 		scwClient: scwClient,
 		server:    server,
-		serverIP:  net.IP(ipToReturn),
 	}
 
 	return s, nil
@@ -124,10 +109,6 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 
 func (s *ScwCloudProvider) InstanceID() string {
 	return fmt.Sprintf("%s-%s", s.server.Name, s.server.ID)
-}
-
-func (s ScwCloudProvider) InstanceInternalIP() net.IP {
-	return s.serverIP
 }
 
 func (s *ScwCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
