@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -34,10 +35,11 @@ import (
 type Terraform struct {
 	dir           string
 	terraformPath string
+	artifactsDir  string
 }
 
 // NewTerraform creates a new Terraform object
-func NewTerraform(version string) (*Terraform, error) {
+func NewTerraform(version, artifactsDir string) (*Terraform, error) {
 	var b bytes.Buffer
 	url := fmt.Sprintf("https://releases.hashicorp.com/terraform/%v/terraform_%v_%v_%v.zip", version, version, runtime.GOOS, runtime.GOARCH)
 
@@ -52,9 +54,15 @@ func NewTerraform(version string) (*Terraform, error) {
 	if err != nil {
 		return nil, err
 	}
+	artifacts := filepath.Join(artifactsDir, "terraform")
+	if err := os.MkdirAll(artifacts, 0644); err != nil {
+		return nil, err
+	}
+
 	t := &Terraform{
 		dir:           tfDir,
 		terraformPath: filepath.Join(binaryDir, "terraform"),
+		artifactsDir:  artifacts,
 	}
 	return t, nil
 }
@@ -76,6 +84,11 @@ func (t *Terraform) InitApply() error {
 
 	exec.InheritOutput(cmd)
 	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	err = t.Backup()
 	if err != nil {
 		return err
 	}
@@ -112,6 +125,29 @@ func (t *Terraform) Destroy() error {
 	err := cmd.Run()
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (t *Terraform) Backup() error {
+	if t.artifactsDir == "" {
+		return nil
+	}
+
+	files := []string{
+		"kubernetes.tf",
+		".terraform.lock.hcl",
+	}
+	for _, f := range files {
+		klog.Infof("Copying %s to artifacts", f)
+		contents, err := os.ReadFile(path.Join(t.Dir(), f))
+		if err != nil {
+			return fmt.Errorf("failed to read %s: %v", f, err)
+		}
+		err = os.WriteFile(path.Join(t.artifactsDir, f), contents, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write %s: %v", f, err)
+		}
 	}
 	return nil
 }

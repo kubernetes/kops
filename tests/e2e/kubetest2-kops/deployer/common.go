@@ -114,7 +114,7 @@ func (d *deployer) initialize() error {
 		d.SSHUser = os.Getenv("KUBE_SSH_USER")
 	}
 	if d.TerraformVersion != "" {
-		t, err := target.NewTerraform(d.TerraformVersion)
+		t, err := target.NewTerraform(d.TerraformVersion, d.ArtifactsDir)
 		if err != nil {
 			return err
 		}
