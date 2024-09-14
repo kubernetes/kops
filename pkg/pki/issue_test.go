@@ -39,7 +39,7 @@ type mockKeystore struct {
 	invoked bool
 }
 
-// FindPrimaryKeypair implements pki.Keystore
+// FindPrimaryKeypair implements Keystore
 func (m *mockKeystore) FindPrimaryKeypair(ctx context.Context, name string) (*Certificate, *PrivateKey, error) {
 	assert.False(m.t, m.invoked, "invoked already")
 	m.invoked = true

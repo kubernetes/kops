@@ -54,7 +54,7 @@ func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool
 }
 
 // ParseRawYaml parses an object just using yaml, without the full api machinery
-// Deprecated: prefer using the API machinery
+// Deprecated: prefer using the API machinery (package kopscodecs)
 func ParseRawYaml(data []byte, dest interface{}) error {
 	// Yaml can't parse empty strings
 	configString := string(data)
@@ -71,7 +71,7 @@ func ParseRawYaml(data []byte, dest interface{}) error {
 }
 
 // ToRawYaml marshals an object to yaml, without the full api machinery
-// Deprecated: prefer using the API machinery
+// Deprecated: prefer using the API machinery (package kopscodecs)
 func ToRawYaml(obj interface{}) ([]byte, error) {
 	data, err := utils.YamlMarshal(obj)
 	if err != nil {

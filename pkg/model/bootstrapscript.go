@@ -125,17 +125,35 @@ func (b *BootstrapScript) kubeEnv(ig *kops.InstanceGroup, c *fi.CloudupContext) 
 }
 
 func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup) []string {
-	keypairs := []string{"kubernetes-ca", "etcd-clients-ca"}
-	for _, etcdCluster := range cluster.Spec.EtcdClusters {
-		k := etcdCluster.Name
-		keypairs = append(keypairs, "etcd-manager-ca-"+k, "etcd-peers-ca-"+k)
-		if k != "events" && k != "main" {
-			keypairs = append(keypairs, "etcd-clients-ca-"+k)
+	keypairs := []string{"kubernetes-ca"}
+
+	// Add keypairs for default etcd clusters (main and events, not cilium)
+	if ig.IsControlPlane() {
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			k := etcdCluster.Name
+			if k != "events" && k != "main" {
+				// Likely cilium
+				continue
+			}
+			keypairs = append(keypairs, "etcd-manager-ca-"+k, "etcd-peers-ca-"+k)
+			// The client ca certificate is shared between events and main etcd clusters
+			keypairs = append(keypairs, "etcd-clients-ca")
 		}
 	}
 
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
+	}
+
+	// Add keypairs for cilium etcd clusters (not the default etcd clusters)
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		k := etcdCluster.Name
+		if k == "events" || k == "main" {
+			// Not cilium
+			continue
+		}
+
+		keypairs = append(keypairs, "etcd-manager-ca-"+k, "etcd-peers-ca-"+k, "etcd-clients-ca-"+k)
 	}
 
 	if ig.IsBastion() {

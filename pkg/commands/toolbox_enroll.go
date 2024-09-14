@@ -45,6 +45,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands/commandutils"
@@ -188,7 +189,7 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 		}
 	}
 
-	for k, v := range bootstrapData.ConfigFiles {
+	for k, v := range bootstrapData.NodeupScriptAdditionalFiles {
 		if err := host.writeFile(ctx, k, bytes.NewReader(v)); err != nil {
 			return fmt.Errorf("writing file %q over SSH: %w", k, err)
 		}
@@ -383,8 +384,12 @@ func (s *SSHHost) getHostname(ctx context.Context) (string, error) {
 }
 
 type BootstrapData struct {
+	// NodeupScript is a script that can be used to bootstrap the node.
 	NodeupScript []byte
-	ConfigFiles  map[string][]byte
+	// NodeupConfig is structured configuration, provided by kops-controller (for example).
+	NodeupConfig *nodeup.Config
+	// NodeupScriptAdditionalFiles are additional files that are needed by the nodeup script.
+	NodeupScriptAdditionalFiles map[string][]byte
 }
 
 // ConfigBuilder builds bootstrap configuration for a node.
@@ -730,7 +735,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 	}
 
 	bootstrapData := &BootstrapData{}
-	bootstrapData.ConfigFiles = make(map[string][]byte)
+	bootstrapData.NodeupScriptAdditionalFiles = make(map[string][]byte)
 
 	encryptionConfigSecretHash := ""
 	// TODO: Support encryption config?
@@ -812,7 +817,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 		// bootConfig.NodeupConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
 
 		p := filepath.Join("/etc/kubernetes/kops/config", "igconfig", bootConfig.InstanceGroupRole.ToLowerString(), ig.Name, "nodeupconfig.yaml")
-		bootstrapData.ConfigFiles[p] = nodeupConfigBytes
+		bootstrapData.NodeupScriptAdditionalFiles[p] = nodeupConfigBytes
 
 		// Copy any static manifests we need on the control plane
 		for _, staticManifest := range assetBuilder.StaticManifests {
@@ -820,7 +825,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 				continue
 			}
 			p := filepath.Join("/etc/kubernetes/kops/config", staticManifest.Path)
-			bootstrapData.ConfigFiles[p] = staticManifest.Contents
+			bootstrapData.NodeupScriptAdditionalFiles[p] = staticManifest.Contents
 		}
 	}
 
@@ -829,6 +834,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 		return nil, err
 	}
 	bootstrapData.NodeupScript = nodeupScriptBytes
+	bootstrapData.NodeupConfig = nodeupConfig
 
 	b.bootstrapData = bootstrapData
 

@@ -55,7 +55,7 @@ type Clientset interface {
 	// SecretStore builds the secret store for the specified cluster
 	SecretStore(cluster *kops.Cluster) (fi.SecretStore, error)
 
-	// KeyStore builds the key store for the specified cluster
+	// KeyStore gets the read-write keystore store for the specified cluster
 	KeyStore(cluster *kops.Cluster) (fi.CAStore, error)
 
 	// SSHCredentialStore builds the SSHCredential store for the specified cluster

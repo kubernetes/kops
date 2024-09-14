@@ -38,7 +38,9 @@ function cleanup() {
   ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/cleanup || true
 }
 
-trap cleanup EXIT
+if [[ -z "${SKIP_CLEANUP:-}" ]]; then
+  trap cleanup EXIT
+fi
 
 # Create the directory that will back our mock s3 storage
 rm -rf ${WORKDIR}/s3
@@ -115,7 +117,7 @@ eval $(ssh-agent)
 ssh-add ${REPO_ROOT}/.build/.ssh/id_ed25519
 
 # Enroll the control-plane VM
-${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group control-plane-main --host 10.123.45.10 --v=8
+${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group control-plane-main --host 10.123.45.10 --v=2
 
 # Manual creation of "volumes" for etcd, and setting up peer nodes
 cat <<EOF | ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10 tee -a /etc/hosts
@@ -142,9 +144,76 @@ kubectl get pods -A
 
 # Install kindnet
 kubectl create -f https://raw.githubusercontent.com/aojea/kindnet/main/install-kindnet.yaml
-echo "Waiting 10 seconds for kube to start"
+echo "Waiting 10 seconds for kindnet to start"
 sleep 10
 kubectl get nodes
 kubectl get pods -A
+
+# For host records
+kubectl create ns kops-system
+kubectl apply -f ${REPO_ROOT}/k8s/crds/kops.k8s.io_hosts.yaml
+
+# kops-controller extra permissions
+kubectl apply --server-side -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kops-controller:pki-verifier
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kops-controller:pki-verifier
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kops-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kops-controller:pki-verifier
+rules:
+- apiGroups:
+  - "kops.k8s.io"
+  resources:
+  - hosts
+  verbs:
+  - get
+  - list
+  - watch
+# Must be able to set node addresses
+# TODO: Move out?
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+EOF
+
+function enroll_node() {
+  local node_ip=$1
+
+# Manual "discovery" for control-plane endpoints
+# TODO: Replace with well-known IP
+cat <<EOF | ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${node_ip} tee -a /etc/hosts
+
+# Hosts added for leader discovery
+10.123.45.10 kops-controller.internal.metal.k8s.local
+10.123.45.10 api.internal.metal.k8s.local
+EOF
+
+${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group nodes-main --host ${node_ip} --v=2
+}
+
+enroll_node 10.123.45.11
+enroll_node 10.123.45.12
+
+echo "Waiting 30 seconds for nodes to be ready"
+sleep 30
+
+kubectl get nodes
+kubectl get pods -A
+
 
 echo "Test successful"

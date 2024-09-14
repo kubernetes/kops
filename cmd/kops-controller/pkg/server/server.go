@@ -36,10 +36,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
+	"k8s.io/kops/cmd/kops-controller/pkg/controllerclientset"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,8 +57,10 @@ type Server struct {
 	keypairIDs  map[string]string
 	server      *http.Server
 	verifier    bootstrap.Verifier
-	keystore    pki.Keystore
+	keystore    *keystore
 	secretStore fi.SecretStore
+
+	clientset simple.Clientset
 
 	// configBase is the base of the configuration storage.
 	configBase vfs.Path
@@ -92,16 +96,22 @@ func NewServer(vfsContext *vfs.VFSContext, opt *config.Options, verifier bootstr
 	}
 	s.configBase = configBase
 
+	s.keystore, s.keypairIDs, err = newKeystore(opt.Server.CABasePath, opt.Server.SigningCAs)
+	if err != nil {
+		return nil, err
+	}
+
 	p, err := vfsContext.BuildVfsPath(opt.SecretStore)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse SecretStore %q: %w", opt.SecretStore, err)
 	}
 	s.secretStore = secrets.NewVFSSecretStore(nil, p)
 
-	s.keystore, s.keypairIDs, err = newKeystore(opt.Server.CABasePath, opt.Server.SigningCAs)
+	clientset, err := controllerclientset.New(vfsContext, configBase, opt.ClusterName, s.keystore, s.secretStore)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("building controller clientset: %w", err)
 	}
+	s.clientset = clientset
 
 	challengeClient, err := bootstrap.NewChallengeClient(s.keystore)
 	if err != nil {

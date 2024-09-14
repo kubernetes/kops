@@ -459,8 +459,8 @@ func loadCertificates(keysets map[string]*fi.Keyset, name string, config *nodeup
 	}
 	config.CAs[name] = string(certificates)
 	if includeKeypairID {
-		if keyset.Primary == nil {
-			return fmt.Errorf("key %q did not have primary set", name)
+		if keyset.Primary == nil || keyset.Primary.Id == "" {
+			return fmt.Errorf("key %q did not have primary id set", name)
 		}
 		config.KeypairIDs[name] = keyset.Primary.Id
 	}

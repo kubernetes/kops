@@ -3,6 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
+    api-approved.kubernetes.io: https://github.com/kubernetes/enhancements/pull/1111
     controller-gen.kubebuilder.io/version: v0.16.0
   name: hosts.kops.k8s.io
 spec:
@@ -47,3 +48,5 @@ spec:
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
