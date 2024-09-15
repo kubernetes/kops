@@ -19,7 +19,6 @@ package protokube
 import (
 	"context"
 	"fmt"
-	"net"
 	"os"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -34,7 +33,6 @@ import (
 type HetznerCloudProvider struct {
 	hcloudClient *hcloud.Client
 	server       *hcloud.Server
-	serverIP     net.IP
 }
 
 var _ CloudProvider = &HetznerCloudProvider{}
@@ -77,14 +75,9 @@ func NewHetznerCloudProvider() (*HetznerCloudProvider, error) {
 	h := &HetznerCloudProvider{
 		hcloudClient: hcloudClient,
 		server:       server,
-		serverIP:     server.PrivateNet[0].IP,
 	}
 
 	return h, nil
-}
-
-func (h HetznerCloudProvider) InstanceInternalIP() net.IP {
-	return h.serverIP
 }
 
 func (h *HetznerCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {

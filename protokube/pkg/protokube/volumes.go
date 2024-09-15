@@ -17,13 +17,10 @@ limitations under the License.
 package protokube
 
 import (
-	"net"
-
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
 type CloudProvider interface {
 	InstanceID() string
-	InstanceInternalIP() net.IP
 	GossipSeeds() (gossip.SeedProvider, error)
 }

@@ -18,7 +18,6 @@ package protokube
 
 import (
 	"fmt"
-	"net"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -36,7 +35,6 @@ type OpenStackCloudProvider struct {
 	clusterName  string
 	project      string
 	instanceName string
-	internalIP   net.IP
 	storageZone  string
 }
 
@@ -70,11 +68,6 @@ func NewOpenStackCloudProvider() (*OpenStackCloudProvider, error) {
 // Project returns the current OpenStack project
 func (a *OpenStackCloudProvider) Project() string {
 	return a.meta.ProjectID
-}
-
-// InstanceInternalIP implements CloudProvider InstanceInternalIP
-func (a *OpenStackCloudProvider) InstanceInternalIP() net.IP {
-	return a.internalIP
 }
 
 func (a *OpenStackCloudProvider) discoverTags() error {
@@ -111,25 +104,6 @@ func (a *OpenStackCloudProvider) discoverTags() error {
 			return fmt.Errorf("instance name metadata was empty")
 		}
 		klog.Infof("Found instanceName=%q", a.instanceName)
-	}
-
-	// Internal IP
-	{
-		server, err := a.cloud.GetInstance(strings.TrimSpace(a.meta.ServerID))
-		if err != nil {
-			return fmt.Errorf("error getting instance from ID: %v", err)
-		}
-		// find kopsNetwork from metadata, fallback to clustername
-		ifName := a.clusterName
-		if val, ok := server.Metadata[openstack.TagKopsNetwork]; ok {
-			ifName = val
-		}
-		ip, err := openstack.GetServerFixedIP(server, ifName)
-		if err != nil {
-			return fmt.Errorf("error querying InternalIP from name: %v", err)
-		}
-		a.internalIP = net.ParseIP(ip)
-		klog.Infof("Found internalIP=%q", a.internalIP)
 	}
 
 	return nil

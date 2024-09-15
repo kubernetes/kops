@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"strings"
 
@@ -128,22 +127,6 @@ func (c *Client) GetName() string {
 // GetTags returns the tags of the VM queried from Instance Metadata Service.
 func (c *Client) GetTags() (map[string]string, error) {
 	return c.metadata.Compute.GetTags()
-}
-
-// GetInternalIP returns the internal IP of the VM queried from Instance Metadata Service.
-// This function returns nil if no internal IP is found.
-func (c *Client) GetInternalIP() net.IP {
-	for _, iface := range c.metadata.Network.Interfaces {
-		if iface.IPv4 == nil {
-			continue
-		}
-		for _, ipAddr := range iface.IPv4.IPAddresses {
-			if a := ipAddr.PrivateIPAddress; a != "" {
-				return net.ParseIP(a)
-			}
-		}
-	}
-	return nil
 }
 
 // ListVMScaleSets returns VM ScaleSets in the resource group.

@@ -19,7 +19,6 @@ package protokube
 import (
 	"context"
 	"fmt"
-	"net"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,8 +34,6 @@ type KubeBoot struct {
 	Channels []string
 	// InternalDNSSuffix is the dns zone we are living in
 	InternalDNSSuffix string
-	// InternalIP is the internal ip address of the node
-	InternalIP net.IP
 	// Kubernetes holds a kubernetes client
 	Kubernetes *KubernetesContext
 	// Master indicates we are a master node

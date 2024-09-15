@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -55,7 +54,6 @@ type DOCloudProvider struct {
 	region      string
 	dropletName string
 	dropletID   int
-	dropletIP   net.IP
 	dropletTags []string
 }
 
@@ -102,12 +100,6 @@ func NewDOCloudProvider() (*DOCloudProvider, error) {
 		return nil, fmt.Errorf("failed to convert droplet ID to int: %s", err)
 	}
 
-	dropletIPStr, err := getMetadata(dropletInternalIPMetadataURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get droplet ip: %s", err)
-	}
-	dropletIP := net.ParseIP(dropletIPStr)
-
 	dropletName, err := getMetadataDropletName()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get droplet name: %s", err)
@@ -132,7 +124,6 @@ func NewDOCloudProvider() (*DOCloudProvider, error) {
 		godoClient:  godoClient,
 		ClusterID:   clusterID,
 		dropletID:   dropletID,
-		dropletIP:   dropletIP,
 		dropletName: dropletName,
 		region:      region,
 		dropletTags: dropletTags,
@@ -200,10 +191,6 @@ func (d *DOCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 
 func (d *DOCloudProvider) InstanceID() string {
 	return d.dropletName
-}
-
-func (d *DOCloudProvider) InstanceInternalIP() net.IP {
-	return d.dropletIP
 }
 
 func getMetadataRegion() (string, error) {
