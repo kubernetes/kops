@@ -62,9 +62,10 @@ func (b *KubeApiserverBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	})
 
 	b.AssetBuilder.StaticManifests = append(b.AssetBuilder.StaticManifests, &assets.StaticManifest{
-		Key:   key,
-		Path:  location,
-		Roles: []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer},
+		Key:      key,
+		Path:     location,
+		Contents: manifestYAML,
+		Roles:    []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer},
 	})
 	return nil
 }

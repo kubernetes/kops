@@ -80,6 +80,18 @@ type StaticManifest struct {
 
 	// The static manifest will only be applied to instances matching the specified role
 	Roles []kops.InstanceGroupRole
+
+	// Contents is the contents of the manifest, which may be easier than fetching it from Path
+	Contents []byte
+}
+
+func (m *StaticManifest) AppliesToRole(role kops.InstanceGroupRole) bool {
+	for _, r := range m.Roles {
+		if r == role {
+			return true
+		}
+	}
+	return false
 }
 
 // ImageAsset models an image's location.
