@@ -204,7 +204,7 @@ WorkingDirectory=${WORKDIR}/${vm_name}/
 ExecStart=qemu-system-x86_64 \
    -machine type=q35,accel=kvm \
    -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 \
-   -m 1024 \
+   -m 2048M \
    -cpu host \
    -smp 4 \
    -nographic \
