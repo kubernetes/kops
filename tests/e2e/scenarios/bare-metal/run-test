@@ -85,7 +85,7 @@ aws s3 ls s3://kops-state-store || aws s3 mb s3://kops-state-store
 ${KOPS} get cluster || true
 
 # Create a cluster
-${KOPS} create cluster --cloud=metal metal.k8s.local --zones main
+${KOPS} create cluster --cloud=metal metal.k8s.local --zones main --networking cni
 
 # Set the IP ingress, required for metal cloud
 # TODO: is this the best option?
@@ -137,6 +137,13 @@ ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 r
 echo "Waiting 300 seconds for kube to start"
 sleep 300
 
+kubectl get nodes
+kubectl get pods -A
+
+# Install kindnet
+kubectl create -f https://raw.githubusercontent.com/aojea/kindnet/main/install-kindnet.yaml
+echo "Waiting 10 seconds for kube to start"
+sleep 10
 kubectl get nodes
 kubectl get pods -A
 
