@@ -88,111 +88,23 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 		return err
 	}
 
-	cluster, err := clientset.GetCluster(ctx, options.ClusterName)
+	configBuilder := &ConfigBuilder{
+		Clientset:         clientset,
+		ClusterName:       options.ClusterName,
+		InstanceGroupName: options.InstanceGroup,
+	}
+
+	fullCluster, err := configBuilder.GetFullCluster(ctx)
 	if err != nil {
 		return err
 	}
-	if cluster == nil {
-		return fmt.Errorf("cluster not found %q", options.ClusterName)
-	}
-
-	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), cluster)
-	if err != nil {
-		return fmt.Errorf("getting channel for cluster %q: %w", options.ClusterName, err)
-	}
-
-	instanceGroupList, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	fullInstanceGroup, err := configBuilder.GetFullInstanceGroup(ctx)
 	if err != nil {
 		return err
 	}
-
-	cloud, err := cloudup.BuildCloud(cluster)
+	bootstrapData, err := configBuilder.GetBootstrapData(ctx)
 	if err != nil {
 		return err
-	}
-
-	// The assetBuilder is used primarily to remap images.
-	var assetBuilder *assets.AssetBuilder
-	{
-		// ApplyClusterCmd is get the assets.
-		// We use DryRun and GetAssets to do this without applying any changes.
-		apply := &cloudup.ApplyClusterCmd{
-			Cloud:      cloud,
-			Cluster:    cluster,
-			Clientset:  clientset,
-			DryRun:     true,
-			GetAssets:  true,
-			TargetName: cloudup.TargetDryRun,
-		}
-		applyResults, err := apply.Run(ctx)
-		if err != nil {
-			return fmt.Errorf("error during apply: %w", err)
-		}
-		assetBuilder = applyResults.AssetBuilder
-	}
-
-	// Populate the full cluster and instanceGroup specs.
-	var fullInstanceGroup *kops.InstanceGroup
-	var fullCluster *kops.Cluster
-	{
-		var instanceGroups []*kops.InstanceGroup
-		for i := range instanceGroupList.Items {
-			instanceGroup := &instanceGroupList.Items[i]
-			instanceGroups = append(instanceGroups, instanceGroup)
-		}
-
-		populatedCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, instanceGroups, cloud, assetBuilder)
-		if err != nil {
-			return fmt.Errorf("building full cluster spec: %w", err)
-		}
-		fullCluster = populatedCluster
-
-		// Build full IG spec to ensure we end up with a valid IG
-		for _, ig := range instanceGroups {
-			if ig.Name != options.InstanceGroup {
-				continue
-			}
-			populated, err := cloudup.PopulateInstanceGroupSpec(fullCluster, ig, cloud, channel)
-			if err != nil {
-				return err
-			}
-			fullInstanceGroup = populated
-		}
-	}
-	if fullInstanceGroup == nil {
-		return fmt.Errorf("instance group %q not found", options.InstanceGroup)
-	}
-
-	// Determine the well-known addresses for the cluster.
-	wellKnownAddresses := make(model.WellKnownAddresses)
-	{
-		ingresses, err := cloud.GetApiIngressStatus(fullCluster)
-		if err != nil {
-			return fmt.Errorf("error getting ingress status: %v", err)
-		}
-
-		for _, ingress := range ingresses {
-			// TODO: Do we need to support hostnames?
-			// if ingress.Hostname != "" {
-			// 	apiserverAdditionalIPs = append(apiserverAdditionalIPs, ingress.Hostname)
-			// }
-			if ingress.IP != "" {
-				wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], ingress.IP)
-			}
-		}
-	}
-	if len(wellKnownAddresses[wellknownservices.KubeAPIServer]) == 0 {
-		// TODO: Should we support DNS?
-		return fmt.Errorf("unable to determine IP address for kube-apiserver")
-	}
-	for k := range wellKnownAddresses {
-		sort.Strings(wellKnownAddresses[k])
-	}
-
-	// Build the bootstrap data for this node.
-	bootstrapData, err := buildBootstrapData(ctx, clientset, fullCluster, fullInstanceGroup, assetBuilder, wellKnownAddresses)
-	if err != nil {
-		return fmt.Errorf("building bootstrap data: %w", err)
 	}
 
 	// Enroll the node over SSH.
@@ -215,7 +127,7 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 	return nil
 }
 
-func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnrollOptions, bootstrapData *bootstrapData, restConfig *rest.Config) error {
+func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnrollOptions, bootstrapData *BootstrapData, restConfig *rest.Config) error {
 	scheme := runtime.NewScheme()
 	if err := v1alpha2.AddToScheme(scheme); err != nil {
 		return fmt.Errorf("building kubernetes scheme: %w", err)
@@ -276,14 +188,14 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 		}
 	}
 
-	for k, v := range bootstrapData.configFiles {
+	for k, v := range bootstrapData.ConfigFiles {
 		if err := host.writeFile(ctx, k, bytes.NewReader(v)); err != nil {
 			return fmt.Errorf("writing file %q over SSH: %w", k, err)
 		}
 	}
 
-	if len(bootstrapData.nodeupScript) != 0 {
-		if _, err := host.runScript(ctx, string(bootstrapData.nodeupScript), ExecOptions{Sudo: sudo, Echo: true}); err != nil {
+	if len(bootstrapData.NodeupScript) != 0 {
+		if _, err := host.runScript(ctx, string(bootstrapData.NodeupScript), ExecOptions{Sudo: sudo, Echo: true}); err != nil {
 			return err
 		}
 	}
@@ -470,14 +382,355 @@ func (s *SSHHost) getHostname(ctx context.Context) (string, error) {
 	return hostname, nil
 }
 
-type bootstrapData struct {
-	nodeupScript []byte
-	configFiles  map[string][]byte
+type BootstrapData struct {
+	NodeupScript []byte
+	ConfigFiles  map[string][]byte
 }
 
-func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster *kops.Cluster, ig *kops.InstanceGroup, assetBuilder *assets.AssetBuilder, wellknownAddresses model.WellKnownAddresses) (*bootstrapData, error) {
-	bootstrapData := &bootstrapData{}
-	bootstrapData.configFiles = make(map[string][]byte)
+// ConfigBuilder builds bootstrap configuration for a node.
+type ConfigBuilder struct {
+	// ClusterName is the name of the cluster to build.
+	// Required.
+	ClusterName string
+
+	// InstanceGroupName is the name of the InstanceGroup we are building configuration for.
+	// Required.
+	InstanceGroupName string
+
+	// Clientset is the clientset to use to query for clusters / instancegroups etc
+	// Required.
+	Clientset simple.Clientset
+
+	// Cloud is the cloud implementation
+	// Use GetCloud to read and auto-populate.
+	Cloud fi.Cloud
+
+	// AssetBuilder holds the assets used by the cluster.
+	// Use GetAssetBuilder to read and auto-populate.
+	AssetBuilder *assets.AssetBuilder
+
+	// Cluster holds the (unexpanded) cluster configuration.
+	// Use GetCluster to read and auto-populate.
+	Cluster *kops.Cluster
+
+	// InstanceGroup holds the (unexpanded) instance group configuration.
+	// Use GetInstanceGroup to read and auto-populate.
+	InstanceGroup *kops.InstanceGroup
+
+	// instanceGroups holds the (unexpanded) instance group configurations
+	// Use GetInstanceGroups to read and auto-populate
+	instanceGroups *kops.InstanceGroupList
+
+	// wellKnownAddresses holds the known IP/host endpoints for the cluster.
+	// Use GetWellKnownAddresses to read and auto-populate.
+	wellKnownAddresses *model.WellKnownAddresses
+
+	// fullCluster holds the fully-expanded cluster configuration
+	// Use GetFullCluster to read and auto-populate.
+	fullCluster *kops.Cluster
+
+	// fullInstanceGroup holds the fully-expanded instance group configuration
+	// Use GetFullIntsanceGroup to read and auto-populate.
+	fullInstanceGroup *kops.InstanceGroup
+
+	// bootstrapData holds the final computed bootstrap configuration.
+	// Use GetBootstrapData to read and auto-populate.
+	bootstrapData *BootstrapData
+}
+
+func (b *ConfigBuilder) GetClientset(ctx context.Context) (simple.Clientset, error) {
+	if b.Clientset != nil {
+		return b.Clientset, nil
+	}
+	return nil, fmt.Errorf("clientset is required")
+}
+
+func (b *ConfigBuilder) GetFullCluster(ctx context.Context) (*kops.Cluster, error) {
+	if b.fullCluster != nil {
+		return b.fullCluster, nil
+	}
+
+	clientset, err := b.GetClientset(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cluster, err := b.GetCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cloud, err := b.GetCloud(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	assetBuilder, err := b.GetAssetBuilder(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceGroupList, err := b.GetInstanceGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var instanceGroups []*kops.InstanceGroup
+	for i := range instanceGroupList.Items {
+		instanceGroup := &instanceGroupList.Items[i]
+		instanceGroups = append(instanceGroups, instanceGroup)
+	}
+
+	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, cluster, instanceGroups, cloud, assetBuilder)
+	if err != nil {
+		return nil, fmt.Errorf("building full cluster spec: %w", err)
+	}
+	b.fullCluster = fullCluster
+	return fullCluster, nil
+}
+
+func (b *ConfigBuilder) GetInstanceGroup(ctx context.Context) (*kops.InstanceGroup, error) {
+	if b.InstanceGroup != nil {
+		return b.InstanceGroup, nil
+	}
+
+	instanceGroups, err := b.GetInstanceGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.InstanceGroupName == "" {
+		return nil, fmt.Errorf("InstanceGroup name is missing")
+	}
+
+	// Build full IG spec to ensure we end up with a valid IG
+	for i := range instanceGroups.Items {
+		ig := &instanceGroups.Items[i]
+		if ig.Name == b.InstanceGroupName {
+			b.InstanceGroup = ig
+			return ig, nil
+		}
+	}
+	return nil, fmt.Errorf("instance group %q not found", b.InstanceGroupName)
+}
+
+func (b *ConfigBuilder) GetFullInstanceGroup(ctx context.Context) (*kops.InstanceGroup, error) {
+	if b.fullInstanceGroup != nil {
+		return b.fullInstanceGroup, nil
+	}
+
+	clientset, err := b.GetClientset(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	fullCluster, err := b.GetFullCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cloud, err := b.GetCloud(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ig, err := b.GetInstanceGroup(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := cloudup.ChannelForCluster(clientset.VFSContext(), fullCluster)
+	if err != nil {
+		return nil, fmt.Errorf("getting channel for cluster %q: %w", fullCluster.Name, err)
+	}
+
+	// Build full IG spec to ensure we end up with a valid IG
+	fullInstanceGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, ig, cloud, channel)
+	if err != nil {
+		return nil, err
+	}
+	b.fullInstanceGroup = fullInstanceGroup
+	return fullInstanceGroup, nil
+}
+
+func (b *ConfigBuilder) GetCloud(ctx context.Context) (fi.Cloud, error) {
+	if b.Cloud != nil {
+		return b.Cloud, nil
+	}
+	cluster, err := b.GetCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+	b.Cloud = cloud
+	return cloud, nil
+}
+
+func (b *ConfigBuilder) GetInstanceGroups(ctx context.Context) (*kops.InstanceGroupList, error) {
+	if b.instanceGroups != nil {
+		return b.instanceGroups, nil
+	}
+
+	cluster, err := b.GetCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := b.GetClientset(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceGroupList, err := clientset.InstanceGroupsFor(cluster).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("reading instance groups: %w", err)
+	}
+
+	b.instanceGroups = instanceGroupList
+	return instanceGroupList, nil
+}
+
+func (b *ConfigBuilder) GetCluster(ctx context.Context) (*kops.Cluster, error) {
+	if b.Cluster != nil {
+		return b.Cluster, nil
+	}
+
+	if b.ClusterName == "" {
+		return nil, fmt.Errorf("ClusterName is missing")
+	}
+
+	clientset, err := b.GetClientset(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cluster, err := clientset.GetCluster(ctx, b.ClusterName)
+	if err != nil {
+		return nil, err
+	}
+	if cluster == nil {
+		return nil, fmt.Errorf("cluster %q not found", b.ClusterName)
+	}
+	b.Cluster = cluster
+	return cluster, nil
+}
+
+func (b *ConfigBuilder) GetAssetBuilder(ctx context.Context) (*assets.AssetBuilder, error) {
+	if b.AssetBuilder != nil {
+		return b.AssetBuilder, nil
+	}
+
+	clientset, err := b.GetClientset(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cluster, err := b.GetCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cloud, err := b.GetCloud(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// ApplyClusterCmd is get the assets.
+	// We use DryRun and GetAssets to do this without applying any changes.
+	apply := &cloudup.ApplyClusterCmd{
+		Cloud:      cloud,
+		Cluster:    cluster,
+		Clientset:  clientset,
+		DryRun:     true,
+		GetAssets:  true,
+		TargetName: cloudup.TargetDryRun,
+	}
+	applyResults, err := apply.Run(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error during apply: %w", err)
+	}
+	b.AssetBuilder = applyResults.AssetBuilder
+	return b.AssetBuilder, nil
+}
+
+func (b *ConfigBuilder) GetWellKnownAddresses(ctx context.Context) (model.WellKnownAddresses, error) {
+	if b.wellKnownAddresses != nil {
+		return *b.wellKnownAddresses, nil
+	}
+
+	cloud, err := b.GetCloud(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	fullCluster, err := b.GetFullCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine the well-known addresses for the cluster.
+	wellKnownAddresses := make(model.WellKnownAddresses)
+	{
+		ingresses, err := cloud.GetApiIngressStatus(fullCluster)
+		if err != nil {
+			return nil, fmt.Errorf("error getting ingress status: %v", err)
+		}
+
+		for _, ingress := range ingresses {
+			// TODO: Do we need to support hostnames?
+			// if ingress.Hostname != "" {
+			// 	apiserverAdditionalIPs = append(apiserverAdditionalIPs, ingress.Hostname)
+			// }
+			if ingress.IP != "" {
+				wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], ingress.IP)
+			}
+		}
+	}
+	if len(wellKnownAddresses[wellknownservices.KubeAPIServer]) == 0 {
+		// TODO: Should we support DNS?
+		return nil, fmt.Errorf("unable to determine IP address for kube-apiserver")
+	}
+	for k := range wellKnownAddresses {
+		sort.Strings(wellKnownAddresses[k])
+	}
+
+	b.wellKnownAddresses = &wellKnownAddresses
+	return wellKnownAddresses, nil
+}
+
+func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, error) {
+	if b.bootstrapData != nil {
+		return b.bootstrapData, nil
+	}
+
+	cluster, err := b.GetFullCluster(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	assetBuilder, err := b.GetAssetBuilder(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := b.GetClientset(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	wellKnownAddresses, err := b.GetWellKnownAddresses(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ig, err := b.GetFullInstanceGroup(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	bootstrapData := &BootstrapData{}
+	bootstrapData.ConfigFiles = make(map[string][]byte)
 
 	encryptionConfigSecretHash := ""
 	// TODO: Support encryption config?
@@ -521,13 +774,13 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 		}
 
 		if keyset == nil {
-			return nil, fmt.Errorf("failed to find keyset %q", keyName)
+			return nil, fmt.Errorf("did not find keyset %q", keyName)
 		}
 
 		keysets[keyName] = keyset
 	}
 
-	nodeupConfig, bootConfig, err := configBuilder.BuildConfig(ig, wellknownAddresses, keysets)
+	nodeupConfig, bootConfig, err := configBuilder.BuildConfig(ig, wellKnownAddresses, keysets)
 	if err != nil {
 		return nil, err
 	}
@@ -559,7 +812,7 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 		// bootConfig.NodeupConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
 
 		p := filepath.Join("/etc/kubernetes/kops/config", "igconfig", bootConfig.InstanceGroupRole.ToLowerString(), ig.Name, "nodeupconfig.yaml")
-		bootstrapData.configFiles[p] = nodeupConfigBytes
+		bootstrapData.ConfigFiles[p] = nodeupConfigBytes
 
 		// Copy any static manifests we need on the control plane
 		for _, staticManifest := range assetBuilder.StaticManifests {
@@ -567,7 +820,7 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 				continue
 			}
 			p := filepath.Join("/etc/kubernetes/kops/config", staticManifest.Path)
-			bootstrapData.configFiles[p] = staticManifest.Contents
+			bootstrapData.ConfigFiles[p] = staticManifest.Contents
 		}
 	}
 
@@ -575,7 +828,9 @@ func buildBootstrapData(ctx context.Context, clientset simple.Clientset, cluster
 	if err != nil {
 		return nil, err
 	}
-	bootstrapData.nodeupScript = nodeupScriptBytes
+	bootstrapData.NodeupScript = nodeupScriptBytes
+
+	b.bootstrapData = bootstrapData
 
 	return bootstrapData, nil
 }
