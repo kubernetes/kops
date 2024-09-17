@@ -63,6 +63,8 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
+        - name: KOPS_RUN_TOO_NEW_VERSION
+          value: "1"
         image: registry.k8s.io/kops/kops-controller:1.30.0-beta.1
         name: kops-controller
         resources:

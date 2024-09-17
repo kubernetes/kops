@@ -64,11 +64,11 @@ spec:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
         - name: SCW_ACCESS_KEY
-          value: null
+          value: ""
         - name: SCW_DEFAULT_PROJECT_ID
-          value: null
+          value: ""
         - name: SCW_SECRET_KEY
-          value: null
+          value: ""
         image: registry.k8s.io/kops/kops-controller:1.30.0-beta.1
         name: kops-controller
         resources:
