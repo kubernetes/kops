@@ -24,7 +24,6 @@ import (
 // OIDCProviderBuilder configures IAM OIDC Provider
 type OIDCProviderBuilder struct {
 	*AWSModelContext
-	KeyStore  fi.Keystore
 	Lifecycle fi.Lifecycle
 }
 
