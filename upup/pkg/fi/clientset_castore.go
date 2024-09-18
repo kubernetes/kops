@@ -45,7 +45,7 @@ var (
 )
 
 // NewClientsetCAStore is the constructor for ClientsetCAStore
-func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
+func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) *ClientsetCAStore {
 	c := &ClientsetCAStore{
 		cluster:   cluster,
 		clientset: clientset,
@@ -158,6 +158,25 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 // FindKeyset implements KeystoreReader.
 func (c *ClientsetCAStore) FindKeyset(ctx context.Context, name string) (*Keyset, error) {
 	return c.loadKeyset(ctx, name)
+}
+
+// FindPrimaryKeypair implements pki.Keystore
+func (c *ClientsetCAStore) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := c.FindKeyset(ctx, name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if keyset == nil {
+		return nil, nil, nil
+	}
+	if keyset.Primary == nil {
+		return nil, nil, nil
+	}
+	if keyset.Primary.Certificate == nil {
+		return nil, nil, nil
+	}
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
 // ListKeysets implements CAStore::ListKeysets

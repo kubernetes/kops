@@ -38,12 +38,12 @@ import (
 )
 
 type ClusterVFS struct {
-	commonVFS
+	VFSClientBase
 }
 
 func newClusterVFS(vfsContext *vfs.VFSContext, basePath vfs.Path) *ClusterVFS {
 	c := &ClusterVFS{}
-	c.init("Cluster", vfsContext, basePath, StoreVersion)
+	c.Init("Cluster", vfsContext, basePath, StoreVersion)
 	return c
 }
 

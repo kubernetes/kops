@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -106,6 +107,25 @@ var legacyKeysetMappings = map[string]string{
 	"service-account": "master",
 	// Renamed in kOps 1.22
 	"kubernetes-ca": "ca",
+}
+
+// FindPrimaryKeypair implements pki.Keystore
+func (c *VFSKeystoreReader) FindPrimaryKeypair(ctx context.Context, name string) (*pki.Certificate, *pki.PrivateKey, error) {
+	keyset, err := c.FindKeyset(ctx, name)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if keyset == nil {
+		return nil, nil, nil
+	}
+	if keyset.Primary == nil {
+		return nil, nil, nil
+	}
+	if keyset.Primary.Certificate == nil {
+		return nil, nil, nil
+	}
+	return keyset.Primary.Certificate, keyset.Primary.PrivateKey, nil
 }
 
 func (c *VFSKeystoreReader) FindKeyset(ctx context.Context, id string) (*Keyset, error) {

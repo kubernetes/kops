@@ -34,7 +34,7 @@ import (
 )
 
 type InstanceGroupVFS struct {
-	commonVFS
+	VFSClientBase
 
 	clusterName string
 	cluster     *kopsapi.Cluster
@@ -52,7 +52,7 @@ func newInstanceGroupVFS(c *VFSClientset, cluster *kopsapi.Cluster) *InstanceGro
 		cluster:     cluster,
 		clusterName: clusterName,
 	}
-	r.init(kind, c.VFSContext(), c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
+	r.Init(kind, c.VFSContext(), c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
 	r.validate = func(o runtime.Object) error {
 		return validation.ValidateInstanceGroup(o.(*kopsapi.InstanceGroup), nil, false).ToAggregate()
 	}
@@ -66,7 +66,7 @@ func (c *InstanceGroupVFS) Get(ctx context.Context, name string, options metav1.
 		return nil, fmt.Errorf("ResourceVersion not supported in InstanceGroupVFS::Get")
 	}
 
-	o, err := c.find(ctx, name)
+	o, err := c.Find(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (c *InstanceGroupVFS) addLabels(ig *kopsapi.InstanceGroup) {
 
 func (c *InstanceGroupVFS) List(ctx context.Context, options metav1.ListOptions) (*kopsapi.InstanceGroupList, error) {
 	list := &kopsapi.InstanceGroupList{}
-	items, err := c.list(ctx, list.Items, options)
+	items, err := c.VFSClientBase.List(ctx, list.Items, options)
 	if err != nil {
 		return nil, err
 	}

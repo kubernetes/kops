@@ -18,11 +18,13 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/commands"
 )
 
 func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest, identity *bootstrap.VerifyResult) (*nodeup.NodeConfig, error) {
@@ -35,10 +37,21 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 
 	nodeConfig := &nodeup.NodeConfig{}
 
-	// Note: For now, we're assuming there is only a single cluster, and it is ours.
-	// We therefore use the configured base path
+	if s.opt.Cloud == "metal" {
+		bootstrapData, err := s.buildNodeupConfig(ctx, s.opt.ClusterName, identity.InstanceGroupName)
+		if err != nil {
+			return nil, fmt.Errorf("building nodeConfig for instanceGroup: %w", err)
+		}
+		nodeupConfig, err := json.Marshal(bootstrapData.NodeupConfig)
+		if err != nil {
+			return nil, fmt.Errorf("marshalling nodeupConfig: %w", err)
+		}
+		nodeConfig.NodeupConfig = string(nodeupConfig)
+	} else {
 
-	{
+		// Note: For now, we're assuming there is only a single cluster, and it is ours.
+		// We therefore use the configured base path
+
 		p := s.configBase.Join("igconfig", "node", instanceGroupName, "nodeupconfig.yaml")
 
 		b, err := p.ReadFile(ctx)
@@ -65,4 +78,19 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	}
 
 	return nodeConfig, nil
+}
+
+func (s *Server) buildNodeupConfig(ctx context.Context, clusterName string, instanceGroupName string) (*commands.BootstrapData, error) {
+	configBuilder := &commands.ConfigBuilder{
+		Clientset:         s.clientset,
+		ClusterName:       clusterName,
+		InstanceGroupName: instanceGroupName,
+	}
+
+	bootstrapData, err := configBuilder.GetBootstrapData(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return bootstrapData, nil
 }
