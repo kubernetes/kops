@@ -203,7 +203,7 @@ cat <<EOF | ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/
 10.123.45.10 api.internal.metal.k8s.local
 EOF
 
-${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group nodes-main --host ${node_ip} --v=2
+timeout 10m ${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group nodes-main --host ${node_ip} --v=2
 }
 
 enroll_node 10.123.45.11

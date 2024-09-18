@@ -15,6 +15,7 @@ permissions:
 jobs:
   tests-e2e-scenarios-bare-metal:
     runs-on: ubuntu-24.04
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
         with:
@@ -28,7 +29,7 @@ jobs:
       - name: tests/e2e/scenarios/bare-metal/run-test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
-          tests/e2e/scenarios/bare-metal/run-test
+          timeout 60m tests/e2e/scenarios/bare-metal/run-test
         env:
           ARTIFACTS: /tmp/artifacts
       - name: Archive production artifacts
