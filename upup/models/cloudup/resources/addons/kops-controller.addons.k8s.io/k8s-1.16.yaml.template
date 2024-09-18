@@ -84,10 +84,10 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: "127.0.0.1"
-{{- if KopsSystemEnv }}
-{{ range $var := KopsSystemEnv }}
-        - name: {{ $var.Name }}
-          value: {{ $var.Value }}
+{{- if KopsControllerEnv }}
+{{ range $var := KopsControllerEnv }}
+        - name: "{{ $var.Name }}"
+          value: "{{ $var.Value }}"
 {{ end }}
 {{- end }}
         resources:
