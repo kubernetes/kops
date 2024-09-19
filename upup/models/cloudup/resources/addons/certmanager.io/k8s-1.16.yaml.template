@@ -5278,7 +5278,7 @@ metadata:
   namespace: kube-system
   labels:
     app: webhook
-    app.kubernetes.io/name: webhook
+    app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: "webhook"
     app.kubernetes.io/version: "v1.12.10"
