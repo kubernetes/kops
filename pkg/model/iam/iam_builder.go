@@ -999,7 +999,10 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 		"autoscaling:DescribeAutoScalingInstances",
 		"autoscaling:DescribeLaunchConfigurations",
 		"autoscaling:DescribeScalingActivities",
+		"ec2:DescribeImages",
+		"ec2:DescribeInstanceTypes",
 		"ec2:DescribeLaunchTemplateVersions",
+		"ec2:GetInstanceTypesFromInstanceRequirements",
 	)
 	if !useStaticInstanceList {
 		p.unconditionalAction.Insert(
