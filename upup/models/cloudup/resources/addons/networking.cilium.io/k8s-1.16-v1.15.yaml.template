@@ -3,8 +3,6 @@
 # --namespace kube-system \
 # --values helm-values.yaml
 {{ with .Networking.Cilium }}
-{{ $semver := (trimPrefix "v" .Version) }}
-{{ $operatorHealthPort := 9234 }}
 {{- if CiliumSecret }}
 apiVersion: v1
 kind: Secret
