@@ -48,7 +48,7 @@ spec:
           value: arn:aws-test:iam::123456789012:role/aws-cloud-controller-manager.kube-system.sa.nthimdsproces-25s838
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: /var/run/secrets/amazonaws.com/token
-        image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.11
+        image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.12
         imagePullPolicy: IfNotPresent
         name: aws-cloud-controller-manager
         resources:
