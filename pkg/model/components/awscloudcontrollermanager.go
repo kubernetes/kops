@@ -78,17 +78,19 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 		case 25:
 			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.15"
 		case 26:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.11"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.12"
 		case 27:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.27.6"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.27.9"
 		case 28:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.28.5"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.28.9"
 		case 29:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.29.2"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.29.6"
 		case 30:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.30.0"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.30.3"
+		case 31:
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0"
 		default:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.30.0"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0"
 		}
 	}
 
