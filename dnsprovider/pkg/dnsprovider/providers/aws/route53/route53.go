@@ -53,7 +53,6 @@ func newRoute53() (*Interface, error) {
 
 	imdsCfg, err := awsconfig.LoadDefaultConfig(ctx,
 		awsconfig.WithClientLogMode(aws.LogRetries),
-		awslog.WithAWSLogger(),
 		awsconfig.WithRetryer(func() aws.Retryer {
 			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
 		}),
