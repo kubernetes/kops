@@ -11,7 +11,7 @@ type JWT struct {
 }
 
 // XSessionTokenHeader is Scaleway auth header for browser
-const XSessionTokenHeader = "x-session-token" // #nosec G101
+const XSessionTokenHeader = "X-Session-Token" // #nosec G101
 
 // NewJWT create a token authentication from a jwt
 func NewJWT(token string) *JWT {

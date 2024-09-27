@@ -50,6 +50,8 @@ type ChangeMessageVisibilityBatchRequestEntry struct {
 	ReceiptHandle *string
 
 	// The new value (in seconds) for the message's visibility timeout.
+	//
+	// This member is required.
 	VisibilityTimeout int32
 
 	noSmithyDocumentSerde

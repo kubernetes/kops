@@ -38,7 +38,6 @@ func (s *API) WaitForImage(req *WaitForImageRequest, opts ...scw.RequestOption) 
 				ImageID: req.ImageID,
 				Zone:    req.Zone,
 			}, opts...)
-
 			if err != nil {
 				return nil, false, err
 			}

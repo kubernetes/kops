@@ -40,7 +40,7 @@ type GetParameterInput struct {
 	// For more information about shared parameters, see [Working with shared parameters] in the Amazon Web Services
 	// Systems Manager User Guide.
 	//
-	// [Working with shared parameters]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sharing.html
+	// [Working with shared parameters]: https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-shared-parameters.html
 	//
 	// This member is required.
 	Name *string
@@ -106,6 +106,9 @@ func (c *Client) addOperationGetParameterMiddlewares(stack *middleware.Stack, op
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -143,6 +146,18 @@ func (c *Client) addOperationGetParameterMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

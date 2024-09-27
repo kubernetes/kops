@@ -37,20 +37,18 @@ const (
 	ZonePlWaw3 = Zone("pl-waw-3")
 )
 
-var (
-	// AllZones is an array that list all zones
-	AllZones = []Zone{
-		ZoneFrPar1,
-		ZoneFrPar2,
-		ZoneFrPar3,
-		ZoneNlAms1,
-		ZoneNlAms2,
-		ZoneNlAms3,
-		ZonePlWaw1,
-		ZonePlWaw2,
-		ZonePlWaw3,
-	}
-)
+// AllZones is an array that list all zones
+var AllZones = []Zone{
+	ZoneFrPar1,
+	ZoneFrPar2,
+	ZoneFrPar3,
+	ZoneNlAms1,
+	ZoneNlAms2,
+	ZoneNlAms3,
+	ZonePlWaw1,
+	ZonePlWaw2,
+	ZonePlWaw3,
+}
 
 // Exists checks whether a zone exists
 func (zone Zone) Exists() bool {
@@ -90,14 +88,12 @@ const (
 	RegionPlWaw = Region("pl-waw")
 )
 
-var (
-	// AllRegions is an array that list all regions
-	AllRegions = []Region{
-		RegionFrPar,
-		RegionNlAms,
-		RegionPlWaw,
-	}
-)
+// AllRegions is an array that list all regions
+var AllRegions = []Region{
+	RegionFrPar,
+	RegionNlAms,
+	RegionPlWaw,
+}
 
 // Exists checks whether a region exists
 func (region Region) Exists() bool {

@@ -71,7 +71,6 @@ func waitForLb(timeout *time.Duration, retryInterval *time.Duration, getLB func(
 	lb, err := async.WaitSync(&async.WaitSyncConfig{
 		Get: func() (interface{}, bool, error) {
 			res, err := getLB()
-
 			if err != nil {
 				return nil, false, err
 			}
@@ -189,7 +188,7 @@ func waitForPNLb(timeout *time.Duration, retryInterval *time.Duration, getPNs fu
 				if err != nil {
 					return nil, false, err
 				}
-				//wait at the first not terminal state
+				// wait at the first not terminal state
 				_, isTerminal := terminalStatus[pn.Status]
 				if !isTerminal {
 					return pns, isTerminal, nil
@@ -259,7 +258,6 @@ func waitForLBCertificate(timeout *time.Duration, retryInterval *time.Duration, 
 	crt, err := async.WaitSync(&async.WaitSyncConfig{
 		Get: func() (interface{}, bool, error) {
 			res, err := getCertificate()
-
 			if err != nil {
 				return nil, false, err
 			}

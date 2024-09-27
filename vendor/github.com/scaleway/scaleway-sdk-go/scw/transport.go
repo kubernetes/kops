@@ -35,7 +35,7 @@ func (l *requestLoggerTransport) RoundTrip(request *http.Request) (*http.Respons
 		var logString string
 		logString += "\n---------- Scaleway SDK REQUEST %d (%x) : ----------\n"
 		logString += "%s\n"
-		logString += "---------------------------------------------------------"
+		logString += "---------------------------------------------------------\n"
 
 		logger.Debugf(logString, currentRequestNumber, requestIdentifier, dump)
 	}
@@ -57,7 +57,7 @@ func (l *requestLoggerTransport) RoundTrip(request *http.Request) (*http.Respons
 		var logString string
 		logString += "\n---------- Scaleway SDK RESPONSE %d (%x) : ----------\n"
 		logString += "%s\n"
-		logString += "----------------------------------------------------------"
+		logString += "----------------------------------------------------------\n"
 
 		logger.Debugf(logString, currentRequestNumber, requestIdentifier, dump)
 	}

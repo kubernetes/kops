@@ -43,7 +43,7 @@ type DescribeMaintenanceWindowExecutionsInput struct {
 	//
 	//   - Values. An array of strings, each between 1 and 256 characters. Supported
 	//   values are date/time strings in a valid ISO 8601 date/time format, such as
-	//   2021-11-04T05:00:00Z .
+	//   2024-11-04T05:00:00Z .
 	Filters []types.MaintenanceWindowFilter
 
 	// The maximum number of items to return for this call. The call also returns a
@@ -115,6 +115,9 @@ func (c *Client) addOperationDescribeMaintenanceWindowExecutionsMiddlewares(stac
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -152,6 +155,18 @@ func (c *Client) addOperationDescribeMaintenanceWindowExecutionsMiddlewares(stac
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

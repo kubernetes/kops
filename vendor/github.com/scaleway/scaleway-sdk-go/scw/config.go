@@ -3,22 +3,20 @@ package scw
 import (
 	"bytes"
 	goerrors "errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/logger"
+	"gopkg.in/yaml.v2"
 )
 
 const (
 	documentationLink       = "https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md"
-	defaultConfigPermission = 0600
+	defaultConfigPermission = 0o600
 
 	// Reserved name for the default profile.
 	DefaultProfileName = "default"
@@ -218,7 +216,7 @@ func LoadConfigFromPath(path string) (*Config, error) {
 		return nil, err
 	}
 
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot read config file")
 	}
@@ -255,10 +253,10 @@ func (c *Config) GetProfile(profileName string) (*Profile, error) {
 func (c *Config) GetActiveProfile() (*Profile, error) {
 	switch {
 	case os.Getenv(ScwActiveProfileEnv) != "":
-		logger.Debugf("using active profile from env: %s=%s", ScwActiveProfileEnv, os.Getenv(ScwActiveProfileEnv))
+		logger.Debugf("using active profile from env: %s=%s\n", ScwActiveProfileEnv, os.Getenv(ScwActiveProfileEnv))
 		return c.GetProfile(os.Getenv(ScwActiveProfileEnv))
 	case c.ActiveProfile != nil:
-		logger.Debugf("using active profile from config: active_profile=%s", ScwActiveProfileEnv, *c.ActiveProfile)
+		logger.Debugf("using active profile from config: active_profile=%s\n", *c.ActiveProfile)
 		return c.GetProfile(*c.ActiveProfile)
 	default:
 		return &c.Profile, nil
@@ -299,13 +297,13 @@ func (c *Config) SaveTo(path string) error {
 	}
 
 	// STEP 2: create config path dir in cases it didn't exist before
-	err = os.MkdirAll(filepath.Dir(path), 0700)
+	err = os.MkdirAll(filepath.Dir(path), 0o700)
 	if err != nil {
 		return err
 	}
 
 	// STEP 3: write new config file
-	err = ioutil.WriteFile(path, []byte(file), defaultConfigPermission)
+	err = os.WriteFile(path, []byte(file), defaultConfigPermission)
 	if err != nil {
 		return err
 	}

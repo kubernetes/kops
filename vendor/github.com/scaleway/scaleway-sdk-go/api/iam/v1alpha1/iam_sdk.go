@@ -791,6 +791,9 @@ type RuleSpecs struct {
 	// PermissionSetNames: names of permission sets bound to the rule.
 	PermissionSetNames *[]string `json:"permission_set_names"`
 
+	// Condition: condition expression to evaluate.
+	Condition string `json:"condition"`
+
 	// ProjectIDs: list of Project IDs the rule is scoped to.
 	// Precisely one of ProjectIDs, OrganizationID must be set.
 	ProjectIDs *[]string `json:"project_ids,omitempty"`
@@ -1062,6 +1065,9 @@ type Rule struct {
 	// PermissionSetsScopeType: permission_set_names have the same scope_type.
 	// Default value: unknown_scope_type
 	PermissionSetsScopeType PermissionSetScopeType `json:"permission_sets_scope_type"`
+
+	// Condition: condition expression to evaluate.
+	Condition string `json:"condition"`
 
 	// ProjectIDs: list of Project IDs the rule is scoped to.
 	// Precisely one of ProjectIDs, OrganizationID, AccountRootUserID must be set.

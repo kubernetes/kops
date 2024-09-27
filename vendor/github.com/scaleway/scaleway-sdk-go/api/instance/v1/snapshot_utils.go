@@ -38,7 +38,6 @@ func (s *API) WaitForSnapshot(req *WaitForSnapshotRequest, opts ...scw.RequestOp
 				SnapshotID: req.SnapshotID,
 				Zone:       req.Zone,
 			}, opts...)
-
 			if err != nil {
 				return nil, false, err
 			}

@@ -126,10 +126,10 @@ type RegisterTaskWithMaintenanceWindowInput struct {
 	// However, for an improved security posture, we strongly recommend creating a
 	// custom policy and custom service role for running your maintenance window tasks.
 	// The policy can be crafted to provide only the permissions needed for your
-	// particular maintenance window tasks. For more information, see [Setting up maintenance windows]in the in the
+	// particular maintenance window tasks. For more information, see [Setting up Maintenance Windows]in the in the
 	// Amazon Web Services Systems Manager User Guide.
 	//
-	// [Setting up maintenance windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
+	// [Setting up Maintenance Windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
 	ServiceRoleArn *string
 
 	// The targets (either managed nodes or maintenance window targets).
@@ -220,6 +220,9 @@ func (c *Client) addOperationRegisterTaskWithMaintenanceWindowMiddlewares(stack 
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -260,6 +263,18 @@ func (c *Client) addOperationRegisterTaskWithMaintenanceWindowMiddlewares(stack 
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

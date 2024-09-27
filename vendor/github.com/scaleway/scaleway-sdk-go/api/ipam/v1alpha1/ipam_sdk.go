@@ -88,6 +88,7 @@ type ResourceType string
 
 const (
 	ResourceTypeUnknownType         = ResourceType("unknown_type")
+	ResourceTypeCustom              = ResourceType("custom")
 	ResourceTypeInstanceServer      = ResourceType("instance_server")
 	ResourceTypeInstanceIP          = ResourceType("instance_ip")
 	ResourceTypeInstancePrivateNic  = ResourceType("instance_private_nic")
@@ -115,6 +116,7 @@ func (enum ResourceType) String() string {
 func (enum ResourceType) Values() []ResourceType {
 	return []ResourceType{
 		"unknown_type",
+		"custom",
 		"instance_server",
 		"instance_ip",
 		"instance_private_nic",

@@ -56,7 +56,6 @@ func WaitSync(config *WaitSyncConfig) (terminalValue interface{}, err error) {
 		for {
 			// get the payload
 			value, stopCondition, err := config.Get()
-
 			// send the payload
 			if err != nil {
 				resultErr <- err

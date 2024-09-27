@@ -1488,7 +1488,8 @@ type VolumeServer struct {
 
 	Name string `json:"name"`
 
-	ExportURI string `json:"export_uri"`
+	// Deprecated
+	ExportURI *string `json:"export_uri"`
 
 	Organization string `json:"organization"`
 

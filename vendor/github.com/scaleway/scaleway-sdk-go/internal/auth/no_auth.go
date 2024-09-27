@@ -2,8 +2,7 @@ package auth
 
 import "net/http"
 
-type NoAuth struct {
-}
+type NoAuth struct{}
 
 // NewNoAuth return an auth with no authentication method
 func NewNoAuth() *NoAuth {

@@ -310,6 +310,26 @@ func (m *validateOpDeregisterTargets) HandleInitialize(ctx context.Context, in m
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDescribeListenerAttributes struct {
+}
+
+func (*validateOpDescribeListenerAttributes) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDescribeListenerAttributes) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DescribeListenerAttributesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDescribeListenerAttributesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDescribeListenerCertificates struct {
 }
 
@@ -505,6 +525,26 @@ func (m *validateOpGetTrustStoreRevocationContent) HandleInitialize(ctx context.
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpGetTrustStoreRevocationContentInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpModifyListenerAttributes struct {
+}
+
+func (*validateOpModifyListenerAttributes) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpModifyListenerAttributes) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ModifyListenerAttributesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpModifyListenerAttributesInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -850,6 +890,10 @@ func addOpDeregisterTargetsValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeregisterTargets{}, middleware.After)
 }
 
+func addOpDescribeListenerAttributesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDescribeListenerAttributes{}, middleware.After)
+}
+
 func addOpDescribeListenerCertificatesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDescribeListenerCertificates{}, middleware.After)
 }
@@ -888,6 +932,10 @@ func addOpGetTrustStoreCaCertificatesBundleValidationMiddleware(stack *middlewar
 
 func addOpGetTrustStoreRevocationContentValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetTrustStoreRevocationContent{}, middleware.After)
+}
+
+func addOpModifyListenerAttributesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpModifyListenerAttributes{}, middleware.After)
 }
 
 func addOpModifyListenerValidationMiddleware(stack *middleware.Stack) error {
@@ -1436,6 +1484,21 @@ func validateOpDeregisterTargetsInput(v *DeregisterTargetsInput) error {
 	}
 }
 
+func validateOpDescribeListenerAttributesInput(v *DescribeListenerAttributesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DescribeListenerAttributesInput"}
+	if v.ListenerArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ListenerArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpDescribeListenerCertificatesInput(v *DescribeListenerCertificatesInput) error {
 	if v == nil {
 		return nil
@@ -1586,6 +1649,24 @@ func validateOpGetTrustStoreRevocationContentInput(v *GetTrustStoreRevocationCon
 	}
 	if v.RevocationId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("RevocationId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpModifyListenerAttributesInput(v *ModifyListenerAttributesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ModifyListenerAttributesInput"}
+	if v.ListenerArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ListenerArn"))
+	}
+	if v.Attributes == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Attributes"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

@@ -3383,11 +3383,11 @@ func (e *TargetInUseException) ErrorCode() string {
 func (e *TargetInUseException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The specified target managed node for the session isn't fully configured for
-// use with Session Manager. For more information, see [Getting started with Session Manager]in the Amazon Web Services
+// use with Session Manager. For more information, see [Setting up Session Manager]in the Amazon Web Services
 // Systems Manager User Guide. This error is also returned if you attempt to start
 // a session on a managed node that is located in a different account or Region
 //
-// [Getting started with Session Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-getting-started.html
+// [Setting up Session Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-getting-started.html
 type TargetNotConnected struct {
 	Message *string
 
