@@ -23,7 +23,7 @@ spec:
     clusterCIDR: 172.20.128.0/17
     clusterName: minimal.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.11
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.12
     leaderElection:
       leaderElect: true
   cloudProvider: aws
