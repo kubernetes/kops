@@ -907,7 +907,7 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 func (s *API) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms3, scw.ZonePlWaw3}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw3}
 }
 
 // ListVolumeTypes: List all available volume types in a specified zone. The volume types listed are ordered by name in ascending order.
@@ -1235,7 +1235,8 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	return &resp, nil
 }
 
-// Deprecated: ImportSnapshotFromS3: The bucket must contain a QCOW2 image.
+// Deprecated: ImportSnapshotFromS3: Import a snapshot from a Scaleway Object Storage bucket
+// The bucket must contain a QCOW2 image.
 // The bucket can be imported into any Availability Zone as long as it is in the same region as the bucket.
 func (s *API) ImportSnapshotFromS3(req *ImportSnapshotFromS3Request, opts ...scw.RequestOption) (*Snapshot, error) {
 	var err error

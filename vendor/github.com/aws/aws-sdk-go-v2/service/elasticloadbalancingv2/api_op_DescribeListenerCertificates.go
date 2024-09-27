@@ -113,6 +113,9 @@ func (c *Client) addOperationDescribeListenerCertificatesMiddlewares(stack *midd
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -152,8 +155,104 @@ func (c *Client) addOperationDescribeListenerCertificatesMiddlewares(stack *midd
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
+		return err
+	}
 	return nil
 }
+
+// DescribeListenerCertificatesPaginatorOptions is the paginator options for
+// DescribeListenerCertificates
+type DescribeListenerCertificatesPaginatorOptions struct {
+	// Set to true if pagination should stop if the service returns a pagination token
+	// that matches the most recent token provided to the service.
+	StopOnDuplicateToken bool
+}
+
+// DescribeListenerCertificatesPaginator is a paginator for
+// DescribeListenerCertificates
+type DescribeListenerCertificatesPaginator struct {
+	options   DescribeListenerCertificatesPaginatorOptions
+	client    DescribeListenerCertificatesAPIClient
+	params    *DescribeListenerCertificatesInput
+	nextToken *string
+	firstPage bool
+}
+
+// NewDescribeListenerCertificatesPaginator returns a new
+// DescribeListenerCertificatesPaginator
+func NewDescribeListenerCertificatesPaginator(client DescribeListenerCertificatesAPIClient, params *DescribeListenerCertificatesInput, optFns ...func(*DescribeListenerCertificatesPaginatorOptions)) *DescribeListenerCertificatesPaginator {
+	if params == nil {
+		params = &DescribeListenerCertificatesInput{}
+	}
+
+	options := DescribeListenerCertificatesPaginatorOptions{}
+
+	for _, fn := range optFns {
+		fn(&options)
+	}
+
+	return &DescribeListenerCertificatesPaginator{
+		options:   options,
+		client:    client,
+		params:    params,
+		firstPage: true,
+		nextToken: params.Marker,
+	}
+}
+
+// HasMorePages returns a boolean indicating whether more pages are available
+func (p *DescribeListenerCertificatesPaginator) HasMorePages() bool {
+	return p.firstPage || (p.nextToken != nil && len(*p.nextToken) != 0)
+}
+
+// NextPage retrieves the next DescribeListenerCertificates page.
+func (p *DescribeListenerCertificatesPaginator) NextPage(ctx context.Context, optFns ...func(*Options)) (*DescribeListenerCertificatesOutput, error) {
+	if !p.HasMorePages() {
+		return nil, fmt.Errorf("no more pages available")
+	}
+
+	params := *p.params
+	params.Marker = p.nextToken
+
+	optFns = append([]func(*Options){
+		addIsPaginatorUserAgent,
+	}, optFns...)
+	result, err := p.client.DescribeListenerCertificates(ctx, &params, optFns...)
+	if err != nil {
+		return nil, err
+	}
+	p.firstPage = false
+
+	prevToken := p.nextToken
+	p.nextToken = result.NextMarker
+
+	if p.options.StopOnDuplicateToken &&
+		prevToken != nil &&
+		p.nextToken != nil &&
+		*prevToken == *p.nextToken {
+		p.nextToken = nil
+	}
+
+	return result, nil
+}
+
+// DescribeListenerCertificatesAPIClient is a client that implements the
+// DescribeListenerCertificates operation.
+type DescribeListenerCertificatesAPIClient interface {
+	DescribeListenerCertificates(context.Context, *DescribeListenerCertificatesInput, ...func(*Options)) (*DescribeListenerCertificatesOutput, error)
+}
+
+var _ DescribeListenerCertificatesAPIClient = (*Client)(nil)
 
 func newServiceMetadataMiddleware_opDescribeListenerCertificates(region string) *awsmiddleware.RegisterServiceMetadata {
 	return &awsmiddleware.RegisterServiceMetadata{

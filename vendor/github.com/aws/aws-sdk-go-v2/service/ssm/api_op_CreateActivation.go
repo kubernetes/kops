@@ -18,14 +18,14 @@ import (
 // it possible to manage them using Systems Manager capabilities. You use the
 // activation code and ID when installing SSM Agent on machines in your hybrid
 // environment. For more information about requirements for managing on-premises
-// machines using Systems Manager, see [Setting up Amazon Web Services Systems Manager for hybrid and multicloud environments]in the Amazon Web Services Systems Manager
+// machines using Systems Manager, see [Using Amazon Web Services Systems Manager in hybrid and multicloud environments]in the Amazon Web Services Systems Manager
 // User Guide.
 //
 // Amazon Elastic Compute Cloud (Amazon EC2) instances, edge devices, and
 // on-premises servers and VMs that are configured for Systems Manager are all
 // called managed nodes.
 //
-// [Setting up Amazon Web Services Systems Manager for hybrid and multicloud environments]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-managedinstances.html
+// [Using Amazon Web Services Systems Manager in hybrid and multicloud environments]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-hybrid-multicloud.html
 func (c *Client) CreateActivation(ctx context.Context, params *CreateActivationInput, optFns ...func(*Options)) (*CreateActivationOutput, error) {
 	if params == nil {
 		params = &CreateActivationInput{}
@@ -46,13 +46,13 @@ type CreateActivationInput struct {
 	// The name of the Identity and Access Management (IAM) role that you want to
 	// assign to the managed node. This IAM role must provide AssumeRole permissions
 	// for the Amazon Web Services Systems Manager service principal ssm.amazonaws.com
-	// . For more information, see [Create an IAM service role for a hybrid and multicloud environment]in the Amazon Web Services Systems Manager User
+	// . For more information, see [Create the IAM service role required for Systems Manager in a hybrid and multicloud environments]in the Amazon Web Services Systems Manager User
 	// Guide.
 	//
 	// You can't specify an IAM service-linked role for this parameter. You must
 	// create a unique role.
 	//
-	// [Create an IAM service role for a hybrid and multicloud environment]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-service-role.html
+	// [Create the IAM service role required for Systems Manager in a hybrid and multicloud environments]: https://docs.aws.amazon.com/systems-manager/latest/userguide/hybrid-multicloud-service-role.html
 	//
 	// This member is required.
 	IamRole *string
@@ -71,7 +71,7 @@ type CreateActivationInput struct {
 	Description *string
 
 	// The date by which this activation request should expire, in timestamp format,
-	// such as "2021-07-07T00:00:00". You can specify a date up to 30 days in advance.
+	// such as "2024-07-07T00:00:00". You can specify a date up to 30 days in advance.
 	// If you don't provide an expiration date, the activation code expires in 24
 	// hours.
 	ExpirationDate *time.Time
@@ -169,6 +169,9 @@ func (c *Client) addOperationCreateActivationMiddlewares(stack *middleware.Stack
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -206,6 +209,18 @@ func (c *Client) addOperationCreateActivationMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

@@ -29,7 +29,7 @@ func (c *Client) ModifyTargetGroupAttributes(ctx context.Context, params *Modify
 
 type ModifyTargetGroupAttributesInput struct {
 
-	// The attributes.
+	// The target group attributes.
 	//
 	// This member is required.
 	Attributes []types.TargetGroupAttribute
@@ -44,7 +44,7 @@ type ModifyTargetGroupAttributesInput struct {
 
 type ModifyTargetGroupAttributesOutput struct {
 
-	// Information about the attributes.
+	// Information about the target group attributes.
 	Attributes []types.TargetGroupAttribute
 
 	// Metadata pertaining to the operation's result.
@@ -96,6 +96,9 @@ func (c *Client) addOperationModifyTargetGroupAttributesMiddlewares(stack *middl
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -133,6 +136,18 @@ func (c *Client) addOperationModifyTargetGroupAttributesMiddlewares(stack *middl
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/async"
@@ -34,7 +33,6 @@ func (s *API) WaitForDNSZone(
 	req *WaitForDNSZoneRequest,
 	opts ...scw.RequestOption,
 ) (*DNSZone, error) {
-
 	timeout := defaultTimeout
 	if req.Timeout != nil {
 		timeout = *req.Timeout
@@ -50,7 +48,7 @@ func (s *API) WaitForDNSZone(
 		DNSZoneStatusError:  {},
 	}
 
-	dns, err := async.WaitSync(&async.WaitSyncConfig{
+	dnsZone, err := async.WaitSync(&async.WaitSyncConfig{
 		Get: func() (interface{}, bool, error) {
 			listReq := &ListDNSZonesRequest{
 				DNSZones: req.DNSZones,
@@ -60,32 +58,30 @@ func (s *API) WaitForDNSZone(
 				listReq.DNSZone = &req.DNSZone
 			}
 
-			// listing dns zones and take the first one
+			// listing dnsZone zones and take the first one
 			DNSZones, err := s.ListDNSZones(listReq, opts...)
-
 			if err != nil {
 				return nil, false, err
 			}
 
 			if len(DNSZones.DNSZones) == 0 {
-				return nil, true, fmt.Errorf(ErrCodeNoSuchDNSZone)
+				return nil, true, errors.New(ErrCodeNoSuchDNSZone)
 			}
 
-			Dns := DNSZones.DNSZones[0]
+			zone := DNSZones.DNSZones[0]
 
-			_, isTerminal := terminalStatus[Dns.Status]
+			_, isTerminal := terminalStatus[zone.Status]
 
-			return Dns, isTerminal, nil
+			return zone, isTerminal, nil
 		},
 		Timeout:          timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
-
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for DNS failed")
 	}
 
-	return dns.(*DNSZone), nil
+	return dnsZone.(*DNSZone), nil
 }
 
 // WaitForDNSRecordExistRequest is used by WaitForDNSRecordExist method.
@@ -118,13 +114,12 @@ func (s *API) WaitForDNSRecordExist(
 				Type:    req.RecordType,
 				DNSZone: req.DNSZone,
 			}, opts...)
-
 			if err != nil {
 				return nil, false, err
 			}
 
 			if DNSRecords.TotalCount == 0 {
-				return nil, false, fmt.Errorf(ErrCodeNoSuchDNSRecord)
+				return nil, false, errors.New(ErrCodeNoSuchDNSRecord)
 			}
 
 			record := DNSRecords.Records[0]
@@ -134,7 +129,6 @@ func (s *API) WaitForDNSRecordExist(
 		Timeout:          timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
-
 	if err != nil {
 		return nil, errors.Wrap(err, "check for DNS Record exist failed")
 	}

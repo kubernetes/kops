@@ -14,7 +14,7 @@
   "canonicalName": "Container",
   "description": "Builds and manages container-based applications, powered by the open source Kubernetes technology.",
   "discoveryVersion": "v1",
-  "documentationLink": "https://cloud.google.com/container-engine/",
+  "documentationLink": "https://cloud.google.com/kubernetes-engine/docs/",
   "fullyEncodeReservedExpansion": true,
   "icons": {
     "x16": "http://www.google.com/images/icons/product/search-16.gif",
@@ -2540,7 +2540,7 @@
       }
     }
   },
-  "revision": "20240730",
+  "revision": "20240905",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2593,6 +2593,10 @@
         "maxPodsPerNode": {
           "$ref": "MaxPodsConstraint",
           "description": "The maximum number of pods per node which use this pod network."
+        },
+        "networkAttachment": {
+          "description": "The name of the network attachment for pods to communicate to; cannot be specified along with subnetwork or secondary_pod_range.",
+          "type": "string"
         },
         "secondaryPodRange": {
           "description": "The name of the secondary range on the subnet which provides IP address for this pod range.",
@@ -3147,6 +3151,10 @@
           "description": "The IP address range of the container pods in this cluster, in [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`). Leave blank to have one automatically chosen or specify a `/14` block in `10.0.0.0/8`.",
           "type": "string"
         },
+        "compliancePostureConfig": {
+          "$ref": "CompliancePostureConfig",
+          "description": "Enable/Disable Compliance Posture features for the cluster."
+        },
         "conditions": {
           "description": "Which conditions caused the current cluster state.",
           "items": {
@@ -3369,6 +3377,10 @@
           "$ref": "PrivateClusterConfig",
           "description": "Configuration for private cluster."
         },
+        "rbacBindingConfig": {
+          "$ref": "RBACBindingConfig",
+          "description": "RBACBindingConfig allows user to restrict ClusterRoleBindings an RoleBindings that can be created."
+        },
         "releaseChannel": {
           "$ref": "ReleaseChannel",
           "description": "Release channel configuration. If left unspecified on cluster creation and a version is specified, the cluster is enrolled in the most mature release channel where the version is available (first checking STABLE, then REGULAR, and finally RAPID). Otherwise, if no release channel configuration and no version is specified, the cluster is enrolled in the REGULAR channel with its default version."
@@ -3560,6 +3572,10 @@
         "desiredClusterAutoscaling": {
           "$ref": "ClusterAutoscaling",
           "description": "Cluster-level autoscaling configuration."
+        },
+        "desiredCompliancePostureConfig": {
+          "$ref": "CompliancePostureConfig",
+          "description": "Enable/Disable Compliance Posture features for the cluster."
         },
         "desiredContainerdConfig": {
           "$ref": "ContainerdConfig",
@@ -3756,6 +3772,10 @@
           ],
           "type": "string"
         },
+        "desiredRbacBindingConfig": {
+          "$ref": "RBACBindingConfig",
+          "description": "RBACBindingConfig allows user to restrict ClusterRoleBindings an RoleBindings that can be created."
+        },
         "desiredReleaseChannel": {
           "$ref": "ReleaseChannel",
           "description": "The desired release channel configuration."
@@ -3847,6 +3867,45 @@
       "description": "CompleteNodePoolUpgradeRequest sets the name of target node pool to complete upgrade.",
       "id": "CompleteNodePoolUpgradeRequest",
       "properties": {},
+      "type": "object"
+    },
+    "CompliancePostureConfig": {
+      "description": "CompliancePostureConfig defines the settings needed to enable/disable features for the Compliance Posture.",
+      "id": "CompliancePostureConfig",
+      "properties": {
+        "complianceStandards": {
+          "description": "List of enabled compliance standards.",
+          "items": {
+            "$ref": "ComplianceStandard"
+          },
+          "type": "array"
+        },
+        "mode": {
+          "description": "Defines the enablement mode for Compliance Posture.",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "DISABLED",
+            "ENABLED"
+          ],
+          "enumDescriptions": [
+            "Default value not specified.",
+            "Disables Compliance Posture features on the cluster.",
+            "Enables Compliance Posture features on the cluster."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ComplianceStandard": {
+      "description": "Defines the details of a compliance standard.",
+      "id": "ComplianceStandard",
+      "properties": {
+        "standard": {
+          "description": "Name of the compliance standard.",
+          "type": "string"
+        }
+      },
       "type": "object"
     },
     "ConfidentialNodes": {
@@ -4343,7 +4402,7 @@
       "properties": {
         "cacheHeader": {
           "$ref": "HttpCacheControlResponseHeader",
-          "description": "OnePlatform automatically extracts this field and uses it to set the HTTP Cache-Control header."
+          "description": "For HTTP requests, this field is automatically extracted into the Cache-Control HTTP header."
         },
         "keys": {
           "description": "The public component of the keys used by the cluster to sign token requests.",
@@ -4361,7 +4420,7 @@
       "properties": {
         "cacheHeader": {
           "$ref": "HttpCacheControlResponseHeader",
-          "description": "OnePlatform automatically extracts this field and uses it to set the HTTP Cache-Control header."
+          "description": "For HTTP requests, this field is automatically extracted into the Cache-Control HTTP header."
         },
         "claims_supported": {
           "description": "Supported claims.",
@@ -4960,7 +5019,7 @@
       "id": "MasterAuth",
       "properties": {
         "clientCertificate": {
-          "description": "Output only. Base64-encoded public certificate used by clients to authenticate to the cluster endpoint.",
+          "description": "Output only. Base64-encoded public certificate used by clients to authenticate to the cluster endpoint. Issued only if client_certificate_config is set.",
           "readOnly": true,
           "type": "string"
         },
@@ -6311,6 +6370,21 @@
       "properties": {
         "enabled": {
           "description": "Denotes that this nodepool is QRM specific, meaning nodes can be only obtained through queuing via the Cluster Autoscaler ProvisioningRequest API.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "RBACBindingConfig": {
+      "description": "RBACBindingConfig allows user to restrict ClusterRoleBindings an RoleBindings that can be created.",
+      "id": "RBACBindingConfig",
+      "properties": {
+        "enableInsecureBindingSystemAuthenticated": {
+          "description": "Setting this to true will allow any ClusterRoleBinding and RoleBinding with subjects system:authenticated.",
+          "type": "boolean"
+        },
+        "enableInsecureBindingSystemUnauthenticated": {
+          "description": "Setting this to true will allow any ClusterRoleBinding and RoleBinding with subjets system:anonymous or system:unauthenticated.",
           "type": "boolean"
         }
       },

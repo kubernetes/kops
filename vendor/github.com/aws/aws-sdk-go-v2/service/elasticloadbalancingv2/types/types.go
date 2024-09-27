@@ -452,6 +452,24 @@ type Listener struct {
 	noSmithyDocumentSerde
 }
 
+// Information about a listener attribute.
+type ListenerAttribute struct {
+
+	// The name of the attribute.
+	//
+	// The following attribute is supported by Network Load Balancers, and Gateway
+	// Load Balancers.
+	//
+	//   - tcp.idle_timeout.seconds - The tcp idle timeout value, in seconds. The valid
+	//   range is 60-6000 seconds. The default is 350 seconds.
+	Key *string
+
+	// The value of the attribute.
+	Value *string
+
+	noSmithyDocumentSerde
+}
+
 // Information about a load balancer.
 type LoadBalancer struct {
 

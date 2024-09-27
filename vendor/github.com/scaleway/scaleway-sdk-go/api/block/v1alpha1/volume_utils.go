@@ -56,7 +56,6 @@ func (s *API) WaitForVolume(req *WaitForVolumeRequest, opts ...scw.RequestOption
 				VolumeID: req.VolumeID,
 				Zone:     req.Zone,
 			}, opts...)
-
 			if err != nil {
 				return nil, false, err
 			}

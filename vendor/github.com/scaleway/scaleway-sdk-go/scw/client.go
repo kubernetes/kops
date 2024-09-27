@@ -66,16 +66,16 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 
 	// insecure mode
 	if s.insecure {
-		logger.Debugf("client: using insecure mode")
+		logger.Debugf("client: using insecure mode\n")
 		setInsecureMode(s.httpClient)
 	}
 
 	if logger.ShouldLog(logger.LogLevelDebug) {
-		logger.Debugf("client: using request logger")
+		logger.Debugf("client: using request logger\n")
 		setRequestLogging(s.httpClient)
 	}
 
-	logger.Debugf("client: using sdk version " + version)
+	logger.Debugf("client: using sdk version " + getVersion() + "\n")
 
 	return &Client{
 		auth:                  s.token,
@@ -189,7 +189,6 @@ func (c *Client) Do(req *ScalewayRequest, res interface{}, opts ...RequestOption
 
 // do performs a single HTTP request based on the ScalewayRequest object.
 func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
-
 	if req == nil {
 		return errors.New("request must be non-nil")
 	}
@@ -199,7 +198,7 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 	if sdkErr != nil {
 		return sdkErr
 	}
-	logger.Debugf("creating %s request on %s", req.Method, url.String())
+	logger.Debugf("creating %s request on %s\n", req.Method, url.String())
 
 	// build request
 	httpRequest, err := http.NewRequest(req.Method, url.String(), req.Body)
@@ -353,12 +352,12 @@ func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err error) {
 	return errors.New("%T does not support pagination", res)
 }
 
-// doListLocalities collects all localities using mutliple list requests and aggregate all results on a lister response
+// doListLocalities collects all localities using multiple list requests and aggregate all results on a lister response
 // results is sorted by locality
 func (c *Client) doListLocalities(req *ScalewayRequest, res interface{}, localities []string) (err error) {
 	path := req.Path
 	if !strings.Contains(path, "%locality%") {
-		return fmt.Errorf("request is not a valid locality request")
+		return errors.New("request is not a valid locality request")
 	}
 	// Requests are parallelized
 	responseMutex := sync.Mutex{}
@@ -419,7 +418,7 @@ func (c *Client) doListZones(req *ScalewayRequest, res interface{}, zones []Zone
 			}
 		}
 		if !strings.Contains(req.Path, "%locality%") {
-			return fmt.Errorf("request is not a valid zoned request")
+			return errors.New("request is not a valid zoned request")
 		}
 		localities := make([]string, 0, len(zones))
 		for _, zone := range zones {
@@ -450,7 +449,7 @@ func (c *Client) doListRegions(req *ScalewayRequest, res interface{}, regions []
 			}
 		}
 		if !strings.Contains(req.Path, "%locality%") {
-			return fmt.Errorf("request is not a valid zoned request")
+			return errors.New("request is not a valid zoned request")
 		}
 		localities := make([]string, 0, len(regions))
 		for _, region := range regions {

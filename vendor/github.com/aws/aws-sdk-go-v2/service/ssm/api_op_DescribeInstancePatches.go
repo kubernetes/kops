@@ -55,10 +55,10 @@ type DescribeInstancePatchesInput struct {
 	//
 	// Sample values: Installed | InstalledOther | InstalledPendingReboot
 	//
-	// For lists of all State values, see [Understanding patch compliance state values]in the Amazon Web Services Systems Manager
+	// For lists of all State values, see [Patch compliance state values]in the Amazon Web Services Systems Manager
 	//   User Guide.
 	//
-	// [Understanding patch compliance state values]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-compliance-states.html
+	// [Patch compliance state values]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-compliance-states.html
 	Filters []types.PatchOrchestratorFilter
 
 	// The maximum number of patches to return (per page).
@@ -143,6 +143,9 @@ func (c *Client) addOperationDescribeInstancePatchesMiddlewares(stack *middlewar
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -180,6 +183,18 @@ func (c *Client) addOperationDescribeInstancePatchesMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

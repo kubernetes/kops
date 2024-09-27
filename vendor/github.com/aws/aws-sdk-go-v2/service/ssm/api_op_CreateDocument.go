@@ -17,7 +17,7 @@ import (
 // schemas, features, and syntax, see [Amazon Web Services Systems Manager Documents]in the Amazon Web Services Systems Manager
 // User Guide.
 //
-// [Amazon Web Services Systems Manager Documents]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-ssm-docs.html
+// [Amazon Web Services Systems Manager Documents]: https://docs.aws.amazon.com/systems-manager/latest/userguide/documents.html
 func (c *Client) CreateDocument(ctx context.Context, params *CreateDocumentInput, optFns ...func(*Options)) (*CreateDocumentOutput, error) {
 	if params == nil {
 		params = &CreateDocumentInput{}
@@ -189,6 +189,9 @@ func (c *Client) addOperationCreateDocumentMiddlewares(stack *middleware.Stack, 
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -226,6 +229,18 @@ func (c *Client) addOperationCreateDocumentMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil

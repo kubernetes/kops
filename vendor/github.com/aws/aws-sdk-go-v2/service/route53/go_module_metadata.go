@@ -3,4 +3,4 @@
 package route53
 
 // goModuleVersion is the tagged release for this module
-const goModuleVersion = "1.43.0"
+const goModuleVersion = "1.44.2"

@@ -967,6 +967,19 @@ type Gateway struct {
 	// 'OPEN_MESH' listen on 0.0.0.0 for IPv4 and :: for IPv6 and support multiple
 	// ports.
 	Ports []int64 `json:"ports,omitempty"`
+	// RoutingMode: Optional. The routing mode of the Gateway. This field is
+	// configurable only for gateways of type SECURE_WEB_GATEWAY. This field is
+	// required for gateways of type SECURE_WEB_GATEWAY.
+	//
+	// Possible values:
+	//   "EXPLICIT_ROUTING_MODE" - The routing mode is explicit; clients are
+	// configured to send traffic through the gateway. This is the default routing
+	// mode.
+	//   "NEXT_HOP_ROUTING_MODE" - The routing mode is next-hop. Clients are
+	// unaware of the gateway, and a route (advanced route or other route type) can
+	// be configured to direct traffic from client to gateway. The gateway then
+	// acts as a next-hop to the destination.
+	RoutingMode string `json:"routingMode,omitempty"`
 	// Scope: Optional. Scope determines how configuration across multiple Gateway
 	// instances are merged. The configuration for multiple Gateway instances with
 	// the same scope will be merged as presented as a single coniguration to the
@@ -1278,7 +1291,8 @@ func (s GrpcRouteMethodMatch) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// GrpcRouteRetryPolicy: The specifications for retries.
+// GrpcRouteRetryPolicy: The specifications for retries. Specifies one or more
+// conditions for which this retry rule applies. Valid values are:
 type GrpcRouteRetryPolicy struct {
 	// NumRetries: Specifies the allowed number of retries. This number must be >
 	// 0. If not specified, default to 1.
@@ -2240,7 +2254,8 @@ type LbRouteExtension struct {
 	// available under the namespace `com.google.lb_route_extension.`. The
 	// following variables are supported in the metadata Struct:
 	// `{forwarding_rule_id}` - substituted with the forwarding rule's fully
-	// qualified resource name.
+	// qualified resource name. Only one of the resource level metadata and
+	// extension level metadata can be set.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 	// Name: Required. Identifier. Name of the `LbRouteExtension` resource in the
 	// following format:
@@ -2313,7 +2328,8 @@ type LbTrafficExtension struct {
 	// `ProcessingRequest.metadata_context.filter_metadata` map field. The metadata
 	// is available under the key `com.google.lb_traffic_extension.`. The following
 	// variables are supported in the metadata: `{forwarding_rule_id}` -
-	// substituted with the forwarding rule's fully qualified resource name.
+	// substituted with the forwarding rule's fully qualified resource name. Only
+	// one of the resource level metadata and extension level metadata can be set.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 	// Name: Required. Identifier. Name of the `LbTrafficExtension` resource in the
 	// following format:
@@ -2774,6 +2790,47 @@ func (s Location) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// LoggingConfig: The configuration for Platform Telemetry logging for Eventarc
+// Avdvanced resources.
+type LoggingConfig struct {
+	// LogSeverity: Optional. The minimum severity of logs that will be sent to
+	// Stackdriver/Platform Telemetry. Logs at severitiy ≥ this value will be
+	// sent, unless it is NONE.
+	//
+	// Possible values:
+	//   "LOG_SEVERITY_UNSPECIFIED" - Log severity is not specified. This value is
+	// treated the same as NONE, but is used to distinguish between no update and
+	// update to NONE in update_masks.
+	//   "NONE" - Default value at resource creation, presence of this value must
+	// be treated as no logging/disable logging.
+	//   "DEBUG" - Debug or trace level logging.
+	//   "INFO" - Routine information, such as ongoing status or performance.
+	//   "NOTICE" - Normal but significant events, such as start up, shut down, or
+	// a configuration change.
+	//   "WARNING" - Warning events might cause problems.
+	//   "ERROR" - Error events are likely to cause problems.
+	//   "CRITICAL" - Critical events cause more severe problems or outages.
+	//   "ALERT" - A person must take action immediately.
+	//   "EMERGENCY" - One or more systems are unusable.
+	LogSeverity string `json:"logSeverity,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "LogSeverity") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "LogSeverity") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s LoggingConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod LoggingConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // Mesh: Mesh represents a logical configuration grouping for workload to
 // workload communication within a service mesh. Routes that point to mesh
 // dictate how requests are routed within this logical mesh boundary.
@@ -3006,6 +3063,27 @@ type Policy struct {
 
 func (s Policy) MarshalJSON() ([]byte, error) {
 	type NoMethod Policy
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+type RetryFilterPerRouteConfig struct {
+	// CryptoKeyName: The name of the crypto key to use for encrypting event data.
+	CryptoKeyName string `json:"cryptoKeyName,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "CryptoKeyName") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "CryptoKeyName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s RetryFilterPerRouteConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod RetryFilterPerRouteConfig
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 

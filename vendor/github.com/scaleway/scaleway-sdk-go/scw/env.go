@@ -35,20 +35,20 @@ const (
 	cliSecretKeyEnv          = "SCW_TOKEN"
 
 	// TBD
-	//cliVerboseEnv         = "SCW_VERBOSE_API"
-	//cliDebugEnv           = "DEBUG"
-	//cliNoCheckVersionEnv  = "SCW_NOCHECKVERSION"
-	//cliTestWithRealAPIEnv = "TEST_WITH_REAL_API"
-	//cliSecureExecEnv      = "SCW_SECURE_EXEC"
-	//cliGatewayEnv         = "SCW_GATEWAY"
-	//cliSensitiveEnv       = "SCW_SENSITIVE"
-	//cliAccountAPIEnv      = "SCW_ACCOUNT_API"
-	//cliMetadataAPIEnv     = "SCW_METADATA_API"
-	//cliMarketPlaceAPIEnv  = "SCW_MARKETPLACE_API"
-	//cliComputePar1APIEnv  = "SCW_COMPUTE_PAR1_API"
-	//cliComputeAms1APIEnv  = "SCW_COMPUTE_AMS1_API"
-	//cliCommercialTypeEnv  = "SCW_COMMERCIAL_TYPE"
-	//cliTargetArchEnv      = "SCW_TARGET_ARCH"
+	// cliVerboseEnv         = "SCW_VERBOSE_API"
+	// cliDebugEnv           = "DEBUG"
+	// cliNoCheckVersionEnv  = "SCW_NOCHECKVERSION"
+	// cliTestWithRealAPIEnv = "TEST_WITH_REAL_API"
+	// cliSecureExecEnv      = "SCW_SECURE_EXEC"
+	// cliGatewayEnv         = "SCW_GATEWAY"
+	// cliSensitiveEnv       = "SCW_SENSITIVE"
+	// cliAccountAPIEnv      = "SCW_ACCOUNT_API"
+	// cliMetadataAPIEnv     = "SCW_METADATA_API"
+	// cliMarketPlaceAPIEnv  = "SCW_MARKETPLACE_API"
+	// cliComputePar1APIEnv  = "SCW_COMPUTE_PAR1_API"
+	// cliComputeAms1APIEnv  = "SCW_COMPUTE_AMS1_API"
+	// cliCommercialTypeEnv  = "SCW_COMMERCIAL_TYPE"
+	// cliTargetArchEnv      = "SCW_TARGET_ARCH"
 )
 
 const (
@@ -115,15 +115,15 @@ func LoadEnvProfile() *Profile {
 func getEnv(upToDateKey string, deprecatedKeys ...string) (string, string, bool) {
 	value, exist := os.LookupEnv(upToDateKey)
 	if exist {
-		logger.Debugf("reading value from %s", upToDateKey)
+		logger.Debugf("reading value from %s\n", upToDateKey)
 		return value, upToDateKey, true
 	}
 
 	for _, key := range deprecatedKeys {
 		value, exist := os.LookupEnv(key)
 		if exist {
-			logger.Debugf("reading value from %s", key)
-			logger.Warningf("%s is deprecated, please use %s instead", key, upToDateKey)
+			logger.Debugf("reading value from %s\n", key)
+			logger.Warningf("%s is deprecated, please use %s instead\n", key, upToDateKey)
 			return value, key, true
 		}
 	}

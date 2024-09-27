@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -173,6 +174,26 @@ func StringToTimeDurationHookFunc() DecodeHookFunc {
 
 		// Convert it by parsing
 		return time.ParseDuration(data.(string))
+	}
+}
+
+// StringToURLHookFunc returns a DecodeHookFunc that converts
+// strings to *url.URL.
+func StringToURLHookFunc() DecodeHookFunc {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{},
+	) (interface{}, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		if t != reflect.TypeOf(&url.URL{}) {
+			return data, nil
+		}
+
+		// Convert it by parsing
+		return url.Parse(data.(string))
 	}
 }
 

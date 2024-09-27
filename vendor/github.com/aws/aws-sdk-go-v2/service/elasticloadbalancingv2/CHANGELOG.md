@@ -1,3 +1,37 @@
+# v1.38.2 (2024-09-25)
+
+* No change notes available for this release.
+
+# v1.38.1 (2024-09-23)
+
+* No change notes available for this release.
+
+# v1.38.0 (2024-09-20)
+
+* **Feature**: Add tracing and metrics support to service clients.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.37.1 (2024-09-17)
+
+* **Bug Fix**: **BREAKFIX**: Only generate AccountIDEndpointMode config for services that use it. This is a compiler break, but removes no actual functionality, as no services currently use the account ID in endpoint resolution.
+
+# v1.37.0 (2024-09-12)
+
+* **Feature**: Correct incorrectly mapped error in ELBv2 waiters
+
+# v1.36.0 (2024-09-09)
+
+* **Feature**: Add paginators for the ELBv2 DescribeListenerCertificates and DescribeRules APIs. Fix broken waiter for the ELBv2 DescribeLoadBalancers API.
+
+# v1.35.1 (2024-09-04)
+
+* No change notes available for this release.
+
+# v1.35.0 (2024-09-03)
+
+* **Feature**: This release adds support for configuring TCP idle timeout on NLB and GWLB listeners.
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.34.2 (2024-08-22)
 
 * No change notes available for this release.

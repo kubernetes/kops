@@ -635,11 +635,11 @@ type AttachmentsSource struct {
 	//
 	//   - For the key SourceUrl, the value is an S3 bucket location. For example:
 	//
-	// "Values": [ "s3://doc-example-bucket/my-folder" ]
+	// "Values": [ "s3://amzn-s3-demo-bucket/my-prefix" ]
 	//
 	//   - For the key S3FileUrl, the value is a file in an S3 bucket. For example:
 	//
-	// "Values": [ "s3://doc-example-bucket/my-folder/my-file.py" ]
+	// "Values": [ "s3://amzn-s3-demo-bucket/my-prefix/my-file.py" ]
 	//
 	//   - For the key AttachmentReference, the value is constructed from the name of
 	//   another SSM document in your account, a version number of that document, and a
@@ -763,6 +763,10 @@ type AutomationExecution struct {
 	// accounts where you want to run the Automation.
 	TargetLocations []TargetLocation
 
+	// A publicly accessible URL for a file that contains the TargetLocations body.
+	// Currently, only files in presigned Amazon S3 buckets are supported
+	TargetLocationsURL *string
+
 	// The specified key-value mapping of document parameters to target resources.
 	TargetMaps []map[string][]string
 
@@ -820,10 +824,10 @@ type AutomationExecutionMetadata struct {
 
 	// Use this filter with DescribeAutomationExecutions. Specify either Local or CrossAccount. CrossAccount is an
 	// Automation that runs in multiple Amazon Web Services Regions and Amazon Web
-	// Services accounts. For more information, see [Running Automation workflows in multiple Amazon Web Services Regions and accounts]in the Amazon Web Services Systems
+	// Services accounts. For more information, see [Running automations in multiple Amazon Web Services Regions and accounts]in the Amazon Web Services Systems
 	// Manager User Guide.
 	//
-	// [Running Automation workflows in multiple Amazon Web Services Regions and accounts]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation-multiple-accounts-and-regions.html
+	// [Running automations in multiple Amazon Web Services Regions and accounts]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-automation-multiple-accounts-and-regions.html
 	AutomationType AutomationType
 
 	// The name of the Change Manager change request.
@@ -892,6 +896,10 @@ type AutomationExecutionMetadata struct {
 	// The list of execution outputs as defined in the Automation runbook.
 	Target *string
 
+	// A publicly accessible URL for a file that contains the TargetLocations body.
+	// Currently, only files in presigned Amazon S3 buckets are supported
+	TargetLocationsURL *string
+
 	// The specified key-value mapping of document parameters to target resources.
 	TargetMaps []map[string][]string
 
@@ -916,9 +924,9 @@ type BaselineOverride struct {
 	// A list of explicitly approved patches for the baseline.
 	//
 	// For information about accepted formats for lists of approved patches and
-	// rejected patches, see [About package name formats for approved and rejected patch lists]in the Amazon Web Services Systems Manager User Guide.
+	// rejected patches, see [Package name formats for approved and rejected patch lists]in the Amazon Web Services Systems Manager User Guide.
 	//
-	// [About package name formats for approved and rejected patch lists]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-approved-rejected-package-name-formats.html
+	// [Package name formats for approved and rejected patch lists]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-approved-rejected-package-name-formats.html
 	ApprovedPatches []string
 
 	// Defines the compliance level for approved patches. When an approved patch is
@@ -940,9 +948,9 @@ type BaselineOverride struct {
 	// A list of explicitly rejected patches for the baseline.
 	//
 	// For information about accepted formats for lists of approved patches and
-	// rejected patches, see [About package name formats for approved and rejected patch lists]in the Amazon Web Services Systems Manager User Guide.
+	// rejected patches, see [Package name formats for approved and rejected patch lists]in the Amazon Web Services Systems Manager User Guide.
 	//
-	// [About package name formats for approved and rejected patch lists]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-approved-rejected-package-name-formats.html
+	// [Package name formats for approved and rejected patch lists]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-approved-rejected-package-name-formats.html
 	RejectedPatches []string
 
 	// The action for Patch Manager to take on patches included in the RejectedPackages
@@ -1143,11 +1151,11 @@ type CommandFilter struct {
 	// The filter value. Valid values for each filter key are as follows:
 	//
 	//   - InvokedAfter: Specify a timestamp to limit your results. For example,
-	//   specify 2021-07-07T00:00:00Z to see a list of command executions occurring
+	//   specify 2024-07-07T00:00:00Z to see a list of command executions occurring
 	//   July 7, 2021, and later.
 	//
 	//   - InvokedBefore: Specify a timestamp to limit your results. For example,
-	//   specify 2021-07-07T00:00:00Z to see a list of command executions from before
+	//   specify 2024-07-07T00:00:00Z to see a list of command executions from before
 	//   July 7, 2021.
 	//
 	//   - Status: Specify a valid command status to see a list of all command
@@ -1358,11 +1366,11 @@ type CommandPlugin struct {
 	// This was requested when issuing the command. For example, in the following
 	// response:
 	//
-	//     doc-example-bucket/ab19cb99-a030-46dd-9dfc-8eSAMPLEPre-Fix/i-02573cafcfEXAMPLE/awsrunShellScript
+	//     amzn-s3-demo-bucket/my-prefix/i-02573cafcfEXAMPLE/awsrunShellScript
 	//
-	// doc-example-bucket is the name of the S3 bucket;
+	// amzn-s3-demo-bucket is the name of the S3 bucket;
 	//
-	// ab19cb99-a030-46dd-9dfc-8eSAMPLEPre-Fix is the name of the S3 prefix;
+	// my-prefix is the name of the S3 prefix;
 	//
 	// i-02573cafcfEXAMPLE is the managed node ID;
 	//
@@ -1373,11 +1381,11 @@ type CommandPlugin struct {
 	// executions should be stored. This was requested when issuing the command. For
 	// example, in the following response:
 	//
-	//     doc-example-bucket/ab19cb99-a030-46dd-9dfc-8eSAMPLEPre-Fix/i-02573cafcfEXAMPLE/awsrunShellScript
+	//     amzn-s3-demo-bucket/my-prefix/i-02573cafcfEXAMPLE/awsrunShellScript
 	//
-	// doc-example-bucket is the name of the S3 bucket;
+	// amzn-s3-demo-bucket is the name of the S3 bucket;
 	//
-	// ab19cb99-a030-46dd-9dfc-8eSAMPLEPre-Fix is the name of the S3 prefix;
+	// my-prefix is the name of the S3 prefix;
 	//
 	// i-02573cafcfEXAMPLE is the managed node ID;
 	//
@@ -2433,13 +2441,13 @@ type InstanceInformation struct {
 	// (VM) when it is activated as a Systems Manager managed node. The name is
 	// specified as the DefaultInstanceName property using the CreateActivation command. It is applied
 	// to the managed node by specifying the Activation Code and Activation ID when you
-	// install SSM Agent on the node, as explained in [Install SSM Agent for a hybrid and multicloud environment (Linux)]and [Install SSM Agent for a hybrid and multicloud environment (Windows)]. To retrieve the Name tag
+	// install SSM Agent on the node, as explained in [How to install SSM Agent on hybrid Linux nodes]and [How to install SSM Agent on hybrid Windows Server nodes]. To retrieve the Name tag
 	// of an EC2 instance, use the Amazon EC2 DescribeInstances operation. For
 	// information, see [DescribeInstances]in the Amazon EC2 API Reference or [describe-instances] in the Amazon Web Services
 	// CLI Command Reference.
 	//
-	// [Install SSM Agent for a hybrid and multicloud environment (Windows)]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-win.html
-	// [Install SSM Agent for a hybrid and multicloud environment (Linux)]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-install-managed-linux.html
+	// [How to install SSM Agent on hybrid Linux nodes]: https://docs.aws.amazon.com/systems-manager/latest/userguide/hybrid-multicloud-ssm-agent-install-linux.html
+	// [How to install SSM Agent on hybrid Windows Server nodes]: https://docs.aws.amazon.com/systems-manager/latest/userguide/hybrid-multicloud-ssm-agent-install-windows.html
 	// [DescribeInstances]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
 	// [describe-instances]: https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html
 	Name *string
@@ -2589,11 +2597,10 @@ type InstancePatchState struct {
 	// AWS-RunPatchBaseline , overrides the patches specified by the default patch
 	// baseline.
 	//
-	// For more information about the InstallOverrideList parameter, see [About the AWS-RunPatchBaseline SSM document]
-	// AWS-RunPatchBaseline SSM document in the Amazon Web Services Systems Manager
-	// User Guide.
+	// For more information about the InstallOverrideList parameter, see [SSM Command document for patching: AWS-RunPatchBaseline]
+	// AWS-RunPatchBaseline in the Amazon Web Services Systems Manager User Guide.
 	//
-	// [About the AWS-RunPatchBaseline SSM document]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-about-aws-runpatchbaseline.html
+	// [SSM Command document for patching: AWS-RunPatchBaseline]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-about-aws-runpatchbaseline.html
 	InstallOverrideList *string
 
 	// The number of patches from the patch baseline that are installed on the managed
@@ -2873,7 +2880,7 @@ type InventoryDeletionStatusItem struct {
 	// Information about the delete operation. For more information about this
 	// summary, see [Understanding the delete inventory summary]in the Amazon Web Services Systems Manager User Guide.
 	//
-	// [Understanding the delete inventory summary]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-inventory-custom.html#sysman-inventory-delete
+	// [Understanding the delete inventory summary]: https://docs.aws.amazon.com/systems-manager/latest/userguide/inventory-custom.html#delete-custom-inventory
 	DeletionSummary *InventoryDeletionSummary
 
 	// The status of the operation. Possible values are InProgress and Complete.
@@ -2943,7 +2950,7 @@ type InventoryFilter struct {
 	// The Exists filter must be used with aggregators. For more information, see [Aggregating inventory data] in
 	// the Amazon Web Services Systems Manager User Guide.
 	//
-	// [Aggregating inventory data]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-inventory-aggregate.html
+	// [Aggregating inventory data]: https://docs.aws.amazon.com/systems-manager/latest/userguide/inventory-aggregate.html
 	Type InventoryQueryOperatorType
 
 	noSmithyDocumentSerde
@@ -3450,10 +3457,10 @@ type MaintenanceWindowRunCommandParameters struct {
 	// However, for an improved security posture, we strongly recommend creating a
 	// custom policy and custom service role for running your maintenance window tasks.
 	// The policy can be crafted to provide only the permissions needed for your
-	// particular maintenance window tasks. For more information, see [Setting up maintenance windows]in the in the
+	// particular maintenance window tasks. For more information, see [Setting up Maintenance Windows]in the in the
 	// Amazon Web Services Systems Manager User Guide.
 	//
-	// [Setting up maintenance windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
+	// [Setting up Maintenance Windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
 	ServiceRoleArn *string
 
 	// If this time is reached and the command hasn't already started running, it
@@ -3593,10 +3600,10 @@ type MaintenanceWindowTask struct {
 	// However, for an improved security posture, we strongly recommend creating a
 	// custom policy and custom service role for running your maintenance window tasks.
 	// The policy can be crafted to provide only the permissions needed for your
-	// particular maintenance window tasks. For more information, see [Setting up maintenance windows]in the in the
+	// particular maintenance window tasks. For more information, see [Setting up Maintenance Windows]in the in the
 	// Amazon Web Services Systems Manager User Guide.
 	//
-	// [Setting up maintenance windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
+	// [Setting up Maintenance Windows]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-maintenance-permissions.html
 	ServiceRoleArn *string
 
 	// The targets (either managed nodes or tags). Managed nodes are specified using
@@ -3897,8 +3904,8 @@ type OpsItem struct {
 	// resource is a subset of source.
 	Source *string
 
-	// The OpsItem status. Status can be Open , In Progress , or Resolved . For more
-	// information, see [Editing OpsItem details]in the Amazon Web Services Systems Manager User Guide.
+	// The OpsItem status. For more information, see [Editing OpsItem details] in the Amazon Web Services
+	// Systems Manager User Guide.
 	//
 	// [Editing OpsItem details]: https://docs.aws.amazon.com/systems-manager/latest/userguide/OpsCenter-working-with-OpsItems-editing-details.html
 	Status OpsItemStatus
@@ -4140,7 +4147,7 @@ type OpsItemSummary struct {
 	// The impacted Amazon Web Services resource.
 	Source *string
 
-	// The OpsItem status. Status can be Open , In Progress , or Resolved .
+	// The OpsItem status.
 	Status OpsItemStatus
 
 	// A short heading that describes the nature of the OpsItem and the impacted
@@ -4605,7 +4612,7 @@ type PatchComplianceData struct {
 	// For descriptions of each patch state, see [About patch compliance] in the Amazon Web Services Systems
 	// Manager User Guide.
 	//
-	// [About patch compliance]: https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-compliance-about.html#sysman-compliance-monitor-patch
+	// [About patch compliance]: https://docs.aws.amazon.com/systems-manager/latest/userguide/compliance-about.html#compliance-monitor-patch
 	//
 	// This member is required.
 	State PatchComplianceDataState
@@ -4719,21 +4726,37 @@ type PatchRule struct {
 	// that the patch is marked as approved in the patch baseline. For example, a value
 	// of 7 means that patches are approved seven days after they are released.
 	//
-	// This parameter is marked as not required, but your request must include a value
+	// This parameter is marked as Required: No , but your request must include a value
 	// for either ApproveAfterDays or ApproveUntilDate .
 	//
 	// Not supported for Debian Server or Ubuntu Server.
+	//
+	// Use caution when setting this value for Windows Server patch baselines. Because
+	// patch updates that are replaced by later updates are removed, setting too broad
+	// a value for this parameter can result in crucial patches not being installed.
+	// For more information, see the Windows Server tab in the topic [How security patches are selected]in the Amazon Web
+	// Services Systems Manager User Guide.
+	//
+	// [How security patches are selected]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-selecting-patches.html
 	ApproveAfterDays *int32
 
 	// The cutoff date for auto approval of released patches. Any patches released on
 	// or before this date are installed automatically.
 	//
-	// Enter dates in the format YYYY-MM-DD . For example, 2021-12-31 .
+	// Enter dates in the format YYYY-MM-DD . For example, 2024-12-31 .
 	//
-	// This parameter is marked as not required, but your request must include a value
+	// This parameter is marked as Required: No , but your request must include a value
 	// for either ApproveUntilDate or ApproveAfterDays .
 	//
 	// Not supported for Debian Server or Ubuntu Server.
+	//
+	// Use caution when setting this value for Windows Server patch baselines. Because
+	// patch updates that are replaced by later updates are removed, setting too broad
+	// a value for this parameter can result in crucial patches not being installed.
+	// For more information, see the Windows Server tab in the topic [How security patches are selected]in the Amazon Web
+	// Services Systems Manager User Guide.
+	//
+	// [How security patches are selected]: https://docs.aws.amazon.com/systems-manager/latest/userguide/patch-manager-selecting-patches.html
 	ApproveUntilDate *string
 
 	// A compliance severity level for all approved patches in a patch baseline.
@@ -5339,12 +5362,12 @@ type SessionFilter struct {
 	// The filter value. Valid values for each filter key are as follows:
 	//
 	//   - InvokedAfter: Specify a timestamp to limit your results. For example,
-	//   specify 2018-08-29T00:00:00Z to see sessions that started August 29, 2018, and
+	//   specify 2024-08-29T00:00:00Z to see sessions that started August 29, 2024, and
 	//   later.
 	//
 	//   - InvokedBefore: Specify a timestamp to limit your results. For example,
-	//   specify 2018-08-29T00:00:00Z to see sessions that started before August 29,
-	//   2018.
+	//   specify 2024-08-29T00:00:00Z to see sessions that started before August 29,
+	//   2024.
 	//
 	//   - Target: Specify a managed node to which session connections have been made.
 	//
@@ -5628,9 +5651,17 @@ type TargetLocation struct {
 	// The Amazon Web Services accounts targeted by the current Automation execution.
 	Accounts []string
 
+	// Amazon Web Services accounts or organizational units to exclude as expanded
+	// targets.
+	ExcludeAccounts []string
+
 	// The Automation execution role used by the currently running Automation. If not
 	// specified, the default value is AWS-SystemsManager-AutomationExecutionRole .
 	ExecutionRoleName *string
+
+	// Indicates whether to include child organizational units (OUs) that are children
+	// of the targeted OUs. The default is false .
+	IncludeChildOrganizationUnits bool
 
 	// The Amazon Web Services Regions targeted by the current Automation execution.
 	Regions []string
@@ -5646,6 +5677,24 @@ type TargetLocation struct {
 	// The maximum number of errors allowed before the system stops queueing
 	// additional Automation executions for the currently running Automation.
 	TargetLocationMaxErrors *string
+
+	// A list of key-value mappings to target resources. If you specify values for
+	// this data type, you must also specify a value for TargetParameterName .
+	//
+	// This Targets parameter takes precedence over the
+	// StartAutomationExecution:Targets parameter if both are supplied.
+	Targets []Target
+
+	// The maximum number of targets allowed to run this task in parallel. This
+	// TargetsMaxConcurrency takes precedence over the
+	// StartAutomationExecution:MaxConcurrency parameter if both are supplied.
+	TargetsMaxConcurrency *string
+
+	// The maximum number of errors that are allowed before the system stops running
+	// the automation on additional targets. This TargetsMaxErrors parameter takes
+	// precedence over the StartAutomationExecution:MaxErrors parameter if both are
+	// supplied.
+	TargetsMaxErrors *string
 
 	noSmithyDocumentSerde
 }

@@ -397,7 +397,7 @@ var (
 		// Jane Goodall - British primatologist, ethologist, and anthropologist who is considered to be the world's foremost expert on chimpanzees - https://en.wikipedia.org/wiki/Jane_Goodall
 		"goodall",
 
-		// Stephen Jay Gould was was an American paleontologist, evolutionary biologist, and historian of science. He is most famous for the theory of punctuated equilibrium - https://en.wikipedia.org/wiki/Stephen_Jay_Gould
+		// Stephen Jay Gould was an American paleontologist, evolutionary biologist, and historian of science. He is most famous for the theory of punctuated equilibrium - https://en.wikipedia.org/wiki/Stephen_Jay_Gould
 		"gould",
 
 		// Carolyn Widney Greider - American molecular biologist and joint winner of the 2009 Nobel Prize for Physiology or Medicine for the discovery of telomerase. https://en.wikipedia.org/wiki/Carol_W._Greider
@@ -853,7 +853,7 @@ var (
 // formatted as "scw-adjective-surname". For example 'scw-focused-turing'.
 func GetRandomName(prefixes ...string) string {
 begin:
-	parts := append(prefixes, left[r.Intn(len(left))], right[r.Intn(len(right))])
+	parts := append(prefixes, left[r.Intn(len(left))], right[r.Intn(len(right))]) //nolint:gocritic
 	name := strings.Join(parts, "-")
 	if strings.Contains(name, "boring-wozniak") /* Steve Wozniak is not boring */ {
 		goto begin

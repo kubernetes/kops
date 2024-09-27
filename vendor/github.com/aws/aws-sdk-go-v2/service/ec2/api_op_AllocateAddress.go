@@ -69,6 +69,9 @@ type AllocateAddressInput struct {
 	// UnauthorizedOperation .
 	DryRun *bool
 
+	// The ID of an IPAM pool.
+	IpamPoolId *string
+
 	//  A unique set of Availability Zones, Local Zones, or Wavelength Zones from
 	// which Amazon Web Services advertises IP addresses. Use this parameter to limit
 	// the IP address to this location. IP addresses cannot move between network border
@@ -163,6 +166,9 @@ func (c *Client) addOperationAllocateAddressMiddlewares(stack *middleware.Stack,
 	if err = addRecordResponseTiming(stack); err != nil {
 		return err
 	}
+	if err = addSpanRetryLoop(stack, options); err != nil {
+		return err
+	}
 	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
@@ -197,6 +203,18 @@ func (c *Client) addOperationAllocateAddressMiddlewares(stack *middleware.Stack,
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addSpanInitializeStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanInitializeEnd(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestStart(stack); err != nil {
+		return err
+	}
+	if err = addSpanBuildRequestEnd(stack); err != nil {
 		return err
 	}
 	return nil
