@@ -255,6 +255,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 				"DISABLE_METRICS":                       "false",
 				"ENABLE_POD_ENI":                        "false",
 				"ENABLE_PREFIX_DELEGATION":              "false",
+				"ENABLE_SUBNET_DISCOVERY":               "true",
+				"NETWORK_POLICY_ENFORCING_MODE":         "standard",
 				"WARM_ENI_TARGET":                       "1",
 				"WARM_PREFIX_TARGET":                    "1",
 				"DISABLE_NETWORK_RESOURCE_PROVISIONING": "false",
