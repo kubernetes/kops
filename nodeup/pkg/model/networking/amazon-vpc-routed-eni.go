@@ -65,10 +65,10 @@ ManageForeignRoutingPolicyRules=no
 		})
 	}
 
-	// Running Amazon VPC CNI on Ubuntu 22.04 and later or any version of al2023 requires
+	// Running Amazon VPC CNI on Ubuntu 22.04 or any version of al2023 requires
 	// setting MACAddressPolicy to `none` (ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2103
 	// & https://github.com/kubernetes/kops/issues/16255)
-	if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04) ||
+	if (b.Distribution.IsUbuntu() && b.Distribution.Version() == 22.04) ||
 		b.Distribution == distributions.DistributionAmazonLinux2023 {
 		contents := `
 [Match]
