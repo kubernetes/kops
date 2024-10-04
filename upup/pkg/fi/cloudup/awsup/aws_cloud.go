@@ -63,7 +63,7 @@ import (
 	"k8s.io/kops/util/pkg/awsinterfaces"
 )
 
-// By default, aws-sdk-go only retries 3 times, which doesn't give
+// By default, aws-sdk-go-v2 only retries 3 times, which doesn't give
 // much time for exponential backoff to work for serious issues. At 13
 // retries, we'll try a given request for up to ~6m with exponential
 // backoff along the way.
@@ -279,7 +279,11 @@ func loadAWSConfig(ctx context.Context, region string) (aws.Config, error) {
 		awsconfig.WithClientLogMode(aws.LogRetries),
 		awsconfig.WithLogger(awsLogger{}),
 		awsconfig.WithRetryer(func() aws.Retryer {
-			return retry.NewAdaptiveMode()
+			return retry.NewAdaptiveMode(func(ao *retry.AdaptiveModeOptions) {
+				ao.StandardOptions = append(ao.StandardOptions, func(so *retry.StandardOptions) {
+					so.MaxAttempts = ClientMaxRetries
+				})
+			})
 		}),
 	}
 
@@ -1271,7 +1275,9 @@ func getTags(c AWSCloud, resourceID string) (map[string]string, error) {
 	for {
 		attempt++
 
-		response, err := c.EC2().DescribeTags(ctx, request)
+		response, err := c.EC2().DescribeTags(ctx, request, func(o *ec2.Options) {
+			o.RetryMaxAttempts = DescribeTagsMaxAttempts
+		})
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > DescribeTagsMaxAttempts {
