@@ -58,7 +58,13 @@ type gvrNamespace struct {
 }
 
 func (d *gvrNamespace) String() string {
-	return path.Join(d.namespace, d.gvr.Resource)
+	var gr string
+	if d.gvr.Group == "" {
+		gr = d.gvr.Resource
+	} else {
+		gr = fmt.Sprintf("%v.%v", d.gvr.Group, d.gvr.Resource)
+	}
+	return path.Join(d.namespace, gr)
 }
 
 type resourceDumper struct {
