@@ -79,6 +79,7 @@ func (d *deployer) templateValues(zones []string, publicIP string) (map[string]i
 		"kubernetesVersion": d.KubernetesVersion,
 		"publicIP":          publicIP,
 		"stateStore":        d.stateStore(),
+		"discoveryStore":    d.discoveryStore(),
 		"zones":             zones,
 		"sshPublicKey":      string(publicKey),
 	}, nil

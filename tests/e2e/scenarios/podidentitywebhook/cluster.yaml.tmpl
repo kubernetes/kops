@@ -40,7 +40,7 @@ spec:
   podIdentityWebhook:
     enabled: true
   serviceAccountIssuerDiscovery:
-    discoveryStore: "{{.stateStore}}/{{.clusterName}}"
+    discoveryStore: "{{.discoveryStore}}/{{.clusterName}}"
     enableAWSOIDCProvider: true
   sshAccess:
     - {{.publicIP}}
