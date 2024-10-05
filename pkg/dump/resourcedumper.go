@@ -111,7 +111,10 @@ func (d *resourceDumper) DumpResources(ctx context.Context) error {
 	}
 
 	resourceLists, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
+	var discoveryErr *discovery.ErrGroupDiscoveryFailed
+	if errors.As(err, &discoveryErr) {
+		klog.Warningf("using incomplete list of API groups: %v", discoveryErr)
+	} else if err != nil {
 		return fmt.Errorf("listing server preferred resources: %w", err)
 	}
 
