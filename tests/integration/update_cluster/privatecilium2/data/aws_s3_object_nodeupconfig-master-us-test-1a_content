@@ -59,7 +59,7 @@ Assets:
   amd64:
   - 32a32ec3d7e7f8b2648c9dd503ce9ef63b4af1d1677f5b5aed7846fb02d66f18@https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubelet
   - 7c3807c0f5c1b30110a2ff1e55da1d112a6d0096201f1beb81b269f582b5d1c5@https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl
-  - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
+  - 0d97641c8977fe775cb18f9e6f40acd99ef2570543b55e5c13dec320dcaa8ee3@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.29.0/linux/amd64/ecr-credential-provider-linux-amd64
   - f3a841324845ca6bf0d4091b4fc7f97e18a623172158b72fc3fdcdb9d42d2d37@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
   - 4f4f2c3c7d14fd59a404961a3a3341303c2fdeeba0e78808c209f606e828f99c@https://github.com/containerd/containerd/releases/download/v1.7.16/containerd-1.7.16-linux-amd64.tar.gz
   - aadeef400b8f05645768c1476d1023f7875b78f52c7ff1967a6dbce236b8cbd8@https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.amd64
@@ -70,7 +70,7 @@ Assets:
   arm64:
   - fa887647422d34f3c7cc5b30fefcf97084d2c3277eff237c5808685ba8e4b15a@https://dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubelet
   - 669af0cf520757298ea60a8b6eb6b719ba443a9c7d35f36d3fb2fd7513e8c7d2@https://dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubectl
-  - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
+  - 8313d0744b7e5cfaccb7aa1327c5260471eb9463bc769f87df6f45dee84b8c44@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.29.0/linux/arm64/ecr-credential-provider-linux-arm64
   - 525e2b62ba92a1b6f3dc9612449a84aa61652e680f7ebf4eff579795fe464b57@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz
   - 2d4373de40a6f58cd0f29377c0257b35697a987248e6268520586996771d7a75@https://github.com/containerd/containerd/releases/download/v1.7.16/containerd-1.7.16-linux-arm64.tar.gz
   - 879f910a05c95c10c64ad8eb7d5e3aa8e4b30e65587b3d68e009a3565aed5bb8@https://github.com/opencontainers/runc/releases/download/v1.1.12/runc.arm64
