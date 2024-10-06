@@ -1,5 +1,5 @@
 # helm template --release-name cilium cilium/cilium \
-# --version 1.16.1 \
+# --version 1.16.2 \
 # --namespace kube-system \
 # --values helm-values.yaml
 {{ with .Networking.Cilium }}
@@ -1320,7 +1320,7 @@ spec:
       # from a privileged container because the mount propagation bidirectional
       # only works from privileged containers.
       - name: mount-bpf-fs
-        image: "quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39"
+        image: "{{ or .Registry "quay.io" }}/cilium/cilium:{{ .Version }}"
         imagePullPolicy: IfNotPresent
         args:
         - 'mount | grep "/sys/fs/bpf type bpf" || mount -t bpf bpf /sys/fs/bpf'
