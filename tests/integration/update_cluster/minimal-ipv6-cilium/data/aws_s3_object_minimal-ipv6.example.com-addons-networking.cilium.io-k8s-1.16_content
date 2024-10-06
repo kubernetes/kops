@@ -573,7 +573,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.16.1
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -691,7 +691,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.16.1
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -710,7 +710,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.16.1
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -737,7 +737,7 @@ spec:
         env:
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.16.1
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         name: apply-sysctl-overwrites
         securityContext:
@@ -761,7 +761,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cilium/cilium:v1.16.1@sha256:0b4a3ab41a4760d86b7fc945b8783747ba27f29dac30dd434d94f2c9e3679f39
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -796,7 +796,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.16.1
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -821,7 +821,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cilium/cilium:v1.16.1
+        image: quay.io/cilium/cilium:v1.16.2
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -984,7 +984,7 @@ spec:
           value: api.internal.minimal-ipv6.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.16.1
+        image: quay.io/cilium/operator:v1.16.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
