@@ -54,11 +54,10 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 
 	for _, ig := range b.InstanceGroups {
 		igSize := fi.ValueOf(ig.Spec.MinSize)
-
-		labels := make(map[string]string)
-		labels[hetzner.TagKubernetesClusterName] = b.ClusterName()
-		labels[hetzner.TagKubernetesInstanceGroup] = ig.Name
-		labels[hetzner.TagKubernetesInstanceRole] = string(ig.Spec.Role)
+		labels, err := b.CloudTagsForInstanceGroup(ig)
+		if err != nil {
+			return err
+		}
 
 		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
