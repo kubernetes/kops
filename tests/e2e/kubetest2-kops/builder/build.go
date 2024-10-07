@@ -17,6 +17,7 @@ limitations under the License.
 package builder
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -33,6 +34,7 @@ type BuildOptions struct {
 	KopsRoot        string `flag:"-"`
 	KubeRoot        string `flag:"-"`
 	StageLocation   string `flag:"-"`
+	S3BucketRegion  string `flag:"-"`
 	TargetBuildArch string `flag:"~target-build-arch" desc:"CPU architecture to test against"`
 	BuildKubernetes bool   `flag:"~build-kubernetes" desc:"Set this flag to true to build kubernetes"`
 }
@@ -83,13 +85,29 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		return results, nil
 	}
 
-	cmd := exec.Command("make", "gcs-publish-ci")
+	var cmd exec.Cmd
+	switch {
+	case strings.HasPrefix(b.StageLocation, "gs://"):
+		cmd = exec.Command("make", "gcs-publish-ci")
+		cmd.SetEnv(
+			fmt.Sprintf("GCS_LOCATION=%v", gcsLocation),
+		)
+	case strings.HasPrefix(b.StageLocation, "s3://"):
+		if b.S3BucketRegion == "" {
+			return nil, errors.New("missing required S3 bucket region")
+		}
+		cmd = exec.Command("make", "s3-publish-ci")
+		cmd.SetEnv(
+			fmt.Sprintf("S3_BUCKET=%v", gcsLocation),
+			fmt.Sprintf("S3_REGION=%v", b.S3BucketRegion),
+		)
+	}
 	cmd.SetEnv(
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
-		fmt.Sprintf("GCS_LOCATION=%v", gcsLocation),
 		fmt.Sprintf("GOPATH=%v", os.Getenv("GOPATH")),
 	)
+
 	cmd.SetDir(b.KopsRoot)
 	exec.InheritOutput(cmd)
 	if err := cmd.Run(); err != nil {
@@ -97,7 +115,7 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	}
 
 	// Get the full path (including subdirectory) that we uploaded to
-	// It is written by gcs-publish-ci to .build/upload/latest-ci.txt
+	// It is written by the *-publish-ci make tasks to .build/upload/latest-ci.txt
 	latestPath := filepath.Join(b.KopsRoot, ".build", "upload", "latest-ci.txt")
 	kopsBaseURL, err := os.ReadFile(latestPath)
 	if err != nil {
