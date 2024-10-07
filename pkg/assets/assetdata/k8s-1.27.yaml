@@ -13,40 +13,20 @@ files:
   sha256: f1dc2fdda8acb8abbc8e356f51082eef1b2d1f247c80a144d7bbed69a2b3c3b9
 - name: v1.27.0/bin/darwin/arm64/kubectl-convert
   sha256: eb274a55101c30c05931dc498aecf7759ec3a650a1567392ba5f277fe92f8dfd
-- name: v1.27.0/bin/linux/386/kubectl
-  sha256: c6e5ec695fec16a41761b61c73125e930ff2480193e8bc32edb46128457a1a2e
-- name: v1.27.0/bin/linux/386/kubectl-convert
-  sha256: a3bf1d96dc62406ec296c302e59eb81bacbd0f7bdf9bd1bc8c8268941e287f69
 - name: v1.27.0/bin/linux/amd64/apiextensions-apiserver
   sha256: a7c26201285c0bf36d91027722ff83d5ae7a60237dfe0cd0fd72f26802698c66
 - name: v1.27.0/bin/linux/amd64/kube-aggregator
   sha256: 53fa41370128374ec839fe99aa5e1baa9f64574e240424ca865ddcbe08f126b9
 - name: v1.27.0/bin/linux/amd64/kube-apiserver
   sha256: e9a894d633ab57bbc8f9c242cf352170272818a14ead9993072f8a9cb15b8641
-- name: v1.27.0/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/amd64/kube-apiserver.tar
-  sha256: c6bdd9b99eb0e5663cb205fb5800f12ee1db870e8b10f13aa099a292b721b2a6
 - name: v1.27.0/bin/linux/amd64/kube-controller-manager
   sha256: 192972ba514b9078bd184f5208454028ccf9fdb63dcc2338991dd5a969eb03da
-- name: v1.27.0/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 33ce3d359ab403fe738a35f16040b8cc9d6de765b392204c37dd6a561d549432
 - name: v1.27.0/bin/linux/amd64/kube-log-runner
   sha256: 0ced8944054da858267b7080e88643ed701ae9575098b2a90d8960dbdc6d2c31
 - name: v1.27.0/bin/linux/amd64/kube-proxy
   sha256: 3fed26680fa3ed022aeeb05e663553819a19536023b4c786f6874de5ad4b83f9
-- name: v1.27.0/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/amd64/kube-proxy.tar
-  sha256: bda8dec039326bbbb5ebddef1a238e5330b3cb11b11b5c1d6d81fda8d2829bbd
 - name: v1.27.0/bin/linux/amd64/kube-scheduler
   sha256: 9c70cacaa2d4058489d39227c3f29ea696366fa09bb878de2f6571f5127b680f
-- name: v1.27.0/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/amd64/kube-scheduler.tar
-  sha256: 569cc80aaeb0fdd6d9b8e6377656f1fb2a2ad898a1376f033b8f6b2b699f00c9
 - name: v1.27.0/bin/linux/amd64/kubeadm
   sha256: 78d0e04705a7bdb76a514d60f60c073b16334b15f57ee87f064354ca8a233e80
 - name: v1.27.0/bin/linux/amd64/kubectl
@@ -63,30 +43,14 @@ files:
   sha256: 81e0887545638c317eb8d494b36e2d643ce7e585842bb3331911d6451decf638
 - name: v1.27.0/bin/linux/arm64/kube-apiserver
   sha256: 103e6a278796448b6d1617a51fb1d36d19876b764373a6ef7a11b33419aaea6a
-- name: v1.27.0/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/arm64/kube-apiserver.tar
-  sha256: dc314c11127a5862a565f396bd5eb30b8fd1b9a63910a54d241e5e7170744c16
 - name: v1.27.0/bin/linux/arm64/kube-controller-manager
   sha256: 8858c8ef4d9e45ee3439de684b665c6d855d530b143933522d5decd3d2f97dfc
-- name: v1.27.0/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 840c8ad477a2bdda64e8e94b899486736b5177d3300013226bb06fde6f2f226c
 - name: v1.27.0/bin/linux/arm64/kube-log-runner
   sha256: cb9d1653ac2a9cf336c66d16be6b8538c12930e53bd773c711d5d54ea619959b
 - name: v1.27.0/bin/linux/arm64/kube-proxy
   sha256: 2db02973a3359dbeb4bb20eefe2221f848ee6d3b552a4ae19399a5171e1e818c
-- name: v1.27.0/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/arm64/kube-proxy.tar
-  sha256: df04cdbee953460ddd752bcc511c7adc870cb53ee76ec0104fc13c475eeb054b
 - name: v1.27.0/bin/linux/arm64/kube-scheduler
   sha256: 5b1c7587345745a42729d15e8af7cde3470c5ec014e96fb95756932f3331cd8c
-- name: v1.27.0/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 81e3fb28426ee31a2847c5e7bac11bcfeaa7903e22edb1aabb65c5a7c8d7488a
-- name: v1.27.0/bin/linux/arm64/kube-scheduler.tar
-  sha256: 4ccf0ad21bf99650e67fc63af1ad36167235fbe10ec5360c773ad057cce533e9
 - name: v1.27.0/bin/linux/arm64/kubeadm
   sha256: acd805c6783b678ee0068b9dd8165bbfd879c345fd9c25d6a978dbc965f48544
 - name: v1.27.0/bin/linux/arm64/kubectl
@@ -97,10 +61,6 @@ files:
   sha256: 37aa2edc7c0c4b3e488518c6a4b44c8aade75a55010534ee2be291220c73d157
 - name: v1.27.0/bin/linux/arm64/mounter
   sha256: 09df74818d0fbb1bdca6e925895888ffdf8c4b21f86bf663e82a3f96aa4569c7
-- name: v1.27.0/kubernetes-release.spdx
-  sha256: afbcbe93611d414810e35fecf33c67a1eb03bd6686a7043954cbd01be166badf
-- name: v1.27.0/kubernetes-source.spdx
-  sha256: e62fd0a742cce88102c0e43391288f66845cdc2d714b8a703af9f99e5147fec0
 # kubernetes 1.27.1
 - name: v1.27.1/bin/darwin/amd64/kubectl
   sha256: 136f73ede0d52c7985d299432236f891515c050d58d71b4a7d39c45085020ad8
@@ -110,40 +70,20 @@ files:
   sha256: a2029331fa70450a631506c83bb27ae95cc9fdb4b21efb81fde81c689d922ceb
 - name: v1.27.1/bin/darwin/arm64/kubectl-convert
   sha256: 8020e0a3b6c1ec141ee9e1cfcedebb4be943eb544d6a8250cc25e1505d8bbd63
-- name: v1.27.1/bin/linux/386/kubectl
-  sha256: 14615b02a0e9b689233f756d3314f9bd24e80603eb365ed6e17acd4098772def
-- name: v1.27.1/bin/linux/386/kubectl-convert
-  sha256: 73f361d10fd01b0310fd03a15e820e57d776cbbcb797553fc8bc74a423768ce9
 - name: v1.27.1/bin/linux/amd64/apiextensions-apiserver
   sha256: d46ae024747115ad2b4500bedfc4f4edfa44e37001af2fb6caa747db9b5672e6
 - name: v1.27.1/bin/linux/amd64/kube-aggregator
   sha256: 75a9a4b667d3a2244831938ac68ed945a88785ac1786a484ae83800c7394d43f
 - name: v1.27.1/bin/linux/amd64/kube-apiserver
   sha256: 74f7532e51c31cbaa2d0b6a5ca3e235e458d8b5d486273ab6d2f7cc5c349719b
-- name: v1.27.1/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/amd64/kube-apiserver.tar
-  sha256: f9c22a492d18834f760d1d312dbda4d29ff23cf0a87a72cd4c6f54af570248fa
 - name: v1.27.1/bin/linux/amd64/kube-controller-manager
   sha256: 45a6f229f02a4384001210d22a1fa514bd8c2127d347b0ed5528a2caacefdf7b
-- name: v1.27.1/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 107e4b4ed6704722aadbdbb819cb0fa22256b5b25f9af1de83ed4a118b576b9b
 - name: v1.27.1/bin/linux/amd64/kube-log-runner
   sha256: fc4176998ffd6bb77da6f2253554d04c0223a1082945b2e5ec8743509c905a52
 - name: v1.27.1/bin/linux/amd64/kube-proxy
   sha256: 5cf6240bd2685cc4f3391549cb9e362c14727dc67c34fbdeff0cbaaf9e49d3d0
-- name: v1.27.1/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/amd64/kube-proxy.tar
-  sha256: cd2db51a1301a8efe19104373a568fdf75e91d7a15249e913e31b5d370d341a7
 - name: v1.27.1/bin/linux/amd64/kube-scheduler
   sha256: 7c65b0b1664c63e3aa73f66e815f80d2c161dd5db26fa7bb774fc7e8398878ad
-- name: v1.27.1/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/amd64/kube-scheduler.tar
-  sha256: d2f013b74fabdfed61c9f1b926bb6ec447f425bdea61c10c5fd84e3f33480939
 - name: v1.27.1/bin/linux/amd64/kubeadm
   sha256: c7d32d698e99b90f877025104cb4a9f3f8c707e99e6817940f260135b6d1ad0a
 - name: v1.27.1/bin/linux/amd64/kubectl
@@ -160,30 +100,14 @@ files:
   sha256: affc7fd642cbab7a94d2ab85dbd9af37a204108877867db360a4681b77c90be3
 - name: v1.27.1/bin/linux/arm64/kube-apiserver
   sha256: 79d65d42d8cd6cc058a06ef031b3662678ef6e507c1c0a3c4d9043e6ef1bca51
-- name: v1.27.1/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/arm64/kube-apiserver.tar
-  sha256: 48811d54486c7b1897df9793fddee9b50a78a31296e825cae931df2df63de826
 - name: v1.27.1/bin/linux/arm64/kube-controller-manager
   sha256: a62a9c8fbc5e3c364fe3736333bd53572d8717a69189d37be15bfd6ffb045c1d
-- name: v1.27.1/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/arm64/kube-controller-manager.tar
-  sha256: ee8a1fe770f9021b8c45bd4f4758bb243b9c9cd0247462335c582c730a7847c1
 - name: v1.27.1/bin/linux/arm64/kube-log-runner
   sha256: f4b729c0d814affc630efcac98d3f192edfd11da93386cfcb9abcba137b8d9bd
 - name: v1.27.1/bin/linux/arm64/kube-proxy
   sha256: 66722ea5e20577f07ed74d95743ac844ebc9e0c262c86d7689d927857ca478e7
-- name: v1.27.1/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/arm64/kube-proxy.tar
-  sha256: 094a4b099e6c50cbd5bb1fab866154933bcd24024191a5f0a5c9e1dd88e69193
 - name: v1.27.1/bin/linux/arm64/kube-scheduler
   sha256: fb5c78e7034daebdc84b754b84b608a79f19f7090efa14f4b6c21e8ed5e25696
-- name: v1.27.1/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 1582392f830fc9aae6da8d3e0120dd4f364b0fb956a446fb63789d4593abed98
-- name: v1.27.1/bin/linux/arm64/kube-scheduler.tar
-  sha256: 7dc53e9288ffa69fcfca6c4ccce6b177a74eb6274573b7b202e319b1e09d66c4
 - name: v1.27.1/bin/linux/arm64/kubeadm
   sha256: 024a59cd6fc76784b597c0c1cf300526e856e8c9fefa5fa7948158929b739551
 - name: v1.27.1/bin/linux/arm64/kubectl
@@ -194,10 +118,6 @@ files:
   sha256: dbb09d297d924575654db38ed2fc627e35913c2d4000c34613ac6de4995457d0
 - name: v1.27.1/bin/linux/arm64/mounter
   sha256: eb5fe8d74bb258d6f65d8ddda6af2a9a374ab24083ad46688a4e9abebca0ea7b
-- name: v1.27.1/kubernetes-release.spdx
-  sha256: 17ce6a3e3a4ada1fb1d226a21d2a8a3b4256ba979058c17cec50b1bde5101b61
-- name: v1.27.1/kubernetes-source.spdx
-  sha256: fb46db0568aab788a6f41f8e989f58b12dc413950448ab6510bf27e285c787e7
 # kubernetes 1.27.2
 - name: v1.27.2/bin/darwin/amd64/kubectl
   sha256: ec954c580e4f50b5a8aa9e29132374ce54390578d6e95f7ad0b5d528cb025f85
@@ -207,40 +127,20 @@ files:
   sha256: d2b045b1a0804d4c46f646aeb6dcd278202b9da12c773d5e462b1b857d1f37d7
 - name: v1.27.2/bin/darwin/arm64/kubectl-convert
   sha256: 3e917563fd614b0161fcb25cf14ec4e580a9096a3fe65db7e30adb4f2f41b7e1
-- name: v1.27.2/bin/linux/386/kubectl
-  sha256: 9b150c9c95a66cbf5a3834f33fde520ad9c272450038757e23deabb77b759d14
-- name: v1.27.2/bin/linux/386/kubectl-convert
-  sha256: faee5404e3789fa19a36bc385cf7478752148710ae2e770a15724607ada8874a
 - name: v1.27.2/bin/linux/amd64/apiextensions-apiserver
   sha256: eb7360ae50eda54cf648f824d722f0e22358e7cffb54bd9e2f755013bbad4a74
 - name: v1.27.2/bin/linux/amd64/kube-aggregator
   sha256: f1f8b811c1e2fd67599d5e820007d31fce2e85e951d7d1409e52c29ac28aeb72
 - name: v1.27.2/bin/linux/amd64/kube-apiserver
   sha256: d15f3c2c96683a30f33f54d119d297122b669fdd7ea02083584223941ce16d66
-- name: v1.27.2/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/amd64/kube-apiserver.tar
-  sha256: ec8117e958f9c783dd6995ee2138ef361af8e6c10a8cc665f4c2997e92a4ebbd
 - name: v1.27.2/bin/linux/amd64/kube-controller-manager
   sha256: c3963c3cebd22d077ef602eca747d1a59134bef729d58b88702ff7328c5cacfe
-- name: v1.27.2/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/amd64/kube-controller-manager.tar
-  sha256: ab01deb0af73aaf0798d135dfe0fadd6bceef34f4caff2c28d23cc129af14d2e
 - name: v1.27.2/bin/linux/amd64/kube-log-runner
   sha256: a3e60d598645a7d4d191073e6552af773b550fa8581fdb5bb442db22c535f040
 - name: v1.27.2/bin/linux/amd64/kube-proxy
   sha256: 94f7226f7087a439785ea97aff5919097f85e9474fd537f58678d11e2646faab
-- name: v1.27.2/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/amd64/kube-proxy.tar
-  sha256: cb99fe7fa6e4c28f5d8c42c0a454d9aedfec0da03b6b22e7f7d10ee633f15f3e
 - name: v1.27.2/bin/linux/amd64/kube-scheduler
   sha256: 9ff859b1cfda5fe30243c4c6b787b7f425a74475a18285fa7391db7f9421ad17
-- name: v1.27.2/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/amd64/kube-scheduler.tar
-  sha256: dd14f362d332f2224ea6339f339094bbd35dff5426d98d7b197619fd4b64f0ad
 - name: v1.27.2/bin/linux/amd64/kubeadm
   sha256: 95c4bfb7929900506a42de4d92280f06efe6b47e0a32cbc1f5a1ed737592977a
 - name: v1.27.2/bin/linux/amd64/kubectl
@@ -257,30 +157,14 @@ files:
   sha256: 8a16754716a6d9c64bd034263cdd4e748ac5a33df430b12728704ae615df821b
 - name: v1.27.2/bin/linux/arm64/kube-apiserver
   sha256: bcf805295eb7f34e9e6a8cbfc5e34838f6e2e23b6c60438023a695b93cb818a1
-- name: v1.27.2/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/arm64/kube-apiserver.tar
-  sha256: 82e5e549da176fea596a435f25bf5efab7bad45a1e73cc942fa5509ac9fbc6a3
 - name: v1.27.2/bin/linux/arm64/kube-controller-manager
   sha256: 2967bca5a7822e918065deb21011831432d3a51f35a23dc6bd278479b5c49f13
-- name: v1.27.2/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 5fe883163e4b65c8e4c76b4de743ec095856e310aa20cc2adfbe545c2409f5d3
 - name: v1.27.2/bin/linux/arm64/kube-log-runner
   sha256: a96215044b2007cd6494a31bef0337b0a5a3d4290b12f182dc29bc4f949ab44f
 - name: v1.27.2/bin/linux/arm64/kube-proxy
   sha256: f93cebcf60aaf3f6321ba92e035d6a4300b7455ee185de85592658371782dc46
-- name: v1.27.2/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/arm64/kube-proxy.tar
-  sha256: 54249d471cd56535c251a58986e49b9094aecb1f694abce5d9675445c060db61
 - name: v1.27.2/bin/linux/arm64/kube-scheduler
   sha256: 91ac61bb20232dddf914533d5be1a667d5701d24d2e7fd5e2b5761135fde57de
-- name: v1.27.2/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 77f7c33273eda981800c9e924d2e0b736a71efbca29da777179cdca3caf4791e
-- name: v1.27.2/bin/linux/arm64/kube-scheduler.tar
-  sha256: c9b4c27873bfce84dcc8af5fd54db72aa1b105fa9c1119fab4f1873641aea2d7
 - name: v1.27.2/bin/linux/arm64/kubeadm
   sha256: 8f01f363f7c7f92de2f2276124a895503cdc5a60ff549440170880f296b087eb
 - name: v1.27.2/bin/linux/arm64/kubectl
@@ -291,10 +175,6 @@ files:
   sha256: 810cd9a611e9f084e57c9ee466e33c324b2228d4249ff38c2588a0cc3224f10d
 - name: v1.27.2/bin/linux/arm64/mounter
   sha256: 0601fd5b8df10d89ce6e18be3392b35e2b640013526d4f1fdcab30cede4012e1
-- name: v1.27.2/kubernetes-release.spdx
-  sha256: b7e63e85156ecb94740ed59837aeabf4d7daefdf280f54e4d2325bb4e61c52bf
-- name: v1.27.2/kubernetes-source.spdx
-  sha256: 98e475a27757c903a851876939d8aa142e2a49641335376b77a09500cc1cef53
 # kubernetes 1.27.3
 - name: v1.27.3/bin/darwin/amd64/kubectl
   sha256: 10662b3859fe302903e5d4f665d74c243bdb3a709b120c5c49434659a81942c5
@@ -304,40 +184,20 @@ files:
   sha256: 795af693fc168351132e127d75b03ace039e4bb40d67001790db77f7b7a37a7e
 - name: v1.27.3/bin/darwin/arm64/kubectl-convert
   sha256: 1a054a924ca0ac550cb37d2fe662a0c602021bd1e9cbad2cd288447b9a833bf5
-- name: v1.27.3/bin/linux/386/kubectl
-  sha256: a0bb66d37189802bccf9b41d5097d459b631b3b1a49de8bf19b2cd46441c8936
-- name: v1.27.3/bin/linux/386/kubectl-convert
-  sha256: ed6dc6fd4ded2ac93493482d6e797e7d9d8b52cca71e478ef6963236344554bd
 - name: v1.27.3/bin/linux/amd64/apiextensions-apiserver
   sha256: 5a084925b09714c77f3c62d8763f1034890e0dfa520cbe6a0e980f2879261396
 - name: v1.27.3/bin/linux/amd64/kube-aggregator
   sha256: 6f7126f8c0f903fdbb0b1fd043a8469915a131591abf12e0ea65af638aee5c4b
 - name: v1.27.3/bin/linux/amd64/kube-apiserver
   sha256: 9aeec3c9114ac2dce1049e72a304ac78458fddb62e68b19b172cad72acbf64aa
-- name: v1.27.3/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/amd64/kube-apiserver.tar
-  sha256: e414eb4daa377bc909763a682dc33f827947b07f5710d320a922506a2c2f696d
 - name: v1.27.3/bin/linux/amd64/kube-controller-manager
   sha256: 877ce25462c0d14db99cbc1dd230a538ddf9f210454d7140fc21301c1d0b0356
-- name: v1.27.3/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 8cc221cdd8936e8dc862acc5dd7f70fc7d9b2197c712ef9503abfd6958d79e72
 - name: v1.27.3/bin/linux/amd64/kube-log-runner
   sha256: 8b3e8fd6beb7d5b206ef062255217ab8b900c1a07ff0435fc895839a5cb2ee3e
 - name: v1.27.3/bin/linux/amd64/kube-proxy
   sha256: e46f34e97e03ef1e0b82dbd68b341e719a52a2b58079175f290cb18e056b3955
-- name: v1.27.3/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/amd64/kube-proxy.tar
-  sha256: c01cba27812047c48605a73cc9786f4806319951d78de9fab5adb57c5226da1f
 - name: v1.27.3/bin/linux/amd64/kube-scheduler
   sha256: 6cdd29d0963c0cc963971bd523923d5bc408137c8dd4e59dfbd85fa1bac6c810
-- name: v1.27.3/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/amd64/kube-scheduler.tar
-  sha256: 46ac4b68ef2a13fc6bb6cec74c8e6d96ecfacc71ee8269b485b1c3a452c7af97
 - name: v1.27.3/bin/linux/amd64/kubeadm
   sha256: 2cd663f25c2490bd614a6c0ad9089a47ef315caf0dbdf78efd787d5653b1c6e3
 - name: v1.27.3/bin/linux/amd64/kubectl
@@ -354,30 +214,14 @@ files:
   sha256: 66ea7dfd5d95c28d245a9421e0049b9e0f135b45154088449fdf21a849f3680c
 - name: v1.27.3/bin/linux/arm64/kube-apiserver
   sha256: e11dd6c358b8fa2ddf1b4c3eb588e323df4f4fe5ea8e7f8a156e2918ed47c97e
-- name: v1.27.3/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/arm64/kube-apiserver.tar
-  sha256: 082a97398a688a2c7ad8f8e98c10a8577faeb530055d307c62d9b13703097701
 - name: v1.27.3/bin/linux/arm64/kube-controller-manager
   sha256: 617226b83b66475f2d1e06095d3107497fa4e5d1097ee07604257af9b966861e
-- name: v1.27.3/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 5f3dc1550e03486eadbe3ed0646ed0d14caa22f78dbf1b9b6a57b751bf9a35fd
 - name: v1.27.3/bin/linux/arm64/kube-log-runner
   sha256: ba0f4312dad2c3dafc59ffe996bb9f5fd91cf7ae1d1068d0c977dc1160efb501
 - name: v1.27.3/bin/linux/arm64/kube-proxy
   sha256: 50452550577d947d427ab66413975ce01e01c8aa1d2ac9c4073331fe51d86a37
-- name: v1.27.3/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/arm64/kube-proxy.tar
-  sha256: e07ec2d6e36d34c75a450cd17242a4fd46ef83a24c32836431811b59fecdf73f
 - name: v1.27.3/bin/linux/arm64/kube-scheduler
   sha256: 5dd0f3e85909f9d6912521f554fa9ba45daa2a7a0af9b72a3987862cad323ccb
-- name: v1.27.3/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 4e8a9af74a85f8d9e0891634b0384a210dc41a384311aa5646b20295717a54f8
-- name: v1.27.3/bin/linux/arm64/kube-scheduler.tar
-  sha256: eda0da85af459126b9fded8d3aca498ef768fd0c5049cbb6f3e30440c10913d6
 - name: v1.27.3/bin/linux/arm64/kubeadm
   sha256: 495e2193ed779d25584b4b532796c2270df0f7139ef15fb89dc7980603615ef4
 - name: v1.27.3/bin/linux/arm64/kubectl
@@ -388,10 +232,6 @@ files:
   sha256: 2838fd55340d59f777d7bd7e5989fc72b7a0ca198cf4f3f723cd9956859ce942
 - name: v1.27.3/bin/linux/arm64/mounter
   sha256: a4b1c4bc37baec768e536e6c4e2c71c7864fad7b77c9592796c673cb5b1cd165
-- name: v1.27.3/kubernetes-release.spdx
-  sha256: a4937059675acf934cfe3e124150df0db005fefab2cd56cfa6ee7311d7ec5996
-- name: v1.27.3/kubernetes-source.spdx
-  sha256: bdfa9ace81fdf82013a148a54587e41bd681705989187ad1fe1e82d4af7287f3
 # kubernetes 1.27.4
 - name: v1.27.4/bin/darwin/amd64/kubectl
   sha256: 7963839cb85028adffcca41b36a05dc273ccd5f8afe4a551106d0654f5c5168b
@@ -401,40 +241,20 @@ files:
   sha256: 6abf3d4a2c43812b3ac4565713716f835e2da82b36c8dff0e05e803c68dbdf56
 - name: v1.27.4/bin/darwin/arm64/kubectl-convert
   sha256: 0c2947edaa775f2d03da65ce93150e1c8984bcb14a0787924e248a936a52ce57
-- name: v1.27.4/bin/linux/386/kubectl
-  sha256: 2d377a73344c95bfee5105a6347285abe630bef9c1b73ea8bea63362f430c294
-- name: v1.27.4/bin/linux/386/kubectl-convert
-  sha256: 28520006f3d1eed75ac9dddb607e121c2f9315f86ae4fc374b3ef5e2ef08bd3b
 - name: v1.27.4/bin/linux/amd64/apiextensions-apiserver
   sha256: b7753380cbcd5cc7140865e29303c2a95277a7938fb077cb283de5a4ce137a6c
 - name: v1.27.4/bin/linux/amd64/kube-aggregator
   sha256: 5f75ff599515aea9040ddc51dd343b8306831272725439b4562ee7b4f1754090
 - name: v1.27.4/bin/linux/amd64/kube-apiserver
   sha256: 97d28b1773d27a3e74f06e53a766141b8d8e364b3948338a5aaeafe1d6d66e52
-- name: v1.27.4/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/amd64/kube-apiserver.tar
-  sha256: 1a0c66a7390397e4717eb8a8cc8435191e83c76fcde23259af246a246cc9207e
 - name: v1.27.4/bin/linux/amd64/kube-controller-manager
   sha256: 72d3c041d60cf6301a0f7dd3f98bd19e7cb84f064246b29e5e9753333354580b
-- name: v1.27.4/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 9b293a5e29cfb6f642fd3cb8edc2ca9b8041665a420f108a5ef5a92c874c5133
 - name: v1.27.4/bin/linux/amd64/kube-log-runner
   sha256: 45ec05d5dfa1869b059bd1c871e6bb26e4440a6e1b72bbabf20dca87fc0170b0
 - name: v1.27.4/bin/linux/amd64/kube-proxy
   sha256: 35a771876a75e688d9a557b40e57507ebd86d01e43fb5d2ff9afc4ce0d2edbfe
-- name: v1.27.4/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/amd64/kube-proxy.tar
-  sha256: 1b602a571bcba1013e79bb2e6639b2a4ab43c390fd5dbd7f11f87c49eef3c6ff
 - name: v1.27.4/bin/linux/amd64/kube-scheduler
   sha256: 7547a6f8e2c5bb5405b9faefe4be3f204050492932b935a97134ef9cddd1733a
-- name: v1.27.4/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/amd64/kube-scheduler.tar
-  sha256: 98b049ff9018ac8bb1d4d0e45f652c00666a236c560e5b38253f7479248ed284
 - name: v1.27.4/bin/linux/amd64/kubeadm
   sha256: 7be21d6fb3707fbbe8f0db0403db6234c8af773b941f931bf8248759ee988bcd
 - name: v1.27.4/bin/linux/amd64/kubectl
@@ -451,30 +271,14 @@ files:
   sha256: fa7632a663e29e46e74620d79a8658a2c63427e2650964d5aad78e172560f91e
 - name: v1.27.4/bin/linux/arm64/kube-apiserver
   sha256: a12820f3cbbe6c64fd516696e49a737c566477d944f1a34e12711018af9ebfbe
-- name: v1.27.4/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/arm64/kube-apiserver.tar
-  sha256: 91a19b95ca9db9dda2679a0dd5072b6a8bd7e7cc6d74444f9232777f5d9db6f7
 - name: v1.27.4/bin/linux/arm64/kube-controller-manager
   sha256: c9db65b12a693e915143171565f4aabc2bd55ef0dbd1504fe6b0228fa1142ba6
-- name: v1.27.4/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 24ae16cadd3e83e85eabdcf4a80f52198da753edca5a17d1e399e41861ec0873
 - name: v1.27.4/bin/linux/arm64/kube-log-runner
   sha256: 70507b55a65ef00a6565834b76acf8fffe5e3db2b9d06cd3d200f87ab538015f
 - name: v1.27.4/bin/linux/arm64/kube-proxy
   sha256: cc7f18d76424e5ed10afd489c14e9e572ec394b89a9a699a90f0c42f8c12f053
-- name: v1.27.4/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/arm64/kube-proxy.tar
-  sha256: 6019f3f4f520b00ddc7a0e4f4a314bae1461f9383b9f971fa3be51d63497ae7a
 - name: v1.27.4/bin/linux/arm64/kube-scheduler
   sha256: de1b7f80a1b3e96bbb16b07af9fd2d8e0a8d9cc3563a09f8c774e0fe0f712a7c
-- name: v1.27.4/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 454f43896536c1cbea170ef9eda5d052803ae610ff80ce3ba4190b27ea56fd20
-- name: v1.27.4/bin/linux/arm64/kube-scheduler.tar
-  sha256: 425738191696ecdd1e63859cb92701841a1a97b69772510d898d091c41bbe82e
 - name: v1.27.4/bin/linux/arm64/kubeadm
   sha256: b4ede8a18ef3d1cfa61e6fbca8fcab02f8eee3d0770d2329490fa7be90a4cae4
 - name: v1.27.4/bin/linux/arm64/kubectl
@@ -485,10 +289,6 @@ files:
   sha256: c75ad8e7c7ef05c0c021b21a9fe86e92f64db1e4c1bc84e1baf45d8dbb8ba8d1
 - name: v1.27.4/bin/linux/arm64/mounter
   sha256: b69259f863858864377c049bfc941f2f59e1698a97201bab812d54f2a0a93a4c
-- name: v1.27.4/kubernetes-release.spdx
-  sha256: 2a05b92c43c33c8c7dbe96b95e9093e04aed310f259764a30b6ab20ca71c21f1
-- name: v1.27.4/kubernetes-source.spdx
-  sha256: 2b74fff712c2be120bc4e7d7dbe29f5cd80628e0d575bb6af19d88a19ea2483f
 # kubernetes 1.27.5
 - name: v1.27.5/bin/darwin/amd64/kubectl
   sha256: 3d4853b5633b50cc27389f7dd2caabafb64a07e2e3363e233d80736b57d78e3b
@@ -498,40 +298,20 @@ files:
   sha256: fa1b6d03ea6b5060470b15836cfa85e51d164627ffdebc889f88849cf413ec3f
 - name: v1.27.5/bin/darwin/arm64/kubectl-convert
   sha256: 79374401862f26cdece095ae2b18f8aa3a13396703e32d0b65256b985486beac
-- name: v1.27.5/bin/linux/386/kubectl
-  sha256: c258964d3b3dd4753acedeeb19cffa64b86a2452be0b706019e9e1023e494682
-- name: v1.27.5/bin/linux/386/kubectl-convert
-  sha256: 145f6997be590be376d36c25100dc3d178c7902cff8133a2e51ef603d69e3d27
 - name: v1.27.5/bin/linux/amd64/apiextensions-apiserver
   sha256: b7d946fe2b42c682d6618758b986333682fae92ab830dcf73c016126a2cc624e
 - name: v1.27.5/bin/linux/amd64/kube-aggregator
   sha256: e254a82ac7475c4a8d2aabf2cf50c6c88d936e830b4055ada6d8e1c3b94e1a79
 - name: v1.27.5/bin/linux/amd64/kube-apiserver
   sha256: 6d3882b6483825217720a34632f4c8faeb87732d8177c0c54361b23ace6d17cc
-- name: v1.27.5/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/amd64/kube-apiserver.tar
-  sha256: bbb950963f8eb0dbbe2e00d9d3ddd7177ad8ed391dbb6e667d5ca8b515aedc28
 - name: v1.27.5/bin/linux/amd64/kube-controller-manager
   sha256: 4c60f68d3a173b4df6fd3036b62dd8812417d4d3241ec9b96184ce7e0a3a812b
-- name: v1.27.5/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 8fc7d7f51e0aa9b187683579da8398bea5813ad0d03ee653a51e71a3c20b2e9e
 - name: v1.27.5/bin/linux/amd64/kube-log-runner
   sha256: 1e38993cb8e2c4ae0a5b958435c8cb9cbfec89bc4a49dead71384e08c91aecf4
 - name: v1.27.5/bin/linux/amd64/kube-proxy
   sha256: 41ddfff14ca4d2c04cf1a60b440e66109e341ee7b4b4921bf0460d7c5a4ea8ec
-- name: v1.27.5/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/amd64/kube-proxy.tar
-  sha256: 74211fb1e12f0cdb5f61f0d4fd700e383bbfcca46aa5ee52f739f927bd3e6a3f
 - name: v1.27.5/bin/linux/amd64/kube-scheduler
   sha256: d1f7e322ed499f07b0815e0e091751f8cf2bf1a00de0d844ac419824e51d25ab
-- name: v1.27.5/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/amd64/kube-scheduler.tar
-  sha256: 7a001e52eb9c59858ba4674f28fb9f4d51793b08ba1040f5ac8a43a4ba0cb732
 - name: v1.27.5/bin/linux/amd64/kubeadm
   sha256: 35df8efa6e1bc864ed3c48a665caed634a5c46cfd7f41cda5ad66defdfddb2aa
 - name: v1.27.5/bin/linux/amd64/kubectl
@@ -548,30 +328,14 @@ files:
   sha256: 2ca4c2c3347771e2f57659f7ead5c4d8235f441a8896f87d3f35b63a2bfdeb96
 - name: v1.27.5/bin/linux/arm64/kube-apiserver
   sha256: 43f2c640e20b03398872e148cb1891228d8514861d89dbe6a20c7335f60768b8
-- name: v1.27.5/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/arm64/kube-apiserver.tar
-  sha256: ae4615dd16709ba75ce63f3da2b1486bace49c4e6be6e47ef82fc7685c08ba4c
 - name: v1.27.5/bin/linux/arm64/kube-controller-manager
   sha256: 5d87783d01eb132a18d339dd311835c7729be9b70a09a8530ec854472a1a35c6
-- name: v1.27.5/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/arm64/kube-controller-manager.tar
-  sha256: fe5b6a7c48b798e5a27935ff86f78c3c22eb17314b0d3ed0768db884805eb54d
 - name: v1.27.5/bin/linux/arm64/kube-log-runner
   sha256: 377613c04b406fc320620c3d7c6e5357980fad9d87527c92118721313a5bc886
 - name: v1.27.5/bin/linux/arm64/kube-proxy
   sha256: cce54171c58d022b5f09b62a05f4d29949d238bc4b2d28ec01ec865d6ad04dfc
-- name: v1.27.5/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/arm64/kube-proxy.tar
-  sha256: b164d9be7321db72c8fa44e81f9e7d146ab323208e42c9363ceaba555af589b9
 - name: v1.27.5/bin/linux/arm64/kube-scheduler
   sha256: 20802934aa04d440bb1c09ee535d305029d3ad744643e2c07dfdd5e2638ee6cf
-- name: v1.27.5/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 33b13274f8e2358797c41afd853faec45172fef251312227a2ae1261ad4e4253
-- name: v1.27.5/bin/linux/arm64/kube-scheduler.tar
-  sha256: 6fa75276293064fac5f9723836b0b5c4b3a7f49b222c2dfb4388b67233c5c0c6
 - name: v1.27.5/bin/linux/arm64/kubeadm
   sha256: 3023ef1d2eff885af860e13c8b9fcdb857d259728f16bf992d59c2be522cec82
 - name: v1.27.5/bin/linux/arm64/kubectl
@@ -582,10 +346,6 @@ files:
   sha256: 4e78fafdeb5d61ab6ebcd6e75e968c47001c321bec169bb9bd9f001132de5321
 - name: v1.27.5/bin/linux/arm64/mounter
   sha256: 70725c0928aec76834cb353706ad977f479d0e69766cb672af26969d415be8f0
-- name: v1.27.5/kubernetes-release.spdx
-  sha256: ce68e455f4c9f7e14d6fb6cf465cb81e34556f87a596bb028a8b690e4a3bfa84
-- name: v1.27.5/kubernetes-source.spdx
-  sha256: e3f2a9576d88e855e94c2b7b864915dbec97ea505a9cd82466a5d3103ffb8a1a
 # kubernetes 1.27.6
 - name: v1.27.6/bin/darwin/amd64/kubectl
   sha256: 68bbaa3cfda19a726a046823106e3e96339f4af7f6a26460aebc46c7ddac9983
@@ -595,40 +355,20 @@ files:
   sha256: 68efeb2eed2ca7927a1fc73637fac4b10d071e467d71ae10dcb092c089f9a4ac
 - name: v1.27.6/bin/darwin/arm64/kubectl-convert
   sha256: b4a017ed23dec1da5711b910d31cc99a86b6ddc1e247ecbfd1688cd4f863d5ca
-- name: v1.27.6/bin/linux/386/kubectl
-  sha256: 2b24e312bf9a2b39d7c2355ce62490188add2c3be8196dc3d9fc9d423f274f96
-- name: v1.27.6/bin/linux/386/kubectl-convert
-  sha256: aa5259ca38f6b15c3b0e0355158772900a237b43572f53fae567d02c593632c0
 - name: v1.27.6/bin/linux/amd64/apiextensions-apiserver
   sha256: 26845ec159bd697cfbea4c0d34c7e00d9b68616a6d1c544ab47e499b9ad188ec
 - name: v1.27.6/bin/linux/amd64/kube-aggregator
   sha256: 3a7986d832a5ebe88ff3c94e01534f671ca1c32e13ed97380bd0170a7482dfcd
 - name: v1.27.6/bin/linux/amd64/kube-apiserver
   sha256: 005106928b05c99478ae154a1573fd0f5254b7d8cc87cb8cd5b6c4b15d14f100
-- name: v1.27.6/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/amd64/kube-apiserver.tar
-  sha256: 96ff64b1cc09db63e20dd6be5aa9e9c89b9282cf47955bd32c1415402cd95766
 - name: v1.27.6/bin/linux/amd64/kube-controller-manager
   sha256: 529bf110f46b173fb3eb7ed5b594c3bc5fa42e63d45fce9fc49af9ea44702bb9
-- name: v1.27.6/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/amd64/kube-controller-manager.tar
-  sha256: bc6f6a0e5d2ef93abf59ffeada741f39111835a3521f232619c41f8acbb4c346
 - name: v1.27.6/bin/linux/amd64/kube-log-runner
   sha256: 4937d26bc708a9769712a832d6b003eb8fed28184b33673dab072f688add420f
 - name: v1.27.6/bin/linux/amd64/kube-proxy
   sha256: 4d47535e01c74ce0ce46f44036e7ac7d42c86ea2ab26a3510549fa30b403459a
-- name: v1.27.6/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/amd64/kube-proxy.tar
-  sha256: 4ffafbcf6c499c8cc74386085bac91cb7218b85804c9d513a1824996d5e6f913
 - name: v1.27.6/bin/linux/amd64/kube-scheduler
   sha256: 13c1dd5fe78a23289a5628abd3f84cdcd3114bcd03631b0b3b55d2c42cc1d3b9
-- name: v1.27.6/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/amd64/kube-scheduler.tar
-  sha256: e3eacde74f38f7ff0d080574a956cadfd4639b2b9c17ce887a2708e1c4b3f7c5
 - name: v1.27.6/bin/linux/amd64/kubeadm
   sha256: 2bcdd68957ec25d0689bb56f32b4ec86e38463d2691d5ea21cd109c7afa3aa7c
 - name: v1.27.6/bin/linux/amd64/kubectl
@@ -645,30 +385,14 @@ files:
   sha256: 0c719050522e16ff7f1a29a95672762e6753319643983e1c077eb88316029fdd
 - name: v1.27.6/bin/linux/arm64/kube-apiserver
   sha256: 2481daed50e45a717afc93b5d51a7d9bffe39efafb02a93bc3d615132695f675
-- name: v1.27.6/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/arm64/kube-apiserver.tar
-  sha256: 3e5fa63d2fbf17e3157daf21df21354867dd4f554a485210abc34031e8338873
 - name: v1.27.6/bin/linux/arm64/kube-controller-manager
   sha256: ab7d3c92bd91b28c732f0b4055f5c40bced28b8397b5d443a7c10048a3002aae
-- name: v1.27.6/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 63968cd8a824e63b6820631ca56032a7d0889858f59fe1e4db48fb494f8babc7
 - name: v1.27.6/bin/linux/arm64/kube-log-runner
   sha256: 743cb42b64a91311463b42264520bccf31b70c63e22826856f2d2566a45c7872
 - name: v1.27.6/bin/linux/arm64/kube-proxy
   sha256: 3e63d7b59790189f361331c9b546051ff12c9beb86f3063ce15ca2edba01334d
-- name: v1.27.6/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/arm64/kube-proxy.tar
-  sha256: d43732b82f3daf47bd259d75b8bdfd9cbf94080bd197faf871169659531148fd
 - name: v1.27.6/bin/linux/arm64/kube-scheduler
   sha256: 73e013e717c5e00d31bc3c91aa6f22c97f61aafa183cf9b2826af4101fa6cdbd
-- name: v1.27.6/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: f8177659f535ea381f2c299383c2c8fa78adbcfd7652158564c06d63c3221b23
-- name: v1.27.6/bin/linux/arm64/kube-scheduler.tar
-  sha256: 5c2d1ca7ae431cd48bb5098e4360b495437ecb33ac35d0d03ba576e5f2722224
 - name: v1.27.6/bin/linux/arm64/kubeadm
   sha256: faec35315203913b835e9b789d89001a05e072943c960bcf4de1e331d08e10c8
 - name: v1.27.6/bin/linux/arm64/kubectl
@@ -679,10 +403,6 @@ files:
   sha256: be579ef4e8fa3e1de9d40a77e4d35d99e535a293f66bf3038cbea9cf803d11e5
 - name: v1.27.6/bin/linux/arm64/mounter
   sha256: 4c26498750a06a59e16640c0dfae465b65cd8c0ee00e1bb0ae27bcf9b8ac344d
-- name: v1.27.6/kubernetes-release.spdx
-  sha256: 7d1e930bd55e9800604f533c37535b4d419c6f14b8e65789e90e7d03dcd6d009
-- name: v1.27.6/kubernetes-source.spdx
-  sha256: 03aa2b588ba9ac82b32d0e0c05f15a5fe3507534f0c3aca12805071fe48691f0
 # kubernetes 1.27.7
 - name: v1.27.7/bin/darwin/amd64/kubectl
   sha256: eee61c04bf069da80d0b6b2c0e15d371de05fff056fc76f12928d2faefe9fa95
@@ -692,40 +412,20 @@ files:
   sha256: 3d08fd9236baad9ed5025c73693466c6020cfa02e2a15ca6c236b2ebff080582
 - name: v1.27.7/bin/darwin/arm64/kubectl-convert
   sha256: 53fb0780b2fc7436b44e0b455347361785be08df70183f1b4401e84fa6fa0b0b
-- name: v1.27.7/bin/linux/386/kubectl
-  sha256: 3457daadd974741f6740b03aab4a440937d75f8a3a1d35d2e2f2eaa06a52b234
-- name: v1.27.7/bin/linux/386/kubectl-convert
-  sha256: 8bddcbc289d61a6b8d91608ce85377c7d95c1aa0ea668846f53ab4ea7841a615
 - name: v1.27.7/bin/linux/amd64/apiextensions-apiserver
   sha256: d3afa2463a8729add6f1ceebc22dda8c1233db3ae0b8b0f6c20d275cf57f8007
 - name: v1.27.7/bin/linux/amd64/kube-aggregator
   sha256: f35547c711464711f35a2a95cbd13710f3b11b960ef6af27987e3247b454f1f2
 - name: v1.27.7/bin/linux/amd64/kube-apiserver
   sha256: a41663de01c5f8bc621fa2c1256c2506a68282fb113a2f81145c2ab038d36198
-- name: v1.27.7/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/amd64/kube-apiserver.tar
-  sha256: e47b29a74def83c545a51fa12e02e102daed4020db66edb929f38aa0f87e5665
 - name: v1.27.7/bin/linux/amd64/kube-controller-manager
   sha256: 9be1b258af09e416858f1340befb5f309601ca6562b156a2633a74c0c91b81a4
-- name: v1.27.7/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 283ae6ac472a75b39611a440411526753304d5c16cd9ba3023c82e8adf03754e
 - name: v1.27.7/bin/linux/amd64/kube-log-runner
   sha256: 066bf0ab77d53e020cea57de86a85bc43f2e8c0e7a3e86bfd93ebb0a17991c27
 - name: v1.27.7/bin/linux/amd64/kube-proxy
   sha256: 36aec4d1f7fae395303dc586c276518e5dc036517a50696c0a7617227f827481
-- name: v1.27.7/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/amd64/kube-proxy.tar
-  sha256: bcee55a80a981aaaabf0bc98083dd9fbc7fa0b9cfa622090d8b6befbef50cc6f
 - name: v1.27.7/bin/linux/amd64/kube-scheduler
   sha256: bbaef04e31288fdc006712eeac818f23eb7fb37b07d2f05bd99a17420b71e2cd
-- name: v1.27.7/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/amd64/kube-scheduler.tar
-  sha256: b4d7707c300bb31521e683f415dffbfc81f5c5b8ad5686c0149aad37b6ec625b
 - name: v1.27.7/bin/linux/amd64/kubeadm
   sha256: bc589219a003b3b94c114e4bcf20549a02657a0c6e5c73f588b37817148892d2
 - name: v1.27.7/bin/linux/amd64/kubectl
@@ -742,30 +442,14 @@ files:
   sha256: 2fabd38d971fc2b30f9eb059525d1f6c9e483f8d51dce6415f1c790b825cd8d3
 - name: v1.27.7/bin/linux/arm64/kube-apiserver
   sha256: 86e930321aa0a849bfa4dd21395ceb2d473e95deaa8a94cacca06c0a84229a88
-- name: v1.27.7/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/arm64/kube-apiserver.tar
-  sha256: eee16bb0ed829e7f7348ed4091e6219d2c597acfa7d7a1664b9790b481435c03
 - name: v1.27.7/bin/linux/arm64/kube-controller-manager
   sha256: 9cb57b32487e9f34249f908b2396fe3d0fc961b1ffd679b9626b867afd5f8743
-- name: v1.27.7/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/arm64/kube-controller-manager.tar
-  sha256: b0949293d4e379284a9ad52dcb20684feaf45ce94590f27d0581faed18f1db20
 - name: v1.27.7/bin/linux/arm64/kube-log-runner
   sha256: 0bbb0449c7dcaac81308252ba722c6a90ed7bec2615be93aaeb90668b32c5acb
 - name: v1.27.7/bin/linux/arm64/kube-proxy
   sha256: 0f57f8b57cafcb63b7103ba2f3b4127aed30962d3e1aa40f3584151bf231733a
-- name: v1.27.7/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/arm64/kube-proxy.tar
-  sha256: 890c60f442b25be0af61246e4ace6ccb83c430c5560c9c2bb50d4f98fae3f0d1
 - name: v1.27.7/bin/linux/arm64/kube-scheduler
   sha256: ddf2e7d6b7138f59aca4a71809e363e030e9f8d55642c7bcf1d101d1927cf542
-- name: v1.27.7/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: c6bcaae661b9de655091c860fd1b0c74091bf60155e99c0c7eb070c693934cee
-- name: v1.27.7/bin/linux/arm64/kube-scheduler.tar
-  sha256: c6a0cf0910130a5e8e84902a0d9eb0914329e3b9c04b790f3cacafe86e41ada3
 - name: v1.27.7/bin/linux/arm64/kubeadm
   sha256: 46d7c43532233906919a53ee0e03ab04ab9e08514392d17a86f058e0364cda4b
 - name: v1.27.7/bin/linux/arm64/kubectl
@@ -776,10 +460,6 @@ files:
   sha256: ed5bfa48ee64d5e6cf23ed9fc03ea0593021839429fdc1ea7cc2ebf3f11b6491
 - name: v1.27.7/bin/linux/arm64/mounter
   sha256: 8b8657b65574a3b4cc04478159741752de45f73b766a64e2d6d913a9bde2f4c2
-- name: v1.27.7/kubernetes-release.spdx
-  sha256: d0451358ca7483ed01f1af071b274cce0c232919933da025d5834c2433cbb202
-- name: v1.27.7/kubernetes-source.spdx
-  sha256: 12ab62904b605125d491ef62e7250ee9c89a04a1b3e69f4269cdfd81c5ef5a4b
 # kubernetes 1.27.8
 - name: v1.27.8/bin/darwin/amd64/kubectl
   sha256: 35d8034e4ba977ec62499d7f43478f935a79729e49c7be1af344c1ef2a52e270
@@ -789,40 +469,20 @@ files:
   sha256: d103219a0e97c6a5d194afb57ff86b599879159a2b96a8b94bb6a7e7594e484c
 - name: v1.27.8/bin/darwin/arm64/kubectl-convert
   sha256: 73bdf1c2097783d628149071bf95f571371d81ae858fdab49815b0b06b45fe08
-- name: v1.27.8/bin/linux/386/kubectl
-  sha256: 226dddb85d159a49e9c16b2561445693eae8b80241f77fe21c9a15fe5486093e
-- name: v1.27.8/bin/linux/386/kubectl-convert
-  sha256: 85d3c6cb4ed8be4007c2bf92812636c62fcee75c43ccf1b6603d7d56b5c4d07d
 - name: v1.27.8/bin/linux/amd64/apiextensions-apiserver
   sha256: 8ea2820df9b52706bbc62948b79c2c3e91d523839f9c2d471d8fe5774b6bcce2
 - name: v1.27.8/bin/linux/amd64/kube-aggregator
   sha256: 748d5e47d5406717af9dd178610cbd8fe69fcf019f5a0bda5a8b6899896fb7a3
 - name: v1.27.8/bin/linux/amd64/kube-apiserver
   sha256: 5480eb26c8548f54156b3bd450be39c47ff8ff6c33a6ebd8113a757df080237a
-- name: v1.27.8/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/amd64/kube-apiserver.tar
-  sha256: 4aa103485fe1f4842a4d7cdf020a366863714ebc98b09958f0df8c41be4fceab
 - name: v1.27.8/bin/linux/amd64/kube-controller-manager
   sha256: e4f4cbb89f1a7c3a9226efad28a0a90cbf421e886166e294381ec357f3d6c7a8
-- name: v1.27.8/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 74c13040903bd158eecd236105e40c28e47f3319537616f3b5b030cec405b657
 - name: v1.27.8/bin/linux/amd64/kube-log-runner
   sha256: 70354efd00014763712d936a0a8759d6b966e7ed82adaa1baa2e59f98bc8512f
 - name: v1.27.8/bin/linux/amd64/kube-proxy
   sha256: e2c73e7aa4789f51c0b3d51626d23a03f640e59b9249179323f913bb4adfaa6a
-- name: v1.27.8/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/amd64/kube-proxy.tar
-  sha256: 3f9f435a83ef148b20f81bddf922052f6b507fd8ed54b8feb6db56ea734dcf8a
 - name: v1.27.8/bin/linux/amd64/kube-scheduler
   sha256: 9cdf9c5a9d6faf6ce5ede7f678c2fb86fa52710bff2b982299178c9e6450b496
-- name: v1.27.8/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/amd64/kube-scheduler.tar
-  sha256: ecaf02888a4769bc2e90949af315b0a8bf8f726e048040117bffc979c2f6fa70
 - name: v1.27.8/bin/linux/amd64/kubeadm
   sha256: f8864769b8b2d7a14f53eb983f23317ff14d68ab76aba71e9de17ce84c38d4eb
 - name: v1.27.8/bin/linux/amd64/kubectl
@@ -839,30 +499,14 @@ files:
   sha256: e4cb34fcf6285899eb463573da4e757fddbc6aff38e913fc7277567878fee425
 - name: v1.27.8/bin/linux/arm64/kube-apiserver
   sha256: fd508c712134440aa7574034f5451df3b7bc50a02073b5800a877c1ac0feae31
-- name: v1.27.8/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/arm64/kube-apiserver.tar
-  sha256: ced9f4e8fbebcc8cae047f76edc2825004d2123dc91374401c61888bb43ce003
 - name: v1.27.8/bin/linux/arm64/kube-controller-manager
   sha256: 6f651bb1a241b31d98aa426481316b66d9709b9dbaf3590d3efa24cf3ca413df
-- name: v1.27.8/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 9ab96e4e9b8839b82c1d17c66e4e45fb78da40f93cb5fc72cbadef718ba8df48
 - name: v1.27.8/bin/linux/arm64/kube-log-runner
   sha256: 288324fa11c079cbfc978b9c1fb1609bb2ffe4db42c84c65e504a9d57e037f44
 - name: v1.27.8/bin/linux/arm64/kube-proxy
   sha256: 320cf6beb113a3aa50d6d163d82792fa9fecbb3f74ce6da9f70d96c8b2be7fc0
-- name: v1.27.8/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/arm64/kube-proxy.tar
-  sha256: 996c5763446082729c8145b70d015325300309c668ef39356099dbb3cd2d266f
 - name: v1.27.8/bin/linux/arm64/kube-scheduler
   sha256: b04fa187c6f95d921e5d151fcc60e5230bb00915616cf769434f9a1796cac178
-- name: v1.27.8/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 7d5e8bfa07c40ac6848498c1f2ff1406a1e1b3bbf52d5d648e53c1f263089071
-- name: v1.27.8/bin/linux/arm64/kube-scheduler.tar
-  sha256: 8adebcc31fb29c6939b4177a5ed5dbecd4c2c9748417b304ea13223b43f67af1
 - name: v1.27.8/bin/linux/arm64/kubeadm
   sha256: 0d0f5b2781d663d314e785d14361aa5a09cfaf6e1694aa3cc731f4f06342ec13
 - name: v1.27.8/bin/linux/arm64/kubectl
@@ -873,10 +517,6 @@ files:
   sha256: 71849182ceb018dc084f499ad28b7b1afb7f23e35ccaf8421941dd5dafef0d4c
 - name: v1.27.8/bin/linux/arm64/mounter
   sha256: 3112a92aa3ef651a0df91e3f2942adb4c1e41777c94e7fdcc4e4ae14c04642d9
-- name: v1.27.8/kubernetes-release.spdx
-  sha256: b940a795f3d7403a81af8d9b6f2ca5a7eedfc2206aa836282fb44e420d5f05a1
-- name: v1.27.8/kubernetes-source.spdx
-  sha256: 769d47ab0960d5f746634abd1a9230bf899e6ae3a7917bcd543f89911fbdbd89
 # kubernetes 1.27.9
 - name: v1.27.9/bin/darwin/amd64/kubectl
   sha256: 0b2b965f471768b68d7a06deb85d2d2202551db5cc62a7100bb8c309e636a717
@@ -886,40 +526,20 @@ files:
   sha256: a5dd031329a357e4c06fc6404a5601773bba9ada075a481ef1008a0e7aa885f5
 - name: v1.27.9/bin/darwin/arm64/kubectl-convert
   sha256: 2ec2b89b1c5f93ec3331b35c35ba4dc6d141cb1ea4544de93f64491b555ccee4
-- name: v1.27.9/bin/linux/386/kubectl
-  sha256: ffe08f304bbfee938adf7da27e1c7cdb1e691ba1a9cdb42dce696fa581bc2497
-- name: v1.27.9/bin/linux/386/kubectl-convert
-  sha256: 83ff38c581a63305bf1df800c7c9232672e4b91897b81285640e26b3f8eb1a52
 - name: v1.27.9/bin/linux/amd64/apiextensions-apiserver
   sha256: 6ae9fc820c752ea0e9dfe7f2f350ba93240cdc37944c2b60941baed1b73e59f9
 - name: v1.27.9/bin/linux/amd64/kube-aggregator
   sha256: c3055e5d4d49c594b13f24f6050c28c662e3d02942974bba655b5ba0644f2b1c
 - name: v1.27.9/bin/linux/amd64/kube-apiserver
   sha256: 886dd179ee0819bdfe7a93692a52bc3b66ff82ef511e3a7def0e73a08ccaa935
-- name: v1.27.9/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/amd64/kube-apiserver.tar
-  sha256: 6f0132fe87cba013bdb5e62b251ed80c884c8a6004972801c039053685b677e3
 - name: v1.27.9/bin/linux/amd64/kube-controller-manager
   sha256: c6699e5ff6930f2079b2e98986cd68fbe5d752667ee7905ba5d2967ac01e0b19
-- name: v1.27.9/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 91fe4ce65e77a31e8918f27d2c7f744db5d96f0b0bf3a4585ca8208fa57a4b21
 - name: v1.27.9/bin/linux/amd64/kube-log-runner
   sha256: 942f2386e3b6445f9836e7cf6abb83173f7b6dfa5c8b30f1e5d22ce24e5e46bb
 - name: v1.27.9/bin/linux/amd64/kube-proxy
   sha256: 9f967c4a02324ddfc672d0345c666b46d71c6d3544f2ada768df968afe57606b
-- name: v1.27.9/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/amd64/kube-proxy.tar
-  sha256: 474f06934255ee280bc6d760b26f63dca4e7ebcea145d92d6865da0d315c1214
 - name: v1.27.9/bin/linux/amd64/kube-scheduler
   sha256: 7fbcbfdb24fac5637978a5e10b29c3b6aad71a5bd65c50f903859f8d66af9f99
-- name: v1.27.9/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/amd64/kube-scheduler.tar
-  sha256: 18d4cff5a4133f041dcf2e19efac8552d5bfd599ac48e3540477553e9bb408d9
 - name: v1.27.9/bin/linux/amd64/kubeadm
   sha256: 78dddac376fa2f04116022cb44ed39ccb9cb0104e05c5b21b220d5151e5c0f86
 - name: v1.27.9/bin/linux/amd64/kubectl
@@ -936,30 +556,14 @@ files:
   sha256: 7cc3bec8ab3250ba9f2a2a6a52913117137a4eadd8d8cb1b0be34a10962dc944
 - name: v1.27.9/bin/linux/arm64/kube-apiserver
   sha256: fb995e9120a34101c71295c5f551ad0b9d5896099364cf4e0d133e15e7f3db89
-- name: v1.27.9/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/arm64/kube-apiserver.tar
-  sha256: 40d6c233ef5191bf64b2e171bbbb60fe76dc9a8365f6f545fb6f2ad5e8258e6b
 - name: v1.27.9/bin/linux/arm64/kube-controller-manager
   sha256: 7b9770cc27a893f72a51543ed2dfe6891d5faa368817cad6e86929286726bbd6
-- name: v1.27.9/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 5c4e6c38d48ed6bb2c0135be9593545205b24a699fb006be4ccc6d2f34bd648d
 - name: v1.27.9/bin/linux/arm64/kube-log-runner
   sha256: 017591d5893ca9c2d9f43d7abf8fd49303823897f509f004706994aa848b1cab
 - name: v1.27.9/bin/linux/arm64/kube-proxy
   sha256: 9889b0b6ac7bdf96517e338ce8da825b694cd31ef53100203b9fa30d9d8f2dda
-- name: v1.27.9/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/arm64/kube-proxy.tar
-  sha256: dea5656454902ca8f52c21454add78ca2ed3262f6c9bd0d0a955205ba2b9dc43
 - name: v1.27.9/bin/linux/arm64/kube-scheduler
   sha256: a3481bd8a2c2a3bbb79e1eaa429d16e668afb1c8ca519db73da4a7c607db24d1
-- name: v1.27.9/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 3f955891d4b0582eb0ec2ebe4a1b576c28ffd315a6637c8788f34f50435c6e17
-- name: v1.27.9/bin/linux/arm64/kube-scheduler.tar
-  sha256: 248984da6fac05076e531610c0e17774846e399461e35cd4aab863f2f20a0efe
 - name: v1.27.9/bin/linux/arm64/kubeadm
   sha256: d3d022842b0b8e4661222e8873249f5acafdbef52fd1bfb98152a582352b3c40
 - name: v1.27.9/bin/linux/arm64/kubectl
@@ -970,10 +574,6 @@ files:
   sha256: 8a14bc3739f5ca3b23d08301c2e769ee58c8d1cecb7243b46b1c098ae77effd7
 - name: v1.27.9/bin/linux/arm64/mounter
   sha256: c99b9e163e66afc53f00118968a01116546e5824e2e3c29a822c0cf1a62da840
-- name: v1.27.9/kubernetes-release.spdx
-  sha256: 40018ad87dafbc5263eacbaf64d736a210724fb65c192a9d913de8d07ae52294
-- name: v1.27.9/kubernetes-source.spdx
-  sha256: 546e0859782469fa1ae958f2d6ce178acd49d6e23ddbeca9e9a75d053b614187
 # kubernetes 1.27.10
 - name: v1.27.10/bin/darwin/amd64/kubectl
   sha256: 1931d0b610b4e6e7e876d57868fb62545972326ebf8280f9a755176a748c45f3
@@ -983,40 +583,20 @@ files:
   sha256: 096c58d0859ba043739a5545670032de2a8f22571f12771d316dd1d3f40f1014
 - name: v1.27.10/bin/darwin/arm64/kubectl-convert
   sha256: fe0d3ce7d638c033ae4fde345207e758f0b9e25d40593b5a5014e90fa17557c7
-- name: v1.27.10/bin/linux/386/kubectl
-  sha256: 6e8fac066c583e36b1cb63bcd044dc2d2b253e9ecf01a0125e3ae55a14958fda
-- name: v1.27.10/bin/linux/386/kubectl-convert
-  sha256: 23994b7052f59a8b289f395b73faf0c28aba6a72bed9bd48d6af67f9bad6f386
 - name: v1.27.10/bin/linux/amd64/apiextensions-apiserver
   sha256: 5418e9671e13d0a10bac7e3b997e04f64d5f7c313e472eca8287e27f2f30991c
 - name: v1.27.10/bin/linux/amd64/kube-aggregator
   sha256: 0acbd50d5eab27f51d1deac2fad62f7fe4fa527e606717ae8fd0ebb5bc1a42c8
 - name: v1.27.10/bin/linux/amd64/kube-apiserver
   sha256: bc97946a5874027fc7a5f9b91ba67598ef9923c6acc7a85e40feae77fd05373b
-- name: v1.27.10/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/amd64/kube-apiserver.tar
-  sha256: 8e3cd3e9dd462b51b75415be45ea65cca63d5d9955aa7d8c7849d5f6a7d7bf02
 - name: v1.27.10/bin/linux/amd64/kube-controller-manager
   sha256: 4b14a166594b2f281adc04a97f5047972b2e19f0f48aacda69587a0378230700
-- name: v1.27.10/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 03d0af83ed0f0e8181089c1a4358eabf97e96e234d2434862129d5d1b2f07f13
 - name: v1.27.10/bin/linux/amd64/kube-log-runner
   sha256: 356f7e0a2672091ffd1e781720cd44f67a7376d04358b76bd9eb5c0010bcc09c
 - name: v1.27.10/bin/linux/amd64/kube-proxy
   sha256: f317a3c078b3525c4a80a48b5453ebf2598504c51f338ed2e97050d689fe2aee
-- name: v1.27.10/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/amd64/kube-proxy.tar
-  sha256: 32a4d326b541b4291ce70ea92bb73fc9fc92749350bbd48b62d773d18ba5e61f
 - name: v1.27.10/bin/linux/amd64/kube-scheduler
   sha256: 88c95b3e3865531bf406b4d8190329373ba5cfbcfd4a5c775c5f00287e3d4155
-- name: v1.27.10/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/amd64/kube-scheduler.tar
-  sha256: 3ba356bde75b44ae92a882db74ec9c8d18ecd0ca17ea665ea24945a440237828
 - name: v1.27.10/bin/linux/amd64/kubeadm
   sha256: 23985e958443ac1aabdbeeedc675358abc0638eb580707829fd42b0996a0aae5
 - name: v1.27.10/bin/linux/amd64/kubectl
@@ -1033,30 +613,14 @@ files:
   sha256: 2416403886a35dba073074746e45c0c85d4915bc1ffd079d36d73701ac803430
 - name: v1.27.10/bin/linux/arm64/kube-apiserver
   sha256: 2190f842710f6bca393142bc5cea926830dc1e3b0aedfab8dce1f32ec4ebdcc9
-- name: v1.27.10/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/arm64/kube-apiserver.tar
-  sha256: 7e3178f73db422dab322ef0bcf871994caaae291a4d5a87df046da1c01b3f27c
 - name: v1.27.10/bin/linux/arm64/kube-controller-manager
   sha256: fd84f2ef271e4ecbe05a149b95f2c1d8c8f4dc9c56e6f15406f9196b2604c0d0
-- name: v1.27.10/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 9a6cc5de090f2b5326ac703131e9f233da22680fe96dab26fcb569e7cb227b5f
 - name: v1.27.10/bin/linux/arm64/kube-log-runner
   sha256: 666eb8cf6fed3829e8a34c0181764463122be19a6ae9ea1329e9bf555406bdd9
 - name: v1.27.10/bin/linux/arm64/kube-proxy
   sha256: 8ecdf6532133c49608f08b87cb41fad62000d3b50da912257a956f55957a5df7
-- name: v1.27.10/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/arm64/kube-proxy.tar
-  sha256: 41dcfe84174480913cb835e7e08772fc3ae56e020385eab4e45399f2e2dfcde6
 - name: v1.27.10/bin/linux/arm64/kube-scheduler
   sha256: 8208b850378a3dae6846893d3e013ef796ff3e17cf28bfa464130ef7af5a8919
-- name: v1.27.10/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 383101bc7c6321efda1fcaa88e45094488f7bc292be03b8de6ac2c78cea6faab
-- name: v1.27.10/bin/linux/arm64/kube-scheduler.tar
-  sha256: c44028e45e522751104b4c913f6bca0b522d6391977a8413a0024a809cd8e2ab
 - name: v1.27.10/bin/linux/arm64/kubeadm
   sha256: ed0447155a7e967ae23480b06b31b2c0aaa871e7c59dfd82ae25b03a1eccf6e6
 - name: v1.27.10/bin/linux/arm64/kubectl
@@ -1067,10 +631,6 @@ files:
   sha256: 0edadc44ef36be8d8106cad9972360c0477540e2d8c0bbeb38fd97fd1d7801d5
 - name: v1.27.10/bin/linux/arm64/mounter
   sha256: 091bbf4f8c91e0013acaeae0e7fd8a7a55ac37bec0275a53e22e3fde83133f9d
-- name: v1.27.10/kubernetes-release.spdx
-  sha256: 66106735db333b707b5deea35dd1416f288c9be6982fe835517cb68b9f91bf29
-- name: v1.27.10/kubernetes-source.spdx
-  sha256: 91677ee903133fd89ced3a296d9751cd350827ce38bac88bce010ba9c478d204
 # kubernetes 1.27.11
 - name: v1.27.11/bin/darwin/amd64/kubectl
   sha256: 46d35c437c3dcdf58e80dd69083fc334f447ebb097c94460fd7af4ca34994944
@@ -1080,40 +640,20 @@ files:
   sha256: 0bdcb54bb892a5c06fa7510716ca1a46b435d9b9ce1537898238a16528fbae39
 - name: v1.27.11/bin/darwin/arm64/kubectl-convert
   sha256: d3c473e40afff7389b3175a1c2bb054f275d6496f3198ea07b78b3832af9270b
-- name: v1.27.11/bin/linux/386/kubectl
-  sha256: 3b1971a52d94989dcbb0d4e8d470d9459d0f7d6591242e63e0ef0b956189abe2
-- name: v1.27.11/bin/linux/386/kubectl-convert
-  sha256: e7385e7eda03bc78fd820bbbee4655e45d1e1084713333d929a09180e62f8edb
 - name: v1.27.11/bin/linux/amd64/apiextensions-apiserver
   sha256: bc765faf3ab0ec7d0b09ba60221964f323049f8dfab1bae72efb89bad040b9c4
 - name: v1.27.11/bin/linux/amd64/kube-aggregator
   sha256: fee96a31c0812b941ba970a5836eee08eafccc9bf1b097abb66ff6eb1d3b5d5f
 - name: v1.27.11/bin/linux/amd64/kube-apiserver
   sha256: 1f759402c6f258fedda2fae2ccfb222328f0c6818f2fec33393bdde6f9b392c9
-- name: v1.27.11/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/amd64/kube-apiserver.tar
-  sha256: 9b36886415f4029d22667739bea41a41b83a98ed16f55c6723b58ccbf13c3e62
 - name: v1.27.11/bin/linux/amd64/kube-controller-manager
   sha256: ae63a98e2af597474e6585880d80839212c2829021a20bebcafd30c0cb9e2672
-- name: v1.27.11/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 496dc159153a0d5830adf8bdcd5ca61515ab34ce57bb252cbfaf0ed1cdd1221e
 - name: v1.27.11/bin/linux/amd64/kube-log-runner
   sha256: f9823a6587bb7c8e19efa18f152107a5993b8c5e3be91c14f1e7efdb2cf88b0b
 - name: v1.27.11/bin/linux/amd64/kube-proxy
   sha256: 980435fa4db2cb4be72f61daf02c8d6b0c1da1fba30f147a80dea760e940d63e
-- name: v1.27.11/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/amd64/kube-proxy.tar
-  sha256: e7c8050049a91576a6b848dbcf12c95bcb373109644b4e74bab575fff18734cc
 - name: v1.27.11/bin/linux/amd64/kube-scheduler
   sha256: 7b5f01dcaa2ec220db43de3ffe037f434e2f9dd922677f4ebfabf580b48c238d
-- name: v1.27.11/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/amd64/kube-scheduler.tar
-  sha256: 55339353ebaaff54ca91b11864b8101ec358b16854455e41ee8c910456bbb8a0
 - name: v1.27.11/bin/linux/amd64/kubeadm
   sha256: 31bf446a712fb08190838c35d1f4c93b0f975708c59634a5dc3d8915a241c83e
 - name: v1.27.11/bin/linux/amd64/kubectl
@@ -1130,30 +670,14 @@ files:
   sha256: 001292d99c687f3400f78bce36791fdfcf461498234e78782c68997e7957abca
 - name: v1.27.11/bin/linux/arm64/kube-apiserver
   sha256: b634a0681d5dc72e027129a0bc8fd7f1290f92190cfe1830a42ec31f80212c53
-- name: v1.27.11/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/arm64/kube-apiserver.tar
-  sha256: 9f692f5b98b52c151619d39001c64a204bcc165a3a8d4b4270426a1721f7766a
 - name: v1.27.11/bin/linux/arm64/kube-controller-manager
   sha256: 1c23cfa9ac0067e4f32384577c8fde355a6c4b91d7f250465cf40e55cbb1055c
-- name: v1.27.11/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/arm64/kube-controller-manager.tar
-  sha256: e062299b744259a415e659fb05a214198e20da868081f990c53569bdad598323
 - name: v1.27.11/bin/linux/arm64/kube-log-runner
   sha256: 84920ec25647a64e53e229d0ae95e7b76209cd9e066de53baeac0c7f7424cff4
 - name: v1.27.11/bin/linux/arm64/kube-proxy
   sha256: 759944af894ed489b741d5aea50b6af754e8e15912b298343504d20882ce7d51
-- name: v1.27.11/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/arm64/kube-proxy.tar
-  sha256: 4ab903c5e3506f948c974554b8cfd723d77dc741e3342465da3aea3fcf8cdbe9
 - name: v1.27.11/bin/linux/arm64/kube-scheduler
   sha256: b1303f85724c564e0cc3924a3a3bbeb5c5b4d0509641b25059248b7cd009e958
-- name: v1.27.11/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: 3af35e061f327158b540e278294e9a3ae32c00d9382159354f1c0b4c6a32c077
-- name: v1.27.11/bin/linux/arm64/kube-scheduler.tar
-  sha256: bd4d91b15fa8d719b54dc32d6f7c3559fe6f6492aca7cd4b914cb0fb6ed61aa5
 - name: v1.27.11/bin/linux/arm64/kubeadm
   sha256: b8452d6c3f1331beb3d5fa42466a9bc96638a76c40980dba9822300f230c0858
 - name: v1.27.11/bin/linux/arm64/kubectl
@@ -1164,10 +688,6 @@ files:
   sha256: e81987a864fb47afe14f65fa4e93760bc19c424335e0f0540c6c725b727ce22a
 - name: v1.27.11/bin/linux/arm64/mounter
   sha256: d5471bd997274a16eea975ea1c71f42212a7d5e7ff78d6cef611eccb87602a03
-- name: v1.27.11/kubernetes-release.spdx
-  sha256: 4646c6595a2def16f3451f27f93023006edb9e8dd204c3524434cbef6fbfef8f
-- name: v1.27.11/kubernetes-source.spdx
-  sha256: 00afb60ac7bc600d3c86a098d778172ba8d265e93996f125907c619cd39f2bea
 # kubernetes 1.27.12
 - name: v1.27.12/bin/darwin/amd64/kubectl
   sha256: bb4cb346b20fdb40a20f6f55c527974f5e5f2eb7bcf7950c545ac6d65f00eeaf
@@ -1177,40 +697,20 @@ files:
   sha256: ad6191bca8a725596ec67181c1c541ab919f87444ed149ed0b1cf30a28a6d1bf
 - name: v1.27.12/bin/darwin/arm64/kubectl-convert
   sha256: 15e7bb1c2ddf2a10100ee50450579b23b392b769903dd6889bad4e3b3a8170b5
-- name: v1.27.12/bin/linux/386/kubectl
-  sha256: bff8f2ae918cdf244abe020c601e770200bd06700e2ed68952846c4d637feb82
-- name: v1.27.12/bin/linux/386/kubectl-convert
-  sha256: b6f3587cd89d742c416dd5d50790a09fb5fa74ed65f76cd638f9fdb478b5a327
 - name: v1.27.12/bin/linux/amd64/apiextensions-apiserver
   sha256: 7a7d2e862d4f5cb102265f18aea9ab8ba26ec78b2394c9102ae04c5528d5fbfc
 - name: v1.27.12/bin/linux/amd64/kube-aggregator
   sha256: 6b85c6aa3d104599ce7e229f8c785bd1894a25773e889dd63dc28cb5e2f0cd40
 - name: v1.27.12/bin/linux/amd64/kube-apiserver
   sha256: 7bcd89a3e0f4dea0f2c3148759a18f71267e508c47109c731422a0d959f22852
-- name: v1.27.12/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/amd64/kube-apiserver.tar
-  sha256: cf65348a11aba99e7c768c24298f5793412f227e6a34979843e11b2ab6948f91
 - name: v1.27.12/bin/linux/amd64/kube-controller-manager
   sha256: dbb9e0eecfc8205a5d5d754ae2a491708c15ba65d36d5a8e70fabe63e8648424
-- name: v1.27.12/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 48b96dec18a6c0bfa86325b6703de5474810cc5e63d0183b0f3517e8b42228e4
 - name: v1.27.12/bin/linux/amd64/kube-log-runner
   sha256: 1f1e0b4617ad04fd408b7a76442b87e2c940b61652192d8a69883495694ac900
 - name: v1.27.12/bin/linux/amd64/kube-proxy
   sha256: c12d70708c68d8819dbcb3dc569d0b2d9e876130d4ba2c594509d02b5d82f619
-- name: v1.27.12/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/amd64/kube-proxy.tar
-  sha256: 393d1f0e2edfd8f95cbd7ddbf34897817d9ea040b7bff420ca3154189b215c2e
 - name: v1.27.12/bin/linux/amd64/kube-scheduler
   sha256: 0221a56b98803ddad3cfff722deb742b3fb697df42ac442b58a0f614abae4f52
-- name: v1.27.12/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/amd64/kube-scheduler.tar
-  sha256: 29517a962d66aef3f02ea96cead4d7a57059e09706a4d2d53a5aaee2478598b0
 - name: v1.27.12/bin/linux/amd64/kubeadm
   sha256: 06ee36cc80cfdfc01c937d750783d3ca6169a3da76382c7af3dd172d9f6bfa4e
 - name: v1.27.12/bin/linux/amd64/kubectl
@@ -1227,30 +727,14 @@ files:
   sha256: 0bc32e26a319adb65444f46e89b0d296523637be9cd7a55e85948990260c701c
 - name: v1.27.12/bin/linux/arm64/kube-apiserver
   sha256: f8281ef811a70b5bb97d4ae267c9fda7749c9edfafb6e45afecca994f5edeb75
-- name: v1.27.12/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/arm64/kube-apiserver.tar
-  sha256: 4ccc9baba8cf869f7a870b3511db719701918a2660406c09c6b2aa09e4b0ec34
 - name: v1.27.12/bin/linux/arm64/kube-controller-manager
   sha256: 93ed31fc2efffde1f916e7108bcda16cbdf450855da5993182ddcf4d88d2d292
-- name: v1.27.12/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/arm64/kube-controller-manager.tar
-  sha256: 3ea5d8b11bb3f0bd2956d587b68913af62e5870e9e29a6e69014e427767fd982
 - name: v1.27.12/bin/linux/arm64/kube-log-runner
   sha256: de7e400ffba205718b1129ecd2b37e3c6ec00adeadf103a1e39129274ea3f119
 - name: v1.27.12/bin/linux/arm64/kube-proxy
   sha256: 4215d48faab6c17cc8ae581d748dd4b6cac0b208c311af042cba504af1380223
-- name: v1.27.12/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/arm64/kube-proxy.tar
-  sha256: 0537d692635ee878539f4d678526dbd459bafbd340ecacc4ef0d3b7dde728271
 - name: v1.27.12/bin/linux/arm64/kube-scheduler
   sha256: 708f334d7eadc1c4a2d854a2f331c59a538b86c846753eb8e4c03522176eba30
-- name: v1.27.12/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: e7c0d1b99ada69614fc13bcfb368a3bddfe2cdd93f6426179be3f36663567203
-- name: v1.27.12/bin/linux/arm64/kube-scheduler.tar
-  sha256: 2b4c5e1ae3de84e5f93c25ee19779d4154d60d1d08aee7d354b6347d03e01b28
 - name: v1.27.12/bin/linux/arm64/kubeadm
   sha256: e74d47c14b5a251cff961dcce92cd632abcfd0fba4a07e78f0a5a5b2796e4b84
 - name: v1.27.12/bin/linux/arm64/kubectl
@@ -1261,10 +745,6 @@ files:
   sha256: 0d7d2d25c8b909d6cec7c1c2a5bfe51428ec33eaa5e8b209c718b77983e9dcba
 - name: v1.27.12/bin/linux/arm64/mounter
   sha256: 94d7bed9e8358c5c57d355273022e97c139b5a9847f489cb38630072c5b2269d
-- name: v1.27.12/kubernetes-release.spdx
-  sha256: 964a9e521278f9d2c9ae0eb18dafce43582d0ebe2ec3504eb53c99ad2de30629
-- name: v1.27.12/kubernetes-source.spdx
-  sha256: 4b0a9319351c548d1e64337e39979cd4b5ed51219f7331c893d71131f2b072fb
 # kubernetes 1.27.13
 - name: v1.27.13/bin/darwin/amd64/kubectl
   sha256: 7f39c78f21b1181638789253b8d19a8ae93d2e57152f20c9a672a45927b7c501
@@ -1274,40 +754,20 @@ files:
   sha256: 959cb92818559ed81ac9260e83211f7075a19e4856b2f37a09f4ccf37d379e6e
 - name: v1.27.13/bin/darwin/arm64/kubectl-convert
   sha256: c43d981ea9edd91428d62e5662b1dd01c74934684895690e10f888b361d6d050
-- name: v1.27.13/bin/linux/386/kubectl
-  sha256: ca654a9ff05fcfb9408d6a7dae8bbdd237920c2aa863773bfb4a1c69b3d1751e
-- name: v1.27.13/bin/linux/386/kubectl-convert
-  sha256: 7636a8e8d1b8e6ac9f80e24a1681be8d7e0306577b61a483e0ee740bc83b87fb
 - name: v1.27.13/bin/linux/amd64/apiextensions-apiserver
   sha256: a0bd58ff4e4c60b2065bbd345bac3deacbfd2620aec87aa1a68156082b500273
 - name: v1.27.13/bin/linux/amd64/kube-aggregator
   sha256: 0481e7e20fd9de179d504128cd47aa9121598465869d35bd6fcd2c42a53cfd41
 - name: v1.27.13/bin/linux/amd64/kube-apiserver
   sha256: c893071cc87a35e85cc3719daf53d3acbac36b911c170108db4a1cba4dbce7a2
-- name: v1.27.13/bin/linux/amd64/kube-apiserver.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/amd64/kube-apiserver.tar
-  sha256: 0618693cd212bfac4996a1027c43f853de148d48c6f07aed44208cc15f4c43e0
 - name: v1.27.13/bin/linux/amd64/kube-controller-manager
   sha256: 633d79e1b543f4cb51dc038a9f253ed3e1b8267ae6bab78b50b430f02f8c9196
-- name: v1.27.13/bin/linux/amd64/kube-controller-manager.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/amd64/kube-controller-manager.tar
-  sha256: 3d2a0e7ccd14aec5c47f41bd00f83d5e57887c809482c2676baf9b9e2193fe38
 - name: v1.27.13/bin/linux/amd64/kube-log-runner
   sha256: e5fadc3274e7be50d9ed2047c568e24ee9f1023070a34336af4e92cadd1e1329
 - name: v1.27.13/bin/linux/amd64/kube-proxy
   sha256: 3b1c38f3af95f68a840319b6002719f12f2f23ad7a924ac962182aa232f44d89
-- name: v1.27.13/bin/linux/amd64/kube-proxy.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/amd64/kube-proxy.tar
-  sha256: 0310561b64aa425c93be070d6bce5e3f4941a47bac7eda9d3229529137692ee9
 - name: v1.27.13/bin/linux/amd64/kube-scheduler
   sha256: ee6263f19c706f56676c698b2c1ddad615d770898e588e7a222ea991e77eaf8c
-- name: v1.27.13/bin/linux/amd64/kube-scheduler.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/amd64/kube-scheduler.tar
-  sha256: 59704f83c35f5bdbc8b899259b372298272498f3fd8be8270fbab06136ae0d6a
 - name: v1.27.13/bin/linux/amd64/kubeadm
   sha256: b88c30b7067f095b7fa02c5560cc50d6e69a5a9fecc606ef477dc7efc86453b9
 - name: v1.27.13/bin/linux/amd64/kubectl
@@ -1324,30 +784,14 @@ files:
   sha256: bc58d290486f060c2a529668af262ce1905a1f43ff24e5e8ce57e54a4a76b6b5
 - name: v1.27.13/bin/linux/arm64/kube-apiserver
   sha256: b59e0978eca381dfaddec83ade254ef2c00ce8b3a47fc3caa39452194343e093
-- name: v1.27.13/bin/linux/arm64/kube-apiserver.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/arm64/kube-apiserver.tar
-  sha256: e6bb6a44460f0fdde87a25cd6a14d4294546be2b39e269dfd4004550c3591e43
 - name: v1.27.13/bin/linux/arm64/kube-controller-manager
   sha256: 4afd7df70d894574682e048f9323c0df4c1a3d03669671ff13842f3b633d3e10
-- name: v1.27.13/bin/linux/arm64/kube-controller-manager.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/arm64/kube-controller-manager.tar
-  sha256: e3d5ddf0c1a3292ff6d900fe886959e79b2008390cafe1261d58e72876a74d18
 - name: v1.27.13/bin/linux/arm64/kube-log-runner
   sha256: f6766a609f695b34a249a449299e1b8e002e87cec0e9f9ebaa85bb5746ecb1df
 - name: v1.27.13/bin/linux/arm64/kube-proxy
   sha256: 31dab5ef8e4160a43ab573e47ec78fec0bd3383ec128c60783b11d64b6942a88
-- name: v1.27.13/bin/linux/arm64/kube-proxy.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/arm64/kube-proxy.tar
-  sha256: 1a387b8294b4d7250c02b55593f396e90a3a26e36ba03b9fc8b9a48196e3d63d
 - name: v1.27.13/bin/linux/arm64/kube-scheduler
   sha256: 7c0cce53bfb90ba3326648fe938c7c74bef173488f0d52b3f21759f22fa47cfd
-- name: v1.27.13/bin/linux/arm64/kube-scheduler.docker_tag
-  sha256: c46f3cbd5c675eb78035dd8d78b5c3f9a1907a99f0456e7b55a841f6f057dd55
-- name: v1.27.13/bin/linux/arm64/kube-scheduler.tar
-  sha256: 22845273722c5e8c7400fd18e0e2306c14a6b6704ef76f5e1cdfdae3b9613008
 - name: v1.27.13/bin/linux/arm64/kubeadm
   sha256: f334ba0612fada50e98a7ea56b686b35c22f0e3243ec2210f2a6a87e841a139f
 - name: v1.27.13/bin/linux/arm64/kubectl
@@ -1358,7 +802,174 @@ files:
   sha256: d7bfb14d0b0fc2c41074baf02617cf98589fd029fb3539ea017825e36371f19c
 - name: v1.27.13/bin/linux/arm64/mounter
   sha256: 24a75d659fb5ecfa2c19cf0a9abb4011e352ecfaf9ae355dac6c410fbc867a5a
-- name: v1.27.13/kubernetes-release.spdx
-  sha256: e3f2a31e60adff5f0430e765c4a2ddcc9e068b883e9515394476574c76ea746d
-- name: v1.27.13/kubernetes-source.spdx
-  sha256: 53fb7101380a039edf3d0e1c7c0f56b834c4bda0e22562a76a2033de3766715f
+# kubernetes 1.27.14
+- name: v1.27.14/bin/darwin/amd64/kubectl
+  sha256: f0dca5da8a5e9f06be7ae56dba08f1c4c3db8a2b3a3db553b7eeebaf726b854d
+- name: v1.27.14/bin/darwin/amd64/kubectl-convert
+  sha256: ac85566fad24aa62212bfeaacc0462db19b3cb8ff3b92fb41d7da1d841e52120
+- name: v1.27.14/bin/darwin/arm64/kubectl
+  sha256: 8e1e4189b008eac3acc18594136429bf24676736402736e5cc72bd52a84aad9a
+- name: v1.27.14/bin/darwin/arm64/kubectl-convert
+  sha256: 263ee6233d9d9e0fc8bceb11a2310cef98e71ab46efdf39c802d631f4237c17d
+- name: v1.27.14/bin/linux/amd64/apiextensions-apiserver
+  sha256: 85b57157fa482a79d9eac00232f1af853d6ade5b68f49dc29555fc298708716f
+- name: v1.27.14/bin/linux/amd64/kube-aggregator
+  sha256: b635ab84b527ac77567ed77a4cee1109fc12b5b7a59edaccdb7f89c775c0a93d
+- name: v1.27.14/bin/linux/amd64/kube-apiserver
+  sha256: 345240f4a3a1f5c3d5fd4978433dc7968344c205c769c86847a7d75416616ede
+- name: v1.27.14/bin/linux/amd64/kube-controller-manager
+  sha256: 846d9c16d6adbd04268586ec5e01919f8b573cb662e692b5252ce744774b5fdf
+- name: v1.27.14/bin/linux/amd64/kube-log-runner
+  sha256: 4c518ec5400685e8843cc3431cff0b1a5f21500ce15edd884f33bfa653fd3fa3
+- name: v1.27.14/bin/linux/amd64/kube-proxy
+  sha256: 1216021cabb839ea308625c8646dd59bde179d2ed8a1c4bc0194b6fe977b54fc
+- name: v1.27.14/bin/linux/amd64/kube-scheduler
+  sha256: b12eaa4ddc72353289ad70e9485668f21ad051e077b65f2b08873e39843fcaa4
+- name: v1.27.14/bin/linux/amd64/kubeadm
+  sha256: 1ce264643e521494e111b1c9ee59694a54d1f2464bbac3a7a531324ffeae0182
+- name: v1.27.14/bin/linux/amd64/kubectl
+  sha256: 1d2431c68bb6dfa9de3cd40fd66d97a9ac73593c489f9467249eea43e9c16a1e
+- name: v1.27.14/bin/linux/amd64/kubectl-convert
+  sha256: 26fe7d7d90593d897c3c8d41063112b3cdbfa065203d1fa640e404192764eb77
+- name: v1.27.14/bin/linux/amd64/kubelet
+  sha256: f28defa43f80f82ce909940c1b57b71cba1fcf0de6fc4723e798ef5c72376c28
+- name: v1.27.14/bin/linux/amd64/mounter
+  sha256: 95b324ac0e98e5fb29b9a955d28e41328a5c1f692fc83dd9c41b88b731bcba31
+- name: v1.27.14/bin/linux/arm64/apiextensions-apiserver
+  sha256: 315eeded94cc78eff56475c575f9fea79e3e474baed38e1156ee083b39922472
+- name: v1.27.14/bin/linux/arm64/kube-aggregator
+  sha256: 2ef27672f0d341c7877dd016e31a76a61c0d32cf8cebd9d434d98f60addfa713
+- name: v1.27.14/bin/linux/arm64/kube-apiserver
+  sha256: 1df0a8fc7ae016fb85ee34fbf4b10fff906417f67326ecca25a0a5c51bc6f537
+- name: v1.27.14/bin/linux/arm64/kube-controller-manager
+  sha256: a73033f6eba0bb2d79e3cdb2b18ca1b04324dd14d0e5d8413a142c9898d7239d
+- name: v1.27.14/bin/linux/arm64/kube-log-runner
+  sha256: 0e1be1653390ba01db842b092a354d5a4fec251b9e5db415d75ce48daca32ae6
+- name: v1.27.14/bin/linux/arm64/kube-proxy
+  sha256: 6b3cbb28b98a94c5085d87ddc55a4fa1385fe50a34241e58b4d4bb048cdda3cb
+- name: v1.27.14/bin/linux/arm64/kube-scheduler
+  sha256: 4b41992ec933c47a882953d69bb128a2f55ce759636a9a682614174fd697f75c
+- name: v1.27.14/bin/linux/arm64/kubeadm
+  sha256: cb840eb83404047cdafec0b15054023c90a47491b56d2dceba1050040f37cc7e
+- name: v1.27.14/bin/linux/arm64/kubectl
+  sha256: 29f3a1f520d929df38873c68dec73519c1e5e521140e01cf9d7701f7b5ffe4f3
+- name: v1.27.14/bin/linux/arm64/kubectl-convert
+  sha256: 7e88e58e247768c4cc8be08bc348848839eb69c502ba6dcba2085e845e5be17e
+- name: v1.27.14/bin/linux/arm64/kubelet
+  sha256: 31c97a723021ccc90a47a15ad1de1ffdf58ba109aea922eb359ad2fcb8e8ce4b
+- name: v1.27.14/bin/linux/arm64/mounter
+  sha256: 1e0ccac6150b99b27146f03e5756c649b7d0ec6e9f024109ec09a3f7a6a86aad
+# kubernetes 1.27.15
+- name: v1.27.15/bin/darwin/amd64/kubectl
+  sha256: 8ceb9c7e9c78bb367699ac3af08da2fd452c74273c29bc03fbb1b063ca39bbf7
+- name: v1.27.15/bin/darwin/amd64/kubectl-convert
+  sha256: 4a5b46672b162823ca0da2f9d2fabf4917a7015c635b16aa3d506475457eefbc
+- name: v1.27.15/bin/darwin/arm64/kubectl
+  sha256: 7210b5538b87ffb6f38cb148c79c0a7824d5540553e598ac362be8c8bceed681
+- name: v1.27.15/bin/darwin/arm64/kubectl-convert
+  sha256: f4baa8b172507c4b18e2bc49364599d19b96eff269d11942edaaf7e1cfce1748
+- name: v1.27.15/bin/linux/amd64/apiextensions-apiserver
+  sha256: 14e15a5e42a2c722823019c1f060a92d2368ce3eecea1df97e080fe27bb6f647
+- name: v1.27.15/bin/linux/amd64/kube-aggregator
+  sha256: 2ac8b9ecdb6282c28d7888428145c59452ee96720e8973d5391283989ec358cb
+- name: v1.27.15/bin/linux/amd64/kube-apiserver
+  sha256: 586aacd4f2500c510585b0d76679ff4cdb485c74209d42e0aefee540fff5c85b
+- name: v1.27.15/bin/linux/amd64/kube-controller-manager
+  sha256: 1e2d6e1bb9d4f7b81f08decdb58c4392d1f5eaf407f9e2012d98cc8beef8f538
+- name: v1.27.15/bin/linux/amd64/kube-log-runner
+  sha256: d2774ca37b03e39835f22e0054484db3b0f6f59da089a176092081165d05d4a1
+- name: v1.27.15/bin/linux/amd64/kube-proxy
+  sha256: aafa74e873543fc544040ac13c276e12115d712472573c94d1ae700fcdb80502
+- name: v1.27.15/bin/linux/amd64/kube-scheduler
+  sha256: 1b754ebe251fea8f069ed1cbf87801210dc77665efd3d1b5d6dc2988f3de27c5
+- name: v1.27.15/bin/linux/amd64/kubeadm
+  sha256: e6f8313e213a8a75deda81edf445d0d785493f6a0a0caadf31e88d173b607943
+- name: v1.27.15/bin/linux/amd64/kubectl
+  sha256: c12cf17ec30fb162f8f5fb168e67d4e5b7d6826e08c7648a5f1c6b4e9ba23f39
+- name: v1.27.15/bin/linux/amd64/kubectl-convert
+  sha256: 6fd37dfa1f258e7a570652f4b08ac799e879a2d94f82162761ab2f7454d672a4
+- name: v1.27.15/bin/linux/amd64/kubelet
+  sha256: c0ab414cdd116e9644c8c154ae4a6565c75c2605e2c7b6a5a04b56037ef2ba88
+- name: v1.27.15/bin/linux/amd64/mounter
+  sha256: 5ad6d4d62c80fc4afd03612eb521c19096dddba95c525b62428e8bb4364d35bb
+- name: v1.27.15/bin/linux/arm64/apiextensions-apiserver
+  sha256: 1cefce4aa042a31d33101bbfea433bf2a4a831b3487bdecc350fdc0f66e0e702
+- name: v1.27.15/bin/linux/arm64/kube-aggregator
+  sha256: 1a15dee3b61522bd3bcf75fee8f8ed4adbd57d80a352a5713ecc7bdfca9904fb
+- name: v1.27.15/bin/linux/arm64/kube-apiserver
+  sha256: d59c74ec3da15c603da05639d08061855b10655248c72ef4ab5a1233410853f4
+- name: v1.27.15/bin/linux/arm64/kube-controller-manager
+  sha256: 5dd469c29019b3cf5875a2e6d7c563f5b0234d68be9b7846de97ac950c6d3ca3
+- name: v1.27.15/bin/linux/arm64/kube-log-runner
+  sha256: 5b7dffbc6b2957dfb50d39b0bd9b26c6116149ba1fceb5ba1502bbcd1917e01e
+- name: v1.27.15/bin/linux/arm64/kube-proxy
+  sha256: 115e729acd798fe96fe99f198a74164ecca1ac1489fa157bb4d42e98c53ed0bf
+- name: v1.27.15/bin/linux/arm64/kube-scheduler
+  sha256: 87da7c1d5f5b2bd9f2e090d25ad2db77aa02571661e8b89803b5495ec5c6eafb
+- name: v1.27.15/bin/linux/arm64/kubeadm
+  sha256: 577630b65c54ba9b629c9c42e35ba0939ce03dcb8f38fb79583ec3c9db9141a7
+- name: v1.27.15/bin/linux/arm64/kubectl
+  sha256: 6bd6bd3092c0a8e536e8e5a56b22aaab87ab1e54a4556ce4d1bff2493180fb8c
+- name: v1.27.15/bin/linux/arm64/kubectl-convert
+  sha256: 183fc1ff99aa02fe3d04e7b846021b1b4edfa623635cae603c78480edfaec6b5
+- name: v1.27.15/bin/linux/arm64/kubelet
+  sha256: ac8abb249dd78a22d92e28306ce9823f7e3ce23cd4ba8dbb0f3bd34f48b6c12b
+- name: v1.27.15/bin/linux/arm64/mounter
+  sha256: 72676bfe7eb88a4e3d0d66764cb900ce9e811cd5d53c77a67c497fadf596d73a
+# kubernetes 1.27.16
+- name: v1.27.16/bin/darwin/amd64/kubectl
+  sha256: 8d7f339660ba9b33ed56d540bed41b37babc945975a9e7027010697249b9ac5a
+- name: v1.27.16/bin/darwin/amd64/kubectl-convert
+  sha256: f8e9c83b6af4a61b7e1491c8ebe2b2c4d4db41150514b37d78c96fc991e1c488
+- name: v1.27.16/bin/darwin/arm64/kubectl
+  sha256: d6bc47098bcb13a0ff5c267b30021b499aff4d960bd92610c2b0bc6f6e7246c9
+- name: v1.27.16/bin/darwin/arm64/kubectl-convert
+  sha256: 8e2f9a872bc25ab2eab42ccc9108b12dc9f5881c26fa4a3d02512ab7d4e659a5
+- name: v1.27.16/bin/linux/amd64/apiextensions-apiserver
+  sha256: ea841d226814a76b66e0770bb0c23d00a85219fdc53e670b7df2b91913f95bae
+- name: v1.27.16/bin/linux/amd64/kube-aggregator
+  sha256: e05ece43a3ebe9c1f3e97ce60fdca9e35876d53e6deb6d884b5d47c31813bd1b
+- name: v1.27.16/bin/linux/amd64/kube-apiserver
+  sha256: 502149f88302c982fd78e0d295a1793efd3a3d7cc584029d252c7140b03e1e4f
+- name: v1.27.16/bin/linux/amd64/kube-controller-manager
+  sha256: a8ed11464d6f1c8e29fab2ca88c09dc3db504c951bfa0cd015e1c6409fb5315d
+- name: v1.27.16/bin/linux/amd64/kube-log-runner
+  sha256: 9d3f751e2cacf5c3b0db8222c3678f16d634768eaa29762fb977682e9234c3cf
+- name: v1.27.16/bin/linux/amd64/kube-proxy
+  sha256: b5abd5a3f7c8a6031a51d15dc10b21118edf2ca8a48af887da00d627bf3fda19
+- name: v1.27.16/bin/linux/amd64/kube-scheduler
+  sha256: 241737dbf882eb146c8f4f47def0c2e3f21c996209bb8934131cb0dc1f407d1c
+- name: v1.27.16/bin/linux/amd64/kubeadm
+  sha256: 33622018f83515331ac70c2041eba5d814a6d78a40b8869f089ea502f63a1421
+- name: v1.27.16/bin/linux/amd64/kubectl
+  sha256: 97ea7cd771d0c6e3332614668a40d2c5996f0053ff11b44b198ea84dba0818cb
+- name: v1.27.16/bin/linux/amd64/kubectl-convert
+  sha256: 8bd8314aed1fb38f939c46bc4d203334d7df1ab53f8574f2962b49cce7ddde46
+- name: v1.27.16/bin/linux/amd64/kubelet
+  sha256: 1b390641b47c6f9265ed8d19b48a8aa334ac28c825ad7ee8201717a5d9e8b759
+- name: v1.27.16/bin/linux/amd64/mounter
+  sha256: 27bbd3c3506b06a8558c5584585d05154d2a1bb40a393533cca5922637ce726e
+- name: v1.27.16/bin/linux/arm64/apiextensions-apiserver
+  sha256: 163bc4afab1bef7b2f4f21868164a08494d2b76281a62fe30e4f306dc219925a
+- name: v1.27.16/bin/linux/arm64/kube-aggregator
+  sha256: 3c57d10aa6ba69dceac0e29b67abc91674e32dab67695fab9a6a10eed0914b42
+- name: v1.27.16/bin/linux/arm64/kube-apiserver
+  sha256: fccf4b0d7eaa69df92e48fb8adb2d83f16d91be0c429520fcebef6c14bf71fb8
+- name: v1.27.16/bin/linux/arm64/kube-controller-manager
+  sha256: 779f1037d208fe51b17e92efe9e1c504e1a19b1aaf596005d596521a8354eba7
+- name: v1.27.16/bin/linux/arm64/kube-log-runner
+  sha256: ee8641868d11a144e9e2fc853abf37c5d9d014b72366620926fab86af2c93521
+- name: v1.27.16/bin/linux/arm64/kube-proxy
+  sha256: 0d51d5b769013ee34efb6b8e2040d41e5bc50c819022bfb6aeb5581c0c0540d1
+- name: v1.27.16/bin/linux/arm64/kube-scheduler
+  sha256: 8bbe3e0774bec8d552fb37acabaedf47b612d46de9045920a14b68db568184a4
+- name: v1.27.16/bin/linux/arm64/kubeadm
+  sha256: 39fb88ab0f6b943bbe61dde5d7ea58ce728045a0556f9b6f56d66fe1f20affcc
+- name: v1.27.16/bin/linux/arm64/kubectl
+  sha256: 2f50cb29d73f696ffb57437d3e2c95b22c54f019de1dba19e2b834e0b4501eb9
+- name: v1.27.16/bin/linux/arm64/kubectl-convert
+  sha256: 47ef7529d43bc639bd1bf51d165cf1e6849a8a5c968e13ffcd9da4d0190082c3
+- name: v1.27.16/bin/linux/arm64/kubelet
+  sha256: 2d3cfefc64e1ff5f1e1b8bcba0589a4a9b247f7bcd43cb78645f346687cbbef3
+- name: v1.27.16/bin/linux/arm64/mounter
+  sha256: 091e7e1fdd6131b8c5d15d3a1ea281903f6c616d2fb4e5519ab8891bd9a28c25

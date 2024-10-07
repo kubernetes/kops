@@ -44,9 +44,13 @@ EOF
       --base https://dl.k8s.io/release/ \
       --prefix "v${version}/" \
       --exclude "**/arm/**" \
+      --exclude "**/386/**" \
       --exclude "**/ppc64le/**" \
       --exclude "**/s390x/**" \
       --exclude "**/windows/**" \
+      --exclude "**/*.docker_tag" \
+      --exclude "**/*.spdx" \
+      --exclude "**/*.tar" \
       --exclude "**/*.tar.gz" \
       | sed "s@files:@# kubernetes ${version}@g" >> "${REPO_ROOT}/pkg/assets/assetdata/k8s-${prefix}.yaml"
   done
@@ -73,6 +77,12 @@ EOF
     go run ./pkg/assets/assetdata/tools/cmd/generatefileassets \
       --base https://github.com/opencontainers/runc/releases/download/ \
       --prefix "v${version}/" \
+      --exclude "**/*.armel" \
+      --exclude "**/*.armhf" \
+      --exclude "**/*.ppc64le" \
+      --exclude "**/*.riscv64" \
+      --exclude "**/*.s390x" \
+      --exclude "**/*.tar.xz" \
       --sums "https://github.com/opencontainers/runc/releases/download/v${version}/runc.sha256sum" \
       | sed "s@files:@# runc ${version}@g" >> "${REPO_ROOT}/pkg/assets/assetdata/runc-${prefix}.yaml"
   done
@@ -80,9 +90,10 @@ EOF
 
 generate_k8s_hashes 1.25 16
 generate_k8s_hashes 1.26 15
-generate_k8s_hashes 1.27 13
-generate_k8s_hashes 1.28 9
-generate_k8s_hashes 1.29 4
-generate_k8s_hashes 1.30 0
+generate_k8s_hashes 1.27 16
+generate_k8s_hashes 1.28 14
+generate_k8s_hashes 1.29 9
+generate_k8s_hashes 1.30 5
+generate_k8s_hashes 1.31 1
 
-generate_runc_hashes 1.1 12
+generate_runc_hashes 1.1 14
