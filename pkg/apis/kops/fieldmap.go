@@ -16,7 +16,7 @@ limitations under the License.
 
 package kops
 
-// Because we have multiple versions of the API, fields hvae different paths in different API versions.
+// Because we have multiple versions of the API, fields have different paths in different API versions.
 // This file contains the mappings from the old paths to the new paths.
 
 // These functions are somewhat of a work in progress, we are adding function mappings as we hit them.
