@@ -100,7 +100,7 @@ func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatu
 	var ret []fi.ApiIngressStatus
 	publicName := cluster.Spec.API.PublicName
 	if publicName == "" {
-		return ret, fmt.Errorf("spec.api.publicName must be set for bare metal")
+		return ret, fmt.Errorf("%s must be set for bare metal", kops.HumanPathForClusterField("spec.api.publicName"))
 	}
 	ip := net.ParseIP(publicName)
 	if ip == nil {
