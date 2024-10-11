@@ -77,9 +77,10 @@ var allZones = []string{
 	"us-east-2a",
 	"us-east-2b",
 	"us-east-2c",
-	"us-west-1a",
-	"us-west-1b",
-	//"us-west-1c", AZ does not exist, so we're breaking the 3 AZs per region target here
+	// Newer accounts don't have us-west-1c and one other zone is constrained so we ignore the entire region
+	//"us-west-1a",
+	//"us-west-1b",
+	//"us-west-1c",
 	"us-west-2a",
 	"us-west-2b",
 	"us-west-2c",
