@@ -160,8 +160,24 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 			klog.Warningf("error parsing KubernetesVersion %q", cluster.Spec.KubernetesVersion)
 		}
 	}
+
+	// Check if there is an upgraded kubernetes version recommended by the channel
 	if proposedKubernetesVersion == nil {
-		proposedKubernetesVersion = kopsapi.RecommendedKubernetesVersion(channel, kops.Version)
+		if currentKubernetesVersion != nil {
+			versionInfo := kopsapi.FindKubernetesVersionSpec(channel.Spec.KubernetesVersions, *currentKubernetesVersion)
+			if versionInfo == nil {
+				klog.Warningf("unable to find version information for kubernetes version %v in channel", *currentKubernetesVersion)
+			} else {
+				proposedKubernetesVersion, err = kopsutil.ParseKubernetesVersion(versionInfo.RecommendedVersion)
+				if err != nil {
+					klog.Warningf("error parsing KubernetesVersion %q", versionInfo.RecommendedVersion)
+				}
+			}
+		} else {
+			// fallback to recommended version by kOps version, but this is not the usual path
+			proposedKubernetesVersion = kopsapi.RecommendedKubernetesVersion(channel, kops.Version)
+			klog.V(2).Infof("kubernetes version %q is recommended by channel %q", channelLocation, proposedKubernetesVersion)
+		}
 	}
 
 	// We won't propose a downgrade
