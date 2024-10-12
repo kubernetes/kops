@@ -221,9 +221,16 @@ echo "Waiting 30 seconds for nodes to be ready"
 sleep 30
 
 kubectl get nodes
+kubectl get nodes -o yaml
+
 kubectl get pods -A
 
 # Ensure the cluster passes validation
 ${KOPS} validate cluster metal.k8s.local --wait=10m
+
+# Run a few bare-metal e2e tests
+echo "running e2e tests"
+cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
+go test -v .
 
 echo "Test successful"
