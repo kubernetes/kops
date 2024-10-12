@@ -499,7 +499,7 @@ type HubbleSpec struct {
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// Metrics is a list of metrics to collect. If empty or null, metrics are disabled.
-	// See https://docs.cilium.io/en/stable/configuration/metrics/#hubble-exported-metrics
+	// See https://docs.cilium.io/en/stable/observability/metrics/#hubble-exported-metrics
 	Metrics []string `json:"metrics,omitempty"`
 }
 
