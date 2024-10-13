@@ -6,7 +6,6 @@ Enable experimental features with:
 
 The following experimental features are currently available:
 
-* `+EnableExternalDNS` - Enable external-dns with default settings (ingress sources only).
 * `+VPCSkipEnableDNSSupport` - Enables creation of a VPC that does not need DNSSupport enabled.
 * `+EnableSeparateConfigBase` - Allow a config-base that is different from the state store.
 * `+ExperimentalClusterDNS` - Turns off validation of the kubelet cluster dns flag.
