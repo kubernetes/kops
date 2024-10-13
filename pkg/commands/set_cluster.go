@@ -35,6 +35,8 @@ func SetClusterFields(fields []string, cluster *api.Cluster) error {
 		key := kv[0]
 		key = strings.TrimPrefix(key, "cluster.")
 
+		key = api.InternalPathForClusterField(key)
+
 		if err := reflectutils.SetString(cluster, key, kv[1]); err != nil {
 			return err
 		}

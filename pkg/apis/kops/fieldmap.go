@@ -27,6 +27,12 @@ func HumanPathForClusterField(fieldPath string) string {
 	return f.HumanPath()
 }
 
+// InternalPathForClusterField returns the path for a given cluster field, as it appears in the internal API.
+func InternalPathForClusterField(fieldPath string) string {
+	f := NewClusterField(fieldPath)
+	return f.InternalPath()
+}
+
 // ClusterField represents a field in the Cluster resource.
 // +k8s:deepcopy-gen=false
 type ClusterField struct {
@@ -41,6 +47,11 @@ func NewClusterField(path string) *ClusterField {
 // HumanPath returns the path for the field, as we should print it for users.
 func (f *ClusterField) HumanPath() string {
 	return f.PathInV1Alpha2()
+}
+
+// InternalPath returns the path for the field, as it appears in the internal API.
+func (f *ClusterField) InternalPath() string {
+	return f.PathInV1Alpha3()
 }
 
 // PathInV1Alpha2 returns the path for the field in the v1alpha2 API.
