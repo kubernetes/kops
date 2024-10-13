@@ -209,14 +209,14 @@ func (c *Context[T]) Render(a, e, changes Task[T]) error {
 		var args []reflect.Value
 		for j := 0; j < method.Type.NumIn(); j++ {
 			arg := method.Type.In(j)
-			if arg.ConvertibleTo(vType) {
+			if vType.ConvertibleTo(arg) {
 				continue
 			}
-			if arg.ConvertibleTo(typeContextPtr) {
+			if typeContextPtr.ConvertibleTo(arg) {
 				args = append(args, reflect.ValueOf(c))
 				continue
 			}
-			if arg.ConvertibleTo(targetType) {
+			if targetType.ConvertibleTo(arg) {
 				args = append(args, reflect.ValueOf(c.Target))
 				continue
 			}
