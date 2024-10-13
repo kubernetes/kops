@@ -44,38 +44,38 @@ func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderMetal
 }
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
-	return nil, fmt.Errorf("method not implemented")
+	return nil, fmt.Errorf("method metal.Cloud::DNS not implemented")
 }
 
 // FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil).
 func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, fmt.Errorf("method not implemented")
+	return nil, fmt.Errorf("method metal.Cloud::FindVPCInfo not implemented")
 }
 
 // DeleteInstance deletes a cloud instance.
 func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstance) error {
-	return fmt.Errorf("method not implemented")
+	return fmt.Errorf("method metal.Cloud::DeleteInstance not implemented")
 }
 
 // // DeregisterInstance drains a cloud instance and loadbalancers.
 func (c *Cloud) DeregisterInstance(instance *cloudinstances.CloudInstance) error {
-	return fmt.Errorf("method not implemented")
+	return fmt.Errorf("method metal.Cloud::DeregisterInstance not implemented")
 }
 
 // DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances.
 func (c *Cloud) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
-	return fmt.Errorf("method not implemented")
+	return fmt.Errorf("method metal.Cloud::DeleteGroup not implemented")
 }
 
 // DetachInstance causes a cloud instance to no longer be counted against the group's size limits.
 func (c *Cloud) DetachInstance(instance *cloudinstances.CloudInstance) error {
-	return fmt.Errorf("method not implemented")
+	return fmt.Errorf("method metal.Cloud::DetachInstance not implemented")
 }
 
 // GetCloudGroups returns a map of cloud instances that back a kops cluster.
 // Detached instances must be returned in the NeedUpdate slice.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, fmt.Errorf("method not implemented")
+	return nil, fmt.Errorf("method metal.Cloud::GetCloudGroups not implemented")
 }
 
 // Region returns the cloud region bound to the cloud instance.
