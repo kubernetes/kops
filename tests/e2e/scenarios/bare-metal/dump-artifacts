@@ -57,3 +57,11 @@ for vm in 0 1 2; do
   ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kubelet 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kubelet.service || true
   ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kops-configuration 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kops-configuration.service || true
 done
+
+# Dump the pod logs for all the pods in system namespaces
+for ns in kube-system; do
+  mkdir -p ${ARTIFACTS}/logs/${ns}/
+  for pod in $(kubectl get pods -n ${ns} -o json | jq -r '.items[].metadata.name'); do
+    kubectl logs -n ${ns} ${pod} > ${ARTIFACTS}/logs/${ns}/${pod}.log || true
+  done
+done
