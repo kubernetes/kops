@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
@@ -34,6 +36,7 @@ import (
 const (
 	defaultJobName = "pull-kops-e2e-kubernetes-aws"
 	defaultGCSPath = "gs://k8s-staging-kops/pulls/%v/pull-%v"
+	defaultS3Path  = "s3://k8s-infra-kops-ci-results/pulls/%v/pull-%v"
 )
 
 func (d *deployer) Build() error {
@@ -109,8 +112,8 @@ func (d *deployer) verifyBuildFlags() error {
 		d.BuildOptions.KubeRoot = KubeRoot
 	}
 	if d.StageLocation != "" {
-		if !strings.HasPrefix(d.StageLocation, "gs://") {
-			return errors.New("stage-location must be a gs:// path")
+		if !strings.HasPrefix(d.StageLocation, "gs://") && !strings.HasPrefix(d.StageLocation, "s3://") {
+			return errors.New("stage-location must be a gs:// or s3:// path")
 		}
 	} else if d.boskos != nil {
 		d.StageLocation = d.stagingStore()
@@ -119,14 +122,26 @@ func (d *deployer) verifyBuildFlags() error {
 			return err
 		}
 	} else {
-		stageLocation, err := defaultStageLocation(d.KopsRoot)
+		stageLocation, err := defaultStageLocation(d.CloudProvider, d.KopsRoot)
 		if err != nil {
 			return err
 		}
 		d.StageLocation = stageLocation
 	}
+	if strings.HasPrefix(d.StageLocation, "s3://") {
+		region, err := aws.GetBucketRegion(context.TODO(), d.StageLocation)
+		if err != nil {
+			return fmt.Errorf("failed to get bucket region: %w", err)
+		}
+		d.BuildOptions.S3BucketRegion = region
+	}
 	if d.KopsBaseURL == "" && os.Getenv("KOPS_BASE_URL") == "" {
-		d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
+		switch {
+		case strings.HasPrefix(d.StageLocation, "gs://"):
+			d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
+		case strings.HasPrefix(d.StageLocation, "s3://"):
+			d.KopsBaseURL = fmt.Sprintf("https://s3.%s.amazonaws.com/%s", d.BuildOptions.S3BucketRegion, strings.TrimPrefix(d.StageLocation, "s3://"))
+		}
 	}
 
 	if d.KopsVersionMarker != "" && !d.BuildOptions.BuildKubernetes {
@@ -138,7 +153,7 @@ func (d *deployer) verifyBuildFlags() error {
 	return nil
 }
 
-func defaultStageLocation(kopsRoot string) (string, error) {
+func defaultStageLocation(cloudProvider, kopsRoot string) (string, error) {
 	jobName := os.Getenv("JOB_NAME")
 	if jobName == "" {
 		jobName = defaultJobName
@@ -155,6 +170,10 @@ func defaultStageLocation(kopsRoot string) (string, error) {
 			return "", fmt.Errorf("unexpected output from git describe: %v", output)
 		}
 		sha = strings.TrimSpace(output[0])
+	}
+	switch cloudProvider {
+	case "aws":
+		return fmt.Sprintf(defaultS3Path, jobName, sha), nil
 	}
 	return fmt.Sprintf(defaultGCSPath, jobName, sha), nil
 }

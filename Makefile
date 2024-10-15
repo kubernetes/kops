@@ -18,7 +18,10 @@ DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
 UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
+S3_REGION?=us-east-1
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
+S3_HOSTNAME=$(subst %,$(S3_REGION),https://s3.%.amazonaws.com)
+S3_URL=$(S3_BUCKET:s3://%=${S3_HOSTNAME}/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST:=$(shell go env GOPATH)
 UNIQUE:=$(shell date +%s)
@@ -260,7 +263,7 @@ gcs-upload-and-tag: gsutil gcs-upload
 	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
 
-# gcs-publish-ci is the entry point for CI testing
+# gcs-publish-ci and s3-publish-ci are the entry points for CI testing
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
@@ -270,6 +273,15 @@ gcs-publish-ci: gsutil version-dist-ci
 	echo "VERSION: ${VERSION}"
 	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+
+.PHONY: s3-publish-ci
+s3-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
+s3-publish-ci: version-dist-ci
+	@echo "== Uploading kops =="
+	aws s3 sync -r --cache-control "private, max-age=0, no-transform" ${UPLOAD}/kops/* ${S3_LOCATION}
+	echo "VERSION: ${VERSION}"
+	echo "${S3_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+	aws s3 sync --cache-control "private, max-age=0, no-transform" ${UPLOAD}/${LATEST_FILE} ${S3_LOCATION}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
