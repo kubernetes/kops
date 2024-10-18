@@ -901,7 +901,7 @@ spec:
           timeoutSeconds: 3
         name: ebs-plugin
         ports:
-        - containerPort: 9808
+        - containerPort: 9809
           name: healthz
           protocol: TCP
         - containerPort: 3301
@@ -1084,6 +1084,7 @@ spec:
           readOnly: true
       - args:
         - --csi-address=/csi/csi.sock
+        - --http-endpoint=0.0.0.0:9809
         env:
         - name: AWS_ROLE_ARN
           value: arn:aws-test:iam::123456789012:role/ebs-csi-controller-sa.kube-system.sa.minimal.example.com

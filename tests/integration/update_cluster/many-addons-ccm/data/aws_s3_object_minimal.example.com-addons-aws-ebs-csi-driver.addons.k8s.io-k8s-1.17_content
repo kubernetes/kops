@@ -899,7 +899,7 @@ spec:
           timeoutSeconds: 3
         name: ebs-plugin
         ports:
-        - containerPort: 9808
+        - containerPort: 9809
           name: healthz
           protocol: TCP
         - containerPort: 3301
@@ -1081,6 +1081,7 @@ spec:
           name: socket-dir
       - args:
         - --csi-address=/csi/csi.sock
+        - --http-endpoint=0.0.0.0:9809
         image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.13.0-eks-1-30-10
         imagePullPolicy: IfNotPresent
         name: liveness-probe
