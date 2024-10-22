@@ -32,11 +32,11 @@ import (
 	"time"
 
 	"github.com/go-ini/ini"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	swiftcontainer "github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers"
-	swiftobject "github.com/gophercloud/gophercloud/openstack/objectstorage/v1/objects"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	swiftcontainer "github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/containers"
+	swiftobject "github.com/gophercloud/gophercloud/v2/openstack/objectstorage/v1/objects"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
@@ -70,7 +70,7 @@ func NewSwiftClient(ctx context.Context) (*gophercloud.ServiceClient, error) {
 
 	klog.V(2).Info("authenticating to keystone")
 
-	err = openstack.Authenticate(pc, authOption)
+	err = openstack.Authenticate(ctx, pc, authOption)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
@@ -288,7 +288,7 @@ func (p *SwiftPath) Remove(ctx context.Context) error {
 			return false, err
 		}
 		opt := swiftobject.DeleteOpts{}
-		if _, err := swiftobject.Delete(client, p.bucket, p.key, opt).Extract(); err != nil {
+		if _, err := swiftobject.Delete(ctx, client, p.bucket, p.key, opt).Extract(); err != nil {
 			if isSwiftNotFound(err) {
 				return true, os.ErrNotExist
 			}
@@ -337,7 +337,7 @@ func (p *SwiftPath) RemoveAll(ctx context.Context) error {
 			if err != nil {
 				return false, err
 			}
-			if _, err := swiftobject.BulkDelete(client, p.bucket, objectsToDelete).Extract(); err != nil {
+			if _, err := swiftobject.BulkDelete(ctx, client, p.bucket, objectsToDelete).Extract(); err != nil {
 				if isSwiftNotFound(err) {
 					return true, os.ErrNotExist
 				}
@@ -386,7 +386,7 @@ func (p *SwiftPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) 
 		}
 
 		createOpts := swiftobject.CreateOpts{Content: data}
-		if _, err := swiftobject.Create(client, p.bucket, p.key, createOpts).Extract(); err != nil {
+		if _, err := swiftobject.Create(ctx, client, p.bucket, p.key, createOpts).Extract(); err != nil {
 			return false, fmt.Errorf("error writing %s: %v", p, err)
 		}
 
@@ -421,7 +421,7 @@ func (p *SwiftPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL)
 	if _, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
 		klog.V(4).Infof("Getting file %q", p)
 
-		_, err := swiftobject.Get(client, p.bucket, p.key, swiftobject.GetOpts{}).Extract()
+		_, err := swiftobject.Get(ctx, client, p.bucket, p.key, swiftobject.GetOpts{}).Extract()
 		if err == nil {
 			return true, nil
 		} else if isSwiftNotFound(err) {
@@ -452,12 +452,12 @@ func (p *SwiftPath) createBucket() error {
 			return false, err
 		}
 
-		if _, err := swiftcontainer.Get(client, p.bucket, swiftcontainer.GetOpts{}).Extract(); err == nil {
+		if _, err := swiftcontainer.Get(ctx, client, p.bucket, swiftcontainer.GetOpts{}).Extract(); err == nil {
 			return true, nil
 		}
 		if isSwiftNotFound(err) {
 			createOpts := swiftcontainer.CreateOpts{}
-			_, err = swiftcontainer.Create(client, p.bucket, createOpts).Extract()
+			_, err = swiftcontainer.Create(ctx, client, p.bucket, createOpts).Extract()
 			return err == nil, err
 		}
 		return false, err
@@ -510,7 +510,7 @@ func (p *SwiftPath) WriteTo(out io.Writer) (int64, error) {
 	}
 
 	opt := swiftobject.DownloadOpts{}
-	result := swiftobject.Download(client, p.bucket, p.key, opt)
+	result := swiftobject.Download(ctx, client, p.bucket, p.key, opt)
 	if result.Err != nil {
 		if isSwiftNotFound(result.Err) {
 			return 0, os.ErrNotExist
@@ -534,7 +534,7 @@ func (p *SwiftPath) readPath(opt swiftobject.ListOpts) ([]Path, error) {
 
 		var paths []Path
 		pager := swiftobject.List(client, p.bucket, opt)
-		if err := pager.EachPage(func(page pagination.Page) (bool, error) {
+		if err := pager.EachPage(ctx, func(ctx context.Context, page pagination.Page) (bool, error) {
 			objects, err1 := swiftobject.ExtractInfo(page)
 			if err1 != nil {
 				return false, err1
@@ -576,7 +576,6 @@ func (p *SwiftPath) ReadDir() ([]Path, error) {
 		prefix += "/"
 	}
 	opt := swiftobject.ListOpts{
-		Full: true,
 		Path: prefix,
 	}
 	return p.readPath(opt)
@@ -589,7 +588,6 @@ func (p *SwiftPath) ReadTree(ctx context.Context) ([]Path, error) {
 		prefix += "/"
 	}
 	opt := swiftobject.ListOpts{
-		Full:   true,
 		Prefix: prefix,
 	}
 	return p.readPath(opt)
@@ -622,9 +620,5 @@ func (p *SwiftPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 }
 
 func isSwiftNotFound(err error) bool {
-	if err == nil {
-		return false
-	}
-	_, ok := err.(gophercloud.ErrDefault404)
-	return ok
+	return gophercloud.ResponseCodeIs(err, http.StatusNotFound)
 }

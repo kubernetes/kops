@@ -17,12 +17,13 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/attributestags"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/attributestags"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/external"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -33,7 +34,7 @@ func (c *openstackCloud) AppendTag(resource string, id string, tag string) error
 
 func appendTag(c OpenstackCloud, resource string, id string, tag string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		err := attributestags.Add(c.NetworkingClient(), resource, id, tag).ExtractErr()
+		err := attributestags.Add(context.TODO(), c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
 			return false, fmt.Errorf("error appending tag %s: %v", tag, err)
 		}
@@ -54,7 +55,7 @@ func (c *openstackCloud) DeleteTag(resource string, id string, tag string) error
 
 func deleteTag(c OpenstackCloud, resource string, id string, tag string) error {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		err := attributestags.Delete(c.NetworkingClient(), resource, id, tag).ExtractErr()
+		err := attributestags.Delete(context.TODO(), c.NetworkingClient(), resource, id, tag).ExtractErr()
 		if err != nil {
 			return false, fmt.Errorf("error deleting tag %s: %v", tag, err)
 		}
@@ -105,7 +106,7 @@ func (c *openstackCloud) GetNetwork(id string) (*networks.Network, error) {
 func getNetwork(c OpenstackCloud, id string) (*networks.Network, error) {
 	var network *networks.Network
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		r, err := networks.Get(c.NetworkingClient(), id).Extract()
+		r, err := networks.Get(context.TODO(), c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error retrieving network with id %s: %v", id, err)
 		}
@@ -129,7 +130,7 @@ func listNetworks(c OpenstackCloud, opt networks.ListOptsBuilder) ([]networks.Ne
 	var ns []networks.Network
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := networks.List(c.NetworkingClient(), opt).AllPages()
+		allPages, err := networks.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing networks: %v", err)
 		}
@@ -161,7 +162,7 @@ func getExternalNetwork(c OpenstackCloud, networkName string) (net *networks.Net
 	}
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		err = networks.List(c.NetworkingClient(), networks.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+		err = networks.List(c.NetworkingClient(), networks.ListOpts{}).EachPage(context.TODO(), func(ctx context.Context, page pagination.Page) (bool, error) {
 			var externalNetwork []NetworkWithExternalExt
 			err := networks.ExtractNetworksInto(page, &externalNetwork)
 			if err != nil {
@@ -198,7 +199,7 @@ func createNetwork(c OpenstackCloud, opt networks.CreateOptsBuilder) (*networks.
 	var n *networks.Network
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		r, err := networks.Create(c.NetworkingClient(), opt).Extract()
+		r, err := networks.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating network: %v", err)
 		}
@@ -220,7 +221,7 @@ func (c *openstackCloud) DeleteNetwork(networkID string) error {
 
 func deleteNetwork(c OpenstackCloud, networkID string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := networks.Delete(c.NetworkingClient(), networkID).ExtractErr()
+		err := networks.Delete(context.TODO(), c.NetworkingClient(), networkID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting network: %v", err)
 		}

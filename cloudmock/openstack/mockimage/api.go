@@ -20,7 +20,7 @@ import (
 	"net/http/httptest"
 	"sync"
 
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	"github.com/gophercloud/gophercloud/v2/openstack/image/v2/images"
 	"k8s.io/kops/cloudmock/openstack"
 )
 

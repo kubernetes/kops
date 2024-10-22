@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/v2"
 )
 
 type MockOpenstackServer struct {

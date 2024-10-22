@@ -17,9 +17,10 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -31,7 +32,7 @@ func (c *openstackCloud) GetKeypair(name string) (*keypairs.KeyPair, error) {
 func getKeypair(c OpenstackCloud, name string) (*keypairs.KeyPair, error) {
 	var k *keypairs.KeyPair
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		rs, err := keypairs.Get(c.ComputeClient(), name, nil).Extract()
+		rs, err := keypairs.Get(context.TODO(), c.ComputeClient(), name, nil).Extract()
 		if err != nil {
 			if isNotFound(err) {
 				return true, nil
@@ -58,7 +59,7 @@ func createKeypair(c OpenstackCloud, opt keypairs.CreateOptsBuilder) (*keypairs.
 	var k *keypairs.KeyPair
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := keypairs.Create(c.ComputeClient(), opt).Extract()
+		v, err := keypairs.Create(context.TODO(), c.ComputeClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating keypair: %v", err)
 		}
@@ -80,7 +81,7 @@ func (c *openstackCloud) DeleteKeyPair(name string) error {
 
 func deleteKeyPair(c OpenstackCloud, name string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := keypairs.Delete(c.ComputeClient(), name, nil).ExtractErr()
+		err := keypairs.Delete(context.TODO(), c.ComputeClient(), name, nil).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting keypair: %v", err)
 		}
@@ -105,7 +106,7 @@ func (c *openstackCloud) ListKeypairs() ([]keypairs.KeyPair, error) {
 func listKeypairs(c OpenstackCloud) ([]keypairs.KeyPair, error) {
 	var k []keypairs.KeyPair
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := keypairs.List(c.ComputeClient(), nil).AllPages()
+		allPages, err := keypairs.List(c.ComputeClient(), nil).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing keypairs: %v", err)
 		}

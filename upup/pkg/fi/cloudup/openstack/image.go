@@ -17,9 +17,10 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
+	"github.com/gophercloud/gophercloud/v2/openstack/image/v2/images"
 )
 
 func (c *openstackCloud) GetImage(name string) (*images.Image, error) {
@@ -29,7 +30,7 @@ func (c *openstackCloud) GetImage(name string) (*images.Image, error) {
 func getImage(c OpenstackCloud, name string) (*images.Image, error) {
 	opts := images.ListOpts{Name: name}
 	pager := images.List(c.ImageClient(), opts)
-	page, err := pager.AllPages()
+	page, err := pager.AllPages(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list images: %v", err)
 	}

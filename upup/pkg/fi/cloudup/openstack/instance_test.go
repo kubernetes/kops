@@ -17,12 +17,13 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -84,6 +85,6 @@ func Test_WaitForStatusActiveResultsInTimeout(t *testing.T) {
 
 	actualErr := waitForStatusActive(c, serverID, fi.PtrTo(time.Second))
 
-	expectedErr := fmt.Errorf("A timeout occurred")
+	expectedErr := context.DeadlineExceeded
 	assertTestResults(t, nil, expectedErr, actualErr)
 }

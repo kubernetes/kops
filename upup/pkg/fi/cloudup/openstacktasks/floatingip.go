@@ -17,13 +17,14 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 
-	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
+	l3floatingip "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/floatingips"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownservices"
@@ -298,7 +299,7 @@ func (f *FloatingIP) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 		return nil
 	}
 	if changes.Name != nil {
-		_, err := l3floatingip.Update(cloud.NetworkingClient(), fi.ValueOf(a.ID), l3floatingip.UpdateOpts{
+		_, err := l3floatingip.Update(context.TODO(), cloud.NetworkingClient(), fi.ValueOf(a.ID), l3floatingip.UpdateOpts{
 			Description: e.Name,
 		}).Extract()
 		if err != nil {

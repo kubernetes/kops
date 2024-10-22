@@ -19,7 +19,7 @@ package designate
 import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 )
 
 var _ dnsprovider.Zone = &Zone{}

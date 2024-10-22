@@ -17,7 +17,9 @@ limitations under the License.
 package designate
 
 import (
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"context"
+
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
@@ -31,7 +33,7 @@ type Zones struct {
 func (kzs Zones) List() ([]dnsprovider.Zone, error) {
 	var zoneList []dnsprovider.Zone
 
-	allPages, err := zones.List(kzs.iface.sc, nil).AllPages()
+	allPages, err := zones.List(kzs.iface.sc, nil).AllPages(context.TODO())
 	if err != nil {
 		return zoneList, err
 	}
@@ -51,7 +53,7 @@ func (kzs Zones) List() ([]dnsprovider.Zone, error) {
 
 func (kzs Zones) Add(zone dnsprovider.Zone) (dnsprovider.Zone, error) {
 	opts := &zones.CreateOpts{Name: zone.Name()}
-	z, err := zones.Create(kzs.iface.sc, opts).Extract()
+	z, err := zones.Create(context.TODO(), kzs.iface.sc, opts).Extract()
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +64,7 @@ func (kzs Zones) Add(zone dnsprovider.Zone) (dnsprovider.Zone, error) {
 }
 
 func (kzs Zones) Remove(zone dnsprovider.Zone) error {
-	_, err := zones.Delete(kzs.iface.sc, zone.ID()).Extract()
+	_, err := zones.Delete(context.TODO(), kzs.iface.sc, zone.ID()).Extract()
 	return err
 }
 
