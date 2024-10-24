@@ -32,7 +32,7 @@ func (d *deployer) PostTest(testErr error) error {
 	if testErr != nil || d.PublishVersionMarker == "" {
 		return nil
 	}
-	if !strings.HasPrefix(d.PublishVersionMarker, "gs://") {
+	if !strings.HasPrefix(d.PublishVersionMarker, "gs://") && !strings.HasPrefix(d.PublishVersionMarker, "s3://") {
 		return fmt.Errorf("unsupported --publish-version-marker protocol: %v", d.PublishVersionMarker)
 	}
 	if d.KopsVersionMarker == "" {
@@ -51,13 +51,26 @@ func (d *deployer) PostTest(testErr error) error {
 	if err != nil {
 		return err
 	}
-
-	args := []string{
-		"gsutil",
-		"-h", "Cache-Control:private, max-age=0, no-transform",
-		"cp",
-		tempSrc.Name(),
-		d.PublishVersionMarker,
+	var args []string
+	switch {
+	case strings.HasPrefix(d.PublishVersionMarker, "gs://"):
+		args = []string{
+			"gsutil",
+			"-h", "Cache-Control:private, max-age=0, no-transform",
+			"cp",
+			tempSrc.Name(),
+			d.PublishVersionMarker,
+		}
+	case strings.HasPrefix(d.PublishVersionMarker, "s3://"):
+		args = []string{
+			"aws",
+			"s3",
+			"sync",
+			"--cache-control",
+			"private, max-age=0, no-transform",
+			tempSrc.Name(),
+			d.PublishVersionMarker,
+		}
 	}
 	klog.Info(strings.Join(args, " "))
 
