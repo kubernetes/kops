@@ -3330,6 +3330,16 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.WatchCache != nil {
+		in, out := &in.WatchCache, &out.WatchCache
+		*out = new(bool)
+		**out = **in
+	}
+	if in.WatchCacheSizes != nil {
+		in, out := &in.WatchCacheSizes, &out.WatchCacheSizes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.ServiceAccountKeyFile != nil {
 		in, out := &in.ServiceAccountKeyFile, &out.ServiceAccountKeyFile
 		*out = make([]string, len(*in))
