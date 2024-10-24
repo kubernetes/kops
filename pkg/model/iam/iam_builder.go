@@ -761,6 +761,10 @@ func addECRPermissions(p *Policy) {
 		"ecr:DescribeRepositories",
 		"ecr:ListImages",
 		"ecr:BatchGetImage",
+		"ecr:ReplicateImage",
+		"ecr:BatchImportUpstreamImage",
+		"ecr:CreateRepository",
+		"ecr:TagResource",
 	)
 }
 
