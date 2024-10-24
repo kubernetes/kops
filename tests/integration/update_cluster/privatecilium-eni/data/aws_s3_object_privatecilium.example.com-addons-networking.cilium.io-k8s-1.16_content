@@ -222,6 +222,14 @@ rules:
   - delete
 - apiGroups:
   - ""
+  resourceNames:
+  - cilium-config
+  resources:
+  - configmaps
+  verbs:
+  - patch
+- apiGroups:
+  - ""
   resources:
   - nodes
   verbs:
@@ -576,7 +584,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -719,7 +727,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -738,7 +746,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -765,7 +773,7 @@ spec:
         env:
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         name: apply-sysctl-overwrites
         securityContext:
@@ -789,7 +797,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -824,7 +832,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -849,7 +857,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cilium/cilium:v1.16.2
+        image: quay.io/cilium/cilium:v1.16.3
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -1012,7 +1020,7 @@ spec:
           value: api.internal.privatecilium.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.16.2
+        image: quay.io/cilium/operator:v1.16.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

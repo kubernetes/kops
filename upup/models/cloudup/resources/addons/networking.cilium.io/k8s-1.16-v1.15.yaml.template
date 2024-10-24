@@ -508,6 +508,15 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - configmaps
+  resourceNames:
+  - cilium-config
+  verbs:
+  # allow patching of the configmap to set annotations
+  - patch
+- apiGroups:
+  - ""
+  resources:
   - nodes
   verbs:
   - list
@@ -1834,6 +1843,12 @@ spec:
     kind: Issuer
     name: networking.cilium.io
   secretName: hubble-server-certs
+  isCA: false
+  usages:
+    - signing
+    - key encipherment
+    - server auth
+    - client auth
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -1849,8 +1864,11 @@ spec:
   issuerRef:
     kind: Issuer
     name: networking.cilium.io
+  isCA: false
   usages:
-  - client auth
+    - signing
+    - key encipherment
+    - client auth
   secretName: hubble-relay-client-certs
 {{ end }}
 {{ end }}
