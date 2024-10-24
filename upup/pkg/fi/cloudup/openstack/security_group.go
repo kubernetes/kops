@@ -17,10 +17,11 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
-	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
+	sg "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
+	sgr "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -33,7 +34,7 @@ func listSecurityGroups(c OpenstackCloud, opt sg.ListOpts) ([]sg.SecGroup, error
 	var groups []sg.SecGroup
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := sg.List(c.NetworkingClient(), opt).AllPages()
+		allPages, err := sg.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing security groups %v: %v", opt, err)
 		}
@@ -62,7 +63,7 @@ func createSecurityGroup(c OpenstackCloud, opt sg.CreateOptsBuilder) (*sg.SecGro
 	var group *sg.SecGroup
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		g, err := sg.Create(c.NetworkingClient(), opt).Extract()
+		g, err := sg.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating security group %v: %v", opt, err)
 		}
@@ -86,7 +87,7 @@ func listSecurityGroupRules(c OpenstackCloud, opt sgr.ListOpts) ([]sgr.SecGroupR
 	var rules []sgr.SecGroupRule
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := sgr.List(c.NetworkingClient(), opt).AllPages()
+		allPages, err := sgr.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing security group rules %v: %v", opt, err)
 		}
@@ -115,7 +116,7 @@ func createSecurityGroupRule(c OpenstackCloud, opt sgr.CreateOptsBuilder) (*sgr.
 	var rule *sgr.SecGroupRule
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		r, err := sgr.Create(c.NetworkingClient(), opt).Extract()
+		r, err := sgr.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating security group rule %v: %v", opt, err)
 		}
@@ -137,7 +138,7 @@ func (c *openstackCloud) DeleteSecurityGroup(sgID string) error {
 
 func deleteSecurityGroup(c OpenstackCloud, sgID string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := sg.Delete(c.NetworkingClient(), sgID).ExtractErr()
+		err := sg.Delete(context.TODO(), c.NetworkingClient(), sgID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting security group: %v", err)
 		}
@@ -161,7 +162,7 @@ func (c *openstackCloud) DeleteSecurityGroupRule(ruleID string) error {
 
 func deleteSecurityGroupRule(c OpenstackCloud, ruleID string) error {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		err := sgr.Delete(c.NetworkingClient(), ruleID).ExtractErr()
+		err := sgr.Delete(context.TODO(), c.NetworkingClient(), ruleID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting security group rule: %v", err)
 		}

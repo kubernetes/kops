@@ -21,9 +21,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servergroups"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -161,7 +161,7 @@ func makeGroupOS(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGr
 					Port: port.ID,
 				},
 			},
-		}, "")
+		}, nil, "")
 		if err != nil {
 			t.Fatalf("Failed to make group: %v", err)
 		}

@@ -20,9 +20,9 @@ import (
 	"net/http/httptest"
 	"sync"
 
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/listeners"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
 	"k8s.io/kops/cloudmock/openstack"
 )
 

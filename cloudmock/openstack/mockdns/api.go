@@ -20,8 +20,8 @@ import (
 	"net/http/httptest"
 	"sync"
 
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 	"k8s.io/kops/cloudmock/openstack"
 )
 

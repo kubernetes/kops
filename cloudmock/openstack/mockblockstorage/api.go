@@ -20,8 +20,8 @@ import (
 	"net/http/httptest"
 	"sync"
 
-	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
+	cinderv3 "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones"
 	"k8s.io/kops/cloudmock/openstack"
 )
 

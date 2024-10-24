@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/google/uuid"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 )
 
 type portListResponse struct {

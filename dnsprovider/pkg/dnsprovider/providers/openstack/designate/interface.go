@@ -17,7 +17,7 @@ limitations under the License.
 package designate
 
 import (
-	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 

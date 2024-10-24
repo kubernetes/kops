@@ -17,10 +17,11 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud"
-	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
+	"github.com/gophercloud/gophercloud/v2"
+	az "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -31,7 +32,7 @@ func (c *openstackCloud) ListAvailabilityZones(serviceClient *gophercloud.Servic
 
 func listAvailabilityZones(c OpenstackCloud, serviceClient *gophercloud.ServiceClient) (azList []az.AvailabilityZone, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		azPage, err := az.List(serviceClient).AllPages()
+		azPage, err := az.List(serviceClient).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("failed to list storage availability zones: %v", err)
 		}

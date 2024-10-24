@@ -19,29 +19,29 @@ package openstack
 import (
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
 
-	"github.com/gophercloud/gophercloud"
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
-	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/v2"
+	cinder "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	az "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servergroups"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/volumeattach"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/image/v2/images"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/listeners"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/monitors"
+	v2pools "github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
+	l3floatingip "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/floatingips"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/routers"
+	sg "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
+	sgr "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/cloudmock/openstack/mockblockstorage"
 	"k8s.io/kops/cloudmock/openstack/mockcompute"
@@ -173,8 +173,8 @@ func (c *MockCloud) AttachVolume(serverID string, opts volumeattach.CreateOpts) 
 	return attachVolume(c, serverID, opts)
 }
 
-func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
-	return createInstance(c, opt, portID)
+func (c *MockCloud) CreateInstance(opt servers.CreateOptsBuilder, schedulerHints servers.SchedulerHintOptsBuilder, portID string) (*servers.Server, error) {
+	return createInstance(c, opt, schedulerHints, portID)
 }
 
 func (c *MockCloud) CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error) {

@@ -19,16 +19,17 @@ package openstack
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
 
 	"github.com/go-viper/mapstructure/v2"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/loadbalancers"
+	v2pools "github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -60,12 +61,12 @@ var floatingBackoff = wait.Backoff{
 	Steps:    20,
 }
 
-func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
-	return createInstance(c, opt, portID)
+func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder, schedulerHints servers.SchedulerHintOptsBuilder, portID string) (*servers.Server, error) {
+	return createInstance(c, opt, schedulerHints, portID)
 }
 
 func IsPortInUse(err error) bool {
-	if _, ok := err.(gophercloud.ErrDefault409); ok {
+	if gophercloud.ResponseCodeIs(err, http.StatusConflict) {
 		return true
 	}
 	return false
@@ -79,8 +80,9 @@ func waitForStatusActive(c OpenstackCloud, serverID string, timeout *time.Durati
 	if timeout == nil {
 		timeout = fi.PtrTo(defaultActiveTimeout)
 	}
-
-	return gophercloud.WaitFor(int(timeout.Seconds()), func() (bool, error) {
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(timeout.Seconds())*time.Second)
+	defer cancel()
+	return gophercloud.WaitFor(ctx, func(_ context.Context) (bool, error) {
 		server, err := c.GetInstance(serverID)
 		if err != nil {
 			return false, err
@@ -98,12 +100,12 @@ func waitForStatusActive(c OpenstackCloud, serverID string, timeout *time.Durati
 	})
 }
 
-func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, portID string) (*servers.Server, error) {
+func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, schedulerHints servers.SchedulerHintOptsBuilder, portID string) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
 
-		v, err := servers.Create(c.ComputeClient(), opt).Extract()
+		v, err := servers.Create(context.TODO(), c.ComputeClient(), opt, schedulerHints).Extract()
 		if err != nil {
 			if IsPortInUse(err) && portID != "" {
 				port, err := c.GetPort(portID)
@@ -196,7 +198,7 @@ func (c *openstackCloud) DeleteInstanceWithID(instanceID string) error {
 
 func deleteInstanceWithID(c OpenstackCloud, instanceID string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := servers.Delete(c.ComputeClient(), instanceID).ExtractErr()
+		err := servers.Delete(context.TODO(), c.ComputeClient(), instanceID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting instance: %s", err)
 		}
@@ -325,7 +327,7 @@ func getInstance(c OpenstackCloud, id string) (*servers.Server, error) {
 	var server *servers.Server
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		instance, err := servers.Get(c.ComputeClient(), id).Extract()
+		instance, err := servers.Get(context.TODO(), c.ComputeClient(), id).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -349,7 +351,7 @@ func listInstances(c OpenstackCloud, opt servers.ListOptsBuilder) ([]servers.Ser
 	var instances []servers.Server
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := servers.List(c.ComputeClient(), opt).AllPages()
+		allPages, err := servers.List(c.ComputeClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing servers %v: %v", opt, err)
 		}
@@ -377,7 +379,7 @@ func (c *openstackCloud) GetFlavor(name string) (*flavors.Flavor, error) {
 func getFlavor(c OpenstackCloud, name string) (*flavors.Flavor, error) {
 	opts := flavors.ListOpts{}
 	pager := flavors.ListDetail(c.ComputeClient(), opts)
-	page, err := pager.AllPages()
+	page, err := pager.AllPages(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list flavors: %v", err)
 	}

@@ -17,8 +17,10 @@ limitations under the License.
 package designate
 
 import (
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
-	"github.com/gophercloud/gophercloud/pagination"
+	"context"
+
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
@@ -31,7 +33,7 @@ type ResourceRecordSets struct {
 
 func (rrsets ResourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
 	var list []dnsprovider.ResourceRecordSet
-	err := recordsets.ListByZone(rrsets.zone.zones.iface.sc, rrsets.zone.impl.ID, nil).EachPage(func(page pagination.Page) (bool, error) {
+	err := recordsets.ListByZone(rrsets.zone.zones.iface.sc, rrsets.zone.impl.ID, nil).EachPage(context.TODO(), func(ctx context.Context, page pagination.Page) (bool, error) {
 		rrs, err := recordsets.ExtractRecordSets(page)
 		if err != nil {
 			return false, err
@@ -54,7 +56,7 @@ func (rrsets ResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordS
 	}
 
 	var list []dnsprovider.ResourceRecordSet
-	err := recordsets.ListByZone(rrsets.zone.zones.iface.sc, rrsets.zone.impl.ID, opts).EachPage(func(page pagination.Page) (bool, error) {
+	err := recordsets.ListByZone(rrsets.zone.zones.iface.sc, rrsets.zone.impl.ID, opts).EachPage(context.TODO(), func(ctx context.Context, page pagination.Page) (bool, error) {
 		rrs, err := recordsets.ExtractRecordSets(page)
 		if err != nil {
 			return false, err

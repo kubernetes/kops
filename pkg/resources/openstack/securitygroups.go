@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	sg "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"

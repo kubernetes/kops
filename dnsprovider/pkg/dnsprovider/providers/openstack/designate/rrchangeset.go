@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
@@ -64,7 +64,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		err = recordsets.Delete(c.zone.zones.iface.sc, zoneID, rrID).ExtractErr()
+		err = recordsets.Delete(ctx, c.zone.zones.iface.sc, zoneID, rrID).ExtractErr()
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 			Type:    string(addition.Type()),
 			Records: addition.Rrdatas(),
 		}
-		_, err := recordsets.Create(c.zone.zones.iface.sc, zoneID, opts).Extract()
+		_, err := recordsets.Create(ctx, c.zone.zones.iface.sc, zoneID, opts).Extract()
 		if err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 			TTL:     &ttl,
 			Records: upsert.Rrdatas(),
 		}
-		_, err = recordsets.Update(c.zone.zones.iface.sc, zoneID, rrID, uopts).Extract()
+		_, err = recordsets.Update(ctx, c.zone.zones.iface.sc, zoneID, rrID, uopts).Extract()
 		if err != nil {
 			copts := recordsets.CreateOpts{
 				Name:    upsert.Name(),
@@ -101,7 +101,7 @@ func (c *ResourceRecordChangeset) Apply(ctx context.Context) error {
 				Type:    string(upsert.Type()),
 				Records: upsert.Rrdatas(),
 			}
-			_, err := recordsets.Create(c.zone.zones.iface.sc, zoneID, copts).Extract()
+			_, err := recordsets.Create(ctx, c.zone.zones.iface.sc, zoneID, copts).Extract()
 			if err != nil {
 				return err
 			}
@@ -124,7 +124,7 @@ func (c *ResourceRecordChangeset) nameToID(name string) (string, error) {
 	opts := recordsets.ListOpts{
 		Name: name,
 	}
-	allPages, err := recordsets.ListByZone(c.zone.zones.iface.sc, c.zone.impl.ID, opts).AllPages()
+	allPages, err := recordsets.ListByZone(c.zone.zones.iface.sc, c.zone.impl.ID, opts).AllPages(context.TODO())
 	if err != nil {
 		return "", err
 	}

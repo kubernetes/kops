@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/kops/pkg/dns"
 
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 )

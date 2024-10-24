@@ -23,9 +23,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
@@ -71,7 +71,7 @@ func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	// node-controller should be able to renew it tokens against OpenStack API
 	env.AllowReauth = true
 
-	err = openstack.Authenticate(provider, env)
+	err = openstack.Authenticate(context.TODO(), provider, env)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		}
 	}
 
-	server, err := servers.Get(i.novaClient, instanceID).Extract()
+	server, err := servers.Get(ctx, i.novaClient, instanceID).Extract()
 	if err != nil {
 		return nil, err
 	}

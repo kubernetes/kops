@@ -17,11 +17,12 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -58,7 +59,7 @@ func (c *openstackCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Ins
 func defaultInstanceType(c OpenstackCloud, cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	flavorPage, err := flavors.ListDetail(c.ComputeClient(), flavors.ListOpts{
 		MinRAM: 1024,
-	}).AllPages()
+	}).AllPages(context.TODO())
 	if err != nil {
 		return "", fmt.Errorf("Could not list flavors: %v", err)
 	}

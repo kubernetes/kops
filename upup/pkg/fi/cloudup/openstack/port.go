@@ -17,9 +17,10 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -32,7 +33,7 @@ func createPort(c OpenstackCloud, opt ports.CreateOptsBuilder) (*ports.Port, err
 	var p *ports.Port
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		port, err := ports.Create(c.NetworkingClient(), opt).Extract()
+		port, err := ports.Create(context.TODO(), c.NetworkingClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating port: %v", err)
 		}
@@ -56,7 +57,7 @@ func updatePort(c OpenstackCloud, id string, opt ports.UpdateOptsBuilder) (*port
 	var p *ports.Port
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		port, err := ports.Update(c.NetworkingClient(), id, opt).Extract()
+		port, err := ports.Update(context.TODO(), c.NetworkingClient(), id, opt).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -80,7 +81,7 @@ func getPort(c OpenstackCloud, id string) (*ports.Port, error) {
 	var p *ports.Port
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		port, err := ports.Get(c.NetworkingClient(), id).Extract()
+		port, err := ports.Get(context.TODO(), c.NetworkingClient(), id).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -104,7 +105,7 @@ func listPorts(c OpenstackCloud, opt ports.ListOptsBuilder) ([]ports.Port, error
 	var p []ports.Port
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := ports.List(c.NetworkingClient(), opt).AllPages()
+		allPages, err := ports.List(c.NetworkingClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing ports: %v", err)
 		}
@@ -131,7 +132,7 @@ func (c *openstackCloud) DeletePort(portID string) error {
 
 func deletePort(c OpenstackCloud, portID string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := ports.Delete(c.NetworkingClient(), portID).ExtractErr()
+		err := ports.Delete(context.TODO(), c.NetworkingClient(), portID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting port: %v", err)
 		}

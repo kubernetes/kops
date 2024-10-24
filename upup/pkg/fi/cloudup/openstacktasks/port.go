@@ -21,8 +21,8 @@ import (
 	"sort"
 	"strings"
 
-	secgroup "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	secgroup "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"

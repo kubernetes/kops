@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/pki"

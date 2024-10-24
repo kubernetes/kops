@@ -17,10 +17,11 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
+	cinder "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/volumeattach"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/vfs"
@@ -34,7 +35,7 @@ func listVolumes(c OpenstackCloud, opt cinder.ListOptsBuilder) ([]cinder.Volume,
 	var volumes []cinder.Volume
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := cinder.List(c.BlockStorageClient(), opt).AllPages()
+		allPages, err := cinder.List(c.BlockStorageClient(), opt).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing volumes %v: %v", opt, err)
 		}
@@ -63,7 +64,7 @@ func createVolume(c OpenstackCloud, opt cinder.CreateOptsBuilder) (*cinder.Volum
 	var volume *cinder.Volume
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := cinder.Create(c.BlockStorageClient(), opt).Extract()
+		v, err := cinder.Create(context.TODO(), c.BlockStorageClient(), opt, nil).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating volume %v: %v", opt, err)
 		}
@@ -85,7 +86,7 @@ func (c *openstackCloud) AttachVolume(serverID string, opts volumeattach.CreateO
 
 func attachVolume(c OpenstackCloud, serverID string, opts volumeattach.CreateOpts) (attachment *volumeattach.VolumeAttachment, err error) {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		volumeAttachment, err := volumeattach.Create(c.ComputeClient(), serverID, opts).Extract()
+		volumeAttachment, err := volumeattach.Create(context.TODO(), c.ComputeClient(), serverID, opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error attaching volume %s to server %s: %v", opts.VolumeID, serverID, err)
 		}
@@ -116,7 +117,7 @@ func setVolumeTags(c OpenstackCloud, id string, tags map[string]string) error {
 
 	opt := cinder.UpdateOpts{Metadata: tags}
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		_, err := cinder.Update(c.BlockStorageClient(), id, opt).Extract()
+		_, err := cinder.Update(context.TODO(), c.BlockStorageClient(), id, opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error setting tags to cinder volume %q: %v", id, err)
 		}
@@ -137,7 +138,7 @@ func (c *openstackCloud) DeleteVolume(volumeID string) error {
 
 func deleteVolume(c OpenstackCloud, volumeID string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := cinder.Delete(c.BlockStorageClient(), volumeID, cinder.DeleteOpts{}).ExtractErr()
+		err := cinder.Delete(context.TODO(), c.BlockStorageClient(), volumeID, cinder.DeleteOpts{}).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting volume: %v", err)
 		}

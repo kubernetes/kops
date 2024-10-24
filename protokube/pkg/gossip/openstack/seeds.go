@@ -17,11 +17,12 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/pagination"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/pagination"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -40,7 +41,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 
 	err := servers.List(p.computeClient, servers.ListOpts{
 		TenantID: p.projectID,
-	}).EachPage(func(page pagination.Page) (bool, error) {
+	}).EachPage(context.TODO(), func(ctx context.Context, page pagination.Page) (bool, error) {
 		var s []servers.Server
 		err := servers.ExtractServersInto(page, &s)
 		if err != nil {

@@ -24,12 +24,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/google/uuid"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 )
 
 type serverGetResponse struct {
@@ -210,7 +210,7 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusAccepted)
 
 	server := servers.Server{
 		ID:       uuid.New().String(),
@@ -225,7 +225,7 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 	server.SecurityGroups = securityGroups
 
 	portID := create.Server.Networks[0].Port
-	ports.Update(m.networkClient, portID, ports.UpdateOpts{
+	ports.Update(r.Context(), m.networkClient, portID, ports.UpdateOpts{
 		DeviceID: fi.PtrTo(server.ID),
 	})
 

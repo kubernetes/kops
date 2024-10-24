@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
-	zones "github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
+	zones "github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 )
 
 type zoneListResponse struct {
