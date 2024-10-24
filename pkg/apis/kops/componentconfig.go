@@ -488,7 +488,7 @@ type KubeAPIServerConfig struct {
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
 
 	// Used to disable watch caching in the apiserver, defaults to enabling caching by omission
-	WatchCache bool `json:"watchCache,omitempty" flag:"watch-cache"`
+	WatchCache *bool `json:"watchCache,omitempty" flag:"watch-cache"`
 
 	// Set the watch-cache-sizes parameter for the apiserver
 	// The only meaningful value is setting to 0, which disable caches for specific object types.

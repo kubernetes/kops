@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/utils/pointer"
 )
 
 func Test_KubeAPIServer_BuildFlags(t *testing.T) {
@@ -92,7 +93,7 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
-				WatchCache: false,
+				WatchCache: pointer.Bool(false),
 			},
 			"--secure-port=0 --watch-cache=false",
 		},
