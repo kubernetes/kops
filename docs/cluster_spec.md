@@ -586,14 +586,27 @@ spec:
     disableBasicAuth: true
 ```
 
-### targetRamMb
-
-Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
+### watchCache
+Used to disable watch caching in the apiserver, defaults to enabling caching by omission
 
 ```yaml
 spec:
   kubeAPIServer:
-    targetRamMb: 4096
+    watchCache: false
+```
+
+### watchCacheSizes
+
+Set the watch-cache-sizes parameter for the apiserver
+The only currently useful value is setting to 0, which disable caches for specific object types.
+Setting any values other than 0 for a resource will yield no effect since the caches are dynamic
+
+```yaml
+spec:
+  kubeAPIServer:
+    watchCacheSizes: 
+      - secrets#0
+      - pods#0
 ```
 
 ### eventTTL
@@ -1585,7 +1598,6 @@ the removal of fields no longer in use.
 | kubeAPIServer.oidcRequiredClaim (list)                 | authentication.oidc.oidcRequiredClaims (map)                   |
 | kubeAPIServer.oidcUsernameClaim                        | authentication.oidc.usernameClaim                              |
 | kubeAPIServer.oidcUsernamePrefix                       | authentication.oidc.usernamePrefix                             |
-| kubeAPIServer.targetRamMb                              | kubeAPIServer.targetRamMB                                      |
 | kubeControllerManager.concurrentRcSyncs                | kubeControllerManager.concurrentRCSyncs                        |
 | kubelet.authenticationTokenWebhookCacheTtl             | kubelet.authenticationTokenWebhookCacheTTL                     |
 | kubelet.clientCaFile                                   | kubelet.clientCAFile                                           |

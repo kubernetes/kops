@@ -92,9 +92,15 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		},
 		{
 			kops.KubeAPIServerConfig{
-				TargetRamMB: 320,
+				WatchCache: false,
 			},
-			"--secure-port=0 --target-ram-mb=320",
+			"--secure-port=0 --watch-cache=false",
+		},
+		{
+			kops.KubeAPIServerConfig{
+				WatchCacheSizes: []string{"secrets#0", "pods#0"},
+			},
+			"--secure-port=0 --watch-cache-sizes=secrets#0,pods#0",
 		},
 		{
 			kops.KubeAPIServerConfig{
