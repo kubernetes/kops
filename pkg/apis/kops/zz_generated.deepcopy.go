@@ -2807,6 +2807,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AdditionalNetworkTags != nil {
+		in, out := &in.AdditionalNetworkTags, &out.AdditionalNetworkTags
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
