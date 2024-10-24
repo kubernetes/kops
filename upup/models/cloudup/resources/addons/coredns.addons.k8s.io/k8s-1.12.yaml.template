@@ -160,7 +160,7 @@ spec:
             k8s-app: kube-dns
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.11.1{{ end }}
+        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.11.3{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
