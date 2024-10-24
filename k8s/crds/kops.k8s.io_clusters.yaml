@@ -2147,6 +2147,10 @@ spec:
                     type: string
                   tokenAuthFile:
                     type: string
+                  watchCache:
+                    description: Used to disable watch caching in the apiserver, defaults
+                      to enabling caching by omission
+                    type: boolean
                   watchCacheSizes:
                     description: |-
                       Set the watch-cache-sizes parameter for the apiserver
@@ -2155,10 +2159,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  watchCaches:
-                    description: Used to disable watch caching in the apiserver, defaults
-                      to enabling caching by omission
-                    type: boolean
                 type: object
               kubeControllerManager:
                 description: KubeControllerManagerConfig is the configuration for
