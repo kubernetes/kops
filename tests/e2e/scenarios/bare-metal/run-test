@@ -213,7 +213,12 @@ echo "Waiting 30 seconds for nodes to be ready"
 sleep 30
 
 kubectl get nodes
+kubectl get nodes -o yaml
+
 kubectl get pods -A
 
+echo "running e2e tests"
+cd ${REPO_ROOT}/tests/e2e/scenarios/bare-metal
+go test -v .
 
 echo "Test successful"
