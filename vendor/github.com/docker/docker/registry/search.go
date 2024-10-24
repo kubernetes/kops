@@ -27,11 +27,16 @@ func (s *Service) Search(ctx context.Context, searchFilters filters.Args, term s
 		return nil, err
 	}
 
-	// TODO(thaJeztah): the "is-automated" field is deprecated; reset the field for the next release (v26.0.0). Return early when using "is-automated=true", and ignore "is-automated=false".
 	isAutomated, err := searchFilters.GetBoolOrDefault("is-automated", false)
 	if err != nil {
 		return nil, err
 	}
+
+	// "is-automated" is deprecated and filtering for `true` will yield no results.
+	if isAutomated {
+		return []registry.SearchResult{}, nil
+	}
+
 	isOfficial, err := searchFilters.GetBoolOrDefault("is-official", false)
 	if err != nil {
 		return nil, err
@@ -51,7 +56,6 @@ func (s *Service) Search(ctx context.Context, searchFilters filters.Args, term s
 		}
 	}
 
-	// TODO(thaJeztah): the "is-automated" field is deprecated. Reset the field for the next release (v26.0.0) if any "true" values are present.
 	unfilteredResult, err := s.searchUnfiltered(ctx, term, limit, authConfig, headers)
 	if err != nil {
 		return nil, err
@@ -59,11 +63,6 @@ func (s *Service) Search(ctx context.Context, searchFilters filters.Args, term s
 
 	filteredResults := []registry.SearchResult{}
 	for _, result := range unfilteredResult.Results {
-		if searchFilters.Contains("is-automated") {
-			if isAutomated != result.IsAutomated { //nolint:staticcheck // ignore SA1019 for old API versions.
-				continue
-			}
-		}
 		if searchFilters.Contains("is-official") {
 			if isOfficial != result.IsOfficial {
 				continue
@@ -74,6 +73,10 @@ func (s *Service) Search(ctx context.Context, searchFilters filters.Args, term s
 				continue
 			}
 		}
+		// "is-automated" is deprecated and the value in Docker Hub search
+		// results is untrustworthy. Force it to false so as to not mislead our
+		// clients.
+		result.IsAutomated = false //nolint:staticcheck  // ignore SA1019 (field is deprecated)
 		filteredResults = append(filteredResults, result)
 	}
 
@@ -109,16 +112,12 @@ func (s *Service) searchUnfiltered(ctx context.Context, term string, limit int, 
 	var client *http.Client
 	if authConfig != nil && authConfig.IdentityToken != "" && authConfig.Username != "" {
 		creds := NewStaticCredentialStore(authConfig)
-		scopes := []auth.Scope{
-			auth.RegistryScope{
-				Name:    "catalog",
-				Actions: []string{"search"},
-			},
-		}
 
 		// TODO(thaJeztah); is there a reason not to include other headers here? (originally added in 19d48f0b8ba59eea9f2cac4ad1c7977712a6b7ac)
 		modifiers := Headers(headers.Get("User-Agent"), nil)
-		v2Client, err := v2AuthHTTPClient(endpoint.URL, endpoint.client.Transport, modifiers, creds, scopes)
+		v2Client, err := v2AuthHTTPClient(endpoint.URL, endpoint.client.Transport, modifiers, creds, []auth.Scope{
+			auth.RegistryScope{Name: "catalog", Actions: []string{"search"}},
+		})
 		if err != nil {
 			return nil, err
 		}
