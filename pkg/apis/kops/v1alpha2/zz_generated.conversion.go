@@ -4953,7 +4953,8 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.RequestTimeout = in.RequestTimeout
 	out.MinRequestTimeout = in.MinRequestTimeout
-	out.TargetRamMB = in.TargetRamMB
+	out.WatchCache = in.WatchCache
+	out.WatchCacheSizes = in.WatchCacheSizes
 	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	out.ServiceAccountSigningKeyFile = in.ServiceAccountSigningKeyFile
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
@@ -5068,7 +5069,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.RequestTimeout = in.RequestTimeout
 	out.MinRequestTimeout = in.MinRequestTimeout
-	out.TargetRamMB = in.TargetRamMB
+	out.WatchCache = in.WatchCache
+	out.WatchCacheSizes = in.WatchCacheSizes
 	out.ServiceAccountKeyFile = in.ServiceAccountKeyFile
 	out.ServiceAccountSigningKeyFile = in.ServiceAccountSigningKeyFile
 	out.ServiceAccountIssuer = in.ServiceAccountIssuer
