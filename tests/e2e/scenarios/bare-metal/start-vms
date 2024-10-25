@@ -42,6 +42,7 @@ go build -o ${BINDIR}/storage .
 sudo setcap cap_net_bind_service=ep ${BINDIR}/dhcp
 
 # Install software we need
+sudo apt-get update
 if ! genisoimage --version; then
   echo "Installing genisoimage"
   sudo apt-get install --yes genisoimage
