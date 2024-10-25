@@ -246,7 +246,7 @@ crossbuild-channels: channels-amd64 channels-arm64
 
 .PHONY: upload
 upload: version-dist # Upload kops to S3
-	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
+	aws s3 sync --no-progress --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
 # gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload

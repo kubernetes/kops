@@ -27,7 +27,7 @@ if [[ "${DEST:0:5}" == "s3://" ]]; then
   if aws s3api get-bucket-ownership-controls --bucket "${bucket}" | grep -q "BucketOwnerEnforced" 2>/dev/null; then
     acl_flag=""
   fi
-  aws s3 sync ${acl_flag} ${SRC} ${DEST}
+  aws s3 sync --no-progress ${acl_flag} ${SRC} ${DEST}
   exit 0
 fi
 
