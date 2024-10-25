@@ -603,6 +603,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableLocalRedirectPolicy != nil {
+		in, out := &in.EnableLocalRedirectPolicy, &out.EnableLocalRedirectPolicy
+		*out = new(bool)
+		**out = **in
+	}
 	if in.EnableBPFMasquerade != nil {
 		in, out := &in.EnableBPFMasquerade, &out.EnableBPFMasquerade
 		*out = new(bool)

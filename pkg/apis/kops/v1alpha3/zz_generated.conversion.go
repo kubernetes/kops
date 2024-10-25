@@ -2157,6 +2157,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.DisableEndpointCRD = in.DisableEndpointCRD
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableL7Proxy = in.EnableL7Proxy
+	out.EnableLocalRedirectPolicy = in.EnableLocalRedirectPolicy
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
@@ -2233,6 +2234,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.DisableEndpointCRD = in.DisableEndpointCRD
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableL7Proxy = in.EnableL7Proxy
+	out.EnableLocalRedirectPolicy = in.EnableLocalRedirectPolicy
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics

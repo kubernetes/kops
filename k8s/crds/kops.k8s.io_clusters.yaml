@@ -5301,6 +5301,13 @@ spec:
                           EnableL7Proxy enables L7 proxy for L7 policy enforcement.
                           Default: true
                         type: boolean
+                      enableLocalRedirectPolicy:
+                        description: |-
+                          EnableLocalRedirectPolicy that enables pod traffic destined to an IP address and port/protocol
+                          tuple or Kubernetes service to be redirected locally to backend pod(s) within a node, using eBPF.
+                          https://docs.cilium.io/en/stable/network/kubernetes/local-redirect-policy/
+                          Default: false
+                        type: boolean
                       enableNodePort:
                         description: |-
                           EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
