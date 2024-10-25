@@ -197,3 +197,10 @@ func TestKubeAPIServerBuilderARM64(t *testing.T) {
 		return builder.Build(target)
 	})
 }
+
+func TestKubeAPIServerEnvBuilder(t *testing.T) {
+	RunGoldenTest(t, "tests/golden/envvars", "kube-apiserver", func(nodeupModelContext *NodeupModelContext, target *fi.NodeupModelBuilderContext) error {
+		builder := KubeAPIServerBuilder{NodeupModelContext: nodeupModelContext}
+		return builder.Build(target)
+	})
+}

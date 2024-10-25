@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha2
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -550,6 +551,11 @@ type KubeAPIServerConfig struct {
 	DefaultNotReadyTolerationSeconds *int64 `json:"defaultNotReadyTolerationSeconds,omitempty" flag:"default-not-ready-toleration-seconds"`
 	// DefaultUnreachableTolerationSeconds
 	DefaultUnreachableTolerationSeconds *int64 `json:"defaultUnreachableTolerationSeconds,omitempty" flag:"default-unreachable-toleration-seconds"`
+
+	// Env allows users to pass in env variables to the apiserver container.
+	// This can be useful to control some environment runtime settings, such as GOMEMLIMIT and GOCG to tweak the memory settings of the apiserver
+	// This also allows the flexibility for adding any other variables for future use cases
+	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
