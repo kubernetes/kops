@@ -47,9 +47,18 @@ const (
 // KopsModelContext is the kops model
 type KopsModelContext struct {
 	iam.IAMModelContext
+
+	// AllInstanceGroups is the list of instance groups in the cluster.
+	// Generally most tasks should use InstanceGroups instead,
+	// but we sometimes need the full list for example when configuring cluster-wide IAM.
+	AllInstanceGroups []*kops.InstanceGroup
+
+	// InstanceGroups is the list of instance groups in the cluster that are being processed.
+	// This is a filtered list of AllInstanceGroups.
 	InstanceGroups []*kops.InstanceGroup
-	Region         string
-	SSHPublicKeys  [][]byte
+
+	Region        string
+	SSHPublicKeys [][]byte
 
 	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
 	AdditionalObjects kubemanifest.ObjectList
@@ -92,7 +101,7 @@ func (b *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.Cluste
 
 // FindInstanceGroup returns the instance group with the matching Name (or nil if not found)
 func (b *KopsModelContext) FindInstanceGroup(name string) *kops.InstanceGroup {
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.ObjectMeta.Name == name {
 			return ig
 		}
