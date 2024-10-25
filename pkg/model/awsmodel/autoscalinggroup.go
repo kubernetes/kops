@@ -58,13 +58,22 @@ type AutoscalingGroupModelBuilder struct {
 	Lifecycle              fi.Lifecycle
 	SecurityLifecycle      fi.Lifecycle
 	Cluster                *kops.Cluster
+
+	FilteredInstanceGroups []*kops.InstanceGroup
 }
 
 var _ fi.CloudupModelBuilder = &AutoscalingGroupModelBuilder{}
 
 // Build is responsible for constructing the aws autoscaling group from the kops spec
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	for _, ig := range b.InstanceGroups {
+	klog.Infof("AIGs: %+v", b.InstanceGroups)
+	klog.Infof("FIGs: %+v", b.FilteredInstanceGroups)
+	instanceGroups := b.InstanceGroups
+	if len(b.FilteredInstanceGroups) > 0 {
+		instanceGroups = b.FilteredInstanceGroups
+	}
+	for _, ig := range instanceGroups {
+		klog.Infof("IG: %q", ig.Name)
 		name := b.AutoscalingGroupName(ig)
 
 		if featureflag.SpotinstHybrid.Enabled() {

@@ -89,7 +89,8 @@ type ApplyClusterCmd struct {
 	Cloud   fi.Cloud
 	Cluster *kops.Cluster
 
-	InstanceGroups []*kops.InstanceGroup
+	InstanceGroups         []*kops.InstanceGroup
+	FilteredInstanceGroups []*kops.InstanceGroup
 
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	TargetName string
@@ -590,6 +591,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				Lifecycle:              clusterLifecycle,
 				SecurityLifecycle:      securityLifecycle,
 				Cluster:                cluster,
+				FilteredInstanceGroups: c.FilteredInstanceGroups,
 			}
 
 			if featureflag.Spotinst.Enabled() {
