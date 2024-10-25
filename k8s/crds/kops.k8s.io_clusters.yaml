@@ -2132,11 +2132,6 @@ spec:
                   storageBackend:
                     description: StorageBackend is the backend storage
                     type: string
-                  targetRamMb:
-                    description: Memory limit for apiserver in MB (used to configure
-                      sizes of caches, etc.)
-                    format: int32
-                    type: integer
                   tlsCertFile:
                     type: string
                   tlsCipherSuites:
@@ -2152,6 +2147,18 @@ spec:
                     type: string
                   tokenAuthFile:
                     type: string
+                  watchCache:
+                    description: Used to disable watch caching in the apiserver, defaults
+                      to enabling caching by omission
+                    type: boolean
+                  watchCacheSizes:
+                    description: |-
+                      Set the watch-cache-sizes parameter for the apiserver
+                      The only meaningful value is setting to 0, which disable caches for specific object types.
+                      Setting any values other than 0 for a resource will yield no effect since the caches are dynamic
+                    items:
+                      type: string
+                    type: array
                 type: object
               kubeControllerManager:
                 description: KubeControllerManagerConfig is the configuration for
