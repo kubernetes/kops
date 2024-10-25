@@ -184,6 +184,7 @@ spec:
       enableBPFMasquerade: false
       enableEndpointHealthChecking: true
       enableL7Proxy: true
+      enableLocalRedirectPolicy: false
       enableNodePort: true
       enableRemoteNodeIdentity: true
       enableUnreachableRoutes: false

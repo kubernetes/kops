@@ -372,6 +372,11 @@ type CiliumNetworkingSpec struct {
 	// EnableL7Proxy enables L7 proxy for L7 policy enforcement.
 	// Default: true
 	EnableL7Proxy *bool `json:"enableL7Proxy,omitempty"`
+	// EnableLocalRedirectPolicy that enables pod traffic destined to an IP address and port/protocol
+	// tuple or Kubernetes service to be redirected locally to backend pod(s) within a node, using eBPF.
+	// https://docs.cilium.io/en/stable/network/kubernetes/local-redirect-policy/
+	// Default: false
+	EnableLocalRedirectPolicy *bool `json:"enableLocalRedirectPolicy,omitempty"`
 	// EnableBPFMasquerade enables masquerading packets from endpoints leaving the host with BPF instead of iptables.
 	// Default: false
 	EnableBPFMasquerade *bool `json:"enableBPFMasquerade,omitempty"`

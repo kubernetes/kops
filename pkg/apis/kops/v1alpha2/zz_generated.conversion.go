@@ -1987,6 +1987,7 @@ func autoConvert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	// INFO: in.DisableK8sServices opted out of conversion generation
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableL7Proxy = in.EnableL7Proxy
+	out.EnableLocalRedirectPolicy = in.EnableLocalRedirectPolicy
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
 	// INFO: in.EnableTracing opted out of conversion generation
@@ -2098,6 +2099,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(in *
 	out.DisableEndpointCRD = in.DisableEndpointCRD
 	out.EnablePolicy = in.EnablePolicy
 	out.EnableL7Proxy = in.EnableL7Proxy
+	out.EnableLocalRedirectPolicy = in.EnableLocalRedirectPolicy
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
