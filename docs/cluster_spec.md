@@ -640,6 +640,17 @@ spec:
     logFormat: json
 ```
 
+### Environment Variables
+```yaml
+spec:
+  kubeAPIServer:
+    env:
+    - name: GOMEMLIMIT
+      value: "2750MiB"
+    - name: GOGC
+      value: 50
+```
+
 ## externalDns
 
 This block contains configuration options for your `external-DNS` provider.
