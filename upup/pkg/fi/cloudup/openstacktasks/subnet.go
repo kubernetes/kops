@@ -17,10 +17,11 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -190,7 +191,7 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 			}
 			opt.DNSNameservers = &dnsNameSrv
 		}
-		result := subnets.Update(client, fi.ValueOf(a.ID), opt)
+		result := subnets.Update(context.TODO(), client, fi.ValueOf(a.ID), opt)
 		klog.Infof("Updated %v", opt)
 		if result.Err != nil {
 			return fmt.Errorf("error updating subnet %v: %v", a.ID, result.Err)

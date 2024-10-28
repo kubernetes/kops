@@ -33,12 +33,12 @@ import (
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/external"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/image/v2/images"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/external"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	"k8s.io/klog/v2"
 	kopsroot "k8s.io/kops"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
@@ -339,23 +339,23 @@ func SetupMockOpenstack() *openstack.MockCloud {
 	c.CreateSubnet(extSubnet)
 	c.SetExternalSubnet(fi.PtrTo(extSubnetName))
 	c.SetLBFloatingSubnet(fi.PtrTo(extSubnetName))
-	images.Create(c.MockImageClient.ServiceClient(), images.CreateOpts{
+	images.Create(context.TODO(), c.MockImageClient.ServiceClient(), images.CreateOpts{
 		Name:    "Ubuntu-20.04",
 		MinDisk: 12,
 	})
-	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
+	flavors.Create(context.TODO(), c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
 		Name:  "n1-standard-2",
 		RAM:   8192,
 		VCPUs: 8,
 		Disk:  fi.PtrTo(16),
 	})
-	flavors.Create(c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
+	flavors.Create(context.TODO(), c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
 		Name:  "n1-standard-1",
 		RAM:   8192,
 		VCPUs: 4,
 		Disk:  fi.PtrTo(16),
 	})
-	zones.Create(c.MockDNSClient.ServiceClient(), zones.CreateOpts{
+	zones.Create(context.TODO(), c.MockDNSClient.ServiceClient(), zones.CreateOpts{
 		Name: "minimal-openstack.k8s.local",
 	})
 	return c

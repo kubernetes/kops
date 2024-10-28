@@ -17,6 +17,7 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -25,30 +26,30 @@ import (
 	"time"
 
 	"github.com/blang/semver/v4"
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
-	az "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/keypairs"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/flavors"
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
-	"github.com/gophercloud/gophercloud/openstack/imageservice/v2/images"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/apiversions"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/monitors"
-	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
-	l3floatingip "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/routers"
-	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
-	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/networks"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
+	cinder "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
+	az "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servergroups"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/volumeattach"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
+	"github.com/gophercloud/gophercloud/v2/openstack/image/v2/images"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/apiversions"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/listeners"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/monitors"
+	v2pools "github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
+	l3floatingip "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/floatingips"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/routers"
+	sg "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
+	sgr "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -117,7 +118,7 @@ type OpenstackCloud interface {
 	ListInstances(servers.ListOptsBuilder) ([]servers.Server, error)
 
 	// CreateInstance will create an openstack server provided create opts
-	CreateInstance(servers.CreateOptsBuilder, string) (*servers.Server, error)
+	CreateInstance(servers.CreateOptsBuilder, servers.SchedulerHintOptsBuilder, string) (*servers.Server, error)
 
 	// DeleteInstanceWithID will delete instance
 	DeleteInstanceWithID(instanceID string) error
@@ -361,7 +362,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 
 	klog.V(2).Info("authenticating to keystone")
 
-	err = openstack.Authenticate(provider, authOption)
+	err = openstack.Authenticate(context.TODO(), provider, authOption)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
@@ -404,7 +405,7 @@ func buildClients(provider *gophercloud.ProviderClient, tags map[string]string, 
 	// 2.47 is the minimum version where the compute API /server/details returns flavor names
 	novaClient.Microversion = "2.47"
 
-	glanceClient, err := openstack.NewImageServiceV2(provider, gophercloud.EndpointOpts{
+	glanceClient, err := openstack.NewImageV2(provider, gophercloud.EndpointOpts{
 		Type:   "image",
 		Region: region,
 	})
@@ -714,7 +715,7 @@ func useLoadBalancerVIPACL(c OpenstackCloud) (bool, error) {
 	if c.LoadBalancerClient() == nil {
 		return false, nil
 	}
-	allPages, err := apiversions.List(c.LoadBalancerClient()).AllPages()
+	allPages, err := apiversions.List(c.LoadBalancerClient()).AllPages(context.TODO())
 	if err != nil {
 		return false, err
 	}
@@ -829,7 +830,7 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi
 }
 
 func isNotFound(err error) bool {
-	if _, ok := err.(gophercloud.ErrDefault404); ok {
+	if gophercloud.ResponseCodeIs(err, http.StatusNotFound) {
 		return true
 	}
 

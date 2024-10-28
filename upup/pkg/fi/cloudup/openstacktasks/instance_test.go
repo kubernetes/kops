@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )

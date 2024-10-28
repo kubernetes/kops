@@ -19,7 +19,7 @@ package openstacktasks
 import (
 	"fmt"
 
-	v2pools "github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/pools"
+	v2pools "github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/pools"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"

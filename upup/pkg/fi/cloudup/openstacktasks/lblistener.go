@@ -17,10 +17,11 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/listeners"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/listeners"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
@@ -172,7 +173,7 @@ func (_ *LBListener) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, chan
 			opts := listeners.UpdateOpts{
 				AllowedCIDRs: &changes.AllowedCIDRs,
 			}
-			_, err := listeners.Update(t.Cloud.LoadBalancerClient(), fi.ValueOf(a.ID), opts).Extract()
+			_, err := listeners.Update(context.TODO(), t.Cloud.LoadBalancerClient(), fi.ValueOf(a.ID), opts).Extract()
 			if err != nil {
 				return fmt.Errorf("error updating LB listener: %v", err)
 			}

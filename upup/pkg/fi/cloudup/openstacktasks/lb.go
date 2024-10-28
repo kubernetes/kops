@@ -17,14 +17,15 @@ limitations under the License.
 package openstacktasks
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/ports"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/loadbalancer/v2/loadbalancers"
-	"github.com/gophercloud/gophercloud/openstack/networking/v2/subnets"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack/loadbalancer/v2/loadbalancers"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -66,7 +67,7 @@ func waitLoadbalancerActiveProvisioningStatus(client *gophercloud.ServiceClient,
 
 	var provisioningStatus string
 	err := wait.ExponentialBackoff(backoff, func() (bool, error) {
-		loadbalancer, err := loadbalancers.Get(client, loadbalancerID).Extract()
+		loadbalancer, err := loadbalancers.Get(context.TODO(), client, loadbalancerID).Extract()
 		if err != nil {
 			return false, err
 		}
@@ -109,7 +110,7 @@ func (s *LB) CompareWithID() *string {
 
 func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, lb *loadbalancers.LoadBalancer, find *LB) (*LB, error) {
 	osCloud := cloud
-	sub, err := subnets.Get(osCloud.NetworkingClient(), lb.VipSubnetID).Extract()
+	sub, err := subnets.Get(context.TODO(), osCloud.NetworkingClient(), lb.VipSubnetID).Extract()
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +156,7 @@ func (s *LB) Find(context *fi.CloudupContext) (*LB, error) {
 	cloud := context.T.Cloud.(openstack.OpenstackCloud)
 	lbPage, err := loadbalancers.List(cloud.LoadBalancerClient(), loadbalancers.ListOpts{
 		Name: fi.ValueOf(s.Name),
-	}).AllPages()
+	}).AllPages(context.Context())
 	if err != nil {
 		return nil, fmt.Errorf("Failed to retrieve loadbalancers for name %s: %v", fi.ValueOf(s.Name), err)
 	}
@@ -228,7 +229,7 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 			opts := ports.UpdateOpts{
 				SecurityGroups: &[]string{fi.ValueOf(e.SecurityGroup.ID)},
 			}
-			_, err = ports.Update(t.Cloud.NetworkingClient(), lb.VipPortID, opts).Extract()
+			_, err = ports.Update(context.TODO(), t.Cloud.NetworkingClient(), lb.VipPortID, opts).Extract()
 			if err != nil {
 				return fmt.Errorf("Failed to update security group for port %s: %v", lb.VipPortID, err)
 			}
@@ -247,7 +248,7 @@ func (_ *LB) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *LB)
 		opts := ports.UpdateOpts{
 			SecurityGroups: &[]string{fi.ValueOf(e.SecurityGroup.ID)},
 		}
-		_, err = ports.Update(t.Cloud.NetworkingClient(), fi.ValueOf(a.PortID), opts).Extract()
+		_, err = ports.Update(context.TODO(), t.Cloud.NetworkingClient(), fi.ValueOf(a.PortID), opts).Extract()
 		if err != nil {
 			return fmt.Errorf("Failed to update security group for port %s: %v", fi.ValueOf(a.PortID), err)
 		}

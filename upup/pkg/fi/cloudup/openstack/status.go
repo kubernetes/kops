@@ -33,7 +33,7 @@ import (
 	"fmt"
 	"strings"
 
-	cinderv3 "github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	cinderv3 "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"

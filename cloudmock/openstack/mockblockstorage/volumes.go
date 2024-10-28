@@ -25,7 +25,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes"
 )
 
 type volumeListResponse struct {

@@ -17,11 +17,12 @@ limitations under the License.
 package openstack
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
 
-	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servergroups"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -39,7 +40,7 @@ func createServerGroup(c OpenstackCloud, opt servergroups.CreateOptsBuilder) (*s
 	var i *servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		v, err := servergroups.Create(c.ComputeClient(), opt).Extract()
+		v, err := servergroups.Create(context.TODO(), c.ComputeClient(), opt).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error creating server group: %v", err)
 		}
@@ -63,7 +64,7 @@ func listServerGroups(c OpenstackCloud, opts servergroups.ListOptsBuilder) ([]se
 	var sgs []servergroups.ServerGroup
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		allPages, err := servergroups.List(c.ComputeClient(), opts).AllPages()
+		allPages, err := servergroups.List(c.ComputeClient(), opts).AllPages(context.TODO())
 		if err != nil {
 			return false, fmt.Errorf("error listing server groups: %v", err)
 		}
@@ -141,7 +142,7 @@ func (c *openstackCloud) DeleteServerGroup(groupID string) error {
 
 func deleteServerGroup(c OpenstackCloud, groupID string) error {
 	done, err := vfs.RetryWithBackoff(deleteBackoff, func() (bool, error) {
-		err := servergroups.Delete(c.ComputeClient(), groupID).ExtractErr()
+		err := servergroups.Delete(context.TODO(), c.ComputeClient(), groupID).ExtractErr()
 		if err != nil && !isNotFound(err) {
 			return false, fmt.Errorf("error deleting server group: %v", err)
 		}

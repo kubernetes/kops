@@ -20,7 +20,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 
-	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
+	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
 )
 
 var _ dnsprovider.ResourceRecordSet = ResourceRecordSet{}

@@ -17,13 +17,14 @@ limitations under the License.
 package designate
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/v2"
+	"github.com/gophercloud/gophercloud/v2/openstack"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/util/pkg/vfs"
@@ -70,7 +71,7 @@ func newDesignate(_ io.Reader) (*Interface, error) {
 
 	klog.V(2).Info("authenticating to keystone")
 
-	err = openstack.Authenticate(provider, ao)
+	err = openstack.Authenticate(context.TODO(), provider, ao)
 	if err != nil {
 		return nil, fmt.Errorf("error building openstack authenticated client: %v", err)
 	}
