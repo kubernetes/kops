@@ -485,8 +485,13 @@ type KubeAPIServerConfig struct {
 	// Currently only honored by the watch request handler
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
 
-	// Memory limit for apiserver in MB (used to configure sizes of caches, etc.)
-	TargetRamMB int32 `json:"targetRamMB,omitempty" flag:"target-ram-mb" flag-empty:"0"`
+	// Used to disable watch caching in the apiserver, defaults to enabling caching by omission
+	WatchCache *bool `json:"watchCache,omitempty" flag:"watch-cache"`
+
+	// Set the watch-cache-sizes parameter for the apiserver
+	// The only meaningful value is setting to 0, which disable caches for specific object types.
+	// Setting any values other than 0 for a resource will yield no effect since the caches are dynamic
+	WatchCacheSizes []string `json:"watchCacheSizes,omitempty" flag:"watch-cache-sizes" flag-empty:"0"`
 
 	// File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify ServiceAccount tokens.
 	// The specified file can contain multiple keys, and the flag can be specified multiple times with different files.
