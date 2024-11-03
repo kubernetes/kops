@@ -139,6 +139,10 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		c.EnableL7Proxy = fi.PtrTo(true)
 	}
 
+	if c.EnableLocalRedirectPolicy == nil {
+		c.EnableLocalRedirectPolicy = fi.PtrTo(false)
+	}
+
 	if c.DisableCNPStatusUpdates == nil {
 		c.DisableCNPStatusUpdates = fi.PtrTo(true)
 	}

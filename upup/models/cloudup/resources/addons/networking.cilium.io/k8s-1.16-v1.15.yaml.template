@@ -279,6 +279,10 @@ data:
   # enable-l7-proxy enables L7 proxy for L7 policy enforcement. (default true)
   enable-l7-proxy: "{{ .EnableL7Proxy }}"
 
+  # enable-local-redirect-policy EnableLocalRedirectPolicy that enables pod traffic destined to an IP address and port/protocol
+  # tuple or Kubernetes service to be redirected locally to backend pod(s) within a node, using eBPF. (default false)
+  enable-local-redirect-policy: "{{ .EnableLocalRedirectPolicy }}"
+
   cgroup-root: /run/cilium/cgroupv2
 
   disable-cnp-status-updates: "{{ .DisableCNPStatusUpdates }}"
