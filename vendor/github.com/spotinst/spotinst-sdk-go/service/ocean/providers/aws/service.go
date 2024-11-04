@@ -17,7 +17,6 @@ type Service interface {
 	serviceCommon
 	serviceExtendedResourceDefinition
 }
-
 type serviceKubernetes interface {
 	ListClusters(context.Context, *ListClustersInput) (*ListClustersOutput, error)
 	CreateCluster(context.Context, *CreateClusterInput) (*CreateClusterOutput, error)
@@ -46,6 +45,14 @@ type serviceKubernetes interface {
 	Roll(context.Context, *RollClusterInput) (*RollClusterOutput, error)
 
 	GetClusterAggregatedCosts(context.Context, *ClusterAggregatedCostInput) (*ClusterAggregatedCostOutput, error)
+
+	ReadClusterNodes(context.Context, *ReadClusterNodeInput) (*ReadClusterNodeOutput, error)
+
+	ListMigrations(context.Context, *ReadMigrationInput) (*ReadMigrationOutput, error)
+
+	MigrationStatus(context.Context, *ReadMigrationStatusInput) (*ReadMigrationStatusOutput, error)
+	AttachLoadBalancer(context.Context, *AttachLoadbalancerInput) (*AttachLoadbalancerOutput, error)
+	DetachLoadBalancer(context.Context, *DetachLoadbalancerInput) (*DetachLoadbalancerOutput, error)
 }
 
 type serviceECS interface {

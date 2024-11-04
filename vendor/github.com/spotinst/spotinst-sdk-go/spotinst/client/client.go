@@ -79,3 +79,15 @@ func (c *Client) logResponse(resp *http.Response) {
 		}
 	}
 }
+
+// Do runs a request with our client.
+func (c *Client) DoOrg(ctx context.Context, r *Request) (*http.Response, error) {
+	req, err := r.toHTTPOrg(ctx, c.config)
+	if err != nil {
+		return nil, err
+	}
+	c.logRequest(req)
+	resp, err := c.config.HTTPClient.Do(req)
+	c.logResponse(resp)
+	return resp, err
+}

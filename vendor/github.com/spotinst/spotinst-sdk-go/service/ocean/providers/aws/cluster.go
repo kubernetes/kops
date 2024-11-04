@@ -119,9 +119,48 @@ type ShutdownHours struct {
 }
 
 type Task struct {
-	IsEnabled      *bool   `json:"isEnabled,omitempty"`
-	Type           *string `json:"taskType,omitempty"`
-	CronExpression *string `json:"cronExpression,omitempty"`
+	IsEnabled      *bool      `json:"isEnabled,omitempty"`
+	Type           *string    `json:"taskType,omitempty"`
+	CronExpression *string    `json:"cronExpression,omitempty"`
+	Parameter      *Parameter `json:"parameters,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type Parameter struct {
+	AmiAutoUpdate *AmiAutoUpdate        `json:"amiAutoUpdate,omitempty"`
+	ClusterRoll   *ParameterClusterRoll `json:"clusterRoll,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AmiAutoUpdate struct {
+	ApplyRoll                *bool                     `json:"applyRoll,omitempty"`
+	AmiAutoUpdateClusterRoll *AmiAutoUpdateClusterRoll `json:"clusterRoll,omitempty"`
+	MinorVersion             *bool                     `json:"minorVersion,omitempty"`
+	Patch                    *bool                     `json:"patch,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AmiAutoUpdateClusterRoll struct {
+	BatchMinHealthyPercentage *int    `json:"batchMinHealthyPercentage,omitempty"`
+	BatchSizePercentage       *int    `json:"batchSizePercentage,omitempty"`
+	Comment                   *string `json:"comment,omitempty"`
+	RespectPdb                *bool   `json:"respectPdb,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ParameterClusterRoll struct {
+	BatchMinHealthyPercentage *int    `json:"batchMinHealthyPercentage,omitempty"`
+	BatchSizePercentage       *int    `json:"batchSizePercentage,omitempty"`
+	Comment                   *string `json:"comment,omitempty"`
+	RespectPdb                *bool   `json:"respectPdb,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -162,23 +201,24 @@ type Filters struct {
 }
 
 type LaunchSpecification struct {
-	AssociatePublicIPAddress *bool                         `json:"associatePublicIpAddress,omitempty"`
-	AssociateIPv6Address     *bool                         `json:"associateIpv6Address,omitempty"`
-	SecurityGroupIDs         []string                      `json:"securityGroupIds,omitempty"`
-	ImageID                  *string                       `json:"imageId,omitempty"`
-	KeyPair                  *string                       `json:"keyPair,omitempty"`
-	UserData                 *string                       `json:"userData,omitempty"`
-	IAMInstanceProfile       *IAMInstanceProfile           `json:"iamInstanceProfile,omitempty"`
-	Tags                     []*Tag                        `json:"tags,omitempty"`
-	LoadBalancers            []*LoadBalancer               `json:"loadBalancers,omitempty"`
-	RootVolumeSize           *int                          `json:"rootVolumeSize,omitempty"`
-	Monitoring               *bool                         `json:"monitoring,omitempty"`
-	EBSOptimized             *bool                         `json:"ebsOptimized,omitempty"`
-	UseAsTemplateOnly        *bool                         `json:"useAsTemplateOnly,omitempty"`
-	InstanceMetadataOptions  *InstanceMetadataOptions      `json:"instanceMetadataOptions,omitempty"`
-	BlockDeviceMappings      []*ClusterBlockDeviceMappings `json:"blockDeviceMappings,omitempty"`
-	LaunchSpecScheduling     *LaunchSpecScheduling         `json:"scheduling,omitempty"`
-	ResourceTagSpecification *ResourceTagSpecification     `json:"resourceTagSpecification,omitempty"`
+	AssociatePublicIPAddress                      *bool                         `json:"associatePublicIpAddress,omitempty"`
+	AssociateIPv6Address                          *bool                         `json:"associateIpv6Address,omitempty"`
+	SecurityGroupIDs                              []string                      `json:"securityGroupIds,omitempty"`
+	ImageID                                       *string                       `json:"imageId,omitempty"`
+	KeyPair                                       *string                       `json:"keyPair,omitempty"`
+	UserData                                      *string                       `json:"userData,omitempty"`
+	IAMInstanceProfile                            *IAMInstanceProfile           `json:"iamInstanceProfile,omitempty"`
+	Tags                                          []*Tag                        `json:"tags,omitempty"`
+	LoadBalancers                                 []*LoadBalancer               `json:"loadBalancers,omitempty"`
+	RootVolumeSize                                *int                          `json:"rootVolumeSize,omitempty"`
+	HealthCheckUnhealthyDurationBeforeReplacement *int                          `json:"healthCheckUnhealthyDurationBeforeReplacement,omitempty"`
+	Monitoring                                    *bool                         `json:"monitoring,omitempty"`
+	EBSOptimized                                  *bool                         `json:"ebsOptimized,omitempty"`
+	UseAsTemplateOnly                             *bool                         `json:"useAsTemplateOnly,omitempty"`
+	InstanceMetadataOptions                       *InstanceMetadataOptions      `json:"instanceMetadataOptions,omitempty"`
+	BlockDeviceMappings                           []*ClusterBlockDeviceMappings `json:"blockDeviceMappings,omitempty"`
+	LaunchSpecScheduling                          *LaunchSpecScheduling         `json:"scheduling,omitempty"`
+	ResourceTagSpecification                      *ResourceTagSpecification     `json:"resourceTagSpecification,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -235,8 +275,16 @@ type AutoScalerResourceLimits struct {
 }
 
 type AutoScalerDown struct {
-	EvaluationPeriods      *int     `json:"evaluationPeriods,omitempty"`
-	MaxScaleDownPercentage *float64 `json:"maxScaleDownPercentage,omitempty"`
+	EvaluationPeriods      *int                 `json:"evaluationPeriods,omitempty"`
+	MaxScaleDownPercentage *float64             `json:"maxScaleDownPercentage,omitempty"`
+	AggressiveScaleDown    *AggressiveScaleDown `json:"aggressiveScaleDown,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type AggressiveScaleDown struct {
+	IsEnabled *bool `json:"isEnabled,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -1349,6 +1397,125 @@ func (o *Task) SetCronExpression(v *string) *Task {
 
 // endregion
 
+// region Parameter
+
+func (o *Task) SetParameter(v *Parameter) *Task {
+	if o.Parameter = v; o.Parameter == nil {
+		o.nullFields = append(o.nullFields, "Parameter")
+	}
+	return o
+}
+
+func (o *Parameter) SetAmiAutoUpdate(v *AmiAutoUpdate) *Parameter {
+	if o.AmiAutoUpdate = v; o.AmiAutoUpdate == nil {
+		o.nullFields = append(o.nullFields, "AmiAutoUpdate")
+	}
+	return o
+}
+
+func (o *Parameter) SetClusterRoll(v *ParameterClusterRoll) *Parameter {
+	if o.ClusterRoll = v; o.ClusterRoll == nil {
+		o.nullFields = append(o.nullFields, "ClusterRoll")
+	}
+	return o
+}
+
+// region AmiAutoUpdate
+
+func (o *AmiAutoUpdate) SetApplyRoll(v *bool) *AmiAutoUpdate {
+	if o.ApplyRoll = v; o.ApplyRoll == nil {
+		o.nullFields = append(o.nullFields, "ApplyRoll")
+	}
+	return o
+}
+
+func (o *AmiAutoUpdate) SetClusterRoll(v *AmiAutoUpdateClusterRoll) *AmiAutoUpdate {
+	if o.AmiAutoUpdateClusterRoll = v; o.AmiAutoUpdateClusterRoll == nil {
+		o.nullFields = append(o.nullFields, "ClusterRoll")
+	}
+	return o
+}
+
+func (o *AmiAutoUpdate) SetMinorVersion(v *bool) *AmiAutoUpdate {
+	if o.MinorVersion = v; o.MinorVersion == nil {
+		o.nullFields = append(o.nullFields, "MinorVersion")
+	}
+	return o
+}
+
+func (o *AmiAutoUpdate) SetPatch(v *bool) *AmiAutoUpdate {
+	if o.Patch = v; o.Patch == nil {
+		o.nullFields = append(o.nullFields, "Patch")
+	}
+	return o
+}
+
+// endregion
+
+// region ParameterClusterRoll
+
+func (o *ParameterClusterRoll) SetBatchMinHealthyPercentage(v *int) *ParameterClusterRoll {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
+	}
+	return o
+}
+
+func (o *ParameterClusterRoll) SetBatchSizePercentage(v *int) *ParameterClusterRoll {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *ParameterClusterRoll) SetComment(v *string) *ParameterClusterRoll {
+	if o.Comment = v; o.Comment == nil {
+		o.nullFields = append(o.nullFields, "Comment")
+	}
+	return o
+}
+
+func (o *ParameterClusterRoll) SetRespectPdb(v *bool) *ParameterClusterRoll {
+	if o.RespectPdb = v; o.RespectPdb == nil {
+		o.nullFields = append(o.nullFields, "RespectPdb")
+	}
+	return o
+}
+
+// endregion
+
+// region ParameterClusterRoll
+
+func (o *AmiAutoUpdateClusterRoll) SetBatchMinHealthyPercentage(v *int) *AmiAutoUpdateClusterRoll {
+	if o.BatchMinHealthyPercentage = v; o.BatchMinHealthyPercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchMinHealthyPercentage")
+	}
+	return o
+}
+
+func (o *AmiAutoUpdateClusterRoll) SetBatchSizePercentage(v *int) *AmiAutoUpdateClusterRoll {
+	if o.BatchSizePercentage = v; o.BatchSizePercentage == nil {
+		o.nullFields = append(o.nullFields, "BatchSizePercentage")
+	}
+	return o
+}
+
+func (o *AmiAutoUpdateClusterRoll) SetComment(v *string) *AmiAutoUpdateClusterRoll {
+	if o.Comment = v; o.Comment == nil {
+		o.nullFields = append(o.nullFields, "Comment")
+	}
+	return o
+}
+
+func (o *AmiAutoUpdateClusterRoll) SetRespectPdb(v *bool) *AmiAutoUpdateClusterRoll {
+	if o.RespectPdb = v; o.RespectPdb == nil {
+		o.nullFields = append(o.nullFields, "RespectPdb")
+	}
+	return o
+}
+
+// endregion
+
 // region ShutdownHours
 
 func (o ShutdownHours) MarshalJSON() ([]byte, error) {
@@ -1513,6 +1680,13 @@ func (o *LaunchSpecification) SetInstanceMetadataOptions(v *InstanceMetadataOpti
 func (o *LaunchSpecification) SetResourceTagSpecification(v *ResourceTagSpecification) *LaunchSpecification {
 	if o.ResourceTagSpecification = v; o.ResourceTagSpecification == nil {
 		o.nullFields = append(o.nullFields, "ResourceTagSpecification")
+	}
+	return o
+}
+
+func (o *LaunchSpecification) SetHealthCheckUnhealthyDurationBeforeReplacement(v *int) *LaunchSpecification {
+	if o.HealthCheckUnhealthyDurationBeforeReplacement = v; o.HealthCheckUnhealthyDurationBeforeReplacement == nil {
+		o.nullFields = append(o.nullFields, "HealthCheckUnhealthyDurationBeforeReplacement")
 	}
 	return o
 }
@@ -1725,7 +1899,27 @@ func (o *AutoScalerDown) SetMaxScaleDownPercentage(v *float64) *AutoScalerDown {
 	return o
 }
 
+func (o *AutoScalerDown) SetAggressiveScaleDown(v *AggressiveScaleDown) *AutoScalerDown {
+	if o.AggressiveScaleDown = v; o.AggressiveScaleDown == nil {
+		o.nullFields = append(o.nullFields, "AggressiveScaleDown")
+	}
+	return o
+}
+
 // endregion
+
+func (o AggressiveScaleDown) MarshalJSON() ([]byte, error) {
+	type noMethod AggressiveScaleDown
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *AggressiveScaleDown) SetIsEnabled(v *bool) *AggressiveScaleDown {
+	if o.IsEnabled = v; o.IsEnabled == nil {
+		o.nullFields = append(o.nullFields, "IsEnabled")
+	}
+	return o
+}
 
 // region Roll
 
@@ -2078,11 +2272,21 @@ type ClusterEBS struct {
 	VolumeSize          *int                      `json:"volumeSize,omitempty"`
 	Throughput          *int                      `json:"throughput,omitempty"`
 	DynamicVolumeSize   *ClusterDynamicVolumeSize `json:"dynamicVolumeSize,omitempty"`
+	DynamicIops         *ClusterDynamicIops       `json:"dynamicIops,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
 }
 type ClusterDynamicVolumeSize struct {
+	BaseSize            *int    `json:"baseSize,omitempty"`
+	SizePerResourceUnit *int    `json:"sizePerResourceUnit,omitempty"`
+	Resource            *string `json:"resource,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type ClusterDynamicIops struct {
 	BaseSize            *int    `json:"baseSize,omitempty"`
 	SizePerResourceUnit *int    `json:"sizePerResourceUnit,omitempty"`
 	Resource            *string `json:"resource,omitempty"`
@@ -2186,6 +2390,13 @@ func (o *ClusterEBS) SetThroughput(v *int) *ClusterEBS {
 	return o
 }
 
+func (o *ClusterEBS) SetDynamicIops(v *ClusterDynamicIops) *ClusterEBS {
+	if o.DynamicIops = v; o.DynamicIops == nil {
+		o.nullFields = append(o.nullFields, "DynamicIops")
+	}
+	return o
+}
+
 // endregion
 
 // region DynamicVolumeSize
@@ -2211,6 +2422,37 @@ func (o *ClusterDynamicVolumeSize) SetResource(v *string) *ClusterDynamicVolumeS
 }
 
 func (o *ClusterDynamicVolumeSize) SetSizePerResourceUnit(v *int) *ClusterDynamicVolumeSize {
+	if o.SizePerResourceUnit = v; o.SizePerResourceUnit == nil {
+		o.nullFields = append(o.nullFields, "SizePerResourceUnit")
+	}
+	return o
+}
+
+// endregion
+
+// region DynamicIops
+
+func (o ClusterDynamicIops) MarshalJSON() ([]byte, error) {
+	type noMethod ClusterDynamicIops
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ClusterDynamicIops) SetBaseSize(v *int) *ClusterDynamicIops {
+	if o.BaseSize = v; o.BaseSize == nil {
+		o.nullFields = append(o.nullFields, "BaseSize")
+	}
+	return o
+}
+
+func (o *ClusterDynamicIops) SetResource(v *string) *ClusterDynamicIops {
+	if o.Resource = v; o.Resource == nil {
+		o.nullFields = append(o.nullFields, "Resource")
+	}
+	return o
+}
+
+func (o *ClusterDynamicIops) SetSizePerResourceUnit(v *int) *ClusterDynamicIops {
 	if o.SizePerResourceUnit = v; o.SizePerResourceUnit == nil {
 		o.nullFields = append(o.nullFields, "SizePerResourceUnit")
 	}

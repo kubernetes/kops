@@ -26,6 +26,7 @@ type Service interface {
 	StopDeployment(context.Context, *StopDeploymentInput) (*StopDeploymentOutput, error)
 
 	Roll(context.Context, *RollGroupInput) (*RollGroupOutput, error)
+	RollStatus(context.Context, *RollStatusInput) (*RollStatusOutput, error)
 	RollECS(context.Context, *RollECSGroupInput) (*RollGroupOutput, error)
 
 	GetInstanceHealthiness(context.Context, *GetInstanceHealthinessInput) (*GetInstanceHealthinessOutput, error)

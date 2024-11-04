@@ -139,6 +139,87 @@ type DeleteClusterInput struct {
 
 type DeleteClusterOutput struct{}
 
+type RollSpec struct {
+	ID                        *string  `json:"id,omitempty"`
+	ClusterID                 *string  `json:"clusterId,omitempty"`
+	Comment                   *string  `json:"comment,omitempty"`
+	Status                    *string  `json:"status,omitempty"`
+	BatchSizePercentage       *int     `json:"batchSizePercentage,omitempty"`
+	BatchMinHealthyPercentage *int     `json:"batchMinHealthyPercentage,omitempty"`
+	RespectPDB                *bool    `json:"respectPdb,omitempty"`
+	NodePoolNames             []string `json:"nodePoolNames,omitempty"`
+	VngIds                    []string `json:"vngIds,omitempty"`
+	RespectRestrictScaleDown  *bool    `json:"respectRestrictScaleDown,omitempty"`
+	NodeNames                 []string `json:"nodeNames,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type RollStatus struct {
+	ID                        *string   `json:"id,omitempty"`
+	ClusterID                 *string   `json:"oceanId,omitempty"`
+	Scope                     *string   `json:"scope,omitempty"`
+	Comment                   *string   `json:"comment,omitempty"`
+	Status                    *string   `json:"status,omitempty"`
+	Progress                  *Progress `json:"progress,omitempty"`
+	RespectPDB                *bool     `json:"respectPdb,omitempty"`
+	RespectRestrictScaleDown  *bool     `json:"respectRestrictScaleDown,omitempty"`
+	BatchMinHealthyPercentage *int      `json:"batchMinHealthyPercentage,omitempty"`
+	CurrentBatch              *int      `json:"currentBatch,omitempty"`
+	NumOfBatches              *int      `json:"numOfBatches,omitempty"`
+	CreatedAt                 *string   `json:"createdAt,omitempty"`
+	UpdatedAt                 *string   `json:"updatedAt,omitempty"`
+}
+
+type Progress struct {
+	ProgressPercentage *float64   `json:"progressPercentage,omitempty"`
+	DetailedStatus     *RollNodes `json:"detailedStatus,omitempty"`
+}
+
+type RollNodes struct {
+	RollNodes []*NodeStatus `json:"rollNodes,omitempty"`
+}
+
+type NodeStatus struct {
+	NodeName *string `json:"nodeName,omitempty"`
+	Status   *string `json:"status,omitempty"`
+}
+
+type CreateRollInput struct {
+	Roll *RollSpec `json:"roll,omitempty"`
+}
+
+type CreateRollOutput struct {
+	Roll *RollStatus `json:"roll,omitempty"`
+}
+
+type ReadRollInput struct {
+	RollID    *string `json:"rollId,omitempty"`
+	ClusterID *string `json:"clusterId,omitempty"`
+}
+
+type ReadRollOutput struct {
+	Roll *RollStatus `json:"roll,omitempty"`
+}
+
+type ListRollsInput struct {
+	ClusterID *string `json:"clusterId,omitempty"`
+}
+
+type ListRollsOutput struct {
+	Rolls []*RollStatus `json:"rolls,omitempty"`
+}
+
+type StopRollInput struct {
+	ClusterID *string `json:"clusterId,omitempty"`
+	RollID    *string `json:"rollId,omitempty"`
+}
+
+type StopRollOutput struct {
+	Rolls []*RollStatus `json:"rolls,omitempty"`
+}
+
 // region Unmarshalls
 
 func clusterFromJSON(in []byte) (*Cluster, error) {
@@ -295,7 +376,7 @@ func (s *ServiceOp) UpdateCluster(ctx context.Context, input *UpdateClusterInput
 
 	r := client.NewRequest(http.MethodPut, path)
 	r.Obj = input
-
+	input.Cluster.AKS = nil
 	resp, err := client.RequireOK(s.Client.Do(ctx, r))
 	if err != nil {
 		return nil, err
@@ -576,12 +657,12 @@ func (o Automatic) MarshalJSON() ([]byte, error) {
 	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
-/*func (o *Automatic) SetIsEnabled(v *bool) *Automatic {
+func (o *Automatic) SetIsEnabled(v *bool) *Automatic {
 	if o.IsEnabled = v; o.IsEnabled == nil {
 		o.nullFields = append(o.nullFields, "IsEnabled")
 	}
 	return o
-}*/
+}
 
 func (o *Automatic) SetPercentage(v *int) *Automatic {
 	if o.Percentage = v; o.Percentage == nil {
@@ -700,4 +781,185 @@ type ImportClusterOutput struct {
 	Cluster *Cluster `json:"cluster,omitempty"`
 }
 
+type LaunchNewNodesInput struct {
+	Adjustment          *int     `json:"adjustment,omitempty"`
+	ApplicableVmSizes   []string `json:"applicableVmSizes,omitempty"`
+	AvailabilityZones   []string `json:"availabilityZones,omitempty"`
+	MinCoresPerNode     *int     `json:"minCoresPerNode,omitempty"`
+	MinMemoryGiBPerNode *float64 `json:"minMemoryGiBPerNode,omitempty"`
+	OceanId             *string  `json:"oceanId,omitempty"`
+	PreferredLifecycle  *string  `json:"preferredLifecycle,omitempty"`
+	VngIds              []string `json:"vngIds,omitempty"`
+}
+
+type LaunchNewNodesOutput struct{}
+
+func (s *ServiceOp) LaunchNewNodes(ctx context.Context,
+	input *LaunchNewNodesInput) (*LaunchNewNodesOutput, error) {
+	r := client.NewRequest(http.MethodPut, "/ocean/azure/np/cluster/launchNewNodes")
+	r.Obj = input
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	return &LaunchNewNodesOutput{}, nil
+}
+
 // endregion
+
+func (s *ServiceOp) CreateRoll(ctx context.Context, input *CreateRollInput) (*CreateRollOutput, error) {
+	path, err := uritemplates.Expand("/ocean/azure/np/cluster/{clusterId}/roll", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.Roll.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// We do not need the ID anymore so let's drop it.
+	input.Roll.ClusterID = nil
+
+	r := client.NewRequest(http.MethodPost, path)
+	r.Obj = input.Roll
+
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(CreateRollOutput)
+	if len(v) > 0 {
+		output.Roll = v[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) ReadRoll(ctx context.Context, input *ReadRollInput) (*ReadRollOutput, error) {
+	path, err := uritemplates.Expand("/ocean/azure/np/cluster/{clusterId}/roll/{rollId}", uritemplates.Values{
+		"clusterId": spotinst.StringValue(input.ClusterID),
+		"rollId":    spotinst.StringValue(input.RollID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ReadRollOutput)
+	if len(v) > 0 {
+		output.Roll = v[0]
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) ListRolls(ctx context.Context, input *ListRollsInput) (*ListRollsOutput, error) {
+	path, err := uritemplates.Expand("/ocean/azure/np/cluster/{oceanClusterId}/roll", uritemplates.Values{
+		"oceanClusterId": spotinst.StringValue(input.ClusterID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodGet, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(ListRollsOutput)
+	if len(v) > 0 {
+		output.Rolls = v
+	}
+
+	return output, nil
+}
+
+func (s *ServiceOp) StopRoll(ctx context.Context, input *StopRollInput) (*StopRollOutput, error) {
+	path, err := uritemplates.Expand("/ocean/azure/np/cluster/{oceanClusterId}/roll/{rollId}/stop", uritemplates.Values{
+		"oceanClusterId": spotinst.StringValue(input.ClusterID),
+		"rollId":         spotinst.StringValue(input.RollID),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	r := client.NewRequest(http.MethodPut, path)
+	resp, err := client.RequireOK(s.Client.Do(ctx, r))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	v, err := rollStatusesFromHttpResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	output := new(StopRollOutput)
+	if len(v) > 0 {
+		output.Rolls = v
+	}
+
+	return output, nil
+}
+
+func rollStatusesFromHttpResponse(resp *http.Response) ([]*RollStatus, error) {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return rollStatusesFromJSON(body)
+}
+
+func rollStatusesFromJSON(in []byte) ([]*RollStatus, error) {
+	var rw client.Response
+	if err := json.Unmarshal(in, &rw); err != nil {
+		return nil, err
+	}
+	out := make([]*RollStatus, len(rw.Response.Items))
+	if len(out) == 0 {
+		return out, nil
+	}
+	for i, rb := range rw.Response.Items {
+		b, err := rollStatusFromJSON(rb)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = b
+	}
+	return out, nil
+}
+
+func rollStatusFromJSON(in []byte) (*RollStatus, error) {
+	b := new(RollStatus)
+	if err := json.Unmarshal(in, b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}

@@ -52,12 +52,6 @@ type Attribute struct {
 	nullFields      []string
 }
 
-// Deprecated: Use ListOceanResourceSuggestionsInput instead.
-type ListResourceSuggestionsInput struct {
-	OceanID   *string `json:"oceanId,omitempty"`
-	Namespace *string `json:"namespace,omitempty"`
-}
-
 // Deprecated: Use ListOceanResourceSuggestionsOutput instead.
 type ListResourceSuggestionsOutput struct {
 	Suggestions []*ResourceSuggestion `json:"suggestions,omitempty"`
@@ -72,6 +66,12 @@ type ListOceanResourceSuggestionsInput struct {
 // ListOceanResourceSuggestionsOutput represents the output of `ListOceanResourceSuggestions` function.
 type ListOceanResourceSuggestionsOutput struct {
 	Suggestions []*ResourceSuggestion `json:"suggestions,omitempty"`
+}
+
+// Deprecated: Use ListOceanResourceSuggestionsInput instead.
+type ListResourceSuggestionsInput struct {
+	OceanID   *string `json:"oceanId,omitempty"`
+	Namespace *string `json:"namespace,omitempty"`
 }
 
 func resourceSuggestionFromJSON(in []byte) (*ResourceSuggestion, error) {

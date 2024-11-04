@@ -2,7 +2,6 @@ package elastigroup
 
 import (
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws"
-	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure"
 	azurev3 "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure/v3"
 	"github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gcp"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -15,7 +14,6 @@ import (
 // the service.
 type Service interface {
 	CloudProviderAWS() aws.Service
-	CloudProviderAzure() azure.Service
 	CloudProviderAzureV3() azurev3.Service
 	CloudProviderGCP() gcp.Service
 }
@@ -38,12 +36,6 @@ func New(sess *session.Session, cfgs ...*spotinst.Config) *ServiceOp {
 
 func (s *ServiceOp) CloudProviderAWS() aws.Service {
 	return &aws.ServiceOp{
-		Client: s.Client,
-	}
-}
-
-func (s *ServiceOp) CloudProviderAzure() azure.Service {
-	return &azure.ServiceOp{
 		Client: s.Client,
 	}
 }

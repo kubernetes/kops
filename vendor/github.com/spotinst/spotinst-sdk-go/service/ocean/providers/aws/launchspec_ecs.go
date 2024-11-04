@@ -32,6 +32,7 @@ type ECSLaunchSpec struct {
 	SubnetIDs               []string                              `json:"subnetIds,omitempty"`
 	LaunchSpecScheduling    *ECSLaunchSpecScheduling              `json:"scheduling,omitempty"`
 	InstanceMetadataOptions *ECSLaunchspecInstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
+	Images                  []*ECSImages                          `json:"images,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -224,6 +225,33 @@ type UpdateECSLaunchSpecOutput struct {
 
 type DeleteECSLaunchSpecInput struct {
 	LaunchSpecID *string `json:"launchSpecId,omitempty"`
+}
+
+type ECSImages struct {
+	ImageId *string `json:"id,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+func (o *ECSLaunchSpec) SetECSImages(v []*ECSImages) *ECSLaunchSpec {
+	if o.Images = v; o.Images == nil {
+		o.nullFields = append(o.nullFields, "Images")
+	}
+	return o
+}
+
+func (o ECSImages) MarshalJSON() ([]byte, error) {
+	type noMethod ECSImages
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *ECSImages) SetImageId(v *string) *ECSImages {
+	if o.ImageId = v; o.ImageId == nil {
+		o.nullFields = append(o.nullFields, "ImageId")
+	}
+	return o
 }
 
 type DeleteECSLaunchSpecOutput struct{}
