@@ -137,6 +137,9 @@ type ApplyClusterCmd struct {
 
 	// InstanceGroupFilter is a predicate that restricts which instance groups we will update.
 	InstanceGroupFilter predicates.Predicate[*kops.InstanceGroup]
+
+	// The current oldest version of control plane nodes, defaults to version defined in cluster spec if IgnoreVersionSkew was set
+	ControlPlaneRunningVersion string
 }
 
 // ApplyResults holds information about an ApplyClusterCmd operation.
@@ -239,6 +242,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	}
 
 	assetBuilder := assets.NewAssetBuilder(c.Clientset.VFSContext(), c.Cluster.Spec.Assets, c.Cluster.Spec.KubernetesVersion, c.GetAssets)
+	if len(c.ControlPlaneRunningVersion) > 0 && c.ControlPlaneRunningVersion != c.Cluster.Spec.KubernetesVersion {
+		assetBuilder.KubeletSupportedVersion = c.ControlPlaneRunningVersion
+	}
 	err = c.upgradeSpecs(ctx, assetBuilder)
 	if err != nil {
 		return nil, err

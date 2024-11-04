@@ -51,6 +51,11 @@ type AssetBuilder struct {
 	// KubernetesVersion is the version of kubernetes we are installing
 	KubernetesVersion semver.Version
 
+	// KubeletSupportedVersion is the max version of kubelet that we are currently allowed to run on worker nodes.
+	// This is used to avoid violating the kubelet supported version skew policy,
+	// (we are not allowed to run a newer kubelet on a worker node than the control plane)
+	KubeletSupportedVersion string
+
 	// StaticManifests records manifests used by nodeup:
 	// * e.g. sidecar manifests for static pods run by kubelet
 	StaticManifests []*StaticManifest

@@ -27,11 +27,14 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	apisutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kubeconfig"
@@ -67,6 +70,10 @@ type UpdateClusterOptions struct {
 	SSHPublicKey       string
 	RunTasksOptions    fi.RunTasksOptions
 	AllowKopsDowngrade bool
+	// Bypasses kubelet vs control plane version skew checks,
+	// which by default prevent non-control plane instancegroups
+	// from being updated to a version greater than the control plane
+	IgnoreKubeletVersionSkew bool
 	// GetAssets is whether this is invoked from the CmdGetAssets.
 	GetAssets bool
 
@@ -103,6 +110,8 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.Target = "direct"
 	o.SSHPublicKey = ""
 	o.OutDir = ""
+	// By default we enforce the version skew between control plane and worker nodes
+	o.IgnoreKubeletVersionSkew = false
 
 	// By default we export a kubecfg, but it doesn't have a static/eternal credential in it any more.
 	o.CreateKubecfg = true
@@ -163,6 +172,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("lifecycle-overrides", completeLifecycleOverrides)
 
 	cmd.Flags().BoolVar(&options.Prune, "prune", options.Prune, "Delete old revisions of cloud resources that were needed during an upgrade")
+	cmd.Flags().BoolVar(&options.IgnoreKubeletVersionSkew, "ignore-kubelet-version-skew", options.IgnoreKubeletVersionSkew, "Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running")
 
 	return cmd
 }
@@ -318,20 +328,30 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		return nil, err
 	}
 
+	minControlPlaneRunningVersion := cluster.Spec.KubernetesVersion
+	if !c.IgnoreKubeletVersionSkew {
+		minControlPlaneRunningVersion, err = checkControlPlaneRunningVersion(ctx, cluster.ObjectMeta.Name, minControlPlaneRunningVersion)
+		if err != nil {
+			klog.Warningf("error checking control plane running version, assuming no k8s upgrade in progress: %v", err)
+		} else {
+			klog.V(2).Infof("successfully checked control plane running version: %v", minControlPlaneRunningVersion)
+		}
+	}
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cloud:               cloud,
-		Clientset:           clientset,
-		Cluster:             cluster,
-		DryRun:              isDryrun,
-		AllowKopsDowngrade:  c.AllowKopsDowngrade,
-		RunTasksOptions:     &c.RunTasksOptions,
-		OutDir:              c.OutDir,
-		InstanceGroupFilter: predicates.AllOf(instanceGroupFilters...),
-		Phase:               phase,
-		TargetName:          targetName,
-		LifecycleOverrides:  lifecycleOverrideMap,
-		GetAssets:           c.GetAssets,
-		DeletionProcessing:  deletionProcessing,
+		Cloud:                      cloud,
+		Clientset:                  clientset,
+		Cluster:                    cluster,
+		DryRun:                     isDryrun,
+		AllowKopsDowngrade:         c.AllowKopsDowngrade,
+		RunTasksOptions:            &c.RunTasksOptions,
+		OutDir:                     c.OutDir,
+		InstanceGroupFilter:        predicates.AllOf(instanceGroupFilters...),
+		Phase:                      phase,
+		TargetName:                 targetName,
+		LifecycleOverrides:         lifecycleOverrideMap,
+		GetAssets:                  c.GetAssets,
+		DeletionProcessing:         deletionProcessing,
+		ControlPlaneRunningVersion: minControlPlaneRunningVersion,
 	}
 
 	applyResults, err := applyCmd.Run(ctx)
@@ -574,4 +594,39 @@ func matchInstanceGroupRoles(roles []string) predicates.Predicate[*kops.Instance
 		}
 		return false
 	}
+}
+
+// checkControlPlaneRunningVersion returns the minimum control plane running version
+func checkControlPlaneRunningVersion(ctx context.Context, clusterName string, version string) (string, error) {
+	configLoadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		configLoadingRules,
+		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+	if err != nil {
+		return version, fmt.Errorf("cannot load kubecfg settings for %q: %v", clusterName, err)
+	}
+
+	k8sClient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return version, fmt.Errorf("cannot build kubernetes api client for %q: %v", clusterName, err)
+	}
+
+	parsedVersion, err := apisutil.ParseKubernetesVersion(version)
+	if err != nil {
+		return version, fmt.Errorf("cannot parse kubernetes version %q: %v", clusterName, err)
+	}
+	nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{
+		LabelSelector: "node-role.kubernetes.io/control-plane",
+	})
+	if err != nil {
+		return version, fmt.Errorf("cannot list nodes in cluster %q: %v", clusterName, err)
+	}
+	for _, node := range nodeList.Items {
+		if apisutil.IsKubernetesGTE(node.Status.NodeInfo.KubeletVersion, *parsedVersion) {
+			version = node.Status.NodeInfo.KubeletVersion
+			parsedVersion, _ = apisutil.ParseKubernetesVersion(version)
+		}
+
+	}
+	return strings.TrimPrefix(version, "v"), nil
 }

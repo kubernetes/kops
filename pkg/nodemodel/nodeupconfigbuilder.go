@@ -224,6 +224,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		return nil, nil, fmt.Errorf("building instance group model: %w", err)
 	}
 
+	if !hasAPIServer && n.assetBuilder.KubeletSupportedVersion != "" {
+		if err := igModel.ForceKubernetesVersion(n.assetBuilder.KubeletSupportedVersion); err != nil {
+			return nil, nil, err
+		}
+	}
+
 	kubernetesAssets, err := BuildKubernetesFileAssets(igModel, n.assetBuilder)
 	if err != nil {
 		return nil, nil, err
