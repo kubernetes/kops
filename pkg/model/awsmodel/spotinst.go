@@ -143,6 +143,10 @@ const (
 	// SpotClusterLabelResourceTagSpecificationVolumes
 	// Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags.
 	SpotClusterLabelResourceTagSpecificationVolumes = "spotinst.io/resource-tag-specification-volumes"
+
+	// SpotClusterLabelAutoScalerAggressiveScaleDown
+	// configure the aggressive scale down feature, the default is false. cluster.autoScaler.down.aggressiveScaleDown.isEnabled
+	SpotClusterLabelAutoScalerAggressiveScaleDown = "spotinst.io/autoscaler-aggressive-scale-down"
 )
 
 // SpotInstanceGroupModelBuilder configures SpotInstanceGroup objects
@@ -403,6 +407,11 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 			ocean.AvailabilityVsCost = fi.PtrTo(string(spotinsttasks.NormalizeClusterOrientation(&v)))
 		case SpotClusterLabelResourceTagSpecificationVolumes:
 			ocean.ResourceTagSpecificationVolumes, err = parseBool(v)
+			if err != nil {
+				return err
+			}
+		case SpotClusterLabelAutoScalerAggressiveScaleDown:
+			ocean.AutoScalerAggressiveScaleDown, err = parseBool(v)
 			if err != nil {
 				return err
 			}
