@@ -211,7 +211,7 @@ metadata:
 | `spotinst.io/strategy-cluster-orientation-availability-vs-cost` | Specify approach [cost,balanced,cheapest] that Ocean takes while launching nodes.      | `balanced` |
 | `spotinst.io/resource-tag-specification-volumes` | Specify if Volume resources will be tagged with Virtual Node Group tags or Ocean tags. | `false` |
 | `spotinst.io/autoscaler-aggressive-scale-down` | Specify  if nodes to be promptly scaled down without any waiting period. | `false` |
->>>>>>> 5b5132332a (first commit update doc)
+
 ## Documentation
 
 If you're new to [Spot](https://spot.io/) and want to get started, please checkout our [Getting Started](https://docs.spot.io/connect-your-cloud-provider/) guide, available on the [Spot Documentation](https://docs.spot.io/) website.
