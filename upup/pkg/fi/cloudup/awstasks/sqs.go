@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -115,6 +116,13 @@ func (q *SQS) Find(c *fi.CloudupContext) (*SQS, error) {
 			return nil, fmt.Errorf("error parsing actual Policy for SQS %q: %v", aws.ToString(q.Name), err)
 		}
 
+		if err := normalizePolicy(expectedJson); err != nil {
+			return nil, err
+		}
+		if err := normalizePolicy(actualJson); err != nil {
+			return nil, err
+		}
+
 		if reflect.DeepEqual(actualJson, expectedJson) {
 			klog.V(2).Infof("actual Policy was json-equal to expected; returning expected value")
 			actualPolicy = expectedPolicy
@@ -137,6 +145,47 @@ func (q *SQS) Find(c *fi.CloudupContext) (*SQS, error) {
 	q.ARN = actual.ARN
 
 	return actual, nil
+}
+
+type JSONObject map[string]any
+
+func (j *JSONObject) Slice(key string) ([]any, bool, error) {
+	v, found := (*j)[key]
+	if !found {
+		return nil, false, nil
+	}
+	s, ok := v.([]any)
+	if !ok {
+		return nil, false, fmt.Errorf("expected slice at %q, got %T", key, v)
+	}
+	return s, true, nil
+}
+
+func (j *JSONObject) Object(key string) (JSONObject, bool, error) {
+	v, found := (*j)[key]
+	if !found {
+		return nil, false, nil
+	}
+	m, ok := v.(JSONObject)
+	if !ok {
+		return nil, false, fmt.Errorf("expected object at %q, got %T", key, v)
+	}
+	return m, true, nil
+}
+
+// normalizePolicy sorts the Service principals in the policy, so that we can compare policies more easily.
+func normalizePolicy(policy map[string]interface{}) error {
+	xform := jsonutils.NewTransformer()
+	xform.AddSliceTransform(func(path string, value []any) ([]any, error) {
+		if path != ".Statement[].Principal.Service[]" {
+			return value, nil
+		}
+		return jsonutils.SortSlice(value)
+	})
+	if err := xform.Transform(policy); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (q *SQS) Run(c *fi.CloudupContext) error {
