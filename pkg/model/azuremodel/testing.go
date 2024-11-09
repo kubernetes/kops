@@ -32,8 +32,9 @@ func newTestAzureModelContext() *AzureModelContext {
 			IAMModelContext: iam.IAMModelContext{
 				Cluster: cluster,
 			},
-			InstanceGroups: []*kops.InstanceGroup{ig},
-			SSHPublicKeys:  [][]byte{[]byte("ssh-rsa ...")},
+			AllInstanceGroups: []*kops.InstanceGroup{ig},
+			InstanceGroups:    []*kops.InstanceGroup{ig},
+			SSHPublicKeys:     [][]byte{[]byte("ssh-rsa ...")},
 		},
 	}
 }

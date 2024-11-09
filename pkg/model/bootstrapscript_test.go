@@ -170,8 +170,9 @@ func TestBootstrapUserData(t *testing.T) {
 
 		bs := &BootstrapScriptBuilder{
 			KopsModelContext: &KopsModelContext{
-				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-				InstanceGroups:  []*kops.InstanceGroup{group},
+				IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+				AllInstanceGroups: []*kops.InstanceGroup{group},
+				InstanceGroups:    []*kops.InstanceGroup{group},
 			},
 			NodeUpConfigBuilder: &nodeupConfigBuilder{cluster: cluster},
 			NodeUpAssets: map[architectures.Architecture]*assets.MirroredAsset{

@@ -153,6 +153,8 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 		},
 	}
 
+	kopsModel.AllInstanceGroups = kopsModel.InstanceGroups
+
 	tf := &TemplateFunctions{
 		KopsModelContext: kopsModel,
 		cloud:            cloud,
