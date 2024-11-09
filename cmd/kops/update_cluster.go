@@ -103,6 +103,9 @@ type UpdateClusterOptions struct {
 	// The goal is that the cluster can keep running even during more disruptive
 	// infrastructure changes.
 	Prune bool
+
+	// Reconcile is true if we should reconcile the cluster by rolling the control plane and nodes sequentially
+	Reconcile bool
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -117,6 +120,7 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.CreateKubecfg = true
 
 	o.Prune = false
+	o.Reconcile = false
 
 	o.RunTasksOptions.InitDefaults()
 }
@@ -174,6 +178,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Prune, "prune", options.Prune, "Delete old revisions of cloud resources that were needed during an upgrade")
 	cmd.Flags().BoolVar(&options.IgnoreKubeletVersionSkew, "ignore-kubelet-version-skew", options.IgnoreKubeletVersionSkew, "Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running")
 
+	cmd.Flags().BoolVar(&options.Reconcile, "reconcile", options.Reconcile, "Reconcile the cluster by rolling the control plane and nodes sequentially")
+
 	return cmd
 }
 
@@ -193,6 +199,16 @@ type UpdateClusterResults struct {
 }
 
 func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
+	if c.Reconcile {
+		if !c.Yes {
+			return nil, fmt.Errorf("--reconcile is only supported with --yes")
+		}
+		if c.Target == cloudup.TargetTerraform {
+			return nil, fmt.Errorf("--reconcile is not supported with terraform")
+		}
+		return nil, ReconcileCluster(ctx, f, out, c)
+	}
+
 	results := &UpdateClusterResults{}
 
 	isDryrun := false
