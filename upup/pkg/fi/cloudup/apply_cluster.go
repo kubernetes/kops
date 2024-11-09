@@ -50,6 +50,7 @@ import (
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/scalewaymodel"
 	"k8s.io/kops/pkg/nodemodel"
+	"k8s.io/kops/pkg/predicates"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
@@ -133,6 +134,9 @@ type ApplyClusterCmd struct {
 
 	// DeletionProcessing controls whether we process deletions.
 	DeletionProcessing fi.DeletionProcessingMode
+
+	// InstanceGroupFilter is a predicate that restricts which instance groups we will update.
+	InstanceGroupFilter predicates.Predicate[*kops.InstanceGroup]
 }
 
 // ApplyResults holds information about an ApplyClusterCmd operation.
@@ -401,9 +405,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		}
 	}
 
+	allInstanceGroups := c.InstanceGroups
+	filteredInstanceGroups := predicates.Filter(allInstanceGroups, c.InstanceGroupFilter)
+
 	modelContext := &model.KopsModelContext{
 		IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
-		InstanceGroups:    c.InstanceGroups,
+		InstanceGroups:    filteredInstanceGroups,
+		AllInstanceGroups: allInstanceGroups,
 		AdditionalObjects: c.AdditionalObjects,
 	}
 

@@ -65,9 +65,10 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 	b := AutoscalingGroupModelBuilder{
 		AWSModelContext: &AWSModelContext{
 			KopsModelContext: &model.KopsModelContext{
-				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-				SSHPublicKeys:   k,
-				InstanceGroups:  igs,
+				IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+				SSHPublicKeys:     k,
+				AllInstanceGroups: igs,
+				InstanceGroups:    igs,
 			},
 		},
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
@@ -177,15 +178,17 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	b := AutoscalingGroupModelBuilder{
 		AWSModelContext: &AWSModelContext{
 			KopsModelContext: &model.KopsModelContext{
-				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-				SSHPublicKeys:   [][]byte{[]byte(sshPublicKeyEntry)},
-				InstanceGroups:  igs,
+				IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+				SSHPublicKeys:     [][]byte{[]byte(sshPublicKeyEntry)},
+				AllInstanceGroups: igs,
+				InstanceGroups:    igs,
 			},
 		},
 		BootstrapScriptBuilder: &model.BootstrapScriptBuilder{
 			KopsModelContext: &model.KopsModelContext{
-				IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-				InstanceGroups:  igs,
+				IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+				AllInstanceGroups: igs,
+				InstanceGroups:    igs,
 			},
 			Lifecycle: fi.LifecycleSync,
 		},

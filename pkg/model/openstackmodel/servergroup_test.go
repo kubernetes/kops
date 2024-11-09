@@ -1531,9 +1531,10 @@ func createBuilderForCluster(cluster *kops.Cluster, instanceGroups []*kops.Insta
 	sshPublicKey := []byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDF2sghZsClUBXJB4mBMIw8rb0hJWjg1Vz4eUeXwYmTdi92Gf1zNc5xISSip9Y+PWX/jJokPB7tgPnMD/2JOAKhG1bi4ZqB15pYRmbbBekVpM4o4E0dx+czbqjiAm6wlccTrINK5LYenbucAAQt19eH+D0gJwzYUK9SYz1hWnlGS+qurt2bz7rrsG73lN8E2eiNvGtIXqv3GabW/Hea3acOBgCUJQWUDTRu0OmmwxzKbFN/UpNKeRaHlCqwZWjVAsmqA8TX8LIocq7Np7MmIBwt7EpEeZJxThcmC8DEJs9ClAjD+jlLIvMPXKC3JWCPgwCLGxHjy7ckSGFCSzbyPduh")
 
 	modelContext := &model.KopsModelContext{
-		IAMModelContext: iam.IAMModelContext{Cluster: cluster},
-		InstanceGroups:  instanceGroups,
-		SSHPublicKeys:   [][]byte{sshPublicKey},
+		IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+		AllInstanceGroups: instanceGroups,
+		InstanceGroups:    instanceGroups,
+		SSHPublicKeys:     [][]byte{sshPublicKey},
 	}
 	openstackModelContext := &OpenstackModelContext{
 		KopsModelContext: modelContext,
@@ -1569,8 +1570,9 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	clusterLifecycle := fi.LifecycleSync
 	bootstrapScriptBuilder := &model.BootstrapScriptBuilder{
 		KopsModelContext: &model.KopsModelContext{
-			IAMModelContext: iam.IAMModelContext{Cluster: testCase.cluster},
-			InstanceGroups:  testCase.instanceGroups,
+			IAMModelContext:   iam.IAMModelContext{Cluster: testCase.cluster},
+			AllInstanceGroups: testCase.instanceGroups,
+			InstanceGroups:    testCase.instanceGroups,
 		},
 		NodeUpConfigBuilder: &nodeupConfigBuilder{},
 		NodeUpAssets: map[architectures.Architecture]*assets.MirroredAsset{

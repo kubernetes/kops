@@ -27,6 +27,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
@@ -34,6 +35,7 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/predicates"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -75,6 +77,14 @@ type UpdateClusterOptions struct {
 	user          string
 	internal      bool
 
+	// InstanceGroups is the list of instance groups to update;
+	// if not specified, all instance groups will be updated
+	InstanceGroups []string
+
+	// InstanceGroupRoles is the list of roles we should update
+	// if not specified, all instance groups will be updated
+	InstanceGroupRoles []string
+
 	Phase string
 
 	// LifecycleOverrides is a slice of taskName=lifecycle name values.  This slice is used
@@ -106,6 +116,11 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &UpdateClusterOptions{}
 	options.InitDefaults()
 
+	allRoles := make([]string, 0, len(kops.AllInstanceGroupRoles))
+	for _, r := range kops.AllInstanceGroupRoles {
+		allRoles = append(allRoles, r.ToLowerString())
+	}
+
 	cmd := &cobra.Command{
 		Use:               "cluster [CLUSTER]",
 		Short:             updateClusterShort,
@@ -132,6 +147,12 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("user", completeKubecfgUser)
 	cmd.Flags().BoolVar(&options.internal, "internal", options.internal, "Use the cluster's internal DNS name. Implies --create-kube-config")
 	cmd.Flags().BoolVar(&options.AllowKopsDowngrade, "allow-kops-downgrade", options.AllowKopsDowngrade, "Allow an older version of kOps to update the cluster than last used")
+	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "Instance groups to update (defaults to all if not specified)")
+	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(f, &options.InstanceGroups, &options.InstanceGroupRoles))
+	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "Instance group roles to update ("+strings.Join(allRoles, ",")+")")
+	cmd.RegisterFlagCompletionFunc("instance-group-roles", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return sets.NewString(allRoles...).Delete(options.InstanceGroupRoles...).List(), cobra.ShellCompDirectiveNoFileComp
+	})
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
 	cmd.RegisterFlagCompletionFunc("phase", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return cloudup.Phases.List(), cobra.ShellCompDirectiveNoFileComp
@@ -285,24 +306,32 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		lifecycleOverrideMap[taskName] = lifecycleOverride
 	}
 
+	var instanceGroupFilters []predicates.Predicate[*kops.InstanceGroup]
+	if len(c.InstanceGroups) != 0 {
+		instanceGroupFilters = append(instanceGroupFilters, matchInstanceGroupNames(c.InstanceGroups))
+	} else if len(c.InstanceGroupRoles) != 0 {
+		instanceGroupFilters = append(instanceGroupFilters, matchInstanceGroupRoles(c.InstanceGroupRoles))
+	}
+
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return nil, err
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cloud:              cloud,
-		Clientset:          clientset,
-		Cluster:            cluster,
-		DryRun:             isDryrun,
-		AllowKopsDowngrade: c.AllowKopsDowngrade,
-		RunTasksOptions:    &c.RunTasksOptions,
-		OutDir:             c.OutDir,
-		Phase:              phase,
-		TargetName:         targetName,
-		LifecycleOverrides: lifecycleOverrideMap,
-		GetAssets:          c.GetAssets,
-		DeletionProcessing: deletionProcessing,
+		Cloud:               cloud,
+		Clientset:           clientset,
+		Cluster:             cluster,
+		DryRun:              isDryrun,
+		AllowKopsDowngrade:  c.AllowKopsDowngrade,
+		RunTasksOptions:     &c.RunTasksOptions,
+		OutDir:              c.OutDir,
+		InstanceGroupFilter: predicates.AllOf(instanceGroupFilters...),
+		Phase:               phase,
+		TargetName:          targetName,
+		LifecycleOverrides:  lifecycleOverrideMap,
+		GetAssets:           c.GetAssets,
+		DeletionProcessing:  deletionProcessing,
 	}
 
 	applyResults, err := applyCmd.Run(ctx)
@@ -517,4 +546,32 @@ func completeLifecycleOverrides(cmd *cobra.Command, args []string, toComplete st
 		completions = append(completions, split[0]+lifecycle)
 	}
 	return completions, cobra.ShellCompDirectiveNoFileComp
+}
+
+// matchInstanceGroupNames returns a predicate that matches instance groups by name
+func matchInstanceGroupNames(names []string) predicates.Predicate[*kops.InstanceGroup] {
+	return func(ig *kops.InstanceGroup) bool {
+		for _, name := range names {
+			if ig.ObjectMeta.Name == name {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// matchInstanceGroupRoles returns a predicate that matches instance groups by role
+func matchInstanceGroupRoles(roles []string) predicates.Predicate[*kops.InstanceGroup] {
+	return func(ig *kops.InstanceGroup) bool {
+		for _, role := range roles {
+			instanceGroupRole, ok := kops.ParseInstanceGroupRole(role, true)
+			if !ok {
+				continue
+			}
+			if ig.Spec.Role == instanceGroupRole {
+				return true
+			}
+		}
+		return false
+	}
 }

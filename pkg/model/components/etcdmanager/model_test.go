@@ -81,8 +81,9 @@ func LoadKopsModelContext(basedir string) (*model.KopsModelContext, error) {
 	}
 
 	kopsContext := &model.KopsModelContext{
-		IAMModelContext: iam.IAMModelContext{Cluster: spec.Cluster},
-		InstanceGroups:  spec.InstanceGroups,
+		IAMModelContext:   iam.IAMModelContext{Cluster: spec.Cluster},
+		AllInstanceGroups: spec.InstanceGroups,
+		InstanceGroups:    spec.InstanceGroups,
 	}
 
 	return kopsContext, nil

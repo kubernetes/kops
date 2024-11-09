@@ -65,7 +65,7 @@ func (b *IAMModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	// Collect Instance Profile ARNs and their associated Instance Group roles
 	sharedProfileARNsToIGRole := make(map[string]kops.InstanceGroupRole)
-	for _, ig := range b.InstanceGroups {
+	for _, ig := range b.AllInstanceGroups {
 		if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
 			specProfile := fi.ValueOf(ig.Spec.IAM.Profile)
 			if matchingRole, ok := sharedProfileARNsToIGRole[specProfile]; ok {
