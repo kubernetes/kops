@@ -67,6 +67,7 @@ type Ocean struct {
 	SpreadNodesBy                   *string
 	AvailabilityVsCost              *string
 	ResourceTagSpecificationVolumes *bool
+	AutoScalerAggressiveScaleDown   *bool
 }
 
 var (
@@ -324,9 +325,14 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 
 			// Scale down.
 			if down := ocean.AutoScaler.Down; down != nil {
-				actual.AutoScalerOpts.Down = &AutoScalerDownOpts{
-					MaxPercentage:     down.MaxScaleDownPercentage,
-					EvaluationPeriods: down.EvaluationPeriods,
+				if down.MaxScaleDownPercentage != nil || down.EvaluationPeriods != nil {
+					actual.AutoScalerOpts.Down = &AutoScalerDownOpts{
+						MaxPercentage:     down.MaxScaleDownPercentage,
+						EvaluationPeriods: down.EvaluationPeriods,
+					}
+				}
+				if down.AggressiveScaleDown != nil {
+					actual.AutoScalerAggressiveScaleDown = down.AggressiveScaleDown.IsEnabled
 				}
 			}
 
@@ -583,6 +589,16 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					autoScaler.ResourceLimits = &aws.AutoScalerResourceLimits{
 						MaxVCPU:      limits.MaxVCPU,
 						MaxMemoryGiB: limits.MaxMemory,
+					}
+				}
+				// create AutoScalerAggressiveScaleDown
+				{
+					if e.AutoScalerAggressiveScaleDown != nil {
+						aggressiveScaleDown := new(aws.AggressiveScaleDown)
+						if down := autoScaler.Down; down == nil {
+							autoScaler.Down = new(aws.AutoScalerDown)
+						}
+						autoScaler.Down.SetAggressiveScaleDown(aggressiveScaleDown.SetIsEnabled(fi.PtrTo(*e.AutoScalerAggressiveScaleDown)))
 					}
 				}
 
@@ -1083,6 +1099,15 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					}
 				} else if a.AutoScalerOpts.ResourceLimits != nil {
 					autoScaler.SetResourceLimits(nil)
+				}
+				// AutoScaler aggressive scale down
+				if changes.AutoScalerAggressiveScaleDown != nil {
+					aggressiveScaleDown := new(aws.AggressiveScaleDown)
+					if down := autoScaler.Down; down == nil {
+						autoScaler.Down = new(aws.AutoScalerDown)
+					}
+					autoScaler.Down.SetAggressiveScaleDown(aggressiveScaleDown.SetIsEnabled(fi.PtrTo(*changes.AutoScalerAggressiveScaleDown)))
+					changes.AutoScalerAggressiveScaleDown = nil
 				}
 
 				ocean.SetAutoScaler(autoScaler)

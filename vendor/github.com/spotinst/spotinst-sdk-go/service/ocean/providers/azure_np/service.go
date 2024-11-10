@@ -17,12 +17,17 @@ type Service interface {
 	UpdateCluster(context.Context, *UpdateClusterInput) (*UpdateClusterOutput, error)
 	DeleteCluster(context.Context, *DeleteClusterInput) (*DeleteClusterOutput, error)
 	ImportCluster(context.Context, *ImportClusterInput) (*ImportClusterOutput, error)
+	CreateRoll(context.Context, *CreateRollInput) (*CreateRollOutput, error)
+	ReadRoll(ctx context.Context, input *ReadRollInput) (*ReadRollOutput, error)
+	ListRolls(ctx context.Context, input *ListRollsInput) (*ListRollsOutput, error)
+	StopRoll(ctx context.Context, input *StopRollInput) (*StopRollOutput, error)
 
 	ListVirtualNodeGroups(context.Context, *ListVirtualNodeGroupsInput) (*ListVirtualNodeGroupsOutput, error)
 	CreateVirtualNodeGroup(context.Context, *CreateVirtualNodeGroupInput) (*CreateVirtualNodeGroupOutput, error)
 	ReadVirtualNodeGroup(context.Context, *ReadVirtualNodeGroupInput) (*ReadVirtualNodeGroupOutput, error)
 	UpdateVirtualNodeGroup(context.Context, *UpdateVirtualNodeGroupInput) (*UpdateVirtualNodeGroupOutput, error)
 	DeleteVirtualNodeGroup(context.Context, *DeleteVirtualNodeGroupInput) (*DeleteVirtualNodeGroupOutput, error)
+	LaunchNewNodes(context.Context, *LaunchNewNodesInput) (*LaunchNewNodesOutput, error)
 }
 
 type ServiceOp struct {

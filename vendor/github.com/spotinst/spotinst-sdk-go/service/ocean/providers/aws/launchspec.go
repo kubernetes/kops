@@ -31,6 +31,7 @@ type LaunchSpec struct {
 	AutoScale                *AutoScale                         `json:"autoScale,omitempty"`
 	ElasticIPPool            *ElasticIPPool                     `json:"elasticIpPool,omitempty"`
 	BlockDeviceMappings      []*BlockDeviceMapping              `json:"blockDeviceMappings,omitempty"`
+	EphemeralStorage         *EphemeralStorage                  `json:"ephemeralStorage,omitempty"`
 	Labels                   []*Label                           `json:"labels,omitempty"`
 	Taints                   []*Taint                           `json:"taints,omitempty"`
 	Tags                     []*Tag                             `json:"tags,omitempty"`
@@ -39,6 +40,8 @@ type LaunchSpec struct {
 	LaunchSpecScheduling     *LaunchSpecScheduling              `json:"scheduling,omitempty"`
 	InstanceMetadataOptions  *LaunchspecInstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
 	Images                   []*Images                          `json:"images,omitempty"`
+	InstanceTypesFilters     *InstanceTypesFilters              `json:"instanceTypesFilters,omitempty"`
+	PreferredOnDemandTypes   []string                           `json:"preferredOnDemandTypes,omitempty"`
 
 	// Read-only fields.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
@@ -218,7 +221,10 @@ type TagSelector struct {
 }
 
 type LaunchSpecStrategy struct {
-	SpotPercentage *int `json:"spotPercentage,omitempty"`
+	SpotPercentage           *int  `json:"spotPercentage,omitempty"`
+	DrainingTimeout          *int  `json:"drainingTimeout,omitempty"`
+	UtilizeCommitments       *bool `json:"utilizeCommitments,omitempty"`
+	UtilizeReservedInstances *bool `json:"utilizeReservedInstances,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -269,6 +275,37 @@ type LaunchSpecTaskHeadroom struct {
 
 type Images struct {
 	ImageId *string `json:"id,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type InstanceTypesFilters struct {
+	Categories            []string `json:"categories,omitempty"`
+	DiskTypes             []string `json:"diskTypes,omitempty"`
+	ExcludeFamilies       []string `json:"excludeFamilies,omitempty"`
+	ExcludeMetal          *bool    `json:"excludeMetal,omitempty"`
+	Hypervisor            []string `json:"hypervisor,omitempty"`
+	IncludeFamilies       []string `json:"includeFamilies,omitempty"`
+	IsEnaSupported        *bool    `json:"isEnaSupported,omitempty"`
+	MaxGpu                *int     `json:"maxGpu,omitempty"`
+	MaxMemoryGiB          *float64 `json:"maxMemoryGiB,omitempty"`
+	MaxNetworkPerformance *int     `json:"maxNetworkPerformance,omitempty"`
+	MaxVcpu               *int     `json:"maxVcpu,omitempty"`
+	MinEnis               *int     `json:"minEnis,omitempty"`
+	MinGpu                *int     `json:"minGpu,omitempty"`
+	MinMemoryGiB          *float64 `json:"minMemoryGiB,omitempty"`
+	MinNetworkPerformance *int     `json:"minNetworkPerformance,omitempty"`
+	MinVcpu               *int     `json:"minVcpu,omitempty"`
+	RootDeviceTypes       []string `json:"rootDeviceTypes,omitempty"`
+	VirtualizationTypes   []string `json:"virtualizationTypes,omitempty"`
+
+	forceSendFields []string
+	nullFields      []string
+}
+
+type EphemeralStorage struct {
+	DeviceName *string `json:"deviceName,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -558,6 +595,13 @@ func (o *LaunchSpec) SetPreferredSpotTypes(v []string) *LaunchSpec {
 	return o
 }
 
+func (o *LaunchSpec) SetPreferredOnDemandTypes(v []string) *LaunchSpec {
+	if o.PreferredOnDemandTypes = v; o.PreferredOnDemandTypes == nil {
+		o.nullFields = append(o.nullFields, "PreferredOnDemandTypes")
+	}
+	return o
+}
+
 func (o *LaunchSpec) SetRootVolumeSize(v *int) *LaunchSpec {
 	if o.RootVolumeSize = v; o.RootVolumeSize == nil {
 		o.nullFields = append(o.nullFields, "RootVolumeSize")
@@ -645,6 +689,18 @@ func (o *LaunchSpec) SetRestrictScaleDown(v *bool) *LaunchSpec {
 func (o *LaunchSpec) SetScheduling(v *LaunchSpecScheduling) *LaunchSpec {
 	if o.LaunchSpecScheduling = v; o.LaunchSpecScheduling == nil {
 		o.nullFields = append(o.nullFields, "scheduling")
+	}
+	return o
+}
+func (o *LaunchSpec) SetInstanceTypesFilters(v *InstanceTypesFilters) *LaunchSpec {
+	if o.InstanceTypesFilters = v; o.InstanceTypesFilters == nil {
+		o.nullFields = append(o.nullFields, "InstanceTypesFilters")
+	}
+	return o
+}
+func (o *LaunchSpec) SetEphemeralStorage(v *EphemeralStorage) *LaunchSpec {
+	if o.EphemeralStorage = v; o.EphemeralStorage == nil {
+		o.nullFields = append(o.nullFields, "EphemeralStorage")
 	}
 	return o
 }
@@ -990,6 +1046,27 @@ func (o *LaunchSpecStrategy) SetSpotPercentage(v *int) *LaunchSpecStrategy {
 	return o
 }
 
+func (o *LaunchSpecStrategy) SetDrainingTimeout(v *int) *LaunchSpecStrategy {
+	if o.DrainingTimeout = v; o.DrainingTimeout == nil {
+		o.nullFields = append(o.nullFields, "DrainingTimeout")
+	}
+	return o
+}
+
+func (o *LaunchSpecStrategy) SetUtilizeCommitments(v *bool) *LaunchSpecStrategy {
+	if o.UtilizeCommitments = v; o.UtilizeCommitments == nil {
+		o.nullFields = append(o.nullFields, "UtilizeCommitments")
+	}
+	return o
+}
+
+func (o *LaunchSpecStrategy) SetUtilizeReservedInstances(v *bool) *LaunchSpecStrategy {
+	if o.UtilizeReservedInstances = v; o.UtilizeReservedInstances == nil {
+		o.nullFields = append(o.nullFields, "UtilizeReservedInstances")
+	}
+	return o
+}
+
 // endregion
 
 //region Scheduling
@@ -1147,6 +1224,159 @@ func (o *Images) SetImageId(v *string) *Images {
 		o.nullFields = append(o.nullFields, "ImageId")
 	}
 	return o
+}
+
+// endregion
+
+// region InstanceTypesFilters
+
+func (o InstanceTypesFilters) MarshalJSON() ([]byte, error) {
+	type noMethod InstanceTypesFilters
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
+}
+
+func (o *InstanceTypesFilters) SetCategories(v []string) *InstanceTypesFilters {
+	if o.Categories = v; o.Categories == nil {
+		o.nullFields = append(o.nullFields, "Categories")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetDiskTypes(v []string) *InstanceTypesFilters {
+	if o.DiskTypes = v; o.DiskTypes == nil {
+		o.nullFields = append(o.nullFields, "DiskTypes")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetExcludeFamilies(v []string) *InstanceTypesFilters {
+	if o.ExcludeFamilies = v; o.ExcludeFamilies == nil {
+		o.nullFields = append(o.nullFields, "ExcludeFamilies")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetExcludeMetal(v *bool) *InstanceTypesFilters {
+	if o.ExcludeMetal = v; o.ExcludeMetal == nil {
+		o.nullFields = append(o.nullFields, "ExcludeMetal")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetHypervisor(v []string) *InstanceTypesFilters {
+	if o.Hypervisor = v; o.Hypervisor == nil {
+		o.nullFields = append(o.nullFields, "Hypervisor")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetIncludeFamilies(v []string) *InstanceTypesFilters {
+	if o.IncludeFamilies = v; o.IncludeFamilies == nil {
+		o.nullFields = append(o.nullFields, "IncludeFamilies")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetIsEnaSupported(v *bool) *InstanceTypesFilters {
+	if o.IsEnaSupported = v; o.IsEnaSupported == nil {
+		o.nullFields = append(o.nullFields, "IsEnaSupported")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMaxGpu(v *int) *InstanceTypesFilters {
+	if o.MaxGpu = v; o.MaxGpu == nil {
+		o.nullFields = append(o.nullFields, "MaxGpu")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMaxMemoryGiB(v *float64) *InstanceTypesFilters {
+	if o.MaxMemoryGiB = v; o.MaxMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MaxMemoryGiB")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMaxNetworkPerformance(v *int) *InstanceTypesFilters {
+	if o.MaxNetworkPerformance = v; o.MaxNetworkPerformance == nil {
+		o.nullFields = append(o.nullFields, "MaxNetworkPerformance")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMaxVcpu(v *int) *InstanceTypesFilters {
+	if o.MaxVcpu = v; o.MaxVcpu == nil {
+		o.nullFields = append(o.nullFields, "MaxVcpu")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMinEnis(v *int) *InstanceTypesFilters {
+	if o.MinEnis = v; o.MinEnis == nil {
+		o.nullFields = append(o.nullFields, "MinEnis")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMinGpu(v *int) *InstanceTypesFilters {
+	if o.MinGpu = v; o.MinGpu == nil {
+		o.nullFields = append(o.nullFields, "MinGpu")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMinMemoryGiB(v *float64) *InstanceTypesFilters {
+	if o.MinMemoryGiB = v; o.MinMemoryGiB == nil {
+		o.nullFields = append(o.nullFields, "MinMemoryGiB")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMinNetworkPerformance(v *int) *InstanceTypesFilters {
+	if o.MinNetworkPerformance = v; o.MinNetworkPerformance == nil {
+		o.nullFields = append(o.nullFields, "MinNetworkPerformance")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetMinVcpu(v *int) *InstanceTypesFilters {
+	if o.MinVcpu = v; o.MinVcpu == nil {
+		o.nullFields = append(o.nullFields, "MinVcpu")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetRootDeviceTypes(v []string) *InstanceTypesFilters {
+	if o.RootDeviceTypes = v; o.RootDeviceTypes == nil {
+		o.nullFields = append(o.nullFields, "RootDeviceTypes")
+	}
+	return o
+}
+
+func (o *InstanceTypesFilters) SetVirtualizationTypes(v []string) *InstanceTypesFilters {
+	if o.VirtualizationTypes = v; o.VirtualizationTypes == nil {
+		o.nullFields = append(o.nullFields, "VirtualizationTypes")
+	}
+	return o
+}
+
+// endregion
+
+// region EphemeralStorage
+
+func (o *EphemeralStorage) SetDeviceName(v *string) *EphemeralStorage {
+	if o.DeviceName = v; o.DeviceName == nil {
+		o.nullFields = append(o.nullFields, "DeviceName")
+	}
+	return o
+}
+
+func (o EphemeralStorage) MarshalJSON() ([]byte, error) {
+	type noMethod EphemeralStorage
+	raw := noMethod(o)
+	return jsonutil.MarshalJSON(raw, o.forceSendFields, o.nullFields)
 }
 
 // endregion

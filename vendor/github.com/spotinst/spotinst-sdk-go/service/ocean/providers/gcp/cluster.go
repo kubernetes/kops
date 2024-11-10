@@ -46,9 +46,10 @@ type Cluster struct {
 }
 
 type Strategy struct {
-	DrainingTimeout       *int    `json:"drainingTimeout,omitempty"`
-	ProvisioningModel     *string `json:"provisioningModel,omitempty"`
-	PreemptiblePercentage *int    `json:"preemptiblePercentage,omitempty"`
+	DrainingTimeout          *int    `json:"drainingTimeout,omitempty"`
+	ProvisioningModel        *string `json:"provisioningModel,omitempty"`
+	PreemptiblePercentage    *int    `json:"preemptiblePercentage,omitempty"`
+	ShouldUtilizeCommitments *bool   `json:"shouldUtilizeCommitments,omitempty"`
 
 	forceSendFields []string
 	nullFields      []string
@@ -873,6 +874,13 @@ func (o *Strategy) SetProvisioningModel(v *string) *Strategy {
 func (o *Strategy) SetPreemptiblePercentage(v *int) *Strategy {
 	if o.PreemptiblePercentage = v; o.PreemptiblePercentage == nil {
 		o.nullFields = append(o.nullFields, "PreemptiblePercentage")
+	}
+	return o
+}
+
+func (o *Strategy) SetShouldUtilizeCommitments(v *bool) *Strategy {
+	if o.ShouldUtilizeCommitments = v; o.ShouldUtilizeCommitments == nil {
+		o.nullFields = append(o.nullFields, "ShouldUtilizeCommitments")
 	}
 	return o
 }
