@@ -28,7 +28,7 @@ BINDIR=${WORKDIR}/bin
 mkdir -p "${BINDIR}"
 go build -o ${BINDIR}/kops ./cmd/kops
 
-KOPS=${BINDIR}/kops
+export KOPS=${BINDIR}/kops
 
 function cleanup() {
   echo "running dump-artifacts"

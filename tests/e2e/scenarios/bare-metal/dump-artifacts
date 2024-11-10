@@ -71,3 +71,12 @@ for ns in kube-system; do
     kubectl logs -n ${ns} ${pod} > ${ARTIFACTS}/logs/${ns}/${pod}.log || true
   done
 done
+
+# Use `kops toolbox dump` to dump a lot of useful information
+mkdir -p ${ARTIFACTS}/dump
+${KOPS} toolbox dump \
+  --dir ${ARTIFACTS}/dump \
+  --k8s-resources \
+  --private-key ${REPO_ROOT}/.build/.ssh/id_ed25519 \
+  --ssh-user root \
+  --name metal.k8s.local
