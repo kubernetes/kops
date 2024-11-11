@@ -75,7 +75,45 @@ func (c *Cloud) DetachInstance(instance *cloudinstances.CloudInstance) error {
 // GetCloudGroups returns a map of cloud instances that back a kops cluster.
 // Detached instances must be returned in the NeedUpdate slice.
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, fmt.Errorf("method metal.Cloud::GetCloudGroups not implemented")
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	for _, ig := range instancegroups {
+		cloudInstanceGroup := &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: ig,
+		}
+		groups[ig.ObjectMeta.Name] = cloudInstanceGroup
+		for _, node := range nodes {
+			isControlPlaneNode := false
+			for k := range node.Labels {
+				if k == "node-role.kubernetes.io/control-plane" {
+					isControlPlaneNode = true
+				}
+
+			}
+
+			match := true
+			switch ig.Spec.Role {
+			case kops.InstanceGroupRoleControlPlane:
+				if !isControlPlaneNode {
+					match = false
+				}
+
+			case kops.InstanceGroupRoleNode:
+				if isControlPlaneNode {
+					match = false
+				}
+			}
+
+			if match {
+				cloudInstanceGroup.Ready = append(cloudInstanceGroup.Ready, &cloudinstances.CloudInstance{
+					ID:                 node.Name,
+					Node:               &node,
+					CloudInstanceGroup: cloudInstanceGroup,
+				})
+			}
+		}
+	}
+
+	return groups, nil
 }
 
 // Region returns the cloud region bound to the cloud instance.

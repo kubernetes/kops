@@ -34,8 +34,10 @@ function cleanup() {
   echo "running dump-artifacts"
   ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/dump-artifacts || true
 
-  echo "running cleanup"
-  ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/cleanup || true
+  if [[ -z "${SKIP_CLEANUP:-}" ]]; then
+    echo "running cleanup"
+    ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/cleanup || true
+  fi
 }
 
 if [[ -z "${SKIP_CLEANUP:-}" ]]; then
@@ -136,8 +138,14 @@ ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 r
 ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@10.123.45.10 touch    /mnt/disks/metal.k8s.local--events--0/mnt/please-create-new-cluster
 
 
-echo "Waiting 300 seconds for kube to start"
-sleep 300
+echo "Waiting for kube to start"
+# Wait for kube-apiserver to be ready, timeout after 10 minutes
+for i in {1..60}; do
+  if kubectl get nodes; then
+    break
+  fi
+  sleep 10
+done
 
 kubectl get nodes
 kubectl get pods -A
@@ -215,5 +223,7 @@ sleep 30
 kubectl get nodes
 kubectl get pods -A
 
+# Ensure the cluster passes validation
+${KOPS} validate cluster metal.k8s.local --wait=10m
 
 echo "Test successful"
