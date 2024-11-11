@@ -38,6 +38,8 @@ sudo ip link del dev tap-vm0 || true
 sudo ip link del dev tap-vm1 || true
 sudo ip link del dev tap-vm2 || true
 
+sudo ip link del dev br0 || true
+
 rm -rf .build/vm0
 rm -rf .build/vm1
 rm -rf .build/vm2
