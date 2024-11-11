@@ -54,8 +54,14 @@ for vm in 0 1 2; do
   scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip}:/var/log/etcd* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
   scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip}:/var/log/kube* ${ARTIFACTS}/vms/${vm_name}/logs/ || true
   scp -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip}:/etc/kubernetes/manifests/* ${ARTIFACTS}/vms/${vm_name}/manifests/ || true
+
   ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kubelet 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kubelet.service || true
   ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} journalctl --no-pager -u kops-configuration 2>&1 > ${ARTIFACTS}/vms/${vm_name}/logs/kops-configuration.service || true
+
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip route 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip-route || true
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} ip addr 2>&1 > ${ARTIFACTS}/vms/${vm_name}/ip-addr || true
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} iptables --list-rules 2>&1 > ${ARTIFACTS}/vms/${vm_name}/iptables-rules || true
+  ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${ip} iptables -t nat --list-rules 2>&1 > ${ARTIFACTS}/vms/${vm_name}/iptables-nat-rules || true
 done
 
 # Dump the pod logs for all the pods in system namespaces
