@@ -38,3 +38,29 @@ jobs:
         with:
           name: tests-e2e-scenarios-bare-metal
           path: /tmp/artifacts/
+
+  tests-e2e-scenarios-bare-metal-ipv6:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/kops
+
+      - name: Set up go
+        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed
+        with:
+          go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
+
+      - name: tests/e2e/scenarios/bare-metal/run-test
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
+        run: |
+          timeout 60m tests/e2e/scenarios/bare-metal/scenario-ipv6
+        env:
+          ARTIFACTS: /tmp/artifacts
+      - name: Archive production artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-e2e-scenarios-bare-metal-ipv6
+          path: /tmp/artifacts/
