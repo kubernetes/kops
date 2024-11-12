@@ -23,6 +23,7 @@ kops toolbox dump [CLUSTER] [flags]
 ### Options
 
 ```
+      --cloud-resources      Include cloud resources in the dump (default true)
       --dir string           Target directory; if specified will collect logs and other information.
   -h, --help                 help for dump
       --k8s-resources        Include k8s resources in the dump

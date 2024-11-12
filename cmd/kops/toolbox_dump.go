@@ -70,6 +70,9 @@ type ToolboxDumpOptions struct {
 	SSHUser      string
 	MaxNodes     int
 	K8sResources bool
+
+	// CloudResources controls whether we dump the cloud resources
+	CloudResources bool
 }
 
 func (o *ToolboxDumpOptions) InitDefaults() {
@@ -78,6 +81,7 @@ func (o *ToolboxDumpOptions) InitDefaults() {
 	o.SSHUser = "ubuntu"
 	o.MaxNodes = 500
 	o.K8sResources = k8sResources != ""
+	o.CloudResources = true
 }
 
 func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
@@ -104,6 +108,7 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Dir, "dir", options.Dir, "Target directory; if specified will collect logs and other information.")
 	cmd.MarkFlagDirname("dir")
 	cmd.Flags().BoolVar(&options.K8sResources, "k8s-resources", options.K8sResources, "Include k8s resources in the dump")
+	cmd.Flags().BoolVar(&options.CloudResources, "cloud-resources", options.CloudResources, "Include cloud resources in the dump")
 	cmd.Flags().IntVar(&options.MaxNodes, "max-nodes", options.MaxNodes, "The maximum number of nodes from which to dump logs")
 	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "File containing private key to use for SSH access to instances")
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "The remote user for SSH access to instances")
@@ -132,13 +137,17 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		return err
 	}
 
-	resourceMap, err := resourceops.ListResources(cloud, cluster)
-	if err != nil {
-		return err
-	}
-	d, err := resources.BuildDump(ctx, cloud, resourceMap)
-	if err != nil {
-		return err
+	var cloudResources *resources.Dump
+	if options.CloudResources {
+		resourceMap, err := resourceops.ListResources(cloud, cluster)
+		if err != nil {
+			return err
+		}
+		d, err := resources.BuildDump(ctx, cloud, resourceMap)
+		if err != nil {
+			return err
+		}
+		cloudResources = d
 	}
 
 	if options.Dir != "" {
@@ -213,15 +222,17 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		// look for a bastion instance and use it if exists
 		// Prefer a bastion load balancer if exists
 		bastionAddress := ""
-		for _, lb := range d.LoadBalancers {
-			if strings.Contains(lb.Name, "bastion") && lb.DNSName != "" {
-				bastionAddress = lb.DNSName
+		if cloudResources != nil {
+			for _, lb := range cloudResources.LoadBalancers {
+				if strings.Contains(lb.Name, "bastion") && lb.DNSName != "" {
+					bastionAddress = lb.DNSName
+				}
 			}
-		}
-		if bastionAddress == "" {
-			for _, instance := range d.Instances {
-				if strings.Contains(instance.Name, "bastion") {
-					bastionAddress = instance.PublicAddresses[0]
+			if bastionAddress == "" {
+				for _, instance := range cloudResources.Instances {
+					if strings.Contains(instance.Name, "bastion") {
+						bastionAddress = instance.PublicAddresses[0]
+					}
 				}
 			}
 		}
@@ -229,13 +240,15 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 		var additionalIPs []string
 		var additionalPrivateIPs []string
-		for _, instance := range d.Instances {
-			if len(instance.PublicAddresses) != 0 {
-				additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
-			} else if len(instance.PrivateAddresses) != 0 {
-				additionalPrivateIPs = append(additionalPrivateIPs, instance.PrivateAddresses[0])
-			} else {
-				klog.Warningf("no IP for instance %q", instance.Name)
+		if cloudResources != nil {
+			for _, instance := range cloudResources.Instances {
+				if len(instance.PublicAddresses) != 0 {
+					additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
+				} else if len(instance.PrivateAddresses) != 0 {
+					additionalPrivateIPs = append(additionalPrivateIPs, instance.PrivateAddresses[0])
+				} else {
+					klog.Warningf("no IP for instance %q", instance.Name)
+				}
 			}
 		}
 
@@ -262,32 +275,35 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 	}
 
-	switch options.Output {
-	case OutputYaml:
-		b, err := kops.ToRawYaml(d)
-		if err != nil {
-			return fmt.Errorf("error marshaling yaml: %v", err)
-		}
-		_, err = out.Write(b)
-		if err != nil {
-			return fmt.Errorf("error writing to stdout: %v", err)
-		}
-		return nil
+	if cloudResources != nil {
+		switch options.Output {
+		case OutputYaml:
+			b, err := kops.ToRawYaml(cloudResources)
+			if err != nil {
+				return fmt.Errorf("error marshaling yaml: %v", err)
+			}
+			_, err = out.Write(b)
+			if err != nil {
+				return fmt.Errorf("error writing to stdout: %v", err)
+			}
+			return nil
 
-	case OutputJSON:
-		b, err := json.MarshalIndent(d, "", "  ")
-		if err != nil {
-			return fmt.Errorf("error marshaling json: %v", err)
-		}
-		_, err = out.Write(b)
-		if err != nil {
-			return fmt.Errorf("error writing to stdout: %v", err)
-		}
-		return nil
+		case OutputJSON:
+			b, err := json.MarshalIndent(cloudResources, "", "  ")
+			if err != nil {
+				return fmt.Errorf("error marshaling json: %v", err)
+			}
+			_, err = out.Write(b)
+			if err != nil {
+				return fmt.Errorf("error writing to stdout: %v", err)
+			}
+			return nil
 
-	default:
-		return fmt.Errorf("unsupported output format: %q", options.Output)
+		default:
+			return fmt.Errorf("unsupported output format: %q", options.Output)
+		}
 	}
+	return nil
 }
 
 func truncateNodeList(nodes *corev1.NodeList, max int) error {
