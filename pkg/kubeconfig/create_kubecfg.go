@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/x509/pkix"
 	"fmt"
+	"net"
 	"os/user"
 	"sort"
 	"time"
@@ -41,7 +42,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 		server = "https://" + cluster.APIInternalName()
 	} else {
 		if cluster.Spec.API.PublicName != "" {
-			server = "https://" + cluster.Spec.API.PublicName
+			server = "https://" + wrapIPv6Address(cluster.Spec.API.PublicName)
 		} else {
 			server = "https://api." + clusterName
 		}
@@ -82,7 +83,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 				if len(targets) != 1 {
 					klog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)
 				}
-				server = "https://" + targets[0]
+				server = "https://" + wrapIPv6Address(targets[0])
 			}
 		}
 	}
@@ -170,4 +171,15 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 	}
 
 	return b, nil
+}
+
+// wrapIPv6Address will wrap IPv6 addresses in square brackets,
+// for use in URLs; other endpoints are unchanged.
+func wrapIPv6Address(endpoint string) string {
+	ip := net.ParseIP(endpoint)
+	// IPv6 addresses are wrapped in square brackets in URLs
+	if ip != nil && ip.To4() == nil {
+		return "[" + endpoint + "]"
+	}
+	return endpoint
 }

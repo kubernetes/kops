@@ -70,18 +70,24 @@ ssh-add ${REPO_ROOT}/.build/.ssh/id_ed25519
 
 . hack/dev-build-metal.sh
 
+IPV6_PREFIX=fd00:10:123:45:
+IPV4_PREFIX=10.123.45.
+
 echo "Waiting 10 seconds for VMs to start"
 sleep 10
 
-# Remove from known-hosts in case of reuse
-ssh-keygen -f ~/.ssh/known_hosts -R 10.123.45.10 || true
-ssh-keygen -f ~/.ssh/known_hosts -R 10.123.45.11 || true
-ssh-keygen -f ~/.ssh/known_hosts -R 10.123.45.12 || true
+VM0_IP=${IPV4_PREFIX}10
+VM1_IP=${IPV4_PREFIX}11
+VM2_IP=${IPV4_PREFIX}12
 
-# Check SSH is working and accept the keys
-ssh -o StrictHostKeyChecking=accept-new root@${VM0_IP} uptime
-ssh -o StrictHostKeyChecking=accept-new root@${VM1_IP} uptime
-ssh -o StrictHostKeyChecking=accept-new root@${VM2_IP} uptime
+# Remove from known-hosts in case of reuse
+ssh-keygen -f ~/.ssh/known_hosts -R ${VM0_IP} || true
+ssh-keygen -f ~/.ssh/known_hosts -R ${VM1_IP} || true
+ssh-keygen -f ~/.ssh/known_hosts -R ${VM2_IP} || true
+
+ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${VM0_IP} uptime
+ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${VM1_IP} uptime
+ssh -o StrictHostKeyChecking=accept-new -i ${REPO_ROOT}/.build/.ssh/id_ed25519 root@${VM2_IP} uptime
 
 cd ${REPO_ROOT}
 
@@ -206,8 +212,8 @@ ${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group control-plane-
 cat <<EOF | ssh root@${VM0_IP} tee -a /etc/hosts
 
 # Hosts added for etcd discovery
-10.123.45.10 node0.main.${CLUSTER_NAME}
-10.123.45.10 node0.events.${CLUSTER_NAME}
+${VM0_IP} node0.main.${CLUSTER_NAME}
+${VM0_IP} node0.events.${CLUSTER_NAME}
 EOF
 
 ssh root@${VM0_IP} cat /etc/hosts
@@ -278,17 +284,18 @@ EOF
 
 function enroll_node() {
   local node_ip=$1
+  local pod_cidr=$2
 
 # Manual "discovery" for control-plane endpoints
 # TODO: Replace with well-known IP
 cat <<EOF | ssh root@${node_ip} tee -a /etc/hosts
 
 # Hosts added for leader discovery
-10.123.45.10 kops-controller.internal.${CLUSTER_NAME}
-10.123.45.10 api.internal.${CLUSTER_NAME}
+${VM0_IP} kops-controller.internal.${CLUSTER_NAME}
+${VM0_IP} api.internal.${CLUSTER_NAME}
 EOF
 
-timeout 10m ${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group nodes-main --host ${node_ip} --v=2
+timeout 10m ${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group nodes-main --host ${node_ip} --pod-cidr ${pod_cidr} --v=2
 }
 
 enroll_node ${VM1_IP} ${VM1_POD_CIDR}
