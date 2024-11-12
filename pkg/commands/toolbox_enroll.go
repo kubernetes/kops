@@ -67,6 +67,9 @@ type ToolboxEnrollOptions struct {
 
 	SSHUser string
 	SSHPort int
+
+	// PodCIDRs is the list of IP Address ranges to use for pods that run on this node
+	PodCIDRs []string
 }
 
 func (o *ToolboxEnrollOptions) InitDefaults() {
@@ -209,6 +212,7 @@ func createHostResourceInAPIServer(ctx context.Context, options *ToolboxEnrollOp
 	host.Name = nodeName
 	host.Spec.InstanceGroup = options.InstanceGroup
 	host.Spec.PublicKey = string(publicKey)
+	host.Spec.PodCIDRs = options.PodCIDRs
 
 	if err := client.Create(ctx, host); err != nil {
 		return fmt.Errorf("failed to create host %s/%s: %w", host.Namespace, host.Name, err)
