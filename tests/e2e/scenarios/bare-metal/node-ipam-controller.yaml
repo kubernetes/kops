@@ -1,0 +1,192 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: node-ipam-controller
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: node-ipam-controller
+    app.kubernetes.io/instance: node-ipam-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-ipam-controller-manager-role
+  labels:
+    app.kubernetes.io/name: node-ipam-controller
+    app.kubernetes.io/instance: node-ipam-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.x-k8s.io
+  resources:
+  - clustercidrs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-ipam-controller-rolebinding
+  labels:
+    app.kubernetes.io/name: node-ipam-controller
+    app.kubernetes.io/instance: node-ipam-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-ipam-controller-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: node-ipam-controller
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: node-ipam-controller-leader-election-role
+  namespace: kube-system
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["create","get","list"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["update"]
+  resourceNames: ["node-ipam-controller"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: node-ipam-controller-leader-election-rolebinding
+  namespace: kube-system
+subjects:
+- kind: ServiceAccount
+  name: node-ipam-controller
+  namespace: gitea
+roleRef:
+  kind: Role
+  name: node-ipam-controller-leader-election-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-ipam-controller
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: node-ipam-controller
+    app.kubernetes.io/instance: node-ipam-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: node-ipam-controller
+      app.kubernetes.io/instance: node-ipam-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: node-ipam-controller
+        app.kubernetes.io/instance: node-ipam-controller
+    spec:
+      hostNetwork: true
+      serviceAccountName: node-ipam-controller
+      securityContext:
+        {}
+      containers:
+        - name: node-ipam-controller
+          args: []
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          image: "gcr.io/k8s-staging-networking/node-ipam-controller:main"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: node-ipam-controller
+          maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+      tolerations:
+        - effect: NoExecute
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+        - effect: NoSchedule
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+        - effect: NoExecute
+          key: node.kubernetes.io/unreachable
+          operator: Exists
+        - effect: NoSchedule
+          key: node.kubernetes.io/disk-pressure
+          operator: Exists
+        - effect: NoSchedule
+          key: node.kubernetes.io/memory-pressure
+          operator: Exists
+        - effect: NoSchedule
+          key: node.kubernetes.io/pid-pressure
+          operator: Exists
+        - effect: NoSchedule
+          key: node.kubernetes.io/unschedulable
+          operator: Exists
+        - effect: NoSchedule
+          key: node.kubernetes.io/network-unavailable
+          operator: Exists

@@ -99,7 +99,7 @@ function configure_ipv6() {
   local ipv6_range=$4
 
   ssh root@${node_ip} ip link
-  ssh root@${node_ip} ip -6 addr add ${ipv6_range} dev enp0s3
+  #ssh root@${node_ip} ip -6 addr add ${ipv6_range} dev enp0s3
   ssh root@${node_ip} ip -6 route add default dev enp0s3
 
   cat <<EOF | ssh root@${node_ip} tee /etc/resolv.conf
@@ -114,23 +114,23 @@ EOF
 ::1 ${hostname} localhost
 EOF
 
-  cat << EOF | ssh root@${node_ip} tee /etc/radvd.conf
-interface enp0s3
-{
-  AdvSendAdvert on;
-  AdvDefaultLifetime 0; # Not a default router
-  route ${ipv6_range}
-  {
-  };
-};
-EOF
+#   cat << EOF | ssh root@${node_ip} tee /etc/radvd.conf
+# interface enp0s3
+# {
+#   AdvSendAdvert on;
+#   AdvDefaultLifetime 0; # Not a default router
+#   route ${ipv6_range}
+#   {
+#   };
+# };
+# EOF
 
-  ssh root@${node_ip} apt-get update
-  ssh root@${node_ip} apt-get install -y radvd
-  ssh root@${node_ip} systemctl restart radvd
+  # ssh root@${node_ip} apt-get update
+  # ssh root@${node_ip} apt-get install -y radvd
+  # ssh root@${node_ip} systemctl restart radvd
 
-  ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra=2
-  ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra_rt_info_max_plen=96
+  # ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra=2
+  # ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra_rt_info_max_plen=96
 
   ssh root@${node_ip} ip -6 addr
   ssh root@${node_ip} ip -6 route
@@ -140,8 +140,8 @@ EOF
 
 # Configure our IPv6 addresses on the bridge
 sudo ip address add ${IPV6_PREFIX}0::/96 dev br0 || true
-sudo sysctl net.ipv6.conf.br0.accept_ra=2
-sudo sysctl net.ipv6.conf.br0.accept_ra_rt_info_max_plen=96
+# sudo sysctl net.ipv6.conf.br0.accept_ra=2
+# sudo sysctl net.ipv6.conf.br0.accept_ra_rt_info_max_plen=96
 
 # Configure the VMs on the bridge
 configure_ipv6 vm0 ${VM0_IP} ${VM0_IPV6} ${VM0_POD_CIDR}
@@ -150,10 +150,10 @@ configure_ipv6 vm2 ${VM2_IP} ${VM2_IPV6} ${VM2_POD_CIDR}
 
 ip -6 route
 
-# Check the VMs are OK
-ping6 -c 1 ${VM0_IPV6}
-ping6 -c 1 ${VM1_IPV6}
-ping6 -c 1 ${VM2_IPV6}
+# # Check the VMs are OK
+# ping6 -c 1 ${VM0_IPV6}
+# ping6 -c 1 ${VM1_IPV6}
+# ping6 -c 1 ${VM2_IPV6}
 
 # Enable feature flag for bare metal
 export KOPS_FEATURE_FLAGS=Metal
@@ -183,7 +183,8 @@ ${KOPS} create cluster --cloud=metal ${CLUSTER_NAME} --zones main --networking c
 
 # Set the IP ingress, required for metal cloud
 # TODO: is this the best option?
-${KOPS} edit cluster ${CLUSTER_NAME} --set spec.api.publicName=${VM0_IPV6}
+#${KOPS} edit cluster ${CLUSTER_NAME} --set spec.api.publicName=${VM0_IPV6}
+${KOPS} edit cluster ${CLUSTER_NAME} --set spec.api.publicName=${VM0_IP}
 
 # Use latest etcd-manager image (while we're adding features)
 ${KOPS} edit cluster ${CLUSTER_NAME} --set 'spec.etcdClusters[*].manager.image=us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-static:latest'
@@ -239,6 +240,20 @@ echo "Waiting 10 seconds for kindnet to start"
 sleep 10
 kubectl get nodes
 kubectl get pods -A
+
+# Install node-ipam-controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/node-ipam-controller/refs/heads/main/charts/node-ipam-controller/gen/crds/networking.x-k8s.io_clustercidrs.yaml
+kubectl apply -f ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/node-ipam-controller.yaml
+
+kubectl apply -f - <<EOF
+apiVersion: networking.x-k8s.io/v1
+kind: ClusterCIDR
+metadata:
+  name: primary
+spec:
+  perNodeHostBits: 32
+  ipv6: ${IPV6_PREFIX}:/64
+EOF
 
 # For host records
 kubectl create ns kops-system
