@@ -811,6 +811,8 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	switch cloudProvider {
 	case kops.CloudProviderAWS:
 		argv = append(argv, "--provider=aws")
+	case kops.CloudProviderOpenstack:
+		argv = append(argv, "--provider=designate")
 	case kops.CloudProviderGCE:
 		project := cluster.Spec.CloudProvider.GCE.Project
 		argv = append(argv, "--provider=google")
