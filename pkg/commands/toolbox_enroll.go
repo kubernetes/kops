@@ -752,14 +752,13 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 	// 	}
 	// 	hashBytes := sha256.Sum256(secret.Data)
 	// 	encryptionConfigSecretHash = base64.URLEncoding.EncodeToString(hashBytes[:])
-	// }
 
-	fileAssets := &nodemodel.FileAssets{Cluster: cluster}
-	if err := fileAssets.AddFileAssets(assetBuilder); err != nil {
+	nodeUpAssets, err := nodemodel.BuildNodeUpAssets(ctx, assetBuilder)
+	if err != nil {
 		return nil, err
 	}
 
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, fileAssets.Assets, encryptionConfigSecretHash)
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err
 	}
@@ -791,7 +790,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 	}
 
 	var nodeupScript resources.NodeUpScript
-	nodeupScript.NodeUpAssets = fileAssets.NodeUpAssets
+	nodeupScript.NodeUpAssets = nodeUpAssets.NodeUpAssets
 	nodeupScript.BootConfig = bootConfig
 
 	nodeupScript.WithEnvironmentVariables(cluster, ig)

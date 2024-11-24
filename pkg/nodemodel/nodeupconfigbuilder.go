@@ -42,12 +42,6 @@ import (
 )
 
 type nodeUpConfigBuilder struct {
-	// Assets is a list of sources for files (primarily when not using everything containerized)
-	// Formats:
-	//  raw url: http://... or https://...
-	//  url with hash: <hex>@http://... or <hex>@https://...
-	assets map[architectures.Architecture][]*assets.MirroredAsset
-
 	assetBuilder               *assets.AssetBuilder
 	channels                   []string
 	configBase                 vfs.Path
@@ -59,7 +53,7 @@ type nodeUpConfigBuilder struct {
 	encryptionConfigSecretHash string
 }
 
-func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, nodeAssets map[architectures.Architecture][]*assets.MirroredAsset, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
+func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, encryptionConfigSecretHash string) (model.NodeUpConfigBuilder, error) {
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
@@ -194,7 +188,6 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	configBuilder := nodeUpConfigBuilder{
 		assetBuilder:               assetBuilder,
-		assets:                     nodeAssets,
 		channels:                   channels,
 		configBase:                 configBase,
 		cluster:                    cluster,
@@ -227,10 +220,14 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
+	kubernetesAssets, err := BuildKubernetesFileAssets(cluster, n.assetBuilder)
+	if err != nil {
+		return nil, nil, err
+	}
 	config.Assets = make(map[architectures.Architecture][]string)
 	for _, arch := range architectures.GetSupported() {
 		config.Assets[arch] = []string{}
-		for _, a := range n.assets[arch] {
+		for _, a := range kubernetesAssets.KubernetesFileAssets[arch] {
 			config.Assets[arch] = append(config.Assets[arch], a.CompactString())
 		}
 	}

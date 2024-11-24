@@ -35,10 +35,8 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/pkg/nodemodel"
-	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -211,17 +209,12 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 	// 	encryptionConfigSecretHash = base64.URLEncoding.EncodeToString(hashBytes[:])
 	// }
 
-	nodeUpAssets := make(map[architectures.Architecture]*assets.MirroredAsset)
-	for _, arch := range architectures.GetSupported() {
-		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)
-		if err != nil {
-			return nil, err
-		}
-		nodeUpAssets[arch] = asset
+	nodeUpAssets, err := nodemodel.BuildNodeUpAssets(ctx, assetBuilder)
+	if err != nil {
+		return nil, err
 	}
 
-	assets := make(map[architectures.Architecture][]*assets.MirroredAsset)
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, assets, encryptionConfigSecretHash)
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +260,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 	// b.nodeupConfig.Resource = fi.NewBytesResource(configData)
 
 	var nodeupScript resources.NodeUpScript
-	nodeupScript.NodeUpAssets = nodeUpAssets
+	nodeupScript.NodeUpAssets = nodeUpAssets.NodeUpAssets
 	nodeupScript.BootConfig = bootConfig
 
 	{

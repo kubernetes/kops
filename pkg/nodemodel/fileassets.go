@@ -17,6 +17,7 @@ limitations under the License.
 package nodemodel
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"path"
@@ -32,70 +33,62 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 )
 
-type FileAssets struct {
-	// Assets is a list of sources for files (primarily when not using everything containerized)
-	// Formats:
-	//  raw url: http://... or https://...
-	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets map[architectures.Architecture][]*assets.MirroredAsset
-
-	// NodeUpAssets are the assets for downloading nodeup
-	NodeUpAssets map[architectures.Architecture]*assets.MirroredAsset
-
-	Cluster *kops.Cluster
+// KubernetesFileAssets are the assets for downloading Kubernetes binaries
+type KubernetesFileAssets struct {
+	// KubernetesFileAssets are the assets for downloading Kubernetes binaries
+	KubernetesFileAssets map[architectures.Architecture][]*assets.MirroredAsset
 }
 
-// AddFileAssets adds the file assets within the assetBuilder
-func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
+// BuildKubernetesFileAssets returns the Kubernetes file assets for the given cluster
+func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder) (*KubernetesFileAssets, error) {
 	var baseURL string
-	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
-		baseURL = c.Cluster.Spec.KubernetesVersion
+	if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+		baseURL = cluster.Spec.KubernetesVersion
 	} else {
-		baseURL = "https://dl.k8s.io/release/v" + c.Cluster.Spec.KubernetesVersion
+		baseURL = "https://dl.k8s.io/release/v" + cluster.Spec.KubernetesVersion
 	}
 
-	c.Assets = make(map[architectures.Architecture][]*assets.MirroredAsset)
-	c.NodeUpAssets = make(map[architectures.Architecture]*assets.MirroredAsset)
+	kubernetesAssets := make(map[architectures.Architecture][]*assets.MirroredAsset)
 	for _, arch := range architectures.GetSupported() {
-		c.Assets[arch] = []*assets.MirroredAsset{}
+		kubernetesAssets[arch] = []*assets.MirroredAsset{}
 
 		k8sAssetsNames := []string{
 			fmt.Sprintf("/bin/linux/%s/kubelet", arch),
 			fmt.Sprintf("/bin/linux/%s/kubectl", arch),
 		}
 
-		if needsMounterAsset(c.Cluster) {
+		if needsMounterAsset(cluster) {
 			k8sAssetsNames = append(k8sAssetsNames, fmt.Sprintf("/bin/linux/%s/mounter", arch))
 		}
 
 		for _, an := range k8sAssetsNames {
 			k, err := url.Parse(baseURL)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			k.Path = path.Join(k.Path, an)
 
 			asset, err := assetBuilder.RemapFile(k, nil)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(asset))
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
 		}
 
-		kubernetesVersion, _ := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
+		kubernetesVersion, _ := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 
-		cloudProvider := c.Cluster.GetCloudProvider()
+		cloudProvider := cluster.GetCloudProvider()
 		if ok := model.UseExternalKubeletCredentialProvider(*kubernetesVersion, cloudProvider); ok {
 			switch cloudProvider {
 			case kops.CloudProviderGCE:
-				binaryLocation := c.Cluster.Spec.CloudProvider.GCE.BinariesLocation
+				binaryLocation := cluster.Spec.CloudProvider.GCE.BinariesLocation
 				if binaryLocation == nil {
 					binaryLocation = fi.PtrTo("https://storage.googleapis.com/k8s-staging-cloud-provider-gcp/auth-provider-gcp")
 				}
 				// VALID FOR 60 DAYS WE REALLY NEED TO MERGE https://github.com/kubernetes/cloud-provider-gcp/pull/601 and CUT A RELEASE
 				k, err := url.Parse(fmt.Sprintf("%s/linux-%s/v20231005-providersv0.27.1-65-g8fbe8d27", *binaryLocation, arch))
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				// TODO: Move these hashes to assetdata
@@ -105,81 +98,98 @@ func (c *FileAssets) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 				}
 				hash, err := hashing.FromString(hashes[arch])
 				if err != nil {
-					return fmt.Errorf("unable to parse auth-provider-gcp binary asset hash %q: %v", hashes[arch], err)
+					return nil, fmt.Errorf("unable to parse auth-provider-gcp binary asset hash %q: %v", hashes[arch], err)
 				}
 				asset, err := assetBuilder.RemapFile(k, hash)
 				if err != nil {
-					return err
+					return nil, err
 				}
 
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(asset))
+				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
 			case kops.CloudProviderAWS:
-				binaryLocation := c.Cluster.Spec.CloudProvider.AWS.BinariesLocation
+				binaryLocation := cluster.Spec.CloudProvider.AWS.BinariesLocation
 				if binaryLocation == nil {
 					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
 				}
 
 				u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
 				if err != nil {
-					return err
+					return nil, err
 				}
 				asset, err := assetBuilder.RemapFile(u, nil)
 				if err != nil {
-					return err
+					return nil, err
 				}
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(asset))
+				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
 			}
 		}
 
 		{
-			cniAsset, err := wellknownassets.FindCNIAssets(c.Cluster, assetBuilder, arch)
+			cniAsset, err := wellknownassets.FindCNIAssets(cluster, assetBuilder, arch)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(cniAsset))
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(cniAsset))
 		}
 
-		if c.Cluster.Spec.Containerd == nil || !c.Cluster.Spec.Containerd.SkipInstall {
-			containerdAsset, err := wellknownassets.FindContainerdAsset(c.Cluster, assetBuilder, arch)
+		if cluster.Spec.Containerd == nil || !cluster.Spec.Containerd.SkipInstall {
+			containerdAsset, err := wellknownassets.FindContainerdAsset(cluster, assetBuilder, arch)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if containerdAsset != nil {
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(containerdAsset))
+				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(containerdAsset))
 			}
 
-			runcAsset, err := wellknownassets.FindRuncAsset(c.Cluster, assetBuilder, arch)
+			runcAsset, err := wellknownassets.FindRuncAsset(cluster, assetBuilder, arch)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if runcAsset != nil {
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(runcAsset))
+				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(runcAsset))
 			}
-			nerdctlAsset, err := wellknownassets.FindNerdctlAsset(c.Cluster, assetBuilder, arch)
+			nerdctlAsset, err := wellknownassets.FindNerdctlAsset(cluster, assetBuilder, arch)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			if nerdctlAsset != nil {
-				c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(nerdctlAsset))
+				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(nerdctlAsset))
 			}
 		}
 
-		crictlAsset, err := wellknownassets.FindCrictlAsset(c.Cluster, assetBuilder, arch)
+		crictlAsset, err := wellknownassets.FindCrictlAsset(cluster, assetBuilder, arch)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if crictlAsset != nil {
-			c.Assets[arch] = append(c.Assets[arch], assets.BuildMirroredAsset(crictlAsset))
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(crictlAsset))
 		}
 
-		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)
-		if err != nil {
-			return err
-		}
-		c.NodeUpAssets[arch] = asset
 	}
 
-	return nil
+	return &KubernetesFileAssets{
+		KubernetesFileAssets: kubernetesAssets,
+	}, nil
+}
+
+// NodeUpAssets are the assets for downloading nodeup
+type NodeUpAssets struct {
+	// NodeUpAssets are the assets for downloading nodeup
+	NodeUpAssets map[architectures.Architecture]*assets.MirroredAsset
+}
+
+func BuildNodeUpAssets(ctx context.Context, assetBuilder *assets.AssetBuilder) (*NodeUpAssets, error) {
+	nodeUpAssets := make(map[architectures.Architecture]*assets.MirroredAsset)
+	for _, arch := range architectures.GetSupported() {
+		asset, err := wellknownassets.NodeUpAsset(assetBuilder, arch)
+		if err != nil {
+			return nil, err
+		}
+		nodeUpAssets[arch] = asset
+	}
+	return &NodeUpAssets{
+		NodeUpAssets: nodeUpAssets,
+	}, nil
 }
 
 // needsMounterAsset checks if we need the mounter program

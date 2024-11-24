@@ -385,11 +385,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		}
 	}
 
-	fileAssets := &nodemodel.FileAssets{Cluster: cluster}
-	if err := fileAssets.AddFileAssets(assetBuilder); err != nil {
-		return nil, err
-	}
-
 	project := ""
 	scwZone := ""
 
@@ -513,7 +508,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		cloud:            cloud,
 	}
 
-	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, fileAssets.Assets, encryptionConfigSecretHash)
+	nodeUpAssets, err := nodemodel.BuildNodeUpAssets(ctx, assetBuilder)
+	if err != nil {
+		return nil, err
+	}
+	configBuilder, err := nodemodel.NewNodeUpConfigBuilder(cluster, assetBuilder, encryptionConfigSecretHash)
 	if err != nil {
 		return nil, err
 	}
@@ -521,7 +520,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		KopsModelContext:    modelContext,
 		Lifecycle:           clusterLifecycle,
 		NodeUpConfigBuilder: configBuilder,
-		NodeUpAssets:        fileAssets.NodeUpAssets,
+		NodeUpAssets:        nodeUpAssets.NodeUpAssets,
 	}
 
 	{
