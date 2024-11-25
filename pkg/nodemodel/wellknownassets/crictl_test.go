@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs"
@@ -32,8 +33,16 @@ func Test_FindCrictlVersionHash(t *testing.T) {
 	cluster := &kops.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.29.0"
 
+	ig := &kops.InstanceGroup{}
+
+	igModel, err := kopsmodel.ForInstanceGroup(cluster, ig)
+	if err != nil {
+		t.Fatalf("building instance group model: %v", err)
+	}
+
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
-	crictlAsset, err := FindCrictlAsset(cluster, assetBuilder, architectures.ArchitectureAmd64)
+
+	crictlAsset, err := FindCrictlAsset(igModel, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {
 		t.Errorf("Unable to parse crictl version %s", err)
 	}

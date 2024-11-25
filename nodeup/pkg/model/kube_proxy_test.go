@@ -21,13 +21,13 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/exec"
 
-	"github.com/blang/semver/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,7 +70,7 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			fields{
 				&NodeupModelContext{
 					NodeupConfig:      nodeupConfig,
-					kubernetesVersion: semver.Version{Major: 1, Minor: 20},
+					kubernetesVersion: kopsmodel.MustParseKubernetesVersion("1.20"),
 				},
 			},
 			&v1.Pod{

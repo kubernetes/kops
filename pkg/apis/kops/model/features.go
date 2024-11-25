@@ -17,9 +17,7 @@ limitations under the License.
 package model
 
 import (
-	"github.com/blang/semver/v4"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 )
 
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
@@ -70,12 +68,12 @@ func UseCiliumEtcd(cluster *kops.Cluster) bool {
 }
 
 // Configures a Kubelet Credential Provider if Kubernetes is newer than a specific version
-func UseExternalKubeletCredentialProvider(k8sVersion semver.Version, cloudProvider kops.CloudProviderID) bool {
+func UseExternalKubeletCredentialProvider(k8sVersion *KubernetesVersion, cloudProvider kops.CloudProviderID) bool {
 	switch cloudProvider {
 	case kops.CloudProviderGCE:
-		return util.IsKubernetesGTE("1.29", k8sVersion)
+		return k8sVersion.IsGTE("1.29")
 	case kops.CloudProviderAWS:
-		return util.IsKubernetesGTE("1.27", k8sVersion)
+		return k8sVersion.IsGTE("1.27")
 	default:
 		return false
 	}

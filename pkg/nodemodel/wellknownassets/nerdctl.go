@@ -19,7 +19,7 @@ package wellknownassets
 import (
 	"fmt"
 
-	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 )
@@ -31,7 +31,7 @@ const (
 	nerdctlAssetHashArm64 = "d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d"
 )
 
-func FindNerdctlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
+func FindNerdctlAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	var assetURL, assetHash string
 	switch arch {
 	case architectures.ArchitectureAmd64:

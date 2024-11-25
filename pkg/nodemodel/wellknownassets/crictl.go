@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 )
@@ -30,7 +30,7 @@ const (
 	crictlAssetUrlArm64 = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz"
 )
 
-func FindCrictlAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
+func FindCrictlAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	var assetURL string
 	switch arch {
 	case architectures.ArchitectureAmd64:

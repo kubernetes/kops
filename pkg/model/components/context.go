@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8sversion"
@@ -89,10 +90,6 @@ func WellKnownServiceIP(networkingSpec *kops.NetworkingSpec, id int) (net.IP, er
 	return nil, fmt.Errorf("unexpected IP address type for ServiceClusterIPRange: %s", networkingSpec.ServiceClusterIPRange)
 }
 
-func IsBaseURL(kubernetesVersion string) bool {
-	return strings.HasPrefix(kubernetesVersion, "http:") || strings.HasPrefix(kubernetesVersion, "https:") || strings.HasPrefix(kubernetesVersion, "memfs:")
-}
-
 // Image returns the docker image name for the specified component
 func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
 	if assetsBuilder == nil {
@@ -106,7 +103,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 
 	imageName := component
 
-	if !IsBaseURL(clusterSpec.KubernetesVersion) {
+	if !kopsmodel.IsBaseURL(clusterSpec.KubernetesVersion) {
 		image := "registry.k8s.io/" + imageName + ":" + "v" + kubernetesVersion.String()
 
 		image, err := assetsBuilder.RemapImage(image)

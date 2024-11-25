@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"k8s.io/klog/v2"
-	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
@@ -47,7 +47,7 @@ const (
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
 )
 
-func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
+func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
 	// Override CNI packages from env vars
 	cniAssetURL := os.Getenv(ENV_VAR_CNI_ASSET_URL)
 	cniAssetHash := os.Getenv(ENV_VAR_CNI_ASSET_HASH)
@@ -76,14 +76,14 @@ func FindCNIAssets(c *kopsapi.Cluster, assetBuilder *assets.AssetBuilder, arch a
 
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		if c.IsKubernetesLT("1.27") {
+		if ig.KubernetesVersion().IsLT("1.27") {
 			cniAssetURL = defaultCNIAssetAmd64K8s_22
 		} else {
 			cniAssetURL = defaultCNIAssetAmd64K8s_27
 		}
 		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset: %s", cniAssetURL)
 	case architectures.ArchitectureArm64:
-		if c.IsKubernetesLT("1.27") {
+		if ig.KubernetesVersion().IsLT("1.27") {
 			cniAssetURL = defaultCNIAssetArm64K8s_22
 		} else {
 			cniAssetURL = defaultCNIAssetArm64K8s_27

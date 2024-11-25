@@ -22,7 +22,7 @@ import (
 
 	"github.com/blang/semver/v4"
 
-	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
@@ -37,11 +37,11 @@ const (
 	containerdBundleUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/cri-containerd-cni-%s-linux-amd64.tar.gz"
 )
 
-func FindContainerdAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
-	if c.Spec.Containerd == nil {
+func FindContainerdAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
+	containerd := ig.RawClusterSpec().Containerd
+	if containerd == nil {
 		return nil, fmt.Errorf("unable to find containerd config")
 	}
-	containerd := c.Spec.Containerd
 
 	canonicalURL := ""
 	knownHash := ""

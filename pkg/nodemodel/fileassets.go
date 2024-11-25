@@ -24,9 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
@@ -40,12 +38,14 @@ type KubernetesFileAssets struct {
 }
 
 // BuildKubernetesFileAssets returns the Kubernetes file assets for the given cluster
-func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder) (*KubernetesFileAssets, error) {
+func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder) (*KubernetesFileAssets, error) {
+	kubernetesVersion := ig.KubernetesVersion()
+
 	var baseURL string
-	if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
-		baseURL = cluster.Spec.KubernetesVersion
+	if kubernetesVersion.IsBaseURL() {
+		baseURL = kubernetesVersion.String()
 	} else {
-		baseURL = "https://dl.k8s.io/release/v" + cluster.Spec.KubernetesVersion
+		baseURL = "https://dl.k8s.io/release/v" + kubernetesVersion.String()
 	}
 
 	kubernetesAssets := make(map[architectures.Architecture][]*assets.MirroredAsset)
@@ -57,7 +57,7 @@ func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.Asset
 			fmt.Sprintf("/bin/linux/%s/kubectl", arch),
 		}
 
-		if needsMounterAsset(cluster) {
+		if needsMounterAsset(ig) {
 			k8sAssetsNames = append(k8sAssetsNames, fmt.Sprintf("/bin/linux/%s/mounter", arch))
 		}
 
@@ -75,13 +75,11 @@ func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.Asset
 			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
 		}
 
-		kubernetesVersion, _ := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-
-		cloudProvider := cluster.GetCloudProvider()
-		if ok := model.UseExternalKubeletCredentialProvider(*kubernetesVersion, cloudProvider); ok {
+		cloudProvider := ig.GetCloudProvider()
+		if ok := model.UseExternalKubeletCredentialProvider(kubernetesVersion, cloudProvider); ok {
 			switch cloudProvider {
 			case kops.CloudProviderGCE:
-				binaryLocation := cluster.Spec.CloudProvider.GCE.BinariesLocation
+				binaryLocation := ig.RawClusterSpec().CloudProvider.GCE.BinariesLocation
 				if binaryLocation == nil {
 					binaryLocation = fi.PtrTo("https://storage.googleapis.com/k8s-staging-cloud-provider-gcp/auth-provider-gcp")
 				}
@@ -107,7 +105,7 @@ func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.Asset
 
 				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
 			case kops.CloudProviderAWS:
-				binaryLocation := cluster.Spec.CloudProvider.AWS.BinariesLocation
+				binaryLocation := ig.RawClusterSpec().CloudProvider.AWS.BinariesLocation
 				if binaryLocation == nil {
 					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1")
 				}
@@ -125,15 +123,15 @@ func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.Asset
 		}
 
 		{
-			cniAsset, err := wellknownassets.FindCNIAssets(cluster, assetBuilder, arch)
+			cniAsset, err := wellknownassets.FindCNIAssets(ig, assetBuilder, arch)
 			if err != nil {
 				return nil, err
 			}
 			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(cniAsset))
 		}
 
-		if cluster.Spec.Containerd == nil || !cluster.Spec.Containerd.SkipInstall {
-			containerdAsset, err := wellknownassets.FindContainerdAsset(cluster, assetBuilder, arch)
+		if ig.RawClusterSpec().Containerd == nil || !ig.RawClusterSpec().Containerd.SkipInstall {
+			containerdAsset, err := wellknownassets.FindContainerdAsset(ig, assetBuilder, arch)
 			if err != nil {
 				return nil, err
 			}
@@ -141,14 +139,14 @@ func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.Asset
 				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(containerdAsset))
 			}
 
-			runcAsset, err := wellknownassets.FindRuncAsset(cluster, assetBuilder, arch)
+			runcAsset, err := wellknownassets.FindRuncAsset(ig, assetBuilder, arch)
 			if err != nil {
 				return nil, err
 			}
 			if runcAsset != nil {
 				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(runcAsset))
 			}
-			nerdctlAsset, err := wellknownassets.FindNerdctlAsset(cluster, assetBuilder, arch)
+			nerdctlAsset, err := wellknownassets.FindNerdctlAsset(ig, assetBuilder, arch)
 			if err != nil {
 				return nil, err
 			}
@@ -157,7 +155,7 @@ func BuildKubernetesFileAssets(cluster *kops.Cluster, assetBuilder *assets.Asset
 			}
 		}
 
-		crictlAsset, err := wellknownassets.FindCrictlAsset(cluster, assetBuilder, arch)
+		crictlAsset, err := wellknownassets.FindCrictlAsset(ig, assetBuilder, arch)
 		if err != nil {
 			return nil, err
 		}
@@ -194,9 +192,9 @@ func BuildNodeUpAssets(ctx context.Context, assetBuilder *assets.AssetBuilder) (
 
 // needsMounterAsset checks if we need the mounter program
 // This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
-func needsMounterAsset(c *kops.Cluster) bool {
+func needsMounterAsset(ig model.InstanceGroup) bool {
 	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
-	switch c.GetCloudProvider() {
+	switch ig.GetCloudProvider() {
 	case kops.CloudProviderGCE:
 		return true
 	default:

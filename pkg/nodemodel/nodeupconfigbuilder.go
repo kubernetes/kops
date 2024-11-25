@@ -28,11 +28,10 @@ import (
 	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
-	apiModel "k8s.io/kops/pkg/apis/kops/model"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
@@ -93,7 +92,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		isAPIServer := role == kops.InstanceGroupRoleAPIServer
 
 		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
-		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+		if kopsmodel.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			// When using a custom version, we want to preload the images over http
 			components := []string{"kube-proxy"}
 			if isMaster {
@@ -220,7 +219,12 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
-	kubernetesAssets, err := BuildKubernetesFileAssets(cluster, n.assetBuilder)
+	igModel, err := kopsmodel.ForInstanceGroup(cluster, ig)
+	if err != nil {
+		return nil, nil, fmt.Errorf("building instance group model: %w", err)
+	}
+
+	kubernetesAssets, err := BuildKubernetesFileAssets(igModel, n.assetBuilder)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -371,7 +375,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	useConfigServer := apiModel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
+	useConfigServer := kopsmodel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
 	if useConfigServer {
 		hosts := []string{"kops-controller.internal." + cluster.ObjectMeta.Name}
 		if len(bootConfig.APIServerIPs) > 0 {
