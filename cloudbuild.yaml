@@ -2,7 +2,7 @@
 timeout: 1800s
 options:
   substitution_option: ALLOW_LOOSE
-  machineType: 'N1_HIGHCPU_8'
+  machineType: 'N1_HIGHCPU_32'
 steps:
 # Push the images
 - name: 'docker.io/library/golang:1.22.7-bookworm'
