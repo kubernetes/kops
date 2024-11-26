@@ -63,6 +63,10 @@ spec:
           value: "127.0.0.1"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
+{{ range $name, $value := DNSControllerEnvs }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
         ports:
         - name: http
           protocol: TCP
