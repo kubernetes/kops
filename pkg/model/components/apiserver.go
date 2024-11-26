@@ -185,11 +185,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 
 	if clusterSpec.CloudProvider.AWS != nil {
 
-		if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found && b.IsKubernetesLT("1.31") {
+		if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.31") {
 			c.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 
-		if _, found := c.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
+		if _, found := c.FeatureGates["CSIMigrationAWS"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.27") {
 			c.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 	}

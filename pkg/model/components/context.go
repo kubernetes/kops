@@ -39,15 +39,59 @@ import (
 type OptionsContext struct {
 	ClusterName string
 
+	// Deprecated: Prefer using NodeKubernetesVersion() and ControlPlaneKubernetesVersion()
 	KubernetesVersion semver.Version
 
 	AssetBuilder *assets.AssetBuilder
+
+	nodeKubernetesVersion         kopsmodel.KubernetesVersion
+	controlPlaneKubernetesVersion kopsmodel.KubernetesVersion
 }
 
+func NewOptionsContext(cluster *kops.Cluster, assetBuilder *assets.AssetBuilder, maxKubeletSupportedVersion string) (*OptionsContext, error) {
+	optionsContext := &OptionsContext{
+		ClusterName:  cluster.ObjectMeta.Name,
+		AssetBuilder: assetBuilder,
+	}
+
+	sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+	}
+	optionsContext.KubernetesVersion = *sv
+
+	controlPlaneKubernetesVersion, err := kopsmodel.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine kubernetes version from %q: %w", cluster.Spec.KubernetesVersion, err)
+	}
+	nodeKubernetesVersion := controlPlaneKubernetesVersion
+	if maxKubeletSupportedVersion != "" {
+		nodeKubernetesVersion, err = kopsmodel.ParseKubernetesVersion(maxKubeletSupportedVersion)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine kubernetes version from %q: %w", maxKubeletSupportedVersion, err)
+		}
+	}
+
+	optionsContext.nodeKubernetesVersion = *nodeKubernetesVersion
+	optionsContext.controlPlaneKubernetesVersion = *controlPlaneKubernetesVersion
+
+	return optionsContext, nil
+}
+
+func (c *OptionsContext) NodeKubernetesVersion() kopsmodel.KubernetesVersion {
+	return c.nodeKubernetesVersion
+}
+
+func (c *OptionsContext) ControlPlaneKubernetesVersion() kopsmodel.KubernetesVersion {
+	return c.controlPlaneKubernetesVersion
+}
+
+// Deprecated: prefer using NodeKubernetesVersion() and ControlPlaneKubernetesVersion()
 func (c *OptionsContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, c.KubernetesVersion)
 }
 
+// Deprecated: prefer using NodeKubernetesVersion() and ControlPlaneKubernetesVersion()
 func (c *OptionsContext) IsKubernetesLT(version string) bool {
 	return !c.IsKubernetesGTE(version)
 }

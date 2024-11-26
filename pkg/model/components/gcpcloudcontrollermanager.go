@@ -73,13 +73,13 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 
 	if ccmConfig.Image == "" {
 		// TODO: Implement CCM image publishing
-		switch b.KubernetesVersion.Minor {
+		switch b.ControlPlaneKubernetesVersion().Minor() {
 		default:
 			ccmConfig.Image = "gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:master"
 		}
 	}
 
-	if b.IsKubernetesLT("1.25") {
+	if b.ControlPlaneKubernetesVersion().IsLT("1.25") {
 		ccmConfig.EnableLeaderMigration = fi.PtrTo(true)
 	}
 

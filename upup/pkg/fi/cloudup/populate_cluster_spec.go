@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
@@ -295,15 +294,10 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion is required")
 	}
-	sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
-	}
 
-	optionsContext := &components.OptionsContext{
-		ClusterName:       cluster.ObjectMeta.Name,
-		KubernetesVersion: *sv,
-		AssetBuilder:      c.assetBuilder,
+	optionsContext, err := components.NewOptionsContext(cluster, c.assetBuilder, c.assetBuilder.KubeletSupportedVersion)
+	if err != nil {
+		return err
 	}
 
 	var codeModels []loader.ClusterOptionsBuilder

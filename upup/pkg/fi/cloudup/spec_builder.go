@@ -29,18 +29,22 @@ type SpecBuilder struct {
 }
 
 func (l *SpecBuilder) BuildCompleteSpec(cluster *kopsapi.Cluster) (*kopsapi.Cluster, error) {
+	// Control-plane kubelet config = (base kubelet config + control-plane kubelet config)
+	controlPlaneKubelet := &kopsapi.KubeletConfigSpec{}
+	if cluster.Spec.Kubelet != nil {
+		reflectutils.JSONMergeStruct(controlPlaneKubelet, cluster.Spec.Kubelet)
+	}
+	if cluster.Spec.ControlPlaneKubelet != nil {
+		reflectutils.JSONMergeStruct(controlPlaneKubelet, cluster.Spec.ControlPlaneKubelet)
+	}
+	cluster.Spec.ControlPlaneKubelet = controlPlaneKubelet
+
 	loaded, err := l.OptionsLoader.Build(cluster)
 	if err != nil {
 		return nil, err
 	}
 	completed := &kopsapi.Cluster{}
 	*completed = *loaded
-
-	// Control-plane kubelet config = (base kubelet config + control-plane kubelet config)
-	controlPlaneKubelet := &kopsapi.KubeletConfigSpec{}
-	reflectutils.JSONMergeStruct(controlPlaneKubelet, completed.Spec.Kubelet)
-	reflectutils.JSONMergeStruct(controlPlaneKubelet, completed.Spec.ControlPlaneKubelet)
-	completed.Spec.ControlPlaneKubelet = controlPlaneKubelet
 
 	klog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
 	return completed, nil

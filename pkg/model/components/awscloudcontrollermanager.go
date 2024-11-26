@@ -74,7 +74,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 
 	if eccm.Image == "" {
 		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
-		switch b.KubernetesVersion.Minor {
+		switch b.ControlPlaneKubernetesVersion().Minor() {
 		case 25:
 			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.25.15"
 		case 26:
@@ -94,7 +94,7 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 		}
 	}
 
-	if b.IsKubernetesLT("1.25") {
+	if b.ControlPlaneKubernetesVersion().IsLT("1.25") {
 		eccm.EnableLeaderMigration = fi.PtrTo(true)
 	}
 

@@ -50,7 +50,7 @@ func MustParseKubernetesVersion(versionString string) *KubernetesVersion {
 	return kubernetesVersion
 }
 
-func (v *KubernetesVersion) String() string {
+func (v KubernetesVersion) String() string {
 	return v.versionString
 }
 
@@ -62,13 +62,13 @@ func IsBaseURL(kubernetesVersion string) bool {
 
 // IsBaseURL checks if the version string is a URL, rather than a version identifier.
 // URLs are typically used for CI builds and during development.
-func (v *KubernetesVersion) IsBaseURL() bool {
+func (v KubernetesVersion) IsBaseURL() bool {
 	return IsBaseURL(v.versionString)
 }
 
 // IsGTE checks if the version is greater than or equal (>=) to the specified version.
 // It panics if the kubernetes version in the cluster is invalid, or if the version is invalid.
-func (v *KubernetesVersion) IsGTE(version string) bool {
+func (v KubernetesVersion) IsGTE(version string) bool {
 	parsedVersion, err := util.ParseKubernetesVersion(version)
 	if err != nil || parsedVersion == nil {
 		panic(fmt.Sprintf("error parsing version %q: %v", version, err))
@@ -84,6 +84,11 @@ func (v *KubernetesVersion) IsGTE(version string) bool {
 
 // IsLT checks if the version is strictly less (<) than the specified version.
 // It panics if the kubernetes version in the cluster is invalid, or if the version is invalid.
-func (v *KubernetesVersion) IsLT(version string) bool {
+func (v KubernetesVersion) IsLT(version string) bool {
 	return !v.IsGTE(version)
+}
+
+// Minor returns the minor version of the Kubernetes version.
+func (v KubernetesVersion) Minor() int {
+	return int(v.version.Minor)
 }
