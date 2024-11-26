@@ -116,7 +116,7 @@ spec:
     recommendedVersion: 1.27.15
     requiredVersion: 1.27.0
   - range: ">=1.26.0"
-    recommendedVersion: 1.26.16
+    recommendedVersion: 1.26.15
     requiredVersion: 1.26.0
   - range: ">=1.25.0"
     recommendedVersion: 1.25.16
