@@ -27,12 +27,10 @@ import (
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	"github.com/blang/semver/v4"
 	hcloudmetadata "github.com/hetznercloud/hcloud-go/hcloud/metadata"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/model"
-	"k8s.io/kops/pkg/apis/kops/util"
+	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -74,7 +72,7 @@ type NodeupModelContext struct {
 	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
 	usesNoneDNS bool
 
-	kubernetesVersion   semver.Version
+	kubernetesVersion   *kopsmodel.KubernetesVersion
 	bootstrapCerts      map[string]*nodetasks.BootstrapCert
 	bootstrapKeypairIDs map[string]string
 
@@ -86,11 +84,11 @@ type NodeupModelContext struct {
 
 // Init completes initialization of the object, for example pre-parsing the kubernetes version
 func (c *NodeupModelContext) Init() error {
-	k8sVersion, err := util.ParseKubernetesVersion(c.NodeupConfig.KubernetesVersion)
-	if err != nil || k8sVersion == nil {
-		return fmt.Errorf("unable to parse KubernetesVersion %q", c.NodeupConfig.KubernetesVersion)
+	k8sVersion, err := kopsmodel.ParseKubernetesVersion(c.NodeupConfig.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("unable to parse KubernetesVersion %q: %w", c.NodeupConfig.KubernetesVersion, err)
 	}
-	c.kubernetesVersion = *k8sVersion
+	c.kubernetesVersion = k8sVersion
 	c.bootstrapCerts = map[string]*nodetasks.BootstrapCert{}
 	c.bootstrapKeypairIDs = map[string]string{}
 
@@ -303,20 +301,20 @@ func (c *NodeupModelContext) RemapImage(image string) string {
 	return image
 }
 
-// IsKubernetesGTE checks if the version is greater-than-or-equal
+// IsKubernetesGTE checks if the kubernetes version is greater-than-or-equal-to version
 func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
-	if c.kubernetesVersion.Major == 0 {
+	if c.kubernetesVersion == nil {
 		klog.Fatalf("kubernetesVersion not set (%s); Init not called", c.kubernetesVersion)
 	}
-	return util.IsKubernetesGTE(version, c.kubernetesVersion)
+	return c.kubernetesVersion.IsGTE(version)
 }
 
-// IsKubernetesLT checks if the version is less-than
+// IsKubernetesLT checks if the kubernetes version is less-than version
 func (c *NodeupModelContext) IsKubernetesLT(version string) bool {
-	if c.kubernetesVersion.Major == 0 {
+	if c.kubernetesVersion == nil {
 		klog.Fatalf("kubernetesVersion not set (%s); Init not called", c.kubernetesVersion)
 	}
-	return !c.IsKubernetesGTE(version)
+	return c.kubernetesVersion.IsLT(version)
 }
 
 // UseVolumeMounts is used to check if we have volume mounts enabled as we need to
@@ -327,11 +325,11 @@ func (c *NodeupModelContext) UseVolumeMounts() bool {
 
 // UseChallengeCallback is true if we should use a callback challenge during node provisioning with kops-controller.
 func (c *NodeupModelContext) UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
-	return model.UseChallengeCallback(cloudProvider)
+	return kopsmodel.UseChallengeCallback(cloudProvider)
 }
 
 func (c *NodeupModelContext) UseExternalKubeletCredentialProvider() bool {
-	return model.UseExternalKubeletCredentialProvider(c.kubernetesVersion, c.CloudProvider())
+	return kopsmodel.UseExternalKubeletCredentialProvider(c.kubernetesVersion, c.CloudProvider())
 }
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.

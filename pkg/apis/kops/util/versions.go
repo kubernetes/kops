@@ -46,8 +46,7 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 	return &sv, nil
 }
 
-// TODO: Convert to our own KubernetesVersion type?
-
+// Deprecated: prefer using KubernetesVersion.IsGTE()
 func IsKubernetesGTE(version string, k8sVersion semver.Version) bool {
 	parsedVersion, err := ParseKubernetesVersion(version)
 	if err != nil {

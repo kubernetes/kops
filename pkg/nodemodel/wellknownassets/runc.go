@@ -21,7 +21,7 @@ import (
 
 	"github.com/blang/semver/v4"
 
-	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
@@ -32,11 +32,11 @@ const (
 	runcVersionUrlArm64 = "https://github.com/opencontainers/runc/releases/download/v%s/runc.arm64"
 )
 
-func FindRuncAsset(c *kops.Cluster, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
-	if c.Spec.Containerd == nil {
+func FindRuncAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
+	containerd := ig.RawClusterSpec().Containerd
+	if containerd == nil {
 		return nil, fmt.Errorf("unable to find containerd config")
 	}
-	containerd := c.Spec.Containerd
 
 	containerdVersion, err := semver.ParseTolerant(fi.ValueOf(containerd.Version))
 	if err != nil {

@@ -177,7 +177,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 	return nil
 }
 
-func (b *ContainerdBuilder) buildSystemdService(sv semver.Version) *nodetasks.Service {
+func (b *ContainerdBuilder) buildSystemdService(containerdVersion semver.Version) *nodetasks.Service {
 	// Based on https://github.com/containerd/containerd/blob/master/containerd.service
 
 	manifest := &systemd.Manifest{}
