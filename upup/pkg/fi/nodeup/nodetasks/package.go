@@ -22,7 +22,6 @@ import (
 	"os/exec"
 	"path"
 	"reflect"
-	"slices"
 	"strings"
 	"sync"
 
@@ -328,10 +327,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
 		} else if d.IsRHELFamily() {
 
-			if slices.Contains([]distributions.Distribution{
-				distributions.DistributionRhel8, distributions.DistributionRocky8,
-				distributions.DistributionRhel9, distributions.DistributionRocky9,
-			}, d) {
+			if d.HasDNF() {
 				args = []string{"/usr/bin/dnf", "install", "-y", "--setopt=install_weak_deps=False"}
 			} else {
 				args = []string{"/usr/bin/yum", "install", "-y"}
