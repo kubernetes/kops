@@ -741,7 +741,7 @@ spec:
           mountPath: /var/lib/csi/sockets/pluginproxy/
         ports:
         - name: healthz
-          containerPort: 9809
+          containerPort: 9811
           protocol: TCP
         - name: metrics
           containerPort: 3301
@@ -932,7 +932,7 @@ spec:
         imagePullPolicy: IfNotPresent
         args:
         - --csi-address=/csi/csi.sock
-        - --http-endpoint=0.0.0.0:9809
+        - --http-endpoint=0.0.0.0:9811
         volumeMounts:
         - name: socket-dir
           mountPath: /csi
