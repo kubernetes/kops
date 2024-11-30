@@ -58,6 +58,8 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		return DistributionDebian11, nil
 	case "debian-12":
 		return DistributionDebian12, nil
+	case "fedora-41":
+		return DistributionFedora41, nil
 	case "ubuntu-20.04":
 		return DistributionUbuntu2004, nil
 	case "ubuntu-22.04":
@@ -88,5 +90,5 @@ func FindDistribution(rootfs string) (Distribution, error) {
 
 	// Some distros are not supported
 	klog.V(2).Infof("Contents of /etc/os-release:\n%s", osReleaseBytes)
-	return Distribution{}, fmt.Errorf("unsupported distro: %s", distro)
+	return Distribution{}, fmt.Errorf("unsupported distro %q", distro)
 }

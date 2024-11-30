@@ -19,6 +19,8 @@ package distributions
 import (
 	"fmt"
 	"os"
+
+	"k8s.io/klog/v2"
 )
 
 // Distribution represents a particular version of an operating system.
@@ -38,20 +40,27 @@ type Distribution struct {
 }
 
 var (
-	DistributionDebian10        = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
-	DistributionDebian11        = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
-	DistributionDebian12        = Distribution{packageFormat: "deb", project: "debian", id: "bookworm", version: 12}
-	DistributionUbuntu2004      = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
-	DistributionUbuntu2204      = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
-	DistributionUbuntu2404      = Distribution{packageFormat: "deb", project: "ubuntu", id: "noble", version: 24.04}
-	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
-	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
+	// Debian-family distros
+	DistributionDebian10   = Distribution{packageFormat: "deb", project: "debian", id: "buster", version: 10}
+	DistributionDebian11   = Distribution{packageFormat: "deb", project: "debian", id: "bullseye", version: 11}
+	DistributionDebian12   = Distribution{packageFormat: "deb", project: "debian", id: "bookworm", version: 12}
+	DistributionDebian13   = Distribution{packageFormat: "deb", project: "debian", id: "trixie", version: 13}
+	DistributionUbuntu2004 = Distribution{packageFormat: "deb", project: "ubuntu", id: "focal", version: 20.04}
+	DistributionUbuntu2204 = Distribution{packageFormat: "deb", project: "ubuntu", id: "jammy", version: 22.04}
+	DistributionUbuntu2404 = Distribution{packageFormat: "deb", project: "ubuntu", id: "noble", version: 24.04}
+
+	// Redhat-family distros
 	DistributionRhel8           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
 	DistributionRhel9           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel9", version: 9}
 	DistributionRocky8          = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky8", version: 8}
 	DistributionRocky9          = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky9", version: 9}
-	DistributionFlatcar         = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
-	DistributionContainerOS     = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
+	DistributionFedora41        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora41", version: 41}
+	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
+	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
+
+	// Immutable distros
+	DistributionFlatcar     = Distribution{packageFormat: "", project: "flatcar", id: "flatcar", version: 0}
+	DistributionContainerOS = Distribution{packageFormat: "", project: "containeros", id: "containeros", version: 0}
 )
 
 // IsDebianFamily returns true if this distribution uses deb packages and generally follows debian package names
@@ -67,6 +76,25 @@ func (d *Distribution) IsUbuntu() bool {
 // IsRHELFamily returns true if this distribution uses rpm packages and generally follows rhel package names
 func (d *Distribution) IsRHELFamily() bool {
 	return d.packageFormat == "rpm"
+}
+
+// HasDNF returns true if this distribution uses dnf
+func (d *Distribution) HasDNF() bool {
+	if !d.IsRHELFamily() {
+		return false
+	}
+	// All our RHEL distros support DNF at this point, it seems
+	switch d.project {
+	case "rhel":
+		return d.version >= 8
+	case "rocky":
+		return d.version >= 8
+	case "fedora":
+		return d.version >= 22
+	default:
+		klog.Warningf("unknown project for HasDNF (%q), assuming does support dnf", d.project)
+		return true
+	}
 }
 
 // IsSystemd returns true if this distribution uses systemd

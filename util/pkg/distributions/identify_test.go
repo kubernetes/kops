@@ -41,17 +41,17 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "centos7",
-			err:      fmt.Errorf("unsupported distro: centos-7"),
+			err:      fmt.Errorf("unsupported distro %q", "centos-7"),
 			expected: Distribution{},
 		},
 		{
 			rootfs:   "centos8",
-			err:      fmt.Errorf("unsupported distro: centos-8"),
+			err:      fmt.Errorf("unsupported distro %q", "centos-8"),
 			expected: Distribution{},
 		},
 		{
 			rootfs:   "coreos",
-			err:      fmt.Errorf("unsupported distro: coreos-2247.7.0"),
+			err:      fmt.Errorf("unsupported distro %q", "coreos-2247.7.0"),
 			expected: Distribution{},
 		},
 		{
@@ -61,12 +61,12 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "debian8",
-			err:      fmt.Errorf("unsupported distro: debian-8"),
+			err:      fmt.Errorf("unsupported distro %q", "debian-8"),
 			expected: Distribution{},
 		},
 		{
 			rootfs:   "debian9",
-			err:      fmt.Errorf("unsupported distro: debian-9"),
+			err:      fmt.Errorf("unsupported distro %q", "debian-9"),
 			expected: Distribution{},
 		},
 		{
@@ -91,7 +91,7 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "rhel7",
-			err:      fmt.Errorf("unsupported distro: rhel-7.8"),
+			err:      fmt.Errorf("unsupported distro %q", "rhel-7.8"),
 			expected: Distribution{},
 		},
 		{
@@ -116,7 +116,7 @@ func TestFindDistribution(t *testing.T) {
 		},
 		{
 			rootfs:   "ubuntu1604",
-			err:      fmt.Errorf("unsupported distro: ubuntu-16.04"),
+			err:      fmt.Errorf("unsupported distro %q", "ubuntu-16.04"),
 			expected: Distribution{},
 		},
 		{
