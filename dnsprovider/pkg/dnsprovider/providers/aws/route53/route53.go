@@ -52,7 +52,6 @@ func newRoute53() (*Interface, error) {
 	ctx := context.TODO()
 
 	imdsCfg, err := awsconfig.LoadDefaultConfig(ctx,
-		awsconfig.WithClientLogMode(aws.LogRetries),
 		awsconfig.WithRetryer(func() aws.Retryer {
 			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
 		}),
