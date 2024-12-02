@@ -80,9 +80,9 @@ data:
   hubble-metrics: drop
   hubble-metrics-server: :9091
   hubble-socket-path: /var/run/cilium/hubble.sock
-  hubble-tls-cert-file: /var/lib/cilium/tls/hubble/server.crt
-  hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
-  hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
+  hubble-tls-cert-file: /var/lib/cilium/tls/hubble/tls.crt
+  hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/ca.crt
+  hubble-tls-key-file: /var/lib/cilium/tls/hubble/tls.key
   identity-allocation-mode: crd
   identity-change-grace-period: 5s
   ingress-default-lb-mode: dedicated
