@@ -222,10 +222,6 @@ func runKubeletBuilder(t *testing.T, context *fi.NodeupModelBuilderContext, node
 
 	{
 		task := builder.buildSystemdService()
-		if err != nil {
-			t.Fatalf("error from KubeletBuilder buildSystemdService: %v", err)
-			return
-		}
 		context.AddTask(task)
 	}
 }
@@ -250,8 +246,7 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		return nil, fmt.Errorf("error from BuildCloud: %v", err)
 	}
 
-	err = cloudup.PerformAssignments(model.Cluster, vfs.Context, cloud)
-	if err != nil {
+	if err := cloudup.PerformAssignments(model.Cluster, vfs.Context, cloud); err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
 
