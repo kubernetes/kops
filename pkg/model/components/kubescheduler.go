@@ -63,11 +63,11 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			config.FeatureGates = make(map[string]string)
 		}
 
-		if _, found := config.FeatureGates["InTreePluginAWSUnregister"]; !found && b.IsKubernetesLT("1.31") {
+		if _, found := config.FeatureGates["InTreePluginAWSUnregister"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.31") {
 			config.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 
-		if _, found := config.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
+		if _, found := config.FeatureGates["CSIMigrationAWS"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.27") {
 			config.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 	}

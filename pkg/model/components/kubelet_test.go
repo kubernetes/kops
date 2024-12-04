@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -40,21 +39,16 @@ func buildKubeletTestCluster() *kops.Cluster {
 func buildOptions(cluster *kops.Cluster) error {
 	ab := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
 
-	ver, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	optionsContext, err := NewOptionsContext(cluster, ab, ab.KubeletSupportedVersion)
 	if err != nil {
 		return err
 	}
-
 	builder := KubeletOptionsBuilder{
-		OptionsContext: &OptionsContext{
-			AssetBuilder:      ab,
-			KubernetesVersion: *ver,
-		},
+		OptionsContext: optionsContext,
 	}
 
-	err = builder.BuildOptions(cluster)
-	if err != nil {
-		return nil
+	if err := builder.BuildOptions(cluster); err != nil {
+		return err
 	}
 
 	return nil

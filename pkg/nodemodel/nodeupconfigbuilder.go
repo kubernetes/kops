@@ -225,6 +225,11 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	if !hasAPIServer && n.assetBuilder.KubeletSupportedVersion != "" {
+		// Set kubernetes version to avoid spurious rolling-update
+		config.KubernetesVersion = n.assetBuilder.KubeletSupportedVersion
+
+		// TODO: Rename KubernetesVersion to ControlPlaneVersion
+
 		if err := igModel.ForceKubernetesVersion(n.assetBuilder.KubeletSupportedVersion); err != nil {
 			return nil, nil, err
 		}

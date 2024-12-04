@@ -72,7 +72,10 @@ type NodeupModelContext struct {
 	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
 	usesNoneDNS bool
 
-	kubernetesVersion   *kopsmodel.KubernetesVersion
+	// Deprecated: This should be renamed to controlPlaneVersion / nodeVersion;
+	// controlPlaneVersion should probably/ideally only be populated on control plane nodes.
+	kubernetesVersion *kopsmodel.KubernetesVersion
+
 	bootstrapCerts      map[string]*nodetasks.BootstrapCert
 	bootstrapKeypairIDs map[string]string
 

@@ -53,7 +53,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 	// TLDR; set this too low, and have a few EBS Volumes, and you will spam AWS api
 
 	{
-		klog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", b.KubernetesVersion)
+		klog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", b.ControlPlaneKubernetesVersion().String())
 		// If not set ... or set to 0s ... which is stupid
 		if kcm.AttachDetachReconcileSyncPeriod == nil ||
 			kcm.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
@@ -149,11 +149,11 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 			kcm.FeatureGates = make(map[string]string)
 		}
 
-		if _, found := kcm.FeatureGates["InTreePluginAWSUnregister"]; !found && b.IsKubernetesLT("1.31") {
+		if _, found := kcm.FeatureGates["InTreePluginAWSUnregister"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.31") {
 			kcm.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
 
-		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found && b.IsKubernetesLT("1.27") {
+		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.27") {
 			kcm.FeatureGates["CSIMigrationAWS"] = "true"
 		}
 	}
