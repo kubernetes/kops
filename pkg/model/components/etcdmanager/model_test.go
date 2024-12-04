@@ -53,7 +53,7 @@ func Test_RunEtcdManagerBuilder(t *testing.T) {
 
 			builder := EtcdManagerBuilder{
 				KopsModelContext: kopsModelContext,
-				AssetBuilder:     assets.NewAssetBuilder(vfs.Context, kopsModelContext.Cluster.Spec.Assets, kopsModelContext.Cluster.Spec.KubernetesVersion, false),
+				AssetBuilder:     assets.NewAssetBuilder(vfs.Context, kopsModelContext.Cluster.Spec.Assets, false),
 			}
 
 			if err := builder.Build(context); err != nil {

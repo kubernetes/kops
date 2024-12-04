@@ -40,7 +40,7 @@ func Test_FindCrictlVersionHash(t *testing.T) {
 		t.Fatalf("building instance group model: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
 
 	crictlAsset, err := FindCrictlAsset(igModel, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {

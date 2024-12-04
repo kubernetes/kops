@@ -51,7 +51,7 @@ func Test_RunKubeSchedulerBuilder(t *testing.T) {
 
 			builder := KubeSchedulerBuilder{
 				KopsModelContext: kopsModelContext,
-				AssetBuilder:     assets.NewAssetBuilder(vfs.Context, kopsModelContext.Cluster.Spec.Assets, kopsModelContext.Cluster.Spec.KubernetesVersion, false),
+				AssetBuilder:     assets.NewAssetBuilder(vfs.Context, kopsModelContext.Cluster.Spec.Assets, false),
 			}
 
 			if err := builder.Build(context); err != nil {

@@ -263,7 +263,7 @@ func updateCluster(ctx context.Context, clientset simple.Clientset, oldCluster, 
 		return "", fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), newCluster.Spec.Assets, newCluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(clientset.VFSContext(), newCluster.Spec.Assets, false)
 	fullCluster, err := cloudup.PopulateClusterSpec(ctx, clientset, newCluster, instanceGroups, cloud, assetBuilder)
 	if err != nil {
 		return fmt.Sprintf("error populating cluster spec: %s", err), nil

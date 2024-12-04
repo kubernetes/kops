@@ -67,7 +67,7 @@ func (*testTask) Run(_ *CloudupContext) error {
 }
 
 func Test_DryrunTarget_PrintReport(t *testing.T) {
-	builder := assets.NewAssetBuilder(vfs.Context, nil, "1.17.3", false)
+	builder := assets.NewAssetBuilder(vfs.Context, nil, false)
 	var stdout bytes.Buffer
 	target := newDryRunTarget[CloudupSubContext](builder, &stdout)
 	tasks := map[string]CloudupTask{}

@@ -47,7 +47,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 
 		c := buildCluster()
 		c.Spec.KubernetesVersion = v
-		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, false)
 
 		kcm := &KubeControllerManagerOptionsBuilder{
 			OptionsContext: &OptionsContext{
@@ -68,7 +68,7 @@ func Test_Build_KCM_Builder(t *testing.T) {
 
 func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 	c := buildCluster()
-	b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
+	b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, false)
 
 	kcm := &KubeControllerManagerOptionsBuilder{
 		OptionsContext: &OptionsContext{
@@ -143,7 +143,7 @@ func Test_Build_KCM_Builder_CIDR_Mask_Size(t *testing.T) {
 	for _, tc := range grid {
 		t.Run(tc.PodCIDR+":"+tc.ClusterCIDR, func(t *testing.T) {
 			c := buildCluster()
-			b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
+			b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, false)
 
 			kcm := &KubeControllerManagerOptionsBuilder{
 				OptionsContext: &OptionsContext{

@@ -38,7 +38,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 	ig := &api.InstanceGroup{}
 
-	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
 
 	igModel, err := kopsmodel.ForInstanceGroup(cluster, ig)
 	if err != nil {
@@ -73,7 +73,7 @@ func Test_FindCNIAssetFromDefaults122(t *testing.T) {
 		t.Fatalf("building instance group model: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
 
 	asset, err := FindCNIAssets(igModel, assetBuilder, architectures.ArchitectureAmd64)
 	if err != nil {

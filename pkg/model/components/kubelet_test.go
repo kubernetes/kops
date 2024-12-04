@@ -38,7 +38,7 @@ func buildKubeletTestCluster() *kops.Cluster {
 }
 
 func buildOptions(cluster *kops.Cluster) error {
-	ab := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false)
+	ab := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
 
 	ver, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 	if err != nil {
