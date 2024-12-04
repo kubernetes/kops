@@ -29,6 +29,7 @@ kops update cluster [CLUSTER] [flags]
       --allow-kops-downgrade           Allow an older version of kOps to update the cluster than last used
       --create-kube-config             Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                           help for cluster
+      --ignore-kubelet-version-skew    Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running
       --instance-group strings         Instance groups to update (defaults to all if not specified)
       --instance-group-roles strings   Instance group roles to update (control-plane,apiserver,node,bastion)
       --internal                       Use the cluster's internal DNS name. Implies --create-kube-config

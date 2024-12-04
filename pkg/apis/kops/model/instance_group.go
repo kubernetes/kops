@@ -34,17 +34,20 @@ type InstanceGroup interface {
 	// RawClusterSpec returns the cluster spec for the instance group.
 	// If possible, prefer abstracted methods over accessing this data directly.
 	RawClusterSpec() *kops.ClusterSpec
+
+	// ForceKubernetesVersion overrides the Kubernetes version for this instance group.
+	// (The default is to use the cluster-wide Kubernetes version, but this allows
+	// us to override it for the nodes to respect the node skew policy.)
+	ForceKubernetesVersion(version string) error
 }
 
 // ForInstanceGroup creates an InstanceGroup model for the given cluster and instance group.
 func ForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup) (InstanceGroup, error) {
-	kubernetesVersionString := cluster.Spec.KubernetesVersion
-	kubernetesVersion, err := ParseKubernetesVersion(kubernetesVersionString)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing Kubernetes version %q: %v", kubernetesVersionString, err)
+	m := &instanceGroupModel{cluster: cluster, ig: ig}
+	if err := m.ForceKubernetesVersion(cluster.Spec.KubernetesVersion); err != nil {
+		return nil, err
 	}
-
-	return &instanceGroupModel{cluster: cluster, ig: ig, kubernetesVersion: kubernetesVersion}, nil
+	return m, nil
 }
 
 // instanceGroupModel is a concrete implementation of InstanceGroup.
@@ -66,4 +69,13 @@ func (m *instanceGroupModel) GetCloudProvider() kops.CloudProviderID {
 
 func (m *instanceGroupModel) RawClusterSpec() *kops.ClusterSpec {
 	return &m.cluster.Spec
+}
+
+func (m *instanceGroupModel) ForceKubernetesVersion(kubernetesVersionString string) error {
+	kubernetesVersion, err := ParseKubernetesVersion(kubernetesVersionString)
+	if err != nil {
+		return fmt.Errorf("error parsing Kubernetes version %q: %v", kubernetesVersionString, err)
+	}
+	m.kubernetesVersion = kubernetesVersion
+	return nil
 }
