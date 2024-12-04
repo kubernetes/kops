@@ -31,7 +31,7 @@ func Test_Build_Scheduler(t *testing.T) {
 
 		c := buildCluster()
 		c.Spec.KubernetesVersion = v
-		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, c.Spec.KubernetesVersion, false)
+		b := assets.NewAssetBuilder(vfs.Context, c.Spec.Assets, false)
 
 		version, err := util.ParseKubernetesVersion(v)
 		if err != nil {

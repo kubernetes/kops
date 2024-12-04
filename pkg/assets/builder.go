@@ -25,13 +25,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blang/semver/v4"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets/assetdata"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -47,9 +45,6 @@ type AssetBuilder struct {
 	FileAssets     []*FileAsset
 	AssetsLocation *kops.AssetsSpec
 	GetAssets      bool
-
-	// KubernetesVersion is the version of kubernetes we are installing
-	KubernetesVersion semver.Version
 
 	// KubeletSupportedVersion is the max version of kubelet that we are currently allowed to run on worker nodes.
 	// This is used to avoid violating the kubelet supported version skew policy,
@@ -119,19 +114,12 @@ type FileAsset struct {
 }
 
 // NewAssetBuilder creates a new AssetBuilder.
-func NewAssetBuilder(vfsContext *vfs.VFSContext, assets *kops.AssetsSpec, kubernetesVersion string, getAssets bool) *AssetBuilder {
+func NewAssetBuilder(vfsContext *vfs.VFSContext, assets *kops.AssetsSpec, getAssets bool) *AssetBuilder {
 	a := &AssetBuilder{
 		vfsContext:     vfsContext,
 		AssetsLocation: assets,
 		GetAssets:      getAssets,
 	}
-
-	version, err := util.ParseKubernetesVersion(kubernetesVersion)
-	if err != nil {
-		// This should have already been validated
-		klog.Fatalf("unexpected error from ParseKubernetesVersion %s: %v", kubernetesVersion, err)
-	}
-	a.KubernetesVersion = *version
 
 	return a
 }

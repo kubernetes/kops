@@ -241,7 +241,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		clusterLifecycle = fi.LifecycleIgnore
 	}
 
-	assetBuilder := assets.NewAssetBuilder(c.Clientset.VFSContext(), c.Cluster.Spec.Assets, c.Cluster.Spec.KubernetesVersion, c.GetAssets)
+	assetBuilder := assets.NewAssetBuilder(c.Clientset.VFSContext(), c.Cluster.Spec.Assets, c.GetAssets)
 	if len(c.ControlPlaneRunningVersion) > 0 && c.ControlPlaneRunningVersion != c.Cluster.Spec.KubernetesVersion {
 		assetBuilder.KubeletSupportedVersion = c.ControlPlaneRunningVersion
 	}

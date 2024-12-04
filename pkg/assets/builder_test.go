@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/testutils/golden"
 )
 
@@ -78,9 +77,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToSimplifiedKubernetesURL(t *
 	proxyURL := "proxy.example.com/"
 	image := "registry.k8s.io/kube-apiserver"
 	expected := "proxy.example.com/kube-apiserver"
-	version, _ := util.ParseKubernetesVersion("1.10")
 
-	builder.KubernetesVersion = *version
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
 	remapped, err := builder.RemapImage(image)
@@ -118,9 +115,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToImagesWithTags(t *testing.T
 	proxyURL := "proxy.example.com/"
 	image := "registry.k8s.io/kube-apiserver:1.2.3"
 	expected := "proxy.example.com/kube-apiserver:1.2.3"
-	version, _ := util.ParseKubernetesVersion("1.10")
 
-	builder.KubernetesVersion = *version
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
 	remapped, err := builder.RemapImage(image)
@@ -139,9 +134,7 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 	mirrorURL := "proxy.example.com"
 	image := "kube-apiserver:1.2.3"
 	expected := "proxy.example.com/kube-apiserver:1.2.3"
-	version, _ := util.ParseKubernetesVersion("1.10")
 
-	builder.KubernetesVersion = *version
 	builder.AssetsLocation.ContainerRegistry = &mirrorURL
 
 	remapped := image

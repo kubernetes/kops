@@ -164,7 +164,7 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 	bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
 		&kopsModel,
 		fi.LifecycleSync,
-		assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, false),
+		assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false),
 		templates,
 		nil,
 	)

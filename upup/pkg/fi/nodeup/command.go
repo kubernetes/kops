@@ -348,7 +348,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Cloud:    cloud,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder(vfs.Context, nil, nodeupConfig.KubernetesVersion, false)
+		assetBuilder := assets.NewAssetBuilder(vfs.Context, nil, false)
 		target = fi.NewNodeupDryRunTarget(assetBuilder, out)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)

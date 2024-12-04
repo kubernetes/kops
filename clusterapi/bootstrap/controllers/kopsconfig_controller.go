@@ -191,7 +191,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context) ([]byte, 
 	ig.Spec.Role = kops.InstanceGroupRoleNode
 
 	getAssets := false
-	assetBuilder := assets.NewAssetBuilder(vfsContext, cluster.Spec.Assets, cluster.Spec.KubernetesVersion, getAssets)
+	assetBuilder := assets.NewAssetBuilder(vfsContext, cluster.Spec.Assets, getAssets)
 
 	encryptionConfigSecretHash := ""
 	// if fi.ValueOf(c.Cluster.Spec.EncryptionConfig) {
