@@ -95,9 +95,23 @@ spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
   machineType: t2.medium
+  nodeLabels:
+    foo: bar
   role: Node
   subnets:
   - us-test-1a
+  rootVolumeSize: 200
+  rootVolumeType: gp3
+  rootVolumeIops: 4000
+  rootVolumeThroughput: 200
+  rootVolumeEncryption: true
+  rootVolumeEncryptionKey: arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab
+  volumes:
+  - device: /dev/xvdd
+    size: 20
+    type: gp2
+    encrypted: true
+    key: arn:aws:kms:us-east-1:012345678910:key/1234abcd-12ab-34cd-56ef-1234567890ab
 
 ---
 
@@ -120,6 +134,8 @@ spec:
       memory: 1G
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
+  nodeLabels:
+    foo: baz
   role: Node
   subnets:
   - us-test-1a
