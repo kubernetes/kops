@@ -33,11 +33,21 @@ import (
 
 const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
-func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.KeystoreReader, secretStore fi.SecretStore, cloud fi.Cloud, admin time.Duration, configUser string, internal bool, kopsStateStore string, useKopsAuthenticationPlugin bool) (*KubeconfigBuilder, error) {
+type CreateKubecfgOptions struct {
+	CreateKubecfg bool
+	Admin         time.Duration
+	User          string
+	Internal      bool
+
+	// UseKopsAuthenticationPlugin controls whether we should use the kOps auth helper instead of a static credential
+	UseKopsAuthenticationPlugin bool
+}
+
+func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.KeystoreReader, secretStore fi.SecretStore, cloud fi.Cloud, options CreateKubecfgOptions, kopsStateStore string) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var server string
-	if internal {
+	if options.Internal {
 		server = "https://" + cluster.APIInternalName()
 	} else {
 		if cluster.Spec.API.PublicName != "" {
@@ -48,7 +58,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 		// If a load balancer exists we use it, except for when an SSL certificate is set.
 		// This should avoid a lot of pain with DNS pre-creation.
-		if cluster.Spec.API.LoadBalancer != nil && (cluster.Spec.API.LoadBalancer.SSLCertificate == "" || admin != 0) {
+		if cluster.Spec.API.LoadBalancer != nil && (cluster.Spec.API.LoadBalancer.SSLCertificate == "" || options.Admin != 0) {
 			ingresses, err := cloud.GetApiIngressStatus(cluster)
 			if err != nil {
 				return nil, fmt.Errorf("error getting ingress status: %v", err)
@@ -90,7 +100,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 	b := NewKubeconfigBuilder()
 
 	// Use the secondary load balancer port if a certificate is on the primary listener
-	if admin != 0 && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	if options.Admin != 0 && cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.SSLCertificate != "" && cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
 		server = server + ":8443"
 	}
 
@@ -100,7 +110,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 	// add the CA Cert to the kubeconfig only if we didn't specify a certificate for the LB
 	//  or if we're using admin credentials and the secondary port
-	if cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork || internal {
+	if cluster.Spec.API.LoadBalancer == nil || cluster.Spec.API.LoadBalancer.SSLCertificate == "" || cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork || options.Internal {
 		keySet, err := keyStore.FindKeyset(ctx, fi.CertificateIDCA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
@@ -115,7 +125,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 		}
 	}
 
-	if admin != 0 {
+	if options.Admin != 0 {
 		cn := "kubecfg"
 		user, err := user.Current()
 		if err != nil || user == nil {
@@ -131,7 +141,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 				CommonName:   cn,
 				Organization: []string{rbac.SystemPrivilegedGroup},
 			},
-			Validity: admin,
+			Validity: options.Admin,
 		}
 		cert, privateKey, _, err := pki.IssueCert(ctx, &req, fi.NewPKIKeystoreAdapter(keyStore))
 		if err != nil {
@@ -147,7 +157,7 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 		}
 	}
 
-	if useKopsAuthenticationPlugin {
+	if options.UseKopsAuthenticationPlugin {
 		b.AuthenticationExec = []string{
 			"kops",
 			"helpers",
@@ -163,10 +173,10 @@ func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.Keysto
 
 	b.Server = server
 
-	if configUser == "" {
+	if options.User == "" {
 		b.User = cluster.ObjectMeta.Name
 	} else {
-		b.User = configUser
+		b.User = options.User
 	}
 
 	return b, nil

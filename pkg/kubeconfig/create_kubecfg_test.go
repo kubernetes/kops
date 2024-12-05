@@ -19,7 +19,6 @@ package kubeconfig
 import (
 	"context"
 	"testing"
-	"time"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -149,13 +148,10 @@ func TestBuildKubecfg(t *testing.T) {
 	}()
 
 	type args struct {
-		cluster                     *kops.Cluster
-		secretStore                 fi.SecretStore
-		status                      fakeStatusCloud
-		admin                       time.Duration
-		user                        string
-		internal                    bool
-		useKopsAuthenticationPlugin bool
+		CreateKubecfgOptions
+		cluster     *kops.Cluster
+		secretStore fi.SecretStore
+		status      fakeStatusCloud
 	}
 
 	publicCluster := buildMinimalCluster("testcluster", "testcluster.test.com", false, false)
@@ -187,8 +183,10 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: publicCluster,
 				status:  fakeStatus,
-				admin:   DefaultKubecfgAdminLifetime,
-				user:    "",
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: DefaultKubecfgAdminLifetime,
+					User:  "",
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -204,7 +202,9 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: certNLBCluster,
 				status:  fakeStatus,
-				admin:   DefaultKubecfgAdminLifetime,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: DefaultKubecfgAdminLifetime,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -220,7 +220,9 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: certCluster,
 				status:  fakeStatus,
-				admin:   DefaultKubecfgAdminLifetime,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: DefaultKubecfgAdminLifetime,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -236,7 +238,9 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: certNLBCluster,
 				status:  fakeStatus,
-				admin:   0,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: 0,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -252,8 +256,10 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: publicCluster,
 				status:  fakeStatus,
-				admin:   0,
-				user:    "myuser",
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: 0,
+					User:  "myuser",
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -269,8 +275,10 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: emptyMasterPublicNameCluster,
 				status:  fakeStatus,
-				admin:   0,
-				user:    "",
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: 0,
+					User:  "",
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "emptyMasterPublicNameCluster",
@@ -299,10 +307,12 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Public DNS with kops auth plugin",
 			args: args{
-				cluster:                     publicCluster,
-				status:                      fakeStatus,
-				admin:                       0,
-				useKopsAuthenticationPlugin: true,
+				cluster: publicCluster,
+				status:  fakeStatus,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin:                       0,
+					UseKopsAuthenticationPlugin: true,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -323,10 +333,12 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Test Kube Config Data For internal DNS name with admin",
 			args: args{
-				cluster:  publicCluster,
-				status:   fakeStatus,
-				admin:    DefaultKubecfgAdminLifetime,
-				internal: true,
+				cluster: publicCluster,
+				status:  fakeStatus,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin:    DefaultKubecfgAdminLifetime,
+					Internal: true,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -342,7 +354,9 @@ func TestBuildKubecfg(t *testing.T) {
 			args: args{
 				cluster: certGossipNLBCluster,
 				status:  fakeStatus,
-				admin:   DefaultKubecfgAdminLifetime,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin: DefaultKubecfgAdminLifetime,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testgossipcluster.k8s.local",
@@ -356,10 +370,12 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Test Kube Config Data for Public cluster with admin and internal option",
 			args: args{
-				cluster:  publicCluster,
-				status:   fakeStatus,
-				admin:    DefaultKubecfgAdminLifetime,
-				internal: true,
+				cluster: publicCluster,
+				status:  fakeStatus,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin:    DefaultKubecfgAdminLifetime,
+					Internal: true,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -373,10 +389,12 @@ func TestBuildKubecfg(t *testing.T) {
 		{
 			name: "Test Kube Config Data for Public cluster without admin and with internal option",
 			args: args{
-				cluster:  publicCluster,
-				status:   fakeStatus,
-				admin:    0,
-				internal: true,
+				cluster: publicCluster,
+				status:  fakeStatus,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin:    0,
+					Internal: true,
+				},
 			},
 			want: &KubeconfigBuilder{
 				Context:       "testcluster",
@@ -401,7 +419,7 @@ func TestBuildKubecfg(t *testing.T) {
 				},
 			}
 
-			got, err := BuildKubecfg(ctx, tt.args.cluster, keyStore, tt.args.secretStore, tt.args.status, tt.args.admin, tt.args.user, tt.args.internal, kopsStateStore, tt.args.useKopsAuthenticationPlugin)
+			got, err := BuildKubecfg(ctx, tt.args.cluster, keyStore, tt.args.secretStore, tt.args.status, tt.args.CreateKubecfgOptions, kopsStateStore)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildKubecfg() error = %v, wantErr %v", err, tt.wantErr)
 				return

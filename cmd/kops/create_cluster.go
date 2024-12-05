@@ -802,9 +802,10 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		updateClusterOptions.Yes = c.Yes
 		updateClusterOptions.Target = c.Target
 		updateClusterOptions.OutDir = c.OutDir
-		updateClusterOptions.admin = kubeconfig.DefaultKubecfgAdminLifetime
 		updateClusterOptions.ClusterName = cluster.Name
-		updateClusterOptions.CreateKubecfg = true
+
+		updateClusterOptions.CreateKubecfgOptions.Admin = kubeconfig.DefaultKubecfgAdminLifetime
+		updateClusterOptions.CreateKubecfgOptions.CreateKubecfg = true
 
 		// SSHPublicKey has already been mapped
 		updateClusterOptions.SSHPublicKey = ""

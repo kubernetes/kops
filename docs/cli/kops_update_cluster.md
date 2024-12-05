@@ -19,7 +19,7 @@ kops update cluster [CLUSTER] [flags]
 
 ```
   # After the cluster has been edited or upgraded, update the cloud resources with:
-  kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store --yes
+  kops update cluster k8s-cluster.example.com --state=s3://my-state-store --yes
 ```
 
 ### Options
@@ -37,6 +37,7 @@ kops update cluster [CLUSTER] [flags]
       --out string                     Path to write any local output
       --phase string                   Subset of tasks to run: cluster, network, security
       --prune                          Delete old revisions of cloud resources that were needed during an upgrade
+      --reconcile                      Reconcile the cluster by rolling the control plane and nodes sequentially
       --ssh-public-key string          SSH public key to use (deprecated: use kops create secret instead)
       --target string                  Target - direct, terraform (default "direct")
       --user string                    Existing user in kubeconfig file to use.  Implies --create-kube-config
