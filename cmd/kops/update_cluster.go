@@ -76,8 +76,11 @@ type UpdateClusterOptions struct {
 // which are shared with the reconcile cluster command.
 // The fields _not_ shared with the reconcile cluster command are the ones in CreateKubecfgOptions.
 type CoreUpdateClusterOptions struct {
-	Yes                bool
-	Target             string
+	Yes bool
+
+	// Target is the type of target we will operate against (direct, dry-run, terraform)
+	Target cloudup.Target
+
 	OutDir             string
 	SSHPublicKey       string
 	RunTasksOptions    fi.RunTasksOptions
@@ -123,7 +126,7 @@ func (o *UpdateClusterOptions) InitDefaults() {
 
 func (o *CoreUpdateClusterOptions) InitDefaults() {
 	o.Yes = false
-	o.Target = "direct"
+	o.Target = cloudup.TargetDirect
 	o.SSHPublicKey = ""
 	o.OutDir = ""
 	// By default we enforce the version skew between control plane and worker nodes
@@ -157,7 +160,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Create cloud resources, without --yes update is in dry run mode")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform")
+	cmd.Flags().Var(&options.Target, "target", fmt.Sprintf("Target - %q, %q", cloudup.TargetDirect, cloudup.TargetTerraform))
 	cmd.RegisterFlagCompletionFunc("target", completeUpdateClusterTarget(f, &options.CoreUpdateClusterOptions))
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -552,14 +555,14 @@ func completeUpdateClusterTarget(f commandutils.Factory, options *CoreUpdateClus
 
 		cluster, _, _, directive := GetClusterForCompletion(ctx, f, nil)
 		if cluster == nil {
-			return []string{
+			return toStringSlice([]cloudup.Target{
 				cloudup.TargetDirect,
 				cloudup.TargetDryRun,
 				cloudup.TargetTerraform,
-			}, directive
+			}), directive
 		}
 
-		completions := []string{
+		completions := []cloudup.Target{
 			cloudup.TargetDirect,
 			cloudup.TargetDryRun,
 		}
@@ -568,8 +571,16 @@ func completeUpdateClusterTarget(f commandutils.Factory, options *CoreUpdateClus
 				completions = append(completions, cloudup.TargetTerraform)
 			}
 		}
-		return completions, cobra.ShellCompDirectiveNoFileComp
+		return toStringSlice(completions), cobra.ShellCompDirectiveNoFileComp
 	}
+}
+
+func toStringSlice[T ~string](targets []T) []string {
+	strings := make([]string, len(targets))
+	for i, target := range targets {
+		strings[i] = string(target)
+	}
+	return strings
 }
 
 func completeLifecycleOverrides(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

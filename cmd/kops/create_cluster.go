@@ -61,8 +61,11 @@ import (
 
 type CreateClusterOptions struct {
 	cloudup.NewClusterOptions
-	Yes                        bool
-	Target                     string
+	Yes bool
+
+	// Target is the type of target we will operate against (direct, dry-run, terraform)
+	Target cloudup.Target
+
 	ControlPlaneVolumeSize     int32
 	NodeVolumeSize             int32
 	ContainerRuntime           string
@@ -203,7 +206,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately create the cluster")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s. Set this flag to %s if you want kOps to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetTerraform))
+	cmd.Flags().Var(&options.Target, "target", fmt.Sprintf("Valid targets: %q, %q. Set this flag to %q if you want kOps to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetTerraform))
 	cmd.RegisterFlagCompletionFunc("target", completeCreateClusterTarget(options))
 
 	// Configuration / state location
@@ -1010,7 +1013,7 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 
 func completeCreateClusterTarget(options *CreateClusterOptions) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		completions := []string{
+		completions := []cloudup.Target{
 			cloudup.TargetDirect,
 			cloudup.TargetDryRun,
 		}
@@ -1019,7 +1022,7 @@ func completeCreateClusterTarget(options *CreateClusterOptions) func(cmd *cobra.
 				completions = append(completions, cloudup.TargetTerraform)
 			}
 		}
-		return completions, cobra.ShellCompDirectiveNoFileComp
+		return toStringSlice(completions), cobra.ShellCompDirectiveNoFileComp
 	}
 }
 
