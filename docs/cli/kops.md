@@ -33,6 +33,7 @@ kOps is Kubernetes Operations.
 * [kops export](kops_export.md)	 - Export configuration.
 * [kops get](kops_get.md)	 - Get one or many resources.
 * [kops promote](kops_promote.md)	 - Promote a resource.
+* [kops reconcile](kops_reconcile.md)	 - Reconcile a cluster.
 * [kops replace](kops_replace.md)	 - Replace cluster resources.
 * [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
 * [kops toolbox](kops_toolbox.md)	 - Miscellaneous, experimental, or infrequently used commands.

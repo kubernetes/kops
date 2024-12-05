@@ -19,7 +19,7 @@ kops update cluster [CLUSTER] [flags]
 
 ```
   # After the cluster has been edited or upgraded, update the cloud resources with:
-  kops update cluster k8s-cluster.example.com --yes --state=s3://my-state-store --yes
+  kops update cluster k8s-cluster.example.com --state=s3://my-state-store --yes
 ```
 
 ### Options

@@ -102,9 +102,11 @@ func NewCmdGetAssets(f *util.Factory, out io.Writer, getOptions *GetOptions) *co
 
 func RunGetAssets(ctx context.Context, f *util.Factory, out io.Writer, options *GetAssetsOptions) error {
 	updateClusterResults, err := RunUpdateCluster(ctx, f, out, &UpdateClusterOptions{
-		Target:      cloudup.TargetDryRun,
-		GetAssets:   true,
-		ClusterName: options.ClusterName,
+		CoreUpdateClusterOptions: CoreUpdateClusterOptions{
+			Target:      cloudup.TargetDryRun,
+			GetAssets:   true,
+			ClusterName: options.ClusterName,
+		},
 	})
 	if err != nil {
 		return err
