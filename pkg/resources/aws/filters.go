@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-// buildEc2FiltersForCluster returns the set of filters we must use to find all resources
+// buildEC2FiltersForCluster returns the set of filters we must use to find all resources
 func buildEC2FiltersForCluster(clusterName string) [][]ec2types.Filter {
 	var filterSets [][]ec2types.Filter
 

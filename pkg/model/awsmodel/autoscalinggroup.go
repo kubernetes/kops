@@ -398,7 +398,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBui
 	return securityGroups, nil
 }
 
-// buildAutoscalingGroupTask is responsible for building the autoscaling task into the model
+// buildAutoScalingGroupTask is responsible for building the autoscaling task into the model
 func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
 	t := &awstasks.AutoscalingGroup{
 		Name:      fi.PtrTo(name),

@@ -42,7 +42,7 @@ func (z *zone) ID() string {
 	return "gossip:" + z.zoneInfo.Name
 }
 
-// ResourceRecordsets returns the provider's ResourceRecordSets interface, or false if not supported.
+// ResourceRecordSets returns the provider's ResourceRecordSets interface, or false if not supported.
 func (z *zone) ResourceRecordSets() (dnsprovider.ResourceRecordSets, bool) {
 	return &resourceRecordSets{
 		zone: z,

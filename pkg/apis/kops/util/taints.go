@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// parseTaint takes a string and returns a map of its value
+// ParseTaint takes a string and returns a map of its value
 // it mimics the function from https://github.com/kubernetes/kubernetes/blob/master/pkg/util/taints/taints.go
 // but returns a map instead of a v1.Taint
 func ParseTaint(st string) (map[string]string, error) {
