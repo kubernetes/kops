@@ -88,12 +88,16 @@ EOF
   done
 }
 
+# Generate k8s hashes.
+# The first argument is the major and minor version, the second is the maximum patch version.
 generate_k8s_hashes 1.25 16
 generate_k8s_hashes 1.26 15
 generate_k8s_hashes 1.27 16
-generate_k8s_hashes 1.28 14
-generate_k8s_hashes 1.29 9
-generate_k8s_hashes 1.30 5
-generate_k8s_hashes 1.31 1
+generate_k8s_hashes 1.28 15
+generate_k8s_hashes 1.29 11
+generate_k8s_hashes 1.30 7
+generate_k8s_hashes 1.31 3
 
+# Generate runc hashes.
+# The first argument is the major and minor version, the second is the maximum patch version.
 generate_runc_hashes 1.1 14

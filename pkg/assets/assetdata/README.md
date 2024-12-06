@@ -8,4 +8,4 @@ e.g. by [kpromo](https://github.com/kubernetes-sigs/promo-tools/blob/main/docs/f
 However, this should be treated as an implementation detail.
 
 Currently many hash files are manually curated.  Some of them can be automatically generated,
-and we have scripts named `generate-<foo>.sh` to generate them.
+and we have a script `hack/generate-asset-hashes.sh` to generate them.
