@@ -896,7 +896,7 @@ func (tf *TemplateFunctions) KopsControllerEnv() []corev1.EnvVar {
 	return envMap.ToEnvVars()
 }
 
-// OpenStackCCM returns OpenStack external cloud controller manager current image
+// OpenStackCCMTag returns OpenStack external cloud controller manager current image
 // with tag specified to k8s version
 func (tf *TemplateFunctions) OpenStackCCMTag() string {
 	var tag string
@@ -918,7 +918,7 @@ func (tf *TemplateFunctions) OpenStackCCMTag() string {
 	return tag
 }
 
-// OpenStackCSI returns OpenStack csi current image
+// OpenStackCSITag returns OpenStack csi current image
 // with tag specified to k8s version
 func (tf *TemplateFunctions) OpenStackCSITag() string {
 	var tag string
