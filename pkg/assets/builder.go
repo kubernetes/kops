@@ -314,7 +314,7 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 		return knownHash, nil
 	}
 
-	klog.Infof("asset %q is not well-known, downloading hash", file.CanonicalURL)
+	klog.V(2).Infof("asset %q is not well-known, downloading hash", file.CanonicalURL)
 
 	// We now prefer sha256 hashes
 	for backoffSteps := 1; backoffSteps <= 3; backoffSteps++ {
