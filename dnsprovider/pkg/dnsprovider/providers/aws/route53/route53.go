@@ -71,34 +71,37 @@ func newRoute53() (*Interface, error) {
 		region = imdsRegionResp.Region
 	}
 
-	stsCfg, err := awsconfig.LoadDefaultConfig(ctx,
-		awsconfig.WithClientLogMode(aws.LogRetries),
-		awslog.WithAWSLogger(),
-		awsconfig.WithRetryer(func() aws.Retryer {
-			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
-		}),
-		awsconfig.WithRegion(region),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load default aws config for STS client: %w", err)
-	}
-
 	awsOptions := []func(*awsconfig.LoadOptions) error{
 		awsconfig.WithClientLogMode(aws.LogRetries),
 		awslog.WithAWSLogger(),
 		awsconfig.WithRetryer(func() aws.Retryer {
 			return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
 		}),
-		awsconfig.WithAssumeRoleCredentialOptions(func(aro *stscreds.AssumeRoleOptions) {
-			// Ensure the STS client has a region configured, if discovered by IMDS
-			aro.Client = sts.NewFromConfig(stsCfg)
-		}),
 	}
 
 	if imdsClient != nil {
-		awsOptions = append(awsOptions, awsconfig.WithEC2IMDSRegion(func(o *awsconfig.UseEC2IMDSRegion) {
-			o.Client = imdsClient
-		}))
+		stsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+			awsconfig.WithClientLogMode(aws.LogRetries),
+			awslog.WithAWSLogger(),
+			awsconfig.WithRetryer(func() aws.Retryer {
+				return retry.AddWithMaxAttempts(retry.NewStandard(), 5)
+			}),
+			awsconfig.WithRegion(region),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load default aws config for STS client: %w", err)
+		}
+
+		awsOptions = append(
+			awsOptions,
+			awsconfig.WithEC2IMDSRegion(func(o *awsconfig.UseEC2IMDSRegion) {
+				o.Client = imdsClient
+			}),
+			awsconfig.WithAssumeRoleCredentialOptions(func(aro *stscreds.AssumeRoleOptions) {
+				// Ensure the STS client has a region configured, if discovered by IMDS
+				aro.Client = sts.NewFromConfig(stsCfg)
+			}),
+		)
 	}
 
 	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsOptions...)
