@@ -599,6 +599,8 @@ type KubeDNSConfig struct {
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// NodeLocalDNS specifies the configuration for the node-local-dns addon
 	NodeLocalDNS *NodeLocalDNSConfig `json:"nodeLocalDNS,omitempty"`
+	// TopologySpreadConstraints describes how a group of pods ought to spread across topology domains.
+	TopologySpreadConstraints []corev1.TopologySpreadConstraint `json:"topologySpreadConstraints,omitempty"`
 }
 
 // NodeLocalDNSConfig are options of the node-local-dns
