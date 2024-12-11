@@ -61,7 +61,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
-    verbs: ["get", "list", "watch", "create", "delete"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "update"]
@@ -250,7 +250,7 @@ spec:
       serviceAccount: csi-cinder-controller-sa
       containers:
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v4.4.2
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.7.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -263,7 +263,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v3.6.2
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -282,7 +282,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v6.3.2
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.1.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -297,7 +297,7 @@ spec:
               name: socket-dir
         {{ end }}
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.9.2
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.12.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
@@ -311,7 +311,7 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.11.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.14.0
           args:
             - "--csi-address=$(ADDRESS)"
           env:
@@ -434,7 +434,7 @@ spec:
       hostNetwork: true
       containers:
         - name: node-driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.2
+          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
@@ -454,7 +454,7 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: liveness-probe
-          image: registry.k8s.io/sig-storage/livenessprobe:v2.11.0
+          image: registry.k8s.io/sig-storage/livenessprobe:v2.14.0
           args:
             - --csi-address=/csi/csi.sock
           volumeMounts:
