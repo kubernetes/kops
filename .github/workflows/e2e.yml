@@ -22,7 +22,7 @@ jobs:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
       - name: Set up go
-        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed
+        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
         with:
           go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
