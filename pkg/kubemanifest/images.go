@@ -17,13 +17,12 @@ limitations under the License.
 package kubemanifest
 
 import (
-	"fmt"
 	"strings"
 
 	"k8s.io/klog/v2"
 )
 
-type ImageRemapFunction func(image string) (string, error)
+type ImageRemapFunction func(image string) string
 
 func (m *Object) RemapImages(mapper ImageRemapFunction) error {
 	visitor := &imageRemapVisitor{
@@ -57,10 +56,7 @@ func (m *imageRemapVisitor) VisitString(path []string, v string, mutator func(st
 
 	image := v
 	klog.V(4).Infof("Consider image for re-mapping: %q", image)
-	remapped, err := m.mapper(v)
-	if err != nil {
-		return fmt.Errorf("error remapping image %q: %v", image, err)
-	}
+	remapped := m.mapper(v)
 	if remapped != image {
 		mutator(remapped)
 	}

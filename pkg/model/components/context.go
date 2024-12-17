@@ -150,11 +150,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	if !kopsmodel.IsBaseURL(clusterSpec.KubernetesVersion) {
 		image := "registry.k8s.io/" + imageName + ":" + "v" + kubernetesVersion.String()
 
-		image, err := assetsBuilder.RemapImage(image)
-		if err != nil {
-			return "", fmt.Errorf("unable to remap container %q: %v", image, err)
-		}
-		return image, nil
+		return assetsBuilder.RemapImage(image), nil
 	}
 
 	// The simple name is valid when pulling.  But if we
