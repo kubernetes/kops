@@ -67,6 +67,8 @@ spec:
   kubernetesVersion: v1.30.0
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16
+  nodeTerminationHandler:
+    managedASGTag: kubernetes.io/cluster/complex.example.com
   additionalNetworkCIDRs:
   - 10.1.0.0/16
   - 10.2.0.0/16

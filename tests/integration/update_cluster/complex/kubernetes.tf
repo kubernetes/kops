@@ -141,11 +141,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
     value               = "John Doe"
   }
   tag {
-    key                 = "aws-node-termination-handler/managed"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
     key                 = "foo/bar"
     propagate_at_launch = true
     value               = "fib+baz"
@@ -217,11 +212,6 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
     key                 = "Owner"
     propagate_at_launch = true
     value               = "John Doe"
-  }
-  tag {
-    key                 = "aws-node-termination-handler/managed"
-    propagate_at_launch = true
-    value               = ""
   }
   tag {
     key                 = "foo/bar"
@@ -493,7 +483,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       "KubernetesCluster"                                                                                     = "complex.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.complex.example.com"
       "Owner"                                                                                                 = "John Doe"
-      "aws-node-termination-handler/managed"                                                                  = ""
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -510,7 +499,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       "KubernetesCluster"                                                                                     = "complex.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.complex.example.com"
       "Owner"                                                                                                 = "John Doe"
-      "aws-node-termination-handler/managed"                                                                  = ""
       "foo/bar"                                                                                               = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -525,7 +513,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     "KubernetesCluster"                                                                                     = "complex.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.complex.example.com"
     "Owner"                                                                                                 = "John Doe"
-    "aws-node-termination-handler/managed"                                                                  = ""
     "foo/bar"                                                                                               = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
@@ -593,7 +580,6 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       "KubernetesCluster"                                                          = "complex.example.com"
       "Name"                                                                       = "nodes.complex.example.com"
       "Owner"                                                                      = "John Doe"
-      "aws-node-termination-handler/managed"                                       = ""
       "foo/bar"                                                                    = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -607,7 +593,6 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       "KubernetesCluster"                                                          = "complex.example.com"
       "Name"                                                                       = "nodes.complex.example.com"
       "Owner"                                                                      = "John Doe"
-      "aws-node-termination-handler/managed"                                       = ""
       "foo/bar"                                                                    = "fib+baz"
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
@@ -619,7 +604,6 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     "KubernetesCluster"                                                          = "complex.example.com"
     "Name"                                                                       = "nodes.complex.example.com"
     "Owner"                                                                      = "John Doe"
-    "aws-node-termination-handler/managed"                                       = ""
     "foo/bar"                                                                    = "fib+baz"
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
