@@ -176,7 +176,7 @@ spec:
         - name: CHECK_TAG_BEFORE_DRAINING
           value: "true"
         - name: MANAGED_TAG
-          value: aws-node-termination-handler/managed
+          value: kubernetes.io/cluster/complex.example.com
         - name: USE_PROVIDER_ID
           value: "true"
         - name: DRY_RUN
