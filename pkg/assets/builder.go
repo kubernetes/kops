@@ -144,7 +144,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 }
 
 // RemapImage normalizes a containers location if a user sets the AssetsLocation ContainerRegistry location.
-func (a *AssetBuilder) RemapImage(image string) (string, error) {
+func (a *AssetBuilder) RemapImage(image string) string {
 	asset := &ImageAsset{
 		DownloadLocation:  image,
 		CanonicalLocation: image,
@@ -225,20 +225,20 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	a.ImageAssets = append(a.ImageAssets, asset)
 
 	if !featureflag.ImageDigest.Enabled() || os.Getenv("KOPS_BASE_URL") != "" {
-		return image, nil
+		return image
 	}
 
 	if strings.Contains(image, "@") {
-		return image, nil
+		return image
 	}
 
 	digest, err := crane.Digest(image, crane.WithAuthFromKeychain(authn.DefaultKeychain))
 	if err != nil {
 		klog.Warningf("failed to digest image %q: %s", image, err)
-		return image, nil
+		return image
 	}
 
-	return image + "@" + digest, nil
+	return image + "@" + digest
 }
 
 // RemapFile returns a remapped URL for the file, if AssetsLocation is defined.
