@@ -235,7 +235,7 @@ spec:
     enableSpotInterruptionDraining: true
     enabled: true
     excludeFromLoadBalancers: true
-    managedASGTag: aws-node-termination-handler/managed
+    managedASGTag: kubernetes.io/cluster/complex.example.com
     memoryRequest: 64Mi
     podTerminationGracePeriod: -1
     prometheusEnable: false
