@@ -178,7 +178,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
   tag {
     key                 = "kubernetes.io/cluster/complex.example.com"
     propagate_at_launch = true
-    value               = ""
+    value               = "owned"
   }
   target_group_arns   = [aws_lb_target_group.tcp-complex-example-com-vpjolq.id, aws_lb_target_group.tls-complex-example-com-5nursn.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
@@ -236,7 +236,7 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
   tag {
     key                 = "kubernetes.io/cluster/complex.example.com"
     propagate_at_launch = true
-    value               = ""
+    value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-complex-example-com.id]
 }
@@ -490,7 +490,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
-      "kubernetes.io/cluster/complex.example.com"                                                             = ""
+      "kubernetes.io/cluster/complex.example.com"                                                             = "owned"
     }
   }
   tag_specifications {
@@ -506,7 +506,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
       "k8s.io/role/control-plane"                                                                             = "1"
       "k8s.io/role/master"                                                                                    = "1"
       "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
-      "kubernetes.io/cluster/complex.example.com"                                                             = ""
+      "kubernetes.io/cluster/complex.example.com"                                                             = "owned"
     }
   }
   tags = {
@@ -520,7 +520,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-complex-example-com" {
     "k8s.io/role/control-plane"                                                                             = "1"
     "k8s.io/role/master"                                                                                    = "1"
     "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
-    "kubernetes.io/cluster/complex.example.com"                                                             = ""
+    "kubernetes.io/cluster/complex.example.com"                                                             = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_master-us-test-1a.masters.complex.example.com_user_data")
 }
@@ -584,7 +584,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
-      "kubernetes.io/cluster/complex.example.com"                                  = ""
+      "kubernetes.io/cluster/complex.example.com"                                  = "owned"
     }
   }
   tag_specifications {
@@ -597,7 +597,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
-      "kubernetes.io/cluster/complex.example.com"                                  = ""
+      "kubernetes.io/cluster/complex.example.com"                                  = "owned"
     }
   }
   tags = {
@@ -608,7 +608,7 @@ resource "aws_launch_template" "nodes-complex-example-com" {
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
-    "kubernetes.io/cluster/complex.example.com"                                  = ""
+    "kubernetes.io/cluster/complex.example.com"                                  = "owned"
   }
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.complex.example.com_user_data")
 }
