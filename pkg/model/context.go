@@ -152,7 +152,10 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		// Apply NTH Labels
 		nth := b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
 		if nth.IsQueueMode() {
-			labels[fi.ValueOf(nth.ManagedASGTag)] = ""
+			k := fi.ValueOf(nth.ManagedASGTag)
+			if _, ok := labels[k]; !ok && k != "" {
+				labels[k] = ""
+			}
 		}
 	}
 
