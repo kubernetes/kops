@@ -179,48 +179,9 @@ func (a *AssetBuilder) RemapImage(image string) string {
 		}
 	}
 
-	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
-		containerProxy := strings.TrimSuffix(*a.AssetsLocation.ContainerProxy, "/")
-		normalized := image
-
-		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL,
-		// like registry.k8s.io/<image-name> or registry.k8s.io/<image-name>
-		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
-		if strings.Count(normalized, "/") <= 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
-			normalized = containerProxy + "/" + normalized
-		} else {
-			re := regexp.MustCompile(`^[^/]+`)
-			normalized = re.ReplaceAllString(normalized, containerProxy)
-		}
-
-		asset.DownloadLocation = normalized
-
-		// Run the new image
-		image = asset.DownloadLocation
-	}
-
-	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
-		registryMirror := *a.AssetsLocation.ContainerRegistry
-		normalized := image
-
-		// Remove the 'standard' kubernetes image prefixes, just for sanity
-		normalized = strings.TrimPrefix(normalized, "registry.k8s.io/")
-
-		// When assembling the cluster spec, kops may call the option more then once until the config converges
-		// This means that this function may me called more than once on the same image
-		// It this is pass is the second one, the image will already have been normalized with the containerRegistry settings
-		// If this is the case, passing though the process again will re-prepend the container registry again
-		// and again, causing the spec to never converge and the config build to fail.
-		if !strings.HasPrefix(normalized, registryMirror+"/") {
-			// We can't nest arbitrarily
-			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
-			normalized = strings.Replace(normalized, "/", "-", -1)
-			asset.DownloadLocation = registryMirror + "/" + normalized
-		}
-
-		// Run the new image
-		image = asset.DownloadLocation
-	}
+	normalized := NormalizeImage(a, image)
+	image = normalized
+	asset.DownloadLocation = normalized
 
 	a.ImageAssets = append(a.ImageAssets, asset)
 
@@ -377,4 +338,47 @@ func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
 	fileRepo.Path = path.Join(fileRepo.Path, canonicalURL.Path)
 
 	return fileRepo, nil
+}
+
+func NormalizeImage(a *AssetBuilder, image string) string {
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerProxy != nil {
+		containerProxy := strings.TrimSuffix(*a.AssetsLocation.ContainerProxy, "/")
+		normalized := image
+
+		// If the image name contains only a single / we need to determine if the image is located on docker-hub or if it's using a convenient URL,
+		// like registry.k8s.io/<image-name> or registry.k8s.io/<image-name>
+		// In case of a hub image it should be sufficient to just prepend the proxy url, producing eg docker-proxy.example.com/weaveworks/weave-kube
+		if strings.Count(normalized, "/") <= 1 && !strings.ContainsAny(strings.Split(normalized, "/")[0], ".:") {
+			normalized = containerProxy + "/" + normalized
+		} else {
+			re := regexp.MustCompile(`^[^/]+`)
+			normalized = re.ReplaceAllString(normalized, containerProxy)
+		}
+
+		// Run the new image
+		image = normalized
+	}
+
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
+		registryMirror := *a.AssetsLocation.ContainerRegistry
+		normalized := image
+
+		// Remove the 'standard' kubernetes image prefixes, just for sanity
+		normalized = strings.TrimPrefix(normalized, "registry.k8s.io/")
+
+		// When assembling the cluster spec, kops may call the option more then once until the config converges
+		// This means that this function may me called more than once on the same image
+		// It this is pass is the second one, the image will already have been normalized with the containerRegistry settings
+		// If this is the case, passing though the process again will re-prepend the container registry again
+		// and again, causing the spec to never converge and the config build to fail.
+		if !strings.HasPrefix(normalized, registryMirror+"/") {
+			// We can't nest arbitrarily
+			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
+			normalized = strings.Replace(normalized, "/", "-", -1)
+			normalized = registryMirror + "/" + normalized
+		}
+		image = normalized
+	}
+	// Run the new image
+	return image
 }
