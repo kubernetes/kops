@@ -303,6 +303,15 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			}
 			return "CrossSubnet"
 		}
+		dest["CalicoIPv6PoolVXLANMode"] = func() string {
+			if c.EncapsulationMode != "vxlan" {
+				return "Never"
+			}
+			if c.VXLANMode != "" {
+				return c.VXLANMode
+			}
+			return "Never"
+		}
 	}
 
 	if cluster.Spec.Networking.Cilium != nil {
