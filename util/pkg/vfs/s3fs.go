@@ -194,8 +194,16 @@ func (p *S3Path) RemoveAllVersions(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("error listing all versions of file %s: %v", p, err)
 		}
-		versions = append(versions, page.Versions...)
-		deleteMarkers = append(deleteMarkers, page.DeleteMarkers...)
+		for _, version := range page.Versions {
+			if aws.ToString(version.Key) == p.key {
+				versions = append(versions, version)
+			}
+		}
+		for _, marker := range page.DeleteMarkers {
+			if aws.ToString(marker.Key) == p.key {
+				deleteMarkers = append(deleteMarkers, marker)
+			}
+		}
 	}
 
 	if len(versions) == 0 && len(deleteMarkers) == 0 {
@@ -237,9 +245,12 @@ func (p *S3Path) RemoveAllVersions(ctx context.Context) error {
 
 		klog.V(8).Infof("removing %d file/marker versions\n", len(request.Delete.Objects))
 
-		_, err = client.DeleteObjects(ctx, request)
+		deleteResult, err := client.DeleteObjects(ctx, request)
 		if err != nil {
 			return fmt.Errorf("error removing %d file/marker versions: %v", len(request.Delete.Objects), err)
+		}
+		if len(deleteResult.Errors) > 0 {
+			return fmt.Errorf("error removing file/marker versions: %v", deleteResult.Errors)
 		}
 	}
 
