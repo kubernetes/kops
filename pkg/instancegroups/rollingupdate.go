@@ -38,7 +38,6 @@ import (
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
 type RollingUpdateCluster struct {
 	Clientset simple.Clientset
-	Ctx       context.Context
 	Cluster   *api.Cluster
 	Cloud     fi.Cloud
 
@@ -106,7 +105,7 @@ func (*RollingUpdateCluster) AdjustNeedUpdate(groups map[string]*cloudinstances.
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[string]*cloudinstances.CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		klog.Info("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -147,7 +146,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				defer wg.Done()
 
-				err := c.rollingUpdateInstanceGroup(bastionGroups[k], c.BastionInterval)
+				err := c.rollingUpdateInstanceGroup(ctx, bastionGroups[k], c.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -172,7 +171,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		// and we don't want to roll all the control-plane nodes at the same time.  See issue #284
 
 		for _, k := range sortGroups(masterGroups) {
-			err := c.rollingUpdateInstanceGroup(masterGroups[k], c.MasterInterval)
+			err := c.rollingUpdateInstanceGroup(ctx, masterGroups[k], c.MasterInterval)
 			// Do not continue update if control-plane node(s) failed; cluster is potentially in an unhealthy state.
 			if err != nil {
 				return fmt.Errorf("control-plane node not healthy after update, stopping rolling-update: %q", err)
@@ -187,7 +186,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 
 		for _, k := range sortGroups(apiServerGroups) {
-			err := c.rollingUpdateInstanceGroup(apiServerGroups[k], c.NodeInterval)
+			err := c.rollingUpdateInstanceGroup(ctx, apiServerGroups[k], c.NodeInterval)
 			results[k] = err
 			if err != nil {
 				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
@@ -212,7 +211,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 		}
 
 		for _, k := range sortGroups(nodeGroups) {
-			err := c.rollingUpdateInstanceGroup(nodeGroups[k], c.NodeInterval)
+			err := c.rollingUpdateInstanceGroup(ctx, nodeGroups[k], c.NodeInterval)
 			results[k] = err
 			if err != nil {
 				klog.Errorf("failed to roll InstanceGroup %q: %v", k, err)
