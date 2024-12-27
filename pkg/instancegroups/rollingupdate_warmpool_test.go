@@ -35,6 +35,7 @@ import (
 // Here we have three nodes that are up to date, while three warm nodes need updating.
 // Only the initial cluster validation should be run
 func TestRollingUpdateOnlyWarmPoolNodes(t *testing.T) {
+	ctx := context.TODO()
 	c, cloud := getTestSetup()
 	k8sClient := c.K8sClient
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
@@ -45,12 +46,13 @@ func TestRollingUpdateOnlyWarmPoolNodes(t *testing.T) {
 
 	assert.Equal(t, 3, len(groups["node-1"].NeedUpdate), "number of nodes needing update")
 
-	err := c.RollingUpdate(groups, &kops.InstanceGroupList{})
+	err := c.RollingUpdate(ctx, groups, &kops.InstanceGroupList{})
 	assert.NoError(t, err, "rolling update")
 	assert.Equal(t, 1, validator.numValidations, "number of validations")
 }
 
 func TestRollingWarmPoolBeforeJoinedNodes(t *testing.T) {
+	ctx := context.TODO()
 	c, cloud := getTestSetup()
 	k8sClient := c.K8sClient
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
@@ -62,7 +64,7 @@ func TestRollingWarmPoolBeforeJoinedNodes(t *testing.T) {
 	}
 	cloud.MockEC2 = warmPoolBeforeJoinedNodesTest
 
-	err := c.RollingUpdate(groups, &kops.InstanceGroupList{})
+	err := c.RollingUpdate(ctx, groups, &kops.InstanceGroupList{})
 
 	assert.NoError(t, err, "rolling update")
 
