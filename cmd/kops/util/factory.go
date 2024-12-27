@@ -17,14 +17,15 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -36,6 +37,8 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/client/simple/api"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -57,7 +60,8 @@ type Factory struct {
 
 // clusterInfo holds REST connection configuration for connecting to a cluster
 type clusterInfo struct {
-	clusterName string
+	factory *Factory
+	cluster *kops.Cluster
 
 	cachedHTTPClient    *http.Client
 	cachedRESTConfig    *rest.Config
@@ -155,48 +159,47 @@ func (f *Factory) KopsStateStore() string {
 	return f.options.RegistryPath
 }
 
-func (f *Factory) getClusterInfo(clusterName string) *clusterInfo {
+func (f *Factory) getClusterInfo(cluster *kops.Cluster) *clusterInfo {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
-	if clusterInfo, ok := f.clusters[clusterName]; ok {
+	key := cluster.ObjectMeta.Name
+	if clusterInfo, ok := f.clusters[key]; ok {
 		return clusterInfo
 	}
-	clusterInfo := &clusterInfo{}
-	f.clusters[clusterName] = clusterInfo
+	clusterInfo := &clusterInfo{
+		factory: f,
+		cluster: cluster,
+	}
+	f.clusters[key] = clusterInfo
 	return clusterInfo
 }
 
 func (f *Factory) RESTConfig(cluster *kops.Cluster) (*rest.Config, error) {
-	clusterInfo := f.getClusterInfo(cluster.ObjectMeta.Name)
+	clusterInfo := f.getClusterInfo(cluster)
 	return clusterInfo.RESTConfig()
 }
 
 func (f *clusterInfo) RESTConfig() (*rest.Config, error) {
+	ctx := context.Background()
+
 	if f.cachedRESTConfig == nil {
-		// Get the kubeconfig from the context
-
-		clientGetter := genericclioptions.NewConfigFlags(true)
-		if f.clusterName != "" {
-			contextName := f.clusterName
-			clientGetter.Context = &contextName
-		}
-
-		restConfig, err := clientGetter.ToRESTConfig()
+		restConfig, err := f.factory.buildRESTConfig(ctx, f.cluster)
 		if err != nil {
-			return nil, fmt.Errorf("loading kubecfg settings for %q: %w", f.clusterName, err)
+			return nil, err
 		}
 
 		restConfig.UserAgent = "kops"
 		restConfig.Burst = 50
 		restConfig.QPS = 20
+
 		f.cachedRESTConfig = restConfig
 	}
 	return f.cachedRESTConfig, nil
 }
 
 func (f *Factory) HTTPClient(cluster *kops.Cluster) (*http.Client, error) {
-	clusterInfo := f.getClusterInfo(cluster.ObjectMeta.Name)
+	clusterInfo := f.getClusterInfo(cluster)
 	return clusterInfo.HTTPClient()
 }
 
@@ -216,8 +219,8 @@ func (f *clusterInfo) HTTPClient() (*http.Client, error) {
 }
 
 // DynamicClient returns a dynamic client
-func (f *Factory) DynamicClient(clusterName string) (dynamic.Interface, error) {
-	clusterInfo := f.getClusterInfo(clusterName)
+func (f *Factory) DynamicClient(cluster *kops.Cluster) (dynamic.Interface, error) {
+	clusterInfo := f.getClusterInfo(cluster)
 	return clusterInfo.DynamicClient()
 }
 
@@ -248,4 +251,45 @@ func (f *Factory) VFSContext() *vfs.VFSContext {
 		f.vfsContext = vfs.Context
 	}
 	return f.vfsContext
+}
+
+func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster) (*rest.Config, error) {
+	clientset, err := f.KopsClient()
+	if err != nil {
+		return nil, err
+	}
+
+	keyStore, err := clientset.KeyStore(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	secretStore, err := clientset.SecretStore(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate a relatively short-lived certificate / kubeconfig
+	createKubecfgOptions := kubeconfig.CreateKubecfgOptions{
+		Admin: 1 * time.Hour,
+	}
+
+	conf, err := kubeconfig.BuildKubecfg(
+		ctx,
+		cluster,
+		keyStore,
+		secretStore,
+		cloud,
+		createKubecfgOptions,
+		f.KopsStateStore())
+	if err != nil {
+		return nil, err
+	}
+
+	return conf.ToRESTConfig()
 }

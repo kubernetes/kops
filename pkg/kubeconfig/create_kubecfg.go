@@ -35,9 +35,15 @@ const DefaultKubecfgAdminLifetime = 18 * time.Hour
 
 type CreateKubecfgOptions struct {
 	CreateKubecfg bool
-	Admin         time.Duration
-	User          string
-	Internal      bool
+
+	// Admin is the lifetime of the admin certificate
+	Admin time.Duration
+
+	// User is the user to use in the kubeconfig
+	User string
+
+	// Internal is whether to use the internal API endpoint
+	Internal bool
 
 	// UseKopsAuthenticationPlugin controls whether we should use the kOps auth helper instead of a static credential
 	UseKopsAuthenticationPlugin bool

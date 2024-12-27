@@ -147,19 +147,6 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
-	// // TODO: Refactor into util.Factory
-	// contextName := cluster.ObjectMeta.Name
-	// configLoadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-	// if options.kubeconfig != "" {
-	// 	configLoadingRules.ExplicitPath = options.kubeconfig
-	// }
-	// config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-	// 	configLoadingRules,
-	// 	&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
-	// }
-
 	restConfig, err := f.RESTConfig(cluster)
 	if err != nil {
 		return nil, fmt.Errorf("getting rest config: %w", err)
