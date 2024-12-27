@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdGet(f Factory, out io.Writer) *cobra.Command {
+func NewCmdGet(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "get",
 		SuggestFor: []string{"list"},

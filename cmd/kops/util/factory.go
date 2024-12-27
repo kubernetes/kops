@@ -18,20 +18,20 @@ package util
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
-	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
-	channelscmd "k8s.io/kops/channels/pkg/cmd"
+
 	gceacls "k8s.io/kops/pkg/acls/gce"
+	"k8s.io/kops/pkg/apis/kops"
 	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/client/simple/api"
@@ -44,24 +44,36 @@ type FactoryOptions struct {
 }
 
 type Factory struct {
-	ConfigFlags genericclioptions.ConfigFlags
-	options     *FactoryOptions
-	clientset   simple.Clientset
+	options   *FactoryOptions
+	clientset simple.Clientset
 
-	kubernetesClient  kubernetes.Interface
-	certManagerClient certmanager.Interface
-	vfsContext        *vfs.VFSContext
+	vfsContext *vfs.VFSContext
 
-	cachedRESTConfig *rest.Config
-	dynamicClient    dynamic.Interface
-	restMapper       *restmapper.DeferredDiscoveryRESTMapper
+	// mutex protects access to the clusters map
+	mutex sync.Mutex
+	// clusters holds REST connection configuration for connecting to clusters
+	clusters map[string]*clusterInfo
+}
+
+// clusterInfo holds REST connection configuration for connecting to a cluster
+type clusterInfo struct {
+	clusterName string
+
+	cachedHTTPClient    *http.Client
+	cachedRESTConfig    *rest.Config
+	cachedDynamicClient dynamic.Interface
 }
 
 func NewFactory(options *FactoryOptions) *Factory {
 	gceacls.Register()
 
+	if options == nil {
+		options = &FactoryOptions{}
+	}
+
 	return &Factory{
-		options: options,
+		options:  options,
+		clusters: make(map[string]*clusterInfo),
 	}
 }
 
@@ -143,14 +155,38 @@ func (f *Factory) KopsStateStore() string {
 	return f.options.RegistryPath
 }
 
-var _ channelscmd.Factory = &Factory{}
+func (f *Factory) getClusterInfo(clusterName string) *clusterInfo {
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
 
-func (f *Factory) restConfig() (*rest.Config, error) {
+	if clusterInfo, ok := f.clusters[clusterName]; ok {
+		return clusterInfo
+	}
+	clusterInfo := &clusterInfo{}
+	f.clusters[clusterName] = clusterInfo
+	return clusterInfo
+}
+
+func (f *Factory) RESTConfig(cluster *kops.Cluster) (*rest.Config, error) {
+	clusterInfo := f.getClusterInfo(cluster.ObjectMeta.Name)
+	return clusterInfo.RESTConfig()
+}
+
+func (f *clusterInfo) RESTConfig() (*rest.Config, error) {
 	if f.cachedRESTConfig == nil {
-		restConfig, err := f.ConfigFlags.ToRESTConfig()
-		if err != nil {
-			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
+		// Get the kubeconfig from the context
+
+		clientGetter := genericclioptions.NewConfigFlags(true)
+		if f.clusterName != "" {
+			contextName := f.clusterName
+			clientGetter.Context = &contextName
 		}
+
+		restConfig, err := clientGetter.ToRESTConfig()
+		if err != nil {
+			return nil, fmt.Errorf("loading kubecfg settings for %q: %w", f.clusterName, err)
+		}
+
 		restConfig.UserAgent = "kops"
 		restConfig.Burst = 50
 		restConfig.QPS = 20
@@ -159,67 +195,51 @@ func (f *Factory) restConfig() (*rest.Config, error) {
 	return f.cachedRESTConfig, nil
 }
 
-func (f *Factory) KubernetesClient() (kubernetes.Interface, error) {
-	if f.kubernetesClient == nil {
-		restConfig, err := f.restConfig()
+func (f *Factory) HTTPClient(cluster *kops.Cluster) (*http.Client, error) {
+	clusterInfo := f.getClusterInfo(cluster.ObjectMeta.Name)
+	return clusterInfo.HTTPClient()
+}
+
+func (f *clusterInfo) HTTPClient() (*http.Client, error) {
+	if f.cachedHTTPClient == nil {
+		restConfig, err := f.RESTConfig()
 		if err != nil {
 			return nil, err
 		}
-		k8sClient, err := kubernetes.NewForConfig(restConfig)
+		httpClient, err := rest.HTTPClientFor(restConfig)
 		if err != nil {
-			return nil, fmt.Errorf("cannot build kube client: %w", err)
+			return nil, fmt.Errorf("building http client: %w", err)
 		}
-		f.kubernetesClient = k8sClient
+		f.cachedHTTPClient = httpClient
 	}
-
-	return f.kubernetesClient, nil
+	return f.cachedHTTPClient, nil
 }
 
-func (f *Factory) DynamicClient() (dynamic.Interface, error) {
-	if f.dynamicClient == nil {
-		restConfig, err := f.restConfig()
-		if err != nil {
-			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
-		}
-		dynamicClient, err := dynamic.NewForConfig(restConfig)
-		if err != nil {
-			return nil, fmt.Errorf("cannot build dynamicClient client: %v", err)
-		}
-		f.dynamicClient = dynamicClient
-	}
-
-	return f.dynamicClient, nil
+// DynamicClient returns a dynamic client
+func (f *Factory) DynamicClient(clusterName string) (dynamic.Interface, error) {
+	clusterInfo := f.getClusterInfo(clusterName)
+	return clusterInfo.DynamicClient()
 }
 
-func (f *Factory) CertManagerClient() (certmanager.Interface, error) {
-	if f.certManagerClient == nil {
-		restConfig, err := f.restConfig()
-		if err != nil {
-			return nil, err
-		}
-		certManagerClient, err := certmanager.NewForConfig(restConfig)
-		if err != nil {
-			return nil, fmt.Errorf("cannot build kube client: %v", err)
-		}
-		f.certManagerClient = certManagerClient
-	}
-
-	return f.certManagerClient, nil
-}
-
-func (f *Factory) RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error) {
-	if f.restMapper == nil {
-		discoveryClient, err := f.ConfigFlags.ToDiscoveryClient()
+func (f *clusterInfo) DynamicClient() (dynamic.Interface, error) {
+	if f.cachedDynamicClient == nil {
+		restConfig, err := f.RESTConfig()
 		if err != nil {
 			return nil, err
 		}
 
-		restMapper := restmapper.NewDeferredDiscoveryRESTMapper(discoveryClient)
+		httpClient, err := f.HTTPClient()
+		if err != nil {
+			return nil, err
+		}
 
-		f.restMapper = restMapper
+		dynamicClient, err := dynamic.NewForConfigAndClient(restConfig, httpClient)
+		if err != nil {
+			return nil, fmt.Errorf("building dynamic client: %w", err)
+		}
+		f.cachedDynamicClient = dynamicClient
 	}
-
-	return f.restMapper, nil
+	return f.cachedDynamicClient, nil
 }
 
 func (f *Factory) VFSContext() *vfs.VFSContext {
