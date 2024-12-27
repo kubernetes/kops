@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmdApply(f Factory, out io.Writer) *cobra.Command {
+func NewCmdApply(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apply",
 		Short: "apply resources from a channel",

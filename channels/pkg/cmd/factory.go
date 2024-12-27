@@ -17,20 +17,101 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+	"net/http"
+
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/kops/util/pkg/vfs"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
-
-	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 )
 
-type Factory interface {
-	VFSContext() *vfs.VFSContext
-	KubernetesClient() (kubernetes.Interface, error)
-	CertManagerClient() (certmanager.Interface, error)
-	RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error)
-	DynamicClient() (dynamic.Interface, error)
+type ChannelsFactory struct {
+	configFlags      genericclioptions.ConfigFlags
+	cachedRESTConfig *rest.Config
+	cachedHTTPClient *http.Client
+	vfsContext       *vfs.VFSContext
+	restMapper       *restmapper.DeferredDiscoveryRESTMapper
+	dynamicClient    dynamic.Interface
+}
+
+func NewChannelsFactory() *ChannelsFactory {
+	return &ChannelsFactory{}
+}
+
+func (f *ChannelsFactory) RESTConfig() (*rest.Config, error) {
+	if f.cachedRESTConfig == nil {
+		clientGetter := genericclioptions.NewConfigFlags(true)
+
+		restConfig, err := clientGetter.ToRESTConfig()
+		if err != nil {
+			return nil, fmt.Errorf("cannot load kubecfg settings: %w", err)
+		}
+
+		restConfig.UserAgent = "kops"
+		restConfig.Burst = 50
+		restConfig.QPS = 20
+		f.cachedRESTConfig = restConfig
+	}
+	return f.cachedRESTConfig, nil
+}
+
+func (f *ChannelsFactory) HTTPClient() (*http.Client, error) {
+	if f.cachedHTTPClient == nil {
+		restConfig, err := f.RESTConfig()
+		if err != nil {
+			return nil, err
+		}
+		httpClient, err := rest.HTTPClientFor(restConfig)
+		if err != nil {
+			return nil, fmt.Errorf("getting http client: %w", err)
+		}
+		f.cachedHTTPClient = httpClient
+	}
+	return f.cachedHTTPClient, nil
+}
+
+func (f *ChannelsFactory) RESTMapper() (*restmapper.DeferredDiscoveryRESTMapper, error) {
+	if f.restMapper == nil {
+		discoveryClient, err := f.configFlags.ToDiscoveryClient()
+		if err != nil {
+			return nil, err
+		}
+
+		restMapper := restmapper.NewDeferredDiscoveryRESTMapper(discoveryClient)
+
+		f.restMapper = restMapper
+	}
+
+	return f.restMapper, nil
+}
+
+func (f *ChannelsFactory) DynamicClient() (dynamic.Interface, error) {
+	if f.dynamicClient == nil {
+		restConfig, err := f.RESTConfig()
+		if err != nil {
+			return nil, err
+		}
+		httpClient, err := f.HTTPClient()
+		if err != nil {
+			return nil, err
+		}
+		dynamicClient, err := dynamic.NewForConfigAndClient(restConfig, httpClient)
+		if err != nil {
+			return nil, err
+		}
+		f.dynamicClient = dynamicClient
+	}
+	return f.dynamicClient, nil
+}
+
+func (f *ChannelsFactory) VFSContext() *vfs.VFSContext {
+	if f.vfsContext == nil {
+		// TODO vfs.NewVFSContext()
+		f.vfsContext = vfs.Context
+	}
+	return f.vfsContext
 }

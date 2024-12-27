@@ -41,13 +41,14 @@ import (
 	"github.com/spf13/cobra"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
 )
 
 type GetAddonsOptions struct{}
 
-func NewCmdGetAddons(f Factory, out io.Writer) *cobra.Command {
+func NewCmdGetAddons(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	var options GetAddonsOptions
 
 	cmd := &cobra.Command{
@@ -70,10 +71,19 @@ type addonInfo struct {
 	Namespace *v1.Namespace
 }
 
-func RunGetAddons(ctx context.Context, f Factory, out io.Writer, options *GetAddonsOptions) error {
-	k8sClient, err := f.KubernetesClient()
+func RunGetAddons(ctx context.Context, f *ChannelsFactory, out io.Writer, options *GetAddonsOptions) error {
+	restConfig, err := f.RESTConfig()
 	if err != nil {
 		return err
+	}
+	httpClient, err := f.HTTPClient()
+	if err != nil {
+		return err
+	}
+
+	k8sClient, err := kubernetes.NewForConfigAndClient(restConfig, httpClient)
+	if err != nil {
+		return fmt.Errorf("building kube client: %w", err)
 	}
 
 	namespaces, err := k8sClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})

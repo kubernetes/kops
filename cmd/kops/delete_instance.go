@@ -30,6 +30,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"k8s.io/client-go/rest"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -163,11 +164,28 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return err
 	}
 
-	var nodes []v1.Node
 	var k8sClient kubernetes.Interface
-	var host string
+	var restConfig *rest.Config
 	if !options.CloudOnly {
-		k8sClient, host, nodes, err = getNodes(ctx, cluster, true)
+		restConfig, err = f.RESTConfig(cluster)
+		if err != nil {
+			return fmt.Errorf("getting rest config: %w", err)
+		}
+
+		httpClient, err := f.HTTPClient(cluster)
+		if err != nil {
+			return fmt.Errorf("getting http client: %w", err)
+		}
+
+		k8sClient, err = kubernetes.NewForConfigAndClient(restConfig, httpClient)
+		if err != nil {
+			return fmt.Errorf("cannot build kube client: %w", err)
+		}
+	}
+
+	var nodes []v1.Node
+	if !options.CloudOnly {
+		nodes, err = getNodes(ctx, k8sClient, true)
 		if err != nil {
 			return err
 		}
@@ -241,7 +259,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 
 	var clusterValidator validation.ClusterValidator
 	if !options.CloudOnly {
-		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, host, k8sClient)
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, restConfig, k8sClient)
 		if err != nil {
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
@@ -251,37 +269,22 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	return d.UpdateSingleInstance(cloudMember, options.Surge)
 }
 
-func getNodes(ctx context.Context, cluster *kopsapi.Cluster, verbose bool) (kubernetes.Interface, string, []v1.Node, error) {
+func getNodes(ctx context.Context, kubeClient kubernetes.Interface, verbose bool) ([]v1.Node, error) {
 	var nodes []v1.Node
-	var k8sClient kubernetes.Interface
 
-	contextName := cluster.ObjectMeta.Name
-	clientGetter := genericclioptions.NewConfigFlags(true)
-	clientGetter.Context = &contextName
-
-	config, err := clientGetter.ToRESTConfig()
-	if err != nil {
-		return nil, "", nil, fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
-	}
-
-	k8sClient, err = kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, "", nil, fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
-	}
-
-	nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	nodeList, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if verbose {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
 			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a deletion without confirming progress with the k8s API\n\n")
 		}
-		return nil, "", nil, fmt.Errorf("listing nodes in cluster: %v", err)
+		return nil, fmt.Errorf("listing nodes in cluster: %v", err)
 	}
 
 	if nodeList != nil {
 		nodes = nodeList.Items
 	}
-	return k8sClient, config.Host, nodes, nil
+	return nodes, nil
 }
 
 func deleteNodeMatch(cloudMember *cloudinstances.CloudInstance, options *DeleteInstanceOptions) bool {
@@ -320,12 +323,22 @@ func completeInstanceOrNode(f commandutils.Factory, options *DeleteInstanceOptio
 			return completions, directive
 		}
 
-		var nodes []v1.Node
-		var err error
+		var kubeClient kubernetes.Interface
 		if !options.CloudOnly {
-			_, _, nodes, err = getNodes(ctx, cluster, false)
+			var err error
+			kubeClient, err = getKubeClientFromKubeconfig(ctx, cluster)
 			if err != nil {
 				cobra.CompErrorln(err.Error())
+			}
+		}
+
+		var nodes []v1.Node
+		if kubeClient != nil {
+			nodeList, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+			if err != nil {
+				cobra.CompErrorln(err.Error())
+			} else if nodeList != nil {
+				nodes = nodeList.Items
 			}
 		}
 
@@ -367,6 +380,26 @@ func completeInstanceOrNode(f commandutils.Factory, options *DeleteInstanceOptio
 
 		return completions, cobra.ShellCompDirectiveNoFileComp
 	}
+}
+
+// getKubeClientFromKubeconfig returns a kubernetes client from the kubeconfig,
+// assuming it has already been exported.  This is not ideal, but is reasonable
+// for command completion.
+func getKubeClientFromKubeconfig(ctx context.Context, cluster *kopsapi.Cluster) (kubernetes.Interface, error) {
+	contextName := cluster.ObjectMeta.Name
+	clientGetter := genericclioptions.NewConfigFlags(true)
+	clientGetter.Context = &contextName
+
+	config, err := clientGetter.ToRESTConfig()
+	if err != nil {
+		return nil, fmt.Errorf("cannot load kubecfg settings for %q: %w", contextName, err)
+	}
+
+	k8sClient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("cannot build kube client for %q: %w", contextName, err)
+	}
+	return k8sClient, nil
 }
 
 func appendInstance(completions []string, instance *cloudinstances.CloudInstance, longestGroup int) []string {
