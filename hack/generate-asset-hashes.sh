@@ -100,4 +100,5 @@ generate_k8s_hashes 1.31 3
 
 # Generate runc hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
-generate_runc_hashes 1.1 14
+generate_runc_hashes 1.1 15
+generate_runc_hashes 1.2 3
