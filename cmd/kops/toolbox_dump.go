@@ -176,6 +176,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 
 		var nodes corev1.NodeList
 
+		// TODO: We should use the factory to get the kubeconfig
 		kubeConfig, err := clientGetter.ToRESTConfig()
 		if err != nil {
 			klog.Warningf("cannot load kubeconfig settings for %q: %v", contextName, err)

@@ -23,6 +23,7 @@ import (
 	"io"
 	"strings"
 
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -31,10 +32,7 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"k8s.io/client-go/kubernetes"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"k8s.io/kops/util/pkg/tables"
 
@@ -101,9 +99,19 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	k8sClient, err := createK8sClient(cluster)
+	restConfig, err := f.RESTConfig(cluster)
 	if err != nil {
 		return err
+	}
+
+	httpClient, err := f.HTTPClient(cluster)
+	if err != nil {
+		return err
+	}
+
+	k8sClient, err := kubernetes.NewForConfigAndClient(restConfig, httpClient)
+	if err != nil {
+		return fmt.Errorf("building kubernetes client: %w", err)
 	}
 
 	nodeList, err := k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
@@ -198,22 +206,6 @@ func instanceOutputTable(instances []*cloudinstances.CloudInstance, out io.Write
 
 	columns := []string{"ID", "NODE-NAME", "STATUS", "ROLES", "STATE", "INTERNAL-IP", "EXTERNAL-IP", "INSTANCE-GROUP", "MACHINE-TYPE"}
 	return t.Render(instances, out, columns...)
-}
-
-func createK8sClient(cluster *kops.Cluster) (*kubernetes.Clientset, error) {
-	contextName := cluster.ObjectMeta.Name
-	clientGetter := genericclioptions.NewConfigFlags(true)
-	clientGetter.Context = &contextName
-
-	config, err := clientGetter.ToRESTConfig()
-	if err != nil {
-		return nil, fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
-	}
-	k8sClient, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("cannot build kubernetes api client for %q: %v", contextName, err)
-	}
-	return k8sClient, nil
 }
 
 func asRenderable(instances []*cloudinstances.CloudInstance) []*renderableCloudInstance {
