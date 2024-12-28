@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
@@ -320,7 +322,20 @@ func (d *deployer) stateStore() string {
 	if ss == "" {
 		switch d.CloudProvider {
 		case "aws":
-			ss = "s3://k8s-kops-prow"
+			ctx := context.TODO()
+			bucketName, err := aws.AWSBucketName(ctx)
+			if err != nil {
+				klog.Fatalf("Failed to generate bucket name: %v", err)
+			}
+			awsClient, err := aws.NewAWSClient(ctx)
+			if err != nil {
+				klog.Fatalf("failed to load client config: %v", err)
+			}
+			if err := awsClient.EnsureS3Bucket(ctx, bucketName, d.PublicReadOnlyBucket); err != nil {
+				klog.Fatalf("Failed to ensure S3 bucket exists: %v", err)
+				return ""
+			}
+			ss = "s3://" + bucketName
 		case "gce":
 			d.createBucket = true
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
