@@ -82,6 +82,7 @@ type NetworkingSpec struct {
 	Cilium     *CiliumNetworkingSpec       `json:"cilium,omitempty"`
 	LyftVPC    *kops.LyftVPCNetworkingSpec `json:"-"`
 	GCP        *GCPNetworkingSpec          `json:"gcp,omitempty"`
+	Kindnet    *KindnetNetworkingSpec      `json:"kindnet,omitempty"`
 }
 
 // KubenetNetworkingSpec is the specification for kubenet networking, largely integrated but intended to replace classic
@@ -510,3 +511,20 @@ type HubbleSpec struct {
 
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
 type GCPNetworkingSpec struct{}
+
+// KindnetNetworkingSpec configures Kindnet settings.
+type KindnetNetworkingSpec struct {
+	Version                      string                 `json:"version,omitempty"`
+	NetworkPolicies              *bool                  `json:"networkPolicies,omitempty"`
+	AdminNetworkPolicies         *bool                  `json:"adminNetworkPolicies,omitempty"`
+	BaselineAdminNetworkPolicies *bool                  `json:"baselineAdminNetworkPolicies,omitempty"`
+	DNSCaching                   *bool                  `json:"dnsCaching,omitempty"`
+	NAT64                        *bool                  `json:"nat64,omitempty"`
+	FastPathThreshold            *int32                 `json:"fastPathThreshold,omitempty"`
+	Masquerade                   *KindnetMasqueradeSpec `json:"masquerade,omitempty"`
+}
+
+type KindnetMasqueradeSpec struct {
+	Enabled            *bool    `json:"enabled,omitempty"`
+	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs,omitempty"`
+}

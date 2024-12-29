@@ -49,12 +49,13 @@ type NetworkingSpec struct {
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
 	GCP        *GCPNetworkingSpec        `json:"gce,omitempty"`
+	Kindnet    *KindnetNetworkingSpec    `json:"kindnet,omitempty"`
 }
 
 func (s *NetworkingSpec) IsEmpty() bool {
 	return s.Classic == nil && s.Kubenet == nil && s.External == nil && s.CNI == nil && s.Kopeio == nil &&
 		s.Weave == nil && s.Flannel == nil && s.Calico == nil && s.Canal == nil && s.KubeRouter == nil &&
-		s.Romana == nil && s.AmazonVPC == nil && s.Cilium == nil && s.LyftVPC == nil && s.GCP == nil
+		s.Romana == nil && s.AmazonVPC == nil && s.Cilium == nil && s.LyftVPC == nil && s.GCP == nil && s.Kindnet == nil
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
@@ -674,3 +675,21 @@ type LyftVPCNetworkingSpec struct {
 
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
 type GCPNetworkingSpec struct{}
+
+// KindnetNetworkingSpec configures Kindnet settings.
+type KindnetNetworkingSpec struct {
+	Version                      string                 `json:"version,omitempty"`
+	NetworkPolicies              *bool                  `json:"networkPolicies,omitempty"`
+	AdminNetworkPolicies         *bool                  `json:"adminNetworkPolicies,omitempty"`
+	BaselineAdminNetworkPolicies *bool                  `json:"baselineAdminNetworkPolicies,omitempty"`
+	DNSCaching                   *bool                  `json:"dnsCaching,omitempty"`
+	NAT64                        *bool                  `json:"nat64,omitempty"`
+	FastPathThreshold            *int32                 `json:"fastPathThreshold,omitempty"`
+	Masquerade                   *KindnetMasqueradeSpec `json:"masquerade,omitempty"`
+}
+
+// KindnetMasqueradeSpec configures Kindnet masquerading settings.
+type KindnetMasqueradeSpec struct {
+	Enabled            *bool    `json:"enabled,omitempty"`
+	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs,omitempty"`
+}

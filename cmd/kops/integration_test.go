@@ -228,6 +228,7 @@ const (
 	canalAddon   = "networking.projectcalico.org.canal-k8s-1.25"
 	ciliumAddon  = "networking.cilium.io-k8s-1.16"
 	flannelAddon = "networking.flannel-k8s-1.25"
+	kindnetAddon = "networking.kindnet-k8s-1.32"
 
 	certManagerAddon         = "certmanager.io-k8s-1.16"
 	clusterAutoscalerAddon   = "cluster-autoscaler.addons.k8s.io-k8s-1.15"
@@ -639,6 +640,15 @@ func TestPrivateFlannel(t *testing.T) {
 		withPrivate().
 		withDefaultAddons24().
 		withAddons(flannelAddon).
+		runTestTerraformAWS(t)
+}
+
+// TestPrivateKindnet runs the test on a configuration with private topology, flannel networking
+func TestPrivateKindnet(t *testing.T) {
+	newIntegrationTest("privatekindnet.example.com", "privatekindnet").
+		withPrivate().
+		withDefaultAddons24().
+		withAddons(kindnetAddon).
 		runTestTerraformAWS(t)
 }
 

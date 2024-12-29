@@ -5773,6 +5773,36 @@ spec:
                     description: GCPNetworkingSpec is the specification of GCP's native
                       networking mode, using IP aliases.
                     type: object
+                  kindnet:
+                    description: KindnetNetworkingSpec configures Kindnet settings.
+                    properties:
+                      adminNetworkPolicies:
+                        type: boolean
+                      baselineAdminNetworkPolicies:
+                        type: boolean
+                      dnsCaching:
+                        type: boolean
+                      fastPathThreshold:
+                        format: int32
+                        type: integer
+                      masquerade:
+                        description: KindnetMasqueradeSpec configures Kindnet masquerading
+                          settings.
+                        properties:
+                          enabled:
+                            type: boolean
+                          nonMasqueradeCIDRs:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      nat64:
+                        type: boolean
+                      networkPolicies:
+                        type: boolean
+                      version:
+                        type: string
+                    type: object
                   kopeio:
                     description: KopeioNetworkingSpec declares that we want Kopeio
                       networking

@@ -313,6 +313,18 @@ func TestSetupNetworking(t *testing.T) {
 				},
 			},
 		},
+		{
+			options: NewClusterOptions{
+				Networking: "kindnet",
+			},
+			expected: api.Cluster{
+				Spec: api.ClusterSpec{
+					Networking: api.NetworkingSpec{
+						Kindnet: &api.KindnetNetworkingSpec{},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

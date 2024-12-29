@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/utils/ptr"
 )
 
 func Test_Validate_DNS(t *testing.T) {
@@ -449,6 +450,72 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 						},
 					},
 					Flannel: &g.Input,
+				},
+			},
+		}
+
+		errs := validateNetworking(cluster, &cluster.Spec.Networking, field.NewPath("networking"), true, &cloudProviderConstraints{})
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func Test_Validate_Networking_Kindnet(t *testing.T) {
+	grid := []struct {
+		Input          kops.KindnetNetworkingSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.KindnetNetworkingSpec{
+				Masquerade: &kops.KindnetMasqueradeSpec{
+					Enabled: ptr.To(true),
+				},
+			},
+		},
+		{
+			Input: kops.KindnetNetworkingSpec{
+				Masquerade: &kops.KindnetMasqueradeSpec{
+					Enabled:            ptr.To(true),
+					NonMasqueradeCIDRs: []string{"10.0.0.0/24", "2001:db8::/64"},
+				},
+			},
+		},
+		{
+			Input: kops.KindnetNetworkingSpec{
+				Masquerade: &kops.KindnetMasqueradeSpec{
+					Enabled:            ptr.To(true),
+					NonMasqueradeCIDRs: []string{"a.b.c.d/24", "2001:db8::/64"},
+				},
+			},
+			ExpectedErrors: []string{"Invalid value::networking.kindnet"},
+		},
+		{
+			Input: kops.KindnetNetworkingSpec{
+				Masquerade: &kops.KindnetMasqueradeSpec{
+					Enabled:            ptr.To(false),
+					NonMasqueradeCIDRs: []string{"a.b.c.d/24", "2001:db8::/64"},
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+	}
+
+	for _, g := range grid {
+		cluster := &kops.Cluster{
+			Spec: kops.ClusterSpec{
+				KubernetesVersion: "1.27.0",
+				Networking: kops.NetworkingSpec{
+					NetworkCIDR:           "10.0.0.0/8",
+					NonMasqueradeCIDR:     "100.64.0.0/10",
+					PodCIDR:               "100.96.0.0/11",
+					ServiceClusterIPRange: "100.64.0.0/13",
+					Subnets: []kops.ClusterSubnetSpec{
+						{
+							Name: "sg-test",
+							CIDR: "10.11.0.0/16",
+							Type: "Public",
+						},
+					},
+					Kindnet: &g.Input,
 				},
 			},
 		}

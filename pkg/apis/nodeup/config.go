@@ -328,6 +328,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.Networking.KubeRouter = &kops.KuberouterNetworkingSpec{}
 	}
 
+	if cluster.Spec.Networking.Kindnet != nil {
+		config.Networking.Kindnet = &kops.KindnetNetworkingSpec{}
+	}
+
 	if instanceGroup.Spec.Kubelet != nil {
 		config.KubeletConfig = *instanceGroup.Spec.Kubelet
 	}
