@@ -314,7 +314,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.EtcdStorageType, "etcd-storage-type", options.EtcdStorageType, "The default storage type for etcd members")
 	cmd.RegisterFlagCompletionFunc("etcd-storage-type", completeStorageType)
 
-	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode.  kubenet, external, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, cni.")
+	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode.  kubenet, external, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, amazonvpc, cilium, cilium-etcd, kindnet, cni.")
 	cmd.RegisterFlagCompletionFunc("networking", completeNetworking(options))
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone (defaults to longest matching zone)")
@@ -983,6 +983,7 @@ func completeNetworking(options *CreateClusterOptions) func(cmd *cobra.Command, 
 			"cilium",
 			"cilium-eni",
 			"cilium-etcd",
+			"kindnet",
 		}
 
 		if !options.IPv6 {

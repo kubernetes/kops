@@ -1018,6 +1018,23 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
+	if b.Cluster.Spec.Networking.Kindnet != nil {
+		key := "networking.kindnet"
+
+		{
+			id := "k8s-1.32"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:               fi.PtrTo(key),
+				Selector:           networkingSelector(),
+				Manifest:           fi.PtrTo(location),
+				Id:                 id,
+				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateAll,
+			})
+		}
+	}
+
 	err := addCiliumAddon(b, addons)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to add cilium addon: %w", err)

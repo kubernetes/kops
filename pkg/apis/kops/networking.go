@@ -78,6 +78,7 @@ type NetworkingSpec struct {
 	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
 	GCP        *GCPNetworkingSpec        `json:"gcp,omitempty"`
+	Kindnet    *KindnetNetworkingSpec    `json:"kindnet,omitempty"`
 }
 
 // UsesKubenet returns true if our networking is derived from kubenet
@@ -553,3 +554,29 @@ type LyftVPCNetworkingSpec struct {
 
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
 type GCPNetworkingSpec struct{}
+
+// KindnetNetworkingSpec configures Kindnet settings.
+type KindnetNetworkingSpec struct {
+	// Version is the version of the kindnet agent.
+	// Default: v1.8.0
+	Version string `json:"version,omitempty"`
+	// Enable network policies
+	NetworkPolicies              *bool `json:"networkPolicies,omitempty"`
+	AdminNetworkPolicies         *bool `json:"adminNetworkPolicies,omitempty"`
+	BaselineAdminNetworkPolicies *bool `json:"baselineAdminNetworkPolicies,omitempty"`
+	// enable dns caching
+	DNSCaching *bool `json:"dnsCaching,omitempty"`
+	// enable nat64 on ipv6 clusters
+	NAT64 *bool `json:"nat64,omitempty"`
+	// number of packets in a connection to offload it to the fast path
+	FastPathThreshold *int32 `json:"fastPathThreshold,omitempty"`
+	// node agent masquerading rules
+	Masquerade *KindnetMasqueradeSpec `json:"masquerade,omitempty"`
+	// log level
+	LogLevel *int32 `json:"logLevel,omitempty"`
+}
+
+type KindnetMasqueradeSpec struct {
+	Enabled            *bool    `json:"enabled,omitempty"`
+	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs,omitempty"`
+}

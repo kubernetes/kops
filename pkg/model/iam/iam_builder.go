@@ -374,6 +374,10 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
+	if b.Cluster.Spec.Networking.Kindnet != nil {
+		addKindnetSrcDstCheckPermissions(p)
+	}
+
 	return p, nil
 }
 
@@ -438,6 +442,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addCalicoSrcDstCheckPermissions(p)
 	}
 
+	if b.Cluster.Spec.Networking.Kindnet != nil {
+		addKindnetSrcDstCheckPermissions(p)
+	}
+
 	return p, nil
 }
 
@@ -467,6 +475,10 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.Cluster.Spec.Networking.KubeRouter != nil {
 		addKubeRouterSrcDstCheckPermissions(p)
+	}
+
+	if b.Cluster.Spec.Networking.Kindnet != nil {
+		addKindnetSrcDstCheckPermissions(p)
 	}
 
 	return p, nil
@@ -772,6 +784,12 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 }
 
 func addKubeRouterSrcDstCheckPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:ModifyInstanceAttribute",
+	)
+}
+
+func addKindnetSrcDstCheckPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:ModifyInstanceAttribute",
 	)
