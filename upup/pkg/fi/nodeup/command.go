@@ -562,10 +562,18 @@ func modprobe(module string) error {
 // loadKernelModules is a hack to force br_netfilter to be loaded
 // TODO: Move to tasks architecture
 func loadKernelModules(context *model.NodeupModelContext) error {
-	err := modprobe("br_netfilter")
-	if err != nil {
-		// TODO: Return error in 1.11 (too risky for 1.10)
-		klog.Warningf("error loading br_netfilter module: %v", err)
+	{
+		err := modprobe("br_netfilter")
+		if err != nil {
+			// TODO: Return error in 1.11 (too risky for 1.10)
+			klog.Warningf("error loading br_netfilter module: %v", err)
+		}
+	}
+	if context.NodeupConfig.Networking.Kindnet != nil {
+		err := modprobe("nfnetlink_queue")
+		if err != nil {
+			return fmt.Errorf("loading nfnetlink_queue module: %w", err)
+		}
 	}
 	// TODO: Add to /etc/modules-load.d/ ?
 	return nil
