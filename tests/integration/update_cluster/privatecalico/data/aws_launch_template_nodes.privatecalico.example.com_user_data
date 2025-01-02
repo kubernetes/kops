@@ -153,7 +153,7 @@ ConfigServer:
   - https://kops-controller.internal.privatecalico.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: w3+x76e6uiaG7CYTtxZHworfLrnHC16vpA/kMJpLpZc=
+NodeupConfigHash: M4JVU8sN/OLDmMrsAYw3+X7anH94lfKa/oTaj/nTCqg=
 
 __EOF_KUBE_ENV
 

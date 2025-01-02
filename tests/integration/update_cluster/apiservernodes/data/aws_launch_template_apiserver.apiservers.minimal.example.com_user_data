@@ -130,7 +130,7 @@ ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: apiserver
 InstanceGroupRole: APIServer
-NodeupConfigHash: armWT5T1TvUG74wHtHrz06NrWI8IXJsAaA3XNf+QC5I=
+NodeupConfigHash: EgxBNpdOW1dhGhWYU64WzwNDxKf3cJ7l3IhXUIpg9BM=
 
 __EOF_KUBE_ENV
 

@@ -130,7 +130,7 @@ ClusterName: sharedvpc.example.com
 ConfigBase: memfs://clusters.example.com/sharedvpc.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: GXI1pK6dJqPlJYgdM3lBQi+qOl/nnOZDGOC2xUjGKM8=
+NodeupConfigHash: K6abEa1yyR7DYFUtfPGYoh9wy/wh0XGO3lhU6WfaVVo=
 
 __EOF_KUBE_ENV
 
