@@ -309,7 +309,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.0
+    app.kubernetes.io/version: v1.19.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -334,7 +334,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.0
+    app.kubernetes.io/version: v1.19.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: amazon-vpc-cni
@@ -432,7 +432,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.0
+    app.kubernetes.io/version: v1.19.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -456,7 +456,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.0
+    app.kubernetes.io/version: v1.19.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -543,7 +543,7 @@ spec:
         - name: WARM_PREFIX_TARGET
           value: "1"
         - name: VPC_CNI_VERSION
-          value: v1.19.0
+          value: v1.19.2
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
