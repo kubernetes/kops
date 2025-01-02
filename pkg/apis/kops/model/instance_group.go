@@ -31,6 +31,9 @@ type InstanceGroup interface {
 	// GetCloudProvider returns the cloud provider for the instance group
 	GetCloudProvider() kops.CloudProviderID
 
+	// InstallCNIAssets returns true if CNI network plugins need to be installed
+	InstallCNIAssets() bool
+
 	// RawClusterSpec returns the cluster spec for the instance group.
 	// If possible, prefer abstracted methods over accessing this data directly.
 	RawClusterSpec() *kops.ClusterSpec
@@ -65,6 +68,12 @@ func (m *instanceGroupModel) KubernetesVersion() *KubernetesVersion {
 
 func (m *instanceGroupModel) GetCloudProvider() kops.CloudProviderID {
 	return m.cluster.GetCloudProvider()
+}
+
+func (m *instanceGroupModel) InstallCNIAssets() bool {
+	return m.cluster.Spec.Networking.AmazonVPC == nil &&
+		m.cluster.Spec.Networking.Calico == nil &&
+		m.cluster.Spec.Networking.Cilium == nil
 }
 
 func (m *instanceGroupModel) RawClusterSpec() *kops.ClusterSpec {

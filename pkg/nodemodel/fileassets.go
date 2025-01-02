@@ -122,7 +122,7 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 			}
 		}
 
-		{
+		if ig.InstallCNIAssets() {
 			cniAsset, err := wellknownassets.FindCNIAssets(ig, assetBuilder, arch)
 			if err != nil {
 				return nil, err
