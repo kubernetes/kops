@@ -345,7 +345,19 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 	if err := n.shellToFile(ctx, "sudo iptables -t filter --list-rules", filepath.Join(n.dir, "iptables-filter.log")); err != nil {
 		errors = append(errors, err)
 	}
-	if err := n.shellToFile(ctx, "ip route", filepath.Join(n.dir, "ip-routes.log")); err != nil {
+	if err := n.shellToFile(ctx, "sudo nft list ruleset", filepath.Join(n.dir, "nftables-ruleset.log")); err != nil {
+		errors = append(errors, err)
+	}
+	if err := n.shellToFile(ctx, "ip route show table all", filepath.Join(n.dir, "ip-routes.log")); err != nil {
+		errors = append(errors, err)
+	}
+	if err := n.shellToFile(ctx, "ip rule list", filepath.Join(n.dir, "ip-rules.log")); err != nil {
+		errors = append(errors, err)
+	}
+	if err := n.shellToFile(ctx, "ip -s link", filepath.Join(n.dir, "ip-link.log")); err != nil {
+		errors = append(errors, err)
+	}
+	if err := n.shellToFile(ctx, "ss -s", filepath.Join(n.dir, "netstat.log")); err != nil {
 		errors = append(errors, err)
 	}
 
