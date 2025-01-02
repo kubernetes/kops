@@ -106,7 +106,7 @@ spec:
         args:
         - /bin/kindnetd
         - --hostname-override=$(NODE_NAME)
-        - --v=2
+        - --v=7
         {{- if .Networking.Kindnet.NetworkPolicies }}
         - --network-policy={{ .NetworkPolicies }}
         {{- end }}
