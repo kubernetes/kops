@@ -48,7 +48,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.13
+    version: 3.5.17
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -59,7 +59,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.13
+    version: 3.5.17
   iam:
     legacy: false
   keyStore: memfs://tests/minimal-gce.example.com/pki

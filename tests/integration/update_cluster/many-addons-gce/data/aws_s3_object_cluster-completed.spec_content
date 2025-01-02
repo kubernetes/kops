@@ -64,7 +64,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.13
+    version: 3.5.17
   - backups:
       backupStore: memfs://tests/minimal.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -75,7 +75,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.13
+    version: 3.5.17
   externalDns:
     provider: dns-controller
   iam:
