@@ -130,7 +130,7 @@ ClusterName: minimal.example.com
 ConfigBase: memfs://clusters.example.com/minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 6I/xMbU1RuEJGM/q+HqSJhU5a4gk4fZ2NsSLom4F6ME=
+NodeupConfigHash: oat4TLWZZOwj65R6CKin5eR7GMvLjjtMZK541q480iE=
 
 __EOF_KUBE_ENV
 

@@ -20,6 +20,7 @@ ClusterName: bastionuserdata.example.com
 Hooks:
 - null
 - null
+InstallCNIAssets: true
 KeypairIDs: {}
 KubeProxy:
   clusterCIDR: 100.96.0.0/11

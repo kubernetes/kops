@@ -20,6 +20,7 @@ Hooks:
       ExecStart=/usr/bin/systemctl start apply-to-all.service
     name: apply-to-all.service
 - null
+InstallCNIAssets: true
 KeypairIDs: {}
 KubeProxy:
   cpuLimit: 30m

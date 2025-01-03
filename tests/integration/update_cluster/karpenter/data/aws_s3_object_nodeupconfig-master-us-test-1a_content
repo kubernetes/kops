@@ -269,6 +269,7 @@ FileAssets:
 Hooks:
 - null
 - null
+InstallCNIAssets: true
 KeypairIDs:
   apiserver-aggregator-ca: "6980187172486667078076483355"
   etcd-clients-ca: "6979622252718071085282986282"

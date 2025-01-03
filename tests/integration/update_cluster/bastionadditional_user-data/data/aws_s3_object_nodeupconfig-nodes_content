@@ -20,6 +20,7 @@ ClusterName: bastionuserdata.example.com
 Hooks:
 - null
 - null
+InstallCNIAssets: true
 KeypairIDs:
   kubernetes-ca: "6982820025135291416230495506"
 KubeProxy:
