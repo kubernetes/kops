@@ -34,13 +34,23 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	// CNI tarball for k8s >= 1.22
 	defaultCNIAssetAmd64K8s_22 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz"
 	defaultCNIAssetArm64K8s_22 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz"
 
-	// CNI tarball for k8s >= 1.27
 	defaultCNIAssetAmd64K8s_27 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz"
 	defaultCNIAssetArm64K8s_27 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz"
+
+	defaultCNIAssetAmd64K8s_29 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz"
+	defaultCNIAssetArm64K8s_29 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.3.0/cni-plugins-linux-arm64-v1.3.0.tgz"
+
+	defaultCNIAssetAmd64K8s_30 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.4.1/cni-plugins-linux-amd64-v1.4.1.tgz"
+	defaultCNIAssetArm64K8s_30 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.4.1/cni-plugins-linux-arm64-v1.4.1.tgz"
+
+	defaultCNIAssetAmd64K8s_31 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.5.1/cni-plugins-linux-amd64-v1.5.1.tgz"
+	defaultCNIAssetArm64K8s_31 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.5.1/cni-plugins-linux-arm64-v1.5.1.tgz"
+
+	defaultCNIAssetAmd64K8s_32 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz"
+	defaultCNIAssetArm64K8s_32 = "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz"
 
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_ASSET_URL  = "CNI_VERSION_URL"
@@ -76,17 +86,35 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		if ig.KubernetesVersion().IsLT("1.27") {
-			cniAssetURL = defaultCNIAssetAmd64K8s_22
-		} else {
+		switch {
+		case ig.KubernetesVersion().IsGTE("1.32"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_32
+		case ig.KubernetesVersion().IsGTE("1.31"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_31
+		case ig.KubernetesVersion().IsGTE("1.30"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_30
+		case ig.KubernetesVersion().IsGTE("1.29"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_29
+		case ig.KubernetesVersion().IsGTE("1.27"):
 			cniAssetURL = defaultCNIAssetAmd64K8s_27
+		default:
+			cniAssetURL = defaultCNIAssetAmd64K8s_22
 		}
 		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset: %s", cniAssetURL)
 	case architectures.ArchitectureArm64:
-		if ig.KubernetesVersion().IsLT("1.27") {
-			cniAssetURL = defaultCNIAssetArm64K8s_22
-		} else {
+		switch {
+		case ig.KubernetesVersion().IsGTE("1.32"):
+			cniAssetURL = defaultCNIAssetArm64K8s_32
+		case ig.KubernetesVersion().IsGTE("1.31"):
+			cniAssetURL = defaultCNIAssetArm64K8s_31
+		case ig.KubernetesVersion().IsGTE("1.30"):
+			cniAssetURL = defaultCNIAssetArm64K8s_30
+		case ig.KubernetesVersion().IsGTE("1.29"):
+			cniAssetURL = defaultCNIAssetArm64K8s_29
+		case ig.KubernetesVersion().IsGTE("1.27"):
 			cniAssetURL = defaultCNIAssetArm64K8s_27
+		default:
+			cniAssetURL = defaultCNIAssetArm64K8s_22
 		}
 		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset: %s", cniAssetURL)
 	default:

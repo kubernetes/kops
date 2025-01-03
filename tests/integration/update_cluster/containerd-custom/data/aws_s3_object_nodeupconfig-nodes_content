@@ -2,18 +2,19 @@ Assets:
   amd64:
   - b64949fe696c77565edbe4100a315b6bf8f0e2325daeb762f7e865f16a6e54b5@https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubelet
   - b6769d8ac6a0ed0f13b307d289dc092ad86180b08f5b5044af152808c04950ae@https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl
-  - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
+  - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz,https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
   arm64:
   - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubelet
   - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubectl
-  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
+  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz,https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
 CAs: {}
 ClusterName: containerd.example.com
 Hooks:
 - null
 - null
+InstallCNIAssets: true
 KeypairIDs:
   kubernetes-ca: "6982820025135291416230495506"
 KubeProxy:

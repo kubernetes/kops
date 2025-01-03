@@ -30,8 +30,10 @@ var _ fi.NodeupModelBuilder = &CommonBuilder{}
 
 // Build is responsible for copying the common CNI binaries
 func (b *CommonBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if err := b.AddCNIBinAssets(c); err != nil {
-		return err
+	if b.NodeupConfig.InstallCNIAssets {
+		if err := b.AddCNIBinAssets(c); err != nil {
+			return err
+		}
 	}
 
 	return nil
