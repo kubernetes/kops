@@ -69,6 +69,8 @@ type Config struct {
 	KubeProxy *kops.KubeProxyConfig
 	// Networking configures networking.
 	Networking kops.NetworkingSpec
+	// InstallCNIAssets specifies that the CNI network plugins need to be installed.
+	InstallCNIAssets bool `json:",omitempty"`
 	// UseCiliumEtcd is true when a Cilium etcd cluster is present.
 	UseCiliumEtcd bool `json:",omitempty"`
 	// UsesKubenet specifies that the CNI is derived from Kubenet.
@@ -295,6 +297,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.UpdatePolicy = *cluster.Spec.UpdatePolicy
 	} else {
 		config.UpdatePolicy = kops.UpdatePolicyAutomatic
+	}
+
+	if cluster.InstallCNIAssets() {
+		config.InstallCNIAssets = true
 	}
 
 	if cluster.Spec.Networking.AmazonVPC != nil {

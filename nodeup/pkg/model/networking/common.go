@@ -30,9 +30,7 @@ var _ fi.NodeupModelBuilder = &CommonBuilder{}
 
 // Build is responsible for copying the common CNI binaries
 func (b *CommonBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.NodeupConfig.Networking.AmazonVPC == nil &&
-		b.NodeupConfig.Networking.Calico == nil &&
-		b.NodeupConfig.Networking.Cilium == nil {
+	if b.NodeupConfig.InstallCNIAssets {
 		if err := b.AddCNIBinAssets(c); err != nil {
 			return err
 		}

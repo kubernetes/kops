@@ -938,6 +938,12 @@ func (c *Cluster) UsesNoneDNS() bool {
 	return false
 }
 
+func (c *Cluster) InstallCNIAssets() bool {
+	return c.Spec.Networking.AmazonVPC == nil &&
+		c.Spec.Networking.Calico == nil &&
+		c.Spec.Networking.Cilium == nil
+}
+
 func (c *Cluster) APIInternalName() string {
 	return "api.internal." + c.ObjectMeta.Name
 }

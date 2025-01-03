@@ -71,9 +71,7 @@ func (m *instanceGroupModel) GetCloudProvider() kops.CloudProviderID {
 }
 
 func (m *instanceGroupModel) InstallCNIAssets() bool {
-	return m.cluster.Spec.Networking.AmazonVPC == nil &&
-		m.cluster.Spec.Networking.Calico == nil &&
-		m.cluster.Spec.Networking.Cilium == nil
+	return m.cluster.InstallCNIAssets()
 }
 
 func (m *instanceGroupModel) RawClusterSpec() *kops.ClusterSpec {
