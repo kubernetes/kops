@@ -46,14 +46,14 @@ var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UT
 
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.25", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.27", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.28", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.29", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.30", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26-arm64", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26-irsa", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.31", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.32", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-arm64", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-irsa", "v1alpha2")
 }
 
 // TestCreateClusterHetzner runs kops create cluster minimal.k8s.local --zones fsn1
@@ -111,9 +111,8 @@ func TestCreateClusterHA(t *testing.T) {
 
 // TestCreateClusterMinimalGCE runs kops create cluster minimal.example.com --cloud gce --zones us-test1-a
 func TestCreateClusterMinimalGCE(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26-gce", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.26-gce-dns-none", "v1alpha2")
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.29-gce", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-gce", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-gce-dns-none", "v1alpha2")
 }
 
 // TestCreateClusterHAGCE runs kops create cluster ha-gce.example.com --cloud gce --zones us-test1-a,us-test1-b,us-test1-c --master-zones us-test1-a,us-test1-b,us-test1-c

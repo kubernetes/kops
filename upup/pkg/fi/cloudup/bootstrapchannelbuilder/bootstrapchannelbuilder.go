@@ -426,25 +426,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.IsKubernetesLT("1.26") &&
-		(b.Cluster.GetCloudProvider() == kops.CloudProviderAWS ||
-			b.Cluster.GetCloudProvider() == kops.CloudProviderGCE) {
-		// AWS and GCE KCM-to-CCM leader migration
-		key := "leader-migration.rbac.addons.k8s.io"
-
-		{
-			location := key + "/k8s-1.23.yaml"
-			id := "k8s-1.23"
-
-			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-		}
-	}
-
 	{
 		key := "limit-range.addons.k8s.io"
 		version := "1.5.0"
@@ -951,19 +932,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	if b.Cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
 
-		if b.IsKubernetesGTE("v1.25.0") {
+		{
 			id := "k8s-1.25"
-			location := key + "/" + id + ".yaml"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
-		} else {
-			id := "k8s-1.12"
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
@@ -979,19 +949,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	if b.Cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
 
-		if b.IsKubernetesGTE("v1.25.0") {
+		{
 			id := "k8s-1.25"
-			location := key + "/" + id + ".yaml"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
-		} else {
-			id := "k8s-1.22"
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
@@ -1007,19 +966,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	if b.Cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org.canal"
 
-		if b.IsKubernetesGTE("v1.25.0") {
+		{
 			id := "k8s-1.25"
-			location := key + "/" + id + ".yaml"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
-		} else {
-			id := "k8s-1.22"
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{

@@ -371,6 +371,7 @@ func runLifecycleTestAWS(o *LifecycleTestOptions) {
 	o.AddDefaults()
 
 	t := o.t
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
 
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
@@ -401,15 +402,11 @@ func runLifecycleTestOpenstack(o *LifecycleTestOptions) {
 	o.AddDefaults()
 
 	t := o.t
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+	t.Setenv("OS_REGION_NAME", "us-test1")
 
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()
-
-	origRegion := os.Getenv("OS_REGION_NAME")
-	os.Setenv("OS_REGION_NAME", "us-test1")
-	defer func() {
-		os.Setenv("OS_REGION_NAME", origRegion)
-	}()
 
 	h.MockKopsVersion("1.21.0-alpha.1")
 	cloud := testutils.SetupMockOpenstack()
@@ -459,6 +456,7 @@ func runLifecycleTestGCE(o *LifecycleTestOptions) {
 	o.AddDefaults()
 
 	t := o.t
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
 
 	h := testutils.NewIntegrationTestHarness(o.t)
 	defer h.Close()

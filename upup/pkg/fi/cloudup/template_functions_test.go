@@ -243,26 +243,6 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 			},
 		},
 		{
-			desc: "Leader Migration",
-			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
-				CloudProvider: kops.CloudProviderSpec{
-					Openstack: &kops.OpenstackSpec{},
-				},
-				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					LeaderElection:        &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
-					EnableLeaderMigration: fi.PtrTo(true),
-				},
-			}},
-			expectedArgv: []string{
-				"--enable-leader-migration=true",
-				"--leader-elect=true",
-				"--v=2",
-				"--cloud-provider=openstack",
-				"--use-service-account-credentials=true",
-				"--cloud-config=/etc/kubernetes/cloud.config",
-			},
-		},
-		{
 			desc: "Disable Controller",
 			cluster: &kops.Cluster{Spec: kops.ClusterSpec{
 				CloudProvider: kops.CloudProviderSpec{
