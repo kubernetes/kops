@@ -4,7 +4,7 @@ ControlPlaneZones:
 - us-test1-a
 - us-test1-b
 - us-test1-c
-KubernetesVersion: v1.26.0
+KubernetesVersion: v1.32.0
 Networking: cni
 Project: testproject
 Zones:

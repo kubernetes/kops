@@ -1,7 +1,7 @@
 CloudProvider: openstack
 ClusterName: minimal.k8s.local
 Image: ubuntu-20.04
-KubernetesVersion: v1.25.0
+KubernetesVersion: v1.32.0
 ControlPlaneCount: 3
 NetworkCIDRs:
   - 10.0.0.0/16

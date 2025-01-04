@@ -162,14 +162,6 @@ resource "aws_s3_object" "minimal-example-com-addons-limit-range-addons-k8s-io" 
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-example-com-addons-metadata-proxy-addons-k8s-io-v0-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-metadata-proxy.addons.k8s.io-v0.1.12_content")
-  key                    = "tests/minimal.example.com/addons/metadata-proxy.addons.k8s.io/v0.1.12.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-example-com-addons-metrics-server-addons-k8s-io-k8s-1-11" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-metrics-server.addons.k8s.io-k8s-1.11_content")

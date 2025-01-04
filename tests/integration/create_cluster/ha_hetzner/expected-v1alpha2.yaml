@@ -45,7 +45,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: v1.25.0
+  kubernetesVersion: v1.32.0
   networkCIDR: 10.0.0.0/16
   networking:
     cni: {}
@@ -71,7 +71,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: control-plane-fsn1-1
 spec:
-  image: ubuntu-20.04
+  image: ubuntu-22.04
   machineType: cx21
   maxSize: 1
   minSize: 1
@@ -89,7 +89,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: control-plane-fsn1-2
 spec:
-  image: ubuntu-20.04
+  image: ubuntu-22.04
   machineType: cx21
   maxSize: 1
   minSize: 1
@@ -107,7 +107,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: control-plane-fsn1-3
 spec:
-  image: ubuntu-20.04
+  image: ubuntu-22.04
   machineType: cx21
   maxSize: 1
   minSize: 1
@@ -125,7 +125,7 @@ metadata:
     kops.k8s.io/cluster: ha.example.com
   name: nodes-fsn1
 spec:
-  image: ubuntu-20.04
+  image: ubuntu-22.04
   machineType: cx21
   maxSize: 1
   minSize: 1

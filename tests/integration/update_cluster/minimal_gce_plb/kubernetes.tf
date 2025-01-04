@@ -146,14 +146,6 @@ resource "aws_s3_object" "minimal-gce-plb-example-com-addons-limit-range-addons-
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-gce-plb-example-com-addons-metadata-proxy-addons-k8s-io-v0-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-gce-plb.example.com-addons-metadata-proxy.addons.k8s.io-v0.1.12_content")
-  key                    = "tests/minimal-gce-plb.example.com/addons/metadata-proxy.addons.k8s.io/v0.1.12.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-plb-example-com-addons-storage-gce-addons-k8s-io-v1-7-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-plb.example.com-addons-storage-gce.addons.k8s.io-v1.7.0_content")

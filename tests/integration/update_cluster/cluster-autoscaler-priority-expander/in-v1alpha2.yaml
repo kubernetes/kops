@@ -23,7 +23,7 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
-  kubernetesVersion: v1.26.0
+  kubernetesVersion: v1.32.0
   masterInternalName: api.internal.cas-priority-expander.example.com
   masterPublicName: api.cas-priority-expander.example.com
   networkCIDR: 172.20.0.0/16

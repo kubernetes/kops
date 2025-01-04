@@ -21,7 +21,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.25.0
+  kubernetesVersion: v1.27.0
   masterPublicName: api.privateflannel.example.com
   networkCIDR: 172.20.0.0/16
   networking:

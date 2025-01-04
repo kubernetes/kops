@@ -483,7 +483,7 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-ipv6-example-c
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -565,7 +565,7 @@ resource "aws_launch_template" "nodes-minimal-ipv6-example-com" {
     http_endpoint               = "enabled"
     http_protocol_ipv6          = "enabled"
     http_put_response_hop_limit = 1
-    http_tokens                 = "optional"
+    http_tokens                 = "required"
   }
   monitoring {
     enabled = false
@@ -921,14 +921,6 @@ resource "aws_s3_object" "minimal-ipv6-example-com-addons-kubelet-api-rbac-addon
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content")
   key                    = "clusters.example.com/minimal-ipv6.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
-resource "aws_s3_object" "minimal-ipv6-example-com-addons-leader-migration-rbac-addons-k8s-io-k8s-1-23" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-ipv6.example.com-addons-leader-migration.rbac.addons.k8s.io-k8s-1.23_content")
-  key                    = "clusters.example.com/minimal-ipv6.example.com/addons/leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

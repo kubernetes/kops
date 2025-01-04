@@ -30,7 +30,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: v1.25.0
+  kubernetesVersion: v1.32.0
   masterPublicName: api.minimal-ipv6.example.com
   networkCIDR: 172.20.0.0/16
   networkID: vpc-12345678

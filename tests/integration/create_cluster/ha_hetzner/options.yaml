@@ -1,6 +1,6 @@
 CloudProvider: hetzner
 ClusterName: ha.example.com
-KubernetesVersion: v1.25.0
+KubernetesVersion: v1.32.0
 ControlPlaneCount: 3
 NetworkCIDRs:
   - 10.0.0.0/16

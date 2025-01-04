@@ -6,4 +6,4 @@ Networking: cni
 Topology: private
 Bastion: true
 Egress: i-09123456
-KubernetesVersion: v1.26.0
+KubernetesVersion: v1.32.0

@@ -1,20 +1,22 @@
 Assets:
   amd64:
-  - b64949fe696c77565edbe4100a315b6bf8f0e2325daeb762f7e865f16a6e54b5@https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubelet
-  - b6769d8ac6a0ed0f13b307d289dc092ad86180b08f5b5044af152808c04950ae@https://dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/amd64/kubectl
-  - 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz,https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
-  - bb9a9ccd6517e2a54da748a9f60dc9aa9d79d19d4724663f2386812f083968e2@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-amd64.tar.gz
-  - f00b144e86f8c1db347a2e8f22caade07d55382c5f76dd5c0a5b1ab64eaec8bb@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.amd64
+  - 5ad4965598773d56a37a8e8429c3dc3d86b4c5c26d8417ab333ae345c053dae2@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet
+  - 646d58f6d98ee670a71d9cdffbf6625aeea2849d567f214bc43a35f8ccb7bf70@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl
+  - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
+  - 2503ce29ac445715ebe146073f45468153f9e28f45fa173cb060cfd9e735f563@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz
+  - f8b2d935d1f86003f4e0c1af3b9f0d2820bacabe6dc9f562785b74af24c5e468@https://github.com/containerd/containerd/releases/download/v1.7.22/containerd-1.7.22-linux-amd64.tar.gz
+  - a83c0804ebc16826829e7925626c4793da89a9b225bbcc468f2b338ea9f8e8a8@https://github.com/opencontainers/runc/releases/download/v1.1.14/runc.amd64
   - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
   - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
   - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
   - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
   arm64:
-  - fb033c1d079cac8babb04a25abecbc6cc1a2afb53f56ef1d73f8dc3b15b3c09e@https://dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubelet
-  - 79b14e4ddada9e81d2989f36a89faa9e56f8abe6e0246e7bdc305c93c3731ea4@https://dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.26.0/bin/linux/arm64/kubectl
-  - ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0@https://storage.googleapis.com/k8s-artifacts-cni/release/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz,https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
-  - c3e6a054b18b20fce06c7c3ed53f0989bb4b255c849bede446ebca955f07a9ce@https://github.com/containerd/containerd/releases/download/v1.6.20/containerd-1.6.20-linux-arm64.tar.gz
-  - 54e79e4d48b9e191767e4abc08be1a8476a1c757e9a9f8c45c6ded001226867f@https://github.com/opencontainers/runc/releases/download/v1.1.5/runc.arm64
+  - bda9b2324c96693b38c41ecea051bab4c7c434be5683050b5e19025b50dbc0bf@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
+  - ba4004f98f3d3a7b7d2954ff0a424caa2c2b06b78c17b1dccf2acc76a311a896@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl
+  - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
+  - f0f440b968ab50ad13d9d42d993ba98ec30b2ec666846f4ef1bddc7646a701cc@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz
+  - 48d0a8461ae829b12b07c3663b14b70287d0607a0792719c51b4e4dd700b02ce@https://github.com/containerd/containerd/releases/download/v1.7.22/containerd-1.7.22-linux-arm64.tar.gz
+  - 050ee97c266bf7d31e1474568ffcbb2a3ff2208087aaa238c8bbe7e398414126@https://github.com/opencontainers/runc/releases/download/v1.1.14/runc.arm64
   - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
   - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
   - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
@@ -51,7 +53,7 @@ KeypairIDs:
 KubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.26.0
+  image: registry.k8s.io/kube-proxy:v1.32.0
   logLevel: 2
 KubeletConfig:
   anonymousAuth: false
@@ -62,9 +64,6 @@ KubeletConfig:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-  featureGates:
-    CSIMigrationAWS: "true"
-    InTreePluginAWSUnregister: "true"
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   nodeLabels:
@@ -75,7 +74,7 @@ KubeletConfig:
   registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
-KubernetesVersion: 1.26.0
+KubernetesVersion: 1.32.0
 Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
@@ -88,7 +87,7 @@ configStore:
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.1.5
-  version: 1.6.20
+    version: 1.1.14
+  version: 1.7.22
 usesLegacyGossip: true
 usesNoneDNS: false
