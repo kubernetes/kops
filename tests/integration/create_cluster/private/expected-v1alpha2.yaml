@@ -44,7 +44,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: v1.26.0
+  kubernetesVersion: v1.32.0
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
@@ -75,10 +75,7 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: bastions
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20241112
-  instanceMetadata:
-    httpPutResponseHopLimit: 1
-    httpTokens: required
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20241211
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -99,9 +96,7 @@ spec:
   additionalSecurityGroups:
   - sg-exampleid3
   - sg-exampleid4
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20241112
-  instanceMetadata:
-    httpTokens: required
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20241211
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -122,10 +117,7 @@ spec:
   additionalSecurityGroups:
   - sg-exampleid
   - sg-exampleid2
-  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20241112
-  instanceMetadata:
-    httpPutResponseHopLimit: 1
-    httpTokens: required
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20241211
   machineType: t2.medium
   maxSize: 1
   minSize: 1

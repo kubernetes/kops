@@ -79,9 +79,5 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 		}
 	}
 
-	if b.ControlPlaneKubernetesVersion().IsLT("1.25") {
-		ccmConfig.EnableLeaderMigration = fi.PtrTo(true)
-	}
-
 	return nil
 }

@@ -130,7 +130,7 @@ ClusterName: private-shared-ip.example.com
 ConfigBase: memfs://clusters.example.com/private-shared-ip.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: PTOyfcL4CyyaQhsPp8abT6ZryyDJ2LrSEn4JnaFLjIE=
+NodeupConfigHash: ii45HiarxMQZsJqnXYnNebvgWW4hf6YnVUYSKi+8YL8=
 
 __EOF_KUBE_ENV
 

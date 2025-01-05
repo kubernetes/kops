@@ -190,16 +190,6 @@ func (i integrationTest) withDefaultServiceAccountRoles24() *integrationTest {
 		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true)
 }
 
-// withDefaultAddons24 adds the default addons for an AWS cluster running k8s 1.24
-func (i integrationTest) withDefaultAddons24() *integrationTest {
-	return i.withAddons(
-		awsCCMAddon,
-		awsEBSCSIAddon,
-		dnsControllerAddon,
-		leaderElectionAddon,
-	)
-}
-
 // withDefaultAddons30 adds the default addons for an AWS cluster running k8s 1.30
 func (i integrationTest) withDefaultAddons30() *integrationTest {
 	return i.withAddons(
@@ -210,7 +200,7 @@ func (i integrationTest) withDefaultAddons30() *integrationTest {
 }
 
 func (i integrationTest) withDefaults24() *integrationTest {
-	return i.withDefaultAddons24().withDefaultServiceAccountRoles24()
+	return i.withDefaultAddons30().withDefaultServiceAccountRoles24()
 }
 
 const (
@@ -232,7 +222,6 @@ const (
 	certManagerAddon         = "certmanager.io-k8s-1.16"
 	clusterAutoscalerAddon   = "cluster-autoscaler.addons.k8s.io-k8s-1.15"
 	dnsControllerAddon       = "dns-controller.addons.k8s.io-k8s-1.12"
-	leaderElectionAddon      = "leader-migration.rbac.addons.k8s.io-k8s-1.23"
 	metricsServerAddon       = "metrics-server.addons.k8s.io-k8s-1.11"
 	nodeProblemDetectorAddon = "node-problem-detector.addons.k8s.io-k8s-1.17"
 )
@@ -249,34 +238,7 @@ func TestMinimalAWS(t *testing.T) {
 }
 
 // TestMinimal runs the test on a minimum configuration
-func TestMinimal_v1_25(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "minimal-1.25").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			leaderElectionAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum configuration
-func TestMinimal_v1_26(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-
-	newIntegrationTest("minimal.example.com", "minimal-1.26").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_27(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-
 	newIntegrationTest("minimal.example.com", "minimal-1.27").
 		withAddons(
 			awsEBSCSIAddon,
@@ -288,8 +250,6 @@ func TestMinimal_v1_27(t *testing.T) {
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_28(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-
 	newIntegrationTest("minimal.example.com", "minimal-1.28").
 		withAddons(
 			awsEBSCSIAddon,
@@ -301,8 +261,6 @@ func TestMinimal_v1_28(t *testing.T) {
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_29(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-
 	newIntegrationTest("minimal.example.com", "minimal-1.29").
 		withAddons(
 			awsEBSCSIAddon,
@@ -314,9 +272,29 @@ func TestMinimal_v1_29(t *testing.T) {
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_30(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-
 	newIntegrationTest("minimal.example.com", "minimal-1.30").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_31(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "minimal-1.31").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_32(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "minimal-1.32").
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
@@ -327,8 +305,6 @@ func TestMinimal_v1_30(t *testing.T) {
 
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
 func TestMinimal_NoneDNS(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").
 		withAddons(
 			awsEBSCSIAddon,
@@ -538,14 +514,14 @@ func TestExternalPolicies(t *testing.T) {
 // TestMinimalIPv6 runs the test on a minimum IPv6 configuration
 func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").
-		withDefaultAddons24().
+		withDefaultAddons30().
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
 func TestMinimalIPv6Calico(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").
-		withDefaultAddons24().
+		withDefaultAddons30().
 		withAddons(calicoAddon).
 		runTestTerraformAWS(t)
 }
@@ -553,7 +529,7 @@ func TestMinimalIPv6Calico(t *testing.T) {
 // TestMinimalIPv6Cilium runs the test on a minimum IPv6 configuration with Cilium
 func TestMinimalIPv6Cilium(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
-		withDefaultAddons24().
+		withDefaultAddons30().
 		withAddons(ciliumAddon).
 		runTestTerraformAWS(t)
 }
@@ -561,7 +537,7 @@ func TestMinimalIPv6Cilium(t *testing.T) {
 // TestMinimalIPv6NoSubnetPrefix runs the test with "/64#N" subnet notation
 func TestMinimalIPv6NoSubnetPrefix(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-no-subnet-prefix").
-		withDefaultAddons24().
+		withDefaultAddons30().
 		runTestTerraformAWS(t)
 }
 
@@ -637,7 +613,7 @@ func TestBastionAdditionalUserData(t *testing.T) {
 func TestPrivateFlannel(t *testing.T) {
 	newIntegrationTest("privateflannel.example.com", "privateflannel").
 		withPrivate().
-		withDefaultAddons24().
+		withDefaultAddons30().
 		withAddons(flannelAddon).
 		runTestTerraformAWS(t)
 }
@@ -646,7 +622,7 @@ func TestPrivateFlannel(t *testing.T) {
 func TestPrivateCalico(t *testing.T) {
 	newIntegrationTest("privatecalico.example.com", "privatecalico").
 		withPrivate().
-		withDefaultAddons24().
+		withDefaultAddons30().
 		withAddons(calicoAddon).
 		runTestTerraformAWS(t)
 }
@@ -702,7 +678,7 @@ func TestPrivateCiliumENI(t *testing.T) {
 func TestPrivateCanal(t *testing.T) {
 	newIntegrationTest("privatecanal.example.com", "privatecanal").
 		withPrivate().
-		withDefaultAddons24().
+		withDefaultAddons30().
 		withAddons(canalAddon).
 		runTestTerraformAWS(t)
 }
@@ -861,57 +837,7 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-func TestManyAddonsCCMIRSA25(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa25").
-		withOIDCDiscovery().
-		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("cluster-autoscaler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withAddons(
-			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
-			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
-			"certmanager.io-k8s-1.16",
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"snapshot-controller.addons.k8s.io-k8s-1.20",
-			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
-			leaderElectionAddon,
-			metricsServerAddon,
-			dnsControllerAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-func TestManyAddonsCCMIRSA26(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
-	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa26").
-		withOIDCDiscovery().
-		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("cluster-autoscaler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withAddons(
-			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
-			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
-			"certmanager.io-k8s-1.16",
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"snapshot-controller.addons.k8s.io-k8s-1.20",
-			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
-			"nodelocaldns.addons.k8s.io-k8s-1.12",
-			metricsServerAddon,
-			dnsControllerAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
 func TestManyAddonsGCE(t *testing.T) {
-	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
 	newIntegrationTest("minimal.example.com", "many-addons-gce").
 		withAddons(
 			certManagerAddon,
@@ -1007,7 +933,7 @@ func TestSharedVPC(t *testing.T) {
 // TestSharedVPCIPv6 runs the test on a configuration with a shared VPC using IPv6
 func TestSharedVPCIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "shared_vpc_ipv6").
-		withDefaultAddons24().
+		withDefaultAddons30().
 		runTestTerraformAWS(t)
 }
 
@@ -1527,6 +1453,8 @@ func storeKeyset(t *testing.T, ctx context.Context, keyStore fi.Keystore, name s
 }
 
 func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
 	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
@@ -1615,6 +1543,8 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 }
 
 func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
 	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
@@ -1660,6 +1590,8 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 }
 
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
 	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
@@ -1688,8 +1620,8 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
 		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
 		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"aws_s3_object_"+i.clusterName+"-addons-metadata-proxy.addons.k8s.io-v0.1.12_content",
-		"aws_s3_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content")
+		"aws_s3_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content",
+	)
 
 	for j := 0; j < i.zones; j++ {
 		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
@@ -1710,6 +1642,8 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 }
 
 func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
 	ctx := testcontext.ForTest(t)
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
@@ -1743,6 +1677,8 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 }
 
 func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
+	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
+
 	featureflag.ParseFlags("+Scaleway")
 	unsetFeatureFlags := func() {
 		featureflag.ParseFlags("-Scaleway")

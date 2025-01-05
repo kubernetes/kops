@@ -41,7 +41,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: a60534cf6f674d86d17a32490fef182ebf5d821523402ea8cbb1d589eaec5031
+    manifestHash: 7aaa72ea23224ce59b6009ea711f2cc50f20279aa586e7aa1f75961f990f103b
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
@@ -123,13 +123,6 @@ spec:
     name: gcp-pd-csi-driver.addons.k8s.io
     selector:
       k8s-addon: gcp-pd-csi-driver.addons.k8s.io
-    version: 9.99.0
-  - id: v0.1.12
-    manifest: metadata-proxy.addons.k8s.io/v0.1.12.yaml
-    manifestHash: 5b18a0e4a56168a792e1366d4bd57fe7c232a0e78baf91241ba61ffcbeb79bf5
-    name: metadata-proxy.addons.k8s.io
-    selector:
-      k8s-addon: metadata-proxy.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.23
     manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml

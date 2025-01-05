@@ -35,7 +35,7 @@ spec:
   kubernetesApiAccess:
     - 0.0.0.0/0
     - ::/0
-  kubernetesVersion: 1.25.5
+  kubernetesVersion: 1.32.0
   networking:
     cilium:
       enableNodePort: true

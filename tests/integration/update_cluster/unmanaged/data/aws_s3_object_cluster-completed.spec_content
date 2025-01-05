@@ -20,7 +20,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: unmanaged.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.26.12
+    image: registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0
     leaderElection:
       leaderElect: true
   cloudProvider: aws
@@ -29,8 +29,8 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.1.5
-    version: 1.6.20
+      version: 1.1.14
+    version: 1.7.22
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:
@@ -79,10 +79,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    featureGates:
-      CSIMigrationAWS: "true"
-      InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-apiserver:v1.26.0
+    image: registry.k8s.io/kube-apiserver:v1.32.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -108,10 +105,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: unmanaged.example.com
     configureCloudRoutes: false
-    featureGates:
-      CSIMigrationAWS: "true"
-      InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-controller-manager:v1.26.0
+    image: registry.k8s.io/kube-controller-manager:v1.32.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -133,13 +127,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.26.0
+    image: registry.k8s.io/kube-proxy:v1.32.0
     logLevel: 2
   kubeScheduler:
-    featureGates:
-      CSIMigrationAWS: "true"
-      InTreePluginAWSUnregister: "true"
-    image: registry.k8s.io/kube-scheduler:v1.26.0
+    image: registry.k8s.io/kube-scheduler:v1.32.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -152,9 +143,6 @@ spec:
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    featureGates:
-      CSIMigrationAWS: "true"
-      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     podInfraContainerImage: registry.k8s.io/pause:3.9
@@ -165,7 +153,7 @@ spec:
     shutdownGracePeriodCriticalPods: 10s
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.26.0
+  kubernetesVersion: 1.32.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
@@ -175,9 +163,6 @@ spec:
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    featureGates:
-      CSIMigrationAWS: "true"
-      InTreePluginAWSUnregister: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     podInfraContainerImage: registry.k8s.io/pause:3.9

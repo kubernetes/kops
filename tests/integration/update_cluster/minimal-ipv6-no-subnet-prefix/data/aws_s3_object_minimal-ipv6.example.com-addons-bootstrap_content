@@ -6,7 +6,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 789e163f90e57004cbe9f1ceffea4e30cda69da2e60bc05623404d85fa098bed
+    manifestHash: c0e588106cb050f6e2e8b10082da29b67937142de68a58f5d28d611169263131
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -25,13 +25,6 @@ spec:
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
-    version: 9.99.0
-  - id: k8s-1.23
-    manifest: leader-migration.rbac.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: b9c91e09c0f28c9b74ff140b8395d611834c627d698846d625c10975a74a48c4
-    name: leader-migration.rbac.addons.k8s.io
-    selector:
-      k8s-addon: leader-migration.rbac.addons.k8s.io
     version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
@@ -106,7 +99,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: deacc9b38bf6a0e9e88d9e9ca241948e85f05f4a2dd396461cde5fc60ab67e39
+    manifestHash: a26b686d2e5ed0161da6ff083a66024102cd57a5ceb6471155fe814e16ed9710
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io

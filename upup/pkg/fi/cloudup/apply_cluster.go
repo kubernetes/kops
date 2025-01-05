@@ -72,9 +72,9 @@ const (
 	starline = "*********************************************************************************"
 
 	// OldestSupportedKubernetesVersion is the oldest kubernetes version that is supported in kOps.
-	OldestSupportedKubernetesVersion = "1.25.0"
+	OldestSupportedKubernetesVersion = "1.27.0"
 	// OldestRecommendedKubernetesVersion is the oldest kubernetes version that is not deprecated in kOps.
-	OldestRecommendedKubernetesVersion = "1.27.0"
+	OldestRecommendedKubernetesVersion = "1.29.0"
 )
 
 // TerraformCloudProviders is the list of cloud providers with terraform target support

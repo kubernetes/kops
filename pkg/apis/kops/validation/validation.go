@@ -757,20 +757,18 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, c *kops.Cluster, fldPath
 				"admissionControl is mutually exclusive with disableAdmissionPlugins˚"))
 		}
 
-		if c.IsKubernetesGTE("1.26") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"), "admissionControl has been replaced with enableAdmissionPlugins"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"), "admissionControl has been replaced with enableAdmissionPlugins"))
 	}
 
 	for _, plugin := range v.EnableAdmissionPlugins {
-		if plugin == "PodSecurityPolicy" && c.IsKubernetesGTE("1.25") {
+		if plugin == "PodSecurityPolicy" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableAdmissionPlugins"),
 				"PodSecurityPolicy has been removed from Kubernetes 1.25"))
 		}
 	}
 
 	for _, plugin := range v.AdmissionControl {
-		if plugin == "PodSecurityPolicy" && c.IsKubernetesGTE("1.25") {
+		if plugin == "PodSecurityPolicy" {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("admissionControl"),
 				"PodSecurityPolicy has been removed from Kubernetes 1.25"))
 		}
@@ -853,9 +851,7 @@ func validateKubeControllerManager(v *kops.KubeControllerManagerConfig, c *kops.
 	// We aren't aiming to do comprehensive validation, but we can add some best-effort validation where it helps guide users
 	// Users reported encountered this in #15909
 	if v.ExperimentalClusterSigningDuration != nil {
-		if c.IsKubernetesGTE("1.25") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("experimentalClusterSigningDuration"), "experimentalClusterSigningDuration has been replaced with clusterSigningDuration as of kubernetes 1.25"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("experimentalClusterSigningDuration"), "experimentalClusterSigningDuration has been replaced with clusterSigningDuration as of kubernetes 1.25"))
 	}
 
 	return allErrs
@@ -1111,9 +1107,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("external"), "only one networking option permitted"))
 		}
 
-		if cluster.IsKubernetesGTE("1.26") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("external"), "external is not supported for Kubernetes >= 1.26"))
-		}
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("external"), "external is not supported for Kubernetes >= 1.26"))
 		optionTaken = true
 	}
 

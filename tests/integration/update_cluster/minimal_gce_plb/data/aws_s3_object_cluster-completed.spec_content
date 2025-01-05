@@ -36,8 +36,8 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.1.5
-    version: 1.6.20
+      version: 1.1.14
+    version: 1.7.22
   dnsZone: "1"
   etcdClusters:
   - backups:
@@ -90,7 +90,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.26.0
+    image: registry.k8s.io/kube-apiserver:v1.32.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -116,7 +116,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-gce-plb.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.26.0
+    image: registry.k8s.io/kube-controller-manager:v1.32.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -138,10 +138,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.26.0
+    image: registry.k8s.io/kube-proxy:v1.32.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.26.0
+    image: registry.k8s.io/kube-scheduler:v1.32.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -166,7 +166,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
-  kubernetesVersion: 1.26.0
+  kubernetesVersion: 1.32.0
   masterKubelet:
     anonymousAuth: false
     cgroupDriver: systemd
