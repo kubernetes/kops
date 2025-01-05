@@ -191,7 +191,7 @@ spec:
       enableBPFMasquerade: true
       enableEndpointHealthChecking: true
       enableL7Proxy: true
-      enableLocalRedirectPolicy: false
+      enableLocalRedirectPolicy: true
       enableRemoteNodeIdentity: true
       enableUnreachableRoutes: false
       hubble:

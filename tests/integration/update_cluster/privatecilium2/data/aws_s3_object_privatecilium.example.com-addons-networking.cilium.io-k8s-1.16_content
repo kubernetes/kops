@@ -69,7 +69,7 @@ data:
   enable-ipv6: "false"
   enable-ipv6-masquerade: "false"
   enable-l7-proxy: "true"
-  enable-local-redirect-policy: "false"
+  enable-local-redirect-policy: "true"
   enable-node-port: "false"
   enable-remote-node-identity: "true"
   enable-service-topology: "false"
