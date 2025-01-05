@@ -140,7 +140,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.EnableLocalRedirectPolicy == nil {
-		c.EnableLocalRedirectPolicy = fi.PtrTo(false)
+		c.EnableLocalRedirectPolicy = fi.PtrTo(true)
 	}
 
 	if c.DisableCNPStatusUpdates == nil {
