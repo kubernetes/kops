@@ -83,12 +83,9 @@ func (t *Tester) setSkipRegexFlag() error {
 			// This seems to be specific to the kube-proxy replacement
 			// < 33 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
-
-			if cluster.Spec.LegacyCloudProvider == "gce" {
-				// https://github.com/kubernetes/kubernetes/issues/129221
-				// < 33 so we look at this again
-				skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
-			}
+			// https://github.com/kubernetes/kubernetes/issues/129221
+			// < 33 so we look at this again
+			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 
 		if isPre28 {
