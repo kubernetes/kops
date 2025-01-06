@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 
+	armcompute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -48,6 +49,7 @@ const (
 	DefaultAWSEtcdVolumeIonIops       = 100
 	DefaultAWSEtcdVolumeGp3Iops       = 3000
 	DefaultAWSEtcdVolumeGp3Throughput = 125
+	DefaultAZUREEtcdVolumeType        = "StandardSSD_LRS"
 	DefaultGCEEtcdVolumeType          = "pd-ssd"
 )
 
@@ -363,6 +365,10 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	m kops.EtcdMemberSpec,
 	allMembers []string,
 ) error {
+	volumeType := fi.ValueOf(m.VolumeType)
+	if volumeType == "" {
+		volumeType = DefaultAZUREEtcdVolumeType
+	}
 	// The tags are use by Protokube to mount the volume and use it for etcd.
 	tags := map[string]*string{
 		// This is the configuration of the etcd cluster.
@@ -394,9 +400,10 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 		ResourceGroup: &azuretasks.ResourceGroup{
 			Name: fi.PtrTo(b.Cluster.AzureResourceGroupName()),
 		},
-		SizeGB: fi.PtrTo(volumeSize),
-		Tags:   tags,
-		Zones:  []*string{&zoneNumber},
+		SizeGB:     fi.PtrTo(volumeSize),
+		Tags:       tags,
+		VolumeType: fi.PtrTo(armcompute.DiskStorageAccountTypes(volumeType)),
+		Zones:      []*string{&zoneNumber},
 	}
 	c.AddTask(t)
 

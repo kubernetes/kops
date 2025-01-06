@@ -29,8 +29,9 @@ import (
 )
 
 const (
-	testTagKey   = "key"
-	testTagValue = "value"
+	testTagKey     = "key"
+	testTagValue   = "value"
+	testVolumeType = "StandardSSD_LRS"
 )
 
 func newTestDisk() *Disk {
@@ -40,7 +41,8 @@ func newTestDisk() *Disk {
 		ResourceGroup: &ResourceGroup{
 			Name: to.Ptr("rg"),
 		},
-		SizeGB: to.Ptr[int32](32),
+		SizeGB:     to.Ptr[int32](32),
+		VolumeType: to.Ptr(compute.DiskStorageAccountTypesStandardSSDLRS),
 		Tags: map[string]*string{
 			testTagKey: to.Ptr(testTagValue),
 		},
