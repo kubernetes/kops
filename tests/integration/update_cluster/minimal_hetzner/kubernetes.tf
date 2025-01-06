@@ -235,9 +235,12 @@ resource "hcloud_server" "master-fsn1" {
   count = 1
   image = "ubuntu-20.04"
   labels = {
-    "kops.k8s.io/cluster"        = "minimal.example.com"
-    "kops.k8s.io/instance-group" = "master-fsn1"
-    "kops.k8s.io/instance-role"  = "ControlPlane"
+    "kops.k8s.io/cluster"                                                            = "minimal.example.com"
+    "kops.k8s.io/instance-group"                                                     = "master-fsn1"
+    "kops.k8s.io/instance-role"                                                      = "ControlPlane"
+    "node-label.kops.k8s.io.kops.k8s.io/kops-controller-pki"                         = ""
+    "node-label.kops.k8s.io.node-role.kubernetes.io/control-plane"                   = ""
+    "node-label.kops.k8s.io.node.kubernetes.io/exclude-from-external-load-balancers" = ""
   }
   location = "fsn1"
   name     = "master-fsn1-${count.index}"
@@ -257,9 +260,10 @@ resource "hcloud_server" "nodes-fsn1" {
   count = 1
   image = "ubuntu-20.04"
   labels = {
-    "kops.k8s.io/cluster"        = "minimal.example.com"
-    "kops.k8s.io/instance-group" = "nodes-fsn1"
-    "kops.k8s.io/instance-role"  = "Node"
+    "kops.k8s.io/cluster"                                 = "minimal.example.com"
+    "kops.k8s.io/instance-group"                          = "nodes-fsn1"
+    "kops.k8s.io/instance-role"                           = "Node"
+    "node-label.kops.k8s.io.node-role.kubernetes.io/node" = ""
   }
   location = "fsn1"
   name     = "nodes-fsn1-${count.index}"
