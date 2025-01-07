@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 
 	"github.com/blang/semver/v4"
@@ -174,7 +175,12 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		return nil, fmt.Errorf("error building node labels: %w", err)
 	}
 	for k, v := range nodeLabels {
-		labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
+		switch b.Cluster.GetCloudProvider() {
+		case kops.CloudProviderHetzner:
+			labels[hetzner.TagKubernetesNodeLabelPrefix+k] = v
+		default:
+			labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
+		}
 	}
 
 	// Apply labels for cluster autoscaler node taints
@@ -185,27 +191,33 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		}
 	}
 
-	// The system tags take priority because the cluster likely breaks without them...
+	switch b.Cluster.GetCloudProvider() {
+	case kops.CloudProviderHetzner:
+		labels[hetzner.TagKubernetesInstanceRole] = string(ig.Spec.Role)
+		labels[hetzner.TagKubernetesClusterName] = b.ClusterName()
+		labels[hetzner.TagKubernetesInstanceGroup] = ig.Name
+	default:
+		// The system tags take priority because the cluster likely breaks without them...
 
-	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-		labels[awstasks.CloudTagInstanceGroupRolePrefix+"master"] = "1"
-		labels[awstasks.CloudTagInstanceGroupRolePrefix+kops.InstanceGroupRoleControlPlane.ToLowerString()] = "1"
+		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+"master"] = "1"
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+kops.InstanceGroupRoleControlPlane.ToLowerString()] = "1"
+		}
+
+		if ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleAPIServer))] = "1"
+		}
+
+		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleNode))] = "1"
+		}
+
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
+		}
+
+		labels[nodeidentityaws.CloudTagInstanceGroupName] = ig.Name
 	}
-
-	if ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
-		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleAPIServer))] = "1"
-	}
-
-	if ig.Spec.Role == kops.InstanceGroupRoleNode {
-		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleNode))] = "1"
-	}
-
-	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
-	}
-
-	labels[nodeidentityaws.CloudTagInstanceGroupName] = ig.Name
-
 	return labels, nil
 }
 
@@ -259,6 +271,8 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 			}
 			tags[k] = v
 		}
+	case kops.CloudProviderHetzner:
+		tags[hetzner.TagKubernetesClusterName] = b.ClusterName()
 	}
 	return tags
 }

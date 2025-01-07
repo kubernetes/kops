@@ -97,7 +97,8 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	labels := map[string]string{}
 	for key, value := range server.Labels {
-		if key == hetzner.TagKubernetesInstanceRole {
+		switch {
+		case key == hetzner.TagKubernetesInstanceRole:
 			switch kops.InstanceGroupRole(value) {
 			case kops.InstanceGroupRoleControlPlane:
 				labels[nodelabels.RoleLabelControlPlane20] = ""
@@ -108,6 +109,8 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 			default:
 				klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)
 			}
+		case strings.HasPrefix(key, hetzner.TagKubernetesNodeLabelPrefix):
+			labels[strings.TrimPrefix(key, hetzner.TagKubernetesNodeLabelPrefix)] = value
 		}
 	}
 

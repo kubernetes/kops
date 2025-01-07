@@ -41,6 +41,7 @@ const (
 	TagKubernetesInstanceUserData    = "kops.k8s.io/instance-userdata"
 	TagKubernetesInstanceNeedsUpdate = "kops.k8s.io/needs-update"
 	TagKubernetesVolumeRole          = "kops.k8s.io/volume-role"
+	TagKubernetesNodeLabelPrefix     = "node-label.kops.k8s.io."
 )
 
 // HetznerCloud exposes all the interfaces required to operate on Hetzner Cloud resources
