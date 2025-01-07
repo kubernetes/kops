@@ -3,16 +3,16 @@ Assets:
   - 5ad4965598773d56a37a8e8429c3dc3d86b4c5c26d8417ab333ae345c053dae2@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet
   - 646d58f6d98ee670a71d9cdffbf6625aeea2849d567f214bc43a35f8ccb7bf70@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl
   - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
-  - f8b2d935d1f86003f4e0c1af3b9f0d2820bacabe6dc9f562785b74af24c5e468@https://github.com/containerd/containerd/releases/download/v1.7.22/containerd-1.7.22-linux-amd64.tar.gz
-  - a83c0804ebc16826829e7925626c4793da89a9b225bbcc468f2b338ea9f8e8a8@https://github.com/opencontainers/runc/releases/download/v1.1.14/runc.amd64
+  - 1a94f15139f37633f39e24f08a4071f4533b285df3cbee6478972d26147bcaef@https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-linux-amd64.tar.gz
+  - e83565aa78ec8f52a4d2b4eb6c4ca262b74c5f6770c1f43670c3029c20175502@https://github.com/opencontainers/runc/releases/download/v1.2.4/runc.amd64
   - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
   - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
   arm64:
   - bda9b2324c96693b38c41ecea051bab4c7c434be5683050b5e19025b50dbc0bf@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
   - ba4004f98f3d3a7b7d2954ff0a424caa2c2b06b78c17b1dccf2acc76a311a896@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl
   - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
-  - 48d0a8461ae829b12b07c3663b14b70287d0607a0792719c51b4e4dd700b02ce@https://github.com/containerd/containerd/releases/download/v1.7.22/containerd-1.7.22-linux-arm64.tar.gz
-  - 050ee97c266bf7d31e1474568ffcbb2a3ff2208087aaa238c8bbe7e398414126@https://github.com/opencontainers/runc/releases/download/v1.1.14/runc.arm64
+  - 420406d2b34ebb422ab3755fbeede59bf3bfcfccf5cfa584b558c93769d99064@https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-linux-arm64.tar.gz
+  - 285f6c4c3de1d78d9f536a0299ae931219527b2ebd9ad89df5a1072896b7e82a@https://github.com/opencontainers/runc/releases/download/v1.2.4/runc.arm64
   - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
   - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
 CAs: {}
@@ -55,7 +55,7 @@ UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
   runc:
-    version: 1.1.14
-  version: 1.7.22
+    version: 1.2.4
+  version: 1.7.24
 usesLegacyGossip: false
 usesNoneDNS: false

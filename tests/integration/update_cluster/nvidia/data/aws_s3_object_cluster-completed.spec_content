@@ -30,8 +30,8 @@ spec:
       enabled: true
       package: nvidia-driver-535-server
     runc:
-      version: 1.1.14
-    version: 1.7.22
+      version: 1.2.4
+    version: 1.7.24
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:
