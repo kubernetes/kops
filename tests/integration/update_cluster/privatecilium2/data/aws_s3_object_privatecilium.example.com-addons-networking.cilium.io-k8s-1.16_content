@@ -78,7 +78,7 @@ data:
   hubble-disable-tls: "false"
   hubble-listen-address: :4244
   hubble-metrics: drop
-  hubble-metrics-server: :9091
+  hubble-metrics-server: :9965
   hubble-socket-path: /var/run/cilium/hubble.sock
   hubble-tls-cert-file: /var/lib/cilium/tls/hubble/tls.crt
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/ca.crt
@@ -831,8 +831,8 @@ spec:
           hostPort: 4244
           name: peer-service
           protocol: TCP
-        - containerPort: 9091
-          hostPort: 9091
+        - containerPort: 9965
+          hostPort: 9965
           name: hubble-metrics
           protocol: TCP
         readinessProbe:
