@@ -5,9 +5,8 @@ so we can avoid port collisions.
 
 See also pkg/wellknownports/wellknownports.go
 
-
 | Port | Description                              |
-|------|------------------------------------------|
+| ---- | ---------------------------------------- |
 | 22   | SSH                                      |
 | 443  | Kubernetes API                           |
 | 179  | Calico                                   |
@@ -31,4 +30,4 @@ See also pkg/wellknownports/wellknownports.go
 | 4789 | VXLAN                                    |
 | 6942 | Cilium operator prometheus port          |
 | 9090 | Cilium prometheus port                   |
-| 9091 | Cilium hubble prometheus port            |
+| 9965 | Cilium hubble prometheus port            |
