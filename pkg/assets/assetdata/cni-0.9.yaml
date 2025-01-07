@@ -7,6 +7,5 @@ files:
 # cni 0.9.1
 - name: v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
   sha256: 962100bbc4baeaaa5748cdbfce941f756b1531c2eadb290129401498bfac21e7
-# cni 0.9.1
 - name: v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz
   sha256: ef17764ffd6cdcb16d76401bac1db6acc050c9b088f1be5efa0e094ea3b01df0

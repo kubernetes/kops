@@ -59,8 +59,8 @@ containerdConfig:
     docker.io:
     - https://registry-1.docker.io
   runc:
-    version: 1.1.14
+    version: 1.2.4
   skipInstall: true
-  version: 1.7.22
+  version: 1.7.24
 usesLegacyGossip: false
 usesNoneDNS: false

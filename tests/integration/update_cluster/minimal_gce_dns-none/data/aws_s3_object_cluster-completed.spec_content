@@ -35,8 +35,8 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.1.14
-    version: 1.7.22
+      version: 1.2.4
+    version: 1.7.24
   etcdClusters:
   - backups:
       backupStore: memfs://tests/minimal-gce.example.com/backups/etcd/main

@@ -315,9 +315,9 @@ containerdConfig:
     docker.io:
     - https://registry-1.docker.io
   runc:
-    version: 1.1.14
+    version: 1.2.4
   skipInstall: true
-  version: 1.7.22
+  version: 1.7.24
 etcdManifests:
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/events-master-us-test-1a.yaml
