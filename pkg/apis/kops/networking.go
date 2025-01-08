@@ -16,7 +16,12 @@ limitations under the License.
 
 package kops
 
-import "k8s.io/apimachinery/pkg/api/resource"
+import (
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
+	"k8s.io/kops/util/pkg/reflectutils"
+)
 
 // NetworkingSpec configures networking.
 type NetworkingSpec struct {
@@ -79,6 +84,16 @@ type NetworkingSpec struct {
 	LyftVPC    *LyftVPCNetworkingSpec    `json:"lyftvpc,omitempty"`
 	GCP        *GCPNetworkingSpec        `json:"gcp,omitempty"`
 	Kindnet    *KindnetNetworkingSpec    `json:"kindnet,omitempty"`
+}
+
+// ConfiguredOptions returns the set of networking options that are configured (non-nil)
+// in the struct.  We only expect a single option to be configured.
+func (n *NetworkingSpec) ConfiguredOptions() sets.Set[string] {
+	options, err := reflectutils.FindSetFields(n, "classic", "kubenet", "external", "cni", "kopeio", "weave", "flannel", "calico", "canal", "kubeRouter", "romana", "amazonVPC", "cilium", "lyftvpc", "gcp", "kindnet")
+	if err != nil {
+		klog.Fatalf("error getting set fields: %v", err)
+	}
+	return options
 }
 
 // UsesKubenet returns true if our networking is derived from kubenet
