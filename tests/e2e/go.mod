@@ -1,6 +1,6 @@
 module k8s.io/kops/tests/e2e
 
-go 1.22.7
+go 1.23.4
 
 replace k8s.io/kops => ../../.
 
