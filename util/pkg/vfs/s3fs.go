@@ -552,13 +552,18 @@ func (p *S3Path) GetHTTPsUrl(dualstack bool) (string, error) {
 		return "", fmt.Errorf("failed to get bucket details for %q: %w", p.String(), err)
 	}
 
-	var url string
-	if dualstack {
-		url = fmt.Sprintf("https://s3.dualstack.%s.amazonaws.com/%s/%s", bucketDetails.region, bucketDetails.name, p.Key())
-	} else {
-		url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucketDetails.name, bucketDetails.region, p.Key())
+	resolver := s3.NewDefaultEndpointResolverV2()
+	endpoint, err := resolver.ResolveEndpoint(ctx, s3.EndpointParameters{
+		Bucket:       aws.String(bucketDetails.name),
+		Region:       aws.String(bucketDetails.region),
+		UseDualStack: aws.Bool(dualstack),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve endpoint for %q: %w", p.String(), err)
 	}
-	return strings.TrimSuffix(url, "/"), nil
+
+	endpoint.URI.Path = path.Join(endpoint.URI.Path, p.Key())
+	return endpoint.URI.String(), nil
 }
 
 func (p *S3Path) IsBucketPublic(ctx context.Context) (bool, error) {
