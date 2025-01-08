@@ -318,6 +318,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 			codeModels = append(codeModels, &components.CloudConfigurationOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.CalicoOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.CiliumOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KindnetOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.OpenStackOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.DiscoveryOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.ClusterAutoscalerOptionsBuilder{OptionsContext: optionsContext})

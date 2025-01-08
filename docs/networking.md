@@ -23,6 +23,7 @@ As of kOps 1.26 the default network provider is Cilium. Prior to that the defaul
 | Cilium ENI       |         1.18 |   1.26 |          - |               - |
 | Flannel udp      |        1.5.2 |      - |       1.27 | Kubernetes 1.28 |
 | Flannel vxlan    |        1.8.0 |      - |       1.27 | Kubernetes 1.28 |
+| Kindnet          |         1.32 |      - |          - |               - |
 | Kopeio           |          1.5 |      - |          - |               - |
 | Kube-router      |        1.6.2 |      - |       1.27 | Kubernetes 1.28 |
 | Kubenet          |          1.5 |    1.5 |          - |               - |
@@ -69,6 +70,7 @@ Several CNI providers are currently built into kOps:
 * [Canal](networking/canal.md)
 * [Cilium](networking/cilium.md)
 * [Flannel](networking/flannel.md)
+* [Kindnet](networking/kindnet.md)
 * [Kube-router](networking/kube-router.md)
 
 kOps makes it easy for cluster operators to choose one of these options. The manifests for the providers

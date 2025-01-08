@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"path/filepath"
 	"regexp"
@@ -1220,6 +1221,14 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		allErrs = append(allErrs, validateNetworkingGCP(cluster, v.GCP, fldPath.Child("gcp"))...)
 	}
 
+	if v.Kindnet != nil {
+		if optionTaken {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("kindnet"), "only one networking option permitted"))
+		}
+
+		allErrs = append(allErrs, validateNetworkingKindnet(cluster, v.Kindnet, fldPath.Child("kindnet"))...)
+	}
+
 	return allErrs
 }
 
@@ -1394,6 +1403,23 @@ func validateNetworkingGCP(cluster *kops.Cluster, v *kops.GCPNetworkingSpec, fld
 		allErrs = append(allErrs, field.Forbidden(fldPath, "GCP networking does not support IPv6"))
 	}
 
+	return allErrs
+}
+
+func validateNetworkingKindnet(cluster *kops.Cluster, v *kops.KindnetNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Masquerade != nil && v.Masquerade.Enabled != nil && *v.Masquerade.Enabled {
+		for _, cidr := range v.Masquerade.NonMasqueradeCIDRs {
+			if cidr == "" {
+				continue
+			}
+			_, err := netip.ParsePrefix(cidr)
+			if err != nil {
+				allErrs = append(allErrs, field.Invalid(fldPath, cidr, err.Error()))
+			}
+		}
+	}
 	return allErrs
 }
 
