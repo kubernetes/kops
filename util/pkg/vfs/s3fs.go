@@ -575,8 +575,14 @@ func (p *S3Path) GetHTTPsUrl(dualstack bool) (string, error) {
 	var url string
 	if dualstack {
 		url = fmt.Sprintf("https://s3.dualstack.%s.amazonaws.com/%s/%s", bucketDetails.region, bucketDetails.name, p.Key())
+		if strings.Contains(bucketDetails.region, "cn-") {
+			url = fmt.Sprintf("https://s3.dualstack.%s.amazonaws.com.cn/%s/%s", bucketDetails.region, bucketDetails.name, p.Key())
+		}
 	} else {
 		url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucketDetails.name, bucketDetails.region, p.Key())
+		if strings.Contains(bucketDetails.region, "cn-") {
+			url = fmt.Sprintf("https://%s.s3.%s.amazonaws.com.cn/%s", bucketDetails.name, bucketDetails.region, p.Key())
+		}
 	}
 	return strings.TrimSuffix(url, "/"), nil
 }
@@ -773,7 +779,6 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		}
 		return w.RenderResource("aws_s3_object", name, tf)
 	}
-
 }
 
 // AWSErrorCode returns the aws error code, if it is an smity.APIError, otherwise ""
