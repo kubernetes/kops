@@ -54,7 +54,7 @@ The following table provides the support status for various distros with regards
 | Ubuntu 18.04                            |         1.10 |   1.16 |       1.26 |    1.28 |
 | [Ubuntu 20.04](#ubuntu-2004-focal)      |       1.16.2 |   1.18 |          - |       - |
 | [Ubuntu 22.04](#ubuntu-2204-jammy)      |         1.23 |   1.24 |          - |       - |
-| [Ubuntu 24.04](#ubuntu-2404-noble)      |         1.29 |      - |          - |       - |
+| [Ubuntu 24.04](#ubuntu-2404-noble)      |         1.29 |   1.31 |          - |       - |
 
 ## Supported Distros
 
@@ -268,7 +268,9 @@ az vm image list --all --output table \
 
 ### Ubuntu 24.04 (Noble)
 
-Support for Ubuntu 24.04 is **experimental**.
+Support for Ubuntu 24.04 is based on Kernel version **6.8**.
+
+Available images can be listed using:
 
 ```bash
 # Amazon Web Services (AWS)
