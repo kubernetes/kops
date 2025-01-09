@@ -4,7 +4,7 @@
 
 Kops' upgrade procedure has hostorically risked violating the [Kubelet version skew policy](https://kubernetes.io/releases/version-skew-policy/#kubelet). Between `kops update cluster --yes` and every kube-apiserver being rotated with `kops rolling-update cluster --yes`, newly launched nodes running new kubelet versions could be connecting to older `kube-apiserver` nodes.
 
-**Violating this policy when upgrading to Kubernetes 1.31 can cause newer kubelets to crash.**
+**Violating this policy when upgrading to Kubernetes 1.31 can cause newer kubelets to crash.** [This kubernetes issue](https://github.com/kubernetes/kubernetes/issues/127316) provides details though it was not addressed because the change does not actually violate the version skew policy, it merely breaks tooling that was already violating the policy.
 
 To upgrade a cluster to Kubernetes 1.31 or newer, use the new `kops reconcile cluster` command introduced in Kops 1.31. This replaces both `kops update cluster --yes` and `kops rolling-update cluster --yes`.
 
