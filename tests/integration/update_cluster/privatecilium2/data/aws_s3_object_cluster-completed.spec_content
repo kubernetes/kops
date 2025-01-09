@@ -15,7 +15,7 @@ spec:
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
-      version: v1.33.0
+      version: v1.38.1
     manageStorageClasses: true
   cloudControllerManager:
     allocateNodeCIDRs: true
