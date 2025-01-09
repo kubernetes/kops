@@ -105,35 +105,25 @@ spec:
         args:
         - /bin/kindnetd
         - --hostname-override=$(NODE_NAME)
-        {{- if .Networking.Kindnet.LogLevel }}
         - --v={{ .Networking.Kindnet.LogLevel }}
-        {{- end }}
-        {{- if .Networking.Kindnet.NetworkPolicies }}
+        {{ if .Networking.Kindnet.NetworkPolicies }}
         - --network-policy={{ .Networking.Kindnet.NetworkPolicies }}
-        {{- end }}
-        {{- if .Networking.Kindnet.AdminNetworkPolicies }}
+        {{ end }}
+        {{ if .Networking.Kindnet.AdminNetworkPolicies }}
         - --admin-network-policy={{ .Networking.Kindnet.AdminNetworkPolicies }}
-        {{- end }}
-        {{- if .Networking.Kindnet.BaselineAdminNetworkPolicies }}
+        {{ end }}
+        {{ if .Networking.Kindnet.BaselineAdminNetworkPolicies }}
         - --admin-network-policy={{ .Networking.Kindnet.BaselineAdminNetworkPolicies }}
-        {{- end }}
-        {{- if .Networking.Kindnet.DNSCaching }}
-        - --dns-caching={{ .Networking.Kindnet.DNSCaching }}
-        {{- end }}
-        {{- if .Networking.Kindnet.NAT64 }}
-        - --nat64={{ .Networking.Kindnet.NAT64 }}
-        {{- end }}
-        {{- if .Networking.Kindnet.FastPathThreshold }}
+        {{ end }}
+        - --dns-caching={{ WithDefaultBool .Networking.Kindnet.DNSCaching true }}
+        - --nat64={{ WithDefaultBool .Networking.Kindnet.NAT64 false }}
         - --fastpath-threshold={{ .Networking.Kindnet.FastPathThreshold }}
-        {{- end }}
         {{- if .Networking.Kindnet.Masquerade }}
-        {{- if .Networking.Kindnet.Masquerade.Enabled }}
-        - --masquerading={{ .Networking.Kindnet.Masquerade.Enabled }}
-        {{- end }}
-        {{- if .Networking.Kindnet.Masquerade.NonMasqueradeCIDRs }}
+        - --masquerading={{ WithDefaultBool .Networking.Kindnet.Masquerade.Enabled true }}
+        {{ if .Networking.Kindnet.Masquerade.NonMasqueradeCIDRs }}
         - --no-masquerade-cidr={{ range $index, $element := .Networking.Kindnet.Masquerade.NonMasqueradeCIDRs }}{{if $index}},{{end}}{{$element}}{{end}}
         {{- end }}
-        {{- end }}
+        {{ end }}
         env:
         - name: HOST_IP
           valueFrom:
