@@ -40,19 +40,26 @@ func (b *KindnetOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		c.Version = "v1.8.0"
 	}
 
-	// Kindnet should masquerade well known ranges if kops is not doing it
 	if c.Masquerade == nil {
-		c.Masquerade = &kops.KindnetMasqueradeSpec{
-			Enabled: fi.PtrTo(true),
-		}
-		if clusterSpec.Networking.NetworkCIDR != "" {
-			c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.NetworkCIDR)
-		}
-		if clusterSpec.Networking.PodCIDR != "" {
-			c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.PodCIDR)
-		}
-		if clusterSpec.Networking.ServiceClusterIPRange != "" {
-			c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.ServiceClusterIPRange)
+		c.Masquerade = &kops.KindnetMasqueradeSpec{}
+		if clusterSpec.IsIPv6Only() {
+			// Kindnet should NOT masquerade when IPv6 is used
+			c.Masquerade.Enabled = fi.PtrTo(false)
+			if o.GetCloudProvider() != kops.CloudProviderAWS {
+				c.NAT64 = fi.PtrTo(true)
+			}
+		} else {
+			// Kindnet should masquerade well known ranges if kops is not doing it
+			c.Masquerade.Enabled = fi.PtrTo(true)
+			if clusterSpec.Networking.NetworkCIDR != "" {
+				c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.NetworkCIDR)
+			}
+			if clusterSpec.Networking.PodCIDR != "" {
+				c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.PodCIDR)
+			}
+			if clusterSpec.Networking.ServiceClusterIPRange != "" {
+				c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.ServiceClusterIPRange)
+			}
 		}
 	}
 

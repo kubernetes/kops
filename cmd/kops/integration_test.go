@@ -628,6 +628,14 @@ func TestPrivateKindnet(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestPrivateKindnet runs the test on a configuration with private topology, flannel networking
+func TestKindnetIPv6(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-kindnet").
+		withDefaultAddons30().
+		withAddons(kindnetAddon).
+		runTestTerraformAWS(t)
+}
+
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
 	newIntegrationTest("privatecalico.example.com", "privatecalico").
