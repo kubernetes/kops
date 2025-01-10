@@ -334,7 +334,7 @@ data:
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
   {{ if .Hubble.Metrics }}
-  hubble-metrics-server: ":9091"
+  hubble-metrics-server: ":9965"
   hubble-metrics:
   {{- range .Hubble.Metrics }}
     {{ . }}
@@ -1132,8 +1132,8 @@ spec:
           hostPort: 4244
           protocol: TCP
         {{- if .Hubble.Metrics }}
-        - containerPort: 9091
-          hostPort: 9091
+        - containerPort: 9965
+          hostPort: 9965
           name: hubble-metrics
           protocol: TCP
         {{- end }}
