@@ -170,7 +170,7 @@ generate_runc_hashes 1.1 15
 generate_runc_hashes 1.2 4
 
 # Generate containerd hashes.
-generate_containerd_hashes 1.7 24
+generate_containerd_hashes 1.7 25
 generate_containerd_hashes 2.0 1
 
 # Generate CNI network plugins hashes.
