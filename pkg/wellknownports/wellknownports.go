@@ -71,7 +71,7 @@ const (
 	CiliumPrometheusPort = 9090
 
 	// CiliumHubblePrometheusPort is the default port where Hubble exposes metrics
-	CiliumHubblePrometheusPort = 9091
+	CiliumHubblePrometheusPort = 9965
 
 	// VxlanUDP is the port used by VXLAN tunneling over UDP
 	VxlanUDP = 8472
