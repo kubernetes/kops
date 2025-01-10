@@ -275,7 +275,7 @@ Support for Ubuntu 24.04 is **experimental**.
 aws ec2 describe-images --region us-east-1 --output table \
   --owners 099720109477 \
   --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
-  --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-jammy-22.04-*-*"
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-*-*"
 ```
 
 ## Owner aliases
