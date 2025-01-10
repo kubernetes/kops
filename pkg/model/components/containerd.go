@@ -52,7 +52,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 				Version: fi.PtrTo("1.1.5"),
 			}
 		case b.IsKubernetesGTE("1.27.2"):
-			containerd.Version = fi.PtrTo("1.7.24")
+			containerd.Version = fi.PtrTo("1.7.25")
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.2.4"),
 			}
