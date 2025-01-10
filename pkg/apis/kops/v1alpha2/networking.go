@@ -18,6 +18,9 @@ package v1alpha2
 
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/klog/v2"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 // NetworkingSpec allows selection and configuration of a networking plugin
@@ -53,9 +56,17 @@ type NetworkingSpec struct {
 }
 
 func (s *NetworkingSpec) IsEmpty() bool {
-	return s.Classic == nil && s.Kubenet == nil && s.External == nil && s.CNI == nil && s.Kopeio == nil &&
-		s.Weave == nil && s.Flannel == nil && s.Calico == nil && s.Canal == nil && s.KubeRouter == nil &&
-		s.Romana == nil && s.AmazonVPC == nil && s.Cilium == nil && s.LyftVPC == nil && s.GCP == nil && s.Kindnet == nil
+	return s.ConfiguredOptions().Len() == 0
+}
+
+// ConfiguredOptions returns the set of networking options that are configured (non-nil)
+// in the struct.  We only expect a single option to be configured.
+func (s *NetworkingSpec) ConfiguredOptions() sets.Set[string] {
+	options, err := reflectutils.FindSetFields(s, "classic", "kubenet", "external", "cni", "kopeio", "weave", "flannel", "calico", "canal", "kuberouter", "romana", "amazonvpc", "cilium", "lyftvpc", "gce", "kindnet")
+	if err != nil {
+		klog.Fatalf("error getting configured options: %v", err)
+	}
+	return options
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.

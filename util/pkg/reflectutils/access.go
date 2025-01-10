@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kops/pkg/apis/kops"
 )
 
 func SetString(target interface{}, targetPath string, newValue string) error {
@@ -216,14 +215,24 @@ func setType(v reflect.Value, newValue string) error {
 		newV = reflect.ValueOf(intstr.Parse(newValue))
 
 	case "kops.EnvVar":
-		name, value, found := strings.Cut(newValue, "=")
-		envVar := kops.EnvVar{
-			Name: name,
+		newV = reflect.New(v.Type()).Elem()
+
+		envVarType := newV.Type()
+
+		fdName, found := envVarType.FieldByName("Name")
+		if !found {
+			return fmt.Errorf("field Name not found in %T", newV.Interface())
 		}
-		if found {
-			envVar.Value = value
+		fdValue, found := envVarType.FieldByName("Value")
+		if !found {
+			return fmt.Errorf("field Value not found in %T", newV.Interface())
 		}
-		newV = reflect.ValueOf(envVar)
+
+		name, value, hasValue := strings.Cut(newValue, "=")
+		newV.FieldByIndex(fdName.Index).SetString(name)
+		if hasValue {
+			newV.FieldByIndex(fdValue.Index).SetString(value)
+		}
 
 	case "v1.Duration":
 		duration, err := time.ParseDuration(newValue)

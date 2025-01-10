@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package reflectutils
+package tests
 
 import (
 	"encoding/json"
@@ -25,6 +25,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/util/pkg/reflectutils"
 )
 
 type fakeEnum string
@@ -239,7 +240,7 @@ func TestSet(t *testing.T) {
 				t.Fatalf("failed to unmarshal input: %v", err)
 			}
 
-			if err := SetString(c, g.Path, g.Value); err != nil {
+			if err := reflectutils.SetString(c, g.Path, g.Value); err != nil {
 				t.Fatalf("error from SetString: %v", err)
 			}
 
@@ -312,7 +313,7 @@ func TestSetInvalidPath(t *testing.T) {
 				t.Fatalf("failed to unmarshal input: %v", err)
 			}
 
-			err := SetString(c, g.Path, g.Value)
+			err := reflectutils.SetString(c, g.Path, g.Value)
 			if err == nil {
 				t.Fatalf("Expected error for invalid path %s", g.Path)
 			}
@@ -402,7 +403,7 @@ func TestUnset(t *testing.T) {
 				t.Fatalf("failed to unmarshal input: %v", err)
 			}
 
-			if err := Unset(c, g.Path); err != nil {
+			if err := reflectutils.Unset(c, g.Path); err != nil {
 				t.Fatalf("error from Unset: %v", err)
 			}
 
@@ -452,7 +453,7 @@ func TestUnsetInvalidPath(t *testing.T) {
 				t.Fatalf("failed to unmarshal input: %v", err)
 			}
 
-			err := Unset(c, g.Path)
+			err := reflectutils.Unset(c, g.Path)
 			if err == nil {
 				t.Fatalf("Expected error for invalid path %s", g.Path)
 			}
