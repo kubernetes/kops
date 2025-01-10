@@ -317,7 +317,7 @@ containerdConfig:
   runc:
     version: 1.2.4
   skipInstall: true
-  version: 1.7.24
+  version: 1.7.25
 etcdManifests:
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/events-master-us-test-1a.yaml

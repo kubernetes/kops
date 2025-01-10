@@ -28,7 +28,7 @@ spec:
     logLevel: info
     runc:
       version: 1.2.4
-    version: 1.7.24
+    version: 1.7.25
   etcdClusters:
   - backups:
       backupStore: memfs://clusters.example.com/minimal.k8s.local/backups/etcd/main
