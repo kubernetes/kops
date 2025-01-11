@@ -5,7 +5,7 @@ Assets:
   - eca252d94176f8e08084433d08cd478c28cba7b773b49d691f1bec0f1e94e7d1@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/mounter,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/mounter
   - 827d558953d861b81a35c3b599191a73f53c1f63bce42c61e7a3fee21a717a89@https://storage.googleapis.com/k8s-staging-cloud-provider-gcp/auth-provider-gcp/linux-amd64/v20231005-providersv0.27.1-65-g8fbe8d27
   - 2503ce29ac445715ebe146073f45468153f9e28f45fa173cb060cfd9e735f563@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz
-  - 1a94f15139f37633f39e24f08a4071f4533b285df3cbee6478972d26147bcaef@https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-linux-amd64.tar.gz
+  - 02990fa281c0a2c4b073c6d2415d264b682bd693aa7d86c5d8eb4b86d684a18c@https://github.com/containerd/containerd/releases/download/v1.7.25/containerd-1.7.25-linux-amd64.tar.gz
   - e83565aa78ec8f52a4d2b4eb6c4ca262b74c5f6770c1f43670c3029c20175502@https://github.com/opencontainers/runc/releases/download/v1.2.4/runc.amd64
   - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
   - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
@@ -15,7 +15,7 @@ Assets:
   - ee06cd4a0e8428a3cced77f4f7db836138c589e8e4bf46f0c676f8ff4b54b942@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/mounter,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/mounter
   - f1617c0ef77f3718e12a3efc6f650375d5b5e96eebdbcbad3e465e89e781bdfa@https://storage.googleapis.com/k8s-staging-cloud-provider-gcp/auth-provider-gcp/linux-arm64/v20231005-providersv0.27.1-65-g8fbe8d27
   - f0f440b968ab50ad13d9d42d993ba98ec30b2ec666846f4ef1bddc7646a701cc@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz
-  - 420406d2b34ebb422ab3755fbeede59bf3bfcfccf5cfa584b558c93769d99064@https://github.com/containerd/containerd/releases/download/v1.7.24/containerd-1.7.24-linux-arm64.tar.gz
+  - e9201d478e4c931496344b779eb6cb40ce5084ec08c8fff159a02cabb0c6b9bf@https://github.com/containerd/containerd/releases/download/v1.7.25/containerd-1.7.25-linux-arm64.tar.gz
   - 285f6c4c3de1d78d9f536a0299ae931219527b2ebd9ad89df5a1072896b7e82a@https://github.com/opencontainers/runc/releases/download/v1.2.4/runc.arm64
   - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
   - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
@@ -61,7 +61,7 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.2.4
-  version: 1.7.24
+  version: 1.7.25
 multizone: true
 nodeTags: ha-gce-example-com-k8s-io-role-node
 usesLegacyGossip: false
