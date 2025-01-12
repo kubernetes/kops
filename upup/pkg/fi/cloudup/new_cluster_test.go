@@ -508,7 +508,7 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultDOImageJammy,
+			expected:     defaultDOImageNoble,
 		},
 		{
 			cluster: &api.Cluster{
@@ -520,7 +520,7 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultHetznerImageJammy,
+			expected:     defaultHetznerImageNoble,
 		},
 		{
 			cluster: &api.Cluster{
@@ -532,7 +532,7 @@ func TestDefaultImage(t *testing.T) {
 				},
 			},
 			architecture: architectures.ArchitectureAmd64,
-			expected:     defaultScalewayImageJammy,
+			expected:     defaultScalewayImageNoble,
 		},
 	}
 

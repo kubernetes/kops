@@ -59,6 +59,9 @@ const (
 	defaultDOImageJammy       = "ubuntu-22-04-x64"
 	defaultHetznerImageJammy  = "ubuntu-22.04"
 	defaultScalewayImageJammy = "ubuntu_jammy"
+	defaultDOImageNoble       = "ubuntu-24-04-x64"
+	defaultHetznerImageNoble  = "ubuntu-24.04"
+	defaultScalewayImageNoble = "ubuntu_noble"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
