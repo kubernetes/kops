@@ -102,7 +102,7 @@ spec:
       containers:
       - name: kindnet-cni
         image: "ghcr.io/aojea/kindnetd:{{ .Networking.Kindnet.Version }}"
-        args:
+        command:
         - /bin/kindnetd
         - --hostname-override=$(NODE_NAME)
         - --v={{ .Networking.Kindnet.LogLevel }}
