@@ -37,7 +37,7 @@ func (b *KindnetOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.Version == "" {
-		c.Version = "v1.8.0"
+		c.Version = "debug"
 	}
 
 	if c.Masquerade == nil {
@@ -68,7 +68,7 @@ func (b *KindnetOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.LogLevel == nil {
-		c.LogLevel = fi.PtrTo(int32(2))
+		c.LogLevel = fi.PtrTo(int32(7))
 	}
 
 	return nil
