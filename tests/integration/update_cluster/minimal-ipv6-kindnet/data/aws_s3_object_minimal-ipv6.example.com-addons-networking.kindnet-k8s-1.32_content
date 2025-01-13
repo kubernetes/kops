@@ -100,7 +100,7 @@ spec:
         tier: node
     spec:
       containers:
-      - args:
+      - command:
         - /bin/kindnetd
         - --hostname-override=$(NODE_NAME)
         - --v=2
