@@ -31,9 +31,16 @@ import (
 
 // UsesIPAliases checks if the cluster uses IP aliases for network connectivity
 func UsesIPAliases(c *kops.Cluster) bool {
+	// "GCP" networking mode is called "ip-alias" or "vpc-native" on GKE.
 	if c.Spec.Networking.GCP != nil {
 		return true
 	}
+
+	if c.Spec.Networking.Kindnet != nil {
+		// TODO: Are we _always_ using ipalias - should we at least check the cloud is GCP?
+		return true
+	}
+
 	return false
 }
 
