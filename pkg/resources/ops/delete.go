@@ -24,6 +24,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/resources"
 	awsresources "k8s.io/kops/pkg/resources/aws"
+	gceresources "k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -128,7 +129,7 @@ func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource,
 					}
 					if err != nil {
 						mutex.Lock()
-						if awsresources.IsDependencyViolation(err) {
+						if awsresources.IsDependencyViolation(err) || gceresources.IsDependencyViolation(err) {
 							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
 							klog.V(4).Infof("resource %q generated a dependency error: %v", human, err)
 						} else {
