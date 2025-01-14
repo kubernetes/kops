@@ -72,7 +72,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--node-volume-size=30")
   create_args+=("--master-volume-size=1000")
   create_args+=("--gce-service-account=default")
-  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2204-jammy-v20231213a}")
+  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20241219}")
 fi
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
@@ -104,6 +104,8 @@ create_args+=("--set spec.kubeAPIServer.logLevel=2")
 create_args+=("--set spec.kubeAPIServer.featureGates=ServiceTrafficDistribution=false")
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
+# this is required for kindnet to use nftables
+create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--set spec.kubeProxy.featureGates=ServiceTrafficDistribution=false")
