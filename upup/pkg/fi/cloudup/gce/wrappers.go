@@ -38,7 +38,7 @@ func DeleteInstanceGroupManager(c GCECloud, t *compute.InstanceGroupManager) err
 			klog.Infof("InstanceGroupManager not found, assuming deleted: %q", t.SelfLink)
 			return nil
 		}
-		return fmt.Errorf("error deleting InstanceGroupManager %s: %v", t.SelfLink, err)
+		return fmt.Errorf("error deleting InstanceGroupManager %s: %w", t.SelfLink, err)
 	}
 
 	return c.WaitForOp(op)
@@ -58,7 +58,7 @@ func DeleteInstanceTemplate(c GCECloud, selfLink string) error {
 			klog.Infof("instancetemplate not found, assuming deleted: %q", selfLink)
 			return nil
 		}
-		return fmt.Errorf("error deleting InstanceTemplate %s: %v", selfLink, err)
+		return fmt.Errorf("error deleting InstanceTemplate %s: %w", selfLink, err)
 	}
 
 	return c.WaitForOp(op)
@@ -78,7 +78,7 @@ func DeleteInstance(c GCECloud, instanceSelfLink string) error {
 			klog.Infof("Instance not found, assuming deleted: %q", instanceSelfLink)
 			return nil
 		}
-		return fmt.Errorf("error deleting Instance %s: %v", instanceSelfLink, err)
+		return fmt.Errorf("error deleting Instance %s: %w", instanceSelfLink, err)
 	}
 
 	return c.WaitForOp(op)
@@ -100,7 +100,7 @@ func ListManagedInstances(c GCECloud, igm *compute.InstanceGroupManager) ([]*com
 
 	instances, err := c.Compute().InstanceGroupManagers().ListManagedInstances(ctx, project, zoneName, igm.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
+		return nil, fmt.Errorf("error listing ManagedInstances in %s: %w", igm.Name, err)
 	}
 
 	return instances, nil
