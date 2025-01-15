@@ -116,11 +116,17 @@ func NewCmdReconcileCluster(f *util.Factory, out io.Writer) *cobra.Command {
 // "update" is probably now smart enough to automatically not update the control plane if it is already at the desired version,
 // but we do it explicitly here to be clearer / safer.
 func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CoreUpdateClusterOptions) error {
-	if !c.Yes {
-		return fmt.Errorf("reconcile is only supported with --yes")
-	}
 	if c.Target == cloudup.TargetTerraform {
 		return fmt.Errorf("reconcile is not supported with terraform")
+	}
+
+	if !c.Yes {
+		// A reconcile without --yes is the same as a dry run
+		opt := *c
+		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	fmt.Fprintf(out, "Updating control plane configuration\n")
