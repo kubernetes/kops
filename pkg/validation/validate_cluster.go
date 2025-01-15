@@ -56,15 +56,23 @@ type ValidationError struct {
 
 type ClusterValidator interface {
 	// Validate validates a k8s cluster
-	Validate() (*ValidationCluster, error)
+	Validate(ctx context.Context) (*ValidationCluster, error)
 }
 
 type clusterValidatorImpl struct {
-	cluster        *kops.Cluster
-	cloud          fi.Cloud
-	instanceGroups []*kops.InstanceGroup
-	restConfig     *rest.Config
-	k8sClient      kubernetes.Interface
+	cluster    *kops.Cluster
+	cloud      fi.Cloud
+	restConfig *rest.Config
+	k8sClient  kubernetes.Interface
+
+	// allInstanceGroups is the list of all instance groups in the cluster
+	allInstanceGroups []*kops.InstanceGroup
+
+	// filterInstanceGroups is a function that returns true if the instance group should be validated
+	filterInstanceGroups func(ig *kops.InstanceGroup) bool
+
+	// filterPodsForValidation is a function that returns true if the pod should be validated
+	filterPodsForValidation func(pod *v1.Pod) bool
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -101,30 +109,44 @@ func hasPlaceHolderIP(host string) (string, error) {
 	return "", nil
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, restConfig *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
-	var instanceGroups []*kops.InstanceGroup
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, filterInstanceGroups func(ig *kops.InstanceGroup) bool, filterPodsForValidation func(pod *v1.Pod) bool, restConfig *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+	var allInstanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
-		instanceGroups = append(instanceGroups, ig)
+		allInstanceGroups = append(allInstanceGroups, ig)
 	}
 
-	if len(instanceGroups) == 0 {
+	if len(allInstanceGroups) == 0 {
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
+	// If no filter is provided, validate all instance groups
+	if filterInstanceGroups == nil {
+		filterInstanceGroups = func(ig *kops.InstanceGroup) bool {
+			return true
+		}
+	}
+
+	// If no filter is provided, validate all pods
+	if filterPodsForValidation == nil {
+		filterPodsForValidation = func(pod *v1.Pod) bool {
+			return true
+		}
+	}
+
 	return &clusterValidatorImpl{
-		cluster:        cluster,
-		cloud:          cloud,
-		instanceGroups: instanceGroups,
-		restConfig:     restConfig,
-		k8sClient:      k8sClient,
+		cluster:                 cluster,
+		cloud:                   cloud,
+		allInstanceGroups:       allInstanceGroups,
+		restConfig:              restConfig,
+		k8sClient:               k8sClient,
+		filterInstanceGroups:    filterInstanceGroups,
+		filterPodsForValidation: filterPodsForValidation,
 	}, nil
 }
 
-func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
-	ctx := context.TODO()
-
+func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster, error) {
 	validation := &ValidationCluster{}
 
 	// Do not use if we are running gossip or without dns
@@ -161,13 +183,14 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 	}
 
 	warnUnmatched := false
-	cloudGroups, err := v.cloud.GetCloudGroups(v.cluster, v.instanceGroups, warnUnmatched, nodeList.Items)
+	cloudGroups, err := v.cloud.GetCloudGroups(v.cluster, v.allInstanceGroups, warnUnmatched, nodeList.Items)
 	if err != nil {
 		return nil, err
 	}
-	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.instanceGroups)
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping); err != nil {
+	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.allInstanceGroups, v.filterInstanceGroups)
+
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 
@@ -181,7 +204,7 @@ var masterStaticPods = []string{
 }
 
 func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
-	nodeInstanceGroupMapping map[string]*kops.InstanceGroup,
+	nodeInstanceGroupMapping map[string]*kops.InstanceGroup, podValidationFilter func(pod *v1.Pod) bool,
 ) error {
 	masterWithoutPod := map[string]map[string]bool{}
 	nodeByAddress := map[string]string{}
@@ -210,10 +233,16 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 			delete(masterWithoutPod[nodeByAddress[pod.Status.HostIP]], app)
 		}
 
+		// Ignore pods that we don't want to validate
+		if !podValidationFilter(pod) {
+			return nil
+		}
+
 		priority := pod.Spec.PriorityClassName
 		if priority != "system-cluster-critical" && priority != "system-node-critical" {
 			return nil
 		}
+
 		if pod.Status.Phase == v1.PodSucceeded {
 			return nil
 		}
@@ -275,12 +304,16 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 	return nil
 }
 
-func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup) ([]v1.Node, map[string]*kops.InstanceGroup) {
+func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool) ([]v1.Node, map[string]*kops.InstanceGroup) {
 	var readyNodes []v1.Node
 	groupsSeen := map[string]bool{}
 	nodeInstanceGroupMapping := map[string]*kops.InstanceGroup{}
 
 	for _, cloudGroup := range cloudGroups {
+		if cloudGroup.InstanceGroup != nil && !shouldValidateInstanceGroup(cloudGroup.InstanceGroup) {
+			continue
+		}
+
 		var allMembers []*cloudinstances.CloudInstance
 		allMembers = append(allMembers, cloudGroup.Ready...)
 		allMembers = append(allMembers, cloudGroup.NeedUpdate...)
@@ -372,6 +405,10 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 	}
 
 	for _, ig := range groups {
+		if !shouldValidateInstanceGroup(ig) {
+			continue
+		}
+
 		if !groupsSeen[ig.Name] {
 			v.addError(&ValidationError{
 				Kind:          "InstanceGroup",

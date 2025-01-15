@@ -75,7 +75,7 @@ type countingValidator struct {
 	numValidations int
 }
 
-func (c *countingValidator) Validate() (*validation.ValidationCluster, error) {
+func (c *countingValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	c.numValidations++
 	return &validation.ValidationCluster{}, nil
 }

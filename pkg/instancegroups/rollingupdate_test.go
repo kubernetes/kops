@@ -84,13 +84,13 @@ func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud) {
 
 type successfulClusterValidator struct{}
 
-func (*successfulClusterValidator) Validate() (*validation.ValidationCluster, error) {
+func (*successfulClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	return &validation.ValidationCluster{}, nil
 }
 
 type failingClusterValidator struct{}
 
-func (*failingClusterValidator) Validate() (*validation.ValidationCluster, error) {
+func (*failingClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	return &validation.ValidationCluster{
 		Failures: []*validation.ValidationError{
 			{
@@ -104,7 +104,7 @@ func (*failingClusterValidator) Validate() (*validation.ValidationCluster, error
 
 type erroringClusterValidator struct{}
 
-func (*erroringClusterValidator) Validate() (*validation.ValidationCluster, error) {
+func (*erroringClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	return nil, errors.New("testing validation error")
 }
 
@@ -113,7 +113,7 @@ type instanceGroupNodeSpecificErrorClusterValidator struct {
 	InstanceGroup *kopsapi.InstanceGroup
 }
 
-func (igErrorValidator *instanceGroupNodeSpecificErrorClusterValidator) Validate() (*validation.ValidationCluster, error) {
+func (igErrorValidator *instanceGroupNodeSpecificErrorClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	return &validation.ValidationCluster{
 		Failures: []*validation.ValidationError{
 			{
@@ -130,7 +130,7 @@ type assertNotCalledClusterValidator struct {
 	T *testing.T
 }
 
-func (v *assertNotCalledClusterValidator) Validate() (*validation.ValidationCluster, error) {
+func (v *assertNotCalledClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	v.T.Fatal("validator called unexpectedly")
 	return nil, errors.New("validator called unexpectedly")
 }
@@ -425,8 +425,7 @@ type failAfterOneNodeClusterValidator struct {
 	ReturnError bool
 }
 
-func (v *failAfterOneNodeClusterValidator) Validate() (*validation.ValidationCluster, error) {
-	ctx := context.TODO()
+func (v *failAfterOneNodeClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []string{v.Group},
 	})
@@ -648,8 +647,7 @@ type flappingClusterValidator struct {
 	invocationCount int
 }
 
-func (v *flappingClusterValidator) Validate() (*validation.ValidationCluster, error) {
-	ctx := context.TODO()
+func (v *flappingClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	asgGroups, _ := v.Cloud.Autoscaling().DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []string{"master-1"},
 	})
@@ -706,7 +704,7 @@ type failThreeTimesClusterValidator struct {
 	invocationCount int
 }
 
-func (v *failThreeTimesClusterValidator) Validate() (*validation.ValidationCluster, error) {
+func (v *failThreeTimesClusterValidator) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	v.invocationCount++
 	if v.invocationCount <= 3 {
 		return &validation.ValidationCluster{
@@ -1060,7 +1058,7 @@ type concurrentTest struct {
 	detached                map[string]bool
 }
 
-func (c *concurrentTest) Validate() (*validation.ValidationCluster, error) {
+func (c *concurrentTest) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -1441,7 +1439,7 @@ type alreadyDetachedTest struct {
 	detached                map[string]bool
 }
 
-func (t *alreadyDetachedTest) Validate() (*validation.ValidationCluster, error) {
+func (t *alreadyDetachedTest) Validate(ctx context.Context) (*validation.ValidationCluster, error) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 

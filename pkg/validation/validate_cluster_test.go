@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -70,6 +71,8 @@ func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*k
 }
 
 func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object) (*ValidationCluster, error) {
+	ctx := context.TODO()
+
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 		Spec: kopsapi.ClusterSpec{
@@ -130,14 +133,16 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 	restConfig := &rest.Config{
 		Host: "https://api.testcluster.k8s.local",
 	}
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, restConfig, fake.NewSimpleClientset(objects...))
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, nil, restConfig, fake.NewSimpleClientset(objects...))
 	if err != nil {
 		return nil, err
 	}
-	return validator.Validate()
+	return validator.Validate(ctx)
 }
 
 func Test_ValidateCloudGroupMissing(t *testing.T) {
+	ctx := context.TODO()
+
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 		Spec: kopsapi.ClusterSpec{
@@ -163,9 +168,9 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 	restConfig := &rest.Config{
 		Host: "https://api.testcluster.k8s.local",
 	}
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, restConfig, fake.NewSimpleClientset())
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, nil, restConfig, fake.NewSimpleClientset())
 	require.NoError(t, err)
-	v, err := validator.Validate()
+	v, err := validator.Validate(ctx)
 	require.NoError(t, err)
 	if !assert.Len(t, v.Failures, 1) ||
 		!assert.Equal(t, &ValidationError{

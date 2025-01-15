@@ -537,7 +537,7 @@ func (c *RollingUpdateCluster) validateClusterWithTimeout(validateCount int, gro
 
 	for {
 		// Note that we validate at least once before checking the timeout, in case the cluster is healthy with a short timeout
-		result, err := c.ClusterValidator.Validate()
+		result, err := c.ClusterValidator.Validate(ctx)
 		if err == nil && !hasFailureRelevantToGroup(result.Failures, group) {
 			successCount++
 			if successCount >= validateCount {

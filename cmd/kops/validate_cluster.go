@@ -36,6 +36,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
@@ -61,12 +62,19 @@ var (
 )
 
 type ValidateClusterOptions struct {
-	ClusterName string
-	output      string
-	wait        time.Duration
-	count       int
-	interval    time.Duration
-	kubeconfig  string
+	ClusterName        string
+	InstanceGroupRoles []kops.InstanceGroupRole
+	output             string
+	wait               time.Duration
+	count              int
+	interval           time.Duration
+	kubeconfig         string
+
+	// filterInstanceGroups is a function that returns true if the instance group should be validated
+	filterInstanceGroups func(ig *kops.InstanceGroup) bool
+
+	// filterPodsForValidation is a function that returns true if the pod should be validated
+	filterPodsForValidation func(pod *v1.Pod) bool
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
@@ -164,7 +172,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 
 	timeout := time.Now().Add(options.wait)
 
-	validator, err := validation.NewClusterValidator(cluster, cloud, list, restConfig, k8sClient)
+	validator, err := validation.NewClusterValidator(cluster, cloud, list, options.filterInstanceGroups, options.filterPodsForValidation, restConfig, k8sClient)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected error creating validatior: %v", err)
 	}
@@ -175,7 +183,7 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 			return nil, fmt.Errorf("wait time exceeded during validation")
 		}
 
-		result, err := validator.Validate()
+		result, err := validator.Validate(ctx)
 		if err != nil {
 			consecutive = 0
 			if options.wait > 0 {

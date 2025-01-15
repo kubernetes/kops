@@ -453,7 +453,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 			return fmt.Errorf("getting rest config: %w", err)
 		}
 
-		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, restConfig, k8sClient)
+		clusterValidator, err = validation.NewClusterValidator(cluster, cloud, list, nil, nil, restConfig, k8sClient)
 		if err != nil {
 			return fmt.Errorf("cannot create cluster validator: %v", err)
 		}
