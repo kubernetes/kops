@@ -119,6 +119,14 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 		} else {
 			kcm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
 		}
+	} else if networking.Kindnet != nil {
+		// We don't expect KCM to configure routes; it should be done by the CCM (or by the infrastructure)
+		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+
+		// If the cloud is allocating the node CIDRs, that should be done by CCM
+		if o.GetCloudProvider() == kops.CloudProviderGCE && gce.UsesIPAliases(o) {
+			kcm.AllocateNodeCIDRs = fi.PtrTo(false)
+		}
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
 	} else if UsesCNI(networking) {

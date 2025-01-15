@@ -233,7 +233,7 @@ CAs:
 ClusterName: privatekindnet.example.com
 ControlPlaneConfig:
   KubeControllerManager:
-    allocateNodeCIDRs: true
+    allocateNodeCIDRs: false
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: external
     clusterCIDR: 100.96.0.0/11
