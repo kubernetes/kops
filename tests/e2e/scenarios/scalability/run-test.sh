@@ -72,7 +72,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--node-volume-size=30")
   create_args+=("--master-volume-size=1000")
   create_args+=("--gce-service-account=default")
-  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2204-jammy-v20231213a}")
+  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2204-jammy-v20240927}")
 fi
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
