@@ -185,7 +185,7 @@ spec:
       logLevel: 2
       masquerade:
         enabled: false
-      version: v1.8.0
+      version: v1.8.2
   nodeTerminationHandler:
     cpuRequest: 50m
     deleteSQSMsgIfNodeNotFound: false
