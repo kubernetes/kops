@@ -141,9 +141,9 @@ func (_ *HealthCheck) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 			Port: e.Port,
 		},
 	}
-	return t.RenderResource("google_compute_health_check", *e.Name, tf)
+	return t.RenderResource("google_compute_region_health_check", *e.Name, tf)
 }
 
 func (e *HealthCheck) TerraformAddress() *terraformWriter.Literal {
-	return terraformWriter.LiteralProperty("google_compute_health_check", *e.Name, "id")
+	return terraformWriter.LiteralProperty("google_compute_region_health_check", *e.Name, "id")
 }
