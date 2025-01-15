@@ -99,7 +99,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.32
     manifest: networking.kindnet/k8s-1.32.yaml
-    manifestHash: 94a6df20bdbaafa96a21757cce17c3423a82e9fff86308de418cdbb0b272bb41
+    manifestHash: b6731b412e046c9ae24d1a845169a3ed153ab57f544c88cf37497d2b56efd406
     name: networking.kindnet
     needsRollingUpdate: all
     selector:
