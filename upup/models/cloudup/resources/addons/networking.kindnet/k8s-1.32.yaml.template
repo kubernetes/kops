@@ -13,6 +13,13 @@ rules:
       - watch
       - patch
   - apiGroups:
+      - ""
+    resources:
+      - nodes/proxy
+      - nodes/configz
+    verbs:
+      - get
+  - apiGroups:
      - ""
     resources:
       - configmaps
