@@ -1,6 +1,6 @@
 module k8s.io/kops/hack
 
-go 1.23.4
+go 1.23.5
 
 require (
 	github.com/client9/misspell v0.3.4
