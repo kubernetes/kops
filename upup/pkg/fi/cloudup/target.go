@@ -16,8 +16,42 @@ limitations under the License.
 
 package cloudup
 
-const (
-	TargetDirect    = "direct"
-	TargetDryRun    = "dryrun"
-	TargetTerraform = "terraform"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/spf13/pflag"
 )
+
+// Target is the type of target we are operating against.
+type Target string
+
+const (
+	// TargetDirect means we will apply the changes directly to the cloud.
+	TargetDirect Target = "direct"
+	// TargetDryRun means we will not apply the changes but will print what would have been done.
+	TargetDryRun Target = "dryrun"
+	// TargetTerraform means we will generate terraform code.
+	TargetTerraform Target = "terraform"
+)
+
+// Target can be used as a flag value.
+var _ pflag.Value = (*Target)(nil)
+
+func (t *Target) String() string {
+	return string(*t)
+}
+
+func (t *Target) Set(value string) error {
+	switch strings.ToLower(value) {
+	case string(TargetDirect), string(TargetDryRun), string(TargetTerraform):
+		*t = Target(value)
+		return nil
+	default:
+		return fmt.Errorf("invalid target: %q", value)
+	}
+}
+
+func (t *Target) Type() string {
+	return "target"
+}

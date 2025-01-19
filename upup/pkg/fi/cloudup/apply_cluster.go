@@ -93,7 +93,7 @@ type ApplyClusterCmd struct {
 	InstanceGroups []*kops.InstanceGroup
 
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
-	TargetName string
+	TargetName Target
 
 	// Target is the fi.Target we will operate against
 	Target fi.CloudupTarget

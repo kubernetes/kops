@@ -39,7 +39,7 @@ kops update cluster [CLUSTER] [flags]
       --prune                          Delete old revisions of cloud resources that were needed during an upgrade
       --reconcile                      Reconcile the cluster by rolling the control plane and nodes sequentially
       --ssh-public-key string          SSH public key to use (deprecated: use kops create secret instead)
-      --target string                  Target - direct, terraform (default "direct")
+      --target target                  Target - "direct", "terraform" (default direct)
       --user string                    Existing user in kubeconfig file to use.  Implies --create-kube-config
   -y, --yes                            Create cloud resources, without --yes update is in dry run mode
 ```
