@@ -1,6 +1,6 @@
 module k8s.io/kops/tools/otel/traceserver
 
-go 1.23.4
+go 1.23.5
 
 require (
 	go.opentelemetry.io/proto/otlp v1.3.1
