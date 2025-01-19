@@ -121,24 +121,37 @@ else
   "${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
 fi
 
-"${KOPS_B}" update cluster
-"${KOPS_B}" update cluster --admin --yes
-# Verify no additional changes
-"${KOPS_B}" update cluster
+if [[ "${KOPS_VERSION_B}" =~ 1.(20|21|22|23|24|25|26|27|28|29|30). ]]; then
+  # kOps introduced the reconcile command in 1.31
+  # TODO: remove this block once we stop testing upgrades to kops <1.31
+  "${KOPS_B}" update cluster
+  "${KOPS_B}" update cluster --admin --yes
+  # Verify no additional changes
+  "${KOPS_B}" update cluster
 
-# Verify kubeconfig-a still works
-kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
+  # Verify kubeconfig-a still works
+  kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
 
-# Sleep to ensure channels has done its thing
-sleep 120s
+  # Sleep to ensure channels has done its thing
+  sleep 120s
 
-# Make sure configuration B has been applied (e.g. new load balancer is ready)
-"${KOPS_B}" validate cluster --wait=10m
+  # Make sure configuration B has been applied (e.g. new load balancer is ready)
+  "${KOPS_B}" validate cluster --wait=10m
 
-${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
+  ${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
 
-"${KOPS_B}" rolling-update cluster
-"${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
+  "${KOPS_B}" rolling-update cluster
+  "${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
+else
+  # Preview changes
+  "${KOPS_B}" reconcile cluster
+
+  # Apply changes
+  "${KOPS_B}" reconcile cluster --yes
+
+  # Verify no additional changes
+  "${KOPS_B}" update cluster
+fi
 
 "${KOPS_B}" validate cluster
 
