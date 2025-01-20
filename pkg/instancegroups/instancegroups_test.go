@@ -60,7 +60,7 @@ func TestWarmPoolOnlyRoll(t *testing.T) {
 	instance.State = cloudinstances.WarmPool
 
 	{
-		err := c.rollingUpdateInstanceGroup(group, 0*time.Second)
+		err := c.rollingUpdateInstanceGroup(ctx, group, 0*time.Second)
 		if err != nil {
 			t.Fatalf("could not roll instance group: %v", err)
 		}

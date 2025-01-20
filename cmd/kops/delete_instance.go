@@ -219,7 +219,6 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	d := &instancegroups.RollingUpdateCluster{
 		Clientset:         clientSet,
 		Cluster:           cluster,
-		Ctx:               ctx,
 		MasterInterval:    0,
 		NodeInterval:      0,
 		BastionInterval:   0,
@@ -248,7 +247,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	}
 	d.ClusterValidator = clusterValidator
 
-	return d.UpdateSingleInstance(cloudMember, options.Surge)
+	return d.UpdateSingleInstance(ctx, cloudMember, options.Surge)
 }
 
 func getNodes(ctx context.Context, cluster *kopsapi.Cluster, verbose bool) (kubernetes.Interface, string, []v1.Node, error) {

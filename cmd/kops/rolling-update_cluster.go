@@ -348,7 +348,6 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 
 	d := &instancegroups.RollingUpdateCluster{
 		Clientset:         clientset,
-		Ctx:               ctx,
 		Cluster:           cluster,
 		MasterInterval:    options.ControlPlaneInterval,
 		NodeInterval:      options.NodeInterval,
@@ -456,7 +455,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	}
 	d.ClusterValidator = clusterValidator
 
-	return d.RollingUpdate(groups, list)
+	return d.RollingUpdate(ctx, groups, list)
 }
 
 func completeInstanceGroup(f commandutils.Factory, selectedInstanceGroups *[]string, selectedInstanceGroupRoles *[]string) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
