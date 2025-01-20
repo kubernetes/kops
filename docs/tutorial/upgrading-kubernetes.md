@@ -15,7 +15,7 @@ It is comparable to the following sequence:
 2. `kops rolling-update cluster --instance-group-roles=control-plane,apiserver --yes`
 3. `kops update cluster --yes`
 4. `kops rolling-update cluster --yes`
-
+5. `kops update cluster --prune --yes`
 **Terraform** users will need to use a targeted terraform apply with the normal `kops rolling-update cluster --yes`:
 
 ```sh
