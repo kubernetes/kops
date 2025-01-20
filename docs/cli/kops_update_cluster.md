@@ -37,7 +37,6 @@ kops update cluster [CLUSTER] [flags]
       --out string                     Path to write any local output
       --phase string                   Subset of tasks to run: cluster, network, security
       --prune                          Delete old revisions of cloud resources that were needed during an upgrade
-      --reconcile                      Reconcile the cluster by rolling the control plane and nodes sequentially
       --ssh-public-key string          SSH public key to use (deprecated: use kops create secret instead)
       --target target                  Target - "direct", "terraform" (default direct)
       --user string                    Existing user in kubeconfig file to use.  Implies --create-kube-config

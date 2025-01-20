@@ -190,8 +190,6 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Prune, "prune", options.Prune, "Delete old revisions of cloud resources that were needed during an upgrade")
 	cmd.Flags().BoolVar(&options.IgnoreKubeletVersionSkew, "ignore-kubelet-version-skew", options.IgnoreKubeletVersionSkew, "Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running")
 
-	cmd.Flags().BoolVar(&options.Reconcile, "reconcile", options.Reconcile, "Reconcile the cluster by rolling the control plane and nodes sequentially")
-
 	return cmd
 }
 
@@ -219,10 +217,6 @@ func RunCoreUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c
 }
 
 func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *UpdateClusterOptions) (*UpdateClusterResults, error) {
-	if c.Reconcile {
-		return nil, RunReconcileCluster(ctx, f, out, &c.CoreUpdateClusterOptions)
-	}
-
 	results := &UpdateClusterResults{}
 
 	isDryrun := false
