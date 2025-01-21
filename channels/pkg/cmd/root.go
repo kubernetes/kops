@@ -17,6 +17,7 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	goflag "flag"
 	"fmt"
 	"io"
@@ -29,17 +30,17 @@ type CmdRootOptions struct {
 	configFile string
 }
 
-func Execute(f Factory, out io.Writer) error {
+func Execute(ctx context.Context, f *ChannelsFactory, out io.Writer) error {
 	cobra.OnInitialize(initConfig)
 
 	cmd := NewCmdRoot(f, out)
 
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
-	return cmd.Execute()
+	return cmd.ExecuteContext(ctx)
 }
 
-func NewCmdRoot(f Factory, out io.Writer) *cobra.Command {
+func NewCmdRoot(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	options := &CmdRootOptions{}
 
 	cmd := &cobra.Command{

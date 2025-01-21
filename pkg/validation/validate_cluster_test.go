@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
@@ -126,7 +127,10 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 
 	mockcloud := BuildMockCloud(t, groups, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset(objects...))
+	restConfig := &rest.Config{
+		Host: "https://api.testcluster.k8s.local",
+	}
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, restConfig, fake.NewSimpleClientset(objects...))
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +160,10 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 
 	mockcloud := BuildMockCloud(t, nil, cluster, instanceGroups)
 
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, "https://api.testcluster.k8s.local", fake.NewSimpleClientset())
+	restConfig := &rest.Config{
+		Host: "https://api.testcluster.k8s.local",
+	}
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, restConfig, fake.NewSimpleClientset())
 	require.NoError(t, err)
 	v, err := validator.Validate()
 	require.NoError(t, err)

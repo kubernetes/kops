@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/pager"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -62,7 +63,7 @@ type clusterValidatorImpl struct {
 	cluster        *kops.Cluster
 	cloud          fi.Cloud
 	instanceGroups []*kops.InstanceGroup
-	host           string
+	restConfig     *rest.Config
 	k8sClient      kubernetes.Interface
 }
 
@@ -100,7 +101,7 @@ func hasPlaceHolderIP(host string) (string, error) {
 	return "", nil
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, host string, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, restConfig *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
 	var instanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
@@ -116,7 +117,7 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		cluster:        cluster,
 		cloud:          cloud,
 		instanceGroups: instanceGroups,
-		host:           host,
+		restConfig:     restConfig,
 		k8sClient:      k8sClient,
 	}, nil
 }
@@ -133,7 +134,7 @@ func (v *clusterValidatorImpl) Validate() (*ValidationCluster, error) {
 			dnsProvider = kops.ExternalDNSProviderExternalDNS
 		}
 
-		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.host)
+		hasPlaceHolderIPAddress, err := hasPlaceHolderIP(v.restConfig.Host)
 		if err != nil {
 			return nil, err
 		}

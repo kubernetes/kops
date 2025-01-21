@@ -25,12 +25,15 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
+	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/spf13/cobra"
 	"go.uber.org/multierr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
+
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kops/util/pkg/vfs"
@@ -38,9 +41,11 @@ import (
 
 type ApplyChannelOptions struct {
 	Yes bool
+
+	configFlags genericclioptions.ConfigFlags
 }
 
-func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
+func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	var options ApplyChannelOptions
 
 	cmd := &cobra.Command{
@@ -57,20 +62,29 @@ func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *ApplyChannelOptions, args []string) error {
-	k8sClient, err := f.KubernetesClient()
+func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
+	restConfig, err := f.RESTConfig()
+	if err != nil {
+		return err
+	}
+	httpClient, err := f.HTTPClient()
 	if err != nil {
 		return err
 	}
 
-	cmClient, err := f.CertManagerClient()
+	k8sClient, err := kubernetes.NewForConfigAndClient(restConfig, httpClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("building kube client: %w", err)
+	}
+
+	cmClient, err := certmanager.NewForConfigAndClient(restConfig, httpClient)
+	if err != nil {
+		return fmt.Errorf("building cert manager client: %w", err)
 	}
 
 	dynamicClient, err := f.DynamicClient()
 	if err != nil {
-		return err
+		return fmt.Errorf("building dynamic client: %w", err)
 	}
 
 	restMapper, err := f.RESTMapper()
@@ -92,7 +106,7 @@ func RunApplyChannel(ctx context.Context, f Factory, out io.Writer, options *App
 	kubernetesVersion.Pre = nil
 
 	if len(args) != 1 {
-		return fmt.Errorf("unexpected number of arguments. Only one channel may be processed at the same time.")
+		return fmt.Errorf("unexpected number of arguments. Only one channel may be processed at the same time")
 	}
 
 	channelLocation := args[0]
