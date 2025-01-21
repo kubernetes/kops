@@ -19,6 +19,7 @@ package kubeconfig
 import (
 	"fmt"
 
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
@@ -207,4 +208,22 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 
 	fmt.Printf("kOps has set your kubectl context to %s\n", b.Context)
 	return nil
+}
+
+func (b *KubeconfigBuilder) ToRESTConfig() (*rest.Config, error) {
+	restConfig := &rest.Config{}
+
+	restConfig.Host = b.Server
+	restConfig.TLSClientConfig.CAData = b.CACerts
+	restConfig.TLSClientConfig.ServerName = b.TLSServerName
+
+	usingAuthPlugin := len(b.AuthenticationExec) != 0
+	if usingAuthPlugin {
+		return nil, fmt.Errorf("auth plugin not yet supported by ToRESTConfig")
+	}
+
+	restConfig.CertData = b.ClientCert
+	restConfig.KeyData = b.ClientKey
+
+	return restConfig, nil
 }
