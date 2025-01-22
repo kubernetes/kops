@@ -58,27 +58,27 @@ spec:
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.17.0 <1.18.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20241112
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20250111
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.18.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20241112
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20250111
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20241211
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250112
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20241211
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20250112
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20241206
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250115
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20241206
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250115
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.32.0"
@@ -120,16 +120,16 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.32.0"
-    recommendedVersion: 1.32.0
+    recommendedVersion: 1.32.1
     requiredVersion: 1.30.0
   - range: ">=1.31.0"
-    recommendedVersion: 1.31.4
+    recommendedVersion: 1.31.5
     requiredVersion: 1.30.0
   - range: ">=1.30.0"
-    recommendedVersion: 1.30.8
+    recommendedVersion: 1.30.9
     requiredVersion: 1.30.0
   - range: ">=1.29.0"
-    recommendedVersion: 1.29.12
+    recommendedVersion: 1.29.13
     requiredVersion: 1.29.0
   - range: ">=1.28.0"
     recommendedVersion: 1.28.15
@@ -192,19 +192,19 @@ spec:
   - range: ">=1.32.0-alpha.1"
     recommendedVersion: "1.31.0-beta.1"
     #requiredVersion: 1.32.0
-    kubernetesVersion: 1.32.0
+    kubernetesVersion: 1.32.1
   - range: ">=1.31.0-alpha.1"
     recommendedVersion: "1.31.0-beta.1"
     #requiredVersion: 1.31.0
-    kubernetesVersion: 1.31.4
+    kubernetesVersion: 1.31.5
   - range: ">=1.30.0-alpha.1"
     recommendedVersion: "1.30.3"
     #requiredVersion: 1.30.0
-    kubernetesVersion: 1.30.8
+    kubernetesVersion: 1.30.9
   - range: ">=1.29.0-alpha.1"
     recommendedVersion: "1.30.3"
     #requiredVersion: 1.29.0
-    kubernetesVersion: 1.29.12
+    kubernetesVersion: 1.29.13
   - range: ">=1.28.0-alpha.1"
     recommendedVersion: "1.30.3"
     #requiredVersion: 1.28.0
