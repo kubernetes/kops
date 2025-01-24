@@ -566,8 +566,8 @@ resource "google_compute_network" "minimal-gce-ilb-example-com" {
 
 resource "google_compute_region_backend_service" "api-minimal-gce-ilb-example-com" {
   backend {
-    balancing_group = "CONNECTION"
-    group           = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-ilb-example-com.instance_group
+    balancing_mode = "CONNECTION"
+    group          = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-ilb-example-com.instance_group
   }
   health_checks         = [google_compute_region_health_check.api-minimal-gce-ilb-example-com.id]
   load_balancing_scheme = "INTERNAL"
