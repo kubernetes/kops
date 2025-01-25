@@ -62,8 +62,13 @@ It is recommended to run the latest version of kOps to ensure compatibility with
 In future the upgrade step will likely perform the update immediately (and possibly even without a
 node restart), but currently you must:
 
+For kOps 1.31 and newer, run `kops reconcile cluster $NAME --yes`
+
+For older kOps versions, run: 
 * `kops update cluster $NAME` to preview, then `kops update cluster $NAME --yes`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
+
+For more detail about the command change in kOps 1.31, see [docs/tutorial/upgrading-kubernetes.md](/docs/tutorial/upgrading-kubernetes.md).
 
 Upgrade uses the latest Kubernetes version considered stable by kOps, defined in `https://github.com/kubernetes/kops/blob/master/channels/stable`.
 

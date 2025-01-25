@@ -1,15 +1,60 @@
 # Upgrading kubernetes
 
-Upgrading kubernetes is very easy with kOps, as long as you are using a compatible version of kOps.
-The kOps `1.18.x` series (for example) supports the kubernetes 1.16, 1.17 and 1.18 series,
-as per the kubernetes deprecation policy. Older versions of kubernetes will likely still work, but these
-are on a best-effort basis and will have little if any testing. kOps `1.18` will not support the kubernetes
-`1.19` series, and for full support of kubernetes `1.19` it is best to wait for the kOps `1.19` series release.
-We aim to release the next major version of kOps within a few weeks of the equivalent major release of kubernetes,
-so kOps `1.19.0` will be released within a few weeks of kubernetes `1.19.0`. We try to ensure that a 1.19 pre-release
-(alpha or beta) is available at the kubernetes release, for early adopters.
+## **NOTE for Kubernetes >1.31**
 
-Upgrading kubernetes is similar to changing the image on an InstanceGroup, except that the kubernetes version is
+Kops' upgrade procedure has historically risked violating the [Kubelet version skew policy](https://kubernetes.io/releases/version-skew-policy/#kubelet). After `kops update cluster --yes` completes and before every kube-apiserver is replaced with `kops rolling-update cluster --yes`, newly launched nodes running newer kubelet versions could be connecting to older `kube-apiserver` nodes.
+
+**Violating this policy when upgrading to Kubernetes 1.31 can cause newer kubelets to crash.** [This kubernetes issue](https://github.com/kubernetes/kubernetes/issues/127316) provides details though it was not addressed because the change does not actually violate the version skew policy, it merely breaks tooling that was already violating the policy.
+
+To upgrade a cluster to Kubernetes 1.31 or newer, use the new `kops reconcile cluster` command introduced in Kops 1.31. This replaces both `kops update cluster --yes` and `kops rolling-update cluster --yes`.
+
+`kops reconcile cluster` will interleave the cloud provider updates of `kops update cluster --yes` with the node rotations of `kops rolling-update cluster --yes`.
+
+It is comparable to the following sequence:
+1. `kops update cluster --instance-group-roles=control-plane,apiserver --yes`
+2. `kops rolling-update cluster --instance-group-roles=control-plane,apiserver --yes`
+3. `kops update cluster --yes`
+4. `kops rolling-update cluster --yes`
+5. `kops update cluster --prune --yes`
+
+**Terraform** users will need to use a targeted terraform apply with the normal `kops rolling-update cluster --yes`:
+
+```sh
+$ kops update cluster --target terraform ...
+
+# Get the terraform resource IDs of the instance groups with a spec.role of `ControlPlane`, `Master`, or `APIServer`
+# The exact output may vary.
+$ terraform state list | grep -E 'aws_autoscaling_group|google_compute_instance_group_manager|hcloud_server|digitalocean_droplet|scaleway_instance_server'
+aws_autoscaling_group.controlplane-us-east-1a-example-com
+aws_autoscaling_group.controlplane-us-east-1b-example-com
+aws_autoscaling_group.controlplane-us-east-1c-example-com
+aws_autoscaling_group.nodes-example-com
+aws_autoscaling_group.bastion-example-com
+
+# Apply the changes to all control plane instance groups
+$ terraform apply -target 'aws_autoscaling_group.controlplane-us-east-1a-example-com' -target 'aws_autoscaling_group.controlplane-us-east-1b-example-com' -target 'aws_autoscaling_group.controlplane-us-east-1c-example-com'
+
+# Roll the apiserver nodes
+$ kops rolling-update cluster --yes --instance-group-roles control-plane,apiserver
+
+# Apply everything else
+$ terraform apply
+
+# Roll the remaining nodes
+$ kops rolling-update cluster --yes
+```
+
+## Upgrades before Kops 1.31
+
+Upgrading kubernetes is very easy with kOps, as long as you are using a compatible version of kOps.
+The kOps `1.30.x` series (for example) supports the kubernetes 1.28, 1.29, and 1.30 series,
+as per the kubernetes deprecation policy. Older versions of kubernetes will likely still work, but these
+are on a best-effort basis and will have little if any testing. kOps `1.30` will not support the kubernetes
+`1.31` series, and for full support of kubernetes `1.31` it is best to wait for the kOps `1.31` series release.
+We aim to release the next major version of kOps within a few weeks of the equivalent major release of kubernetes.
+We try to ensure that a pre-release (alpha or beta) is available at the kubernetes release date, for early adopters.
+
+Upgrading kubernetes is similar to changing the image on an InstanceGroup, the kubernetes version is
 controlled at the cluster level.  So instead of `kops edit ig <name>`, we `kops edit cluster`, and change the
 `kubernetesVersion` field.  `kops edit cluster` will open your editor with the cluster, similar to:
 
