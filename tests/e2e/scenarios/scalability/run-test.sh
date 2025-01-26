@@ -120,6 +120,19 @@ create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   # Enable creating a single nodes instance group
   KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeIOPS=16000")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeIOPS=16000")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeIOPS=16000")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeThroughput=1000")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeThroughput=1000")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeThroughput=1000")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeSize=32")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeSize=32")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeSize=32")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeType=io2")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeType=io2")
+  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeType=io2")
+
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 
