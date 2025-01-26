@@ -21,7 +21,7 @@ jobs:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
       - name: Set up go
-        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
         with:
           go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
@@ -38,7 +38,7 @@ jobs:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
     - name: Set up go
-      uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
+      uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
       with:
         go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
@@ -55,7 +55,7 @@ jobs:
         path: ${{ env.GOPATH }}/src/k8s.io/kops
 
     - name: Set up go
-      uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
+      uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
       with:
         go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
@@ -72,7 +72,7 @@ jobs:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
       - name: Set up go
-        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
         with:
           go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
