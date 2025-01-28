@@ -176,7 +176,6 @@ spec:
         name: aws-iam-authenticator
         resources:
           limits:
-            cpu: 100m
             memory: 20Mi
           requests:
             cpu: 10m

@@ -51,11 +51,6 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o *kops.Cluster) error 
 		npd.MemoryRequest = &defaultMemoryRequest
 	}
 
-	if npd.CPULimit == nil {
-		defaultCPULimit := resource.MustParse("200m")
-		npd.CPULimit = &defaultCPULimit
-	}
-
 	if npd.MemoryLimit == nil {
 		defaultMemoryLimit := resource.MustParse("100Mi")
 		npd.MemoryLimit = &defaultMemoryLimit
