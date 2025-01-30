@@ -13,7 +13,9 @@ require (
 	github.com/octago/sflags v0.2.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
+	k8s.io/api v0.31.1
 	k8s.io/apimachinery v0.31.1
+	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kops v1.30.0
 	k8s.io/release v0.16.4
@@ -295,8 +297,6 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.31.1 // indirect
-	k8s.io/client-go v11.0.0+incompatible // indirect
 	k8s.io/cloud-provider v0.31.0 // indirect
 	k8s.io/cloud-provider-gcp/providers v0.28.2 // indirect
 	k8s.io/component-base v0.31.1 // indirect
