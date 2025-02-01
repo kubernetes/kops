@@ -191,7 +191,9 @@ spec:
             cpu: {{ or .Authentication.AWS.CPURequest "10m" }}
           limits:
             memory: {{ or .Authentication.AWS.MemoryLimit "20Mi" }}
-            cpu: {{ or .Authentication.AWS.CPULimit "100m" }}
+            {{- if .Authentication.AWS.CPULimit }}
+            cpu: {{ .Authentication.AWS.CPULimit }}
+            {{- end }}
         livenessProbe:
           httpGet:
             host: 127.0.0.1
