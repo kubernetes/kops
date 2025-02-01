@@ -99,7 +99,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.25
     manifest: networking.flannel/k8s-1.25.yaml
-    manifestHash: 0b0d13083ea6ee5196f49234a338d9d96e21684a622d2320bd4d9241f7b2e2d7
+    manifestHash: b32abfc782bdbdbfb9d63c6f3340296cdc6c1f069384ac53e36671853ef28bed
     name: networking.flannel
     prune:
       kinds:

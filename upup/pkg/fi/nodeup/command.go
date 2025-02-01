@@ -324,6 +324,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &networking.CiliumBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.KindnetBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.AmazonVPCRoutedENIBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &networking.FlannelBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.KuberouterBuilder{NodeupModelContext: modelContext})
 
 	loader.Builders = append(loader.Builders, &model.BootstrapClientBuilder{NodeupModelContext: modelContext})
