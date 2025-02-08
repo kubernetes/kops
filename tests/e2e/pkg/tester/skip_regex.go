@@ -115,6 +115,11 @@ func (t *Tester) setSkipRegexFlag() error {
 			// Ref: https://github.com/kubernetes/kubernetes/issues/126903
 			skipRegex += "|KubeProxy.should.update.metric.for.tracking.accepted.packets.destined.for.localhost.nodeports"
 		}
+	} else if networking.Flannel != nil {
+		if k8sVersion.Minor < 33 {
+			// < 33 so we look at this again
+			skipRegex += "|Services should implement NodePort and HealthCheckNodePort correctly when ExternalTrafficPolicy changes"
+		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
 	} else if networking.Kubenet != nil {
