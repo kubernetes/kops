@@ -1142,11 +1142,7 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 		}
 		optionTaken = true
 
-		if cluster.IsKubernetesGTE("1.28") {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("flannel"), "Flannel is not supported for Kubernetes >= 1.28"))
-		} else {
-			allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
-		}
+		allErrs = append(allErrs, validateNetworkingFlannel(cluster, v.Flannel, fldPath.Child("flannel"))...)
 	}
 
 	if v.Calico != nil {
