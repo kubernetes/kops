@@ -199,7 +199,12 @@ func (d *logDumper) dumpRegistered(ctx context.Context, node *corev1.Node) error
 	if publicIP != "" {
 		return d.dumpNode(ctx, node.Name, publicIP, false)
 	} else {
-		return d.dumpNode(ctx, node.Name, privateIP, true)
+		useBastion := true
+		if !d.sshClientFactory.HasBastion() {
+			klog.Warningf("no bastion address set, will attempt to connect to node %s directly via private IP %v", node.Name, privateIP)
+			useBastion = false
+		}
+		return d.dumpNode(ctx, node.Name, privateIP, useBastion)
 	}
 }
 
@@ -274,7 +279,12 @@ type sshClient interface {
 
 // sshClientFactory is an interface abstracting to a node over SSH
 type sshClientFactory interface {
+	// Dial creates a new sshClient
 	Dial(ctx context.Context, host string, useBastion bool) (sshClient, error)
+
+	// HasBastion returns true if the sshClientFactory has a bastion configured.
+	// Calling Dial with useBastion=true will return an error if there is no bastion.
+	HasBastion() bool
 }
 
 // logDumperNode holds state for a particular node we are dumping
@@ -540,13 +550,23 @@ type sshClientFactoryImplementation struct {
 
 var _ sshClientFactory = &sshClientFactoryImplementation{}
 
+// HasBastion implements sshClientFactory::HasBastion
+func (f *sshClientFactoryImplementation) HasBastion() bool {
+	return f.bastion != ""
+}
+
 // Dial implements sshClientFactory::Dial
 func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, useBastion bool) (sshClient, error) {
-	var addr string
+	addr := host
 	if useBastion {
+		if f.bastion == "" {
+			return nil, fmt.Errorf("bastion is not set, but useBastion is true")
+		}
 		addr = f.bastion
-	} else {
-		addr = host
+	}
+
+	if addr == "" {
+		return nil, fmt.Errorf("host is empty")
 	}
 	addr = net.JoinHostPort(addr, "22")
 	d := net.Dialer{
@@ -554,7 +574,7 @@ func (f *sshClientFactoryImplementation) Dial(ctx context.Context, host string, 
 	}
 	conn, err := d.DialContext(ctx, "tcp", addr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error dialing tcp %s: %w", addr, err)
 	}
 
 	// We have a TCP connection; we will force-close it to support context cancellation
