@@ -1,15 +1,18 @@
-# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.19.2/Documentation/kube-flannel.yml
+# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.26.4/Documentation/kube-flannel.yml
 ---
 kind: Namespace
 apiVersion: v1
 metadata:
   name: kube-flannel
   labels:
+    k8s-app: flannel
     pod-security.kubernetes.io/enforce: privileged
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  labels:
+    k8s-app: flannel
   name: flannel
 rules:
 - apiGroups:
@@ -23,6 +26,7 @@ rules:
   resources:
   - nodes
   verbs:
+  - get
   - list
   - watch
 - apiGroups:
@@ -35,6 +39,8 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  labels:
+    k8s-app: flannel
   name: flannel
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -48,6 +54,8 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  labels:
+    k8s-app: flannel
   name: flannel
   namespace: kube-flannel
 ---
@@ -58,6 +66,7 @@ metadata:
   namespace: kube-flannel
   labels:
     tier: node
+    k8s-app: flannel
     app: flannel
 data:
   cni-conf.json: |
@@ -83,6 +92,7 @@ data:
   net-conf.json: |
     {
       "Network": "{{ .Networking.NonMasqueradeCIDR }}",
+      "EnableNFTables": true,
       "Backend": {
         "Type": "{{ FlannelBackendType }}"
       }
@@ -96,6 +106,7 @@ metadata:
   labels:
     tier: node
     app: flannel
+    k8s-app: flannel
 spec:
   selector:
     matchLabels:
@@ -124,8 +135,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-       #image: flannelcni/flannel-cni-plugin:v1.1.0 for ppc64le and mips64le (dockerhub limitations may apply)
-        image: docker.io/rancher/mirrored-flannelcni-flannel-cni-plugin:v1.1.0
+        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.6.2-flannel1
         command:
         - cp
         args:
@@ -136,8 +146,7 @@ spec:
         - name: cni-plugin
           mountPath: /opt/cni/bin
       - name: install-cni
-       #image: flannelcni/flannel:v0.19.2 for ppc64le and mips64le (dockerhub limitations may apply)
-        image: docker.io/rancher/mirrored-flannelcni-flannel:v0.19.2
+        image: ghcr.io/flannel-io/flannel:v0.26.4
         command:
         - cp
         args:
@@ -151,8 +160,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-       #image: flannelcni/flannel:v0.19.2 for ppc64le and mips64le (dockerhub limitations may apply)
-        image: docker.io/rancher/mirrored-flannelcni-flannel:v0.19.2
+        image: ghcr.io/flannel-io/flannel:v0.26.4
         command:
         - /opt/bin/flanneld
         args:
@@ -161,9 +169,6 @@ spec:
         - --iptables-resync={{- or .Networking.Flannel.IptablesResyncSeconds "5" }}
         resources:
           requests:
-            cpu: "100m"
-            memory: "50Mi"
-          limits:
             cpu: "100m"
             memory: "50Mi"
         securityContext:
