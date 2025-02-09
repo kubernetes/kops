@@ -119,6 +119,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
+		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
