@@ -36,8 +36,8 @@ kubectl exec -it -n kube-system $CONTAINER -- sh
 3\. Run etcdctl
 
 ```bash
-ETCD_VERSION=3.5.1
-ETCDDIR=/opt/etcd-v$ETCD_VERSION-linux-amd64 # Replace with arm64 if you are running an arm control plane
+ETCD_VERSION=3.5.13
+ETCDDIR=/opt/etcd-v$ETCD_VERSION
 CERTDIR=/rootfs/srv/kubernetes/kube-apiserver/
 alias etcdctl="ETCDCTL_API=3 $ETCDDIR/etcdctl --cacert=$CERTDIR/etcd-ca.crt --cert=$CERTDIR/etcd-client.crt --key=$CERTDIR/etcd-client.key --endpoints=https://127.0.0.1:4001"
 ```
