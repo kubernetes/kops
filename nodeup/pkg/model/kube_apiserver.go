@@ -19,10 +19,12 @@ package model
 import (
 	"context"
 	"fmt"
+	"net"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -74,6 +76,55 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 		if localIP != "" {
 			kubeAPIServer.AdvertiseAddress = localIP
+		}
+	}
+
+	if b.CloudProvider() == kops.CloudProviderMetal {
+		// Workaround for https://github.com/kubernetes/kubernetes/issues/111671
+		if b.IsIPv6Only() {
+			interfaces, err := net.Interfaces()
+			if err != nil {
+				return fmt.Errorf("getting local network interfaces: %w", err)
+			}
+			var ipv6s []net.IP
+			for _, intf := range interfaces {
+				addresses, err := intf.Addrs()
+				if err != nil {
+					return fmt.Errorf("getting addresses for network interface %q: %w", intf.Name, err)
+				}
+				for _, addr := range addresses {
+					ip, _, err := net.ParseCIDR(addr.String())
+					if ip == nil {
+						return fmt.Errorf("parsing ip address %q (bound to network %q): %w", addr.String(), intf.Name, err)
+					}
+					if ip.To4() != nil {
+						// We're only looking for ipv6
+						continue
+					}
+					if ip.IsLinkLocalUnicast() {
+						klog.V(4).Infof("ignoring link-local unicast addr %v", addr)
+						continue
+					}
+					if ip.IsLinkLocalMulticast() {
+						klog.V(4).Infof("ignoring link-local multicast addr %v", addr)
+						continue
+					}
+					if ip.IsLoopback() {
+						klog.V(4).Infof("ignoring loopback addr %v", addr)
+						continue
+					}
+					ipv6s = append(ipv6s, ip)
+				}
+			}
+			if len(ipv6s) > 1 {
+				klog.Warningf("found multiple ipv6s, choosing first: %v", ipv6s)
+			}
+			if len(ipv6s) == 0 {
+				klog.Warningf("did not find ipv6 address for kube-apiserver --advertise-address")
+			}
+			if len(ipv6s) > 0 {
+				kubeAPIServer.AdvertiseAddress = ipv6s[0].String()
+			}
 		}
 	}
 
