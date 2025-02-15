@@ -209,6 +209,9 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
 
+		klog.Infof("will SSH using username %q", sshConfig.User)
+		klog.Infof("ssh auth methods %v", sshConfig.Auth)
+
 		keyRing := agent.NewKeyring()
 		defer func(keyRing agent.Agent) {
 			_ = keyRing.RemoveAll()
