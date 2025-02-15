@@ -1081,7 +1081,6 @@ type NodeProblemDetectorConfig struct {
 	// Default: 80Mi
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 	// CPULimit of NodeProblemDetector container.
-	// Default: 10m
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
 }
 
