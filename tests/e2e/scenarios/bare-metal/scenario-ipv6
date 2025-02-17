@@ -94,7 +94,12 @@ function configure_ipv6() {
 
   ssh root@${node_ip} ip link
   ssh root@${node_ip} ip -6 addr add ${ipv6_range} dev enp0s3
-  ssh root@${node_ip} ip -6 route add default dev enp0s3
+
+  # Set our node as the default route
+  # (otherwise the kubelet will not discover the IPv6 addresses in ResolveBindAddress)
+  # node-to-node routes will be discovered by radvd
+  ssh root@${node_ip} ip -6 route add ${IPV6_PREFIX}0::/96 dev enp0s3
+  ssh root@${node_ip} ip -6 route add default via ${IPV6_PREFIX}0::
 
   cat <<EOF | ssh root@${node_ip} tee /etc/resolv.conf
 nameserver 8.8.8.8
@@ -126,10 +131,9 @@ EOF
   ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra=2
   ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra_rt_info_max_plen=96
 
+  
   ssh root@${node_ip} ip -6 addr
   ssh root@${node_ip} ip -6 route
-
-  #sudo ip -6 route add ${ipv6_range} dev br0 via ${ipv6_ip}
 }
 
 # Configure our IPv6 addresses on the bridge
@@ -179,12 +183,9 @@ ${KOPS} create cluster --cloud=metal ${CLUSTER_NAME} --zones main --networking c
 # TODO: is this the best option?
 ${KOPS} edit cluster ${CLUSTER_NAME} --set spec.api.publicName=${VM0_IPV6}
 
-# Use latest etcd-manager image (while we're adding features)
-${KOPS} edit cluster ${CLUSTER_NAME} --set 'spec.etcdClusters[*].manager.image=us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-static:latest'
-
-# Use 1.31 kubernetes so we get kube-apiserver fixes
+# Use 1.32 kubernetes so we get https://github.com/kubernetes/kubernetes/pull/125337
 export KOPS_RUN_TOO_NEW_VERSION=1
-"${KOPS}" edit cluster ${CLUSTER_NAME} "--set=cluster.spec.kubernetesVersion=1.31.0"
+"${KOPS}" edit cluster ${CLUSTER_NAME} "--set=cluster.spec.kubernetesVersion=1.32.0"
 
 # List clusters
 ${KOPS} get cluster
