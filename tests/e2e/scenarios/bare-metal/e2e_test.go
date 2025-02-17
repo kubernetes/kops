@@ -54,6 +54,35 @@ func TestNodeAddresses(t *testing.T) {
 		}
 	}
 }
+func TestNodesNotTainted(t *testing.T) {
+	h := NewHarness(context.Background(), t)
+
+	nodes := h.Nodes()
+
+	// Quick check that we have some nodes
+	if len(nodes) == 0 {
+		t.Errorf("expected some nodes, got 0 nodes")
+	}
+
+	// Verify that the nodes aren't tainted
+	// In particular, we are checking for the node.cloudprovider.kubernetes.io/uninitialized taint
+	for _, node := range nodes {
+		t.Logf("node %s has taints: %v", node.Name, node.Spec.Taints)
+		for _, taint := range node.Spec.Taints {
+			switch taint.Key {
+			case "node.kops.k8s.io/uninitialized":
+				t.Errorf("unexpected taint for node %s: %s", node.Name, taint.Key)
+				t.Errorf("if we pass the --cloud-provider=external flag to kubelet, the node will be tainted with the node.kops.k8s.io/uninitialize taint")
+				t.Errorf("the taint is expected to be removed by the cloud-contoller-manager")
+				t.Errorf("(likely should be running a cloud-controller-manager in the cluster, or we should not pass the --cloud-provider=external flag to kubelet)")
+			case "node-role.kubernetes.io/control-plane":
+				// expected for control-plane nodes
+			default:
+				t.Errorf("unexpected taint for node %s: %s", node.Name, taint.Key)
+			}
+		}
+	}
+}
 
 // Harness is a test harness for our bare-metal e2e tests
 type Harness struct {
