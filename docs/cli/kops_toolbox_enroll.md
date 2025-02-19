@@ -22,6 +22,7 @@ kops toolbox enroll [CLUSTER] [flags]
 ### Options
 
 ```
+      --build-host              only build the host resource, don't apply it or enroll the node
       --cluster string          Name of cluster to join
   -h, --help                    help for enroll
       --host string             IP/hostname for machine to add

@@ -51,5 +51,7 @@ func NewCmdToolboxEnroll(f commandutils.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "user for ssh")
 	cmd.Flags().IntVar(&options.SSHPort, "ssh-port", options.SSHPort, "port for ssh")
 
+	cmd.Flags().BoolVar(&options.BuildHost, "build-host", options.BuildHost, "only build the host resource, don't apply it or enroll the node")
+
 	return cmd
 }
