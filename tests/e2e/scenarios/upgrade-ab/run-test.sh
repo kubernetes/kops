@@ -121,7 +121,7 @@ else
   "${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
 fi
 
-if [[ "${KOPS_VERSION_B}" =~ 1.(20|21|22|23|24|25|26|27|28|29|30). ]]; then
+if [[ "${KOPS_VERSION_B}" =~ 1.(20|21|22|23|24|25|26|27|28|29|30) ]]; then
   # kOps introduced the reconcile command in 1.31
   # TODO: remove this block once we stop testing upgrades to kops <1.31
   "${KOPS_B}" update cluster
