@@ -228,6 +228,13 @@ for i in {1..60}; do
   sleep 10
 done
 
+# Create CRD and namespace for host records
+kubectl create ns kops-system
+kubectl apply -f ${REPO_ROOT}/k8s/crds/kops.k8s.io_hosts.yaml
+
+# Create the host record (we can't auto create for control plane nodes)
+${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group control-plane-main --host ${VM0_IP} --pod-cidr ${VM0_POD_CIDR} --v=2 --build-host | kubectl apply -f -
+
 kubectl get nodes
 kubectl get pods -A
 
@@ -238,9 +245,6 @@ sleep 10
 kubectl get nodes
 kubectl get pods -A
 
-# For host records
-kubectl create ns kops-system
-kubectl apply -f ${REPO_ROOT}/k8s/crds/kops.k8s.io_hosts.yaml
 
 # kops-controller extra permissions
 kubectl apply --server-side -f - <<EOF
