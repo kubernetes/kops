@@ -28,7 +28,6 @@ import (
 	"net"
 	"os"
 	"path"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -139,15 +138,15 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 		sudo = false
 	}
 
-	host, err := NewSSHHost(ctx, options.Host, options.SSHPort, options.SSHUser, sudo)
+	sshTarget, err := NewSSHHost(ctx, options.Host, options.SSHPort, options.SSHUser, sudo)
 	if err != nil {
 		return err
 	}
-	defer host.Close()
+	defer sshTarget.Close()
 
 	publicKeyPath := "/etc/kubernetes/kops/pki/machine/public.pem"
 
-	publicKeyBytes, err := host.readFile(ctx, publicKeyPath)
+	publicKeyBytes, err := sshTarget.readFile(ctx, publicKeyPath)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			publicKeyBytes = nil
@@ -158,11 +157,11 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 
 	publicKeyBytes = bytes.TrimSpace(publicKeyBytes)
 	if len(publicKeyBytes) == 0 {
-		if _, err := host.runScript(ctx, scriptCreateKey, ExecOptions{Sudo: sudo, Echo: true}); err != nil {
+		if _, err := sshTarget.runScript(ctx, scriptCreateKey, ExecOptions{Sudo: sudo, Echo: true}); err != nil {
 			return err
 		}
 
-		b, err := host.readFile(ctx, publicKeyPath)
+		b, err := sshTarget.readFile(ctx, publicKeyPath)
 		if err != nil {
 			return fmt.Errorf("error reading public key %q (after creation): %w", publicKeyPath, err)
 		}
@@ -170,7 +169,7 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 	}
 	klog.Infof("public key is %s", string(publicKeyBytes))
 
-	hostname, err := host.getHostname(ctx)
+	hostname, err := sshTarget.getHostname(ctx)
 	if err != nil {
 		return err
 	}
@@ -184,13 +183,13 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 	}
 
 	for k, v := range bootstrapData.NodeupScriptAdditionalFiles {
-		if err := host.writeFile(ctx, k, bytes.NewReader(v)); err != nil {
+		if err := sshTarget.writeFile(ctx, k, bytes.NewReader(v)); err != nil {
 			return fmt.Errorf("writing file %q over SSH: %w", k, err)
 		}
 	}
 
 	if len(bootstrapData.NodeupScript) != 0 {
-		if _, err := host.runScript(ctx, string(bootstrapData.NodeupScript), ExecOptions{Sudo: sudo, Echo: true}); err != nil {
+		if _, err := sshTarget.runScript(ctx, string(bootstrapData.NodeupScript), ExecOptions{Sudo: sudo, Echo: true}); err != nil {
 			return err
 		}
 	}
@@ -800,7 +799,113 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 		return nil, err
 	}
 
+	vfsContext := clientset.VFSContext()
+
+	// If this is the control plane, we want to copy the config from s3/gcs to the local file system on the target node,
+	// so that we don't need credentials to the state store.
 	if bootConfig.InstanceGroupRole == kops.InstanceGroupRoleControlPlane {
+		remapPrefix := "s3://" // TODO: Support GCS?
+
+		// targetDir is the location of the config on the target node.
+		targetDir := "/etc/kubernetes/kops/config"
+
+		// remapFile remaps a file from s3/gcs etc to the local file system on the target node.
+		remapFile := func(pSrc *string, destDir string) error {
+			src := *pSrc
+			if !strings.HasPrefix(src, remapPrefix) {
+				return nil
+			}
+
+			srcPath, err := vfsContext.BuildVfsPath(src)
+			if err != nil {
+				return fmt.Errorf("building vfs path: %w", err)
+			}
+			b, err := srcPath.ReadFile(ctx)
+			if err != nil {
+				return fmt.Errorf("reading file: %w", err)
+			}
+
+			dest := strings.TrimPrefix(src, remapPrefix)
+			dest = path.Join(destDir, dest)
+			bootstrapData.NodeupScriptAdditionalFiles[dest] = b
+
+			*pSrc = dest
+			return nil
+		}
+
+		// remapTree remaps a file tree from s3/gcs etc to the local file system on the target node.
+		remapTree := func(pSrc *string, dest string) error {
+			src := *pSrc
+			if !strings.HasPrefix(src, remapPrefix) {
+				return nil
+			}
+
+			srcPath, err := vfsContext.BuildVfsPath(src)
+			if err != nil {
+				return fmt.Errorf("building vfs path: %w", err)
+			}
+
+			srcFiles, err := srcPath.ReadTree(ctx)
+			if err != nil {
+				return fmt.Errorf("reading tree: %w", err)
+			}
+			basePath := srcPath.Path()
+			for _, srcFile := range srcFiles {
+				b, err := srcFile.ReadFile(ctx)
+				if err != nil {
+					return fmt.Errorf("reading file: %w", err)
+				}
+
+				if !strings.HasPrefix(srcFile.Path(), basePath) {
+					return fmt.Errorf("unexpected path: %q", srcFile.Path())
+				}
+				relativePath := strings.TrimPrefix(srcFile.Path(), basePath)
+
+				bootstrapData.NodeupScriptAdditionalFiles[path.Join(dest, relativePath)] = b
+			}
+
+			*pSrc = dest
+			return nil
+		}
+
+		for i := range nodeupConfig.EtcdManifests {
+			if err := remapFile(&nodeupConfig.EtcdManifests[i], path.Join(targetDir)); err != nil {
+				return nil, err
+			}
+		}
+
+		configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigStore.Base)
+		if err != nil {
+			return nil, fmt.Errorf("parsing configStore.base %q: %w", cluster.Spec.ConfigStore.Base, err)
+		}
+		for i, channel := range nodeupConfig.Channels {
+			bootstrapChannelPath := configBase.Join("addons", "bootstrap-channel.yaml").Path()
+			if channel != bootstrapChannelPath {
+				klog.Infof("not remapping non-bootstrap channel %q", channel)
+				continue
+			}
+
+			parentPath := configBase.Join("addons").Path()
+			if err := remapTree(&parentPath, path.Join(targetDir, "addons")); err != nil {
+				return nil, err
+			}
+			nodeupConfig.Channels[i] = path.Join(parentPath, "bootstrap-channel.yaml")
+
+			// The channels tool requires a file:// prefix
+			if strings.HasPrefix(nodeupConfig.Channels[i], "/") {
+				nodeupConfig.Channels[i] = "file://" + nodeupConfig.Channels[i]
+			}
+		}
+
+		if nodeupConfig.ConfigStore != nil {
+			if err := remapTree(&nodeupConfig.ConfigStore.Keypairs, path.Join(targetDir, "pki/etcd")); err != nil {
+				return nil, err
+			}
+			if err := remapTree(&nodeupConfig.ConfigStore.Secrets, path.Join(targetDir, "pki")); err != nil {
+				return nil, err
+			}
+		}
+
 		nodeupConfigBytes, err := yaml.Marshal(nodeupConfig)
 		if err != nil {
 			return nil, fmt.Errorf("error converting nodeup config to yaml: %w", err)
@@ -809,7 +914,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 		// sum256 := sha256.Sum256(nodeupConfigBytes)
 		// bootConfig.NodeupConfigHash = base64.StdEncoding.EncodeToString(sum256[:])
 
-		p := filepath.Join("/etc/kubernetes/kops/config", "igconfig", bootConfig.InstanceGroupRole.ToLowerString(), ig.Name, "nodeupconfig.yaml")
+		p := path.Join(targetDir, "igconfig", bootConfig.InstanceGroupRole.ToLowerString(), ig.Name, "nodeupconfig.yaml")
 		bootstrapData.NodeupScriptAdditionalFiles[p] = nodeupConfigBytes
 
 		// Copy any static manifests we need on the control plane
@@ -817,7 +922,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 			if !staticManifest.AppliesToRole(bootConfig.InstanceGroupRole) {
 				continue
 			}
-			p := filepath.Join("/etc/kubernetes/kops/config", staticManifest.Path)
+			p := path.Join(targetDir, staticManifest.Path)
 			bootstrapData.NodeupScriptAdditionalFiles[p] = staticManifest.Contents
 		}
 	}
