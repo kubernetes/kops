@@ -23,7 +23,6 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/dynamic"
@@ -56,6 +55,8 @@ type Factory struct {
 	mutex sync.Mutex
 	// clusters holds REST connection configuration for connecting to clusters
 	clusters map[string]*clusterInfo
+
+	kubeconfig.CreateKubecfgOptions
 }
 
 // clusterInfo holds REST connection configuration for connecting to a cluster
@@ -66,6 +67,7 @@ type clusterInfo struct {
 	cachedHTTPClient    *http.Client
 	cachedRESTConfig    *rest.Config
 	cachedDynamicClient dynamic.Interface
+	kubeconfig.CreateKubecfgOptions
 }
 
 func NewFactory(options *FactoryOptions) *Factory {
@@ -177,6 +179,7 @@ func (f *Factory) getClusterInfo(cluster *kops.Cluster) *clusterInfo {
 
 func (f *Factory) RESTConfig(cluster *kops.Cluster) (*rest.Config, error) {
 	clusterInfo := f.getClusterInfo(cluster)
+	clusterInfo.CreateKubecfgOptions = f.CreateKubecfgOptions
 	return clusterInfo.RESTConfig()
 }
 
@@ -184,7 +187,7 @@ func (f *clusterInfo) RESTConfig() (*rest.Config, error) {
 	ctx := context.Background()
 
 	if f.cachedRESTConfig == nil {
-		restConfig, err := f.factory.buildRESTConfig(ctx, f.cluster)
+		restConfig, err := f.factory.buildRESTConfig(ctx, f.cluster, f.CreateKubecfgOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -253,7 +256,7 @@ func (f *Factory) VFSContext() *vfs.VFSContext {
 	return f.vfsContext
 }
 
-func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster) (*rest.Config, error) {
+func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster, options kubeconfig.CreateKubecfgOptions) (*rest.Config, error) {
 	clientset, err := f.KopsClient()
 	if err != nil {
 		return nil, err
@@ -274,9 +277,9 @@ func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster) (*
 		return nil, err
 	}
 
-	// Generate a relatively short-lived certificate / kubeconfig
-	createKubecfgOptions := kubeconfig.CreateKubecfgOptions{
-		Admin: 1 * time.Hour,
+	// backwards compatibility
+	if options.Admin == 0 {
+		options.Admin = kubeconfig.DefaultKubecfgAdminLifetime
 	}
 
 	conf, err := kubeconfig.BuildKubecfg(
@@ -285,7 +288,7 @@ func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster) (*
 		keyStore,
 		secretStore,
 		cloud,
-		createKubecfgOptions,
+		options,
 		f.KopsStateStore())
 	if err != nil {
 		return nil, err

@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/instancegroups"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -145,6 +146,8 @@ type RollingUpdateOptions struct {
 
 	// TODO: Move more/all above options to RollingUpdateOptions
 	instancegroups.RollingUpdateOptions
+
+	kubeconfig.CreateKubecfgOptions
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -164,6 +167,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.ValidateCount = 2
 
 	o.DrainTimeout = 15 * time.Minute
+
+	o.Admin = kubeconfig.DefaultKubecfgAdminLifetime
 
 	o.RollingUpdateOptions.InitDefaults()
 }
@@ -193,6 +198,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without validating cluster status (will cause downtime)")
 
+	cmd.Flags().DurationVar(&options.Admin, "admin", options.Admin, "a cluster admin user credential with the specified lifetime")
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "validation-timeout", options.ValidationTimeout, "Maximum time to wait for a cluster to validate")
 	cmd.Flags().DurationVar(&options.DrainTimeout, "drain-timeout", options.DrainTimeout, "Maximum time to wait for a node to drain")
 	cmd.Flags().Int32Var(&options.ValidateCount, "validate-count", options.ValidateCount, "Number of times that a cluster needs to be validated after single node update")
@@ -227,6 +233,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
+	f.CreateKubecfgOptions = options.CreateKubecfgOptions
 	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
