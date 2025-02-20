@@ -59,6 +59,7 @@ kops rolling-update cluster [CLUSTER] [flags]
 ### Options
 
 ```
+      --admin duration                    a cluster admin user credential with the specified lifetime (default 18h0m0s)
       --bastion-interval duration         Time to wait between restarting bastions (default 15s)
       --cloudonly                         Perform rolling update without validating cluster status (will cause downtime)
       --control-plane-interval duration   Time to wait between restarting control plane nodes (default 15s)
