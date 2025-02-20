@@ -145,7 +145,7 @@ func (e *Package) Find(c *fi.NodeupContext) (*Package, error) {
 }
 
 func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
-	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
+	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}\\t${Version}\\n", "-W", e.Name}
 	human := strings.Join(args, " ")
 
 	klog.V(2).Infof("Listing installed packages: %s", human)
@@ -166,12 +166,12 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 			continue
 		}
 
-		tokens := strings.Split(line, " ")
+		tokens := strings.Split(line, "\t")
 		if len(tokens) != 2 {
 			return nil, fmt.Errorf("error parsing dpkg-query line %q", line)
 		}
-		state := tokens[0]
-		version := tokens[1]
+		state := strings.TrimSpace(tokens[0])
+		version := strings.TrimSpace(tokens[1])
 
 		switch state {
 		case "ii":
