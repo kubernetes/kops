@@ -21,6 +21,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -40,12 +41,17 @@ func ValidateCluster(c *kops.Cluster, strict bool, vfsContext *vfs.VFSContext) f
 	// KubernetesVersion
 	// This is one case we return the error because a large part of the rest of the validation logic depends on a valid kubernetes version.
 
+	var k8sVersion *semver.Version
+	var err error
 	if c.Spec.KubernetesVersion == "" {
 		allErrs = append(allErrs, field.Required(fieldSpec.Child("kubernetesVersion"), ""))
 		return allErrs
-	} else if _, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion); err != nil {
-		allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version"))
-		return allErrs
+	} else {
+		k8sVersion, err = util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fieldSpec.Child("kubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version"))
+			return allErrs
+		}
 	}
 
 	if strict && c.Spec.Kubelet == nil {
@@ -72,7 +78,6 @@ func ValidateCluster(c *kops.Cluster, strict bool, vfsContext *vfs.VFSContext) f
 
 	var nonMasqueradeCIDR *net.IPNet
 	var serviceClusterIPRange *net.IPNet
-	var err error
 
 	if c.Spec.Networking.NonMasqueradeCIDR != "" {
 		_, nonMasqueradeCIDR, _ = net.ParseCIDR(c.Spec.Networking.NonMasqueradeCIDR)
@@ -182,8 +187,10 @@ func ValidateCluster(c *kops.Cluster, strict bool, vfsContext *vfs.VFSContext) f
 				}
 			}
 			if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
-				if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
-					allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "cloudProvider"), "Did not match cluster cloudProvider"))
+				if k8sVersion != nil && k8sVersion.LT(semver.MustParse("1.33.0")) {
+					if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
+						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "cloudProvider"), "Did not match cluster cloudProvider"))
+					}
 				}
 			}
 			if c.Spec.KubeControllerManager != nil && (strict || c.Spec.KubeControllerManager.CloudProvider != "") {
