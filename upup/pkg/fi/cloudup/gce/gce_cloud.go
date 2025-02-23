@@ -25,6 +25,8 @@ import (
 	"strings"
 	"sync"
 
+	"maps"
+
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
@@ -273,9 +275,7 @@ func (c *gceCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 func (c *gceCloudImplementation) Labels() map[string]string {
 	// Defensive copy
 	tags := make(map[string]string)
-	for k, v := range c.labels {
-		tags[k] = v
-	}
+	maps.Copy(tags, c.labels)
 	return tags
 }
 

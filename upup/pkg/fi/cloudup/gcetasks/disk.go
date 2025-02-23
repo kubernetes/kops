@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"maps"
+
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -136,15 +138,9 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 		//for _, k := range d.Tags {
 		//	labelsRequest.Labels[k] = ""
 		//}
-		for k, v := range d.Labels {
-			labelsRequest.Labels[k] = v
-		}
-		for k, v := range t.Cloud.Labels() {
-			labelsRequest.Labels[k] = v
-		}
-		for k, v := range e.Labels {
-			labelsRequest.Labels[k] = v
-		}
+		maps.Copy(labelsRequest.Labels, d.Labels)
+		maps.Copy(labelsRequest.Labels, t.Cloud.Labels())
+		maps.Copy(labelsRequest.Labels, e.Labels)
 		klog.V(2).Infof("Setting labels on disk %q: %v", disk.Name, labelsRequest.Labels)
 		if err = t.Cloud.Compute().Disks().SetLabels(t.Cloud.Project(), *e.Zone, disk.Name, labelsRequest); err != nil {
 			return fmt.Errorf("error setting labels on created Disk: %v", err)
@@ -174,12 +170,8 @@ func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk
 	cloud := t.Cloud.(gce.GCECloud)
 
 	labels := make(map[string]string)
-	for k, v := range cloud.Labels() {
-		labels[k] = v
-	}
-	for k, v := range e.Labels {
-		labels[k] = v
-	}
+	maps.Copy(labels, cloud.Labels())
+	maps.Copy(labels, e.Labels)
 
 	tf := &terraformDisk{
 		Name:       e.Name,

@@ -19,6 +19,8 @@ package gcetasks
 import (
 	"fmt"
 
+	"slices"
+
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -64,15 +66,13 @@ func (e *PoolHealthCheck) Find(c *fi.CloudupContext) (*PoolHealthCheck, error) {
 		}
 		return nil, fmt.Errorf("error getting TargetPool %q: %v", name, err)
 	}
-	for _, check := range r.HealthChecks {
-		if check == e.Healthcheck.SelfLink {
-			return &PoolHealthCheck{
-				Name:        e.Name,
-				Healthcheck: e.Healthcheck,
-				Pool:        e.Pool,
-				Lifecycle:   e.Lifecycle,
-			}, nil
-		}
+	if slices.Contains(r.HealthChecks, e.Healthcheck.SelfLink) {
+		return &PoolHealthCheck{
+			Name:        e.Name,
+			Healthcheck: e.Healthcheck,
+			Pool:        e.Pool,
+			Lifecycle:   e.Lifecycle,
+		}, nil
 	}
 	return nil, nil
 }
