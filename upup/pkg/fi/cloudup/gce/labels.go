@@ -42,7 +42,7 @@ const (
 func EncodeGCELabel(s string) string {
 	var b bytes.Buffer
 
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		c := s[i]
 		if ('0' <= c && c <= '9') || ('a' <= c && c <= 'z') {
 			b.WriteByte(c)
