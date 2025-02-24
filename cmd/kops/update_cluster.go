@@ -478,7 +478,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 			fmt.Fprintf(sb, "\n")
 		}
 
-		if !firstRun {
+		if !firstRun && !c.Reconcile {
 			// TODO: Detect if rolling-update is needed
 			fmt.Fprintf(sb, "\n")
 			fmt.Fprintf(sb, "Changes may require instances to restart: kops rolling-update cluster\n")
