@@ -20,6 +20,8 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 	"sync"
 	"time"
@@ -230,7 +232,8 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 		}
 	}
 
-	klog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
+	igNames := slices.Sorted(maps.Keys(groups))
+	klog.Infof("Completed rolling update for cluster %q instance groups %v", c.ClusterName, igNames)
 	return errors.NewAggregate(errs)
 }
 
