@@ -166,7 +166,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, c 
 		}
 	}
 
-	fmt.Fprintf(out, "Doing rolling-update for control plane\n")
+	fmt.Fprintf(out, "Performing rolling-update for control plane\n")
 	{
 		opt := &RollingUpdateOptions{}
 		opt.InitDefaults()
@@ -192,7 +192,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, c 
 		}
 	}
 
-	fmt.Fprintf(out, "Doing rolling-update for nodes\n")
+	fmt.Fprintf(out, "Performing rolling-update for nodes\n")
 	{
 		opt := &RollingUpdateOptions{}
 		opt.InitDefaults()

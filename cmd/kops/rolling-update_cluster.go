@@ -285,7 +285,6 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		countByRole[instanceGroup.Spec.Role] = countByRole[instanceGroup.Spec.Role] + minSize
 	}
 	if countByRole[kopsapi.InstanceGroupRoleAPIServer]+countByRole[kopsapi.InstanceGroupRoleControlPlane] <= 1 {
-		fmt.Fprintf(out, "Detected single-control-plane cluster; won't detach before draining\n")
 		options.DeregisterControlPlaneNodes = false
 	}
 
