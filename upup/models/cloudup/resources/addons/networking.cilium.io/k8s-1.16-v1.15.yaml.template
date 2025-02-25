@@ -1439,6 +1439,11 @@ spec:
         hostPath:
           path: /var/run/cilium
           type: DirectoryOrCreate
+        # To exec into pod network namespaces
+      - name: cilium-netns
+        hostPath:
+          path: /var/run/netns
+          type: DirectoryOrCreate
         # To keep state between restarts / upgrades for bpf maps
       - name: bpf-maps
         hostPath:
@@ -1464,6 +1469,9 @@ spec:
         hostPath:
           path: /etc/cni/net.d
           type: DirectoryOrCreate
+      - name: cilium-netns
+        mountPath: /var/run/cilium/netns
+        mountPropagation: HostToContainer
         # To be able to load kernel modules
       - name: lib-modules
         hostPath:
