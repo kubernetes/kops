@@ -1,7 +1,7 @@
 ---
 name: CI
 
-'on':
+"on":
   - push
   - pull_request
 
@@ -13,17 +13,27 @@ permissions:
   contents: read
 
 jobs:
-  build-linux-amd64:
-    runs-on: ubuntu-20.04
+  build-linux:
+    strategy:
+      matrix:
+        os:
+          - name: Linux-amd64
+            runs-on: ubuntu-24.04
+            arch: amd64
+          - name: Linux-arm64
+            runs-on: ubuntu-24.04-arm
+            arch: arm64
+    name: build-linux-${{ matrix.os.arch }}
+    runs-on: ${{ matrix.os.runs-on }}
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
       - name: Set up go
-        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
         with:
-          go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
+          go-version-file: "${{ env.GOPATH }}/src/k8s.io/kops/go.mod"
 
       - name: make all examples test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
@@ -33,48 +43,58 @@ jobs:
   build-macos-amd64:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-      with:
-        path: ${{ env.GOPATH }}/src/k8s.io/kops
-
-    - name: Set up go
-      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
-      with:
-        go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
-
-    - name: make kops examples test
-      working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
-      run: |
-        make kops examples test
-
-  build-windows-amd64:
-    runs-on: windows-2019
-    steps:
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-      with:
-        path: ${{ env.GOPATH }}/src/k8s.io/kops
-
-    - name: Set up go
-      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
-      with:
-        go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
-
-    - name: make kops examples test
-      working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
-      run: |
-        make kops examples test-windows
-
-  verify:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
 
       - name: Set up go
-        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
         with:
-          go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
+          go-version-file: "${{ env.GOPATH }}/src/k8s.io/kops/go.mod"
+
+      - name: make kops examples test
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
+        run: |
+          make kops examples test
+
+  build-windows-amd64:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/kops
+
+      - name: Set up go
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
+        with:
+          go-version-file: "${{ env.GOPATH }}/src/k8s.io/kops/go.mod"
+
+      - name: make kops examples test
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
+        run: |
+          make kops examples test-windows
+
+  verify:
+    strategy:
+      matrix:
+        os:
+          - name: Linux-amd64
+            runs-on: ubuntu-24.04
+            arch: amd64
+          - name: Linux-arm64
+            runs-on: ubuntu-24.04-arm
+            arch: arm64
+    name: verify-${{ matrix.os.arch }}
+    runs-on: ${{ matrix.os.runs-on }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          path: ${{ env.GOPATH }}/src/k8s.io/kops
+
+      - name: Set up go
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34
+        with:
+          go-version-file: "${{ env.GOPATH }}/src/k8s.io/kops/go.mod"
 
       - name: make quick-ci
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
