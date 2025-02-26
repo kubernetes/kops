@@ -22,9 +22,9 @@ set -o pipefail
 
 # required version for this script, if not installed on the host we will
 # use the official docker image instead. keep this in sync with SHELLCHECK_IMAGE
-SHELLCHECK_VERSION="0.9.0"
+SHELLCHECK_VERSION="0.10.0"
 # upstream shellcheck latest stable image as of September 1st, 2020
-SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.9.0@sha256:e19ed93c22423970d56568e171b4512c9244fc75dd9114045016b4a0073ac4b7"
+SHELLCHECK_IMAGE="koalaman/shellcheck-alpine:v0.10.0@sha256:5921d946dac740cbeec2fb1c898747b6105e585130cc7f0602eec9a10f7ddb63"
 
 # fixed name for the shellcheck docker container so we can reliably clean it up
 SHELLCHECK_CONTAINER="k8s-shellcheck"
@@ -41,15 +41,15 @@ disabled=(
 )
 # comma separate for passing to shellcheck
 join_by() {
-  local IFS="$1";
-  shift;
-  echo "$*";
+  local IFS="$1"
+  shift
+  echo "$*"
 }
 SHELLCHECK_DISABLED="$(join_by , "${disabled[@]}")"
 readonly SHELLCHECK_DISABLED
 
 # creates the shellcheck container for later use
-create_container () {
+create_container() {
   # TODO(bentheelder): this is a performance hack, we create the container with
   # a sleep MAX_INT32 so that it is effectively paused.
   # We then repeatedly exec to it to run each shellcheck, and later rm it when
@@ -59,8 +59,8 @@ create_container () {
   docker run --name "${SHELLCHECK_CONTAINER}" -d --rm -v "${KOPS_ROOT}:/go/src/k8s.io/kops" -w "/go/src/k8s.io/kops" --entrypoint="sleep" "${SHELLCHECK_IMAGE}" 2147483647
 }
 # removes the shellcheck container
-remove_container () {
-  docker rm -f "${SHELLCHECK_CONTAINER}" &> /dev/null || true
+remove_container() {
+  docker rm -f "${SHELLCHECK_CONTAINER}" &>/dev/null || true
 }
 
 # ensure we're linting the k8s source tree
@@ -75,14 +75,14 @@ cd "${KOPS_ROOT}"
 #    forked should be linted and fixed.
 #    include also output from bootstrap script tests
 mapfile -t all_shell_scripts < <(ls -1 pkg/model/tests/data/bootstrapscript_*.txt)
-while IFS=$'\n' read -r script;
-  do git check-ignore -q "$script" || all_shell_scripts+=("$script");
+while IFS=$'\n' read -r script; do
+  git check-ignore -q "$script" || all_shell_scripts+=("$script")
 done < <(find . -type f -name "*.sh" \
   -not \( \
-    -path ./_\*      -o \
-    -path ./.git\*   -o \
-    -path ./vendor\* -o \
-    \( -path ./third_party\* -a -not -path ./third_party/forked\* \) \
+  -path ./_\* -o \
+  -path ./.git\* -o \
+  -path ./vendor\* -o \
+  \( -path ./third_party\* -a -not -path ./third_party/forked\* \) \
   \))
 
 # make sure known failures are sorted
@@ -100,8 +100,8 @@ fi
 
 # load known failure files
 failing_files=()
-while IFS=$'\n' read -r script;
-  do failing_files+=("$script");
+while IFS=$'\n' read -r script; do
+  failing_files+=("$script")
 done < <(cat "${failure_file}")
 
 # detect if the host machine has the required shellcheck version installed
@@ -124,12 +124,12 @@ else
   remove_container
   kube::util::trap_add 'remove_container' EXIT
   if ! output="$(create_container 2>&1)"; then
-      {
-        echo "Failed to create shellcheck container with output: "
-        echo ""
-        echo "${output}"
-      } >&2
-      exit 1
+    {
+      echo "Failed to create shellcheck container with output: "
+      echo ""
+      echo "${output}"
+    } >&2
+    exit 1
   fi
 fi
 
@@ -161,15 +161,15 @@ for f in "${all_shell_scripts[@]}"; do
     failedLint=$(shellcheck "${SHELLCHECK_OPTIONS[@]}" "${f}")
   else
     failedLint=$(docker exec -t ${SHELLCHECK_CONTAINER} \
-                 shellcheck "${SHELLCHECK_OPTIONS[@]}" "${f}")
+      shellcheck "${SHELLCHECK_OPTIONS[@]}" "${f}")
   fi
   set -o errexit
   kube::util::array_contains "${f}" "${failing_files[@]}" && in_failing=$? || in_failing=$?
   if [[ -n "${failedLint}" ]] && [[ "${in_failing}" -ne "0" ]]; then
-    errors+=( "${failedLint}" )
+    errors+=("${failedLint}")
   fi
   if [[ -z "${failedLint}" ]] && [[ "${in_failing}" -eq "0" ]]; then
-    not_failing+=( "${f}" )
+    not_failing+=("${f}")
   fi
 done
 
@@ -206,7 +206,7 @@ fi
 # Check that all failing_files actually still exist
 gone=()
 for f in "${failing_files[@]}"; do
-  kube::util::array_contains "$f" "${all_shell_scripts[@]}" || gone+=( "$f" )
+  kube::util::array_contains "$f" "${all_shell_scripts[@]}" || gone+=("$f")
 done
 
 if [[ ${#gone[@]} -gt 0 ]]; then

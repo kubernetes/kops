@@ -20,9 +20,9 @@ set -o pipefail
 
 . "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-if ! command -v gofumpt &> /dev/null; then
+if ! command -v gofumpt &>/dev/null; then
   cd "${KOPS_ROOT}/hack" || exit 1
-  go install mvdan.cc/gofumpt@v0.2.0
+  go install mvdan.cc/gofumpt@v0.7.0
 fi
 
 cd "${KOPS_ROOT}" || exit 1
