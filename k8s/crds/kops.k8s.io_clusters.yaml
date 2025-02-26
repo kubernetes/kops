@@ -197,7 +197,6 @@ spec:
                         - type: integer
                         - type: string
                         description: CPULimit CPU limit of AWS IAM Authenticator container.
-                          Default 10m
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                       cpuRequest:
@@ -5983,9 +5982,7 @@ spec:
                     anyOf:
                     - type: integer
                     - type: string
-                    description: |-
-                      CPULimit of NodeProblemDetector container.
-                      Default: 10m
+                    description: CPULimit of NodeProblemDetector container.
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                   cpuRequest:
