@@ -167,8 +167,9 @@ func (t *Tester) setSkipRegexFlag() error {
 	// ref: https://github.com/kubernetes/kops/issues/16349
 	// ref: https://github.com/kubernetes/kubernetes/issues/123255
 	// ref: https://github.com/kubernetes/kubernetes/issues/121018
-	// < 33 so we look at this again
-	if k8sVersion.Minor < 33 {
+	// ref: https://github.com/kubernetes/kubernetes/pull/126896
+	// < 34 so we look at this again
+	if k8sVersion.Minor < 34 {
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
