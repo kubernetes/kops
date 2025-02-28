@@ -80,6 +80,7 @@ func (c Client) BucketName(ctx context.Context) (string, error) {
 
 // EnsureS3Bucket creates a new S3 bucket with the given name and public read permissions.
 func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRead bool) error {
+	bucketName = strings.TrimPrefix(bucketName, "s3://")
 	_, err := c.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
@@ -127,6 +128,7 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 
 // DeleteS3Bucket deletes a S3 bucket with the given name.
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
+	bucketName = strings.TrimPrefix(bucketName, "s3://")
 	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	})
