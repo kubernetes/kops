@@ -32,46 +32,44 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// We need to pick some region to query the AWS APIs through, even if we are not running on AWS.
+// defaultRegion is the region to query the AWS APIs through, this can be any AWS region is required even if we are not
+// running on AWS.
 const defaultRegion = "us-east-2"
 
-// It contains S3Client, an Amazon S3 service client that is used to perform bucket
-// and object actions.
-type awsClient struct {
-	S3Client *s3.Client
+// Client contains S3 and STS clients that are used to perform bucket and object actions.
+type Client struct {
+	s3Client  *s3.Client
+	stsClient *sts.Client
 }
 
-func NewAWSClient(ctx context.Context) (*awsClient, error) {
+// NewAWSClient returns a new instance of awsClient configured to work in the default region (us-east-2).
+func NewClient(ctx context.Context) (*Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(ctx,
 		awsconfig.WithRegion(defaultRegion))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load AWS config: %w", err)
+		return nil, fmt.Errorf("loading AWS config: %w", err)
 	}
-	return &awsClient{
-		S3Client: s3.NewFromConfig(cfg),
+
+	return &Client{
+		s3Client:  s3.NewFromConfig(cfg),
+		stsClient: sts.NewFromConfig(cfg),
 	}, nil
 }
 
-// AWSBucketName constructs an unique bucket name using the AWS account ID on region us-east-2
-func AWSBucketName(ctx context.Context) (string, error) {
-	config, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(string(types.BucketLocationConstraintUsEast2)))
-	if err != nil {
-		return "", fmt.Errorf("failed to load AWS config: %w", err)
-	}
-
-	stsSvc := sts.NewFromConfig(config)
-	callerIdentity, err := stsSvc.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+// BucketName constructs an unique bucket name using the AWS account ID in the default region (us-east-2).
+func (c Client) BucketName(ctx context.Context) (string, error) {
+	callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", fmt.Errorf("building AWS STS presigned request: %w", err)
 	}
 
-	// Add timestamp suffix
-	timestamp := time.Now().Format("01022006")
-	bucket := fmt.Sprintf("k8s-infra-kops-%s", *callerIdentity.Account)
-	bucket = fmt.Sprintf("%s-%s", bucket, timestamp)
+	// Construct the bucket name based on the AWS account ID and the current timestamp
+	timestamp := time.Now().Format("20060102150405")
+	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s", *callerIdentity.Account, timestamp)
 
 	bucket = strings.ToLower(bucket)
-	bucket = regexp.MustCompile("[^a-z0-9-]").ReplaceAllString(bucket, "") // Only allow lowercase letters, numbers, and hyphens
+	// Only allow lowercase letters, numbers, and hyphens
+	bucket = regexp.MustCompile("[^a-z0-9-]").ReplaceAllString(bucket, "")
 
 	if len(bucket) > 63 {
 		bucket = bucket[:63] // Max length is 63
@@ -80,73 +78,88 @@ func AWSBucketName(ctx context.Context) (string, error) {
 	return bucket, nil
 }
 
-func (client awsClient) EnsureS3Bucket(ctx context.Context, bucketName string, publicRead bool) error {
-	_, err := client.S3Client.CreateBucket(ctx, &s3.CreateBucketInput{
+// EnsureS3Bucket creates a new S3 bucket with the given name and public read permissions.
+func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRead bool) error {
+	_, err := c.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: types.BucketLocationConstraintUsEast2,
+			LocationConstraint: defaultRegion,
 		},
 	})
-
-	var exists *types.BucketAlreadyExists
 	if err != nil {
+		var exists *types.BucketAlreadyExists
 		if errors.As(err, &exists) {
-			klog.Infof("Bucket %s already exists.\n", bucketName)
-			err = exists
+			klog.Infof("Bucket %s already exists\n", bucketName)
+		} else {
+			klog.Infof("Error creating bucket %s, err: %v\n", bucketName, err)
 		}
-	} else {
-		err := s3.NewBucketExistsWaiter(client.S3Client).Wait(
-			ctx, &s3.HeadBucketInput{
-				Bucket: aws.String(bucketName),
-			},
-			time.Minute)
-		if err != nil {
-			klog.Infof("Failed attempt to wait for bucket %s to exist.", bucketName)
-		}
+
+		return fmt.Errorf("creating bucket %s: %w", bucketName, err)
+	}
+
+	// Wait for the bucket to be created
+	err = s3.NewBucketExistsWaiter(c.s3Client).Wait(
+		ctx, &s3.HeadBucketInput{
+			Bucket: aws.String(bucketName),
+		},
+		time.Minute)
+	if err != nil {
+		klog.Infof("Failed attempt to wait for bucket %s to exist, err: %v", bucketName, err)
+
+		return fmt.Errorf("waiting for bucket %s to exist: %w", bucketName, err)
 	}
 
 	klog.Infof("Bucket %s created successfully", bucketName)
 
-	if err == nil && publicRead {
-		err = client.setPublicReadPolicy(ctx, bucketName)
+	if publicRead {
+		err = c.setPublicReadPolicy(ctx, bucketName)
 		if err != nil {
-			klog.Errorf("Failed to set public read policy on bucket %s: %v", bucketName, err)
-			return err
+			klog.Errorf("Failed to set public read policy on bucket %s, err: %v", bucketName, err)
+
+			return fmt.Errorf("setting public read policy for bucket %s: %w", bucketName, err)
 		}
+
 		klog.Infof("Public read policy set on bucket %s", bucketName)
 	}
 
-	return err
+	return nil
 }
 
-func (client awsClient) DeleteS3Bucket(ctx context.Context, bucketName string) error {
-	_, err := client.S3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+// DeleteS3Bucket deletes a S3 bucket with the given name.
+func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
+	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
 		var noBucket *types.NoSuchBucket
 		if errors.As(err, &noBucket) {
-			klog.Infof("Bucket %s does not exits", bucketName)
-			err = noBucket
+			klog.Infof("Bucket %s does not exits.", bucketName)
+
+			return nil
 		} else {
-			klog.Infof("Couldn't delete bucket %s. Reason: %v", bucketName, err)
-		}
-	} else {
-		err = s3.NewBucketNotExistsWaiter(client.S3Client).Wait(
-			ctx, &s3.HeadBucketInput{
-				Bucket: aws.String(bucketName),
-			},
-			time.Minute)
-		if err != nil {
-			klog.Infof("Failed attempt to wait for bucket %s to be deleted", bucketName)
-		} else {
-			klog.Infof("Bucket %s deleted", bucketName)
+			klog.Infof("Couldn't delete bucket %s, err: %v", bucketName, err)
+
+			return fmt.Errorf("deleting bucket %s: %w", bucketName, err)
 		}
 	}
-	return err
+
+	err = s3.NewBucketNotExistsWaiter(c.s3Client).Wait(
+		ctx, &s3.HeadBucketInput{
+			Bucket: aws.String(bucketName),
+		},
+		time.Minute)
+	if err != nil {
+		klog.Infof("Failed attempt to wait for bucket %s to be deleted, err: %v", bucketName, err)
+
+		return fmt.Errorf("waiting for bucket %s to be deleted, err: %w", bucketName, err)
+	}
+
+	klog.Infof("Bucket %s deleted", bucketName)
+
+	return nil
 }
 
-func (client awsClient) setPublicReadPolicy(ctx context.Context, bucketName string) error {
+func (c Client) setPublicReadPolicy(ctx context.Context, bucketName string) error {
 	policy := fmt.Sprintf(`{
     "Version": "2012-10-17",
     "Statement": [
@@ -160,13 +173,13 @@ func (client awsClient) setPublicReadPolicy(ctx context.Context, bucketName stri
     ]
   }`, bucketName)
 
-	_, err := client.S3Client.PutBucketPolicy(ctx, &s3.PutBucketPolicyInput{
+	_, err := c.s3Client.PutBucketPolicy(ctx, &s3.PutBucketPolicyInput{
 		Bucket: aws.String(bucketName),
 		Policy: aws.String(policy),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to put bucket policy for %s: %w", bucketName, err)
+		return fmt.Errorf("putting bucket policy for %s: %w", bucketName, err)
 	}
 
-	return err
+	return nil
 }

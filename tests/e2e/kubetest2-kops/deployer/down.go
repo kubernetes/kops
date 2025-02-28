@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -72,9 +73,17 @@ func (d *deployer) Down() error {
 		return err
 	}
 
-	if d.CloudProvider == "gce" && d.createBucket {
-		gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
-		gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
+	if d.createBucket {
+		switch d.CloudProvider {
+		case "aws":
+			ctx := context.Background()
+			if err := d.aws.DeleteS3Bucket(ctx, d.stateStore()); err != nil {
+				return err
+			}
+		case "gce":
+			gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
+			gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
+		}
 	}
 
 	if d.boskos != nil {
