@@ -55,7 +55,7 @@ func (l *OptionsLoader[T]) iterate(userConfig T, current T) (T, error) {
 	reflectutils.JSONMergeStruct(next, current)
 
 	for _, t := range l.Builders {
-		klog.V(2).Infof("executing builder %T", t)
+		klog.V(4).Infof("executing builder %T", t)
 
 		err := t.BuildOptions(next)
 		if err != nil {
