@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	osexec "os/exec"
@@ -61,9 +62,17 @@ func (d *deployer) Up() error {
 		_ = d.Down()
 	}
 
-	if d.CloudProvider == "gce" && d.createBucket {
-		if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject, false); err != nil {
-			return err
+	if d.createBucket {
+		switch d.CloudProvider {
+		case "aws":
+			ctx := context.Background()
+			if err := d.aws.EnsureS3Bucket(ctx, d.stateStore(), false); err != nil {
+				return err
+			}
+		case "gce":
+			if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject, false); err != nil {
+				return err
+			}
 		}
 	}
 
