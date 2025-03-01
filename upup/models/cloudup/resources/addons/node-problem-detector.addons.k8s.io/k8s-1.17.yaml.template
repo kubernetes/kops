@@ -62,7 +62,9 @@ spec:
           privileged: true
         resources:
           limits:
+            {{- if .CPULimit }}
             cpu: {{ .CPULimit }}
+            {{- end }}
             memory: {{ .MemoryLimit }}
           requests:
             cpu: {{ .CPURequest }}

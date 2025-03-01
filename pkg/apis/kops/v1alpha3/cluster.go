@@ -395,7 +395,7 @@ type AWSAuthenticationSpec struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// MemoryLimit memory limit of AWS IAM Authenticator container. Default 20Mi
 	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
-	// CPULimit CPU limit of AWS IAM Authenticator container. Default 10m
+	// CPULimit CPU limit of AWS IAM Authenticator container.
 	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
 	// IdentityMappings maps IAM Identities to Kubernetes users/groups
 	IdentityMappings []AWSAuthenticationIdentityMappingSpec `json:"identityMappings,omitempty"`
