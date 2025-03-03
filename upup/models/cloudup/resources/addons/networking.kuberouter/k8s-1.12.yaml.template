@@ -63,7 +63,7 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v2.1.1
+        image: docker.io/cloudnativelabs/kube-router:v2.5.0
         args:
         - --run-router=true
         - --run-firewall=true
@@ -117,7 +117,7 @@ spec:
           readOnly: true
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v2.1.1
+        image: docker.io/cloudnativelabs/kube-router:v2.5.0
         command:
         - /bin/sh
         - -c
