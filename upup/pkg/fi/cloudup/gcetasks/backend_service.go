@@ -149,7 +149,8 @@ func (a *BackendService) URL(cloud gce.GCECloud) string {
 }
 
 type terraformBackend struct {
-	Group *terraformWriter.Literal `cty:"group"`
+	BalancingMode *terraformWriter.Literal `cty:"balancing_mode"`
+	Group         *terraformWriter.Literal `cty:"group"`
 }
 
 type terraformBackendService struct {
@@ -166,30 +167,27 @@ func (_ *BackendService) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 		LoadBalancingScheme: e.LoadBalancingScheme,
 		Protocol:            e.Protocol,
 	}
-	// Terraform has a different name for this scheme:
-	if tf.LoadBalancingScheme != nil && *tf.LoadBalancingScheme == "INTERNAL" {
-		sm := "INTERNAL_SELF_MANAGED"
-		tf.LoadBalancingScheme = &sm
-	}
+
 	var igms []terraformBackend
 	for _, ig := range e.InstanceGroupManagers {
 		igms = append(igms, terraformBackend{
-			Group: terraformWriter.LiteralProperty("google_compute_instance_group_manager", *ig.Name, "instance_group"),
+			BalancingMode: terraformWriter.LiteralFromStringValue("CONNECTION"),
+			Group:         terraformWriter.LiteralProperty("google_compute_instance_group_manager", *ig.Name, "instance_group"),
 		})
 	}
 	tf.Backend = igms
 
 	var hcs []*terraformWriter.Literal
 	for _, hc := range e.HealthChecks {
-		hcs = append(hcs, terraformWriter.LiteralProperty("google_compute_health_check", *hc.Name, "id"))
+		hcs = append(hcs, terraformWriter.LiteralProperty("google_compute_region_health_check", *hc.Name, "id"))
 	}
 	tf.HealthChecks = hcs
 
-	return t.RenderResource("google_compute_backend_service", *e.Name, tf)
+	return t.RenderResource("google_compute_region_backend_service", *e.Name, tf)
 }
 
 func (e *BackendService) TerraformAddress() *terraformWriter.Literal {
 	name := fi.ValueOf(e.Name)
 
-	return terraformWriter.LiteralProperty("google_compute_backend_service", name, "id")
+	return terraformWriter.LiteralProperty("google_compute_region_backend_service", name, "id")
 }
