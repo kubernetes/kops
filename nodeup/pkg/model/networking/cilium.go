@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"golang.org/x/sys/unix"
 
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // CiliumBuilder writes Cilium's assets
@@ -47,6 +49,13 @@ func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	if b.NodeupConfig.Networking.Cilium == nil {
 		return nil
+	}
+
+	if b.NodeupConfig.Networking.Cilium.IPAM == "eni" && slices.Contains([]distributions.Distribution{
+		distributions.DistributionFlatcar,
+		distributions.DistributionAmazonLinux2023,
+	}, b.Distribution) {
+		b.eniDisableDHCP(c)
 	}
 
 	if err := b.buildBPFMount(c); err != nil {
@@ -191,4 +200,30 @@ func (b *CiliumBuilder) buildCiliumEtcdSecrets(c *fi.NodeupModelBuilderContext) 
 
 		return nil
 	}
+}
+
+// Certain distros are known to manipulate network interfaces created and managed by Cilium
+// To avoid this, disable DHCP on the ENI interfaces and mark them as unmanaged
+// https://github.com/cilium/cilium/blob/04f033e39c15fcfdae664caef3b0cbc17f2cec0b/Documentation/operations/system_requirements.rst#flatcar-on-aws-eks-in-eni-mode
+func (b *CiliumBuilder) eniDisableDHCP(c *fi.NodeupModelBuilderContext) {
+	contents := `
+[Match]
+Name=eth[1-9]* ens[6-9]*
+
+[Network]
+DHCP=no
+
+[Link]
+Unmanaged=yes
+`
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/systemd/network/01-no-dhcp.network",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			{"systemctl", "daemon-reload"},
+			{"systemctl", "restart", "systemd-networkd"},
+		},
+	})
 }
