@@ -42,6 +42,12 @@ spec:
             properties:
               instanceGroup:
                 type: string
+              podCIDRs:
+                description: PodCIDRs configures the IP ranges to be used for pods
+                  on this node/host.
+                items:
+                  type: string
+                type: array
               publicKey:
                 type: string
             type: object
