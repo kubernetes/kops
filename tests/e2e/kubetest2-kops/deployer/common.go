@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -24,6 +25,7 @@ import (
 	"strings"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
@@ -51,6 +53,12 @@ func (d *deployer) initialize() error {
 
 	switch d.CloudProvider {
 	case "aws":
+		client, err := aws.NewClient(context.Background())
+		if err != nil {
+			return fmt.Errorf("init failed to build AWS client: %w", err)
+		}
+		d.aws = client
+
 		if d.SSHPrivateKeyPath == "" {
 			d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
 		}
@@ -316,11 +324,21 @@ func defaultClusterName(cloudProvider string) (string, error) {
 // stateStore returns the kops state store to use
 // defaulting to values used in prow jobs
 func (d *deployer) stateStore() string {
+	if d.stateStoreName != "" {
+		return d.stateStoreName
+	}
 	ss := os.Getenv("KOPS_STATE_STORE")
 	if ss == "" {
 		switch d.CloudProvider {
 		case "aws":
-			ss = "s3://k8s-kops-prow"
+			ctx := context.Background()
+			bucketName, err := d.aws.BucketName(ctx)
+			if err != nil {
+				klog.Fatalf("Failed to generate bucket name: %v", err)
+				return ""
+			}
+			d.createBucket = true
+			ss = "s3://" + bucketName
 		case "gce":
 			d.createBucket = true
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
@@ -328,11 +346,16 @@ func (d *deployer) stateStore() string {
 			ss = "do://e2e-kops-space"
 		}
 	}
+
+	d.stateStoreName = ss
 	return ss
 }
 
 // discoveryStore returns the VFS path to use for public OIDC documents
 func (d *deployer) discoveryStore() string {
+	if d.discoveryStoreName != "" {
+		return d.discoveryStoreName
+	}
 	discovery := os.Getenv("KOPS_DISCOVERY_STORE")
 	if discovery == "" {
 		switch d.CloudProvider {
@@ -340,10 +363,14 @@ func (d *deployer) discoveryStore() string {
 			discovery = "s3://k8s-kops-ci-prow"
 		}
 	}
+	d.discoveryStoreName = discovery
 	return discovery
 }
 
 func (d *deployer) stagingStore() string {
+	if d.stagingStoreName != "" {
+		return d.stagingStoreName
+	}
 	sb := os.Getenv("KOPS_STAGING_BUCKET")
 	if sb == "" {
 		switch d.CloudProvider {
@@ -352,6 +379,7 @@ func (d *deployer) stagingStore() string {
 			sb = "gs://" + gce.GCSBucketName(d.GCPProject, "staging")
 		}
 	}
+	d.stagingStoreName = sb
 	return sb
 }
 
