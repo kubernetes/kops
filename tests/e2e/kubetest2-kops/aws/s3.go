@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -58,14 +59,20 @@ func NewClient(ctx context.Context) (*Client, error) {
 
 // BucketName constructs an unique bucket name using the AWS account ID in the default region (us-east-2).
 func (c Client) BucketName(ctx context.Context) (string, error) {
-	callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
-	if err != nil {
-		return "", fmt.Errorf("building AWS STS presigned request: %w", err)
+	// Construct the bucket name based on the ProwJob ID (if running in Prow) or AWS account ID (if running outside
+	// Prow) and the current timestamp
+	var identifier string
+	if jobID := os.Getenv("PROW_JOB_ID"); len(jobID) >= 4 {
+		identifier = jobID[:4]
+	} else {
+		callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+		if err != nil {
+			return "", fmt.Errorf("building AWS STS presigned request: %w", err)
+		}
+		identifier = *callerIdentity.Account
 	}
-
-	// Construct the bucket name based on the AWS account ID and the current timestamp
 	timestamp := time.Now().Format("20060102150405")
-	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s", *callerIdentity.Account, timestamp)
+	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s", identifier, timestamp)
 
 	bucket = strings.ToLower(bucket)
 	// Only allow lowercase letters, numbers, and hyphens
@@ -80,6 +87,7 @@ func (c Client) BucketName(ctx context.Context) (string, error) {
 
 // EnsureS3Bucket creates a new S3 bucket with the given name and public read permissions.
 func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRead bool) error {
+	bucketName = strings.TrimPrefix(bucketName, "s3://")
 	_, err := c.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
@@ -127,6 +135,7 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 
 // DeleteS3Bucket deletes a S3 bucket with the given name.
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
+	bucketName = strings.TrimPrefix(bucketName, "s3://")
 	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	})
