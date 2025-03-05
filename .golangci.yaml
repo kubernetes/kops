@@ -1,35 +1,35 @@
 run:
   timeout: 30m
-  go: "1.22"
+  go: "1.23"
 
 issues:
   max-same-issues: 0
   # Excluding configuration per-path, per-linter, per-text and per-source
   exclude-rules:
-  # exclude ineffassing linter for generated files for conversion
-  - path: conversion\.go
-    linters:
-    - ineffassign
+    # exclude ineffassing linter for generated files for conversion
+    - path: conversion\.go
+      linters:
+        - ineffassign
   exclude-files:
-  - "^zz_generated.*"
+    - "^zz_generated.*"
 
 linters:
   disable-all: true
   enable:
-  - govet
-  - ineffassign
-  - staticcheck
-  - tenv
+    - govet
+    - ineffassign
+    - staticcheck
+    - tenv
 
 linters-settings: # please keep this alphabetized
   staticcheck:
     checks: [
-      "all",
-      "-ST1000",  # Incorrect or missing package comment
-      "-ST1003",  # Poorly chosen identifier
-      "-ST1005",  # Incorrectly formatted error string
-      "-ST1006",  # Poorly chosen receiver name
-      "-ST1012",  # Poorly chosen name for error variable
-      "-ST1016",  # Use consistent method receiver names
-      "-SA1019",  # Using a deprecated function, variable, constant or field
-    ]
+        "all",
+        "-ST1000", # Incorrect or missing package comment
+        "-ST1003", # Poorly chosen identifier
+        "-ST1005", # Incorrectly formatted error string
+        "-ST1006", # Poorly chosen receiver name
+        "-ST1012", # Poorly chosen name for error variable
+        "-ST1016", # Use consistent method receiver names
+        "-SA1019", # Using a deprecated function, variable, constant or field
+      ]
