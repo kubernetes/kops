@@ -142,7 +142,7 @@ func fakeKeyset() *fi.Keyset {
 
 func TestBuildKubecfg(t *testing.T) {
 	originalPKIDefaultPrivateKeySize := pki.DefaultPrivateKeySize
-	pki.DefaultPrivateKeySize = 512
+	pki.DefaultPrivateKeySize = 2048
 	defer func() {
 		pki.DefaultPrivateKeySize = originalPKIDefaultPrivateKeySize
 	}()
