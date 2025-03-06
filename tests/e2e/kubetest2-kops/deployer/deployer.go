@@ -25,6 +25,7 @@ import (
 	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/builder"
 	"k8s.io/kops/tests/e2e/pkg/target"
 
@@ -57,7 +58,6 @@ type deployer struct {
 	CreateArgs             string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
 	KopsBinaryPath         string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
 	KubernetesFeatureGates string   `flag:"kubernetes-feature-gates" desc:"Feature Gates to enable on Kubernetes components"`
-	createBucket           bool     `flag:"-"`
 
 	// ControlPlaneCount specifies the number of VMs in the control-plane.
 	ControlPlaneCount int `flag:"control-plane-count" desc:"Number of control-plane instances"`
@@ -90,6 +90,13 @@ type deployer struct {
 	manifestPath string
 	terraform    *target.Terraform
 
+	aws *aws.Client
+
+	createBucket       bool
+	stateStoreName     string
+	discoveryStoreName string
+	stagingStoreName   string
+
 	// boskos struct field will be non-nil when the deployer is
 	// using boskos to acquire a GCP project
 	boskos                  *client.Client
@@ -106,8 +113,10 @@ type deployer struct {
 var _ types.NewDeployer = New
 
 // assert that deployer implements types.Deployer
-var _ types.Deployer = &deployer{}
-var _ types.DeployerWithPostTester = &deployer{}
+var (
+	_ types.Deployer               = &deployer{}
+	_ types.DeployerWithPostTester = &deployer{}
+)
 
 func (d *deployer) Provider() string {
 	return Name
