@@ -251,7 +251,7 @@ resource "hcloud_server" "master-fsn1" {
     ipv4_enabled = true
     ipv6_enabled = false
   }
-  server_type = "cx21"
+  server_type = "cx22"
   ssh_keys    = [hcloud_ssh_key.minimal-example-com-c4_a6_ed_9a_a8_89_b9_e2_c3_9c_d6_63_eb_9c_71_57.id]
   user_data   = filebase64("${path.module}/data/hcloud_server_master-fsn1_user_data")
 }
@@ -274,7 +274,7 @@ resource "hcloud_server" "nodes-fsn1" {
     ipv4_enabled = true
     ipv6_enabled = false
   }
-  server_type = "cx21"
+  server_type = "cx22"
   ssh_keys    = [hcloud_ssh_key.minimal-example-com-c4_a6_ed_9a_a8_89_b9_e2_c3_9c_d6_63_eb_9c_71_57.id]
   user_data   = filebase64("${path.module}/data/hcloud_server_nodes-fsn1_user_data")
 }
