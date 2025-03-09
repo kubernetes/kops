@@ -176,7 +176,7 @@ spec:
         - --kubelet-preferred-address-types=InternalIP
         - --cert-dir=/tmp
         - --kubelet-insecure-tls
-        image: registry.k8s.io/metrics-server/metrics-server:v0.7.1
+        image: registry.k8s.io/metrics-server/metrics-server:v0.7.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
