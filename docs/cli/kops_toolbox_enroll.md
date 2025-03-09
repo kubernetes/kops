@@ -22,10 +22,12 @@ kops toolbox enroll [CLUSTER] [flags]
 ### Options
 
 ```
+      --build-host              only build the host resource, don't apply it or enroll the node
       --cluster string          Name of cluster to join
   -h, --help                    help for enroll
       --host string             IP/hostname for machine to add
       --instance-group string   Name of instance-group to join
+      --pod-cidr strings        IP Address range to use for pods that run on this node
       --ssh-port int            port for ssh (default 22)
       --ssh-user string         user for ssh (default "root")
 ```
