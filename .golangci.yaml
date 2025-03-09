@@ -1,6 +1,6 @@
 run:
   timeout: 30m
-  go: "1.23"
+  go: "1.24"
 
 issues:
   max-same-issues: 0
