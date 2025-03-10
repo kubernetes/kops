@@ -2,64 +2,64 @@
 timeout: 1800s
 options:
   substitution_option: ALLOW_LOOSE
-  machineType: 'N1_HIGHCPU_32'
+  machineType: "E2_HIGHCPU_32"
 steps:
-# Push the images
-- name: 'docker.io/library/golang:1.23.5-bookworm'
-  id: images
-  entrypoint: make
-  env:
-  # _GIT_TAG is not a valid semver, we use CI=1 instead
-  # - VERSION=$_GIT_TAG
-  - CI=$_CI
-  - PULL_BASE_REF=$_PULL_BASE_REF
-  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
-  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
-  args:
-  - kops-utils-cp-push
-  - kops-controller-push
-  - dns-controller-push
-  - kube-apiserver-healthcheck-push
-# Push the artifacts
-- name: 'docker.io/library/golang:1.23.5-bookworm'
-  id: artifacts
-  entrypoint: make
-  env:
-  # _GIT_TAG is not a valid semver, we use CI=1 instead
-  # - VERSION=$_GIT_TAG
-  - CI=$_CI
-  - PULL_BASE_REF=$_PULL_BASE_REF
-  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
-  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
-  - GCS_LOCATION=$_GCS_LOCATION
-  - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
-  args:
-  - gcs-upload-and-tag
-# Build cloudbuild artifacts (for attestation)
-- name: 'docker.io/library/golang:1.23.5-bookworm'
-  id: cloudbuild-artifacts
-  entrypoint: make
-  env:
-  # _GIT_TAG is not a valid semver, we use CI=1 instead
-  # - VERSION=$_GIT_TAG
-  - CI=$_CI
-  - PULL_BASE_REF=$_PULL_BASE_REF
-  - DOCKER_REGISTRY=$_DOCKER_REGISTRY
-  - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
-  - GCS_LOCATION=$_GCS_LOCATION
-  - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
-  args:
-  - cloudbuild-artifacts
+  # Push the images
+  - name: "mirror.gcr.io/library/golang:1.24.1-bookworm"
+    id: images
+    entrypoint: make
+    env:
+      # _GIT_TAG is not a valid semver, we use CI=1 instead
+      # - VERSION=$_GIT_TAG
+      - CI=$_CI
+      - PULL_BASE_REF=$_PULL_BASE_REF
+      - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+      - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+    args:
+      - kops-utils-cp-push
+      - kops-controller-push
+      - dns-controller-push
+      - kube-apiserver-healthcheck-push
+  # Push the artifacts
+  - name: "mirror.gcr.io/library/golang:1.24.1-bookworm"
+    id: artifacts
+    entrypoint: make
+    env:
+      # _GIT_TAG is not a valid semver, we use CI=1 instead
+      # - VERSION=$_GIT_TAG
+      - CI=$_CI
+      - PULL_BASE_REF=$_PULL_BASE_REF
+      - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+      - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+      - GCS_LOCATION=$_GCS_LOCATION
+      - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
+    args:
+      - gcs-upload-and-tag
+  # Build cloudbuild artifacts (for attestation)
+  - name: "mirror.gcr.io/library/golang:1.24.1-bookworm"
+    id: cloudbuild-artifacts
+    entrypoint: make
+    env:
+      # _GIT_TAG is not a valid semver, we use CI=1 instead
+      # - VERSION=$_GIT_TAG
+      - CI=$_CI
+      - PULL_BASE_REF=$_PULL_BASE_REF
+      - DOCKER_REGISTRY=$_DOCKER_REGISTRY
+      - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
+      - GCS_LOCATION=$_GCS_LOCATION
+      - LATEST_FILE=markers/${_PULL_BASE_REF}/latest-ci.txt
+    args:
+      - cloudbuild-artifacts
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
-  _CI: '1'
-  _GIT_TAG: '12345'
-  _PULL_BASE_REF: 'dev'
-  _DOCKER_REGISTRY: 'gcr.io'
-  _DOCKER_IMAGE_PREFIX: 'k8s-staging-kops/'
-  _GCS_LOCATION: 'gs://k8s-staging-kops/kops/releases/'
+  _CI: "1"
+  _GIT_TAG: "12345"
+  _PULL_BASE_REF: "dev"
+  _DOCKER_REGISTRY: "gcr.io"
+  _DOCKER_IMAGE_PREFIX: "k8s-staging-kops/"
+  _GCS_LOCATION: "gs://k8s-staging-kops/kops/releases/"
 artifacts:
   objects:
-    location: '$_GCS_LOCATION/$_GIT_TAG/cloudbuild/'
+    location: "$_GCS_LOCATION/$_GIT_TAG/cloudbuild/"
     paths: ["cloudbuild/*"]
