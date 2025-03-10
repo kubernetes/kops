@@ -1319,6 +1319,9 @@ spec:
           mountPath: /run/cilium/cgroupv2
         - name: cilium-run
           mountPath: /var/run/cilium
+        - name: cilium-netns
+          mountPath: /var/run/cilium/netns
+          mountPropagation: HostToContainer
         - name: etc-cni-netd
           mountPath: /host/etc/cni/net.d
 {{ if .EtcdManaged }}
@@ -1572,6 +1575,11 @@ spec:
       - name: cilium-run
         hostPath:
           path: /var/run/cilium
+          type: DirectoryOrCreate
+        # To exec into pod network namespaces
+      - name: cilium-netns
+        hostPath:
+          path: /var/run/netns
           type: DirectoryOrCreate
         # To keep state between restarts / upgrades for bpf maps
       - name: bpf-maps
