@@ -3690,6 +3690,13 @@ spec:
                           Default: none
                         type: object
                     type: object
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      PodAnnotations makes possible to add additional annotations to CoreDNS Pods.
+                      Default: none
+                    type: object
                   provider:
                     description: Provider indicates whether CoreDNS or kube-dns will
                       be the default service discovery.

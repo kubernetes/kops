@@ -122,6 +122,12 @@ spec:
     metadata:
       labels:
         k8s-app: kube-dns
+      {{- if KubeDNS.PodAnnotations }}
+      annotations:
+        {{- range $key, $value := KubeDNS.PodAnnotations }}
+        {{ $key }}: "{{ $value }}"
+        {{- end }}
+      {{- end }}
     spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
