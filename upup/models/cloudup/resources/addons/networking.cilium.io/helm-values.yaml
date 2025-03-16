@@ -22,6 +22,8 @@ gatewayAPI:
 bgpControlPlane:
   secretsNamespace:
     create: false
+scheduling:
+  mode: kube-scheduler
 updateStrategy:
   type: OnDelete
   rollingUpdate: null
