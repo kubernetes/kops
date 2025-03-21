@@ -1195,9 +1195,6 @@ spec:
         - name: clustermesh-secrets
           mountPath: /var/lib/cilium/clustermesh
           readOnly: true
-        - name: cilium-config-path
-          mountPath: /tmp/cilium/config-map
-          readOnly: true
           # Needed to be able to load kernel modules
         - name: lib-modules
           mountPath: /lib/modules
@@ -1511,9 +1508,6 @@ spec:
                 path: common-etcd-client.crt
               - key: ca.crt
                 path: common-etcd-client-ca.crt
-      - configMap:
-          name: cilium-config
-        name: cilium-config-path
 {{ if CiliumSecret }}
       - name: cilium-ipsec-secrets
         secret:
