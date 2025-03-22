@@ -56,7 +56,7 @@ func NewGCEIPAMReconciler(mgr manager.Manager) (*GCEIPAMReconciler, error) {
 	return r, nil
 }
 
-// GCEIPAMReconciler observes Node objects, assigning their`PodCIDRs` from the instance's `ExternalIpv6`.
+// GCEIPAMReconciler observes Node objects, assigning their `PodCIDRs` from the instance's `ExternalIpv6`.
 type GCEIPAMReconciler struct {
 	// client is the controller-runtime client
 	client client.Client
