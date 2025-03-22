@@ -145,6 +145,9 @@ spec:
 {{ ToYAML .KubeDNS.Affinity | indent 8 }}
 {{- end }}
       topologySpreadConstraints:
+      {{- if .KubeDNS.TopologySpreadConstraints }}
+{{ ToYAML .KubeDNS.TopologySpreadConstraints | indent 6 }}
+      {{- else }}
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
         whenUnsatisfiable: ScheduleAnyway
@@ -158,6 +161,7 @@ spec:
         labelSelector:
           matchLabels:
             k8s-app: kube-dns
+      {{- end }}
       containers:
       - name: coredns
         image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.11.3{{ end }}
