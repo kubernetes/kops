@@ -82,12 +82,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 
 		// @step: now lets build the autoscaling group task
 		if ig.Spec.Manager != "Karpenter" {
-			tsk, err := b.buildAutoScalingGroupTask(c, name, ig)
+			asg, err := b.buildAutoScalingGroupTask(c, name, ig)
 			if err != nil {
 				return err
 			}
-			tsk.LaunchTemplate = task
-			c.AddTask(tsk)
+			asg.LaunchTemplate = task
+			c.AddTask(asg)
 
 			warmPool := b.Cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(ig)
 
@@ -103,9 +103,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				if warmPool.MaxSize != nil {
 					warmPoolTask.MaxSize = fi.PtrTo(int32(aws.ToInt64(warmPool.MaxSize)))
 				}
-				tsk.WarmPool = warmPoolTask
+				asg.WarmPool = warmPoolTask
 			} else {
-				tsk.WarmPool = nil
+				asg.WarmPool = nil
 			}
 			c.AddTask(warmPoolTask)
 
