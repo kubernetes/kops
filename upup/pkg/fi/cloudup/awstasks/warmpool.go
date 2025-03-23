@@ -41,6 +41,7 @@ type WarmPool struct {
 	// MinSize is the smallest number of nodes in the warm pool.
 	MinSize int32
 
+	// AutoscalingGroup is the AutoscalingGroup on which we configure this warmpool.
 	AutoscalingGroup *AutoscalingGroup
 }
 
