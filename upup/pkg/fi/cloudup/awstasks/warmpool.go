@@ -66,6 +66,13 @@ func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudup
 	return deps
 }
 
+var _ fi.CompareWithID = &WarmPool{}
+
+// CompareWithID returns the ID of the WarmPool task
+func (e *WarmPool) CompareWithID() *string {
+	return e.Name
+}
+
 // Find is used to discover the ASG in the cloud provider.
 func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	ctx := c.Context()
