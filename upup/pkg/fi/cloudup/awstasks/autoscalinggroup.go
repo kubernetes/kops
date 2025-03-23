@@ -100,8 +100,10 @@ type AutoscalingGroup struct {
 	TargetGroups []*TargetGroup
 	// CapacityRebalance makes ASG proactively replace spot instances when ASG receives a rebalance recommendation
 	CapacityRebalance *bool
-	// WarmPool is the WarmPool config for the ASG
-	WarmPool *WarmPool
+
+	// WarmPool is the WarmPool config for the ASG.
+	// It is marked to be ignored in JSON marshalling to avoid a circular dependency.
+	WarmPool *WarmPool `json:"-"`
 
 	deletions []fi.CloudupDeletion
 }
