@@ -22,6 +22,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -1259,10 +1260,19 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 		options.ClusterName = i.clusterName
 		options.LifecycleOverrides = i.lifecycleOverrides
 
-		_, err := RunUpdateCluster(ctx, factory, &stdout, options)
+		updateClusterResults, err := RunUpdateCluster(ctx, factory, &stdout, options)
 		if err != nil {
 			t.Fatalf("error running update cluster %q: %v", i.clusterName, err)
 		}
+
+		// Verify that we can print all the tasks
+		// Catches bugs like https://github.com/kubernetes/kops/issues/17316
+		for key, task := range updateClusterResults.TaskMap {
+			if _, err := json.Marshal(task); err != nil {
+				t.Errorf("unable to marshal task %q of type %T to json: %v", key, task, err)
+			}
+		}
+
 	}
 
 	// Compare main files
