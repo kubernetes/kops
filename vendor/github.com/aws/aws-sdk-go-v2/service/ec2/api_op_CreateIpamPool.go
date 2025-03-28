@@ -113,11 +113,8 @@ type CreateIpamPoolInput struct {
 	//   want this IPAM pool to be available for allocations ([supported Local Zones] ). This option is only
 	//   available for IPAM IPv4 pools in the public scope.
 	//
-	// If you do not choose a locale, resources in Regions others than the IPAM's home
-	// region cannot use CIDRs from this pool.
-	//
 	// Possible values: Any Amazon Web Services Region or supported Amazon Web
-	// Services Local Zone.
+	// Services Local Zone. Default is none and means any locale.
 	//
 	// [supported Local Zones]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-byoip.html#byoip-zone-avail
 	Locale *string
@@ -133,8 +130,8 @@ type CreateIpamPoolInput struct {
 	// [Quotas for your IPAM]: https://docs.aws.amazon.com/vpc/latest/ipam/quotas-ipam.html
 	PublicIpSource types.IpamPoolPublicIpSource
 
-	// Determines if the pool is publicly advertisable. This option is not available
-	// for pools with AddressFamily set to ipv4 .
+	// Determines if the pool is publicly advertisable. The request can only contain
+	// PubliclyAdvertisable if AddressFamily is ipv6 and PublicIpSource is byoip .
 	PubliclyAdvertisable *bool
 
 	// The ID of the source IPAM pool. Use this option to create a pool within an
@@ -227,6 +224,9 @@ func (c *Client) addOperationCreateIpamPoolMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opCreateIpamPoolMiddleware(stack, options); err != nil {

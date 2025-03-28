@@ -13,7 +13,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Deletes an inventory configuration (identified by the inventory ID) from the
 // bucket.
@@ -155,6 +155,9 @@ func (c *Client) addOperationDeleteBucketInventoryConfigurationMiddlewares(stack
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeleteBucketInventoryConfigurationValidationMiddleware(stack); err != nil {

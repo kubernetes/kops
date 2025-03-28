@@ -50,3 +50,31 @@ func (*WindowsDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 func (*WindowsDevice) Product() *spb.SevProduct {
 	return &spb.SevProduct{}
 }
+
+// WindowsQuoteProvider implements the QuoteProvider interface with Linux's configfs-tsm.
+type WindowsQuoteProvider struct{}
+
+// IsSupported checks if the quote provider is supported.
+func (*WindowsQuoteProvider) IsSupported() bool {
+	return false
+}
+
+// GetRawQuote returns byte format attestation plus certificate table via ConfigFS.
+func (*WindowsQuoteProvider) GetRawQuote(reportData [64]byte) ([]byte, error) {
+	return nil, fmt.Errorf("Windows is unsupported")
+}
+
+// GetRawQuoteAtLevel returns byte format attestation plus certificate table via ConfigFS.
+func (*WindowsQuoteProvider) GetRawQuoteAtLevel(reportData [64]byte, level uint) ([]byte, error) {
+	return nil, fmt.Errorf("Windows is unsupported")
+}
+
+// GetQuoteProvider returns a supported SEV-SNP QuoteProvider.
+func GetQuoteProvider() (QuoteProvider, error) {
+	return nil, fmt.Errorf("Windows is unsupported")
+}
+
+// GetLeveledQuoteProvider returns a supported SEV-SNP LeveledQuoteProvider.
+func GetLeveledQuoteProvider() (LeveledQuoteProvider, error) {
+	return nil, fmt.Errorf("Windows is unsupported")
+}

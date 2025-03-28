@@ -41,22 +41,24 @@ var certificaterequestsKind = v1.SchemeGroupVersion.WithKind("CertificateRequest
 
 // Get takes name of the certificateRequest, and returns the corresponding certificateRequest object, and an error if there is any.
 func (c *FakeCertificateRequests) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.CertificateRequest, err error) {
+	emptyResult := &v1.CertificateRequest{}
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(certificaterequestsResource, c.ns, name), &v1.CertificateRequest{})
+		Invokes(testing.NewGetActionWithOptions(certificaterequestsResource, c.ns, name, options), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.CertificateRequest), err
 }
 
 // List takes label and field selectors, and returns the list of CertificateRequests that match those selectors.
 func (c *FakeCertificateRequests) List(ctx context.Context, opts metav1.ListOptions) (result *v1.CertificateRequestList, err error) {
+	emptyResult := &v1.CertificateRequestList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(certificaterequestsResource, certificaterequestsKind, c.ns, opts), &v1.CertificateRequestList{})
+		Invokes(testing.NewListActionWithOptions(certificaterequestsResource, certificaterequestsKind, c.ns, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 
 	label, _, _ := testing.ExtractFromListOptions(opts)
@@ -75,40 +77,43 @@ func (c *FakeCertificateRequests) List(ctx context.Context, opts metav1.ListOpti
 // Watch returns a watch.Interface that watches the requested certificateRequests.
 func (c *FakeCertificateRequests) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(certificaterequestsResource, c.ns, opts))
+		InvokesWatch(testing.NewWatchActionWithOptions(certificaterequestsResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a certificateRequest and creates it.  Returns the server's representation of the certificateRequest, and an error, if there is any.
 func (c *FakeCertificateRequests) Create(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.CreateOptions) (result *v1.CertificateRequest, err error) {
+	emptyResult := &v1.CertificateRequest{}
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(certificaterequestsResource, c.ns, certificateRequest), &v1.CertificateRequest{})
+		Invokes(testing.NewCreateActionWithOptions(certificaterequestsResource, c.ns, certificateRequest, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.CertificateRequest), err
 }
 
 // Update takes the representation of a certificateRequest and updates it. Returns the server's representation of the certificateRequest, and an error, if there is any.
 func (c *FakeCertificateRequests) Update(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.UpdateOptions) (result *v1.CertificateRequest, err error) {
+	emptyResult := &v1.CertificateRequest{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(certificaterequestsResource, c.ns, certificateRequest), &v1.CertificateRequest{})
+		Invokes(testing.NewUpdateActionWithOptions(certificaterequestsResource, c.ns, certificateRequest, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.CertificateRequest), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeCertificateRequests) UpdateStatus(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.UpdateOptions) (*v1.CertificateRequest, error) {
+func (c *FakeCertificateRequests) UpdateStatus(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.UpdateOptions) (result *v1.CertificateRequest, err error) {
+	emptyResult := &v1.CertificateRequest{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(certificaterequestsResource, "status", c.ns, certificateRequest), &v1.CertificateRequest{})
+		Invokes(testing.NewUpdateSubresourceActionWithOptions(certificaterequestsResource, "status", c.ns, certificateRequest, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.CertificateRequest), err
 }
@@ -123,7 +128,7 @@ func (c *FakeCertificateRequests) Delete(ctx context.Context, name string, opts 
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeCertificateRequests) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(certificaterequestsResource, c.ns, listOpts)
+	action := testing.NewDeleteCollectionActionWithOptions(certificaterequestsResource, c.ns, opts, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1.CertificateRequestList{})
 	return err
@@ -131,11 +136,12 @@ func (c *FakeCertificateRequests) DeleteCollection(ctx context.Context, opts met
 
 // Patch applies the patch and returns the patched certificateRequest.
 func (c *FakeCertificateRequests) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.CertificateRequest, err error) {
+	emptyResult := &v1.CertificateRequest{}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(certificaterequestsResource, c.ns, name, pt, data, subresources...), &v1.CertificateRequest{})
+		Invokes(testing.NewPatchSubresourceActionWithOptions(certificaterequestsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.CertificateRequest), err
 }

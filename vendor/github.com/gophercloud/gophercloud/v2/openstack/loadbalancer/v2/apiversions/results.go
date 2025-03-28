@@ -5,7 +5,7 @@ import "github.com/gophercloud/gophercloud/v2/pagination"
 // APIVersion represents an API version for load balancer. It contains
 // the status of the API, and its unique ID.
 type APIVersion struct {
-	Status string `son:"status"`
+	Status string `json:"status"`
 	ID     string `json:"id"`
 }
 

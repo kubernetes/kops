@@ -365,6 +365,24 @@ var defaultPartitions = endpoints.Partitions{
 				Deprecated: aws.TrueTernary,
 			},
 			endpoints.EndpointKey{
+				Region: "ap-southeast-7",
+			}: endpoints.Endpoint{},
+			endpoints.EndpointKey{
+				Region:  "ap-southeast-7",
+				Variant: endpoints.FIPSVariant,
+			}: {
+				Hostname: "kms-fips.ap-southeast-7.amazonaws.com",
+			},
+			endpoints.EndpointKey{
+				Region: "ap-southeast-7-fips",
+			}: endpoints.Endpoint{
+				Hostname: "kms-fips.ap-southeast-7.amazonaws.com",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "ap-southeast-7",
+				},
+				Deprecated: aws.TrueTernary,
+			},
+			endpoints.EndpointKey{
 				Region: "ca-central-1",
 			}: endpoints.Endpoint{},
 			endpoints.EndpointKey{
@@ -595,6 +613,24 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname: "kms-fips.me-south-1.amazonaws.com",
 				CredentialScope: endpoints.CredentialScope{
 					Region: "me-south-1",
+				},
+				Deprecated: aws.TrueTernary,
+			},
+			endpoints.EndpointKey{
+				Region: "mx-central-1",
+			}: endpoints.Endpoint{},
+			endpoints.EndpointKey{
+				Region:  "mx-central-1",
+				Variant: endpoints.FIPSVariant,
+			}: {
+				Hostname: "kms-fips.mx-central-1.amazonaws.com",
+			},
+			endpoints.EndpointKey{
+				Region: "mx-central-1-fips",
+			}: endpoints.Endpoint{
+				Hostname: "kms-fips.mx-central-1.amazonaws.com",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "mx-central-1",
 				},
 				Deprecated: aws.TrueTernary,
 			},
@@ -892,6 +928,53 @@ var defaultPartitions = endpoints.Partitions{
 		},
 		RegionRegex:    partitionRegexp.AwsIsoF,
 		IsRegionalized: true,
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "ProdFips",
+			}: endpoints.Endpoint{
+				Hostname: "kms-fips.us-isof-east-1.csp.hci.ic.gov",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "us-isof-east-1",
+				},
+				Deprecated: aws.TrueTernary,
+			},
+			endpoints.EndpointKey{
+				Region: "us-isof-east-1",
+			}: endpoints.Endpoint{},
+			endpoints.EndpointKey{
+				Region:  "us-isof-east-1",
+				Variant: endpoints.FIPSVariant,
+			}: {
+				Hostname: "kms-fips.us-isof-east-1.csp.hci.ic.gov",
+			},
+			endpoints.EndpointKey{
+				Region: "us-isof-east-1-fips",
+			}: endpoints.Endpoint{
+				Hostname: "kms-fips.us-isof-east-1.csp.hci.ic.gov",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "us-isof-east-1",
+				},
+				Deprecated: aws.TrueTernary,
+			},
+			endpoints.EndpointKey{
+				Region: "us-isof-south-1",
+			}: endpoints.Endpoint{},
+			endpoints.EndpointKey{
+				Region:  "us-isof-south-1",
+				Variant: endpoints.FIPSVariant,
+			}: {
+				Hostname: "kms-fips.us-isof-south-1.csp.hci.ic.gov",
+			},
+			endpoints.EndpointKey{
+				Region: "us-isof-south-1-fips",
+			}: endpoints.Endpoint{
+				Hostname: "kms-fips.us-isof-south-1.csp.hci.ic.gov",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "us-isof-south-1",
+				},
+				Deprecated: aws.TrueTernary,
+			},
+		},
 	},
 	{
 		ID: "aws-us-gov",

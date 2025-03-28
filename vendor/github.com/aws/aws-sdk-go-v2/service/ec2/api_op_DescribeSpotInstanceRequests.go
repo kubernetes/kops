@@ -262,6 +262,9 @@ func (c *Client) addOperationDescribeSpotInstanceRequestsMiddlewares(stack *midd
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeSpotInstanceRequests(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -463,7 +466,11 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		var v2 []string
 		for _, v := range v1 {
 			v3 := v.Status
-			v4 := v3.Code
+			var v4 *string
+			if v3 != nil {
+				v5 := v3.Code
+				v4 = v5
+			}
 			if v4 != nil {
 				v2 = append(v2, *v4)
 			}
@@ -487,7 +494,11 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		var v2 []string
 		for _, v := range v1 {
 			v3 := v.Status
-			v4 := v3.Code
+			var v4 *string
+			if v3 != nil {
+				v5 := v3.Code
+				v4 = v5
+			}
 			if v4 != nil {
 				v2 = append(v2, *v4)
 			}
@@ -511,7 +522,11 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		var v2 []string
 		for _, v := range v1 {
 			v3 := v.Status
-			v4 := v3.Code
+			var v4 *string
+			if v3 != nil {
+				v5 := v3.Code
+				v4 = v5
+			}
 			if v4 != nil {
 				v2 = append(v2, *v4)
 			}
@@ -535,7 +550,11 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		var v2 []string
 		for _, v := range v1 {
 			v3 := v.Status
-			v4 := v3.Code
+			var v4 *string
+			if v3 != nil {
+				v5 := v3.Code
+				v4 = v5
+			}
 			if v4 != nil {
 				v2 = append(v2, *v4)
 			}
@@ -559,7 +578,11 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		var v2 []string
 		for _, v := range v1 {
 			v3 := v.Status
-			v4 := v3.Code
+			var v4 *string
+			if v3 != nil {
+				v5 := v3.Code
+				v4 = v5
+			}
 			if v4 != nil {
 				v2 = append(v2, *v4)
 			}
@@ -583,7 +606,11 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		var v2 []string
 		for _, v := range v1 {
 			v3 := v.Status
-			v4 := v3.Code
+			var v4 *string
+			if v3 != nil {
+				v5 := v3.Code
+				v4 = v5
+			}
 			if v4 != nil {
 				v2 = append(v2, *v4)
 			}
@@ -614,6 +641,9 @@ func spotInstanceRequestFulfilledStateRetryable(ctx context.Context, input *Desc
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

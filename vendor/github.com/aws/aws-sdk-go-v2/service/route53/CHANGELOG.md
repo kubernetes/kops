@@ -1,3 +1,110 @@
+# v1.50.0 (2025-03-18)
+
+* **Feature**: Amazon Route 53 now supports the iso-f regions for private DNS Amazon VPCs and cloudwatch healthchecks.
+
+# v1.49.1 (2025-03-04.2)
+
+* **Bug Fix**: Add assurance test for operation order.
+
+# v1.49.0 (2025-02-27)
+
+* **Feature**: Track credential providers via User-Agent Feature ids
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.8 (2025-02-18)
+
+* **Bug Fix**: Bump go version to 1.22
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.7 (2025-02-05)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.6 (2025-02-04)
+
+* No change notes available for this release.
+
+# v1.48.5 (2025-01-31)
+
+* **Dependency Update**: Switch to code-generated waiter matchers, removing the dependency on go-jmespath.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.4 (2025-01-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.3 (2025-01-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+* **Dependency Update**: Upgrade to smithy-go v1.22.2.
+
+# v1.48.2 (2025-01-17)
+
+* **Bug Fix**: Fix bug where credentials weren't refreshed during retry loop.
+
+# v1.48.1 (2025-01-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.0 (2025-01-14)
+
+* **Feature**: Amazon Route 53 now supports the Mexico (Central) Region (mx-central-1) for latency records, geoproximity records, and private DNS for Amazon VPCs in that region
+* **Bug Fix**: Fix issue where waiters were not failing on unmatched errors as they should. This may have breaking behavioral changes for users in fringe cases. See [this announcement](https://github.com/aws/aws-sdk-go-v2/discussions/2954) for more information.
+
+# v1.47.1 (2025-01-09)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.47.0 (2025-01-08)
+
+* **Feature**: Amazon Route 53 now supports the Asia Pacific (Thailand) Region (ap-southeast-7) for latency records, geoproximity records, and private DNS for Amazon VPCs in that region
+
+# v1.46.4 (2024-12-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.46.3 (2024-12-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.46.2 (2024-11-18)
+
+* **Dependency Update**: Update to smithy-go v1.22.1.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.46.1 (2024-11-06)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.46.0 (2024-10-30)
+
+* **Feature**: This release adds support for TLSA, SSHFP, SVCB, and HTTPS record types.
+
+# v1.45.3 (2024-10-28)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.2 (2024-10-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.1 (2024-10-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.0 (2024-10-04)
+
+* **Feature**: Add support for HTTP client metrics.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.44.4 (2024-10-03)
+
+* No change notes available for this release.
+
+# v1.44.3 (2024-09-27)
+
+* No change notes available for this release.
+
 # v1.44.2 (2024-09-25)
 
 * No change notes available for this release.

@@ -11,7 +11,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This API operation is superseded by DescribeTrafficSources, which can describe multiple traffic
+// This API operation is superseded by [DescribeTrafficSources], which can describe multiple traffic
 // sources types. We recommend using DetachTrafficSources to simplify how you
 // manage traffic sources. However, we continue to support
 // DescribeLoadBalancerTargetGroups . You can use both the original
@@ -32,17 +32,22 @@ import (
 // If no registered instances pass the health checks, the target group doesn't
 // enter the InService state.
 //
-// Target groups also have an InService state if you attach them in the CreateAutoScalingGroup API call.
+// Target groups also have an InService state if you attach them in the [CreateAutoScalingGroup] API call.
 // If your target group state is InService , but it is not working properly, check
-// the scaling activities by calling DescribeScalingActivitiesand take any corrective actions necessary.
+// the scaling activities by calling [DescribeScalingActivities]and take any corrective actions necessary.
 //
 // For help with failed health checks, see [Troubleshooting Amazon EC2 Auto Scaling: Health checks] in the Amazon EC2 Auto Scaling User
 // Guide. For more information, see [Use Elastic Load Balancing to distribute traffic across the instances in your Auto Scaling group]in the Amazon EC2 Auto Scaling User Guide.
 //
 // You can use this operation to describe target groups that were attached by
-// using AttachLoadBalancerTargetGroups, but not for target groups that were attached by using AttachTrafficSources.
+// using [AttachLoadBalancerTargetGroups], but not for target groups that were attached by using [AttachTrafficSources].
 //
 // [Troubleshooting Amazon EC2 Auto Scaling: Health checks]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ts-as-healthchecks.html
+// [AttachLoadBalancerTargetGroups]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_AttachLoadBalancerTargetGroups.html
+// [DescribeScalingActivities]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeScalingActivities.html
+// [CreateAutoScalingGroup]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CreateAutoScalingGroup.html
+// [DescribeTrafficSources]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeTrafficSources.html
+// [AttachTrafficSources]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_AttachTrafficSources.html
 // [Use Elastic Load Balancing to distribute traffic across the instances in your Auto Scaling group]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-load-balancer.html
 func (c *Client) DescribeLoadBalancerTargetGroups(ctx context.Context, params *DescribeLoadBalancerTargetGroupsInput, optFns ...func(*Options)) (*DescribeLoadBalancerTargetGroupsOutput, error) {
 	if params == nil {
@@ -156,6 +161,9 @@ func (c *Client) addOperationDescribeLoadBalancerTargetGroupsMiddlewares(stack *
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribeLoadBalancerTargetGroupsValidationMiddleware(stack); err != nil {

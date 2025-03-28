@@ -34,11 +34,12 @@ import (
 //   - If you need more time, record the lifecycle action heartbeat to keep the
 //     instance in a wait state.
 //
-//   - If you finish before the timeout period ends, send a callback by using the CompleteLifecycleAction
+//   - If you finish before the timeout period ends, send a callback by using the [CompleteLifecycleAction]
 //     API call.
 //
 // For more information, see [Complete a lifecycle action] in the Amazon EC2 Auto Scaling User Guide.
 //
+// [CompleteLifecycleAction]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CompleteLifecycleAction.html
 // [Complete a lifecycle action]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/completing-lifecycle-hooks.html
 func (c *Client) CompleteLifecycleAction(ctx context.Context, params *CompleteLifecycleActionInput, optFns ...func(*Options)) (*CompleteLifecycleActionOutput, error) {
 	if params == nil {
@@ -152,6 +153,9 @@ func (c *Client) addOperationCompleteLifecycleActionMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCompleteLifecycleActionValidationMiddleware(stack); err != nil {

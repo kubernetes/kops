@@ -149,9 +149,9 @@ type VenafiTPP struct {
 	// for example: "https://tpp.example.com/vedsdk".
 	URL string `json:"url"`
 
-	// CredentialsRef is a reference to a Secret containing the username and
-	// password for the TPP server.
-	// The secret must contain two keys, 'username' and 'password'.
+	// CredentialsRef is a reference to a Secret containing the Venafi TPP API credentials.
+	// The secret must contain the key 'access-token' for the Access Token Authentication,
+	// or two keys, 'username' and 'password' for the API Keys Authentication.
 	CredentialsRef cmmeta.LocalObjectReference `json:"credentialsRef"`
 
 	// Base64-encoded bundle of PEM CAs which will be used to validate the certificate
@@ -160,6 +160,14 @@ type VenafiTPP struct {
 	// is used to validate the chain.
 	// +optional
 	CABundle []byte `json:"caBundle,omitempty"`
+
+	// Reference to a Secret containing a base64-encoded bundle of PEM CAs
+	// which will be used to validate the certificate chain presented by the TPP server.
+	// Only used if using HTTPS; ignored for HTTP. Mutually exclusive with CABundle.
+	// If neither CABundle nor CABundleSecretRef is defined, the certificate bundle in
+	// the cert-manager controller container is used to validate the TLS connection.
+	// +optional
+	CABundleSecretRef *cmmeta.SecretKeySelector `json:"caBundleSecretRef,omitempty"`
 }
 
 // VenafiCloud defines connection configuration details for Venafi Cloud
@@ -231,7 +239,7 @@ type VaultIssuer struct {
 }
 
 // VaultAuth is configuration used to authenticate with a Vault server. The
-// order of precedence is [`tokenSecretRef`, `appRole` or `kubernetes`].
+// order of precedence is [`tokenSecretRef`, `appRole`, `clientCertificate` or `kubernetes`].
 type VaultAuth struct {
 	// TokenSecretRef authenticates with Vault by presenting a token.
 	// +optional
@@ -241,6 +249,12 @@ type VaultAuth struct {
 	// with the role and secret stored in a Kubernetes Secret resource.
 	// +optional
 	AppRole *VaultAppRole `json:"appRole,omitempty"`
+
+	// ClientCertificate authenticates with Vault by presenting a client
+	// certificate during the request's TLS handshake.
+	// Works only when using HTTPS protocol.
+	// +optional
+	ClientCertificate *VaultClientCertificateAuth `json:"clientCertificate,omitempty"`
 
 	// Kubernetes authenticates with Vault by passing the ServiceAccount
 	// token stored in the named Secret resource to the Vault server.
@@ -264,6 +278,28 @@ type VaultAppRole struct {
 	// The `key` field must be specified and denotes which entry within the Secret
 	// resource is used as the app role secret.
 	SecretRef cmmeta.SecretKeySelector `json:"secretRef"`
+}
+
+// VaultKubernetesAuth is used to authenticate against Vault using a client
+// certificate stored in a Secret.
+type VaultClientCertificateAuth struct {
+	// The Vault mountPath here is the mount path to use when authenticating with
+	// Vault. For example, setting a value to `/v1/auth/foo`, will use the path
+	// `/v1/auth/foo/login` to authenticate with Vault. If unspecified, the
+	// default value "/v1/auth/cert" will be used.
+	// +optional
+	Path string `json:"mountPath,omitempty"`
+
+	// Reference to Kubernetes Secret of type "kubernetes.io/tls" (hence containing
+	// tls.crt and tls.key) used to authenticate to Vault using TLS client
+	// authentication.
+	// +optional
+	SecretName string `json:"secretName,omitempty"`
+
+	// Name of the certificate role to authenticate against.
+	// If not set, matching any certificate role, if available.
+	// +optional
+	Name string `json:"name,omitempty"`
 }
 
 // Authenticate against Vault using a Kubernetes ServiceAccount token stored in

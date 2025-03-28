@@ -118,7 +118,7 @@ type RunInstancesInput struct {
 	// Information about the Capacity Reservation targeting option. If you do not
 	// specify this parameter, the instance's Capacity Reservation preference defaults
 	// to open , which enables it to run in any open Capacity Reservation that has
-	// matching attributes (instance type, platform, Availability Zone).
+	// matching attributes (instance type, platform, Availability Zone, and tenancy).
 	CapacityReservationSpecification *types.CapacityReservationSpecification
 
 	// Unique, case-sensitive identifier you provide to ensure the idempotency of the
@@ -156,18 +156,14 @@ type RunInstancesInput struct {
 	// [Stop protection]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Stop_Start.html#Using_StopProtection
 	DisableApiStop *bool
 
-	// If you set this parameter to true , you can't terminate the instance using the
-	// Amazon EC2 console, CLI, or API; otherwise, you can. To change this attribute
-	// after launch, use [ModifyInstanceAttribute]. Alternatively, if you set InstanceInitiatedShutdownBehavior
-	// to terminate , you can terminate the instance by running the shutdown command
-	// from the instance.
-	//
-	// Default: false
-	//
-	// [ModifyInstanceAttribute]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceAttribute.html
+	// Indicates whether termination protection is enabled for the instance. The
+	// default is false , which means that you can terminate the instance using the
+	// Amazon EC2 console, command line tools, or API. You can enable termination
+	// protection when you launch an instance, while the instance is running, or while
+	// the instance is stopped.
 	DisableApiTermination *bool
 
-	// Checks whether you have the required permissions for the action, without
+	// Checks whether you have the required permissions for the operation, without
 	// actually making the request, and provides an error response. If you have the
 	// required permissions, the error response is DryRunOperation . Otherwise, it is
 	// UnauthorizedOperation .
@@ -189,10 +185,7 @@ type RunInstancesInput struct {
 
 	// An elastic inference accelerator to associate with the instance.
 	//
-	// Amazon Elastic Inference (EI) is no longer available to new customers. For more
-	// information, see [Amazon Elastic Inference FAQs].
-	//
-	// [Amazon Elastic Inference FAQs]: http://aws.amazon.com/machine-learning/elastic-inference/faqs/
+	// Amazon Elastic Inference is no longer available.
 	ElasticInferenceAccelerators []types.ElasticInferenceAccelerator
 
 	// If you’re launching an instance into a dual-stack or IPv6-only subnet, you can
@@ -311,6 +304,12 @@ type RunInstancesInput struct {
 
 	// The network interfaces to associate with the instance.
 	NetworkInterfaces []types.InstanceNetworkInterfaceSpecification
+
+	// Contains settings for the network performance options for the instance.
+	NetworkPerformanceOptions *types.InstanceNetworkPerformanceOptionsRequest
+
+	// Reserved for internal use.
+	Operator *types.OperatorRequest
 
 	// The placement for the instance.
 	Placement *types.Placement
@@ -481,6 +480,9 @@ func (c *Client) addOperationRunInstancesMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opRunInstancesMiddleware(stack, options); err != nil {

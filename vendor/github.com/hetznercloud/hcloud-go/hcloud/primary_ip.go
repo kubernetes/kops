@@ -119,7 +119,7 @@ type PrimaryIPUpdateOpts struct {
 // PrimaryIPAssignOpts defines the request to
 // assign a Primary IP to an assignee (usually a server).
 type PrimaryIPAssignOpts struct {
-	ID           int
+	ID           int    `json:"-"`
 	AssigneeID   int    `json:"assignee_id"`
 	AssigneeType string `json:"assignee_type"`
 }
@@ -133,7 +133,7 @@ type PrimaryIPAssignResult struct {
 // PrimaryIPChangeDNSPtrOpts defines the request to
 // change a DNS PTR entry from a Primary IP.
 type PrimaryIPChangeDNSPtrOpts struct {
-	ID     int
+	ID     int    `json:"-"`
 	DNSPtr string `json:"dns_ptr"`
 	IP     string `json:"ip"`
 }
@@ -147,7 +147,7 @@ type PrimaryIPChangeDNSPtrResult struct {
 // PrimaryIPChangeProtectionOpts defines the request to
 // change protection configuration of a Primary IP.
 type PrimaryIPChangeProtectionOpts struct {
-	ID     int
+	ID     int  `json:"-"`
 	Delete bool `json:"delete"`
 }
 

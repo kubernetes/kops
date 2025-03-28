@@ -28,9 +28,12 @@ import (
 // This operation is additive and does not detach existing traffic sources from
 // the Auto Scaling group.
 //
-// After the operation completes, use the DescribeTrafficSources API to return details about the state
+// After the operation completes, use the [DescribeTrafficSources] API to return details about the state
 // of the attachments between traffic sources and your Auto Scaling group. To
-// detach a traffic source from the Auto Scaling group, call the DetachTrafficSourcesAPI.
+// detach a traffic source from the Auto Scaling group, call the [DetachTrafficSources]API.
+//
+// [DescribeTrafficSources]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeTrafficSources.html
+// [DetachTrafficSources]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DetachTrafficSources.html
 func (c *Client) AttachTrafficSources(ctx context.Context, params *AttachTrafficSourcesInput, optFns ...func(*Options)) (*AttachTrafficSourcesOutput, error) {
 	if params == nil {
 		params = &AttachTrafficSourcesInput{}
@@ -58,6 +61,14 @@ type AttachTrafficSourcesInput struct {
 	//
 	// This member is required.
 	TrafficSources []types.TrafficSourceIdentifier
+
+	//  If you enable zonal shift with cross-zone disabled load balancers, capacity
+	// could become imbalanced across Availability Zones. To skip the validation,
+	// specify true . For more information, see [Auto Scaling group zonal shift] in the Amazon EC2 Auto Scaling User
+	// Guide.
+	//
+	// [Auto Scaling group zonal shift]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-zonal-shift.html
+	SkipZonalShiftValidation *bool
 
 	noSmithyDocumentSerde
 }
@@ -131,6 +142,9 @@ func (c *Client) addOperationAttachTrafficSourcesMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpAttachTrafficSourcesValidationMiddleware(stack); err != nil {

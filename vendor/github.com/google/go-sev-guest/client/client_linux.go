@@ -20,8 +20,11 @@ package client
 import (
 	"flag"
 	"fmt"
+	"strconv"
 	"time"
 
+	"github.com/google/go-configfs-tsm/configfs/linuxtsm"
+	"github.com/google/go-configfs-tsm/report"
 	"github.com/google/go-sev-guest/abi"
 	labi "github.com/google/go-sev-guest/client/linuxabi"
 	spb "github.com/google/go-sev-guest/proto/sevsnp"
@@ -39,6 +42,7 @@ const (
 var (
 	throttleDuration = flag.Duration("self_throttle_duration", 2*time.Second, "Rate-limit library-initiated device commands to this duration")
 	burstMax         = flag.Int("self_throttle_burst", 1, "Rate-limit library-initiated device commands to this many commands per duration")
+	defaultVMPL      = flag.String("default_vmpl", "", "Default VMPL to use for attestation (empty for driver default)")
 )
 
 // LinuxDevice implements the Device interface with Linux ioctls.
@@ -122,4 +126,163 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 // Product returns the current CPU's associated AMD SEV product information.
 func (d *LinuxDevice) Product() *spb.SevProduct {
 	return abi.SevProduct()
+}
+
+// LinuxIoctlQuoteProvider implements the QuoteProvider interface to fetch
+// attestation quote via the deprecated /dev/sev-guest ioctl.
+type LinuxIoctlQuoteProvider struct{}
+
+// IsSupported checks if TSM client can be created to use /dev/sev-guest ioctl.
+func (p *LinuxIoctlQuoteProvider) IsSupported() bool {
+	d, err := OpenDevice()
+	if err != nil {
+		return false
+	}
+	d.Close()
+	return true
+}
+
+// GetRawQuoteAtLevel returns byte format attestation plus certificate table via /dev/sev-guest ioctl.
+func (p *LinuxIoctlQuoteProvider) GetRawQuoteAtLevel(reportData [64]byte, level uint) ([]uint8, error) {
+	d, err := OpenDevice()
+	if err != nil {
+		return nil, err
+	}
+	defer d.Close()
+	// If there are no certificates, then just return the raw report.
+	length, err := queryCertificateLength(d, int(level))
+	if err != nil {
+		return GetRawReportAtVmpl(d, reportData, int(level))
+	}
+	certs := make([]byte, length)
+	report, _, err := getExtendedReportIn(d, reportData, int(level), certs)
+	if err != nil {
+		return nil, err
+	}
+	// Mix the platform info in with the auxblob.
+	extended, err := abi.ExtendedPlatformCertTable(certs)
+	if err != nil {
+		return nil, fmt.Errorf("invalid certificate table: %v", err)
+	}
+	return append(report, extended...), nil
+}
+
+// GetRawQuote returns byte format attestation plus certificate table via /dev/sev-guest ioctl.
+func (p *LinuxIoctlQuoteProvider) GetRawQuote(reportData [64]byte) ([]uint8, error) {
+	if *defaultVMPL == "" {
+		return p.GetRawQuoteAtLevel(reportData, 0)
+	}
+	vmpl, err := strconv.ParseUint(*defaultVMPL, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("bad default_vmpl: %q", *defaultVMPL)
+	}
+	return p.GetRawQuoteAtLevel(reportData, uint(vmpl))
+}
+
+// Product returns the current CPU's associated AMD SEV product information.
+//
+// Deprecated: Use ExtraPlatformInfoGUID from the cert table.
+func (*LinuxIoctlQuoteProvider) Product() *spb.SevProduct {
+	return abi.SevProduct()
+}
+
+// LinuxConfigFsQuoteProvider implements the QuoteProvider interface to fetch
+// attestation quote via ConfigFS.
+type LinuxConfigFsQuoteProvider struct{}
+
+// IsSupported checks if TSM client can be created to use ConfigFS system.
+func (p *LinuxConfigFsQuoteProvider) IsSupported() bool {
+	c, err := linuxtsm.MakeClient()
+	if err != nil {
+		return false
+	}
+	r, err := report.Create(c, &report.Request{})
+	if err != nil {
+		return false
+	}
+	provider, err := r.ReadOption("provider")
+	return err == nil && string(provider) == "sev_guest\n"
+}
+
+// GetRawQuoteAtLevel returns byte format attestation plus certificate table via ConfigFS.
+func (p *LinuxConfigFsQuoteProvider) GetRawQuoteAtLevel(reportData [64]byte, level uint) ([]uint8, error) {
+	req := &report.Request{
+		InBlob:     reportData[:],
+		GetAuxBlob: true,
+		Privilege: &report.Privilege{
+			Level: level,
+		},
+	}
+	resp, err := linuxtsm.GetReport(req)
+	if err != nil {
+		return nil, err
+	}
+	// Mix the platform info in with the auxblob.
+	extended, err := abi.ExtendedPlatformCertTable(resp.AuxBlob)
+	if err != nil {
+		return nil, fmt.Errorf("invalid certificate table: %v", err)
+	}
+	return append(resp.OutBlob, extended...), nil
+}
+
+// GetRawQuote returns byte format attestation plus certificate table via ConfigFS.
+func (p *LinuxConfigFsQuoteProvider) GetRawQuote(reportData [64]byte) ([]uint8, error) {
+	req := &report.Request{
+		InBlob:     reportData[:],
+		GetAuxBlob: true,
+	}
+	if *defaultVMPL != "" {
+		vmpl, err := strconv.ParseUint(*defaultVMPL, 10, 32)
+		if err != nil {
+			return nil, fmt.Errorf("bad default_vmpl: %q", *defaultVMPL)
+		}
+		req.Privilege = &report.Privilege{
+			Level: uint(vmpl),
+		}
+	}
+	resp, err := linuxtsm.GetReport(req)
+	if err != nil {
+		return nil, err
+	}
+	// Mix the platform info in with the auxblob.
+	extended, err := abi.ExtendedPlatformCertTable(resp.AuxBlob)
+	if err != nil {
+		return nil, fmt.Errorf("invalid certificate table: %v", err)
+	}
+	return append(resp.OutBlob, extended...), nil
+}
+
+// Product returns the current CPU's associated AMD SEV product information.
+//
+// Deprecated: Use ExtraPlatformInfoGUID from the cert table.
+func (*LinuxConfigFsQuoteProvider) Product() *spb.SevProduct {
+	return abi.SevProduct()
+}
+
+// GetQuoteProvider returns a supported SEV-SNP QuoteProvider.
+func GetQuoteProvider() (QuoteProvider, error) {
+	var provider QuoteProvider
+	provider = &LinuxConfigFsQuoteProvider{}
+	if provider.IsSupported() {
+		return provider, nil
+	}
+	provider = &LinuxIoctlQuoteProvider{}
+	if provider.IsSupported() {
+		return provider, nil
+	}
+	return nil, fmt.Errorf("no supported SEV-SNP QuoteProvider found")
+}
+
+// GetLeveledQuoteProvider returns a supported SEV-SNP LeveledQuoteProvider.
+func GetLeveledQuoteProvider() (LeveledQuoteProvider, error) {
+	var provider LeveledQuoteProvider
+	provider = &LinuxConfigFsQuoteProvider{}
+	if provider.IsSupported() {
+		return provider, nil
+	}
+	provider = &LinuxIoctlQuoteProvider{}
+	if provider.IsSupported() {
+		return provider, nil
+	}
+	return nil, fmt.Errorf("no supported SEV-SNP LeveledQuoteProvider found")
 }

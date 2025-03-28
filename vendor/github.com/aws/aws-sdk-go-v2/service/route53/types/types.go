@@ -875,8 +875,8 @@ type HealthCheckConfig struct {
 	//   53 submits an HTTPS request and waits for an HTTP status code of 200 or greater
 	//   and less than 400.
 	//
-	// If you specify HTTPS for the value of Type , the endpoint must support TLS v1.0
-	//   or later.
+	// If you specify HTTPS for the value of Type , the endpoint must support TLS v1.0,
+	//   v1.1, or v1.2.
 	//
 	//   - HTTP_STR_MATCH: Route 53 tries to establish a TCP connection. If
 	//   successful, Route 53 submits an HTTP request and searches the first 5,120 bytes
@@ -1569,15 +1569,16 @@ type ResourceRecordSet struct {
 	// is encoded for them, see [Supported DNS Resource Record Types]in the Amazon Route 53 Developer Guide.
 	//
 	// Valid values for basic resource record sets: A | AAAA | CAA | CNAME | DS | MX |
-	// NAPTR | NS | PTR | SOA | SPF | SRV | TXT
+	// NAPTR | NS | PTR | SOA | SPF | SRV | TXT | TLSA | SSHFP | SVCB | HTTPS
 	//
 	// Values for weighted, latency, geolocation, and failover resource record sets: A
-	// | AAAA | CAA | CNAME | MX | NAPTR | PTR | SPF | SRV | TXT . When creating a
-	// group of weighted, latency, geolocation, or failover resource record sets,
-	// specify the same value for all of the resource record sets in the group.
+	// | AAAA | CAA | CNAME | MX | NAPTR | PTR | SPF | SRV | TXT | TLSA | SSHFP | SVCB
+	// | HTTPS . When creating a group of weighted, latency, geolocation, or failover
+	// resource record sets, specify the same value for all of the resource record sets
+	// in the group.
 	//
 	// Valid values for multivalue answer resource record sets: A | AAAA | MX | NAPTR
-	// | PTR | SPF | SRV | TXT
+	// | PTR | SPF | SRV | TXT | CAA | TLSA | SSHFP | SVCB | HTTPS
 	//
 	// SPF records were formerly used to verify the identity of the sender of email
 	// messages. However, we no longer recommend that you create resource record sets

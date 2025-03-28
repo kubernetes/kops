@@ -124,6 +124,9 @@ func (c *Client) addOperationCancelMessageMoveTaskMiddlewares(stack *middleware.
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCancelMessageMoveTaskValidationMiddleware(stack); err != nil {
 		return err
 	}

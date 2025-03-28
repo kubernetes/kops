@@ -50,6 +50,11 @@ type ZonePage struct {
 	pagination.LinkedPageBase
 }
 
+// ErrResult represents a generic error result.
+type ErrResult struct {
+	gophercloud.ErrResult
+}
+
 // IsEmpty returns true if the page contains no results.
 func (r ZonePage) IsEmpty() (bool, error) {
 	if r.StatusCode == 204 {

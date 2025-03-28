@@ -35,9 +35,9 @@ import (
 //     instances launch or terminate.
 //
 //   - If you need more time, record the lifecycle action heartbeat to keep the
-//     instance in a wait state using the RecordLifecycleActionHeartbeatAPI call.
+//     instance in a wait state using the [RecordLifecycleActionHeartbeat]API call.
 //
-//   - If you finish before the timeout period ends, send a callback by using the CompleteLifecycleAction
+//   - If you finish before the timeout period ends, send a callback by using the [CompleteLifecycleAction]
 //     API call.
 //
 // For more information, see [Amazon EC2 Auto Scaling lifecycle hooks] in the Amazon EC2 Auto Scaling User Guide.
@@ -45,11 +45,15 @@ import (
 // If you exceed your maximum limit of lifecycle hooks, which by default is 50 per
 // Auto Scaling group, the call fails.
 //
-// You can view the lifecycle hooks for an Auto Scaling group using the DescribeLifecycleHooks API call.
-// If you are no longer using a lifecycle hook, you can delete it by calling the DeleteLifecycleHook
+// You can view the lifecycle hooks for an Auto Scaling group using the [DescribeLifecycleHooks] API call.
+// If you are no longer using a lifecycle hook, you can delete it by calling the [DeleteLifecycleHook]
 // API.
 //
+// [RecordLifecycleActionHeartbeat]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_RecordLifecycleActionHeartbeat.html
+// [CompleteLifecycleAction]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CompleteLifecycleAction.html
 // [Amazon EC2 Auto Scaling lifecycle hooks]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html
+// [DescribeLifecycleHooks]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeLifecycleHooks.html
+// [DeleteLifecycleHook]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DeleteLifecycleHook.html
 func (c *Client) PutLifecycleHook(ctx context.Context, params *PutLifecycleHookInput, optFns ...func(*Options)) (*PutLifecycleHookOutput, error) {
 	if params == nil {
 		params = &PutLifecycleHookInput{}
@@ -199,6 +203,9 @@ func (c *Client) addOperationPutLifecycleHookMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutLifecycleHookValidationMiddleware(stack); err != nil {

@@ -75,12 +75,15 @@ type CreateNetworkInterfaceInput struct {
 	// with the ENI becomes the primary IPv6 address.
 	EnablePrimaryIpv6 *bool
 
-	// The IDs of one or more security groups.
+	// The IDs of the security groups.
 	Groups []string
 
 	// The type of network interface. The default is interface .
 	//
-	// The only supported values are interface , efa , and trunk .
+	// If you specify efa-only , do not assign any IP addresses to the network
+	// interface. EFA-only network interfaces do not support IP addresses.
+	//
+	// The only supported values are interface , efa , efa-only , and trunk .
 	InterfaceType types.NetworkInterfaceCreationType
 
 	// The number of IPv4 prefixes that Amazon Web Services automatically assigns to
@@ -129,6 +132,9 @@ type CreateNetworkInterfaceInput struct {
 	// You can't specify IPv6 prefixes if you've specified one of the following: a
 	// count of IPv6 prefixes, specific IPv6 addresses, or a count of IPv6 addresses.
 	Ipv6Prefixes []types.Ipv6PrefixSpecificationRequest
+
+	// Reserved for internal use.
+	Operator *types.OperatorRequest
 
 	// The primary private IPv4 address of the network interface. If you don't specify
 	// an IPv4 address, Amazon EC2 selects one for you from the subnet's IPv4 CIDR
@@ -238,6 +244,9 @@ func (c *Client) addOperationCreateNetworkInterfaceMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opCreateNetworkInterfaceMiddleware(stack, options); err != nil {

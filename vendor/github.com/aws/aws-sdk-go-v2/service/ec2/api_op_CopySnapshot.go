@@ -30,7 +30,7 @@ import (
 // Snapshots copied to an Outpost are encrypted by default using the default
 // encryption key for the Region, or a different key that you specify in the
 // request using KmsKeyId. Outposts do not support unencrypted snapshots. For more
-// information, [Amazon EBS local snapshots on Outposts]in the Amazon EBS User Guide.
+// information, see [Amazon EBS local snapshots on Outposts]in the Amazon EBS User Guide.
 //
 // Snapshots created by copying another snapshot have an arbitrary volume ID that
 // should not be used for any purpose.
@@ -65,6 +65,16 @@ type CopySnapshotInput struct {
 	//
 	// This member is required.
 	SourceSnapshotId *string
+
+	// Specify a completion duration, in 15 minute increments, to initiate a
+	// time-based snapshot copy. Time-based snapshot copy operations complete within
+	// the specified duration. For more information, see [Time-based copies].
+	//
+	// If you do not specify a value, the snapshot copy operation is completed on a
+	// best-effort basis.
+	//
+	// [Time-based copies]: https://docs.aws.amazon.com/ebs/latest/userguide/time-based-copies.html
+	CompletionDurationMinutes *int32
 
 	// A description for the EBS snapshot.
 	Description *string
@@ -221,6 +231,9 @@ func (c *Client) addOperationCopySnapshotMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCopySnapshotValidationMiddleware(stack); err != nil {

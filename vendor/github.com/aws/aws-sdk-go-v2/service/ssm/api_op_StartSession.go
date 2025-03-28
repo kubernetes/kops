@@ -57,7 +57,10 @@ type StartSessionInput struct {
 	DocumentName *string
 
 	// The values you want to specify for the parameters defined in the Session
-	// document.
+	// document. For more information about these parameters, see [Create a Session Manager preferences document]in the Amazon Web
+	// Services Systems Manager User Guide.
+	//
+	// [Create a Session Manager preferences document]: https://docs.aws.amazon.com/systems-manager/latest/userguide/getting-started-create-preferences-cli.html
 	Parameters map[string][]string
 
 	// The reason for connecting to the instance. This value is included in the
@@ -162,6 +165,9 @@ func (c *Client) addOperationStartSessionMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpStartSessionValidationMiddleware(stack); err != nil {

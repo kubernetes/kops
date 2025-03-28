@@ -85,7 +85,7 @@ func (e *EmptyBatchRequest) ErrorCode() string {
 }
 func (e *EmptyBatchRequest) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The accountId is invalid.
+// The specified ID is invalid.
 type InvalidAddress struct {
 	Message *string
 
@@ -241,7 +241,7 @@ func (e *InvalidMessageContents) ErrorCode() string {
 }
 func (e *InvalidMessageContents) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// When the request to a queue is not HTTPS and SigV4.
+// The request was not made over HTTPS or did not use SigV4 for signing.
 type InvalidSecurity struct {
 	Message *string
 
@@ -567,7 +567,7 @@ func (e *QueueDeletedRecently) ErrorCode() string {
 }
 func (e *QueueDeletedRecently) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The specified queue doesn't exist.
+// Ensure that the QueueUrl is correct and that the queue has not been deleted.
 type QueueDoesNotExist struct {
 	Message *string
 
@@ -649,17 +649,13 @@ func (e *ReceiptHandleIsInvalid) ErrorFault() smithy.ErrorFault { return smithy.
 
 // The request was denied due to request throttling.
 //
-//   - The rate of requests per second exceeds the Amazon Web Services KMS request
-//     quota for an account and Region.
+//   - Exceeds the permitted request rate for the queue or for the recipient of
+//     the request.
 //
-//   - A burst or sustained high rate of requests to change the state of the same
-//     KMS key. This condition is often known as a "hot key."
+//   - Ensure that the request rate is within the Amazon SQS limits for sending
+//     messages. For more information, see [Amazon SQS quotas]in the Amazon SQS Developer Guide.
 //
-//   - Requests for operations on KMS keys in a Amazon Web Services CloudHSM key
-//     store might be throttled at a lower-than-expected rate when the Amazon Web
-//     Services CloudHSM cluster associated with the Amazon Web Services CloudHSM key
-//     store is processing numerous commands, including those unrelated to the Amazon
-//     Web Services CloudHSM key store.
+// [Amazon SQS quotas]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-quotas.html#quotas-requests
 type RequestThrottled struct {
 	Message *string
 
@@ -711,7 +707,12 @@ func (e *ResourceNotFoundException) ErrorCode() string {
 }
 func (e *ResourceNotFoundException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The batch request contains more entries than permissible.
+// The batch request contains more entries than permissible. For Amazon SQS, the
+// maximum number of entries you can include in a single [SendMessageBatch], [DeleteMessageBatch], or [ChangeMessageVisibilityBatch] request is 10.
+//
+// [SendMessageBatch]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessageBatch.html
+// [ChangeMessageVisibilityBatch]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_ChangeMessageVisibilityBatch.html
+// [DeleteMessageBatch]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_DeleteMessageBatch.html
 type TooManyEntriesInBatchRequest struct {
 	Message *string
 

@@ -18,7 +18,9 @@ import (
 	"fmt"
 	"os"
 
+	comp "github.com/google/go-containerregistry/internal/compression"
 	"github.com/google/go-containerregistry/internal/windows"
+	"github.com/google/go-containerregistry/pkg/compression"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/stream"
@@ -50,13 +52,11 @@ func Append(base v1.Image, paths ...string) (v1.Image, error) {
 	}
 
 	baseMediaType, err := base.MediaType()
-
 	if err != nil {
 		return nil, fmt.Errorf("getting base image media type: %w", err)
 	}
 
 	layerType := types.DockerLayer
-
 	if baseMediaType == types.OCIManifestSchema1 {
 		layerType = types.OCILayer
 	}
@@ -88,6 +88,21 @@ func getLayer(path string, layerType types.MediaType) (v1.Layer, error) {
 	}
 	if f != nil {
 		return stream.NewLayer(f, stream.WithMediaType(layerType)), nil
+	}
+
+	// This is dumb but the tarball package assumes things about mediaTypes that aren't true
+	// and doesn't have enough context to know what the right default is.
+	f, err = os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	z, _, err := comp.PeekCompression(f)
+	if err != nil {
+		return nil, err
+	}
+	if z == compression.ZStd {
+		layerType = types.OCILayerZStd
 	}
 
 	return tarball.LayerFromFile(path, tarball.WithMediaType(layerType))

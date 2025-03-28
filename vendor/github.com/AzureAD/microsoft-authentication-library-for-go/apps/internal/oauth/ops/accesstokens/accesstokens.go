@@ -262,11 +262,7 @@ func (c Client) FromClientSecret(ctx context.Context, authParameters authority.A
 	qv.Set(clientID, authParameters.ClientID)
 	addScopeQueryParam(qv, authParameters)
 
-	token, err := c.doTokenResp(ctx, authParameters, qv)
-	if err != nil {
-		return token, fmt.Errorf("FromClientSecret(): %w", err)
-	}
-	return token, nil
+	return c.doTokenResp(ctx, authParameters, qv)
 }
 
 func (c Client) FromAssertion(ctx context.Context, authParameters authority.AuthParams, assertion string) (TokenResponse, error) {
@@ -281,11 +277,7 @@ func (c Client) FromAssertion(ctx context.Context, authParameters authority.Auth
 	qv.Set(clientInfo, clientInfoVal)
 	addScopeQueryParam(qv, authParameters)
 
-	token, err := c.doTokenResp(ctx, authParameters, qv)
-	if err != nil {
-		return token, fmt.Errorf("FromAssertion(): %w", err)
-	}
-	return token, nil
+	return c.doTokenResp(ctx, authParameters, qv)
 }
 
 func (c Client) FromUserAssertionClientSecret(ctx context.Context, authParameters authority.AuthParams, userAssertion string, clientSecret string) (TokenResponse, error) {

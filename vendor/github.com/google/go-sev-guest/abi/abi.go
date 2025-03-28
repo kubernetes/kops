@@ -24,7 +24,7 @@ import (
 
 	pb "github.com/google/go-sev-guest/proto/sevsnp"
 	"github.com/google/logger"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/cryptobyte"
 	"golang.org/x/crypto/cryptobyte/asn1"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -110,9 +110,32 @@ const (
 	// a single machine can use both VCEK and VLEK report signing.
 	AsvkGUID = "00000000-0000-0000-0000-000000000000"
 
-	// ExpectedReportVersion is set by the SNP API specification
+	// ExtraPlatformInfoGUID represents more information about the machine collecting an attestation
+	// report than just the report to help interpret the attestation report.
+	ExtraPlatformInfoGUID = "ecae0c0f-9502-43b1-afa2-0ae2e0d565b6"
+	// ExtraPlatformInfoV0Size is the minimum size for an ExtraPlatformInfo blob.
+	ExtraPlatformInfoV0Size = 8
+
+	// CpuidProductMask keeps only the SevProduct-relevant bits from the CPUID(1).EAX result.
+	CpuidProductMask    = 0x0fff0fff
+	extendedFamilyShift = 20
+	extendedModelShift  = 16
+	familyShift         = 8
+	modelShift          = 4
+	// Combined extended values
+	zen3zen4Family = 0x19
+	zen5Family     = 0x1A
+	milanModel     = 0 | 1
+	genoaModel     = (1 << 4) | 1
+	turinModel     = 2
+
+	// ReportVersion2 is set by the SNP API specification
+	// https://web.archive.org/web/20231222054111if_/http://www.amd.com/content/dam/amd/en/documents/epyc-technical-docs/specifications/56860.pdf
+	ReportVersion2 = 2
+
+	// ReportVersion3 is set by the SNP API specification
 	// https://www.amd.com/system/files/TechDocs/56860.pdf
-	ExpectedReportVersion = 2
+	ReportVersion3 = 3
 )
 
 // CertTableHeaderEntry defines an entry of the beginning of an extended attestation report which
@@ -463,7 +486,14 @@ func ReportToProto(data []uint8) (*pb.Report, error) {
 	r.ReportId = clone(data[0x140:0x160])
 	r.ReportIdMa = clone(data[0x160:0x180])
 	r.ReportedTcb = binary.LittleEndian.Uint64(data[0x180:0x188])
-	if err := mbz(data, 0x188, 0x1A0); err != nil {
+
+	mbzLo := 0x188
+	if r.Version == ReportVersion3 {
+		mbzLo = 0x18B
+		r.Cpuid1EaxFms = FmsToCpuid1Eax(data[0x188], data[0x189], data[0x18A])
+	}
+
+	if err := mbz(data, mbzLo, 0x1A0); err != nil {
 		return nil, err
 	}
 	r.ChipId = clone(data[0x1A0:0x1E0])
@@ -491,6 +521,27 @@ func ReportToProto(data []uint8) (*pb.Report, error) {
 	}
 	r.Signature = clone(data[signatureOffset:ReportSize])
 	return r, nil
+}
+
+// ReportCertsToProto creates a pb.Attestation from the report and certificate table represented in
+// data. The report is expected to take exactly abi.ReportSize bytes, followed by the certificate
+// table.
+func ReportCertsToProto(data []uint8) (*pb.Attestation, error) {
+	var certs []uint8
+	report := data
+	if len(data) >= ReportSize {
+		report = data[:ReportSize]
+		certs = data[ReportSize:]
+	}
+	mreport, err := ReportToProto(report)
+	if err != nil {
+		return nil, err
+	}
+	table := new(CertTable)
+	if err := table.Unmarshal(certs); err != nil {
+		return nil, err
+	}
+	return &pb.Attestation{Report: mreport, CertificateChain: table.Proto()}, nil
 }
 
 func checkReportSizes(r *pb.Report) error {
@@ -538,8 +589,8 @@ func ValidateReportFormat(r []byte) error {
 	}
 
 	version := binary.LittleEndian.Uint32(r[0x00:0x04])
-	if version != ExpectedReportVersion {
-		return fmt.Errorf("report version is: %d. Expected %d", version, ExpectedReportVersion)
+	if version != ReportVersion2 && version != ReportVersion3 {
+		return fmt.Errorf("report version is: %d. Expected %d or %d", version, ReportVersion2, ReportVersion3)
 	}
 
 	policy := binary.LittleEndian.Uint64(r[0x08:0x10])
@@ -582,6 +633,15 @@ func ReportToAbiBytes(r *pb.Report) ([]byte, error) {
 	copy(data[0x140:0x160], r.ReportId[:])
 	copy(data[0x160:0x180], r.ReportIdMa[:])
 	binary.LittleEndian.PutUint64(data[0x180:0x188], r.ReportedTcb)
+
+	// Add CPUID information if this is a version 3 report.
+	if r.Version == ReportVersion3 {
+		family, model, stepping := FmsFromCpuid1Eax(r.Cpuid1EaxFms)
+		data[0x188] = family
+		data[0x189] = model
+		data[0x18A] = stepping
+	}
+
 	copy(data[0x1A0:0x1E0], r.ChipId[:])
 	binary.LittleEndian.PutUint64(data[0x1E0:0x1E8], r.CommittedTcb)
 	if r.CurrentBuild >= (1 << 8) {
@@ -673,7 +733,7 @@ func (h *CertTableHeaderEntry) Unmarshal(data []byte) error {
 	if len(data) < CertTableEntrySize {
 		return fmt.Errorf("data too small: %v, want %v", len(data), CertTableEntrySize)
 	}
-	h.GUID = clone(data[0:GUIDSize])
+	copy(h.GUID[:], data[0:GUIDSize])
 	uint32Size := 4
 	h.Offset = binary.LittleEndian.Uint32(data[GUIDSize : GUIDSize+uint32Size])
 	h.Length = binary.LittleEndian.Uint32(data[GUIDSize+uint32Size : CertTableEntrySize])
@@ -737,8 +797,7 @@ func (c *CertTable) Unmarshal(certs []byte) error {
 	}
 	for i, entry := range certTableHeader {
 		var next CertTableEntry
-		next.GUID = make([]byte, GUIDSize)
-		copy(next.GUID, entry.GUID)
+		copy(next.GUID[:], entry.GUID[:])
 		if entry.Offset+entry.Length > uint32(len(certs)) {
 			return fmt.Errorf("cert table entry %d specifies a byte range outside the certificate data block (size %d): offset=%d, length%d", i, len(certs), entry.Offset, entry.Length)
 		}
@@ -752,16 +811,64 @@ func (c *CertTable) Unmarshal(certs []byte) error {
 // GetByGUIDString returns the raw bytes for a certificate that matches a key identified by the
 // given GUID string.
 func (c *CertTable) GetByGUIDString(guid string) ([]byte, error) {
-	g := uuid.Parse(guid)
-	if g == nil {
-		return nil, fmt.Errorf("GUID string format is XXXXXXXX-XXXX-XXXX-XXXXXXXXXXXXXXXX, got %s", guid)
+	g, err := uuid.Parse(guid)
+	if err != nil {
+		return nil, err
 	}
 	for _, entry := range c.Entries {
-		if uuid.Equal(entry.GUID, g) {
+		if entry.GUID == g {
 			return entry.RawCert, nil
 		}
 	}
 	return nil, fmt.Errorf("cert not found for GUID %s", guid)
+}
+
+// CertsFromProto returns the CertTable represented in the given certificate chain.
+func CertsFromProto(chain *pb.CertificateChain) *CertTable {
+	c := &CertTable{}
+	if len(chain.GetArkCert()) != 0 {
+		c.Entries = append(c.Entries,
+			CertTableEntry{GUID: uuid.MustParse(ArkGUID), RawCert: chain.GetArkCert()})
+	}
+	if len(chain.GetAskCert()) != 0 {
+		c.Entries = append(c.Entries,
+			CertTableEntry{GUID: uuid.MustParse(AskGUID), RawCert: chain.GetAskCert()})
+	}
+	if len(chain.GetVcekCert()) != 0 {
+		c.Entries = append(c.Entries,
+			CertTableEntry{GUID: uuid.MustParse(VcekGUID), RawCert: chain.GetVcekCert()})
+	}
+	if len(chain.GetVlekCert()) != 0 {
+		c.Entries = append(c.Entries,
+			CertTableEntry{GUID: uuid.MustParse(VlekGUID), RawCert: chain.GetVlekCert()})
+	}
+	for guid, cert := range chain.GetExtras() {
+		c.Entries = append(c.Entries,
+			CertTableEntry{GUID: uuid.MustParse(guid), RawCert: cert})
+	}
+	return c
+}
+
+// Marshal returns the CertTable in its GUID table ABI format.
+func (c *CertTable) Marshal() []byte {
+	if len(c.Entries) == 0 {
+		return nil
+	}
+	headerSize := uint32((len(c.Entries) + 1) * CertTableEntrySize)
+	var dataSize uint32
+	for _, entry := range c.Entries {
+		dataSize += uint32(len(entry.RawCert))
+	}
+	output := make([]byte, dataSize+headerSize)
+	cursor := headerSize
+	for i, entry := range c.Entries {
+		size := uint32(len(entry.RawCert))
+		h := &CertTableHeaderEntry{GUID: entry.GUID, Offset: cursor, Length: size}
+		copy(output[cursor:cursor+size], entry.RawCert)
+		h.Write(output[i*CertTableEntrySize:])
+		cursor += size
+	}
+	return output
 }
 
 // Proto returns the certificate chain represented in an extended guest request's
@@ -769,20 +876,20 @@ func (c *CertTable) GetByGUIDString(guid string) ([]byte, error) {
 // so missing certificates aren't an error. If certificates are missing, you can
 // choose to fetch them yourself by calling verify.GetAttestationFromReport.
 func (c *CertTable) Proto() *pb.CertificateChain {
-	vcekGUID := uuid.Parse(VcekGUID)
-	vlekGUID := uuid.Parse(VlekGUID)
-	askGUID := uuid.Parse(AskGUID)
-	arkGUID := uuid.Parse(ArkGUID)
+	vcekGUID := uuid.MustParse(VcekGUID)
+	vlekGUID := uuid.MustParse(VlekGUID)
+	askGUID := uuid.MustParse(AskGUID)
+	arkGUID := uuid.MustParse(ArkGUID)
 	result := &pb.CertificateChain{Extras: make(map[string][]byte)}
 	for _, entry := range c.Entries {
 		switch {
-		case uuid.Equal(entry.GUID, vcekGUID):
+		case entry.GUID == vcekGUID:
 			result.VcekCert = entry.RawCert
-		case uuid.Equal(entry.GUID, vlekGUID):
+		case entry.GUID == vlekGUID:
 			result.VlekCert = entry.RawCert
-		case uuid.Equal(entry.GUID, askGUID):
+		case entry.GUID == askGUID:
 			result.AskCert = entry.RawCert
-		case uuid.Equal(entry.GUID, arkGUID):
+		case entry.GUID == arkGUID:
 			result.ArkCert = entry.RawCert
 		default:
 			result.Extras[entry.GUID.String()] = entry.RawCert
@@ -791,13 +898,6 @@ func (c *CertTable) Proto() *pb.CertificateChain {
 	if len(result.VcekCert) == 0 && len(result.VlekCert) == 0 {
 		logger.Warning("Warning: Neither VCEK nor VLEK certificate found in data pages")
 	}
-
-	if len(result.AskCert) == 0 {
-		logger.Warningf("ASK certificate not found in data pages")
-	}
-	if len(result.ArkCert) == 0 {
-		logger.Warningf("ARK certificate not found in data pages")
-	}
 	return result
 }
 
@@ -805,39 +905,124 @@ func (c *CertTable) Proto() *pb.CertificateChain {
 // See assembly implementations in cpuid_*.s
 var cpuid func(op uint32) (eax, ebx, ecx, edx uint32)
 
+// FmsToCpuid1Eax returns the masked CPUID_1_EAX value that represents the given
+// family, model, stepping (FMS) values.
+func FmsToCpuid1Eax(family, model, stepping byte) uint32 {
+	var extendedFamily byte
+
+	familyID := family
+	if family >= 0xf {
+		extendedFamily = family - 0xf
+		familyID = 0xf
+	}
+	extendedModel := model >> 4
+	modelID := model & 0xf
+	return (uint32(extendedFamily) << extendedFamilyShift) |
+		(uint32(extendedModel) << extendedModelShift) |
+		(uint32(familyID) << familyShift) |
+		(uint32(modelID) << modelShift) |
+		(uint32(stepping & 0xf))
+}
+
+// FmsFromCpuid1Eax returns the family, model, stepping (FMS) values extracted from a
+// CPUID_1_EAX value.
+func FmsFromCpuid1Eax(eax uint32) (byte, byte, byte) {
+	// 31:28 reserved
+	// 27:20 Extended Family ID
+	extendedFamily := byte((eax >> extendedFamilyShift) & 0xff)
+	// 19:16 Extended Model ID
+	extendedModel := byte((eax >> extendedModelShift) & 0xf)
+	// 15:14 reserved
+	// 11:8 Family ID
+	familyID := byte((eax >> familyShift) & 0xf)
+	// 7:4 Model
+	modelID := byte((eax >> modelShift) & 0xf)
+	// 3:0 Stepping
+	family := extendedFamily + familyID
+	model := (extendedModel << 4) | modelID
+	stepping := byte(eax & 0xf)
+	return family, model, stepping
+}
+
+// SevProductFromCpuid1Eax returns the SevProduct that is represented by cpuid(1).eax.
+func SevProductFromCpuid1Eax(eax uint32) *pb.SevProduct {
+	family, model, stepping := FmsFromCpuid1Eax(eax)
+	// Ah, Fh, {0h,1h} values from the KDS specification,
+	// section "Determining the Product Name".
+	var productName pb.SevProduct_SevProductName
+	unknown := func() {
+		productName = pb.SevProduct_SEV_PRODUCT_UNKNOWN
+		stepping = 0 // Reveal nothing.
+	}
+	// Product information specified by processor programming reference publications.
+	switch family {
+	case zen3zen4Family:
+		switch model {
+		case milanModel:
+			productName = pb.SevProduct_SEV_PRODUCT_MILAN
+		case genoaModel:
+			productName = pb.SevProduct_SEV_PRODUCT_GENOA
+		default:
+			unknown()
+		}
+	case zen5Family:
+		switch model {
+		case turinModel:
+			productName = pb.SevProduct_SEV_PRODUCT_TURIN
+		default:
+			unknown()
+		}
+	default:
+		unknown()
+	}
+	return &pb.SevProduct{
+		Name:            productName,
+		MachineStepping: &wrapperspb.UInt32Value{Value: uint32(stepping)},
+	}
+}
+
+// MaskedCpuid1EaxFromSevProduct returns the Cpuid1Eax value expected from the given product
+// when masked with CpuidProductMask.
+func MaskedCpuid1EaxFromSevProduct(product *pb.SevProduct) uint32 {
+	if product == nil {
+		return 0
+	}
+	var family, model, stepping byte
+	if product.MachineStepping != nil {
+		stepping = byte(product.MachineStepping.Value & 0xf)
+	}
+	switch product.Name {
+	case pb.SevProduct_SEV_PRODUCT_MILAN:
+		family = zen3zen4Family
+		model = milanModel
+	case pb.SevProduct_SEV_PRODUCT_GENOA:
+		family = zen3zen4Family
+		model = genoaModel
+	case pb.SevProduct_SEV_PRODUCT_TURIN:
+		family = zen5Family
+		model = turinModel
+	default:
+		return 0
+	}
+	return FmsToCpuid1Eax(family, model, stepping)
+}
+
 // SevProduct returns the SEV product enum for the CPU that runs this
 // function. Ought to be called from the client, not the verifier.
 func SevProduct() *pb.SevProduct {
 	// CPUID[EAX=1] is the processor info. The only bits we care about are in
 	// the eax result.
 	eax, _, _, _ := cpuid(1)
-	// 31:28 reserved
-	// 27:20 Extended Family ID
-	extendedFamily := (eax >> 20) & 0xff
-	// 19:16 Extended Model ID
-	extendedModel := (eax >> 16) & 0xf
-	// 15:14 reserved
-	// 11:8 Family ID
-	family := (eax >> 8) & 0xf
-	// 3:0 Stepping
-	stepping := eax & 0xf
-	// Ah, Fh, {0h,1h} values from the KDS specification,
-	// section "Determining the Product Name".
-	var productName pb.SevProduct_SevProductName
-	// Product information specified by processor programming reference publications.
-	if extendedFamily == 0xA && family == 0xF {
-		switch extendedModel {
-		case 0:
-			productName = pb.SevProduct_SEV_PRODUCT_MILAN
-		case 1:
-			productName = pb.SevProduct_SEV_PRODUCT_GENOA
-		default:
-			productName = pb.SevProduct_SEV_PRODUCT_UNKNOWN
-		}
-	}
-	return &pb.SevProduct{
-		Name:            productName,
-		MachineStepping: &wrapperspb.UInt32Value{Value: stepping},
+	return SevProductFromCpuid1Eax(eax & CpuidProductMask)
+}
+
+// MakeExtraPlatformInfo returns the representation of platform info needed on top of what an
+// attestation report provides in order to interpret it with the help of the AMD KDS.
+func MakeExtraPlatformInfo() *ExtraPlatformInfo {
+	eax, _, _, _ := cpuid(1)
+	return &ExtraPlatformInfo{
+		Size:      ExtraPlatformInfoV0Size,
+		Cpuid1Eax: eax & CpuidProductMask,
 	}
 }
 
@@ -847,4 +1032,70 @@ func DefaultSevProduct() *pb.SevProduct {
 		Name:            pb.SevProduct_SEV_PRODUCT_MILAN,
 		MachineStepping: &wrapperspb.UInt32Value{Value: 1},
 	}
+}
+
+// ExtraPlatformInfo represents environment information needed to interpret an attestation report when
+// the VCEK certificate is not available in the auxblob.
+type ExtraPlatformInfo struct {
+	Size      uint32 // Size doubles as Version, following the Linux ABI expansion methodology.
+	Cpuid1Eax uint32 // Provides product information
+}
+
+// ParseExtraPlatformInfo extracts an ExtraPlatformInfo from a blob if it matches expectations, or
+// errors.
+func ParseExtraPlatformInfo(data []byte) (*ExtraPlatformInfo, error) {
+	if len(data) < ExtraPlatformInfoV0Size {
+		return nil, fmt.Errorf("%d bytes is too small for ExtraPlatformInfoSize. Want >= %d bytes",
+			len(data), ExtraPlatformInfoV0Size)
+	}
+	// Populate V0 data.
+	result := &ExtraPlatformInfo{
+		Size:      binary.LittleEndian.Uint32(data[0:0x04]),
+		Cpuid1Eax: binary.LittleEndian.Uint32(data[0x04:0x08]),
+	}
+	if uint32(len(data)) != result.Size {
+		return nil, fmt.Errorf("actual size %d bytes != reported size %d bytes", len(data), result.Size)
+	}
+	return result, nil
+}
+
+// Marshal returns ExtraPlatformInfo in its ABI format or errors.
+func (i *ExtraPlatformInfo) Marshal() ([]byte, error) {
+	if i.Size != ExtraPlatformInfoV0Size {
+		return nil, fmt.Errorf("unsupported ExtraPlatformInfo size %d bytes", i.Size)
+	}
+	data := make([]byte, ExtraPlatformInfoV0Size)
+	binary.LittleEndian.PutUint32(data[0:0x04], i.Size)
+	binary.LittleEndian.PutUint32(data[0x04:0x08], i.Cpuid1Eax)
+	return data, nil
+}
+
+// ExtendPlatformCertTable is a convenience function for parsing a CertTable, adding the
+// ExtraPlatformInfoGUID entry, and returning the marshaled extended table.
+func ExtendPlatformCertTable(data []byte, info *ExtraPlatformInfo) ([]byte, error) {
+	certs := new(CertTable)
+	if err := certs.Unmarshal(data); err != nil {
+		return nil, err
+	}
+	// Don't extend the entries with unnecessary information about the platform
+	// since the VCEK certificate already contains it in an extension.
+	if _, err := certs.GetByGUIDString(VcekGUID); err == nil {
+		return data, nil
+	}
+	// A directly constructed info cannot have a marshaling error.
+	extra, err := info.Marshal()
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal ExtraPlatformInfo: %v", err)
+	}
+	certs.Entries = append(certs.Entries, CertTableEntry{
+		GUID:    uuid.MustParse(ExtraPlatformInfoGUID),
+		RawCert: extra,
+	})
+	return certs.Marshal(), nil
+}
+
+// ExtendedPlatformCertTable is a convenience function for parsing a CertTable, adding the
+// ExtraPlatformInfoGUID entry, and returning the marshaled extended table.
+func ExtendedPlatformCertTable(data []byte) ([]byte, error) {
+	return ExtendPlatformCertTable(data, MakeExtraPlatformInfo())
 }

@@ -18,7 +18,7 @@ import (
 // Creates an Auto Scaling group with the specified name and attributes.
 //
 // If you exceed your maximum limit of Auto Scaling groups, the call fails. To
-// query this limit, call the DescribeAccountLimitsAPI. For information about updating this limit, see [Quotas for Amazon EC2 Auto Scaling]
+// query this limit, call the [DescribeAccountLimits]API. For information about updating this limit, see [Quotas for Amazon EC2 Auto Scaling]
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // If you're new to Amazon EC2 Auto Scaling, see the introductory tutorials in [Get started with Amazon EC2 Auto Scaling] in
@@ -30,6 +30,7 @@ import (
 // weights for the instance types, you must specify these sizes with the same units
 // that you use for weighting instances.
 //
+// [DescribeAccountLimits]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAccountLimits.html
 // [Get started with Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/get-started-with-ec2-auto-scaling.html
 // [Quotas for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html
 func (c *Client) CreateAutoScalingGroup(ctx context.Context, params *CreateAutoScalingGroupInput, optFns ...func(*Options)) (*CreateAutoScalingGroupOutput, error) {
@@ -76,6 +77,12 @@ type CreateAutoScalingGroupInput struct {
 	// This member is required.
 	MinSize *int32
 
+	// The instance capacity distribution across Availability Zones.
+	AvailabilityZoneDistribution *types.AvailabilityZoneDistribution
+
+	//  The policy for Availability Zone impairment.
+	AvailabilityZoneImpairmentPolicy *types.AvailabilityZoneImpairmentPolicy
+
 	// A list of Availability Zones where instances in the Auto Scaling group can be
 	// created. Used for launching into the default VPC subnet in each Availability
 	// Zone when not using the VPCZoneIdentifier property, or for attaching a network
@@ -92,6 +99,9 @@ type CreateAutoScalingGroupInput struct {
 	//
 	// [Use Capacity Rebalancing to handle Amazon EC2 Spot Interruptions]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
 	CapacityRebalance *bool
+
+	//  The capacity reservation specification for the Auto Scaling group.
+	CapacityReservationSpecification *types.CapacityReservationSpecification
 
 	// Reserved.
 	Context *string
@@ -260,6 +270,14 @@ type CreateAutoScalingGroupInput struct {
 	// [Service-linked roles]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-service-linked-role.html
 	ServiceLinkedRoleARN *string
 
+	//  If you enable zonal shift with cross-zone disabled load balancers, capacity
+	// could become imbalanced across Availability Zones. To skip the validation,
+	// specify true . For more information, see [Auto Scaling group zonal shift] in the Amazon EC2 Auto Scaling User
+	// Guide.
+	//
+	// [Auto Scaling group zonal shift]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-zonal-shift.html
+	SkipZonalShiftValidation *bool
+
 	// One or more tags. You can tag your Auto Scaling group and propagate the tags to
 	// the Amazon EC2 instances it launches. Tags are not propagated to Amazon EBS
 	// volumes. To add tags to Amazon EBS volumes, specify the tags in a launch
@@ -377,6 +395,9 @@ func (c *Client) addOperationCreateAutoScalingGroupMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateAutoScalingGroupValidationMiddleware(stack); err != nil {

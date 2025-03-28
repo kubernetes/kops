@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Retrieves the PublicAccessBlock configuration for an Amazon S3 bucket. To use
 // this operation, you must have the s3:GetBucketPublicAccessBlock permission. For
@@ -163,6 +163,9 @@ func (c *Client) addOperationGetPublicAccessBlockMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetPublicAccessBlockValidationMiddleware(stack); err != nil {

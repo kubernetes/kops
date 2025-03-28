@@ -22,6 +22,25 @@ func (AccessAdvisorUsageGranularityType) Values() []AccessAdvisorUsageGranularit
 	}
 }
 
+type AssertionEncryptionModeType string
+
+// Enum values for AssertionEncryptionModeType
+const (
+	AssertionEncryptionModeTypeRequired AssertionEncryptionModeType = "Required"
+	AssertionEncryptionModeTypeAllowed  AssertionEncryptionModeType = "Allowed"
+)
+
+// Values returns all known values for AssertionEncryptionModeType. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (AssertionEncryptionModeType) Values() []AssertionEncryptionModeType {
+	return []AssertionEncryptionModeType{
+		"Required",
+		"Allowed",
+	}
+}
+
 type AssignmentStatusType string
 
 // Enum values for AssignmentStatusType
@@ -146,6 +165,25 @@ func (EntityType) Values() []EntityType {
 		"Group",
 		"LocalManagedPolicy",
 		"AWSManagedPolicy",
+	}
+}
+
+type FeatureType string
+
+// Enum values for FeatureType
+const (
+	FeatureTypeRootCredentialsManagement FeatureType = "RootCredentialsManagement"
+	FeatureTypeRootSessions              FeatureType = "RootSessions"
+)
+
+// Values returns all known values for FeatureType. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (FeatureType) Values() []FeatureType {
+	return []FeatureType{
+		"RootCredentialsManagement",
+		"RootSessions",
 	}
 }
 
@@ -437,6 +475,7 @@ const (
 	SummaryKeyTypeMFADevicesInUse                   SummaryKeyType = "MFADevicesInUse"
 	SummaryKeyTypeAccountMFAEnabled                 SummaryKeyType = "AccountMFAEnabled"
 	SummaryKeyTypeAccountAccessKeysPresent          SummaryKeyType = "AccountAccessKeysPresent"
+	SummaryKeyTypeAccountPasswordPresent            SummaryKeyType = "AccountPasswordPresent"
 	SummaryKeyTypeAccountSigningCertificatesPresent SummaryKeyType = "AccountSigningCertificatesPresent"
 	SummaryKeyTypeAttachedPoliciesPerGroupQuota     SummaryKeyType = "AttachedPoliciesPerGroupQuota"
 	SummaryKeyTypeAttachedPoliciesPerRoleQuota      SummaryKeyType = "AttachedPoliciesPerRoleQuota"
@@ -471,6 +510,7 @@ func (SummaryKeyType) Values() []SummaryKeyType {
 		"MFADevicesInUse",
 		"AccountMFAEnabled",
 		"AccountAccessKeysPresent",
+		"AccountPasswordPresent",
 		"AccountSigningCertificatesPresent",
 		"AttachedPoliciesPerGroupQuota",
 		"AttachedPoliciesPerRoleQuota",

@@ -3372,6 +3372,138 @@ func (m *awsAwsquery_serializeOpDetachUserPolicy) HandleSerialize(ctx context.Co
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsquery_serializeOpDisableOrganizationsRootCredentialsManagement struct {
+}
+
+func (*awsAwsquery_serializeOpDisableOrganizationsRootCredentialsManagement) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsquery_serializeOpDisableOrganizationsRootCredentialsManagement) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*DisableOrganizationsRootCredentialsManagementInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-www-form-urlencoded")
+
+	bodyWriter := bytes.NewBuffer(nil)
+	bodyEncoder := query.NewEncoder(bodyWriter)
+	body := bodyEncoder.Object()
+	body.Key("Action").String("DisableOrganizationsRootCredentialsManagement")
+	body.Key("Version").String("2010-05-08")
+
+	err = bodyEncoder.Encode()
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(bodyWriter.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsquery_serializeOpDisableOrganizationsRootSessions struct {
+}
+
+func (*awsAwsquery_serializeOpDisableOrganizationsRootSessions) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsquery_serializeOpDisableOrganizationsRootSessions) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*DisableOrganizationsRootSessionsInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-www-form-urlencoded")
+
+	bodyWriter := bytes.NewBuffer(nil)
+	bodyEncoder := query.NewEncoder(bodyWriter)
+	body := bodyEncoder.Object()
+	body.Key("Action").String("DisableOrganizationsRootSessions")
+	body.Key("Version").String("2010-05-08")
+
+	err = bodyEncoder.Encode()
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(bodyWriter.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsquery_serializeOpEnableMFADevice struct {
 }
 
@@ -3422,6 +3554,138 @@ func (m *awsAwsquery_serializeOpEnableMFADevice) HandleSerialize(ctx context.Con
 	if err := awsAwsquery_serializeOpDocumentEnableMFADeviceInput(input, bodyEncoder.Value); err != nil {
 		return out, metadata, &smithy.SerializationError{Err: err}
 	}
+
+	err = bodyEncoder.Encode()
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(bodyWriter.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsquery_serializeOpEnableOrganizationsRootCredentialsManagement struct {
+}
+
+func (*awsAwsquery_serializeOpEnableOrganizationsRootCredentialsManagement) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsquery_serializeOpEnableOrganizationsRootCredentialsManagement) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*EnableOrganizationsRootCredentialsManagementInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-www-form-urlencoded")
+
+	bodyWriter := bytes.NewBuffer(nil)
+	bodyEncoder := query.NewEncoder(bodyWriter)
+	body := bodyEncoder.Object()
+	body.Key("Action").String("EnableOrganizationsRootCredentialsManagement")
+	body.Key("Version").String("2010-05-08")
+
+	err = bodyEncoder.Encode()
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(bodyWriter.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsquery_serializeOpEnableOrganizationsRootSessions struct {
+}
+
+func (*awsAwsquery_serializeOpEnableOrganizationsRootSessions) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsquery_serializeOpEnableOrganizationsRootSessions) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*EnableOrganizationsRootSessionsInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-www-form-urlencoded")
+
+	bodyWriter := bytes.NewBuffer(nil)
+	bodyEncoder := query.NewEncoder(bodyWriter)
+	body := bodyEncoder.Object()
+	body.Key("Action").String("EnableOrganizationsRootSessions")
+	body.Key("Version").String("2010-05-08")
 
 	err = bodyEncoder.Encode()
 	if err != nil {
@@ -6552,6 +6816,72 @@ func (m *awsAwsquery_serializeOpListOpenIDConnectProviderTags) HandleSerialize(c
 	if err := awsAwsquery_serializeOpDocumentListOpenIDConnectProviderTagsInput(input, bodyEncoder.Value); err != nil {
 		return out, metadata, &smithy.SerializationError{Err: err}
 	}
+
+	err = bodyEncoder.Encode()
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(bodyWriter.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
+type awsAwsquery_serializeOpListOrganizationsFeatures struct {
+}
+
+func (*awsAwsquery_serializeOpListOrganizationsFeatures) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsquery_serializeOpListOrganizationsFeatures) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*ListOrganizationsFeaturesInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-www-form-urlencoded")
+
+	bodyWriter := bytes.NewBuffer(nil)
+	bodyEncoder := query.NewEncoder(bodyWriter)
+	body := bodyEncoder.Object()
+	body.Key("Action").String("ListOrganizationsFeatures")
+	body.Key("Version").String("2010-05-08")
 
 	err = bodyEncoder.Encode()
 	if err != nil {
@@ -11615,6 +11945,16 @@ func awsAwsquery_serializeOpDocumentCreateSAMLProviderInput(v *CreateSAMLProvide
 	object := value.Object()
 	_ = object
 
+	if v.AddPrivateKey != nil {
+		objectKey := object.Key("AddPrivateKey")
+		objectKey.String(*v.AddPrivateKey)
+	}
+
+	if len(v.AssertionEncryptionMode) > 0 {
+		objectKey := object.Key("AssertionEncryptionMode")
+		objectKey.String(string(v.AssertionEncryptionMode))
+	}
+
 	if v.Name != nil {
 		objectKey := object.Key("Name")
 		objectKey.String(*v.Name)
@@ -12099,6 +12439,20 @@ func awsAwsquery_serializeOpDocumentDetachUserPolicyInput(v *DetachUserPolicyInp
 	return nil
 }
 
+func awsAwsquery_serializeOpDocumentDisableOrganizationsRootCredentialsManagementInput(v *DisableOrganizationsRootCredentialsManagementInput, value query.Value) error {
+	object := value.Object()
+	_ = object
+
+	return nil
+}
+
+func awsAwsquery_serializeOpDocumentDisableOrganizationsRootSessionsInput(v *DisableOrganizationsRootSessionsInput, value query.Value) error {
+	object := value.Object()
+	_ = object
+
+	return nil
+}
+
 func awsAwsquery_serializeOpDocumentEnableMFADeviceInput(v *EnableMFADeviceInput, value query.Value) error {
 	object := value.Object()
 	_ = object
@@ -12122,6 +12476,20 @@ func awsAwsquery_serializeOpDocumentEnableMFADeviceInput(v *EnableMFADeviceInput
 		objectKey := object.Key("UserName")
 		objectKey.String(*v.UserName)
 	}
+
+	return nil
+}
+
+func awsAwsquery_serializeOpDocumentEnableOrganizationsRootCredentialsManagementInput(v *EnableOrganizationsRootCredentialsManagementInput, value query.Value) error {
+	object := value.Object()
+	_ = object
+
+	return nil
+}
+
+func awsAwsquery_serializeOpDocumentEnableOrganizationsRootSessionsInput(v *EnableOrganizationsRootSessionsInput, value query.Value) error {
+	object := value.Object()
+	_ = object
 
 	return nil
 }
@@ -12900,6 +13268,13 @@ func awsAwsquery_serializeOpDocumentListOpenIDConnectProviderTagsInput(v *ListOp
 		objectKey := object.Key("OpenIDConnectProviderArn")
 		objectKey.String(*v.OpenIDConnectProviderArn)
 	}
+
+	return nil
+}
+
+func awsAwsquery_serializeOpDocumentListOrganizationsFeaturesInput(v *ListOrganizationsFeaturesInput, value query.Value) error {
+	object := value.Object()
+	_ = object
 
 	return nil
 }
@@ -14170,6 +14545,21 @@ func awsAwsquery_serializeOpDocumentUpdateRoleInput(v *UpdateRoleInput, value qu
 func awsAwsquery_serializeOpDocumentUpdateSAMLProviderInput(v *UpdateSAMLProviderInput, value query.Value) error {
 	object := value.Object()
 	_ = object
+
+	if v.AddPrivateKey != nil {
+		objectKey := object.Key("AddPrivateKey")
+		objectKey.String(*v.AddPrivateKey)
+	}
+
+	if len(v.AssertionEncryptionMode) > 0 {
+		objectKey := object.Key("AssertionEncryptionMode")
+		objectKey.String(string(v.AssertionEncryptionMode))
+	}
+
+	if v.RemovePrivateKey != nil {
+		objectKey := object.Key("RemovePrivateKey")
+		objectKey.String(*v.RemovePrivateKey)
+	}
 
 	if v.SAMLMetadataDocument != nil {
 		objectKey := object.Key("SAMLMetadataDocument")

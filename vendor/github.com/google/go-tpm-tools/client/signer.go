@@ -51,7 +51,7 @@ func (signer *tpmSigner) Sign(_ io.Reader, digest []byte, opts crypto.SignerOpts
 		return nil, fmt.Errorf("hash algorithm: got %v, want %v", opts.HashFunc(), signer.Hash)
 	}
 	if len(digest) != signer.Hash.Size() {
-		return nil, fmt.Errorf("digest length: got %d, want %d", digest, signer.Hash.Size())
+		return nil, fmt.Errorf("digest length: got %d, want %d", len(digest), signer.Hash.Size())
 	}
 
 	signerMutex.Lock()

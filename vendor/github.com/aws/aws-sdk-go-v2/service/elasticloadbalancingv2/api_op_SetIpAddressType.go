@@ -30,24 +30,19 @@ func (c *Client) SetIpAddressType(ctx context.Context, params *SetIpAddressTypeI
 
 type SetIpAddressTypeInput struct {
 
-	// Note: Internal load balancers must use the ipv4 IP address type.
+	// The IP address type. Internal load balancers must use ipv4 .
 	//
-	// [Application Load Balancers] The IP address type. The possible values are ipv4
-	// (for only IPv4 addresses), dualstack (for IPv4 and IPv6 addresses), and
-	// dualstack-without-public-ipv4 (for IPv6 only public addresses, with private IPv4
-	// and IPv6 addresses).
+	// [Application Load Balancers] The possible values are ipv4 (IPv4 addresses),
+	// dualstack (IPv4 and IPv6 addresses), and dualstack-without-public-ipv4 (public
+	// IPv6 addresses and private IPv4 and IPv6 addresses).
 	//
-	// Note: Application Load Balancer authentication only supports IPv4 addresses
-	// when connecting to an Identity Provider (IdP) or Amazon Cognito endpoint.
-	// Without a public IPv4 address the load balancer cannot complete the
-	// authentication process, resulting in HTTP 500 errors.
+	// Application Load Balancer authentication supports IPv4 addresses only when
+	// connecting to an Identity Provider (IdP) or Amazon Cognito endpoint. Without a
+	// public IPv4 address the load balancer can't complete the authentication process,
+	// resulting in HTTP 500 errors.
 	//
-	// [Network Load Balancers] The IP address type. The possible values are ipv4 (for
-	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses). You can’t
-	// specify dualstack for a load balancer with a UDP or TCP_UDP listener.
-	//
-	// [Gateway Load Balancers] The IP address type. The possible values are ipv4 (for
-	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses).
+	// [Network Load Balancers and Gateway Load Balancers] The possible values are ipv4
+	// (IPv4 addresses) and dualstack (IPv4 and IPv6 addresses).
 	//
 	// This member is required.
 	IpAddressType types.IpAddressType
@@ -133,6 +128,9 @@ func (c *Client) addOperationSetIpAddressTypeMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpSetIpAddressTypeValidationMiddleware(stack); err != nil {
