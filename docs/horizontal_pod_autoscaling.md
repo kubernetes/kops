@@ -38,8 +38,7 @@ Specifically:
 
 ### Support For Multiple Metrics
 
-To enable the resource metrics API for scaling on CPU and memory, install metrics-server
-([installation instruction here][k8s-metrics-server]). The
+To enable the resource metrics API for scaling on CPU and memory, enable metrics-server by setting `spec.metricsServer.enabled=true` in the Cluster spec. The
 compatibility matrix is as follows:
 
 Metrics Server | Metrics API group/version | Supported Kubernetes version
@@ -54,5 +53,4 @@ Prometheus, checkout the [custom metrics adapter for Prometheus][k8s-prometheus-
 [k8s-aggregation-layer]: https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
 [k8s-extend-api]: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/
 [k8s-hpa]: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-[k8s-metrics-server]: https://github.com/kubernetes/kops/blob/master/addons/metrics-server/README.md
 [k8s-prometheus-custom-metrics-adapter]: https://github.com/DirectXMan12/k8s-prometheus-adapter
