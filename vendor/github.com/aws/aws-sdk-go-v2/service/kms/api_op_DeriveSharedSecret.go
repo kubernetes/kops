@@ -319,6 +319,9 @@ func (c *Client) addOperationDeriveSharedSecretMiddlewares(stack *middleware.Sta
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeriveSharedSecretValidationMiddleware(stack); err != nil {
 		return err
 	}

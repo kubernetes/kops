@@ -286,6 +286,11 @@ type ACMEChallengeSolverHTTP01GatewayHTTPRoute struct {
 	// the HTTPRoute. Usually, the parentRef references a Gateway. See:
 	// https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways
 	ParentRefs []gwapi.ParentReference `json:"parentRefs,omitempty"`
+
+	// Optional pod template used to configure the ACME challenge solver pods
+	// used for HTTP01 challenges.
+	// +optional
+	PodTemplate *ACMEChallengeSolverHTTP01IngressPodTemplate `json:"podTemplate,omitempty"`
 }
 
 type ACMEChallengeSolverHTTP01IngressPodTemplate struct {
@@ -304,7 +309,7 @@ type ACMEChallengeSolverHTTP01IngressPodTemplate struct {
 }
 
 type ACMEChallengeSolverHTTP01IngressPodObjectMeta struct {
-	// Annotations that should be added to the create ACME HTTP01 solver pods.
+	// Annotations that should be added to the created ACME HTTP01 solver pods.
 	// +optional
 	Annotations map[string]string `json:"annotations,omitempty"`
 
@@ -339,6 +344,10 @@ type ACMEChallengeSolverHTTP01IngressPodSpec struct {
 	// If specified, the pod's imagePullSecrets
 	// +optional
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty" patchMergeKey:"name" patchStrategy:"merge"`
+
+	// If specified, the pod's security context
+	// +optional
+	SecurityContext *ACMEChallengeSolverHTTP01IngressPodSecurityContext `json:"securityContext,omitempty"`
 }
 
 type ACMEChallengeSolverHTTP01IngressTemplate struct {
@@ -407,6 +416,80 @@ type ACMEChallengeSolverDNS01 struct {
 	// DNS01 challenge records.
 	// +optional
 	Webhook *ACMEIssuerDNS01ProviderWebhook `json:"webhook,omitempty"`
+}
+
+type ACMEChallengeSolverHTTP01IngressPodSecurityContext struct {
+	// The SELinux context to be applied to all containers.
+	// If unspecified, the container runtime will allocate a random SELinux context for each
+	// container.  May also be set in SecurityContext.  If set in
+	// both SecurityContext and PodSecurityContext, the value specified in SecurityContext
+	// takes precedence for that container.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	SELinuxOptions *corev1.SELinuxOptions `json:"seLinuxOptions,omitempty"`
+	// The UID to run the entrypoint of the container process.
+	// Defaults to user specified in image metadata if unspecified.
+	// May also be set in SecurityContext.  If set in both SecurityContext and
+	// PodSecurityContext, the value specified in SecurityContext takes precedence
+	// for that container.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	RunAsUser *int64 `json:"runAsUser,omitempty"`
+	// The GID to run the entrypoint of the container process.
+	// Uses runtime default if unset.
+	// May also be set in SecurityContext.  If set in both SecurityContext and
+	// PodSecurityContext, the value specified in SecurityContext takes precedence
+	// for that container.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	RunAsGroup *int64 `json:"runAsGroup,omitempty"`
+	// Indicates that the container must run as a non-root user.
+	// If true, the Kubelet will validate the image at runtime to ensure that it
+	// does not run as UID 0 (root) and fail to start the container if it does.
+	// If unset or false, no such validation will be performed.
+	// May also be set in SecurityContext.  If set in both SecurityContext and
+	// PodSecurityContext, the value specified in SecurityContext takes precedence.
+	// +optional
+	RunAsNonRoot *bool `json:"runAsNonRoot,omitempty"`
+	// A list of groups applied to the first process run in each container, in addition
+	// to the container's primary GID, the fsGroup (if specified), and group memberships
+	// defined in the container image for the uid of the container process. If unspecified,
+	// no additional groups are added to any container. Note that group memberships
+	// defined in the container image for the uid of the container process are still effective,
+	// even if they are not included in this list.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	SupplementalGroups []int64 `json:"supplementalGroups,omitempty"`
+	// A special supplemental group that applies to all containers in a pod.
+	// Some volume types allow the Kubelet to change the ownership of that volume
+	// to be owned by the pod:
+	//
+	// 1. The owning GID will be the FSGroup
+	// 2. The setgid bit is set (new files created in the volume will be owned by FSGroup)
+	// 3. The permission bits are OR'd with rw-rw----
+	//
+	// If unset, the Kubelet will not modify the ownership and permissions of any volume.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	FSGroup *int64 `json:"fsGroup,omitempty"`
+	// Sysctls hold a list of namespaced sysctls used for the pod. Pods with unsupported
+	// sysctls (by the container runtime) might fail to launch.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	Sysctls []corev1.Sysctl `json:"sysctls,omitempty"`
+	// fsGroupChangePolicy defines behavior of changing ownership and permission of the volume
+	// before being exposed inside Pod. This field will only apply to
+	// volume types which support fsGroup based ownership(and permissions).
+	// It will have no effect on ephemeral volume types such as: secret, configmaps
+	// and emptydir.
+	// Valid values are "OnRootMismatch" and "Always". If not specified, "Always" is used.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	FSGroupChangePolicy *corev1.PodFSGroupChangePolicy `json:"fsGroupChangePolicy,omitempty"`
+	// The seccomp options to use by the containers in this pod.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	SeccompProfile *corev1.SeccompProfile `json:"seccompProfile,omitempty"`
 }
 
 // CNAMEStrategy configures how the DNS01 provider should handle CNAME records
@@ -512,12 +595,35 @@ type ACMEIssuerDNS01ProviderRoute53 struct {
 	// +optional
 	Role string `json:"role,omitempty"`
 
-	// If set, the provider will manage only this zone in Route53 and will not do an lookup using the route53:ListHostedZonesByName api call.
+	// If set, the provider will manage only this zone in Route53 and will not do a lookup using the route53:ListHostedZonesByName api call.
 	// +optional
 	HostedZoneID string `json:"hostedZoneID,omitempty"`
 
-	// Always set the region when using AccessKeyID and SecretAccessKey
-	Region string `json:"region"`
+	// Override the AWS region.
+	//
+	// Route53 is a global service and does not have regional endpoints but the
+	// region specified here (or via environment variables) is used as a hint to
+	// help compute the correct AWS credential scope and partition when it
+	// connects to Route53. See:
+	// - [Amazon Route 53 endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/r53.html)
+	// - [Global services](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/global-services.html)
+	//
+	// If you omit this region field, cert-manager will use the region from
+	// AWS_REGION and AWS_DEFAULT_REGION environment variables, if they are set
+	// in the cert-manager controller Pod.
+	//
+	// The `region` field is not needed if you use [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html).
+	// Instead an AWS_REGION environment variable is added to the cert-manager controller Pod by:
+	// [Amazon EKS Pod Identity Webhook](https://github.com/aws/amazon-eks-pod-identity-webhook).
+	// In this case this `region` field value is ignored.
+	//
+	// The `region` field is not needed if you use [EKS Pod Identities](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html).
+	// Instead an AWS_REGION environment variable is added to the cert-manager controller Pod by:
+	// [Amazon EKS Pod Identity Agent](https://github.com/aws/eks-pod-identity-agent),
+	// In this case this `region` field value is ignored.
+	//
+	// +optional
+	Region string `json:"region,omitempty"`
 }
 
 // Route53Auth is configuration used to authenticate with a Route53.
@@ -604,6 +710,10 @@ type AzureManagedIdentity struct {
 	// Cannot be used for Azure Managed Service Identity
 	// +optional
 	ResourceID string `json:"resourceID,omitempty"`
+
+	// tenant ID of the managed identity, can not be used at the same time as resourceID
+	// +optional
+	TenantID string `json:"tenantID,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=AzurePublicCloud;AzureChinaCloud;AzureGermanCloud;AzureUSGovernmentCloud

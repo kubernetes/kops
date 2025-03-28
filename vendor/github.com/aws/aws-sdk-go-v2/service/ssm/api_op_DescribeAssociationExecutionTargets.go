@@ -138,6 +138,9 @@ func (c *Client) addOperationDescribeAssociationExecutionTargetsMiddlewares(stac
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeAssociationExecutionTargetsValidationMiddleware(stack); err != nil {
 		return err
 	}

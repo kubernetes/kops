@@ -13,7 +13,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Removes the PublicAccessBlock configuration for an Amazon S3 bucket. To use
 // this operation, you must have the s3:PutBucketPublicAccessBlock permission. For
@@ -146,6 +146,9 @@ func (c *Client) addOperationDeletePublicAccessBlockMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeletePublicAccessBlockValidationMiddleware(stack); err != nil {

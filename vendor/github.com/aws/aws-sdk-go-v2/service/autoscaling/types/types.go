@@ -8,7 +8,9 @@ import (
 )
 
 // Specifies the minimum and maximum for the AcceleratorCount object when you
-// specify InstanceRequirementsfor an Auto Scaling group.
+// specify [InstanceRequirements]for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type AcceleratorCountRequest struct {
 
 	// The maximum value.
@@ -21,7 +23,9 @@ type AcceleratorCountRequest struct {
 }
 
 // Specifies the minimum and maximum for the AcceleratorTotalMemoryMiB object when
-// you specify InstanceRequirementsfor an Auto Scaling group.
+// you specify [InstanceRequirements]for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type AcceleratorTotalMemoryMiBRequest struct {
 
 	// The memory maximum in MiB.
@@ -165,8 +169,17 @@ type AutoScalingGroup struct {
 	// The Amazon Resource Name (ARN) of the Auto Scaling group.
 	AutoScalingGroupARN *string
 
+	//  The instance capacity distribution across Availability Zones.
+	AvailabilityZoneDistribution *AvailabilityZoneDistribution
+
+	//  The Availability Zone impairment policy.
+	AvailabilityZoneImpairmentPolicy *AvailabilityZoneImpairmentPolicy
+
 	// Indicates whether Capacity Rebalancing is enabled.
 	CapacityRebalance *bool
+
+	//  The capacity reservation specification.
+	CapacityReservationSpecification *CapacityReservationSpecification
 
 	// Reserved.
 	Context *string
@@ -222,7 +235,9 @@ type AutoScalingGroup struct {
 	// group uses to call other Amazon Web Services on your behalf.
 	ServiceLinkedRoleARN *string
 
-	// The current state of the group when the DeleteAutoScalingGroup operation is in progress.
+	// The current state of the group when the [DeleteAutoScalingGroup] operation is in progress.
+	//
+	// [DeleteAutoScalingGroup]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DeleteAutoScalingGroup.html
 	Status *string
 
 	// The suspended processes associated with the group.
@@ -317,8 +332,46 @@ type AutoScalingInstanceDetails struct {
 	noSmithyDocumentSerde
 }
 
+// Describes an Availability Zone distribution.
+type AvailabilityZoneDistribution struct {
+
+	//  If launches fail in an Availability Zone, the following strategies are
+	// available. The default is balanced-best-effort .
+	//
+	//   - balanced-only - If launches fail in an Availability Zone, Auto Scaling will
+	//   continue to attempt to launch in the unhealthy zone to preserve a balanced
+	//   distribution.
+	//
+	//   - balanced-best-effort - If launches fail in an Availability Zone, Auto
+	//   Scaling will attempt to launch in another healthy Availability Zone instead.
+	CapacityDistributionStrategy CapacityDistributionStrategy
+
+	noSmithyDocumentSerde
+}
+
+// Describes an Availability Zone impairment policy.
+type AvailabilityZoneImpairmentPolicy struct {
+
+	//  Specifies the health check behavior for the impaired Availability Zone in an
+	// active zonal shift. If you select Replace unhealthy , instances that appear
+	// unhealthy will be replaced in all Availability Zones. If you select Ignore
+	// unhealthy , instances will not be replaced in the Availability Zone with the
+	// active zonal shift. For more information, see [Auto Scaling group zonal shift]in the Amazon EC2 Auto Scaling
+	// User Guide.
+	//
+	// [Auto Scaling group zonal shift]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-zonal-shift.html
+	ImpairedZoneHealthCheckBehavior ImpairedZoneHealthCheckBehavior
+
+	//  If true , enable zonal shift for your Auto Scaling group.
+	ZonalShiftEnabled *bool
+
+	noSmithyDocumentSerde
+}
+
 // Specifies the minimum and maximum for the BaselineEbsBandwidthMbps object when
-// you specify InstanceRequirementsfor an Auto Scaling group.
+// you specify [InstanceRequirements]for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type BaselineEbsBandwidthMbpsRequest struct {
 
 	// The maximum value in Mbps.
@@ -326,6 +379,25 @@ type BaselineEbsBandwidthMbpsRequest struct {
 
 	// The minimum value in Mbps.
 	Min *int32
+
+	noSmithyDocumentSerde
+}
+
+//	The baseline performance to consider, using an instance family as a baseline
+//
+// reference. The instance family establishes the lowest acceptable level of
+// performance. Auto Scaling uses this baseline to guide instance type selection,
+// but there is no guarantee that the selected instance types will always exceed
+// the baseline for every application.
+//
+// Currently, this parameter only supports CPU performance as a baseline
+// performance factor. For example, specifying c6i uses the CPU performance of the
+// c6i family as the baseline reference.
+type BaselinePerformanceFactorsRequest struct {
+
+	//  The CPU performance to consider, using an instance family as the baseline
+	// reference.
+	Cpu *CpuPerformanceFactorRequest
 
 	noSmithyDocumentSerde
 }
@@ -381,6 +453,66 @@ type CapacityForecast struct {
 	noSmithyDocumentSerde
 }
 
+//	Describes the Capacity Reservation preference and targeting options. If you
+//
+// specify open or none for CapacityReservationPreference , do not specify a
+// CapacityReservationTarget .
+type CapacityReservationSpecification struct {
+
+	//  The capacity reservation preference. The following options are available:
+	//
+	//   - capacity-reservations-only - Auto Scaling will only launch instances into a
+	//   Capacity Reservation or Capacity Reservation resource group. If capacity isn't
+	//   available, instances will fail to launch.
+	//
+	//   - capacity-reservations-first - Auto Scaling will try to launch instances into
+	//   a Capacity Reservation or Capacity Reservation resource group first. If capacity
+	//   isn't available, instances will run in On-Demand capacity.
+	//
+	//   - none - Auto Scaling will not launch instances into a Capacity Reservation.
+	//   Instances will run in On-Demand capacity.
+	//
+	//   - default - Auto Scaling uses the Capacity Reservation preference from your
+	//   launch template or an open Capacity Reservation.
+	CapacityReservationPreference CapacityReservationPreference
+
+	//  Describes a target Capacity Reservation or Capacity Reservation resource
+	// group.
+	CapacityReservationTarget *CapacityReservationTarget
+
+	noSmithyDocumentSerde
+}
+
+//	The target for the Capacity Reservation. Specify Capacity Reservations IDs or
+//
+// Capacity Reservation resource group ARNs.
+type CapacityReservationTarget struct {
+
+	//  The Capacity Reservation IDs to launch instances into.
+	CapacityReservationIds []string
+
+	//  The resource group ARNs of the Capacity Reservation to launch instances into.
+	CapacityReservationResourceGroupArns []string
+
+	noSmithyDocumentSerde
+}
+
+//	The CPU performance to consider, using an instance family as the baseline
+//
+// reference.
+type CpuPerformanceFactorRequest struct {
+
+	//  Specify an instance family to use as the baseline reference for CPU
+	// performance. All instance types that match your specified attributes will be
+	// compared against the CPU performance of the referenced instance family,
+	// regardless of CPU manufacturer or architecture differences.
+	//
+	// Currently only one instance family can be specified in the list.
+	References []PerformanceFactorReferenceRequest
+
+	noSmithyDocumentSerde
+}
+
 // Represents a CloudWatch metric of your choosing for a target tracking scaling
 // policy to use with Amazon EC2 Auto Scaling.
 //
@@ -426,6 +558,13 @@ type CustomizedMetricSpecification struct {
 
 	// The namespace of the metric.
 	Namespace *string
+
+	//  The period of the metric in seconds. The default value is 60. Accepted values
+	// are 10, 30, and 60. For high resolution metric, set the value to less than 60.
+	// For more information, see [Create a target tracking policy using high-resolution metrics for faster response].
+	//
+	// [Create a target tracking policy using high-resolution metrics for faster response]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/policy-creating-high-resolution-metrics.html
+	Period *int32
 
 	// The statistic of the metric.
 	Statistic MetricStatistic
@@ -636,7 +775,7 @@ type Filter struct {
 	// The name of the filter.
 	//
 	// The valid values for Name depend on which API operation you're using with the
-	// filter (DescribeAutoScalingGroups or DescribeTags).
+	// filter ([DescribeAutoScalingGroups] or [DescribeTags]).
 	//
 	// DescribeAutoScalingGroups
 	//
@@ -670,6 +809,9 @@ type Filter struct {
 	//   - propagate-at-launch - Accepts a Boolean value, which specifies whether tags
 	//   propagate to instances at launch. The results only include information about the
 	//   tags associated with the specified Boolean value.
+	//
+	// [DescribeAutoScalingGroups]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAutoScalingGroups.html
+	// [DescribeTags]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeTags.html
 	Name *string
 
 	// One or more filter values. Filter values are case-sensitive.
@@ -877,6 +1019,9 @@ type InstanceRefresh struct {
 	//   the status reason and the scaling activities.
 	//
 	//   - RollbackSuccessful - The rollback completed successfully.
+	//
+	//   - Baking - Waiting the specified bake time after an instance refresh has
+	//   finished updating instances.
 	Status InstanceRefreshStatus
 
 	// The explanation for the specific status assigned to this operation.
@@ -1060,6 +1205,9 @@ type InstanceRequirements struct {
 	//
 	// [Amazon EBS–optimized instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html
 	BaselineEbsBandwidthMbps *BaselineEbsBandwidthMbpsRequest
+
+	//  The baseline performance factors for the instance requirements.
+	BaselinePerformanceFactors *BaselinePerformanceFactorsRequest
 
 	// Indicates whether burstable performance instance types are included, excluded,
 	// or required. For more information, see [Burstable performance instances]in the Amazon EC2 User Guide for Linux
@@ -1263,7 +1411,7 @@ type InstancesDistribution struct {
 	//
 	// lowest-price Uses price to determine which instance types are the highest
 	// priority, launching the lowest priced instance types within an Availability Zone
-	// first. This is the default value for Auto Scaling groups that specify InstanceRequirements.
+	// first. This is the default value for Auto Scaling groups that specify [InstanceRequirements].
 	//
 	// prioritized You set the order of instance types for the launch template
 	// overrides from highest to lowest priority (from first to last in the list).
@@ -1271,8 +1419,10 @@ type InstancesDistribution struct {
 	// all your On-Demand capacity cannot be fulfilled using your highest priority
 	// instance type, then Amazon EC2 Auto Scaling launches the remaining capacity
 	// using the second priority instance type, and so on. This is the default value
-	// for Auto Scaling groups that don't specify InstanceRequirementsand cannot be used for groups that
+	// for Auto Scaling groups that don't specify [InstanceRequirements]and cannot be used for groups that
 	// do.
+	//
+	// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 	OnDemandAllocationStrategy *string
 
 	// The minimum amount of the Auto Scaling group's capacity that must be fulfilled
@@ -1313,7 +1463,7 @@ type InstancesDistribution struct {
 	// effort basis but optimizes for capacity first. Note that if the On-Demand
 	// allocation strategy is set to prioritized , the same priority is applied when
 	// fulfilling On-Demand capacity. This is not a valid value for Auto Scaling groups
-	// that specify InstanceRequirements.
+	// that specify [InstanceRequirements].
 	//
 	// lowest-price Requests Spot Instances using the lowest priced pools within an
 	// Availability Zone, across the number of Spot pools that you specify for the
@@ -1326,6 +1476,8 @@ type InstancesDistribution struct {
 	// allocation strategy looks at both price and capacity to select the Spot Instance
 	// pools that are the least likely to be interrupted and have the lowest possible
 	// price.
+	//
+	// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 	SpotAllocationStrategy *string
 
 	// The number of Spot Instance pools across which to allocate your Spot Instances.
@@ -1798,7 +1950,9 @@ type LoadForecast struct {
 }
 
 // Specifies the minimum and maximum for the MemoryGiBPerVCpu object when you
-// specify InstanceRequirementsfor an Auto Scaling group.
+// specify [InstanceRequirements]for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type MemoryGiBPerVCpuRequest struct {
 
 	// The memory maximum in GiB.
@@ -1810,8 +1964,10 @@ type MemoryGiBPerVCpuRequest struct {
 	noSmithyDocumentSerde
 }
 
-// Specifies the minimum and maximum for the MemoryMiB object when you specify InstanceRequirements
+// Specifies the minimum and maximum for the MemoryMiB object when you specify [InstanceRequirements]
 // for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type MemoryMiBRequest struct {
 
 	// The memory minimum in MiB.
@@ -2043,7 +2199,7 @@ type MixedInstancesPolicy struct {
 }
 
 // Specifies the minimum and maximum for the NetworkBandwidthGbps object when you
-// specify InstanceRequirementsfor an Auto Scaling group.
+// specify [InstanceRequirements]for an Auto Scaling group.
 //
 // Setting the minimum bandwidth does not guarantee that your instance will
 // achieve the minimum bandwidth. Amazon EC2 will identify instance types that
@@ -2052,6 +2208,7 @@ type MixedInstancesPolicy struct {
 // see [Available instance bandwidth]in the Amazon EC2 User Guide for Linux Instances.
 //
 // [Available instance bandwidth]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type NetworkBandwidthGbpsRequest struct {
 
 	// The maximum amount of network bandwidth, in gigabits per second (Gbps).
@@ -2064,7 +2221,9 @@ type NetworkBandwidthGbpsRequest struct {
 }
 
 // Specifies the minimum and maximum for the NetworkInterfaceCount object when you
-// specify InstanceRequirementsfor an Auto Scaling group.
+// specify [InstanceRequirements]for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type NetworkInterfaceCountRequest struct {
 
 	// The maximum number of network interfaces.
@@ -2097,6 +2256,55 @@ type NotificationConfiguration struct {
 
 	// The Amazon Resource Name (ARN) of the Amazon SNS topic.
 	TopicARN *string
+
+	noSmithyDocumentSerde
+}
+
+//	Specify an instance family to use as the baseline reference for CPU
+//
+// performance. All instance types that All instance types that match your
+// specified attributes will be compared against the CPU performance of the
+// referenced instance family, regardless of CPU manufacturer or architecture
+// differences.
+//
+// Currently only one instance family can be specified in the list.
+type PerformanceFactorReferenceRequest struct {
+
+	//  The instance family to use as a baseline reference.
+	//
+	// Make sure that you specify the correct value for the instance family. The
+	// instance family is everything before the period (.) in the instance type name.
+	// For example, in the instance c6i.large , the instance family is c6i , not c6 .
+	// For more information, see [Amazon EC2 instance type naming conventions]in Amazon EC2 Instance Types.
+	//
+	// The following instance types are not supported for performance protection.
+	//
+	//   - c1
+	//
+	//   - g3| g3s
+	//
+	//   - hpc7g
+	//
+	//   - m1| m2
+	//
+	//   - mac1 | mac2 | mac2-m1ultra | mac2-m2 | mac2-m2pro
+	//
+	//   - p3dn | p4d | p5
+	//
+	//   - t1
+	//
+	//   - u-12tb1 | u-18tb1 | u-24tb1 | u-3tb1 | u-6tb1 | u-9tb1 | u7i-12tb |
+	//   u7in-16tb | u7in-24tb | u7in-32tb
+	//
+	// If you performance protection by specifying a supported instance family, the
+	// returned instance types will exclude the preceding unsupported instance
+	// families.
+	//
+	// If you specify an unsupported instance family as a value for baseline
+	// performance, the API returns an empty response.
+	//
+	// [Amazon EC2 instance type naming conventions]: https://docs.aws.amazon.com/ec2/latest/instancetypes/instance-type-names.html
+	InstanceFamily *string
 
 	noSmithyDocumentSerde
 }
@@ -2507,6 +2715,10 @@ type RefreshPreferences struct {
 	// [Undo changes with a rollback]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/instance-refresh-rollback.html
 	AutoRollback *bool
 
+	//  The amount of time, in seconds, to wait at the end of an instance refresh
+	// before the instance refresh is considered complete.
+	BakeTime *int32
+
 	// (Optional) The amount of time, in seconds, to wait after a checkpoint before
 	// continuing. This property is optional, but if you specify a value for it, you
 	// must also specify a value for CheckpointPercentages . If you specify a value for
@@ -2752,7 +2964,9 @@ type ScheduledUpdateGroupAction struct {
 }
 
 // Describes information used for one or more scheduled scaling action updates in
-// a BatchPutScheduledUpdateGroupActionoperation.
+// a [BatchPutScheduledUpdateGroupAction]operation.
+//
+// [BatchPutScheduledUpdateGroupAction]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_BatchPutScheduledUpdateGroupAction.html
 type ScheduledUpdateGroupActionRequest struct {
 
 	// The name of the scaling action.
@@ -2997,6 +3211,13 @@ type TargetTrackingMetricDataQuery struct {
 	// either Expression or MetricStat , but not both.
 	MetricStat *TargetTrackingMetricStat
 
+	//  The period of the metric in seconds. The default value is 60. Accepted values
+	// are 10, 30, and 60. For high resolution metric, set the value to less than 60.
+	// For more information, see [Create a target tracking policy using high-resolution metrics for faster response].
+	//
+	// [Create a target tracking policy using high-resolution metrics for faster response]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/policy-creating-high-resolution-metrics.html
+	Period *int32
+
 	// Indicates whether to return the timestamps and raw data values of this metric.
 	//
 	// If you use any math expressions, specify true for this value for only the final
@@ -3036,6 +3257,13 @@ type TargetTrackingMetricStat struct {
 	// This member is required.
 	Stat *string
 
+	//  The period of the metric in seconds. The default value is 60. Accepted values
+	// are 10, 30, and 60. For high resolution metric, set the value to less than 60.
+	// For more information, see [Create a target tracking policy using high-resolution metrics for faster response].
+	//
+	// [Create a target tracking policy using high-resolution metrics for faster response]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/policy-creating-high-resolution-metrics.html
+	Period *int32
+
 	// The unit to use for the returned data points. For a complete list of the units
 	// that CloudWatch supports, see the [MetricDatum]data type in the Amazon CloudWatch API
 	// Reference.
@@ -3047,7 +3275,9 @@ type TargetTrackingMetricStat struct {
 }
 
 // Specifies the minimum and maximum for the TotalLocalStorageGB object when you
-// specify InstanceRequirementsfor an Auto Scaling group.
+// specify [InstanceRequirements]for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type TotalLocalStorageGBRequest struct {
 
 	// The storage maximum in GB.
@@ -3161,8 +3391,10 @@ type TrafficSourceState struct {
 	noSmithyDocumentSerde
 }
 
-// Specifies the minimum and maximum for the VCpuCount object when you specify InstanceRequirements
+// Specifies the minimum and maximum for the VCpuCount object when you specify [InstanceRequirements]
 // for an Auto Scaling group.
+//
+// [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html
 type VCpuCountRequest struct {
 
 	// The minimum number of vCPUs.

@@ -122,6 +122,9 @@ func (c *Client) addOperationUpdateDocumentDefaultVersionMiddlewares(stack *midd
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpUpdateDocumentDefaultVersionValidationMiddleware(stack); err != nil {
 		return err
 	}

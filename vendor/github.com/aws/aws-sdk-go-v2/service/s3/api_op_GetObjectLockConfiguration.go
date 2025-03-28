@@ -13,7 +13,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Gets the Object Lock configuration for a bucket. The rule specified in the
 // Object Lock configuration will be applied by default to every new object placed
@@ -151,6 +151,9 @@ func (c *Client) addOperationGetObjectLockConfigurationMiddlewares(stack *middle
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetObjectLockConfigurationValidationMiddleware(stack); err != nil {

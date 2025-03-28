@@ -50,6 +50,9 @@ const (
 	// Annotation key for certificate renewBefore.
 	RenewBeforeAnnotationKey = "cert-manager.io/renew-before"
 
+	// Annotation key for certificate renewBeforePercentage.
+	RenewBeforePercentageAnnotationKey = "cert-manager.io/renew-before-percentage"
+
 	// Annotation key for emails subjectAltNames.
 	EmailsAnnotationKey = "cert-manager.io/email-sans"
 
@@ -291,6 +294,9 @@ const (
 	JKSSecretKey = "keystore.jks"
 	// Data Entry Name in the Secret resource for JKS containing Certificate Authority
 	JKSTruststoreKey = "truststore.jks"
+
+	// The password used to encrypt the keystore and truststore
+	KeystorePassword = "keystorePassword"
 )
 
 // DefaultKeyUsages contains the default list of key usages

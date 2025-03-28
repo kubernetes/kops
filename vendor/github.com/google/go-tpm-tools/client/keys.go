@@ -388,7 +388,12 @@ func (k *Key) Unseal(in *pb.SealedBytes, opts UnsealOpts) ([]byte, error) {
 		// ECC signing key.
 		// We can detect this bug, as it triggers a RCInsufficient
 		// Unmarshaling error.
-		if paramErr, ok := certErr.(tpm2.ParameterError); ok && paramErr.Code == tpm2.RCInsufficient {
+		var (
+			paramError  tpm2.ParameterError
+			handleError tpm2.HandleError
+		)
+		if (errors.As(certErr, &paramError) && paramError.Code == tpm2.RCInsufficient) ||
+			(errors.As(certErr, &handleError) && handleError.Code == tpm2.RCInsufficient) {
 			signer, err := AttestationKeyECC(k.rw)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create fallback signing key: %w", err)

@@ -323,6 +323,36 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
+                "fetchClusterUpgradeInfo": {
+                  "description": "Fetch upgrade information of a specific cluster.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:fetchClusterUpgradeInfo",
+                  "httpMethod": "GET",
+                  "id": "container.projects.locations.clusters.fetchClusterUpgradeInfo",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name (project, location, cluster) of the cluster to get. Specified in the format `projects/*/locations/*/clusters/*` or `projects/*/zones/*/clusters/*`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "version": {
+                      "description": "API request version that initiates this operation.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:fetchClusterUpgradeInfo",
+                  "response": {
+                    "$ref": "ClusterUpgradeInfo"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "get": {
                   "description": "Gets the details of a specific cluster.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}",
@@ -866,6 +896,36 @@
                       "path": "v1/{+name}",
                       "response": {
                         "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "fetchNodePoolUpgradeInfo": {
+                      "description": "Fetch upgrade information of a specific nodepool.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/nodePools/{nodePoolsId}:fetchNodePoolUpgradeInfo",
+                      "httpMethod": "GET",
+                      "id": "container.projects.locations.clusters.nodePools.fetchNodePoolUpgradeInfo",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name (project, location, cluster, nodepool) of the nodepool to get. Specified in the format `projects/*/locations/*/clusters/*/nodePools/*` or `projects/*/zones/*/clusters/*/nodePools/*`.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+/nodePools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "version": {
+                          "description": "API request version that initiates this operation.",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:fetchNodePoolUpgradeInfo",
+                      "response": {
+                        "$ref": "NodePoolUpgradeInfo"
                       },
                       "scopes": [
                         "https://www.googleapis.com/auth/cloud-platform"
@@ -1443,6 +1503,36 @@
                   "path": "v1/projects/{projectId}/zones/{zone}/clusters/{clusterId}",
                   "response": {
                     "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "fetchClusterUpgradeInfo": {
+                  "description": "Fetch upgrade information of a specific cluster.",
+                  "flatPath": "v1/projects/{projectsId}/zones/{zonesId}/clusters/{clustersId}:fetchClusterUpgradeInfo",
+                  "httpMethod": "GET",
+                  "id": "container.projects.zones.clusters.fetchClusterUpgradeInfo",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name (project, location, cluster) of the cluster to get. Specified in the format `projects/*/locations/*/clusters/*` or `projects/*/zones/*/clusters/*`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/zones/[^/]+/clusters/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "version": {
+                      "description": "API request version that initiates this operation.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}:fetchClusterUpgradeInfo",
+                  "response": {
+                    "$ref": "ClusterUpgradeInfo"
                   },
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
@@ -2122,6 +2212,36 @@
                         "https://www.googleapis.com/auth/cloud-platform"
                       ]
                     },
+                    "fetchNodePoolUpgradeInfo": {
+                      "description": "Fetch upgrade information of a specific nodepool.",
+                      "flatPath": "v1/projects/{projectsId}/zones/{zonesId}/clusters/{clustersId}/nodePools/{nodePoolsId}:fetchNodePoolUpgradeInfo",
+                      "httpMethod": "GET",
+                      "id": "container.projects.zones.clusters.nodePools.fetchNodePoolUpgradeInfo",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name (project, location, cluster, nodepool) of the nodepool to get. Specified in the format `projects/*/locations/*/clusters/*/nodePools/*` or `projects/*/zones/*/clusters/*/nodePools/*`.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/zones/[^/]+/clusters/[^/]+/nodePools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "version": {
+                          "description": "API request version that initiates this operation.",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:fetchNodePoolUpgradeInfo",
+                      "response": {
+                        "$ref": "NodePoolUpgradeInfo"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
                     "get": {
                       "description": "Retrieves the requested node pool.",
                       "flatPath": "v1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/nodePools/{nodePoolId}",
@@ -2540,7 +2660,7 @@
       }
     }
   },
-  "revision": "20240905",
+  "revision": "20250311",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2680,6 +2800,10 @@
           "$ref": "NetworkPolicyConfig",
           "description": "Configuration for NetworkPolicy. This only tracks whether the addon is enabled or not on the Master, it does not track whether network policy is enabled for the nodes."
         },
+        "parallelstoreCsiDriverConfig": {
+          "$ref": "ParallelstoreCsiDriverConfig",
+          "description": "Configuration for the Cloud Storage Parallelstore CSI driver."
+        },
         "rayOperatorConfig": {
           "$ref": "RayOperatorConfig",
           "description": "Optional. Configuration for Ray Operator addon."
@@ -2753,6 +2877,27 @@
       },
       "type": "object"
     },
+    "AutoMonitoringConfig": {
+      "description": "AutoMonitoringConfig defines the configuration for GKE Workload Auto-Monitoring.",
+      "id": "AutoMonitoringConfig",
+      "properties": {
+        "scope": {
+          "description": "Scope for GKE Workload Auto-Monitoring.",
+          "enum": [
+            "SCOPE_UNSPECIFIED",
+            "ALL",
+            "NONE"
+          ],
+          "enumDescriptions": [
+            "Not set.",
+            "Auto-Monitoring is enabled for all supported applications.",
+            "Disable Auto-Monitoring."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "AutoUpgradeOptions": {
       "description": "AutoUpgradeOptions defines the set of options for the user to control how the Auto Upgrades will proceed.",
       "id": "AutoUpgradeOptions",
@@ -2780,7 +2925,7 @@
         },
         "workloadPolicyConfig": {
           "$ref": "WorkloadPolicyConfig",
-          "description": "Workload policy configuration for Autopilot."
+          "description": "WorkloadPolicyConfig is the configuration related to GCW workload policy"
         }
       },
       "type": "object"
@@ -2798,7 +2943,7 @@
           "type": "string"
         },
         "documentationUrl": {
-          "description": "A URL to a public documnetation, which addresses resolving this issue.",
+          "description": "A URL to a public documentation, which addresses resolving this issue.",
           "type": "string"
         },
         "incompatibilityType": {
@@ -2832,6 +2977,17 @@
       },
       "type": "object"
     },
+    "AutopilotConfig": {
+      "description": "AutopilotConfig contains configuration of autopilot feature for this nodepool.",
+      "id": "AutopilotConfig",
+      "properties": {
+        "enabled": {
+          "description": "Denotes that nodes belonging to this node pool are Autopilot nodes.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "AutoprovisioningNodePoolDefaults": {
       "description": "AutoprovisioningNodePoolDefaults contains defaults for a node pool created by NAP.",
       "id": "AutoprovisioningNodePoolDefaults",
@@ -2854,7 +3010,7 @@
           "type": "string"
         },
         "insecureKubeletReadonlyPortEnabled": {
-          "description": "Enable or disable Kubelet read only port.",
+          "description": "DEPRECATED. Use NodePoolAutoConfig.NodeKubeletConfig instead.",
           "type": "boolean"
         },
         "management": {
@@ -3041,7 +3197,7 @@
       "id": "CertificateAuthorityDomainConfig",
       "properties": {
         "fqdns": {
-          "description": "List of fully qualified domain names (FQDN). Specifying port is supported. Wilcards are NOT supported. Examples: - my.customdomain.com - 10.0.1.2:5000",
+          "description": "List of fully qualified domain names (FQDN). Specifying port is supported. Wildcards are NOT supported. Examples: - my.customdomain.com - 10.0.1.2:5000",
           "items": {
             "type": "string"
           },
@@ -3166,6 +3322,10 @@
           "$ref": "ConfidentialNodes",
           "description": "Configuration of Confidential Nodes. All the nodes in the cluster will be Confidential VM once enabled."
         },
+        "controlPlaneEndpointsConfig": {
+          "$ref": "ControlPlaneEndpointsConfig",
+          "description": "Configuration for all cluster's control plane endpoints."
+        },
         "costManagementConfig": {
           "$ref": "CostManagementConfig",
           "description": "Configuration for the fine-grained cost management feature."
@@ -3214,7 +3374,8 @@
           "type": "boolean"
         },
         "enableTpu": {
-          "description": "Enable the ability to use Cloud TPUs in this cluster.",
+          "deprecated": true,
+          "description": "Enable the ability to use Cloud TPUs in this cluster. This field is deprecated due to the deprecation of 2VM TPU. The end of life date for 2VM TPU is 2025-04-25.",
           "type": "boolean"
         },
         "endpoint": {
@@ -3309,7 +3470,8 @@
         },
         "masterAuthorizedNetworksConfig": {
           "$ref": "MasterAuthorizedNetworksConfig",
-          "description": "The configuration options for master authorized networks feature."
+          "deprecated": true,
+          "description": "The configuration options for master authorized networks feature. Deprecated: Use ControlPlaneEndpointsConfig.IPEndpointsConfig.authorized_networks_config instead."
         },
         "meshCertificates": {
           "$ref": "MeshCertificates",
@@ -3320,7 +3482,7 @@
           "description": "Monitoring configuration for the cluster."
         },
         "monitoringService": {
-          "description": "The monitoring service the cluster should use to write metrics. Currently available options: * \"monitoring.googleapis.com/kubernetes\" - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
+          "description": "The monitoring service the cluster should use to write metrics. Currently available options: * `monitoring.googleapis.com/kubernetes` - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
           "type": "string"
         },
         "name": {
@@ -3372,6 +3534,10 @@
         "parentProductConfig": {
           "$ref": "ParentProductConfig",
           "description": "The configuration of the parent product of the cluster. This field is used by Google internal products that are built on top of the GKE cluster and take the ownership of the cluster."
+        },
+        "podAutoscaling": {
+          "$ref": "PodAutoscaling",
+          "description": "The config for pod autoscaling."
         },
         "privateClusterConfig": {
           "$ref": "PrivateClusterConfig",
@@ -3462,9 +3628,14 @@
           "type": "string"
         },
         "tpuIpv4CidrBlock": {
-          "description": "Output only. The IP address range of the Cloud TPUs in this cluster, in [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `1.2.3.4/29`).",
+          "deprecated": true,
+          "description": "Output only. The IP address range of the Cloud TPUs in this cluster, in [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `1.2.3.4/29`). This field is deprecated due to the deprecation of 2VM TPU. The end of life date for 2VM TPU is 2025-04-25.",
           "readOnly": true,
           "type": "string"
+        },
+        "userManagedKeysConfig": {
+          "$ref": "UserManagedKeysConfig",
+          "description": "The Custom keys configuration for the cluster."
         },
         "verticalPodAutoscaling": {
           "$ref": "VerticalPodAutoscaling",
@@ -3563,7 +3734,7 @@
         },
         "desiredAutopilotWorkloadPolicyConfig": {
           "$ref": "WorkloadPolicyConfig",
-          "description": "The desired workload policy configuration for the autopilot cluster."
+          "description": "WorkloadPolicyConfig is the configuration related to GCW workload policy"
         },
         "desiredBinaryAuthorization": {
           "$ref": "BinaryAuthorization",
@@ -3580,6 +3751,10 @@
         "desiredContainerdConfig": {
           "$ref": "ContainerdConfig",
           "description": "The desired containerd config for the cluster."
+        },
+        "desiredControlPlaneEndpointsConfig": {
+          "$ref": "ControlPlaneEndpointsConfig",
+          "description": "Control plane endpoints configuration."
         },
         "desiredCostManagementConfig": {
           "$ref": "CostManagementConfig",
@@ -3603,9 +3778,17 @@
           ],
           "type": "string"
         },
+        "desiredDefaultEnablePrivateNodes": {
+          "description": "Override the default setting of whether future created nodes have private IP addresses only, namely NetworkConfig.default_enable_private_nodes",
+          "type": "boolean"
+        },
         "desiredDefaultSnatStatus": {
           "$ref": "DefaultSnatStatus",
           "description": "The desired status of whether to disable default sNAT for this cluster."
+        },
+        "desiredDisableL4LbFirewallReconciliation": {
+          "description": "Enable/Disable L4 LB VPC firewall reconciliation for the cluster.",
+          "type": "boolean"
         },
         "desiredDnsConfig": {
           "$ref": "DNSConfig",
@@ -3624,8 +3807,13 @@
           "type": "boolean"
         },
         "desiredEnablePrivateEndpoint": {
-          "description": "Enable/Disable private endpoint for the cluster's master.",
+          "deprecated": true,
+          "description": "Enable/Disable private endpoint for the cluster's master. Deprecated: Use desired_control_plane_endpoints_config.ip_endpoints_config.enable_public_endpoint instead. Note that the value of enable_public_endpoint is reversed: if enable_private_endpoint is false, then enable_public_endpoint will be true.",
           "type": "boolean"
+        },
+        "desiredEnterpriseConfig": {
+          "$ref": "DesiredEnterpriseConfig",
+          "description": "The desired enterprise configuration for the cluster."
         },
         "desiredFleet": {
           "$ref": "Fleet",
@@ -3690,7 +3878,8 @@
         },
         "desiredMasterAuthorizedNetworksConfig": {
           "$ref": "MasterAuthorizedNetworksConfig",
-          "description": "The desired configuration options for master authorized networks feature."
+          "deprecated": true,
+          "description": "The desired configuration options for master authorized networks feature. Deprecated: Use desired_control_plane_endpoints_config.ip_endpoints_config.authorized_networks_config instead."
         },
         "desiredMasterVersion": {
           "description": "The Kubernetes version to change the master to. Users may specify either explicit versions offered by Kubernetes Engine or version aliases, which have the following behavior: - \"latest\": picks the highest valid Kubernetes version - \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version - \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version - \"1.X.Y-gke.N\": picks an explicit Kubernetes version - \"-\": picks the default Kubernetes version",
@@ -3705,7 +3894,7 @@
           "description": "The desired monitoring configuration."
         },
         "desiredMonitoringService": {
-          "description": "The monitoring service the cluster should use to write metrics. Currently available options: * \"monitoring.googleapis.com/kubernetes\" - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
+          "description": "The monitoring service the cluster should use to write metrics. Currently available options: * `monitoring.googleapis.com/kubernetes` - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
           "type": "string"
         },
         "desiredNetworkPerformanceConfig": {
@@ -3719,6 +3908,10 @@
         "desiredNodePoolAutoConfigKubeletConfig": {
           "$ref": "NodeKubeletConfig",
           "description": "The desired node kubelet config for all auto-provisioned node pools in autopilot clusters and node auto-provisioning enabled clusters."
+        },
+        "desiredNodePoolAutoConfigLinuxNodeConfig": {
+          "$ref": "LinuxNodeConfig",
+          "description": "The desired Linux node config for all auto-provisioned node pools in autopilot clusters and node auto-provisioning enabled clusters. Currently only `cgroup_mode` can be set here."
         },
         "desiredNodePoolAutoConfigNetworkTags": {
           "$ref": "NetworkTags",
@@ -3752,9 +3945,14 @@
           "$ref": "ParentProductConfig",
           "description": "The desired parent product config for the cluster."
         },
+        "desiredPodAutoscaling": {
+          "$ref": "PodAutoscaling",
+          "description": "The desired config for pod autoscaling."
+        },
         "desiredPrivateClusterConfig": {
           "$ref": "PrivateClusterConfig",
-          "description": "The desired private cluster configuration. master_global_access_config is the only field that can be changed via this field. See also ClusterUpdate.desired_enable_private_endpoint for modifying other fields within PrivateClusterConfig."
+          "deprecated": true,
+          "description": "The desired private cluster configuration. master_global_access_config is the only field that can be changed via this field. See also ClusterUpdate.desired_enable_private_endpoint for modifying other fields within PrivateClusterConfig. Deprecated: Use desired_control_plane_endpoints_config.ip_endpoints_config.global_access instead."
         },
         "desiredPrivateIpv6GoogleAccess": {
           "description": "The desired state of IPv6 connectivity to Google Services.",
@@ -3833,6 +4031,84 @@
         "removedAdditionalPodRangesConfig": {
           "$ref": "AdditionalPodRangesConfig",
           "description": "The additional pod ranges that are to be removed from the cluster. The pod ranges specified here must have been specified earlier in the 'additional_pod_ranges_config' argument."
+        },
+        "userManagedKeysConfig": {
+          "$ref": "UserManagedKeysConfig",
+          "description": "The Custom keys configuration for the cluster."
+        }
+      },
+      "type": "object"
+    },
+    "ClusterUpgradeInfo": {
+      "description": "ClusterUpgradeInfo contains the upgrade information of a cluster.",
+      "id": "ClusterUpgradeInfo",
+      "properties": {
+        "autoUpgradeStatus": {
+          "description": "The auto upgrade status.",
+          "items": {
+            "enum": [
+              "UNKNOWN",
+              "ACTIVE",
+              "MINOR_UPGRADE_PAUSED",
+              "UPGRADE_PAUSED"
+            ],
+            "enumDescriptions": [
+              "UNKNOWN indicates an unknown status.",
+              "ACTIVE indicates an active status.",
+              "MINOR_UPGRADE_PAUSED indicates the minor version upgrade is paused.",
+              "UPGRADE_PAUSED indicates the upgrade is paused."
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "endOfExtendedSupportTimestamp": {
+          "description": "The cluster's current minor version's end of extended support timestamp.",
+          "type": "string"
+        },
+        "endOfStandardSupportTimestamp": {
+          "description": "The cluster's current minor version's end of standard support timestamp.",
+          "type": "string"
+        },
+        "minorTargetVersion": {
+          "description": "minor_target_version indicates the target version for minor upgrade.",
+          "type": "string"
+        },
+        "patchTargetVersion": {
+          "description": "patch_target_version indicates the target version for patch upgrade.",
+          "type": "string"
+        },
+        "pausedReason": {
+          "description": "The auto upgrade paused reason.",
+          "items": {
+            "enum": [
+              "AUTO_UPGRADE_PAUSED_REASON_UNSPECIFIED",
+              "MAINTENANCE_WINDOW",
+              "MAINTENANCE_EXCLUSION_NO_UPGRADES",
+              "MAINTENANCE_EXCLUSION_NO_MINOR_UPGRADES",
+              "CLUSTER_DISRUPTION_BUDGET",
+              "CLUSTER_DISRUPTION_BUDGET_MINOR_UPGRADE",
+              "SYSTEM_CONFIG"
+            ],
+            "enumDescriptions": [
+              "AUTO_UPGRADE_PAUSED_REASON_UNSPECIFIED indicates an unspecified reason.",
+              "MAINTENANCE_WINDOW indicates the cluster is outside customer maintenance window.",
+              "MAINTENANCE_EXCLUSION_NO_UPGRADES indicates the cluster is in a maintenance exclusion with scope NO_UPGRADES.",
+              "MAINTENANCE_EXCLUSION_NO_MINOR_UPGRADES indicates the cluster is in a maintenance exclusion with scope NO_MINOR_UPGRADES.",
+              "CLUSTER_DISRUPTION_BUDGET indicates the cluster is outside the cluster disruption budget.",
+              "CLUSTER_DISRUPTION_BUDGET_MINOR_UPGRADE indicates the cluster is outside the cluster disruption budget for minor version upgrade.",
+              "SYSTEM_CONFIG indicates the cluster upgrade is paused by system config."
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "upgradeDetails": {
+          "description": "The list of past auto upgrades.",
+          "items": {
+            "$ref": "UpgradeDetails"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -3952,6 +4228,21 @@
       },
       "type": "object"
     },
+    "ControlPlaneEndpointsConfig": {
+      "description": "Configuration for all of the cluster's control plane endpoints.",
+      "id": "ControlPlaneEndpointsConfig",
+      "properties": {
+        "dnsEndpointConfig": {
+          "$ref": "DNSEndpointConfig",
+          "description": "DNS endpoint configuration."
+        },
+        "ipEndpointsConfig": {
+          "$ref": "IPEndpointsConfig",
+          "description": "IP endpoints configuration."
+        }
+      },
+      "type": "object"
+    },
     "CostManagementConfig": {
       "description": "Configuration for fine-grained cost management feature.",
       "id": "CostManagementConfig",
@@ -4063,6 +4354,22 @@
       },
       "type": "object"
     },
+    "DNSEndpointConfig": {
+      "description": "Describes the configuration of a DNS endpoint.",
+      "id": "DNSEndpointConfig",
+      "properties": {
+        "allowExternalTraffic": {
+          "description": "Controls whether user traffic is allowed over this endpoint. Note that GCP-managed services may still use the endpoint even if this is false.",
+          "type": "boolean"
+        },
+        "endpoint": {
+          "description": "Output only. The cluster's DNS endpoint configuration. A DNS format address. This is accessible from the public internet. Ex: uid.us-central1.gke.goog. Always present, but the behavior may change according to the value of DNSEndpointConfig.allow_external_traffic.",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "DailyMaintenanceWindow": {
       "description": "Time window specified for daily maintenance operations.",
       "id": "DailyMaintenanceWindow",
@@ -4154,6 +4461,27 @@
       },
       "type": "object"
     },
+    "DesiredEnterpriseConfig": {
+      "description": "DesiredEnterpriseConfig is a wrapper used for updating enterprise_config.",
+      "id": "DesiredEnterpriseConfig",
+      "properties": {
+        "desiredTier": {
+          "description": "desired_tier specifies the desired tier of the cluster.",
+          "enum": [
+            "CLUSTER_TIER_UNSPECIFIED",
+            "STANDARD",
+            "ENTERPRISE"
+          ],
+          "enumDescriptions": [
+            "CLUSTER_TIER_UNSPECIFIED is when cluster_tier is not set.",
+            "STANDARD indicates a standard GKE cluster.",
+            "ENTERPRISE indicates a GKE Enterprise cluster."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "DnsCacheConfig": {
       "description": "Configuration for NodeLocal DNSCache",
       "id": "DnsCacheConfig",
@@ -4188,6 +4516,20 @@
             "ENTERPRISE indicates a GKE Enterprise cluster."
           ],
           "readOnly": true,
+          "type": "string"
+        },
+        "desiredTier": {
+          "description": "desired_tier specifies the desired tier of the cluster.",
+          "enum": [
+            "CLUSTER_TIER_UNSPECIFIED",
+            "STANDARD",
+            "ENTERPRISE"
+          ],
+          "enumDescriptions": [
+            "CLUSTER_TIER_UNSPECIFIED is when cluster_tier is not set.",
+            "STANDARD indicates a standard GKE cluster.",
+            "ENTERPRISE indicates a GKE Enterprise cluster."
+          ],
           "type": "string"
         }
       },
@@ -4227,13 +4569,15 @@
               "EVENT_TYPE_UNSPECIFIED",
               "UPGRADE_AVAILABLE_EVENT",
               "UPGRADE_EVENT",
-              "SECURITY_BULLETIN_EVENT"
+              "SECURITY_BULLETIN_EVENT",
+              "UPGRADE_INFO_EVENT"
             ],
             "enumDescriptions": [
               "Not set, will be ignored.",
               "Corresponds with UpgradeAvailableEvent.",
               "Corresponds with UpgradeEvent.",
-              "Corresponds with SecurityBulletinEvent."
+              "Corresponds with SecurityBulletinEvent.",
+              "Corresponds with UpgradeInfoEvent."
             ],
             "type": "string"
           },
@@ -4397,7 +4741,7 @@
       "type": "object"
     },
     "GetJSONWebKeysResponse": {
-      "description": "GetJSONWebKeysResponse is a valid JSON Web Key Set as specififed in rfc 7517",
+      "description": "GetJSONWebKeysResponse is a valid JSON Web Key Set as specified in rfc 7517",
       "id": "GetJSONWebKeysResponse",
       "properties": {
         "cacheHeader": {
@@ -4650,7 +4994,8 @@
           "type": "string"
         },
         "tpuIpv4CidrBlock": {
-          "description": "The IP address range of the Cloud TPUs in this cluster. If unspecified, a range will be automatically chosen with the default size. This field is only applicable when `use_ip_aliases` is true. If unspecified, the range will use the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks (e.g. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific range to use.",
+          "deprecated": true,
+          "description": "The IP address range of the Cloud TPUs in this cluster. If unspecified, a range will be automatically chosen with the default size. This field is only applicable when `use_ip_aliases` is true. If unspecified, the range will use the default size. Set to /netmask (e.g. `/14`) to have a range chosen with a specific netmask. Set to a [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks (e.g. `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific range to use. This field is deprecated due to the deprecation of 2VM TPU. The end of life date for 2VM TPU is 2025-04-25.",
           "type": "string"
         },
         "useIpAliases": {
@@ -4660,6 +5005,43 @@
         "useRoutes": {
           "description": "Whether routes will be used for pod IPs in the cluster. This is used in conjunction with use_ip_aliases. It cannot be true if use_ip_aliases is true. If both use_ip_aliases and use_routes are false, then the server picks the default IP allocation mode",
           "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "IPEndpointsConfig": {
+      "description": "IP endpoints configuration.",
+      "id": "IPEndpointsConfig",
+      "properties": {
+        "authorizedNetworksConfig": {
+          "$ref": "MasterAuthorizedNetworksConfig",
+          "description": "Configuration of authorized networks. If enabled, restricts access to the control plane based on source IP. It is invalid to specify both Cluster.masterAuthorizedNetworksConfig and this field at the same time."
+        },
+        "enablePublicEndpoint": {
+          "description": "Controls whether the control plane allows access through a public IP. It is invalid to specify both PrivateClusterConfig.enablePrivateEndpoint and this field at the same time.",
+          "type": "boolean"
+        },
+        "enabled": {
+          "description": "Controls whether to allow direct IP access.",
+          "type": "boolean"
+        },
+        "globalAccess": {
+          "description": "Controls whether the control plane's private endpoint is accessible from sources in other regions. It is invalid to specify both PrivateClusterMasterGlobalAccessConfig.enabled and this field at the same time.",
+          "type": "boolean"
+        },
+        "privateEndpoint": {
+          "description": "Output only. The internal IP address of this cluster's control plane. Only populated if enabled.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "privateEndpointSubnetwork": {
+          "description": "Subnet to provision the master's private endpoint during cluster creation. Specified in projects/*/regions/*/subnetworks/* format. It is invalid to specify both PrivateClusterConfig.privateEndpointSubnetwork and this field at the same time.",
+          "type": "string"
+        },
+        "publicEndpoint": {
+          "description": "Output only. The external IP address of this cluster's control plane. Only populated if enabled.",
+          "readOnly": true,
+          "type": "string"
         }
       },
       "type": "object"
@@ -4791,7 +5173,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "The Linux kernel parameters to be applied to the nodes and all pods running on the nodes. The following parameters are supported. net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog net.core.rmem_max net.core.wmem_default net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse",
+          "description": "The Linux kernel parameters to be applied to the nodes and all pods running on the nodes. The following parameters are supported. net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog net.core.rmem_max net.core.rmem_default net.core.wmem_default net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.netfilter.nf_conntrack_max net.netfilter.nf_conntrack_buckets net.netfilter.nf_conntrack_tcp_timeout_close_wait net.netfilter.nf_conntrack_tcp_timeout_time_wait net.netfilter.nf_conntrack_tcp_timeout_established net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax kernel.shmall vm.max_map_count",
           "type": "object"
         }
       },
@@ -4896,7 +5278,10 @@
               "WORKLOADS",
               "APISERVER",
               "SCHEDULER",
-              "CONTROLLER_MANAGER"
+              "CONTROLLER_MANAGER",
+              "KCP_SSHD",
+              "KCP_CONNECTION",
+              "KCP_HPA"
             ],
             "enumDescriptions": [
               "Default value. This shouldn't be used.",
@@ -4904,7 +5289,10 @@
               "workloads",
               "kube-apiserver",
               "kube-scheduler",
-              "kube-controller-manager"
+              "kube-controller-manager",
+              "kcp-sshd",
+              "kcp connection logs",
+              "horizontal pod autoscaler decision logs"
             ],
             "type": "string"
           },
@@ -5007,6 +5395,10 @@
       "description": "ManagedPrometheusConfig defines the configuration for Google Cloud Managed Service for Prometheus.",
       "id": "ManagedPrometheusConfig",
       "properties": {
+        "autoMonitoringConfig": {
+          "$ref": "AutoMonitoringConfig",
+          "description": "GKE Workload Auto-Monitoring Configuration."
+        },
         "enabled": {
           "description": "Enable Managed Collection.",
           "type": "boolean"
@@ -5066,7 +5458,11 @@
           "type": "boolean"
         },
         "gcpPublicCidrsAccessEnabled": {
-          "description": "Whether master is accessbile via Google Compute Engine Public IP addresses.",
+          "description": "Whether master is accessible via Google Compute Engine Public IP addresses.",
+          "type": "boolean"
+        },
+        "privateEndpointEnforcementEnabled": {
+          "description": "Whether master authorized networks is enforced on private endpoint or not.",
           "type": "boolean"
         }
       },
@@ -5141,7 +5537,8 @@
               "STATEFULSET",
               "CADVISOR",
               "KUBELET",
-              "DCGM"
+              "DCGM",
+              "JOBSET"
             ],
             "enumDescriptions": [
               "Default value. This shouldn't be used.",
@@ -5157,7 +5554,8 @@
               "Statefulset",
               "CADVISOR",
               "KUBELET",
-              "NVIDIA Data Center GPU Manager (DCGM)"
+              "NVIDIA Data Center GPU Manager (DCGM)",
+              "JobSet"
             ],
             "type": "string"
           },
@@ -5203,9 +5601,17 @@
           ],
           "type": "string"
         },
+        "defaultEnablePrivateNodes": {
+          "description": "Controls whether by default nodes have private IP addresses only. It is invalid to specify both PrivateClusterConfig.enablePrivateNodes and this field at the same time. To update the default setting, use ClusterUpdate.desired_default_enable_private_nodes",
+          "type": "boolean"
+        },
         "defaultSnatStatus": {
           "$ref": "DefaultSnatStatus",
           "description": "Whether the cluster disables default in-node sNAT rules. In-node sNAT rules will be disabled when default_snat_status is disabled. When disabled is set to false, default IP masquerade rules will be applied to the nodes to prevent sNAT on cluster internal traffic."
+        },
+        "disableL4LbFirewallReconciliation": {
+          "description": "Disable L4 load balancer VPC firewalls to enable firewall policies.",
+          "type": "boolean"
         },
         "dnsConfig": {
           "$ref": "DNSConfig",
@@ -5250,7 +5656,7 @@
           "type": "string"
         },
         "network": {
-          "description": "Output only. The relative name of the Google Compute Engine network(https://cloud.google.com/compute/docs/networks-and-firewalls#networks) to which the cluster is connected. Example: projects/my-project/global/networks/my-network",
+          "description": "Output only. The relative name of the Google Compute Engine [network](https://cloud.google.com/compute/docs/networks-and-firewalls#networks) to which the cluster is connected. Example: projects/my-project/global/networks/my-network",
           "readOnly": true,
           "type": "string"
         },
@@ -5421,6 +5827,21 @@
           "description": "Type of the disk attached to each node (e.g. 'pd-standard', 'pd-ssd' or 'pd-balanced') If unspecified, the default disk type is 'pd-standard'",
           "type": "string"
         },
+        "effectiveCgroupMode": {
+          "description": "Output only. effective_cgroup_mode is the cgroup mode actually used by the node pool. It is determined by the cgroup mode specified in the LinuxNodeConfig or the default cgroup mode based on the cluster creation version.",
+          "enum": [
+            "EFFECTIVE_CGROUP_MODE_UNSPECIFIED",
+            "EFFECTIVE_CGROUP_MODE_V1",
+            "EFFECTIVE_CGROUP_MODE_V2"
+          ],
+          "enumDescriptions": [
+            "EFFECTIVE_CGROUP_MODE_UNSPECIFIED means the cgroup configuration for the node pool is unspecified, i.e. the node pool is a Windows node pool.",
+            "CGROUP_MODE_V1 means the node pool is configured to use cgroupv1 for the cgroup configuration.",
+            "CGROUP_MODE_V2 means the node pool is configured to use cgroupv2 for the cgroup configuration."
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
         "enableConfidentialStorage": {
           "description": "Optional. Reserved for future use.",
           "type": "boolean"
@@ -5469,12 +5890,31 @@
           "format": "int32",
           "type": "integer"
         },
+        "localSsdEncryptionMode": {
+          "description": "Specifies which method should be used for encrypting the Local SSDs attached to the node.",
+          "enum": [
+            "LOCAL_SSD_ENCRYPTION_MODE_UNSPECIFIED",
+            "STANDARD_ENCRYPTION",
+            "EPHEMERAL_KEY_ENCRYPTION"
+          ],
+          "enumDescriptions": [
+            "The given node will be encrypted using keys managed by Google infrastructure and the keys will be deleted when the node is deleted.",
+            "The given node will be encrypted using keys managed by Google infrastructure and the keys will be deleted when the node is deleted.",
+            "The given node will opt-in for using ephemeral key for encryption of Local SSDs. The Local SSDs will not be able to recover data in case of node crash."
+          ],
+          "type": "string"
+        },
         "loggingConfig": {
           "$ref": "NodePoolLoggingConfig",
           "description": "Logging configuration."
         },
         "machineType": {
           "description": "The name of a Google Compute Engine [machine type](https://cloud.google.com/compute/docs/machine-types) If unspecified, the default machine type is `e2-medium`.",
+          "type": "string"
+        },
+        "maxRunDuration": {
+          "description": "The maximum duration for the nodes to exist. If unspecified, the nodes can exist indefinitely.",
+          "format": "google-duration",
           "type": "string"
         },
         "metadata": {
@@ -5608,6 +6048,22 @@
       "description": "Node kubelet configs.",
       "id": "NodeKubeletConfig",
       "properties": {
+        "allowedUnsafeSysctls": {
+          "description": "Optional. Defines a comma-separated allowlist of unsafe sysctls or sysctl patterns (ending in `*`). The unsafe namespaced sysctl groups are `kernel.shm*`, `kernel.msg*`, `kernel.sem`, `fs.mqueue.*`, and `net.*`. Leaving this allowlist empty means they cannot be set on Pods. To allow certain sysctls or sysctl patterns to be set on Pods, list them separated by commas. For example: `kernel.msg*,net.ipv4.route.min_pmtu`. See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for more details.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "containerLogMaxFiles": {
+          "description": "Optional. Defines the maximum number of container log files that can be present for a container. See https://kubernetes.io/docs/concepts/cluster-administration/logging/#log-rotation The value must be an integer between 2 and 10, inclusive. The default value is 5 if unspecified.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "containerLogMaxSize": {
+          "description": "Optional. Defines the maximum size of the container log file before it is rotated. See https://kubernetes.io/docs/concepts/cluster-administration/logging/#log-rotation Valid format is positive number + unit, e.g. 100Ki, 10Mi. Valid units are Ki, Mi, Gi. The value must be between 10Mi and 500Mi, inclusive. Note that the total container log size (container_log_max_size * container_log_max_files) cannot exceed 1% of the total storage of the node, to avoid disk pressure caused by log files. The default value is 10Mi if unspecified.",
+          "type": "string"
+        },
         "cpuCfsQuota": {
           "description": "Enable CPU CFS quota enforcement for containers that specify CPU limits. This option is enabled by default which makes kubelet use CFS quota (https://www.kernel.org/doc/Documentation/scheduler/sched-bwc.txt) to enforce container CPU limits. Otherwise, CPU limits will not be enforced at all. Disable this option to mitigate CPU throttling problems while still having your pods to be in Guaranteed QoS class by specifying the CPU limits. The default value is 'true' if unspecified.",
           "type": "boolean"
@@ -5618,6 +6074,24 @@
         },
         "cpuManagerPolicy": {
           "description": "Control the CPU management policy on the node. See https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/ The following values are allowed. * \"none\": the default, which represents the existing scheduling behavior. * \"static\": allows pods with certain resource characteristics to be granted increased CPU affinity and exclusivity on the node. The default value is 'none' if unspecified.",
+          "type": "string"
+        },
+        "imageGcHighThresholdPercent": {
+          "description": "Optional. Defines the percent of disk usage after which image garbage collection is always run. The percent is calculated as this field value out of 100. The value must be between 10 and 85, inclusive and greater than image_gc_low_threshold_percent. The default value is 85 if unspecified.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "imageGcLowThresholdPercent": {
+          "description": "Optional. Defines the percent of disk usage before which image garbage collection is never run. Lowest disk usage to garbage collect to. The percent is calculated as this field value out of 100. The value must be between 10 and 85, inclusive and smaller than image_gc_high_threshold_percent. The default value is 80 if unspecified.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "imageMaximumGcAge": {
+          "description": "Optional. Defines the maximum age an image can be unused before it is garbage collected. The string must be a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300s\", \"1.5h\", and \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\". The value must be a positive duration greater than image_minimum_gc_age or \"0s\". The default value is \"0s\" if unspecified, which disables this field, meaning images won't be garbage collected based on being unused for too long.",
+          "type": "string"
+        },
+        "imageMinimumGcAge": {
+          "description": "Optional. Defines the minimum age for an unused image before it is garbage collected. The string must be a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300s\", \"1.5h\", and \"2h45m\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\". The value must be a positive duration less than or equal to 2 minutes. The default value is \"2m0s\" if unspecified.",
           "type": "string"
         },
         "insecureKubeletReadonlyPortEnabled": {
@@ -5688,7 +6162,7 @@
           "type": "boolean"
         },
         "enablePrivateNodes": {
-          "description": "Whether nodes have internal IP addresses only. If enable_private_nodes is not specified, then the value is derived from cluster.privateClusterConfig.enablePrivateNodes",
+          "description": "Whether nodes have internal IP addresses only. If enable_private_nodes is not specified, then the value is derived from Cluster.NetworkConfig.default_enable_private_nodes",
           "type": "boolean"
         },
         "networkPerformanceConfig": {
@@ -5720,6 +6194,10 @@
       "description": "NodePool contains the name and configuration for a cluster's node pool. Node pools are a set of nodes (i.e. VM's), with a common configuration and specification, under the control of the cluster master. They may have a set of Kubernetes labels applied to them, which may be used to reference them during pod scheduling. They may also be resized up or down, to accommodate the workload.",
       "id": "NodePool",
       "properties": {
+        "autopilotConfig": {
+          "$ref": "AutopilotConfig",
+          "description": "Specifies the autopilot configuration for this node pool. This field is exclusively reserved for Cluster Autoscaler to implement go/gke-managed-nodes-ccc-api"
+        },
         "autoscaling": {
           "$ref": "NodePoolAutoscaling",
           "description": "Autoscaler configuration for this NodePool. Autoscaler is enabled only if a valid configuration is present."
@@ -5847,6 +6325,11 @@
       "description": "Node pool configs that apply to all auto-provisioned node pools in autopilot clusters and node auto-provisioning enabled clusters.",
       "id": "NodePoolAutoConfig",
       "properties": {
+        "linuxNodeConfig": {
+          "$ref": "LinuxNodeConfig",
+          "description": "Output only. Configuration options for Linux nodes.",
+          "readOnly": true
+        },
         "networkTags": {
           "$ref": "NetworkTags",
           "description": "The list of instance tags applied to all nodes. Tags are used to identify valid sources or targets for network firewalls and are specified by the client during cluster creation. Each tag within the list must comply with RFC1035."
@@ -5889,22 +6372,22 @@
           "type": "string"
         },
         "maxNodeCount": {
-          "description": "Maximum number of nodes for one location in the NodePool. Must be \u003e= min_node_count. There has to be enough quota to scale up the cluster.",
+          "description": "Maximum number of nodes for one location in the node pool. Must be \u003e= min_node_count. There has to be enough quota to scale up the cluster.",
           "format": "int32",
           "type": "integer"
         },
         "minNodeCount": {
-          "description": "Minimum number of nodes for one location in the NodePool. Must be \u003e= 1 and \u003c= max_node_count.",
+          "description": "Minimum number of nodes for one location in the node pool. Must be greater than or equal to 0 and less than or equal to max_node_count.",
           "format": "int32",
           "type": "integer"
         },
         "totalMaxNodeCount": {
-          "description": "Maximum number of nodes in the node pool. Must be greater than total_min_node_count. There has to be enough quota to scale up the cluster. The total_*_node_count fields are mutually exclusive with the *_node_count fields.",
+          "description": "Maximum number of nodes in the node pool. Must be greater than or equal to total_min_node_count. There has to be enough quota to scale up the cluster. The total_*_node_count fields are mutually exclusive with the *_node_count fields.",
           "format": "int32",
           "type": "integer"
         },
         "totalMinNodeCount": {
-          "description": "Minimum number of nodes in the node pool. Must be greater than 1 less than total_max_node_count. The total_*_node_count fields are mutually exclusive with the *_node_count fields.",
+          "description": "Minimum number of nodes in the node pool. Must be greater than or equal to 0 and less than or equal to total_max_node_count. The total_*_node_count fields are mutually exclusive with the *_node_count fields.",
           "format": "int32",
           "type": "integer"
         }
@@ -5929,6 +6412,76 @@
         "variantConfig": {
           "$ref": "LoggingVariantConfig",
           "description": "Logging variant configuration."
+        }
+      },
+      "type": "object"
+    },
+    "NodePoolUpgradeInfo": {
+      "description": "NodePoolUpgradeInfo contains the upgrade information of a nodepool.",
+      "id": "NodePoolUpgradeInfo",
+      "properties": {
+        "autoUpgradeStatus": {
+          "description": "The auto upgrade status.",
+          "items": {
+            "enum": [
+              "UNKNOWN",
+              "ACTIVE",
+              "MINOR_UPGRADE_PAUSED",
+              "UPGRADE_PAUSED"
+            ],
+            "enumDescriptions": [
+              "UNKNOWN indicates an unknown status.",
+              "ACTIVE indicates an active status.",
+              "MINOR_UPGRADE_PAUSED indicates the minor version upgrade is paused.",
+              "UPGRADE_PAUSED indicates the upgrade is paused."
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "endOfExtendedSupportTimestamp": {
+          "description": "The nodepool's current minor version's end of extended support timestamp.",
+          "type": "string"
+        },
+        "endOfStandardSupportTimestamp": {
+          "description": "The nodepool's current minor version's end of standard support timestamp.",
+          "type": "string"
+        },
+        "minorTargetVersion": {
+          "description": "minor_target_version indicates the target version for minor upgrade.",
+          "type": "string"
+        },
+        "patchTargetVersion": {
+          "description": "patch_target_version indicates the target version for patch upgrade.",
+          "type": "string"
+        },
+        "pausedReason": {
+          "description": "The auto upgrade paused reason.",
+          "items": {
+            "enum": [
+              "AUTO_UPGRADE_PAUSED_REASON_UNSPECIFIED",
+              "MAINTENANCE_WINDOW",
+              "MAINTENANCE_EXCLUSION_NO_UPGRADES",
+              "MAINTENANCE_EXCLUSION_NO_MINOR_UPGRADES",
+              "SYSTEM_CONFIG"
+            ],
+            "enumDescriptions": [
+              "AUTO_UPGRADE_PAUSED_REASON_UNSPECIFIED indicates an unspecified reason.",
+              "MAINTENANCE_WINDOW indicates the cluster is outside customer maintenance window.",
+              "MAINTENANCE_EXCLUSION_NO_UPGRADES indicates the cluster is in a maintenance exclusion with scope NO_UPGRADES.",
+              "MAINTENANCE_EXCLUSION_NO_MINOR_UPGRADES indicates the cluster is in a maintenance exclusion with scope NO_MINOR_UPGRADES.",
+              "SYSTEM_CONFIG indicates the cluster upgrade is paused by system config."
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "upgradeDetails": {
+          "description": "The list of past auto upgrades.",
+          "items": {
+            "$ref": "UpgradeDetails"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -6218,6 +6771,17 @@
       },
       "type": "object"
     },
+    "ParallelstoreCsiDriverConfig": {
+      "description": "Configuration for the Cloud Storage Parallelstore CSI driver.",
+      "id": "ParallelstoreCsiDriverConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the Cloud Storage Parallelstore CSI driver is enabled for this cluster.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "ParentProductConfig": {
       "description": "ParentProductConfig is the configuration of the parent product of the cluster. This field is used by Google internal products that are built on top of a GKE cluster and take the ownership of the cluster.",
       "id": "ParentProductConfig",
@@ -6263,6 +6827,27 @@
       },
       "type": "object"
     },
+    "PodAutoscaling": {
+      "description": "PodAutoscaling is used for configuration of parameters for workload autoscaling.",
+      "id": "PodAutoscaling",
+      "properties": {
+        "hpaProfile": {
+          "description": "Selected Horizontal Pod Autoscaling profile.",
+          "enum": [
+            "HPA_PROFILE_UNSPECIFIED",
+            "NONE",
+            "PERFORMANCE"
+          ],
+          "enumDescriptions": [
+            "HPA_PROFILE_UNSPECIFIED is used when no custom HPA profile is set.",
+            "Customers explicitly opt-out of HPA profiles.",
+            "PERFORMANCE is used when customers opt-in to the performance HPA profile. In this profile we support a higher number of HPAs per cluster and faster metrics collection for workload autoscaling."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "PodCIDROverprovisionConfig": {
       "description": "[PRIVATE FIELD] Config for pod CIDR size overprovisioning.",
       "id": "PodCIDROverprovisionConfig",
@@ -6279,16 +6864,19 @@
       "id": "PrivateClusterConfig",
       "properties": {
         "enablePrivateEndpoint": {
-          "description": "Whether the master's internal IP address is used as the cluster endpoint.",
+          "deprecated": true,
+          "description": "Whether the master's internal IP address is used as the cluster endpoint. Deprecated: Use ControlPlaneEndpointsConfig.IPEndpointsConfig.enable_public_endpoint instead. Note that the value of enable_public_endpoint is reversed: if enable_private_endpoint is false, then enable_public_endpoint will be true.",
           "type": "boolean"
         },
         "enablePrivateNodes": {
-          "description": "Whether nodes have internal IP addresses only. If enabled, all nodes are given only RFC 1918 private addresses and communicate with the master via private networking.",
+          "deprecated": true,
+          "description": "Whether nodes have internal IP addresses only. If enabled, all nodes are given only RFC 1918 private addresses and communicate with the master via private networking. Deprecated: Use NetworkConfig.default_enable_private_nodes instead.",
           "type": "boolean"
         },
         "masterGlobalAccessConfig": {
           "$ref": "PrivateClusterMasterGlobalAccessConfig",
-          "description": "Controls master global access settings."
+          "deprecated": true,
+          "description": "Controls master global access settings. Deprecated: Use ControlPlaneEndpointsConfig.IPEndpointsConfig.enable_global_access instead."
         },
         "masterIpv4CidrBlock": {
           "description": "The IP range in CIDR notation to use for the hosted master network. This range will be used for assigning internal IP addresses to the master or set of masters, as well as the ILB VIP. This range must not overlap with any other ranges in use within the cluster's network.",
@@ -6300,16 +6888,19 @@
           "type": "string"
         },
         "privateEndpoint": {
-          "description": "Output only. The internal IP address of this cluster's master endpoint.",
+          "deprecated": true,
+          "description": "Output only. The internal IP address of this cluster's master endpoint. Deprecated: Use ControlPlaneEndpointsConfig.IPEndpointsConfig.private_endpoint instead.",
           "readOnly": true,
           "type": "string"
         },
         "privateEndpointSubnetwork": {
-          "description": "Subnet to provision the master's private endpoint during cluster creation. Specified in projects/*/regions/*/subnetworks/* format.",
+          "deprecated": true,
+          "description": "Subnet to provision the master's private endpoint during cluster creation. Specified in projects/*/regions/*/subnetworks/* format. Deprecated: Use ControlPlaneEndpointsConfig.IPEndpointsConfig.private_endpoint_subnetwork instead.",
           "type": "string"
         },
         "publicEndpoint": {
-          "description": "Output only. The external IP address of this cluster's master endpoint.",
+          "deprecated": true,
+          "description": "Output only. The external IP address of this cluster's master endpoint. Deprecated:Use ControlPlaneEndpointsConfig.IPEndpointsConfig.public_endpoint instead.",
           "readOnly": true,
           "type": "string"
         }
@@ -6513,6 +7104,10 @@
         },
         "defaultVersion": {
           "description": "The default version for newly created clusters on the channel.",
+          "type": "string"
+        },
+        "upgradeTargetVersion": {
+          "description": "The auto upgrade target version for clusters on the channel.",
           "type": "string"
         },
         "validVersions": {
@@ -6754,6 +7349,13 @@
         "manualStepsRequired": {
           "description": "If this field is specified, it means there are manual steps that the user must take to make their clusters safe.",
           "type": "boolean"
+        },
+        "mitigatedVersions": {
+          "description": "The GKE versions where this vulnerability is mitigated.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "patchedVersions": {
           "description": "The GKE versions where this vulnerability is patched.",
@@ -7113,7 +7715,7 @@
           "type": "string"
         },
         "monitoringService": {
-          "description": "Required. The monitoring service the cluster should use to write metrics. Currently available options: * \"monitoring.googleapis.com/kubernetes\" - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
+          "description": "Required. The monitoring service the cluster should use to write metrics. Currently available options: * `monitoring.googleapis.com/kubernetes` - The Cloud Monitoring service with a Kubernetes-native resource model * `monitoring.googleapis.com` - The legacy Cloud Monitoring service (no longer available as of GKE 1.15). * `none` - No metrics will be exported from the cluster. If left as an empty string,`monitoring.googleapis.com/kubernetes` will be used for GKE 1.14+ or `monitoring.googleapis.com` for earlier versions.",
           "type": "string"
         },
         "name": {
@@ -7455,7 +8057,8 @@
             "GCE_QUOTA_EXCEEDED",
             "SET_BY_OPERATOR",
             "CLOUD_KMS_KEY_ERROR",
-            "CA_EXPIRING"
+            "CA_EXPIRING",
+            "NODE_SERVICE_ACCOUNT_MISSING_PERMISSIONS"
           ],
           "enumDescriptions": [
             "UNKNOWN indicates a generic condition.",
@@ -7464,7 +8067,8 @@
             "Google Compute Engine quota was exceeded.",
             "Cluster state was manually changed by an SRE due to a system logic error.",
             "Unable to perform an encrypt operation against the CloudKMS key used for etcd level encryption.",
-            "Cluster CA is expiring soon."
+            "Cluster CA is expiring soon.",
+            "Node service account is missing permissions."
           ],
           "type": "string"
         },
@@ -7647,6 +8251,11 @@
           "description": "Optional. The desired [Google Compute Engine machine type](https://cloud.google.com/compute/docs/machine-types) for nodes in the node pool. Initiates an upgrade operation that migrates the nodes in the node pool to the specified machine type.",
           "type": "string"
         },
+        "maxRunDuration": {
+          "description": "The maximum duration for the nodes to exist. If unspecified, the nodes can exist indefinitely.",
+          "format": "google-duration",
+          "type": "string"
+        },
         "name": {
           "description": "The name (project, location, cluster, node pool) of the node pool to update. Specified in the format `projects/*/locations/*/clusters/*/nodePools/*`.",
           "type": "string"
@@ -7749,6 +8358,64 @@
       },
       "type": "object"
     },
+    "UpgradeDetails": {
+      "description": "UpgradeDetails contains detailed information of each individual upgrade operation.",
+      "id": "UpgradeDetails",
+      "properties": {
+        "endTime": {
+          "description": "The end timestamp of the upgrade.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "initialVersion": {
+          "description": "The version before the upgrade.",
+          "type": "string"
+        },
+        "startTime": {
+          "description": "The start timestamp of the upgrade.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "startType": {
+          "description": "The start type of the upgrade.",
+          "enum": [
+            "START_TYPE_UNSPECIFIED",
+            "AUTOMATIC",
+            "MANUAL"
+          ],
+          "enumDescriptions": [
+            "Upgrade start type is unspecified.",
+            "Upgrade started automatically.",
+            "Upgrade started manually."
+          ],
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the upgrade.",
+          "enum": [
+            "UNKNOWN",
+            "FAILED",
+            "SUCCEEDED",
+            "CANCELED",
+            "RUNNING"
+          ],
+          "enumDescriptions": [
+            "Upgrade state is unknown.",
+            "Upgrade has failed with an error.",
+            "Upgrade has succeeded.",
+            "Upgrade has been canceled.",
+            "Upgrade is running."
+          ],
+          "readOnly": true,
+          "type": "string"
+        },
+        "targetVersion": {
+          "description": "The version after the upgrade.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "UpgradeEvent": {
       "description": "UpgradeEvent is a notification sent to customers by the cluster server when a resource is upgrading.",
       "id": "UpgradeEvent",
@@ -7782,6 +8449,100 @@
             "Master / control plane",
             "Node pool"
           ],
+          "type": "string"
+        },
+        "targetVersion": {
+          "description": "The target version for the upgrade.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "UpgradeInfoEvent": {
+      "description": "UpgradeInfoEvent is a notification sent to customers about the upgrade information of a resource.",
+      "id": "UpgradeInfoEvent",
+      "properties": {
+        "currentVersion": {
+          "description": "The current version before the upgrade.",
+          "type": "string"
+        },
+        "description": {
+          "description": "A brief description of the event.",
+          "type": "string"
+        },
+        "endTime": {
+          "description": "The time when the operation ended.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "eventType": {
+          "description": "The type of the event.",
+          "enum": [
+            "EVENT_TYPE_UNSPECIFIED",
+            "END_OF_SUPPORT",
+            "COS_MILESTONE_VERSION_UPDATE"
+          ],
+          "enumDescriptions": [
+            "EVENT_TYPE_UNSPECIFIED indicates the event type is unspecified.",
+            "END_OF_SUPPORT indicates GKE version reaches end of support, check standard_support_end_time and extended_support_end_time for more details.",
+            "COS_MILESTONE_VERSION_UPDATE indicates that the COS node image will update COS milestone version for new patch versions starting with the one in the description."
+          ],
+          "type": "string"
+        },
+        "extendedSupportEndTime": {
+          "description": "The end of extended support timestamp.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "operation": {
+          "description": "The operation associated with this upgrade.",
+          "type": "string"
+        },
+        "resource": {
+          "description": "Optional relative path to the resource. For example in node pool upgrades, the relative path of the node pool.",
+          "type": "string"
+        },
+        "resourceType": {
+          "description": "The resource type associated with the upgrade.",
+          "enum": [
+            "UPGRADE_RESOURCE_TYPE_UNSPECIFIED",
+            "MASTER",
+            "NODE_POOL"
+          ],
+          "enumDescriptions": [
+            "Default value. This shouldn't be used.",
+            "Master / control plane",
+            "Node pool"
+          ],
+          "type": "string"
+        },
+        "standardSupportEndTime": {
+          "description": "The end of standard support timestamp.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "startTime": {
+          "description": "The time when the operation was started.",
+          "format": "google-datetime",
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the upgrade.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "STARTED",
+            "SUCCEEDED",
+            "FAILED",
+            "CANCELED"
+          ],
+          "enumDescriptions": [
+            "STATE_UNSPECIFIED indicates the state is unspecified.",
+            "STARTED indicates the upgrade has started.",
+            "SUCCEEDED indicates the upgrade has completed successfully.",
+            "FAILED indicates the upgrade has failed.",
+            "CANCELED indicates the upgrade has canceled."
+          ],
+          "readOnly": true,
           "type": "string"
         },
         "targetVersion": {
@@ -7889,6 +8650,51 @@
       },
       "type": "object"
     },
+    "UserManagedKeysConfig": {
+      "description": "UserManagedKeysConfig holds the resource address to Keys which are used for signing certs and token that are used for communication within cluster.",
+      "id": "UserManagedKeysConfig",
+      "properties": {
+        "aggregationCa": {
+          "description": "The Certificate Authority Service caPool to use for the aggregation CA in this cluster.",
+          "type": "string"
+        },
+        "clusterCa": {
+          "description": "The Certificate Authority Service caPool to use for the cluster CA in this cluster.",
+          "type": "string"
+        },
+        "controlPlaneDiskEncryptionKey": {
+          "description": "The Cloud KMS cryptoKey to use for Confidential Hyperdisk on the control plane nodes.",
+          "type": "string"
+        },
+        "etcdApiCa": {
+          "description": "Resource path of the Certificate Authority Service caPool to use for the etcd API CA in this cluster.",
+          "type": "string"
+        },
+        "etcdPeerCa": {
+          "description": "Resource path of the Certificate Authority Service caPool to use for the etcd peer CA in this cluster.",
+          "type": "string"
+        },
+        "gkeopsEtcdBackupEncryptionKey": {
+          "description": "Resource path of the Cloud KMS cryptoKey to use for encryption of internal etcd backups.",
+          "type": "string"
+        },
+        "serviceAccountSigningKeys": {
+          "description": "The Cloud KMS cryptoKeyVersions to use for signing service account JWTs issued by this cluster. Format: `projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{cryptoKey}/cryptoKeyVersions/{cryptoKeyVersion}`",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "serviceAccountVerificationKeys": {
+          "description": "The Cloud KMS cryptoKeyVersions to use for verifying service account JWTs issued by this cluster. Format: `projects/{project}/locations/{location}/keyRings/{keyring}/cryptoKeys/{cryptoKey}/cryptoKeyVersions/{cryptoKeyVersion}`",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "VerticalPodAutoscaling": {
       "description": "VerticalPodAutoscaling contains global, per-cluster information required by Vertical Pod Autoscaler to automatically adjust the resources of pods controlled by it.",
       "id": "VerticalPodAutoscaling",
@@ -7912,20 +8718,20 @@
       "type": "object"
     },
     "WindowsNodeConfig": {
-      "description": "Parameters that can be configured on Windows nodes. Windows Node Config that define the parameters that will be used to configure the Windows node pool settings",
+      "description": "Parameters that can be configured on Windows nodes. Windows Node Config that define the parameters that will be used to configure the Windows node pool settings.",
       "id": "WindowsNodeConfig",
       "properties": {
         "osVersion": {
-          "description": "OSVersion specifies the Windows node config to be used on the node",
+          "description": "OSVersion specifies the Windows node config to be used on the node.",
           "enum": [
             "OS_VERSION_UNSPECIFIED",
             "OS_VERSION_LTSC2019",
             "OS_VERSION_LTSC2022"
           ],
           "enumDescriptions": [
-            "When OSVersion is not specified",
-            "LTSC2019 specifies to use LTSC2019 as the Windows Servercore Base Image",
-            "LTSC2022 specifies to use LTSC2022 as the Windows Servercore Base Image"
+            "When OSVersion is not specified.",
+            "LTSC2019 specifies to use LTSC2019 as the Windows Servercore Base Image.",
+            "LTSC2022 specifies to use LTSC2022 as the Windows Servercore Base Image."
           ],
           "type": "string"
         }
@@ -7965,11 +8771,15 @@
       "type": "object"
     },
     "WorkloadPolicyConfig": {
-      "description": "WorkloadPolicyConfig is the configuration of workload policy for autopilot clusters.",
+      "description": "WorkloadPolicyConfig is the configuration related to GCW workload policy",
       "id": "WorkloadPolicyConfig",
       "properties": {
         "allowNetAdmin": {
           "description": "If true, workloads can use NET_ADMIN capability.",
+          "type": "boolean"
+        },
+        "autopilotCompatibilityAuditingEnabled": {
+          "description": "If true, enables the GCW Auditor that audits workloads on standard clusters.",
           "type": "boolean"
         }
       },

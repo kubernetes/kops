@@ -178,3 +178,45 @@ func Delete(ctx context.Context, client *gophercloud.ServiceClient, zoneID strin
 	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
 	return
 }
+
+// request body for sharing a zone.
+type ShareOptsBuilder interface {
+	ToShareMap() (map[string]interface{}, error)
+}
+
+// ShareZoneOpts specifies the target project for sharing a zone.
+type ShareZoneOpts struct {
+	// TargetProjectID is the ID of the project to share the zone with.
+	TargetProjectID string `json:"target_project_id" required:"true"`
+}
+
+// ToShareMap constructs a request body from a ShareZoneOpts.
+func (opts ShareZoneOpts) ToShareMap() (map[string]interface{}, error) {
+	return map[string]interface{}{
+		"target_project_id": opts.TargetProjectID,
+	}, nil
+}
+
+// Share shares a zone with another project.
+func Share(ctx context.Context, client *gophercloud.ServiceClient, zoneID string, opts ShareOptsBuilder) (r gophercloud.ErrResult) {
+	body, err := gophercloud.BuildRequestBody(opts, "")
+	if err != nil {
+		r.Err = err
+		return
+	}
+
+	resp, err := client.Post(ctx, zoneShareURL(client, zoneID), body, nil, &gophercloud.RequestOpts{
+		OkCodes: []int{201},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}
+
+// Unshare removes a share for a zone.
+func Unshare(ctx context.Context, client *gophercloud.ServiceClient, zoneID, shareID string) (r gophercloud.ErrResult) {
+	resp, err := client.Delete(ctx, zoneUnshareURL(client, zoneID, shareID), &gophercloud.RequestOpts{
+		OkCodes: []int{204},
+	})
+	_, r.Header, r.Err = gophercloud.ParseResponse(resp, err)
+	return
+}

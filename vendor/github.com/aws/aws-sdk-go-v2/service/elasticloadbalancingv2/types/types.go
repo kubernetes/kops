@@ -53,6 +53,21 @@ type Action struct {
 	noSmithyDocumentSerde
 }
 
+// Information about the override status applied to a target.
+type AdministrativeOverride struct {
+
+	// A description of the override state that provides additional details.
+	Description *string
+
+	// The reason code for the state.
+	Reason TargetAdministrativeOverrideReasonEnum
+
+	// The state of the override.
+	State TargetAdministrativeOverrideStateEnum
+
+	noSmithyDocumentSerde
+}
+
 // Information about anomaly detection and mitigation.
 type AnomalyDetection struct {
 
@@ -203,11 +218,29 @@ type AvailabilityZone struct {
 	// [Application Load Balancers on Outposts] The ID of the Outpost.
 	OutpostId *string
 
+	// [Network Load Balancers with UDP listeners] The IPv6 prefixes to use for source
+	// NAT. For each subnet, specify an IPv6 prefix (/80 netmask) from the subnet CIDR
+	// block or auto_assigned to use an IPv6 prefix selected at random from the subnet
+	// CIDR block.
+	SourceNatIpv6Prefixes []string
+
 	// The ID of the subnet. You can specify one subnet per Availability Zone.
 	SubnetId *string
 
 	// The name of the Availability Zone.
 	ZoneName *string
+
+	noSmithyDocumentSerde
+}
+
+// The status of a capacity reservation.
+type CapacityReservationStatus struct {
+
+	// The status code.
+	Code CapacityReservationStateEnum
+
+	// The reason code for the status.
+	Reason *string
 
 	noSmithyDocumentSerde
 }
@@ -356,6 +389,16 @@ type HttpRequestMethodConditionConfig struct {
 	noSmithyDocumentSerde
 }
 
+// An IPAM pool is a collection of IP address CIDRs. IPAM pools enable you to
+// organize your IP addresses according to your routing and security needs.
+type IpamPools struct {
+
+	// The ID of the IPv4 IPAM pool.
+	Ipv4IpamPoolId *string
+
+	noSmithyDocumentSerde
+}
+
 // Information about an Elastic Load Balancing resource limit for your Amazon Web
 // Services account.
 //
@@ -462,6 +505,75 @@ type ListenerAttribute struct {
 	//
 	//   - tcp.idle_timeout.seconds - The tcp idle timeout value, in seconds. The valid
 	//   range is 60-6000 seconds. The default is 350 seconds.
+	//
+	// The following attributes are only supported by Application Load Balancers.
+	//
+	//   - routing.http.request.x_amzn_mtls_clientcert_serial_number.header_name -
+	//   Enables you to modify the header name of the
+	//   X-Amzn-Mtls-Clientcert-Serial-Number HTTP request header.
+	//
+	//   - routing.http.request.x_amzn_mtls_clientcert_issuer.header_name - Enables you
+	//   to modify the header name of the X-Amzn-Mtls-Clientcert-Issuer HTTP request
+	//   header.
+	//
+	//   - routing.http.request.x_amzn_mtls_clientcert_subject.header_name - Enables
+	//   you to modify the header name of the X-Amzn-Mtls-Clientcert-Subject HTTP request
+	//   header.
+	//
+	//   - routing.http.request.x_amzn_mtls_clientcert_validity.header_name - Enables
+	//   you to modify the header name of the X-Amzn-Mtls-Clientcert-Validity HTTP
+	//   request header.
+	//
+	//   - routing.http.request.x_amzn_mtls_clientcert_leaf.header_name - Enables you
+	//   to modify the header name of the X-Amzn-Mtls-Clientcert-Leaf HTTP request
+	//   header.
+	//
+	//   - routing.http.request.x_amzn_mtls_clientcert.header_name - Enables you to
+	//   modify the header name of the X-Amzn-Mtls-Clientcert HTTP request header.
+	//
+	//   - routing.http.request.x_amzn_tls_version.header_name - Enables you to modify
+	//   the header name of the X-Amzn-Tls-Version HTTP request header.
+	//
+	//   - routing.http.request.x_amzn_tls_cipher_suite.header_name - Enables you to
+	//   modify the header name of the X-Amzn-Tls-Cipher-Suite HTTP request header.
+	//
+	//   - routing.http.response.server.enabled - Enables you to allow or remove the
+	//   HTTP response server header.
+	//
+	//   - routing.http.response.strict_transport_security.header_value - Informs
+	//   browsers that the site should only be accessed using HTTPS, and that any future
+	//   attempts to access it using HTTP should automatically be converted to HTTPS.
+	//
+	//   - routing.http.response.access_control_allow_origin.header_value - Specifies
+	//   which origins are allowed to access the server.
+	//
+	//   - routing.http.response.access_control_allow_methods.header_value - Returns
+	//   which HTTP methods are allowed when accessing the server from a different
+	//   origin.
+	//
+	//   - routing.http.response.access_control_allow_headers.header_value - Specifies
+	//   which headers can be used during the request.
+	//
+	//   - routing.http.response.access_control_allow_credentials.header_value -
+	//   Indicates whether the browser should include credentials such as cookies or
+	//   authentication when making requests.
+	//
+	//   - routing.http.response.access_control_expose_headers.header_value - Returns
+	//   which headers the browser can expose to the requesting client.
+	//
+	//   - routing.http.response.access_control_max_age.header_value - Specifies how
+	//   long the results of a preflight request can be cached, in seconds.
+	//
+	//   - routing.http.response.content_security_policy.header_value - Specifies
+	//   restrictions enforced by the browser to help minimize the risk of certain types
+	//   of security threats.
+	//
+	//   - routing.http.response.x_content_type_options.header_value - Indicates
+	//   whether the MIME types advertised in the Content-Type headers should be followed
+	//   and not be changed.
+	//
+	//   - routing.http.response.x_frame_options.header_value - Indicates whether the
+	//   browser is allowed to render a page in a frame, iframe, embed or object.
 	Key *string
 
 	// The value of the attribute.
@@ -489,21 +601,29 @@ type LoadBalancer struct {
 	// The public DNS name of the load balancer.
 	DNSName *string
 
+	// [Network Load Balancers with UDP listeners] Indicates whether to use an IPv6
+	// prefix from each subnet for source NAT. The IP address type must be dualstack .
+	// The default value is off .
+	EnablePrefixForIpv6SourceNat EnablePrefixForIpv6SourceNatEnum
+
 	// Indicates whether to evaluate inbound security group rules for traffic sent to
 	// a Network Load Balancer through Amazon Web Services PrivateLink.
 	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string
 
-	// [Application Load Balancers] The type of IP addresses used for public or
-	// private connections by the subnets attached to your load balancer. The possible
-	// values are ipv4 (for only IPv4 addresses), dualstack (for IPv4 and IPv6
-	// addresses), and dualstack-without-public-ipv4 (for IPv6 only public addresses,
-	// with private IPv4 and IPv6 addresses).
+	// The type of IP addresses used for public or private connections by the subnets
+	// attached to your load balancer.
 	//
-	// [Network Load Balancers and Gateway Load Balancers] The type of IP addresses
-	// used for public or private connections by the subnets attached to your load
-	// balancer. The possible values are ipv4 (for only IPv4 addresses) and dualstack
-	// (for IPv4 and IPv6 addresses).
+	// [Application Load Balancers] The possible values are ipv4 (IPv4 addresses),
+	// dualstack (IPv4 and IPv6 addresses), and dualstack-without-public-ipv4 (public
+	// IPv6 addresses and private IPv4 and IPv6 addresses).
+	//
+	// [Network Load Balancers and Gateway Load Balancers] The possible values are ipv4
+	// (IPv4 addresses) and dualstack (IPv4 and IPv6 addresses).
 	IpAddressType IpAddressType
+
+	// [Application Load Balancers] The IPAM pool in use by the load balancer, if
+	// configured.
+	IpamPools *IpamPools
 
 	// The Amazon Resource Name (ARN) of the load balancer.
 	LoadBalancerArn *string
@@ -569,7 +689,7 @@ type LoadBalancerAttribute struct {
 	//   - load_balancing.cross_zone.enabled - Indicates whether cross-zone load
 	//   balancing is enabled. The possible values are true and false . The default for
 	//   Network Load Balancers and Gateway Load Balancers is false . The default for
-	//   Application Load Balancers is true , and cannot be changed.
+	//   Application Load Balancers is true , and can't be changed.
 	//
 	// The following attributes are supported by both Application Load Balancers and
 	// Network Load Balancers:
@@ -589,6 +709,9 @@ type LoadBalancerAttribute struct {
 	//   balancer. It is set to false for internet-facing load balancers and true for
 	//   internal load balancers, preventing unintended access to your internal load
 	//   balancer through an internet gateway.
+	//
+	//   - zonal_shift.config.enabled - Indicates whether zonal shift is enabled. The
+	//   possible values are true and false . The default is false .
 	//
 	// The following attributes are supported by only Application Load Balancers:
 	//
@@ -719,8 +842,20 @@ type Matcher struct {
 	noSmithyDocumentSerde
 }
 
+// The minimum capacity for a load balancer.
+type MinimumLoadBalancerCapacity struct {
+
+	// The number of capacity units.
+	CapacityUnits *int32
+
+	noSmithyDocumentSerde
+}
+
 // Information about the mutual authentication attributes of a listener.
 type MutualAuthenticationAttributes struct {
+
+	// Indicates whether trust store CA certificate names are advertised.
+	AdvertiseTrustStoreCaNames AdvertiseTrustStoreCaNamesEnum
 
 	// Indicates whether expired client certificates are ignored.
 	IgnoreClientCertificateExpiry *bool
@@ -828,7 +963,7 @@ type RedirectActionConfig struct {
 	Port *string
 
 	// The protocol. You can specify HTTP, HTTPS, or #{protocol}. You can redirect
-	// HTTP to HTTP, HTTP to HTTPS, and HTTPS to HTTPS. You cannot redirect HTTPS to
+	// HTTP to HTTP, HTTP to HTTPS, and HTTPS to HTTPS. You can't redirect HTTPS to
 	// HTTP.
 	Protocol *string
 
@@ -888,7 +1023,7 @@ type Rule struct {
 // Each rule can optionally include up to one of each of the following conditions:
 // http-request-method , host-header , path-pattern , and source-ip . Each rule can
 // also optionally include one or more of each of the following conditions:
-// http-header and query-string . Note that the value for a condition cannot be
+// http-header and query-string . Note that the value for a condition can't be
 // empty.
 //
 // For more information, see [Quotas for your Application Load Balancers].
@@ -1033,6 +1168,12 @@ type SubnetMapping struct {
 	// [Network Load Balancers] The private IPv4 address for an internal load balancer.
 	PrivateIPv4Address *string
 
+	// [Network Load Balancers with UDP listeners] The IPv6 prefix to use for source
+	// NAT. Specify an IPv6 prefix (/80 netmask) from the subnet CIDR block or
+	// auto_assigned to use an IPv6 prefix selected at random from the subnet CIDR
+	// block.
+	SourceNatIpv6Prefix *string
+
 	// The ID of the subnet.
 	SubnetId *string
 
@@ -1138,9 +1279,7 @@ type TargetGroup struct {
 	// an unhealthy target healthy.
 	HealthyThresholdCount *int32
 
-	// The type of IP address used for this target group. The possible values are ipv4
-	// and ipv6 . This is an optional parameter. If not specified, the IP address type
-	// defaults to ipv4 .
+	// The IP address type. The default value is ipv4 .
 	IpAddressType TargetGroupIpAddressTypeEnum
 
 	// The Amazon Resource Name (ARN) of the load balancer that routes traffic to this
@@ -1297,7 +1436,7 @@ type TargetGroupAttribute struct {
 	//   - preserve_client_ip.enabled - Indicates whether client IP preservation is
 	//   enabled. The value is true or false . The default is disabled if the target
 	//   group type is IP address and the target group protocol is TCP or TLS. Otherwise,
-	//   the default is enabled. Client IP preservation cannot be disabled for UDP and
+	//   the default is enabled. Client IP preservation can't be disabled for UDP and
 	//   TCP_UDP target groups.
 	//
 	//   - proxy_protocol_v2.enabled - Indicates whether Proxy Protocol version 2 is
@@ -1305,7 +1444,8 @@ type TargetGroupAttribute struct {
 	//
 	//   - target_health_state.unhealthy.connection_termination.enabled - Indicates
 	//   whether the load balancer terminates connections to unhealthy targets. The value
-	//   is true or false . The default is true .
+	//   is true or false . The default is true . This attribute can't be enabled for
+	//   UDP and TCP_UDP target groups.
 	//
 	//   - target_health_state.unhealthy.draining_interval_seconds - The amount of time
 	//   for Elastic Load Balancing to wait before changing the state of an unhealthy
@@ -1326,7 +1466,7 @@ type TargetGroupAttribute struct {
 	//   - target_failover.on_unhealthy - Indicates how the Gateway Load Balancer
 	//   handles existing flows when a target is unhealthy. The possible values are
 	//   rebalance and no_rebalance . The default is no_rebalance . The two attributes (
-	//   target_failover.on_deregistration and target_failover.on_unhealthy ) cannot be
+	//   target_failover.on_deregistration and target_failover.on_unhealthy ) can't be
 	//   set independently. The value you set for both attributes must be the same.
 	Key *string
 
@@ -1434,6 +1574,9 @@ type TargetHealth struct {
 // Information about the health of a target.
 type TargetHealthDescription struct {
 
+	// The administrative override information for the target.
+	AdministrativeOverride *AdministrativeOverride
+
 	// The anomaly detection result for the target.
 	//
 	// If no anomalies were detected, the result is normal .
@@ -1497,6 +1640,21 @@ type TrustStoreRevocation struct {
 
 	// The Amazon Resource Name (ARN) of the trust store.
 	TrustStoreArn *string
+
+	noSmithyDocumentSerde
+}
+
+// The capacity reservation status for each availability zone.
+type ZonalCapacityReservationState struct {
+
+	// Information about the availability zone.
+	AvailabilityZone *string
+
+	// The number of effective capacity units.
+	EffectiveCapacityUnits *float64
+
+	// The state of the capacity reservation.
+	State *CapacityReservationStatus
 
 	noSmithyDocumentSerde
 }

@@ -42,8 +42,14 @@ type ListPartnerEventSourcesInput struct {
 	// to retrieve the next set of results.
 	Limit *int32
 
-	// The token returned by a previous call to this operation. Specifying this
-	// retrieves the next set of results.
+	// The token returned by a previous call, which you can use to retrieve the next
+	// set of results.
+	//
+	// The value of nextToken is a unique pagination token for each page. To retrieve
+	// the next page of results, make the call again using the returned token. Keep all
+	// other arguments unchanged.
+	//
+	// Using an expired pagination token results in an HTTP 400 InvalidToken error.
 	NextToken *string
 
 	noSmithyDocumentSerde
@@ -51,8 +57,14 @@ type ListPartnerEventSourcesInput struct {
 
 type ListPartnerEventSourcesOutput struct {
 
-	// A token you can use in a subsequent operation to retrieve the next set of
-	// results.
+	// A token indicating there are more results available. If there are no more
+	// results, no token is included in the response.
+	//
+	// The value of nextToken is a unique pagination token for each page. To retrieve
+	// the next page of results, make the call again using the returned token. Keep all
+	// other arguments unchanged.
+	//
+	// Using an expired pagination token results in an HTTP 400 InvalidToken error.
 	NextToken *string
 
 	// The list of partner event sources returned by the operation.
@@ -126,6 +138,9 @@ func (c *Client) addOperationListPartnerEventSourcesMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpListPartnerEventSourcesValidationMiddleware(stack); err != nil {

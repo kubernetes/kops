@@ -44,6 +44,14 @@ type UpdateConnectionInput struct {
 	// A description for the connection.
 	Description *string
 
+	// For connections to private resource endpoints, the parameters to use for
+	// invoking the resource endpoint.
+	//
+	// For more information, see [Connecting to private resources] in the Amazon EventBridge User Guide .
+	//
+	// [Connecting to private resources]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-target-connection-private.html
+	InvocationConnectivityParameters *types.ConnectivityResourceParameters
+
 	noSmithyDocumentSerde
 }
 
@@ -132,6 +140,9 @@ func (c *Client) addOperationUpdateConnectionMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpUpdateConnectionValidationMiddleware(stack); err != nil {

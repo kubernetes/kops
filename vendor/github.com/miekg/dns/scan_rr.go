@@ -55,7 +55,10 @@ func endingToTxtSlice(c *zlexer, errstr string) ([]string, *ParseError) {
 			sx := []string{}
 			p := 0
 			for {
-				i := escapedStringOffset(l.token[p:], 255)
+				i, ok := escapedStringOffset(l.token[p:], 255)
+				if !ok {
+					return nil, &ParseError{err: errstr, lex: l}
+				}
 				if i != -1 && p+i != len(l.token) {
 					sx = append(sx, l.token[p:p+i])
 				} else {
@@ -1919,29 +1922,36 @@ func (rr *APL) parse(c *zlexer, o string) *ParseError {
 
 // escapedStringOffset finds the offset within a string (which may contain escape
 // sequences) that corresponds to a certain byte offset. If the input offset is
-// out of bounds, -1 is returned.
-func escapedStringOffset(s string, byteOffset int) int {
-	if byteOffset == 0 {
-		return 0
+// out of bounds, -1 is returned (which is *not* considered an error).
+func escapedStringOffset(s string, desiredByteOffset int) (int, bool) {
+	if desiredByteOffset == 0 {
+		return 0, true
 	}
 
-	offset := 0
-	for i := 0; i < len(s); i++ {
-		offset += 1
+	currentByteOffset, i := 0, 0
+
+	for i < len(s) {
+		currentByteOffset += 1
 
 		// Skip escape sequences
 		if s[i] != '\\' {
-			// Not an escape sequence; nothing to do.
-		} else if isDDD(s[i+1:]) {
-			i += 3
-		} else {
+			// Single plain byte, not an escape sequence.
 			i++
+		} else if isDDD(s[i+1:]) {
+			// Skip backslash and DDD.
+			i += 4
+		} else if len(s[i+1:]) < 1 {
+			// No character following the backslash; that's an error.
+			return 0, false
+		} else {
+			// Skip backslash and following byte.
+			i += 2
 		}
 
-		if offset >= byteOffset {
-			return i + 1
+		if currentByteOffset >= desiredByteOffset {
+			return i, true
 		}
 	}
 
-	return -1
+	return -1, true
 }

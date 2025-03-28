@@ -160,6 +160,9 @@ func (c *Client) addOperationListOpenIDConnectProviderTagsMiddlewares(stack *mid
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListOpenIDConnectProviderTagsValidationMiddleware(stack); err != nil {
 		return err
 	}

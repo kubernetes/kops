@@ -1,5 +1,26 @@
 # Release History
 
+## 1.7.0 (2025-02-27)
+### Features Added
+
+- New value `SKUNamePremiumV2LRS`, `SKUNamePremiumV2ZRS`, `SKUNameStandardV2GRS`, `SKUNameStandardV2GZRS`, `SKUNameStandardV2LRS`, `SKUNameStandardV2ZRS` added to enum type `SKUName`
+- New function `*FileServicesClient.GetServiceUsage(context.Context, string, string, *FileServicesClientGetServiceUsageOptions) (FileServicesClientGetServiceUsageResponse, error)`
+- New function `*FileServicesClient.NewListServiceUsagesPager(string, string, *FileServicesClientListServiceUsagesOptions) *runtime.Pager[FileServicesClientListServiceUsagesResponse]`
+- New struct `AccountLimits`
+- New struct `AccountUsage`
+- New struct `AccountUsageElements`
+- New struct `BurstingConstants`
+- New struct `FileServiceUsage`
+- New struct `FileServiceUsageProperties`
+- New struct `FileServiceUsages`
+- New struct `FileShareLimits`
+- New struct `FileSharePropertiesFileSharePaidBursting`
+- New struct `FileShareRecommendations`
+- New struct `ObjectReplicationPolicyPropertiesMetrics`
+- New field `FileSharePaidBursting`, `IncludedBurstIops`, `MaxBurstCreditsForIops`, `NextAllowedProvisionedBandwidthDowngradeTime`, `NextAllowedProvisionedIopsDowngradeTime`, `NextAllowedQuotaDowngradeTime`, `ProvisionedBandwidthMibps`, `ProvisionedIops` in struct `FileShareProperties`
+- New field `Metrics` in struct `ObjectReplicationPolicyProperties`
+
+
 ## 1.6.0 (2024-06-28)
 ### Features Added
 

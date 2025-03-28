@@ -156,6 +156,9 @@ func (c *Client) addOperationListInstanceProfilesForRoleMiddlewares(stack *middl
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListInstanceProfilesForRoleValidationMiddleware(stack); err != nil {
 		return err
 	}

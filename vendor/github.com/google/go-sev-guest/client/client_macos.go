@@ -52,3 +52,31 @@ func (*MacOSDevice) Ioctl(_ uintptr, _ any) (uintptr, error) {
 func (*MacOSDevice) Product() *spb.SevProduct {
 	return &spb.SevProduct{}
 }
+
+// MacOSQuoteProvider implements the QuoteProvider interface with Linux's configfs-tsm.
+type MacOSQuoteProvider struct{}
+
+// IsSupported checks if the quote provider is supported.
+func (*MacOSQuoteProvider) IsSupported() bool {
+	return false
+}
+
+// GetRawQuote returns byte format attestation plus certificate table via ConfigFS.
+func (*MacOSQuoteProvider) GetRawQuote(reportData [64]byte) ([]byte, error) {
+	return nil, fmt.Errorf("MacOS is unsupported")
+}
+
+// GetRawQuoteAtLevel returns byte format attestation plus certificate table via ConfigFS.
+func (*MacOSQuoteProvider) GetRawQuoteAtLevel(reportData [64]byte, level uint) ([]byte, error) {
+	return nil, fmt.Errorf("MacOS is unsupported")
+}
+
+// GetQuoteProvider returns a supported SEV-SNP QuoteProvider.
+func GetQuoteProvider() (QuoteProvider, error) {
+	return nil, fmt.Errorf("MacOS is unsupported")
+}
+
+// GetLeveledQuoteProvider returns a supported SEV-SNP LeveledQuoteProvider.
+func GetLeveledQuoteProvider() (LeveledQuoteProvider, error) {
+	return nil, fmt.Errorf("MacOS is unsupported")
+}

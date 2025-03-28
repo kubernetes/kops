@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20240719",
+  "revision": "20250227",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2753,6 +2753,10 @@
           "description": "A mutable string of at most 1024 characters associated with this resource for the user's convenience. Has no effect on the policy's function.",
           "type": "string"
         },
+        "dns64Config": {
+          "$ref": "PolicyDns64Config",
+          "description": "Configurations related to DNS64 for this Policy."
+        },
         "enableInboundForwarding": {
           "description": "Allows networks bound to this policy to receive DNS queries sent by VMs or applications over VPN connections. When enabled, a virtual IP address is allocated from each of the subnetworks that are bound to this policy.",
           "type": "boolean"
@@ -2826,6 +2830,35 @@
         },
         "kind": {
           "default": "dns#policyAlternativeNameServerConfigTargetNameServer",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PolicyDns64Config": {
+      "description": "DNS64 policies",
+      "id": "PolicyDns64Config",
+      "properties": {
+        "kind": {
+          "default": "dns#policyDns64Config",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "PolicyDns64ConfigScope",
+          "description": "The scope to which DNS64 config will be applied to."
+        }
+      },
+      "type": "object"
+    },
+    "PolicyDns64ConfigScope": {
+      "id": "PolicyDns64ConfigScope",
+      "properties": {
+        "allQueries": {
+          "description": "Controls whether DNS64 is enabled globally at the network level.",
+          "type": "boolean"
+        },
+        "kind": {
+          "default": "dns#policyDns64ConfigScope",
           "type": "string"
         }
       },
@@ -3014,7 +3047,7 @@
           "$ref": "RRSetRoutingPolicyGeoPolicy"
         },
         "healthCheck": {
-          "description": "The selfLink attribute of the HealthCheck resource to use for this RRSetRoutingPolicy. https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks",
+          "description": "The fully qualified URL of the HealthCheck to use for this RRSetRoutingPolicy. Format this URL like `https://www.googleapis.com/compute/v1/projects/{project}/global/healthChecks/{healthCheck}`. https://cloud.google.com/compute/docs/reference/rest/v1/healthChecks",
           "type": "string"
         },
         "kind": {
@@ -3075,7 +3108,7 @@
           "type": "array"
         },
         "signatureRrdatas": {
-          "description": "DNSSEC generated signatures for all the `rrdata` within this item. If health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 IP address per item.",
+          "description": "DNSSEC generated signatures for all the `rrdata` within this item. When using health-checked targets for DNSSEC-enabled zones, you can only use at most one health-checked IP address per item.",
           "items": {
             "type": "string"
           },
@@ -3085,7 +3118,7 @@
       "type": "object"
     },
     "RRSetRoutingPolicyHealthCheckTargets": {
-      "description": "HealthCheckTargets describes endpoints to health-check when responding to Routing Policy queries. Only the healthy endpoints will be included in the response.",
+      "description": "HealthCheckTargets describes endpoints to health-check when responding to Routing Policy queries. Only the healthy endpoints will be included in the response. Set either `internal_load_balancer` or `external_endpoints`. Do not set both.",
       "id": "RRSetRoutingPolicyHealthCheckTargets",
       "properties": {
         "externalEndpoints": {
@@ -3226,7 +3259,7 @@
           "type": "array"
         },
         "signatureRrdatas": {
-          "description": "DNSSEC generated signatures for all the `rrdata` within this item. Note that if health checked targets are provided for DNSSEC enabled zones, there's a restriction of 1 IP address per item.",
+          "description": "DNSSEC generated signatures for all the `rrdata` within this item. When using health-checked targets for DNSSEC-enabled zones, you can only use at most one health-checked IP address per item.",
           "items": {
             "type": "string"
           },

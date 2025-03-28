@@ -127,6 +127,9 @@ func (c *Client) addOperationDescribeTrustStoreRevocationsMiddlewares(stack *mid
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDescribeTrustStoreRevocationsValidationMiddleware(stack); err != nil {
 		return err
 	}

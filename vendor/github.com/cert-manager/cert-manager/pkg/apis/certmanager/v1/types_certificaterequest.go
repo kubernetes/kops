@@ -220,7 +220,7 @@ type CertificateRequestCondition struct {
 	Message string `json:"message,omitempty"`
 }
 
-// CertificateRequestConditionType represents an Certificate condition value.
+// CertificateRequestConditionType represents a Certificate condition value.
 type CertificateRequestConditionType string
 
 const (

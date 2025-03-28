@@ -58,6 +58,14 @@ type DescribeConnectionOutput struct {
 	// The description for the connection retrieved.
 	Description *string
 
+	// For connections to private resource endpoints. The parameters EventBridge uses
+	// to invoke the resource endpoint.
+	//
+	// For more information, see [Connecting to private resources] in the Amazon EventBridge User Guide .
+	//
+	// [Connecting to private resources]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-target-connection-private.html
+	InvocationConnectivityParameters *types.DescribeConnectionConnectivityParameters
+
 	// A time stamp for the time that the connection was last authorized.
 	LastAuthorizedTime *time.Time
 
@@ -142,6 +150,9 @@ func (c *Client) addOperationDescribeConnectionMiddlewares(stack *middleware.Sta
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribeConnectionValidationMiddleware(stack); err != nil {

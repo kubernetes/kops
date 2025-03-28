@@ -42,6 +42,14 @@ type DescribePatchGroupStateOutput struct {
 	// The number of managed nodes in the patch group.
 	Instances int32
 
+	// The number of managed nodes for which security-related patches are available
+	// but not approved because because they didn't meet the patch baseline
+	// requirements. For example, an updated version of a patch might have been
+	// released before the specified auto-approval period was over.
+	//
+	// Applies to Windows Server managed nodes only.
+	InstancesWithAvailableSecurityUpdates *int32
+
 	// The number of managed nodes where patches that are specified as Critical for
 	// compliance reporting in the patch baseline aren't installed. These patches might
 	// be missing, have failed installation, were rejected, or were installed but
@@ -91,8 +99,8 @@ type DescribePatchGroupStateOutput struct {
 	InstancesWithSecurityNonCompliantPatches *int32
 
 	// The number of managed nodes with NotApplicable patches beyond the supported
-	// limit, which aren't reported by name to Inventory. Inventory is a capability of
-	// Amazon Web Services Systems Manager.
+	// limit, which aren't reported by name to Inventory. Inventory is a tool in Amazon
+	// Web Services Systems Manager.
 	InstancesWithUnreportedNotApplicablePatches *int32
 
 	// Metadata pertaining to the operation's result.
@@ -163,6 +171,9 @@ func (c *Client) addOperationDescribePatchGroupStateMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribePatchGroupStateValidationMiddleware(stack); err != nil {

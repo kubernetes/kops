@@ -209,6 +209,7 @@ func (t *Transfer) inIxfr(q *Msg, c chan *Envelope) {
 //	ch := make(chan *dns.Envelope)
 //	tr := new(dns.Transfer)
 //	var wg sync.WaitGroup
+//	wg.Add(1)
 //	go func() {
 //		tr.Out(w, r, ch)
 //		wg.Done()

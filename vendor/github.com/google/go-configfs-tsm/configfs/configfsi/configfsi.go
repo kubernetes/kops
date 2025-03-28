@@ -15,6 +15,10 @@
 // Package configfsi defines an interface for interaction with the TSM configfs subsystem.
 package configfsi
 
+import (
+	"os"
+)
+
 // Client abstracts the filesystem operations for interacting with configfs files.
 type Client interface {
 	// MkdirTemp creates a new temporary directory in the directory dir and returns the pathname
@@ -22,6 +26,8 @@ type Client interface {
 	MkdirTemp(dir, pattern string) (string, error)
 	// ReadFile reads the named file and returns the contents.
 	ReadFile(name string) ([]byte, error)
+	// ReadDir reads the directory named by dirname and returns a list of directory entries sorted by filename.
+	ReadDir(dirname string) ([]os.DirEntry, error)
 	// WriteFile writes data to the named file, creating it if necessary. The permissions
 	// are implementation-defined.
 	WriteFile(name string, contents []byte) error

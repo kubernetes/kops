@@ -77,7 +77,7 @@ type DescribeVpcsInput struct {
 	//
 	//   - state - The state of the VPC ( pending | available ).
 	//
-	//   - tag : - The key/value combination of a tag assigned to the resource. Use the
+	//   - tag - The key/value combination of a tag assigned to the resource. Use the
 	//   tag key in the filter name and the tag value as the filter value. For example,
 	//   to find all resources that have a tag with the key Owner and the value TeamA ,
 	//   specify tag:Owner for the filter name and TeamA for the filter value.
@@ -182,6 +182,9 @@ func (c *Client) addOperationDescribeVpcsMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeVpcs(options.Region), middleware.Before); err != nil {
@@ -396,6 +399,9 @@ func vpcAvailableStateRetryable(ctx context.Context, input *DescribeVpcsInput, o
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -573,6 +579,9 @@ func vpcExistsStateRetryable(ctx context.Context, input *DescribeVpcsInput, outp
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
