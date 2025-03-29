@@ -18,7 +18,7 @@ require (
 	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.3
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kops v1.30.0
+	k8s.io/kops v1.31.0
 	k8s.io/release v0.16.4
 	sigs.k8s.io/boskos v0.0.0-20240624145324-1e4de26c366a
 	sigs.k8s.io/kubetest2 v0.0.0-20231218114518-71238a9645df
