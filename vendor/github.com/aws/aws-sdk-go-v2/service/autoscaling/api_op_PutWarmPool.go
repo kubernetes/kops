@@ -19,11 +19,13 @@ import (
 // This operation must be called from the Region in which the Auto Scaling group
 // was created.
 //
-// You can view the instances in the warm pool using the DescribeWarmPool API call. If you are no
-// longer using a warm pool, you can delete it by calling the DeleteWarmPoolAPI.
+// You can view the instances in the warm pool using the [DescribeWarmPool] API call. If you are no
+// longer using a warm pool, you can delete it by calling the [DeleteWarmPool]API.
 //
 // For more information, see [Warm pools for Amazon EC2 Auto Scaling] in the Amazon EC2 Auto Scaling User Guide.
 //
+// [DeleteWarmPool]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DeleteWarmPool.html
+// [DescribeWarmPool]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeWarmPool.html
 // [Warm pools for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-warm-pools.html
 func (c *Client) PutWarmPool(ctx context.Context, params *PutWarmPoolInput, optFns ...func(*Options)) (*PutWarmPoolOutput, error) {
 	if params == nil {
@@ -154,6 +156,9 @@ func (c *Client) addOperationPutWarmPoolMiddlewares(stack *middleware.Stack, opt
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutWarmPoolValidationMiddleware(stack); err != nil {

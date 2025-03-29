@@ -59,20 +59,23 @@ type CreateLoadBalancerInput struct {
 	// pool (CoIP pool).
 	CustomerOwnedIpv4Pool *string
 
-	// Note: Internal load balancers must use the ipv4 IP address type.
+	// [Network Load Balancers with UDP listeners] Indicates whether to use an IPv6
+	// prefix from each subnet for source NAT. The IP address type must be dualstack .
+	// The default value is off .
+	EnablePrefixForIpv6SourceNat types.EnablePrefixForIpv6SourceNatEnum
+
+	// The IP address type. Internal load balancers must use ipv4 .
 	//
-	// [Application Load Balancers] The IP address type. The possible values are ipv4
-	// (for only IPv4 addresses), dualstack (for IPv4 and IPv6 addresses), and
-	// dualstack-without-public-ipv4 (for IPv6 only public addresses, with private IPv4
-	// and IPv6 addresses).
+	// [Application Load Balancers] The possible values are ipv4 (IPv4 addresses),
+	// dualstack (IPv4 and IPv6 addresses), and dualstack-without-public-ipv4 (public
+	// IPv6 addresses and private IPv4 and IPv6 addresses).
 	//
-	// [Network Load Balancers] The IP address type. The possible values are ipv4 (for
-	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses). You can’t
-	// specify dualstack for a load balancer with a UDP or TCP_UDP listener.
-	//
-	// [Gateway Load Balancers] The IP address type. The possible values are ipv4 (for
-	// only IPv4 addresses) and dualstack (for IPv4 and IPv6 addresses).
+	// [Network Load Balancers and Gateway Load Balancers] The possible values are ipv4
+	// (IPv4 addresses) and dualstack (IPv4 and IPv6 addresses).
 	IpAddressType types.IpAddressType
+
+	// [Application Load Balancers] The IPAM pools to use with the load balancer.
+	IpamPools *types.IpamPools
 
 	// The nodes of an Internet-facing load balancer have public IP addresses. The DNS
 	// name of an Internet-facing load balancer is publicly resolvable to the public IP
@@ -86,7 +89,7 @@ type CreateLoadBalancerInput struct {
 	//
 	// The default is an Internet-facing load balancer.
 	//
-	// You cannot specify a scheme for a Gateway Load Balancer.
+	// You can't specify a scheme for a Gateway Load Balancer.
 	Scheme types.LoadBalancerSchemeEnum
 
 	// [Application Load Balancers and Network Load Balancers] The IDs of the security
@@ -97,7 +100,7 @@ type CreateLoadBalancerInput struct {
 	// You must specify either subnets or subnet mappings, but not both.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two
-	// Availability Zones. You cannot specify Elastic IP addresses for your subnets.
+	// Availability Zones. You can't specify Elastic IP addresses for your subnets.
 	//
 	// [Application Load Balancers on Outposts] You must specify one Outpost subnet.
 	//
@@ -112,7 +115,7 @@ type CreateLoadBalancerInput struct {
 	// subnet.
 	//
 	// [Gateway Load Balancers] You can specify subnets from one or more Availability
-	// Zones. You cannot specify Elastic IP addresses for your subnets.
+	// Zones. You can't specify Elastic IP addresses for your subnets.
 	SubnetMappings []types.SubnetMapping
 
 	// The IDs of the subnets. You can specify only one subnet per Availability Zone.
@@ -127,11 +130,8 @@ type CreateLoadBalancerInput struct {
 	// [Application Load Balancers on Local Zones] You can specify subnets from one or
 	// more Local Zones.
 	//
-	// [Network Load Balancers] You can specify subnets from one or more Availability
-	// Zones.
-	//
-	// [Gateway Load Balancers] You can specify subnets from one or more Availability
-	// Zones.
+	// [Network Load Balancers and Gateway Load Balancers] You can specify subnets
+	// from one or more Availability Zones.
 	Subnets []string
 
 	// The tags to assign to the load balancer.
@@ -216,6 +216,9 @@ func (c *Client) addOperationCreateLoadBalancerMiddlewares(stack *middleware.Sta
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateLoadBalancerValidationMiddleware(stack); err != nil {

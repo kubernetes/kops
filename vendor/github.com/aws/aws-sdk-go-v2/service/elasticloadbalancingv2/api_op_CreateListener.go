@@ -82,14 +82,14 @@ type CreateListenerInput struct {
 	// The mutual authentication configuration information.
 	MutualAuthentication *types.MutualAuthenticationAttributes
 
-	// The port on which the load balancer is listening. You cannot specify a port for
+	// The port on which the load balancer is listening. You can't specify a port for
 	// a Gateway Load Balancer.
 	Port *int32
 
 	// The protocol for connections from clients to the load balancer. For Application
 	// Load Balancers, the supported protocols are HTTP and HTTPS. For Network Load
 	// Balancers, the supported protocols are TCP, TLS, UDP, and TCP_UDP. You can’t
-	// specify the UDP or TCP_UDP protocol if dual-stack mode is enabled. You cannot
+	// specify the UDP or TCP_UDP protocol if dual-stack mode is enabled. You can't
 	// specify a protocol for a Gateway Load Balancer.
 	Protocol types.ProtocolEnum
 
@@ -181,6 +181,9 @@ func (c *Client) addOperationCreateListenerMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateListenerValidationMiddleware(stack); err != nil {

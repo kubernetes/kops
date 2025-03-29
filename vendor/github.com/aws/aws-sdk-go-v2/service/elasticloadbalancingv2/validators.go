@@ -310,6 +310,26 @@ func (m *validateOpDeregisterTargets) HandleInitialize(ctx context.Context, in m
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpDescribeCapacityReservation struct {
+}
+
+func (*validateOpDescribeCapacityReservation) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpDescribeCapacityReservation) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*DescribeCapacityReservationInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpDescribeCapacityReservationInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpDescribeListenerAttributes struct {
 }
 
@@ -525,6 +545,46 @@ func (m *validateOpGetTrustStoreRevocationContent) HandleInitialize(ctx context.
 		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
 	}
 	if err := validateOpGetTrustStoreRevocationContentInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpModifyCapacityReservation struct {
+}
+
+func (*validateOpModifyCapacityReservation) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpModifyCapacityReservation) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ModifyCapacityReservationInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpModifyCapacityReservationInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
+type validateOpModifyIpPools struct {
+}
+
+func (*validateOpModifyIpPools) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpModifyIpPools) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*ModifyIpPoolsInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpModifyIpPoolsInput(input); err != nil {
 		return out, metadata, err
 	}
 	return next.HandleInitialize(ctx, in)
@@ -890,6 +950,10 @@ func addOpDeregisterTargetsValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDeregisterTargets{}, middleware.After)
 }
 
+func addOpDescribeCapacityReservationValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpDescribeCapacityReservation{}, middleware.After)
+}
+
 func addOpDescribeListenerAttributesValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpDescribeListenerAttributes{}, middleware.After)
 }
@@ -932,6 +996,14 @@ func addOpGetTrustStoreCaCertificatesBundleValidationMiddleware(stack *middlewar
 
 func addOpGetTrustStoreRevocationContentValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetTrustStoreRevocationContent{}, middleware.After)
+}
+
+func addOpModifyCapacityReservationValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpModifyCapacityReservation{}, middleware.After)
+}
+
+func addOpModifyIpPoolsValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpModifyIpPools{}, middleware.After)
 }
 
 func addOpModifyListenerAttributesValidationMiddleware(stack *middleware.Stack) error {
@@ -1484,6 +1556,21 @@ func validateOpDeregisterTargetsInput(v *DeregisterTargetsInput) error {
 	}
 }
 
+func validateOpDescribeCapacityReservationInput(v *DescribeCapacityReservationInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "DescribeCapacityReservationInput"}
+	if v.LoadBalancerArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("LoadBalancerArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpDescribeListenerAttributesInput(v *DescribeListenerAttributesInput) error {
 	if v == nil {
 		return nil
@@ -1649,6 +1736,36 @@ func validateOpGetTrustStoreRevocationContentInput(v *GetTrustStoreRevocationCon
 	}
 	if v.RevocationId == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("RevocationId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpModifyCapacityReservationInput(v *ModifyCapacityReservationInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ModifyCapacityReservationInput"}
+	if v.LoadBalancerArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("LoadBalancerArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpModifyIpPoolsInput(v *ModifyIpPoolsInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ModifyIpPoolsInput"}
+	if v.LoadBalancerArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("LoadBalancerArn"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

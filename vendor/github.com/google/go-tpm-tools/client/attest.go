@@ -137,10 +137,10 @@ func (k *Key) getCertificateChain(client *http.Client) ([][]byte, error) {
 	return nil, fmt.Errorf("max certificate chain length (%v) exceeded", maxCertChainLength)
 }
 
-// SevSnpDevice encapsulates the SEV-SNP attestation device to add its attestation report
+// SevSnpQuoteProvider encapsulates the SEV-SNP attestation device to add its attestation report
 // to a pb.Attestation.
-type SevSnpDevice struct {
-	Device sg.Device
+type SevSnpQuoteProvider struct {
+	QuoteProvider sg.QuoteProvider
 }
 
 // TdxDevice encapsulates the TDX attestation device to add its attestation quote
@@ -156,20 +156,10 @@ type TdxQuoteProvider struct {
 	QuoteProvider tg.QuoteProvider
 }
 
-// CreateSevSnpDevice opens the SEV-SNP attestation driver and wraps it with behavior
-// that allows it to add an attestation report to pb.Attestation.
-func CreateSevSnpDevice() (*SevSnpDevice, error) {
-	d, err := sg.OpenDevice()
-	if err != nil {
-		return nil, err
-	}
-	return &SevSnpDevice{Device: d}, nil
-}
-
 // AddAttestation will get the SEV-SNP attestation report given opts.TEENonce with
 // associated certificates and add them to `attestation`. If opts.TEENonce is empty,
 // then uses contents of opts.Nonce.
-func (d *SevSnpDevice) AddAttestation(attestation *pb.Attestation, opts AttestOpts) error {
+func (d *SevSnpQuoteProvider) AddAttestation(attestation *pb.Attestation, opts AttestOpts) error {
 	var snpNonce [sabi.ReportDataSize]byte
 	if len(opts.TEENonce) == 0 {
 		copy(snpNonce[:], opts.Nonce)
@@ -178,7 +168,11 @@ func (d *SevSnpDevice) AddAttestation(attestation *pb.Attestation, opts AttestOp
 	} else {
 		copy(snpNonce[:], opts.TEENonce)
 	}
-	extReport, err := sg.GetExtendedReport(d.Device, snpNonce)
+	raw, err := d.QuoteProvider.GetRawQuote(snpNonce)
+	if err != nil {
+		return err
+	}
+	extReport, err := sabi.ReportCertsToProto(raw)
 	if err != nil {
 		return err
 	}
@@ -188,15 +182,22 @@ func (d *SevSnpDevice) AddAttestation(attestation *pb.Attestation, opts AttestOp
 	return nil
 }
 
-// Close will free the device handle held by the SevSnpDevice. Calling more
-// than once has no effect.
-func (d *SevSnpDevice) Close() error {
-	if d.Device != nil {
-		err := d.Device.Close()
-		d.Device = nil
-		return err
-	}
+// Close is a no-op.
+func (d *SevSnpQuoteProvider) Close() error {
 	return nil
+}
+
+// CreateSevSnpQuoteProvider creates the SEV-SNP quote provider and wraps it with behavior
+// that allows it to add an attestation quote to pb.Attestation.
+func CreateSevSnpQuoteProvider() (TEEDevice, error) {
+	qp, err := sg.GetQuoteProvider()
+	if err != nil {
+		return nil, err
+	}
+	if !qp.IsSupported() {
+		return nil, fmt.Errorf("sev-snp attestation reports not available")
+	}
+	return &SevSnpQuoteProvider{QuoteProvider: qp}, nil
 }
 
 // CreateTdxDevice opens the TDX attestation driver and wraps it with behavior
@@ -319,11 +320,10 @@ func getTEEAttestationReport(attestation *pb.Attestation, opts AttestOpts) error
 	}
 
 	// Try SEV-SNP.
-	if device, err := CreateSevSnpDevice(); err == nil {
+	if sevqp, err := CreateSevSnpQuoteProvider(); err == nil {
 		// Don't return errors if the attestation collection fails, since
 		// the user didn't specify a TEEDevice.
-		device.AddAttestation(attestation, opts)
-		device.Close()
+		sevqp.AddAttestation(attestation, opts)
 		return nil
 	}
 

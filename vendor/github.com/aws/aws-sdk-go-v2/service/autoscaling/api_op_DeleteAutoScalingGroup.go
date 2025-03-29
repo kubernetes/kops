@@ -17,11 +17,11 @@ import (
 // operation will also terminate the EC2 instances. If the group has a warm pool,
 // the force delete option also deletes the warm pool.
 //
-// To remove instances from the Auto Scaling group before deleting it, call the DetachInstances
+// To remove instances from the Auto Scaling group before deleting it, call the [DetachInstances]
 // API with the list of instances and the option to decrement the desired capacity.
 // This ensures that Amazon EC2 Auto Scaling does not launch replacement instances.
 //
-// To terminate all instances before deleting the Auto Scaling group, call the UpdateAutoScalingGroup
+// To terminate all instances before deleting the Auto Scaling group, call the [UpdateAutoScalingGroup]
 // API and set the minimum size and desired capacity of the Auto Scaling group to
 // zero.
 //
@@ -31,6 +31,8 @@ import (
 // For more information, see [Delete your Auto Scaling infrastructure] in the Amazon EC2 Auto Scaling User Guide.
 //
 // [Delete your Auto Scaling infrastructure]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-process-shutdown.html
+// [DetachInstances]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DetachInstances.html
+// [UpdateAutoScalingGroup]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_UpdateAutoScalingGroup.html
 func (c *Client) DeleteAutoScalingGroup(ctx context.Context, params *DeleteAutoScalingGroupInput, optFns ...func(*Options)) (*DeleteAutoScalingGroupOutput, error) {
 	if params == nil {
 		params = &DeleteAutoScalingGroupInput{}
@@ -130,6 +132,9 @@ func (c *Client) addOperationDeleteAutoScalingGroupMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeleteAutoScalingGroupValidationMiddleware(stack); err != nil {

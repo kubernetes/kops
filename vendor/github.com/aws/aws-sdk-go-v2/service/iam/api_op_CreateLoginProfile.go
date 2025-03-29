@@ -42,6 +42,9 @@ type CreateLoginProfileInput struct {
 
 	// The new password for the user.
 	//
+	// This parameter must be omitted when you make the request with an [AssumeRoot] session. It
+	// is required in all other cases.
+	//
 	// The [regex pattern] that is used to validate this parameter is a string of characters. That
 	// string can include almost any printable ASCII character from the space ( \u0020
 	// ) through the end of the ASCII character range ( \u00FF ). You can also include
@@ -51,24 +54,26 @@ type CreateLoginProfileInput struct {
 	// ability to type certain characters because they have special meaning within that
 	// tool.
 	//
+	// [AssumeRoot]: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoot.html
 	// [regex pattern]: http://wikipedia.org/wiki/regex
-	//
-	// This member is required.
 	Password *string
 
+	// Specifies whether the user is required to set a new password on next sign-in.
+	PasswordResetRequired bool
+
 	// The name of the IAM user to create a password for. The user must already exist.
+	//
+	// This parameter is optional. If no user name is included, it defaults to the
+	// principal making the request. When you make this request with root user
+	// credentials, you must use an [AssumeRoot]session to omit the user name.
 	//
 	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
 	// and lowercase alphanumeric characters with no spaces. You can also include any
 	// of the following characters: _+=,.@-
 	//
+	// [AssumeRoot]: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoot.html
 	// [regex pattern]: http://wikipedia.org/wiki/regex
-	//
-	// This member is required.
 	UserName *string
-
-	// Specifies whether the user is required to set a new password on next sign-in.
-	PasswordResetRequired bool
 
 	noSmithyDocumentSerde
 }
@@ -151,7 +156,7 @@ func (c *Client) addOperationCreateLoginProfileMiddlewares(stack *middleware.Sta
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
-	if err = addOpCreateLoginProfileValidationMiddleware(stack); err != nil {
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opCreateLoginProfile(options.Region), middleware.Before); err != nil {

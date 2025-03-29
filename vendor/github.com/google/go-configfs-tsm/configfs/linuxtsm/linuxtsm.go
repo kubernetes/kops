@@ -48,6 +48,12 @@ func (*client) RemoveAll(path string) error {
 	return os.Remove(path)
 }
 
+// ReadDir reads the directory named by dirname and returns a list of directory
+// entries sorted by filename.
+func (*client) ReadDir(dirname string) ([]os.DirEntry, error) {
+	return os.ReadDir(dirname)
+}
+
 // MakeClient returns a "real" client for using configfs for TSM use.
 func MakeClient() (configfsi.Client, error) {
 	// Linux client expects just the "report" subsystem for now.

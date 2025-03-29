@@ -117,6 +117,9 @@ func (c *Client) addOperationUpdateDocumentMetadataMiddlewares(stack *middleware
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpUpdateDocumentMetadataValidationMiddleware(stack); err != nil {
 		return err
 	}

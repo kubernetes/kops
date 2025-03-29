@@ -3,8 +3,8 @@ package block
 import (
 	"time"
 
+	"github.com/scaleway/scaleway-sdk-go/errors"
 	"github.com/scaleway/scaleway-sdk-go/internal/async"
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -14,6 +14,11 @@ type WaitForSnapshotRequest struct {
 	Zone          scw.Zone
 	Timeout       *time.Duration
 	RetryInterval *time.Duration
+
+	// If set, will wait until this specific status has been reached or the
+	// snapshot has an error status. This is useful when we need to wait for
+	// the snapshot to transition from "in_use" to "available".
+	TerminalStatus *SnapshotStatus
 }
 
 // WaitForSnapshot wait for the snapshot to be in a "terminal state" before returning.
@@ -28,11 +33,16 @@ func (s *API) WaitForSnapshot(req *WaitForSnapshotRequest, opts ...scw.RequestOp
 	}
 
 	terminalStatus := map[SnapshotStatus]struct{}{
-		SnapshotStatusAvailable: {},
-		SnapshotStatusInUse:     {},
-		SnapshotStatusError:     {},
-		SnapshotStatusLocked:    {},
-		SnapshotStatusDeleted:   {},
+		SnapshotStatusError:   {},
+		SnapshotStatusLocked:  {},
+		SnapshotStatusDeleted: {},
+	}
+
+	if req.TerminalStatus != nil {
+		terminalStatus[*req.TerminalStatus] = struct{}{}
+	} else {
+		terminalStatus[SnapshotStatusAvailable] = struct{}{}
+		terminalStatus[SnapshotStatusInUse] = struct{}{}
 	}
 
 	snapshot, err := async.WaitSync(&async.WaitSyncConfig{

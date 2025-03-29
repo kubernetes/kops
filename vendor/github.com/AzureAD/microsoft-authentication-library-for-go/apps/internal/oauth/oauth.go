@@ -10,15 +10,15 @@ import (
 	"io"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/errors"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/exported"
-	internalTime "github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/json/types/time"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/accesstokens"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/authority"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/wstrust"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/oauth/ops/wstrust/defs"
-	"github.com/google/uuid"
 )
 
 // ResolveEndpointer contains the methods for resolving authority endpoints.
@@ -119,11 +119,9 @@ func (t *Client) Credential(ctx context.Context, authParams authority.AuthParams
 			return accesstokens.TokenResponse{}, err
 		}
 		return accesstokens.TokenResponse{
-			TokenType:   authParams.AuthnScheme.AccessTokenType(),
-			AccessToken: tr.AccessToken,
-			ExpiresOn: internalTime.DurationTime{
-				T: now.Add(time.Duration(tr.ExpiresInSeconds) * time.Second),
-			},
+			TokenType:     authParams.AuthnScheme.AccessTokenType(),
+			AccessToken:   tr.AccessToken,
+			ExpiresOn:     now.Add(time.Duration(tr.ExpiresInSeconds) * time.Second),
 			GrantedScopes: accesstokens.Scopes{Slice: authParams.Scopes},
 		}, nil
 	}
@@ -331,7 +329,7 @@ func (t *Client) DeviceCode(ctx context.Context, authParams authority.AuthParams
 func (t *Client) resolveEndpoint(ctx context.Context, authParams *authority.AuthParams, userPrincipalName string) error {
 	endpoints, err := t.Resolver.ResolveEndpoints(ctx, authParams.AuthorityInfo, userPrincipalName)
 	if err != nil {
-		return fmt.Errorf("unable to resolve an endpoint: %s", err)
+		return fmt.Errorf("unable to resolve an endpoint: %w", err)
 	}
 	authParams.Endpoints = endpoints
 	return nil

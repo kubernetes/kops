@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/scaleway/scaleway-sdk-go/errors"
 	"github.com/scaleway/scaleway-sdk-go/internal/async"
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -184,12 +184,6 @@ func (s *API) DetachVolume(req *DetachVolumeRequest, opts ...scw.RequestOption) 
 // UnsafeSetTotalCount should not be used
 // Internal usage only
 func (r *ListServersResponse) UnsafeSetTotalCount(totalCount int) {
-	r.TotalCount = uint32(totalCount)
-}
-
-// UnsafeSetTotalCount should not be used
-// Internal usage only
-func (r *ListBootscriptsResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
 }
 

@@ -133,6 +133,9 @@ func (c *Client) addOperationGetInventoryMiddlewares(stack *middleware.Stack, op
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetInventoryValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -95,6 +95,9 @@ type RevokeSecurityGroupEgressOutput struct {
 	// Returns true if the request succeeds; otherwise, returns an error.
 	Return *bool
 
+	// Details about the revoked security group rules.
+	RevokedSecurityGroupRules []types.RevokedSecurityGroupRule
+
 	// The outbound rules that were unknown to the service. In some cases,
 	// unknownIpPermissionSet might be in a different format from the request
 	// parameter.
@@ -168,6 +171,9 @@ func (c *Client) addOperationRevokeSecurityGroupEgressMiddlewares(stack *middlew
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpRevokeSecurityGroupEgressValidationMiddleware(stack); err != nil {

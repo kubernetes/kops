@@ -42,6 +42,8 @@ const (
 	databaseIndexPath                   = databaseBasePath + "/%s/indexes/%s"
 	databaseLogsinkPath                 = databaseBasePath + "/%s/logsink/%s"
 	databaseLogsinksPath                = databaseBasePath + "/%s/logsink"
+	databaseOnlineMigrationsPath        = databaseBasePath + "/%s/online-migration"
+	databaseOnlineMigrationPath         = databaseBasePath + "/%s/online-migration/%s"
 )
 
 // SQL Mode constants allow for MySQL-specific SQL flavor configuration.
@@ -154,11 +156,13 @@ type DatabasesService interface {
 	GetRedisConfig(context.Context, string) (*RedisConfig, *Response, error)
 	GetMySQLConfig(context.Context, string) (*MySQLConfig, *Response, error)
 	GetMongoDBConfig(context.Context, string) (*MongoDBConfig, *Response, error)
+	GetOpensearchConfig(context.Context, string) (*OpensearchConfig, *Response, error)
 	GetKafkaConfig(context.Context, string) (*KafkaConfig, *Response, error)
 	UpdatePostgreSQLConfig(context.Context, string, *PostgreSQLConfig) (*Response, error)
 	UpdateRedisConfig(context.Context, string, *RedisConfig) (*Response, error)
 	UpdateMySQLConfig(context.Context, string, *MySQLConfig) (*Response, error)
 	UpdateMongoDBConfig(context.Context, string, *MongoDBConfig) (*Response, error)
+	UpdateOpensearchConfig(context.Context, string, *OpensearchConfig) (*Response, error)
 	UpdateKafkaConfig(context.Context, string, *KafkaConfig) (*Response, error)
 	ListOptions(todo context.Context) (*DatabaseOptions, *Response, error)
 	UpgradeMajorVersion(context.Context, string, *UpgradeVersionRequest) (*Response, error)
@@ -177,6 +181,9 @@ type DatabasesService interface {
 	ListLogsinks(ctx context.Context, databaseID string, opts *ListOptions) ([]DatabaseLogsink, *Response, error)
 	UpdateLogsink(ctx context.Context, databaseID string, logsinkID string, updateLogsink *DatabaseUpdateLogsinkRequest) (*Response, error)
 	DeleteLogsink(ctx context.Context, databaseID, logsinkID string) (*Response, error)
+	StartOnlineMigration(ctx context.Context, databaseID string, onlineMigrationRequest *DatabaseStartOnlineMigrationRequest) (*DatabaseOnlineMigrationStatus, *Response, error)
+	StopOnlineMigration(ctx context.Context, databaseID, migrationID string) (*Response, error)
+	GetOnlineMigrationStatus(ctx context.Context, databaseID string) (*DatabaseOnlineMigrationStatus, *Response, error)
 }
 
 // DatabasesServiceOp handles communication with the Databases related methods
@@ -297,19 +304,27 @@ type DatabaseBackupRestore struct {
 	BackupCreatedAt string `json:"backup_created_at,omitempty"`
 }
 
+// DatabaseCreateFirewallRule is a rule describing an inbound source to a database
+type DatabaseCreateFirewallRule struct {
+	UUID  string `json:"uuid"`
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
 // DatabaseCreateRequest represents a request to create a database cluster
 type DatabaseCreateRequest struct {
-	Name               string                 `json:"name,omitempty"`
-	EngineSlug         string                 `json:"engine,omitempty"`
-	Version            string                 `json:"version,omitempty"`
-	SizeSlug           string                 `json:"size,omitempty"`
-	Region             string                 `json:"region,omitempty"`
-	NumNodes           int                    `json:"num_nodes,omitempty"`
-	PrivateNetworkUUID string                 `json:"private_network_uuid"`
-	Tags               []string               `json:"tags,omitempty"`
-	BackupRestore      *DatabaseBackupRestore `json:"backup_restore,omitempty"`
-	ProjectID          string                 `json:"project_id"`
-	StorageSizeMib     uint64                 `json:"storage_size_mib,omitempty"`
+	Name               string                        `json:"name,omitempty"`
+	EngineSlug         string                        `json:"engine,omitempty"`
+	Version            string                        `json:"version,omitempty"`
+	SizeSlug           string                        `json:"size,omitempty"`
+	Region             string                        `json:"region,omitempty"`
+	NumNodes           int                           `json:"num_nodes,omitempty"`
+	PrivateNetworkUUID string                        `json:"private_network_uuid"`
+	Tags               []string                      `json:"tags,omitempty"`
+	BackupRestore      *DatabaseBackupRestore        `json:"backup_restore,omitempty"`
+	ProjectID          string                        `json:"project_id"`
+	StorageSizeMib     uint64                        `json:"storage_size_mib,omitempty"`
+	Rules              []*DatabaseCreateFirewallRule `json:"rules"`
 }
 
 // DatabaseResizeRequest can be used to initiate a database resize operation.
@@ -354,6 +369,13 @@ type DatabaseLogsink struct {
 	Name   string                 `json:"sink_name,omitempty"`
 	Type   string                 `json:"sink_type,omitempty"`
 	Config *DatabaseLogsinkConfig `json:"config,omitempty"`
+}
+
+// DatabaseOnlineMigrationStatus represents an online migration status
+type DatabaseOnlineMigrationStatus struct {
+	ID        string `json:"id"`
+	Status    string `json:"status"`
+	CreatedAt string `json:"created_at"`
 }
 
 // TopicPartition represents the state of a Kafka topic partition
@@ -505,6 +527,13 @@ type DatabaseFirewallRule struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+// DatabaseStartOnlineMigrationRequest is used to start an online migration for a database cluster
+type DatabaseStartOnlineMigrationRequest struct {
+	Source     *DatabaseOnlineMigrationConfig `json:"source"`
+	DisableSSL bool                           `json:"disable_ssl,omitempty"`
+	IgnoreDBs  []string                       `json:"ignore_dbs,omitempty"`
+}
+
 // DatabaseCreateLogsinkRequest is used to create logsink for a database cluster
 type DatabaseCreateLogsinkRequest struct {
 	Name   string                 `json:"sink_name"`
@@ -532,6 +561,15 @@ type DatabaseLogsinkConfig struct {
 	CA           string  `json:"ca,omitempty"`
 	Key          string  `json:"key,omitempty"`
 	Cert         string  `json:"cert,omitempty"`
+}
+
+// DatabaseOnlineMigrationConfig represents the configuration options for database online migrations.
+type DatabaseOnlineMigrationConfig struct {
+	Host         string `json:"host,omitempty"`
+	Port         int    `json:"port,omitempty"`
+	DatabaseName string `json:"dbname,omitempty"`
+	Username     string `json:"username,omitempty"`
+	Password     string `json:"password,omitempty"`
 }
 
 // PostgreSQLConfig holds advanced configurations for PostgreSQL database clusters.
@@ -587,6 +625,9 @@ type PostgreSQLConfig struct {
 	BackupMinute                    *int                         `json:"backup_minute,omitempty"`
 	WorkMem                         *int                         `json:"work_mem,omitempty"`
 	TimeScaleDB                     *PostgreSQLTimeScaleDBConfig `json:"timescaledb,omitempty"`
+	SynchronousReplication          *string                      `json:"synchronous_replication,omitempty"`
+	StatMonitorEnable               *bool                        `json:"stat_monitor_enable,omitempty"`
+	MaxFailoverReplicationTimeLag   *int64                       `json:"max_failover_replication_time_lag,omitempty"`
 }
 
 // PostgreSQLBouncerConfig configuration
@@ -651,6 +692,13 @@ type MySQLConfig struct {
 	BackupHour                   *int     `json:"backup_hour,omitempty"`
 	BackupMinute                 *int     `json:"backup_minute,omitempty"`
 	BinlogRetentionPeriod        *int     `json:"binlog_retention_period,omitempty"`
+	InnodbChangeBufferMaxSize    *int     `json:"innodb_change_buffer_max_size,omitempty"`
+	InnodbFlushNeighbors         *int     `json:"innodb_flush_neighbors,omitempty"`
+	InnodbReadIoThreads          *int     `json:"innodb_read_io_threads,omitempty"`
+	InnodbThreadConcurrency      *int     `json:"innodb_thread_concurrency,omitempty"`
+	InnodbWriteIoThreads         *int     `json:"innodb_write_io_threads,omitempty"`
+	NetBufferLength              *int     `json:"net_buffer_length,omitempty"`
+	LogOutput                    *string  `json:"log_output,omitempty"`
 }
 
 // MongoDBConfig holds advanced configurations for MongoDB database clusters.
@@ -681,6 +729,48 @@ type KafkaConfig struct {
 	LogRollJitterMs                    *uint64  `json:"log_roll_jitter_ms,omitempty"`
 	LogSegmentDeleteDelayMs            *int     `json:"log_segment_delete_delay_ms,omitempty"`
 	AutoCreateTopicsEnable             *bool    `json:"auto_create_topics_enable,omitempty"`
+}
+
+// OpensearchConfig holds advanced configurations for Opensearch database clusters.
+type OpensearchConfig struct {
+	HttpMaxContentLengthBytes                        *int     `json:"http_max_content_length_bytes,omitempty"`
+	HttpMaxHeaderSizeBytes                           *int     `json:"http_max_header_size_bytes,omitempty"`
+	HttpMaxInitialLineLengthBytes                    *int     `json:"http_max_initial_line_length_bytes,omitempty"`
+	IndicesQueryBoolMaxClauseCount                   *int     `json:"indices_query_bool_max_clause_count,omitempty"`
+	IndicesFielddataCacheSizePercentage              *int     `json:"indices_fielddata_cache_size_percentage,omitempty"`
+	IndicesMemoryIndexBufferSizePercentage           *int     `json:"indices_memory_index_buffer_size_percentage,omitempty"`
+	IndicesMemoryMinIndexBufferSizeMb                *int     `json:"indices_memory_min_index_buffer_size_mb,omitempty"`
+	IndicesMemoryMaxIndexBufferSizeMb                *int     `json:"indices_memory_max_index_buffer_size_mb,omitempty"`
+	IndicesQueriesCacheSizePercentage                *int     `json:"indices_queries_cache_size_percentage,omitempty"`
+	IndicesRecoveryMaxMbPerSec                       *int     `json:"indices_recovery_max_mb_per_sec,omitempty"`
+	IndicesRecoveryMaxConcurrentFileChunks           *int     `json:"indices_recovery_max_concurrent_file_chunks,omitempty"`
+	ThreadPoolSearchSize                             *int     `json:"thread_pool_search_size,omitempty"`
+	ThreadPoolSearchThrottledSize                    *int     `json:"thread_pool_search_throttled_size,omitempty"`
+	ThreadPoolGetSize                                *int     `json:"thread_pool_get_size,omitempty"`
+	ThreadPoolAnalyzeSize                            *int     `json:"thread_pool_analyze_size,omitempty"`
+	ThreadPoolWriteSize                              *int     `json:"thread_pool_write_size,omitempty"`
+	ThreadPoolForceMergeSize                         *int     `json:"thread_pool_force_merge_size,omitempty"`
+	ThreadPoolSearchQueueSize                        *int     `json:"thread_pool_search_queue_size,omitempty"`
+	ThreadPoolSearchThrottledQueueSize               *int     `json:"thread_pool_search_throttled_queue_size,omitempty"`
+	ThreadPoolGetQueueSize                           *int     `json:"thread_pool_get_queue_size,omitempty"`
+	ThreadPoolAnalyzeQueueSize                       *int     `json:"thread_pool_analyze_queue_size,omitempty"`
+	ThreadPoolWriteQueueSize                         *int     `json:"thread_pool_write_queue_size,omitempty"`
+	IsmEnabled                                       *bool    `json:"ism_enabled,omitempty"`
+	IsmHistoryEnabled                                *bool    `json:"ism_history_enabled,omitempty"`
+	IsmHistoryMaxAgeHours                            *int     `json:"ism_history_max_age_hours,omitempty"`
+	IsmHistoryMaxDocs                                *int64   `json:"ism_history_max_docs,omitempty"`
+	IsmHistoryRolloverCheckPeriodHours               *int     `json:"ism_history_rollover_check_period_hours,omitempty"`
+	IsmHistoryRolloverRetentionPeriodDays            *int     `json:"ism_history_rollover_retention_period_days,omitempty"`
+	SearchMaxBuckets                                 *int     `json:"search_max_buckets,omitempty"`
+	ActionAutoCreateIndexEnabled                     *bool    `json:"action_auto_create_index_enabled,omitempty"`
+	EnableSecurityAudit                              *bool    `json:"enable_security_audit,omitempty"`
+	ActionDestructiveRequiresName                    *bool    `json:"action_destructive_requires_name,omitempty"`
+	ClusterMaxShardsPerNode                          *int     `json:"cluster_max_shards_per_node,omitempty"`
+	OverrideMainResponseVersion                      *bool    `json:"override_main_response_version,omitempty"`
+	ScriptMaxCompilationsRate                        *string  `json:"script_max_compilations_rate,omitempty"`
+	ClusterRoutingAllocationNodeConcurrentRecoveries *int     `json:"cluster_routing_allocation_node_concurrent_recoveries,omitempty"`
+	ReindexRemoteWhitelist                           []string `json:"reindex_remote_whitelist,omitempty"`
+	PluginsAlertingFilterByBackendRolesEnabled       *bool    `json:"plugins_alerting_filter_by_backend_roles_enabled,omitempty"`
 }
 
 type databaseUserRoot struct {
@@ -725,6 +815,10 @@ type databaseMySQLConfigRoot struct {
 
 type databaseMongoDBConfigRoot struct {
 	Config *MongoDBConfig `json:"config"`
+}
+
+type databaseOpensearchConfigRoot struct {
+	Config *OpensearchConfig `json:"config"`
 }
 
 type databaseKafkaConfigRoot struct {
@@ -1606,6 +1700,38 @@ func (svc *DatabasesServiceOp) UpdateKafkaConfig(ctx context.Context, databaseID
 	return resp, nil
 }
 
+// GetOpensearchConfig retrieves the config for a Opensearch database cluster.
+func (svc *DatabasesServiceOp) GetOpensearchConfig(ctx context.Context, databaseID string) (*OpensearchConfig, *Response, error) {
+	path := fmt.Sprintf(databaseConfigPath, databaseID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(databaseOpensearchConfigRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.Config, resp, nil
+}
+
+// UpdateOpensearchConfig updates the config for a Opensearch database cluster.
+func (svc *DatabasesServiceOp) UpdateOpensearchConfig(ctx context.Context, databaseID string, config *OpensearchConfig) (*Response, error) {
+	path := fmt.Sprintf(databaseConfigPath, databaseID)
+	root := &databaseOpensearchConfigRoot{
+		Config: config,
+	}
+	req, err := svc.client.NewRequest(ctx, http.MethodPatch, path, root)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
 // ListOptions gets the database options available.
 func (svc *DatabasesServiceOp) ListOptions(ctx context.Context) (*DatabaseOptions, *Response, error) {
 	root := new(databaseOptionsRoot)
@@ -1867,6 +1993,53 @@ func (svc *DatabasesServiceOp) UpdateLogsink(ctx context.Context, databaseID str
 // DeleteLogsink deletes a logsink for a database cluster
 func (svc *DatabasesServiceOp) DeleteLogsink(ctx context.Context, databaseID, logsinkID string) (*Response, error) {
 	path := fmt.Sprintf(databaseLogsinkPath, databaseID, logsinkID)
+	req, err := svc.client.NewRequest(ctx, http.MethodDelete, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := svc.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+// StartOnlineMigration starts an online migration for a database. Migrating a cluster establishes a connection with an existing cluster
+// and replicates its contents to the target cluster. Online migration is only available for MySQL, PostgreSQL, and Redis clusters.
+func (svc *DatabasesServiceOp) StartOnlineMigration(ctx context.Context, databaseID string, onlineMigration *DatabaseStartOnlineMigrationRequest) (*DatabaseOnlineMigrationStatus, *Response, error) {
+	path := fmt.Sprintf(databaseOnlineMigrationsPath, databaseID)
+	req, err := svc.client.NewRequest(ctx, http.MethodPut, path, onlineMigration)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(DatabaseOnlineMigrationStatus)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root, resp, nil
+}
+
+// GetOnlineMigrationStatus retrieves the status of the most recent online migration
+func (svc *DatabasesServiceOp) GetOnlineMigrationStatus(ctx context.Context, databaseID string) (*DatabaseOnlineMigrationStatus, *Response, error) {
+	path := fmt.Sprintf(databaseOnlineMigrationsPath, databaseID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	root := new(DatabaseOnlineMigrationStatus)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root, resp, nil
+}
+
+// StopOnlineMigration stops an online migration
+func (svc *DatabasesServiceOp) StopOnlineMigration(ctx context.Context, databaseID, migrationID string) (*Response, error) {
+	path := fmt.Sprintf(databaseOnlineMigrationPath, databaseID, migrationID)
 	req, err := svc.client.NewRequest(ctx, http.MethodDelete, path, nil)
 	if err != nil {
 		return nil, err

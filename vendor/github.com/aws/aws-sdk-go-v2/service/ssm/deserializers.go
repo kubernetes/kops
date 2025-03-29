@@ -8295,6 +8295,120 @@ func awsAwsjson11_deserializeOpErrorGetDocument(response *smithyhttp.Response, m
 	}
 }
 
+type awsAwsjson11_deserializeOpGetExecutionPreview struct {
+}
+
+func (*awsAwsjson11_deserializeOpGetExecutionPreview) ID() string {
+	return "OperationDeserializer"
+}
+
+func (m *awsAwsjson11_deserializeOpGetExecutionPreview) HandleDeserialize(ctx context.Context, in middleware.DeserializeInput, next middleware.DeserializeHandler) (
+	out middleware.DeserializeOutput, metadata middleware.Metadata, err error,
+) {
+	out, metadata, err = next.HandleDeserialize(ctx, in)
+	if err != nil {
+		return out, metadata, err
+	}
+
+	_, span := tracing.StartSpan(ctx, "OperationDeserializer")
+	endTimer := startMetricTimer(ctx, "client.call.deserialization_duration")
+	defer endTimer()
+	defer span.End()
+	response, ok := out.RawResponse.(*smithyhttp.Response)
+	if !ok {
+		return out, metadata, &smithy.DeserializationError{Err: fmt.Errorf("unknown transport type %T", out.RawResponse)}
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return out, metadata, awsAwsjson11_deserializeOpErrorGetExecutionPreview(response, &metadata)
+	}
+	output := &GetExecutionPreviewOutput{}
+	out.Result = output
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(response.Body, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	err = awsAwsjson11_deserializeOpDocumentGetExecutionPreviewOutput(&output, shape)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	return out, metadata, err
+}
+
+func awsAwsjson11_deserializeOpErrorGetExecutionPreview(response *smithyhttp.Response, metadata *middleware.Metadata) error {
+	var errorBuffer bytes.Buffer
+	if _, err := io.Copy(&errorBuffer, response.Body); err != nil {
+		return &smithy.DeserializationError{Err: fmt.Errorf("failed to copy error response body, %w", err)}
+	}
+	errorBody := bytes.NewReader(errorBuffer.Bytes())
+
+	errorCode := "UnknownError"
+	errorMessage := errorCode
+
+	headerCode := response.Header.Get("X-Amzn-ErrorType")
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	bodyInfo, err := getProtocolErrorInfo(decoder)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	if typ, ok := resolveProtocolErrorType(headerCode, bodyInfo); ok {
+		errorCode = restjson.SanitizeErrorCode(typ)
+	}
+	if len(bodyInfo.Message) != 0 {
+		errorMessage = bodyInfo.Message
+	}
+	switch {
+	case strings.EqualFold("InternalServerError", errorCode):
+		return awsAwsjson11_deserializeErrorInternalServerError(response, errorBody)
+
+	case strings.EqualFold("ResourceNotFoundException", errorCode):
+		return awsAwsjson11_deserializeErrorResourceNotFoundException(response, errorBody)
+
+	default:
+		genericError := &smithy.GenericAPIError{
+			Code:    errorCode,
+			Message: errorMessage,
+		}
+		return genericError
+
+	}
+}
+
 type awsAwsjson11_deserializeOpGetInventory struct {
 }
 
@@ -11727,6 +11841,255 @@ func awsAwsjson11_deserializeOpErrorListInventoryEntries(response *smithyhttp.Re
 	}
 }
 
+type awsAwsjson11_deserializeOpListNodes struct {
+}
+
+func (*awsAwsjson11_deserializeOpListNodes) ID() string {
+	return "OperationDeserializer"
+}
+
+func (m *awsAwsjson11_deserializeOpListNodes) HandleDeserialize(ctx context.Context, in middleware.DeserializeInput, next middleware.DeserializeHandler) (
+	out middleware.DeserializeOutput, metadata middleware.Metadata, err error,
+) {
+	out, metadata, err = next.HandleDeserialize(ctx, in)
+	if err != nil {
+		return out, metadata, err
+	}
+
+	_, span := tracing.StartSpan(ctx, "OperationDeserializer")
+	endTimer := startMetricTimer(ctx, "client.call.deserialization_duration")
+	defer endTimer()
+	defer span.End()
+	response, ok := out.RawResponse.(*smithyhttp.Response)
+	if !ok {
+		return out, metadata, &smithy.DeserializationError{Err: fmt.Errorf("unknown transport type %T", out.RawResponse)}
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return out, metadata, awsAwsjson11_deserializeOpErrorListNodes(response, &metadata)
+	}
+	output := &ListNodesOutput{}
+	out.Result = output
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(response.Body, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	err = awsAwsjson11_deserializeOpDocumentListNodesOutput(&output, shape)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	return out, metadata, err
+}
+
+func awsAwsjson11_deserializeOpErrorListNodes(response *smithyhttp.Response, metadata *middleware.Metadata) error {
+	var errorBuffer bytes.Buffer
+	if _, err := io.Copy(&errorBuffer, response.Body); err != nil {
+		return &smithy.DeserializationError{Err: fmt.Errorf("failed to copy error response body, %w", err)}
+	}
+	errorBody := bytes.NewReader(errorBuffer.Bytes())
+
+	errorCode := "UnknownError"
+	errorMessage := errorCode
+
+	headerCode := response.Header.Get("X-Amzn-ErrorType")
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	bodyInfo, err := getProtocolErrorInfo(decoder)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	if typ, ok := resolveProtocolErrorType(headerCode, bodyInfo); ok {
+		errorCode = restjson.SanitizeErrorCode(typ)
+	}
+	if len(bodyInfo.Message) != 0 {
+		errorMessage = bodyInfo.Message
+	}
+	switch {
+	case strings.EqualFold("InternalServerError", errorCode):
+		return awsAwsjson11_deserializeErrorInternalServerError(response, errorBody)
+
+	case strings.EqualFold("InvalidFilter", errorCode):
+		return awsAwsjson11_deserializeErrorInvalidFilter(response, errorBody)
+
+	case strings.EqualFold("InvalidNextToken", errorCode):
+		return awsAwsjson11_deserializeErrorInvalidNextToken(response, errorBody)
+
+	case strings.EqualFold("ResourceDataSyncNotFoundException", errorCode):
+		return awsAwsjson11_deserializeErrorResourceDataSyncNotFoundException(response, errorBody)
+
+	case strings.EqualFold("UnsupportedOperationException", errorCode):
+		return awsAwsjson11_deserializeErrorUnsupportedOperationException(response, errorBody)
+
+	default:
+		genericError := &smithy.GenericAPIError{
+			Code:    errorCode,
+			Message: errorMessage,
+		}
+		return genericError
+
+	}
+}
+
+type awsAwsjson11_deserializeOpListNodesSummary struct {
+}
+
+func (*awsAwsjson11_deserializeOpListNodesSummary) ID() string {
+	return "OperationDeserializer"
+}
+
+func (m *awsAwsjson11_deserializeOpListNodesSummary) HandleDeserialize(ctx context.Context, in middleware.DeserializeInput, next middleware.DeserializeHandler) (
+	out middleware.DeserializeOutput, metadata middleware.Metadata, err error,
+) {
+	out, metadata, err = next.HandleDeserialize(ctx, in)
+	if err != nil {
+		return out, metadata, err
+	}
+
+	_, span := tracing.StartSpan(ctx, "OperationDeserializer")
+	endTimer := startMetricTimer(ctx, "client.call.deserialization_duration")
+	defer endTimer()
+	defer span.End()
+	response, ok := out.RawResponse.(*smithyhttp.Response)
+	if !ok {
+		return out, metadata, &smithy.DeserializationError{Err: fmt.Errorf("unknown transport type %T", out.RawResponse)}
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return out, metadata, awsAwsjson11_deserializeOpErrorListNodesSummary(response, &metadata)
+	}
+	output := &ListNodesSummaryOutput{}
+	out.Result = output
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(response.Body, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	err = awsAwsjson11_deserializeOpDocumentListNodesSummaryOutput(&output, shape)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	return out, metadata, err
+}
+
+func awsAwsjson11_deserializeOpErrorListNodesSummary(response *smithyhttp.Response, metadata *middleware.Metadata) error {
+	var errorBuffer bytes.Buffer
+	if _, err := io.Copy(&errorBuffer, response.Body); err != nil {
+		return &smithy.DeserializationError{Err: fmt.Errorf("failed to copy error response body, %w", err)}
+	}
+	errorBody := bytes.NewReader(errorBuffer.Bytes())
+
+	errorCode := "UnknownError"
+	errorMessage := errorCode
+
+	headerCode := response.Header.Get("X-Amzn-ErrorType")
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	bodyInfo, err := getProtocolErrorInfo(decoder)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	if typ, ok := resolveProtocolErrorType(headerCode, bodyInfo); ok {
+		errorCode = restjson.SanitizeErrorCode(typ)
+	}
+	if len(bodyInfo.Message) != 0 {
+		errorMessage = bodyInfo.Message
+	}
+	switch {
+	case strings.EqualFold("InternalServerError", errorCode):
+		return awsAwsjson11_deserializeErrorInternalServerError(response, errorBody)
+
+	case strings.EqualFold("InvalidAggregatorException", errorCode):
+		return awsAwsjson11_deserializeErrorInvalidAggregatorException(response, errorBody)
+
+	case strings.EqualFold("InvalidFilter", errorCode):
+		return awsAwsjson11_deserializeErrorInvalidFilter(response, errorBody)
+
+	case strings.EqualFold("InvalidNextToken", errorCode):
+		return awsAwsjson11_deserializeErrorInvalidNextToken(response, errorBody)
+
+	case strings.EqualFold("ResourceDataSyncNotFoundException", errorCode):
+		return awsAwsjson11_deserializeErrorResourceDataSyncNotFoundException(response, errorBody)
+
+	case strings.EqualFold("UnsupportedOperationException", errorCode):
+		return awsAwsjson11_deserializeErrorUnsupportedOperationException(response, errorBody)
+
+	default:
+		genericError := &smithy.GenericAPIError{
+			Code:    errorCode,
+			Message: errorMessage,
+		}
+		return genericError
+
+	}
+}
+
 type awsAwsjson11_deserializeOpListOpsItemEvents struct {
 }
 
@@ -14560,6 +14923,120 @@ func awsAwsjson11_deserializeOpErrorStartChangeRequestExecution(response *smithy
 
 	case strings.EqualFold("InvalidAutomationExecutionParametersException", errorCode):
 		return awsAwsjson11_deserializeErrorInvalidAutomationExecutionParametersException(response, errorBody)
+
+	default:
+		genericError := &smithy.GenericAPIError{
+			Code:    errorCode,
+			Message: errorMessage,
+		}
+		return genericError
+
+	}
+}
+
+type awsAwsjson11_deserializeOpStartExecutionPreview struct {
+}
+
+func (*awsAwsjson11_deserializeOpStartExecutionPreview) ID() string {
+	return "OperationDeserializer"
+}
+
+func (m *awsAwsjson11_deserializeOpStartExecutionPreview) HandleDeserialize(ctx context.Context, in middleware.DeserializeInput, next middleware.DeserializeHandler) (
+	out middleware.DeserializeOutput, metadata middleware.Metadata, err error,
+) {
+	out, metadata, err = next.HandleDeserialize(ctx, in)
+	if err != nil {
+		return out, metadata, err
+	}
+
+	_, span := tracing.StartSpan(ctx, "OperationDeserializer")
+	endTimer := startMetricTimer(ctx, "client.call.deserialization_duration")
+	defer endTimer()
+	defer span.End()
+	response, ok := out.RawResponse.(*smithyhttp.Response)
+	if !ok {
+		return out, metadata, &smithy.DeserializationError{Err: fmt.Errorf("unknown transport type %T", out.RawResponse)}
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return out, metadata, awsAwsjson11_deserializeOpErrorStartExecutionPreview(response, &metadata)
+	}
+	output := &StartExecutionPreviewOutput{}
+	out.Result = output
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(response.Body, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	err = awsAwsjson11_deserializeOpDocumentStartExecutionPreviewOutput(&output, shape)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
+	}
+
+	return out, metadata, err
+}
+
+func awsAwsjson11_deserializeOpErrorStartExecutionPreview(response *smithyhttp.Response, metadata *middleware.Metadata) error {
+	var errorBuffer bytes.Buffer
+	if _, err := io.Copy(&errorBuffer, response.Body); err != nil {
+		return &smithy.DeserializationError{Err: fmt.Errorf("failed to copy error response body, %w", err)}
+	}
+	errorBody := bytes.NewReader(errorBuffer.Bytes())
+
+	errorCode := "UnknownError"
+	errorMessage := errorCode
+
+	headerCode := response.Header.Get("X-Amzn-ErrorType")
+
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	bodyInfo, err := getProtocolErrorInfo(decoder)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	if typ, ok := resolveProtocolErrorType(headerCode, bodyInfo); ok {
+		errorCode = restjson.SanitizeErrorCode(typ)
+	}
+	if len(bodyInfo.Message) != 0 {
+		errorMessage = bodyInfo.Message
+	}
+	switch {
+	case strings.EqualFold("InternalServerError", errorCode):
+		return awsAwsjson11_deserializeErrorInternalServerError(response, errorBody)
+
+	case strings.EqualFold("ValidationException", errorCode):
+		return awsAwsjson11_deserializeErrorValidationException(response, errorBody)
 
 	default:
 		genericError := &smithy.GenericAPIError{
@@ -21331,6 +21808,41 @@ func awsAwsjson11_deserializeErrorUnsupportedOperatingSystem(response *smithyhtt
 	return output
 }
 
+func awsAwsjson11_deserializeErrorUnsupportedOperationException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	output := &types.UnsupportedOperationException{}
+	err := awsAwsjson11_deserializeDocumentUnsupportedOperationException(&output, shape)
+
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	return output
+}
+
 func awsAwsjson11_deserializeErrorUnsupportedParameterType(response *smithyhttp.Response, errorBody *bytes.Reader) error {
 	var buff [1024]byte
 	ringBuffer := smithyio.NewRingBuffer(buff[:])
@@ -21386,6 +21898,41 @@ func awsAwsjson11_deserializeErrorUnsupportedPlatformType(response *smithyhttp.R
 
 	output := &types.UnsupportedPlatformType{}
 	err := awsAwsjson11_deserializeDocumentUnsupportedPlatformType(&output, shape)
+
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	return output
+}
+
+func awsAwsjson11_deserializeErrorValidationException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	output := &types.ValidationException{}
+	err := awsAwsjson11_deserializeDocumentValidationException(&output, shape)
 
 	if err != nil {
 		var snapshot bytes.Buffer
@@ -21953,7 +22500,7 @@ func awsAwsjson11_deserializeDocumentAlreadyExistsException(v **types.AlreadyExi
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -22528,7 +23075,7 @@ func awsAwsjson11_deserializeDocumentAssociationDoesNotExist(v **types.Associati
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -22695,7 +23242,7 @@ func awsAwsjson11_deserializeDocumentAssociationExecutionDoesNotExist(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -23353,7 +23900,7 @@ func awsAwsjson11_deserializeDocumentAssociationVersionLimitExceeded(v **types.A
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -23615,7 +24162,7 @@ func awsAwsjson11_deserializeDocumentAutomationDefinitionNotApprovedException(v 
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -23655,7 +24202,7 @@ func awsAwsjson11_deserializeDocumentAutomationDefinitionNotFoundException(v **t
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -23695,7 +24242,7 @@ func awsAwsjson11_deserializeDocumentAutomationDefinitionVersionNotFoundExceptio
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -24054,7 +24601,7 @@ func awsAwsjson11_deserializeDocumentAutomationExecutionLimitExceededException(v
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -24431,13 +24978,72 @@ func awsAwsjson11_deserializeDocumentAutomationExecutionNotFoundException(v **ty
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
 					return fmt.Errorf("expected String to be of type string, got %T instead", value)
 				}
 				sv.Message = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentAutomationExecutionPreview(v **types.AutomationExecutionPreview, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.AutomationExecutionPreview
+	if *v == nil {
+		sv = &types.AutomationExecutionPreview{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "Regions":
+			if err := awsAwsjson11_deserializeDocumentRegionList(&sv.Regions, value); err != nil {
+				return err
+			}
+
+		case "StepPreviews":
+			if err := awsAwsjson11_deserializeDocumentStepPreviewMap(&sv.StepPreviews, value); err != nil {
+				return err
+			}
+
+		case "TargetPreviews":
+			if err := awsAwsjson11_deserializeDocumentTargetPreviewList(&sv.TargetPreviews, value); err != nil {
+				return err
+			}
+
+		case "TotalAccounts":
+			if value != nil {
+				jtv, ok := value.(json.Number)
+				if !ok {
+					return fmt.Errorf("expected Integer to be json.Number, got %T instead", value)
+				}
+				i64, err := jtv.Int64()
+				if err != nil {
+					return err
+				}
+				sv.TotalAccounts = int32(i64)
 			}
 
 		default:
@@ -24541,7 +25147,7 @@ func awsAwsjson11_deserializeDocumentAutomationStepNotFoundException(v **types.A
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -25761,7 +26367,7 @@ func awsAwsjson11_deserializeDocumentComplianceTypeCountLimitExceededException(v
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -26041,7 +26647,7 @@ func awsAwsjson11_deserializeDocumentCustomSchemaCountLimitExceededException(v *
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -26081,7 +26687,7 @@ func awsAwsjson11_deserializeDocumentDocumentAlreadyExists(v **types.DocumentAlr
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -26650,7 +27256,7 @@ func awsAwsjson11_deserializeDocumentDocumentLimitExceeded(v **types.DocumentLim
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -26827,7 +27433,7 @@ func awsAwsjson11_deserializeDocumentDocumentPermissionLimit(v **types.DocumentP
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27299,7 +27905,7 @@ func awsAwsjson11_deserializeDocumentDocumentVersionLimitExceeded(v **types.Docu
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27373,7 +27979,7 @@ func awsAwsjson11_deserializeDocumentDoesNotExistException(v **types.DoesNotExis
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27413,7 +28019,7 @@ func awsAwsjson11_deserializeDocumentDuplicateDocumentContent(v **types.Duplicat
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27453,7 +28059,7 @@ func awsAwsjson11_deserializeDocumentDuplicateDocumentVersionName(v **types.Dupl
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27610,6 +28216,46 @@ func awsAwsjson11_deserializeDocumentExcludeAccounts(v *[]string, value interfac
 
 	}
 	*v = cv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentExecutionPreview(v *types.ExecutionPreview, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var uv types.ExecutionPreview
+loop:
+	for key, value := range shape {
+		if value == nil {
+			continue
+		}
+		switch key {
+		case "Automation":
+			var mv types.AutomationExecutionPreview
+			destAddr := &mv
+			if err := awsAwsjson11_deserializeDocumentAutomationExecutionPreview(&destAddr, value); err != nil {
+				return err
+			}
+			mv = *destAddr
+			uv = &types.ExecutionPreviewMemberAutomation{Value: mv}
+			break loop
+
+		default:
+			uv = &types.UnknownUnionMember{Tag: key}
+			break loop
+
+		}
+	}
+	*v = uv
 	return nil
 }
 
@@ -27777,7 +28423,7 @@ func awsAwsjson11_deserializeDocumentFeatureNotAvailableException(v **types.Feat
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27909,7 +28555,7 @@ func awsAwsjson11_deserializeDocumentHierarchyLevelLimitExceededException(v **ty
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27949,7 +28595,7 @@ func awsAwsjson11_deserializeDocumentHierarchyTypeMismatchException(v **types.Hi
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -27989,7 +28635,7 @@ func awsAwsjson11_deserializeDocumentIdempotentParameterMismatch(v **types.Idemp
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -28029,7 +28675,7 @@ func awsAwsjson11_deserializeDocumentIncompatiblePolicyException(v **types.Incom
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -28517,6 +29163,127 @@ func awsAwsjson11_deserializeDocumentInstanceIdList(v *[]string, value interface
 	return nil
 }
 
+func awsAwsjson11_deserializeDocumentInstanceInfo(v **types.InstanceInfo, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.InstanceInfo
+	if *v == nil {
+		sv = &types.InstanceInfo{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "AgentType":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected AgentType to be of type string, got %T instead", value)
+				}
+				sv.AgentType = ptr.String(jtv)
+			}
+
+		case "AgentVersion":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected AgentVersion to be of type string, got %T instead", value)
+				}
+				sv.AgentVersion = ptr.String(jtv)
+			}
+
+		case "ComputerName":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ComputerName to be of type string, got %T instead", value)
+				}
+				sv.ComputerName = ptr.String(jtv)
+			}
+
+		case "InstanceStatus":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected InstanceStatus to be of type string, got %T instead", value)
+				}
+				sv.InstanceStatus = ptr.String(jtv)
+			}
+
+		case "IpAddress":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected IPAddress to be of type string, got %T instead", value)
+				}
+				sv.IpAddress = ptr.String(jtv)
+			}
+
+		case "ManagedStatus":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ManagedStatus to be of type string, got %T instead", value)
+				}
+				sv.ManagedStatus = types.ManagedStatus(jtv)
+			}
+
+		case "PlatformName":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected PlatformName to be of type string, got %T instead", value)
+				}
+				sv.PlatformName = ptr.String(jtv)
+			}
+
+		case "PlatformType":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected PlatformType to be of type string, got %T instead", value)
+				}
+				sv.PlatformType = types.PlatformType(jtv)
+			}
+
+		case "PlatformVersion":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected PlatformVersion to be of type string, got %T instead", value)
+				}
+				sv.PlatformVersion = ptr.String(jtv)
+			}
+
+		case "ResourceType":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ResourceType to be of type string, got %T instead", value)
+				}
+				sv.ResourceType = types.ResourceType(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
 func awsAwsjson11_deserializeDocumentInstanceInformation(v **types.InstanceInformation, value interface{}) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)
@@ -28817,6 +29584,19 @@ func awsAwsjson11_deserializeDocumentInstancePatchState(v **types.InstancePatchS
 
 	for key, value := range shape {
 		switch key {
+		case "AvailableSecurityUpdateCount":
+			if value != nil {
+				jtv, ok := value.(json.Number)
+				if !ok {
+					return fmt.Errorf("expected PatchAvailableSecurityUpdateCount to be json.Number, got %T instead", value)
+				}
+				i64, err := jtv.Int64()
+				if err != nil {
+					return err
+				}
+				sv.AvailableSecurityUpdateCount = ptr.Int32(int32(i64))
+			}
+
 		case "BaselineId":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -29509,7 +30289,7 @@ func awsAwsjson11_deserializeDocumentInternalServerError(v **types.InternalServe
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29549,7 +30329,7 @@ func awsAwsjson11_deserializeDocumentInvalidActivation(v **types.InvalidActivati
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29589,7 +30369,7 @@ func awsAwsjson11_deserializeDocumentInvalidActivationId(v **types.InvalidActiva
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29629,7 +30409,7 @@ func awsAwsjson11_deserializeDocumentInvalidAggregatorException(v **types.Invali
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29669,7 +30449,7 @@ func awsAwsjson11_deserializeDocumentInvalidAllowedPatternException(v **types.In
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29709,7 +30489,7 @@ func awsAwsjson11_deserializeDocumentInvalidAssociation(v **types.InvalidAssocia
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29749,7 +30529,7 @@ func awsAwsjson11_deserializeDocumentInvalidAssociationVersion(v **types.Invalid
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29789,7 +30569,7 @@ func awsAwsjson11_deserializeDocumentInvalidAutomationExecutionParametersExcepti
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29829,7 +30609,7 @@ func awsAwsjson11_deserializeDocumentInvalidAutomationSignalException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29869,7 +30649,7 @@ func awsAwsjson11_deserializeDocumentInvalidAutomationStatusUpdateException(v **
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29940,7 +30720,7 @@ func awsAwsjson11_deserializeDocumentInvalidDeleteInventoryParametersException(v
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -29980,7 +30760,7 @@ func awsAwsjson11_deserializeDocumentInvalidDeletionIdException(v **types.Invali
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30020,7 +30800,7 @@ func awsAwsjson11_deserializeDocumentInvalidDocument(v **types.InvalidDocument, 
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30060,7 +30840,7 @@ func awsAwsjson11_deserializeDocumentInvalidDocumentContent(v **types.InvalidDoc
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30100,7 +30880,7 @@ func awsAwsjson11_deserializeDocumentInvalidDocumentOperation(v **types.InvalidD
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30140,7 +30920,7 @@ func awsAwsjson11_deserializeDocumentInvalidDocumentSchemaVersion(v **types.Inva
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30180,7 +30960,7 @@ func awsAwsjson11_deserializeDocumentInvalidDocumentType(v **types.InvalidDocume
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30220,7 +31000,7 @@ func awsAwsjson11_deserializeDocumentInvalidDocumentVersion(v **types.InvalidDoc
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30260,7 +31040,7 @@ func awsAwsjson11_deserializeDocumentInvalidFilter(v **types.InvalidFilter, valu
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30331,7 +31111,7 @@ func awsAwsjson11_deserializeDocumentInvalidFilterOption(v **types.InvalidFilter
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30371,7 +31151,7 @@ func awsAwsjson11_deserializeDocumentInvalidFilterValue(v **types.InvalidFilterV
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30411,7 +31191,7 @@ func awsAwsjson11_deserializeDocumentInvalidInstanceId(v **types.InvalidInstance
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30451,7 +31231,7 @@ func awsAwsjson11_deserializeDocumentInvalidInstanceInformationFilterValue(v **t
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30491,7 +31271,7 @@ func awsAwsjson11_deserializeDocumentInvalidInstancePropertyFilterValue(v **type
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30531,7 +31311,7 @@ func awsAwsjson11_deserializeDocumentInvalidInventoryGroupException(v **types.In
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30571,7 +31351,7 @@ func awsAwsjson11_deserializeDocumentInvalidInventoryItemContextException(v **ty
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30611,7 +31391,7 @@ func awsAwsjson11_deserializeDocumentInvalidInventoryRequestException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30651,7 +31431,7 @@ func awsAwsjson11_deserializeDocumentInvalidItemContentException(v **types.Inval
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30700,7 +31480,7 @@ func awsAwsjson11_deserializeDocumentInvalidKeyId(v **types.InvalidKeyId, value 
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30740,7 +31520,7 @@ func awsAwsjson11_deserializeDocumentInvalidNextToken(v **types.InvalidNextToken
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30780,7 +31560,7 @@ func awsAwsjson11_deserializeDocumentInvalidNotificationConfig(v **types.Invalid
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30820,7 +31600,7 @@ func awsAwsjson11_deserializeDocumentInvalidOptionException(v **types.InvalidOpt
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30922,7 +31702,7 @@ func awsAwsjson11_deserializeDocumentInvalidParameters(v **types.InvalidParamete
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -30962,7 +31742,7 @@ func awsAwsjson11_deserializeDocumentInvalidPermissionType(v **types.InvalidPerm
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31033,7 +31813,7 @@ func awsAwsjson11_deserializeDocumentInvalidPolicyAttributeException(v **types.I
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31073,7 +31853,7 @@ func awsAwsjson11_deserializeDocumentInvalidPolicyTypeException(v **types.Invali
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31175,7 +31955,7 @@ func awsAwsjson11_deserializeDocumentInvalidResultAttributeException(v **types.I
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31215,7 +31995,7 @@ func awsAwsjson11_deserializeDocumentInvalidRole(v **types.InvalidRole, value in
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31255,7 +32035,7 @@ func awsAwsjson11_deserializeDocumentInvalidSchedule(v **types.InvalidSchedule, 
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31295,7 +32075,7 @@ func awsAwsjson11_deserializeDocumentInvalidTag(v **types.InvalidTag, value inte
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31335,7 +32115,7 @@ func awsAwsjson11_deserializeDocumentInvalidTarget(v **types.InvalidTarget, valu
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31375,7 +32155,7 @@ func awsAwsjson11_deserializeDocumentInvalidTargetMaps(v **types.InvalidTargetMa
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31415,7 +32195,7 @@ func awsAwsjson11_deserializeDocumentInvalidTypeNameException(v **types.InvalidT
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -31455,7 +32235,7 @@ func awsAwsjson11_deserializeDocumentInvalidUpdate(v **types.InvalidUpdate, valu
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -32260,7 +33040,7 @@ func awsAwsjson11_deserializeDocumentItemContentMismatchException(v **types.Item
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -32309,7 +33089,7 @@ func awsAwsjson11_deserializeDocumentItemSizeLimitExceededException(v **types.It
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -33981,7 +34761,7 @@ func awsAwsjson11_deserializeDocumentMalformedResourcePolicyDocumentException(v 
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -34021,7 +34801,7 @@ func awsAwsjson11_deserializeDocumentMaxDocumentSizeExceeded(v **types.MaxDocume
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -34111,6 +34891,281 @@ func awsAwsjson11_deserializeDocumentMetadataValue(v **types.MetadataValue, valu
 		}
 	}
 	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentNode(v **types.Node, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.Node
+	if *v == nil {
+		sv = &types.Node{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "CaptureTime":
+			if value != nil {
+				switch jtv := value.(type) {
+				case json.Number:
+					f64, err := jtv.Float64()
+					if err != nil {
+						return err
+					}
+					sv.CaptureTime = ptr.Time(smithytime.ParseEpochSeconds(f64))
+
+				default:
+					return fmt.Errorf("expected NodeCaptureTime to be a JSON Number, got %T instead", value)
+
+				}
+			}
+
+		case "Id":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NodeId to be of type string, got %T instead", value)
+				}
+				sv.Id = ptr.String(jtv)
+			}
+
+		case "NodeType":
+			if err := awsAwsjson11_deserializeDocumentNodeType(&sv.NodeType, value); err != nil {
+				return err
+			}
+
+		case "Owner":
+			if err := awsAwsjson11_deserializeDocumentNodeOwnerInfo(&sv.Owner, value); err != nil {
+				return err
+			}
+
+		case "Region":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NodeRegion to be of type string, got %T instead", value)
+				}
+				sv.Region = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentNodeList(v *[]types.Node, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.([]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var cv []types.Node
+	if *v == nil {
+		cv = []types.Node{}
+	} else {
+		cv = *v
+	}
+
+	for _, value := range shape {
+		var col types.Node
+		destAddr := &col
+		if err := awsAwsjson11_deserializeDocumentNode(&destAddr, value); err != nil {
+			return err
+		}
+		col = *destAddr
+		cv = append(cv, col)
+
+	}
+	*v = cv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentNodeOwnerInfo(v **types.NodeOwnerInfo, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.NodeOwnerInfo
+	if *v == nil {
+		sv = &types.NodeOwnerInfo{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "AccountId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NodeAccountId to be of type string, got %T instead", value)
+				}
+				sv.AccountId = ptr.String(jtv)
+			}
+
+		case "OrganizationalUnitId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NodeOrganizationalUnitId to be of type string, got %T instead", value)
+				}
+				sv.OrganizationalUnitId = ptr.String(jtv)
+			}
+
+		case "OrganizationalUnitPath":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NodeOrganizationalUnitPath to be of type string, got %T instead", value)
+				}
+				sv.OrganizationalUnitPath = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentNodeSummary(v *map[string]string, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var mv map[string]string
+	if *v == nil {
+		mv = map[string]string{}
+	} else {
+		mv = *v
+	}
+
+	for key, value := range shape {
+		var parsedVal string
+		if value != nil {
+			jtv, ok := value.(string)
+			if !ok {
+				return fmt.Errorf("expected AttributeValue to be of type string, got %T instead", value)
+			}
+			parsedVal = jtv
+		}
+		mv[key] = parsedVal
+
+	}
+	*v = mv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentNodeSummaryList(v *[]map[string]string, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.([]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var cv []map[string]string
+	if *v == nil {
+		cv = []map[string]string{}
+	} else {
+		cv = *v
+	}
+
+	for _, value := range shape {
+		var col map[string]string
+		if err := awsAwsjson11_deserializeDocumentNodeSummary(&col, value); err != nil {
+			return err
+		}
+		cv = append(cv, col)
+
+	}
+	*v = cv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentNodeType(v *types.NodeType, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var uv types.NodeType
+loop:
+	for key, value := range shape {
+		if value == nil {
+			continue
+		}
+		switch key {
+		case "Instance":
+			var mv types.InstanceInfo
+			destAddr := &mv
+			if err := awsAwsjson11_deserializeDocumentInstanceInfo(&destAddr, value); err != nil {
+				return err
+			}
+			mv = *destAddr
+			uv = &types.NodeTypeMemberInstance{Value: mv}
+			break loop
+
+		default:
+			uv = &types.UnknownUnionMember{Tag: key}
+			break loop
+
+		}
+	}
+	*v = uv
 	return nil
 }
 
@@ -34801,7 +35856,7 @@ func awsAwsjson11_deserializeDocumentOpsItemAccessDeniedException(v **types.OpsI
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -34841,7 +35896,7 @@ func awsAwsjson11_deserializeDocumentOpsItemAlreadyExistsException(v **types.Ops
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -34890,7 +35945,7 @@ func awsAwsjson11_deserializeDocumentOpsItemConflictException(v **types.OpsItemC
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -35150,7 +36205,7 @@ func awsAwsjson11_deserializeDocumentOpsItemInvalidParameterException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -35217,7 +36272,7 @@ func awsAwsjson11_deserializeDocumentOpsItemLimitExceededException(v **types.Ops
 				sv.LimitType = ptr.String(jtv)
 			}
 
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -35262,7 +36317,7 @@ func awsAwsjson11_deserializeDocumentOpsItemNotFoundException(v **types.OpsItemN
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -35447,7 +36502,7 @@ func awsAwsjson11_deserializeDocumentOpsItemRelatedItemAlreadyExistsException(v 
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -35505,7 +36560,7 @@ func awsAwsjson11_deserializeDocumentOpsItemRelatedItemAssociationNotFoundExcept
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36047,7 +37102,7 @@ func awsAwsjson11_deserializeDocumentOpsMetadataAlreadyExistsException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36087,7 +37142,7 @@ func awsAwsjson11_deserializeDocumentOpsMetadataInvalidArgumentException(v **typ
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36127,7 +37182,7 @@ func awsAwsjson11_deserializeDocumentOpsMetadataKeyLimitExceededException(v **ty
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36167,7 +37222,7 @@ func awsAwsjson11_deserializeDocumentOpsMetadataLimitExceededException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36241,7 +37296,7 @@ func awsAwsjson11_deserializeDocumentOpsMetadataNotFoundException(v **types.OpsM
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36281,7 +37336,7 @@ func awsAwsjson11_deserializeDocumentOpsMetadataTooManyUpdatesException(v **type
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36493,7 +37548,7 @@ func awsAwsjson11_deserializeDocumentParameterAlreadyExists(v **types.ParameterA
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36812,7 +37867,7 @@ func awsAwsjson11_deserializeDocumentParameterLimitExceeded(v **types.ParameterL
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -36886,7 +37941,7 @@ func awsAwsjson11_deserializeDocumentParameterMaxVersionLimitExceeded(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -37142,7 +38197,7 @@ func awsAwsjson11_deserializeDocumentParameterNotFound(v **types.ParameterNotFou
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -37182,7 +38237,7 @@ func awsAwsjson11_deserializeDocumentParameterPatternMismatchException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -37326,7 +38381,7 @@ func awsAwsjson11_deserializeDocumentParameterVersionLabelLimitExceeded(v **type
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -37366,7 +38421,7 @@ func awsAwsjson11_deserializeDocumentParameterVersionNotFound(v **types.Paramete
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -38851,7 +39906,7 @@ func awsAwsjson11_deserializeDocumentPoliciesLimitExceededException(v **types.Po
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -38962,6 +40017,42 @@ func awsAwsjson11_deserializeDocumentProgressCounters(v **types.ProgressCounters
 		}
 	}
 	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentRegionList(v *[]string, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.([]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var cv []string
+	if *v == nil {
+		cv = []string{}
+	} else {
+		cv = *v
+	}
+
+	for _, value := range shape {
+		var col string
+		if value != nil {
+			jtv, ok := value.(string)
+			if !ok {
+				return fmt.Errorf("expected Region to be of type string, got %T instead", value)
+			}
+			col = jtv
+		}
+		cv = append(cv, col)
+
+	}
+	*v = cv
 	return nil
 }
 
@@ -39352,7 +40443,7 @@ func awsAwsjson11_deserializeDocumentResourceDataSyncConflictException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -39392,7 +40483,7 @@ func awsAwsjson11_deserializeDocumentResourceDataSyncCountExceededException(v **
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -39472,7 +40563,7 @@ func awsAwsjson11_deserializeDocumentResourceDataSyncInvalidConfigurationExcepti
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -39687,7 +40778,7 @@ func awsAwsjson11_deserializeDocumentResourceDataSyncNotFoundException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40013,7 +41104,7 @@ func awsAwsjson11_deserializeDocumentResourceInUseException(v **types.ResourceIn
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40053,7 +41144,7 @@ func awsAwsjson11_deserializeDocumentResourceLimitExceededException(v **types.Re
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40093,7 +41184,7 @@ func awsAwsjson11_deserializeDocumentResourceNotFoundException(v **types.Resourc
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40133,7 +41224,7 @@ func awsAwsjson11_deserializeDocumentResourcePolicyConflictException(v **types.R
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40173,7 +41264,7 @@ func awsAwsjson11_deserializeDocumentResourcePolicyInvalidParameterException(v *
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40240,7 +41331,7 @@ func awsAwsjson11_deserializeDocumentResourcePolicyLimitExceededException(v **ty
 				sv.LimitType = ptr.String(jtv)
 			}
 
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40280,7 +41371,7 @@ func awsAwsjson11_deserializeDocumentResourcePolicyNotFoundException(v **types.R
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -40867,7 +41958,7 @@ func awsAwsjson11_deserializeDocumentServiceSettingNotFound(v **types.ServiceSet
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -41515,6 +42606,46 @@ func awsAwsjson11_deserializeDocumentStepExecutionList(v *[]types.StepExecution,
 	return nil
 }
 
+func awsAwsjson11_deserializeDocumentStepPreviewMap(v *map[string]int32, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var mv map[string]int32
+	if *v == nil {
+		mv = map[string]int32{}
+	} else {
+		mv = *v
+	}
+
+	for key, value := range shape {
+		var parsedVal int32
+		if value != nil {
+			jtv, ok := value.(json.Number)
+			if !ok {
+				return fmt.Errorf("expected Integer to be json.Number, got %T instead", value)
+			}
+			i64, err := jtv.Int64()
+			if err != nil {
+				return err
+			}
+			parsedVal = int32(i64)
+		}
+		mv[key] = parsedVal
+
+	}
+	*v = mv
+	return nil
+}
+
 func awsAwsjson11_deserializeDocumentSubTypeCountLimitExceededException(v **types.SubTypeCountLimitExceededException, value interface{}) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)
@@ -41537,7 +42668,7 @@ func awsAwsjson11_deserializeDocumentSubTypeCountLimitExceededException(v **type
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -41705,7 +42836,7 @@ func awsAwsjson11_deserializeDocumentTargetInUseException(v **types.TargetInUseE
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -41991,7 +43122,7 @@ func awsAwsjson11_deserializeDocumentTargetNotConnected(v **types.TargetNotConne
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42038,6 +43169,93 @@ func awsAwsjson11_deserializeDocumentTargetParameterList(v *[]string, value inte
 			}
 			col = jtv
 		}
+		cv = append(cv, col)
+
+	}
+	*v = cv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentTargetPreview(v **types.TargetPreview, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.TargetPreview
+	if *v == nil {
+		sv = &types.TargetPreview{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "Count":
+			if value != nil {
+				jtv, ok := value.(json.Number)
+				if !ok {
+					return fmt.Errorf("expected Integer to be json.Number, got %T instead", value)
+				}
+				i64, err := jtv.Int64()
+				if err != nil {
+					return err
+				}
+				sv.Count = int32(i64)
+			}
+
+		case "TargetType":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+				}
+				sv.TargetType = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentTargetPreviewList(v *[]types.TargetPreview, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.([]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var cv []types.TargetPreview
+	if *v == nil {
+		cv = []types.TargetPreview{}
+	} else {
+		cv = *v
+	}
+
+	for _, value := range shape {
+		var col types.TargetPreview
+		destAddr := &col
+		if err := awsAwsjson11_deserializeDocumentTargetPreview(&destAddr, value); err != nil {
+			return err
+		}
+		col = *destAddr
 		cv = append(cv, col)
 
 	}
@@ -42168,7 +43386,7 @@ func awsAwsjson11_deserializeDocumentTooManyUpdates(v **types.TooManyUpdates, va
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42208,7 +43426,7 @@ func awsAwsjson11_deserializeDocumentTotalSizeLimitExceededException(v **types.T
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42248,7 +43466,7 @@ func awsAwsjson11_deserializeDocumentUnsupportedCalendarException(v **types.Unsu
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42288,7 +43506,7 @@ func awsAwsjson11_deserializeDocumentUnsupportedFeatureRequiredException(v **typ
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42328,7 +43546,7 @@ func awsAwsjson11_deserializeDocumentUnsupportedInventoryItemContextException(v 
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42377,7 +43595,7 @@ func awsAwsjson11_deserializeDocumentUnsupportedInventorySchemaVersionException(
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42417,7 +43635,47 @@ func awsAwsjson11_deserializeDocumentUnsupportedOperatingSystem(v **types.Unsupp
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+				}
+				sv.Message = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentUnsupportedOperationException(v **types.UnsupportedOperationException, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.UnsupportedOperationException
+	if *v == nil {
+		sv = &types.UnsupportedOperationException{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42457,7 +43715,7 @@ func awsAwsjson11_deserializeDocumentUnsupportedParameterType(v **types.Unsuppor
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -42497,13 +43755,62 @@ func awsAwsjson11_deserializeDocumentUnsupportedPlatformType(v **types.Unsupport
 
 	for key, value := range shape {
 		switch key {
-		case "Message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
 					return fmt.Errorf("expected String to be of type string, got %T instead", value)
 				}
 				sv.Message = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentValidationException(v **types.ValidationException, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.ValidationException
+	if *v == nil {
+		sv = &types.ValidationException{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "message", "Message":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+				}
+				sv.Message = ptr.String(jtv)
+			}
+
+		case "ReasonCode":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+				}
+				sv.ReasonCode = ptr.String(jtv)
 			}
 
 		default:
@@ -45028,6 +46335,19 @@ func awsAwsjson11_deserializeOpDocumentDescribePatchGroupStateOutput(v **Describ
 				sv.Instances = int32(i64)
 			}
 
+		case "InstancesWithAvailableSecurityUpdates":
+			if value != nil {
+				jtv, ok := value.(json.Number)
+				if !ok {
+					return fmt.Errorf("expected Integer to be json.Number, got %T instead", value)
+				}
+				i64, err := jtv.Int64()
+				if err != nil {
+					return err
+				}
+				sv.InstancesWithAvailableSecurityUpdates = ptr.Int32(int32(i64))
+			}
+
 		case "InstancesWithCriticalNonCompliantPatches":
 			if value != nil {
 				jtv, ok := value.(json.Number)
@@ -45880,6 +47200,85 @@ func awsAwsjson11_deserializeOpDocumentGetDocumentOutput(v **GetDocumentOutput, 
 					return fmt.Errorf("expected DocumentVersionName to be of type string, got %T instead", value)
 				}
 				sv.VersionName = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeOpDocumentGetExecutionPreviewOutput(v **GetExecutionPreviewOutput, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *GetExecutionPreviewOutput
+	if *v == nil {
+		sv = &GetExecutionPreviewOutput{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "EndedAt":
+			if value != nil {
+				switch jtv := value.(type) {
+				case json.Number:
+					f64, err := jtv.Float64()
+					if err != nil {
+						return err
+					}
+					sv.EndedAt = ptr.Time(smithytime.ParseEpochSeconds(f64))
+
+				default:
+					return fmt.Errorf("expected DateTime to be a JSON Number, got %T instead", value)
+
+				}
+			}
+
+		case "ExecutionPreview":
+			if err := awsAwsjson11_deserializeDocumentExecutionPreview(&sv.ExecutionPreview, value); err != nil {
+				return err
+			}
+
+		case "ExecutionPreviewId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ExecutionPreviewId to be of type string, got %T instead", value)
+				}
+				sv.ExecutionPreviewId = ptr.String(jtv)
+			}
+
+		case "Status":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ExecutionPreviewStatus to be of type string, got %T instead", value)
+				}
+				sv.Status = types.ExecutionPreviewStatus(jtv)
+			}
+
+		case "StatusMessage":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+				}
+				sv.StatusMessage = ptr.String(jtv)
 			}
 
 		default:
@@ -47162,6 +48561,15 @@ func awsAwsjson11_deserializeOpDocumentGetPatchBaselineOutput(v **GetPatchBaseli
 				sv.ApprovedPatchesEnableNonSecurity = ptr.Bool(jtv)
 			}
 
+		case "AvailableSecurityUpdatesComplianceStatus":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected PatchComplianceStatus to be of type string, got %T instead", value)
+				}
+				sv.AvailableSecurityUpdatesComplianceStatus = types.PatchComplianceStatus(jtv)
+			}
+
 		case "BaselineId":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -47900,6 +49308,96 @@ func awsAwsjson11_deserializeOpDocumentListInventoryEntriesOutput(v **ListInvent
 					return fmt.Errorf("expected InventoryItemTypeName to be of type string, got %T instead", value)
 				}
 				sv.TypeName = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeOpDocumentListNodesOutput(v **ListNodesOutput, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *ListNodesOutput
+	if *v == nil {
+		sv = &ListNodesOutput{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "NextToken":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NextToken to be of type string, got %T instead", value)
+				}
+				sv.NextToken = ptr.String(jtv)
+			}
+
+		case "Nodes":
+			if err := awsAwsjson11_deserializeDocumentNodeList(&sv.Nodes, value); err != nil {
+				return err
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeOpDocumentListNodesSummaryOutput(v **ListNodesSummaryOutput, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *ListNodesSummaryOutput
+	if *v == nil {
+		sv = &ListNodesSummaryOutput{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "NextToken":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected NextToken to be of type string, got %T instead", value)
+				}
+				sv.NextToken = ptr.String(jtv)
+			}
+
+		case "Summary":
+			if err := awsAwsjson11_deserializeDocumentNodeSummaryList(&sv.Summary, value); err != nil {
+				return err
 			}
 
 		default:
@@ -48848,6 +50346,46 @@ func awsAwsjson11_deserializeOpDocumentStartChangeRequestExecutionOutput(v **Sta
 	return nil
 }
 
+func awsAwsjson11_deserializeOpDocumentStartExecutionPreviewOutput(v **StartExecutionPreviewOutput, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *StartExecutionPreviewOutput
+	if *v == nil {
+		sv = &StartExecutionPreviewOutput{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "ExecutionPreviewId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ExecutionPreviewId to be of type string, got %T instead", value)
+				}
+				sv.ExecutionPreviewId = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
 func awsAwsjson11_deserializeOpDocumentStartSessionOutput(v **StartSessionOutput, value interface{}) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)
@@ -49725,6 +51263,15 @@ func awsAwsjson11_deserializeOpDocumentUpdatePatchBaselineOutput(v **UpdatePatch
 					return fmt.Errorf("expected Boolean to be of type *bool, got %T instead", value)
 				}
 				sv.ApprovedPatchesEnableNonSecurity = ptr.Bool(jtv)
+			}
+
+		case "AvailableSecurityUpdatesComplianceStatus":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected PatchComplianceStatus to be of type string, got %T instead", value)
+				}
+				sv.AvailableSecurityUpdatesComplianceStatus = types.PatchComplianceStatus(jtv)
 			}
 
 		case "BaselineId":

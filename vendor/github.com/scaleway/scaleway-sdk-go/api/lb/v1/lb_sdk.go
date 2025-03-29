@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
-	"github.com/scaleway/scaleway-sdk-go/internal/marshaler"
-	"github.com/scaleway/scaleway-sdk-go/internal/parameter"
+	"github.com/scaleway/scaleway-sdk-go/errors"
+	"github.com/scaleway/scaleway-sdk-go/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
+	"github.com/scaleway/scaleway-sdk-go/parameter"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -1113,7 +1113,7 @@ type SubscriberWebhookConfig struct {
 
 // HealthCheckHTTPConfig: health check http config.
 type HealthCheckHTTPConfig struct {
-	// URI: the HTTP URI to use when performing a health check on backend servers.
+	// URI: the HTTP path to use when performing a health check on backend servers.
 	URI string `json:"uri"`
 
 	// Method: the HTTP method used when performing a health check on backend servers.
@@ -1128,7 +1128,7 @@ type HealthCheckHTTPConfig struct {
 
 // HealthCheckHTTPSConfig: health check https config.
 type HealthCheckHTTPSConfig struct {
-	// URI: the HTTP URI to use when performing a health check on backend servers.
+	// URI: the HTTP path to use when performing a health check on backend servers.
 	URI string `json:"uri"`
 
 	// Method: the HTTP method used when performing a health check on backend servers.
@@ -1258,7 +1258,7 @@ type HealthCheck struct {
 	// Precisely one of TCPConfig, MysqlConfig, PgsqlConfig, LdapConfig, RedisConfig, HTTPConfig, HTTPSConfig must be set.
 	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
 
-	// MysqlConfig: object to configure a MySQL health check. The check requires MySQL >=3.22, for older versions, use a TCP health check.
+	// MysqlConfig: object to configure a MySQL health check. The check requires MySQL >=3.22 or <9.0. For older or newer versions, use a TCP health check.
 	// Precisely one of TCPConfig, MysqlConfig, PgsqlConfig, LdapConfig, RedisConfig, HTTPConfig, HTTPSConfig must be set.
 	MysqlConfig *HealthCheckMysqlConfig `json:"mysql_config,omitempty"`
 
@@ -1460,7 +1460,7 @@ type Backend struct {
 	// UpdatedAt: date at which the backend was updated.
 	UpdatedAt *time.Time `json:"updated_at"`
 
-	// FailoverHost: scaleway S3 bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
+	// FailoverHost: scaleway Object Storage bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
 	FailoverHost *string `json:"failover_host"`
 
 	// SslBridging: defines whether to enable SSL bridging between the Load Balancer and backend servers.
@@ -1625,6 +1625,9 @@ type Frontend struct {
 
 	// EnableHTTP3: defines whether to enable HTTP/3 protocol on the frontend.
 	EnableHTTP3 bool `json:"enable_http3"`
+
+	// ConnectionRateLimit: rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+	ConnectionRateLimit *uint32 `json:"connection_rate_limit"`
 }
 
 func (m *Frontend) UnmarshalJSON(b []byte) error {
@@ -1677,9 +1680,12 @@ type RouteMatch struct {
 	// Precisely one of Sni, HostHeader must be set.
 	Sni *string `json:"sni,omitempty"`
 
-	// HostHeader: value to match in the HTTP Host request header from an incoming connection. This field should be set for routes on HTTP Load Balancers.
+	// HostHeader: value to match in the HTTP Host request header from an incoming request. This field should be set for routes on HTTP Load Balancers.
 	// Precisely one of Sni, HostHeader must be set.
 	HostHeader *string `json:"host_header,omitempty"`
+
+	// MatchSubdomains: if true, all subdomains will match.
+	MatchSubdomains bool `json:"match_subdomains"`
 }
 
 // CreateCertificateRequestCustomCertificate: create certificate request custom certificate.
@@ -1960,7 +1966,7 @@ type CreateBackendRequest struct {
 	// Default value: proxy_protocol_unknown
 	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 
-	// FailoverHost: scaleway S3 bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
+	// FailoverHost: scaleway Object Storage bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
 	FailoverHost *string `json:"failover_host,omitempty"`
 
 	// SslBridging: defines whether to enable SSL bridging between the Load Balancer and backend servers.
@@ -2066,6 +2072,9 @@ type CreateFrontendRequest struct {
 
 	// EnableHTTP3: defines whether to enable HTTP/3 protocol on the frontend.
 	EnableHTTP3 bool `json:"enable_http3"`
+
+	// ConnectionRateLimit: rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+	ConnectionRateLimit *uint32 `json:"connection_rate_limit,omitempty"`
 }
 
 func (m *CreateFrontendRequest) UnmarshalJSON(b []byte) error {
@@ -3081,7 +3090,7 @@ type UpdateBackendRequest struct {
 	// Default value: proxy_protocol_unknown
 	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 
-	// FailoverHost: scaleway S3 bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
+	// FailoverHost: scaleway Object Storage bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
 	FailoverHost *string `json:"failover_host,omitempty"`
 
 	// SslBridging: defines whether to enable SSL bridging between the Load Balancer and backend servers.
@@ -3179,6 +3188,9 @@ type UpdateFrontendRequest struct {
 
 	// EnableHTTP3: defines whether to enable HTTP/3 protocol on the frontend.
 	EnableHTTP3 bool `json:"enable_http3"`
+
+	// ConnectionRateLimit: rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+	ConnectionRateLimit *uint32 `json:"connection_rate_limit,omitempty"`
 }
 
 func (m *UpdateFrontendRequest) UnmarshalJSON(b []byte) error {
@@ -3236,7 +3248,7 @@ type UpdateHealthCheckRequest struct {
 	// Precisely one of TCPConfig, MysqlConfig, PgsqlConfig, LdapConfig, RedisConfig, HTTPConfig, HTTPSConfig must be set.
 	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
 
-	// MysqlConfig: object to configure a MySQL health check. The check requires MySQL >=3.22, for older versions, use a TCP health check.
+	// MysqlConfig: object to configure a MySQL health check. The check requires MySQL >=3.22 or <9.0. For older or newer versions, use a TCP health check.
 	// Precisely one of TCPConfig, MysqlConfig, PgsqlConfig, LdapConfig, RedisConfig, HTTPConfig, HTTPSConfig must be set.
 	MysqlConfig *HealthCheckMysqlConfig `json:"mysql_config,omitempty"`
 
@@ -3489,7 +3501,7 @@ type ZonedAPICreateBackendRequest struct {
 	// Default value: proxy_protocol_unknown
 	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 
-	// FailoverHost: scaleway S3 bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
+	// FailoverHost: scaleway Object Storage bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
 	FailoverHost *string `json:"failover_host,omitempty"`
 
 	// SslBridging: defines whether to enable SSL bridging between the Load Balancer and backend servers.
@@ -3595,6 +3607,9 @@ type ZonedAPICreateFrontendRequest struct {
 
 	// EnableHTTP3: defines whether to enable HTTP/3 protocol on the frontend.
 	EnableHTTP3 bool `json:"enable_http3"`
+
+	// ConnectionRateLimit: rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+	ConnectionRateLimit *uint32 `json:"connection_rate_limit,omitempty"`
 }
 
 func (m *ZonedAPICreateFrontendRequest) UnmarshalJSON(b []byte) error {
@@ -4280,7 +4295,7 @@ type ZonedAPIUpdateBackendRequest struct {
 	// Default value: proxy_protocol_unknown
 	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 
-	// FailoverHost: scaleway S3 bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
+	// FailoverHost: scaleway Object Storage bucket website to be served as failover if all backend servers are down, e.g. failover-website.s3-website.fr-par.scw.cloud.
 	FailoverHost *string `json:"failover_host,omitempty"`
 
 	// SslBridging: defines whether to enable SSL bridging between the Load Balancer and backend servers.
@@ -4378,6 +4393,9 @@ type ZonedAPIUpdateFrontendRequest struct {
 
 	// EnableHTTP3: defines whether to enable HTTP/3 protocol on the frontend.
 	EnableHTTP3 bool `json:"enable_http3"`
+
+	// ConnectionRateLimit: rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+	ConnectionRateLimit *uint32 `json:"connection_rate_limit,omitempty"`
 }
 
 func (m *ZonedAPIUpdateFrontendRequest) UnmarshalJSON(b []byte) error {
@@ -4435,7 +4453,7 @@ type ZonedAPIUpdateHealthCheckRequest struct {
 	// Precisely one of TCPConfig, MysqlConfig, PgsqlConfig, LdapConfig, RedisConfig, HTTPConfig, HTTPSConfig must be set.
 	TCPConfig *HealthCheckTCPConfig `json:"tcp_config,omitempty"`
 
-	// MysqlConfig: object to configure a MySQL health check. The check requires MySQL >=3.22, for older versions, use a TCP health check.
+	// MysqlConfig: object to configure a MySQL health check. The check requires MySQL >=3.22 or <9.0. For older or newer versions, use a TCP health check.
 	// Precisely one of TCPConfig, MysqlConfig, PgsqlConfig, LdapConfig, RedisConfig, HTTPConfig, HTTPSConfig must be set.
 	MysqlConfig *HealthCheckMysqlConfig `json:"mysql_config,omitempty"`
 

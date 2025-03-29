@@ -20,14 +20,13 @@ package v1
 
 import (
 	"context"
-	"time"
 
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
+	gentype "k8s.io/client-go/gentype"
 )
 
 // IssuersGetter has a method to return a IssuerInterface.
@@ -40,6 +39,7 @@ type IssuersGetter interface {
 type IssuerInterface interface {
 	Create(ctx context.Context, issuer *v1.Issuer, opts metav1.CreateOptions) (*v1.Issuer, error)
 	Update(ctx context.Context, issuer *v1.Issuer, opts metav1.UpdateOptions) (*v1.Issuer, error)
+	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 	UpdateStatus(ctx context.Context, issuer *v1.Issuer, opts metav1.UpdateOptions) (*v1.Issuer, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
@@ -52,144 +52,18 @@ type IssuerInterface interface {
 
 // issuers implements IssuerInterface
 type issuers struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithList[*v1.Issuer, *v1.IssuerList]
 }
 
 // newIssuers returns a Issuers
 func newIssuers(c *CertmanagerV1Client, namespace string) *issuers {
 	return &issuers{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithList[*v1.Issuer, *v1.IssuerList](
+			"issuers",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *v1.Issuer { return &v1.Issuer{} },
+			func() *v1.IssuerList { return &v1.IssuerList{} }),
 	}
-}
-
-// Get takes name of the issuer, and returns the corresponding issuer object, and an error if there is any.
-func (c *issuers) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.Issuer, err error) {
-	result = &v1.Issuer{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("issuers").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Issuers that match those selectors.
-func (c *issuers) List(ctx context.Context, opts metav1.ListOptions) (result *v1.IssuerList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	result = &v1.IssuerList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("issuers").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested issuers.
-func (c *issuers) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("issuers").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch(ctx)
-}
-
-// Create takes the representation of a issuer and creates it.  Returns the server's representation of the issuer, and an error, if there is any.
-func (c *issuers) Create(ctx context.Context, issuer *v1.Issuer, opts metav1.CreateOptions) (result *v1.Issuer, err error) {
-	result = &v1.Issuer{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("issuers").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(issuer).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Update takes the representation of a issuer and updates it. Returns the server's representation of the issuer, and an error, if there is any.
-func (c *issuers) Update(ctx context.Context, issuer *v1.Issuer, opts metav1.UpdateOptions) (result *v1.Issuer, err error) {
-	result = &v1.Issuer{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("issuers").
-		Name(issuer.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(issuer).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *issuers) UpdateStatus(ctx context.Context, issuer *v1.Issuer, opts metav1.UpdateOptions) (result *v1.Issuer, err error) {
-	result = &v1.Issuer{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("issuers").
-		Name(issuer.Name).
-		SubResource("status").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(issuer).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Delete takes name of the issuer and deletes it. Returns an error if one occurs.
-func (c *issuers) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("issuers").
-		Name(name).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *issuers) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
-	var timeout time.Duration
-	if listOpts.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
-	}
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("issuers").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// Patch applies the patch and returns the patched issuer.
-func (c *issuers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Issuer, err error) {
-	result = &v1.Issuer{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("issuers").
-		Name(name).
-		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
 }

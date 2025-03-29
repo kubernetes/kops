@@ -105,10 +105,26 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 // attestation quote via ConfigFS.
 type LinuxConfigFsQuoteProvider struct{}
 
-// IsSupported checks if TSM client can be created to use ConfigFS system.
+// IsSupported checks if TSM client can be created to use ConfigFS system,
+// and that ConfigFS concurs that the backing technology is TDX.
 func (p *LinuxConfigFsQuoteProvider) IsSupported() error {
-	_, err := linuxtsm.MakeClient()
-	return err
+	c, err := linuxtsm.MakeClient()
+	if err != nil {
+		return err
+	}
+	r, err := report.Create(c, &report.Request{})
+	if err != nil {
+		return err
+	}
+	provider, err := r.ReadOption("provider")
+	if err != nil {
+		return err
+	}
+	pstr := string(provider)
+	if pstr != "tdx_guest\n" {
+		return fmt.Errorf("report provider %q is not 'tdx_guest'", pstr)
+	}
+	return nil
 }
 
 // GetRawQuote returns byte format attestation quote via ConfigFS.

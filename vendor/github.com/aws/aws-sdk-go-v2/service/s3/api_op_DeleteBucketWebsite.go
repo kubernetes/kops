@@ -13,7 +13,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // This action removes the website configuration for a bucket. Amazon S3 returns a
 // 200 OK response upon successfully deleting a website configuration on the
@@ -149,6 +149,9 @@ func (c *Client) addOperationDeleteBucketWebsiteMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeleteBucketWebsiteValidationMiddleware(stack); err != nil {

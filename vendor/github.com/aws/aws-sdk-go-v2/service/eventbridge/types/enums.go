@@ -142,13 +142,15 @@ type ConnectionState string
 
 // Enum values for ConnectionState
 const (
-	ConnectionStateCreating      ConnectionState = "CREATING"
-	ConnectionStateUpdating      ConnectionState = "UPDATING"
-	ConnectionStateDeleting      ConnectionState = "DELETING"
-	ConnectionStateAuthorized    ConnectionState = "AUTHORIZED"
-	ConnectionStateDeauthorized  ConnectionState = "DEAUTHORIZED"
-	ConnectionStateAuthorizing   ConnectionState = "AUTHORIZING"
-	ConnectionStateDeauthorizing ConnectionState = "DEAUTHORIZING"
+	ConnectionStateCreating           ConnectionState = "CREATING"
+	ConnectionStateUpdating           ConnectionState = "UPDATING"
+	ConnectionStateDeleting           ConnectionState = "DELETING"
+	ConnectionStateAuthorized         ConnectionState = "AUTHORIZED"
+	ConnectionStateDeauthorized       ConnectionState = "DEAUTHORIZED"
+	ConnectionStateAuthorizing        ConnectionState = "AUTHORIZING"
+	ConnectionStateDeauthorizing      ConnectionState = "DEAUTHORIZING"
+	ConnectionStateActive             ConnectionState = "ACTIVE"
+	ConnectionStateFailedConnectivity ConnectionState = "FAILED_CONNECTIVITY"
 )
 
 // Values returns all known values for ConnectionState. Note that this can be
@@ -164,6 +166,8 @@ func (ConnectionState) Values() []ConnectionState {
 		"DEAUTHORIZED",
 		"AUTHORIZING",
 		"DEAUTHORIZING",
+		"ACTIVE",
+		"FAILED_CONNECTIVITY",
 	}
 }
 

@@ -157,6 +157,9 @@ func (c *Client) addOperationEnableMFADeviceMiddlewares(stack *middleware.Stack,
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpEnableMFADeviceValidationMiddleware(stack); err != nil {
 		return err
 	}

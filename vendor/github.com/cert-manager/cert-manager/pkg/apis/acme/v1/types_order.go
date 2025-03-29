@@ -223,7 +223,7 @@ const (
 	Processing State = "processing"
 
 	// Invalid signifies that an ACME resource is invalid for some reason.
-	// If an Order is marked 'invalid', one of its validations be have invalid for some reason.
+	// If an Order is marked 'invalid', one of its validations must be invalid for some reason.
 	// This is a final state.
 	Invalid State = "invalid"
 

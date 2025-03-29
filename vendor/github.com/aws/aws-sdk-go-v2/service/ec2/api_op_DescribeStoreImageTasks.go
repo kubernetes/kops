@@ -166,6 +166,9 @@ func (c *Client) addOperationDescribeStoreImageTasksMiddlewares(stack *middlewar
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeStoreImageTasks(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -429,6 +432,9 @@ func storeImageTaskCompleteStateRetryable(ctx context.Context, input *DescribeSt
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

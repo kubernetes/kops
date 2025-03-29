@@ -20,4 +20,8 @@ const (
 	// LabelZoneID is a topology label that can be applied to any resource
 	// but will be initially applied to nodes.
 	LabelZoneID = "topology.k8s.aws/zone-id"
+	// LabelNetworkNodePrefix is a topology label that can be applied to any resource,
+	// but will be initially applied to nodes. The suffix should be an incremented
+	// integer starting at 1.
+	LabelNetworkNodePrefix = "topology.k8s.aws/network-node-layer-"
 )

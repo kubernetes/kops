@@ -124,6 +124,9 @@ func (c *Client) addOperationGetTrafficPolicyInstanceMiddlewares(stack *middlewa
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetTrafficPolicyInstanceValidationMiddleware(stack); err != nil {
 		return err
 	}

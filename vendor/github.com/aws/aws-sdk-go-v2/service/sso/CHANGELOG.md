@@ -1,3 +1,96 @@
+# v1.25.2 (2025-03-25)
+
+* No change notes available for this release.
+
+# v1.25.1 (2025-03-04.2)
+
+* **Bug Fix**: Add assurance test for operation order.
+
+# v1.25.0 (2025-02-27)
+
+* **Feature**: Track credential providers via User-Agent Feature ids
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.16 (2025-02-18)
+
+* **Bug Fix**: Bump go version to 1.22
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.15 (2025-02-05)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.14 (2025-01-31)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.13 (2025-01-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.12 (2025-01-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+* **Dependency Update**: Upgrade to smithy-go v1.22.2.
+
+# v1.24.11 (2025-01-17)
+
+* **Bug Fix**: Fix bug where credentials weren't refreshed during retry loop.
+
+# v1.24.10 (2025-01-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.9 (2025-01-09)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.8 (2024-12-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.7 (2024-12-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.6 (2024-11-18)
+
+* **Dependency Update**: Update to smithy-go v1.22.1.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.5 (2024-11-07)
+
+* **Bug Fix**: Adds case-insensitive handling of error message fields in service responses
+
+# v1.24.4 (2024-11-06)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.3 (2024-10-28)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.2 (2024-10-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.1 (2024-10-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.24.0 (2024-10-04)
+
+* **Feature**: Add support for HTTP client metrics.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.23.4 (2024-10-03)
+
+* No change notes available for this release.
+
+# v1.23.3 (2024-09-27)
+
+* No change notes available for this release.
+
 # v1.23.2 (2024-09-25)
 
 * No change notes available for this release.

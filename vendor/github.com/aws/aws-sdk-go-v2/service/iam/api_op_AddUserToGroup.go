@@ -124,6 +124,9 @@ func (c *Client) addOperationAddUserToGroupMiddlewares(stack *middleware.Stack, 
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpAddUserToGroupValidationMiddleware(stack); err != nil {
 		return err
 	}

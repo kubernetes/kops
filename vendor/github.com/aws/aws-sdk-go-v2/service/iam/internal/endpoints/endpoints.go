@@ -158,6 +158,15 @@ var defaultPartitions = endpoints.Partitions{
 				},
 			},
 			endpoints.EndpointKey{
+				Region:  "aws-global",
+				Variant: endpoints.DualStackVariant,
+			}: {
+				Hostname: "iam.global.api.aws",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "us-east-1",
+				},
+			},
+			endpoints.EndpointKey{
 				Region: "aws-global-fips",
 			}: endpoints.Endpoint{
 				Hostname: "iam-fips.amazonaws.com",
@@ -344,8 +353,19 @@ var defaultPartitions = endpoints.Partitions{
 				SignatureVersions: []string{"v4"},
 			},
 		},
-		RegionRegex:    partitionRegexp.AwsIsoF,
-		IsRegionalized: true,
+		RegionRegex:       partitionRegexp.AwsIsoF,
+		IsRegionalized:    false,
+		PartitionEndpoint: "aws-iso-f-global",
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "aws-iso-f-global",
+			}: endpoints.Endpoint{
+				Hostname: "iam.us-isof-south-1.csp.hci.ic.gov",
+				CredentialScope: endpoints.CredentialScope{
+					Region: "us-isof-south-1",
+				},
+			},
+		},
 	},
 	{
 		ID: "aws-us-gov",

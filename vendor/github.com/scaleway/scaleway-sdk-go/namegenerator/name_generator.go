@@ -628,9 +628,6 @@ var (
 		// Isaac Newton invented classic mechanics and modern optics. https://en.wikipedia.org/wiki/Isaac_Newton
 		"newton",
 
-		// Xavier Niel - ;) https://en.wikipedia.org/wiki/Xavier_Niel
-		"niel",
-
 		// Florence Nightingale, more prominently known as a nurse, was also the first female member of the Royal Statistical Society and a pioneer in statistical graphics https://en.wikipedia.org/wiki/Florence_Nightingale#Statistics_and_sanitary_reform
 		"nightingale",
 

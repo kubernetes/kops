@@ -356,6 +356,9 @@ func (c *Client) addOperationReEncryptMiddlewares(stack *middleware.Stack, optio
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpReEncryptValidationMiddleware(stack); err != nil {
 		return err
 	}

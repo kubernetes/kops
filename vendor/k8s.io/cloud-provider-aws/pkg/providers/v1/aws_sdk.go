@@ -25,7 +25,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
@@ -179,27 +178,6 @@ func (p *awsSDKProvider) LoadBalancingV2(regionName string) (ELBV2, error) {
 	return elbClient, nil
 }
 
-func (p *awsSDKProvider) Autoscaling(regionName string) (ASG, error) {
-	awsConfig := &aws.Config{
-		Region:      &regionName,
-		Credentials: p.creds,
-	}
-	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true).
-		WithEndpointResolver(p.cfg.GetResolver())
-	sess, err := session.NewSessionWithOptions(session.Options{
-		Config:            *awsConfig,
-		SharedConfigState: session.SharedConfigEnable,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
-	}
-	client := autoscaling.New(sess)
-
-	p.AddHandlers(regionName, &client.Handlers)
-
-	return client, nil
-}
-
 func (p *awsSDKProvider) Metadata() (config.EC2Metadata, error) {
 	sess, err := session.NewSession(&aws.Config{
 		EndpointResolver: p.cfg.GetResolver(),
@@ -211,18 +189,17 @@ func (p *awsSDKProvider) Metadata() (config.EC2Metadata, error) {
 	p.addAPILoggingHandlers(&client.Handlers)
 
 	identity, err := client.GetInstanceIdentityDocument()
-	if err != nil {
-		return nil, fmt.Errorf("unable to get instance identity document: %v", err)
+	if err == nil {
+		klog.InfoS("instance metadata identity",
+			"region", identity.Region,
+			"availability-zone", identity.AvailabilityZone,
+			"instance-type", identity.InstanceType,
+			"architecture", identity.Architecture,
+			"instance-id", identity.InstanceID,
+			"private-ip", identity.PrivateIP,
+			"account-id", identity.AccountID,
+			"image-id", identity.ImageID)
 	}
-	klog.InfoS("instance metadata identity",
-		"region", identity.Region,
-		"availability-zone", identity.AvailabilityZone,
-		"instance-type", identity.InstanceType,
-		"architecture", identity.Architecture,
-		"instance-id", identity.InstanceID,
-		"private-ip", identity.PrivateIP,
-		"account-id", identity.AccountID,
-		"image-id", identity.ImageID)
 	return client, nil
 }
 

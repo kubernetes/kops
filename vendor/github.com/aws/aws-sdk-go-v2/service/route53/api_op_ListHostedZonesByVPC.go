@@ -25,6 +25,10 @@ import (
 //     by Amazon Elastic File System (Amazon EFS), the value of Owner is
 //     efs.amazonaws.com .
 //
+// ListHostedZonesByVPC returns the hosted zones associated with the specified VPC
+// and does not reflect the hosted zone associations to VPCs via Route 53 Profiles.
+// To get the associations to a Profile, call the [ListProfileResourceAssociations]API.
+//
 // When listing private hosted zones, the hosted zone and the Amazon VPC must
 // belong to the same partition where the hosted zones were created. A partition is
 // a group of Amazon Web Services Regions. Each Amazon Web Services account is
@@ -41,6 +45,7 @@ import (
 // For more information, see [Access Management] in the Amazon Web Services General Reference.
 //
 // [Access Management]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
+// [ListProfileResourceAssociations]: https://docs.aws.amazon.com/Route53/latest/APIReference/API_route53profiles_ListProfileResourceAssociations.html
 func (c *Client) ListHostedZonesByVPC(ctx context.Context, params *ListHostedZonesByVPCInput, optFns ...func(*Options)) (*ListHostedZonesByVPCOutput, error) {
 	if params == nil {
 		params = &ListHostedZonesByVPCInput{}
@@ -180,6 +185,9 @@ func (c *Client) addOperationListHostedZonesByVPCMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpListHostedZonesByVPCValidationMiddleware(stack); err != nil {

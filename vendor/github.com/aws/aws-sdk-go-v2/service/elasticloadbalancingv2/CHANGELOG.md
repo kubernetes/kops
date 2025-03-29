@@ -1,3 +1,125 @@
+# v1.45.0 (2025-03-07)
+
+* **Feature**: This release adds support for assigning IP addresses to Application Load Balancers from VPC IP Address Manager pools.
+
+# v1.44.1 (2025-03-04.2)
+
+* **Bug Fix**: Add assurance test for operation order.
+
+# v1.44.0 (2025-02-27)
+
+* **Feature**: Track credential providers via User-Agent Feature ids
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.13 (2025-02-18)
+
+* **Bug Fix**: Bump go version to 1.22
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.12 (2025-02-05)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.11 (2025-02-04)
+
+* No change notes available for this release.
+
+# v1.43.10 (2025-01-31)
+
+* **Dependency Update**: Switch to code-generated waiter matchers, removing the dependency on go-jmespath.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.9 (2025-01-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.8 (2025-01-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+* **Dependency Update**: Upgrade to smithy-go v1.22.2.
+
+# v1.43.7 (2025-01-17)
+
+* **Bug Fix**: Fix bug where credentials weren't refreshed during retry loop.
+
+# v1.43.6 (2025-01-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.5 (2025-01-14)
+
+* **Bug Fix**: Fix issue where waiters were not failing on unmatched errors as they should. This may have breaking behavioral changes for users in fringe cases. See [this announcement](https://github.com/aws/aws-sdk-go-v2/discussions/2954) for more information.
+
+# v1.43.4 (2025-01-09)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.3 (2025-01-08)
+
+* No change notes available for this release.
+
+# v1.43.2 (2024-12-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.1 (2024-12-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.0 (2024-11-22)
+
+* **Feature**: This release adds support for advertising trusted CA certificate names in associated trust stores.
+
+# v1.42.1 (2024-11-21)
+
+* **Documentation**: This feature adds support for enabling zonal shift on cross-zone enabled Application Load Balancer, as well as modifying HTTP request and response headers.
+
+# v1.42.0 (2024-11-20)
+
+* **Feature**: This release adds support for configuring Load balancer Capacity Unit reservations
+
+# v1.41.2 (2024-11-18)
+
+* **Dependency Update**: Update to smithy-go v1.22.1.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.41.1 (2024-11-06)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.41.0 (2024-10-31)
+
+* **Feature**: Add UDP support for AWS PrivateLink and dual-stack Network Load Balancers
+
+# v1.40.1 (2024-10-28)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.40.0 (2024-10-11)
+
+* **Feature**: Add zonal_shift.config.enabled attribute. Add new AdministrativeOverride construct in the describe-target-health API response to include information about the override status applied to a target.
+
+# v1.39.2 (2024-10-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.39.1 (2024-10-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.39.0 (2024-10-04)
+
+* **Feature**: Add support for HTTP client metrics.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.38.4 (2024-10-03)
+
+* No change notes available for this release.
+
+# v1.38.3 (2024-09-27)
+
+* No change notes available for this release.
+
 # v1.38.2 (2024-09-25)
 
 * No change notes available for this release.

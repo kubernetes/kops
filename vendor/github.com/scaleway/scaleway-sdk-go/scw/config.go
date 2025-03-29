@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/scaleway/scaleway-sdk-go/errors"
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/logger"
 	"gopkg.in/yaml.v2"
 )

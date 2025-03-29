@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Puts a S3 Intelligent-Tiering configuration to the specified bucket. You can
 // have up to 1,000 S3 Intelligent-Tiering configurations per bucket.
@@ -183,6 +183,9 @@ func (c *Client) addOperationPutBucketIntelligentTieringConfigurationMiddlewares
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutBucketIntelligentTieringConfigurationValidationMiddleware(stack); err != nil {

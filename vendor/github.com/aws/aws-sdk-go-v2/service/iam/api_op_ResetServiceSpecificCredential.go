@@ -135,6 +135,9 @@ func (c *Client) addOperationResetServiceSpecificCredentialMiddlewares(stack *mi
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpResetServiceSpecificCredentialValidationMiddleware(stack); err != nil {
 		return err
 	}

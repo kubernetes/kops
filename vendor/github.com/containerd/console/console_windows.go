@@ -24,10 +24,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-var (
-	vtInputSupported  bool
-	ErrNotImplemented = errors.New("not implemented")
-)
+var vtInputSupported bool
 
 func (m *master) initStdios() {
 	// Note: We discard console mode warnings, because in/out can be redirected.

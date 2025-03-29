@@ -11,9 +11,11 @@ import (
 )
 
 /*
-BuildRequestBody builds a map[string]interface from the given `struct`. If
-parent is not an empty string, the final map[string]interface returned will
-encapsulate the built one. For example:
+BuildRequestBody builds a map[string]interface from the given `struct`, or
+collection of `structs`. If parent is not an empty string, the final
+map[string]interface returned will encapsulate the built one. Parent is
+required when passing a list of `structs`.
+For example:
 
 	disk := 1
 	createOpts := flavors.CreateOpts{
@@ -27,7 +29,29 @@ encapsulate the built one. For example:
 
 	body, err := gophercloud.BuildRequestBody(createOpts, "flavor")
 
-The above example can be run as-is, however it is recommended to look at how
+
+	opts := []rules.CreateOpts{
+		{
+			Direction:     "ingress",
+			PortRangeMin:  80,
+			EtherType:     rules.EtherType4,
+			PortRangeMax:  80,
+			Protocol:      "tcp",
+			SecGroupID:    "a7734e61-b545-452d-a3cd-0189cbd9747a",
+		},
+		{
+			Direction:    "ingress",
+			PortRangeMin: 443,
+			EtherType:    rules.EtherType4,
+			PortRangeMax: 443,
+			Protocol:     "tcp",
+			SecGroupID:   "a7734e61-b545-452d-a3cd-0189cbd9747a",
+		},
+	}
+
+	body, err := gophercloud.BuildRequestBody(opts, "security_group_rules")
+
+The above examples can be run as-is, however it is recommended to look at how
 BuildRequestBody is used within Gophercloud to more fully understand how it
 fits within the request process as a whole rather than use it directly as shown
 above.
@@ -44,7 +68,8 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 	}
 
 	optsMap := make(map[string]any)
-	if optsValue.Kind() == reflect.Struct {
+	switch optsValue.Kind() {
+	case reflect.Struct:
 		//fmt.Printf("optsValue.Kind() is a reflect.Struct: %+v\n", optsValue.Kind())
 		for i := 0; i < optsValue.NumField(); i++ {
 			v := optsValue.Field(i)
@@ -184,9 +209,22 @@ func BuildRequestBody(opts any, parent string) (map[string]any, error) {
 		}
 		//fmt.Printf("optsMap after parent added: %+v\n", optsMap)
 		return optsMap, nil
+	case reflect.Slice, reflect.Array:
+		optsMaps := make([]map[string]any, optsValue.Len())
+		for i := 0; i < optsValue.Len(); i++ {
+			b, err := BuildRequestBody(optsValue.Index(i).Interface(), "")
+			if err != nil {
+				return nil, err
+			}
+			optsMaps[i] = b
+		}
+		if parent == "" {
+			return nil, fmt.Errorf("Parent is required when passing an array or a slice.")
+		}
+		return map[string]any{parent: optsMaps}, nil
 	}
-	// Return an error if the underlying type of 'opts' isn't a struct.
-	return nil, fmt.Errorf("Options type is not a struct.")
+	// Return an error if we can't work with the underlying type of 'opts'
+	return nil, fmt.Errorf("Options type is not a struct, a slice, or an array.")
 }
 
 // EnabledState is a convenience type, mostly used in Create and Update

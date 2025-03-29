@@ -14,7 +14,7 @@ import (
 // Creates a launch configuration.
 //
 // If you exceed your maximum limit of launch configurations, the call fails. To
-// query this limit, call the DescribeAccountLimitsAPI. For information about updating this limit, see [Quotas for Amazon EC2 Auto Scaling]
+// query this limit, call the [DescribeAccountLimits]API. For information about updating this limit, see [Quotas for Amazon EC2 Auto Scaling]
 // in the Amazon EC2 Auto Scaling User Guide.
 //
 // For more information, see [Launch configurations] in the Amazon EC2 Auto Scaling User Guide.
@@ -26,6 +26,7 @@ import (
 // information about using launch templates, see [Launch templates]in the Amazon EC2 Auto Scaling
 // User Guide.
 //
+// [DescribeAccountLimits]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAccountLimits.html
 // [Quotas for Amazon EC2 Auto Scaling]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-quotas.html
 // [Launch configurations]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-configurations.html
 // [Launch templates]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html
@@ -285,6 +286,9 @@ func (c *Client) addOperationCreateLaunchConfigurationMiddlewares(stack *middlew
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateLaunchConfigurationValidationMiddleware(stack); err != nil {

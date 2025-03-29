@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Places an Object Retention configuration on an object. For more information,
 // see [Locking Objects]. Users or accounts require the s3:PutObjectRetention permission in order
@@ -203,6 +203,12 @@ func (c *Client) addOperationPutObjectRetentionMiddlewares(stack *middleware.Sta
 	if err = addIsExpressUserAgent(stack); err != nil {
 		return err
 	}
+	if err = addRequestChecksumMetricsTracking(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpPutObjectRetentionValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -283,9 +289,10 @@ func getPutObjectRetentionRequestAlgorithmMember(input interface{}) (string, boo
 }
 
 func addPutObjectRetentionInputChecksumMiddlewares(stack *middleware.Stack, options Options) error {
-	return internalChecksum.AddInputMiddleware(stack, internalChecksum.InputMiddlewareOptions{
+	return addInputChecksumMiddleware(stack, internalChecksum.InputMiddlewareOptions{
 		GetAlgorithm:                     getPutObjectRetentionRequestAlgorithmMember,
 		RequireChecksum:                  true,
+		RequestChecksumCalculation:       options.RequestChecksumCalculation,
 		EnableTrailingChecksum:           false,
 		EnableComputeSHA256PayloadHash:   true,
 		EnableDecodedContentLengthHeader: true,

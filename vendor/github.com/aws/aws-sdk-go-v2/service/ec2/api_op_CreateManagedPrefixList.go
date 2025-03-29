@@ -11,8 +11,8 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Creates a managed prefix list. You can specify one or more entries for the
-// prefix list. Each entry consists of a CIDR block and an optional description.
+// Creates a managed prefix list. You can specify entries for the prefix list.
+// Each entry consists of a CIDR block and an optional description.
 func (c *Client) CreateManagedPrefixList(ctx context.Context, params *CreateManagedPrefixListInput, optFns ...func(*Options)) (*CreateManagedPrefixListOutput, error) {
 	if params == nil {
 		params = &CreateManagedPrefixListInput{}
@@ -146,6 +146,9 @@ func (c *Client) addOperationCreateManagedPrefixListMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opCreateManagedPrefixListMiddleware(stack, options); err != nil {

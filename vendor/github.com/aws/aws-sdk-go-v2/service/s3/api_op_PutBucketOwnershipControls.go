@@ -15,7 +15,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Creates or modifies OwnershipControls for an Amazon S3 bucket. To use this
 // operation, you must have the s3:PutBucketOwnershipControls permission. For more
@@ -156,6 +156,12 @@ func (c *Client) addOperationPutBucketOwnershipControlsMiddlewares(stack *middle
 	if err = addIsExpressUserAgent(stack); err != nil {
 		return err
 	}
+	if err = addRequestChecksumMetricsTracking(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpPutBucketOwnershipControlsValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -226,9 +232,10 @@ func newServiceMetadataMiddleware_opPutBucketOwnershipControls(region string) *a
 }
 
 func addPutBucketOwnershipControlsInputChecksumMiddlewares(stack *middleware.Stack, options Options) error {
-	return internalChecksum.AddInputMiddleware(stack, internalChecksum.InputMiddlewareOptions{
+	return addInputChecksumMiddleware(stack, internalChecksum.InputMiddlewareOptions{
 		GetAlgorithm:                     nil,
 		RequireChecksum:                  true,
+		RequestChecksumCalculation:       options.RequestChecksumCalculation,
 		EnableTrailingChecksum:           false,
 		EnableComputeSHA256PayloadHash:   true,
 		EnableDecodedContentLengthHeader: true,

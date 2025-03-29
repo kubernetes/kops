@@ -45,6 +45,15 @@ type GetSnapshotBlockPublicAccessStateInput struct {
 
 type GetSnapshotBlockPublicAccessStateOutput struct {
 
+	// The entity that manages the state for block public access for snapshots.
+	// Possible values include:
+	//
+	//   - account - The state is managed by the account.
+	//
+	//   - declarative-policy - The state is managed by a declarative policy and can't
+	//   be modified by the account.
+	ManagedBy types.ManagedBy
+
 	// The current state of block public access for snapshots. Possible values include:
 	//
 	//   - block-all-sharing - All public sharing of snapshots is blocked. Users in the
@@ -127,6 +136,9 @@ func (c *Client) addOperationGetSnapshotBlockPublicAccessStateMiddlewares(stack 
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opGetSnapshotBlockPublicAccessState(options.Region), middleware.Before); err != nil {

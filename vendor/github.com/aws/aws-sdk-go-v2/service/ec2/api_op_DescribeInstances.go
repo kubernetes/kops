@@ -61,7 +61,7 @@ func (c *Client) DescribeInstances(ctx context.Context, params *DescribeInstance
 
 type DescribeInstancesInput struct {
 
-	// Checks whether you have the required permissions for the action, without
+	// Checks whether you have the required permissions for the operation, without
 	// actually making the request, and provides an error response. If you have the
 	// required permissions, the error response is DryRunOperation . Otherwise, it is
 	// UnauthorizedOperation .
@@ -139,9 +139,6 @@ type DescribeInstancesInput struct {
 	//
 	//   - iam-instance-profile.id - The instance profile associated with the instance.
 	//   Specified as an ID.
-	//
-	//   - iam-instance-profile.name - The instance profile associated with the
-	//   instance. Specified as an name.
 	//
 	//   - image-id - The ID of the image used to launch the instance.
 	//
@@ -313,6 +310,13 @@ type DescribeInstancesInput struct {
 	//
 	//   - network-interface.network-interface-id - The ID of the network interface.
 	//
+	//   - network-interface.operator.managed - A Boolean that indicates whether the
+	//   instance has a managed network interface.
+	//
+	//   - network-interface.operator.principal - The principal that manages the
+	//   network interface. Only valid for instances with managed network interfaces,
+	//   where managed is true .
+	//
 	//   - network-interface.outpost-arn - The ARN of the Outpost.
 	//
 	//   - network-interface.owner-id - The ID of the owner of the network interface.
@@ -346,6 +350,15 @@ type DescribeInstancesInput struct {
 	//   interface.
 	//
 	//   - network-interface.vpc-id - The ID of the VPC for the network interface.
+	//
+	//   - network-performance-options.bandwidth-weighting - Where the performance
+	//   boost is applied, if applicable. Valid values: default , vpc-1 , ebs-1 .
+	//
+	//   - operator.managed - A Boolean that indicates whether this is a managed
+	//   instance.
+	//
+	//   - operator.principal - The principal that manages the instance. Only valid for
+	//   managed instances, where managed is true .
 	//
 	//   - outpost-arn - The Amazon Resource Name (ARN) of the Outpost.
 	//
@@ -556,6 +569,9 @@ func (c *Client) addOperationDescribeInstancesMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeInstances(options.Region), middleware.Before); err != nil {
@@ -777,6 +793,9 @@ func instanceExistsStateRetryable(ctx context.Context, input *DescribeInstancesI
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -953,7 +972,11 @@ func instanceRunningStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "running"
@@ -984,7 +1007,11 @@ func instanceRunningStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "shutting-down"
@@ -1015,7 +1042,11 @@ func instanceRunningStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "terminated"
@@ -1046,7 +1077,11 @@ func instanceRunningStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "stopping"
@@ -1075,6 +1110,9 @@ func instanceRunningStateRetryable(ctx context.Context, input *DescribeInstances
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -1251,7 +1289,11 @@ func instanceStoppedStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "stopped"
@@ -1282,7 +1324,11 @@ func instanceStoppedStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "pending"
@@ -1313,7 +1359,11 @@ func instanceStoppedStateRetryable(ctx context.Context, input *DescribeInstances
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "terminated"
@@ -1330,6 +1380,9 @@ func instanceStoppedStateRetryable(ctx context.Context, input *DescribeInstances
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -1506,7 +1559,11 @@ func instanceTerminatedStateRetryable(ctx context.Context, input *DescribeInstan
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "terminated"
@@ -1537,7 +1594,11 @@ func instanceTerminatedStateRetryable(ctx context.Context, input *DescribeInstan
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "pending"
@@ -1568,7 +1629,11 @@ func instanceTerminatedStateRetryable(ctx context.Context, input *DescribeInstan
 		var v5 []types.InstanceStateName
 		for _, v := range v4 {
 			v6 := v.State
-			v7 := v6.Name
+			var v7 types.InstanceStateName
+			if v6 != nil {
+				v8 := v6.Name
+				v7 = v8
+			}
 			v5 = append(v5, v7)
 		}
 		expectedValue := "stopping"
@@ -1585,6 +1650,9 @@ func instanceTerminatedStateRetryable(ctx context.Context, input *DescribeInstan
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
