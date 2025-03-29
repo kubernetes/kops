@@ -88,7 +88,7 @@ func init() {
 		ActiveWorkers,
 		// expose process metrics like CPU, Memory, file descriptor usage etc.
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-		// expose all Go runtime metrics like GC stats, memory stats etc.
-		collectors.NewGoCollector(collectors.WithGoCollectorRuntimeMetrics(collectors.MetricsAll)),
+		// expose Go runtime metrics like GC stats, memory stats etc.
+		collectors.NewGoCollector(),
 	)
 }

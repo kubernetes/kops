@@ -157,6 +157,9 @@ func (c *Client) addOperationGetAccountLimitMiddlewares(stack *middleware.Stack,
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetAccountLimitValidationMiddleware(stack); err != nil {
 		return err
 	}

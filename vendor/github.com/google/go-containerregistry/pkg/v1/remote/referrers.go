@@ -61,7 +61,7 @@ func (f *fetcher) fetchReferrers(ctx context.Context, filter map[string]string, 
 	}
 	defer resp.Body.Close()
 
-	if err := transport.CheckError(resp, http.StatusOK, http.StatusNotFound, http.StatusBadRequest); err != nil {
+	if err := transport.CheckError(resp, http.StatusOK, http.StatusNotFound, http.StatusBadRequest, http.StatusNotAcceptable); err != nil {
 		return nil, err
 	}
 

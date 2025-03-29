@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // This implementation of the GET action returns an analytics configuration
 // (identified by the analytics configuration ID) from the bucket.
@@ -161,6 +161,9 @@ func (c *Client) addOperationGetBucketAnalyticsConfigurationMiddlewares(stack *m
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketAnalyticsConfigurationValidationMiddleware(stack); err != nil {

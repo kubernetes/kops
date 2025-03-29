@@ -13,7 +13,6 @@ import (
 	smithytime "github.com/aws/smithy-go/time"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	smithywaiter "github.com/aws/smithy-go/waiter"
-	jmespath "github.com/jmespath/go-jmespath"
 	"time"
 )
 
@@ -122,6 +121,9 @@ func (c *Client) addOperationDescribeTargetHealthMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribeTargetHealthValidationMiddleware(stack); err != nil {
@@ -332,29 +334,23 @@ func targetDeregisteredStateRetryable(ctx context.Context, input *DescribeTarget
 	}
 
 	if err == nil {
-		pathValue, err := jmespath.Search("TargetHealthDescriptions[].TargetHealth.State", output)
-		if err != nil {
-			return false, fmt.Errorf("error evaluating waiter state: %w", err)
-		}
-
-		expectedValue := "unused"
-		var match = true
-		listOfValues, ok := pathValue.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("waiter comparator expected list got %T", pathValue)
-		}
-
-		if len(listOfValues) == 0 {
-			match = false
-		}
-		for _, v := range listOfValues {
-			value, ok := v.(types.TargetHealthStateEnum)
-			if !ok {
-				return false, fmt.Errorf("waiter comparator expected types.TargetHealthStateEnum value, got %T", pathValue)
+		v1 := output.TargetHealthDescriptions
+		var v2 []types.TargetHealthStateEnum
+		for _, v := range v1 {
+			v3 := v.TargetHealth
+			var v4 types.TargetHealthStateEnum
+			if v3 != nil {
+				v5 := v3.State
+				v4 = v5
 			}
-
-			if string(value) != expectedValue {
+			v2 = append(v2, v4)
+		}
+		expectedValue := "unused"
+		match := len(v2) > 0
+		for _, v := range v2 {
+			if string(v) != expectedValue {
 				match = false
+				break
 			}
 		}
 
@@ -363,6 +359,9 @@ func targetDeregisteredStateRetryable(ctx context.Context, input *DescribeTarget
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -526,29 +525,23 @@ func (w *TargetInServiceWaiter) WaitForOutput(ctx context.Context, params *Descr
 func targetInServiceStateRetryable(ctx context.Context, input *DescribeTargetHealthInput, output *DescribeTargetHealthOutput, err error) (bool, error) {
 
 	if err == nil {
-		pathValue, err := jmespath.Search("TargetHealthDescriptions[].TargetHealth.State", output)
-		if err != nil {
-			return false, fmt.Errorf("error evaluating waiter state: %w", err)
-		}
-
-		expectedValue := "healthy"
-		var match = true
-		listOfValues, ok := pathValue.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("waiter comparator expected list got %T", pathValue)
-		}
-
-		if len(listOfValues) == 0 {
-			match = false
-		}
-		for _, v := range listOfValues {
-			value, ok := v.(types.TargetHealthStateEnum)
-			if !ok {
-				return false, fmt.Errorf("waiter comparator expected types.TargetHealthStateEnum value, got %T", pathValue)
+		v1 := output.TargetHealthDescriptions
+		var v2 []types.TargetHealthStateEnum
+		for _, v := range v1 {
+			v3 := v.TargetHealth
+			var v4 types.TargetHealthStateEnum
+			if v3 != nil {
+				v5 := v3.State
+				v4 = v5
 			}
-
-			if string(value) != expectedValue {
+			v2 = append(v2, v4)
+		}
+		expectedValue := "healthy"
+		match := len(v2) > 0
+		for _, v := range v2 {
+			if string(v) != expectedValue {
 				match = false
+				break
 			}
 		}
 
@@ -569,6 +562,9 @@ func targetInServiceStateRetryable(ctx context.Context, input *DescribeTargetHea
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

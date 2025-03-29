@@ -17,8 +17,9 @@ import (
 // other process types from functioning properly. For more information, see [Suspend and resume Amazon EC2 Auto Scaling processes]in the
 // Amazon EC2 Auto Scaling User Guide.
 //
-// To resume processes that have been suspended, call the ResumeProcesses API.
+// To resume processes that have been suspended, call the [ResumeProcesses] API.
 //
+// [ResumeProcesses]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_ResumeProcesses.html
 // [Suspend and resume Amazon EC2 Auto Scaling processes]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html
 func (c *Client) SuspendProcesses(ctx context.Context, params *SuspendProcessesInput, optFns ...func(*Options)) (*SuspendProcessesOutput, error) {
 	if params == nil {
@@ -137,6 +138,9 @@ func (c *Client) addOperationSuspendProcessesMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpSuspendProcessesValidationMiddleware(stack); err != nil {

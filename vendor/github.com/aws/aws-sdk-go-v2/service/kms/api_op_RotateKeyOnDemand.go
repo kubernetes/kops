@@ -192,6 +192,9 @@ func (c *Client) addOperationRotateKeyOnDemandMiddlewares(stack *middleware.Stac
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpRotateKeyOnDemandValidationMiddleware(stack); err != nil {
 		return err
 	}

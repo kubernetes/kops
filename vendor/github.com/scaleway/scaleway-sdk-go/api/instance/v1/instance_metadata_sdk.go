@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
+	"github.com/scaleway/scaleway-sdk-go/errors"
 	"github.com/scaleway/scaleway-sdk-go/logger"
 )
 

@@ -37,7 +37,7 @@ func (c *Client) ModifyInstanceMetadataDefaults(ctx context.Context, params *Mod
 
 type ModifyInstanceMetadataDefaultsInput struct {
 
-	// Checks whether you have the required permissions for the action, without
+	// Checks whether you have the required permissions for the operation, without
 	// actually making the request, and provides an error response. If you have the
 	// required permissions, the error response is DryRunOperation . Otherwise, it is
 	// UnauthorizedOperation .
@@ -145,6 +145,9 @@ func (c *Client) addOperationModifyInstanceMetadataDefaultsMiddlewares(stack *mi
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opModifyInstanceMetadataDefaults(options.Region), middleware.Before); err != nil {

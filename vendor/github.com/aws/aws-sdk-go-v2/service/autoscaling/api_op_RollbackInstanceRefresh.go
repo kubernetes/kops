@@ -32,9 +32,10 @@ import (
 //
 // When you receive a successful response from this operation, Amazon EC2 Auto
 // Scaling immediately begins replacing instances. You can check the status of this
-// operation through the DescribeInstanceRefreshesAPI operation.
+// operation through the [DescribeInstanceRefreshes]API operation.
 //
 // [instance refresh feature]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-refresh.html
+// [DescribeInstanceRefreshes]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeInstanceRefreshes.html
 func (c *Client) RollbackInstanceRefresh(ctx context.Context, params *RollbackInstanceRefreshInput, optFns ...func(*Options)) (*RollbackInstanceRefreshOutput, error) {
 	if params == nil {
 		params = &RollbackInstanceRefreshInput{}
@@ -134,6 +135,9 @@ func (c *Client) addOperationRollbackInstanceRefreshMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpRollbackInstanceRefreshValidationMiddleware(stack); err != nil {

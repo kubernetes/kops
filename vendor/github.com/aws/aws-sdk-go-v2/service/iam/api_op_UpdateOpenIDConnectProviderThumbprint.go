@@ -139,6 +139,9 @@ func (c *Client) addOperationUpdateOpenIDConnectProviderThumbprintMiddlewares(st
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpUpdateOpenIDConnectProviderThumbprintValidationMiddleware(stack); err != nil {
 		return err
 	}

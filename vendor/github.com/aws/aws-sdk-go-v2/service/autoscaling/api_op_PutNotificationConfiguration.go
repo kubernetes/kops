@@ -45,7 +45,9 @@ type PutNotificationConfigurationInput struct {
 	AutoScalingGroupName *string
 
 	// The type of event that causes the notification to be sent. To query the
-	// notification types supported by Amazon EC2 Auto Scaling, call the DescribeAutoScalingNotificationTypesAPI.
+	// notification types supported by Amazon EC2 Auto Scaling, call the [DescribeAutoScalingNotificationTypes]API.
+	//
+	// [DescribeAutoScalingNotificationTypes]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAutoScalingNotificationTypes.html
 	//
 	// This member is required.
 	NotificationTypes []string
@@ -127,6 +129,9 @@ func (c *Client) addOperationPutNotificationConfigurationMiddlewares(stack *midd
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutNotificationConfigurationValidationMiddleware(stack); err != nil {

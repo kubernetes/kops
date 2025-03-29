@@ -20,7 +20,7 @@ import (
 	"io"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Returns the Region the bucket resides in. You set the bucket's Region using the
 // LocationConstraint request parameter in a CreateBucket request. For more
@@ -98,8 +98,10 @@ func (in *GetBucketLocationInput) bindEndpointParams(p *EndpointParameters) {
 type GetBucketLocationOutput struct {
 
 	// Specifies the Region where the bucket resides. For a list of all the Amazon S3
-	// supported location constraints by Region, see [Regions and Endpoints]. Buckets in Region us-east-1
-	// have a LocationConstraint of null .
+	// supported location constraints by Region, see [Regions and Endpoints].
+	//
+	// Buckets in Region us-east-1 have a LocationConstraint of null . Buckets with a
+	// LocationConstraint of EU reside in eu-west-1 .
 	//
 	// [Regions and Endpoints]: https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 	LocationConstraint types.BucketLocationConstraint
@@ -181,6 +183,9 @@ func (c *Client) addOperationGetBucketLocationMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketLocationValidationMiddleware(stack); err != nil {

@@ -84,7 +84,7 @@ func (dk *defaultKeychain) Resolve(target Resource) (Authenticator, error) {
 }
 
 // Resolve implements Keychain.
-func (dk *defaultKeychain) ResolveContext(ctx context.Context, target Resource) (Authenticator, error) {
+func (dk *defaultKeychain) ResolveContext(_ context.Context, target Resource) (Authenticator, error) {
 	dk.mu.Lock()
 	defer dk.mu.Unlock()
 
@@ -204,7 +204,7 @@ func (w wrapper) Resolve(r Resource) (Authenticator, error) {
 	return w.ResolveContext(context.Background(), r)
 }
 
-func (w wrapper) ResolveContext(ctx context.Context, r Resource) (Authenticator, error) {
+func (w wrapper) ResolveContext(_ context.Context, r Resource) (Authenticator, error) {
 	u, p, err := w.h.Get(r.RegistryStr())
 	if err != nil {
 		return Anonymous, nil

@@ -76,6 +76,9 @@ type CreateVpcEndpointServiceConfigurationInput struct {
 	// The supported IP address types. The possible values are ipv4 and ipv6 .
 	SupportedIpAddressTypes []string
 
+	// The Regions from which service consumers can access the service.
+	SupportedRegions []string
+
 	// The tags to associate with the service.
 	TagSpecifications []types.TagSpecification
 
@@ -159,6 +162,9 @@ func (c *Client) addOperationCreateVpcEndpointServiceConfigurationMiddlewares(st
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opCreateVpcEndpointServiceConfiguration(options.Region), middleware.Before); err != nil {

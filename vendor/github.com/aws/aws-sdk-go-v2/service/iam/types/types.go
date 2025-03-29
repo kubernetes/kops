@@ -1336,6 +1336,22 @@ type RoleUsageType struct {
 	noSmithyDocumentSerde
 }
 
+// Contains the private keys for the SAML provider.
+//
+// This data type is used as a response element in the GetSAMLProvider operation.
+type SAMLPrivateKey struct {
+
+	// The unique identifier for the SAML private key.
+	KeyId *string
+
+	// The date and time, in [ISO 8601 date-time] format, when the private key was uploaded.
+	//
+	// [ISO 8601 date-time]: http://www.iso.org/iso/iso8601
+	Timestamp *time.Time
+
+	noSmithyDocumentSerde
+}
+
 // Contains the list of SAML providers for this account.
 type SAMLProviderListEntry struct {
 

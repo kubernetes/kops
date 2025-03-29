@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
-	"github.com/scaleway/scaleway-sdk-go/internal/marshaler"
-	"github.com/scaleway/scaleway-sdk-go/internal/parameter"
+	"github.com/scaleway/scaleway-sdk-go/errors"
+	"github.com/scaleway/scaleway-sdk-go/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
+	"github.com/scaleway/scaleway-sdk-go/parameter"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -87,22 +87,27 @@ func (enum *ListIPsRequestOrderBy) UnmarshalJSON(data []byte) error {
 type ResourceType string
 
 const (
-	ResourceTypeUnknownType         = ResourceType("unknown_type")
-	ResourceTypeCustom              = ResourceType("custom")
-	ResourceTypeInstanceServer      = ResourceType("instance_server")
-	ResourceTypeInstanceIP          = ResourceType("instance_ip")
-	ResourceTypeInstancePrivateNic  = ResourceType("instance_private_nic")
-	ResourceTypeLBServer            = ResourceType("lb_server")
-	ResourceTypeFipIP               = ResourceType("fip_ip")
-	ResourceTypeVpcGateway          = ResourceType("vpc_gateway")
-	ResourceTypeVpcGatewayNetwork   = ResourceType("vpc_gateway_network")
-	ResourceTypeK8sNode             = ResourceType("k8s_node")
-	ResourceTypeK8sCluster          = ResourceType("k8s_cluster")
-	ResourceTypeRdbInstance         = ResourceType("rdb_instance")
-	ResourceTypeRedisCluster        = ResourceType("redis_cluster")
-	ResourceTypeBaremetalServer     = ResourceType("baremetal_server")
-	ResourceTypeBaremetalPrivateNic = ResourceType("baremetal_private_nic")
-	ResourceTypeLlmDeployment       = ResourceType("llm_deployment")
+	ResourceTypeUnknownType            = ResourceType("unknown_type")
+	ResourceTypeCustom                 = ResourceType("custom")
+	ResourceTypeInstanceServer         = ResourceType("instance_server")
+	ResourceTypeInstanceIP             = ResourceType("instance_ip")
+	ResourceTypeInstancePrivateNic     = ResourceType("instance_private_nic")
+	ResourceTypeLBServer               = ResourceType("lb_server")
+	ResourceTypeFipIP                  = ResourceType("fip_ip")
+	ResourceTypeVpcGateway             = ResourceType("vpc_gateway")
+	ResourceTypeVpcGatewayNetwork      = ResourceType("vpc_gateway_network")
+	ResourceTypeK8sNode                = ResourceType("k8s_node")
+	ResourceTypeK8sCluster             = ResourceType("k8s_cluster")
+	ResourceTypeRdbInstance            = ResourceType("rdb_instance")
+	ResourceTypeRedisCluster           = ResourceType("redis_cluster")
+	ResourceTypeBaremetalServer        = ResourceType("baremetal_server")
+	ResourceTypeBaremetalPrivateNic    = ResourceType("baremetal_private_nic")
+	ResourceTypeLlmDeployment          = ResourceType("llm_deployment")
+	ResourceTypeMgdbInstance           = ResourceType("mgdb_instance")
+	ResourceTypeAppleSiliconServer     = ResourceType("apple_silicon_server")
+	ResourceTypeAppleSiliconPrivateNic = ResourceType("apple_silicon_private_nic")
+	ResourceTypeServerlessContainer    = ResourceType("serverless_container")
+	ResourceTypeServerlessFunction     = ResourceType("serverless_function")
 )
 
 func (enum ResourceType) String() string {
@@ -131,6 +136,11 @@ func (enum ResourceType) Values() []ResourceType {
 		"baremetal_server",
 		"baremetal_private_nic",
 		"llm_deployment",
+		"mgdb_instance",
+		"apple_silicon_server",
+		"apple_silicon_private_nic",
+		"serverless_container",
+		"serverless_function",
 	}
 }
 

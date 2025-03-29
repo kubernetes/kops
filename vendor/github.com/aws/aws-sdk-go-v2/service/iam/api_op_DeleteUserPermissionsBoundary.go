@@ -112,6 +112,9 @@ func (c *Client) addOperationDeleteUserPermissionsBoundaryMiddlewares(stack *mid
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteUserPermissionsBoundaryValidationMiddleware(stack); err != nil {
 		return err
 	}

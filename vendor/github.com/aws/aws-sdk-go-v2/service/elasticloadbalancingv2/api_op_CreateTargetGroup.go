@@ -56,7 +56,7 @@ type CreateTargetGroupInput struct {
 
 	// Indicates whether health checks are enabled. If the target type is lambda ,
 	// health checks are disabled by default but can be enabled. If the target type is
-	// instance , ip , or alb , health checks are always enabled and cannot be disabled.
+	// instance , ip , or alb , health checks are always enabled and can't be disabled.
 	HealthCheckEnabled *bool
 
 	// The approximate amount of time, in seconds, between health checks of an
@@ -103,9 +103,7 @@ type CreateTargetGroupInput struct {
 	// GENEVE, the default is 5. If the target type is lambda , the default is 5.
 	HealthyThresholdCount *int32
 
-	// The type of IP address used for this target group. The possible values are ipv4
-	// and ipv6 . This is an optional parameter. If not specified, the IP address type
-	// defaults to ipv4 .
+	// The IP address type. The default value is ipv4 .
 	IpAddressType types.TargetGroupIpAddressTypeEnum
 
 	// [HTTP/HTTPS health checks] The HTTP or gRPC codes to use when checking for a
@@ -240,6 +238,9 @@ func (c *Client) addOperationCreateTargetGroupMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateTargetGroupValidationMiddleware(stack); err != nil {

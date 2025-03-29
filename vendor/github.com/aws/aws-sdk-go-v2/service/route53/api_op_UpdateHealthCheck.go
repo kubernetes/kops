@@ -400,6 +400,9 @@ func (c *Client) addOperationUpdateHealthCheckMiddlewares(stack *middleware.Stac
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpUpdateHealthCheckValidationMiddleware(stack); err != nil {
 		return err
 	}

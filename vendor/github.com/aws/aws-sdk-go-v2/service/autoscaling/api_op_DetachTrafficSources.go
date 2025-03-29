@@ -15,8 +15,10 @@ import (
 //
 // When you detach a traffic source, it enters the Removing state while
 // deregistering the instances in the group. When all instances are deregistered,
-// then you can no longer describe the traffic source using the DescribeTrafficSourcesAPI call. The
+// then you can no longer describe the traffic source using the [DescribeTrafficSources]API call. The
 // instances continue to run.
+//
+// [DescribeTrafficSources]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeTrafficSources.html
 func (c *Client) DetachTrafficSources(ctx context.Context, params *DetachTrafficSourcesInput, optFns ...func(*Options)) (*DetachTrafficSourcesOutput, error) {
 	if params == nil {
 		params = &DetachTrafficSourcesInput{}
@@ -117,6 +119,9 @@ func (c *Client) addOperationDetachTrafficSourcesMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDetachTrafficSourcesValidationMiddleware(stack); err != nil {

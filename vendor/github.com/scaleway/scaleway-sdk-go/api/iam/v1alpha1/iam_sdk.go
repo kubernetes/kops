@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
-	"github.com/scaleway/scaleway-sdk-go/internal/marshaler"
-	"github.com/scaleway/scaleway-sdk-go/internal/parameter"
+	"github.com/scaleway/scaleway-sdk-go/errors"
+	"github.com/scaleway/scaleway-sdk-go/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
+	"github.com/scaleway/scaleway-sdk-go/parameter"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -78,6 +78,48 @@ func (enum *BearerType) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = BearerType(BearerType(tmp).String())
+	return nil
+}
+
+type GracePeriodType string
+
+const (
+	// Unknown grace period type.
+	GracePeriodTypeUnknownGracePeriodType = GracePeriodType("unknown_grace_period_type")
+	// Password should be updated.
+	GracePeriodTypeUpdatePassword = GracePeriodType("update_password")
+	// MFA should be configured.
+	GracePeriodTypeSetMfa = GracePeriodType("set_mfa")
+)
+
+func (enum GracePeriodType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_grace_period_type"
+	}
+	return string(enum)
+}
+
+func (enum GracePeriodType) Values() []GracePeriodType {
+	return []GracePeriodType{
+		"unknown_grace_period_type",
+		"update_password",
+		"set_mfa",
+	}
+}
+
+func (enum GracePeriodType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *GracePeriodType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = GracePeriodType(GracePeriodType(tmp).String())
 	return nil
 }
 
@@ -523,6 +565,10 @@ const (
 	ListUsersRequestOrderByLastLoginAsc = ListUsersRequestOrderBy("last_login_asc")
 	// Last login descending.
 	ListUsersRequestOrderByLastLoginDesc = ListUsersRequestOrderBy("last_login_desc")
+	// Username ascending.
+	ListUsersRequestOrderByUsernameAsc = ListUsersRequestOrderBy("username_asc")
+	// Username descending.
+	ListUsersRequestOrderByUsernameDesc = ListUsersRequestOrderBy("username_desc")
 )
 
 func (enum ListUsersRequestOrderBy) String() string {
@@ -543,6 +589,8 @@ func (enum ListUsersRequestOrderBy) Values() []ListUsersRequestOrderBy {
 		"email_desc",
 		"last_login_asc",
 		"last_login_desc",
+		"username_asc",
+		"username_desc",
 	}
 }
 
@@ -558,6 +606,45 @@ func (enum *ListUsersRequestOrderBy) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ListUsersRequestOrderBy(ListUsersRequestOrderBy(tmp).String())
+	return nil
+}
+
+type LocalityType string
+
+const (
+	LocalityTypeGlobal = LocalityType("global")
+	LocalityTypeRegion = LocalityType("region")
+	LocalityTypeZone   = LocalityType("zone")
+)
+
+func (enum LocalityType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "global"
+	}
+	return string(enum)
+}
+
+func (enum LocalityType) Values() []LocalityType {
+	return []LocalityType{
+		"global",
+		"region",
+		"zone",
+	}
+}
+
+func (enum LocalityType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *LocalityType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = LocalityType(LocalityType(tmp).String())
 	return nil
 }
 
@@ -752,7 +839,8 @@ const (
 	// Guest.
 	UserTypeGuest = UserType("guest")
 	// Owner.
-	UserTypeOwner = UserType("owner")
+	UserTypeOwner  = UserType("owner")
+	UserTypeMember = UserType("member")
 )
 
 func (enum UserType) String() string {
@@ -768,6 +856,7 @@ func (enum UserType) Values() []UserType {
 		"unknown_type",
 		"guest",
 		"owner",
+		"member",
 	}
 }
 
@@ -786,21 +875,46 @@ func (enum *UserType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// RuleSpecs: rule specs.
-type RuleSpecs struct {
-	// PermissionSetNames: names of permission sets bound to the rule.
-	PermissionSetNames *[]string `json:"permission_set_names"`
+// ConnectionConnectedOrganization: connection connected organization.
+type ConnectionConnectedOrganization struct {
+	ID string `json:"id"`
 
-	// Condition: condition expression to evaluate.
-	Condition string `json:"condition"`
+	Name string `json:"name"`
 
-	// ProjectIDs: list of Project IDs the rule is scoped to.
-	// Precisely one of ProjectIDs, OrganizationID must be set.
-	ProjectIDs *[]string `json:"project_ids,omitempty"`
+	Locked bool `json:"locked"`
+}
 
-	// OrganizationID: ID of Organization the rule is scoped to.
-	// Precisely one of ProjectIDs, OrganizationID must be set.
-	OrganizationID *string `json:"organization_id,omitempty"`
+// ConnectionConnectedUser: connection connected user.
+type ConnectionConnectedUser struct {
+	ID string `json:"id"`
+
+	Username string `json:"username"`
+
+	// Type: default value: unknown_type
+	Type UserType `json:"type"`
+}
+
+// QuotumLimit: quotum limit.
+type QuotumLimit struct {
+	// Global: whether or not the limit is applied globally.
+	// Precisely one of Global, Region, Zone must be set.
+	Global *bool `json:"global,omitempty"`
+
+	// Region: the region on which the limit is applied.
+	// Precisely one of Global, Region, Zone must be set.
+	Region *scw.Region `json:"region,omitempty"`
+
+	// Zone: the zone on which the limit is applied.
+	// Precisely one of Global, Region, Zone must be set.
+	Zone *scw.Zone `json:"zone,omitempty"`
+
+	// Limit: maximum locality limit.
+	// Precisely one of Limit, Unlimited must be set.
+	Limit *uint64 `json:"limit,omitempty"`
+
+	// Unlimited: whether or not the quota per locality is unlimited.
+	// Precisely one of Limit, Unlimited must be set.
+	Unlimited *bool `json:"unlimited,omitempty"`
 }
 
 // JWT: jwt.
@@ -828,6 +942,62 @@ type JWT struct {
 
 	// UserAgent: user-agent used during the creation of the JWT.
 	UserAgent string `json:"user_agent"`
+}
+
+// RuleSpecs: rule specs.
+type RuleSpecs struct {
+	// PermissionSetNames: names of permission sets bound to the rule.
+	PermissionSetNames *[]string `json:"permission_set_names"`
+
+	// Condition: condition expression to evaluate.
+	Condition string `json:"condition"`
+
+	// ProjectIDs: list of Project IDs the rule is scoped to.
+	// Precisely one of ProjectIDs, OrganizationID must be set.
+	ProjectIDs *[]string `json:"project_ids,omitempty"`
+
+	// OrganizationID: ID of Organization the rule is scoped to.
+	// Precisely one of ProjectIDs, OrganizationID must be set.
+	OrganizationID *string `json:"organization_id,omitempty"`
+}
+
+// CreateUserRequestMember: create user request member.
+type CreateUserRequestMember struct {
+	// Email: email of the user to create.
+	Email string `json:"email"`
+
+	// SendPasswordEmail: whether or not to send an email containing the member's password.
+	SendPasswordEmail bool `json:"send_password_email"`
+
+	// SendWelcomeEmail: whether or not to send a welcome email that includes onboarding information.
+	SendWelcomeEmail bool `json:"send_welcome_email"`
+
+	// Username: the member's username.
+	Username string `json:"username"`
+
+	// Password: the member's password.
+	Password string `json:"password"`
+
+	// FirstName: the member's first name.
+	FirstName string `json:"first_name"`
+
+	// LastName: the member's last name.
+	LastName string `json:"last_name"`
+
+	// PhoneNumber: the member's phone number.
+	PhoneNumber string `json:"phone_number"`
+
+	// Locale: the member's locale.
+	Locale string `json:"locale"`
+}
+
+// Connection: connection.
+type Connection struct {
+	// Organization: information about the connected organization.
+	Organization *ConnectionConnectedOrganization `json:"organization"`
+
+	// User: information about the connected user.
+	User *ConnectionConnectedUser `json:"user"`
 }
 
 // APIKey: api key.
@@ -864,6 +1034,12 @@ type APIKey struct {
 	// Editable: defines whether or not the API key is editable.
 	Editable bool `json:"editable"`
 
+	// Deletable: defines whether or not the API key is deletable.
+	Deletable bool `json:"deletable"`
+
+	// Managed: defines whether or not the API key is managed.
+	Managed bool `json:"managed"`
+
 	// CreationIP: IP address of the device that created the API key.
 	CreationIP string `json:"creation_ip"`
 }
@@ -891,11 +1067,30 @@ type Application struct {
 	// Editable: defines whether or not the application is editable.
 	Editable bool `json:"editable"`
 
+	// Deletable: defines whether or not the application is deletable.
+	Deletable bool `json:"deletable"`
+
+	// Managed: defines whether or not the application is managed.
+	Managed bool `json:"managed"`
+
 	// NbAPIKeys: number of API keys attributed to the application.
 	NbAPIKeys uint32 `json:"nb_api_keys"`
 
 	// Tags: tags associated with the user.
 	Tags []string `json:"tags"`
+}
+
+// GracePeriod: grace period.
+type GracePeriod struct {
+	// Type: type of grace period.
+	// Default value: unknown_grace_period_type
+	Type GracePeriodType `json:"type"`
+
+	// CreatedAt: date and time the grace period was created.
+	CreatedAt *time.Time `json:"created_at"`
+
+	// ExpiresAt: date and time the grace period expires.
+	ExpiresAt *time.Time `json:"expires_at"`
 }
 
 // Group: group.
@@ -926,6 +1121,15 @@ type Group struct {
 
 	// Tags: tags associated to the group.
 	Tags []string `json:"tags"`
+
+	// Editable: defines whether or not the group is editable.
+	Editable bool `json:"editable"`
+
+	// Deletable: defines whether or not the group is deletable.
+	Deletable bool `json:"deletable"`
+
+	// Managed: defines whether or not the group is managed.
+	Managed bool `json:"managed"`
 }
 
 // Log: log.
@@ -1002,6 +1206,12 @@ type Policy struct {
 	// Editable: defines whether or not a policy is editable.
 	Editable bool `json:"editable"`
 
+	// Deletable: defines whether or not a policy is deletable.
+	Deletable bool `json:"deletable"`
+
+	// Managed: defines whether or not a policy is managed.
+	Managed bool `json:"managed"`
+
 	// NbRules: number of rules of the policy.
 	NbRules uint32 `json:"nb_rules"`
 
@@ -1036,11 +1246,11 @@ type Quotum struct {
 	// Name: name of the quota.
 	Name string `json:"name"`
 
-	// Limit: maximum limit of the quota.
+	// Deprecated: Limit: maximum limit of the quota.
 	// Precisely one of Limit, Unlimited must be set.
 	Limit *uint64 `json:"limit,omitempty"`
 
-	// Unlimited: defines whether or not the quota is unlimited.
+	// Deprecated: Unlimited: defines whether or not the quota is unlimited.
 	// Precisely one of Limit, Unlimited must be set.
 	Unlimited *bool `json:"unlimited,omitempty"`
 
@@ -1052,6 +1262,13 @@ type Quotum struct {
 
 	// Description: details about the quota.
 	Description string `json:"description"`
+
+	// LocalityType: whether this quotum is applied on at the zone level, region level, or globally.
+	// Default value: global
+	LocalityType LocalityType `json:"locality_type"`
+
+	// Limits: limits per locality.
+	Limits []*QuotumLimit `json:"limits"`
 }
 
 // Rule: rule.
@@ -1120,6 +1337,21 @@ type User struct {
 	// Email: email of user.
 	Email string `json:"email"`
 
+	// Username: user identifier unique to the Organization.
+	Username string `json:"username"`
+
+	// FirstName: first name of the user.
+	FirstName string `json:"first_name"`
+
+	// LastName: last name of the user.
+	LastName string `json:"last_name"`
+
+	// PhoneNumber: phone number of the user.
+	PhoneNumber string `json:"phone_number"`
+
+	// Locale: locale of the user.
+	Locale string `json:"locale"`
+
 	// CreatedAt: date user was created.
 	CreatedAt *time.Time `json:"created_at"`
 
@@ -1154,6 +1386,9 @@ type User struct {
 
 	// Tags: tags associated with the user.
 	Tags []string `json:"tags"`
+
+	// Locked: defines whether the user is locked.
+	Locked bool `json:"locked"`
 }
 
 // AddGroupMemberRequest: add group member request.
@@ -1292,16 +1527,27 @@ type CreateSSHKeyRequest struct {
 	ProjectID string `json:"project_id"`
 }
 
+// CreateUserMFAOTPRequest: create user mfaotp request.
+type CreateUserMFAOTPRequest struct {
+	// UserID: user ID of the MFA OTP.
+	UserID string `json:"-"`
+}
+
 // CreateUserRequest: create user request.
 type CreateUserRequest struct {
 	// OrganizationID: ID of the Organization.
 	OrganizationID string `json:"organization_id"`
 
 	// Email: email of the user.
-	Email string `json:"email"`
+	// Precisely one of Email, Member must be set.
+	Email *string `json:"email,omitempty"`
 
 	// Tags: tags associated with the user.
 	Tags []string `json:"tags"`
+
+	// Member: details of IAM member.
+	// Precisely one of Email, Member must be set.
+	Member *CreateUserRequestMember `json:"member,omitempty"`
 }
 
 // DeleteAPIKeyRequest: delete api key request.
@@ -1337,6 +1583,12 @@ type DeletePolicyRequest struct {
 // DeleteSSHKeyRequest: delete ssh key request.
 type DeleteSSHKeyRequest struct {
 	SSHKeyID string `json:"-"`
+}
+
+// DeleteUserMFAOTPRequest: delete user mfaotp request.
+type DeleteUserMFAOTPRequest struct {
+	// UserID: user ID of the MFA OTP.
+	UserID string `json:"-"`
 }
 
 // DeleteUserRequest: delete user request.
@@ -1387,6 +1639,12 @@ type GetLogRequest struct {
 	LogID string `json:"-"`
 }
 
+// GetOrganizationSecuritySettingsRequest: get organization security settings request.
+type GetOrganizationSecuritySettingsRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
+}
+
 // GetPolicyRequest: get policy request.
 type GetPolicyRequest struct {
 	// PolicyID: id of policy to search.
@@ -1406,6 +1664,18 @@ type GetQuotumRequest struct {
 type GetSSHKeyRequest struct {
 	// SSHKeyID: ID of the SSH key.
 	SSHKeyID string `json:"-"`
+}
+
+// GetUserConnectionsRequest: get user connections request.
+type GetUserConnectionsRequest struct {
+	// UserID: ID of the user to list connections for.
+	UserID string `json:"-"`
+}
+
+// GetUserConnectionsResponse: get user connections response.
+type GetUserConnectionsResponse struct {
+	// Connections: list of connections.
+	Connections []*Connection `json:"connections"`
 }
 
 // GetUserRequest: get user request.
@@ -1542,6 +1812,18 @@ func (r *ListApplicationsResponse) UnsafeAppend(res interface{}) (uint32, error)
 	r.Applications = append(r.Applications, results.Applications...)
 	r.TotalCount += uint32(len(results.Applications))
 	return uint32(len(results.Applications)), nil
+}
+
+// ListGracePeriodsRequest: list grace periods request.
+type ListGracePeriodsRequest struct {
+	// UserID: ID of the user to list grace periods for.
+	UserID *string `json:"-"`
+}
+
+// ListGracePeriodsResponse: list grace periods response.
+type ListGracePeriodsResponse struct {
+	// GracePeriods: list of grace periods.
+	GracePeriods []*GracePeriod `json:"grace_periods"`
 }
 
 // ListGroupsRequest: list groups request.
@@ -1984,6 +2266,10 @@ type ListUsersRequest struct {
 
 	// Tag: filter by tags containing a given string.
 	Tag *string `json:"-"`
+
+	// Type: filter by user type.
+	// Default value: unknown_type
+	Type UserType `json:"-"`
 }
 
 // ListUsersResponse: list users response.
@@ -2012,6 +2298,29 @@ func (r *ListUsersResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	r.Users = append(r.Users, results.Users...)
 	r.TotalCount += uint32(len(results.Users))
 	return uint32(len(results.Users)), nil
+}
+
+// LockUserRequest: lock user request.
+type LockUserRequest struct {
+	// UserID: ID of the user to lock.
+	UserID string `json:"-"`
+}
+
+// MFAOTP: mfaotp.
+type MFAOTP struct {
+	Secret string `json:"secret"`
+}
+
+// OrganizationSecuritySettings: organization security settings.
+type OrganizationSecuritySettings struct {
+	// EnforcePasswordRenewal: defines whether password renewal is enforced during first login.
+	EnforcePasswordRenewal bool `json:"enforce_password_renewal"`
+
+	// GracePeriodDuration: duration of the grace period to renew password or enable MFA.
+	GracePeriodDuration *scw.Duration `json:"grace_period_duration"`
+
+	// LoginAttemptsBeforeLocked: number of login attempts before the account is locked.
+	LoginAttemptsBeforeLocked uint32 `json:"login_attempts_before_locked"`
 }
 
 // RemoveGroupMemberRequest: remove group member request.
@@ -2050,6 +2359,12 @@ type SetRulesRequest struct {
 type SetRulesResponse struct {
 	// Rules: rules of the policy.
 	Rules []*Rule `json:"rules"`
+}
+
+// UnlockUserRequest: unlock user request.
+type UnlockUserRequest struct {
+	// UserID: ID of the user to unlock.
+	UserID string `json:"-"`
 }
 
 // UpdateAPIKeyRequest: update api key request.
@@ -2094,6 +2409,21 @@ type UpdateGroupRequest struct {
 	Tags *[]string `json:"tags,omitempty"`
 }
 
+// UpdateOrganizationSecuritySettingsRequest: update organization security settings request.
+type UpdateOrganizationSecuritySettingsRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
+
+	// EnforcePasswordRenewal: defines whether password renewal is enforced during first login.
+	EnforcePasswordRenewal *bool `json:"enforce_password_renewal,omitempty"`
+
+	// GracePeriodDuration: duration of the grace period to renew password or enable MFA.
+	GracePeriodDuration *scw.Duration `json:"grace_period_duration,omitempty"`
+
+	// LoginAttemptsBeforeLocked: number of login attempts before the account is locked.
+	LoginAttemptsBeforeLocked *uint32 `json:"login_attempts_before_locked,omitempty"`
+}
+
 // UpdatePolicyRequest: update policy request.
 type UpdatePolicyRequest struct {
 	// PolicyID: id of policy to update.
@@ -2136,6 +2466,15 @@ type UpdateSSHKeyRequest struct {
 	Disabled *bool `json:"disabled,omitempty"`
 }
 
+// UpdateUserPasswordRequest: update user password request.
+type UpdateUserPasswordRequest struct {
+	// UserID: ID of the user to update.
+	UserID string `json:"-"`
+
+	// Password: the new password.
+	Password string `json:"password"`
+}
+
 // UpdateUserRequest: update user request.
 type UpdateUserRequest struct {
 	// UserID: ID of the user to update.
@@ -2143,6 +2482,45 @@ type UpdateUserRequest struct {
 
 	// Tags: new tags for the user (maximum of 10 tags).
 	Tags *[]string `json:"tags,omitempty"`
+
+	// Email: iAM member email.
+	Email *string `json:"email,omitempty"`
+
+	// FirstName: iAM member first name.
+	FirstName *string `json:"first_name,omitempty"`
+
+	// LastName: iAM member last name.
+	LastName *string `json:"last_name,omitempty"`
+
+	// PhoneNumber: iAM member phone number.
+	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Locale: iAM member locale.
+	Locale *string `json:"locale,omitempty"`
+}
+
+// UpdateUserUsernameRequest: update user username request.
+type UpdateUserUsernameRequest struct {
+	// UserID: ID of the user to update.
+	UserID string `json:"-"`
+
+	// Username: the new username.
+	Username string `json:"username"`
+}
+
+// ValidateUserMFAOTPRequest: validate user mfaotp request.
+type ValidateUserMFAOTPRequest struct {
+	// UserID: user ID of the MFA OTP.
+	UserID string `json:"-"`
+
+	// OneTimePassword: a password generated using the OTP.
+	OneTimePassword string `json:"one_time_password"`
+}
+
+// ValidateUserMFAOTPResponse: validate user mfaotp response.
+type ValidateUserMFAOTPResponse struct {
+	// RecoveryCodes: list of recovery codes usable for this OTP method.
+	RecoveryCodes []string `json:"recovery_codes"`
 }
 
 // This API allows you to manage Identity and Access Management (IAM) across your Scaleway Organizations, Projects and resources.
@@ -2308,6 +2686,7 @@ func (s *API) ListUsers(req *ListUsersRequest, opts ...scw.RequestOption) (*List
 	parameter.AddToQuery(query, "user_ids", req.UserIDs)
 	parameter.AddToQuery(query, "mfa", req.Mfa)
 	parameter.AddToQuery(query, "tag", req.Tag)
+	parameter.AddToQuery(query, "type", req.Type)
 
 	scwReq := &scw.ScalewayRequest{
 		Method: "GET",
@@ -2413,6 +2792,237 @@ func (s *API) CreateUser(req *CreateUserRequest, opts ...scw.RequestOption) (*Us
 	}
 
 	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UpdateUserUsername: Update an user's username.
+func (s *API) UpdateUserUsername(req *UpdateUserUsernameRequest, opts ...scw.RequestOption) (*User, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/update-username",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UpdateUserPassword: Update an user's password.
+func (s *API) UpdateUserPassword(req *UpdateUserPasswordRequest, opts ...scw.RequestOption) (*User, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/update-password",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// CreateUserMFAOTP: Create a MFA OTP.
+func (s *API) CreateUserMFAOTP(req *CreateUserMFAOTPRequest, opts ...scw.RequestOption) (*MFAOTP, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/mfa-otp",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp MFAOTP
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ValidateUserMFAOTP: Validate a MFA OTP.
+func (s *API) ValidateUserMFAOTP(req *ValidateUserMFAOTPRequest, opts ...scw.RequestOption) (*ValidateUserMFAOTPResponse, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/validate-mfa-otp",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp ValidateUserMFAOTPResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// DeleteUserMFAOTP: Delete a MFA OTP.
+func (s *API) DeleteUserMFAOTP(req *DeleteUserMFAOTPRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "DELETE",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/mfa-otp",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// LockUser: Lock a member. A locked member cannot log in or use API keys until the locked status is removed.
+func (s *API) LockUser(req *LockUserRequest, opts ...scw.RequestOption) (*User, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/lock",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnlockUser: Unlock a member.
+func (s *API) UnlockUser(req *UnlockUserRequest, opts ...scw.RequestOption) (*User, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/unlock",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp User
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ListGracePeriods: List the grace periods of a member.
+func (s *API) ListGracePeriods(req *ListGracePeriodsRequest, opts ...scw.RequestOption) (*ListGracePeriodsResponse, error) {
+	var err error
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "user_id", req.UserID)
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/grace-periods",
+		Query:  query,
+	}
+
+	var resp ListGracePeriodsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// GetUserConnections:
+func (s *API) GetUserConnections(req *GetUserConnectionsRequest, opts ...scw.RequestOption) (*GetUserConnectionsResponse, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/connections",
+	}
+
+	var resp GetUserConnectionsResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3107,7 +3717,7 @@ func (s *API) ListAPIKeys(req *ListAPIKeysRequest, opts ...scw.RequestOption) (*
 	return &resp, nil
 }
 
-// CreateAPIKey: Create an API key. You must specify the `application_id` or the `user_id` and the description. You can also specify the `default_project_id` which is the Project ID of your preferred Project, to use with Object Storage. The `access_key` and `secret_key` values are returned in the response. Note that he secret key is only showed once. Make sure that you copy and store both keys somewhere safe.
+// CreateAPIKey: Create an API key. You must specify the `application_id` or the `user_id` and the description. You can also specify the `default_project_id`, which is the Project ID of your preferred Project, to use with Object Storage. The `access_key` and `secret_key` values are returned in the response. Note that the secret key is only shown once. Make sure that you copy and store both keys somewhere safe.
 func (s *API) CreateAPIKey(req *CreateAPIKeyRequest, opts ...scw.RequestOption) (*APIKey, error) {
 	var err error
 
@@ -3416,6 +4026,65 @@ func (s *API) GetLog(req *GetLogRequest, opts ...scw.RequestOption) (*Log, error
 	}
 
 	var resp Log
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// GetOrganizationSecuritySettings: Retrieve information about the security settings of an Organization, specified by the `organization_id` parameter.
+func (s *API) GetOrganizationSecuritySettings(req *GetOrganizationSecuritySettingsRequest, opts ...scw.RequestOption) (*OrganizationSecuritySettings, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return nil, errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "/security-settings",
+	}
+
+	var resp OrganizationSecuritySettings
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UpdateOrganizationSecuritySettings: Update the security settings of an Organization.
+func (s *API) UpdateOrganizationSecuritySettings(req *UpdateOrganizationSecuritySettingsRequest, opts ...scw.RequestOption) (*OrganizationSecuritySettings, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return nil, errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "PATCH",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "/security-settings",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp OrganizationSecuritySettings
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {

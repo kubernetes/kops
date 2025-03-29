@@ -144,6 +144,9 @@ func (c *Client) addOperationResyncMFADeviceMiddlewares(stack *middleware.Stack,
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpResyncMFADeviceValidationMiddleware(stack); err != nil {
 		return err
 	}

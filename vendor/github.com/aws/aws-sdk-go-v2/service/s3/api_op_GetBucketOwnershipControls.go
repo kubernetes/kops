@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Retrieves OwnershipControls for an Amazon S3 bucket. To use this operation, you
 // must have the s3:GetBucketOwnershipControls permission. For more information
@@ -146,6 +146,9 @@ func (c *Client) addOperationGetBucketOwnershipControlsMiddlewares(stack *middle
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketOwnershipControlsValidationMiddleware(stack); err != nil {

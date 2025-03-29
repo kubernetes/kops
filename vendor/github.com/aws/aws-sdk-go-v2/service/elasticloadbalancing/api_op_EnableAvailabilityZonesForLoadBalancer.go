@@ -127,6 +127,9 @@ func (c *Client) addOperationEnableAvailabilityZonesForLoadBalancerMiddlewares(s
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpEnableAvailabilityZonesForLoadBalancerValidationMiddleware(stack); err != nil {
 		return err
 	}

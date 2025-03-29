@@ -22,7 +22,7 @@ import (
 // status of OPEN only if all calendars in the request are open. If one or more
 // calendars in the request are closed, the status returned is CLOSED .
 //
-// For more information about Change Calendar, a capability of Amazon Web Services
+// For more information about Change Calendar, a tool in Amazon Web Services
 // Systems Manager, see [Amazon Web Services Systems Manager Change Calendar]in the Amazon Web Services Systems Manager User Guide.
 //
 // [Amazon Web Services Systems Manager Change Calendar]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar.html
@@ -43,7 +43,7 @@ func (c *Client) GetCalendarState(ctx context.Context, params *GetCalendarStateI
 
 type GetCalendarStateInput struct {
 
-	// The names or Amazon Resource Names (ARNs) of the Systems Manager documents (SSM
+	// The names of Amazon Resource Names (ARNs) of the Systems Manager documents (SSM
 	// documents) that represent the calendar entries for which you want to get the
 	// state.
 	//
@@ -148,6 +148,9 @@ func (c *Client) addOperationGetCalendarStateMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetCalendarStateValidationMiddleware(stack); err != nil {

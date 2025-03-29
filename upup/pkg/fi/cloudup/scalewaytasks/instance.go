@@ -225,7 +225,7 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 			Zone:            zone,
 			Name:            uniqueName,
 			CommercialType:  fi.ValueOf(expected.CommercialType),
-			Image:           fi.ValueOf(expected.Image),
+			Image:           expected.Image,
 			Tags:            expected.Tags,
 			RoutedIPEnabled: fi.PtrTo(true),
 		}

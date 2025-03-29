@@ -279,6 +279,10 @@ type Server struct {
 
 	// AvailabilityZone is the availabilty zone the server is in.
 	AvailabilityZone string `json:"OS-EXT-AZ:availability_zone"`
+
+	// Locked indicates the lock status of the server
+	// This requires microversion 2.9 or later
+	Locked *bool `json:"locked"`
 }
 
 type AttachedVolume struct {

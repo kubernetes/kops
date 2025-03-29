@@ -100,6 +100,12 @@ type StartChangeRequestExecutionInput struct {
 	//   - Key=Environment,Value=Production
 	//
 	//   - Key=Region,Value=us-east-2
+	//
+	// The Array Members maximum value is reported as 1000. This number includes
+	// capacity reserved for internal operations. When calling the
+	// StartChangeRequestExecution action, you can specify a maximum of 5 tags. You
+	// can, however, use the AddTagsToResourceaction to add up to a total of 50 tags to an existing
+	// change request configuration.
 	Tags []types.Tag
 
 	noSmithyDocumentSerde
@@ -179,6 +185,9 @@ func (c *Client) addOperationStartChangeRequestExecutionMiddlewares(stack *middl
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpStartChangeRequestExecutionValidationMiddleware(stack); err != nil {

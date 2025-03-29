@@ -45,6 +45,9 @@ type DescribeVpcEndpointConnectionsInput struct {
 	//   - vpc-endpoint-owner - The ID of the Amazon Web Services account ID that owns
 	//   the endpoint.
 	//
+	//   - vpc-endpoint-region - The Region of the endpoint or cross-region to find
+	//   endpoints for other Regions.
+	//
 	//   - vpc-endpoint-state - The state of the endpoint ( pendingAcceptance | pending
 	//   | available | deleting | deleted | rejected | failed ).
 	//
@@ -140,6 +143,9 @@ func (c *Client) addOperationDescribeVpcEndpointConnectionsMiddlewares(stack *mi
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeVpcEndpointConnections(options.Region), middleware.Before); err != nil {

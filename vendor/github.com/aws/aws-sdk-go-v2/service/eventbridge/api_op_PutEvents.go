@@ -23,7 +23,7 @@ import (
 // type, the constraints are: a minimum value of -9,223,372,036,854,775,808 and a
 // maximum value of 9,223,372,036,854,775,807.
 //
-// PutEvents will only process nested JSON up to 1100 levels deep.
+// PutEvents will only process nested JSON up to 1000 levels deep.
 //
 // [Calculating PutEvents event entry size]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html
 func (c *Client) PutEvents(ctx context.Context, params *PutEventsInput, optFns ...func(*Options)) (*PutEventsOutput, error) {
@@ -150,6 +150,9 @@ func (c *Client) addOperationPutEventsMiddlewares(stack *middleware.Stack, optio
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutEventsValidationMiddleware(stack); err != nil {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
+	"github.com/scaleway/scaleway-sdk-go/errors"
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
@@ -50,9 +50,6 @@ func (e *ResponseError) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-
-	tmp.Message = strings.ToLower(tmp.Message)
-
 	*e = ResponseError(tmp)
 	return nil
 }

@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
-	"github.com/scaleway/scaleway-sdk-go/internal/marshaler"
-	"github.com/scaleway/scaleway-sdk-go/internal/parameter"
+	"github.com/scaleway/scaleway-sdk-go/errors"
+	"github.com/scaleway/scaleway-sdk-go/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
+	"github.com/scaleway/scaleway-sdk-go/parameter"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -732,6 +732,9 @@ type ListSnapshotsRequest struct {
 
 	// Name: filter snapshots by their names.
 	Name *string `json:"-"`
+
+	// Tags: filter by tags. Only snapshots with one or more matching tags will be returned.
+	Tags []string `json:"-"`
 }
 
 // ListSnapshotsResponse: list snapshots response.
@@ -828,6 +831,9 @@ type ListVolumesRequest struct {
 
 	// ProductResourceID: filter by a product resource ID linked to this volume (such as an Instance ID).
 	ProductResourceID *string `json:"-"`
+
+	// Tags: filter by tags. Only volumes with one or more matching tags will be returned.
+	Tags []string `json:"-"`
 }
 
 // ListVolumesResponse: list volumes response.
@@ -907,7 +913,7 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 func (s *API) Zones() []scw.Zone {
-	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw3}
+	return []scw.Zone{scw.ZoneFrPar1, scw.ZoneFrPar2, scw.ZoneFrPar3, scw.ZoneNlAms1, scw.ZoneNlAms2, scw.ZoneNlAms3, scw.ZonePlWaw1, scw.ZonePlWaw2, scw.ZonePlWaw3}
 }
 
 // ListVolumeTypes: List all available volume types in a specified zone. The volume types listed are ordered by name in ascending order.
@@ -969,6 +975,7 @@ func (s *API) ListVolumes(req *ListVolumesRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "product_resource_id", req.ProductResourceID)
+	parameter.AddToQuery(query, "tags", req.Tags)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -1002,6 +1009,10 @@ func (s *API) CreateVolume(req *CreateVolumeRequest, opts ...scw.RequestOption) 
 	if req.ProjectID == "" {
 		defaultProjectID, _ := s.client.GetDefaultProjectID()
 		req.ProjectID = defaultProjectID
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("vol")
 	}
 
 	if fmt.Sprint(req.Zone) == "" {
@@ -1146,6 +1157,7 @@ func (s *API) ListSnapshots(req *ListSnapshotsRequest, opts ...scw.RequestOption
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "volume_id", req.VolumeID)
 	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "tags", req.Tags)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -1210,6 +1222,10 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	if req.ProjectID == "" {
 		defaultProjectID, _ := s.client.GetDefaultProjectID()
 		req.ProjectID = defaultProjectID
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("snp")
 	}
 
 	if fmt.Sprint(req.Zone) == "" {

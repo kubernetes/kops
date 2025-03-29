@@ -115,6 +115,9 @@ func (c *Client) addOperationRemoveListenerCertificatesMiddlewares(stack *middle
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpRemoveListenerCertificatesValidationMiddleware(stack); err != nil {
 		return err
 	}

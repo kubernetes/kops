@@ -65,6 +65,9 @@ type CreateVerifiedAccessTrustProviderInput struct {
 	// UnauthorizedOperation .
 	DryRun *bool
 
+	// The OpenID Connect (OIDC) options.
+	NativeApplicationOidcOptions *types.CreateVerifiedAccessNativeApplicationOidcOptions
+
 	// The options for a OpenID Connect-compatible user-identity trust provider. This
 	// parameter is required when the provider type is user .
 	OidcOptions *types.CreateVerifiedAccessTrustProviderOidcOptions
@@ -155,6 +158,9 @@ func (c *Client) addOperationCreateVerifiedAccessTrustProviderMiddlewares(stack 
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opCreateVerifiedAccessTrustProviderMiddleware(stack, options); err != nil {

@@ -188,6 +188,9 @@ func (c *Client) addOperationListRetirableGrantsMiddlewares(stack *middleware.St
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpListRetirableGrantsValidationMiddleware(stack); err != nil {
 		return err
 	}

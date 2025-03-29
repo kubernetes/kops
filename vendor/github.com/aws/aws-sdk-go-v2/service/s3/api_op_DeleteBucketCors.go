@@ -13,7 +13,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Deletes the cors configuration information set for the bucket.
 //
@@ -143,6 +143,9 @@ func (c *Client) addOperationDeleteBucketCorsMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeleteBucketCorsValidationMiddleware(stack); err != nil {

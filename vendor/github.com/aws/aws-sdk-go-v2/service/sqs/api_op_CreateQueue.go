@@ -35,21 +35,27 @@ import (
 // After you create a queue, you must wait at least one second after the queue is
 // created to be able to use the queue.
 //
-// To get the queue URL, use the GetQueueUrl action. GetQueueUrl requires only the QueueName parameter.
-// be aware of existing queue names:
+// To retrieve the URL of a queue, use the [GetQueueUrl]GetQueueUrl action. This action only
+// requires the [QueueName]QueueName parameter.
 //
-//   - If you provide the name of an existing queue along with the exact names and
-//     values of all the queue's attributes, CreateQueue returns the queue URL for
-//     the existing queue.
+// When creating queues, keep the following points in mind:
 //
-//   - If the queue name, attribute names, or attribute values don't match an
-//     existing queue, CreateQueue returns an error.
+//   - If you specify the name of an existing queue and provide the exact same
+//     names and values for all its attributes, the [CreateQueue]CreateQueue action will return
+//     the URL of the existing queue instead of creating a new one.
+//
+//   - If you attempt to create a queue with a name that already exists but with
+//     different attribute names or values, the CreateQueue action will return an
+//     error. This ensures that existing queues are not inadvertently altered.
 //
 // Cross-account permissions don't apply to this action. For more information, see [Grant cross-account permissions to a role and a username]
 // in the Amazon SQS Developer Guide.
 //
 // [limits related to queues]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/limits-queues.html
+// [CreateQueue]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html
 // [Grant cross-account permissions to a role and a username]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-customer-managed-policy-examples.html#grant-cross-account-permissions-to-role-and-user-name
+// [QueueName]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html#API_CreateQueue_RequestSyntax
+// [GetQueueUrl]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_GetQueueUrl.html
 //
 // [Moving From a Standard Queue to a FIFO Queue]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html#FIFO-queues-moving
 func (c *Client) CreateQueue(ctx context.Context, params *CreateQueueInput, optFns ...func(*Options)) (*CreateQueueOutput, error) {
@@ -358,6 +364,9 @@ func (c *Client) addOperationCreateQueueMiddlewares(stack *middleware.Stack, opt
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateQueueValidationMiddleware(stack); err != nil {

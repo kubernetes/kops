@@ -138,6 +138,9 @@ func (c *Client) addOperationGetContextKeysForCustomPolicyMiddlewares(stack *mid
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetContextKeysForCustomPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Deletes a metrics configuration for the Amazon CloudWatch request metrics
 // (specified by the metrics configuration ID) from the bucket. Note that this
@@ -159,6 +159,9 @@ func (c *Client) addOperationDeleteBucketMetricsConfigurationMiddlewares(stack *
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeleteBucketMetricsConfigurationValidationMiddleware(stack); err != nil {

@@ -116,7 +116,7 @@ type DescribeSubnetsInput struct {
 	//
 	//   - subnet-id - The ID of the subnet.
 	//
-	//   - tag : - The key/value combination of a tag assigned to the resource. Use the
+	//   - tag - The key/value combination of a tag assigned to the resource. Use the
 	//   tag key in the filter name and the tag value as the filter value. For example,
 	//   to find all resources that have a tag with the key Owner and the value TeamA ,
 	//   specify tag:Owner for the filter name and TeamA for the filter value.
@@ -223,6 +223,9 @@ func (c *Client) addOperationDescribeSubnetsMiddlewares(stack *middleware.Stack,
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeSubnets(options.Region), middleware.Before); err != nil {
@@ -438,6 +441,9 @@ func subnetAvailableStateRetryable(ctx context.Context, input *DescribeSubnetsIn
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

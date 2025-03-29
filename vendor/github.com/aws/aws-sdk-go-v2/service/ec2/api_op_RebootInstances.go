@@ -43,7 +43,7 @@ type RebootInstancesInput struct {
 	// This member is required.
 	InstanceIds []string
 
-	// Checks whether you have the required permissions for the action, without
+	// Checks whether you have the required permissions for the operation, without
 	// actually making the request, and provides an error response. If you have the
 	// required permissions, the error response is DryRunOperation . Otherwise, it is
 	// UnauthorizedOperation .
@@ -121,6 +121,9 @@ func (c *Client) addOperationRebootInstancesMiddlewares(stack *middleware.Stack,
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpRebootInstancesValidationMiddleware(stack); err != nil {

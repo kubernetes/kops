@@ -113,6 +113,9 @@ func (c *Client) addOperationGetTrustStoreCaCertificatesBundleMiddlewares(stack 
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetTrustStoreCaCertificatesBundleValidationMiddleware(stack); err != nil {
 		return err
 	}

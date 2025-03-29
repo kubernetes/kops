@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/scaleway/scaleway-sdk-go/errors"
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
-	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/internal/generic"
 	"github.com/scaleway/scaleway-sdk-go/logger"
 )
@@ -230,7 +230,7 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 		return sdkErr
 	}
 
-	if res != nil {
+	if res != nil && httpResponse.ContentLength != 0 {
 		contentType := httpResponse.Header.Get("Content-Type")
 
 		if strings.HasPrefix(contentType, "application/json") {

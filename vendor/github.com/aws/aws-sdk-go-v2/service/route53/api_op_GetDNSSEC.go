@@ -120,6 +120,9 @@ func (c *Client) addOperationGetDNSSECMiddlewares(stack *middleware.Stack, optio
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetDNSSECValidationMiddleware(stack); err != nil {
 		return err
 	}

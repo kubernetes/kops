@@ -11,7 +11,8 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Retrieve information about one or more parameters in a specific hierarchy.
+// Retrieve information about one or more parameters under a specified level in a
+// hierarchy.
 //
 // Request results are returned on a best-effort basis. If you specify MaxResults
 // in the request, the response includes information up to the limit specified. The
@@ -154,6 +155,9 @@ func (c *Client) addOperationGetParametersByPathMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetParametersByPathValidationMiddleware(stack); err != nil {

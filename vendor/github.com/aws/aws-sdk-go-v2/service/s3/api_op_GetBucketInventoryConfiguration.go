@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Returns an inventory configuration (identified by the inventory configuration
 // ID) from the bucket.
@@ -160,6 +160,9 @@ func (c *Client) addOperationGetBucketInventoryConfigurationMiddlewares(stack *m
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketInventoryConfigurationValidationMiddleware(stack); err != nil {

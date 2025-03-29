@@ -167,6 +167,9 @@ func (c *Client) addOperationGetMaintenanceWindowMiddlewares(stack *middleware.S
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpGetMaintenanceWindowValidationMiddleware(stack); err != nil {
 		return err
 	}

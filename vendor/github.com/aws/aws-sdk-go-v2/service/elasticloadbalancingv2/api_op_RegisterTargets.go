@@ -21,7 +21,7 @@ import (
 // for a target when you register it. You can register each EC2 instance or IP
 // address with the same target group multiple times using different ports.
 //
-// With a Network Load Balancer, you cannot register instances by instance ID if
+// With a Network Load Balancer, you can't register instances by instance ID if
 // they have the following instance types: C1, CC1, CC2, CG1, CG2, CR1, CS1, G1,
 // G2, HI1, HS1, M1, M2, M3, and T1. You can register instances of these types by
 // IP address.
@@ -124,6 +124,9 @@ func (c *Client) addOperationRegisterTargetsMiddlewares(stack *middleware.Stack,
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpRegisterTargetsValidationMiddleware(stack); err != nil {

@@ -54,10 +54,11 @@ import (
 //	logging.
 //
 //	- Create a CloudWatch Logs resource policy, and give it the permissions that
-//	Route 53 needs to create log streams and to send query logs to log streams. For
-//	the value of Resource , specify the ARN for the log group that you created in
-//	the previous step. To use the same resource policy for all the CloudWatch Logs
-//	log groups that you created for query logging configurations, replace the hosted
+//	Route 53 needs to create log streams and to send query logs to log streams. You
+//	must create the CloudWatch Logs resource policy in the us-east-1 region. For the
+//	value of Resource , specify the ARN for the log group that you created in the
+//	previous step. To use the same resource policy for all the CloudWatch Logs log
+//	groups that you created for query logging configurations, replace the hosted
 //	zone name with * , for example:
 //
 // arn:aws:logs:us-east-1:123412341234:log-group:/aws/route53/*
@@ -249,6 +250,9 @@ func (c *Client) addOperationCreateQueryLoggingConfigMiddlewares(stack *middlewa
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateQueryLoggingConfigValidationMiddleware(stack); err != nil {

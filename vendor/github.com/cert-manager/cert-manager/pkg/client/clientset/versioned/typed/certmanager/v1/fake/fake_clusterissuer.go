@@ -40,20 +40,22 @@ var clusterissuersKind = v1.SchemeGroupVersion.WithKind("ClusterIssuer")
 
 // Get takes name of the clusterIssuer, and returns the corresponding clusterIssuer object, and an error if there is any.
 func (c *FakeClusterIssuers) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.ClusterIssuer, err error) {
+	emptyResult := &v1.ClusterIssuer{}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootGetAction(clusterissuersResource, name), &v1.ClusterIssuer{})
+		Invokes(testing.NewRootGetActionWithOptions(clusterissuersResource, name, options), emptyResult)
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.ClusterIssuer), err
 }
 
 // List takes label and field selectors, and returns the list of ClusterIssuers that match those selectors.
 func (c *FakeClusterIssuers) List(ctx context.Context, opts metav1.ListOptions) (result *v1.ClusterIssuerList, err error) {
+	emptyResult := &v1.ClusterIssuerList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootListAction(clusterissuersResource, clusterissuersKind, opts), &v1.ClusterIssuerList{})
+		Invokes(testing.NewRootListActionWithOptions(clusterissuersResource, clusterissuersKind, opts), emptyResult)
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 
 	label, _, _ := testing.ExtractFromListOptions(opts)
@@ -72,36 +74,39 @@ func (c *FakeClusterIssuers) List(ctx context.Context, opts metav1.ListOptions) 
 // Watch returns a watch.Interface that watches the requested clusterIssuers.
 func (c *FakeClusterIssuers) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewRootWatchAction(clusterissuersResource, opts))
+		InvokesWatch(testing.NewRootWatchActionWithOptions(clusterissuersResource, opts))
 }
 
 // Create takes the representation of a clusterIssuer and creates it.  Returns the server's representation of the clusterIssuer, and an error, if there is any.
 func (c *FakeClusterIssuers) Create(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.CreateOptions) (result *v1.ClusterIssuer, err error) {
+	emptyResult := &v1.ClusterIssuer{}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootCreateAction(clusterissuersResource, clusterIssuer), &v1.ClusterIssuer{})
+		Invokes(testing.NewRootCreateActionWithOptions(clusterissuersResource, clusterIssuer, opts), emptyResult)
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.ClusterIssuer), err
 }
 
 // Update takes the representation of a clusterIssuer and updates it. Returns the server's representation of the clusterIssuer, and an error, if there is any.
 func (c *FakeClusterIssuers) Update(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (result *v1.ClusterIssuer, err error) {
+	emptyResult := &v1.ClusterIssuer{}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateAction(clusterissuersResource, clusterIssuer), &v1.ClusterIssuer{})
+		Invokes(testing.NewRootUpdateActionWithOptions(clusterissuersResource, clusterIssuer, opts), emptyResult)
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.ClusterIssuer), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeClusterIssuers) UpdateStatus(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (*v1.ClusterIssuer, error) {
+func (c *FakeClusterIssuers) UpdateStatus(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (result *v1.ClusterIssuer, err error) {
+	emptyResult := &v1.ClusterIssuer{}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateSubresourceAction(clusterissuersResource, "status", clusterIssuer), &v1.ClusterIssuer{})
+		Invokes(testing.NewRootUpdateSubresourceActionWithOptions(clusterissuersResource, "status", clusterIssuer, opts), emptyResult)
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.ClusterIssuer), err
 }
@@ -115,7 +120,7 @@ func (c *FakeClusterIssuers) Delete(ctx context.Context, name string, opts metav
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeClusterIssuers) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
-	action := testing.NewRootDeleteCollectionAction(clusterissuersResource, listOpts)
+	action := testing.NewRootDeleteCollectionActionWithOptions(clusterissuersResource, opts, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1.ClusterIssuerList{})
 	return err
@@ -123,10 +128,11 @@ func (c *FakeClusterIssuers) DeleteCollection(ctx context.Context, opts metav1.D
 
 // Patch applies the patch and returns the patched clusterIssuer.
 func (c *FakeClusterIssuers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ClusterIssuer, err error) {
+	emptyResult := &v1.ClusterIssuer{}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootPatchSubresourceAction(clusterissuersResource, name, pt, data, subresources...), &v1.ClusterIssuer{})
+		Invokes(testing.NewRootPatchSubresourceActionWithOptions(clusterissuersResource, name, pt, data, opts, subresources...), emptyResult)
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1.ClusterIssuer), err
 }
