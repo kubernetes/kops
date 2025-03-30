@@ -17,26 +17,27 @@
 package platforms
 
 import (
-	"fmt"
+	"runtime"
+	"sync"
 
-	specs "github.com/opencontainers/image-spec/specs-go/v1"
-	"golang.org/x/sys/windows"
+	"github.com/containerd/log"
 )
 
-// NewMatcher returns a Windows matcher that will match on osVersionPrefix if
-// the platform is Windows otherwise use the default matcher
-func newDefaultMatcher(platform specs.Platform) Matcher {
-	prefix := prefix(platform.OSVersion)
-	return windowsmatcher{
-		Platform:        platform,
-		osVersionPrefix: prefix,
-		defaultMatcher: &matcher{
-			Platform: Normalize(platform),
-		},
-	}
-}
+// Present the ARM instruction set architecture, eg: v7, v8
+// Don't use this value directly; call cpuVariant() instead.
+var cpuVariantValue string
 
-func GetWindowsOsVersion() string {
-	major, minor, build := windows.RtlGetNtVersionNumbers()
-	return fmt.Sprintf("%d.%d.%d", major, minor, build)
+var cpuVariantOnce sync.Once
+
+func cpuVariant() string {
+	cpuVariantOnce.Do(func() {
+		if isArmArch(runtime.GOARCH) {
+			var err error
+			cpuVariantValue, err = getCPUVariant()
+			if err != nil {
+				log.L.Errorf("Error getCPUVariant for OS %s: %v", runtime.GOOS, err)
+			}
+		}
+	})
+	return cpuVariantValue
 }

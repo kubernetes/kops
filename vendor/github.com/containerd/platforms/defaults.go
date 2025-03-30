@@ -14,21 +14,16 @@
    limitations under the License.
 */
 
-package version
+package platforms
 
-import "runtime"
+// DefaultString returns the default string specifier for the platform,
+// with [PR#6](https://github.com/containerd/platforms/pull/6) the result
+// may now also include the OSVersion from the provided platform specification.
+func DefaultString() string {
+	return FormatAll(DefaultSpec())
+}
 
-var (
-	// Package is filled at linking time
-	Package = "github.com/containerd/containerd"
-
-	// Version holds the complete version number. Filled in at linking time.
-	Version = "1.7.27+unknown"
-
-	// Revision is filled with the VCS (e.g. git) revision being used to build
-	// the program at linking time.
-	Revision = ""
-
-	// GoVersion is Go tree's version.
-	GoVersion = runtime.Version()
-)
+// DefaultStrict returns strict form of Default.
+func DefaultStrict() MatchComparer {
+	return OnlyStrict(DefaultSpec())
+}

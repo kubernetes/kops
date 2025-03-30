@@ -14,21 +14,21 @@
    limitations under the License.
 */
 
-package version
+package platforms
 
-import "runtime"
-
-var (
-	// Package is filled at linking time
-	Package = "github.com/containerd/containerd"
-
-	// Version holds the complete version number. Filled in at linking time.
-	Version = "1.7.27+unknown"
-
-	// Revision is filled with the VCS (e.g. git) revision being used to build
-	// the program at linking time.
-	Revision = ""
-
-	// GoVersion is Go tree's version.
-	GoVersion = runtime.Version()
+import (
+	specs "github.com/opencontainers/image-spec/specs-go/v1"
 )
+
+// NewMatcher returns a Windows matcher that will match on osVersionPrefix if
+// the platform is Windows otherwise use the default matcher
+func newDefaultMatcher(platform specs.Platform) Matcher {
+	prefix := prefix(platform.OSVersion)
+	return windowsmatcher{
+		Platform:        platform,
+		osVersionPrefix: prefix,
+		defaultMatcher: &matcher{
+			Platform: Normalize(platform),
+		},
+	}
+}
