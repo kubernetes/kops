@@ -981,6 +981,8 @@ func (c *Cluster) GetCloudProvider() CloudProviderID {
 		return CloudProviderOpenstack
 	} else if spec.CloudProvider.Scaleway != nil {
 		return CloudProviderScaleway
+	} else if spec.CloudProvider.Elemento != nil {
+		return CloudProviderElemento
 	}
 	return ""
 }

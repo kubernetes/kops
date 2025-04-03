@@ -25,23 +25,26 @@ import (
 // FindRegion determines the region from the zones specified in the cluster
 func FindRegion(cluster *kops.Cluster) (string, error) {
 	var region string
-	// TODO: insert supported regions
+	// Elemento intends the zone parameter to be used as a continent in order
+	// to let elemento systems determine the best region/zones for the cluster
+	// based on parameters like specs and price.
+	// Elemento also supports deploy of cluster on multiple regions and providers
+	// Supported zones are: asia, europe, north-america, south-america, africa,
+	// oceania, antartica ;)
 	
 	for _, subnet := range cluster.Spec.Networking.Subnets {
 		var zoneRegion string
-		switch subnet.Zone {
-		case "fsn1", "nbg1", "hel1":
-			zoneRegion = "eu-central"
-		case "ash":
-			zoneRegion = "us-east"
-		case "hil":
-			zoneRegion = "us-west"
-		default:
-			return "", fmt.Errorf("unknown zone %q for elemento cloud, known zones are fsn1, nbg1, hel1, ash, hil", subnet.Zone)
-		}
-
-		if region != "" && zoneRegion != region {
-			return "", fmt.Errorf("cluster cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
+		if subnet.Zone == "asia" || 
+		   subnet.Zone == "europe" || 
+		   subnet.Zone == "north-america" || 
+		   subnet.Zone == "south-america" || 
+		   subnet.Zone == "africa" || 
+		   subnet.Zone == "oceania" || 
+		   subnet.Zone == "antartica" {
+			// TODO: check if it is works out
+			zoneRegion = subnet.Zone
+		} else if subnet.Zone == "hel1" {
+			return "", fmt.Errorf("unknown zone %q for elemento cloud, known zones are asia, europe, north-america, south-america, africa, oceania, antartica", subnet.Zone)
 		}
 
 		region = zoneRegion

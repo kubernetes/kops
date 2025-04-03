@@ -359,6 +359,8 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cloud = osCloud
 	case api.CloudProviderScaleway:
 		cluster.Spec.CloudProvider.Scaleway = &api.ScalewaySpec{}
+	case api.CloudProviderElemento:
+		cluster.Spec.CloudProvider.Elemento = &api.ElementoSpec{}
 	case api.CloudProviderMetal:
 		if !featureflag.Metal.Enabled() {
 			return nil, fmt.Errorf("bare-metal support requires the Metal feature flag to be enabled")
@@ -746,6 +748,11 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 	case api.CloudProviderScaleway:
 		if len(opt.Zones) > 1 {
 			return nil, fmt.Errorf("scaleway cloud provider currently supports only one availability zone")
+		}
+
+	case api.CloudProviderElemento:
+		if len(opt.Zones) > 1 {
+			return nil, fmt.Errorf("elemento cloud provider currently supports only one region for single cluster")
 		}
 	}
 

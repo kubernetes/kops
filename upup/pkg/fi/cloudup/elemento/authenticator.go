@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
-	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/metadata"  // TODO: uncomment after pushin new version on ecloud
+	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/metadata"  // TODO: uncomment after pushing new version on ecloud
 	"k8s.io/kops/pkg/bootstrap"
 )
 

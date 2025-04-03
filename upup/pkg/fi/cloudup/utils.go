@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/metal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 )
 
 func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
@@ -193,6 +194,20 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloud = scwCloud
+		}
+	case kops.CloudProviderElemento:
+		{
+			region, err := elemento.FindRegion(cluster)
+			if err != nil {
+				return nil, err
+			}
+
+			elementoCloud, err := elemento.NewElementoCloud(region)
+			if err != nil {
+				return nil, fmt.Errorf("error initializing elemento cloud: %s", err)
+			}
+
+			cloud = elementoCloud
 		}
 	case kops.CloudProviderMetal:
 		metalCloud, err := metal.NewCloud()
