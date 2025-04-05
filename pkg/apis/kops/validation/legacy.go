@@ -187,7 +187,7 @@ func ValidateCluster(c *kops.Cluster, strict bool, vfsContext *vfs.VFSContext) f
 				}
 			}
 			if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
-				if k8sVersion != nil && k8sVersion.LT(semver.MustParse("1.33.0")) {
+				if k8sVersion != nil && k8sVersion.LT(semver.MustParse("1.33.0-alpha.3")) {
 					if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
 						allErrs = append(allErrs, field.Forbidden(fieldSpec.Child("kubeAPIServer", "cloudProvider"), "Did not match cluster cloudProvider"))
 					}
