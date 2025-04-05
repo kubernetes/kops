@@ -4,8 +4,7 @@ kOps incorporates management of some addons; we _have_ to manage some addons whi
 the kubernetes API is functional.
 
 In addition, kOps offers end-user management of addons via the `channels` tool (which is still experimental,
-but we are working on making it a recommended part of kubernetes addon management).  We ship some
-curated addons in the [addons directory](https://github.com/kubernetes/kops/tree/master/addons), more information in the [addons document](/addons.md).
+but we are working on making it a recommended part of kubernetes addon management). More information in the [addons document](/addons.md).
 
 
 kOps uses the `channels` tool for system addon management also.  Because kOps uses the same tool
@@ -34,9 +33,7 @@ If you want to update the bootstrap addons, you can run the following command to
 
 The channels tool adds a manifest-of-manifests file, of `Kind: Addons`, which allows for a description
 of the various manifest versions that are available.  In this way kOps can manage updates
-as new versions of the addon are released.  For example,
-the [dashboard addon](https://github.com/kubernetes/kops/blob/master/addons/kubernetes-dashboard/addon.yaml)
-lists multiple versions.
+as new versions of the addon are released.
 
 For example, a typical addons declaration might looks like this:
 
