@@ -99,7 +99,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.15.yaml
-    manifestHash: 75f56f20d00fdfff26d59fcf430cba0679639a4625ce0907de47509f1a8de67a
+    manifestHash: 663d0be87fe9b2bc2c0405873587d640047479393c32decb12536fc5e0de6e70
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:

@@ -714,9 +714,6 @@ spec:
         - mountPath: /var/lib/cilium/clustermesh
           name: clustermesh-secrets
           readOnly: true
-        - mountPath: /tmp/cilium/config-map
-          name: cilium-config-path
-          readOnly: true
         - mountPath: /lib/modules
           name: lib-modules
           readOnly: true
@@ -959,9 +956,6 @@ spec:
                 path: common-etcd-client-ca.crt
               name: clustermesh-apiserver-remote-cert
               optional: true
-      - configMap:
-          name: cilium-config
-        name: cilium-config-path
       - hostPath:
           path: /proc/sys/net
           type: Directory
