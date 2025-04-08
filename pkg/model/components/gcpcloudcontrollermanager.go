@@ -75,7 +75,7 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(options interface
 		// TODO: Implement CCM image publishing
 		switch b.KubernetesVersion.Minor {
 		default:
-			ccmConfig.Image = "gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:master"
+			ccmConfig.Image = "gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:v32.2.4"
 		}
 	}
 
