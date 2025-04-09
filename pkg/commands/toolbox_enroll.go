@@ -261,6 +261,16 @@ func NewSSHHost(ctx context.Context, host string, sshPort int, sshUser string, s
 
 	agentClient := agent.NewClient(conn)
 
+	signers, err := agentClient.Signers()
+	if err != nil {
+		_ = conn.Close()
+		return nil, fmt.Errorf("failed to get signers: %w", err)
+	}
+
+	if len(signers) == 0 {
+		return nil, fmt.Errorf("SSH agent has no keys")
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 			klog.Warningf("accepting SSH key %v for %q", key, hostname)
