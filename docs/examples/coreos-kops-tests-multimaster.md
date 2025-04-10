@@ -275,7 +275,7 @@ curl http://34.200.247.63
 
 ```
 
-**NOTE:** If you are replicating this exercise in a production environment, use a "real" load balancer in order to expose your replicated services. We are here just testing things so we really don't care right now about that, but, if you are doing this for a "real" production environment, either use an AWS ELB service, or an nginx ingress controller as described in our documentation: [NGINX Based ingress controller](https://github.com/kubernetes/kops/tree/master/addons/ingress-nginx).
+**NOTE:** If you are replicating this exercise in a production environment, use a "real" load balancer in order to expose your replicated services. We are here just testing things so we really don't care right now about that, but, if you are doing this for a "real" production environment, either use an AWS ELB service, or an nginx ingress controller.
 
 Now, let's delete our recently-created deployment:
 
