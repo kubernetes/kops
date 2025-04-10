@@ -22,7 +22,7 @@ spec:
     clusterName: minimal-gce-example-com
     controllers:
     - '*'
-    image: gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:master
+    image: gcr.io/k8s-staging-cloud-provider-gcp/cloud-controller-manager:v32.2.4
     leaderElection:
       leaderElect: true
   cloudProvider: gce
