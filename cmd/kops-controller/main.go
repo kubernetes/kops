@@ -44,6 +44,7 @@ import (
 	nodeidentitymetal "k8s.io/kops/pkg/nodeidentity/metal"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	nodeidentityscw "k8s.io/kops/pkg/nodeidentity/scaleway"
+	nodeidentityelemento "k8s.io/kops/pkg/nodeidentity/elemento"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
@@ -51,6 +52,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 	"k8s.io/kops/util/pkg/vfs"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -180,6 +182,14 @@ func main() {
 		}
 		if opt.Server.Provider.Azure != nil {
 			verifier, err := azure.NewAzureVerifier(ctx, opt.Server.Provider.Azure)
+			if err != nil {
+				setupLog.Error(err, "unable to create verifier")
+				os.Exit(1)
+			}
+			verifiers = append(verifiers, verifier)
+		}
+		if opt.Server.Provider.Elemento != nil {
+			verifier, err := elemento.NewElementoVerifier(opt.Server.Provider.Elemento)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
