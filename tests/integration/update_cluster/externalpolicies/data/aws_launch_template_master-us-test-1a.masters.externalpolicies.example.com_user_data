@@ -130,7 +130,7 @@ ClusterName: externalpolicies.example.com
 ConfigBase: memfs://clusters.example.com/externalpolicies.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: ANsW469TD3QuP8vNBr5lbhMpndW4BhzSuaDWDjr7ENw=
+NodeupConfigHash: oTo8r7xad6XbcXNWhfs4xsYx80YEy5TRZFXk4G+KAtc=
 
 __EOF_KUBE_ENV
 

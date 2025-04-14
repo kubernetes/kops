@@ -72,15 +72,17 @@ spec:
     bindAddress: 0.0.0.0
     cloudProvider: external
     enableAdmissionPlugins:
-    - NamespaceLifecycle
-    - LimitRanger
-    - ServiceAccount
     - DefaultStorageClass
     - DefaultTolerationSeconds
+    - LimitRanger
     - MutatingAdmissionWebhook
-    - ValidatingAdmissionWebhook
+    - NamespaceLifecycle
     - NodeRestriction
     - ResourceQuota
+    - RuntimeClass
+    - ServiceAccount
+    - ValidatingAdmissionPolicy
+    - ValidatingAdmissionWebhook
     etcdServers:
     - https://127.0.0.1:4001
     etcdServersOverrides:
