@@ -477,6 +477,8 @@ type KubeAPIServerConfig struct {
 	RequestheaderAllowedNames []string `json:"requestheaderAllowedNames,omitempty" flag:"requestheader-allowed-names"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+	// GoawayChance is the probability that send a GOAWAY to HTTP/2 clients. Default to 0, means never send GOAWAY. Max is 0.02 to prevent break the apiserver.
+	GoawayChance string `json:"goawayChance,omitempty" flag:"goaway-chance"`
 	// MaxRequestsInflight The maximum number of non-mutating requests in flight at a given time.
 	MaxRequestsInflight int32 `json:"maxRequestsInflight,omitempty" flag:"max-requests-inflight" flag-empty:"0"`
 	// MaxMutatingRequestsInflight The maximum number of mutating requests in flight at a given time. Defaults to 200

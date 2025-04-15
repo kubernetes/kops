@@ -2046,6 +2046,11 @@ spec:
                     description: FeatureGates is set of key=value pairs that describe
                       feature gates for alpha/experimental features.
                     type: object
+                  goawayChance:
+                    description: GoawayChance is the probability that send a GOAWAY
+                      to HTTP/2 clients. Default to 0, means never send GOAWAY. Max
+                      is 0.02 to prevent break the apiserver.
+                    type: string
                   http2MaxStreamsPerConnection:
                     description: HTTP2MaxStreamsPerConnection sets the limit that
                       the server gives to clients for the maximum number of streams
