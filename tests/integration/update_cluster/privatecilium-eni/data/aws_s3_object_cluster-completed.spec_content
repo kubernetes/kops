@@ -194,6 +194,8 @@ spec:
       enableLocalRedirectPolicy: false
       enableRemoteNodeIdentity: true
       enableUnreachableRoutes: false
+      gatewayAPI:
+        enabled: false
       hubble:
         enabled: false
       identityAllocationMode: crd

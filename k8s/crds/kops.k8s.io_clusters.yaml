@@ -5485,6 +5485,20 @@ spec:
                           The cluster is operated by cilium-etcd-operator.
                           Default: false
                         type: boolean
+                      gatewayAPI:
+                        description: GatewayAPI specifies the configuration for Cilium
+                          Gateway API settings.
+                        properties:
+                          enableSecretsSync:
+                            description: |-
+                              EnableSecretsSync specifies whether synchronization of secrets is enabled.
+                              Default: true
+                            type: boolean
+                          enabled:
+                            description: Enabled specifies whether Cilium Gateway
+                              API is enabled.
+                            type: boolean
+                        type: object
                       hubble:
                         description: Hubble configures the Hubble service on the Cilium
                           agent.
@@ -5768,6 +5782,8 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  gatewayAPIEnabled:
+                    type: boolean
                   gce:
                     description: GCPNetworkingSpec is the specification of GCP's native
                       networking mode, using IP aliases.

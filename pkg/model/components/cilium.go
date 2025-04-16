@@ -183,5 +183,16 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		}
 	}
 
+	gatewayAPI := c.GatewayAPI
+	if gatewayAPI != nil {
+		if gatewayAPI.Enabled == nil {
+			gatewayAPI.Enabled = fi.PtrTo(false)
+		}
+	} else {
+		c.GatewayAPI = &kops.CiliumGatewayAPISpec{
+			Enabled: fi.PtrTo(false),
+		}
+	}
+
 	return nil
 }

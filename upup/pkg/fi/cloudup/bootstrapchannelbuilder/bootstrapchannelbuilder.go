@@ -566,6 +566,24 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
+	if fi.ValueOf(b.Cluster.Spec.Networking.GatewayAPIEnabled) {
+		{
+			key := "gateway.networking.k8s.io"
+
+			{
+				location := key + "/k8s-1.32.yaml"
+				id := "k8s-1.32"
+
+				addon := addons.Add(&channelsapi.AddonSpec{
+					Name:     fi.PtrTo(key),
+					Manifest: fi.PtrTo(location),
+					Id:       id,
+				})
+				addon.BuildPrune = true
+			}
+		}
+	}
+
 	if b.Cluster.Spec.CloudProvider.AWS != nil {
 		nth := b.Cluster.Spec.CloudProvider.AWS.NodeTerminationHandler
 

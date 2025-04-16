@@ -604,7 +604,7 @@ Setting any values other than 0 for a resource will yield no effect since the ca
 ```yaml
 spec:
   kubeAPIServer:
-    watchCacheSizes: 
+    watchCacheSizes:
       - secrets#0
       - pods#0
 ```
