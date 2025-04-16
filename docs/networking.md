@@ -84,6 +84,24 @@ kops create cluster --networking calico
 
 Later, when you run `kops get cluster -oyaml`, you will see the option you chose configured under `spec.networking`.
 
+### Gateway API
+
+{{ kops_feature_table(kops_added_default='1.32') }}
+
+The Kubernetes Gateway API is a more expressive and extensible way to configure ingress traffic in your cluster. It provides a standardized way to configure traffic routing, load balancing, and TLS termination.
+
+To enable the Gateway API in your cluster, add the following to your cluster spec:
+
+```yaml
+spec:
+  networking:
+    gatewayAPIEnabled: true
+```
+
+This will install the necessary Gateway API CRDs in your cluster. Note that some CNI providers, like Cilium, have their own Gateway API implementations that require both the cluster-wide Gateway API to be enabled and their specific Gateway API support to be enabled.
+
+For more information about the Gateway API, see the [Kubernetes Gateway API documentation](https://gateway-api.sigs.k8s.io/).
+
 ### Advanced
 
 kOps makes a best-effort attempt to expose as many configuration options as possible for the upstream CNI options that it supports within the kOps cluster spec. However, as upstream CNI options are always changing, not all options may be available, or you may wish to use a CNI option which kOps doesn't support. There may also be edge-cases to operating a given CNI that were not considered by the kOps maintainers. Allowing kOps to manage the CNI installation is sufficient for the vast majority of production clusters; however, if this is not true in your case, then kOps provides an escape-hatch that allows you to take greater control over the CNI installation.

@@ -239,6 +239,28 @@ EOF
 
 Note that you can create an ingress resource for Hubble UI by configuring the `hubble.ui.ingress` stanza. See [Cilium Helm chart documentation](https://artifacthub.io/packages/helm/cilium/cilium/1.11.1) for more information.
 
+## Gateway API Support
+
+{{ kops_feature_table(kops_added_default='1.32') }}
+
+Cilium supports the Kubernetes Gateway API, which provides a more expressive and extensible way to configure ingress traffic. To enable Gateway API support in Cilium, you need to:
+
+1. Enable the cluster-wide Gateway API feature in your cluster spec
+2. Enable Cilium's Gateway API support
+
+Here's how to configure it:
+
+```yaml
+spec:
+  networking:
+    cilium:
+      gatewayAPIEnabled: true
+```
+
+Note that enabling Cilium's Gateway API support requires the cluster-wide Gateway API to be enabled.
+
+For more information about using the Gateway API with Cilium, see the [Cilium Gateway API documentation](https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/).
+
 ## Getting help
 
 For problems with deploying Cilium please post an issue to Github:

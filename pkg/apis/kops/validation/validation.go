@@ -1339,6 +1339,12 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		}
 	}
 
+	if v.GatewayAPI != nil && fi.ValueOf(v.GatewayAPI.Enabled) {
+		if !fi.ValueOf(c.Networking.GatewayAPIEnabled) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("gatewayAPI", "enabled"), "Cilium Gateway API requires cluster-wide Gateway API to be enabled"))
+		}
+	}
+
 	return allErrs
 }
 
