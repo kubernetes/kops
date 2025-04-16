@@ -61,7 +61,8 @@ containerdConfig:
 usesLegacyGossip: false
 usesNoneDNS: false
 warmPoolImages:
-- quay.io/cilium/cilium:v1.16.7
-- quay.io/cilium/operator:v1.16.7
+- quay.io/cilium/cilium:v1.17.3@sha256:1782794aeac951af139315c10eff34050aa7579c12827ee9ec376bb719b82873
+- quay.io/cilium/hubble-relay:v1.17.3@sha256:f8674b5139111ac828a8818da7f2d344b4a5bfbaeb122c5dc9abed3e74000c55
+- quay.io/cilium/operator-generic:v1.17.3@sha256:8bd38d0e97a955b2d725929d60df09d712fb62b60b930551a29abac2dd92e597
 - registry.k8s.io/kube-proxy:v1.32.0
 - registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0
