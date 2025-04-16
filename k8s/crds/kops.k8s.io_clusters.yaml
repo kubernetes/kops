@@ -5782,6 +5782,8 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  gatewayAPIEnabled:
+                    type: boolean
                   gce:
                     description: GCPNetworkingSpec is the specification of GCP's native
                       networking mode, using IP aliases.

@@ -254,7 +254,8 @@ Here's how to configure it:
 spec:
   networking:
     cilium:
-      gatewayAPIEnabled: true
+      gatewayAPI:
+        enabled: true
 ```
 
 Note that enabling Cilium's Gateway API support requires the cluster-wide Gateway API to be enabled.

@@ -36,7 +36,7 @@ type NetworkingSpec struct {
 	PodCIDR                string              `json:"-"`
 	ServiceClusterIPRange  string              `json:"-"`
 	IsolateControlPlane    *bool               `json:"-"`
-	GatewayAPIEnabled      *bool               `json:"-"`
+	GatewayAPIEnabled      *bool               `json:"gatewayAPIEnabled,omitempty"`
 
 	Classic    *ClassicNetworkingSpec    `json:"classic,omitempty"`
 	Kubenet    *KubenetNetworkingSpec    `json:"kubenet,omitempty"`
