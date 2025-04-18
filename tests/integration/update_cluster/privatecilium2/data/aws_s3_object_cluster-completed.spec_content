@@ -198,6 +198,7 @@ spec:
       bpfPolicyMapMax: 16384
       clusterID: 253
       clusterName: privatecilium.example.com
+      cniExclusive: true
       cpuRequest: 25m
       disableCNPStatusUpdates: true
       disableMasquerade: false

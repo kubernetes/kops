@@ -185,6 +185,7 @@ spec:
       bpfNeighGlobalMax: 524288
       bpfPolicyMapMax: 16384
       clusterName: default
+      cniExclusive: true
       cpuRequest: 25m
       disableCNPStatusUpdates: true
       disableMasquerade: false
