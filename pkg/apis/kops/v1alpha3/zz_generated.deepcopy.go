@@ -691,6 +691,11 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.CniExclusive != nil {
+		in, out := &in.CniExclusive, &out.CniExclusive
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Hubble != nil {
 		in, out := &in.Hubble, &out.Hubble
 		*out = new(HubbleSpec)
