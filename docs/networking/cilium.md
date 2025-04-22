@@ -169,7 +169,7 @@ Cilium can make use of the [wireguard protocol for transparent encryption](https
 ```
 
 #### CNI Exclusive
-{{ kops_feature_table(kops_added_default='1.31', k8s_min='1.20') }}
+{{ kops_feature_table(kops_added_default='1.32') }}
 
 If you want to use additional CNI plugins, for example when using service meshes like Istio or Linkerd, It is required to disable the `cni-exclusive` option so that Cilium does not remove the other CNI configuration files.
 
