@@ -42,8 +42,6 @@ github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2/go.mod h1:wP83
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.1 h1:PfoCbCyarklTms3U42xns4kxViGN/DifmnygAKBloX0=
-github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.1/go.mod h1:YH2EIlx27uQJLrRM3dury0mn9RkiB3OKOz9mq0XDuRM=
 github.com/GoogleCloudPlatform/k8s-cloud-provider v1.25.0 h1:lwL1vLWmdBJ5h+StMEN6+GMz1J/Y0yUU3RDv+QBy+Q4=
 github.com/GoogleCloudPlatform/k8s-cloud-provider v1.25.0/go.mod h1:UTfhBnADaj2rybPT049NScSh7Eall3u2ib43wmz3deg=
 github.com/MakeNowJust/heredoc v1.0.0 h1:cXCdzVdstXyiTqTvfqk9SDHpKNjxuom+DOlyEeQ4pzQ=

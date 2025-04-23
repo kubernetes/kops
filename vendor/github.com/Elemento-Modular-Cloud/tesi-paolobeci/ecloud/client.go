@@ -1,5 +1,7 @@
 package ecloud
 
+// TODO: fallo simile ad hetzner
+
 import (
 	"fmt"
 	"net/http"
@@ -30,11 +32,25 @@ var Endpoints = map[string]string{
 	"ionos-eu":        IonosEU,
 }
 
+
+// Local endpoints for deamons connection
+const (
+	AuthenticateRoute = "http://localhost:47777/api/v1/authenticate/"
+	ComputeRoute	  = "http://localhost:17777/api/v1.0/client/vm/"
+	StorageRoute	  = "http://localhost:27777/api/v1.0/client/volume/"
+	NetworkRoute	  = "http://localhost:37777/"
+)
+
+var Routes = map[string]string{
+	"authenticate": AuthenticateRoute,
+	"compute":      ComputeRoute,
+	"storage":      StorageRoute,
+	"network":      NetworkRoute,
+}
+
 // Client represents a client to call the Elemento Cloud API
 type Client struct {
 	endpoint                string
-	token                   string
-	tokenValid              bool
 	retryMaxRetries         int
 	timeout 			    time.Duration
 	httpClient              *http.Client
@@ -53,13 +69,7 @@ type Client struct {
 	// Logger 			 Logger
 }
 
-func NewClient(endpoint string, token string, applicationName string, applicationVersion string) (*Client, error) {
-	if endpoint == "" {
-		return nil, fmt.Errorf("endpoint cannot be empty")
-	}
-	if token == "" {
-		return nil, fmt.Errorf("token cannot be empty")
-	}
+func NewClient(applicationName string, applicationVersion string) (*Client, error) {
 	if applicationName == "" {
 		return nil, fmt.Errorf("application name cannot be empty")
 	}
@@ -68,9 +78,7 @@ func NewClient(endpoint string, token string, applicationName string, applicatio
 	}
 
 	client := &Client{
-		endpoint:           endpoint,
-		token:              token,
-		tokenValid:         false,
+		endpoint:           "http://192.168.1.19",
 		retryMaxRetries:    3,
 		timeout:            30 * time.Second,
 		httpClient:         &http.Client{},

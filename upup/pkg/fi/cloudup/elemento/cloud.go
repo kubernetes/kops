@@ -17,12 +17,7 @@ limitations under the License.
 package elemento
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"os"
-	"strconv"
-	"time"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/kops/upup/pkg/fi"
@@ -50,6 +45,8 @@ type ElementoCloud interface {
 
 	Region() string
 	DNS() (dnsprovider.Interface, error)
+	NetworkClient() ecloud.NetworkClient // TODO
+	ServerClient() ecloud.ServerClient // TODO
 
 	// TODO: Detect and add additional fields here
 }
@@ -66,26 +63,34 @@ type elementoCloudImplementation struct {
 
 func NewElementoCloud(region string) (ElementoCloud, error) {
 	// Elemento does not use an access token, but is previously authenticated with 
-	// the CLI and deamons
+	// the CLI and deamons, you must execute the Electros app to authenticate.
 
-	client, err := ecloud.NewClient() // TODO
+	client, err := ecloud.NewClient("kops-client", "0.1") // TODO
 
 	if err != nil {
 		return nil, fmt.Errorf("creating client for Elemento Cloud: %w", err)
 	}
 
-	tags := make(map[string]string)
-
 	return &elementoCloudImplementation{
 		Client: client,
 		region: region,
-		tags:   tags,
 		dns:    nil,
 	}, nil
 }
 
+func (c *elementoCloudImplementation) ProviderID() kops.CloudProviderID {
+    return kops.CloudProviderElemento
+}
+
 func (c *elementoCloudImplementation) Region() string {
 	return c.region
+}
+
+func (c *elementoCloudImplementation) DNS() (dnsprovider.Interface, error) {
+    if c.dns == nil {
+        return nil, fmt.Errorf("DNS provider is not initialized")
+    }
+    return c.dns, nil
 }
 
 func (s *elementoCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
@@ -137,67 +142,67 @@ func (s *elementoCloudImplementation) GetCloudGroups(cluster *kops.Cluster, inst
 	return nil, fmt.Errorf("GetCloudGroups is not implemented yet for Elemento")
 }
 
-func findServerGroups(s *elementoCloudImplementation, clusterName string) (map[string][]*instance.Server, error) {
-	klog.V(8).Info("Elemento findServerGroups is not implemented")
-	return nil, fmt.Errorf("findServerGroups is not implemented yet for Elemento")
-}
+// func findServerGroups(s *elementoCloudImplementation, clusterName string) (map[string][]*instance.Server, error) {
+// 	klog.V(8).Info("Elemento findServerGroups is not implemented")
+// 	return nil, fmt.Errorf("findServerGroups is not implemented yet for Elemento")
+// }
 
-func buildCloudGroup(s *elementoCloudImplementation, ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
-	klog.V(8).Info("Elemento buildCloudGroup is not implemented")
-	return nil, fmt.Errorf("buildCloudGroup is not implemented yet for Elemento")
-}
+// func buildCloudGroup(s *elementoCloudImplementation, ig *kops.InstanceGroup, sg []*instance.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+// 	klog.V(8).Info("Elemento buildCloudGroup is not implemented")
+// 	return nil, fmt.Errorf("buildCloudGroup is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) GetClusterDNSRecords(clusterName string) ([]*domain.Record, error) {
-	klog.V(8).Info("Elemento GetClusterDNSRecords is not implemented")
-	return nil, fmt.Errorf("GetClusterDNSRecords is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) GetClusterDNSRecords(clusterName string) ([]*domain.Record, error) {
+// 	klog.V(8).Info("Elemento GetClusterDNSRecords is not implemented")
+// 	return nil, fmt.Errorf("GetClusterDNSRecords is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
-	klog.V(8).Info("Elemento GetClusterLoadBalancers is not implemented")
-	return nil, fmt.Errorf("GetClusterLoadBalancers is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error) {
+// 	klog.V(8).Info("Elemento GetClusterLoadBalancers is not implemented")
+// 	return nil, fmt.Errorf("GetClusterLoadBalancers is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error) {
-	klog.V(8).Info("Elemento GetClusterServers is not implemented")
-	return nil, fmt.Errorf("GetClusterServers is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) GetClusterServers(clusterName string, instanceGroupName *string) ([]*instance.Server, error) {
+// 	klog.V(8).Info("Elemento GetClusterServers is not implemented")
+// 	return nil, fmt.Errorf("GetClusterServers is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error) {
-	klog.V(8).Info("Elemento GetClusterSSHKeys is not implemented")
-	return nil, fmt.Errorf("GetClusterSSHKeys is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) GetClusterSSHKeys(clusterName string) ([]*iam.SSHKey, error) {
+// 	klog.V(8).Info("Elemento GetClusterSSHKeys is not implemented")
+// 	return nil, fmt.Errorf("GetClusterSSHKeys is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) GetClusterVolumes(clusterName string) ([]*instance.Volume, error) {
-	klog.V(8).Info("Elemento GetClusterVolumes is not implemented")
-	return nil, fmt.Errorf("GetClusterVolumes is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) GetClusterVolumes(clusterName string) ([]*instance.Volume, error) {
+// 	klog.V(8).Info("Elemento GetClusterVolumes is not implemented")
+// 	return nil, fmt.Errorf("GetClusterVolumes is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (string, error) {
-	klog.V(8).Info("Elemento GetServerIP is not implemented")
-	return "", fmt.Errorf("GetServerIP is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (string, error) {
+// 	klog.V(8).Info("Elemento GetServerIP is not implemented")
+// 	return "", fmt.Errorf("GetServerIP is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterName string) error {
-	klog.V(8).Info("Elemento DeleteDNSRecord is not implemented")
-	return fmt.Errorf("DeleteDNSRecord is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) DeleteDNSRecord(record *domain.Record, clusterName string) error {
+// 	klog.V(8).Info("Elemento DeleteDNSRecord is not implemented")
+// 	return fmt.Errorf("DeleteDNSRecord is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
-	klog.V(8).Info("Elemento DeleteLoadBalancer is not implemented")
-	return fmt.Errorf("DeleteLoadBalancer is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) DeleteLoadBalancer(loadBalancer *lb.LB) error {
+// 	klog.V(8).Info("Elemento DeleteLoadBalancer is not implemented")
+// 	return fmt.Errorf("DeleteLoadBalancer is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) DeleteServer(server *instance.Server) error {
-	klog.V(8).Info("Elemento DeleteServer is not implemented")
-	return fmt.Errorf("DeleteServer is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) DeleteServer(server *instance.Server) error {
+// 	klog.V(8).Info("Elemento DeleteServer is not implemented")
+// 	return fmt.Errorf("DeleteServer is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) DeleteSSHKey(sshkey *iam.SSHKey) error {
-	klog.V(8).Info("Elemento DeleteSSHKey is not implemented")
-	return fmt.Errorf("DeleteSSHKey is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) DeleteSSHKey(sshkey *iam.SSHKey) error {
+// 	klog.V(8).Info("Elemento DeleteSSHKey is not implemented")
+// 	return fmt.Errorf("DeleteSSHKey is not implemented yet for Elemento")
+// }
 
-func (s *elementoCloudImplementation) DeleteVolume(volume *instance.Volume) error {
-	klog.V(8).Info("Elemento DeleteVolume is not implemented")
-	return fmt.Errorf("DeleteVolume is not implemented yet for Elemento")
-}
+// func (s *elementoCloudImplementation) DeleteVolume(volume *instance.Volume) error {
+// 	klog.V(8).Info("Elemento DeleteVolume is not implemented")
+// 	return fmt.Errorf("DeleteVolume is not implemented yet for Elemento")
+// }

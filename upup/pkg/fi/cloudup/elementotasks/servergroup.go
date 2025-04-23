@@ -17,26 +17,24 @@ limitations under the License.
 package elementotasks
 
 import (
-	"context"
-	"crypto/sha256"
-	"encoding/base64"
-	"fmt"
-	"math/rand"
-	"strconv"
-	"strings"
+	// "context"
+	// "crypto/sha256"
+	// "encoding/base64"
+	// "fmt"
+	// "math/rand"
+	// "strconv"
+	// "strings"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
-	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
+	// "k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 )
 
 // +kops:fitask
 type ServerGroup struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
-	SSHKeys   []*SSHKey
+	SSHKeys   []*string
 	Network   *Network
 
 	Count      int
@@ -55,5 +53,5 @@ type ServerGroup struct {
 }
 
 func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
-
+	return nil, nil
 }

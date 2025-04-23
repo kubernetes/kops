@@ -118,7 +118,7 @@ github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/options
 github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/shared
 github.com/AzureAD/microsoft-authentication-library-for-go/apps/internal/version
 github.com/AzureAD/microsoft-authentication-library-for-go/apps/public
-# github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.1
+# github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.2 => ../tesi-paolobeci
 ## explicit; go 1.23.1
 github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud
 # github.com/GoogleCloudPlatform/k8s-cloud-provider v1.25.0
@@ -2258,3 +2258,4 @@ sigs.k8s.io/structured-merge-diff/v4/value
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
 sigs.k8s.io/yaml/goyaml.v3
+# github.com/Elemento-Modular-Cloud/tesi-paolobeci => ../tesi-paolobeci

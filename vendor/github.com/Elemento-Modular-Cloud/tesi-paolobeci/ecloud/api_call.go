@@ -10,17 +10,82 @@ import (
 
 // ------------------------------ API CALLS FUNCTIONS -------------------------
 
-// Retrieve a list of VMs
-func (c *Client) GetVm(url string, resType interface{}) error {
-	return c.CallAPI("GET", url, nil, resType, true)
+// Login to the API
+func (c *Client) Login(reqBody interface{}, resType interface{}) error {
+	return c.CallAPI("POST", "47777", "/api/v1/authenticate/login", reqBody, resType, false)
 }
 
-// Retrieve a VM by its ID
-func (c *Client) GetVmById(url string, id string, resType interface{}) error {
-	return c.CallAPI("GET", url, nil, resType, true)
+// Status login
+func (c *Client) StatusLogin(resType interface{}) error {
+	return c.CallAPI("GET", "47777", "/api/v1/authenticate/status", nil, resType, true)
 }
 
-// ...
+// Logout from the API
+func (c *Client) Logout(resType interface{}) error {
+	return c.CallAPI("POST", "47777", "/api/v1/authenticate/logout", nil, resType, true)
+}
+
+// Health check Compute
+func (c *Client) HealthCheckCompute(resType interface{}) error {
+	return c.CallAPI("GET", "17777", "/", nil, resType, true)
+}
+
+// Can allocate a new compute instance
+func (c *Client) CanAllocateCompute(resType interface{}) error {
+	return c.CallAPI("GET", "17777", "/api/v1.0/client/vm/canallocate", nil, resType, true)
+}
+
+// Create a new compute instance
+func (c *Client) CreateCompute(reqBody interface{}, resType interface{}) error {
+	return c.CallAPI("POST", "17777", "/api/v1.0/client/vm/register", reqBody, resType, true)
+}
+
+// Compute instance status
+func (c *Client) ComputeStatus(resType interface{}) error {
+	return c.CallAPI("GET", "17777", "/api/v1.0/client/vm/status", nil, resType, true)
+}
+
+// Compute templates
+func (c *Client) ComputeTemplates(resType interface{}) error {
+	return c.CallAPI("GET", "17777", "/api/v1.0/client/vm/templates", nil, resType, true)
+}
+
+// Compute instance delete
+func (c *Client) DeleteCompute(reqBody interface{}, resType interface{}) error {
+	return c.CallAPI("POST", "17777", "/api/v1.0/client/vm/delete", reqBody, resType, true)
+}
+
+// Health check Storage
+func (c *Client) HealthCheckStorage(resType interface{}) error {
+	return c.CallAPI("GET", "27777", "/", nil, resType, true)
+}
+
+// Can allocate a new storage volume
+func (c *Client) CanAllocateStorage(resType interface{}) error {
+	return c.CallAPI("GET", "27777", "/api/v1.0/client/volume/cancreate", nil, resType, true)
+}
+
+// Create a new storage volume
+func (c *Client) CreateStorage(reqBody interface{}, resType interface{}) error {
+	return c.CallAPI("POST", "27777", "/api/v1.0/client/volume/create", reqBody, resType, true)
+}
+
+// Get storages
+func (c *Client) GetStorage(resType interface{}) error {
+	return c.CallAPI("GET", "27777", "/api/v1.0/client/volume/accessible", nil, resType, true)
+}
+
+// Get storage by ID
+func (c *Client) GetStorageByID(reqBody interface{}, resType interface{}) error {
+	return c.CallAPI("POST", "27777", "/api/v1.0/client/volume/info", reqBody, resType, true)
+}
+
+// Delete a storage volume
+func (c *Client) DeleteStorage(reqBody interface{}, resType interface{}) error {
+	return c.CallAPI("POST", "27777", "/api/v1.0/client/volume/delete", reqBody, resType, true)
+}
+
+// TODO: Network SDN endpoints...
 
 
 // ------------------------------ UTILS FUNCTIONS -----------------------------
@@ -34,8 +99,8 @@ func (c *Client) GetVmById(url string, id string, resType interface{}) error {
 // - needAuth: if the call needs authentication
 // Returns:
 // - error: if any
-func (c *Client) CallAPI(method, path string, reqBody, resType interface{}, needAuth bool) error {
-	req, err := c.NewRequest(method, path, reqBody, needAuth)
+func (c *Client) CallAPI(method, port string, path string, reqBody, resType interface{}, needAuth bool) error {
+	req, err := c.NewRequest(method, port, path, reqBody, needAuth)
 	if err != nil {
 		return err
 	}
@@ -47,7 +112,7 @@ func (c *Client) CallAPI(method, path string, reqBody, resType interface{}, need
 }
 
 // NewRequest returns a new HTTP request
-func (c *Client) NewRequest(method, path string, reqBody interface{}, needAuth bool) (*http.Request, error) {
+func (c *Client) NewRequest(method, port string, path string, reqBody interface{}, needAuth bool) (*http.Request, error) {
 	var body []byte
 	var err error
 
@@ -58,7 +123,7 @@ func (c *Client) NewRequest(method, path string, reqBody interface{}, needAuth b
 		}
 	}
 
-	target := c.endpoint + path
+	target := c.endpoint + port + path
 	req, err := http.NewRequest(method, target, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
