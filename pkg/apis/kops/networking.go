@@ -511,6 +511,9 @@ type CiliumNetworkingSpec struct {
 	// EnableUnreachableRoutes enables unreachable routes on pod deletion.
 	// Default: false
 	EnableUnreachableRoutes *bool `json:"enableUnreachableRoutes,omitempty"`
+	// CniExclusive configures whether to remove other CNI configuration files.
+	// Default: true
+	CniExclusive *bool `json:"cniExclusive,omitempty"`
 	// Hubble configures the Hubble service on the Cilium agent.
 	Hubble *HubbleSpec `json:"hubble,omitempty"`
 

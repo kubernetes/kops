@@ -161,6 +161,10 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		c.EncryptionType = kops.CiliumEncryptionTypeIPSec
 	}
 
+	if c.CniExclusive == nil {
+		c.CniExclusive = fi.PtrTo(true)
+	}
+
 	hubble := c.Hubble
 	if hubble != nil {
 		if hubble.Enabled == nil {

@@ -2214,6 +2214,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.EtcdManaged = in.EtcdManaged
 	out.EnableRemoteNodeIdentity = in.EnableRemoteNodeIdentity
 	out.EnableUnreachableRoutes = in.EnableUnreachableRoutes
+	out.CniExclusive = in.CniExclusive
 	if in.Hubble != nil {
 		in, out := &in.Hubble, &out.Hubble
 		*out = new(kops.HubbleSpec)
@@ -2291,6 +2292,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.EtcdManaged = in.EtcdManaged
 	out.EnableRemoteNodeIdentity = in.EnableRemoteNodeIdentity
 	out.EnableUnreachableRoutes = in.EnableUnreachableRoutes
+	out.CniExclusive = in.CniExclusive
 	if in.Hubble != nil {
 		in, out := &in.Hubble, &out.Hubble
 		*out = new(HubbleSpec)
