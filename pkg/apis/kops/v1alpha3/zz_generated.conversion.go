@@ -5442,6 +5442,7 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	out.FeatureGates = in.FeatureGates
+	out.GoawayChance = in.GoawayChance
 	out.MaxRequestsInflight = in.MaxRequestsInflight
 	out.MaxMutatingRequestsInflight = in.MaxMutatingRequestsInflight
 	out.HTTP2MaxStreamsPerConnection = in.HTTP2MaxStreamsPerConnection
@@ -5559,6 +5560,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	out.FeatureGates = in.FeatureGates
+	out.GoawayChance = in.GoawayChance
 	out.MaxRequestsInflight = in.MaxRequestsInflight
 	out.MaxMutatingRequestsInflight = in.MaxMutatingRequestsInflight
 	out.HTTP2MaxStreamsPerConnection = in.HTTP2MaxStreamsPerConnection
