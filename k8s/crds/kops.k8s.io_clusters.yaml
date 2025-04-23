@@ -5342,6 +5342,11 @@ spec:
                       cniBinPath:
                         description: CniBinPath is unused.
                         type: string
+                      cniExclusive:
+                        description: |-
+                          CniExclusive configures whether to remove other CNI configuration files.
+                          Default: true
+                        type: boolean
                       containerRuntime:
                         description: ContainerRuntime is unused.
                         items:

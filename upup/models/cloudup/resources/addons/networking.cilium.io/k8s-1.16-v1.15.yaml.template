@@ -319,7 +319,7 @@ data:
 
   # Tell the agent to generate and write a CNI configuration file
   write-cni-conf-when-ready: /host/etc/cni/net.d/05-cilium.conflist
-  cni-exclusive: "true"
+  cni-exclusive: "{{ .CniExclusive }}"
   cni-log-file: "/var/run/cilium/cilium-cni.log"
 
   {{ if WithDefaultBool .Hubble.Enabled false }}
