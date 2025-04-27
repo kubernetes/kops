@@ -345,9 +345,19 @@ func buildChangeList[T SubContext](a, e, changes Task[T]) ([]change, error) {
 			case reflect.String:
 				changed = fieldValC.Convert(reflect.TypeOf("")).Interface() != ""
 
-			case reflect.Int:
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				changed = fieldValA.Int() != fieldValE.Int()
+
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				changed = fieldValA.Uint() != fieldValE.Uint()
+
+			case reflect.Bool:
+				changed = fieldValA.Bool() != fieldValE.Bool()
+
+			default:
+				klog.Warningf("unhandled type in diff construction: %v", fieldValC.Kind())
 			}
+
 			if !changed {
 				continue
 			}
