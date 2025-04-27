@@ -138,11 +138,10 @@ func equalFieldValues(a, e reflect.Value) bool {
 
 // equalMapValues performs a deep-equality check on a map, but using our custom comparison logic (equalFieldValues)
 func equalMapValues(a, e reflect.Value) bool {
-	if a.IsNil() != e.IsNil() {
+	aIsEmpty := a.IsNil() || a.Len() == 0
+	eIsEmpty := e.IsNil() || e.Len() == 0
+	if aIsEmpty != eIsEmpty {
 		return false
-	}
-	if a.IsNil() && e.IsNil() {
-		return true
 	}
 	if a.Len() != e.Len() {
 		return false
