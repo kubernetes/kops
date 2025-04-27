@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/values"
@@ -74,6 +75,11 @@ func ValueAsString(value reflect.Value) string {
 			return SkipReflection
 
 		case reflect.Map:
+			if s, ok := v.Interface().(sets.Set[string]); ok {
+				// Print sorted members without visiting the non-addressable empty map values.
+				fmt.Fprint(b, ValueAsString(reflect.ValueOf(sets.List(s))))
+				return SkipReflection
+			}
 			keys := v.MapKeys()
 			fmt.Fprintf(b, "{")
 			for i, key := range keys {
