@@ -631,13 +631,13 @@ resource "google_compute_subnetwork" "us-test1-minimal-gce-example-com" {
 }
 
 resource "google_project_iam_binding" "serviceaccount-control-plane" {
-  members = ["serviceAccount:control-plane-minimal-g-fu1mg6@testproject.iam.gserviceaccount.com"]
+  members = [format("serviceAccount:%s", google_service_account.control-plane.email)]
   project = "testproject"
   role    = "roles/container.serviceAgent"
 }
 
 resource "google_project_iam_binding" "serviceaccount-nodes" {
-  members = ["serviceAccount:node-minimal-gce-example-com@testproject.iam.gserviceaccount.com"]
+  members = [format("serviceAccount:%s", google_service_account.node.email)]
   project = "testproject"
   role    = "roles/compute.viewer"
 }

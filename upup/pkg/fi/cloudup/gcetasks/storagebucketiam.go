@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // StorageBucketIAM represents an IAM rule on a google cloud storage bucket
@@ -33,9 +34,9 @@ type StorageBucketIAM struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Bucket *string
-	Member *string
-	Role   *string
+	Bucket               *string
+	MemberServiceAccount *ServiceAccount
+	Role                 *string
 }
 
 var _ fi.CompareWithID = &StorageBucketIAM{}
@@ -50,7 +51,7 @@ func (e *StorageBucketIAM) Find(c *fi.CloudupContext) (*StorageBucketIAM, error)
 	cloud := c.T.Cloud.(gce.GCECloud)
 
 	bucket := fi.ValueOf(e.Bucket)
-	member := fi.ValueOf(e.Member)
+	member := "serviceAccount:" + fi.ValueOf(e.MemberServiceAccount.Email)
 	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Checking GCS bucket IAM for gs://%s for %s", bucket, member)
@@ -69,7 +70,7 @@ func (e *StorageBucketIAM) Find(c *fi.CloudupContext) (*StorageBucketIAM, error)
 
 	actual := &StorageBucketIAM{}
 	actual.Bucket = e.Bucket
-	actual.Member = e.Member
+	actual.MemberServiceAccount = e.MemberServiceAccount
 	actual.Role = e.Role
 
 	// Ignore "system" fields
@@ -87,7 +88,10 @@ func (_ *StorageBucketIAM) CheckChanges(a, e, changes *StorageBucketIAM) error {
 	if fi.ValueOf(e.Bucket) == "" {
 		return fi.RequiredField("Bucket")
 	}
-	if fi.ValueOf(e.Member) == "" {
+	if e.MemberServiceAccount == nil {
+		return fi.RequiredField("MemberServiceAccount")
+	}
+	if fi.ValueOf(e.MemberServiceAccount.Email) == "" {
 		return fi.RequiredField("Member")
 	}
 	if fi.ValueOf(e.Role) == "" {
@@ -100,7 +104,7 @@ func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 	ctx := context.TODO()
 
 	bucket := fi.ValueOf(e.Bucket)
-	member := fi.ValueOf(e.Member)
+	member := "serviceAccount:" + fi.ValueOf(e.MemberServiceAccount.Email)
 	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Creating GCS bucket IAM for gs://%s for %s as %s", bucket, member, role)
@@ -126,19 +130,23 @@ func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 
 // terraformStorageBucketIAM is the model for a terraform google_storage_bucket_iam_member rule
 type terraformStorageBucketIAM struct {
-	Bucket string `cty:"bucket"`
-	Role   string `cty:"role"`
-	Member string `cty:"member"`
+	Bucket string                   `cty:"bucket"`
+	Role   string                   `cty:"role"`
+	Member *terraformWriter.Literal `cty:"member"`
 }
 
 func (_ *StorageBucketIAM) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *StorageBucketIAM) error {
 	tf := &terraformStorageBucketIAM{
 		Bucket: fi.ValueOf(e.Bucket),
 		Role:   fi.ValueOf(e.Role),
-		Member: fi.ValueOf(e.Member),
+		Member: e.MemberServiceAccount.TerraformLink_Member(),
 	}
 
-	return t.RenderResource("google_storage_bucket_iam_member", *e.Name, tf)
+	if err := t.RenderResource("google_storage_bucket_iam_member", *e.Name, tf); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func patchPolicy(policy *storage.Policy, wantMember string, wantRole string) bool {

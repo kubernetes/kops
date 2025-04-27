@@ -605,7 +605,7 @@ func mapServiceAccountsToTerraform(serviceAccounts []*ServiceAccount, saScopes [
 	var out []*terraformTemplateServiceAccount
 	for _, serviceAccount := range serviceAccounts {
 		tsa := &terraformTemplateServiceAccount{
-			Email:  serviceAccount.TerraformLink(),
+			Email:  serviceAccount.TerraformLink_Email(),
 			Scopes: scopes,
 		}
 		out = append(out, tsa)

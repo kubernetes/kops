@@ -34,16 +34,23 @@ func TestStorageBucketIAM(t *testing.T) {
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func() map[string]fi.CloudupTask {
+		serviceAccount := &ServiceAccount{
+			Lifecycle: fi.LifecycleSync,
+
+			Email: fi.PtrTo("foo@testproject.iam.gserviceaccount.com"),
+		}
+
 		binding := &StorageBucketIAM{
 			Lifecycle: fi.LifecycleSync,
 
-			Bucket: fi.PtrTo("bucket1"),
-			Member: fi.PtrTo("serviceAccount:foo@testproject.iam.gserviceaccount.com"),
-			Role:   fi.PtrTo("roles/owner"),
+			Bucket:               fi.PtrTo("bucket1"),
+			MemberServiceAccount: serviceAccount,
+			Role:                 fi.PtrTo("roles/owner"),
 		}
 
 		return map[string]fi.CloudupTask{
-			"binding": binding,
+			"serviceAccount": serviceAccount,
+			"binding":        binding,
 		}
 	}
 
