@@ -436,8 +436,8 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
   labels = {
     "k8s-io-cluster-name"       = "minimal-gce-example-com"
     "k8s-io-instance-group"     = "master-us-test1-a"
-    "k8s-io-role-control-plane" = ""
-    "k8s-io-role-master"        = ""
+    "k8s-io-role-control-plane" = "control-plane"
+    "k8s-io-role-master"        = "master"
   }
   lifecycle {
     create_before_destroy = true
@@ -488,7 +488,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-example-com" {
   labels = {
     "k8s-io-cluster-name"   = "minimal-gce-example-com"
     "k8s-io-instance-group" = "nodes"
-    "k8s-io-role-node"      = ""
+    "k8s-io-role-node"      = "node"
   }
   lifecycle {
     create_before_destroy = true

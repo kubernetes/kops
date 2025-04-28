@@ -184,11 +184,11 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
 			t.Labels = map[string]string{
 				clusterLabel.Key:              clusterLabel.Value,
-				roleLabel:                     "",
+				roleLabel:                     ig.Spec.Role.ToLowerString(),
 				gce.GceLabelNameInstanceGroup: ig.ObjectMeta.Name,
 			}
 			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-				t.Labels[gce.GceLabelNameRolePrefix+"master"] = ""
+				t.Labels[gce.GceLabelNameRolePrefix+"master"] = "master"
 			}
 
 			if gce.UsesIPAliases(b.Cluster) {
