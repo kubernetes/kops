@@ -121,16 +121,14 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	type serviceAccountRole struct {
-		Email string
-		Role  kops.InstanceGroupRole
+		ServiceAccount *gcetasks.ServiceAccount
+		Role           kops.InstanceGroupRole
 	}
 	serviceAccountRoles := make(map[serviceAccountRole]bool)
 
 	for _, ig := range b.InstanceGroups {
 		serviceAccount := b.LinkToServiceAccount(ig)
-
-		email := *serviceAccount.Email
-		serviceAccountRoles[serviceAccountRole{Email: email, Role: ig.Spec.Role}] = true
+		serviceAccountRoles[serviceAccountRole{ServiceAccount: serviceAccount, Role: ig.Spec.Role}] = true
 	}
 
 	for serviceAccountRole := range serviceAccountRoles {
@@ -165,11 +163,11 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			klog.Warningf("adding bucket level write IAM for role %q to gs://%s to support etcd backup", role, bucket)
 
 			c.AddTask(&gcetasks.StorageBucketIAM{
-				Name:      s("objectadmin-" + bucket + "-serviceaccount-" + nameForTask),
-				Lifecycle: b.Lifecycle,
-				Bucket:    s(bucket),
-				Member:    s("serviceAccount:" + serviceAccountRole.Email),
-				Role:      s("roles/storage.objectAdmin"),
+				Name:                 s("objectadmin-" + bucket + "-serviceaccount-" + nameForTask),
+				Lifecycle:            b.Lifecycle,
+				Bucket:               s(bucket),
+				MemberServiceAccount: serviceAccountRole.ServiceAccount,
+				Role:                 s("roles/storage.objectAdmin"),
 			})
 		}
 
@@ -201,11 +199,11 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			klog.Warningf("adding bucket level read IAM to gs://%s for role %q", bucket, role)
 
 			c.AddTask(&gcetasks.StorageBucketIAM{
-				Name:      s("objectviewer-" + bucket + "-serviceaccount-" + nameForTask),
-				Lifecycle: b.Lifecycle,
-				Bucket:    s(bucket),
-				Member:    s("serviceAccount:" + serviceAccountRole.Email),
-				Role:      s("roles/storage.objectViewer"),
+				Name:                 s("objectviewer-" + bucket + "-serviceaccount-" + nameForTask),
+				Lifecycle:            b.Lifecycle,
+				Bucket:               s(bucket),
+				MemberServiceAccount: serviceAccountRole.ServiceAccount,
+				Role:                 s("roles/storage.objectViewer"),
 			})
 		}
 	}

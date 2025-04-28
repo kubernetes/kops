@@ -34,16 +34,23 @@ func TestProjectIAMBinding(t *testing.T) {
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func() map[string]fi.CloudupTask {
+		serviceAccount := &ServiceAccount{
+			Lifecycle: fi.LifecycleSync,
+
+			Email: fi.PtrTo("foo@testproject.iam.gserviceaccount.com"),
+		}
+
 		binding := &ProjectIAMBinding{
 			Lifecycle: fi.LifecycleSync,
 
-			Project: fi.PtrTo("testproject"),
-			Member:  fi.PtrTo("serviceAccount:foo@testproject.iam.gserviceaccount.com"),
-			Role:    fi.PtrTo("roles/owner"),
+			Project:              fi.PtrTo("testproject"),
+			MemberServiceAccount: serviceAccount,
+			Role:                 fi.PtrTo("roles/owner"),
 		}
 
 		return map[string]fi.CloudupTask{
-			"binding": binding,
+			"serviceAccount": serviceAccount,
+			"binding":        binding,
 		}
 	}
 

@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
 )
 
 // ProjectIAMBinding represents an IAM rule on a project
@@ -33,9 +34,9 @@ type ProjectIAMBinding struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Project *string
-	Member  *string
-	Role    *string
+	Project              *string
+	MemberServiceAccount *ServiceAccount
+	Role                 *string
 }
 
 var _ fi.CompareWithID = &ProjectIAMBinding{}
@@ -50,7 +51,7 @@ func (e *ProjectIAMBinding) Find(c *fi.CloudupContext) (*ProjectIAMBinding, erro
 	cloud := c.T.Cloud.(gce.GCECloud)
 
 	projectID := fi.ValueOf(e.Project)
-	member := fi.ValueOf(e.Member)
+	member := "serviceAccount:" + fi.ValueOf(e.MemberServiceAccount.Email)
 	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Checking IAM for project %q", projectID)
@@ -70,7 +71,7 @@ func (e *ProjectIAMBinding) Find(c *fi.CloudupContext) (*ProjectIAMBinding, erro
 
 	actual := &ProjectIAMBinding{}
 	actual.Project = e.Project
-	actual.Member = e.Member
+	actual.MemberServiceAccount = e.MemberServiceAccount
 	actual.Role = e.Role
 
 	// Ignore "system" fields
@@ -88,8 +89,11 @@ func (_ *ProjectIAMBinding) CheckChanges(a, e, changes *ProjectIAMBinding) error
 	if fi.ValueOf(e.Project) == "" {
 		return fi.RequiredField("Project")
 	}
-	if fi.ValueOf(e.Member) == "" {
-		return fi.RequiredField("Member")
+	if e.MemberServiceAccount == nil {
+		return fi.RequiredField("MemberServiceAccount")
+	}
+	if fi.ValueOf(e.MemberServiceAccount.Email) == "" {
+		return fi.RequiredField("MemberServiceAccount.Email")
 	}
 	if fi.ValueOf(e.Role) == "" {
 		return fi.RequiredField("Role")
@@ -101,7 +105,7 @@ func (_ *ProjectIAMBinding) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Projec
 	ctx := context.TODO()
 
 	projectID := fi.ValueOf(e.Project)
-	member := fi.ValueOf(e.Member)
+	member := "serviceAccount:" + fi.ValueOf(e.MemberServiceAccount.Email)
 	role := fi.ValueOf(e.Role)
 
 	// Avoid concurrent operations
@@ -132,16 +136,16 @@ func (_ *ProjectIAMBinding) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Projec
 
 // terraformProjectIAMBinding is the model for a terraform google_project_iam_binding rule
 type terraformProjectIAMBinding struct {
-	Project string   `cty:"project"`
-	Role    string   `cty:"role"`
-	Members []string `cty:"members"`
+	Project string                     `cty:"project"`
+	Role    string                     `cty:"role"`
+	Members []*terraformWriter.Literal `cty:"members"`
 }
 
 func (_ *ProjectIAMBinding) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ProjectIAMBinding) error {
 	tf := &terraformProjectIAMBinding{
 		Project: fi.ValueOf(e.Project),
 		Role:    fi.ValueOf(e.Role),
-		Members: []string{fi.ValueOf(e.Member)},
+		Members: []*terraformWriter.Literal{e.MemberServiceAccount.TerraformLink_Member()},
 	}
 
 	return t.RenderResource("google_project_iam_binding", *e.Name, tf)

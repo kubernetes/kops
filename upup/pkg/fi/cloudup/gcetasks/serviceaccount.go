@@ -194,7 +194,7 @@ func (_ *ServiceAccount) RenderTerraform(t *terraform.TerraformTarget, a, e, cha
 	return t.RenderResource("google_service_account", *e.Name, tf)
 }
 
-func (e *ServiceAccount) TerraformLink() *terraformWriter.Literal {
+func (e *ServiceAccount) TerraformLink_Email() *terraformWriter.Literal {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
 		email := fi.ValueOf(e.Email)
@@ -207,4 +207,23 @@ func (e *ServiceAccount) TerraformLink() *terraformWriter.Literal {
 	}
 
 	return terraformWriter.LiteralProperty("google_service_account", *e.Name, "email")
+}
+
+func (e *ServiceAccount) TerraformLink_Member() *terraformWriter.Literal {
+	shared := fi.ValueOf(e.Shared)
+	if shared {
+		email := fi.ValueOf(e.Email)
+		if email == "" {
+			klog.Fatalf("Email must be set, if ServiceAccount is shared: %#v", e)
+		}
+
+		klog.V(4).Infof("reusing existing ServiceAccount %q", email)
+		return terraformWriter.LiteralFromStringValue(email)
+	}
+
+	return terraformWriter.LiteralFunctionExpression(
+		"format",
+		terraformWriter.LiteralFromStringValue("serviceAccount:%s"),
+		terraformWriter.LiteralProperty("google_service_account", *e.Name, "email"),
+	)
 }
