@@ -232,28 +232,28 @@ resource "google_compute_firewall" "lb-health-checks-minimal-gce-with-a-very-ver
   disabled      = false
   name          = "lb-health-checks-minimal-gce-with-a-very-very-very-very--96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
-  source_ranges = ["35.191.0.0/16", "130.211.0.0/22", "209.85.204.0/22", "209.85.152.0/22"]
+  source_ranges = ["130.211.0.0/22", "209.85.152.0/22", "209.85.204.0/22", "35.191.0.0/16"]
   target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane"]
 }
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi"
@@ -264,22 +264,22 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-ver
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "master-to-node-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
@@ -290,15 +290,15 @@ resource "google_compute_firewall" "master-to-node-minimal-gce-with-a-very-very-
 
 resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
   allow {
-    ports    = ["443"]
-    protocol = "tcp"
-  }
-  allow {
     ports    = ["10250"]
     protocol = "tcp"
   }
   allow {
     ports    = ["3988"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["443"]
     protocol = "tcp"
   }
   disabled    = false
@@ -310,22 +310,22 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-
 
 resource "google_compute_firewall" "node-to-node-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "node-to-node-minimal-gce-with-a-very-very-very-very-very-96dqvi"
