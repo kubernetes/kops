@@ -473,6 +473,9 @@ type CiliumNetworkingSpec struct {
 
 	// Ingress specifies the configuration for Cilium Ingress settings.
 	Ingress *CiliumIngressSpec `json:"ingress,omitempty"`
+
+	// GatewayAPI specifies the configuration for Cilium Gateway API settings.
+	GatewayAPI *CiliumGatewayAPISpec `json:"gatewayAPI,omitempty"`
 }
 
 // CiliumIngressSpec configures Cilium Ingress settings.
@@ -500,6 +503,16 @@ type CiliumIngressSpec struct {
 	// SharedLoadBalancerServiceName specifies the name of the shared load balancer service.
 	// Default: cilium-ingress
 	SharedLoadBalancerServiceName string `json:"sharedLoadBalancerServiceName,omitempty"`
+}
+
+// CiliumGatewayAPISpec configures Cilium Gateway API settings.
+type CiliumGatewayAPISpec struct {
+	// Enabled specifies whether Cilium Gateway API is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// EnableSecretsSync specifies whether synchronization of secrets is enabled.
+	// Default: true
+	EnableSecretsSync *bool `json:"enableSecretsSync,omitempty"`
 }
 
 // HubbleSpec configures the Hubble service on the Cilium agent.

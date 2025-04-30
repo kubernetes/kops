@@ -1224,6 +1224,15 @@ func Test_Validate_Cilium(t *testing.T) {
 		{
 			Cilium: kops.CiliumNetworkingSpec{
 				Version: "v1.16.0",
+				GatewayAPI: &kops.CiliumGatewayAPISpec{
+					Enabled:           fi.PtrTo(true),
+					EnableSecretsSync: fi.PtrTo(true),
+				},
+			},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				Version: "v1.16.0",
 				Hubble: &kops.HubbleSpec{
 					Enabled: fi.PtrTo(true),
 				},
@@ -1236,9 +1245,7 @@ func Test_Validate_Cilium(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		g.Spec.Networking = kops.NetworkingSpec{
-			Cilium: &g.Cilium,
-		}
+		g.Spec.Networking.Cilium = &g.Cilium
 		if g.Spec.KubernetesVersion == "" {
 			g.Spec.KubernetesVersion = "1.17.0"
 		}

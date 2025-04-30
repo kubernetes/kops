@@ -209,6 +209,8 @@ spec:
       enableRemoteNodeIdentity: true
       enableUnreachableRoutes: false
       etcdManaged: true
+      gatewayAPI:
+        enabled: false
       hubble:
         enabled: false
       identityAllocationMode: crd

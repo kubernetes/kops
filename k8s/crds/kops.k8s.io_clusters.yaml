@@ -5495,6 +5495,20 @@ spec:
                           The cluster is operated by cilium-etcd-operator.
                           Default: false
                         type: boolean
+                      gatewayAPI:
+                        description: GatewayAPI specifies the configuration for Cilium
+                          Gateway API settings.
+                        properties:
+                          enableSecretsSync:
+                            description: |-
+                              EnableSecretsSync specifies whether synchronization of secrets is enabled.
+                              Default: true
+                            type: boolean
+                          enabled:
+                            description: Enabled specifies whether Cilium Gateway
+                              API is enabled.
+                            type: boolean
+                        type: object
                       hubble:
                         description: Hubble configures the Hubble service on the Cilium
                           agent.
