@@ -75,6 +75,8 @@ type integrationTest struct {
 	nthRebalance bool
 	// enable GCE startup script
 	startupScript bool
+	// verify "kops get assets" functionality
+	testGetAssets bool
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
@@ -87,6 +89,11 @@ func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 		nth:            true,
 		sshKey:         true,
 	}
+}
+
+func (i *integrationTest) withTestGetAssets() *integrationTest {
+	i.testGetAssets = true
+	return i
 }
 
 func (i *integrationTest) withStartupScript() *integrationTest {
@@ -1040,6 +1047,7 @@ func TestExternalLoadBalancer(t *testing.T) {
 			dnsControllerAddon,
 			awsCCMAddon,
 		).
+		withTestGetAssets().
 		runTestTerraformAWS(t)
 }
 
@@ -1374,6 +1382,22 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 				break
 			}
 		}
+	}
+
+	if i.testGetAssets {
+		options := &GetAssetsOptions{}
+		options.GetOptions = &GetOptions{}
+		options.Output = "yaml"
+		options.ClusterName = i.clusterName
+
+		var assetsOut bytes.Buffer
+		err := RunGetAssets(ctx, factory, &assetsOut, options)
+		if err != nil {
+			t.Fatalf("error running get assets %q: %v", i.clusterName, err)
+		}
+
+		wantPath := filepath.Join(i.srcDir, "assets.yaml")
+		golden.AssertMatchesFile(t, assetsOut.String(), wantPath)
 	}
 }
 
