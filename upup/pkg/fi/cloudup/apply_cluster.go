@@ -235,11 +235,6 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	default:
 		return nil, fmt.Errorf("unknown phase %q", c.Phase)
 	}
-	if c.GetAssets {
-		networkLifecycle = fi.LifecycleIgnore
-		securityLifecycle = fi.LifecycleIgnore
-		clusterLifecycle = fi.LifecycleIgnore
-	}
 
 	assetBuilder := assets.NewAssetBuilder(c.Clientset.VFSContext(), c.Cluster.Spec.Assets, c.GetAssets)
 	if len(c.ControlPlaneRunningVersion) > 0 && c.ControlPlaneRunningVersion != c.Cluster.Spec.KubernetesVersion {
@@ -776,10 +771,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 
 	case TargetDryRun:
 		var out io.Writer = os.Stdout
+		checkExisting := true
 		if c.GetAssets {
 			out = io.Discard
+			// For `kops get assets`,there is no need to run Find,
+			// we are just trying to discover the assets.
+			checkExisting = false
 		}
-		target = fi.NewCloudupDryRunTarget(assetBuilder, out)
+		target = fi.NewCloudupDryRunTarget(assetBuilder, checkExisting, out)
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false

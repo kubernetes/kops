@@ -45,6 +45,10 @@ type DryRunTarget[T SubContext] struct {
 
 	// assetBuilder records all assets used
 	assetBuilder *assets.AssetBuilder
+
+	// defaultCheckExisting will control whether we look for existing objects in our dry-run.
+	// This is normally true except for special-case dry-runs, like `kops get assets`
+	defaultCheckExisting bool
 }
 
 type NodeupDryRunTarget = DryRunTarget[NodeupSubContext]
@@ -77,23 +81,26 @@ func (a DeletionByTaskName[T]) Less(i, j int) bool {
 
 var _ Target[CloudupSubContext] = &DryRunTarget[CloudupSubContext]{}
 
-func newDryRunTarget[T SubContext](assetBuilder *assets.AssetBuilder, out io.Writer) *DryRunTarget[T] {
+func newDryRunTarget[T SubContext](assetBuilder *assets.AssetBuilder, defaultCheckExisting bool, out io.Writer) *DryRunTarget[T] {
 	t := &DryRunTarget[T]{}
 	t.out = out
 	t.assetBuilder = assetBuilder
+	t.defaultCheckExisting = defaultCheckExisting
 	return t
 }
 
-func NewCloudupDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *CloudupDryRunTarget {
-	return newDryRunTarget[CloudupSubContext](assetBuilder, out)
+// NewCloudupDryRunTarget builds a dry-run target.
+// checkExisting should normally be true, but can be false for special-case dry-run, such as in `kops get assets`
+func NewCloudupDryRunTarget(assetBuilder *assets.AssetBuilder, checkExisting bool, out io.Writer) *CloudupDryRunTarget {
+	return newDryRunTarget[CloudupSubContext](assetBuilder, checkExisting, out)
 }
 
 func NewNodeupDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *NodeupDryRunTarget {
-	return newDryRunTarget[NodeupSubContext](assetBuilder, out)
+	return newDryRunTarget[NodeupSubContext](assetBuilder, true, out)
 }
 
 func (t *DryRunTarget[T]) DefaultCheckExisting() bool {
-	return true
+	return t.defaultCheckExisting
 }
 
 func (t *DryRunTarget[T]) Render(a, e, changes Task[T]) error {
