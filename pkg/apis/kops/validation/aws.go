@@ -168,9 +168,6 @@ func awsValidateSecurityGroupOverride(fieldPath *field.Path, lbSpec *kops.LoadBa
 	if !strings.HasPrefix(override, "sg-") {
 		allErrs = append(allErrs, field.Invalid(fieldPath, override, "security group override does not match the expected AWS format"))
 	}
-	if lbSpec.Class == kops.LoadBalancerClassNetwork {
-		allErrs = append(allErrs, field.Forbidden(fieldPath, "security group override cannot be specified for a Network Load Balancer"))
-	}
 
 	return allErrs
 }
