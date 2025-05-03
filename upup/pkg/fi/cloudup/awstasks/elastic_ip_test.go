@@ -118,7 +118,8 @@ func checkNoChanges(t *testing.T, ctx context.Context, cloud fi.Cloud, allTasks 
 		},
 	}
 	assetBuilder := assets.NewAssetBuilder(vfs.Context, cluster.Spec.Assets, false)
-	target := fi.NewCloudupDryRunTarget(assetBuilder, os.Stderr)
+	checkExisting := true
+	target := fi.NewCloudupDryRunTarget(assetBuilder, checkExisting, os.Stderr)
 	context, err := fi.NewCloudupContext(ctx, fi.DeletionProcessingModeDeleteIncludingDeferred, target, nil, cloud, nil, nil, nil, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
