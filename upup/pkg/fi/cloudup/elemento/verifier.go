@@ -38,7 +38,7 @@ var _ bootstrap.Verifier = &elementoVerifier{}
 func NewElementoVerifier(opt *ElementoVerifierOptions) (bootstrap.Verifier, error) {
 	elementoClient, err := ecloud.NewClient("kops-elemento", "1.0")
     if err != nil {
-        fmt.Errorf("failed to get server info: %w", err)
+		return nil, fmt.Errorf("failed to get server info: %w", err)
     }
 
 	return &elementoVerifier{

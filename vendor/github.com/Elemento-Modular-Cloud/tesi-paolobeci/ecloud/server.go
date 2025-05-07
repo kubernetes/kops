@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/schema" // TODO
+	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/schema" 
 )
 
 // VM representation inside Elemento
@@ -76,17 +76,6 @@ const (
 	ServerStatusUnknown ServerStatus = "unknown"
 )
 
-// FirewallStatus specifies a Firewall's status.
-type FirewallStatus string
-
-const (
-	// FirewallStatusPending is the status when a Firewall is pending.
-	FirewallStatusPending FirewallStatus = "pending"
-
-	// FirewallStatusApplied is the status when a Firewall is applied.
-	FirewallStatusApplied FirewallStatus = "applied"
-)
-
 // ServerPublicNet represents a server's public network.
 type ServerPublicNet struct {
 	IPv4        string
@@ -95,20 +84,26 @@ type ServerPublicNet struct {
 	Firewalls   []*string
 }
 
-// ServerRescueType represents rescue types.
-type ServerRescueType string
-
-// List of rescue types.
-const (
-	// Deprecated: Use ServerRescueTypeLinux64 instead.
-	ServerRescueTypeLinux32 ServerRescueType = "linux32"
-	ServerRescueTypeLinux64 ServerRescueType = "linux64"
-)
-
-// GetByID retrieves a server by its ID. If the server does not exist, nil is returned.
-func (c *Client) GetByID(ctx context.Context, id int) (*Server, *Response, error) {
-	// TODO
-	// serve GetByID (info server by id, vedi hetzner)
-	return nil, nil, nil
+// ServerClient is a client for the servers API.
+type ServerClient struct {
+	client *Client
 }
 
+// GetByID retrieves a server by its ID. If the server does not exist, nil is returned.
+func (c *ServerClient) GetByID(ctx context.Context, id string) (*schema.Server, error) {
+    // Call ComputeStatus and get the full status response
+    statusResp, err := c.client.ComputeStatus()
+    if err != nil {
+        return nil, err
+    }
+
+    // Search for the server with the matching ID
+    for _, server := range statusResp.Servers {
+        if server.UniqueID == id {
+            return &server, nil
+        }
+    }
+
+    // Server not found
+    return nil, nil
+}

@@ -93,6 +93,14 @@ func (c *elementoCloudImplementation) DNS() (dnsprovider.Interface, error) {
     return c.dns, nil
 }
 
+func (c *elementoCloudImplementation) NetworkClient() ecloud.NetworkClient {
+	return c.Client.Network
+}
+
+func (c *elementoCloudImplementation) ServerClient() ecloud.ServerClient {
+	return c.Client.Server
+}
+
 func (s *elementoCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
 	toDelete := append(group.NeedUpdate, group.Ready...)
 	for _, cloudInstance := range toDelete {

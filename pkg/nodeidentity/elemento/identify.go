@@ -19,17 +19,16 @@ package elemento
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/schema"
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/cloudinstances"
+	// "k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
@@ -48,15 +47,12 @@ type nodeIdentifier struct {
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Elemento
 func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	elementoToken := os.Getenv("ELEMENTO_TOKEN")
-	if elementoToken == "" {
-		return nil, fmt.Errorf("%s is required", "ELEMENTO_TOKEN")
-	}
-	opts := []ecloud.ClientOption{
-		ecloud.WithToken(elementoToken), // TODO: elemento does not use keys
-	}
-	elementoClient := ecloud.NewClient(opts...) 
+	elementoClient, err := ecloud.NewClient("kops-elemento", "1.0") 
 
+	if err != nil {
+		return nil, fmt.Errorf("creating client for Elemento Cloud: %w", err)
+	}
+	
 	return &nodeIdentifier{
 		client:       elementoClient,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
@@ -92,7 +88,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		return nil, err
 	}
 
-	if server.Status != ecloud.ServerStatusRunning && server.Status != ecloud.ServerStatusStarting {
+	if server.Status != "running" {
 		return nil, fmt.Errorf("server %s is not running", serverID)
 	}
 
@@ -108,7 +104,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 			case kops.InstanceGroupRoleAPIServer:
 				labels[nodelabels.RoleLabelAPIServer16] = ""
 			default:
-				klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)
+				klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.uniqueID)
 			}
 		case strings.HasPrefix(key, elemento.TagKubernetesNodeLabelPrefix):
 			labels[strings.TrimPrefix(key, elemento.TagKubernetesNodeLabelPrefix)] = value
@@ -116,7 +112,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 
 	info := &nodeidentity.Info{
-		InstanceID: server.ID,
+		InstanceID: serverID,
 		Labels:	labels,
 	}
 
@@ -138,12 +134,8 @@ func stringKeyFunc(obj interface{}) (string, error) {
 }
 
 // getServer retrieves the server information from Elemento for the given server ID
-func (i *nodeIdentifier) getServer(id string) (*ecloud.Server, error) {
-	serverID, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert server ID %q to int: %w", id, err)
-	}
-	server, _, err := i.client.Server.GetByID(context.TODO(), serverID)
+func (i *nodeIdentifier) getServer(id string) (*schema.Server, error) {
+	server, err := i.client.Server.GetByID(context.TODO(), id)
 	if err != nil || server == nil {
 		return nil, fmt.Errorf("failed to get info for server %q: %w", id, err)
 	}

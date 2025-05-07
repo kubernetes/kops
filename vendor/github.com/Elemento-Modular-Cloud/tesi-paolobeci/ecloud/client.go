@@ -59,14 +59,10 @@ type Client struct {
 	userAgent               string
 	logger 					Logger
 
-	// TODO
+	Server           		ServerClient
+	Network		 			NetworkClient
 
-	// Firewall         FirewallClient
-	// Location         LocationClient
-	// Network          NetworkClient
-	// Pricing          PricingClient
-	// SSHKey           SSHKeyClient
-	// Logger 			 Logger
+	// TODO
 }
 
 func NewClient(applicationName string, applicationVersion string) (*Client, error) {
@@ -86,6 +82,9 @@ func NewClient(applicationName string, applicationVersion string) (*Client, erro
 		applicationVersion: applicationVersion,
 		userAgent:          fmt.Sprintf("%s/%s", applicationName, applicationVersion),
 	}
+
+	client.Server = ServerClient{client: client}
+	client.Network = NetworkClient{client: client}
 
 	// TODO: research real data needed for the client
 

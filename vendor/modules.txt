@@ -121,6 +121,7 @@ github.com/AzureAD/microsoft-authentication-library-for-go/apps/public
 # github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.2 => ../tesi-paolobeci
 ## explicit; go 1.23.1
 github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud
+github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/schema
 # github.com/GoogleCloudPlatform/k8s-cloud-provider v1.25.0
 ## explicit; go 1.20
 github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud
