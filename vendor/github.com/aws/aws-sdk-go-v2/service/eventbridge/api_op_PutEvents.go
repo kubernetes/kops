@@ -14,10 +14,10 @@ import (
 
 // Sends custom events to Amazon EventBridge so that they can be matched to rules.
 //
-// The maximum size for a PutEvents event entry is 256 KB. Entry size is
-// calculated including the event and any necessary characters and keys of the JSON
-// representation of the event. To learn more, see [Calculating PutEvents event entry size]in the Amazon EventBridge User
-// Guide
+// You can batch multiple event entries into one request for efficiency. However,
+// the total entry size must be less than 256KB. You can calculate the entry size
+// before you send the events. For more information, see [Calculating PutEvents event entry size]in the Amazon EventBridge
+// User Guide .
 //
 // PutEvents accepts the data in JSON format. For the JSON number (integer) data
 // type, the constraints are: a minimum value of -9,223,372,036,854,775,808 and a
@@ -25,7 +25,7 @@ import (
 //
 // PutEvents will only process nested JSON up to 1000 levels deep.
 //
-// [Calculating PutEvents event entry size]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html
+// [Calculating PutEvents event entry size]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevents.html#eb-putevent-size
 func (c *Client) PutEvents(ctx context.Context, params *PutEventsInput, optFns ...func(*Options)) (*PutEventsOutput, error) {
 	if params == nil {
 		params = &PutEventsInput{}
