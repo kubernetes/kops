@@ -7,7 +7,7 @@ package armstorage
 
 const (
 	moduleName    = "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
-	moduleVersion = "v1.7.0"
+	moduleVersion = "v1.8.0"
 )
 
 // AccessTier - Required for storage accounts where kind = BlobStorage. The access tier is used for billing. The 'Premium'
@@ -991,6 +991,7 @@ func PossiblePrivateEndpointServiceConnectionStatusValues() []PrivateEndpointSer
 type ProvisioningState string
 
 const (
+	ProvisioningStateAccepted                       ProvisioningState = "Accepted"
 	ProvisioningStateCanceled                       ProvisioningState = "Canceled"
 	ProvisioningStateCreating                       ProvisioningState = "Creating"
 	ProvisioningStateDeleting                       ProvisioningState = "Deleting"
@@ -1004,6 +1005,7 @@ const (
 // PossibleProvisioningStateValues returns the possible values for the ProvisioningState const type.
 func PossibleProvisioningStateValues() []ProvisioningState {
 	return []ProvisioningState{
+		ProvisioningStateAccepted,
 		ProvisioningStateCanceled,
 		ProvisioningStateCreating,
 		ProvisioningStateDeleting,

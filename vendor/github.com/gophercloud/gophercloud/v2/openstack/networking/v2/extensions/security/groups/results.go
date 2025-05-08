@@ -41,6 +41,9 @@ type SecGroup struct {
 
 	// Tags optionally set via extensions/attributestags
 	Tags []string `json:"tags"`
+
+	// RevisionNumber optionally set via extensions/standard-attr-revisions
+	RevisionNumber int `json:"revision_number"`
 }
 
 func (r *SecGroup) UnmarshalJSON(b []byte) error {

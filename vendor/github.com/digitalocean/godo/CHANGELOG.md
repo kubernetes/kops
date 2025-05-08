@@ -1,5 +1,28 @@
 # Change Log
 
+
+## [v1.145.0] - 2025-04-30
+
+- #821 - @greeshmapill - APPS-11076: Add support for VALKEY as a database engine option
+- #817 - @ZachEddy - Bring app spec changes for subdomain routing to godo
+
+## [v1.144.0] - 2025-04-24
+
+- #818 - @dweinshenker - Support Valkey in DatabaseOptions
+
+## [v1.143.0] - 2025-04-22
+
+- #815 - @StephenVarela - Support Load Balancers tls-cipher-policy
+
+## [v1.142.0] - 2025-03-27
+
+- #813 - @lfundaro-do - partner-network-connect: fix typo
+- #811 - @lfundaro-do - fix partner attachment rename
+- #810 - @apinonformoso - VPC-4359: remove custom unmarshaler for PNCs
+- #809 - @apinonformoso - hotfix: json field name
+- #808 - @apinonformoso - fix partner network connect json tags
+- #807 - @bentranter - Bump Go version to v1.23
+
 ## [v1.141.0] - 2025-03-20
 
 - #805 - @singhsaubhikdo - BLOCK-4316: Adds region param in ListSnapshot for resource type volume
@@ -20,7 +43,7 @@
 - #793 - @apinonformoso - add auth_key field
 - #789 - @guptado - [VPC-3917] Update get service key response model
 
-## [v1.138.0] - 2025-03-18
+## [v1.138.0] - 2025-02-18
 
 - #785 - @guptado - Support partner interconnect GetBgpAuthKey and RegenerateServiceKey operations
 - #787 - @andrewsomething - ci: upgrade to actions/cache@v4

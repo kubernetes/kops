@@ -5029,6 +5029,11 @@ func awsAwsjson11_serializeOpDocumentCreateArchiveInput(v *CreateArchiveInput, v
 		ok.String(*v.EventSourceArn)
 	}
 
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
+	}
+
 	if v.RetentionDays != nil {
 		ok := object.Key("RetentionDays")
 		ok.Integer(*v.RetentionDays)
@@ -5063,6 +5068,11 @@ func awsAwsjson11_serializeOpDocumentCreateConnectionInput(v *CreateConnectionIn
 		if err := awsAwsjson11_serializeDocumentConnectivityResourceParameters(v.InvocationConnectivityParameters, ok); err != nil {
 			return err
 		}
+	}
+
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
 	}
 
 	if v.Name != nil {
@@ -6121,6 +6131,11 @@ func awsAwsjson11_serializeOpDocumentUpdateArchiveInput(v *UpdateArchiveInput, v
 		ok.String(*v.EventPattern)
 	}
 
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
+	}
+
 	if v.RetentionDays != nil {
 		ok := object.Key("RetentionDays")
 		ok.Integer(*v.RetentionDays)
@@ -6155,6 +6170,11 @@ func awsAwsjson11_serializeOpDocumentUpdateConnectionInput(v *UpdateConnectionIn
 		if err := awsAwsjson11_serializeDocumentConnectivityResourceParameters(v.InvocationConnectivityParameters, ok); err != nil {
 			return err
 		}
+	}
+
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
 	}
 
 	if v.Name != nil {

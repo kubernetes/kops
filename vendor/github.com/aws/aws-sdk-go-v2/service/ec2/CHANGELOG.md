@@ -1,3 +1,39 @@
+# v1.216.0 (2025-05-07)
+
+* **Feature**: This release adds API support for Path Component Exclusion (Filter Out ARN) for Reachability Analyzer
+
+# v1.215.0 (2025-05-06)
+
+* **Feature**: This release adds support for Amazon EBS Provisioned Rate for Volume Initialization, which lets you specify a volume initialization rate to ensure that your EBS volumes are initialized in a predictable amount of time.
+
+# v1.214.0 (2025-05-05)
+
+* **Feature**: This update introduces API operations to manage and create local gateway VIF and VIF groups. It also includes API operations to describe Outpost LAGs and service link VIFs.
+
+# v1.213.0 (2025-04-30)
+
+* **Feature**: Launch of cost distribution feature for IPAM owners to distribute costs to internal teams.
+
+# v1.212.0 (2025-04-22)
+
+* **Feature**: Added support for  ClientRouteEnforcementOptions flag in CreateClientVpnEndpoint and ModifyClientVpnEndpoint requests and DescribeClientVpnEndpoints responses
+
+# v1.211.3 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.211.2 (2025-04-04)
+
+* **Documentation**: Doc-only updates for Amazon EC2
+
+# v1.211.1 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.211.0 (2025-03-31)
+
+* **Feature**: Release VPC Route Server, a new feature allowing dynamic routing in VPCs.
+
 # v1.210.1 (2025-03-19)
 
 * **Documentation**: Doc-only updates for EC2 for March 2025.

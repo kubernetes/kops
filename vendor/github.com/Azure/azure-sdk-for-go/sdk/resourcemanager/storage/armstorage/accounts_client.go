@@ -414,7 +414,7 @@ func (client *AccountsClient) deleteCreateRequest(ctx context.Context, resourceG
 // event of availability issues as Planned failover is only available while the
 // primary and secondary endpoints are available. The primary use case of a Planned Failover is disaster recovery testing
 // drills. This type of failover is invoked by setting FailoverType parameter to
-// 'Planned'. Learn more about the failover options here- https://learn.microsoft.com/en-us/azure/storage/common/storage-disaster-recovery-guidance
+// 'Planned'. Learn more about the failover options here- https://learn.microsoft.com/azure/storage/common/storage-disaster-recovery-guidance
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 2024-01-01
@@ -448,7 +448,7 @@ func (client *AccountsClient) BeginFailover(ctx context.Context, resourceGroupNa
 // event of availability issues as Planned failover is only available while the
 // primary and secondary endpoints are available. The primary use case of a Planned Failover is disaster recovery testing
 // drills. This type of failover is invoked by setting FailoverType parameter to
-// 'Planned'. Learn more about the failover options here- https://learn.microsoft.com/en-us/azure/storage/common/storage-disaster-recovery-guidance
+// 'Planned'. Learn more about the failover options here- https://learn.microsoft.com/azure/storage/common/storage-disaster-recovery-guidance
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 2024-01-01

@@ -2703,8 +2703,9 @@ type MultipartUpload struct {
 
 	// The class of storage used to store the object.
 	//
-	// Directory buckets - Only the S3 Express One Zone storage class is supported by
-	// directory buckets to store objects.
+	// Directory buckets - Directory buckets only support EXPRESS_ONEZONE (the S3
+	// Express One Zone storage class) in Availability Zones and ONEZONE_IA (the S3
+	// One Zone-Infrequent Access storage class) in Dedicated Local Zones.
 	StorageClass StorageClass
 
 	// Upload ID that identifies the multipart upload.
@@ -2864,8 +2865,10 @@ type Object struct {
 	// about these storage classes and how to work with archived objects, see [Working with archived objects]in the
 	// Amazon S3 User Guide.
 	//
-	// This functionality is not supported for directory buckets. Only the S3 Express
-	// One Zone storage class is supported by directory buckets to store objects.
+	// This functionality is not supported for directory buckets. Directory buckets
+	// only support EXPRESS_ONEZONE (the S3 Express One Zone storage class) in
+	// Availability Zones and ONEZONE_IA (the S3 One Zone-Infrequent Access storage
+	// class) in Dedicated Local Zones.
 	//
 	// [Working with archived objects]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/archived-objects.html
 	RestoreStatus *RestoreStatus
@@ -2875,8 +2878,9 @@ type Object struct {
 
 	// The class of storage used to store the object.
 	//
-	// Directory buckets - Only the S3 Express One Zone storage class is supported by
-	// directory buckets to store objects.
+	// Directory buckets - Directory buckets only support EXPRESS_ONEZONE (the S3
+	// Express One Zone storage class) in Availability Zones and ONEZONE_IA (the S3
+	// One Zone-Infrequent Access storage class) in Dedicated Local Zones.
 	StorageClass ObjectStorageClass
 
 	noSmithyDocumentSerde
@@ -3369,7 +3373,7 @@ type RecordsEvent struct {
 	// guarantee that a record will be self-contained in one record frame. To ensure
 	// continuous streaming of data, S3 Select might split the same record across
 	// multiple record frames instead of aggregating the results in memory. Some S3
-	// clients (for example, the SDK for Java) handle this behavior by creating a
+	// clients (for example, the SDKforJava) handle this behavior by creating a
 	// ByteStream out of the response by default. Other clients might not handle this
 	// behavior by default. In those cases, you must aggregate the results on the
 	// client side and parse the response.
@@ -3713,8 +3717,10 @@ type RestoreRequest struct {
 // about these storage classes and how to work with archived objects, see [Working with archived objects]in the
 // Amazon S3 User Guide.
 //
-// This functionality is not supported for directory buckets. Only the S3 Express
-// One Zone storage class is supported by directory buckets to store objects.
+// This functionality is not supported for directory buckets. Directory buckets
+// only support EXPRESS_ONEZONE (the S3 Express One Zone storage class) in
+// Availability Zones and ONEZONE_IA (the S3 One Zone-Infrequent Access storage
+// class) in Dedicated Local Zones.
 //
 // [Working with archived objects]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/archived-objects.html
 type RestoreStatus struct {

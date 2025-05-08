@@ -1,3 +1,11 @@
+# v1.45.2 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.45.1 (2025-04-03)
+
+* No change notes available for this release.
+
 # v1.45.0 (2025-03-07)
 
 * **Feature**: This release adds support for assigning IP addresses to Application Load Balancers from VPC IP Address Manager pools.
