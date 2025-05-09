@@ -1251,7 +1251,13 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		enabled := false
 		cluster.Spec.KubeProxy.Enabled = &enabled
 	case "amazonvpc", "amazon-vpc-routed-eni":
-		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{}
+		cluster.Spec.Networking.AmazonVPC = &api.AmazonVPCNetworkingSpec{
+			Env: []api.EnvVar{
+				{Name: "AWS_VPC_K8S_CNI_EXTERNALSNAT", Value: "true"},
+				{Name: "ENABLE_PREFIX_DELEGATION", Value: "true"},
+				{Name: "WARM_PREFIX_TARGET", Value: "1"},
+			},
+		}
 	case "cilium", "":
 		addCiliumNetwork(cluster)
 	case "cilium-etcd":
