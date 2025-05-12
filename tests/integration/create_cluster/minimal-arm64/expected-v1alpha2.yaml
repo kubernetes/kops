@@ -67,7 +67,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: control-plane-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250305
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250502.1
   machineType: m6g.xlarge
   maxSize: 1
   minSize: 1
@@ -85,7 +85,7 @@ metadata:
     kops.k8s.io/cluster: minimal.example.com
   name: nodes-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250305
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250502.1
   machineType: m6g.xlarge
   maxSize: 1
   minSize: 1
