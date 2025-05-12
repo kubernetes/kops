@@ -19,9 +19,6 @@ package elementotasks
 import (
 	"context"
 	"fmt"
-	// "net"
-	"strconv"
-	// "time"
 
 	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/kops/upup/pkg/fi"
@@ -56,7 +53,7 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 		idOrName = fi.ValueOf(v.ID)
 	}
 
-	network, _, err := client.Get(context.TODO(), idOrName)
+	network, err := client.Get(context.TODO(), idOrName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find network %q: %w", idOrName, err)
 	}
@@ -70,17 +67,17 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 	matches := &Network{
 		Name:      v.Name,
 		Lifecycle: v.Lifecycle,
-		ID:        fi.PtrTo(strconv.Itoa(network.ID)),
+		ID:        fi.PtrTo(network.ID),
 	}
 
 	if v.ID == nil {
-		matches.IPRange = network.IPRange.String()
+		matches.IPRange = network.IPRange
 		matches.Labels = network.Labels
 		matches.Region = v.Region
 		for _, subnet := range network.Subnets {
-			if subnet.IPRange != nil {
+			if subnet.IPRange != "" {
 				matches.Region = string(subnet.NetworkZone)
-				matches.Subnets = append(matches.Subnets, subnet.IPRange.String())
+				matches.Subnets = append(matches.Subnets, subnet.IPRange)
 			}
 		}
 		// Make sure the ID is set (used by other tasks)

@@ -1659,6 +1659,8 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 			return defaultHetznerImageFocal, nil
 		case api.CloudProviderScaleway:
 			return defaultScalewayImageFocal, nil
+		case api.CloudProviderElemento:
+			return defaultElementoImageFocal, nil
 		}
 	} else if kubernetesVersion.LT(semver.MustParse("1.32.0")) {
 		switch cluster.GetCloudProvider() {
@@ -1670,6 +1672,8 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 			return defaultScalewayImageJammy, nil
 		case api.CloudProviderMetal:
 			return "dummy-metal-image", nil
+		case api.CloudProviderElemento:
+			return defaultElementoImageJammy, nil
 		}
 	} else {
 		switch cluster.GetCloudProvider() {
@@ -1681,6 +1685,8 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 			return defaultScalewayImageNoble, nil
 		case api.CloudProviderMetal:
 			return "dummy-metal-image", nil
+		case api.CloudProviderElemento:
+			return defaultElementoImageNoble, nil
 		}
 	}
 

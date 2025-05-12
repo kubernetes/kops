@@ -20,7 +20,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v2 v2.4.2-0.20231216170552-14d4dfcbaadf
-	github.com/aws/aws-sdk-go-v2 v1.31.0
+	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.27.38
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.36
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.14
@@ -36,7 +36,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.35.2
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.54.2
 	github.com/aws/aws-sdk-go-v2/service/sts v1.31.2
-	github.com/aws/smithy-go v1.21.0
+	github.com/aws/smithy-go v1.22.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/cert-manager/cert-manager v1.15.3
 	github.com/digitalocean/godo v1.126.0

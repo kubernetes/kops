@@ -42,6 +42,7 @@ const (
 	defaultNodeMachineTypeAzure    = "Standard_B2s"
 	defaultNodeMachineTypeHetzner  = "cx22"
 	defaultNodeMachineTypeScaleway = "DEV1-M"
+	defaultNodeMachineTypeElemento = "neon"
 
 	defaultBastionMachineTypeGCE     = "e2-micro"
 	defaultBastionMachineTypeAzure   = "Standard_B2s"
@@ -52,16 +53,20 @@ const (
 	defaultMasterMachineTypeAzure    = "Standard_B2s"
 	defaultMasterMachineTypeHetzner  = "cx22"
 	defaultMasterMachineTypeScaleway = "DEV1-M"
+	defaultMasterMachineTypeElemento = "argon"
 
 	defaultDOImageFocal       = "ubuntu-20-04-x64"
 	defaultHetznerImageFocal  = "ubuntu-20.04"
 	defaultScalewayImageFocal = "ubuntu_focal"
+	defaultElementoImageFocal  = "ubuntu-20-04"
 	defaultDOImageJammy       = "ubuntu-22-04-x64"
 	defaultHetznerImageJammy  = "ubuntu-22.04"
 	defaultScalewayImageJammy = "ubuntu_jammy"
+	defaultElementoImageJammy  = "ubuntu-22-04"
 	defaultDOImageNoble       = "ubuntu-24-04-x64"
 	defaultHetznerImageNoble  = "ubuntu-24.04"
 	defaultScalewayImageNoble = "ubuntu_noble"
+	defaultElementoImageNoble  = "ubuntu-24-04"
 )
 
 // TODO: this hardcoded list can be replaced with DescribeInstanceTypes' DedicatedHostsSupported field
@@ -379,6 +384,15 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 		case kops.InstanceGroupRoleNode:
 			return defaultNodeMachineTypeScaleway, nil
+		}
+
+	case kops.CloudProviderElemento:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleControlPlane:
+			return defaultMasterMachineTypeElemento, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeElemento, nil
 		}
 	}
 
