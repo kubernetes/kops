@@ -47,6 +47,7 @@ type ElementoCloud interface {
 	DNS() (dnsprovider.Interface, error)
 	NetworkClient() ecloud.NetworkClient // TODO
 	ServerClient() ecloud.ServerClient // TODO
+	SSHKeyClient() ecloud.SSHKeyClient // TODO
 
 	// TODO: Detect and add additional fields here
 }
@@ -73,8 +74,8 @@ func NewElementoCloud(region string) (ElementoCloud, error) {
 
 	return &elementoCloudImplementation{
 		Client: client,
-		region: region,
 		dns:    nil,
+		region: region,
 	}, nil
 }
 
@@ -99,6 +100,10 @@ func (c *elementoCloudImplementation) NetworkClient() ecloud.NetworkClient {
 
 func (c *elementoCloudImplementation) ServerClient() ecloud.ServerClient {
 	return c.Client.Server
+}
+
+func (c *elementoCloudImplementation) SSHKeyClient() ecloud.SSHKeyClient {
+	return c.Client.SSHKey
 }
 
 func (s *elementoCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {

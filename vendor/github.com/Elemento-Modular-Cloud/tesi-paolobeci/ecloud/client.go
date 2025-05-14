@@ -61,6 +61,7 @@ type Client struct {
 
 	Server           		ServerClient
 	Network		 			NetworkClient
+	SSHKey          		SSHKeyClient
 
 	// TODO
 }

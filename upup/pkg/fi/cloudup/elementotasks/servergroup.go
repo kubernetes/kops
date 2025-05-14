@@ -34,7 +34,7 @@ import (
 type ServerGroup struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
-	SSHKeys   []*string
+	SSHKeys   []*SSHKey
 	Network   *Network
 
 	Count      int
@@ -54,4 +54,8 @@ type ServerGroup struct {
 
 func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 	return nil, nil
+}
+
+func (v *ServerGroup) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }

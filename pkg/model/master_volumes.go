@@ -124,6 +124,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				}
 			case kops.CloudProviderScaleway:
 				b.addScalewayVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+			case kops.CloudProviderElemento:
+				// Nothing special to do for Elemento (yet) , TODO in the future
 
 			case kops.CloudProviderMetal:
 				// Nothing special to do for Metal (yet)

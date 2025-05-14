@@ -49,6 +49,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/scalewaymodel"
+	"k8s.io/kops/pkg/model/elementomodel"
 	"k8s.io/kops/pkg/nodemodel"
 	"k8s.io/kops/pkg/predicates"
 	"k8s.io/kops/pkg/templates"
@@ -712,6 +713,15 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				&scalewaymodel.DNSModelBuilder{ScwModelContext: scwModelContext, Lifecycle: networkLifecycle},
 				&scalewaymodel.InstanceModelBuilder{ScwModelContext: scwModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
+			)
+		
+		case kops.CloudProviderElemento:
+			elementoModelContext := &elementomodel.ElementoModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&elementomodel.NetworkModelBuilder{ElementoModelContext: elementoModelContext, Lifecycle: networkLifecycle},
+				&elementomodel.ServerGroupModelBuilder{ElementoModelContext: elementoModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)
 
 		case kops.CloudProviderMetal:
