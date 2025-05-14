@@ -77,6 +77,15 @@ type Router struct {
 
 	// Tags optionally set via extensions/attributestags
 	Tags []string `json:"tags"`
+
+	// RevisionNumber optionally set via extensions/standard-attr-revisions
+	RevisionNumber int `json:"revision_number"`
+
+	// Timestamp when the router was created
+	CreatedAt time.Time `json:"created_at"`
+
+	// Timestamp when the router was last updated
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // RouterPage is the page returned by a pager when traversing over a

@@ -42,6 +42,7 @@ type ListOpts struct {
 	TagsAny           string `q:"tags-any"`
 	NotTags           string `q:"not-tags"`
 	NotTagsAny        string `q:"not-tags-any"`
+	RevisionNumber    *int   `q:"revision_number"`
 }
 
 // ToSubnetListQuery formats a ListOpts into a query string.
