@@ -121,10 +121,10 @@ spec:
   kubernetesVersions:
   - range: ">=1.32.0"
     recommendedVersion: 1.32.4
-    requiredVersion: 1.30.0
+    requiredVersion: 1.32.0
   - range: ">=1.31.0"
     recommendedVersion: 1.31.8
-    requiredVersion: 1.30.0
+    requiredVersion: 1.31.0
   - range: ">=1.30.0"
     recommendedVersion: 1.30.12
     requiredVersion: 1.30.0
