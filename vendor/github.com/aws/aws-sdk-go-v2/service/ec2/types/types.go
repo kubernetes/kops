@@ -2130,6 +2130,42 @@ type ClientLoginBannerResponseOptions struct {
 	noSmithyDocumentSerde
 }
 
+// Client Route Enforcement is a feature of Client VPN that helps enforce
+// administrator defined routes on devices connected through the VPN. This feature
+// helps improve your security posture by ensuring that network traffic originating
+// from a connected client is not inadvertently sent outside the VPN tunnel.
+//
+// Client Route Enforcement works by monitoring the route table of a connected
+// device for routing policy changes to the VPN connection. If the feature detects
+// any VPN routing policy modifications, it will automatically force an update to
+// the route table, reverting it back to the expected route configurations.
+type ClientRouteEnforcementOptions struct {
+
+	// Enable or disable Client Route Enforcement. The state can either be true
+	// (enabled) or false (disabled). The default is false .
+	//
+	// Valid values: true | false
+	//
+	// Default value: false
+	Enforced *bool
+
+	noSmithyDocumentSerde
+}
+
+// The current status of Client Route Enforcement.
+type ClientRouteEnforcementResponseOptions struct {
+
+	// Status of the client route enforcement feature, indicating whether Client Route
+	// Enforcement is true (enabled) or false (disabled).
+	//
+	// Valid values: true | false
+	//
+	// Default value: false
+	Enforced *bool
+
+	noSmithyDocumentSerde
+}
+
 // Describes the authentication methods used by a Client VPN endpoint. For more
 // information, see [Authentication]in the Client VPN Administrator Guide.
 //
@@ -2275,6 +2311,18 @@ type ClientVpnEndpoint struct {
 	// Amazon Web Services provided clients when a VPN session is established.
 	ClientLoginBannerOptions *ClientLoginBannerResponseOptions
 
+	// Client route enforcement is a feature of the Client VPN service that helps
+	// enforce administrator defined routes on devices connected through the VPN. T his
+	// feature helps improve your security posture by ensuring that network traffic
+	// originating from a connected client is not inadvertently sent outside the VPN
+	// tunnel.
+	//
+	// Client route enforcement works by monitoring the route table of a connected
+	// device for routing policy changes to the VPN connection. If the feature detects
+	// any VPN routing policy modifications, it will automatically force an update to
+	// the route table, reverting it back to the expected route configurations.
+	ClientRouteEnforcementOptions *ClientRouteEnforcementResponseOptions
+
 	// The ID of the Client VPN endpoint.
 	ClientVpnEndpointId *string
 
@@ -2294,7 +2342,7 @@ type ClientVpnEndpoint struct {
 	// Indicates whether the client VPN session is disconnected after the maximum
 	// sessionTimeoutHours is reached. If true , users are prompted to reconnect client
 	// VPN. If false , client VPN attempts to reconnect automatically. The default
-	// value is false .
+	// value is true .
 	DisconnectOnSessionTimeout *bool
 
 	// The DNS name to be used by clients when connecting to the Client VPN endpoint.
@@ -3936,6 +3984,35 @@ type EbsBlockDevice struct {
 	// Valid Range: Minimum value of 125. Maximum value of 1000.
 	Throughput *int32
 
+	// Specifies the Amazon EBS Provisioned Rate for Volume Initialization (volume
+	// initialization rate), in MiB/s, at which to download the snapshot blocks from
+	// Amazon S3 to the volume. This is also known as volume initialization. Specifying
+	// a volume initialization rate ensures that the volume is initialized at a
+	// predictable and consistent rate after creation.
+	//
+	// This parameter is supported only for volumes created from snapshots. Omit this
+	// parameter if:
+	//
+	//   - You want to create the volume using fast snapshot restore. You must specify
+	//   a snapshot that is enabled for fast snapshot restore. In this case, the volume
+	//   is fully initialized at creation.
+	//
+	// If you specify a snapshot that is enabled for fast snapshot restore and a
+	//   volume initialization rate, the volume will be initialized at the specified rate
+	//   instead of fast snapshot restore.
+	//
+	//   - You want to create a volume that is initialized at the default rate.
+	//
+	// For more information, see [Initialize Amazon EBS volumes] in the Amazon EC2 User Guide.
+	//
+	// This parameter is not supported when using [CreateImage].
+	//
+	// Valid range: 100 - 300 MiB/s
+	//
+	// [Initialize Amazon EBS volumes]: https://docs.aws.amazon.com/ebs/latest/userguide/initalize-volume.html
+	// [CreateImage]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateImage.html
+	VolumeInitializationRate *int32
+
 	// The size of the volume, in GiBs. You must specify either a snapshot ID or a
 	// volume size. If you specify a snapshot, the default is the snapshot size. You
 	// can specify a volume size that is equal to or larger than the snapshot size.
@@ -4442,10 +4519,11 @@ type EnaSrdSpecification struct {
 type EnaSrdSpecificationRequest struct {
 
 	// Specifies whether ENA Express is enabled for the network interface when you
-	// launch an instance from your launch template.
+	// launch an instance.
 	EnaSrdEnabled *bool
 
-	// Contains ENA Express settings for UDP network traffic in your launch template.
+	// Contains ENA Express settings for UDP network traffic for the network interface
+	// attached to the instance.
 	EnaSrdUdpSpecification *EnaSrdUdpSpecificationRequest
 
 	noSmithyDocumentSerde
@@ -4471,8 +4549,7 @@ type EnaSrdUdpSpecificationRequest struct {
 
 	// Indicates whether UDP traffic uses ENA Express for your instance. To ensure
 	// that UDP traffic can use ENA Express when you launch an instance, you must also
-	// set EnaSrdEnabled in the EnaSrdSpecificationRequest to true in your launch
-	// template.
+	// set EnaSrdEnabled in the EnaSrdSpecificationRequest to true .
 	EnaSrdUdpEnabled *bool
 
 	noSmithyDocumentSerde
@@ -5337,10 +5414,10 @@ type FleetEbsBlockDeviceRequest struct {
 	// Encrypted volumes can only be attached to instances that support Amazon EBS
 	// encryption. For more information, see [Supported instance types].
 	//
-	// This parameter is not returned by .
+	// This parameter is not returned by [DescribeImageAttribute].
 	//
-	// For and , whether you can include this parameter, and the allowed values differ
-	// depending on the type of block device mapping you are creating.
+	// For [CreateImage] and [RegisterImage], whether you can include this parameter, and the allowed values
+	// differ depending on the type of block device mapping you are creating.
 	//
 	//   - If you are creating a block device mapping for a new (empty) volume, you
 	//   can include this parameter, and specify either true for an encrypted volume,
@@ -5363,7 +5440,10 @@ type FleetEbsBlockDeviceRequest struct {
 	//   parameter.
 	//
 	// [Amazon EBS encryption]: https://docs.aws.amazon.com/ebs/latest/userguide/ebs-encryption.html
+	// [DescribeImageAttribute]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeImageAttribute
+	// [RegisterImage]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RegisterImage
 	// [Supported instance types]: https://docs.aws.amazon.com/ebs/latest/userguide/ebs-encryption-requirements.html#ebs-encryption_supported_instances
+	// [CreateImage]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateImage
 	Encrypted *bool
 
 	// The number of I/O operations per second (IOPS). For gp3 , io1 , and io2
@@ -8282,6 +8362,8 @@ type InstanceRequirements struct {
 	//
 	//   - For instance types with GPU accelerators, specify gpu .
 	//
+	//   - For instance types with Inference accelerators, specify inference .
+	//
 	// Default: Any accelerator type
 	AcceleratorTypes []AcceleratorType
 
@@ -8650,6 +8732,8 @@ type InstanceRequirementsRequest struct {
 	//   - For instance types with FPGA accelerators, specify fpga .
 	//
 	//   - For instance types with GPU accelerators, specify gpu .
+	//
+	//   - For instance types with Inference accelerators, specify inference .
 	//
 	// Default: Any accelerator type
 	AcceleratorTypes []AcceleratorType
@@ -9369,6 +9453,21 @@ type Ipam struct {
 
 	// The Amazon Web Services Region of the IPAM.
 	IpamRegion *string
+
+	// A metered account is an Amazon Web Services account that is charged for active
+	// IP addresses managed in IPAM. For more information, see [Enable cost distribution]in the Amazon VPC IPAM
+	// User Guide.
+	//
+	// Possible values:
+	//
+	//   - ipam-owner (default): The Amazon Web Services account which owns the IPAM is
+	//   charged for all active IP addresses managed in IPAM.
+	//
+	//   - resource-owner : The Amazon Web Services account that owns the IP address is
+	//   charged for the active IP address.
+	//
+	// [Enable cost distribution]: https://docs.aws.amazon.com/vpc/latest/ipam/ipam-enable-cost-distro.html
+	MeteredAccount IpamMeteredAccount
 
 	// The operating Regions for an IPAM. Operating Regions are Amazon Web Services
 	// Regions where the IPAM is allowed to manage IP address CIDRs. IPAM only
@@ -10882,6 +10981,11 @@ type LaunchTemplateEbsBlockDevice struct {
 	// The throughput that the volume supports, in MiB/s.
 	Throughput *int32
 
+	// The Amazon EBS Provisioned Rate for Volume Initialization (volume
+	// initialization rate) specified for the volume, in MiB/s. If no volume
+	// initialization rate was specified, the value is null .
+	VolumeInitializationRate *int32
+
 	// The size of the volume, in GiB.
 	VolumeSize *int32
 
@@ -10934,6 +11038,32 @@ type LaunchTemplateEbsBlockDeviceRequest struct {
 	//
 	// Valid Range: Minimum value of 125. Maximum value of 1000.
 	Throughput *int32
+
+	// Specifies the Amazon EBS Provisioned Rate for Volume Initialization (volume
+	// initialization rate), in MiB/s, at which to download the snapshot blocks from
+	// Amazon S3 to the volume. This is also known as volume initialization. Specifying
+	// a volume initialization rate ensures that the volume is initialized at a
+	// predictable and consistent rate after creation.
+	//
+	// This parameter is supported only for volumes created from snapshots. Omit this
+	// parameter if:
+	//
+	//   - You want to create the volume using fast snapshot restore. You must specify
+	//   a snapshot that is enabled for fast snapshot restore. In this case, the volume
+	//   is fully initialized at creation.
+	//
+	// If you specify a snapshot that is enabled for fast snapshot restore and a
+	//   volume initialization rate, the volume will be initialized at the specified rate
+	//   instead of fast snapshot restore.
+	//
+	//   - You want to create a volume that is initialized at the default rate.
+	//
+	// For more information, see [Initialize Amazon EBS volumes] in the Amazon EC2 User Guide.
+	//
+	// Valid range: 100 - 300 MiB/s
+	//
+	// [Initialize Amazon EBS volumes]: https://docs.aws.amazon.com/ebs/latest/userguide/initalize-volume.html
+	VolumeInitializationRate *int32
 
 	// The size of the volume, in GiBs. You must specify either a snapshot ID or a
 	// volume size. The following are the supported volumes sizes for each volume type:
@@ -11399,11 +11529,12 @@ type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 	// A description for the network interface.
 	Description *string
 
-	// The device index for the network interface attachment. Each network interface
-	// requires a device index. If you create a launch template that includes secondary
-	// network interfaces but not a primary network interface, then you must add a
-	// primary network interface as a launch parameter when you launch an instance from
-	// the template.
+	// The device index for the network interface attachment. The primary network
+	// interface has a device index of 0. Each network interface is of type interface ,
+	// you must specify a device index. If you create a launch template that includes
+	// secondary network interfaces but not a primary network interface, then you must
+	// add a primary network interface as a launch parameter when you launch an
+	// instance from the template.
 	DeviceIndex *int32
 
 	// Configure ENA Express settings for your launch template.
@@ -12121,6 +12252,9 @@ type LocalGatewayRouteTableVpcAssociation struct {
 // Describes a local gateway virtual interface.
 type LocalGatewayVirtualInterface struct {
 
+	// The current state of the local gateway virtual interface.
+	ConfigurationState LocalGatewayVirtualInterfaceConfigurationState
+
 	// The local address.
 	LocalAddress *string
 
@@ -12131,8 +12265,17 @@ type LocalGatewayVirtualInterface struct {
 	// The ID of the local gateway.
 	LocalGatewayId *string
 
+	// The Amazon Resource Number (ARN) of the local gateway virtual interface.
+	LocalGatewayVirtualInterfaceArn *string
+
+	// The ID of the local gateway virtual interface group.
+	LocalGatewayVirtualInterfaceGroupId *string
+
 	// The ID of the virtual interface.
 	LocalGatewayVirtualInterfaceId *string
+
+	// The Outpost LAG ID.
+	OutpostLagId *string
 
 	// The ID of the Amazon Web Services account that owns the local gateway virtual
 	// interface.
@@ -12143,6 +12286,9 @@ type LocalGatewayVirtualInterface struct {
 
 	// The peer BGP ASN.
 	PeerBgpAsn *int32
+
+	// The extended 32-bit ASN of the BGP peer for use with larger ASN values.
+	PeerBgpAsnExtended *int64
 
 	// The tags assigned to the virtual interface.
 	Tags []Tag
@@ -12156,8 +12302,20 @@ type LocalGatewayVirtualInterface struct {
 // Describes a local gateway virtual interface group.
 type LocalGatewayVirtualInterfaceGroup struct {
 
+	// The current state of the local gateway virtual interface group.
+	ConfigurationState LocalGatewayVirtualInterfaceGroupConfigurationState
+
+	// The Autonomous System Number(ASN) for the local Border Gateway Protocol (BGP).
+	LocalBgpAsn *int32
+
+	// The extended 32-bit ASN for the local BGP configuration.
+	LocalBgpAsnExtended *int64
+
 	// The ID of the local gateway.
 	LocalGatewayId *string
+
+	// The Amazon Resource Number (ARN) of the local gateway virtual interface group.
+	LocalGatewayVirtualInterfaceGroupArn *string
 
 	// The ID of the virtual interface group.
 	LocalGatewayVirtualInterfaceGroupId *string
@@ -13270,6 +13428,9 @@ type NetworkInsightsAnalysis struct {
 	// The Amazon Resource Names (ARN) of the resources that the path must traverse.
 	FilterInArns []string
 
+	// The Amazon Resource Names (ARN) of the resources that the path must ignore.
+	FilterOutArns []string
+
 	// The components in the path from source to destination.
 	ForwardPathComponents []PathComponent
 
@@ -13877,6 +14038,33 @@ type OperatorResponse struct {
 	noSmithyDocumentSerde
 }
 
+// Describes an Outpost link aggregation group (LAG).
+type OutpostLag struct {
+
+	// The IDs of the local gateway virtual interfaces associated with the Outpost LAG.
+	LocalGatewayVirtualInterfaceIds []string
+
+	// The Amazon Resource Number (ARN) of the Outpost LAG.
+	OutpostArn *string
+
+	// The ID of the Outpost LAG.
+	OutpostLagId *string
+
+	// The ID of the Outpost LAG owner.
+	OwnerId *string
+
+	// The service link virtual interface IDs associated with the Outpost LAG.
+	ServiceLinkVirtualInterfaceIds []string
+
+	// The current state of the Outpost LAG.
+	State *string
+
+	// The tags associated with the Outpost LAG.
+	Tags []Tag
+
+	noSmithyDocumentSerde
+}
+
 // Describes a packet header statement.
 type PacketHeaderStatement struct {
 
@@ -14178,10 +14366,15 @@ type PerformanceFactorReference struct {
 	// families.
 	//
 	// If you specify an unsupported instance family as a value for baseline
-	// performance, the API returns an empty response for and an exception for , , ,
-	// and .
+	// performance, the API returns an empty response for [GetInstanceTypesFromInstanceRequirements]and an exception for [CreateFleet], [RequestSpotFleet], [ModifyFleet],
+	// and [ModifySpotFleetRequest].
 	//
+	// [GetInstanceTypesFromInstanceRequirements]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_GetInstanceTypesFromInstanceRequirements
+	// [ModifySpotFleetRequest]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifySpotFleetRequest
+	// [CreateFleet]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet
 	// [Amazon EC2 instance type naming conventions]: https://docs.aws.amazon.com/ec2/latest/instancetypes/instance-type-names.html
+	// [RequestSpotFleet]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet
+	// [ModifyFleet]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyFleet
 	InstanceFamily *string
 
 	noSmithyDocumentSerde
@@ -14226,10 +14419,15 @@ type PerformanceFactorReferenceRequest struct {
 	// families.
 	//
 	// If you specify an unsupported instance family as a value for baseline
-	// performance, the API returns an empty response for and an exception for , , ,
-	// and .
+	// performance, the API returns an empty response for [GetInstanceTypesFromInstanceRequirements]and an exception for [CreateFleet], [RequestSpotFleet], [ModifyFleet],
+	// and [ModifySpotFleetRequest].
 	//
+	// [GetInstanceTypesFromInstanceRequirements]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_GetInstanceTypesFromInstanceRequirements
+	// [ModifySpotFleetRequest]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifySpotFleetRequest
+	// [CreateFleet]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet
 	// [Amazon EC2 instance type naming conventions]: https://docs.aws.amazon.com/ec2/latest/instancetypes/instance-type-names.html
+	// [RequestSpotFleet]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet
+	// [ModifyFleet]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyFleet
 	InstanceFamily *string
 
 	noSmithyDocumentSerde
@@ -16098,6 +16296,343 @@ type Route struct {
 	noSmithyDocumentSerde
 }
 
+// Describes a route server and its configuration.
+//
+// Amazon VPC Route Server simplifies routing for traffic between workloads that
+// are deployed within a VPC and its internet gateways. With this feature, VPC
+// Route Server dynamically updates VPC and internet gateway route tables with your
+// preferred IPv4 or IPv6 routes to achieve routing fault tolerance for those
+// workloads. This enables you to automatically reroute traffic within a VPC, which
+// increases the manageability of VPC routing and interoperability with third-party
+// workloads.
+//
+// Route server supports the follow route table types:
+//
+//   - VPC route tables not associated with subnets
+//
+//   - Subnet route tables
+//
+//   - Internet gateway route tables
+//
+// Route server does not support route tables associated with virtual private
+// gateways. To propagate routes into a transit gateway route table, use [Transit Gateway Connect].
+//
+// [Transit Gateway Connect]: https://docs.aws.amazon.com/vpc/latest/tgw/tgw-connect.html
+type RouteServer struct {
+
+	// The Border Gateway Protocol (BGP) Autonomous System Number (ASN) for the
+	// appliance. Valid values are from 1 to 4294967295. We recommend using a private
+	// ASN in the 64512–65534 (16-bit ASN) or 4200000000–4294967294 (32-bit ASN) range.
+	AmazonSideAsn *int64
+
+	// The number of minutes a route server will wait after BGP is re-established to
+	// unpersist the routes in the FIB and RIB. Value must be in the range of 1-5. The
+	// default value is 1. Only valid if persistRoutesState is 'enabled'.
+	//
+	// If you set the duration to 1 minute, then when your network appliance
+	// re-establishes BGP with route server, it has 1 minute to relearn it's adjacent
+	// network and advertise those routes to route server before route server resumes
+	// normal functionality. In most cases, 1 minute is probably sufficient. If,
+	// however, you have concerns that your BGP network may not be capable of fully
+	// re-establishing and re-learning everything in 1 minute, you can increase the
+	// duration up to 5 minutes.
+	PersistRoutesDuration *int64
+
+	// The current state of route persistence for the route server.
+	PersistRoutesState RouteServerPersistRoutesState
+
+	// The unique identifier of the route server.
+	RouteServerId *string
+
+	// Indicates whether SNS notifications are enabled for the route server. Enabling
+	// SNS notifications persists BGP status changes to an SNS topic provisioned by
+	// Amazon Web Services.
+	SnsNotificationsEnabled *bool
+
+	// The ARN of the SNS topic where notifications are published.
+	SnsTopicArn *string
+
+	// The current state of the route server.
+	State RouteServerState
+
+	// Any tags assigned to the route server.
+	Tags []Tag
+
+	noSmithyDocumentSerde
+}
+
+// Describes the association between a route server and a VPC.
+//
+// A route server association is the connection established between a route server
+// and a VPC.
+type RouteServerAssociation struct {
+
+	// The ID of the associated route server.
+	RouteServerId *string
+
+	// The current state of the association.
+	State RouteServerAssociationState
+
+	// The ID of the associated VPC.
+	VpcId *string
+
+	noSmithyDocumentSerde
+}
+
+// The current status of Bidirectional Forwarding Detection (BFD) for a BGP
+// session.
+type RouteServerBfdStatus struct {
+
+	// The operational status of the BFD session.
+	Status RouteServerBfdState
+
+	noSmithyDocumentSerde
+}
+
+// The BGP configuration options for a route server peer.
+type RouteServerBgpOptions struct {
+
+	// The Border Gateway Protocol (BGP) Autonomous System Number (ASN) for the
+	// appliance. Valid values are from 1 to 4294967295. We recommend using a private
+	// ASN in the 64512–65534 (16-bit ASN) or 4200000000–4294967294 (32-bit ASN) range.
+	PeerAsn *int64
+
+	// The liveness detection protocol used for the BGP peer.
+	//
+	// The requested liveness detection protocol for the BGP peer.
+	//
+	//   - bgp-keepalive : The standard BGP keep alive mechanism ([RFC4271] ) that is stable but
+	//   may take longer to fail-over in cases of network impact or router failure.
+	//
+	//   - bfd : An additional Bidirectional Forwarding Detection (BFD) protocol ([RFC5880] )
+	//   that enables fast failover by using more sensitive liveness detection.
+	//
+	// Defaults to bgp-keepalive .
+	//
+	// [RFC5880]: https://www.rfc-editor.org/rfc/rfc5880
+	// [RFC4271]: https://www.rfc-editor.org/rfc/rfc4271#page-21
+	PeerLivenessDetection RouteServerPeerLivenessMode
+
+	noSmithyDocumentSerde
+}
+
+// The BGP configuration options requested for a route server peer.
+type RouteServerBgpOptionsRequest struct {
+
+	// The Border Gateway Protocol (BGP) Autonomous System Number (ASN) for the
+	// appliance. Valid values are from 1 to 4294967295. We recommend using a private
+	// ASN in the 64512–65534 (16-bit ASN) or 4200000000–4294967294 (32-bit ASN) range.
+	//
+	// This member is required.
+	PeerAsn *int64
+
+	// The requested liveness detection protocol for the BGP peer.
+	//
+	//   - bgp-keepalive : The standard BGP keep alive mechanism ([RFC4271] ) that is stable but
+	//   may take longer to fail-over in cases of network impact or router failure.
+	//
+	//   - bfd : An additional Bidirectional Forwarding Detection (BFD) protocol ([RFC5880] )
+	//   that enables fast failover by using more sensitive liveness detection.
+	//
+	// Defaults to bgp-keepalive .
+	//
+	// [RFC5880]: https://www.rfc-editor.org/rfc/rfc5880
+	// [RFC4271]: https://www.rfc-editor.org/rfc/rfc4271#page-21
+	PeerLivenessDetection RouteServerPeerLivenessMode
+
+	noSmithyDocumentSerde
+}
+
+// The current status of a BGP session.
+type RouteServerBgpStatus struct {
+
+	// The operational status of the BGP session. The status enables you to monitor
+	// session liveness if you lack monitoring on your router/appliance.
+	Status RouteServerBgpState
+
+	noSmithyDocumentSerde
+}
+
+// Describes a route server endpoint and its properties.
+//
+// A route server endpoint is an Amazon Web Services-managed component inside a
+// subnet that facilitates [BGP (Border Gateway Protocol)]connections between your route server and your BGP
+// peers.
+//
+// [BGP (Border Gateway Protocol)]: https://en.wikipedia.org/wiki/Border_Gateway_Protocol
+type RouteServerEndpoint struct {
+
+	// The IP address of the Elastic network interface for the endpoint.
+	EniAddress *string
+
+	// The ID of the Elastic network interface for the endpoint.
+	EniId *string
+
+	// The reason for any failure in endpoint creation or operation.
+	FailureReason *string
+
+	// The unique identifier of the route server endpoint.
+	RouteServerEndpointId *string
+
+	// The ID of the route server associated with this endpoint.
+	RouteServerId *string
+
+	// The current state of the route server endpoint.
+	State RouteServerEndpointState
+
+	// The ID of the subnet to place the route server endpoint into.
+	SubnetId *string
+
+	// Any tags assigned to the route server endpoint.
+	Tags []Tag
+
+	// The ID of the VPC containing the endpoint.
+	VpcId *string
+
+	noSmithyDocumentSerde
+}
+
+// Describes a BGP peer configuration for a route server endpoint.
+//
+// A route server peer is a session between a route server endpoint and the device
+// deployed in Amazon Web Services (such as a firewall appliance or other network
+// security function running on an EC2 instance). The device must meet these
+// requirements:
+//
+//   - Have an elastic network interface in the VPC
+//
+//   - Support BGP (Border Gateway Protocol)
+//
+//   - Can initiate BGP sessions
+type RouteServerPeer struct {
+
+	// The current status of the BFD session with this peer.
+	BfdStatus *RouteServerBfdStatus
+
+	// The BGP configuration options for this peer, including ASN (Autonomous System
+	// Number) and BFD (Bidrectional Forwarding Detection) settings.
+	BgpOptions *RouteServerBgpOptions
+
+	// The current status of the BGP session with this peer.
+	BgpStatus *RouteServerBgpStatus
+
+	// The IP address of the Elastic network interface for the route server endpoint.
+	EndpointEniAddress *string
+
+	// The ID of the Elastic network interface for the route server endpoint.
+	EndpointEniId *string
+
+	// The reason for any failure in peer creation or operation.
+	FailureReason *string
+
+	// The IPv4 address of the peer device.
+	PeerAddress *string
+
+	// The ID of the route server endpoint associated with this peer.
+	RouteServerEndpointId *string
+
+	// The ID of the route server associated with this peer.
+	RouteServerId *string
+
+	// The unique identifier of the route server peer.
+	RouteServerPeerId *string
+
+	// The current state of the route server peer.
+	State RouteServerPeerState
+
+	// The ID of the subnet containing the route server peer.
+	SubnetId *string
+
+	// Any tags assigned to the route server peer.
+	Tags []Tag
+
+	// The ID of the VPC containing the route server peer.
+	VpcId *string
+
+	noSmithyDocumentSerde
+}
+
+// Describes the route propagation configuration between a route server and a
+// route table.
+//
+// When enabled, route server propagation installs the routes in the FIB on the
+// route table you've specified. Route server supports IPv4 and IPv6 route
+// propagation.
+type RouteServerPropagation struct {
+
+	// The ID of the route server configured for route propagation.
+	RouteServerId *string
+
+	// The ID of the route table configured for route server propagation.
+	RouteTableId *string
+
+	// The current state of route propagation.
+	State RouteServerPropagationState
+
+	noSmithyDocumentSerde
+}
+
+// Describes a route in the route server's routing database.
+type RouteServerRoute struct {
+
+	// The AS path attributes of the BGP route.
+	AsPaths []string
+
+	// The Multi-Exit Discriminator (MED) value of the BGP route.
+	Med *int32
+
+	// The IP address for the next hop.
+	NextHopIp *string
+
+	// The destination CIDR block of the route.
+	Prefix *string
+
+	// Details about the installation status of this route in route tables.
+	RouteInstallationDetails []RouteServerRouteInstallationDetail
+
+	// The ID of the route server endpoint that received this route.
+	RouteServerEndpointId *string
+
+	// The ID of the route server peer that advertised this route.
+	RouteServerPeerId *string
+
+	// The current status of the route in the routing database. Values are in-rib or
+	// in-fib depending on if the routes are in the RIB or the FIB database.
+	//
+	// The [Routing Information Base (RIB)] serves as a database that stores all the routing information and network
+	// topology data collected by a router or routing system, such as routes learned
+	// from BGP peers. The RIB is constantly updated as new routing information is
+	// received or existing routes change. This ensures that the route server always
+	// has the most current view of the network topology and can make optimal routing
+	// decisions.
+	//
+	// The [Forwarding Information Base (FIB)] serves as a forwarding table for what route server has determined are the
+	// best-path routes in the RIB after evaluating all available routing information
+	// and policies. The FIB routes are installed on the route tables. The FIB is
+	// recomputed whenever there are changes to the RIB.
+	//
+	// [Routing Information Base (RIB)]: https://en.wikipedia.org/wiki/Routing_table
+	// [Forwarding Information Base (FIB)]: https://en.wikipedia.org/wiki/Forwarding_information_base
+	RouteStatus RouteServerRouteStatus
+
+	noSmithyDocumentSerde
+}
+
+// Describes the installation status of a route in a route table.
+type RouteServerRouteInstallationDetail struct {
+
+	// The current installation status of the route in the route table.
+	RouteInstallationStatus RouteServerRouteInstallationStatus
+
+	// The reason for the current installation status of the route.
+	RouteInstallationStatusReason *string
+
+	// The ID of the route table where the route is being installed.
+	RouteTableId *string
+
+	noSmithyDocumentSerde
+}
+
 // Describes a route table.
 type RouteTable struct {
 
@@ -17016,6 +17551,52 @@ type ServiceDetail struct {
 
 	// Indicates whether the service supports endpoint policies.
 	VpcEndpointPolicySupported *bool
+
+	noSmithyDocumentSerde
+}
+
+// Describes the service link virtual interfaces that establish connectivity
+// between Amazon Web Services Outpost and on-premises networks.
+type ServiceLinkVirtualInterface struct {
+
+	// The current state of the service link virtual interface.
+	ConfigurationState ServiceLinkVirtualInterfaceConfigurationState
+
+	// The IPv4 address assigned to the local gateway virtual interface on the Outpost
+	// side.
+	LocalAddress *string
+
+	// The Outpost Amazon Resource Number (ARN) for the service link virtual interface.
+	OutpostArn *string
+
+	// The Outpost ID for the service link virtual interface.
+	OutpostId *string
+
+	// The link aggregation group (LAG) ID for the service link virtual interface.
+	OutpostLagId *string
+
+	// The ID of the Amazon Web Services account that owns the service link virtual
+	// interface..
+	OwnerId *string
+
+	// The IPv4 peer address for the service link virtual interface.
+	PeerAddress *string
+
+	// The ASN for the Border Gateway Protocol (BGP) associated with the service link
+	// virtual interface.
+	PeerBgpAsn *int64
+
+	// The Amazon Resource Number (ARN) for the service link virtual interface.
+	ServiceLinkVirtualInterfaceArn *string
+
+	// The ID of the service link virtual interface.
+	ServiceLinkVirtualInterfaceId *string
+
+	// The tags associated with the service link virtual interface.
+	Tags []Tag
+
+	// The virtual local area network for the service link virtual interface.
+	Vlan *int32
 
 	noSmithyDocumentSerde
 }
@@ -19641,11 +20222,15 @@ type TransitGatewayOptions struct {
 	AutoAcceptSharedAttachments AutoAcceptSharedAttachmentsValue
 
 	// Indicates whether resource attachments are automatically associated with the
-	// default association route table.
+	// default association route table. Enabled by default. If
+	// defaultRouteTableAssociation is set to enable , Amazon Web Services Transit
+	// Gateway will create the default transit gateway route table.
 	DefaultRouteTableAssociation DefaultRouteTableAssociationValue
 
 	// Indicates whether resource attachments automatically propagate routes to the
-	// default propagation route table.
+	// default propagation route table. Enabled by default. If
+	// defaultRouteTablePropagation is set to enable , Amazon Web Services Transit
+	// Gateway will create the default transit gateway route table.
 	DefaultRouteTablePropagation DefaultRouteTablePropagationValue
 
 	// Indicates whether DNS support is enabled.
@@ -21165,6 +21750,11 @@ type Volume struct {
 
 	// The ID of the volume.
 	VolumeId *string
+
+	// The Amazon EBS Provisioned Rate for Volume Initialization (volume
+	// initialization rate) specified for the volume during creation, in MiB/s. If no
+	// volume initialization rate was specified, the value is null .
+	VolumeInitializationRate *int32
 
 	// The volume type.
 	VolumeType VolumeType

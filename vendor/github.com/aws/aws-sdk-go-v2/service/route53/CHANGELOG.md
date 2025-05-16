@@ -1,3 +1,11 @@
+# v1.51.1 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.51.0 (2025-04-03)
+
+* **Feature**: Added us-gov-east-1 and us-gov-west-1 as valid Latency Based Routing regions for change-resource-record-sets.
+
 # v1.50.0 (2025-03-18)
 
 * **Feature**: Amazon Route 53 now supports the iso-f regions for private DNS Amazon VPCs and cloudwatch healthchecks.

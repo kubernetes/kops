@@ -406,6 +406,8 @@ const (
 	ResourceRecordSetRegionApSoutheast5 ResourceRecordSetRegion = "ap-southeast-5"
 	ResourceRecordSetRegionMxCentral1   ResourceRecordSetRegion = "mx-central-1"
 	ResourceRecordSetRegionApSoutheast7 ResourceRecordSetRegion = "ap-southeast-7"
+	ResourceRecordSetRegionUsGovEast1   ResourceRecordSetRegion = "us-gov-east-1"
+	ResourceRecordSetRegionUsGovWest1   ResourceRecordSetRegion = "us-gov-west-1"
 )
 
 // Values returns all known values for ResourceRecordSetRegion. Note that this can
@@ -448,6 +450,8 @@ func (ResourceRecordSetRegion) Values() []ResourceRecordSetRegion {
 		"ap-southeast-5",
 		"mx-central-1",
 		"ap-southeast-7",
+		"us-gov-east-1",
+		"us-gov-west-1",
 	}
 }
 

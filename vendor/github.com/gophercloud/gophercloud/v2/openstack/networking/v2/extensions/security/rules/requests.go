@@ -29,6 +29,7 @@ type ListOpts struct {
 	Marker         string `q:"marker"`
 	SortKey        string `q:"sort_key"`
 	SortDir        string `q:"sort_dir"`
+	RevisionNumber *int   `q:"revision_number"`
 }
 
 // List returns a Pager which allows you to iterate over a collection of

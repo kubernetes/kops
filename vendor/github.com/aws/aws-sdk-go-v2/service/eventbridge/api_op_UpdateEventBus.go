@@ -48,26 +48,30 @@ type UpdateEventBusInput struct {
 	// If you do not specify a customer managed key identifier, EventBridge uses an
 	// Amazon Web Services owned key to encrypt events on the event bus.
 	//
-	// For more information, see [Managing keys] in the Key Management Service Developer Guide.
+	// For more information, see [Identify and view keys] in the Key Management Service Developer Guide.
 	//
-	// Archives and schema discovery are not supported for event buses encrypted using
-	// a customer managed key. EventBridge returns an error if:
-	//
-	//   - You call [CreateArchive]on an event bus set to use a customer managed key for encryption.
+	// Schema discovery is not supported for event buses encrypted using a customer
+	// managed key. EventBridge returns an error if:
 	//
 	//   - You call [CreateDiscoverer]on an event bus set to use a customer managed key for encryption.
 	//
-	//   - You call [UpdatedEventBus]to set a customer managed key on an event bus with an archives or
-	//   schema discovery enabled.
+	//   - You call [UpdatedEventBus]to set a customer managed key on an event bus with schema
+	//   discovery enabled.
 	//
-	// To enable archives or schema discovery on an event bus, choose to use an Amazon
-	// Web Services owned key. For more information, see [Data encryption in EventBridge]in the Amazon EventBridge
-	// User Guide.
+	// To enable schema discovery on an event bus, choose to use an Amazon Web
+	// Services owned key. For more information, see [Encrypting events]in the Amazon EventBridge User
+	// Guide.
+	//
+	// If you have specified that EventBridge use a customer managed key for
+	// encrypting the source event bus, we strongly recommend you also specify a
+	// customer managed key for any archives for the event bus as well.
+	//
+	// For more information, see [Encrypting archives] in the Amazon EventBridge User Guide.
 	//
 	// [UpdatedEventBus]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_UpdatedEventBus.html
-	// [Data encryption in EventBridge]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption.html
-	// [Managing keys]: https://docs.aws.amazon.com/kms/latest/developerguide/getting-started.html
-	// [CreateArchive]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateArchive.html
+	// [Encrypting events]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption-event-bus-cmkey.html
+	// [Identify and view keys]: https://docs.aws.amazon.com/kms/latest/developerguide/viewing-keys.html
+	// [Encrypting archives]: https://docs.aws.amazon.com/eventbridge/latest/userguide/encryption-archives.html
 	// [CreateDiscoverer]: https://docs.aws.amazon.com/eventbridge/latest/schema-reference/v1-discoverers.html#CreateDiscoverer
 	KmsKeyIdentifier *string
 
