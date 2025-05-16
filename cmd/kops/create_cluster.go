@@ -477,6 +477,12 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
+	switch {
+	case strings.HasPrefix(c.Image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server"):
+		c.Image = "099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250419"
+	case strings.HasPrefix(c.Image, "099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server"):
+		c.Image = "099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250419"
+	}
 	ctx, span := tracer.Start(ctx, "RunCreateCluster")
 	defer span.End()
 
