@@ -212,11 +212,21 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusAccepted)
 
+	flavorId := create.Server.FlavorRef
+	flavor := m.flavors[flavorId]
+
 	server := servers.Server{
 		ID:       uuid.New().String(),
 		Name:     create.Server.Name,
 		Metadata: create.Server.Metadata,
 		Status:   "ACTIVE",
+		Flavor: map[string]any{
+			"id":    flavor.ID,
+			"name":  flavor.Name,
+			"ram":   flavor.RAM,
+			"vcpus": flavor.VCPUs,
+			"disk":  flavor.Disk,
+		},
 	}
 	securityGroups := make([]map[string]interface{}, len(create.Server.SecurityGroups))
 	for i, groupName := range create.Server.SecurityGroups {
