@@ -327,7 +327,9 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(ctx context.Context, kubele
 	// We build this flag differently because it depends on CloudConfig, and to expose it directly
 	// would be a degree of freedom we don't have (we'd have to write the config to different files)
 	// We can always add this later if it is needed.
-	flags += " --cloud-config=" + InTreeCloudConfigFilePath
+	if b.IsKubernetesLT("1.33") {
+		flags += " --cloud-config=" + InTreeCloudConfigFilePath
+	}
 
 	if b.UsesSecondaryIP() {
 		localIP, err := b.GetMetadataLocalIP(ctx)
