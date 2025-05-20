@@ -313,6 +313,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				Lifecycle:                   b.Lifecycle,
 				Zone:                        s(zone),
 				TargetSize:                  fi.PtrTo(int64(targetSize)),
+				UpdatePolicy:                &gcetasks.UpdatePolicy{Type: "OPPORTUNISTIC"},
 				BaseInstanceName:            s(ig.ObjectMeta.Name),
 				InstanceTemplate:            instanceTemplate,
 				ListManagedInstancesResults: "PAGINATED",

@@ -37,6 +37,7 @@ type InstanceGroupManager struct {
 	InstanceTemplate            *InstanceTemplate
 	ListManagedInstancesResults string
 	TargetSize                  *int64
+	UpdatePolicy                *UpdatePolicy
 
 	TargetPools []*TargetPool
 }
@@ -63,6 +64,7 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = &r.TargetSize
+	actual.UpdatePolicy = &UpdatePolicy{Type: r.UpdatePolicy.Type}
 	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
@@ -100,6 +102,7 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		Zone:                        *e.Zone,
 		BaseInstanceName:            *e.BaseInstanceName,
 		TargetSize:                  *e.TargetSize,
+		UpdatePolicy:                &compute.InstanceGroupManagerUpdatePolicy{Type: e.UpdatePolicy.Type},
 		InstanceTemplate:            instanceTemplateURL,
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
 	}
@@ -181,7 +184,12 @@ type terraformInstanceGroupManager struct {
 	ListManagedInstancesResults string                     `cty:"list_managed_instances_results"`
 	Version                     *terraformVersion          `cty:"version"`
 	TargetSize                  *int64                     `cty:"target_size"`
+	UpdatePolicy                *terraformUpdatePolicy     `cty:"update_policy"`
 	TargetPools                 []*terraformWriter.Literal `cty:"target_pools"`
+}
+
+type terraformUpdatePolicy struct {
+	Type string `cty:"type"`
 }
 
 type terraformVersion struct {
@@ -195,6 +203,9 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 		BaseInstanceName:            e.BaseInstanceName,
 		TargetSize:                  e.TargetSize,
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
+	}
+	tf.UpdatePolicy = &terraformUpdatePolicy{
+		Type: e.UpdatePolicy.Type,
 	}
 	tf.Version = &terraformVersion{
 		InstanceTemplate: e.InstanceTemplate.TerraformLink(),
