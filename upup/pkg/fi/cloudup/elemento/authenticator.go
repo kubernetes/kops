@@ -16,6 +16,29 @@ limitations under the License.
 
 package elemento
 
-// Not used since the request are not authenticated, the request only travel 
-// between kops and the local instance of the Elemento deamons, no public
-// internet is involved
+import (
+	"fmt"
+	"strconv"
+
+    "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/metadata"
+	"k8s.io/kops/pkg/bootstrap"
+)
+
+const ElementoAuthenticationTokenPrefix = "x-elemento-id "
+
+type elementoAuthenticator struct {
+}
+
+var _ bootstrap.Authenticator = &elementoAuthenticator{}
+
+func NewElementoAuthenticator() (bootstrap.Authenticator, error) {
+	return &elementoAuthenticator{}, nil
+}
+
+func (h *elementoAuthenticator) CreateToken(body []byte) (string, error) {
+	serverID, err := metadata.NewClient().InstanceID()
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve server ID: %w", err)
+	}
+	return ElementoAuthenticationTokenPrefix + strconv.Itoa(serverID), nil
+}

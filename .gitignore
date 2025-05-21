@@ -92,3 +92,6 @@ _output
 # Used by E2E testing
 _artifacts
 _rundir
+
+# Ignore vendor directory
+vendor/

@@ -61,6 +61,9 @@ func GuessCloudForPath(path string) (kops.CloudProviderID, error) {
 		if os.Getenv("HCLOUD_TOKEN") != "" {
 			return kops.CloudProviderHetzner, nil
 		}
+		if os.Getenv("PROVIDER") == "elemento" {
+			return kops.CloudProviderElemento, nil
+		}
 		return kops.CloudProviderAWS, nil
 	default:
 		return "", fmt.Errorf("cannot infer cloud provider from path: %q", path)

@@ -64,6 +64,7 @@ nav:
     - Deploying to OpenStack - Beta: "getting_started/openstack.md"
     - Deploying to Azure - Alpha: "getting_started/azure.md"
     - Deploying to Spot Ocean - Alpha: "getting_started/spot-ocean.md"
+    - Deploying to Elemento - Alpha: "getting_started/elemento.md"
     - kOps Commands: "getting_started/commands.md"
     - kOps Arguments: "getting_started/arguments.md"
     - kubectl usage: "getting_started/kubectl.md"

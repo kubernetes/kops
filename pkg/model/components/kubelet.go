@@ -160,6 +160,10 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 		kubelet.CloudProvider = "external"
 	}
 
+	if cloudProvider == kops.CloudProviderElemento {
+		kubelet.CloudProvider = "external"
+	}
+
 	if cluster.Spec.ExternalCloudControllerManager != nil {
 		kubelet.CloudProvider = "external"
 	}
