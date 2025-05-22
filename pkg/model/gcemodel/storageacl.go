@@ -38,7 +38,7 @@ type StorageAclBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.CloudupModelBuilder = &NetworkModelBuilder{}
+var _ fi.CloudupModelBuilder = &StorageAclBuilder{}
 
 // Build creates the tasks that set up storage acls
 
