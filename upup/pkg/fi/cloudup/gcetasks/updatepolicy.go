@@ -20,7 +20,8 @@ import "k8s.io/kops/upup/pkg/fi"
 
 // UpdatePolicy represents a GCE instance group manager UpdatePolicy
 type UpdatePolicy struct {
-	Type string
+	MinimalAction string
+	Type          string
 }
 
 var _ fi.CloudupHasDependencies = &UpdatePolicy{}

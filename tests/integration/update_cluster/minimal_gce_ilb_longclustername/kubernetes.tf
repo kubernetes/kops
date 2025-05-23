@@ -435,7 +435,8 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gc
   name                           = "a-master-us-test1-a-minimal-gce-with-a-very-very-very-ve-j0fh8f"
   target_size                    = 1
   update_policy {
-    type = "OPPORTUNISTIC"
+    minimal_action = "REPLACE"
+    type           = "OPPORTUNISTIC"
   }
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.self_link
@@ -449,7 +450,8 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-with-a-ver
   name                           = "a-nodes-minimal-gce-with-a-very-very-very-very-very-long-qk78uj"
   target_size                    = 2
   update_policy {
-    type = "OPPORTUNISTIC"
+    minimal_action = "REPLACE"
+    type           = "OPPORTUNISTIC"
   }
   version {
     instance_template = google_compute_instance_template.nodes-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.self_link

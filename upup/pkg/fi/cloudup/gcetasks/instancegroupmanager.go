@@ -64,7 +64,7 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = &r.TargetSize
-	actual.UpdatePolicy = &UpdatePolicy{Type: r.UpdatePolicy.Type}
+	actual.UpdatePolicy = &UpdatePolicy{MinimalAction: r.UpdatePolicy.MinimalAction, Type: r.UpdatePolicy.Type}
 	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
@@ -97,12 +97,17 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		return err
 	}
 
+	updatePolicy := &compute.InstanceGroupManagerUpdatePolicy{
+		MinimalAction: e.UpdatePolicy.MinimalAction,
+		Type:          e.UpdatePolicy.Type,
+	}
+
 	i := &compute.InstanceGroupManager{
 		Name:                        *e.Name,
 		Zone:                        *e.Zone,
 		BaseInstanceName:            *e.BaseInstanceName,
 		TargetSize:                  *e.TargetSize,
-		UpdatePolicy:                &compute.InstanceGroupManagerUpdatePolicy{Type: e.UpdatePolicy.Type},
+		UpdatePolicy:                updatePolicy,
 		InstanceTemplate:            instanceTemplateURL,
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
 	}
@@ -189,7 +194,8 @@ type terraformInstanceGroupManager struct {
 }
 
 type terraformUpdatePolicy struct {
-	Type string `cty:"type"`
+	MinimalAction string `cty:"minimal_action"`
+	Type          string `cty:"type"`
 }
 
 type terraformVersion struct {
@@ -205,7 +211,8 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
 	}
 	tf.UpdatePolicy = &terraformUpdatePolicy{
-		Type: e.UpdatePolicy.Type,
+		MinimalAction: e.UpdatePolicy.MinimalAction,
+		Type:          e.UpdatePolicy.Type,
 	}
 	tf.Version = &terraformVersion{
 		InstanceTemplate: e.InstanceTemplate.TerraformLink(),
