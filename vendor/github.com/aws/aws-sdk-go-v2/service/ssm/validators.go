@@ -1090,6 +1090,26 @@ func (m *validateOpDisassociateOpsItemRelatedItem) HandleInitialize(ctx context.
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpGetAccessToken struct {
+}
+
+func (*validateOpGetAccessToken) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpGetAccessToken) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*GetAccessTokenInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpGetAccessTokenInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpGetAutomationExecution struct {
 }
 
@@ -2150,6 +2170,26 @@ func (m *validateOpSendCommand) HandleInitialize(ctx context.Context, in middlew
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpStartAccessRequest struct {
+}
+
+func (*validateOpStartAccessRequest) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpStartAccessRequest) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*StartAccessRequestInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpStartAccessRequestInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpStartAssociationsOnce struct {
 }
 
@@ -2806,6 +2846,10 @@ func addOpDisassociateOpsItemRelatedItemValidationMiddleware(stack *middleware.S
 	return stack.Initialize.Add(&validateOpDisassociateOpsItemRelatedItem{}, middleware.After)
 }
 
+func addOpGetAccessTokenValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpGetAccessToken{}, middleware.After)
+}
+
 func addOpGetAutomationExecutionValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetAutomationExecution{}, middleware.After)
 }
@@ -3016,6 +3060,10 @@ func addOpSendAutomationSignalValidationMiddleware(stack *middleware.Stack) erro
 
 func addOpSendCommandValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpSendCommand{}, middleware.After)
+}
+
+func addOpStartAccessRequestValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpStartAccessRequest{}, middleware.After)
 }
 
 func addOpStartAssociationsOnceValidationMiddleware(stack *middleware.Stack) error {
@@ -5837,6 +5885,21 @@ func validateOpDisassociateOpsItemRelatedItemInput(v *DisassociateOpsItemRelated
 	}
 }
 
+func validateOpGetAccessTokenInput(v *GetAccessTokenInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "GetAccessTokenInput"}
+	if v.AccessRequestId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("AccessRequestId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpGetAutomationExecutionInput(v *GetAutomationExecutionInput) error {
 	if v == nil {
 		return nil
@@ -6797,6 +6860,29 @@ func validateOpSendCommandInput(v *SendCommandInput) error {
 	if v.AlarmConfiguration != nil {
 		if err := validateAlarmConfiguration(v.AlarmConfiguration); err != nil {
 			invalidParams.AddNested("AlarmConfiguration", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpStartAccessRequestInput(v *StartAccessRequestInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "StartAccessRequestInput"}
+	if v.Reason == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Reason"))
+	}
+	if v.Targets == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Targets"))
+	}
+	if v.Tags != nil {
+		if err := validateTagList(v.Tags); err != nil {
+			invalidParams.AddNested("Tags", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {

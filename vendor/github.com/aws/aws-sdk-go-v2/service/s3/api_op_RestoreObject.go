@@ -41,17 +41,17 @@ import (
 // and [Managing Access Permissions to Your Amazon S3 Resources]in the Amazon S3 User Guide.
 //
 // Restoring objects Objects that you archive to the S3 Glacier Flexible Retrieval
-// Flexible Retrieval or S3 Glacier Deep Archive storage class, and S3
-// Intelligent-Tiering Archive or S3 Intelligent-Tiering Deep Archive tiers, are
-// not accessible in real time. For objects in the S3 Glacier Flexible Retrieval
-// Flexible Retrieval or S3 Glacier Deep Archive storage classes, you must first
-// initiate a restore request, and then wait until a temporary copy of the object
-// is available. If you want a permanent copy of the object, create a copy of it in
-// the Amazon S3 Standard storage class in your S3 bucket. To access an archived
-// object, you must restore the object for the duration (number of days) that you
-// specify. For objects in the Archive Access or Deep Archive Access tiers of S3
-// Intelligent-Tiering, you must first initiate a restore request, and then wait
-// until the object is moved into the Frequent Access tier.
+// or S3 Glacier Deep Archive storage class, and S3 Intelligent-Tiering Archive or
+// S3 Intelligent-Tiering Deep Archive tiers, are not accessible in real time. For
+// objects in the S3 Glacier Flexible Retrieval or S3 Glacier Deep Archive storage
+// classes, you must first initiate a restore request, and then wait until a
+// temporary copy of the object is available. If you want a permanent copy of the
+// object, create a copy of it in the Amazon S3 Standard storage class in your S3
+// bucket. To access an archived object, you must restore the object for the
+// duration (number of days) that you specify. For objects in the Archive Access or
+// Deep Archive Access tiers of S3 Intelligent-Tiering, you must first initiate a
+// restore request, and then wait until the object is moved into the Frequent
+// Access tier.
 //
 // To restore a specific object version, you can provide a version ID. If you
 // don't provide a version ID, Amazon S3 restores the current version.
@@ -60,33 +60,32 @@ import (
 // access tier options in the Tier element of the request body:
 //
 //   - Expedited - Expedited retrievals allow you to quickly access your data
-//     stored in the S3 Glacier Flexible Retrieval Flexible Retrieval storage class or
-//     S3 Intelligent-Tiering Archive tier when occasional urgent requests for
-//     restoring archives are required. For all but the largest archived objects (250
-//     MB+), data accessed using Expedited retrievals is typically made available
-//     within 1–5 minutes. Provisioned capacity ensures that retrieval capacity for
-//     Expedited retrievals is available when you need it. Expedited retrievals and
-//     provisioned capacity are not available for objects stored in the S3 Glacier Deep
-//     Archive storage class or S3 Intelligent-Tiering Deep Archive tier.
+//     stored in the S3 Glacier Flexible Retrieval storage class or S3
+//     Intelligent-Tiering Archive tier when occasional urgent requests for restoring
+//     archives are required. For all but the largest archived objects (250 MB+), data
+//     accessed using Expedited retrievals is typically made available within 1–5
+//     minutes. Provisioned capacity ensures that retrieval capacity for Expedited
+//     retrievals is available when you need it. Expedited retrievals and provisioned
+//     capacity are not available for objects stored in the S3 Glacier Deep Archive
+//     storage class or S3 Intelligent-Tiering Deep Archive tier.
 //
 //   - Standard - Standard retrievals allow you to access any of your archived
 //     objects within several hours. This is the default option for retrieval requests
 //     that do not specify the retrieval option. Standard retrievals typically finish
-//     within 3–5 hours for objects stored in the S3 Glacier Flexible Retrieval
-//     Flexible Retrieval storage class or S3 Intelligent-Tiering Archive tier. They
-//     typically finish within 12 hours for objects stored in the S3 Glacier Deep
-//     Archive storage class or S3 Intelligent-Tiering Deep Archive tier. Standard
-//     retrievals are free for objects stored in S3 Intelligent-Tiering.
+//     within 3–5 hours for objects stored in the S3 Glacier Flexible Retrieval storage
+//     class or S3 Intelligent-Tiering Archive tier. They typically finish within 12
+//     hours for objects stored in the S3 Glacier Deep Archive storage class or S3
+//     Intelligent-Tiering Deep Archive tier. Standard retrievals are free for objects
+//     stored in S3 Intelligent-Tiering.
 //
 //   - Bulk - Bulk retrievals free for objects stored in the S3 Glacier Flexible
 //     Retrieval and S3 Intelligent-Tiering storage classes, enabling you to retrieve
 //     large amounts, even petabytes, of data at no cost. Bulk retrievals typically
 //     finish within 5–12 hours for objects stored in the S3 Glacier Flexible Retrieval
-//     Flexible Retrieval storage class or S3 Intelligent-Tiering Archive tier. Bulk
-//     retrievals are also the lowest-cost retrieval option when restoring objects from
-//     S3 Glacier Deep Archive. They typically finish within 48 hours for objects
-//     stored in the S3 Glacier Deep Archive storage class or S3 Intelligent-Tiering
-//     Deep Archive tier.
+//     storage class or S3 Intelligent-Tiering Archive tier. Bulk retrievals are also
+//     the lowest-cost retrieval option when restoring objects from S3 Glacier Deep
+//     Archive. They typically finish within 48 hours for objects stored in the S3
+//     Glacier Deep Archive storage class or S3 Intelligent-Tiering Deep Archive tier.
 //
 // For more information about archive retrieval options and provisioned capacity
 // for Expedited data access, see [Restoring Archived Objects] in the Amazon S3 User Guide.
@@ -180,10 +179,12 @@ type RestoreObjectInput struct {
 
 	// The bucket name containing the object to restore.
 	//
-	// Access points - When you use this action with an access point, you must provide
-	// the alias of the access point in place of the bucket name or specify the access
-	// point ARN. When using the access point ARN, you must direct requests to the
-	// access point hostname. The access point hostname takes the form
+	// Access points - When you use this action with an access point for general
+	// purpose buckets, you must provide the alias of the access point in place of the
+	// bucket name or specify the access point ARN. When you use this action with an
+	// access point for directory buckets, you must provide the access point name in
+	// place of the bucket name. When using the access point ARN, you must direct
+	// requests to the access point hostname. The access point hostname takes the form
 	// AccessPointName-AccountId.s3-accesspoint.Region.amazonaws.com. When using this
 	// action with an access point through the Amazon Web Services SDKs, you provide
 	// the access point ARN in place of the bucket name. For more information about
