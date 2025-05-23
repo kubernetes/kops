@@ -5830,6 +5830,7 @@ func autoConvert_v1alpha3_KubeDNSConfig_To_kops_KubeDNSConfig(in *KubeDNSConfig,
 	} else {
 		out.NodeLocalDNS = nil
 	}
+	out.PodAnnotations = in.PodAnnotations
 	return nil
 }
 
@@ -5863,6 +5864,7 @@ func autoConvert_kops_KubeDNSConfig_To_v1alpha3_KubeDNSConfig(in *kops.KubeDNSCo
 	} else {
 		out.NodeLocalDNS = nil
 	}
+	out.PodAnnotations = in.PodAnnotations
 	return nil
 }
 
