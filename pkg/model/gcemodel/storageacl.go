@@ -38,7 +38,7 @@ type StorageAclBuilder struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.CloudupModelBuilder = &NetworkModelBuilder{}
+var _ fi.CloudupModelBuilder = &StorageAclBuilder{}
 
 // Build creates the tasks that set up storage acls
 
@@ -125,6 +125,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Role           kops.InstanceGroupRole
 	}
 	serviceAccountRoles := make(map[serviceAccountRole]bool)
+	serviceAccountEmails := sets.NewString()
 
 	for _, ig := range b.InstanceGroups {
 		serviceAccount := b.LinkToServiceAccount(ig)
@@ -133,6 +134,12 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	for serviceAccountRole := range serviceAccountRoles {
 		role := serviceAccountRole.Role
+		email := *serviceAccountRole.ServiceAccount.Email
+
+		if serviceAccountEmails.Has(email) {
+			continue
+		}
+		serviceAccountEmails.Insert(email)
 
 		nodeRole, err := iam.BuildNodeRoleSubject(role, false)
 		if err != nil {
