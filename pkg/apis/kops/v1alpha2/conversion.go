@@ -183,6 +183,7 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			string(kops.CloudProviderHetzner),
 			string(kops.CloudProviderOpenstack),
 			string(kops.CloudProviderScaleway),
+			string(kops.CloudProviderElemento),
 		})
 	}
 	if in.CloudConfig != nil {
@@ -441,6 +442,9 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 	}
 	if in.CloudProvider.Scaleway != nil {
 		out.LegacyCloudProvider = string(kops.CloudProviderScaleway)
+	}
+	if in.CloudProvider.Elemento != nil {
+		out.LegacyCloudProvider = string(kops.CloudProviderElemento)
 	}
 	switch kops.CloudProviderID(out.LegacyCloudProvider) {
 	case kops.CloudProviderAWS:

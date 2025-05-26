@@ -21,4 +21,32 @@ limitations under the License.
 
 package elementotasks
 
-// TODO: generate fitask for elementotasks
+import (
+	"k8s.io/kops/upup/pkg/fi"
+)
+
+// ServerGroup
+
+var _ fi.HasLifecycle = &ServerGroup{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *ServerGroup) GetLifecycle() fi.Lifecycle {
+	return o.Lifecycle
+}
+
+// SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
+func (o *ServerGroup) SetLifecycle(lifecycle fi.Lifecycle) {
+	o.Lifecycle = lifecycle
+}
+
+var _ fi.HasName = &ServerGroup{}
+
+// GetName returns the Name of the object, implementing fi.HasName
+func (o *ServerGroup) GetName() *string {
+	return o.Name
+}
+
+// String is the stringer function for the task, producing readable output using fi.TaskAsString
+func (o *ServerGroup) String() string {
+	return fi.CloudupTaskAsString(o)
+}

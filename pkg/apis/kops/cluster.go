@@ -966,7 +966,6 @@ func (c *Cluster) GetCloudProvider() CloudProviderID {
 		return CloudProviderMetal
 	}
 	spec := c.Spec
-	fmt.Printf("CloudProvider: %v\n", spec.CloudProvider)
 	if spec.CloudProvider.AWS != nil {
 		return CloudProviderAWS
 	} else if spec.CloudProvider.Azure != nil {

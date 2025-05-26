@@ -60,6 +60,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -671,6 +672,13 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		authenticator = a
 	case api.CloudProviderAzure:
 		a, err := azure.NewAzureAuthenticator()
+		if err != nil {
+			return nil, err
+		}
+		authenticator = a
+
+	case api.CloudProviderElemento:
+		a, err := elemento.NewElementoAuthenticator()
 		if err != nil {
 			return nil, err
 		}

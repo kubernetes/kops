@@ -25,28 +25,28 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// Network
+// SSHKey
 
-var _ fi.HasLifecycle = &Network{}
+var _ fi.HasLifecycle = &SSHKey{}
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
-func (o *Network) GetLifecycle() fi.Lifecycle {
+func (o *SSHKey) GetLifecycle() fi.Lifecycle {
 	return o.Lifecycle
 }
 
 // SetLifecycle sets the Lifecycle of the object, implementing fi.SetLifecycle
-func (o *Network) SetLifecycle(lifecycle fi.Lifecycle) {
+func (o *SSHKey) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Network{}
+var _ fi.HasName = &SSHKey{}
 
 // GetName returns the Name of the object, implementing fi.HasName
-func (o *Network) GetName() *string {
+func (o *SSHKey) GetName() *string {
 	return o.Name
 }
 
 // String is the stringer function for the task, producing readable output using fi.TaskAsString
-func (o *Network) String() string {
+func (o *SSHKey) String() string {
 	return fi.CloudupTaskAsString(o)
 }

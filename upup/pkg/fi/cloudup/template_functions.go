@@ -70,6 +70,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/maps"
 	"sigs.k8s.io/yaml"
@@ -772,6 +773,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.Azure = &azure.AzureVerifierOptions{
 				ClusterName: tf.ClusterName(),
 			}
+
+		case kops.CloudProviderElemento:
+			config.Server.Provider.Elemento = &elemento.ElementoVerifierOptions{}
 
 		case kops.CloudProviderMetal:
 			// Use crypto public/private keys for Metal

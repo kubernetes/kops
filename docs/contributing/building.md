@@ -43,6 +43,70 @@ Interactive Development Environment (IDE).
 For example, run `dlv --listen=:2345 --headless=true --api-version=2 exec ${GOPATH}/bin/kops -- <kops command>`,
 and then configure your IDE to connect its debugger to port 2345 on localhost.
 
+## Debugging
+
+To enable interactive debugging, the kOps binary needs to be specially compiled to include debugging symbols.
+Add `DEBUGGING=true` to the `make` invocation to set the compile flags appropriately.
+
+For example, `DEBUGGING=true make` will produce a kOps binary that can be interactively debugged.
+
+### Interactive Debugging with Delve in Headless Mode
+
+[Delve](https://github.com/go-delve/delve) is a debugger for Go programs. You can use it either directly via CLI or integrate it with an IDE like VS Code.
+
+To run `kOps` under Delve in headless mode:
+
+```bash
+dlv --listen=:2345 --headless=true --api-version=2 exec ${GOPATH}/bin/kops -- <kops-arguments>
+```
+
+**Note:** Replace `<kops-arguments>` with the actual arguments you would normally pass to kOps CLI. Omit the `kops` keyword itself.
+
+#### Example with Environment Variables
+
+To pass environment variables along with Delve, prepend them to the command:
+
+```bash
+S3_REGION=eu-south-1 \
+S3_ENDPOINT=https://s3.eu-south-1.provider.com \
+S3_ACCESS_KEY_ID=xxxxxxxxxxxxxxx \
+S3_SECRET_ACCESS_KEY=yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy \
+dlv --listen=:2345 --headless=true --api-version=2 exec ${GOPATH}/bin/kops -- <kops-arguments>
+```
+
+### Configuring Delve in VS Code environment
+
+To use Delve in VS Code, create a `.vscode/launch.json` file with the following configuration:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to Delve (kOps)",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "port": 2345,
+      "host": "127.0.0.1",
+      "apiVersion": 2,
+      "showLog": true,
+      "trace": "verbose"
+    }
+  ]
+}
+```
+
+Also, update your VS Code `settings.json` to specify your Delve binary path:
+
+```json
+"go.delveConfig": {
+  "dlvPath": "/Users/username/go/bin/dlv"
+}
+```
+
+Run the command `dlv --listen=:2345 --headless=true --a ...` and then you can launch the debugger by selecting the "Attach to Delve (kOps)" configuration in the Run and Debug view.
+
 ## Troubleshooting
 
  - Make sure `$GOPATH` is set, and your [workspace](https://golang.org/doc/code.html#Workspaces) is configured.
