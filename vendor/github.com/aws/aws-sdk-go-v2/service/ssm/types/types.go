@@ -1842,6 +1842,34 @@ type CreateAssociationBatchRequestEntry struct {
 	noSmithyDocumentSerde
 }
 
+// The temporary security credentials, which include an access key ID, a secret
+// access key, and a security (or session) token.
+type Credentials struct {
+
+	// The access key ID that identifies the temporary security credentials.
+	//
+	// This member is required.
+	AccessKeyId *string
+
+	// The datetime on which the current credentials expire.
+	//
+	// This member is required.
+	ExpirationTime *time.Time
+
+	// The secret access key that can be used to sign requests.
+	//
+	// This member is required.
+	SecretAccessKey *string
+
+	// The token that users must pass to the service API to use the temporary
+	// credentials.
+	//
+	// This member is required.
+	SessionToken *string
+
+	noSmithyDocumentSerde
+}
+
 // Filter for the DescribeActivation API.
 type DescribeActivationsFilter struct {
 

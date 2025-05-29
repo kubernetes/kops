@@ -899,6 +899,7 @@ type DatabaseOptions struct {
 	RedisOptions       DatabaseEngineOptions `json:"redis"`
 	KafkaOptions       DatabaseEngineOptions `json:"kafka"`
 	OpensearchOptions  DatabaseEngineOptions `json:"opensearch"`
+	ValkeyOptions      DatabaseEngineOptions `json:"valkey"`
 }
 
 // DatabaseEngineOptions represents the configuration options that are available for a given database engine

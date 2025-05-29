@@ -1,3 +1,11 @@
+# v1.41.1 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.41.0 (2025-03-27)
+
+* **Feature**: Update IAM dual-stack endpoints for BJS, IAD and PDT partitions
+
 # v1.40.2 (2025-03-21)
 
 * No change notes available for this release.

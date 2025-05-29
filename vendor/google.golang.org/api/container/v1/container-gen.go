@@ -120,9 +120,6 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	}
 	s := &Service{client: client, BasePath: basePath, logger: internaloption.GetLogger(opts)}
 	s.Projects = NewProjectsService(s)
-	if err != nil {
-		return nil, err
-	}
 	if endpoint != "" {
 		s.BasePath = endpoint
 	}
@@ -1943,17 +1940,27 @@ func (s ComplianceStandard) MarshalJSON() ([]byte, error) {
 // ConfidentialNodes: ConfidentialNodes is configuration for the confidential
 // nodes feature, which makes nodes run on confidential VMs.
 type ConfidentialNodes struct {
+	// ConfidentialInstanceType: Defines the type of technology used by the
+	// confidential node.
+	//
+	// Possible values:
+	//   "CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED" - No type specified. Do not use
+	// this value.
+	//   "SEV" - AMD Secure Encrypted Virtualization.
+	//   "SEV_SNP" - AMD Secure Encrypted Virtualization - Secure Nested Paging.
+	//   "TDX" - Intel Trust Domain eXtension.
+	ConfidentialInstanceType string `json:"confidentialInstanceType,omitempty"`
 	// Enabled: Whether Confidential Nodes feature is enabled.
 	Enabled bool `json:"enabled,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "ConfidentialInstanceType")
+	// to unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Enabled") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "ConfidentialInstanceType") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -2438,6 +2445,8 @@ func (s EnterpriseConfig) MarshalJSON() ([]byte, error) {
 // EphemeralStorageLocalSsdConfig: EphemeralStorageLocalSsdConfig contains
 // configuration for the node ephemeral storage using Local SSDs.
 type EphemeralStorageLocalSsdConfig struct {
+	// DataCacheCount: Number of local SSDs to use for GKE Data Cache.
+	DataCacheCount int64 `json:"dataCacheCount,omitempty"`
 	// LocalSsdCount: Number of local SSDs to use to back ephemeral storage. Uses
 	// NVMe interfaces. A zero (or unset) value has different meanings depending on
 	// machine type being used: 1. For pre-Gen3 machines, which support flexible
@@ -2453,15 +2462,15 @@ type EphemeralStorageLocalSsdConfig struct {
 	// https://cloud.google.com/compute/docs/disks/local-ssd#choose_number_local_ssds
 	// for more info.
 	LocalSsdCount int64 `json:"localSsdCount,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "LocalSsdCount") to
+	// ForceSendFields is a list of field names (e.g. "DataCacheCount") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "LocalSsdCount") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "DataCacheCount") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -4278,6 +4287,8 @@ type NodeConfig struct {
 	EphemeralStorageLocalSsdConfig *EphemeralStorageLocalSsdConfig `json:"ephemeralStorageLocalSsdConfig,omitempty"`
 	// FastSocket: Enable or disable NCCL fast socket for the node pool.
 	FastSocket *FastSocket `json:"fastSocket,omitempty"`
+	// FlexStart: Flex Start flag for enabling Flex Start VM.
+	FlexStart bool `json:"flexStart,omitempty"`
 	// GcfsConfig: Google Container File System (image streaming) configs.
 	GcfsConfig *GcfsConfig `json:"gcfsConfig,omitempty"`
 	// Gvnic: Enable or disable gvnic in the node pool.
@@ -4713,8 +4724,7 @@ func (s *NodeNetworkConfig) UnmarshalJSON(data []byte) error {
 // accommodate the workload.
 type NodePool struct {
 	// AutopilotConfig: Specifies the autopilot configuration for this node pool.
-	// This field is exclusively reserved for Cluster Autoscaler to implement
-	// go/gke-managed-nodes-ccc-api
+	// This field is exclusively reserved for Cluster Autoscaler.
 	AutopilotConfig *AutopilotConfig `json:"autopilotConfig,omitempty"`
 	// Autoscaling: Autoscaler configuration for this NodePool. Autoscaler is
 	// enabled only if a valid configuration is present.
@@ -7340,6 +7350,8 @@ type UpdateNodePoolRequest struct {
 	Etag string `json:"etag,omitempty"`
 	// FastSocket: Enable or disable NCCL fast socket for the node pool.
 	FastSocket *FastSocket `json:"fastSocket,omitempty"`
+	// FlexStart: Flex Start flag for enabling Flex Start VM.
+	FlexStart bool `json:"flexStart,omitempty"`
 	// GcfsConfig: GCFS config.
 	GcfsConfig *GcfsConfig `json:"gcfsConfig,omitempty"`
 	// Gvnic: Enable or disable gvnic on the node pool.
@@ -7586,6 +7598,8 @@ type UpgradeInfoEvent struct {
 	//   "COS_MILESTONE_VERSION_UPDATE" - COS_MILESTONE_VERSION_UPDATE indicates
 	// that the COS node image will update COS milestone version for new patch
 	// versions starting with the one in the description.
+	//   "UPGRADE_LIFECYCLE" - UPGRADE_LIFECYCLE indicates the event is about the
+	// upgrade lifecycle.
 	EventType string `json:"eventType,omitempty"`
 	// ExtendedSupportEndTime: The end of extended support timestamp.
 	ExtendedSupportEndTime string `json:"extendedSupportEndTime,omitempty"`

@@ -26,6 +26,10 @@ const (
 	// Load Balancer network_stack types
 	LoadBalancerNetworkStackIPv4      = "IPV4"
 	LoadBalancerNetworkStackDualstack = "DUALSTACK"
+
+	// Supported TLS Cipher policies
+	LoadBalancerTLSCipherPolicyDefault = "DEFAULT"
+	LoadBalancerTLSCipherPolicyStrong  = "STRONG"
 )
 
 // LoadBalancersService is an interface for managing load balancers with the DigitalOcean API.
@@ -81,6 +85,7 @@ type LoadBalancer struct {
 	TargetLoadBalancerIDs        []string         `json:"target_load_balancer_ids,omitempty"`
 	Network                      string           `json:"network,omitempty"`
 	NetworkStack                 string           `json:"network_stack,omitempty"`
+	TLSCipherPolicy              string           `json:"tls_cipher_policy,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancer.
@@ -116,6 +121,7 @@ func (l LoadBalancer) AsRequest() *LoadBalancerRequest {
 		TargetLoadBalancerIDs:        append([]string(nil), l.TargetLoadBalancerIDs...),
 		Network:                      l.Network,
 		NetworkStack:                 l.NetworkStack,
+		TLSCipherPolicy:              l.TLSCipherPolicy,
 	}
 
 	if l.DisableLetsEncryptDNSRecords != nil {
@@ -256,6 +262,7 @@ type LoadBalancerRequest struct {
 	TargetLoadBalancerIDs        []string         `json:"target_load_balancer_ids,omitempty"`
 	Network                      string           `json:"network,omitempty"`
 	NetworkStack                 string           `json:"network_stack,omitempty"`
+	TLSCipherPolicy              string           `json:"tls_cipher_policy,omitempty"`
 }
 
 // String creates a human-readable description of a LoadBalancerRequest.
