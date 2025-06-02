@@ -168,18 +168,7 @@ Cilium can make use of the [wireguard protocol for transparent encryption](https
       encryptionType: wireguard
 ```
 
-#### CNI Exclusive
-{{ kops_feature_table(kops_added_default='1.32') }}
-
-If you want to use additional CNI plugins, for example when using service meshes like Istio or Linkerd, It is required to disable the `cni-exclusive` option so that Cilium does not remove the other CNI configuration files.
-
-```yaml
-  networking:
-    cilium:
-      cniExclusive: false
-```
-
-#### Resources in Cilium
+### Resources in Cilium
 {{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
 
 As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Operator. Example:
@@ -188,6 +177,17 @@ As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Op
     cilium:
       cpuRequest: "25m"
       memoryRequest: "128Mi"
+```
+
+### CNI Exclusive
+{{ kops_feature_table(kops_added_default='1.32') }}
+
+If you want to use additional CNI plugins, for example when using service meshes like Istio or Linkerd, It is required to disable the `cni-exclusive` option so that Cilium does not remove the other CNI configuration files.
+
+```yaml
+  networking:
+    cilium:
+      cniExclusive: false
 ```
 
 ## Hubble
