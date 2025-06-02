@@ -168,7 +168,7 @@ Cilium can make use of the [wireguard protocol for transparent encryption](https
       encryptionType: wireguard
 ```
 
-#### Resources in Cilium
+### Resources in Cilium
 {{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
 
 As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Operator. Example:
