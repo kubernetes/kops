@@ -43,7 +43,7 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 		   subnet.Zone == "antartica" {
 			// TODO: check if it is works out
 			zoneRegion = subnet.Zone
-		} else if subnet.Zone == "hel1" {
+		} else {
 			return "", fmt.Errorf("unknown zone %q for elemento cloud, known zones are asia, europe, north-america, south-america, africa, oceania, antartica", subnet.Zone)
 		}
 

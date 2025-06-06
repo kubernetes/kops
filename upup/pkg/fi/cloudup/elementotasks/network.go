@@ -19,8 +19,10 @@ package elementotasks
 import (
 	"context"
 	"fmt"
+	"net"
+	"strconv"
 
-	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 )
@@ -53,7 +55,17 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 		idOrName = fi.ValueOf(v.ID)
 	}
 
-	network, err := client.Get(context.TODO(), idOrName)
+	if id, err := strconv.Atoi(idOrName); err == nil {
+		network, _, err := client.GetByID(context.TODO(), int(id))
+		if err == nil && network != nil {
+			return &Network{
+				Name:      v.Name,
+				Lifecycle: v.Lifecycle,
+				ID:        fi.PtrTo(strconv.Itoa(network.ID)),
+			}, nil
+		}
+	}
+	network, _, err := client.GetByName(context.TODO(), idOrName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find network %q: %w", idOrName, err)
 	}
@@ -67,17 +79,17 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 	matches := &Network{
 		Name:      v.Name,
 		Lifecycle: v.Lifecycle,
-		ID:        fi.PtrTo(network.ID),
+		ID:        fi.PtrTo(strconv.Itoa(network.ID)),
 	}
 
 	if v.ID == nil {
-		matches.IPRange = network.IPRange
+		matches.IPRange = network.IPRange.String()
 		matches.Labels = network.Labels
 		matches.Region = v.Region
 		for _, subnet := range network.Subnets {
-			if subnet.IPRange != "" {
+			if subnet.IPRange != nil {
 				matches.Region = string(subnet.NetworkZone)
-				matches.Subnets = append(matches.Subnets, subnet.IPRange)
+				matches.Subnets = append(matches.Subnets, subnet.IPRange.String())
 			}
 		}
 		// Make sure the ID is set (used by other tasks)
@@ -94,7 +106,7 @@ func (v *Network) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
-func (_ *Network) CheckChanges(a, e, changes *Network) error {
+func (*Network) CheckChanges(a, e, changes *Network) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
@@ -128,14 +140,58 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 	return nil
 }
 
-func (_ *Network) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *Network) error {
-	// client := t.Cloud.NetworkClient()
+func (*Network) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *Network) error {
+	client := t.Cloud.NetworkClient()
 
-	// var network *ecloud.Network // TODO
-	// if a != nil {
-	
-	// } else {
+	var network *ecloud.Network
+	if a != nil {
+		_, ipRange, err := net.ParseCIDR(e.IPRange)
+		if err != nil {
+			return err
+		}
+		opts := ecloud.NetworkCreateOpts{
+			Name:    fi.ValueOf(e.Name),
+			IPRange: ipRange,
+			Labels:  e.Labels,
+		}
+		network, _, err = client.Create(context.TODO(), opts)
+		if err != nil {
+			return err
+		}
+		e.ID = fi.PtrTo(strconv.Itoa(network.ID))
+	} else {
+		var err error
+		network, _, err = client.GetByName(context.TODO(), fi.ValueOf(e.Name))
+		if err != nil {
+			return err
+		}
 
-	// }
+		// Update the labels - NOT SUPPORTED
+		// if changes.Name != nil || len(changes.Labels) != 0 {
+		// 	_, _, err := client.Update(context.TODO(), network, ecloud.NetworkUpdateOpts{
+		// 		Name:   fi.ValueOf(e.Name),
+		// 		Labels: e.Labels,
+		// 	})
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
+	}
+
+	// Add subnets separately and follow the progress
+	if a == nil || len(a.Subnets) == 0 {
+		for _, subnet := range e.Subnets {
+			_, subnetIpRange, err := net.ParseCIDR(subnet)
+			if err != nil {
+				return err
+			}
+			network.Subnets = append(network.Subnets, ecloud.NetworkSubnet{
+				Type:        ecloud.NetworkSubnetTypeCloud,
+				NetworkZone: ecloud.NetworkZone(e.Region),
+				IPRange:     subnetIpRange,
+			})
+		}
+	}
+
 	return nil
 }
