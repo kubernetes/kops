@@ -172,6 +172,27 @@ func RunUpgradeCluster(ctx context.Context, f *util.Factory, out io.Writer, opti
 				if err != nil {
 					klog.Warningf("error parsing KubernetesVersion %q", versionInfo.RecommendedVersion)
 				}
+				// Try a minor version upgrade
+				minorUpgradeVersion := semver.Version{
+					Major: proposedKubernetesVersion.Major,
+					Minor: proposedKubernetesVersion.Minor + 1,
+					Patch: 0,
+				}
+				kopsVersion, err := semver.ParseTolerant(kops.Version)
+				if err != nil {
+					klog.Warningf("error parsing kOps version %q", kops.Version)
+				}
+				if minorUpgradeVersion.LTE(kopsVersion) {
+					minorUpgradeInfo := kopsapi.FindKubernetesVersionSpec(channel.Spec.KubernetesVersions, minorUpgradeVersion)
+					if minorUpgradeInfo != nil {
+						proposedMinorUpgradeVersion, err := kopsutil.ParseKubernetesVersion(minorUpgradeInfo.RecommendedVersion)
+						if err != nil {
+							klog.Warningf("error parsing KubernetesVersion %q", minorUpgradeInfo.RecommendedVersion)
+						} else {
+							proposedKubernetesVersion = proposedMinorUpgradeVersion
+						}
+					}
+				}
 			}
 		} else {
 			// fallback to recommended version by kOps version, but this is not the usual path
