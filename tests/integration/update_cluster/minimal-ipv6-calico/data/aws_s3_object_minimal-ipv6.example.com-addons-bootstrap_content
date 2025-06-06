@@ -99,7 +99,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.25
     manifest: networking.projectcalico.org/k8s-1.25.yaml
-    manifestHash: 0b908c4c6d7093e9cafdde3db1b448088de2de8b42f726869176a7ed43767a80
+    manifestHash: a735f7e1f8268fef16ace45bde3ff4dc3830cee556ed652900a66acd7cc922b8
     name: networking.projectcalico.org
     prune:
       kinds:
