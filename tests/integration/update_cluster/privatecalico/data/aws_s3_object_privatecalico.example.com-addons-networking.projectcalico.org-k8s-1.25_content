@@ -214,8 +214,14 @@ spec:
                           a valid secret key.
                         type: string
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        default: ""
+                        description: 'Name of the referent. This field is effectively
+                          required, but due to backwards compatibility is allowed
+                          to be empty. Instances of this type with an empty value
+                          here are almost certainly wrong. TODO: Add other useful
+                          fields. apiVersion, kind, uid? More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Drop `kubebuilder:default` when controller-gen doesn''t
+                          need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.'
                         type: string
                       optional:
                         description: Specify whether the Secret or its key must be
@@ -575,8 +581,14 @@ spec:
                           a valid secret key.
                         type: string
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        default: ""
+                        description: 'Name of the referent. This field is effectively
+                          required, but due to backwards compatibility is allowed
+                          to be empty. Instances of this type with an empty value
+                          here are almost certainly wrong. TODO: Add other useful
+                          fields. apiVersion, kind, uid? More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Drop `kubebuilder:default` when controller-gen doesn''t
+                          need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.'
                         type: string
                       optional:
                         description: Specify whether the Secret or its key must be
@@ -5935,6 +5947,7 @@ rules:
   - kubecontrollersconfigurations
   verbs:
   - get
+  - list
   - create
   - update
   - watch
@@ -6165,6 +6178,25 @@ rules:
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: calico-tier-getter
+rules:
+- apiGroups:
+  - projectcalico.org
+  resources:
+  - tiers
+  verbs:
+  - get
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
@@ -6221,6 +6253,26 @@ subjects:
 - kind: ServiceAccount
   name: calico-cni-plugin
   namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: networking.projectcalico.org
+    app.kubernetes.io/managed-by: kops
+    role.kubernetes.io/networking: "1"
+  name: calico-tier-getter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico-tier-getter
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:kube-controller-manager
 
 ---
 
@@ -6332,7 +6384,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.29.2
+        image: docker.io/calico/node:v3.29.4
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -6406,7 +6458,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.29.2
+        image: docker.io/calico/cni:v3.29.4
         imagePullPolicy: IfNotPresent
         name: upgrade-ipam
         securityContext:
@@ -6441,7 +6493,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.29.2
+        image: docker.io/calico/cni:v3.29.4
         imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
@@ -6455,7 +6507,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.29.2
+        image: docker.io/calico/node:v3.29.4
         imagePullPolicy: IfNotPresent
         name: mount-bpffs
         securityContext:
@@ -6587,7 +6639,7 @@ spec:
           value: node
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.29.2
+        image: docker.io/calico/kube-controllers:v3.29.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
