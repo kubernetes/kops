@@ -87,10 +87,14 @@ type UpdateAutoScalingGroupInput struct {
 	// One or more Availability Zones for the group.
 	AvailabilityZones []string
 
-	// Enables or disables Capacity Rebalancing. For more information, see [Use Capacity Rebalancing to handle Amazon EC2 Spot Interruptions] in the
-	// Amazon EC2 Auto Scaling User Guide.
+	// Enables or disables Capacity Rebalancing. If Capacity Rebalancing is disabled,
+	// proactive replacement of at-risk Spot Instances does not occur. For more
+	// information, see [Capacity Rebalancing in Auto Scaling to replace at-risk Spot Instances]in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Use Capacity Rebalancing to handle Amazon EC2 Spot Interruptions]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
+	// To suspend rebalancing across Availability Zones, use the [SuspendProcesses] API.
+	//
+	// [SuspendProcesses]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_SuspendedProcess.html
+	// [Capacity Rebalancing in Auto Scaling to replace at-risk Spot Instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
 	CapacityRebalance *bool
 
 	//  The capacity reservation specification for the Auto Scaling group.

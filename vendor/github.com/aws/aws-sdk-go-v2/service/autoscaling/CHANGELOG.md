@@ -1,3 +1,15 @@
+# v1.52.4 (2025-04-17)
+
+* **Documentation**: Doc only update for EC2 Auto Scaling.
+
+# v1.52.3 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.52.2 (2025-04-03)
+
+* No change notes available for this release.
+
 # v1.52.1 (2025-03-04.2)
 
 * **Bug Fix**: Add assurance test for operation order.

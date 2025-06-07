@@ -89,6 +89,7 @@ func New() *Resolver {
 var partitionRegexp = struct {
 	Aws      *regexp.Regexp
 	AwsCn    *regexp.Regexp
+	AwsEusc  *regexp.Regexp
 	AwsIso   *regexp.Regexp
 	AwsIsoB  *regexp.Regexp
 	AwsIsoE  *regexp.Regexp
@@ -98,6 +99,7 @@ var partitionRegexp = struct {
 
 	Aws:      regexp.MustCompile("^(us|eu|ap|sa|ca|me|af|il|mx)\\-\\w+\\-\\d+$"),
 	AwsCn:    regexp.MustCompile("^cn\\-\\w+\\-\\d+$"),
+	AwsEusc:  regexp.MustCompile("^eusc\\-(de)\\-\\w+\\-\\d+$"),
 	AwsIso:   regexp.MustCompile("^us\\-iso\\-\\w+\\-\\d+$"),
 	AwsIsoB:  regexp.MustCompile("^us\\-isob\\-\\w+\\-\\d+$"),
 	AwsIsoE:  regexp.MustCompile("^eu\\-isoe\\-\\w+\\-\\d+$"),
@@ -669,6 +671,27 @@ var defaultPartitions = endpoints.Partitions{
 		},
 	},
 	{
+		ID: "aws-eusc",
+		Defaults: map[endpoints.DefaultKey]endpoints.Endpoint{
+			{
+				Variant: endpoints.FIPSVariant,
+			}: {
+				Hostname:          "s3-fips.{region}.amazonaws.eu",
+				Protocols:         []string{"https"},
+				SignatureVersions: []string{"v4"},
+			},
+			{
+				Variant: 0,
+			}: {
+				Hostname:          "s3.{region}.amazonaws.eu",
+				Protocols:         []string{"https"},
+				SignatureVersions: []string{"v4"},
+			},
+		},
+		RegionRegex:    partitionRegexp.AwsEusc,
+		IsRegionalized: true,
+	},
+	{
 		ID: "aws-iso",
 		Defaults: map[endpoints.DefaultKey]endpoints.Endpoint{
 			{
@@ -800,19 +823,24 @@ var defaultPartitions = endpoints.Partitions{
 				Variant: endpoints.FIPSVariant,
 			}: {
 				Hostname:          "s3-fips.{region}.cloud.adc-e.uk",
-				Protocols:         []string{"https"},
-				SignatureVersions: []string{"v4"},
+				Protocols:         []string{"http", "https"},
+				SignatureVersions: []string{"s3v4"},
 			},
 			{
 				Variant: 0,
 			}: {
 				Hostname:          "s3.{region}.cloud.adc-e.uk",
-				Protocols:         []string{"https"},
-				SignatureVersions: []string{"v4"},
+				Protocols:         []string{"http", "https"},
+				SignatureVersions: []string{"s3v4"},
 			},
 		},
 		RegionRegex:    partitionRegexp.AwsIsoE,
 		IsRegionalized: true,
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "eu-isoe-west-1",
+			}: endpoints.Endpoint{},
+		},
 	},
 	{
 		ID: "aws-iso-f",
@@ -982,6 +1010,19 @@ func GetDNSSuffix(id string, options Options) (string, error) {
 
 		}
 
+	case strings.EqualFold(id, "aws-eusc"):
+		switch variant {
+		case endpoints.FIPSVariant:
+			return "amazonaws.eu", nil
+
+		case 0:
+			return "amazonaws.eu", nil
+
+		default:
+			return "", fmt.Errorf("unsupported endpoint variant %v, in partition %s", variant, id)
+
+		}
+
 	case strings.EqualFold(id, "aws-iso"):
 		switch variant {
 		case endpoints.FIPSVariant:
@@ -1068,6 +1109,9 @@ func GetDNSSuffixFromRegion(region string, options Options) (string, error) {
 
 	case partitionRegexp.AwsCn.MatchString(region):
 		return GetDNSSuffix("aws-cn", options)
+
+	case partitionRegexp.AwsEusc.MatchString(region):
+		return GetDNSSuffix("aws-eusc", options)
 
 	case partitionRegexp.AwsIso.MatchString(region):
 		return GetDNSSuffix("aws-iso", options)

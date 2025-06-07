@@ -7,7 +7,7 @@ import (
 	smithy "github.com/aws/smithy-go"
 )
 
-// You do not have the necessary permissons for this action.
+// You do not have the necessary permissions for this action.
 type AccessDeniedException struct {
 	Message *string
 

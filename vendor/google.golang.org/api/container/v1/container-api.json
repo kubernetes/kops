@@ -2660,7 +2660,7 @@
       }
     }
   },
-  "revision": "20250311",
+  "revision": "20250408",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -4188,6 +4188,22 @@
       "description": "ConfidentialNodes is configuration for the confidential nodes feature, which makes nodes run on confidential VMs.",
       "id": "ConfidentialNodes",
       "properties": {
+        "confidentialInstanceType": {
+          "description": "Defines the type of technology used by the confidential node.",
+          "enum": [
+            "CONFIDENTIAL_INSTANCE_TYPE_UNSPECIFIED",
+            "SEV",
+            "SEV_SNP",
+            "TDX"
+          ],
+          "enumDescriptions": [
+            "No type specified. Do not use this value.",
+            "AMD Secure Encrypted Virtualization.",
+            "AMD Secure Encrypted Virtualization - Secure Nested Paging.",
+            "Intel Trust Domain eXtension."
+          ],
+          "type": "string"
+        },
         "enabled": {
           "description": "Whether Confidential Nodes feature is enabled.",
           "type": "boolean"
@@ -4539,6 +4555,11 @@
       "description": "EphemeralStorageLocalSsdConfig contains configuration for the node ephemeral storage using Local SSDs.",
       "id": "EphemeralStorageLocalSsdConfig",
       "properties": {
+        "dataCacheCount": {
+          "description": "Number of local SSDs to use for GKE Data Cache.",
+          "format": "int32",
+          "type": "integer"
+        },
         "localSsdCount": {
           "description": "Number of local SSDs to use to back ephemeral storage. Uses NVMe interfaces. A zero (or unset) value has different meanings depending on machine type being used: 1. For pre-Gen3 machines, which support flexible numbers of local ssds, zero (or unset) means to disable using local SSDs as ephemeral storage. The limit for this value is dependent upon the maximum number of disk available on a machine per zone. See: https://cloud.google.com/compute/docs/disks/local-ssd for more information. 2. For Gen3 machines which dictate a specific number of local ssds, zero (or unset) means to use the default number of local ssds that goes with that machine type. For example, for a c3-standard-8-lssd machine, 2 local ssds would be provisioned. For c3-standard-8 (which doesn't support local ssds), 0 will be provisioned. See https://cloud.google.com/compute/docs/disks/local-ssd#choose_number_local_ssds for more info.",
           "format": "int32",
@@ -5854,6 +5875,10 @@
           "$ref": "FastSocket",
           "description": "Enable or disable NCCL fast socket for the node pool."
         },
+        "flexStart": {
+          "description": "Flex Start flag for enabling Flex Start VM.",
+          "type": "boolean"
+        },
         "gcfsConfig": {
           "$ref": "GcfsConfig",
           "description": "Google Container File System (image streaming) configs."
@@ -6196,7 +6221,7 @@
       "properties": {
         "autopilotConfig": {
           "$ref": "AutopilotConfig",
-          "description": "Specifies the autopilot configuration for this node pool. This field is exclusively reserved for Cluster Autoscaler to implement go/gke-managed-nodes-ccc-api"
+          "description": "Specifies the autopilot configuration for this node pool. This field is exclusively reserved for Cluster Autoscaler."
         },
         "autoscaling": {
           "$ref": "NodePoolAutoscaling",
@@ -8212,6 +8237,10 @@
           "$ref": "FastSocket",
           "description": "Enable or disable NCCL fast socket for the node pool."
         },
+        "flexStart": {
+          "description": "Flex Start flag for enabling Flex Start VM.",
+          "type": "boolean"
+        },
         "gcfsConfig": {
           "$ref": "GcfsConfig",
           "description": "GCFS config."
@@ -8480,12 +8509,14 @@
           "enum": [
             "EVENT_TYPE_UNSPECIFIED",
             "END_OF_SUPPORT",
-            "COS_MILESTONE_VERSION_UPDATE"
+            "COS_MILESTONE_VERSION_UPDATE",
+            "UPGRADE_LIFECYCLE"
           ],
           "enumDescriptions": [
             "EVENT_TYPE_UNSPECIFIED indicates the event type is unspecified.",
             "END_OF_SUPPORT indicates GKE version reaches end of support, check standard_support_end_time and extended_support_end_time for more details.",
-            "COS_MILESTONE_VERSION_UPDATE indicates that the COS node image will update COS milestone version for new patch versions starting with the one in the description."
+            "COS_MILESTONE_VERSION_UPDATE indicates that the COS node image will update COS milestone version for new patch versions starting with the one in the description.",
+            "UPGRADE_LIFECYCLE indicates the event is about the upgrade lifecycle."
           ],
           "type": "string"
         },
