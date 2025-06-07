@@ -23,11 +23,27 @@ import (
 	"net/url"
 	"regexp"
 
+	"github.com/google/uuid"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/floatingips"
 )
 
 type floatingIPListResponse struct {
 	FloatingIPs []floatingips.FloatingIP `json:"floatingips"`
+}
+
+type floatingIPType struct {
+	ID         string `json:"id"`
+	FloatingIP string `json:"floatingip"`
+	TenantID   string `json:"tenant_id"`
+	ProjectID  string `json:"project_id"`
+}
+
+type floatingIPCreateRequest struct {
+	FloatingIP floatingIPType `json:"floatingip"`
+}
+
+type floatingIPGetResponse struct {
+	FloatingIP floatingips.FloatingIP `json:"floatingip"`
 }
 
 func (m *MockClient) mockFloatingIPs() {
@@ -46,6 +62,8 @@ func (m *MockClient) mockFloatingIPs() {
 				r.ParseForm()
 				m.listFloatingIPs(w, r.Form)
 			}
+		case http.MethodPost:
+			m.createFloatingIp(w, r)
 		default:
 			w.WriteHeader(http.StatusBadRequest)
 		}
@@ -63,6 +81,42 @@ func (m *MockClient) listFloatingIPs(w http.ResponseWriter, vals url.Values) {
 	}
 	resp := floatingIPListResponse{
 		FloatingIPs: floatingips,
+	}
+	respB, err := json.Marshal(resp)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %+v", resp))
+	}
+	_, err = w.Write(respB)
+	if err != nil {
+		panic("failed to write body")
+	}
+}
+
+func (m *MockClient) createFloatingIp(w http.ResponseWriter, r *http.Request) {
+	var create floatingIPCreateRequest
+	err := json.NewDecoder(r.Body).Decode(&create)
+	if err != nil {
+		panic("error decoding create floating ip request")
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+
+	f := floatingips.FloatingIP{
+		ID:         uuid.New().String(),
+		FloatingIP: create.FloatingIP.FloatingIP,
+		TenantID:   create.FloatingIP.TenantID,
+		//UpdatedAt:      time.Now(),
+		//CreatedAt:      time.Now(),
+		ProjectID:      create.FloatingIP.ProjectID,
+		Status:         "ACTIVE",
+		RouterID:       "router",
+		Tags:           nil,
+		RevisionNumber: 0,
+	}
+	m.floatingips[f.ID] = f
+
+	resp := floatingIPGetResponse{
+		FloatingIP: f,
 	}
 	respB, err := json.Marshal(resp)
 	if err != nil {

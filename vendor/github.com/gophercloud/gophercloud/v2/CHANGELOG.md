@@ -1,3 +1,14 @@
+## v2.7.0 (2025-04-03)
+
+* [GH-3306](https://github.com/gophercloud/gophercloud/pull/3306) [v2] identity: Add Get endpoint by ID
+* [GH-3325](https://github.com/gophercloud/gophercloud/pull/3325) [v2] Switch to a version of gocovmerge compatible with go 1.22
+* [GH-3327](https://github.com/gophercloud/gophercloud/pull/3327) Merge pull request #3209 from shiftstack/proper-service-discovery
+* [GH-3328](https://github.com/gophercloud/gophercloud/pull/3328) [v2] Improve support for `network standard-attr-*` extensions
+* [GH-3330](https://github.com/gophercloud/gophercloud/pull/3330) [v2] Enhance Snapshot struct and add ListDetail function in V3 blockstorage
+* [GH-3333](https://github.com/gophercloud/gophercloud/pull/3333) [v2] vpnaas: add support for more ciphers (auth, encryption, pfs modes)
+* [GH-3334](https://github.com/gophercloud/gophercloud/pull/3334) [v2] Added support for VIF's in Baremetal
+* [GH-3335](https://github.com/gophercloud/gophercloud/pull/3335) [v2] Baremetal virtual media Get API
+
 ## v2.6.0 (2025-03-03)
 
 * [GH-3309](https://github.com/gophercloud/gophercloud/pull/3309) Backport: Added support for hypervisor_hostname to v2

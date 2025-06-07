@@ -20,22 +20,23 @@ type ListOptsBuilder interface {
 // by a particular network attribute. SortDir sets the direction, and is either
 // `asc' or `desc'. Marker and Limit are used for pagination.
 type ListOpts struct {
-	Status       string `q:"status"`
-	Name         string `q:"name"`
-	Description  string `q:"description"`
-	AdminStateUp *bool  `q:"admin_state_up"`
-	TenantID     string `q:"tenant_id"`
-	ProjectID    string `q:"project_id"`
-	Shared       *bool  `q:"shared"`
-	ID           string `q:"id"`
-	Marker       string `q:"marker"`
-	Limit        int    `q:"limit"`
-	SortKey      string `q:"sort_key"`
-	SortDir      string `q:"sort_dir"`
-	Tags         string `q:"tags"`
-	TagsAny      string `q:"tags-any"`
-	NotTags      string `q:"not-tags"`
-	NotTagsAny   string `q:"not-tags-any"`
+	Status         string `q:"status"`
+	Name           string `q:"name"`
+	Description    string `q:"description"`
+	AdminStateUp   *bool  `q:"admin_state_up"`
+	TenantID       string `q:"tenant_id"`
+	ProjectID      string `q:"project_id"`
+	Shared         *bool  `q:"shared"`
+	ID             string `q:"id"`
+	Marker         string `q:"marker"`
+	Limit          int    `q:"limit"`
+	SortKey        string `q:"sort_key"`
+	SortDir        string `q:"sort_dir"`
+	Tags           string `q:"tags"`
+	TagsAny        string `q:"tags-any"`
+	NotTags        string `q:"not-tags"`
+	NotTagsAny     string `q:"not-tags-any"`
+	RevisionNumber *int   `q:"revision_number"`
 }
 
 // ToNetworkListQuery formats a ListOpts into a query string.
