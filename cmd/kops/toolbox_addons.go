@@ -35,15 +35,19 @@ func NewCmdToolboxAddons(out io.Writer) *cobra.Command {
 	f := channelscmd.NewChannelsFactory()
 
 	// create subcommands
-	cmd.AddCommand(&cobra.Command{
+	var applyOptions channelscmd.ApplyChannelOptions
+	applyCmd := &cobra.Command{
 		Use:     "apply CHANNEL",
 		Short:   "Applies updates from the given channel",
 		Example: "kops toolbox addons apply s3://<state_store>/<cluster_name>/addons/bootstrap-channel.yaml",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			return channelscmd.RunApplyChannel(ctx, f, out, &channelscmd.ApplyChannelOptions{}, args)
+			return channelscmd.RunApplyChannel(ctx, f, out, &applyOptions, args)
 		},
-	})
+	}
+	applyCmd.Flags().BoolVar(&applyOptions.Yes, "yes", false, "Apply update")
+
+	cmd.AddCommand(applyCmd)
 	cmd.AddCommand(&cobra.Command{
 		Use:   "list",
 		Short: "Lists installed addons",
