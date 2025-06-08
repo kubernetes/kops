@@ -773,7 +773,7 @@ resource "aws_lb" "bastion-bastionuserdata-example-com" {
   internal                         = false
   load_balancer_type               = "network"
   name                             = "bastion-bastionuserdata-e-4grhsv"
-  security_groups                  = [aws_security_group.bastion-elb-bastionuserdata-example-com.id]
+  security_groups                  = ["sg-exampleid", aws_security_group.bastion-elb-bastionuserdata-example-com.id]
   subnet_mapping {
     subnet_id = aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id
   }
