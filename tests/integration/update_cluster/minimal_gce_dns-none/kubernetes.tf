@@ -461,7 +461,10 @@ resource "google_compute_forwarding_rule" "kops-controller-us-test1-minimal-gce-
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-example-com" {
-  base_instance_name             = "master-us-test1-a"
+  base_instance_name = "master-us-test1-a"
+  lifecycle {
+    ignore_changes = [target_size]
+  }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-master-us-test1-a-minimal-gce-example-com"
   target_size                    = 1
@@ -476,7 +479,10 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gc
 }
 
 resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-example-com" {
-  base_instance_name             = "nodes"
+  base_instance_name = "nodes"
+  lifecycle {
+    ignore_changes = [target_size]
+  }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-nodes-minimal-gce-example-com"
   target_size                    = 2
