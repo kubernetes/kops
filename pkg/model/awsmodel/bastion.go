@@ -393,6 +393,20 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		c.AddTask(tg)
 
+		// Add additional security groups to the NLB
+		if b.Cluster.Spec.Networking.Topology != nil && b.Cluster.Spec.Networking.Topology.Bastion != nil && b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer != nil && b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer.AdditionalSecurityGroups != nil {
+			for _, id := range b.Cluster.Spec.Networking.Topology.Bastion.LoadBalancer.AdditionalSecurityGroups {
+				t := &awstasks.SecurityGroup{
+					Name:      fi.PtrTo(id),
+					Lifecycle: b.SecurityLifecycle,
+					ID:        fi.PtrTo(id),
+					Shared:    fi.PtrTo(true),
+				}
+				c.EnsureTask(t)
+				nlb.SecurityGroups = append(nlb.SecurityGroups, t)
+			}
+		}
+
 		c.AddTask(nlb)
 	}
 

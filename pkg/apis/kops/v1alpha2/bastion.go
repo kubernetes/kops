@@ -25,8 +25,6 @@ type BastionSpec struct {
 }
 
 type BastionLoadBalancerSpec struct {
-	// AdditionalSecurityGroups is unused
-	// +k8s:conversion-gen=false
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 	// Type of load balancer to create, it can be Public or Internal.
 	Type LoadBalancerType `json:"type,omitempty"`

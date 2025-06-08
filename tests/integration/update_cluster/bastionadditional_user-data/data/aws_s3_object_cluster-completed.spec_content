@@ -209,6 +209,8 @@ spec:
     zone: us-test-1a
   topology:
     bastion:
-      loadBalancer: {}
+      loadBalancer:
+        additionalSecurityGroups:
+        - sg-exampleid
     dns:
       type: Public

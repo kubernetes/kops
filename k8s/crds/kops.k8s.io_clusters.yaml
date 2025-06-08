@@ -6386,7 +6386,6 @@ spec:
                       loadBalancer:
                         properties:
                           additionalSecurityGroups:
-                            description: AdditionalSecurityGroups is unused
                             items:
                               type: string
                             type: array
