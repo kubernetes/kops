@@ -20,6 +20,14 @@ By default, kOps will create IPv4 clusters using public topology, where all node
 
 Read through the [topology page](../topology.md) to understand the options you have running nodes in internal IP addresses and using a [bastion](../bastion.md) for SSH access.
 
+## Node Lifetime
+
+Kops components issue certificates valid for approximately 15 months including for kubelet.
+Kops doesn't support automatic rotation of kubelet certificates.
+Therefore nodes may be lost once their certificate expires.
+
+It is recommended to limit the lifetime of k8s nodes to 1 year, either by running `kops rolling-update cluster` periodically or a controller that drains and replaces nodes. 
+
 ## Cluster spec
 
 The `kops` command allows you to configure some aspects of your cluster, but for almost any production cluster, you will want to change settings that are not accessible through the CLI. The cluster spec can be exported as a yaml file and checked into version control.
