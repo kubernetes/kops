@@ -68,7 +68,7 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
 	if policy := r.UpdatePolicy; policy != nil {
-		actual.UpdatePolicy = &UpdatePolicy{MinimalAction: r.UpdatePolicy.MinimalAction, Type: r.UpdatePolicy.Type}
+		actual.UpdatePolicy = &UpdatePolicy{MinimalAction: policy.MinimalAction, Type: policy.Type}
 	}
 
 	for _, targetPool := range r.TargetPools {
@@ -111,8 +111,8 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 
 	if policy := e.UpdatePolicy; policy != nil {
 		i.UpdatePolicy = &compute.InstanceGroupManagerUpdatePolicy{
-			MinimalAction: e.UpdatePolicy.MinimalAction,
-			Type:          e.UpdatePolicy.Type,
+			MinimalAction: policy.MinimalAction,
+			Type:          policy.Type,
 		}
 	}
 
@@ -216,8 +216,8 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 	}
 	if policy := e.UpdatePolicy; policy != nil {
 		tf.UpdatePolicy = &terraformUpdatePolicy{
-			MinimalAction: e.UpdatePolicy.MinimalAction,
-			Type:          e.UpdatePolicy.Type,
+			MinimalAction: policy.MinimalAction,
+			Type:          policy.Type,
 		}
 	}
 	tf.Version = &terraformVersion{
