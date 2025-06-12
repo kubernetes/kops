@@ -341,6 +341,7 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 	case e.Name != nil && e.VPC != nil:
 		filters = append(filters, awsup.NewEC2Filter("vpc-id", *e.VPC.ID))
 		filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
+		filters = append(filters, awsup.NewEC2Filter("tag:kubernetes.io/cluster/"+c.T.Cluster.Name, "owned"))
 	default:
 		return nil, nil
 	}
