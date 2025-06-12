@@ -64,9 +64,12 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = &r.TargetSize
-	actual.UpdatePolicy = &UpdatePolicy{MinimalAction: r.UpdatePolicy.MinimalAction, Type: r.UpdatePolicy.Type}
 	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
+
+	if policy := r.UpdatePolicy; policy != nil {
+		actual.UpdatePolicy = &UpdatePolicy{MinimalAction: r.UpdatePolicy.MinimalAction, Type: r.UpdatePolicy.Type}
+	}
 
 	for _, targetPool := range r.TargetPools {
 		actual.TargetPools = append(actual.TargetPools, &TargetPool{
@@ -97,19 +100,20 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 		return err
 	}
 
-	updatePolicy := &compute.InstanceGroupManagerUpdatePolicy{
-		MinimalAction: e.UpdatePolicy.MinimalAction,
-		Type:          e.UpdatePolicy.Type,
-	}
-
 	i := &compute.InstanceGroupManager{
 		Name:                        *e.Name,
 		Zone:                        *e.Zone,
 		BaseInstanceName:            *e.BaseInstanceName,
 		TargetSize:                  *e.TargetSize,
-		UpdatePolicy:                updatePolicy,
 		InstanceTemplate:            instanceTemplateURL,
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
+	}
+
+	if policy := e.UpdatePolicy; policy != nil {
+		i.UpdatePolicy = &compute.InstanceGroupManagerUpdatePolicy{
+			MinimalAction: e.UpdatePolicy.MinimalAction,
+			Type:          e.UpdatePolicy.Type,
+		}
 	}
 
 	for _, targetPool := range e.TargetPools {
@@ -210,9 +214,11 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 		TargetSize:                  e.TargetSize,
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
 	}
-	tf.UpdatePolicy = &terraformUpdatePolicy{
-		MinimalAction: e.UpdatePolicy.MinimalAction,
-		Type:          e.UpdatePolicy.Type,
+	if policy := e.UpdatePolicy; policy != nil {
+		tf.UpdatePolicy = &terraformUpdatePolicy{
+			MinimalAction: e.UpdatePolicy.MinimalAction,
+			Type:          e.UpdatePolicy.Type,
+		}
 	}
 	tf.Version = &terraformVersion{
 		InstanceTemplate: e.InstanceTemplate.TerraformLink(),
