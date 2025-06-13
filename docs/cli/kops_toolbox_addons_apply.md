@@ -19,6 +19,7 @@ kops toolbox addons apply s3://<state_store>/<cluster_name>/addons/bootstrap-cha
 
 ```
   -h, --help   help for apply
+      --yes    Apply update
 ```
 
 ### Options inherited from parent commands
