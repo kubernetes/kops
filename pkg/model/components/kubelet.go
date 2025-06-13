@@ -161,7 +161,14 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	}
 
 	if cluster.Spec.ExternalCloudControllerManager != nil {
-		kubelet.CloudProvider = "external"
+		if cloudProvider == kops.CloudProviderMetal {
+			// metal does not (yet) have a cloud-controller-manager, so we don't need to set the cloud-provider flag
+			// If we do set it to external, kubelet will taint the node with the node.kops.k8s.io/uninitialized taint
+			// and there is no cloud-controller-manager to remove it
+			kubelet.CloudProvider = ""
+		} else {
+			kubelet.CloudProvider = "external"
+		}
 	}
 
 	// Prevent image GC from pruning the pause image
