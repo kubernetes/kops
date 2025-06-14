@@ -57,6 +57,23 @@ func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return fmt.Errorf("failed to create cgroupv2 mount unit: %w", err)
 	}
 
+	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04 {
+		// Make systemd-networkd ignore foreign settings, else it may
+		// unexpectedly delete IP rules and routes added by CNI
+		contents := `
+# Do not clobber any routes or rules added by CNI.
+[Network]
+ManageForeignRoutes=no
+ManageForeignRoutingPolicyRules=no
+`
+		c.AddTask(&nodetasks.File{
+			Path:            "/usr/lib/systemd/networkd.conf.d/99-cilium-foreign-routes.conf",
+			Contents:        fi.NewStringResource(contents),
+			Type:            nodetasks.FileType_File,
+			OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
+		})
+	}
+
 	return nil
 }
 
