@@ -48,7 +48,10 @@ func (b *AmazonVPCRoutedENIBuilder) Build(c *fi.NodeupModelBuilderContext) error
 				{"udevadm", "trigger"},
 			},
 		})
+	}
 
+	if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04) ||
+		b.Distribution == distributions.DistributionAmazonLinux2023 {
 		// Make systemd-networkd ignore foreign settings, else it may
 		// unexpectedly delete IP rules and routes added by CNI
 		contents := `
