@@ -103,11 +103,11 @@ endif
 kops-install: kops
 	cp ${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops* ${GOBIN}
 
-.phony: channels-install # install channels to local $gopath/bin
+.PHONY: channels-install # install channels to local $gopath/bin
 channels-install: channels
 	cp ${DIST}/${OSARCH}/channels ${GOPATH_1ST}/bin
 
-.phony: nodeup-install # install channels to local $gopath/bin
+.PHONY: nodeup-install # install channels to local $gopath/bin
 nodeup-install: nodeup
 	cp ${DIST}/${OSARCH}/channels ${GOPATH_1ST}/bin
 
