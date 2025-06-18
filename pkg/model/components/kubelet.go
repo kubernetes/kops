@@ -206,7 +206,9 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 		kubelet.ShutdownGracePeriodCriticalPods = &metav1.Duration{Duration: 0}
 	}
 
-	kubelet.RegisterSchedulable = fi.PtrTo(true)
+	if kubernetesVersion.IsLT("1.34") {
+		kubelet.RegisterSchedulable = fi.PtrTo(true)
+	}
 
 	return nil
 }

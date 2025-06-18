@@ -1,0 +1,63 @@
+Assets:
+  amd64:
+  - ca9bd9026dc016661e214fac720b777b4545eedccb5eec7c63c3a7e23abd01fb@https://dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/amd64/kubelet
+  - 74acefdb8baf112007d4f1ef6e2c25f8a578d4020072c5143a04cd3fb30abe07@https://dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/amd64/kubectl
+  - 5035d7814c95cd3cedbc5efb447ef25a4942ef05caab2159746d55ce1698c74a@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/amd64/ecr-credential-provider-linux-amd64
+  - 2503ce29ac445715ebe146073f45468153f9e28f45fa173cb060cfd9e735f563@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz
+  - 02990fa281c0a2c4b073c6d2415d264b682bd693aa7d86c5d8eb4b86d684a18c@https://github.com/containerd/containerd/releases/download/v1.7.25/containerd-1.7.25-linux-amd64.tar.gz
+  - e83565aa78ec8f52a4d2b4eb6c4ca262b74c5f6770c1f43670c3029c20175502@https://github.com/opencontainers/runc/releases/download/v1.2.4/runc.amd64
+  - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
+  - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
+  arm64:
+  - 32b713cae8d3a9cea7e1a9942704a6cf1c7f7b7de44818fde9f862ebcd4fd61a@https://dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/arm64/kubelet
+  - 099a8152095537427b3bb2621593caa3793ff7dd416c11f6768812aeca940786@https://dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.34.0-alpha.1/bin/linux/arm64/kubectl
+  - b3d567bda9e2996fc1fbd9d13506bd16763d3865b5c7b0b3c4b48c6088c04481@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.27.1/linux/arm64/ecr-credential-provider-linux-arm64
+  - f0f440b968ab50ad13d9d42d993ba98ec30b2ec666846f4ef1bddc7646a701cc@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz
+  - e9201d478e4c931496344b779eb6cb40ce5084ec08c8fff159a02cabb0c6b9bf@https://github.com/containerd/containerd/releases/download/v1.7.25/containerd-1.7.25-linux-arm64.tar.gz
+  - 285f6c4c3de1d78d9f536a0299ae931219527b2ebd9ad89df5a1072896b7e82a@https://github.com/opencontainers/runc/releases/download/v1.2.4/runc.arm64
+  - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
+  - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
+CAs: {}
+ClusterName: minimal.example.com
+Hooks:
+- null
+- null
+InstallCNIAssets: true
+KeypairIDs:
+  kubernetes-ca: "6982820025135291416230495506"
+KubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.34.0-alpha.1
+  logLevel: 2
+KubeletConfig:
+  anonymousAuth: false
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: external
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-us-test-1a
+    node-role.kubernetes.io/node: ""
+  podInfraContainerImage: registry.k8s.io/pause:3.9
+  podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
+KubernetesVersion: 1.34.0-alpha.1
+Networking:
+  nonMasqueradeCIDR: 100.64.0.0/10
+  serviceClusterIPRange: 100.64.0.0/13
+UpdatePolicy: automatic
+containerdConfig:
+  logLevel: info
+  runc:
+    version: 1.2.4
+  version: 1.7.25
+usesLegacyGossip: false
+usesNoneDNS: false
