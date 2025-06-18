@@ -47,7 +47,6 @@ KubeletConfig:
   podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
-  registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
 KubernetesVersion: 1.34.0-alpha.1
