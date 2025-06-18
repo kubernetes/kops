@@ -375,7 +375,8 @@ func (c *Channel) HasUpstreamImagePrefix(image string) bool {
 		strings.HasPrefix(image, "ubuntu-os-cloud/ubuntu-2404-noble-") ||
 		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:") ||
 		strings.HasPrefix(image, "Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:") ||
-		strings.HasPrefix(image, "Canonical:ubuntu-24_04-lts:server-gen1:")
+		strings.HasPrefix(image, "Canonical:ubuntu-24_04-lts:server-gen1:") ||
+		strings.HasPrefix(image, "Canonical:ubuntu-24_04-lts:server:")
 }
 
 // GetPackageVersion returns the version for the package, or an error if could not be found.

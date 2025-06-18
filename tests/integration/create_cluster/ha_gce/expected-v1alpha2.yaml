@@ -73,7 +73,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: control-plane-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
   machineType: e2-medium
   maxSize: 1
   minSize: 1
@@ -93,7 +93,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: control-plane-us-test1-b
 spec:
-  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
   machineType: e2-medium
   maxSize: 1
   minSize: 1
@@ -113,7 +113,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: control-plane-us-test1-c
 spec:
-  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
   machineType: e2-medium
   maxSize: 1
   minSize: 1
@@ -133,7 +133,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
   machineType: e2-medium
   maxSize: 1
   minSize: 1
@@ -153,7 +153,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes-us-test1-b
 spec:
-  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
   machineType: e2-medium
   maxSize: 1
   minSize: 1
@@ -173,7 +173,7 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes-us-test1-c
 spec:
-  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
   machineType: e2-medium
   maxSize: 1
   minSize: 1

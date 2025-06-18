@@ -66,19 +66,19 @@ spec:
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250425
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20250617
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20250425
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20250617
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250502.1
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250502.1
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20250610
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.32.0"
@@ -94,11 +94,11 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.18.0 <1.27.0"
-    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20240607
+    - name: ubuntu-os-cloud/ubuntu-2204-jammy-v20250615
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20240701a
+    - name: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
@@ -106,11 +106,11 @@ spec:
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:22.04.202405140
+    - name: Canonical:0001-com-ubuntu-server-jammy:22_04-lts-gen2:22.04.202506120
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: Canonical:ubuntu-24_04-lts:server-gen1:24.04.202407011
+    - name: Canonical:ubuntu-24_04-lts:server:24.04.20250606
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
