@@ -63,7 +63,7 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.Name = &r.Name
 	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
-	actual.TargetSize = &r.TargetSize
+	actual.TargetSize = e.TargetSize
 	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
@@ -187,6 +187,7 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 }
 
 type terraformInstanceGroupManager struct {
+	Lifecycle                   *terraform.Lifecycle       `cty:"lifecycle"`
 	Name                        *string                    `cty:"name"`
 	Zone                        *string                    `cty:"zone"`
 	BaseInstanceName            *string                    `cty:"base_instance_name"`
@@ -213,6 +214,9 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 		BaseInstanceName:            e.BaseInstanceName,
 		TargetSize:                  e.TargetSize,
 		ListManagedInstancesResults: e.ListManagedInstancesResults,
+	}
+	tf.Lifecycle = &terraform.Lifecycle{
+		IgnoreChanges: []*terraformWriter.Literal{{String: "target_size"}},
 	}
 	if policy := e.UpdatePolicy; policy != nil {
 		tf.UpdatePolicy = &terraformUpdatePolicy{
