@@ -312,6 +312,28 @@ func TestMinimal_v1_32(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_33(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "minimal-1.33").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
+// TestMinimal runs the test on a minimum configuration
+func TestMinimal_v1_34(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "minimal-1.34").
+		withAddons(
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
 func TestMinimal_NoneDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").
