@@ -5,7 +5,7 @@ options:
   machineType: "E2_HIGHCPU_32"
 steps:
   # Push the images
-  - name: "mirror.gcr.io/library/golang:1.24.3-bookworm"
+  - name: "mirror.gcr.io/library/golang:1.24.4-bookworm"
     id: images
     entrypoint: make
     env:
@@ -21,7 +21,7 @@ steps:
       - dns-controller-push
       - kube-apiserver-healthcheck-push
   # Push the artifacts
-  - name: "mirror.gcr.io/library/golang:1.24.3-bookworm"
+  - name: "mirror.gcr.io/library/golang:1.24.4-bookworm"
     id: artifacts
     entrypoint: make
     env:
@@ -36,7 +36,7 @@ steps:
     args:
       - gcs-upload-and-tag
   # Build cloudbuild artifacts (for attestation)
-  - name: "mirror.gcr.io/library/golang:1.24.3-bookworm"
+  - name: "mirror.gcr.io/library/golang:1.24.4-bookworm"
     id: cloudbuild-artifacts
     entrypoint: make
     env:
