@@ -1,6 +1,6 @@
 module github.com/kubernetes/kops/tools/metal/dhcp
 
-go 1.22.6
+go 1.24.4
 
 require (
 	google.golang.org/grpc v1.66.0

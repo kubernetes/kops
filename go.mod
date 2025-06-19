@@ -1,7 +1,7 @@
 module k8s.io/kops
 
 // This should be kept in sync with cloudbuild.yaml and the other go.mod files
-go 1.24.3
+go 1.24.4
 
 godebug default=go1.24
 
