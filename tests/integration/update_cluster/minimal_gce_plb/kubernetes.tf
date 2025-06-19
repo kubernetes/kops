@@ -461,7 +461,10 @@ resource "google_compute_http_health_check" "api-minimal-gce-plb-example-com" {
 }
 
 resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gce-plb-example-com" {
-  base_instance_name             = "master-us-test1-a"
+  base_instance_name = "master-us-test1-a"
+  lifecycle {
+    ignore_changes = [target_size]
+  }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-master-us-test1-a-minimal-gce-plb-example-com"
   target_pools                   = [google_compute_target_pool.api-minimal-gce-plb-example-com.self_link]
@@ -473,7 +476,10 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gc
 }
 
 resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-plb-example-com" {
-  base_instance_name             = "nodes"
+  base_instance_name = "nodes"
+  lifecycle {
+    ignore_changes = [target_size]
+  }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-nodes-minimal-gce-plb-example-com"
   target_size                    = 2
