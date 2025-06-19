@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // CiliumBuilder writes Cilium's assets
@@ -55,6 +56,24 @@ func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	if err := b.buildCgroup2Mount(c); err != nil {
 		return fmt.Errorf("failed to create cgroupv2 mount unit: %w", err)
+	}
+
+	if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04) ||
+		b.Distribution == distributions.DistributionAmazonLinux2023 {
+		// Make systemd-networkd ignore foreign settings, else it may
+		// unexpectedly delete IP rules and routes added by CNI
+		contents := `
+# Do not clobber any routes or rules added by CNI.
+[Network]
+ManageForeignRoutes=no
+ManageForeignRoutingPolicyRules=no
+`
+		c.AddTask(&nodetasks.File{
+			Path:            "/usr/lib/systemd/networkd.conf.d/40-disable-manage-foreign-routes.conf",
+			Contents:        fi.NewStringResource(contents),
+			Type:            nodetasks.FileType_File,
+			OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
+		})
 	}
 
 	return nil
