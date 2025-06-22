@@ -27,6 +27,7 @@ kops update cluster [CLUSTER] [flags]
 ```
       --admin duration[=18h0m0s]       Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --allow-kops-downgrade           Allow an older version of kOps to update the cluster than last used
+      --api-server string              Override the API server used when communicating with the cluster kube-apiserver
       --create-kube-config             Will control automatically creating the kube config file on your local filesystem (default true)
   -h, --help                           help for cluster
       --ignore-kubelet-version-skew    Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running

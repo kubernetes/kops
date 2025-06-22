@@ -29,6 +29,7 @@ kops validate cluster [CLUSTER] [flags]
 ### Options
 
 ```
+      --api-server string   Override the API server used when communicating with the cluster kube-apiserver
       --count int           Number of consecutive successful validations required
   -h, --help                help for cluster
       --interval duration   Time in duration to wait between validation attempts (default 10s)

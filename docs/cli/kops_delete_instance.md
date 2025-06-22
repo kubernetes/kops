@@ -30,6 +30,7 @@ kops delete instance INSTANCE|NODE [flags]
 ### Options
 
 ```
+      --api-server string             Override the API server used when communicating with the cluster kube-apiserver
       --cloudonly                     Perform deletion update without confirming progress with Kubernetes
       --fail-on-drain-error           Fail if draining a node fails (default true)
       --fail-on-validate-error        Fail if the cluster fails to validate (default true)
