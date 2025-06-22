@@ -22,6 +22,7 @@ kops toolbox enroll [CLUSTER] [flags]
 ### Options
 
 ```
+      --api-server string       Override the API server used when communicating with the cluster kube-apiserver
       --cluster string          Name of cluster to join
   -h, --help                    help for enroll
       --host string             IP/hostname for machine to add
