@@ -185,6 +185,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return c.buildDOPath(p)
 	}
 
+	if strings.HasPrefix(p, "hos://") {
+		return c.buildHetznerPath(p)
+	}
+
 	if strings.HasPrefix(p, "memfs://") {
 		return c.buildMemFSPath(p)
 	}
@@ -350,6 +354,24 @@ func (c *VFSContext) buildDOPath(p string) (*S3Path, error) {
 	bucket := strings.TrimSuffix(u.Host, "/")
 	if bucket == "" {
 		return nil, fmt.Errorf("invalid spaces path: %q", p)
+	}
+
+	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, false)
+	return s3path, nil
+}
+
+func (c *VFSContext) buildHetznerPath(p string) (*S3Path, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid Hetzner Object Storage path: %q", p)
+	}
+	if u.Scheme != "hos" {
+		return nil, fmt.Errorf("invalid Hetzner object storage path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid Hetzner object storage path: %q", p)
 	}
 
 	s3path := newS3Path(c.s3Context, u.Scheme, bucket, u.Path, false)
