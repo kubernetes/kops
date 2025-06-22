@@ -738,7 +738,7 @@ github.com/googleapis/gax-go/v2/callctx
 github.com/googleapis/gax-go/v2/internal
 github.com/googleapis/gax-go/v2/internallog
 github.com/googleapis/gax-go/v2/internallog/internal
-# github.com/gophercloud/gophercloud/v2 v2.6.0
+# github.com/gophercloud/gophercloud/v2 v2.7.0
 ## explicit; go 1.22
 github.com/gophercloud/gophercloud/v2
 github.com/gophercloud/gophercloud/v2/openstack
@@ -746,6 +746,7 @@ github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/volumes
 github.com/gophercloud/gophercloud/v2/openstack/compute/v2/attachinterfaces
 github.com/gophercloud/gophercloud/v2/openstack/compute/v2/availabilityzones
 github.com/gophercloud/gophercloud/v2/openstack/compute/v2/flavors
+github.com/gophercloud/gophercloud/v2/openstack/compute/v2/instanceactions
 github.com/gophercloud/gophercloud/v2/openstack/compute/v2/keypairs
 github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servergroups
 github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers
