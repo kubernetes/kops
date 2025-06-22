@@ -171,7 +171,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
     resources:
       requests:
         cpu: 100m
@@ -183,6 +183,8 @@ spec:
     # TODO: Would be nice to scope this more tightly, but needed for volume mounting
     - mountPath: /rootfs
       name: rootfs
+    - mountPath: /etc/ssl
+      name: ca-certificates
     - mountPath: /run
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -196,6 +198,10 @@ spec:
       path: /
       type: Directory
     name: rootfs
+  - hostPath:
+      path: /etc/ssl
+      type: Directory
+    name: ca-certificates
   - hostPath:
       path: /run
       type: DirectoryOrCreate
@@ -558,7 +564,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	{
-		container.Command = exec.WithTee("/etcd-manager", args, "/var/log/etcd.log")
+		container.Command = exec.WithTee("/ko-app/etcd-manager", args, "/var/log/etcd.log")
 
 		cpuRequest := resource.MustParse("200m")
 		if etcdCluster.CPURequest != nil {
