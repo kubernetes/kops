@@ -50,6 +50,8 @@ func GuessCloudForPath(path string) (kops.CloudProviderID, error) {
 		return kops.CloudProviderAzure, nil
 	case strings.HasPrefix(path, "do://"):
 		return kops.CloudProviderDO, nil
+	case strings.HasPrefix(path, "hos://"):
+		return kops.CloudProviderHetzner, nil
 	case strings.HasPrefix(path, "gs://"):
 		return kops.CloudProviderGCE, nil
 	case strings.HasPrefix(path, "scw://"):
