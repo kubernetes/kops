@@ -24,6 +24,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
@@ -42,6 +43,10 @@ type CreateKubecfgOptions struct {
 	// User is the user to use in the kubeconfig
 	User string
 
+	// OverrideAPIServer overrides the API endpoint to use in the kubeconfig
+	// This takes precedence over the Internal option (if set)
+	OverrideAPIServer string
+
 	// Internal is whether to use the internal API endpoint
 	Internal bool
 
@@ -49,11 +54,19 @@ type CreateKubecfgOptions struct {
 	UseKopsAuthenticationPlugin bool
 }
 
+// AddCommonFlags adds the common flags to the flagset
+// These are the flags that are used when building an internal connection to the cluster.
+func (o *CreateKubecfgOptions) AddCommonFlags(flagset *pflag.FlagSet) {
+	flagset.StringVar(&o.OverrideAPIServer, "api-server", o.OverrideAPIServer, "Override the API server used when communicating with the cluster kube-apiserver")
+}
+
 func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.KeystoreReader, secretStore fi.SecretStore, cloud fi.Cloud, options CreateKubecfgOptions, kopsStateStore string) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	var server string
-	if options.Internal {
+	if options.OverrideAPIServer != "" {
+		server = options.OverrideAPIServer
+	} else if options.Internal {
 		server = "https://" + cluster.APIInternalName()
 	} else {
 		if cluster.Spec.API.PublicName != "" {

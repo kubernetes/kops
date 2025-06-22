@@ -405,6 +405,26 @@ func TestBuildKubecfg(t *testing.T) {
 			},
 			wantClientCert: false,
 		},
+		{
+			name: "Test Kube Config Data with APIEndpoint set",
+			args: args{
+				cluster: publicCluster,
+				status:  fakeStatus,
+				CreateKubecfgOptions: CreateKubecfgOptions{
+					Admin:             DefaultKubecfgAdminLifetime,
+					Internal:          true,
+					OverrideAPIServer: "https://api.testcluster.example.com",
+				},
+			},
+			want: &KubeconfigBuilder{
+				Context:       "testcluster",
+				Server:        "https://api.testcluster.example.com",
+				TLSServerName: "api.internal.testcluster",
+				CACerts:       []byte(nextCertificate + certData),
+				User:          "testcluster",
+			},
+			wantClientCert: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

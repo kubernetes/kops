@@ -26,6 +26,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/commands/commandutils"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 	"sigs.k8s.io/yaml"
@@ -64,7 +65,15 @@ type renderableCloudInstance struct {
 	State         string   `json:"state"`
 }
 
+type GetInstancesOptions struct {
+	*GetOptions
+	kubeconfig.CreateKubecfgOptions
+}
+
 func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *cobra.Command {
+	opt := GetInstancesOptions{
+		GetOptions: options,
+	}
 	cmd := &cobra.Command{
 		Use:               "instances [CLUSTER]",
 		Short:             getInstancesShort,
@@ -72,14 +81,16 @@ func NewCmdGetInstances(f *util.Factory, out io.Writer, options *GetOptions) *co
 		Args:              rootCommand.clusterNameArgs(&options.ClusterName),
 		ValidArgsFunction: commandutils.CompleteClusterName(f, true, false),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunGetInstances(cmd.Context(), f, out, options)
+			return RunGetInstances(cmd.Context(), f, out, &opt)
 		},
 	}
+
+	opt.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
 
 	return cmd
 }
 
-func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, options *GetOptions) error {
+func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, options *GetInstancesOptions) error {
 	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
@@ -99,12 +110,12 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 		return err
 	}
 
-	restConfig, err := f.RESTConfig(cluster)
+	restConfig, err := f.RESTConfig(ctx, cluster, options.CreateKubecfgOptions)
 	if err != nil {
 		return err
 	}
 
-	httpClient, err := f.HTTPClient(cluster)
+	httpClient, err := f.HTTPClient(restConfig)
 	if err != nil {
 		return err
 	}
