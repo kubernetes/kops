@@ -1986,6 +1986,7 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 
 			request.Owners = []string{owner}
 			request.Filters = append(request.Filters, NewEC2Filter("name", tokens[1]))
+			request.IncludeDeprecated = aws.Bool(true)
 		} else {
 			return nil, fmt.Errorf("image name specification not recognized: %q", name)
 		}
