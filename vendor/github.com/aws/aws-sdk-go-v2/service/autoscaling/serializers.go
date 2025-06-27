@@ -7181,6 +7181,11 @@ func awsAwsquery_serializeOpDocumentDescribeAutoScalingGroupsInput(v *DescribeAu
 		}
 	}
 
+	if v.IncludeInstances != nil {
+		objectKey := object.Key("IncludeInstances")
+		objectKey.Boolean(*v.IncludeInstances)
+	}
+
 	if v.MaxRecords != nil {
 		objectKey := object.Key("MaxRecords")
 		objectKey.Integer(*v.MaxRecords)

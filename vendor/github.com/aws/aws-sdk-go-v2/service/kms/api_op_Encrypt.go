@@ -89,9 +89,9 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 // [kms:Encrypt]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) Encrypt(ctx context.Context, params *EncryptInput, optFns ...func(*Options)) (*EncryptOutput, error) {
 	if params == nil {
 		params = &EncryptInput{}
@@ -141,10 +141,10 @@ type EncryptInput struct {
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// Specifies the encryption algorithm that KMS will use to encrypt the plaintext
@@ -175,8 +175,8 @@ type EncryptInput struct {
 	//
 	// For more information, see [Encryption context] in the Key Management Service Developer Guide.
 	//
-	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
-	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
+	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 	EncryptionContext map[string]string
 
 	// A list of grant tokens.
@@ -186,7 +186,7 @@ type EncryptInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	noSmithyDocumentSerde

@@ -31,6 +31,8 @@ import (
 //
 // # GetParametersForImport
 //
+// # ListKeyRotations
+//
 // # ImportKeyMaterial
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
@@ -39,7 +41,7 @@ import (
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [kms:DeleteImportedKeyMaterial]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [Importing Key Material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) DeleteImportedKeyMaterial(ctx context.Context, params *DeleteImportedKeyMaterialInput, optFns ...func(*Options)) (*DeleteImportedKeyMaterialOutput, error) {
 	if params == nil {
 		params = &DeleteImportedKeyMaterialInput{}
@@ -74,10 +76,27 @@ type DeleteImportedKeyMaterialInput struct {
 	// This member is required.
 	KeyId *string
 
+	// Identifies the imported key material you are deleting.
+	//
+	// If no KeyMaterialId is specified, KMS deletes the current key material.
+	//
+	// To get the list of key material IDs associated with a KMS key, use ListKeyRotations.
+	KeyMaterialId *string
+
 	noSmithyDocumentSerde
 }
 
 type DeleteImportedKeyMaterialOutput struct {
+
+	// The Amazon Resource Name ([key ARN] ) of the KMS key from which the key material was
+	// deleted.
+	//
+	// [key ARN]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN
+	KeyId *string
+
+	// Identifies the deleted key material.
+	KeyMaterialId *string
+
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
 

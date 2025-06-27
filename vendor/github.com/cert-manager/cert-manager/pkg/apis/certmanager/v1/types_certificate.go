@@ -99,6 +99,19 @@ const (
 	PKCS8 PrivateKeyEncoding = "PKCS8"
 )
 
+// +kubebuilder:validation:Enum=SHA256WithRSA;SHA384WithRSA;SHA512WithRSA;ECDSAWithSHA256;ECDSAWithSHA384;ECDSAWithSHA512;PureEd25519
+type SignatureAlgorithm string
+
+const (
+	SHA256WithRSA   SignatureAlgorithm = "SHA256WithRSA"
+	SHA384WithRSA   SignatureAlgorithm = "SHA384WithRSA"
+	SHA512WithRSA   SignatureAlgorithm = "SHA512WithRSA"
+	ECDSAWithSHA256 SignatureAlgorithm = "ECDSAWithSHA256"
+	ECDSAWithSHA384 SignatureAlgorithm = "ECDSAWithSHA384"
+	ECDSAWithSHA512 SignatureAlgorithm = "ECDSAWithSHA512"
+	PureEd25519     SignatureAlgorithm = "PureEd25519"
+)
+
 // CertificateSpec defines the desired state of Certificate.
 //
 // NOTE: The specification contains a lot of "requested" certificate attributes, it is
@@ -258,6 +271,13 @@ type CertificateSpec struct {
 	// +optional
 	PrivateKey *CertificatePrivateKey `json:"privateKey,omitempty"`
 
+	// Signature algorithm to use.
+	// Allowed values for RSA keys: SHA256WithRSA, SHA384WithRSA, SHA512WithRSA.
+	// Allowed values for ECDSA keys: ECDSAWithSHA256, ECDSAWithSHA384, ECDSAWithSHA512.
+	// Allowed values for Ed25519 keys: PureEd25519.
+	// +optional
+	SignatureAlgorithm SignatureAlgorithm `json:"signatureAlgorithm,omitempty"`
+
 	// Whether the KeyUsage and ExtKeyUsage extensions should be set in the encoded CSR.
 	//
 	// This option defaults to true, and should only be disabled if the target
@@ -272,17 +292,12 @@ type CertificateSpec struct {
 	// revisions exceeds this number.
 	//
 	// If set, revisionHistoryLimit must be a value of `1` or greater.
-	// If unset (`nil`), revisions will not be garbage collected.
-	// Default value is `nil`.
+	// Default value is `1`.
 	// +optional
 	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty"`
 
 	// Defines extra output formats of the private key and signed certificate chain
 	// to be written to this Certificate's target Secret.
-	//
-	// This is a Beta Feature enabled by default. It can be disabled with the
-	// `--feature-gates=AdditionalCertificateOutputFormats=false` option set on both
-	// the controller and webhook components.
 	// +optional
 	AdditionalOutputFormats []CertificateAdditionalOutputFormat `json:"additionalOutputFormats,omitempty"`
 
@@ -321,7 +336,11 @@ type CertificatePrivateKey struct {
 	// to await user intervention.
 	// If set to `Always`, a private key matching the specified requirements
 	// will be generated whenever a re-issuance occurs.
-	// Default is `Never` for backward compatibility.
+	// Default is `Always`.
+	// The default was changed from `Never` to `Always` in cert-manager >=v1.18.0.
+	// The new default can be disabled by setting the
+	// `--feature-gates=DefaultPrivateKeyRotationPolicyAlways=false` option on
+	// the controller component.
 	// +optional
 	RotationPolicy PrivateKeyRotationPolicy `json:"rotationPolicy,omitempty"`
 
@@ -512,7 +531,7 @@ type PKCS12Keystore struct {
 	// `LegacyRC2`: Deprecated. Not supported by default in OpenSSL 3 or Java 20.
 	// `LegacyDES`: Less secure algorithm. Use this option for maximal compatibility.
 	// `Modern2023`: Secure algorithm. Use this option in case you have to always use secure algorithms
-	// (eg. because of company policy). Please note that the security of the algorithm is not that important
+	// (e.g., because of company policy). Please note that the security of the algorithm is not that important
 	// in reality, because the unencrypted certificate and private key are also stored in the Secret.
 	// +optional
 	Profile PKCS12Profile `json:"profile,omitempty"`

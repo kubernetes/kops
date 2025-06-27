@@ -19,9 +19,9 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 
-	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,33 +37,34 @@ type CertificateRequestsGetter interface {
 
 // CertificateRequestInterface has methods to work with CertificateRequest resources.
 type CertificateRequestInterface interface {
-	Create(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.CreateOptions) (*v1.CertificateRequest, error)
-	Update(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.UpdateOptions) (*v1.CertificateRequest, error)
+	Create(ctx context.Context, certificateRequest *certmanagerv1.CertificateRequest, opts metav1.CreateOptions) (*certmanagerv1.CertificateRequest, error)
+	Update(ctx context.Context, certificateRequest *certmanagerv1.CertificateRequest, opts metav1.UpdateOptions) (*certmanagerv1.CertificateRequest, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, certificateRequest *v1.CertificateRequest, opts metav1.UpdateOptions) (*v1.CertificateRequest, error)
+	UpdateStatus(ctx context.Context, certificateRequest *certmanagerv1.CertificateRequest, opts metav1.UpdateOptions) (*certmanagerv1.CertificateRequest, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.CertificateRequest, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*v1.CertificateRequestList, error)
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*certmanagerv1.CertificateRequest, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.CertificateRequestList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.CertificateRequest, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.CertificateRequest, err error)
 	CertificateRequestExpansion
 }
 
 // certificateRequests implements CertificateRequestInterface
 type certificateRequests struct {
-	*gentype.ClientWithList[*v1.CertificateRequest, *v1.CertificateRequestList]
+	*gentype.ClientWithList[*certmanagerv1.CertificateRequest, *certmanagerv1.CertificateRequestList]
 }
 
 // newCertificateRequests returns a CertificateRequests
 func newCertificateRequests(c *CertmanagerV1Client, namespace string) *certificateRequests {
 	return &certificateRequests{
-		gentype.NewClientWithList[*v1.CertificateRequest, *v1.CertificateRequestList](
+		gentype.NewClientWithList[*certmanagerv1.CertificateRequest, *certmanagerv1.CertificateRequestList](
 			"certificaterequests",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1.CertificateRequest { return &v1.CertificateRequest{} },
-			func() *v1.CertificateRequestList { return &v1.CertificateRequestList{} }),
+			func() *certmanagerv1.CertificateRequest { return &certmanagerv1.CertificateRequest{} },
+			func() *certmanagerv1.CertificateRequestList { return &certmanagerv1.CertificateRequestList{} },
+		),
 	}
 }

@@ -1,3 +1,36 @@
+# v1.39.3 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.39.2 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.39.1 (2025-06-06)
+
+* No change notes available for this release.
+
+# v1.39.0 (2025-04-16)
+
+* **Feature**: Adding support for KmsKeyIdentifer in CreateConnection, UpdateConnection and DescribeConnection APIs
+
+# v1.38.1 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.38.0 (2025-04-04)
+
+* **Feature**: Amazon EventBridge adds support for customer-managed keys on Archives and validations for two fields: eventSourceArn and kmsKeyIdentifier.
+
+# v1.37.3 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.37.2 (2025-03-27)
+
+* No change notes available for this release.
+
 # v1.37.1 (2025-03-04.2)
 
 * **Bug Fix**: Add assurance test for operation order.

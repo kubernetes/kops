@@ -20,8 +20,8 @@ import (
 // determine which grants you may retire. To retire a grant, use the RetireGrantoperation.
 //
 // For detailed information about grants, including grant terminology, see [Grants in KMS] in the
-// Key Management Service Developer Guide . For examples of working with grants in
-// several programming languages, see [Programming grants].
+// Key Management Service Developer Guide . For examples of creating grants in
+// several programming languages, see [Use CreateGrant with an Amazon Web Services SDK or CLI].
 //
 // Cross-account use: You must specify a principal in your Amazon Web Services
 // account. This operation returns a list of grants where the retiring principal
@@ -52,10 +52,10 @@ import (
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
-// [Programming grants]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html
 // [kms:ListRetirableGrants]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [Grants in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [Use CreateGrant with an Amazon Web Services SDK or CLI]: https://docs.aws.amazon.com/kms/latest/developerguide/example_kms_CreateGrant_section.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) ListRetirableGrants(ctx context.Context, params *ListRetirableGrantsInput, optFns ...func(*Options)) (*ListRetirableGrantsOutput, error) {
 	if params == nil {
 		params = &ListRetirableGrantsInput{}

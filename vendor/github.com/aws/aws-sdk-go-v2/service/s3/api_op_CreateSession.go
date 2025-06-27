@@ -219,6 +219,13 @@ type CreateSessionInput struct {
 	// Amazon S3 encrypts data with SSE-S3. For more information, see [Protecting data with server-side encryption]in the Amazon S3
 	// User Guide.
 	//
+	// S3 access points for Amazon FSx - When accessing data stored in Amazon FSx file
+	// systems using S3 access points, the only valid server side encryption option is
+	// aws:fsx . All Amazon FSx file systems have encryption configured by default and
+	// are encrypted at rest. Data is automatically encrypted before being written to
+	// the file system, and automatically decrypted as it is read. These processes are
+	// handled transparently by Amazon FSx.
+	//
 	// [Protecting data with server-side encryption]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/serv-side-encryption.html
 	ServerSideEncryption types.ServerSideEncryption
 
@@ -264,6 +271,9 @@ type CreateSessionOutput struct {
 
 	// The server-side encryption algorithm used when you store objects in the
 	// directory bucket.
+	//
+	// When accessing data stored in Amazon FSx file systems using S3 access points,
+	// the only valid server side encryption option is aws:fsx .
 	ServerSideEncryption types.ServerSideEncryption
 
 	// Metadata pertaining to the operation's result.

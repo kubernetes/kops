@@ -1,3 +1,24 @@
+# v1.42.2 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.42.1 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.42.0 (2025-05-12)
+
+* **Feature**: Updating the endpoint list for the Identity and access management (IAM) service
+
+# v1.41.1 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.41.0 (2025-03-27)
+
+* **Feature**: Update IAM dual-stack endpoints for BJS, IAD and PDT partitions
+
 # v1.40.2 (2025-03-21)
 
 * No change notes available for this release.

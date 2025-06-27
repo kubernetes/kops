@@ -1,3 +1,28 @@
+# v1.46.0 (2025-06-24)
+
+* **Feature**: Add Paginator for DescribeAccountLimits, and fix Paginators for DescribeTrustStoreAssociations, DescribeTrustStoreRevocations, and DescribeTrustStores
+
+# v1.45.5 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.4 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.3 (2025-06-06)
+
+* No change notes available for this release.
+
+# v1.45.2 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.45.1 (2025-04-03)
+
+* No change notes available for this release.
+
 # v1.45.0 (2025-03-07)
 
 * **Feature**: This release adds support for assigning IP addresses to Application Load Balancers from VPC IP Address Manager pools.

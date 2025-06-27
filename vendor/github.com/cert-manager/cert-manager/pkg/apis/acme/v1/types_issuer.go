@@ -46,7 +46,7 @@ type ACMEIssuer struct {
 	// PreferredChain is the chain to use if the ACME server outputs multiple.
 	// PreferredChain is no guarantee that this one gets delivered by the ACME
 	// endpoint.
-	// For example, for Let's Encrypt's DST crosssign you would use:
+	// For example, for Let's Encrypt's DST cross-sign you would use:
 	// "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA.
 	// This value picks the first certificate bundle in the combined set of
 	// ACME default and alternative chains that has a root-most certificate with
@@ -114,6 +114,11 @@ type ACMEIssuer struct {
 	// Defaults to false.
 	// +optional
 	EnableDurationFeature bool `json:"enableDurationFeature,omitempty"`
+
+	// Profile allows requesting a certificate profile from the ACME server.
+	// Supported profiles are listed by the server's ACME directory URL.
+	// +optional
+	Profile string `json:"profile,omitempty"`
 }
 
 // ACMEExternalAccountBinding is a reference to a CA external account of the ACME
@@ -163,7 +168,7 @@ type ACMEChallengeSolver struct {
 	// Configures cert-manager to attempt to complete authorizations by
 	// performing the HTTP01 challenge flow.
 	// It is not possible to obtain certificates for wildcard domain names
-	// (e.g. `*.example.com`) using the HTTP01 challenge mechanism.
+	// (e.g., `*.example.com`) using the HTTP01 challenge mechanism.
 	// +optional
 	HTTP01 *ACMEChallengeSolverHTTP01 `json:"http01,omitempty"`
 
@@ -702,16 +707,16 @@ type ACMEIssuerDNS01ProviderAzureDNS struct {
 // If the AZURE_FEDERATED_TOKEN_FILE environment variable is set, the Azure Workload Identity will be used.
 // Otherwise, we fall-back to using Azure Managed Service Identity.
 type AzureManagedIdentity struct {
-	// client ID of the managed identity, can not be used at the same time as resourceID
+	// client ID of the managed identity, cannot be used at the same time as resourceID
 	// +optional
 	ClientID string `json:"clientID,omitempty"`
 
-	// resource ID of the managed identity, can not be used at the same time as clientID
+	// resource ID of the managed identity, cannot be used at the same time as clientID
 	// Cannot be used for Azure Managed Service Identity
 	// +optional
 	ResourceID string `json:"resourceID,omitempty"`
 
-	// tenant ID of the managed identity, can not be used at the same time as resourceID
+	// tenant ID of the managed identity, cannot be used at the same time as resourceID
 	// +optional
 	TenantID string `json:"tenantID,omitempty"`
 }
@@ -772,14 +777,14 @@ type ACMEIssuerDNS01ProviderWebhook struct {
 
 	// The name of the solver to use, as defined in the webhook provider
 	// implementation.
-	// This will typically be the name of the provider, e.g. 'cloudflare'.
+	// This will typically be the name of the provider, e.g., 'cloudflare'.
 	SolverName string `json:"solverName"`
 
 	// Additional configuration that should be passed to the webhook apiserver
 	// when challenges are processed.
 	// This can contain arbitrary JSON data.
 	// Secret values should not be specified in this stanza.
-	// If secret values are needed (e.g. credentials for a DNS service), you
+	// If secret values are needed (e.g., credentials for a DNS service), you
 	// should use a SecretKeySelector to reference a Secret resource.
 	// For details on the schema of this field, consult the webhook provider
 	// implementation's documentation.

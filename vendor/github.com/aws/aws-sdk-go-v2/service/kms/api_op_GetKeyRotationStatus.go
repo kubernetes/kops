@@ -15,9 +15,10 @@ import (
 // including whether [automatic rotation of the key material]is enabled for the specified KMS key, the [rotation period], and the next
 // scheduled rotation date.
 //
-// Automatic key rotation is supported only on [symmetric encryption KMS keys]. You cannot enable automatic
-// rotation of [asymmetric KMS keys], [HMAC KMS keys], KMS keys with [imported key material], or KMS keys in a [custom key store]. To enable or disable
-// automatic rotation of a set of related [multi-Region keys], set the property on the primary key..
+// Automatic key rotation is supported only on symmetric encryption KMS keys. You
+// cannot enable automatic rotation of [asymmetric KMS keys], [HMAC KMS keys], KMS keys with [imported key material], or KMS keys in a [custom key store]. To
+// enable or disable automatic rotation of a set of related [multi-Region keys], set the property on
+// the primary key.
 //
 // You can enable (EnableKeyRotation ) and disable automatic rotation (DisableKeyRotation ) of the key material in
 // customer managed KMS keys. Key material rotation of [Amazon Web Services managed KMS keys]is not configurable. KMS
@@ -74,12 +75,11 @@ import (
 // [rotation period]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotation-period
 // [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
 // [kms:GetKeyRotationStatus]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [automatic rotation of the key material]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
+// [automatic rotation of the key material]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-enable-disable.html
 // [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
-// [symmetric encryption KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks
-// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#multi-region-rotate
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) GetKeyRotationStatus(ctx context.Context, params *GetKeyRotationStatusInput, optFns ...func(*Options)) (*GetKeyRotationStatusOutput, error) {
 	if params == nil {
 		params = &GetKeyRotationStatusInput{}
@@ -131,12 +131,11 @@ type GetKeyRotationStatusOutput struct {
 	// Identifies the date and time that an in progress on-demand rotation was
 	// initiated.
 	//
-	// The KMS API follows an [eventual consistency] model due to the distributed nature of the system. As a
-	// result, there might be a slight delay between initiating on-demand key rotation
-	// and the rotation's completion. Once the on-demand rotation is complete, use ListKeyRotationsto
-	// view the details of the on-demand rotation.
-	//
-	// [eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+	// KMS uses a background process to perform rotations. As a result, there might be
+	// a slight delay between initiating on-demand key rotation and the rotation's
+	// completion. Once the on-demand rotation is complete, KMS removes this field from
+	// the response. You can use ListKeyRotationsto view the details of the completed on-demand
+	// rotation.
 	OnDemandRotationStartDate *time.Time
 
 	// The number of days between each automatic rotation. The default value is 365

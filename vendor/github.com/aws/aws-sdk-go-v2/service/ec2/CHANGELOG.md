@@ -1,3 +1,96 @@
+# v1.227.0 (2025-06-26)
+
+* **Feature**: This release adds support for OdbNetworkArn as a target in VPC Route Tables
+
+# v1.226.0 (2025-06-24)
+
+* **Feature**: This release allows you to create and register AMIs while maintaining their underlying EBS snapshots within Local Zones.
+
+# v1.225.2 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.225.1 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.225.0 (2025-06-09)
+
+* **Feature**: Release to support Elastic VMware Service (Amazon EVS) Subnet and Amazon EVS Network Interface Types.
+
+# v1.224.1 (2025-06-06)
+
+* No change notes available for this release.
+
+# v1.224.0 (2025-05-28)
+
+* **Feature**: Enable the option to automatically delete underlying Amazon EBS snapshots when deregistering Amazon Machine Images (AMIs)
+
+# v1.223.0 (2025-05-27)
+
+* **Feature**: This release adds three features - option to store AWS Site-to-Site VPN pre-shared keys in AWS Secrets Manager, GetActiveVpnTunnelStatus API to check the in-use VPN algorithms, and SampleType option in GetVpnConnectionDeviceSampleConfiguration API to get recommended sample configs for VPN devices.
+
+# v1.222.0 (2025-05-23)
+
+* **Feature**: This release adds support for the C7i-flex, M7i-flex, I7i, I7ie, I8g, P6-b200, Trn2, C8gd, M8gd and R8gd instances
+
+# v1.221.0 (2025-05-21)
+
+* **Feature**: Release of Dualstack and Ipv6-only EC2 Public DNS hostnames
+
+# v1.220.0 (2025-05-20)
+
+* **Feature**: This release expands the ModifyInstanceMaintenanceOptions API to enable or disable instance migration during customer-initiated reboots for EC2 Scheduled Reboot Events.
+
+# v1.219.0 (2025-05-19)
+
+* **Feature**: This release includes new APIs for System Integrity Protection (SIP) configuration and automated root volume ownership delegation for EC2 Mac instances.
+
+# v1.218.0 (2025-05-12)
+
+* **Feature**: EC2 - Adding support for AvailabilityZoneId
+
+# v1.217.0 (2025-05-08)
+
+* **Feature**: Launching the feature to support ENA queues offering flexibility to support multiple queues per Enhanced Network Interface (ENI)
+
+# v1.216.0 (2025-05-07)
+
+* **Feature**: This release adds API support for Path Component Exclusion (Filter Out ARN) for Reachability Analyzer
+
+# v1.215.0 (2025-05-06)
+
+* **Feature**: This release adds support for Amazon EBS Provisioned Rate for Volume Initialization, which lets you specify a volume initialization rate to ensure that your EBS volumes are initialized in a predictable amount of time.
+
+# v1.214.0 (2025-05-05)
+
+* **Feature**: This update introduces API operations to manage and create local gateway VIF and VIF groups. It also includes API operations to describe Outpost LAGs and service link VIFs.
+
+# v1.213.0 (2025-04-30)
+
+* **Feature**: Launch of cost distribution feature for IPAM owners to distribute costs to internal teams.
+
+# v1.212.0 (2025-04-22)
+
+* **Feature**: Added support for  ClientRouteEnforcementOptions flag in CreateClientVpnEndpoint and ModifyClientVpnEndpoint requests and DescribeClientVpnEndpoints responses
+
+# v1.211.3 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.211.2 (2025-04-04)
+
+* **Documentation**: Doc-only updates for Amazon EC2
+
+# v1.211.1 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.211.0 (2025-03-31)
+
+* **Feature**: Release VPC Route Server, a new feature allowing dynamic routing in VPCs.
+
 # v1.210.1 (2025-03-19)
 
 * **Documentation**: Doc-only updates for EC2 for March 2025.

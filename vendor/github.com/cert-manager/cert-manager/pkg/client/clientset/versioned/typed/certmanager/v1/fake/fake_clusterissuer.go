@@ -19,120 +19,32 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeClusterIssuers implements ClusterIssuerInterface
-type FakeClusterIssuers struct {
+// fakeClusterIssuers implements ClusterIssuerInterface
+type fakeClusterIssuers struct {
+	*gentype.FakeClientWithList[*v1.ClusterIssuer, *v1.ClusterIssuerList]
 	Fake *FakeCertmanagerV1
 }
 
-var clusterissuersResource = v1.SchemeGroupVersion.WithResource("clusterissuers")
-
-var clusterissuersKind = v1.SchemeGroupVersion.WithKind("ClusterIssuer")
-
-// Get takes name of the clusterIssuer, and returns the corresponding clusterIssuer object, and an error if there is any.
-func (c *FakeClusterIssuers) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.ClusterIssuer, err error) {
-	emptyResult := &v1.ClusterIssuer{}
-	obj, err := c.Fake.
-		Invokes(testing.NewRootGetActionWithOptions(clusterissuersResource, name, options), emptyResult)
-	if obj == nil {
-		return emptyResult, err
+func newFakeClusterIssuers(fake *FakeCertmanagerV1) certmanagerv1.ClusterIssuerInterface {
+	return &fakeClusterIssuers{
+		gentype.NewFakeClientWithList[*v1.ClusterIssuer, *v1.ClusterIssuerList](
+			fake.Fake,
+			"",
+			v1.SchemeGroupVersion.WithResource("clusterissuers"),
+			v1.SchemeGroupVersion.WithKind("ClusterIssuer"),
+			func() *v1.ClusterIssuer { return &v1.ClusterIssuer{} },
+			func() *v1.ClusterIssuerList { return &v1.ClusterIssuerList{} },
+			func(dst, src *v1.ClusterIssuerList) { dst.ListMeta = src.ListMeta },
+			func(list *v1.ClusterIssuerList) []*v1.ClusterIssuer { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1.ClusterIssuerList, items []*v1.ClusterIssuer) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1.ClusterIssuer), err
-}
-
-// List takes label and field selectors, and returns the list of ClusterIssuers that match those selectors.
-func (c *FakeClusterIssuers) List(ctx context.Context, opts metav1.ListOptions) (result *v1.ClusterIssuerList, err error) {
-	emptyResult := &v1.ClusterIssuerList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewRootListActionWithOptions(clusterissuersResource, clusterissuersKind, opts), emptyResult)
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1.ClusterIssuerList{ListMeta: obj.(*v1.ClusterIssuerList).ListMeta}
-	for _, item := range obj.(*v1.ClusterIssuerList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested clusterIssuers.
-func (c *FakeClusterIssuers) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewRootWatchActionWithOptions(clusterissuersResource, opts))
-}
-
-// Create takes the representation of a clusterIssuer and creates it.  Returns the server's representation of the clusterIssuer, and an error, if there is any.
-func (c *FakeClusterIssuers) Create(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.CreateOptions) (result *v1.ClusterIssuer, err error) {
-	emptyResult := &v1.ClusterIssuer{}
-	obj, err := c.Fake.
-		Invokes(testing.NewRootCreateActionWithOptions(clusterissuersResource, clusterIssuer, opts), emptyResult)
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ClusterIssuer), err
-}
-
-// Update takes the representation of a clusterIssuer and updates it. Returns the server's representation of the clusterIssuer, and an error, if there is any.
-func (c *FakeClusterIssuers) Update(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (result *v1.ClusterIssuer, err error) {
-	emptyResult := &v1.ClusterIssuer{}
-	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateActionWithOptions(clusterissuersResource, clusterIssuer, opts), emptyResult)
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ClusterIssuer), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeClusterIssuers) UpdateStatus(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (result *v1.ClusterIssuer, err error) {
-	emptyResult := &v1.ClusterIssuer{}
-	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateSubresourceActionWithOptions(clusterissuersResource, "status", clusterIssuer, opts), emptyResult)
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ClusterIssuer), err
-}
-
-// Delete takes name of the clusterIssuer and deletes it. Returns an error if one occurs.
-func (c *FakeClusterIssuers) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewRootDeleteActionWithOptions(clusterissuersResource, name, opts), &v1.ClusterIssuer{})
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeClusterIssuers) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
-	action := testing.NewRootDeleteCollectionActionWithOptions(clusterissuersResource, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1.ClusterIssuerList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched clusterIssuer.
-func (c *FakeClusterIssuers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ClusterIssuer, err error) {
-	emptyResult := &v1.ClusterIssuer{}
-	obj, err := c.Fake.
-		Invokes(testing.NewRootPatchSubresourceActionWithOptions(clusterissuersResource, name, pt, data, opts, subresources...), emptyResult)
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.ClusterIssuer), err
 }

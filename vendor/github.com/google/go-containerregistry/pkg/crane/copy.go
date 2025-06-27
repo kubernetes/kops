@@ -114,7 +114,7 @@ func CopyRepository(src, dst string, opt ...Option) error {
 			if errors.As(err, &terr) {
 				// Some registries create repository on first push, so listing tags will fail.
 				// If we see 404 or 403, assume we failed because the repository hasn't been created yet.
-				if !(terr.StatusCode == http.StatusNotFound || terr.StatusCode == http.StatusForbidden) {
+				if terr.StatusCode != http.StatusNotFound && terr.StatusCode != http.StatusForbidden {
 					return err
 				}
 			} else {

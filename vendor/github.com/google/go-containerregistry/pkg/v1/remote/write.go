@@ -101,7 +101,7 @@ func makeWriter(ctx context.Context, repo name.Repository, ls []v1.Layer, o *opt
 // url returns a url.Url for the specified path in the context of this remote image reference.
 func (w *writer) url(path string) url.URL {
 	return url.URL{
-		Scheme: w.repo.Registry.Scheme(),
+		Scheme: w.repo.Scheme(),
 		Host:   w.repo.RegistryStr(),
 		Path:   path,
 	}
@@ -394,7 +394,7 @@ func (w *writer) uploadOne(ctx context.Context, l v1.Layer) error {
 			return err
 		}
 		smt := string(mt)
-		if !(strings.HasSuffix(smt, "+json") || strings.HasSuffix(smt, "+yaml")) {
+		if !strings.HasSuffix(smt, "+json") && !strings.HasSuffix(smt, "+yaml") {
 			ctx = redact.NewContext(ctx, "omitting binary blobs from logs")
 		}
 

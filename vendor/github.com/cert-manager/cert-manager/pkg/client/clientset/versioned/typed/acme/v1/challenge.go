@@ -19,9 +19,9 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 
-	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,33 +37,34 @@ type ChallengesGetter interface {
 
 // ChallengeInterface has methods to work with Challenge resources.
 type ChallengeInterface interface {
-	Create(ctx context.Context, challenge *v1.Challenge, opts metav1.CreateOptions) (*v1.Challenge, error)
-	Update(ctx context.Context, challenge *v1.Challenge, opts metav1.UpdateOptions) (*v1.Challenge, error)
+	Create(ctx context.Context, challenge *acmev1.Challenge, opts metav1.CreateOptions) (*acmev1.Challenge, error)
+	Update(ctx context.Context, challenge *acmev1.Challenge, opts metav1.UpdateOptions) (*acmev1.Challenge, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, challenge *v1.Challenge, opts metav1.UpdateOptions) (*v1.Challenge, error)
+	UpdateStatus(ctx context.Context, challenge *acmev1.Challenge, opts metav1.UpdateOptions) (*acmev1.Challenge, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.Challenge, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*v1.ChallengeList, error)
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*acmev1.Challenge, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*acmev1.ChallengeList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Challenge, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *acmev1.Challenge, err error)
 	ChallengeExpansion
 }
 
 // challenges implements ChallengeInterface
 type challenges struct {
-	*gentype.ClientWithList[*v1.Challenge, *v1.ChallengeList]
+	*gentype.ClientWithList[*acmev1.Challenge, *acmev1.ChallengeList]
 }
 
 // newChallenges returns a Challenges
 func newChallenges(c *AcmeV1Client, namespace string) *challenges {
 	return &challenges{
-		gentype.NewClientWithList[*v1.Challenge, *v1.ChallengeList](
+		gentype.NewClientWithList[*acmev1.Challenge, *acmev1.ChallengeList](
 			"challenges",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1.Challenge { return &v1.Challenge{} },
-			func() *v1.ChallengeList { return &v1.ChallengeList{} }),
+			func() *acmev1.Challenge { return &acmev1.Challenge{} },
+			func() *acmev1.ChallengeList { return &acmev1.ChallengeList{} },
+		),
 	}
 }

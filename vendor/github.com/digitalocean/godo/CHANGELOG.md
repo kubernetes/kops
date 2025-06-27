@@ -1,5 +1,81 @@
 # Change Log
 
+## [v1.155.0] - 2025-06-26
+
+- #854 - @anup-deka - Implementation for Agent Route and Agent Versions 
+- #858 - @imaskm - Fix byoip create resp
+
+## [v1.154.0] - 2025-06-23
+
+- #856 - @imaskm - Fix byoip names with byoipPrefix
+
+## [v1.153.0] - 2025-06-23
+
+- #850 - @imaskm - Add byoip APIs support
+- #851 - @guptado - [VPC-4603] godo: PNC HA support
+
+## [v1.152.0] - 2025-06-16
+
+- #846 - @harshmaru7 - GenAI Knowledgebase endpoints 
+- #849 - @danaelhe - Databases: Add mongo_user_settings
+
+## [v1.151.0] - 2025-06-03
+
+- #847 - @thearyanahmed - Apps add instance alias
+
+## [v1.150.0] - 2025-05-29
+
+- #844 - @thearyanahmed - Add App Platform Edge Control settings
+
+## [v1.149.0] - 2025-05-27
+
+- #839 - @asaha2 - Rename as vpc nat gateways
+- #841 - @d-honeybadger - expose custom Kubernetes CA expanders
+- #840 - @wez470 - partner-network-connect: Add redundancy zone
+- #836 - @asaha2 - Support gateway size config
+- #834 - @anup-deka - GenAI Agent Service
+- #835 - @asaha2 - Fix url opts encoding for egress-gateways
+
+## [v1.148.0] - 2025-05-14
+
+- #824 - @asaha2 - Introduce egress-gateway service api
+
+## [v1.147.0] - 2025-05-14
+
+- #831 - @thearyanahmed - Implement GetAppInstances - allowing users to list currently running compute instances
+
+## [v1.146.1] - 2025-05-09
+
+- #828 - @thearyanahmed - Pass GetExec() request params as query params
+
+## [v1.146.0] - 2025-05-09
+
+- #826 - @ssaengs - APPS-5889: add liveness health check, update comment
+- #820 - @thearyanahmed - Add support to exec into a specific instance
+- #823 - @blesswinsamuel - APPS-10997 Add AUTOSCALE_FAILED alert
+
+## [v1.145.0] - 2025-04-30
+
+- #821 - @greeshmapill - APPS-11076: Add support for VALKEY as a database engine option
+- #817 - @ZachEddy - Bring app spec changes for subdomain routing to godo
+
+## [v1.144.0] - 2025-04-24
+
+- #818 - @dweinshenker - Support Valkey in DatabaseOptions
+
+## [v1.143.0] - 2025-04-22
+
+- #815 - @StephenVarela - Support Load Balancers tls-cipher-policy
+
+## [v1.142.0] - 2025-03-27
+
+- #813 - @lfundaro-do - partner-network-connect: fix typo
+- #811 - @lfundaro-do - fix partner attachment rename
+- #810 - @apinonformoso - VPC-4359: remove custom unmarshaler for PNCs
+- #809 - @apinonformoso - hotfix: json field name
+- #808 - @apinonformoso - fix partner network connect json tags
+- #807 - @bentranter - Bump Go version to v1.23
+
 ## [v1.141.0] - 2025-03-20
 
 - #805 - @singhsaubhikdo - BLOCK-4316: Adds region param in ListSnapshot for resource type volume
@@ -20,7 +96,7 @@
 - #793 - @apinonformoso - add auth_key field
 - #789 - @guptado - [VPC-3917] Update get service key response model
 
-## [v1.138.0] - 2025-03-18
+## [v1.138.0] - 2025-02-18
 
 - #785 - @guptado - Support partner interconnect GetBgpAuthKey and RegenerateServiceKey operations
 - #787 - @andrewsomething - ci: upgrade to actions/cache@v4

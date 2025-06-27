@@ -25,9 +25,10 @@ import (
 // in progress rotations. You can use the ListKeyRotationsoperation to view the details of
 // completed rotations.
 //
-// Automatic key rotation is supported only on [symmetric encryption KMS keys]. You cannot enable automatic
-// rotation of [asymmetric KMS keys], [HMAC KMS keys], KMS keys with [imported key material], or KMS keys in a [custom key store]. To enable or disable
-// automatic rotation of a set of related [multi-Region keys], set the property on the primary key.
+// Automatic key rotation is supported only on symmetric encryption KMS keys. You
+// cannot enable automatic rotation of [asymmetric KMS keys], [HMAC KMS keys], KMS keys with [imported key material], or KMS keys in a [custom key store]. To
+// enable or disable automatic rotation of a set of related [multi-Region keys], set the property on
+// the primary key.
 //
 // You cannot enable or disable automatic rotation of [Amazon Web Services managed KMS keys]. KMS always rotates the key
 // material of Amazon Web Services managed keys every year. Rotation of [Amazon Web Services owned KMS keys]is managed
@@ -69,18 +70,17 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [kms:EnableKeyRotation]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk
-// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
 // [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
 // [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
 // [customer managed KMS key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk
-// [automatic rotation of the key material]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable
+// [automatic rotation of the key material]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-enable-disable.html
 // [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
-// [symmetric encryption KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk
+// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#multi-region-rotate
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) EnableKeyRotation(ctx context.Context, params *EnableKeyRotationInput, optFns ...func(*Options)) (*EnableKeyRotationOutput, error) {
 	if params == nil {
 		params = &EnableKeyRotationInput{}
@@ -116,8 +116,8 @@ type EnableKeyRotationInput struct {
 	// [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
 	// [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
 	// [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
-	// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate
-	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+	// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#multi-region-rotate
+	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 	//
 	// This member is required.
 	KeyId *string

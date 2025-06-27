@@ -26,9 +26,9 @@ import (
 // does not indicate that the custom key store is connected. To get the connection
 // state of the custom key store, use the DescribeCustomKeyStoresoperation.
 //
-// This operation is part of the [custom key stores] feature in KMS, which combines the convenience
-// and extensive integration of KMS with the isolation and control of a key store
-// that you own and manage.
+// This operation is part of the custom key stores feature in KMS, which combines
+// the convenience and extensive integration of KMS with the isolation and control
+// of a key store that you own and manage.
 //
 // The ConnectCustomKeyStore operation might fail for various reasons. To find the
 // reason, use the DescribeCustomKeyStoresoperation and see the ConnectionErrorCode in the response. For
@@ -95,14 +95,13 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [DescribeClusters]: https://docs.aws.amazon.com/cloudhsm/latest/APIReference/API_DescribeClusters.html
-// [custom key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
-// [kmsuser crypto user]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-concepts.html#concept-kmsuser
+// [kmsuser crypto user]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html#concept-kmsuser
 // [Troubleshooting an CloudHSM key store]: https://docs.aws.amazon.com/kms/latest/developerguide/fix-keystore.html
 // [CreateHsm]: https://docs.aws.amazon.com/cloudhsm/latest/APIReference/API_CreateHsm.html
 // [kms:ConnectCustomKeyStore]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [Troubleshooting an external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/xks-troubleshooting.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) ConnectCustomKeyStore(ctx context.Context, params *ConnectCustomKeyStoreInput, optFns ...func(*Options)) (*ConnectCustomKeyStoreOutput, error) {
 	if params == nil {
 		params = &ConnectCustomKeyStoreInput{}

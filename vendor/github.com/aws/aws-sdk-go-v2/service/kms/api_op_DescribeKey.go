@@ -32,7 +32,7 @@ import (
 //
 //   - Whether automatic key rotation is enabled on the KMS key. To get this
 //     information, use GetKeyRotationStatus. Also, some key states prevent a KMS key from being
-//     automatically rotated. For details, see [How Automatic Key Rotation Works]in the Key Management Service
+//     automatically rotated. For details, see [How key rotation works]in the Key Management Service
 //     Developer Guide.
 //
 //   - Tags on the KMS key. To get this information, use ListResourceTags.
@@ -71,12 +71,12 @@ import (
 //
 // [CloudHSM key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html
 // [external key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
+// [How key rotation works]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotate-keys-how-it-works
 // [customer managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk
 // [kms:DescribeKey]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [How Automatic Key Rotation Works]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotate-keys-how-it-works
 // [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html
 // [Amazon Web Services managed keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [Amazon Web Services managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
 func (c *Client) DescribeKey(ctx context.Context, params *DescribeKeyInput, optFns ...func(*Options)) (*DescribeKeyOutput, error) {
 	if params == nil {
@@ -131,7 +131,7 @@ type DescribeKeyInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	noSmithyDocumentSerde

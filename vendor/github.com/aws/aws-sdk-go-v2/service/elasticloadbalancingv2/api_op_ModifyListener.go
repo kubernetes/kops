@@ -59,7 +59,7 @@ type ModifyListenerInput struct {
 	//
 	// For more information, see [ALPN policies] in the Network Load Balancers Guide.
 	//
-	// [ALPN policies]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#alpn-policies
+	// [ALPN policies]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html#alpn-policies
 	AlpnPolicy []string
 
 	// [HTTPS and TLS listeners] The default certificate for the listener. You must
@@ -90,7 +90,7 @@ type ModifyListenerInput struct {
 	// For more information, see [Security policies] in the Application Load Balancers Guide or [Security policies] in the
 	// Network Load Balancers Guide.
 	//
-	// [Security policies]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies
+	// [Security policies]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/describe-ssl-policies.html
 	SslPolicy *string
 
 	noSmithyDocumentSerde

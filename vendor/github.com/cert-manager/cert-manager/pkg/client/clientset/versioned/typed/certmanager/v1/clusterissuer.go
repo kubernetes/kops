@@ -19,9 +19,9 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 
-	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,33 +37,34 @@ type ClusterIssuersGetter interface {
 
 // ClusterIssuerInterface has methods to work with ClusterIssuer resources.
 type ClusterIssuerInterface interface {
-	Create(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.CreateOptions) (*v1.ClusterIssuer, error)
-	Update(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (*v1.ClusterIssuer, error)
+	Create(ctx context.Context, clusterIssuer *certmanagerv1.ClusterIssuer, opts metav1.CreateOptions) (*certmanagerv1.ClusterIssuer, error)
+	Update(ctx context.Context, clusterIssuer *certmanagerv1.ClusterIssuer, opts metav1.UpdateOptions) (*certmanagerv1.ClusterIssuer, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, clusterIssuer *v1.ClusterIssuer, opts metav1.UpdateOptions) (*v1.ClusterIssuer, error)
+	UpdateStatus(ctx context.Context, clusterIssuer *certmanagerv1.ClusterIssuer, opts metav1.UpdateOptions) (*certmanagerv1.ClusterIssuer, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.ClusterIssuer, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*v1.ClusterIssuerList, error)
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*certmanagerv1.ClusterIssuer, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.ClusterIssuerList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.ClusterIssuer, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.ClusterIssuer, err error)
 	ClusterIssuerExpansion
 }
 
 // clusterIssuers implements ClusterIssuerInterface
 type clusterIssuers struct {
-	*gentype.ClientWithList[*v1.ClusterIssuer, *v1.ClusterIssuerList]
+	*gentype.ClientWithList[*certmanagerv1.ClusterIssuer, *certmanagerv1.ClusterIssuerList]
 }
 
 // newClusterIssuers returns a ClusterIssuers
 func newClusterIssuers(c *CertmanagerV1Client) *clusterIssuers {
 	return &clusterIssuers{
-		gentype.NewClientWithList[*v1.ClusterIssuer, *v1.ClusterIssuerList](
+		gentype.NewClientWithList[*certmanagerv1.ClusterIssuer, *certmanagerv1.ClusterIssuerList](
 			"clusterissuers",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			"",
-			func() *v1.ClusterIssuer { return &v1.ClusterIssuer{} },
-			func() *v1.ClusterIssuerList { return &v1.ClusterIssuerList{} }),
+			func() *certmanagerv1.ClusterIssuer { return &certmanagerv1.ClusterIssuer{} },
+			func() *certmanagerv1.ClusterIssuerList { return &certmanagerv1.ClusterIssuerList{} },
+		),
 	}
 }

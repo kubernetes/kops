@@ -37,8 +37,8 @@ import (
 //     secret.
 //
 // [EncryptionAlgorithms]
-//   - or [SigningAlgorithms]: A list of the encryption algorithms or the signing algorithms for the
-//     key.
+//   - , [KeyAgreementAlgorithms], or [SigningAlgorithms]: A list of the encryption algorithms, key agreement algorithms, or
+//     signing algorithms for the key.
 //
 // Although KMS cannot enforce these restrictions on external operations, it is
 // crucial that you use this information to prevent the public key from being used
@@ -70,10 +70,11 @@ import (
 // [kms:GetPublicKey]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [EncryptionAlgorithms]: https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-EncryptionAlgorithms
 // [Asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
+// [KeyAgreementAlgorithms]: https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-KeyAgreementAlgorithms
 // [KeySpec]: https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-KeySpec
-// [Offline verification with SM2 key pairs]: https://docs.aws.amazon.com/kms/latest/developerguide/asymmetric-key-specs.html#key-spec-sm-offline-verification
+// [Offline verification with SM2 key pairs]: https://docs.aws.amazon.com/kms/latest/developerguide/offline-operations.html#key-spec-sm-offline-verification
 // [KeyUsage]: https://docs.aws.amazon.com/kms/latest/APIReference/API_GetPublicKey.html#KMS-GetPublicKey-response-KeyUsage
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) GetPublicKey(ctx context.Context, params *GetPublicKeyInput, optFns ...func(*Options)) (*GetPublicKeyOutput, error) {
 	if params == nil {
 		params = &GetPublicKeyInput{}
@@ -121,7 +122,7 @@ type GetPublicKeyInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	noSmithyDocumentSerde

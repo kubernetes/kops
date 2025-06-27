@@ -17,8 +17,8 @@ import (
 // grant ID or grantee principal.
 //
 // For detailed information about grants, including grant terminology, see [Grants in KMS] in the
-// Key Management Service Developer Guide . For examples of working with grants in
-// several programming languages, see [Programming grants].
+// Key Management Service Developer Guide . For examples of creating grants in
+// several programming languages, see [Use CreateGrant with an Amazon Web Services SDK or CLI].
 //
 // The GranteePrincipal field in the ListGrants response usually contains the user
 // or role designated as the grantee principal in the grant. However, when the
@@ -45,11 +45,11 @@ import (
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
-// [Programming grants]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html
 // [service principal]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html#principal-services
 // [Grants in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html
+// [Use CreateGrant with an Amazon Web Services SDK or CLI]: https://docs.aws.amazon.com/kms/latest/developerguide/example_kms_CreateGrant_section.html
 // [kms:ListGrants]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) ListGrants(ctx context.Context, params *ListGrantsInput, optFns ...func(*Options)) (*ListGrantsOutput, error) {
 	if params == nil {
 		params = &ListGrantsInput{}

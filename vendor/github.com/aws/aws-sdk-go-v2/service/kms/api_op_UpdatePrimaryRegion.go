@@ -17,7 +17,7 @@ import (
 // have a primary key in us-east-1 and a replica key in eu-west-2 . If you run
 // UpdatePrimaryRegion with a PrimaryRegion value of eu-west-2 , the primary key is
 // now the key in eu-west-2 , and the key in us-east-1 becomes a replica key. For
-// details, see [Updating the primary Region]in the Key Management Service Developer Guide.
+// details, see [Change the primary key in a set of multi-Region keys]in the Key Management Service Developer Guide.
 //
 // This operation supports multi-Region keys, an KMS feature that lets you create
 // multiple interoperable KMS keys in different Amazon Web Services Regions.
@@ -78,13 +78,13 @@ import (
 // [key ID]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-id
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [delete the primary key]: https://docs.aws.amazon.com/kms/latest/APIReference/API_ScheduleKeyDeletion.html
+// [Change the primary key in a set of multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-update.html
 // [key usage]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-usage
-// [Updating the primary Region]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-update
 // [Multi-Region keys in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html
 // [key spec]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-spec
 // [key material origin]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-origin
 // [automatic key rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) UpdatePrimaryRegion(ctx context.Context, params *UpdatePrimaryRegionInput, optFns ...func(*Options)) (*UpdatePrimaryRegionOutput, error) {
 	if params == nil {
 		params = &UpdatePrimaryRegionInput{}

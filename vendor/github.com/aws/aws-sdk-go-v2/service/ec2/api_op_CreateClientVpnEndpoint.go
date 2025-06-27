@@ -76,6 +76,18 @@ type CreateClientVpnEndpointInput struct {
 	// Amazon Web Services provided clients when a VPN session is established.
 	ClientLoginBannerOptions *types.ClientLoginBannerOptions
 
+	// Client route enforcement is a feature of the Client VPN service that helps
+	// enforce administrator defined routes on devices connected through the VPN. T his
+	// feature helps improve your security posture by ensuring that network traffic
+	// originating from a connected client is not inadvertently sent outside the VPN
+	// tunnel.
+	//
+	// Client route enforcement works by monitoring the route table of a connected
+	// device for routing policy changes to the VPN connection. If the feature detects
+	// any VPN routing policy modifications, it will automatically force an update to
+	// the route table, reverting it back to the expected route configurations.
+	ClientRouteEnforcementOptions *types.ClientRouteEnforcementOptions
+
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency of
 	// the request. For more information, see [Ensuring idempotency].
 	//
@@ -88,7 +100,7 @@ type CreateClientVpnEndpointInput struct {
 	// Indicates whether the client VPN session is disconnected after the maximum
 	// timeout specified in SessionTimeoutHours is reached. If true , users are
 	// prompted to reconnect client VPN. If false , client VPN attempts to reconnect
-	// automatically. The default value is false .
+	// automatically. The default value is true .
 	DisconnectOnSessionTimeout *bool
 
 	// Information about the DNS servers to be used for DNS resolution. A Client VPN

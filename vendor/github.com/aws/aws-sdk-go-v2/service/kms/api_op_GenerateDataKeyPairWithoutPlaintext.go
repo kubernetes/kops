@@ -72,9 +72,9 @@ import (
 //
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [RFC 5280]: https://tools.ietf.org/html/rfc5280
-// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 // [kms:GenerateDataKeyPairWithoutPlaintext]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) GenerateDataKeyPairWithoutPlaintext(ctx context.Context, params *GenerateDataKeyPairWithoutPlaintextInput, optFns ...func(*Options)) (*GenerateDataKeyPairWithoutPlaintextOutput, error) {
 	if params == nil {
 		params = &GenerateDataKeyPairWithoutPlaintextInput{}
@@ -120,20 +120,21 @@ type GenerateDataKeyPairWithoutPlaintextInput struct {
 	// Determines the type of data key pair that is generated.
 	//
 	// The KMS rule that restricts the use of asymmetric RSA and SM2 KMS keys to
-	// encrypt and decrypt or to sign and verify (but not both), and the rule that
-	// permits you to use ECC KMS keys only to sign and verify, are not effective on
-	// data key pairs, which are used outside of KMS. The SM2 key spec is only
-	// available in China Regions.
+	// encrypt and decrypt or to sign and verify (but not both), the rule that permits
+	// you to use ECC KMS keys only to sign and verify, and the rule that permits you
+	// to use ML-DSA key pairs to sign and verify only are not effective on data key
+	// pairs, which are used outside of KMS. The SM2 key spec is only available in
+	// China Regions.
 	//
 	// This member is required.
 	KeyPairSpec types.DataKeyPairSpec
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// Specifies the encryption context that will be used when encrypting the private
@@ -152,7 +153,7 @@ type GenerateDataKeyPairWithoutPlaintextInput struct {
 	//
 	// For more information, see [Encryption context] in the Key Management Service Developer Guide.
 	//
-	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 	EncryptionContext map[string]string
 
 	// A list of grant tokens.
@@ -162,7 +163,7 @@ type GenerateDataKeyPairWithoutPlaintextInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	noSmithyDocumentSerde
@@ -174,6 +175,9 @@ type GenerateDataKeyPairWithoutPlaintextOutput struct {
 	//
 	// [key ARN]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN
 	KeyId *string
+
+	// The identifier of the key material used to encrypt the private key.
+	KeyMaterialId *string
 
 	// The type of data key pair that was generated.
 	KeyPairSpec types.DataKeyPairSpec

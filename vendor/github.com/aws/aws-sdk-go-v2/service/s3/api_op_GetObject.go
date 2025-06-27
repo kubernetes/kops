@@ -92,10 +92,11 @@ import (
 // copy using [RestoreObject]. Otherwise, this operation returns an InvalidObjectState error. For
 // information about restoring archived objects, see [Restoring Archived Objects]in the Amazon S3 User Guide.
 //
-// Directory buckets - For directory buckets, only the S3 Express One Zone storage
-// class is supported to store newly created objects. Unsupported storage class
-// values won't write a destination object and will respond with the HTTP status
-// code 400 Bad Request .
+// Directory buckets - Directory buckets only support EXPRESS_ONEZONE (the S3
+// Express One Zone storage class) in Availability Zones and ONEZONE_IA (the S3
+// One Zone-Infrequent Access storage class) in Dedicated Local Zones. Unsupported
+// storage class values won't write a destination object and will respond with the
+// HTTP status code 400 Bad Request .
 //
 // Encryption Encryption request headers, like x-amz-server-side-encryption ,
 // should not be sent for the GetObject requests, if your object uses server-side
@@ -191,10 +192,12 @@ type GetObjectInput struct {
 	// amzn-s3-demo-bucket--usw2-az1--x-s3 ). For information about bucket naming
 	// restrictions, see [Directory bucket naming rules]in the Amazon S3 User Guide.
 	//
-	// Access points - When you use this action with an access point, you must provide
-	// the alias of the access point in place of the bucket name or specify the access
-	// point ARN. When using the access point ARN, you must direct requests to the
-	// access point hostname. The access point hostname takes the form
+	// Access points - When you use this action with an access point for general
+	// purpose buckets, you must provide the alias of the access point in place of the
+	// bucket name or specify the access point ARN. When you use this action with an
+	// access point for directory buckets, you must provide the access point name in
+	// place of the bucket name. When using the access point ARN, you must direct
+	// requests to the access point hostname. The access point hostname takes the form
 	// AccessPointName-AccountId.s3-accesspoint.Region.amazonaws.com. When using this
 	// action with an access point through the Amazon Web Services SDKs, you provide
 	// the access point ARN in place of the bucket name. For more information about
@@ -205,8 +208,7 @@ type GetObjectInput struct {
 	// hostname. The Object Lambda access point hostname takes the form
 	// AccessPointName-AccountId.s3-object-lambda.Region.amazonaws.com.
 	//
-	// Access points and Object Lambda access points are not supported by directory
-	// buckets.
+	// Object Lambda access points are not supported by directory buckets.
 	//
 	// S3 on Outposts - When you use this action with S3 on Outposts, you must direct
 	// requests to the S3 on Outposts hostname. The S3 on Outposts hostname takes the
@@ -592,16 +594,21 @@ type GetObjectOutput struct {
 	ReplicationStatus types.ReplicationStatus
 
 	// If present, indicates that the requester was successfully charged for the
-	// request.
+	// request. For more information, see [Using Requester Pays buckets for storage transfers and usage]in the Amazon Simple Storage Service user
+	// guide.
 	//
 	// This functionality is not supported for directory buckets.
+	//
+	// [Using Requester Pays buckets for storage transfers and usage]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/RequesterPaysBuckets.html
 	RequestCharged types.RequestCharged
 
 	// Provides information about object restoration action and expiration time of the
 	// restored object copy.
 	//
-	// This functionality is not supported for directory buckets. Only the S3 Express
-	// One Zone storage class is supported by directory buckets to store objects.
+	// This functionality is not supported for directory buckets. Directory buckets
+	// only support EXPRESS_ONEZONE (the S3 Express One Zone storage class) in
+	// Availability Zones and ONEZONE_IA (the S3 One Zone-Infrequent Access storage
+	// class) in Dedicated Local Zones.
 	Restore *string
 
 	// If server-side encryption with a customer-provided encryption key was
@@ -622,14 +629,18 @@ type GetObjectOutput struct {
 	SSEKMSKeyId *string
 
 	// The server-side encryption algorithm used when you store this object in Amazon
-	// S3.
+	// S3 or Amazon FSx.
+	//
+	// When accessing data stored in Amazon FSx file systems using S3 access points,
+	// the only valid server side encryption option is aws:fsx .
 	ServerSideEncryption types.ServerSideEncryption
 
 	// Provides storage class information of the object. Amazon S3 returns this header
 	// for all objects except for S3 Standard storage class objects.
 	//
-	// Directory buckets - Only the S3 Express One Zone storage class is supported by
-	// directory buckets to store objects.
+	// Directory buckets - Directory buckets only support EXPRESS_ONEZONE (the S3
+	// Express One Zone storage class) in Availability Zones and ONEZONE_IA (the S3
+	// One Zone-Infrequent Access storage class) in Dedicated Local Zones.
 	StorageClass types.StorageClass
 
 	// The number of tags, if any, on the object, when you have the relevant

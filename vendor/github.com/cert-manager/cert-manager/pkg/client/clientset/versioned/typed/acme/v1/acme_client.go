@@ -19,10 +19,10 @@ limitations under the License.
 package v1
 
 import (
-	"net/http"
+	http "net/http"
 
-	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
-	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
+	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -90,10 +90,10 @@ func New(c rest.Interface) *AcmeV1Client {
 }
 
 func setConfigDefaults(config *rest.Config) error {
-	gv := v1.SchemeGroupVersion
+	gv := acmev1.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()

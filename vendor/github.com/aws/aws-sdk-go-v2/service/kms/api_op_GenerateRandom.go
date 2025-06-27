@@ -29,7 +29,8 @@ import (
 // Amazon Web Services Nitro Enclaves, see [How Amazon Web Services Nitro Enclaves uses KMS]in the Key Management Service Developer
 // Guide.
 //
-// For more information about entropy and random number generation, see [Key Management Service Cryptographic Details].
+// For more information about entropy and random number generation, see [Entropy and random number generation] in the
+// Key Management Service Developer Guide.
 //
 // Cross-account use: Not applicable. GenerateRandom does not use any
 // account-specific resources, such as KMS keys.
@@ -41,10 +42,10 @@ import (
 //
 // [kms:GenerateRandom]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [Amazon Web Services Nitro Enclaves]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html
-// [Key Management Service Cryptographic Details]: https://docs.aws.amazon.com/kms/latest/cryptographic-details/
 // [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [Amazon Web Services Nitro Enclaves SDK]: https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk
+// [Entropy and random number generation]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#entropy-and-random-numbers
 func (c *Client) GenerateRandom(ctx context.Context, params *GenerateRandomInput, optFns ...func(*Options)) (*GenerateRandomOutput, error) {
 	if params == nil {
 		params = &GenerateRandomInput{}

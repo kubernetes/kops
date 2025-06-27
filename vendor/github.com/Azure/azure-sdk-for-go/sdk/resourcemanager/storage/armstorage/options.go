@@ -610,8 +610,7 @@ type TableServicesClientSetServicePropertiesOptions struct {
 // method.
 type TaskAssignmentInstancesReportClientListOptions struct {
 	// Optional. When specified, it can be used to query using reporting properties. See Constructing Filter Strings
-	// [https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#constructing-filter-strings] for
-	// details.
+	// [https://learn.microsoft.com/rest/api/storageservices/querying-tables-and-entities#constructing-filter-strings] for details.
 	Filter *string
 
 	// Optional, specifies the maximum number of storage task assignment instances to be included in the list response.
@@ -651,8 +650,7 @@ type TaskAssignmentsClientListOptions struct {
 // method.
 type TaskAssignmentsInstancesReportClientListOptions struct {
 	// Optional. When specified, it can be used to query using reporting properties. See Constructing Filter Strings
-	// [https://learn.microsoft.com/en-us/rest/api/storageservices/querying-tables-and-entities#constructing-filter-strings] for
-	// details.
+	// [https://learn.microsoft.com/rest/api/storageservices/querying-tables-and-entities#constructing-filter-strings] for details.
 	Filter *string
 
 	// Optional, specifies the maximum number of storage task assignment instances to be included in the list response.

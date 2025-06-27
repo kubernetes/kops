@@ -19,7 +19,7 @@ package tester
 import (
 	"testing"
 
-	"github.com/octago/sflags/gen/gpflag"
+	"github.com/urfave/sflags/gen/gpflag"
 )
 
 func TestFlagParsing(t *testing.T) {

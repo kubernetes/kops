@@ -82,9 +82,9 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 // [kms:GenerateDataKeyWithoutPlaintext]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) GenerateDataKeyWithoutPlaintext(ctx context.Context, params *GenerateDataKeyWithoutPlaintextInput, optFns ...func(*Options)) (*GenerateDataKeyWithoutPlaintextOutput, error) {
 	if params == nil {
 		params = &GenerateDataKeyWithoutPlaintextInput{}
@@ -129,10 +129,10 @@ type GenerateDataKeyWithoutPlaintextInput struct {
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// Specifies the encryption context that will be used when encrypting the data key.
@@ -150,7 +150,7 @@ type GenerateDataKeyWithoutPlaintextInput struct {
 	//
 	// For more information, see [Encryption context] in the Key Management Service Developer Guide.
 	//
-	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 	EncryptionContext map[string]string
 
 	// A list of grant tokens.
@@ -160,7 +160,7 @@ type GenerateDataKeyWithoutPlaintextInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	// The length of the data key. Use AES_128 to generate a 128-bit symmetric key, or
@@ -186,6 +186,9 @@ type GenerateDataKeyWithoutPlaintextOutput struct {
 	//
 	// [key ARN]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN
 	KeyId *string
+
+	// The identifier of the key material used to encrypt the data key.
+	KeyMaterialId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata

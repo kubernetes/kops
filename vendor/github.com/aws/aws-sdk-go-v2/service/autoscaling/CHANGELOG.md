@@ -1,3 +1,36 @@
+# v1.54.0 (2025-06-18)
+
+* **Feature**: Add IncludeInstances parameter to DescribeAutoScalingGroups API
+
+# v1.53.3 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.53.2 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.53.1 (2025-06-06)
+
+* No change notes available for this release.
+
+# v1.53.0 (2025-05-29)
+
+* **Feature**: Add support for "apple" CpuManufacturer in ABIS
+
+# v1.52.4 (2025-04-17)
+
+* **Documentation**: Doc only update for EC2 Auto Scaling.
+
+# v1.52.3 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.52.2 (2025-04-03)
+
+* No change notes available for this release.
+
 # v1.52.1 (2025-03-04.2)
 
 * **Bug Fix**: Add assurance test for operation order.

@@ -328,7 +328,7 @@ func extract(img v1.Image, w io.Writer) error {
 
 			// mark file as handled. non-directory implicitly tombstones
 			// any entries with a matching (or child) name
-			fileMap[name] = tombstone || !(header.Typeflag == tar.TypeDir)
+			fileMap[name] = tombstone || (header.Typeflag != tar.TypeDir)
 			if !tombstone {
 				if err := tarWriter.WriteHeader(header); err != nil {
 					return err
@@ -345,10 +345,7 @@ func extract(img v1.Image, w io.Writer) error {
 }
 
 func inWhiteoutDir(fileMap map[string]bool, file string) bool {
-	for {
-		if file == "" {
-			break
-		}
+	for file != "" {
 		dirname := filepath.Dir(file)
 		if file == dirname {
 			break
@@ -359,13 +356,6 @@ func inWhiteoutDir(fileMap map[string]bool, file string) bool {
 		file = dirname
 	}
 	return false
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 // Time sets all timestamps in an image to the given timestamp.

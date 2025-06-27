@@ -14,21 +14,22 @@
 // variations of this term.
 //
 // Amazon Web Services provides SDKs that consist of libraries and sample code for
-// various programming languages and platforms (Java, Ruby, .Net, macOS, Android,
-// etc.). The SDKs provide a convenient way to create programmatic access to KMS
-// and other Amazon Web Services services. For example, the SDKs take care of tasks
-// such as signing requests (see below), managing errors, and retrying requests
-// automatically. For more information about the Amazon Web Services SDKs,
-// including how to download and install them, see [Tools for Amazon Web Services].
+// various programming languages and platforms (Java, Rust, Python, Ruby, .Net,
+// macOS, Android, etc.). The SDKs provide a convenient way to create programmatic
+// access to KMS and other Amazon Web Services services. For example, the SDKs take
+// care of tasks such as signing requests (see below), managing errors, and
+// retrying requests automatically. For more information about the Amazon Web
+// Services SDKs, including how to download and install them, see [Tools for Amazon Web Services].
 //
 // We recommend that you use the Amazon Web Services SDKs to make programmatic API
 // calls to KMS.
 //
 // If you need to use FIPS 140-2 validated cryptographic modules when
-// communicating with Amazon Web Services, use the FIPS endpoint in your preferred
-// Amazon Web Services Region. For more information about the available FIPS
-// endpoints, see [Service endpoints]in the Key Management Service topic of the Amazon Web Services
-// General Reference.
+// communicating with Amazon Web Services, use one of the FIPS endpoints in your
+// preferred Amazon Web Services Region. If you need communicate over IPv6, use the
+// dual-stack endpoint in your preferred Amazon Web Services Region. For more
+// information see [Service endpoints]in the Key Management Service topic of the Amazon Web Services
+// General Reference and [Dual-stack endpoint support]in the KMS Developer Guide.
 //
 // All KMS API calls must be signed and be transmitted using Transport Layer
 // Security (TLS). KMS recommends you always use the latest supported TLS version.
@@ -86,6 +87,7 @@
 //
 // # GenerateDataKeyWithoutPlaintext
 //
+// [Dual-stack endpoint support]: https://docs.aws.amazon.com/kms/latest/developerguide/ipv6-kms.html
 // [Signature Version 4]: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
 // [Temporary Security Credentials]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html
 // [Tools for Amazon Web Services]: http://aws.amazon.com/tools/

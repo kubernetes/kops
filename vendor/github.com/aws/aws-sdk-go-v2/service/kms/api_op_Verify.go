@@ -59,9 +59,9 @@ import (
 //
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [Asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
-// [Offline verification with SM2 key pairs]: https://docs.aws.amazon.com/kms/latest/developerguide/asymmetric-key-specs.html#key-spec-sm-offline-verification
+// [Offline verification with SM2 key pairs]: https://docs.aws.amazon.com/kms/latest/developerguide/offline-operations.html#key-spec-sm-offline-verification
 // [kms:Verify]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) Verify(ctx context.Context, params *VerifyInput, optFns ...func(*Options)) (*VerifyOutput, error) {
 	if params == nil {
 		params = &VerifyInput{}
@@ -128,10 +128,10 @@ type VerifyInput struct {
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// A list of grant tokens.
@@ -141,31 +141,36 @@ type VerifyInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	// Tells KMS whether the value of the Message parameter should be hashed as part
 	// of the signing algorithm. Use RAW for unhashed messages; use DIGEST for message
-	// digests, which are already hashed.
+	// digests, which are already hashed; use EXTERNAL_MU for 64-byte representative μ
+	// used in ML-DSA signing as defined in NIST FIPS 204 Section 6.2.
 	//
 	// When the value of MessageType is RAW , KMS uses the standard signing algorithm,
 	// which begins with a hash function. When the value is DIGEST , KMS skips the
-	// hashing step in the signing algorithm.
+	// hashing step in the signing algorithm. When the value is EXTERNAL_MU KMS skips
+	// the concatenated hashing of the public key hash and the message done in the
+	// ML-DSA signing algorithm.
 	//
-	// Use the DIGEST value only when the value of the Message parameter is a message
-	// digest. If you use the DIGEST value with an unhashed message, the security of
-	// the verification operation can be compromised.
+	// Use the DIGEST or EXTERNAL_MU value only when the value of the Message
+	// parameter is a message digest. If you use the DIGEST value with an unhashed
+	// message, the security of the signing operation can be compromised.
 	//
 	// When the value of MessageType is DIGEST , the length of the Message value must
 	// match the length of hashed messages for the specified signing algorithm.
+	//
+	// When the value of MessageType is EXTERNAL_MU the length of the Message value
+	// must be 64 bytes.
 	//
 	// You can submit a message digest and omit the MessageType or specify RAW so the
 	// digest is hashed again while signing. However, if the signed message is hashed
 	// once while signing, but twice while verifying, verification fails, even when the
 	// message hasn't changed.
 	//
-	// The hashing algorithm in that Verify uses is based on the SigningAlgorithm
-	// value.
+	// The hashing algorithm that Verify uses is based on the SigningAlgorithm value.
 	//
 	//   - Signing algorithms that end in SHA_256 use the SHA_256 hashing algorithm.
 	//
@@ -173,9 +178,12 @@ type VerifyInput struct {
 	//
 	//   - Signing algorithms that end in SHA_512 use the SHA_512 hashing algorithm.
 	//
+	//   - Signing algorithms that end in SHAKE_256 use the SHAKE_256 hashing
+	//   algorithm.
+	//
 	//   - SM2DSA uses the SM3 hashing algorithm. For details, see [Offline verification with SM2 key pairs].
 	//
-	// [Offline verification with SM2 key pairs]: https://docs.aws.amazon.com/kms/latest/developerguide/asymmetric-key-specs.html#key-spec-sm-offline-verification
+	// [Offline verification with SM2 key pairs]: https://docs.aws.amazon.com/kms/latest/developerguide/offline-operations.html#key-spec-sm-offline-verification
 	MessageType types.MessageType
 
 	noSmithyDocumentSerde

@@ -222,7 +222,11 @@ type AutoScalingGroup struct {
 	MixedInstancesPolicy *MixedInstancesPolicy
 
 	// Indicates whether newly launched instances are protected from termination by
-	// Amazon EC2 Auto Scaling when scaling in.
+	// Amazon EC2 Auto Scaling when scaling in. For more information about preventing
+	// instances from terminating on scale in, see [Use instance scale-in protection]in the Amazon EC2 Auto Scaling User
+	// Guide.
+	//
+	// [Use instance scale-in protection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html
 	NewInstancesProtectedFromScaleIn *bool
 
 	// The name of the placement group into which to launch your instances, if any.
@@ -406,7 +410,7 @@ type BaselinePerformanceFactorsRequest struct {
 type BlockDeviceMapping struct {
 
 	// The device name assigned to the volume (for example, /dev/sdh or xvdh ). For
-	// more information, see [Device naming on Linux instances]in the Amazon EC2 User Guide for Linux Instances.
+	// more information, see [Device naming on Linux instances]in the Amazon EC2 User Guide.
 	//
 	// To define a block device mapping, set the device name and exactly one of the
 	// following properties: Ebs , NoDevice , or VirtualName .
@@ -1100,7 +1104,7 @@ type InstanceRefreshWarmPoolProgress struct {
 //
 // For more information, see [Create a mixed instances group using attribute-based instance type selection] in the Amazon EC2 Auto Scaling User Guide. For help
 // determining which instance types match your attributes before you apply them to
-// your Auto Scaling group, see [Preview instance types with specified attributes]in the Amazon EC2 User Guide for Linux Instances.
+// your Auto Scaling group, see [Preview instance types with specified attributes]in the Amazon EC2 User Guide.
 //
 // [Preview instance types with specified attributes]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-fleet-attribute-based-instance-type-selection.html#ec2fleet-get-instance-types-from-instance-requirements
 // [Create a mixed instances group using attribute-based instance type selection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-mixed-instances-group-attribute-based-instance-type-selection.html
@@ -1198,8 +1202,7 @@ type InstanceRequirements struct {
 	BareMetal BareMetal
 
 	// The minimum and maximum baseline bandwidth performance for an instance type, in
-	// Mbps. For more information, see [Amazon EBS–optimized instances]in the Amazon EC2 User Guide for Linux
-	// Instances.
+	// Mbps. For more information, see [Amazon EBS–optimized instances]in the Amazon EC2 User Guide.
 	//
 	// Default: No minimum or maximum limits
 	//
@@ -1210,8 +1213,7 @@ type InstanceRequirements struct {
 	BaselinePerformanceFactors *BaselinePerformanceFactorsRequest
 
 	// Indicates whether burstable performance instance types are included, excluded,
-	// or required. For more information, see [Burstable performance instances]in the Amazon EC2 User Guide for Linux
-	// Instances.
+	// or required. For more information, see [Burstable performance instances]in the Amazon EC2 User Guide.
 	//
 	// Default: excluded
 	//
@@ -1226,6 +1228,8 @@ type InstanceRequirements struct {
 	//
 	//   - For instance types with Amazon Web Services CPUs, specify
 	//   amazon-web-services .
+	//
+	//   - For instance types with Apple CPUs, specify apple .
 	//
 	// Don't confuse the CPU hardware manufacturer with the CPU hardware architecture.
 	// Instances will be launched with a compatible CPU architecture based on the
@@ -1253,7 +1257,7 @@ type InstanceRequirements struct {
 	//   - For current generation instance types, specify current . The current
 	//   generation includes EC2 instance types currently recommended for use. This
 	//   typically includes the latest two to three generations in each instance family.
-	//   For more information, see [Instance types]in the Amazon EC2 User Guide for Linux Instances.
+	//   For more information, see [Instance types]in the Amazon EC2 User Guide.
 	//
 	//   - For previous generation instance types, specify previous .
 	//
@@ -1263,8 +1267,7 @@ type InstanceRequirements struct {
 	InstanceGenerations []InstanceGeneration
 
 	// Indicates whether instance types with instance store volumes are included,
-	// excluded, or required. For more information, see [Amazon EC2 instance store]in the Amazon EC2 User Guide
-	// for Linux Instances.
+	// excluded, or required. For more information, see [Amazon EC2 instance store]in the Amazon EC2 User Guide.
 	//
 	// Default: included
 	//
@@ -1514,7 +1517,7 @@ type LaunchConfiguration struct {
 	CreatedTime *time.Time
 
 	// The ID of the Amazon Machine Image (AMI) to use to launch your EC2 instances.
-	// For more information, see [Find a Linux AMI]in the Amazon EC2 User Guide for Linux Instances.
+	// For more information, see [Find a Linux AMI]in the Amazon EC2 User Guide.
 	//
 	// [Find a Linux AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
 	//
@@ -1522,7 +1525,7 @@ type LaunchConfiguration struct {
 	ImageId *string
 
 	// The instance type for the instances. For information about available instance
-	// types, see [Available instance types]in the Amazon EC2 User Guide for Linux Instances.
+	// types, see [Available instance types]in the Amazon EC2 User Guide.
 	//
 	// [Available instance types]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes
 	//
@@ -1548,7 +1551,7 @@ type LaunchConfiguration struct {
 	// The block device mapping entries that define the block devices to attach to the
 	// instances at launch. By default, the block devices specified in the block device
 	// mapping for the AMI are used. For more information, see [Block device mappings]in the Amazon EC2 User
-	// Guide for Linux Instances.
+	// Guide.
 	//
 	// [Block device mappings]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html
 	BlockDeviceMappings []BlockDeviceMapping
@@ -1560,8 +1563,7 @@ type LaunchConfiguration struct {
 	ClassicLinkVPCSecurityGroups []string
 
 	// Specifies whether the launch configuration is optimized for EBS I/O ( true ) or
-	// not ( false ). For more information, see [Amazon EBS-optimized instances] in the Amazon EC2 User Guide for
-	// Linux Instances.
+	// not ( false ). For more information, see [Amazon EBS-optimized instances] in the Amazon EC2 User Guide.
 	//
 	// [Amazon EBS-optimized instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-optimized.html
 	EbsOptimized *bool
@@ -1586,7 +1588,7 @@ type LaunchConfiguration struct {
 
 	// The name of the key pair.
 	//
-	// For more information, see [Amazon EC2 key pairs and Amazon EC2 instances] in the Amazon EC2 User Guide for Linux Instances.
+	// For more information, see [Amazon EC2 key pairs and Amazon EC2 instances] in the Amazon EC2 User Guide.
 	//
 	// [Amazon EC2 key pairs and Amazon EC2 instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html
 	KeyName *string
@@ -1624,11 +1626,12 @@ type LaunchConfiguration struct {
 	SpotPrice *string
 
 	// The user data to make available to the launched EC2 instances. For more
-	// information, see [Instance metadata and user data](Linux) and [Instance metadata and user data] (Windows). If you are using a command line tool,
-	// base64-encoding is performed for you, and you can load the text from a file.
-	// Otherwise, you must provide base64-encoded text. User data is limited to 16 KB.
+	// information, see [Instance metadata and user data]in the Amazon EC2 User Guide. If you are using a command line
+	// tool, base64-encoding is performed for you, and you can load the text from a
+	// file. Otherwise, you must provide base64-encoded text. User data is limited to
+	// 16 KB.
 	//
-	// [Instance metadata and user data]: https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html
+	// [Instance metadata and user data]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html
 	UserData *string
 
 	noSmithyDocumentSerde
@@ -1683,7 +1686,7 @@ type LaunchTemplateOverrides struct {
 
 	// The instance type, such as m3.xlarge . You must specify an instance type that is
 	// supported in your requested Region and Availability Zones. For more information,
-	// see [Instance types]in the Amazon EC2 User Guide for Linux Instances.
+	// see [Instance types]in the Amazon EC2 User Guide.
 	//
 	// You can specify up to 40 instance types per Auto Scaling group.
 	//
@@ -2205,7 +2208,7 @@ type MixedInstancesPolicy struct {
 // achieve the minimum bandwidth. Amazon EC2 will identify instance types that
 // support the specified minimum bandwidth, but the actual bandwidth of your
 // instance might go below the specified minimum at times. For more information,
-// see [Available instance bandwidth]in the Amazon EC2 User Guide for Linux Instances.
+// see [Available instance bandwidth]in the Amazon EC2 User Guide.
 //
 // [Available instance bandwidth]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html#available-instance-bandwidth
 // [InstanceRequirements]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstanceRequirements.html

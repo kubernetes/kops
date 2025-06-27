@@ -2,6 +2,31 @@
 
 package types
 
+type AccessRequestStatus string
+
+// Enum values for AccessRequestStatus
+const (
+	AccessRequestStatusApproved AccessRequestStatus = "Approved"
+	AccessRequestStatusRejected AccessRequestStatus = "Rejected"
+	AccessRequestStatusRevoked  AccessRequestStatus = "Revoked"
+	AccessRequestStatusExpired  AccessRequestStatus = "Expired"
+	AccessRequestStatusPending  AccessRequestStatus = "Pending"
+)
+
+// Values returns all known values for AccessRequestStatus. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (AccessRequestStatus) Values() []AccessRequestStatus {
+	return []AccessRequestStatus{
+		"Approved",
+		"Rejected",
+		"Revoked",
+		"Expired",
+		"Pending",
+	}
+}
+
 type AssociationComplianceSeverity string
 
 // Enum values for AssociationComplianceSeverity
@@ -301,6 +326,7 @@ type AutomationSubtype string
 // Enum values for AutomationSubtype
 const (
 	AutomationSubtypeChangeRequest AutomationSubtype = "ChangeRequest"
+	AutomationSubtypeAccessRequest AutomationSubtype = "AccessRequest"
 )
 
 // Values returns all known values for AutomationSubtype. Note that this can be
@@ -310,6 +336,7 @@ const (
 func (AutomationSubtype) Values() []AutomationSubtype {
 	return []AutomationSubtype{
 		"ChangeRequest",
+		"AccessRequest",
 	}
 }
 
@@ -794,6 +821,8 @@ const (
 	DocumentTypeCloudFormation                 DocumentType = "CloudFormation"
 	DocumentTypeConformancePackTemplate        DocumentType = "ConformancePackTemplate"
 	DocumentTypeQuickSetup                     DocumentType = "QuickSetup"
+	DocumentTypeManualApprovalPolicy           DocumentType = "ManualApprovalPolicy"
+	DocumentTypeAutoApprovalPolicy             DocumentType = "AutoApprovalPolicy"
 )
 
 // Values returns all known values for DocumentType. Note that this can be
@@ -817,6 +846,8 @@ func (DocumentType) Values() []DocumentType {
 		"CloudFormation",
 		"ConformancePackTemplate",
 		"QuickSetup",
+		"ManualApprovalPolicy",
+		"AutoApprovalPolicy",
 	}
 }
 
@@ -1581,6 +1612,15 @@ const (
 	OpsItemFilterKeyCategory                          OpsItemFilterKey = "Category"
 	OpsItemFilterKeySeverity                          OpsItemFilterKey = "Severity"
 	OpsItemFilterKeyOpsitemType                       OpsItemFilterKey = "OpsItemType"
+	OpsItemFilterKeyAccessRequestRequesterArn         OpsItemFilterKey = "AccessRequestByRequesterArn"
+	OpsItemFilterKeyAccessRequestRequesterId          OpsItemFilterKey = "AccessRequestByRequesterId"
+	OpsItemFilterKeyAccessRequestApproverArn          OpsItemFilterKey = "AccessRequestByApproverArn"
+	OpsItemFilterKeyAccessRequestApproverId           OpsItemFilterKey = "AccessRequestByApproverId"
+	OpsItemFilterKeyAccessRequestSourceAccountId      OpsItemFilterKey = "AccessRequestBySourceAccountId"
+	OpsItemFilterKeyAccessRequestSourceOpsItemId      OpsItemFilterKey = "AccessRequestBySourceOpsItemId"
+	OpsItemFilterKeyAccessRequestSourceRegion         OpsItemFilterKey = "AccessRequestBySourceRegion"
+	OpsItemFilterKeyAccessRequestIsReplica            OpsItemFilterKey = "AccessRequestByIsReplica"
+	OpsItemFilterKeyAccessRequestTargetResourceId     OpsItemFilterKey = "AccessRequestByTargetResourceId"
 	OpsItemFilterKeyChangeRequestRequesterArn         OpsItemFilterKey = "ChangeRequestByRequesterArn"
 	OpsItemFilterKeyChangeRequestRequesterName        OpsItemFilterKey = "ChangeRequestByRequesterName"
 	OpsItemFilterKeyChangeRequestApproverArn          OpsItemFilterKey = "ChangeRequestByApproverArn"
@@ -1617,6 +1657,15 @@ func (OpsItemFilterKey) Values() []OpsItemFilterKey {
 		"Category",
 		"Severity",
 		"OpsItemType",
+		"AccessRequestByRequesterArn",
+		"AccessRequestByRequesterId",
+		"AccessRequestByApproverArn",
+		"AccessRequestByApproverId",
+		"AccessRequestBySourceAccountId",
+		"AccessRequestBySourceOpsItemId",
+		"AccessRequestBySourceRegion",
+		"AccessRequestByIsReplica",
+		"AccessRequestByTargetResourceId",
 		"ChangeRequestByRequesterArn",
 		"ChangeRequestByRequesterName",
 		"ChangeRequestByApproverArn",
@@ -1712,6 +1761,7 @@ const (
 	OpsItemStatusChangeCalendarOverrideRejected OpsItemStatus = "ChangeCalendarOverrideRejected"
 	OpsItemStatusPendingApproval                OpsItemStatus = "PendingApproval"
 	OpsItemStatusApproved                       OpsItemStatus = "Approved"
+	OpsItemStatusRevoked                        OpsItemStatus = "Revoked"
 	OpsItemStatusRejected                       OpsItemStatus = "Rejected"
 	OpsItemStatusClosed                         OpsItemStatus = "Closed"
 )
@@ -1739,6 +1789,7 @@ func (OpsItemStatus) Values() []OpsItemStatus {
 		"ChangeCalendarOverrideRejected",
 		"PendingApproval",
 		"Approved",
+		"Revoked",
 		"Rejected",
 		"Closed",
 	}
@@ -2279,6 +2330,7 @@ const (
 	SignalTypeStartStep SignalType = "StartStep"
 	SignalTypeStopStep  SignalType = "StopStep"
 	SignalTypeResume    SignalType = "Resume"
+	SignalTypeRevoke    SignalType = "Revoke"
 )
 
 // Values returns all known values for SignalType. Note that this can be expanded
@@ -2292,6 +2344,7 @@ func (SignalType) Values() []SignalType {
 		"StartStep",
 		"StopStep",
 		"Resume",
+		"Revoke",
 	}
 }
 

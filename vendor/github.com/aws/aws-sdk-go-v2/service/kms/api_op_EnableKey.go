@@ -28,8 +28,8 @@ import (
 //
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [kms:EnableKey]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) EnableKey(ctx context.Context, params *EnableKeyInput, optFns ...func(*Options)) (*EnableKeyOutput, error) {
 	if params == nil {
 		params = &EnableKeyInput{}

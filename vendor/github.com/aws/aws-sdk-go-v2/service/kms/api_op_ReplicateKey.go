@@ -28,10 +28,11 @@ import (
 // A replica key is a fully-functional KMS key that can be used independently of
 // its primary and peer replica keys. A primary key and its replica keys share
 // properties that make them interoperable. They have the same [key ID]and key material.
-// They also have the same [key spec], [key usage], [key material origin], and [automatic key rotation status]. KMS automatically synchronizes these shared
-// properties among related multi-Region keys. All other properties of a replica
-// key can differ, including its [key policy], [tags], [aliases], and [Key states of KMS keys]. KMS pricing and quotas for KMS keys
-// apply to each primary key and replica key.
+// They also have the same key spec, key usage, key material origin, and automatic
+// key rotation status. KMS automatically synchronizes these shared properties
+// among related multi-Region keys. All other properties of a replica key can
+// differ, including its [key policy], [tags], [aliases], and [key state]. KMS pricing and quotas for KMS keys apply to
+// each primary key and replica key.
 //
 // When this operation completes, the new replica key has a transient key state of
 // Creating . This key state changes to Enabled (or PendingImport ) after a few
@@ -54,8 +55,7 @@ import (
 //
 // If you replicate a multi-Region primary key with imported key material, the
 // replica key is created with no key material. You must import the same key
-// material that you imported into the primary key. For details, see [Importing key material into multi-Region keys]in the Key
-// Management Service Developer Guide.
+// material that you imported into the primary key.
 //
 // To convert a replica key to a primary key, use the UpdatePrimaryRegion operation.
 //
@@ -86,17 +86,13 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [key ID]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-id
-// [automatic key rotation status]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
+// [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [aliases]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-alias.html
-// [key usage]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-usage
 // [Multi-Region keys in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html
 // [key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [key state]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [tags]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
-// [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [key spec]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-spec
-// [Importing key material into multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-import.html
-// [key material origin]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-origin
 // [shared properties]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html#mrk-sync-properties
 func (c *Client) ReplicateKey(ctx context.Context, params *ReplicateKeyInput, optFns ...func(*Options)) (*ReplicateKeyOutput, error) {
 	if params == nil {
@@ -139,12 +135,6 @@ type ReplicateKeyInput struct {
 	// Web Services Regions in which KMS is supported, see [KMS service endpoints]in the Amazon Web Services
 	// General Reference.
 	//
-	// HMAC KMS keys are not supported in all Amazon Web Services Regions. If you try
-	// to replicate an HMAC KMS key in an Amazon Web Services Region in which HMAC keys
-	// are not supported, the ReplicateKey operation returns an
-	// UnsupportedOperationException . For a list of Regions in which HMAC KMS keys are
-	// supported, see [HMAC keys in KMS]in the Key Management Service Developer Guide.
-	//
 	// The replica must be in a different Amazon Web Services Region than its primary
 	// key and other replicas of that primary key, but in the same Amazon Web Services
 	// partition. KMS must be available in the replica Region. If the Region is not
@@ -156,7 +146,6 @@ type ReplicateKeyInput struct {
 	// [Disabling a Region]: https://docs.aws.amazon.com/general/latest/gr/rande-manage.html#rande-manage-disable
 	// [Enabling a Region]: https://docs.aws.amazon.com/general/latest/gr/rande-manage.html#rande-manage-enable
 	// [KMS service endpoints]: https://docs.aws.amazon.com/general/latest/gr/kms.html#kms_region
-	// [HMAC keys in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
 	// [Amazon Resource Names (ARNs)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
 	//
 	// This member is required.
@@ -226,7 +215,7 @@ type ReplicateKeyInput struct {
 	// [IAM JSON Policy Reference]in the Identity and Access Management User Guide .
 	//
 	// [Key policies in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
-	// [default key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default
+	// [default key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html
 	// [IAM JSON Policy Reference]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html
 	// [Default key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key
 	// [Changes that I make are not always immediately visible]: https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency
@@ -255,11 +244,11 @@ type ReplicateKeyInput struct {
 	//
 	// When you add tags to an Amazon Web Services resource, Amazon Web Services
 	// generates a cost allocation report with usage and costs aggregated by tags. Tags
-	// can also be used to control access to a KMS key. For details, see [Tagging Keys].
+	// can also be used to control access to a KMS key. For details, see [Tags in KMS].
 	//
 	// [kms:TagResource]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-	// [Tagging Keys]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
 	// [ABAC for KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/abac.html
+	// [Tags in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
 	Tags []types.Tag
 
 	noSmithyDocumentSerde
