@@ -17,8 +17,7 @@ import (
 //
 // By default, KMS keys are created with key material that KMS generates. This
 // operation supports [Importing key material], an advanced feature that lets you generate and import the
-// cryptographic key material for a KMS key. For more information about importing
-// key material into KMS, see [Importing key material]in the Key Management Service Developer Guide.
+// cryptographic key material for a KMS key.
 //
 // Before calling GetParametersForImport , use the CreateKey operation with an Origin value
 // of EXTERNAL to create a KMS key with no key material. You can import key
@@ -80,10 +79,10 @@ import (
 // [Importing key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
 // [kms:GetParametersForImport]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [reimport the original key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html#reimport-key-material
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [reimport the original key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-import-key-material.html#reimport-key-material
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [multi-Region key]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) GetParametersForImport(ctx context.Context, params *GetParametersForImportInput, optFns ...func(*Options)) (*GetParametersForImportOutput, error) {
 	if params == nil {
 		params = &GetParametersForImportInput{}
@@ -122,7 +121,7 @@ type GetParametersForImportInput struct {
 	KeyId *string
 
 	// The algorithm you will use with the RSA public key ( PublicKey ) in the response
-	// to protect your key material during import. For more information, see Select a wrapping algorithmin the
+	// to protect your key material during import. For more information, see [Select a wrapping algorithm]in the
 	// Key Management Service Developer Guide.
 	//
 	// For RSA_AES wrapping algorithms, you encrypt your key material with an AES key
@@ -152,6 +151,8 @@ type GetParametersForImportInput struct {
 	//
 	//   - RSAES_PKCS1_V1_5 (Deprecated) — As of October 10, 2023, KMS does not
 	//   support the RSAES_PKCS1_V1_5 wrapping algorithm.
+	//
+	// [Select a wrapping algorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-get-public-key-and-token.html#select-wrapping-algorithm
 	//
 	// This member is required.
 	WrappingAlgorithm types.AlgorithmSpec

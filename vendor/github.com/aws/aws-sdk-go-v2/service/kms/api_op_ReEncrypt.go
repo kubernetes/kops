@@ -99,14 +99,14 @@ import (
 //
 // [Amazon Web Services Encryption SDK]: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [asymmetric KMS key]: https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#asymmetric-cmks
+// [asymmetric KMS key]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
 // [Amazon S3 client-side encryption]: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingClientSideEncryption.html
 // [kms:ReEncryptTo]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
-// [manually rotate]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotate-keys-manually
+// [encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
+// [manually rotate]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys-manually.html
 // [kms:ReEncryptFrom]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) ReEncrypt(ctx context.Context, params *ReEncryptInput, optFns ...func(*Options)) (*ReEncryptOutput, error) {
 	if params == nil {
 		params = &ReEncryptInput{}
@@ -182,15 +182,15 @@ type ReEncryptInput struct {
 	//
 	// For more information, see [Encryption context] in the Key Management Service Developer Guide.
 	//
-	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 	DestinationEncryptionContext map[string]string
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// A list of grant tokens.
@@ -200,7 +200,7 @@ type ReEncryptInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	// Specifies the encryption algorithm that KMS will use to decrypt the ciphertext
@@ -227,7 +227,7 @@ type ReEncryptInput struct {
 	//
 	// For more information, see [Encryption context] in the Key Management Service Developer Guide.
 	//
-	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 	SourceEncryptionContext map[string]string
 
 	// Specifies the KMS key that KMS will use to decrypt the ciphertext before it is
@@ -274,6 +274,10 @@ type ReEncryptOutput struct {
 	// The encryption algorithm that was used to reencrypt the data.
 	DestinationEncryptionAlgorithm types.EncryptionAlgorithmSpec
 
+	// The identifier of the key material used to reencrypt the data. This field is
+	// present only when data is reencrypted using a symmetric encryption KMS key.
+	DestinationKeyMaterialId *string
+
 	// The Amazon Resource Name ([key ARN] ) of the KMS key that was used to reencrypt the data.
 	//
 	// [key ARN]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN
@@ -285,6 +289,11 @@ type ReEncryptOutput struct {
 
 	// Unique identifier of the KMS key used to originally encrypt the data.
 	SourceKeyId *string
+
+	// The identifier of the key material used to originally encrypt the data. This
+	// field is present only when the original encryption used a symmetric encryption
+	// KMS key.
+	SourceKeyMaterialId *string
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata

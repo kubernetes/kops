@@ -943,6 +943,7 @@ const (
 	ObjectStorageClassGlacierIr          ObjectStorageClass = "GLACIER_IR"
 	ObjectStorageClassSnow               ObjectStorageClass = "SNOW"
 	ObjectStorageClassExpressOnezone     ObjectStorageClass = "EXPRESS_ONEZONE"
+	ObjectStorageClassFsxOpenzfs         ObjectStorageClass = "FSX_OPENZFS"
 )
 
 // Values returns all known values for ObjectStorageClass. Note that this can be
@@ -962,6 +963,7 @@ func (ObjectStorageClass) Values() []ObjectStorageClass {
 		"GLACIER_IR",
 		"SNOW",
 		"EXPRESS_ONEZONE",
+		"FSX_OPENZFS",
 	}
 }
 
@@ -1255,6 +1257,7 @@ type ServerSideEncryption string
 // Enum values for ServerSideEncryption
 const (
 	ServerSideEncryptionAes256     ServerSideEncryption = "AES256"
+	ServerSideEncryptionAwsFsx     ServerSideEncryption = "aws:fsx"
 	ServerSideEncryptionAwsKms     ServerSideEncryption = "aws:kms"
 	ServerSideEncryptionAwsKmsDsse ServerSideEncryption = "aws:kms:dsse"
 )
@@ -1266,6 +1269,7 @@ const (
 func (ServerSideEncryption) Values() []ServerSideEncryption {
 	return []ServerSideEncryption{
 		"AES256",
+		"aws:fsx",
 		"aws:kms",
 		"aws:kms:dsse",
 	}
@@ -1325,6 +1329,7 @@ const (
 	StorageClassGlacierIr          StorageClass = "GLACIER_IR"
 	StorageClassSnow               StorageClass = "SNOW"
 	StorageClassExpressOnezone     StorageClass = "EXPRESS_ONEZONE"
+	StorageClassFsxOpenzfs         StorageClass = "FSX_OPENZFS"
 )
 
 // Values returns all known values for StorageClass. Note that this can be
@@ -1344,6 +1349,7 @@ func (StorageClass) Values() []StorageClass {
 		"GLACIER_IR",
 		"SNOW",
 		"EXPRESS_ONEZONE",
+		"FSX_OPENZFS",
 	}
 }
 

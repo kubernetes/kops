@@ -18,8 +18,7 @@ import (
 //
 // A KMS key is a logical representation of a cryptographic key. In addition to
 // the key material used in cryptographic operations, a KMS key includes metadata,
-// such as the key ID, key policy, creation date, description, and key state. For
-// details, see [Managing keys]in the Key Management Service Developer Guide
+// such as the key ID, key policy, creation date, description, and key state.
 //
 // Use the parameters of CreateKey to specify the type of KMS key, the source of
 // its key material, its key policy, description, tags, and other properties.
@@ -52,18 +51,19 @@ import (
 // or sign and verify. You can't change these properties after the KMS key is
 // created.
 //
-// Asymmetric KMS keys contain an RSA key pair, Elliptic Curve (ECC) key pair, or
-// an SM2 key pair (China Regions only). The private key in an asymmetric KMS key
-// never leaves KMS unencrypted. However, you can use the GetPublicKeyoperation to download
-// the public key so it can be used outside of KMS. Each KMS key can have only one
-// key usage. KMS keys with RSA key pairs can be used to encrypt and decrypt data
-// or sign and verify messages (but not both). KMS keys with NIST-recommended ECC
-// key pairs can be used to sign and verify messages or derive shared secrets (but
-// not both). KMS keys with ECC_SECG_P256K1 can be used only to sign and verify
-// messages. KMS keys with SM2 key pairs (China Regions only) can be used to either
-// encrypt and decrypt data, sign and verify messages, or derive shared secrets
-// (you must choose one key usage type). For information about asymmetric KMS keys,
-// see [Asymmetric KMS keys]in the Key Management Service Developer Guide.
+// Asymmetric KMS keys contain an RSA key pair, Elliptic Curve (ECC) key pair,
+// ML-DSA key pair or an SM2 key pair (China Regions only). The private key in an
+// asymmetric KMS key never leaves KMS unencrypted. However, you can use the GetPublicKey
+// operation to download the public key so it can be used outside of KMS. Each KMS
+// key can have only one key usage. KMS keys with RSA key pairs can be used to
+// encrypt and decrypt data or sign and verify messages (but not both). KMS keys
+// with NIST-recommended ECC key pairs can be used to sign and verify messages or
+// derive shared secrets (but not both). KMS keys with ECC_SECG_P256K1 can be used
+// only to sign and verify messages. KMS keys with ML-DSA key pairs can be used to
+// sign and verify messages. KMS keys with SM2 key pairs (China Regions only) can
+// be used to either encrypt and decrypt data, sign and verify messages, or derive
+// shared secrets (you must choose one key usage type). For information about
+// asymmetric KMS keys, see [Asymmetric KMS keys]in the Key Management Service Developer Guide.
 //
 // HMAC KMS key To create an HMAC KMS key, set the KeySpec parameter to a key spec
 // value for HMAC KMS keys. Then set the KeyUsage parameter to GENERATE_VERIFY_MAC
@@ -111,7 +111,7 @@ import (
 // To create a multi-Region primary key with imported key material, use the Origin
 // parameter of CreateKey with a value of EXTERNAL and the MultiRegion parameter
 // with a value of True . To create replicas of the multi-Region primary key, use
-// the ReplicateKeyoperation. For instructions, see [Importing key material into multi-Region keys]. For more information about multi-Region
+// the ReplicateKeyoperation. For instructions, see [Importing key material step 1]. For more information about multi-Region
 // keys, see [Multi-Region keys in KMS]in the Key Management Service Developer Guide.
 //
 // Custom key store A [custom key store] lets you protect your Amazon Web Services resources using
@@ -168,20 +168,19 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [CloudHSM key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html
-// [external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
+// [external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html
 // [external key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
 // [Asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [Multi-Region keys in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-overview.html
-// [Managing keys]: https://docs.aws.amazon.com/kms/latest/developerguide/getting-started.html
+// [Importing key material step 1]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-create-cmk.html
 // [KMS key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#kms-keys
-// [Allow a user to create KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/iam-policies.html#iam-policy-example-create-key
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [Allow a user to create KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/customer-managed-policies.html#iam-policy-example-create-key
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [kms:TagResource]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [CloudHSM key store]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html
+// [CloudHSM key store]: https://docs.aws.amazon.com/kms/latest/developerguide/create-cmk-keystore.html
 // [kms:CreateKey]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [Importing key material into multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-import.html
 // [Importing Key Material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) CreateKey(ctx context.Context, params *CreateKeyInput, optFns ...func(*Options)) (*CreateKeyOutput, error) {
 	if params == nil {
 		params = &CreateKeyInput{}
@@ -227,7 +226,7 @@ type CreateKeyInput struct {
 	// store, you must use the XksKeyId parameter to specify an external key that
 	// serves as key material for the KMS key.
 	//
-	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 	CustomKeyStoreId *string
 
 	// Instead, use the KeySpec parameter.
@@ -253,14 +252,14 @@ type CreateKeyInput struct {
 	// Specifies the type of KMS key to create. The default value, SYMMETRIC_DEFAULT ,
 	// creates a KMS key with a 256-bit AES-GCM key that is used for encryption and
 	// decryption, except in China Regions, where it creates a 128-bit symmetric key
-	// that uses SM4 encryption. For help choosing a key spec for your KMS key, see [Choosing a KMS key type]in
-	// the Key Management Service Developer Guide .
+	// that uses SM4 encryption. For a detailed description of all supported key specs,
+	// see [Key spec reference]in the Key Management Service Developer Guide .
 	//
 	// The KeySpec determines whether the KMS key contains a symmetric key or an
 	// asymmetric key pair. It also determines the algorithms that the KMS key
 	// supports. You can't change the KeySpec after the KMS key is created. To further
 	// restrict the algorithms that can be used with the KMS key, use a condition key
-	// in its key policy or IAM policy. For more information, see [kms:EncryptionAlgorithm], [kms:MacAlgorithm] or [kms:Signing Algorithm] in the Key
+	// in its key policy or IAM policy. For more information, see [kms:EncryptionAlgorithm], [kms:MacAlgorithm], [kms:KeyAgreementAlgorithm], or [kms:SigningAlgorithm] in the Key
 	// Management Service Developer Guide .
 	//
 	// [Amazon Web Services services that are integrated with KMS]use symmetric encryption KMS keys to protect your data. These services do not
@@ -304,15 +303,24 @@ type CreateKeyInput struct {
 	//
 	//   - ECC_SECG_P256K1 (secp256k1), commonly used for cryptocurrencies.
 	//
+	//   - Asymmetric ML-DSA key pairs (signing and verification)
+	//
+	//   - ML_DSA_44
+	//
+	//   - ML_DSA_65
+	//
+	//   - ML_DSA_87
+	//
 	//   - SM2 key pairs (encryption and decryption -or- signing and verification -or-
 	//   deriving shared secrets)
 	//
 	//   - SM2 (China Regions only)
 	//
-	// [kms:EncryptionAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-algorithm
-	// [kms:Signing Algorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-signing-algorithm
-	// [kms:MacAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-mac-algorithm
-	// [Choosing a KMS key type]: https://docs.aws.amazon.com/kms/latest/developerguide/key-types.html#symm-asymm-choose
+	// [Key spec reference]: https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-choose-key-spec.html
+	// [kms:EncryptionAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-encryption-algorithm
+	// [kms:SigningAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-signing-algorithm
+	// [kms:MacAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-mac-algorithm
+	// [kms:KeyAgreementAlgorithm]: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-key-agreement-algorithm
 	// [Amazon Web Services services that are integrated with KMS]: http://aws.amazon.com/kms/features/#AWS_Service_Integration
 	KeySpec types.KeySpec
 
@@ -334,12 +342,14 @@ type CreateKeyInput struct {
 	//   - For asymmetric KMS keys with NIST-recommended elliptic curve key pairs,
 	//   specify SIGN_VERIFY or KEY_AGREEMENT .
 	//
-	//   - For asymmetric KMS keys with ECC_SECG_P256K1 key pairs specify SIGN_VERIFY .
+	//   - For asymmetric KMS keys with ECC_SECG_P256K1 key pairs, specify SIGN_VERIFY .
+	//
+	//   - For asymmetric KMS keys with ML-DSA key pairs, specify SIGN_VERIFY .
 	//
 	//   - For asymmetric KMS keys with SM2 key pairs (China Regions only), specify
 	//   ENCRYPT_DECRYPT , SIGN_VERIFY , or KEY_AGREEMENT .
 	//
-	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
+	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
 	KeyUsage types.KeyUsageType
 
 	// Creates a multi-Region primary key that you can replicate into other Amazon Web
@@ -407,17 +417,28 @@ type CreateKeyInput struct {
 	//   be immediately visible to KMS. For more information, see [Changes that I make are not always immediately visible]in the Amazon Web
 	//   Services Identity and Access Management User Guide.
 	//
+	// If either of the required Resource or Action elements are missing from a key
+	// policy statement, the policy statement has no effect. When a key policy
+	// statement is missing one of these elements, the KMS console correctly reports an
+	// error, but the CreateKey and PutKeyPolicy API requests succeed, even though the
+	// policy statement is ineffective.
+	//
+	// For more information on required key policy elements, see [Elements in a key policy] in the Key
+	// Management Service Developer Guide.
+	//
 	// If you do not provide a key policy, KMS attaches a default key policy to the
 	// KMS key. For more information, see [Default key policy]in the Key Management Service Developer
 	// Guide.
 	//
-	// The key policy size quota is 32 kilobytes (32768 bytes).
+	// If the key policy exceeds the length constraint, KMS returns a
+	// LimitExceededException .
 	//
 	// For help writing and formatting a JSON policy document, see the [IAM JSON Policy Reference] in the
 	// Identity and Access Management User Guide .
 	//
+	// [Elements in a key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-overview.html#key-policy-elements
 	// [IAM JSON Policy Reference]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html
-	// [Default key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html#key-policy-default
+	// [Default key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html
 	// [Changes that I make are not always immediately visible]: https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency
 	Policy *string
 
@@ -440,11 +461,11 @@ type CreateKeyInput struct {
 	//
 	// When you add tags to an Amazon Web Services resource, Amazon Web Services
 	// generates a cost allocation report with usage and costs aggregated by tags. Tags
-	// can also be used to control access to a KMS key. For details, see [Tagging Keys].
+	// can also be used to control access to a KMS key. For details, see [Tags in KMS].
 	//
 	// [kms:TagResource]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-	// [Tagging Keys]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
 	// [ABAC for KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/abac.html
+	// [Tags in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
 	Tags []types.Tag
 
 	// Identifies the [external key] that serves as key material for the KMS key in an [external key store]. Specify the
@@ -472,7 +493,7 @@ type CreateKeyInput struct {
 	// [external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
 	// [Double encryption]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-double-encryption
 	// [external key]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-external-key
-	// [Requirements for a KMS key in an external key store]: https://docs.aws.amazon.com/create-xks-keys.html#xks-key-requirements
+	// [Requirements for a KMS key in an external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keys.html#xks-key-requirements
 	// [external key store proxy]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html#concept-xks-proxy
 	XksKeyId *string
 

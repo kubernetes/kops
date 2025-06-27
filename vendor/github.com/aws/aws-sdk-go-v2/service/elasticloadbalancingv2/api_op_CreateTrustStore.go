@@ -12,6 +12,10 @@ import (
 )
 
 // Creates a trust store.
+//
+// For more information, see [Mutual TLS for Application Load Balancers].
+//
+// [Mutual TLS for Application Load Balancers]: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/mutual-authentication.html
 func (c *Client) CreateTrustStore(ctx context.Context, params *CreateTrustStoreInput, optFns ...func(*Options)) (*CreateTrustStoreOutput, error) {
 	if params == nil {
 		params = &CreateTrustStoreInput{}

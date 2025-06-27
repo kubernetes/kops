@@ -162,7 +162,7 @@ func (p *Pusher) Delete(ctx context.Context, ref name.Reference) error {
 	}
 
 	u := url.URL{
-		Scheme: ref.Context().Registry.Scheme(),
+		Scheme: ref.Context().Scheme(),
 		Host:   ref.Context().RegistryStr(),
 		Path:   fmt.Sprintf("/v2/%s/manifests/%s", ref.Context().RepositoryStr(), ref.Identifier()),
 	}

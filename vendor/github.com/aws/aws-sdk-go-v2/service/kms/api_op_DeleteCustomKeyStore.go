@@ -16,9 +16,9 @@ import (
 // key store, it does not affect the external key store proxy, external key
 // manager, or any external keys.
 //
-// This operation is part of the [custom key stores] feature in KMS, which combines the convenience
-// and extensive integration of KMS with the isolation and control of a key store
-// that you own and manage.
+// This operation is part of the custom key stores feature in KMS, which combines
+// the convenience and extensive integration of KMS with the isolation and control
+// of a key store that you own and manage.
 //
 // The custom key store that you delete cannot contain any [KMS keys]. Before deleting the
 // key store, verify that you will never need to use any of the KMS keys in the key
@@ -63,12 +63,11 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [delete the orphaned key material]: https://docs.aws.amazon.com/kms/latest/developerguide/fix-keystore.html#fix-keystore-orphaned-key
-// [custom key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
 // [kms:DeleteCustomKeyStore]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
+// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
 // [KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#kms_keys
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) DeleteCustomKeyStore(ctx context.Context, params *DeleteCustomKeyStoreInput, optFns ...func(*Options)) (*DeleteCustomKeyStoreOutput, error) {
 	if params == nil {
 		params = &DeleteCustomKeyStoreInput{}

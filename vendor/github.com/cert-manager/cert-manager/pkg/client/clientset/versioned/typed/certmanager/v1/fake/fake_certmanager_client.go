@@ -29,19 +29,19 @@ type FakeCertmanagerV1 struct {
 }
 
 func (c *FakeCertmanagerV1) Certificates(namespace string) v1.CertificateInterface {
-	return &FakeCertificates{c, namespace}
+	return newFakeCertificates(c, namespace)
 }
 
 func (c *FakeCertmanagerV1) CertificateRequests(namespace string) v1.CertificateRequestInterface {
-	return &FakeCertificateRequests{c, namespace}
+	return newFakeCertificateRequests(c, namespace)
 }
 
 func (c *FakeCertmanagerV1) ClusterIssuers() v1.ClusterIssuerInterface {
-	return &FakeClusterIssuers{c}
+	return newFakeClusterIssuers(c)
 }
 
 func (c *FakeCertmanagerV1) Issuers(namespace string) v1.IssuerInterface {
-	return &FakeIssuers{c, namespace}
+	return newFakeIssuers(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate

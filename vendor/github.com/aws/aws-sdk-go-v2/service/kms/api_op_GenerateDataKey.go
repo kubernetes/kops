@@ -103,12 +103,12 @@ import (
 // [Amazon Web Services Encryption SDK]: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/
 // [Amazon DynamoDB Encryption Client]: https://docs.aws.amazon.com/dynamodb-encryption-client/latest/devguide/
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+// [Encryption Context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 // [Amazon Web Services Nitro Enclaves]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html
 // [Amazon S3 client-side encryption]: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingClientSideEncryption.html
 // [kms:GenerateDataKey]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [Amazon Web Services Nitro Enclaves SDK]: https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk
 func (c *Client) GenerateDataKey(ctx context.Context, params *GenerateDataKeyInput, optFns ...func(*Options)) (*GenerateDataKeyOutput, error) {
 	if params == nil {
@@ -154,10 +154,10 @@ type GenerateDataKeyInput struct {
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// Specifies the encryption context that will be used when encrypting the data key.
@@ -175,7 +175,7 @@ type GenerateDataKeyInput struct {
 	//
 	// For more information, see [Encryption context] in the Key Management Service Developer Guide.
 	//
-	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
+	// [Encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
 	EncryptionContext map[string]string
 
 	// A list of grant tokens.
@@ -185,7 +185,7 @@ type GenerateDataKeyInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	// Specifies the length of the data key. Use AES_128 to generate a 128-bit
@@ -252,6 +252,10 @@ type GenerateDataKeyOutput struct {
 	//
 	// [key ARN]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id-key-ARN
 	KeyId *string
+
+	// The identifier of the key material used to encrypt the data key. This field is
+	// omitted if the request includes the Recipient parameter.
+	KeyMaterialId *string
 
 	// The plaintext data key. When you use the HTTP API or the Amazon Web Services
 	// CLI, the value is Base64-encoded. Otherwise, it is not Base64-encoded. Use this

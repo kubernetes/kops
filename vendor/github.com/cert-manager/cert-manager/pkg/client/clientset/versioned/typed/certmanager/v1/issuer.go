@@ -19,9 +19,9 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 
-	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,33 +37,34 @@ type IssuersGetter interface {
 
 // IssuerInterface has methods to work with Issuer resources.
 type IssuerInterface interface {
-	Create(ctx context.Context, issuer *v1.Issuer, opts metav1.CreateOptions) (*v1.Issuer, error)
-	Update(ctx context.Context, issuer *v1.Issuer, opts metav1.UpdateOptions) (*v1.Issuer, error)
+	Create(ctx context.Context, issuer *certmanagerv1.Issuer, opts metav1.CreateOptions) (*certmanagerv1.Issuer, error)
+	Update(ctx context.Context, issuer *certmanagerv1.Issuer, opts metav1.UpdateOptions) (*certmanagerv1.Issuer, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, issuer *v1.Issuer, opts metav1.UpdateOptions) (*v1.Issuer, error)
+	UpdateStatus(ctx context.Context, issuer *certmanagerv1.Issuer, opts metav1.UpdateOptions) (*certmanagerv1.Issuer, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.Issuer, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*v1.IssuerList, error)
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*certmanagerv1.Issuer, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.IssuerList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Issuer, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.Issuer, err error)
 	IssuerExpansion
 }
 
 // issuers implements IssuerInterface
 type issuers struct {
-	*gentype.ClientWithList[*v1.Issuer, *v1.IssuerList]
+	*gentype.ClientWithList[*certmanagerv1.Issuer, *certmanagerv1.IssuerList]
 }
 
 // newIssuers returns a Issuers
 func newIssuers(c *CertmanagerV1Client, namespace string) *issuers {
 	return &issuers{
-		gentype.NewClientWithList[*v1.Issuer, *v1.IssuerList](
+		gentype.NewClientWithList[*certmanagerv1.Issuer, *certmanagerv1.IssuerList](
 			"issuers",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1.Issuer { return &v1.Issuer{} },
-			func() *v1.IssuerList { return &v1.IssuerList{} }),
+			func() *certmanagerv1.Issuer { return &certmanagerv1.Issuer{} },
+			func() *certmanagerv1.IssuerList { return &certmanagerv1.IssuerList{} },
+		),
 	}
 }

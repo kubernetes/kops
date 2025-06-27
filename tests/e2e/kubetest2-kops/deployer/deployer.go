@@ -22,8 +22,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/octago/sflags/gen/gpflag"
 	"github.com/spf13/pflag"
+	"github.com/urfave/sflags/gen/gpflag"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/builder"
@@ -151,7 +151,9 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 	fs.MarkDeprecated("control-plane-size", "use --control-plane-count instead")
 
 	// register flags for klog
-	fs.AddGoFlagSet(flag.CommandLine)
+	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
+	klog.InitFlags(klogFlags)
+	fs.AddGoFlagSet(klogFlags)
 
 	return d, fs
 }

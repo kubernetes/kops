@@ -11,6 +11,14 @@ import (
 	"k8s.io/klog/v2"
 )
 
+const (
+	// ClusterServiceLoadBalancerHealthProbeModeShared is the shared health probe mode for cluster service load balancer.
+	ClusterServiceLoadBalancerHealthProbeModeShared = "Shared"
+
+	// ClusterServiceLoadBalancerHealthProbeModeServiceNodePort is the service node port health probe mode for cluster service load balancer.
+	ClusterServiceLoadBalancerHealthProbeModeServiceNodePort = "ServiceNodePort"
+)
+
 // CloudConfig wraps the settings for the AWS cloud provider.
 // NOTE: Cloud config files should follow the same Kubernetes deprecation policy as
 // flags or CLIs. Config fields should not change behavior in incompatible ways and
@@ -63,6 +71,18 @@ type CloudConfig struct {
 
 		// NodeIPFamilies determines which IP addresses are added to node objects and their ordering.
 		NodeIPFamilies []string
+
+		// ClusterServiceLoadBalancerHealthProbeMode determines the health probe mode for cluster service load balancer.
+		// Supported values are `Shared` and `ServiceNodePort`.
+		// `ServiceeNodePort`: the health probe will be created against each port of each service by watching the backend application (default).
+		// `Shared`: all cluster services shares one HTTP probe targeting the kube-proxy on the node (<nodeIP>/healthz:10256).
+		ClusterServiceLoadBalancerHealthProbeMode string `json:"clusterServiceLoadBalancerHealthProbeMode,omitempty" yaml:"clusterServiceLoadBalancerHealthProbeMode,omitempty"`
+
+		// ClusterServiceSharedLoadBalancerHealthProbePort defines the target port of the shared health probe. Default to 10256.
+		ClusterServiceSharedLoadBalancerHealthProbePort int32 `json:"clusterServiceSharedLoadBalancerHealthProbePort,omitempty" yaml:"clusterServiceSharedLoadBalancerHealthProbePort,omitempty"`
+
+		// ClusterServiceSharedLoadBalancerHealthProbePath defines the target path of the shared health probe. Default to `/healthz`.
+		ClusterServiceSharedLoadBalancerHealthProbePath string `json:"clusterServiceSharedLoadBalancerHealthProbePath,omitempty" yaml:"clusterServiceSharedLoadBalancerHealthProbePath,omitempty"`
 
 		// Override to regex validating whether or not instance types require instance topology
 		// to get a definitive response. This will impact whether or not the node controller will

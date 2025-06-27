@@ -19,129 +19,30 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	acmev1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/acme/v1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeChallenges implements ChallengeInterface
-type FakeChallenges struct {
+// fakeChallenges implements ChallengeInterface
+type fakeChallenges struct {
+	*gentype.FakeClientWithList[*v1.Challenge, *v1.ChallengeList]
 	Fake *FakeAcmeV1
-	ns   string
 }
 
-var challengesResource = v1.SchemeGroupVersion.WithResource("challenges")
-
-var challengesKind = v1.SchemeGroupVersion.WithKind("Challenge")
-
-// Get takes name of the challenge, and returns the corresponding challenge object, and an error if there is any.
-func (c *FakeChallenges) Get(ctx context.Context, name string, options metav1.GetOptions) (result *v1.Challenge, err error) {
-	emptyResult := &v1.Challenge{}
-	obj, err := c.Fake.
-		Invokes(testing.NewGetActionWithOptions(challengesResource, c.ns, name, options), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
+func newFakeChallenges(fake *FakeAcmeV1, namespace string) acmev1.ChallengeInterface {
+	return &fakeChallenges{
+		gentype.NewFakeClientWithList[*v1.Challenge, *v1.ChallengeList](
+			fake.Fake,
+			namespace,
+			v1.SchemeGroupVersion.WithResource("challenges"),
+			v1.SchemeGroupVersion.WithKind("Challenge"),
+			func() *v1.Challenge { return &v1.Challenge{} },
+			func() *v1.ChallengeList { return &v1.ChallengeList{} },
+			func(dst, src *v1.ChallengeList) { dst.ListMeta = src.ListMeta },
+			func(list *v1.ChallengeList) []*v1.Challenge { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1.ChallengeList, items []*v1.Challenge) { list.Items = gentype.FromPointerSlice(items) },
+		),
+		fake,
 	}
-	return obj.(*v1.Challenge), err
-}
-
-// List takes label and field selectors, and returns the list of Challenges that match those selectors.
-func (c *FakeChallenges) List(ctx context.Context, opts metav1.ListOptions) (result *v1.ChallengeList, err error) {
-	emptyResult := &v1.ChallengeList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewListActionWithOptions(challengesResource, challengesKind, c.ns, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1.ChallengeList{ListMeta: obj.(*v1.ChallengeList).ListMeta}
-	for _, item := range obj.(*v1.ChallengeList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested challenges.
-func (c *FakeChallenges) Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchActionWithOptions(challengesResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a challenge and creates it.  Returns the server's representation of the challenge, and an error, if there is any.
-func (c *FakeChallenges) Create(ctx context.Context, challenge *v1.Challenge, opts metav1.CreateOptions) (result *v1.Challenge, err error) {
-	emptyResult := &v1.Challenge{}
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(challengesResource, c.ns, challenge, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.Challenge), err
-}
-
-// Update takes the representation of a challenge and updates it. Returns the server's representation of the challenge, and an error, if there is any.
-func (c *FakeChallenges) Update(ctx context.Context, challenge *v1.Challenge, opts metav1.UpdateOptions) (result *v1.Challenge, err error) {
-	emptyResult := &v1.Challenge{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateActionWithOptions(challengesResource, c.ns, challenge, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.Challenge), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeChallenges) UpdateStatus(ctx context.Context, challenge *v1.Challenge, opts metav1.UpdateOptions) (result *v1.Challenge, err error) {
-	emptyResult := &v1.Challenge{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceActionWithOptions(challengesResource, "status", c.ns, challenge, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.Challenge), err
-}
-
-// Delete takes name of the challenge and deletes it. Returns an error if one occurs.
-func (c *FakeChallenges) Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(challengesResource, c.ns, name, opts), &v1.Challenge{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeChallenges) DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error {
-	action := testing.NewDeleteCollectionActionWithOptions(challengesResource, c.ns, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1.ChallengeList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched challenge.
-func (c *FakeChallenges) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Challenge, err error) {
-	emptyResult := &v1.Challenge{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(challengesResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1.Challenge), err
 }

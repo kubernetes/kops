@@ -1,3 +1,20 @@
+# v1.7.4 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.3 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.2 (2025-05-22)
+
+* **Bug Fix**: Handle checksum for unseekable body with 0 content length
+
+# v1.7.1 (2025-04-28)
+
+* **Bug Fix**: Don't emit warnings about lack of checksum validation for non-200 responses.
+
 # v1.7.0 (2025-03-11)
 
 * **Feature**: Add extra check during output checksum validation so the validation skip warning would not be logged if object is not fetched from s3

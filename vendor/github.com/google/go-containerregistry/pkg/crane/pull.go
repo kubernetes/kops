@@ -70,7 +70,7 @@ func MultiSave(imgMap map[string]v1.Image, path string, opt ...Option) error {
 			if !ok {
 				return fmt.Errorf("ref wasn't a tag or digest")
 			}
-			tag = d.Repository.Tag(iWasADigestTag)
+			tag = d.Tag(iWasADigestTag)
 		}
 		tagToImage[tag] = img
 	}

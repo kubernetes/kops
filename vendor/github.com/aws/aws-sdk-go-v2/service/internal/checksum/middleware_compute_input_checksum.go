@@ -179,7 +179,7 @@ func (m *ComputeInputPayloadChecksum) HandleFinalize(
 
 	// Only seekable streams are supported for non-trailing checksums, because
 	// the stream needs to be rewound before the handler can continue.
-	if stream != nil && !req.IsStreamSeekable() {
+	if stream != nil && !req.IsStreamSeekable() && streamLength != 0 {
 		return out, metadata, computeInputHeaderChecksumError{
 			Msg: "unseekable stream is not supported without TLS and trailing checksum",
 		}
@@ -194,11 +194,13 @@ func (m *ComputeInputPayloadChecksum) HandleFinalize(
 			Err: err,
 		}
 	}
-
-	if err := req.RewindStream(); err != nil {
-		return out, metadata, computeInputHeaderChecksumError{
-			Msg: "failed to rewind stream",
-			Err: err,
+	// only attempt rewind if the stream length has been determined and is non-zero
+	if streamLength > 0 {
+		if err := req.RewindStream(); err != nil {
+			return out, metadata, computeInputHeaderChecksumError{
+				Msg: "failed to rewind stream",
+				Err: err,
+			}
 		}
 	}
 
@@ -414,7 +416,7 @@ func computeStreamChecksum(algorithm Algorithm, stream io.Reader, computePayload
 }
 
 func getRequestStreamLength(req *smithyhttp.Request) (int64, error) {
-	if v := req.ContentLength; v > 0 {
+	if v := req.ContentLength; v >= 0 {
 		return v, nil
 	}
 

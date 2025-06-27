@@ -24,7 +24,7 @@ type ConditionStatus string
 // the condition; "ConditionFalse" means a resource is not in the condition;
 // "ConditionUnknown" means kubernetes can't decide if a resource is in the
 // condition or not. In the future, we could add other intermediate
-// conditions, e.g. ConditionDegraded.
+// conditions, e.g., ConditionDegraded.
 const (
 	// ConditionTrue represents the fact that a given condition is true
 	ConditionTrue ConditionStatus = "True"
@@ -37,7 +37,7 @@ const (
 )
 
 // A reference to an object in the same namespace as the referent.
-// If the referent is a cluster-scoped resource (e.g. a ClusterIssuer),
+// If the referent is a cluster-scoped resource (e.g., a ClusterIssuer),
 // the reference instead refers to the resource with the given name in the
 // configured 'cluster resource namespace', which is set as a flag on the
 // controller component (and defaults to the namespace that cert-manager

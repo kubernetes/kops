@@ -23,7 +23,7 @@ import (
 //
 // Deleting a KMS key is a destructive and potentially dangerous operation. When a
 // KMS key is deleted, all data that was encrypted under the KMS key is
-// unrecoverable. (The only exception is a [multi-Region replica key], or an asymmetric or HMAC KMS key with imported key material.) To prevent the use of a KMS
+// unrecoverable. (The only exception is a [multi-Region replica key], or an [asymmetric or HMAC KMS key with imported key material].) To prevent the use of a KMS
 // key without deleting it, use DisableKey.
 //
 // You can schedule the deletion of a multi-Region primary key and its replica
@@ -67,12 +67,13 @@ import (
 //
 // [delete the orphaned key material]: https://docs.aws.amazon.com/kms/latest/developerguide/fix-keystore.html#fix-keystore-orphaned-key
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [Deleting a KMS key from an external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/delete-xks-key.html
-// [Deleting multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-delete.html
+// [Deleting a KMS key from an external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html#delete-xks-key
+// [Deleting multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html#deleting-mrks
 // [Deleting KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html
 // [multi-Region replica key]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-delete.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [deletes a KMS key from an CloudHSM key store]: https://docs.aws.amazon.com/kms/latest/developerguide/delete-cmk-keystore.html
+// [asymmetric or HMAC KMS key with imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html#import-delete-key
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [deletes a KMS key from an CloudHSM key store]: https://docs.aws.amazon.com/kms/latest/developerguide/deleting-keys.html#delete-cmk-keystore
 func (c *Client) ScheduleKeyDeletion(ctx context.Context, params *ScheduleKeyDeletionInput, optFns ...func(*Options)) (*ScheduleKeyDeletionOutput, error) {
 	if params == nil {
 		params = &ScheduleKeyDeletionInput{}

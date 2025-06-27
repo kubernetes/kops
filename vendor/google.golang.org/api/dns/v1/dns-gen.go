@@ -146,9 +146,6 @@ func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, err
 	s.ResourceRecordSets = NewResourceRecordSetsService(s)
 	s.ResponsePolicies = NewResponsePoliciesService(s)
 	s.ResponsePolicyRules = NewResponsePolicyRulesService(s)
-	if err != nil {
-		return nil, err
-	}
 	if endpoint != "" {
 		s.BasePath = endpoint
 	}
@@ -1174,6 +1171,8 @@ func (s ManagedZoneForwardingConfig) MarshalJSON() ([]byte, error) {
 }
 
 type ManagedZoneForwardingConfigNameServerTarget struct {
+	// DomainName: Fully qualified domain name for the forwarding target.
+	DomainName string `json:"domainName,omitempty"`
 	// ForwardingPath: Forwarding path for this NameServerTarget. If unset or set
 	// to DEFAULT, Cloud DNS makes forwarding decisions based on IP address ranges;
 	// that is, RFC1918 addresses go to the VPC network, non-RFC1918 addresses go
@@ -1192,15 +1191,15 @@ type ManagedZoneForwardingConfigNameServerTarget struct {
 	// fields (ipv4 & ipv6) being populated. Public preview as of November 2022.
 	Ipv6Address string `json:"ipv6Address,omitempty"`
 	Kind        string `json:"kind,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "ForwardingPath") to
+	// ForceSendFields is a list of field names (e.g. "DomainName") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "ForwardingPath") to include in
-	// API requests with the JSON null value. By default, fields with empty values
-	// are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "DomainName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }

@@ -15,9 +15,9 @@ import (
 // external key store from the external key store proxy that communicates with your
 // external key manager.
 //
-// This operation is part of the [custom key stores] feature in KMS, which combines the convenience
-// and extensive integration of KMS with the isolation and control of a key store
-// that you own and manage.
+// This operation is part of the custom key stores feature in KMS, which combines
+// the convenience and extensive integration of KMS with the isolation and control
+// of a key store that you own and manage.
 //
 // While a custom key store is disconnected, you can manage the custom key store
 // and its KMS keys, but you cannot create or use its KMS keys. You can reconnect
@@ -53,11 +53,10 @@ import (
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
-// [custom key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
-// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
+// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
 // [kms:DisconnectCustomKeyStore]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) DisconnectCustomKeyStore(ctx context.Context, params *DisconnectCustomKeyStoreInput, optFns ...func(*Options)) (*DisconnectCustomKeyStoreOutput, error) {
 	if params == nil {
 		params = &DisconnectCustomKeyStoreInput{}

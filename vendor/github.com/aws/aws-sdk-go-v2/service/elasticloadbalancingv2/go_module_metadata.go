@@ -3,4 +3,4 @@
 package elasticloadbalancingv2
 
 // goModuleVersion is the tagged release for this module
-const goModuleVersion = "1.45.0"
+const goModuleVersion = "1.46.0"

@@ -49,14 +49,14 @@ import (
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
 // [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
-// [automatic rotation of the key material]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
+// [automatic rotation of the key material]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-enable-disable.html
 // [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [customer managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk
 // [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk
 // [kms:DisableKeyRotation]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/multi-region-keys-manage.html#multi-region-rotate
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#multi-region-rotate
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) DisableKeyRotation(ctx context.Context, params *DisableKeyRotationInput, optFns ...func(*Options)) (*DisableKeyRotationOutput, error) {
 	if params == nil {
 		params = &DisableKeyRotationInput{}
@@ -91,7 +91,7 @@ type DisableKeyRotationInput struct {
 	// [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
 	// [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
 	// [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html#asymmetric-cmks
-	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 	//
 	// This member is required.
 	KeyId *string

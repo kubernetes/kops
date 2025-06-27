@@ -55,11 +55,11 @@ import (
 // [kms:TagResource]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [customer managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk
 // [Tagging keys]: https://docs.aws.amazon.com/kms/latest/developerguide/tagging-keys.html
-// [alias]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#alias-concept
+// [alias]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-alias.html
 // [ABAC for KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/abac.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [Amazon Web Services managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#keystore-concept
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 // [Tagging Amazon Web Services resources]: https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html
 func (c *Client) TagResource(ctx context.Context, params *TagResourceInput, optFns ...func(*Options)) (*TagResourceOutput, error) {
 	if params == nil {

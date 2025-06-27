@@ -11,13 +11,14 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Returns information about all completed key material rotations for the
-// specified KMS key.
+// Returns information about the key materials associated with the specified KMS
+// key. You can use the optional IncludeKeyMaterial parameter to control which key
+// materials are included in the response.
 //
 // You must specify the KMS key in all requests. You can refine the key rotations
 // list by limiting the number of rotations returned.
 //
-// For detailed information about automatic and on-demand key rotations, see [Rotating KMS keys] in
+// For detailed information about automatic and on-demand key rotations, see [Rotate KMS keys] in
 // the Key Management Service Developer Guide.
 //
 // Cross-account use: No. You cannot perform this operation on a KMS key in a
@@ -29,18 +30,22 @@ import (
 //
 // # EnableKeyRotation
 //
+// # DeleteImportedKeyMaterial
+//
 // # DisableKeyRotation
 //
 // # GetKeyRotationStatus
+//
+// # ImportKeyMaterial
 //
 // # RotateKeyOnDemand
 //
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
-// [Rotating KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
+// [Rotate KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html
 // [kms:ListKeyRotations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) ListKeyRotations(ctx context.Context, params *ListKeyRotationsInput, optFns ...func(*Options)) (*ListKeyRotationsOutput, error) {
 	if params == nil {
 		params = &ListKeyRotationsInput{}
@@ -74,6 +79,15 @@ type ListKeyRotationsInput struct {
 	// This member is required.
 	KeyId *string
 
+	// Use this optional parameter to control which key materials associated with this
+	// key are listed in the response. The default value of this parameter is
+	// ROTATIONS_ONLY . If you omit this parameter, KMS returns information on the key
+	// materials created by automatic or on-demand key rotation. When you specify a
+	// value of ALL_KEY_MATERIAL , KMS adds the first key material and any imported key
+	// material pending rotation to the response. This parameter can only be used with
+	// KMS keys that support automatic or on-demand key rotation.
+	IncludeKeyMaterial types.IncludeKeyMaterial
+
 	// Use this parameter to specify the maximum number of items to return. When this
 	// value is present, KMS does not return more than the specified number of items,
 	// but it might return fewer.
@@ -96,7 +110,9 @@ type ListKeyRotationsOutput struct {
 	// for the Marker parameter in a subsequent request.
 	NextMarker *string
 
-	// A list of completed key material rotations.
+	// A list of completed key material rotations. When the optional input parameter
+	// IncludeKeyMaterial is specified with a value of ALL_KEY_MATERIAL , this list
+	// includes the first key material and any imported key material pending rotation.
 	Rotations []types.RotationsListEntry
 
 	// A flag that indicates whether there are more items in the list. When this value

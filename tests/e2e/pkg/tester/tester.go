@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/octago/sflags/gen/gpflag"
+	"github.com/urfave/sflags/gen/gpflag"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	unversioned "k8s.io/kops/pkg/apis/kops"

@@ -54,6 +54,10 @@ type DescribeAutoScalingGroupsInput struct {
 	// One or more filters to limit the results based on specific tags.
 	Filters []types.Filter
 
+	//  Specifies whether to include information about Amazon EC2 instances in the
+	// response. When set to true (default), the response includes instance details.
+	IncludeInstances *bool
+
 	// The maximum number of items to return with this call. The default value is 50
 	// and the maximum value is 100 .
 	MaxRecords *int32

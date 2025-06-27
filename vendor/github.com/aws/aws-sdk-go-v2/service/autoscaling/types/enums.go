@@ -168,6 +168,7 @@ const (
 	CpuManufacturerIntel             CpuManufacturer = "intel"
 	CpuManufacturerAmd               CpuManufacturer = "amd"
 	CpuManufacturerAmazonWebServices CpuManufacturer = "amazon-web-services"
+	CpuManufacturerApple             CpuManufacturer = "apple"
 )
 
 // Values returns all known values for CpuManufacturer. Note that this can be
@@ -179,6 +180,7 @@ func (CpuManufacturer) Values() []CpuManufacturer {
 		"intel",
 		"amd",
 		"amazon-web-services",
+		"apple",
 	}
 }
 

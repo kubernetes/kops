@@ -17,9 +17,9 @@ import (
 // backed by an [CloudHSM cluster]and [external key stores] backed by an external key store proxy and external key
 // manager outside of Amazon Web Services.
 //
-// This operation is part of the [custom key stores] feature in KMS, which combines the convenience
-// and extensive integration of KMS with the isolation and control of a key store
-// that you own and manage.
+// This operation is part of the custom key stores feature in KMS, which combines
+// the convenience and extensive integration of KMS with the isolation and control
+// of a key store that you own and manage.
 //
 // Before you create the custom key store, the required elements must be in place
 // and operational. We recommend that you use the test tools that KMS provides to
@@ -61,8 +61,6 @@ import (
 // immediately, you might want to connect it to verify that all settings are
 // correct and then disconnect it until you are ready to use it.
 //
-// For help with failures, see [Troubleshooting a custom key store] in the Key Management Service Developer Guide.
-//
 // Cross-account use: No. You cannot perform this operation on a custom key store
 // in a different Amazon Web Services account.
 //
@@ -85,16 +83,14 @@ import (
 //
 // [CloudHSM key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html
 // [CloudHSM cluster]: https://docs.aws.amazon.com/cloudhsm/latest/userguide/clusters.html
-// [custom key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
 // [external key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-external.html
 // [Troubleshooting an CloudHSM key store]: https://docs.aws.amazon.com/kms/latest/developerguide/fix-keystore.html
 // [Assemble the prerequisites (for CloudHSM key stores)]: https://docs.aws.amazon.com/kms/latest/developerguide/create-keystore.html#before-keystore
 // [Assemble the prerequisites (for external key stores)]: https://docs.aws.amazon.com/kms/latest/developerguide/create-xks-keystore.html#xks-requirements
-// [Troubleshooting a custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/fix-keystore.html
 // [Troubleshooting an external key store]: https://docs.aws.amazon.com/kms/latest/developerguide/xks-troubleshooting.html
 // [kms:CreateCustomKeyStore]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
-// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
+// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) CreateCustomKeyStore(ctx context.Context, params *CreateCustomKeyStoreInput, optFns ...func(*Options)) (*CreateCustomKeyStoreOutput, error) {
 	if params == nil {
 		params = &CreateCustomKeyStoreInput{}
@@ -151,7 +147,7 @@ type CreateCustomKeyStoreInput struct {
 	// This parameter tells KMS the kmsuser account password; it does not change the
 	// password in the CloudHSM cluster.
 	//
-	// [kmsuser crypto user (CU) account]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-concepts.html#concept-kmsuser
+	// [kmsuser crypto user (CU) account]: https://docs.aws.amazon.com/kms/latest/developerguide/keystore-cloudhsm.html#concept-kmsuser
 	KeyStorePassword *string
 
 	// Specifies the certificate for an CloudHSM key store. This parameter is required
@@ -201,7 +197,7 @@ type CreateCustomKeyStoreInput struct {
 	// proxy. Even if you choose a VPC endpoint service, the proxy can be hosted within
 	// the VPC or outside of Amazon Web Services such as in your corporate data center.
 	//
-	// [Choosing a connectivity option]: https://docs.aws.amazon.com/kms/latest/developerguide/plan-xks-keystore.html#choose-xks-connectivity
+	// [Choosing a connectivity option]: https://docs.aws.amazon.com/kms/latest/developerguide/choose-xks-connectivity.html
 	XksProxyConnectivity types.XksProxyConnectivityType
 
 	// Specifies the endpoint that KMS uses to send requests to the external key store

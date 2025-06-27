@@ -7935,6 +7935,15 @@ func awsRestxml_deserializeOpHttpBindingsHeadObjectOutput(v *HeadObjectOutput, r
 		v.StorageClass = types.StorageClass(headerValues[0])
 	}
 
+	if headerValues := response.Header.Values("x-amz-tagging-count"); len(headerValues) != 0 {
+		headerValues[0] = strings.TrimSpace(headerValues[0])
+		vv, err := strconv.ParseInt(headerValues[0], 0, 32)
+		if err != nil {
+			return err
+		}
+		v.TagCount = ptr.Int32(int32(vv))
+	}
+
 	if headerValues := response.Header.Values("x-amz-version-id"); len(headerValues) != 0 {
 		headerValues[0] = strings.TrimSpace(headerValues[0])
 		v.VersionId = ptr.String(headerValues[0])
@@ -12742,6 +12751,83 @@ func awsRestxml_deserializeOpErrorPutPublicAccessBlock(response *smithyhttp.Resp
 	}
 }
 
+type awsRestxml_deserializeOpRenameObject struct {
+}
+
+func (*awsRestxml_deserializeOpRenameObject) ID() string {
+	return "OperationDeserializer"
+}
+
+func (m *awsRestxml_deserializeOpRenameObject) HandleDeserialize(ctx context.Context, in middleware.DeserializeInput, next middleware.DeserializeHandler) (
+	out middleware.DeserializeOutput, metadata middleware.Metadata, err error,
+) {
+	out, metadata, err = next.HandleDeserialize(ctx, in)
+	if err != nil {
+		return out, metadata, err
+	}
+
+	_, span := tracing.StartSpan(ctx, "OperationDeserializer")
+	endTimer := startMetricTimer(ctx, "client.call.deserialization_duration")
+	defer endTimer()
+	defer span.End()
+	response, ok := out.RawResponse.(*smithyhttp.Response)
+	if !ok {
+		return out, metadata, &smithy.DeserializationError{Err: fmt.Errorf("unknown transport type %T", out.RawResponse)}
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return out, metadata, awsRestxml_deserializeOpErrorRenameObject(response, &metadata)
+	}
+	output := &RenameObjectOutput{}
+	out.Result = output
+
+	span.End()
+	return out, metadata, err
+}
+
+func awsRestxml_deserializeOpErrorRenameObject(response *smithyhttp.Response, metadata *middleware.Metadata) error {
+	var errorBuffer bytes.Buffer
+	if _, err := io.Copy(&errorBuffer, response.Body); err != nil {
+		return &smithy.DeserializationError{Err: fmt.Errorf("failed to copy error response body, %w", err)}
+	}
+	errorBody := bytes.NewReader(errorBuffer.Bytes())
+
+	errorCode := "UnknownError"
+	errorMessage := errorCode
+
+	errorComponents, err := s3shared.GetErrorResponseComponents(errorBody, s3shared.ErrorResponseDeserializerOptions{
+		UseStatusCode: true, StatusCode: response.StatusCode,
+	})
+	if err != nil {
+		return err
+	}
+	if hostID := errorComponents.HostID; len(hostID) != 0 {
+		s3shared.SetHostIDMetadata(metadata, hostID)
+	}
+	if reqID := errorComponents.RequestID; len(reqID) != 0 {
+		awsmiddleware.SetRequestIDMetadata(metadata, reqID)
+	}
+	if len(errorComponents.Code) != 0 {
+		errorCode = errorComponents.Code
+	}
+	if len(errorComponents.Message) != 0 {
+		errorMessage = errorComponents.Message
+	}
+	errorBody.Seek(0, io.SeekStart)
+	switch {
+	case strings.EqualFold("IdempotencyParameterMismatch", errorCode):
+		return awsRestxml_deserializeErrorIdempotencyParameterMismatch(response, errorBody)
+
+	default:
+		genericError := &smithy.GenericAPIError{
+			Code:    errorCode,
+			Message: errorMessage,
+		}
+		return genericError
+
+	}
+}
+
 type awsRestxml_deserializeOpRestoreObject struct {
 }
 
@@ -13862,6 +13948,11 @@ func awsRestxml_deserializeErrorBucketAlreadyOwnedByYou(response *smithyhttp.Res
 
 func awsRestxml_deserializeErrorEncryptionTypeMismatch(response *smithyhttp.Response, errorBody *bytes.Reader) error {
 	output := &types.EncryptionTypeMismatch{}
+	return output
+}
+
+func awsRestxml_deserializeErrorIdempotencyParameterMismatch(response *smithyhttp.Response, errorBody *bytes.Reader) error {
+	output := &types.IdempotencyParameterMismatch{}
 	return output
 }
 
@@ -17386,6 +17477,42 @@ func awsRestxml_deserializeDocumentGrantsUnwrapped(v *[]types.Grant, decoder smi
 	*v = sv
 	return nil
 }
+func awsRestxml_deserializeDocumentIdempotencyParameterMismatch(v **types.IdempotencyParameterMismatch, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.IdempotencyParameterMismatch
+	if *v == nil {
+		sv = &types.IdempotencyParameterMismatch{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
 func awsRestxml_deserializeDocumentIndexDocument(v **types.IndexDocument, decoder smithyxml.NodeDecoder) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)

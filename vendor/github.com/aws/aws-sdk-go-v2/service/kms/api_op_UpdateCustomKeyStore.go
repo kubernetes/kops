@@ -19,9 +19,9 @@ import (
 // does not return any property values. To verify the updated property values, use
 // the DescribeCustomKeyStoresoperation.
 //
-// This operation is part of the [custom key stores] feature in KMS, which combines the convenience
-// and extensive integration of KMS with the isolation and control of a key store
-// that you own and manage.
+// This operation is part of the custom key stores feature in KMS, which combines
+// the convenience and extensive integration of KMS with the isolation and control
+// of a key store that you own and manage.
 //
 // When updating the properties of an external key store, verify that the updated
 // settings connect your key store, via the external key store proxy, to the same
@@ -95,9 +95,8 @@ import (
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
-// [custom key stores]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
 // [kms:UpdateCustomKeyStore]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) UpdateCustomKeyStore(ctx context.Context, params *UpdateCustomKeyStoreInput, optFns ...func(*Options)) (*UpdateCustomKeyStoreOutput, error) {
 	if params == nil {
 		params = &UpdateCustomKeyStoreInput{}

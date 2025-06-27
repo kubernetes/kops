@@ -107,6 +107,7 @@
         "api_op_PutObjectRetention.go",
         "api_op_PutObjectTagging.go",
         "api_op_PutPublicAccessBlock.go",
+        "api_op_RenameObject.go",
         "api_op_RestoreObject.go",
         "api_op_SelectObjectContent.go",
         "api_op_UploadPart.go",

@@ -447,6 +447,7 @@ const (
 	CmdClear                      tpmutil.Command = 0x00000126
 	CmdHierarchyChangeAuth        tpmutil.Command = 0x00000129
 	CmdDefineSpace                tpmutil.Command = 0x0000012A
+	CmdPCRAllocate                tpmutil.Command = 0x0000012B
 	CmdCreatePrimary              tpmutil.Command = 0x00000131
 	CmdIncrementNVCounter         tpmutil.Command = 0x00000134
 	CmdWriteNV                    tpmutil.Command = 0x00000137

@@ -1529,6 +1529,34 @@
             },
             "workloadIdentityPools": {
               "methods": {
+                "addAttestationRule": {
+                  "description": "Add an AttestationRule on a WorkloadIdentityPoolManagedIdentity. The total attestation rules after addition must not exceed 50.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:addAttestationRule",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.addAttestationRule",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:addAttestationRule",
+                  "request": {
+                    "$ref": "AddAttestationRuleRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "create": {
                   "description": "Creates a new WorkloadIdentityPool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
@@ -1612,6 +1640,34 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
+                "getIamPolicy": {
+                  "description": "Gets the IAM policy of a WorkloadIdentityPool.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:getIamPolicy",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.getIamPolicy",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "REQUIRED: The resource for which the policy is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:getIamPolicy",
+                  "request": {
+                    "$ref": "GetIamPolicyRequest"
+                  },
+                  "response": {
+                    "$ref": "Policy"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "list": {
                   "description": "Lists all non-deleted WorkloadIdentityPools in a project. If `show_deleted` is set to `true`, then deleted pools are also listed.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
@@ -1653,6 +1709,47 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
+                "listAttestationRules": {
+                  "description": "List all AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:listAttestationRules",
+                  "httpMethod": "GET",
+                  "id": "iam.projects.locations.workloadIdentityPools.listAttestationRules",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "filter": {
+                      "description": "Optional. A query filter. Supports the following function: * `container_ids()`: Returns only the AttestationRules under the specific container ids. The function expects a comma-delimited list with only project numbers and must use the format `projects/`. For example: `container_ids(projects/, projects/,...)`.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Optional. The maximum number of AttestationRules to return. If unspecified, at most 50 AttestationRules are returned. The maximum value is 100; values above 100 are truncated to 100.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "Optional. A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to list attestation rules of.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:listAttestationRules",
+                  "response": {
+                    "$ref": "ListAttestationRulesResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "patch": {
                   "description": "Updates an existing WorkloadIdentityPool.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
@@ -1682,6 +1779,118 @@
                   },
                   "response": {
                     "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "removeAttestationRule": {
+                  "description": "Remove an AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:removeAttestationRule",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.removeAttestationRule",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to remove an attestation rule from.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:removeAttestationRule",
+                  "request": {
+                    "$ref": "RemoveAttestationRuleRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "setAttestationRules": {
+                  "description": "Set all AttestationRule on a WorkloadIdentityPoolManagedIdentity. A maximum of 50 AttestationRules can be set.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:setAttestationRules",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.setAttestationRules",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:setAttestationRules",
+                  "request": {
+                    "$ref": "SetAttestationRulesRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "setIamPolicy": {
+                  "description": "Sets the IAM policies on a WorkloadIdentityPool",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:setIamPolicy",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.setIamPolicy",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "REQUIRED: The resource for which the policy is being specified. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:setIamPolicy",
+                  "request": {
+                    "$ref": "SetIamPolicyRequest"
+                  },
+                  "response": {
+                    "$ref": "Policy"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "testIamPermissions": {
+                  "description": "Returns the caller's permissions on a WorkloadIdentityPool",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:testIamPermissions",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.testIamPermissions",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https://cloud.google.com/apis/design/resource_names) for the appropriate value for this field.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:testIamPermissions",
+                  "request": {
+                    "$ref": "TestIamPermissionsRequest"
+                  },
+                  "response": {
+                    "$ref": "TestIamPermissionsResponse"
                   },
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
@@ -1718,8 +1927,509 @@
               },
               "resources": {
                 "namespaces": {
+                  "methods": {
+                    "create": {
+                      "description": "Creates a new WorkloadIdentityPoolNamespace in a WorkloadIdentityPool.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces",
+                      "httpMethod": "POST",
+                      "id": "iam.projects.locations.workloadIdentityPools.namespaces.create",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "parent": {
+                          "description": "Required. The parent resource to create the namespace in. The only supported location is `global`.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "workloadIdentityPoolNamespaceId": {
+                          "description": "Required. The ID to use for the namespace. This value must: * contain at most 63 characters * contain only lowercase alphanumeric characters or `-` * start with an alphanumeric character * end with an alphanumeric character The prefix \"gcp-\" will be reserved for future uses.",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+parent}/namespaces",
+                      "request": {
+                        "$ref": "WorkloadIdentityPoolNamespace"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "delete": {
+                      "description": "Deletes a WorkloadIdentityPoolNamespace. You can undelete a namespace for 30 days. After 30 days, deletion is permanent.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}",
+                      "httpMethod": "DELETE",
+                      "id": "iam.projects.locations.workloadIdentityPools.namespaces.delete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the namespace to delete.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "get": {
+                      "description": "Gets an individual WorkloadIdentityPoolNamespace.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}",
+                      "httpMethod": "GET",
+                      "id": "iam.projects.locations.workloadIdentityPools.namespaces.get",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the namespace to retrieve.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "WorkloadIdentityPoolNamespace"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "list": {
+                      "description": "Lists all non-deleted WorkloadIdentityPoolNamespaces in a workload identity pool. If `show_deleted` is set to `true`, then deleted namespaces are also listed.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces",
+                      "httpMethod": "GET",
+                      "id": "iam.projects.locations.workloadIdentityPools.namespaces.list",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "pageSize": {
+                          "description": "The maximum number of namespaces to return. If unspecified, at most 50 namespaces are returned. The maximum value is 1000; values above are 1000 truncated to 1000.",
+                          "format": "int32",
+                          "location": "query",
+                          "type": "integer"
+                        },
+                        "pageToken": {
+                          "description": "A page token, received from a previous `ListWorkloadIdentityPoolNamespaces` call. Provide this to retrieve the subsequent page.",
+                          "location": "query",
+                          "type": "string"
+                        },
+                        "parent": {
+                          "description": "Required. The parent resource to list namespaces for.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "showDeleted": {
+                          "description": "Whether to return soft-deleted namespaces.",
+                          "location": "query",
+                          "type": "boolean"
+                        }
+                      },
+                      "path": "v1/{+parent}/namespaces",
+                      "response": {
+                        "$ref": "ListWorkloadIdentityPoolNamespacesResponse"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "patch": {
+                      "description": "Updates an existing WorkloadIdentityPoolNamespace in a WorkloadIdentityPool.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}",
+                      "httpMethod": "PATCH",
+                      "id": "iam.projects.locations.workloadIdentityPools.namespaces.patch",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Output only. The resource name of the namespace.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "updateMask": {
+                          "description": "Required. The list of fields to update.",
+                          "format": "google-fieldmask",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "request": {
+                        "$ref": "WorkloadIdentityPoolNamespace"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "undelete": {
+                      "description": "Undeletes a WorkloadIdentityPoolNamespace, as long as it was deleted fewer than 30 days ago.",
+                      "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}:undelete",
+                      "httpMethod": "POST",
+                      "id": "iam.projects.locations.workloadIdentityPools.namespaces.undelete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the namespace to undelete.",
+                          "location": "path",
+                          "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:undelete",
+                      "request": {
+                        "$ref": "UndeleteWorkloadIdentityPoolNamespaceRequest"
+                      },
+                      "response": {
+                        "$ref": "Operation"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    }
+                  },
                   "resources": {
                     "managedIdentities": {
+                      "methods": {
+                        "addAttestationRule": {
+                          "description": "Add an AttestationRule on a WorkloadIdentityPoolManagedIdentity. The total attestation rules after addition must not exceed 50.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}:addAttestationRule",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.addAttestationRule",
+                          "parameterOrder": [
+                            "resource"
+                          ],
+                          "parameters": {
+                            "resource": {
+                              "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+resource}:addAttestationRule",
+                          "request": {
+                            "$ref": "AddAttestationRuleRequest"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "create": {
+                          "description": "Creates a new WorkloadIdentityPoolManagedIdentity in a WorkloadIdentityPoolNamespace.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.create",
+                          "parameterOrder": [
+                            "parent"
+                          ],
+                          "parameters": {
+                            "parent": {
+                              "description": "Required. The parent resource to create the manage identity in. The only supported location is `global`.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "workloadIdentityPoolManagedIdentityId": {
+                              "description": "Required. The ID to use for the managed identity. This value must: * contain at most 63 characters * contain only lowercase alphanumeric characters or `-` * start with an alphanumeric character * end with an alphanumeric character The prefix \"gcp-\" will be reserved for future uses.",
+                              "location": "query",
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+parent}/managedIdentities",
+                          "request": {
+                            "$ref": "WorkloadIdentityPoolManagedIdentity"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "delete": {
+                          "description": "Deletes a WorkloadIdentityPoolManagedIdentity. You can undelete a managed identity for 30 days. After 30 days, deletion is permanent.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}",
+                          "httpMethod": "DELETE",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.delete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the managed identity to delete.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "get": {
+                          "description": "Gets an individual WorkloadIdentityPoolManagedIdentity.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}",
+                          "httpMethod": "GET",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.get",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the managed identity to retrieve.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "WorkloadIdentityPoolManagedIdentity"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "list": {
+                          "description": "Lists all non-deleted WorkloadIdentityPoolManagedIdentitys in a namespace. If `show_deleted` is set to `true`, then deleted managed identities are also listed.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities",
+                          "httpMethod": "GET",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.list",
+                          "parameterOrder": [
+                            "parent"
+                          ],
+                          "parameters": {
+                            "pageSize": {
+                              "description": "The maximum number of managed identities to return. If unspecified, at most 50 managed identities are returned. The maximum value is 1000; values above are 1000 truncated to 1000.",
+                              "format": "int32",
+                              "location": "query",
+                              "type": "integer"
+                            },
+                            "pageToken": {
+                              "description": "A page token, received from a previous `ListWorkloadIdentityPoolManagedIdentities` call. Provide this to retrieve the subsequent page.",
+                              "location": "query",
+                              "type": "string"
+                            },
+                            "parent": {
+                              "description": "Required. The parent resource to list managed identities for.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "showDeleted": {
+                              "description": "Whether to return soft-deleted managed identities.",
+                              "location": "query",
+                              "type": "boolean"
+                            }
+                          },
+                          "path": "v1/{+parent}/managedIdentities",
+                          "response": {
+                            "$ref": "ListWorkloadIdentityPoolManagedIdentitiesResponse"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "listAttestationRules": {
+                          "description": "List all AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}:listAttestationRules",
+                          "httpMethod": "GET",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.listAttestationRules",
+                          "parameterOrder": [
+                            "resource"
+                          ],
+                          "parameters": {
+                            "filter": {
+                              "description": "Optional. A query filter. Supports the following function: * `container_ids()`: Returns only the AttestationRules under the specific container ids. The function expects a comma-delimited list with only project numbers and must use the format `projects/`. For example: `container_ids(projects/, projects/,...)`.",
+                              "location": "query",
+                              "type": "string"
+                            },
+                            "pageSize": {
+                              "description": "Optional. The maximum number of AttestationRules to return. If unspecified, at most 50 AttestationRules are returned. The maximum value is 100; values above 100 are truncated to 100.",
+                              "format": "int32",
+                              "location": "query",
+                              "type": "integer"
+                            },
+                            "pageToken": {
+                              "description": "Optional. A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+                              "location": "query",
+                              "type": "string"
+                            },
+                            "resource": {
+                              "description": "Required. The resource name of the managed identity or namespace resource to list attestation rules of.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+resource}:listAttestationRules",
+                          "response": {
+                            "$ref": "ListAttestationRulesResponse"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "patch": {
+                          "description": "Updates an existing WorkloadIdentityPoolManagedIdentity in a WorkloadIdentityPoolNamespace.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}",
+                          "httpMethod": "PATCH",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.patch",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Output only. The resource name of the managed identity.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "updateMask": {
+                              "description": "Required. The list of fields to update.",
+                              "format": "google-fieldmask",
+                              "location": "query",
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "request": {
+                            "$ref": "WorkloadIdentityPoolManagedIdentity"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "removeAttestationRule": {
+                          "description": "Remove an AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}:removeAttestationRule",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.removeAttestationRule",
+                          "parameterOrder": [
+                            "resource"
+                          ],
+                          "parameters": {
+                            "resource": {
+                              "description": "Required. The resource name of the managed identity or namespace resource to remove an attestation rule from.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+resource}:removeAttestationRule",
+                          "request": {
+                            "$ref": "RemoveAttestationRuleRequest"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "setAttestationRules": {
+                          "description": "Set all AttestationRule on a WorkloadIdentityPoolManagedIdentity. A maximum of 50 AttestationRules can be set.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}:setAttestationRules",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.setAttestationRules",
+                          "parameterOrder": [
+                            "resource"
+                          ],
+                          "parameters": {
+                            "resource": {
+                              "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+resource}:setAttestationRules",
+                          "request": {
+                            "$ref": "SetAttestationRulesRequest"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "undelete": {
+                          "description": "Undeletes a WorkloadIdentityPoolManagedIdentity, as long as it was deleted fewer than 30 days ago.",
+                          "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}/namespaces/{namespacesId}/managedIdentities/{managedIdentitiesId}:undelete",
+                          "httpMethod": "POST",
+                          "id": "iam.projects.locations.workloadIdentityPools.namespaces.managedIdentities.undelete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the managed identity to undelete.",
+                              "location": "path",
+                              "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}:undelete",
+                          "request": {
+                            "$ref": "UndeleteWorkloadIdentityPoolManagedIdentityRequest"
+                          },
+                          "response": {
+                            "$ref": "Operation"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        }
+                      },
                       "resources": {
                         "operations": {
                           "methods": {
@@ -3188,7 +3898,7 @@
       }
     }
   },
-  "revision": "20250313",
+  "revision": "20250619",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -3209,6 +3919,17 @@
       },
       "type": "object"
     },
+    "AddAttestationRuleRequest": {
+      "description": "Request message for AddAttestationRule.",
+      "id": "AddAttestationRuleRequest",
+      "properties": {
+        "attestationRule": {
+          "$ref": "AttestationRule",
+          "description": "Required. The attestation rule to be added."
+        }
+      },
+      "type": "object"
+    },
     "AdminAuditData": {
       "description": "Audit log information specific to Cloud IAM admin APIs. This message is serialized as an `Any` type in the `ServiceData` message of an `AuditLog` message.",
       "id": "AdminAuditData",
@@ -3216,6 +3937,17 @@
         "permissionDelta": {
           "$ref": "PermissionDelta",
           "description": "The permission_delta when when creating or updating a Role."
+        }
+      },
+      "type": "object"
+    },
+    "AttestationRule": {
+      "description": "Defines which workloads can receive an identity within a pool. When an AttestationRule is defined under a managed identity, matching workloads may receive that identity.",
+      "id": "AttestationRule",
+      "properties": {
+        "googleCloudResource": {
+          "description": "Optional. A single workload operating on Google Cloud. For example: `//compute.googleapis.com/projects/123/uid/zones/us-central1-a/instances/12345`.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -3556,8 +4288,8 @@
           ],
           "enumDescriptions": [
             "No AttributesType specified.",
-            "Used to get the user's group claims from the Microsoft Entra ID identity provider using configuration provided in ExtraAttributesOAuth2Client and `mail` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The attributes obtained from idntity provider are mapped to `assertion.groups`.",
-            "Used to get the user's group claims from the Microsoft Entra ID identity provider using configuration provided in ExtraAttributesOAuth2Client and `id` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The group IDs obtained from Microsoft Entra ID are present in `assertion. groups` for OIDC providers and `assertion.attributes.groups` for SAML providers for attribute mapping."
+            "Used to get the user's group claims from the Microsoft Entra ID identity provider using the configuration provided in ExtraAttributesOAuth2Client. The `mail` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The group mail addresses of the user's groups that are returned from Microsoft Entra ID can be mapped by using the following attributes: * OIDC: `assertion.groups` * SAML: `assertion.attributes.groups`",
+            "Used to get the user's group claims from the Microsoft Entra ID identity provider using the configuration provided in ExtraAttributesOAuth2Client. The `id` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The group IDs of the user's groups that are returned from Microsoft Entra ID can be mapped by using the following attributes: * OIDC: `assertion.groups` * SAML: `assertion.attributes.groups`"
           ],
           "type": "string"
         },
@@ -3585,7 +4317,7 @@
       "id": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryParameters",
       "properties": {
         "filter": {
-          "description": "Optional. The filter used to request specific records from IdP. In case of attributes type as AZURE_AD_GROUPS_MAIL, it represents the filter used to request specific groups for users from IdP. By default, all of the groups associated with the user are fetched. The groups should be mail enabled and security enabled. See https://learn.microsoft.com/en-us/graph/search-query-parameter for more details.",
+          "description": "Optional. The filter used to request specific records from the IdP. By default, all of the groups that are associated with a user are fetched. For Microsoft Entra ID, you can add `$search` query parameters using [Keyword Query Language] (https://learn.microsoft.com/en-us/sharepoint/dev/general-development/keyword-query-language-kql-syntax-reference). To learn more about `$search` querying in Microsoft Entra ID, see [Use the `$search` query parameter] (https://learn.microsoft.com/en-us/graph/search-query-parameter). Additionally, Workforce Identity Federation automatically adds the following [`$filter` query parameters] (https://learn.microsoft.com/en-us/graph/filter-query-parameter), based on the value of `attributes_type`. Values passed to `filter` are converted to `$search` query parameters. Additional `$filter` query parameters cannot be added using this field. * `AZURE_AD_GROUPS_MAIL`: `mailEnabled` and `securityEnabled` filters are applied. * `AZURE_AD_GROUPS_ID`: `securityEnabled` filter is applied.",
           "type": "string"
         }
       },
@@ -3692,7 +4424,76 @@
       "id": "GoogleIamAdminV1WorkforcePoolProviderSaml",
       "properties": {
         "idpMetadataXml": {
-          "description": "Required. SAML Identity provider configuration metadata xml doc. The xml document should comply with [SAML 2.0 specification](https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf). The max size of the acceptable xml document will be bounded to 128k characters. The metadata xml document should satisfy the following constraints: 1) Must contain an Identity Provider Entity ID. 2) Must contain at least one non-expired signing key certificate. 3) For each signing key: a) Valid from should be no more than 7 days from now. b) Valid to should be no more than 20 years in the future. 4) Up to 3 IdP signing keys are allowed in the metadata xml. When updating the provider's metadata xml, at least one non-expired signing key must overlap with the existing metadata. This requirement is skipped if there are no non-expired signing keys present in the existing metadata.",
+          "description": "Required. SAML Identity provider configuration metadata xml doc. The xml document should comply with [SAML 2.0 specification](https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf). The max size of the acceptable xml document will be bounded to 128k characters. The metadata xml document should satisfy the following constraints: 1) Must contain an Identity Provider Entity ID. 2) Must contain at least one non-expired signing key certificate. 3) For each signing key: a) Valid from should be no more than 7 days from now. b) Valid to should be no more than 25 years in the future. 4) Up to 3 IdP signing keys are allowed in the metadata xml. When updating the provider's metadata xml, at least one non-expired signing key must overlap with the existing metadata. This requirement is skipped if there are no non-expired signing keys present in the existing metadata.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "InlineCertificateIssuanceConfig": {
+      "description": "Represents configuration for generating mutual TLS (mTLS) certificates for the identities within this pool.",
+      "id": "InlineCertificateIssuanceConfig",
+      "properties": {
+        "caPools": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional. A required mapping of a Google Cloud region to the CA pool resource located in that region. The CA pool is used for certificate issuance, adhering to the following constraints: * Key format: A supported cloud region name equivalent to the location identifier in the corresponding map entry's value. * Value format: A valid CA pool resource path format like: \"projects/{project}/locations/{location}/caPools/{ca_pool}\" * Region Matching: Workloads are ONLY issued certificates from CA pools within the same region. Also the CA pool region (in value) must match the workload's region (key).",
+          "type": "object"
+        },
+        "keyAlgorithm": {
+          "description": "Optional. Key algorithm to use when generating the key pair. This key pair will be used to create the certificate. If not specified, this will default to ECDSA_P256.",
+          "enum": [
+            "KEY_ALGORITHM_UNSPECIFIED",
+            "RSA_2048",
+            "RSA_3072",
+            "RSA_4096",
+            "ECDSA_P256",
+            "ECDSA_P384"
+          ],
+          "enumDescriptions": [
+            "Unspecified key algorithm. Defaults to ECDSA_P256.",
+            "Specifies RSA with a 2048-bit modulus.",
+            "Specifies RSA with a 3072-bit modulus.",
+            "Specifies RSA with a 4096-bit modulus.",
+            "Specifies ECDSA with curve P256.",
+            "Specifies ECDSA with curve P384."
+          ],
+          "type": "string"
+        },
+        "lifetime": {
+          "description": "Optional. Lifetime of the workload certificates issued by the CA pool. Must be between 24 hours and 30 days. If not specified, this will be defaulted to 24 hours.",
+          "format": "google-duration",
+          "type": "string"
+        },
+        "rotationWindowPercentage": {
+          "description": "Optional. Rotation window percentage, the percentage of remaining lifetime after which certificate rotation is initiated. Must be between 50 and 80. If no value is specified, rotation window percentage is defaulted to 50.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "InlineTrustConfig": {
+      "description": "Defines configuration for extending trust to additional trust domains. By establishing trust with another domain, the current domain will recognize and accept certificates issued by entities within the trusted domains. Note that a trust domain automatically trusts itself, eliminating the need for explicit configuration.",
+      "id": "InlineTrustConfig",
+      "properties": {
+        "additionalTrustBundles": {
+          "additionalProperties": {
+            "$ref": "TrustStore"
+          },
+          "description": "Optional. Maps specific trust domains (e.g., \"example.com\") to their corresponding TrustStore, which contain the trusted root certificates for that domain. There can be a maximum of 10 trust domain entries in this map. Note that a trust domain automatically trusts itself and don't need to be specified here. If however, this WorkloadIdentityPool's trust domain contains any trust anchors in the additional_trust_bundles map, those trust anchors will be *appended to* the trust bundle automatically derived from your InlineCertificateIssuanceConfig's ca_pools.",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "IntermediateCA": {
+      "description": "Intermediate CA certificates used for building the trust chain to trust anchor",
+      "id": "IntermediateCA",
+      "properties": {
+        "pemCertificate": {
+          "description": "PEM certificate of the PKI used for validation. Must only contain one ca certificate.",
           "type": "string"
         }
       },
@@ -3836,6 +4637,24 @@
       },
       "type": "object"
     },
+    "ListAttestationRulesResponse": {
+      "description": "Response message for ListAttestationRules.",
+      "id": "ListAttestationRulesResponse",
+      "properties": {
+        "attestationRules": {
+          "description": "A list of AttestationRules.",
+          "items": {
+            "$ref": "AttestationRule"
+          },
+          "type": "array"
+        },
+        "nextPageToken": {
+          "description": "Optional. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "ListOauthClientCredentialsResponse": {
       "description": "Response message for ListOauthClientCredentials.",
       "id": "ListOauthClientCredentialsResponse",
@@ -3966,6 +4785,42 @@
           "description": "A list of pools.",
           "items": {
             "$ref": "WorkforcePool"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkloadIdentityPoolManagedIdentitiesResponse": {
+      "description": "Response message for ListWorkloadIdentityPoolManagedIdentities.",
+      "id": "ListWorkloadIdentityPoolManagedIdentitiesResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workloadIdentityPoolManagedIdentities": {
+          "description": "A list of managed identities.",
+          "items": {
+            "$ref": "WorkloadIdentityPoolManagedIdentity"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkloadIdentityPoolNamespacesResponse": {
+      "description": "Response message for ListWorkloadIdentityPoolNamespaces.",
+      "id": "ListWorkloadIdentityPoolNamespacesResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workloadIdentityPoolNamespaces": {
+          "description": "A list of namespaces.",
+          "items": {
+            "$ref": "WorkloadIdentityPoolNamespace"
           },
           "type": "array"
         }
@@ -4156,7 +5011,7 @@
           "type": "array"
         },
         "issuerUri": {
-          "description": "Required. The OIDC issuer URL. Must be an HTTPS endpoint.",
+          "description": "Required. The OIDC issuer URL. Must be an HTTPS endpoint. Per OpenID Connect Discovery 1.0 spec, the OIDC issuer URL is used to locate the provider's public keys (via `jwks_uri`) for verifying tokens like the OIDC ID token. These public key types must be 'EC' or 'RSA'.",
           "type": "string"
         },
         "jwksJson": {
@@ -4240,6 +5095,17 @@
         "verb": {
           "description": "Output only. Name of the verb executed by the operation.",
           "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "OwnerService": {
+      "description": "The Google Cloud service that owns this namespace.",
+      "id": "OwnerService",
+      "properties": {
+        "principalSubject": {
+          "description": "Required. The service agent principal subject, e.g. \"serviceAccount:service-1234@gcp-sa-gkehub.iam.gserviceaccount.com\".",
           "type": "string"
         }
       },
@@ -4416,7 +5282,7 @@
       "id": "QueryGrantableRolesRequest",
       "properties": {
         "fullResourceName": {
-          "description": "Required. The full resource name to query from the list of grantable roles. The name follows the Google Cloud Platform resource format. For example, a Cloud Platform project with id `my-project` will be named `//cloudresourcemanager.googleapis.com/projects/my-project`.",
+          "description": "Required. Required. The full resource name to query from the list of grantable roles. The name follows the Google Cloud Platform resource format. For example, a Cloud Platform project with id `my-project` will be named `//cloudresourcemanager.googleapis.com/projects/my-project`.",
           "type": "string"
         },
         "pageSize": {
@@ -4529,6 +5395,17 @@
       },
       "type": "object"
     },
+    "RemoveAttestationRuleRequest": {
+      "description": "Request message for RemoveAttestationRule.",
+      "id": "RemoveAttestationRuleRequest",
+      "properties": {
+        "attestationRule": {
+          "$ref": "AttestationRule",
+          "description": "Required. The attestation rule to be removed."
+        }
+      },
+      "type": "object"
+    },
     "Role": {
       "description": "A role in the Identity and Access Management API.",
       "id": "Role",
@@ -4589,7 +5466,7 @@
       "id": "Saml",
       "properties": {
         "idpMetadataXml": {
-          "description": "Required. SAML identity provider (IdP) configuration metadata XML doc. The XML document must comply with the [SAML 2.0 specification](https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf). The maximum size of an acceptable XML document is 128K characters. The SAML metadata XML document must satisfy the following constraints: * Must contain an IdP Entity ID. * Must contain at least one non-expired signing certificate. * For each signing certificate, the expiration must be: * From no more than 7 days in the future. * To no more than 20 years in the future. * Up to three IdP signing keys are allowed. When updating the provider's metadata XML, at least one non-expired signing key must overlap with the existing metadata. This requirement is skipped if there are no non-expired signing keys present in the existing metadata.",
+          "description": "Required. SAML identity provider (IdP) configuration metadata XML doc. The XML document must comply with the [SAML 2.0 specification](https://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf). The maximum size of an acceptable XML document is 128K characters. The SAML metadata XML document must satisfy the following constraints: * Must contain an IdP Entity ID. * Must contain at least one non-expired signing certificate. * For each signing certificate, the expiration must be: * From no more than 7 days in the future. * To no more than 25 years in the future. * Up to three IdP signing keys are allowed. When updating the provider's metadata XML, at least one non-expired signing key must overlap with the existing metadata. This requirement is skipped if there are no non-expired signing keys present in the existing metadata.",
           "type": "string"
         }
       },
@@ -4772,6 +5649,20 @@
       },
       "type": "object"
     },
+    "SetAttestationRulesRequest": {
+      "description": "Request message for SetAttestationRules.",
+      "id": "SetAttestationRulesRequest",
+      "properties": {
+        "attestationRules": {
+          "description": "Required. The attestation rules to be set. At most 50 attestation rules can be set.",
+          "items": {
+            "$ref": "AttestationRule"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "SetIamPolicyRequest": {
       "description": "Request message for `SetIamPolicy` method.",
       "id": "SetIamPolicyRequest",
@@ -4903,6 +5794,38 @@
       },
       "type": "object"
     },
+    "TrustAnchor": {
+      "description": "Represents a root of trust.",
+      "id": "TrustAnchor",
+      "properties": {
+        "pemCertificate": {
+          "description": "PEM certificate of the PKI used for validation. Must only contain one ca certificate(either root or intermediate cert).",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TrustStore": {
+      "description": "Trust store that contains trust anchors and optional intermediate CAs used in PKI to build a trust chain(trust hierarchy) and verify a client's identity.",
+      "id": "TrustStore",
+      "properties": {
+        "intermediateCas": {
+          "description": "Optional. Set of intermediate CA certificates used for building the trust chain to the trust anchor. Important: Intermediate CAs are only supported for X.509 federation.",
+          "items": {
+            "$ref": "IntermediateCA"
+          },
+          "type": "array"
+        },
+        "trustAnchors": {
+          "description": "Required. List of trust anchors to be used while performing validation against a given TrustStore. The incoming end entity's certificate must be in the trust chain of one of the trust anchors here.",
+          "items": {
+            "$ref": "TrustAnchor"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "UndeleteOauthClientRequest": {
       "description": "Request message for UndeleteOauthClient.",
       "id": "UndeleteOauthClientRequest",
@@ -4958,6 +5881,18 @@
     "UndeleteWorkforcePoolSubjectRequest": {
       "description": "Request message for UndeleteWorkforcePoolSubject.",
       "id": "UndeleteWorkforcePoolSubjectRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkloadIdentityPoolManagedIdentityRequest": {
+      "description": "Request message for UndeleteWorkloadIdentityPoolManagedIdentity.",
+      "id": "UndeleteWorkloadIdentityPoolManagedIdentityRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkloadIdentityPoolNamespaceRequest": {
+      "description": "Request message for UndeleteWorkloadIdentityPoolNamespace.",
+      "id": "UndeleteWorkloadIdentityPoolNamespaceRequest",
       "properties": {},
       "type": "object"
     },
@@ -5066,6 +6001,10 @@
         "description": {
           "description": "Optional. A user-specified description of the provider. Cannot exceed 256 characters.",
           "type": "string"
+        },
+        "detailedAuditLogging": {
+          "description": "Optional. If true, populates additional debug information in Cloud Audit Logs for this provider. Logged attribute mappings and values can be found in `sts.googleapis.com` data access logs. Default value is false.",
+          "type": "boolean"
         },
         "disabled": {
           "description": "Optional. Disables the workforce pool provider. You cannot use a disabled provider to exchange tokens. However, existing tokens still grant access.",
@@ -5185,6 +6124,28 @@
           "readOnly": true,
           "type": "string"
         },
+        "inlineCertificateIssuanceConfig": {
+          "$ref": "InlineCertificateIssuanceConfig",
+          "description": "Optional. Defines the Certificate Authority (CA) pool resources and configurations required for issuance and rotation of mTLS workload certificates."
+        },
+        "inlineTrustConfig": {
+          "$ref": "InlineTrustConfig",
+          "description": "Optional. Represents config to add additional trusted trust domains."
+        },
+        "mode": {
+          "description": "Immutable. The mode the pool is operating in.",
+          "enum": [
+            "MODE_UNSPECIFIED",
+            "FEDERATION_ONLY",
+            "TRUST_DOMAIN"
+          ],
+          "enumDescriptions": [
+            "State unspecified. New pools should not use this mode. Pools with an unspecified mode will operate as if they are in federation-only mode.",
+            "Federation-only mode. Federation-only pools can only be used for federating external workload identities into Google Cloud. Unless otherwise noted, no structure or format constraints are applied to workload identities in a federation-only pool, and you cannot create any resources within the pool besides providers.",
+            "Trust-domain mode. Trust-domain pools can be used to assign identities to Google Cloud workloads. All identities within a trust-domain pool must consist of a single namespace and individual workload identifier. The subject identifier for all identities must conform to the following format: `ns//sa/` WorkloadIdentityPoolProviders cannot be created within trust-domain pools."
+          ],
+          "type": "string"
+        },
         "name": {
           "description": "Output only. The resource name of the pool.",
           "readOnly": true,
@@ -5201,6 +6162,93 @@
             "State unspecified.",
             "The pool is active, and may be used in Google Cloud policies.",
             "The pool is soft-deleted. Soft-deleted pools are permanently deleted after approximately 30 days. You can restore a soft-deleted pool using UndeleteWorkloadIdentityPool. You cannot reuse the ID of a soft-deleted pool until it is permanently deleted. While a pool is deleted, you cannot use it to exchange tokens, or use existing tokens to access resources. If the pool is undeleted, existing tokens grant access again."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkloadIdentityPoolManagedIdentity": {
+      "description": "Represents a managed identity for a workload identity pool namespace.",
+      "id": "WorkloadIdentityPoolManagedIdentity",
+      "properties": {
+        "description": {
+          "description": "A description of the managed identity. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Whether the managed identity is disabled. If disabled, credentials may no longer be issued for the identity, however existing credentials will still be accepted until they expire.",
+          "type": "boolean"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the managed identity will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "name": {
+          "description": "Output only. The resource name of the managed identity.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the managed identity.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The managed identity is active.",
+            "The managed identity is soft-deleted. Soft-deleted managed identities are permanently deleted after approximately 30 days. You can restore a soft-deleted managed identity using UndeleteWorkloadIdentityPoolManagedIdentity. You cannot reuse the ID of a soft-deleted managed identity until it is permanently deleted."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkloadIdentityPoolNamespace": {
+      "description": "Represents a namespace for a workload identity pool. Namespaces are used to segment identities within the pool.",
+      "id": "WorkloadIdentityPoolNamespace",
+      "properties": {
+        "description": {
+          "description": "A description of the namespace. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Whether the namespace is disabled. If disabled, credentials may no longer be issued for identities within this namespace, however existing credentials will still be accepted until they expire.",
+          "type": "boolean"
+        },
+        "expireTime": {
+          "description": "Output only. Time after which the namespace will be permanently purged and cannot be recovered.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "name": {
+          "description": "Output only. The resource name of the namespace.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "ownerService": {
+          "$ref": "OwnerService",
+          "description": "Output only. The Google Cloud service that owns this namespace.",
+          "readOnly": true
+        },
+        "state": {
+          "description": "Output only. The state of the namespace.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The namespace is active.",
+            "The namespace is soft-deleted. Soft-deleted namespaces are permanently deleted after approximately 30 days. You can restore a soft-deleted namespace using UndeleteWorkloadIdentityPoolNamespace. You cannot reuse the ID of a soft-deleted namespace until it is permanently deleted."
           ],
           "readOnly": true,
           "type": "string"
@@ -5278,6 +6326,10 @@
           ],
           "readOnly": true,
           "type": "string"
+        },
+        "x509": {
+          "$ref": "X509",
+          "description": "An X.509-type identity provider."
         }
       },
       "type": "object"
@@ -5327,6 +6379,17 @@
             "The public key is used for encryption purposes."
           ],
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "X509": {
+      "description": "An X.509-type identity provider represents a CA. It is trusted to assert a client identity if the client has a certificate that chains up to this CA.",
+      "id": "X509",
+      "properties": {
+        "trustStore": {
+          "$ref": "TrustStore",
+          "description": "Required. A TrustStore. Use this trust store as a wrapper to config the trust anchor and optional intermediate cas to help build the trust chain for the incoming end entity certificate. Follow the X.509 guidelines to define those PEM encoded certs. Only one trust store is currently supported."
         }
       },
       "type": "object"

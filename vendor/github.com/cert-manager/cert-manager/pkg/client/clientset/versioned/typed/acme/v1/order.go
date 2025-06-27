@@ -19,9 +19,9 @@ limitations under the License.
 package v1
 
 import (
-	"context"
+	context "context"
 
-	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,33 +37,34 @@ type OrdersGetter interface {
 
 // OrderInterface has methods to work with Order resources.
 type OrderInterface interface {
-	Create(ctx context.Context, order *v1.Order, opts metav1.CreateOptions) (*v1.Order, error)
-	Update(ctx context.Context, order *v1.Order, opts metav1.UpdateOptions) (*v1.Order, error)
+	Create(ctx context.Context, order *acmev1.Order, opts metav1.CreateOptions) (*acmev1.Order, error)
+	Update(ctx context.Context, order *acmev1.Order, opts metav1.UpdateOptions) (*acmev1.Order, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, order *v1.Order, opts metav1.UpdateOptions) (*v1.Order, error)
+	UpdateStatus(ctx context.Context, order *acmev1.Order, opts metav1.UpdateOptions) (*acmev1.Order, error)
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts metav1.DeleteOptions, listOpts metav1.ListOptions) error
-	Get(ctx context.Context, name string, opts metav1.GetOptions) (*v1.Order, error)
-	List(ctx context.Context, opts metav1.ListOptions) (*v1.OrderList, error)
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (*acmev1.Order, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*acmev1.OrderList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *v1.Order, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *acmev1.Order, err error)
 	OrderExpansion
 }
 
 // orders implements OrderInterface
 type orders struct {
-	*gentype.ClientWithList[*v1.Order, *v1.OrderList]
+	*gentype.ClientWithList[*acmev1.Order, *acmev1.OrderList]
 }
 
 // newOrders returns a Orders
 func newOrders(c *AcmeV1Client, namespace string) *orders {
 	return &orders{
-		gentype.NewClientWithList[*v1.Order, *v1.OrderList](
+		gentype.NewClientWithList[*acmev1.Order, *acmev1.OrderList](
 			"orders",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1.Order { return &v1.Order{} },
-			func() *v1.OrderList { return &v1.OrderList{} }),
+			func() *acmev1.Order { return &acmev1.Order{} },
+			func() *acmev1.OrderList { return &acmev1.OrderList{} },
+		),
 	}
 }

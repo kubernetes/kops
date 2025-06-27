@@ -24,7 +24,7 @@ import (
 //
 // [kms:GetKeyPolicy]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [PutKeyPolicy]: https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) GetKeyPolicy(ctx context.Context, params *GetKeyPolicyInput, optFns ...func(*Options)) (*GetKeyPolicyOutput, error) {
 	if params == nil {
 		params = &GetKeyPolicyInput{}

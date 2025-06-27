@@ -7303,7 +7303,7 @@ func awsAwsjson11_deserializeDocumentArchive(v **types.Archive, value interface{
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected EventBusArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
 			}
@@ -10793,7 +10793,7 @@ func awsAwsjson11_deserializeDocumentReplay(v **types.Replay, value interface{})
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected ArchiveArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
 			}
@@ -13139,9 +13139,18 @@ func awsAwsjson11_deserializeOpDocumentDescribeArchiveOutput(v **DescribeArchive
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected EventBusArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
+			}
+
+		case "KmsKeyIdentifier":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KmsKeyIdentifier to be of type string, got %T instead", value)
+				}
+				sv.KmsKeyIdentifier = ptr.String(jtv)
 			}
 
 		case "RetentionDays":
@@ -13279,6 +13288,15 @@ func awsAwsjson11_deserializeOpDocumentDescribeConnectionOutput(v **DescribeConn
 		case "InvocationConnectivityParameters":
 			if err := awsAwsjson11_deserializeDocumentDescribeConnectionConnectivityParameters(&sv.InvocationConnectivityParameters, value); err != nil {
 				return err
+			}
+
+		case "KmsKeyIdentifier":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KmsKeyIdentifier to be of type string, got %T instead", value)
+				}
+				sv.KmsKeyIdentifier = ptr.String(jtv)
 			}
 
 		case "LastAuthorizedTime":
@@ -13832,7 +13850,7 @@ func awsAwsjson11_deserializeOpDocumentDescribeReplayOutput(v **DescribeReplayOu
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected ArchiveArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
 			}

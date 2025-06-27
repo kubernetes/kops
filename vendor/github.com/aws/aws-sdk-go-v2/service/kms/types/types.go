@@ -239,10 +239,10 @@ type CustomKeyStoresListEntry struct {
 // includes the specified [encryption context].
 //
 // KMS applies the grant constraints only to cryptographic operations that support
-// an encryption context, that is, all cryptographic operations with a [symmetric KMS key]. Grant
-// constraints are not applied to operations that do not support an encryption
-// context, such as cryptographic operations with asymmetric KMS keys and
-// management operations, such as DescribeKeyor RetireGrant.
+// an encryption context, that is, all cryptographic operations with a symmetric
+// KMS key. Grant constraints are not applied to operations that do not support an
+// encryption context, such as cryptographic operations with asymmetric KMS keys
+// and management operations, such as DescribeKeyor RetireGrant.
 //
 // In a cryptographic operation, the encryption context in the decryption
 // operation must be an exact, case-sensitive match for the keys and values in the
@@ -255,19 +255,18 @@ type CustomKeyStoresListEntry struct {
 // To avoid confusion, do not use multiple encryption context pairs that differ
 // only by case. To require a fully case-sensitive encryption context, use the
 // kms:EncryptionContext: and kms:EncryptionContextKeys conditions in an IAM or
-// key policy. For details, see [kms:EncryptionContext:]in the Key Management Service Developer Guide .
+// key policy. For details, see [kms:EncryptionContext:context-key]in the Key Management Service Developer Guide .
 //
-// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
-// [kms:EncryptionContext:]: https://docs.aws.amazon.com/kms/latest/developerguide/policy-conditions.html#conditions-kms-encryption-context
-// [encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#encrypt_context
-// [symmetric KMS key]: https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html#symmetric-cmks
+// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
+// [encryption context]: https://docs.aws.amazon.com/kms/latest/developerguide/encrypt_context.html
+// [kms:EncryptionContext:context-key]: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html#conditions-kms-encryption-context
 type GrantConstraints struct {
 
 	// A list of key-value pairs that must match the encryption context in the [cryptographic operation]
 	// request. The grant allows the operation only when the encryption context in the
 	// request is the same as the encryption context specified in this constraint.
 	//
-	// [cryptographic operation]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
+	// [cryptographic operation]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
 	EncryptionContextEquals map[string]string
 
 	// A list of key-value pairs that must be included in the encryption context of
@@ -275,7 +274,7 @@ type GrantConstraints struct {
 	// encryption context in the request includes the key-value pairs specified in this
 	// constraint, although it can include additional key-value pairs.
 	//
-	// [cryptographic operation]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
+	// [cryptographic operation]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
 	EncryptionContextSubset map[string]string
 
 	noSmithyDocumentSerde
@@ -361,16 +360,24 @@ type KeyMetadata struct {
 	// material for the KMS key in the associated CloudHSM cluster. This field is
 	// present only when the KMS key is created in an CloudHSM key store.
 	//
-	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 	CloudHsmClusterId *string
 
 	// The date and time when the KMS key was created.
 	CreationDate *time.Time
 
+	// Identifies the current key material. This value is present for symmetric
+	// encryption keys with AWS_KMS origin and single-Region, symmetric encryption
+	// keys with EXTERNAL origin. These KMS keys support automatic or on-demand key
+	// rotation and can have multiple key materials associated with them. KMS uses the
+	// current key material for both encryption and decryption, and the non-current key
+	// material for decryption operations only.
+	CurrentKeyMaterialId *string
+
 	// A unique identifier for the [custom key store] that contains the KMS key. This field is present
 	// only when the KMS key is created in a custom key store.
 	//
-	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/custom-key-store-overview.html
+	// [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 	CustomKeyStoreId *string
 
 	// Instead, use the KeySpec field.
@@ -431,7 +438,7 @@ type KeyMetadata struct {
 
 	// The [cryptographic operations] for which you can use the KMS key.
 	//
-	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#cryptographic-operations
+	// [cryptographic operations]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-cryptography.html#cryptographic-operations
 	KeyUsage KeyUsageType
 
 	// The message authentication code (MAC) algorithm that the HMAC KMS key supports.
@@ -493,10 +500,11 @@ type KeyMetadata struct {
 	// This field appears only when the KeyUsage of the KMS key is SIGN_VERIFY .
 	SigningAlgorithms []SigningAlgorithmSpec
 
-	// The time at which the imported key material expires. When the key material
-	// expires, KMS deletes the key material and the KMS key becomes unusable. This
-	// value is present only for KMS keys whose Origin is EXTERNAL and whose
-	// ExpirationModel is KEY_MATERIAL_EXPIRES , otherwise this value is omitted.
+	// The earliest time at which any imported key material permanently associated
+	// with this KMS key expires. When a key material expires, KMS deletes the key
+	// material and the KMS key becomes unusable. This value is present only for KMS
+	// keys whose Origin is EXTERNAL and the ExpirationModel is KEY_MATERIAL_EXPIRES ,
+	// otherwise this value is omitted.
 	ValidTo *time.Time
 
 	// Information about the external key that is associated with a KMS key in an
@@ -566,20 +574,61 @@ type RecipientInfo struct {
 	noSmithyDocumentSerde
 }
 
-// Contains information about completed key material rotations.
+// Each entry contains information about one of the key materials associated with
+// a KMS key.
 type RotationsListEntry struct {
+
+	// Indicates if the key material is configured to automatically expire. There are
+	// two possible values for this field: KEY_MATERIAL_EXPIRES and
+	// KEY_MATERIAL_DOES_NOT_EXPIRE . For any key material that expires, the expiration
+	// date and time is indicated in ValidTo . This field is only present for symmetric
+	// encryption KMS keys with EXTERNAL origin.
+	ExpirationModel ExpirationModelType
+
+	// Indicates if the key material is currently imported into KMS. It has two
+	// possible values: IMPORTED or PENDING_IMPORT . This field is only present for
+	// symmetric encryption KMS keys with EXTERNAL origin.
+	ImportState ImportState
 
 	// Unique identifier of the key.
 	KeyId *string
 
+	// User-specified description of the key material. This field is only present for
+	// symmetric encryption KMS keys with EXTERNAL origin.
+	KeyMaterialDescription *string
+
+	// Unique identifier of the key material.
+	KeyMaterialId *string
+
+	// There are three possible values for this field: CURRENT , NON_CURRENT and
+	// PENDING_ROTATION . KMS uses CURRENT key material for both encryption and
+	// decryption and NON_CURRENT key material only for decryption. PENDING_ROTATION
+	// identifies key material that has been imported for on-demand key rotation but
+	// the rotation hasn't completed. Key material in PENDING_ROTATION is not
+	// permanently associated with the KMS key. You can delete this key material and
+	// import different key material in its place. The PENDING_ROTATION value is only
+	// used in symmetric encryption keys with imported key material. The other values,
+	// CURRENT and NON_CURRENT , are used for all KMS keys that support automatic or
+	// on-demand key rotation.
+	KeyMaterialState KeyMaterialState
+
 	// Date and time that the key material rotation completed. Formatted as Unix time.
+	// This field is not present for the first key material or an imported key material
+	// in PENDING_ROTATION state.
 	RotationDate *time.Time
 
-	// Identifies whether the key material rotation was a scheduled [automatic rotation] or an [on-demand rotation].
+	// Identifies whether the key material rotation was a scheduled [automatic rotation] or an [on-demand rotation]. This
+	// field is not present for the first key material or an imported key material in
+	// PENDING_ROTATION state.
 	//
-	// [automatic rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-enable-disable
-	// [on-demand rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#rotating-keys-on-demand
+	// [automatic rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-enable-disable.html
+	// [on-demand rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-on-demand.html
 	RotationType RotationType
+
+	// Date and time at which the key material expires. This field is only present for
+	// symmetric encryption KMS keys with EXTERNAL origin in rotation list entries
+	// with an ExpirationModel value of KEY_MATERIAL_EXPIRES .
+	ValidTo *time.Time
 
 	noSmithyDocumentSerde
 }

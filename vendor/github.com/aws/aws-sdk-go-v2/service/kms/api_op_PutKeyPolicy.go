@@ -15,7 +15,7 @@ import (
 // For more information about key policies, see [Key Policies] in the Key Management Service
 // Developer Guide. For help writing and formatting a JSON policy document, see the
 // [IAM JSON Policy Reference]in the Identity and Access Management User Guide . For examples of adding a key
-// policy in multiple programming languages, see [Setting a key policy]in the Key Management Service
+// policy in multiple programming languages, see [Use PutKeyPolicy with an Amazon Web Services SDK or CLI]in the Key Management Service
 // Developer Guide.
 //
 // Cross-account use: No. You cannot perform this operation on a KMS key in a
@@ -30,9 +30,9 @@ import (
 //
 // [IAM JSON Policy Reference]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html
 // [kms:PutKeyPolicy]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [Setting a key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-key-policies.html#put-policy
+// [Use PutKeyPolicy with an Amazon Web Services SDK or CLI]: https://docs.aws.amazon.com/kms/latest/developerguide/example_kms_PutKeyPolicy_section.html
 // [Key Policies]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) PutKeyPolicy(ctx context.Context, params *PutKeyPolicyInput, optFns ...func(*Options)) (*PutKeyPolicyOutput, error) {
 	if params == nil {
 		params = &PutKeyPolicyInput{}
@@ -83,6 +83,15 @@ type PutKeyPolicyInput struct {
 	//   be immediately visible to KMS. For more information, see [Changes that I make are not always immediately visible]in the Amazon Web
 	//   Services Identity and Access Management User Guide.
 	//
+	// If either of the required Resource or Action elements are missing from a key
+	// policy statement, the policy statement has no effect. When a key policy
+	// statement is missing one of these elements, the KMS console correctly reports an
+	// error, but the PutKeyPolicy API request succeeds, even though the policy
+	// statement is ineffective.
+	//
+	// For more information on required key policy elements, see [Elements in a key policy] in the Key
+	// Management Service Developer Guide.
+	//
 	// A key policy document can include only the following characters:
 	//
 	//   - Printable ASCII characters from the space character ( \u0020 ) through the
@@ -94,11 +103,15 @@ type PutKeyPolicyInput struct {
 	//   - The tab ( \u0009 ), line feed ( \u000A ), and carriage return ( \u000D )
 	//   special characters
 	//
+	// If the key policy exceeds the length constraint, KMS returns a
+	// LimitExceededException .
+	//
 	// For information about key policies, see [Key policies in KMS] in the Key Management Service
 	// Developer Guide.For help writing and formatting a JSON policy document, see the [IAM JSON Policy Reference]
 	// in the Identity and Access Management User Guide .
 	//
 	// [Key policies in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
+	// [Elements in a key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-overview.html#key-policy-elements
 	// [IAM JSON Policy Reference]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies.html
 	// [Default key policy]: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#prevent-unmanageable-key
 	// [Changes that I make are not always immediately visible]: https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_general.html#troubleshoot_general_eventual-consistency

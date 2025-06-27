@@ -32,7 +32,7 @@ import (
 //
 // Note: If the specified target does not exist, the action returns successfully.
 //
-// [Deregistration delay]: https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#deregistration-delay
+// [Deregistration delay]: https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/edit-target-group-attributes.html#deregistration-delay
 func (c *Client) DeregisterTargets(ctx context.Context, params *DeregisterTargetsInput, optFns ...func(*Options)) (*DeregisterTargetsOutput, error) {
 	if params == nil {
 		params = &DeregisterTargetsInput{}

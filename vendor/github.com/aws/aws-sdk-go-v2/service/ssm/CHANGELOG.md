@@ -1,3 +1,28 @@
+# v1.59.3 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.59.2 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.59.1 (2025-06-06)
+
+* No change notes available for this release.
+
+# v1.59.0 (2025-04-29)
+
+* **Feature**: This release adds support for just-In-time node access in AWS Systems Manager. Just-in-time node access enables customers to move towards zero standing privileges by requiring operators to request access and obtain approval before remotely connecting to nodes managed by the SSM Agent.
+
+# v1.58.2 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.58.1 (2025-04-03)
+
+* No change notes available for this release.
+
 # v1.58.0 (2025-03-24)
 
 * **Feature**: This release adds the AvailableSecurityUpdatesComplianceStatus field to patch baseline operations, as well as the AvailableSecurityUpdateCount and InstancesWithAvailableSecurityUpdates to patch state operations. Applies to Windows Server managed nodes only.

@@ -252,7 +252,7 @@ type CreateAutoScalingGroupInput struct {
 	NewInstancesProtectedFromScaleIn *bool
 
 	// The name of the placement group into which to launch your instances. For more
-	// information, see [Placement groups]in the Amazon EC2 User Guide for Linux Instances.
+	// information, see [Placement groups]in the Amazon EC2 User Guide.
 	//
 	// A cluster placement group is a logical grouping of instances within a single
 	// Availability Zone. You cannot specify multiple Availability Zones and a cluster

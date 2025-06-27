@@ -30,7 +30,7 @@ import (
 //
 // [kms:ListKeyPolicies]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [PutKeyPolicy]: https://docs.aws.amazon.com/kms/latest/APIReference/API_PutKeyPolicy.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 func (c *Client) ListKeyPolicies(ctx context.Context, params *ListKeyPoliciesInput, optFns ...func(*Options)) (*ListKeyPoliciesOutput, error) {
 	if params == nil {
 		params = &ListKeyPoliciesInput{}

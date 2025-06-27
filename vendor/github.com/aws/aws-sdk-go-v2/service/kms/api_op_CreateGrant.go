@@ -21,8 +21,8 @@ import (
 // and delete it without changing your key policies or IAM policies.
 //
 // For detailed information about grants, including grant terminology, see [Grants in KMS] in the
-// Key Management Service Developer Guide . For examples of working with grants in
-// several programming languages, see [Programming grants].
+// Key Management Service Developer Guide . For examples of creating grants in
+// several programming languages, see [Use CreateGrant with an Amazon Web Services SDK or CLI].
 //
 // The CreateGrant operation returns a GrantToken and a GrantId .
 //
@@ -63,13 +63,13 @@ import (
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
-// [Programming grants]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-grants.html
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [Grants in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html
 // [kms:CreateGrant]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
-// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-eventual-consistency.html
+// [Use CreateGrant with an Amazon Web Services SDK or CLI]: https://docs.aws.amazon.com/kms/latest/developerguide/example_kms_CreateGrant_section.html
+// [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 //
-// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 func (c *Client) CreateGrant(ctx context.Context, params *CreateGrantInput, optFns ...func(*Options)) (*CreateGrantOutput, error) {
 	if params == nil {
 		params = &CreateGrantInput{}
@@ -167,10 +167,10 @@ type CreateGrantInput struct {
 
 	// Checks if your request will succeed. DryRun is an optional parameter.
 	//
-	// To learn more about how to use this parameter, see [Testing your KMS API calls] in the Key Management
+	// To learn more about how to use this parameter, see [Testing your permissions] in the Key Management
 	// Service Developer Guide.
 	//
-	// [Testing your KMS API calls]: https://docs.aws.amazon.com/kms/latest/developerguide/programming-dryrun.html
+	// [Testing your permissions]: https://docs.aws.amazon.com/kms/latest/developerguide/testing-permissions.html
 	DryRun *bool
 
 	// A list of grant tokens.
@@ -180,7 +180,7 @@ type CreateGrantInput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
 	// A friendly name for the grant. Use this value to prevent the unintended
@@ -213,7 +213,7 @@ type CreateGrantInput struct {
 	//
 	// [IAM ARNs]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns
 	// [Amazon Resource Name (ARN)]: https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html
-	// [Retiring and revoking grants]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#grant-delete
+	// [Retiring and revoking grants]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-delete.html
 	RetiringPrincipal *string
 
 	noSmithyDocumentSerde
@@ -233,7 +233,7 @@ type CreateGrantOutput struct {
 	// and [Using a grant token]in the Key Management Service Developer Guide.
 	//
 	// [Grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
-	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/grant-manage.html#using-grant-token
+	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantToken *string
 
 	// Metadata pertaining to the operation's result.

@@ -2551,6 +2551,25 @@ func (FleetType) Values() []FleetType {
 	}
 }
 
+type FlexibleEnaQueuesSupport string
+
+// Enum values for FlexibleEnaQueuesSupport
+const (
+	FlexibleEnaQueuesSupportUnsupported FlexibleEnaQueuesSupport = "unsupported"
+	FlexibleEnaQueuesSupportSupported   FlexibleEnaQueuesSupport = "supported"
+)
+
+// Values returns all known values for FlexibleEnaQueuesSupport. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (FlexibleEnaQueuesSupport) Values() []FlexibleEnaQueuesSupport {
+	return []FlexibleEnaQueuesSupport{
+		"unsupported",
+		"supported",
+	}
+}
+
 type FlowLogsResourceType string
 
 // Enum values for FlowLogsResourceType
@@ -3291,6 +3310,26 @@ func (InstanceMetadataTagsState) Values() []InstanceMetadataTagsState {
 	return []InstanceMetadataTagsState{
 		"disabled",
 		"enabled",
+	}
+}
+
+type InstanceRebootMigrationState string
+
+// Enum values for InstanceRebootMigrationState
+const (
+	InstanceRebootMigrationStateDisabled InstanceRebootMigrationState = "disabled"
+	InstanceRebootMigrationStateDefault  InstanceRebootMigrationState = "default"
+)
+
+// Values returns all known values for InstanceRebootMigrationState. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (InstanceRebootMigrationState) Values() []InstanceRebootMigrationState {
+	return []InstanceRebootMigrationState{
+		"disabled",
+		"default",
 	}
 }
 
@@ -4235,6 +4274,61 @@ const (
 	InstanceTypeF212xlarge         InstanceType = "f2.12xlarge"
 	InstanceTypeF248xlarge         InstanceType = "f2.48xlarge"
 	InstanceTypeTrn248xlarge       InstanceType = "trn2.48xlarge"
+	InstanceTypeC7iFlex12xlarge    InstanceType = "c7i-flex.12xlarge"
+	InstanceTypeC7iFlex16xlarge    InstanceType = "c7i-flex.16xlarge"
+	InstanceTypeM7iFlex12xlarge    InstanceType = "m7i-flex.12xlarge"
+	InstanceTypeM7iFlex16xlarge    InstanceType = "m7i-flex.16xlarge"
+	InstanceTypeI7ieMetal24xl      InstanceType = "i7ie.metal-24xl"
+	InstanceTypeI7ieMetal48xl      InstanceType = "i7ie.metal-48xl"
+	InstanceTypeI8g48xlarge        InstanceType = "i8g.48xlarge"
+	InstanceTypeC8gdMedium         InstanceType = "c8gd.medium"
+	InstanceTypeC8gdLarge          InstanceType = "c8gd.large"
+	InstanceTypeC8gdXlarge         InstanceType = "c8gd.xlarge"
+	InstanceTypeC8gd2xlarge        InstanceType = "c8gd.2xlarge"
+	InstanceTypeC8gd4xlarge        InstanceType = "c8gd.4xlarge"
+	InstanceTypeC8gd8xlarge        InstanceType = "c8gd.8xlarge"
+	InstanceTypeC8gd12xlarge       InstanceType = "c8gd.12xlarge"
+	InstanceTypeC8gd16xlarge       InstanceType = "c8gd.16xlarge"
+	InstanceTypeC8gd24xlarge       InstanceType = "c8gd.24xlarge"
+	InstanceTypeC8gd48xlarge       InstanceType = "c8gd.48xlarge"
+	InstanceTypeC8gdMetal24xl      InstanceType = "c8gd.metal-24xl"
+	InstanceTypeC8gdMetal48xl      InstanceType = "c8gd.metal-48xl"
+	InstanceTypeI7iLarge           InstanceType = "i7i.large"
+	InstanceTypeI7iXlarge          InstanceType = "i7i.xlarge"
+	InstanceTypeI7i2xlarge         InstanceType = "i7i.2xlarge"
+	InstanceTypeI7i4xlarge         InstanceType = "i7i.4xlarge"
+	InstanceTypeI7i8xlarge         InstanceType = "i7i.8xlarge"
+	InstanceTypeI7i12xlarge        InstanceType = "i7i.12xlarge"
+	InstanceTypeI7i16xlarge        InstanceType = "i7i.16xlarge"
+	InstanceTypeI7i24xlarge        InstanceType = "i7i.24xlarge"
+	InstanceTypeI7i48xlarge        InstanceType = "i7i.48xlarge"
+	InstanceTypeI7iMetal24xl       InstanceType = "i7i.metal-24xl"
+	InstanceTypeI7iMetal48xl       InstanceType = "i7i.metal-48xl"
+	InstanceTypeP6B20048xlarge     InstanceType = "p6-b200.48xlarge"
+	InstanceTypeM8gdMedium         InstanceType = "m8gd.medium"
+	InstanceTypeM8gdLarge          InstanceType = "m8gd.large"
+	InstanceTypeM8gdXlarge         InstanceType = "m8gd.xlarge"
+	InstanceTypeM8gd2xlarge        InstanceType = "m8gd.2xlarge"
+	InstanceTypeM8gd4xlarge        InstanceType = "m8gd.4xlarge"
+	InstanceTypeM8gd8xlarge        InstanceType = "m8gd.8xlarge"
+	InstanceTypeM8gd12xlarge       InstanceType = "m8gd.12xlarge"
+	InstanceTypeM8gd16xlarge       InstanceType = "m8gd.16xlarge"
+	InstanceTypeM8gd24xlarge       InstanceType = "m8gd.24xlarge"
+	InstanceTypeM8gd48xlarge       InstanceType = "m8gd.48xlarge"
+	InstanceTypeM8gdMetal24xl      InstanceType = "m8gd.metal-24xl"
+	InstanceTypeM8gdMetal48xl      InstanceType = "m8gd.metal-48xl"
+	InstanceTypeR8gdMedium         InstanceType = "r8gd.medium"
+	InstanceTypeR8gdLarge          InstanceType = "r8gd.large"
+	InstanceTypeR8gdXlarge         InstanceType = "r8gd.xlarge"
+	InstanceTypeR8gd2xlarge        InstanceType = "r8gd.2xlarge"
+	InstanceTypeR8gd4xlarge        InstanceType = "r8gd.4xlarge"
+	InstanceTypeR8gd8xlarge        InstanceType = "r8gd.8xlarge"
+	InstanceTypeR8gd12xlarge       InstanceType = "r8gd.12xlarge"
+	InstanceTypeR8gd16xlarge       InstanceType = "r8gd.16xlarge"
+	InstanceTypeR8gd24xlarge       InstanceType = "r8gd.24xlarge"
+	InstanceTypeR8gd48xlarge       InstanceType = "r8gd.48xlarge"
+	InstanceTypeR8gdMetal24xl      InstanceType = "r8gd.metal-24xl"
+	InstanceTypeR8gdMetal48xl      InstanceType = "r8gd.metal-48xl"
 )
 
 // Values returns all known values for InstanceType. Note that this can be
@@ -5133,6 +5227,61 @@ func (InstanceType) Values() []InstanceType {
 		"f2.12xlarge",
 		"f2.48xlarge",
 		"trn2.48xlarge",
+		"c7i-flex.12xlarge",
+		"c7i-flex.16xlarge",
+		"m7i-flex.12xlarge",
+		"m7i-flex.16xlarge",
+		"i7ie.metal-24xl",
+		"i7ie.metal-48xl",
+		"i8g.48xlarge",
+		"c8gd.medium",
+		"c8gd.large",
+		"c8gd.xlarge",
+		"c8gd.2xlarge",
+		"c8gd.4xlarge",
+		"c8gd.8xlarge",
+		"c8gd.12xlarge",
+		"c8gd.16xlarge",
+		"c8gd.24xlarge",
+		"c8gd.48xlarge",
+		"c8gd.metal-24xl",
+		"c8gd.metal-48xl",
+		"i7i.large",
+		"i7i.xlarge",
+		"i7i.2xlarge",
+		"i7i.4xlarge",
+		"i7i.8xlarge",
+		"i7i.12xlarge",
+		"i7i.16xlarge",
+		"i7i.24xlarge",
+		"i7i.48xlarge",
+		"i7i.metal-24xl",
+		"i7i.metal-48xl",
+		"p6-b200.48xlarge",
+		"m8gd.medium",
+		"m8gd.large",
+		"m8gd.xlarge",
+		"m8gd.2xlarge",
+		"m8gd.4xlarge",
+		"m8gd.8xlarge",
+		"m8gd.12xlarge",
+		"m8gd.16xlarge",
+		"m8gd.24xlarge",
+		"m8gd.48xlarge",
+		"m8gd.metal-24xl",
+		"m8gd.metal-48xl",
+		"r8gd.medium",
+		"r8gd.large",
+		"r8gd.xlarge",
+		"r8gd.2xlarge",
+		"r8gd.4xlarge",
+		"r8gd.8xlarge",
+		"r8gd.12xlarge",
+		"r8gd.16xlarge",
+		"r8gd.24xlarge",
+		"r8gd.48xlarge",
+		"r8gd.metal-24xl",
+		"r8gd.metal-48xl",
 	}
 }
 
@@ -5391,6 +5540,25 @@ func (IpamManagementState) Values() []IpamManagementState {
 		"managed",
 		"unmanaged",
 		"ignored",
+	}
+}
+
+type IpamMeteredAccount string
+
+// Enum values for IpamMeteredAccount
+const (
+	IpamMeteredAccountIpamOwner     IpamMeteredAccount = "ipam-owner"
+	IpamMeteredAccountResourceOwner IpamMeteredAccount = "resource-owner"
+)
+
+// Values returns all known values for IpamMeteredAccount. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (IpamMeteredAccount) Values() []IpamMeteredAccount {
+	return []IpamMeteredAccount{
+		"ipam-owner",
+		"resource-owner",
 	}
 }
 
@@ -6275,6 +6443,56 @@ func (LocalGatewayRouteType) Values() []LocalGatewayRouteType {
 	}
 }
 
+type LocalGatewayVirtualInterfaceConfigurationState string
+
+// Enum values for LocalGatewayVirtualInterfaceConfigurationState
+const (
+	LocalGatewayVirtualInterfaceConfigurationStatePending   LocalGatewayVirtualInterfaceConfigurationState = "pending"
+	LocalGatewayVirtualInterfaceConfigurationStateAvailable LocalGatewayVirtualInterfaceConfigurationState = "available"
+	LocalGatewayVirtualInterfaceConfigurationStateDeleting  LocalGatewayVirtualInterfaceConfigurationState = "deleting"
+	LocalGatewayVirtualInterfaceConfigurationStateDeleted   LocalGatewayVirtualInterfaceConfigurationState = "deleted"
+)
+
+// Values returns all known values for
+// LocalGatewayVirtualInterfaceConfigurationState. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (LocalGatewayVirtualInterfaceConfigurationState) Values() []LocalGatewayVirtualInterfaceConfigurationState {
+	return []LocalGatewayVirtualInterfaceConfigurationState{
+		"pending",
+		"available",
+		"deleting",
+		"deleted",
+	}
+}
+
+type LocalGatewayVirtualInterfaceGroupConfigurationState string
+
+// Enum values for LocalGatewayVirtualInterfaceGroupConfigurationState
+const (
+	LocalGatewayVirtualInterfaceGroupConfigurationStatePending    LocalGatewayVirtualInterfaceGroupConfigurationState = "pending"
+	LocalGatewayVirtualInterfaceGroupConfigurationStateIncomplete LocalGatewayVirtualInterfaceGroupConfigurationState = "incomplete"
+	LocalGatewayVirtualInterfaceGroupConfigurationStateAvailable  LocalGatewayVirtualInterfaceGroupConfigurationState = "available"
+	LocalGatewayVirtualInterfaceGroupConfigurationStateDeleting   LocalGatewayVirtualInterfaceGroupConfigurationState = "deleting"
+	LocalGatewayVirtualInterfaceGroupConfigurationStateDeleted    LocalGatewayVirtualInterfaceGroupConfigurationState = "deleted"
+)
+
+// Values returns all known values for
+// LocalGatewayVirtualInterfaceGroupConfigurationState. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (LocalGatewayVirtualInterfaceGroupConfigurationState) Values() []LocalGatewayVirtualInterfaceGroupConfigurationState {
+	return []LocalGatewayVirtualInterfaceGroupConfigurationState{
+		"pending",
+		"incomplete",
+		"available",
+		"deleting",
+		"deleted",
+	}
+}
+
 type LocalStorage string
 
 // Enum values for LocalStorage
@@ -6398,6 +6616,68 @@ func (LogDestinationType) Values() []LogDestinationType {
 		"cloud-watch-logs",
 		"s3",
 		"kinesis-data-firehose",
+	}
+}
+
+type MacModificationTaskState string
+
+// Enum values for MacModificationTaskState
+const (
+	MacModificationTaskStateSuccessful MacModificationTaskState = "successful"
+	MacModificationTaskStateFailed     MacModificationTaskState = "failed"
+	MacModificationTaskStateInprogress MacModificationTaskState = "in-progress"
+	MacModificationTaskStatePending    MacModificationTaskState = "pending"
+)
+
+// Values returns all known values for MacModificationTaskState. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (MacModificationTaskState) Values() []MacModificationTaskState {
+	return []MacModificationTaskState{
+		"successful",
+		"failed",
+		"in-progress",
+		"pending",
+	}
+}
+
+type MacModificationTaskType string
+
+// Enum values for MacModificationTaskType
+const (
+	MacModificationTaskTypeSIPModification           MacModificationTaskType = "sip-modification"
+	MacModificationTaskTypeVolumeOwnershipDelegation MacModificationTaskType = "volume-ownership-delegation"
+)
+
+// Values returns all known values for MacModificationTaskType. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (MacModificationTaskType) Values() []MacModificationTaskType {
+	return []MacModificationTaskType{
+		"sip-modification",
+		"volume-ownership-delegation",
+	}
+}
+
+type MacSystemIntegrityProtectionSettingStatus string
+
+// Enum values for MacSystemIntegrityProtectionSettingStatus
+const (
+	MacSystemIntegrityProtectionSettingStatusEnabled  MacSystemIntegrityProtectionSettingStatus = "enabled"
+	MacSystemIntegrityProtectionSettingStatusDisabled MacSystemIntegrityProtectionSettingStatus = "disabled"
+)
+
+// Values returns all known values for MacSystemIntegrityProtectionSettingStatus.
+// Note that this can be expanded in the future, and so it is only as up to date as
+// the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (MacSystemIntegrityProtectionSettingStatus) Values() []MacSystemIntegrityProtectionSettingStatus {
+	return []MacSystemIntegrityProtectionSettingStatus{
+		"enabled",
+		"disabled",
 	}
 }
 
@@ -7228,6 +7508,46 @@ func (ProtocolValue) Values() []ProtocolValue {
 	}
 }
 
+type PublicIpDnsOption string
+
+// Enum values for PublicIpDnsOption
+const (
+	PublicIpDnsOptionPublicDualStackDnsName PublicIpDnsOption = "public-dual-stack-dns-name"
+	PublicIpDnsOptionPublicIpv4DnsName      PublicIpDnsOption = "public-ipv4-dns-name"
+	PublicIpDnsOptionPublicIpv6DnsName      PublicIpDnsOption = "public-ipv6-dns-name"
+)
+
+// Values returns all known values for PublicIpDnsOption. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (PublicIpDnsOption) Values() []PublicIpDnsOption {
+	return []PublicIpDnsOption{
+		"public-dual-stack-dns-name",
+		"public-ipv4-dns-name",
+		"public-ipv6-dns-name",
+	}
+}
+
+type RebootMigrationSupport string
+
+// Enum values for RebootMigrationSupport
+const (
+	RebootMigrationSupportUnsupported RebootMigrationSupport = "unsupported"
+	RebootMigrationSupportSupported   RebootMigrationSupport = "supported"
+)
+
+// Values returns all known values for RebootMigrationSupport. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RebootMigrationSupport) Values() []RebootMigrationSupport {
+	return []RebootMigrationSupport{
+		"unsupported",
+		"supported",
+	}
+}
+
 type RecurringChargeFrequency string
 
 // Enum values for RecurringChargeFrequency
@@ -7496,6 +7816,7 @@ const (
 	ResourceTypeNetworkInsightsPath                                    ResourceType = "network-insights-path"
 	ResourceTypeNetworkInsightsAccessScope                             ResourceType = "network-insights-access-scope"
 	ResourceTypeNetworkInsightsAccessScopeAnalysis                     ResourceType = "network-insights-access-scope-analysis"
+	ResourceTypeOutpostLag                                             ResourceType = "outpost-lag"
 	ResourceTypePlacementGroup                                         ResourceType = "placement-group"
 	ResourceTypePrefixList                                             ResourceType = "prefix-list"
 	ResourceTypeReplaceRootVolumeTask                                  ResourceType = "replace-root-volume-task"
@@ -7503,6 +7824,7 @@ const (
 	ResourceTypeRouteTable                                             ResourceType = "route-table"
 	ResourceTypeSecurityGroup                                          ResourceType = "security-group"
 	ResourceTypeSecurityGroupRule                                      ResourceType = "security-group-rule"
+	ResourceTypeServiceLinkVirtualInterface                            ResourceType = "service-link-virtual-interface"
 	ResourceTypeSnapshot                                               ResourceType = "snapshot"
 	ResourceTypeSpotFleetRequest                                       ResourceType = "spot-fleet-request"
 	ResourceTypeSpotInstancesRequest                                   ResourceType = "spot-instances-request"
@@ -7538,11 +7860,15 @@ const (
 	ResourceTypeVerifiedAccessTrustProvider                            ResourceType = "verified-access-trust-provider"
 	ResourceTypeVpnConnectionDeviceType                                ResourceType = "vpn-connection-device-type"
 	ResourceTypeVpcBlockPublicAccessExclusion                          ResourceType = "vpc-block-public-access-exclusion"
+	ResourceTypeRouteServer                                            ResourceType = "route-server"
+	ResourceTypeRouteServerEndpoint                                    ResourceType = "route-server-endpoint"
+	ResourceTypeRouteServerPeer                                        ResourceType = "route-server-peer"
 	ResourceTypeIpamResourceDiscovery                                  ResourceType = "ipam-resource-discovery"
 	ResourceTypeIpamResourceDiscoveryAssociation                       ResourceType = "ipam-resource-discovery-association"
 	ResourceTypeInstanceConnectEndpoint                                ResourceType = "instance-connect-endpoint"
 	ResourceTypeVerifiedAccessEndpointTarget                           ResourceType = "verified-access-endpoint-target"
 	ResourceTypeIpamExternalResourceVerificationToken                  ResourceType = "ipam-external-resource-verification-token"
+	ResourceTypeMacModificationTask                                    ResourceType = "mac-modification-task"
 )
 
 // Values returns all known values for ResourceType. Note that this can be
@@ -7593,6 +7919,7 @@ func (ResourceType) Values() []ResourceType {
 		"network-insights-path",
 		"network-insights-access-scope",
 		"network-insights-access-scope-analysis",
+		"outpost-lag",
 		"placement-group",
 		"prefix-list",
 		"replace-root-volume-task",
@@ -7600,6 +7927,7 @@ func (ResourceType) Values() []ResourceType {
 		"route-table",
 		"security-group",
 		"security-group-rule",
+		"service-link-virtual-interface",
 		"snapshot",
 		"spot-fleet-request",
 		"spot-instances-request",
@@ -7635,11 +7963,15 @@ func (ResourceType) Values() []ResourceType {
 		"verified-access-trust-provider",
 		"vpn-connection-device-type",
 		"vpc-block-public-access-exclusion",
+		"route-server",
+		"route-server-endpoint",
+		"route-server-peer",
 		"ipam-resource-discovery",
 		"ipam-resource-discovery-association",
 		"instance-connect-endpoint",
 		"verified-access-endpoint-target",
 		"ipam-external-resource-verification-token",
+		"mac-modification-task",
 	}
 }
 
@@ -7703,6 +8035,275 @@ func (RouteOrigin) Values() []RouteOrigin {
 		"CreateRouteTable",
 		"CreateRoute",
 		"EnableVgwRoutePropagation",
+	}
+}
+
+type RouteServerAssociationState string
+
+// Enum values for RouteServerAssociationState
+const (
+	RouteServerAssociationStateAssociating    RouteServerAssociationState = "associating"
+	RouteServerAssociationStateAssociated     RouteServerAssociationState = "associated"
+	RouteServerAssociationStateDisassociating RouteServerAssociationState = "disassociating"
+)
+
+// Values returns all known values for RouteServerAssociationState. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerAssociationState) Values() []RouteServerAssociationState {
+	return []RouteServerAssociationState{
+		"associating",
+		"associated",
+		"disassociating",
+	}
+}
+
+type RouteServerBfdState string
+
+// Enum values for RouteServerBfdState
+const (
+	RouteServerBfdStateUp   RouteServerBfdState = "up"
+	RouteServerBfdStateDown RouteServerBfdState = "down"
+)
+
+// Values returns all known values for RouteServerBfdState. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerBfdState) Values() []RouteServerBfdState {
+	return []RouteServerBfdState{
+		"up",
+		"down",
+	}
+}
+
+type RouteServerBgpState string
+
+// Enum values for RouteServerBgpState
+const (
+	RouteServerBgpStateUp   RouteServerBgpState = "up"
+	RouteServerBgpStateDown RouteServerBgpState = "down"
+)
+
+// Values returns all known values for RouteServerBgpState. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerBgpState) Values() []RouteServerBgpState {
+	return []RouteServerBgpState{
+		"up",
+		"down",
+	}
+}
+
+type RouteServerEndpointState string
+
+// Enum values for RouteServerEndpointState
+const (
+	RouteServerEndpointStatePending      RouteServerEndpointState = "pending"
+	RouteServerEndpointStateAvailable    RouteServerEndpointState = "available"
+	RouteServerEndpointStateDeleting     RouteServerEndpointState = "deleting"
+	RouteServerEndpointStateDeleted      RouteServerEndpointState = "deleted"
+	RouteServerEndpointStateFailing      RouteServerEndpointState = "failing"
+	RouteServerEndpointStateFailed       RouteServerEndpointState = "failed"
+	RouteServerEndpointStateDeleteFailed RouteServerEndpointState = "delete-failed"
+)
+
+// Values returns all known values for RouteServerEndpointState. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerEndpointState) Values() []RouteServerEndpointState {
+	return []RouteServerEndpointState{
+		"pending",
+		"available",
+		"deleting",
+		"deleted",
+		"failing",
+		"failed",
+		"delete-failed",
+	}
+}
+
+type RouteServerPeerLivenessMode string
+
+// Enum values for RouteServerPeerLivenessMode
+const (
+	RouteServerPeerLivenessModeBfd          RouteServerPeerLivenessMode = "bfd"
+	RouteServerPeerLivenessModeBgpKeepalive RouteServerPeerLivenessMode = "bgp-keepalive"
+)
+
+// Values returns all known values for RouteServerPeerLivenessMode. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerPeerLivenessMode) Values() []RouteServerPeerLivenessMode {
+	return []RouteServerPeerLivenessMode{
+		"bfd",
+		"bgp-keepalive",
+	}
+}
+
+type RouteServerPeerState string
+
+// Enum values for RouteServerPeerState
+const (
+	RouteServerPeerStatePending   RouteServerPeerState = "pending"
+	RouteServerPeerStateAvailable RouteServerPeerState = "available"
+	RouteServerPeerStateDeleting  RouteServerPeerState = "deleting"
+	RouteServerPeerStateDeleted   RouteServerPeerState = "deleted"
+	RouteServerPeerStateFailing   RouteServerPeerState = "failing"
+	RouteServerPeerStateFailed    RouteServerPeerState = "failed"
+)
+
+// Values returns all known values for RouteServerPeerState. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerPeerState) Values() []RouteServerPeerState {
+	return []RouteServerPeerState{
+		"pending",
+		"available",
+		"deleting",
+		"deleted",
+		"failing",
+		"failed",
+	}
+}
+
+type RouteServerPersistRoutesAction string
+
+// Enum values for RouteServerPersistRoutesAction
+const (
+	RouteServerPersistRoutesActionEnable  RouteServerPersistRoutesAction = "enable"
+	RouteServerPersistRoutesActionDisable RouteServerPersistRoutesAction = "disable"
+	RouteServerPersistRoutesActionReset   RouteServerPersistRoutesAction = "reset"
+)
+
+// Values returns all known values for RouteServerPersistRoutesAction. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerPersistRoutesAction) Values() []RouteServerPersistRoutesAction {
+	return []RouteServerPersistRoutesAction{
+		"enable",
+		"disable",
+		"reset",
+	}
+}
+
+type RouteServerPersistRoutesState string
+
+// Enum values for RouteServerPersistRoutesState
+const (
+	RouteServerPersistRoutesStateEnabling  RouteServerPersistRoutesState = "enabling"
+	RouteServerPersistRoutesStateEnabled   RouteServerPersistRoutesState = "enabled"
+	RouteServerPersistRoutesStateResetting RouteServerPersistRoutesState = "resetting"
+	RouteServerPersistRoutesStateDisabling RouteServerPersistRoutesState = "disabling"
+	RouteServerPersistRoutesStateDisabled  RouteServerPersistRoutesState = "disabled"
+	RouteServerPersistRoutesStateModifying RouteServerPersistRoutesState = "modifying"
+)
+
+// Values returns all known values for RouteServerPersistRoutesState. Note that
+// this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerPersistRoutesState) Values() []RouteServerPersistRoutesState {
+	return []RouteServerPersistRoutesState{
+		"enabling",
+		"enabled",
+		"resetting",
+		"disabling",
+		"disabled",
+		"modifying",
+	}
+}
+
+type RouteServerPropagationState string
+
+// Enum values for RouteServerPropagationState
+const (
+	RouteServerPropagationStatePending   RouteServerPropagationState = "pending"
+	RouteServerPropagationStateAvailable RouteServerPropagationState = "available"
+	RouteServerPropagationStateDeleting  RouteServerPropagationState = "deleting"
+)
+
+// Values returns all known values for RouteServerPropagationState. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerPropagationState) Values() []RouteServerPropagationState {
+	return []RouteServerPropagationState{
+		"pending",
+		"available",
+		"deleting",
+	}
+}
+
+type RouteServerRouteInstallationStatus string
+
+// Enum values for RouteServerRouteInstallationStatus
+const (
+	RouteServerRouteInstallationStatusInstalled RouteServerRouteInstallationStatus = "installed"
+	RouteServerRouteInstallationStatusRejected  RouteServerRouteInstallationStatus = "rejected"
+)
+
+// Values returns all known values for RouteServerRouteInstallationStatus. Note
+// that this can be expanded in the future, and so it is only as up to date as the
+// client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerRouteInstallationStatus) Values() []RouteServerRouteInstallationStatus {
+	return []RouteServerRouteInstallationStatus{
+		"installed",
+		"rejected",
+	}
+}
+
+type RouteServerRouteStatus string
+
+// Enum values for RouteServerRouteStatus
+const (
+	RouteServerRouteStatusInRib RouteServerRouteStatus = "in-rib"
+	RouteServerRouteStatusInFib RouteServerRouteStatus = "in-fib"
+)
+
+// Values returns all known values for RouteServerRouteStatus. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerRouteStatus) Values() []RouteServerRouteStatus {
+	return []RouteServerRouteStatus{
+		"in-rib",
+		"in-fib",
+	}
+}
+
+type RouteServerState string
+
+// Enum values for RouteServerState
+const (
+	RouteServerStatePending   RouteServerState = "pending"
+	RouteServerStateAvailable RouteServerState = "available"
+	RouteServerStateModifying RouteServerState = "modifying"
+	RouteServerStateDeleting  RouteServerState = "deleting"
+	RouteServerStateDeleted   RouteServerState = "deleted"
+)
+
+// Values returns all known values for RouteServerState. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RouteServerState) Values() []RouteServerState {
+	return []RouteServerState{
+		"pending",
+		"available",
+		"modifying",
+		"deleting",
+		"deleted",
 	}
 }
 
@@ -7875,12 +8476,37 @@ func (ServiceConnectivityType) Values() []ServiceConnectivityType {
 	}
 }
 
+type ServiceLinkVirtualInterfaceConfigurationState string
+
+// Enum values for ServiceLinkVirtualInterfaceConfigurationState
+const (
+	ServiceLinkVirtualInterfaceConfigurationStatePending   ServiceLinkVirtualInterfaceConfigurationState = "pending"
+	ServiceLinkVirtualInterfaceConfigurationStateAvailable ServiceLinkVirtualInterfaceConfigurationState = "available"
+	ServiceLinkVirtualInterfaceConfigurationStateDeleting  ServiceLinkVirtualInterfaceConfigurationState = "deleting"
+	ServiceLinkVirtualInterfaceConfigurationStateDeleted   ServiceLinkVirtualInterfaceConfigurationState = "deleted"
+)
+
+// Values returns all known values for
+// ServiceLinkVirtualInterfaceConfigurationState. Note that this can be expanded in
+// the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ServiceLinkVirtualInterfaceConfigurationState) Values() []ServiceLinkVirtualInterfaceConfigurationState {
+	return []ServiceLinkVirtualInterfaceConfigurationState{
+		"pending",
+		"available",
+		"deleting",
+		"deleted",
+	}
+}
+
 type ServiceManaged string
 
 // Enum values for ServiceManaged
 const (
-	ServiceManagedAlb ServiceManaged = "alb"
-	ServiceManagedNlb ServiceManaged = "nlb"
+	ServiceManagedAlb  ServiceManaged = "alb"
+	ServiceManagedNlb  ServiceManaged = "nlb"
+	ServiceManagedRnat ServiceManaged = "rnat"
 )
 
 // Values returns all known values for ServiceManaged. Note that this can be
@@ -7891,6 +8517,7 @@ func (ServiceManaged) Values() []ServiceManaged {
 	return []ServiceManaged{
 		"alb",
 		"nlb",
+		"rnat",
 	}
 }
 
@@ -8016,6 +8643,31 @@ func (SnapshotLocationEnum) Values() []SnapshotLocationEnum {
 	return []SnapshotLocationEnum{
 		"regional",
 		"local",
+	}
+}
+
+type SnapshotReturnCodes string
+
+// Enum values for SnapshotReturnCodes
+const (
+	SnapshotReturnCodesSuccess                 SnapshotReturnCodes = "success"
+	SnapshotReturnCodesWarnSkipped             SnapshotReturnCodes = "skipped"
+	SnapshotReturnCodesErrorMissingPermissions SnapshotReturnCodes = "missing-permissions"
+	SnapshotReturnCodesErrorCodeInternalError  SnapshotReturnCodes = "internal-error"
+	SnapshotReturnCodesErrorCodeClientError    SnapshotReturnCodes = "client-error"
+)
+
+// Values returns all known values for SnapshotReturnCodes. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (SnapshotReturnCodes) Values() []SnapshotReturnCodes {
+	return []SnapshotReturnCodes{
+		"success",
+		"skipped",
+		"missing-permissions",
+		"internal-error",
+		"client-error",
 	}
 }
 
@@ -8376,9 +9028,11 @@ type SubnetState string
 
 // Enum values for SubnetState
 const (
-	SubnetStatePending     SubnetState = "pending"
-	SubnetStateAvailable   SubnetState = "available"
-	SubnetStateUnavailable SubnetState = "unavailable"
+	SubnetStatePending                    SubnetState = "pending"
+	SubnetStateAvailable                  SubnetState = "available"
+	SubnetStateUnavailable                SubnetState = "unavailable"
+	SubnetStateFailed                     SubnetState = "failed"
+	SubnetStateFailedInsufficientCapacity SubnetState = "failed-insufficient-capacity"
 )
 
 // Values returns all known values for SubnetState. Note that this can be expanded
@@ -8390,6 +9044,8 @@ func (SubnetState) Values() []SubnetState {
 		"pending",
 		"available",
 		"unavailable",
+		"failed",
+		"failed-insufficient-capacity",
 	}
 }
 
@@ -9763,6 +10419,8 @@ const (
 	VpcEncryptionControlStateDeleting          VpcEncryptionControlState = "deleting"
 	VpcEncryptionControlStateDeleted           VpcEncryptionControlState = "deleted"
 	VpcEncryptionControlStateAvailable         VpcEncryptionControlState = "available"
+	VpcEncryptionControlStateCreating          VpcEncryptionControlState = "creating"
+	VpcEncryptionControlStateDeleteFailed      VpcEncryptionControlState = "delete-failed"
 )
 
 // Values returns all known values for VpcEncryptionControlState. Note that this
@@ -9778,6 +10436,8 @@ func (VpcEncryptionControlState) Values() []VpcEncryptionControlState {
 		"deleting",
 		"deleted",
 		"available",
+		"creating",
+		"delete-failed",
 	}
 }
 
@@ -9949,6 +10609,27 @@ const (
 func (VpnStaticRouteSource) Values() []VpnStaticRouteSource {
 	return []VpnStaticRouteSource{
 		"Static",
+	}
+}
+
+type VpnTunnelProvisioningStatus string
+
+// Enum values for VpnTunnelProvisioningStatus
+const (
+	VpnTunnelProvisioningStatusAvailable VpnTunnelProvisioningStatus = "available"
+	VpnTunnelProvisioningStatusPending   VpnTunnelProvisioningStatus = "pending"
+	VpnTunnelProvisioningStatusFailed    VpnTunnelProvisioningStatus = "failed"
+)
+
+// Values returns all known values for VpnTunnelProvisioningStatus. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (VpnTunnelProvisioningStatus) Values() []VpnTunnelProvisioningStatus {
+	return []VpnTunnelProvisioningStatus{
+		"available",
+		"pending",
+		"failed",
 	}
 }
 

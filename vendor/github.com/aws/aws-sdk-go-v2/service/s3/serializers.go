@@ -1409,6 +1409,11 @@ func awsRestxml_serializeOpHttpBindingsDeleteBucketIntelligentTieringConfigurati
 		return fmt.Errorf("unsupported serialization of nil %T", v)
 	}
 
+	if v.ExpectedBucketOwner != nil {
+		locationName := "X-Amz-Expected-Bucket-Owner"
+		encoder.SetHeader(locationName).String(*v.ExpectedBucketOwner)
+	}
+
 	if v.Id != nil {
 		encoder.SetQuery("id").String(*v.Id)
 	}
@@ -2796,6 +2801,11 @@ func (m *awsRestxml_serializeOpGetBucketIntelligentTieringConfiguration) HandleS
 func awsRestxml_serializeOpHttpBindingsGetBucketIntelligentTieringConfigurationInput(v *GetBucketIntelligentTieringConfigurationInput, encoder *httpbinding.Encoder) error {
 	if v == nil {
 		return fmt.Errorf("unsupported serialization of nil %T", v)
+	}
+
+	if v.ExpectedBucketOwner != nil {
+		locationName := "X-Amz-Expected-Bucket-Owner"
+		encoder.SetHeader(locationName).String(*v.ExpectedBucketOwner)
 	}
 
 	if v.Id != nil {
@@ -5017,6 +5027,11 @@ func awsRestxml_serializeOpHttpBindingsListBucketIntelligentTieringConfiguration
 		encoder.SetQuery("continuation-token").String(*v.ContinuationToken)
 	}
 
+	if v.ExpectedBucketOwner != nil {
+		locationName := "X-Amz-Expected-Bucket-Owner"
+		encoder.SetHeader(locationName).String(*v.ExpectedBucketOwner)
+	}
+
 	return nil
 }
 
@@ -6460,6 +6475,11 @@ func awsRestxml_serializeOpHttpBindingsPutBucketIntelligentTieringConfigurationI
 		return fmt.Errorf("unsupported serialization of nil %T", v)
 	}
 
+	if v.ExpectedBucketOwner != nil {
+		locationName := "X-Amz-Expected-Bucket-Owner"
+		encoder.SetHeader(locationName).String(*v.ExpectedBucketOwner)
+	}
+
 	if v.Id != nil {
 		encoder.SetQuery("id").String(*v.Id)
 	}
@@ -7036,6 +7056,11 @@ func (m *awsRestxml_serializeOpPutBucketOwnershipControls) HandleSerialize(ctx c
 func awsRestxml_serializeOpHttpBindingsPutBucketOwnershipControlsInput(v *PutBucketOwnershipControlsInput, encoder *httpbinding.Encoder) error {
 	if v == nil {
 		return fmt.Errorf("unsupported serialization of nil %T", v)
+	}
+
+	if len(v.ChecksumAlgorithm) > 0 {
+		locationName := "X-Amz-Sdk-Checksum-Algorithm"
+		encoder.SetHeader(locationName).String(string(v.ChecksumAlgorithm))
 	}
 
 	if v.ContentMD5 != nil {
@@ -8653,6 +8678,127 @@ func awsRestxml_serializeOpHttpBindingsPutPublicAccessBlockInput(v *PutPublicAcc
 	if v.ExpectedBucketOwner != nil {
 		locationName := "X-Amz-Expected-Bucket-Owner"
 		encoder.SetHeader(locationName).String(*v.ExpectedBucketOwner)
+	}
+
+	return nil
+}
+
+type awsRestxml_serializeOpRenameObject struct {
+}
+
+func (*awsRestxml_serializeOpRenameObject) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsRestxml_serializeOpRenameObject) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*RenameObjectInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	opPath, opQuery := httpbinding.SplitURI("/{Key+}?renameObject")
+	request.URL.Path = smithyhttp.JoinPath(request.URL.Path, opPath)
+	request.URL.RawQuery = smithyhttp.JoinRawQuery(request.URL.RawQuery, opQuery)
+	request.Method = "PUT"
+	var restEncoder *httpbinding.Encoder
+	if request.URL.RawPath == "" {
+		restEncoder, err = httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	} else {
+		request.URL.RawPath = smithyhttp.JoinPath(request.URL.RawPath, opPath)
+		restEncoder, err = httpbinding.NewEncoderWithRawPath(request.URL.Path, request.URL.RawPath, request.URL.RawQuery, request.Header)
+	}
+
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if err := awsRestxml_serializeOpHttpBindingsRenameObjectInput(input, restEncoder); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = restEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+func awsRestxml_serializeOpHttpBindingsRenameObjectInput(v *RenameObjectInput, encoder *httpbinding.Encoder) error {
+	if v == nil {
+		return fmt.Errorf("unsupported serialization of nil %T", v)
+	}
+
+	if v.ClientToken != nil {
+		locationName := "X-Amz-Client-Token"
+		encoder.SetHeader(locationName).String(*v.ClientToken)
+	}
+
+	if v.DestinationIfMatch != nil {
+		locationName := "If-Match"
+		encoder.SetHeader(locationName).String(*v.DestinationIfMatch)
+	}
+
+	if v.DestinationIfModifiedSince != nil {
+		locationName := "If-Modified-Since"
+		encoder.SetHeader(locationName).String(smithytime.FormatHTTPDate(*v.DestinationIfModifiedSince))
+	}
+
+	if v.DestinationIfNoneMatch != nil {
+		locationName := "If-None-Match"
+		encoder.SetHeader(locationName).String(*v.DestinationIfNoneMatch)
+	}
+
+	if v.DestinationIfUnmodifiedSince != nil {
+		locationName := "If-Unmodified-Since"
+		encoder.SetHeader(locationName).String(smithytime.FormatHTTPDate(*v.DestinationIfUnmodifiedSince))
+	}
+
+	if v.Key == nil || len(*v.Key) == 0 {
+		return &smithy.SerializationError{Err: fmt.Errorf("input member Key must not be empty")}
+	}
+	if v.Key != nil {
+		if err := encoder.SetURI("Key").String(*v.Key); err != nil {
+			return err
+		}
+	}
+
+	if v.RenameSource != nil {
+		locationName := "X-Amz-Rename-Source"
+		encoder.SetHeader(locationName).String(*v.RenameSource)
+	}
+
+	if v.SourceIfMatch != nil {
+		locationName := "X-Amz-Rename-Source-If-Match"
+		encoder.SetHeader(locationName).String(*v.SourceIfMatch)
+	}
+
+	if v.SourceIfModifiedSince != nil {
+		locationName := "X-Amz-Rename-Source-If-Modified-Since"
+		encoder.SetHeader(locationName).String(smithytime.FormatHTTPDate(*v.SourceIfModifiedSince))
+	}
+
+	if v.SourceIfNoneMatch != nil {
+		locationName := "X-Amz-Rename-Source-If-None-Match"
+		encoder.SetHeader(locationName).String(*v.SourceIfNoneMatch)
+	}
+
+	if v.SourceIfUnmodifiedSince != nil {
+		locationName := "X-Amz-Rename-Source-If-Unmodified-Since"
+		encoder.SetHeader(locationName).String(smithytime.FormatHTTPDate(*v.SourceIfUnmodifiedSince))
 	}
 
 	return nil
