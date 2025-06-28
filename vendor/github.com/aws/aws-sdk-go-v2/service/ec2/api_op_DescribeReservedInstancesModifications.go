@@ -56,6 +56,9 @@ type DescribeReservedInstancesModificationsInput struct {
 	//   - modification-result.target-configuration.availability-zone - The
 	//   Availability Zone for the new Reserved Instances.
 	//
+	//   - modification-result.target-configuration.availability-zone-id - The ID of
+	//   the Availability Zone for the new Reserved Instances.
+	//
 	//   - modification-result.target-configuration.instance-count - The number of new
 	//   Reserved Instances.
 	//
@@ -161,6 +164,9 @@ func (c *Client) addOperationDescribeReservedInstancesModificationsMiddlewares(s
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeReservedInstancesModifications(options.Region), middleware.Before); err != nil {

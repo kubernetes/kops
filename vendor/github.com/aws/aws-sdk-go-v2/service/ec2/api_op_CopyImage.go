@@ -24,11 +24,11 @@ import (
 // by default using the default encryption key for the Region or the key that you
 // specify. Outposts do not support unencrypted snapshots.
 //
-// For information about the prerequisites when copying an AMI, see [Copy an AMI] in the Amazon
+// For information about the prerequisites when copying an AMI, see [Copy an Amazon EC2 AMI] in the Amazon
 // EC2 User Guide.
 //
 // [CreateStoreImageTask]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateStoreImageTask.html
-// [Copy an AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
+// [Copy an Amazon EC2 AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
 func (c *Client) CopyImage(ctx context.Context, params *CopyImageInput, optFns ...func(*Options)) (*CopyImageOutput, error) {
 	if params == nil {
 		params = &CopyImageInput{}
@@ -63,9 +63,9 @@ type CopyImageInput struct {
 	SourceRegion *string
 
 	// Unique, case-sensitive identifier you provide to ensure idempotency of the
-	// request. For more information, see [Ensuring idempotency]in the Amazon EC2 API Reference.
+	// request. For more information, see [Ensuring idempotency in Amazon EC2 API requests]in the Amazon EC2 API Reference.
 	//
-	// [Ensuring idempotency]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
+	// [Ensuring idempotency in Amazon EC2 API requests]: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html
 	ClientToken *string
 
 	// Indicates whether to include your user-defined AMI tags when copying the AMI.
@@ -135,6 +135,21 @@ type CopyImageInput struct {
 	//
 	// Amazon EBS does not support asymmetric KMS keys.
 	KmsKeyId *string
+
+	// Specify a completion duration, in 15 minute increments, to initiate a
+	// time-based AMI copy. The specified completion duration applies to each of the
+	// snapshots associated with the AMI. Each snapshot associated with the AMI will be
+	// completed within the specified completion duration, with copy throughput
+	// automatically adjusted for each snapshot based on its size to meet the timing
+	// target.
+	//
+	// If you do not specify a value, the AMI copy operation is completed on a
+	// best-effort basis.
+	//
+	// For more information, see [Time-based copies for Amazon EBS snapshots and EBS-backed AMIs].
+	//
+	// [Time-based copies for Amazon EBS snapshots and EBS-backed AMIs]: https://docs.aws.amazon.com/ebs/latest/userguide/time-based-copies.html
+	SnapshotCopyCompletionDurationMinutes *int64
 
 	// The tags to apply to the new AMI and new snapshots. You can tag the AMI, the
 	// snapshots, or both.
@@ -230,6 +245,12 @@ func (c *Client) addOperationCopyImageMiddlewares(stack *middleware.Stack, optio
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
+	if err = addIdempotencyToken_opCopyImageMiddleware(stack, options); err != nil {
+		return err
+	}
 	if err = addOpCopyImageValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -264,6 +285,39 @@ func (c *Client) addOperationCopyImageMiddlewares(stack *middleware.Stack, optio
 		return err
 	}
 	return nil
+}
+
+type idempotencyToken_initializeOpCopyImage struct {
+	tokenProvider IdempotencyTokenProvider
+}
+
+func (*idempotencyToken_initializeOpCopyImage) ID() string {
+	return "OperationIdempotencyTokenAutoFill"
+}
+
+func (m *idempotencyToken_initializeOpCopyImage) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	if m.tokenProvider == nil {
+		return next.HandleInitialize(ctx, in)
+	}
+
+	input, ok := in.Parameters.(*CopyImageInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("expected middleware input to be of type *CopyImageInput ")
+	}
+
+	if input.ClientToken == nil {
+		t, err := m.tokenProvider.GetIdempotencyToken()
+		if err != nil {
+			return out, metadata, err
+		}
+		input.ClientToken = &t
+	}
+	return next.HandleInitialize(ctx, in)
+}
+func addIdempotencyToken_opCopyImageMiddleware(stack *middleware.Stack, cfg Options) error {
+	return stack.Initialize.Add(&idempotencyToken_initializeOpCopyImage{tokenProvider: cfg.IdempotencyTokenProvider}, middleware.Before)
 }
 
 func newServiceMetadataMiddleware_opCopyImage(region string) *awsmiddleware.RegisterServiceMetadata {

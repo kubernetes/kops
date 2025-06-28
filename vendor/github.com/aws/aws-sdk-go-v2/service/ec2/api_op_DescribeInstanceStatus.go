@@ -34,6 +34,11 @@ import (
 //     them through their termination. For more information, see [Instance lifecycle]in the Amazon EC2
 //     User Guide.
 //
+// The Amazon EC2 API follows an eventual consistency model. This means that the
+// result of an API command you run that creates or modifies resources might not be
+// immediately available to all subsequent commands you run. For guidance on how to
+// manage eventual consistency, see [Eventual consistency in the Amazon EC2 API]in the Amazon EC2 Developer Guide.
+//
 // The order of the elements in the response, including those within nested
 // structures, might vary. Applications should not assume the elements appear in a
 // particular order.
@@ -41,6 +46,7 @@ import (
 // [Troubleshoot instances with failed status checks]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/TroubleshootingInstances.html
 // [Instance lifecycle]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-lifecycle.html
 // [Status checks for your instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-system-instance-status-check.html
+// [Eventual consistency in the Amazon EC2 API]: https://docs.aws.amazon.com/ec2/latest/devguide/eventual-consistency.html
 // [Scheduled events for your instances]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-instances-status-check_sched.html
 func (c *Client) DescribeInstanceStatus(ctx context.Context, params *DescribeInstanceStatusInput, optFns ...func(*Options)) (*DescribeInstanceStatusOutput, error) {
 	if params == nil {
@@ -59,7 +65,7 @@ func (c *Client) DescribeInstanceStatus(ctx context.Context, params *DescribeIns
 
 type DescribeInstanceStatusInput struct {
 
-	// Checks whether you have the required permissions for the action, without
+	// Checks whether you have the required permissions for the operation, without
 	// actually making the request, and provides an error response. If you have the
 	// required permissions, the error response is DryRunOperation . Otherwise, it is
 	// UnauthorizedOperation .
@@ -100,6 +106,12 @@ type DescribeInstanceStatusInput struct {
 	//
 	//   - instance-status.status - The status of the instance ( ok | impaired |
 	//   initializing | insufficient-data | not-applicable ).
+	//
+	//   - operator.managed - A Boolean that indicates whether this is a managed
+	//   instance.
+	//
+	//   - operator.principal - The principal that manages the instance. Only valid for
+	//   managed instances, where managed is true .
 	//
 	//   - system-status.reachability - Filters on system status where the name is
 	//   reachability ( passed | failed | initializing | insufficient-data ).
@@ -218,6 +230,9 @@ func (c *Client) addOperationDescribeInstanceStatusMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeInstanceStatus(options.Region), middleware.Before); err != nil {
@@ -417,7 +432,11 @@ func instanceStatusOkStateRetryable(ctx context.Context, input *DescribeInstance
 		var v2 []types.SummaryStatus
 		for _, v := range v1 {
 			v3 := v.InstanceStatus
-			v4 := v3.Status
+			var v4 types.SummaryStatus
+			if v3 != nil {
+				v5 := v3.Status
+				v4 = v5
+			}
 			v2 = append(v2, v4)
 		}
 		expectedValue := "ok"
@@ -446,6 +465,9 @@ func instanceStatusOkStateRetryable(ctx context.Context, input *DescribeInstance
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -613,7 +635,11 @@ func systemStatusOkStateRetryable(ctx context.Context, input *DescribeInstanceSt
 		var v2 []types.SummaryStatus
 		for _, v := range v1 {
 			v3 := v.SystemStatus
-			v4 := v3.Status
+			var v4 types.SummaryStatus
+			if v3 != nil {
+				v5 := v3.Status
+				v4 = v5
+			}
 			v2 = append(v2, v4)
 		}
 		expectedValue := "ok"
@@ -630,6 +656,9 @@ func systemStatusOkStateRetryable(ctx context.Context, input *DescribeInstanceSt
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

@@ -525,8 +525,9 @@ func (e *IncorrectKeyException) ErrorCode() string {
 func (e *IncorrectKeyException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The request was rejected because the key material in the request is, expired,
-// invalid, or is not the same key material that was previously imported into this
-// KMS key.
+// invalid, or does not meet expectations. For example, it is not the same key
+// material that was previously imported or KMS expected new key material but the
+// key material being imported is already associated with the KMS key.
 type IncorrectKeyMaterialException struct {
 	Message *string
 
@@ -968,8 +969,8 @@ func (e *KMSInvalidStateException) ErrorCode() string {
 }
 func (e *KMSInvalidStateException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The request was rejected because a quota was exceeded. For more information,
-// see [Quotas]in the Key Management Service Developer Guide.
+// The request was rejected because a length constraint or quota was exceeded. For
+// more information, see [Quotas]in the Key Management Service Developer Guide.
 //
 // [Quotas]: https://docs.aws.amazon.com/kms/latest/developerguide/limits.html
 type LimitExceededException struct {

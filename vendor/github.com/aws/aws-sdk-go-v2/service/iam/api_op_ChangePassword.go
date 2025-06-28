@@ -134,6 +134,9 @@ func (c *Client) addOperationChangePasswordMiddlewares(stack *middleware.Stack, 
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpChangePasswordValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -58,6 +58,22 @@ type DescribeConnectionOutput struct {
 	// The description for the connection retrieved.
 	Description *string
 
+	// For connections to private APIs The parameters EventBridge uses to invoke the
+	// resource endpoint.
+	//
+	// For more information, see [Connecting to private APIs] in the Amazon EventBridge User Guide .
+	//
+	// [Connecting to private APIs]: https://docs.aws.amazon.com/eventbridge/latest/userguide/connection-private.html
+	InvocationConnectivityParameters *types.DescribeConnectionConnectivityParameters
+
+	// The identifier of the KMS customer managed key for EventBridge to use to
+	// encrypt the connection, if one has been specified.
+	//
+	// For more information, see [Encrypting connections] in the Amazon EventBridge User Guide.
+	//
+	// [Encrypting connections]: https://docs.aws.amazon.com/eventbridge/latest/userguide/encryption-connections.html
+	KmsKeyIdentifier *string
+
 	// A time stamp for the time that the connection was last authorized.
 	LastAuthorizedTime *time.Time
 
@@ -142,6 +158,9 @@ func (c *Client) addOperationDescribeConnectionMiddlewares(stack *middleware.Sta
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribeConnectionValidationMiddleware(stack); err != nil {

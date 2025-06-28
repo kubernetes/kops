@@ -49,9 +49,13 @@ import (
 //     DesiredCapacity , and the new MaxSize is smaller than the current size of the
 //     group, this sets the group's DesiredCapacity to the new MaxSize value.
 //
-// To see which properties have been set, call the DescribeAutoScalingGroups API. To view the scaling
-// policies for an Auto Scaling group, call the DescribePoliciesAPI. If the group has scaling
-// policies, you can update them by calling the PutScalingPolicyAPI.
+// To see which properties have been set, call the [DescribeAutoScalingGroups] API. To view the scaling
+// policies for an Auto Scaling group, call the [DescribePolicies]API. If the group has scaling
+// policies, you can update them by calling the [PutScalingPolicy]API.
+//
+// [DescribeAutoScalingGroups]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribeAutoScalingGroups.html
+// [DescribePolicies]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_DescribePolicies.html
+// [PutScalingPolicy]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_PutScalingPolicy.html
 func (c *Client) UpdateAutoScalingGroup(ctx context.Context, params *UpdateAutoScalingGroupInput, optFns ...func(*Options)) (*UpdateAutoScalingGroupOutput, error) {
 	if params == nil {
 		params = &UpdateAutoScalingGroupInput{}
@@ -74,14 +78,27 @@ type UpdateAutoScalingGroupInput struct {
 	// This member is required.
 	AutoScalingGroupName *string
 
+	//  The instance capacity distribution across Availability Zones.
+	AvailabilityZoneDistribution *types.AvailabilityZoneDistribution
+
+	//  The policy for Availability Zone impairment.
+	AvailabilityZoneImpairmentPolicy *types.AvailabilityZoneImpairmentPolicy
+
 	// One or more Availability Zones for the group.
 	AvailabilityZones []string
 
-	// Enables or disables Capacity Rebalancing. For more information, see [Use Capacity Rebalancing to handle Amazon EC2 Spot Interruptions] in the
-	// Amazon EC2 Auto Scaling User Guide.
+	// Enables or disables Capacity Rebalancing. If Capacity Rebalancing is disabled,
+	// proactive replacement of at-risk Spot Instances does not occur. For more
+	// information, see [Capacity Rebalancing in Auto Scaling to replace at-risk Spot Instances]in the Amazon EC2 Auto Scaling User Guide.
 	//
-	// [Use Capacity Rebalancing to handle Amazon EC2 Spot Interruptions]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
+	// To suspend rebalancing across Availability Zones, use the [SuspendProcesses] API.
+	//
+	// [SuspendProcesses]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_SuspendedProcess.html
+	// [Capacity Rebalancing in Auto Scaling to replace at-risk Spot Instances]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-rebalancing.html
 	CapacityRebalance *bool
+
+	//  The capacity reservation specification for the Auto Scaling group.
+	CapacityReservationSpecification *types.CapacityReservationSpecification
 
 	// Reserved.
 	Context *string
@@ -205,8 +222,9 @@ type UpdateAutoScalingGroupInput struct {
 	// [Use instance scale-in protection]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-instance-protection.html
 	NewInstancesProtectedFromScaleIn *bool
 
-	// The name of an existing placement group into which to launch your instances.
-	// For more information, see [Placement groups]in the Amazon EC2 User Guide for Linux Instances.
+	// The name of an existing placement group into which to launch your instances. To
+	// remove the placement group setting, pass an empty string for placement-group .
+	// For more information about placement groups, see [Placement groups]in the Amazon EC2 User Guide.
 	//
 	// A cluster placement group is a logical grouping of instances within a single
 	// Availability Zone. You cannot specify multiple Availability Zones and a cluster
@@ -221,6 +239,14 @@ type UpdateAutoScalingGroupInput struct {
 	//
 	// [Service-linked roles]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-service-linked-role.html
 	ServiceLinkedRoleARN *string
+
+	//  If you enable zonal shift with cross-zone disabled load balancers, capacity
+	// could become imbalanced across Availability Zones. To skip the validation,
+	// specify true . For more information, see [Auto Scaling group zonal shift] in the Amazon EC2 Auto Scaling User
+	// Guide.
+	//
+	// [Auto Scaling group zonal shift]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-zonal-shift.html
+	SkipZonalShiftValidation *bool
 
 	// A policy or a list of policies that are used to select the instances to
 	// terminate. The policies are executed in the order that you list them. For more
@@ -311,6 +337,9 @@ func (c *Client) addOperationUpdateAutoScalingGroupMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpUpdateAutoScalingGroupValidationMiddleware(stack); err != nil {

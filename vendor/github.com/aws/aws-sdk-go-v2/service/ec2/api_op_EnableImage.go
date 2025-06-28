@@ -18,9 +18,9 @@ import (
 //
 // Only the AMI owner can re-enable a disabled AMI.
 //
-// For more information, see [Disable an AMI] in the Amazon EC2 User Guide.
+// For more information, see [Disable an Amazon EC2 AMI] in the Amazon EC2 User Guide.
 //
-// [Disable an AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/disable-an-ami.html
+// [Disable an Amazon EC2 AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/disable-an-ami.html
 func (c *Client) EnableImage(ctx context.Context, params *EnableImageInput, optFns ...func(*Options)) (*EnableImageOutput, error) {
 	if params == nil {
 		params = &EnableImageInput{}
@@ -125,6 +125,9 @@ func (c *Client) addOperationEnableImageMiddlewares(stack *middleware.Stack, opt
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpEnableImageValidationMiddleware(stack); err != nil {

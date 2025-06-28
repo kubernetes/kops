@@ -1200,6 +1200,40 @@ func validateCondition(v *types.Condition) error {
 	}
 }
 
+func validateConnectivityResourceConfigurationArn(v *types.ConnectivityResourceConfigurationArn) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ConnectivityResourceConfigurationArn"}
+	if v.ResourceConfigurationArn == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ResourceConfigurationArn"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateConnectivityResourceParameters(v *types.ConnectivityResourceParameters) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "ConnectivityResourceParameters"}
+	if v.ResourceParameters == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ResourceParameters"))
+	} else if v.ResourceParameters != nil {
+		if err := validateConnectivityResourceConfigurationArn(v.ResourceParameters); err != nil {
+			invalidParams.AddNested("ResourceParameters", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateCreateConnectionApiKeyAuthRequestParameters(v *types.CreateConnectionApiKeyAuthRequestParameters) error {
 	if v == nil {
 		return nil
@@ -1236,6 +1270,11 @@ func validateCreateConnectionAuthRequestParameters(v *types.CreateConnectionAuth
 	if v.ApiKeyAuthParameters != nil {
 		if err := validateCreateConnectionApiKeyAuthRequestParameters(v.ApiKeyAuthParameters); err != nil {
 			invalidParams.AddNested("ApiKeyAuthParameters", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.ConnectivityParameters != nil {
+		if err := validateConnectivityResourceParameters(v.ConnectivityParameters); err != nil {
+			invalidParams.AddNested("ConnectivityParameters", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {
@@ -1731,6 +1770,23 @@ func validateTargetList(v []types.Target) error {
 	}
 }
 
+func validateUpdateConnectionAuthRequestParameters(v *types.UpdateConnectionAuthRequestParameters) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "UpdateConnectionAuthRequestParameters"}
+	if v.ConnectivityParameters != nil {
+		if err := validateConnectivityResourceParameters(v.ConnectivityParameters); err != nil {
+			invalidParams.AddNested("ConnectivityParameters", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateOpActivateEventSourceInput(v *ActivateEventSourceInput) error {
 	if v == nil {
 		return nil
@@ -1819,6 +1875,11 @@ func validateOpCreateConnectionInput(v *CreateConnectionInput) error {
 	} else if v.AuthParameters != nil {
 		if err := validateCreateConnectionAuthRequestParameters(v.AuthParameters); err != nil {
 			invalidParams.AddNested("AuthParameters", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.InvocationConnectivityParameters != nil {
+		if err := validateConnectivityResourceParameters(v.InvocationConnectivityParameters); err != nil {
+			invalidParams.AddNested("InvocationConnectivityParameters", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {
@@ -2491,6 +2552,16 @@ func validateOpUpdateConnectionInput(v *UpdateConnectionInput) error {
 	invalidParams := smithy.InvalidParamsError{Context: "UpdateConnectionInput"}
 	if v.Name == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Name"))
+	}
+	if v.AuthParameters != nil {
+		if err := validateUpdateConnectionAuthRequestParameters(v.AuthParameters); err != nil {
+			invalidParams.AddNested("AuthParameters", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.InvocationConnectivityParameters != nil {
+		if err := validateConnectivityResourceParameters(v.InvocationConnectivityParameters); err != nil {
+			invalidParams.AddNested("InvocationConnectivityParameters", err.(smithy.InvalidParamsError))
+		}
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

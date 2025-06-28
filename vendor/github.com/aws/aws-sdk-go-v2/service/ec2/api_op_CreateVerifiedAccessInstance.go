@@ -31,6 +31,9 @@ func (c *Client) CreateVerifiedAccessInstance(ctx context.Context, params *Creat
 
 type CreateVerifiedAccessInstanceInput struct {
 
+	// The custom subdomain.
+	CidrEndpointsCustomSubDomain *string
+
 	// A unique, case-sensitive token that you provide to ensure idempotency of your
 	// modification request. For more information, see [Ensuring idempotency].
 	//
@@ -129,6 +132,9 @@ func (c *Client) addOperationCreateVerifiedAccessInstanceMiddlewares(stack *midd
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opCreateVerifiedAccessInstanceMiddleware(stack, options); err != nil {

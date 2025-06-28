@@ -115,6 +115,9 @@ func (c *Client) addOperationDeleteLoadBalancerPolicyMiddlewares(stack *middlewa
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteLoadBalancerPolicyValidationMiddleware(stack); err != nil {
 		return err
 	}

@@ -2,6 +2,31 @@
 
 package types
 
+type AccessRequestStatus string
+
+// Enum values for AccessRequestStatus
+const (
+	AccessRequestStatusApproved AccessRequestStatus = "Approved"
+	AccessRequestStatusRejected AccessRequestStatus = "Rejected"
+	AccessRequestStatusRevoked  AccessRequestStatus = "Revoked"
+	AccessRequestStatusExpired  AccessRequestStatus = "Expired"
+	AccessRequestStatusPending  AccessRequestStatus = "Pending"
+)
+
+// Values returns all known values for AccessRequestStatus. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (AccessRequestStatus) Values() []AccessRequestStatus {
+	return []AccessRequestStatus{
+		"Approved",
+		"Rejected",
+		"Revoked",
+		"Expired",
+		"Pending",
+	}
+}
+
 type AssociationComplianceSeverity string
 
 // Enum values for AssociationComplianceSeverity
@@ -301,6 +326,7 @@ type AutomationSubtype string
 // Enum values for AutomationSubtype
 const (
 	AutomationSubtypeChangeRequest AutomationSubtype = "ChangeRequest"
+	AutomationSubtypeAccessRequest AutomationSubtype = "AccessRequest"
 )
 
 // Values returns all known values for AutomationSubtype. Note that this can be
@@ -310,6 +336,7 @@ const (
 func (AutomationSubtype) Values() []AutomationSubtype {
 	return []AutomationSubtype{
 		"ChangeRequest",
+		"AccessRequest",
 	}
 }
 
@@ -794,6 +821,8 @@ const (
 	DocumentTypeCloudFormation                 DocumentType = "CloudFormation"
 	DocumentTypeConformancePackTemplate        DocumentType = "ConformancePackTemplate"
 	DocumentTypeQuickSetup                     DocumentType = "QuickSetup"
+	DocumentTypeManualApprovalPolicy           DocumentType = "ManualApprovalPolicy"
+	DocumentTypeAutoApprovalPolicy             DocumentType = "AutoApprovalPolicy"
 )
 
 // Values returns all known values for DocumentType. Note that this can be
@@ -817,6 +846,8 @@ func (DocumentType) Values() []DocumentType {
 		"CloudFormation",
 		"ConformancePackTemplate",
 		"QuickSetup",
+		"ManualApprovalPolicy",
+		"AutoApprovalPolicy",
 	}
 }
 
@@ -836,6 +867,29 @@ func (ExecutionMode) Values() []ExecutionMode {
 	return []ExecutionMode{
 		"Auto",
 		"Interactive",
+	}
+}
+
+type ExecutionPreviewStatus string
+
+// Enum values for ExecutionPreviewStatus
+const (
+	ExecutionPreviewStatusPending    ExecutionPreviewStatus = "Pending"
+	ExecutionPreviewStatusInProgress ExecutionPreviewStatus = "InProgress"
+	ExecutionPreviewStatusSuccess    ExecutionPreviewStatus = "Success"
+	ExecutionPreviewStatusFailed     ExecutionPreviewStatus = "Failed"
+)
+
+// Values returns all known values for ExecutionPreviewStatus. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ExecutionPreviewStatus) Values() []ExecutionPreviewStatus {
+	return []ExecutionPreviewStatus{
+		"Pending",
+		"InProgress",
+		"Success",
+		"Failed",
 	}
 }
 
@@ -876,6 +930,27 @@ func (Fault) Values() []Fault {
 		"Client",
 		"Server",
 		"Unknown",
+	}
+}
+
+type ImpactType string
+
+// Enum values for ImpactType
+const (
+	ImpactTypeMutating     ImpactType = "Mutating"
+	ImpactTypeNonMutating  ImpactType = "NonMutating"
+	ImpactTypeUndetermined ImpactType = "Undetermined"
+)
+
+// Values returns all known values for ImpactType. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ImpactType) Values() []ImpactType {
+	return []ImpactType{
+		"Mutating",
+		"NonMutating",
+		"Undetermined",
 	}
 }
 
@@ -1194,6 +1269,154 @@ func (MaintenanceWindowTaskType) Values() []MaintenanceWindowTaskType {
 	}
 }
 
+type ManagedStatus string
+
+// Enum values for ManagedStatus
+const (
+	ManagedStatusAll       ManagedStatus = "All"
+	ManagedStatusManaged   ManagedStatus = "Managed"
+	ManagedStatusUnmanaged ManagedStatus = "Unmanaged"
+)
+
+// Values returns all known values for ManagedStatus. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (ManagedStatus) Values() []ManagedStatus {
+	return []ManagedStatus{
+		"All",
+		"Managed",
+		"Unmanaged",
+	}
+}
+
+type NodeAggregatorType string
+
+// Enum values for NodeAggregatorType
+const (
+	NodeAggregatorTypeCount NodeAggregatorType = "Count"
+)
+
+// Values returns all known values for NodeAggregatorType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (NodeAggregatorType) Values() []NodeAggregatorType {
+	return []NodeAggregatorType{
+		"Count",
+	}
+}
+
+type NodeAttributeName string
+
+// Enum values for NodeAttributeName
+const (
+	NodeAttributeNameAgentVersion    NodeAttributeName = "AgentVersion"
+	NodeAttributeNamePlatformName    NodeAttributeName = "PlatformName"
+	NodeAttributeNamePlatformType    NodeAttributeName = "PlatformType"
+	NodeAttributeNamePlatformVersion NodeAttributeName = "PlatformVersion"
+	NodeAttributeNameRegion          NodeAttributeName = "Region"
+	NodeAttributeNameResourceType    NodeAttributeName = "ResourceType"
+)
+
+// Values returns all known values for NodeAttributeName. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (NodeAttributeName) Values() []NodeAttributeName {
+	return []NodeAttributeName{
+		"AgentVersion",
+		"PlatformName",
+		"PlatformType",
+		"PlatformVersion",
+		"Region",
+		"ResourceType",
+	}
+}
+
+type NodeFilterKey string
+
+// Enum values for NodeFilterKey
+const (
+	NodeFilterKeyAgentType              NodeFilterKey = "AgentType"
+	NodeFilterKeyAgentVersion           NodeFilterKey = "AgentVersion"
+	NodeFilterKeyComputerName           NodeFilterKey = "ComputerName"
+	NodeFilterKeyInstanceId             NodeFilterKey = "InstanceId"
+	NodeFilterKeyInstanceStatus         NodeFilterKey = "InstanceStatus"
+	NodeFilterKeyIpAddress              NodeFilterKey = "IpAddress"
+	NodeFilterKeyManagedStatus          NodeFilterKey = "ManagedStatus"
+	NodeFilterKeyPlatformName           NodeFilterKey = "PlatformName"
+	NodeFilterKeyPlatformType           NodeFilterKey = "PlatformType"
+	NodeFilterKeyPlatformVersion        NodeFilterKey = "PlatformVersion"
+	NodeFilterKeyResourceType           NodeFilterKey = "ResourceType"
+	NodeFilterKeyOrganizationalUnitId   NodeFilterKey = "OrganizationalUnitId"
+	NodeFilterKeyOrganizationalUnitPath NodeFilterKey = "OrganizationalUnitPath"
+	NodeFilterKeyRegion                 NodeFilterKey = "Region"
+	NodeFilterKeyAccountId              NodeFilterKey = "AccountId"
+)
+
+// Values returns all known values for NodeFilterKey. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (NodeFilterKey) Values() []NodeFilterKey {
+	return []NodeFilterKey{
+		"AgentType",
+		"AgentVersion",
+		"ComputerName",
+		"InstanceId",
+		"InstanceStatus",
+		"IpAddress",
+		"ManagedStatus",
+		"PlatformName",
+		"PlatformType",
+		"PlatformVersion",
+		"ResourceType",
+		"OrganizationalUnitId",
+		"OrganizationalUnitPath",
+		"Region",
+		"AccountId",
+	}
+}
+
+type NodeFilterOperatorType string
+
+// Enum values for NodeFilterOperatorType
+const (
+	NodeFilterOperatorTypeEqual     NodeFilterOperatorType = "Equal"
+	NodeFilterOperatorTypeNotEqual  NodeFilterOperatorType = "NotEqual"
+	NodeFilterOperatorTypeBeginWith NodeFilterOperatorType = "BeginWith"
+)
+
+// Values returns all known values for NodeFilterOperatorType. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (NodeFilterOperatorType) Values() []NodeFilterOperatorType {
+	return []NodeFilterOperatorType{
+		"Equal",
+		"NotEqual",
+		"BeginWith",
+	}
+}
+
+type NodeTypeName string
+
+// Enum values for NodeTypeName
+const (
+	NodeTypeNameInstance NodeTypeName = "Instance"
+)
+
+// Values returns all known values for NodeTypeName. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (NodeTypeName) Values() []NodeTypeName {
+	return []NodeTypeName{
+		"Instance",
+	}
+}
+
 type NotificationEvent string
 
 // Enum values for NotificationEvent
@@ -1389,6 +1612,15 @@ const (
 	OpsItemFilterKeyCategory                          OpsItemFilterKey = "Category"
 	OpsItemFilterKeySeverity                          OpsItemFilterKey = "Severity"
 	OpsItemFilterKeyOpsitemType                       OpsItemFilterKey = "OpsItemType"
+	OpsItemFilterKeyAccessRequestRequesterArn         OpsItemFilterKey = "AccessRequestByRequesterArn"
+	OpsItemFilterKeyAccessRequestRequesterId          OpsItemFilterKey = "AccessRequestByRequesterId"
+	OpsItemFilterKeyAccessRequestApproverArn          OpsItemFilterKey = "AccessRequestByApproverArn"
+	OpsItemFilterKeyAccessRequestApproverId           OpsItemFilterKey = "AccessRequestByApproverId"
+	OpsItemFilterKeyAccessRequestSourceAccountId      OpsItemFilterKey = "AccessRequestBySourceAccountId"
+	OpsItemFilterKeyAccessRequestSourceOpsItemId      OpsItemFilterKey = "AccessRequestBySourceOpsItemId"
+	OpsItemFilterKeyAccessRequestSourceRegion         OpsItemFilterKey = "AccessRequestBySourceRegion"
+	OpsItemFilterKeyAccessRequestIsReplica            OpsItemFilterKey = "AccessRequestByIsReplica"
+	OpsItemFilterKeyAccessRequestTargetResourceId     OpsItemFilterKey = "AccessRequestByTargetResourceId"
 	OpsItemFilterKeyChangeRequestRequesterArn         OpsItemFilterKey = "ChangeRequestByRequesterArn"
 	OpsItemFilterKeyChangeRequestRequesterName        OpsItemFilterKey = "ChangeRequestByRequesterName"
 	OpsItemFilterKeyChangeRequestApproverArn          OpsItemFilterKey = "ChangeRequestByApproverArn"
@@ -1425,6 +1657,15 @@ func (OpsItemFilterKey) Values() []OpsItemFilterKey {
 		"Category",
 		"Severity",
 		"OpsItemType",
+		"AccessRequestByRequesterArn",
+		"AccessRequestByRequesterId",
+		"AccessRequestByApproverArn",
+		"AccessRequestByApproverId",
+		"AccessRequestBySourceAccountId",
+		"AccessRequestBySourceOpsItemId",
+		"AccessRequestBySourceRegion",
+		"AccessRequestByIsReplica",
+		"AccessRequestByTargetResourceId",
 		"ChangeRequestByRequesterArn",
 		"ChangeRequestByRequesterName",
 		"ChangeRequestByApproverArn",
@@ -1520,6 +1761,7 @@ const (
 	OpsItemStatusChangeCalendarOverrideRejected OpsItemStatus = "ChangeCalendarOverrideRejected"
 	OpsItemStatusPendingApproval                OpsItemStatus = "PendingApproval"
 	OpsItemStatusApproved                       OpsItemStatus = "Approved"
+	OpsItemStatusRevoked                        OpsItemStatus = "Revoked"
 	OpsItemStatusRejected                       OpsItemStatus = "Rejected"
 	OpsItemStatusClosed                         OpsItemStatus = "Closed"
 )
@@ -1547,6 +1789,7 @@ func (OpsItemStatus) Values() []OpsItemStatus {
 		"ChangeCalendarOverrideRejected",
 		"PendingApproval",
 		"Approved",
+		"Revoked",
 		"Rejected",
 		"Closed",
 	}
@@ -1638,13 +1881,14 @@ type PatchComplianceDataState string
 
 // Enum values for PatchComplianceDataState
 const (
-	PatchComplianceDataStateInstalled              PatchComplianceDataState = "INSTALLED"
-	PatchComplianceDataStateInstalledOther         PatchComplianceDataState = "INSTALLED_OTHER"
-	PatchComplianceDataStateInstalledPendingReboot PatchComplianceDataState = "INSTALLED_PENDING_REBOOT"
-	PatchComplianceDataStateInstalledRejected      PatchComplianceDataState = "INSTALLED_REJECTED"
-	PatchComplianceDataStateMissing                PatchComplianceDataState = "MISSING"
-	PatchComplianceDataStateNotApplicable          PatchComplianceDataState = "NOT_APPLICABLE"
-	PatchComplianceDataStateFailed                 PatchComplianceDataState = "FAILED"
+	PatchComplianceDataStateInstalled               PatchComplianceDataState = "INSTALLED"
+	PatchComplianceDataStateInstalledOther          PatchComplianceDataState = "INSTALLED_OTHER"
+	PatchComplianceDataStateInstalledPendingReboot  PatchComplianceDataState = "INSTALLED_PENDING_REBOOT"
+	PatchComplianceDataStateInstalledRejected       PatchComplianceDataState = "INSTALLED_REJECTED"
+	PatchComplianceDataStateMissing                 PatchComplianceDataState = "MISSING"
+	PatchComplianceDataStateNotApplicable           PatchComplianceDataState = "NOT_APPLICABLE"
+	PatchComplianceDataStateFailed                  PatchComplianceDataState = "FAILED"
+	PatchComplianceDataStateAvailableSecurityUpdate PatchComplianceDataState = "AVAILABLE_SECURITY_UPDATE"
 )
 
 // Values returns all known values for PatchComplianceDataState. Note that this
@@ -1660,6 +1904,7 @@ func (PatchComplianceDataState) Values() []PatchComplianceDataState {
 		"MISSING",
 		"NOT_APPLICABLE",
 		"FAILED",
+		"AVAILABLE_SECURITY_UPDATE",
 	}
 }
 
@@ -1687,6 +1932,25 @@ func (PatchComplianceLevel) Values() []PatchComplianceLevel {
 		"LOW",
 		"INFORMATIONAL",
 		"UNSPECIFIED",
+	}
+}
+
+type PatchComplianceStatus string
+
+// Enum values for PatchComplianceStatus
+const (
+	PatchComplianceStatusCompliant    PatchComplianceStatus = "COMPLIANT"
+	PatchComplianceStatusNonCompliant PatchComplianceStatus = "NON_COMPLIANT"
+)
+
+// Values returns all known values for PatchComplianceStatus. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (PatchComplianceStatus) Values() []PatchComplianceStatus {
+	return []PatchComplianceStatus{
+		"COMPLIANT",
+		"NON_COMPLIANT",
 	}
 }
 
@@ -2066,6 +2330,7 @@ const (
 	SignalTypeStartStep SignalType = "StartStep"
 	SignalTypeStopStep  SignalType = "StopStep"
 	SignalTypeResume    SignalType = "Resume"
+	SignalTypeRevoke    SignalType = "Revoke"
 )
 
 // Values returns all known values for SignalType. Note that this can be expanded
@@ -2079,6 +2344,7 @@ func (SignalType) Values() []SignalType {
 		"StartStep",
 		"StopStep",
 		"Resume",
+		"Revoke",
 	}
 }
 

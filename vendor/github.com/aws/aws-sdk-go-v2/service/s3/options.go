@@ -52,6 +52,10 @@ type Options struct {
 	// clients initial default settings.
 	DefaultsMode aws.DefaultsMode
 
+	// Disables logging when the client skips output checksum validation due to lack
+	// of algorithm support.
+	DisableLogOutputChecksumValidationSkipped bool
+
 	// Allows you to disable S3 Multi-Region access points feature.
 	DisableMultiRegionAccessPoints bool
 
@@ -83,6 +87,10 @@ type Options struct {
 	// Signature Version 4 (SigV4) Signer
 	HTTPSignerV4 HTTPSignerV4
 
+	// Provides idempotency tokens values that will be automatically populated into
+	// idempotent API operations.
+	IdempotencyTokenProvider IdempotencyTokenProvider
+
 	// The logger writer interface to write logging messages to.
 	Logger logging.Logger
 
@@ -91,6 +99,12 @@ type Options struct {
 
 	// The region to send requests to. (Required)
 	Region string
+
+	// Indicates how user opt-in/out request checksum calculation
+	RequestChecksumCalculation aws.RequestChecksumCalculation
+
+	// Indicates how user opt-in/out response checksum validation
+	ResponseChecksumValidation aws.ResponseChecksumValidation
 
 	// RetryMaxAttempts specifies the maximum number attempts an API client will call
 	// an operation that fails with a retryable error. A value of 0 is ignored, and

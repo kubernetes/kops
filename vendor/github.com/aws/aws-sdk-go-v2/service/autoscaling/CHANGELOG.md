@@ -1,3 +1,155 @@
+# v1.54.0 (2025-06-18)
+
+* **Feature**: Add IncludeInstances parameter to DescribeAutoScalingGroups API
+
+# v1.53.3 (2025-06-17)
+
+* **Dependency Update**: Update to smithy-go v1.22.4.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.53.2 (2025-06-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.53.1 (2025-06-06)
+
+* No change notes available for this release.
+
+# v1.53.0 (2025-05-29)
+
+* **Feature**: Add support for "apple" CpuManufacturer in ABIS
+
+# v1.52.4 (2025-04-17)
+
+* **Documentation**: Doc only update for EC2 Auto Scaling.
+
+# v1.52.3 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.52.2 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.52.1 (2025-03-04.2)
+
+* **Bug Fix**: Add assurance test for operation order.
+
+# v1.52.0 (2025-02-27)
+
+* **Feature**: Track credential providers via User-Agent Feature ids
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.13 (2025-02-18)
+
+* **Bug Fix**: Bump go version to 1.22
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.12 (2025-02-05)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.11 (2025-02-04)
+
+* No change notes available for this release.
+
+# v1.51.10 (2025-01-31)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.9 (2025-01-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.8 (2025-01-24)
+
+* **Bug Fix**: Switch to generated waiters, removing the dependency on go-jmespath and fixing broken waiters that used ordering comparators.
+* **Dependency Update**: Updated to the latest SDK module versions
+* **Dependency Update**: Upgrade to smithy-go v1.22.2.
+
+# v1.51.7 (2025-01-17)
+
+* **Bug Fix**: Fix bug where credentials weren't refreshed during retry loop.
+
+# v1.51.6 (2025-01-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.5 (2025-01-14)
+
+* **Bug Fix**: Fix issue where waiters were not failing on unmatched errors as they should. This may have breaking behavioral changes for users in fringe cases. See [this announcement](https://github.com/aws/aws-sdk-go-v2/discussions/2954) for more information.
+
+# v1.51.4 (2025-01-09)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.3 (2025-01-08)
+
+* No change notes available for this release.
+
+# v1.51.2 (2024-12-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.1 (2024-12-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.51.0 (2024-11-22)
+
+* **Feature**: Now, Amazon EC2 Auto Scaling customers can enable target tracking policies to take quicker scaling decisions, enhancing their application performance and EC2 utilization. To get started, specify target tracking to monitor a metric that is available on Amazon CloudWatch at seconds-level interval.
+
+# v1.50.0 (2024-11-20)
+
+* **Feature**: With this release, customers can prioritize launching instances into ODCRs using targets from ASGs or Launch Templates. Customers can express their baseline instances' CPU-performance in attribute-based Instance Requirements configuration by referencing an instance family that meets their needs.
+
+# v1.49.0 (2024-11-18)
+
+* **Feature**: Amazon EC2 Auto Scaling now supports Amazon Application Recovery Controller (ARC) zonal shift and zonal autoshift to help you quickly recover an impaired application from failures in an Availability Zone (AZ).
+* **Dependency Update**: Update to smithy-go v1.22.1.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.0 (2024-11-07)
+
+* **Feature**: Auto Scaling groups now support the ability to strictly balance instances across Availability Zones by configuring the AvailabilityZoneDistribution parameter. If balanced-only is configured for a group, launches will always be attempted in the under scaled Availability Zone even if it is unhealthy.
+
+# v1.47.1 (2024-11-06)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.47.0 (2024-10-31)
+
+* **Feature**: Adds bake time for Auto Scaling group Instance Refresh
+
+# v1.46.1 (2024-10-28)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.46.0 (2024-10-21)
+
+* **Feature**: Adds support for removing the PlacementGroup setting on an Auto Scaling Group through the UpdateAutoScalingGroup API.
+
+# v1.45.2 (2024-10-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.1 (2024-10-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.0 (2024-10-04)
+
+* **Feature**: Add support for HTTP client metrics.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.44.4 (2024-10-03)
+
+* No change notes available for this release.
+
+# v1.44.3 (2024-09-27)
+
+* No change notes available for this release.
+
 # v1.44.2 (2024-09-25)
 
 * No change notes available for this release.

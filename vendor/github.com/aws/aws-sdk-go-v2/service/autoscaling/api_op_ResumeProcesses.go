@@ -135,6 +135,9 @@ func (c *Client) addOperationResumeProcessesMiddlewares(stack *middleware.Stack,
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpResumeProcessesValidationMiddleware(stack); err != nil {
 		return err
 	}

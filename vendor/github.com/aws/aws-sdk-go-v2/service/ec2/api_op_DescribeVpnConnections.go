@@ -168,6 +168,9 @@ func (c *Client) addOperationDescribeVpnConnectionsMiddlewares(stack *middleware
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeVpnConnections(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -425,6 +428,9 @@ func vpnConnectionAvailableStateRetryable(ctx context.Context, input *DescribeVp
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -631,6 +637,9 @@ func vpnConnectionDeletedStateRetryable(ctx context.Context, input *DescribeVpnC
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

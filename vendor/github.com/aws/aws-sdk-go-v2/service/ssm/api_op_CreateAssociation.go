@@ -17,11 +17,11 @@ import (
 // be closed. For static targets, the association specifies a schedule for when the
 // configuration is reapplied. For dynamic targets, such as an Amazon Web Services
 // resource group or an Amazon Web Services autoscaling group, State Manager, a
-// capability of Amazon Web Services Systems Manager applies the configuration when
-// new managed nodes are added to the group. The association also specifies actions
-// to take when applying the configuration. For example, an association for
-// anti-virus software might run once a day. If the software isn't installed, then
-// State Manager installs it. If the software is installed, but the service isn't
+// tool in Amazon Web Services Systems Manager applies the configuration when new
+// managed nodes are added to the group. The association also specifies actions to
+// take when applying the configuration. For example, an association for anti-virus
+// software might run once a day. If the software isn't installed, then State
+// Manager installs it. If the software is installed, but the service isn't
 // running, then the association might instruct State Manager to start the service.
 func (c *Client) CreateAssociation(ctx context.Context, params *CreateAssociationInput, optFns ...func(*Options)) (*CreateAssociationOutput, error) {
 	if params == nil {
@@ -69,9 +69,17 @@ type CreateAssociationInput struct {
 	AlarmConfiguration *types.AlarmConfiguration
 
 	// By default, when you create a new association, the system runs it immediately
-	// after it is created and then according to the schedule you specified. Specify
-	// this option if you don't want an association to run immediately after you create
-	// it. This parameter isn't supported for rate expressions.
+	// after it is created and then according to the schedule you specified and when
+	// target changes are detected. Specify true for ApplyOnlyAtCronInterval if you
+	// want the association to run only according to the schedule you specified.
+	//
+	// For more information, see [Understanding when associations are applied to resources] and [>About target updates with Automation runbooks] in the Amazon Web Services Systems Manager User
+	// Guide.
+	//
+	// This parameter isn't supported for rate expressions.
+	//
+	// [Understanding when associations are applied to resources]: https://docs.aws.amazon.com/systems-manager/latest/userguide/state-manager-about.html#state-manager-about-scheduling
+	// [>About target updates with Automation runbooks]: https://docs.aws.amazon.com/systems-manager/latest/userguide/state-manager-about.html#runbook-target-updates
 	ApplyOnlyAtCronInterval bool
 
 	// Specify a descriptive name for the association.
@@ -79,13 +87,14 @@ type CreateAssociationInput struct {
 
 	// Choose the parameter that will define how your automation will branch out. This
 	// target is required for associations that use an Automation runbook and target
-	// resources by using rate controls. Automation is a capability of Amazon Web
-	// Services Systems Manager.
+	// resources by using rate controls. Automation is a tool in Amazon Web Services
+	// Systems Manager.
 	AutomationTargetParameterName *string
 
-	// The names or Amazon Resource Names (ARNs) of the Change Calendar type documents
+	// The names of Amazon Resource Names (ARNs) of the Change Calendar type documents
 	// you want to gate your associations under. The associations only run when that
-	// change calendar is open. For more information, see [Amazon Web Services Systems Manager Change Calendar].
+	// change calendar is open. For more information, see [Amazon Web Services Systems Manager Change Calendar]in the Amazon Web Services
+	// Systems Manager User Guide.
 	//
 	// [Amazon Web Services Systems Manager Change Calendar]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-change-calendar
 	CalendarNames []string
@@ -297,6 +306,9 @@ func (c *Client) addOperationCreateAssociationMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateAssociationValidationMiddleware(stack); err != nil {

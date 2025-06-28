@@ -115,6 +115,90 @@ func (e *CaCertificatesBundleNotFoundException) ErrorFault() smithy.ErrorFault {
 	return smithy.FaultClient
 }
 
+// You've exceeded the daily capacity decrease limit for this reservation.
+type CapacityDecreaseRequestsLimitExceededException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *CapacityDecreaseRequestsLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *CapacityDecreaseRequestsLimitExceededException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *CapacityDecreaseRequestsLimitExceededException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "CapacityDecreaseRequestLimitExceeded"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *CapacityDecreaseRequestsLimitExceededException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
+// There is a pending capacity reservation.
+type CapacityReservationPendingException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *CapacityReservationPendingException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *CapacityReservationPendingException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *CapacityReservationPendingException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "CapacityReservationPending"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *CapacityReservationPendingException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
+// You've exceeded the capacity units limit.
+type CapacityUnitsLimitExceededException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *CapacityUnitsLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *CapacityUnitsLimitExceededException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *CapacityUnitsLimitExceededException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "CapacityUnitsLimitExceeded"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *CapacityUnitsLimitExceededException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
 // The specified certificate does not exist.
 type CertificateNotFoundException struct {
 	Message *string
@@ -141,7 +225,7 @@ func (e *CertificateNotFoundException) ErrorCode() string {
 }
 func (e *CertificateNotFoundException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The specified association cannot be within the same account.
+// The specified association can't be within the same account.
 type DeleteAssociationSameAccountException struct {
 	Message *string
 
@@ -353,6 +437,32 @@ func (e *IncompatibleProtocolsException) ErrorCode() string {
 	return *e.ErrorCodeOverride
 }
 func (e *IncompatibleProtocolsException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// There is insufficient capacity to reserve.
+type InsufficientCapacityException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *InsufficientCapacityException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *InsufficientCapacityException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *InsufficientCapacityException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "InsufficientCapacity"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *InsufficientCapacityException) ErrorFault() smithy.ErrorFault { return smithy.FaultServer }
 
 // The specified ca certificate bundle is in an invalid format, or corrupt.
 type InvalidCaCertificatesBundleException struct {
@@ -673,6 +783,32 @@ func (e *PriorityInUseException) ErrorCode() string {
 	return *e.ErrorCodeOverride
 }
 func (e *PriorityInUseException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// This operation is not allowed while a prior request has not been completed.
+type PriorRequestNotCompleteException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *PriorRequestNotCompleteException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *PriorRequestNotCompleteException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *PriorRequestNotCompleteException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "PriorRequestNotComplete"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *PriorRequestNotCompleteException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // A specified resource is in use.
 type ResourceInUseException struct {

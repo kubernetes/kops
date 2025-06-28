@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Returns the versioning state of a bucket.
 //
@@ -155,6 +155,9 @@ func (c *Client) addOperationGetBucketVersioningMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketVersioningValidationMiddleware(stack); err != nil {

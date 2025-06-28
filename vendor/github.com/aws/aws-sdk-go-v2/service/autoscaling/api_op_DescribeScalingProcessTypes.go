@@ -11,7 +11,10 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Describes the scaling process types for use with the ResumeProcesses and SuspendProcesses APIs.
+// Describes the scaling process types for use with the [ResumeProcesses] and [SuspendProcesses] APIs.
+//
+// [ResumeProcesses]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_ResumeProcesses.html
+// [SuspendProcesses]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_SuspendProcesses.html
 func (c *Client) DescribeScalingProcessTypes(ctx context.Context, params *DescribeScalingProcessTypesInput, optFns ...func(*Options)) (*DescribeScalingProcessTypesOutput, error) {
 	if params == nil {
 		params = &DescribeScalingProcessTypesInput{}
@@ -104,6 +107,9 @@ func (c *Client) addOperationDescribeScalingProcessTypesMiddlewares(stack *middl
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeScalingProcessTypes(options.Region), middleware.Before); err != nil {

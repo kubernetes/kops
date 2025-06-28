@@ -65,11 +65,15 @@ import (
 // that you use budgeting, which alerts you when charges exceed your specified
 // limit. For more information, see [Managing Your Costs with Budgets].
 //
+// To create a rule that filters for management events from Amazon Web Services
+// services, see [Receiving read-only management events from Amazon Web Services services]in the EventBridge User Guide.
+//
 // [CreateEventBus]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_CreateEventBus.html
 // [TagResource]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_TagResource.html
 // [UntagResource]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_UntagResource.html
 // [DisableRule]: https://docs.aws.amazon.com/eventbridge/latest/APIReference/API_DisableRule.html
 // [Managing Your Costs with Budgets]: https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/budgets-managing-costs.html
+// [Receiving read-only management events from Amazon Web Services services]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-service-event-cloudtrail.html#eb-service-event-cloudtrail-management
 func (c *Client) PutRule(ctx context.Context, params *PutRuleInput, optFns ...func(*Options)) (*PutRuleOutput, error) {
 	if params == nil {
 		params = &PutRuleInput{}
@@ -224,6 +228,9 @@ func (c *Client) addOperationPutRuleMiddlewares(stack *middleware.Stack, options
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutRuleValidationMiddleware(stack); err != nil {

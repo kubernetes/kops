@@ -110,6 +110,9 @@ func (c *Client) addOperationDeleteListenerMiddlewares(stack *middleware.Stack, 
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpDeleteListenerValidationMiddleware(stack); err != nil {
 		return err
 	}

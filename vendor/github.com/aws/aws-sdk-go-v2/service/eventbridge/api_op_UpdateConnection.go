@@ -44,6 +44,25 @@ type UpdateConnectionInput struct {
 	// A description for the connection.
 	Description *string
 
+	// For connections to private APIs, the parameters to use for invoking the API.
+	//
+	// For more information, see [Connecting to private APIs] in the Amazon EventBridge User Guide .
+	//
+	// [Connecting to private APIs]: https://docs.aws.amazon.com/eventbridge/latest/userguide/connection-private.html
+	InvocationConnectivityParameters *types.ConnectivityResourceParameters
+
+	// The identifier of the KMS customer managed key for EventBridge to use, if you
+	// choose to use a customer managed key to encrypt this connection. The identifier
+	// can be the key Amazon Resource Name (ARN), KeyId, key alias, or key alias ARN.
+	//
+	// If you do not specify a customer managed key identifier, EventBridge uses an
+	// Amazon Web Services owned key to encrypt the connection.
+	//
+	// For more information, see [Identify and view keys] in the Key Management Service Developer Guide.
+	//
+	// [Identify and view keys]: https://docs.aws.amazon.com/kms/latest/developerguide/viewing-keys.html
+	KmsKeyIdentifier *string
+
 	noSmithyDocumentSerde
 }
 
@@ -132,6 +151,9 @@ func (c *Client) addOperationUpdateConnectionMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpUpdateConnectionValidationMiddleware(stack); err != nil {

@@ -51,6 +51,9 @@ type AttachNetworkInterfaceInput struct {
 	// UnauthorizedOperation .
 	DryRun *bool
 
+	// The number of ENA queues to be created with the instance.
+	EnaQueueCount *int32
+
 	// Configures ENA Express for the network interface that this action attaches to
 	// the instance.
 	EnaSrdSpecification *types.EnaSrdSpecification
@@ -140,6 +143,9 @@ func (c *Client) addOperationAttachNetworkInterfaceMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpAttachNetworkInterfaceValidationMiddleware(stack); err != nil {

@@ -49,7 +49,7 @@ import (
 // You can also increase the number of queues you use to process your messages. To
 // request a limit increase, [file a support request].
 //
-// For FIFO queues, there can be a maximum of 20,000 in flight messages (received
+// For FIFO queues, there can be a maximum of 120,000 in flight messages (received
 // from a queue by a consumer, but not yet deleted from the queue). If you reach
 // this limit, Amazon SQS returns no error messages.
 //
@@ -174,6 +174,9 @@ func (c *Client) addOperationChangeMessageVisibilityMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpChangeMessageVisibilityValidationMiddleware(stack); err != nil {

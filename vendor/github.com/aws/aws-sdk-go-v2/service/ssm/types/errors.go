@@ -7,6 +7,32 @@ import (
 	smithy "github.com/aws/smithy-go"
 )
 
+// The requester doesn't have permissions to perform the requested operation.
+type AccessDeniedException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *AccessDeniedException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *AccessDeniedException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *AccessDeniedException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "AccessDeniedException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *AccessDeniedException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // Error returned if an attempt is made to register a patch group with a patch
 // baseline that is already registered with a different patch baseline.
 type AlreadyExistsException struct {
@@ -838,7 +864,7 @@ func (e *InvalidActivation) ErrorCode() string {
 }
 func (e *InvalidActivation) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The activation ID isn't valid. Verify the you entered the correct ActivationId
+// The activation ID isn't valid. Verify that you entered the correct ActivationId
 // or ActivationCode and try again.
 type InvalidActivationId struct {
 	Message *string
@@ -865,9 +891,8 @@ func (e *InvalidActivationId) ErrorCode() string {
 }
 func (e *InvalidActivationId) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The specified aggregator isn't valid for inventory groups. Verify that the
-// aggregator uses a valid inventory type such as AWS:Application or
-// AWS:InstanceInformation .
+// The specified aggregator isn't valid for the group type. Verify that the
+// aggregator you provided is supported.
 type InvalidAggregatorException struct {
 	Message *string
 
@@ -1297,7 +1322,7 @@ func (e *InvalidDocumentVersion) ErrorCode() string {
 }
 func (e *InvalidDocumentVersion) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
-// The filter name isn't valid. Verify the you entered the correct name and try
+// The filter name isn't valid. Verify that you entered the correct name and try
 // again.
 type InvalidFilter struct {
 	Message *string
@@ -2796,6 +2821,10 @@ func (e *ParameterMaxVersionLimitExceeded) ErrorCode() string {
 func (e *ParameterMaxVersionLimitExceeded) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The parameter couldn't be found. Verify the name and try again.
+//
+// For the DeleteParameter and GetParameter actions, if the specified parameter
+// doesn't exist, the ParameterNotFound exception is not recorded in CloudTrail
+// event logs.
 type ParameterNotFound struct {
 	Message *string
 
@@ -3274,6 +3303,39 @@ func (e *ResourcePolicyNotFoundException) ErrorCode() string {
 }
 func (e *ResourcePolicyNotFoundException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+// The request exceeds the service quota. Service quotas, also referred to as
+// limits, are the maximum number of service resources or operations for your
+// Amazon Web Services account.
+type ServiceQuotaExceededException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	ResourceId   *string
+	ResourceType *string
+	QuotaCode    *string
+	ServiceCode  *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *ServiceQuotaExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *ServiceQuotaExceededException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *ServiceQuotaExceededException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "ServiceQuotaExceededException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *ServiceQuotaExceededException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // The specified service setting wasn't found. Either the service name or the
 // setting hasn't been provisioned by the Amazon Web Services service team.
 type ServiceSettingNotFound struct {
@@ -3412,6 +3474,36 @@ func (e *TargetNotConnected) ErrorCode() string {
 	return *e.ErrorCodeOverride
 }
 func (e *TargetNotConnected) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// The request or operation couldn't be performed because the service is
+// throttling requests.
+type ThrottlingException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	QuotaCode   *string
+	ServiceCode *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *ThrottlingException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *ThrottlingException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *ThrottlingException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "ThrottlingException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *ThrottlingException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The Targets parameter includes too many tags. Remove one or more tags and try
 // the command again.
@@ -3640,6 +3732,33 @@ func (e *UnsupportedOperatingSystem) ErrorCode() string {
 }
 func (e *UnsupportedOperatingSystem) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+// This operation is not supported for the current account. You must first enable
+// the Systems Manager integrated experience in your account.
+type UnsupportedOperationException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *UnsupportedOperationException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *UnsupportedOperationException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *UnsupportedOperationException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "UnsupportedOperationException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *UnsupportedOperationException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // The parameter type isn't supported.
 type UnsupportedParameterType struct {
 	Message *string
@@ -3692,3 +3811,32 @@ func (e *UnsupportedPlatformType) ErrorCode() string {
 	return *e.ErrorCodeOverride
 }
 func (e *UnsupportedPlatformType) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// The request isn't valid. Verify that you entered valid contents for the command
+// and try again.
+type ValidationException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	ReasonCode *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *ValidationException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *ValidationException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *ValidationException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "ValidationException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *ValidationException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }

@@ -241,6 +241,9 @@ func (c *Client) addOperationRegisterTaskWithMaintenanceWindowMiddlewares(stack 
 	if err = addUserAgentRetryMode(stack, options); err != nil {
 		return err
 	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addIdempotencyToken_opRegisterTaskWithMaintenanceWindowMiddleware(stack, options); err != nil {
 		return err
 	}

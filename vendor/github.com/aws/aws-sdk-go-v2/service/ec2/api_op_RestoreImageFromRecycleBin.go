@@ -10,10 +10,10 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Restores an AMI from the Recycle Bin. For more information, see [Recycle Bin] in the Amazon
+// Restores an AMI from the Recycle Bin. For more information, see [Recover deleted Amazon EBS snapshots and EBS-back AMIs with Recycle Bin] in the Amazon
 // EC2 User Guide.
 //
-// [Recycle Bin]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html
+// [Recover deleted Amazon EBS snapshots and EBS-back AMIs with Recycle Bin]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html
 func (c *Client) RestoreImageFromRecycleBin(ctx context.Context, params *RestoreImageFromRecycleBinInput, optFns ...func(*Options)) (*RestoreImageFromRecycleBinOutput, error) {
 	if params == nil {
 		params = &RestoreImageFromRecycleBinInput{}
@@ -118,6 +118,9 @@ func (c *Client) addOperationRestoreImageFromRecycleBinMiddlewares(stack *middle
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpRestoreImageFromRecycleBinValidationMiddleware(stack); err != nil {

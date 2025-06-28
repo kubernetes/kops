@@ -264,7 +264,7 @@ type ConnectionApiKeyAuthResponseParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the authorization parameters to use for the connection.
+// Tthe authorization parameters to use for the connection.
 type ConnectionAuthResponseParameters struct {
 
 	// The API Key parameters to use for authorization.
@@ -272,6 +272,14 @@ type ConnectionAuthResponseParameters struct {
 
 	// The authorization parameters for Basic authorization.
 	BasicAuthParameters *ConnectionBasicAuthResponseParameters
+
+	// For private OAuth authentication endpoints. The parameters EventBridge uses to
+	// authenticate against the endpoint.
+	//
+	// For more information, see [Authorization methods for connections] in the Amazon EventBridge User Guide .
+	//
+	// [Authorization methods for connections]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-target-connection-auth.html
+	ConnectivityParameters *DescribeConnectionConnectivityParameters
 
 	// Additional parameters for the connection that are passed through with every
 	// invocation to the HTTP endpoint.
@@ -283,8 +291,8 @@ type ConnectionAuthResponseParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the authorization parameters for the connection if Basic is specified
-// as the authorization type.
+// The authorization parameters for the connection if Basic is specified as the
+// authorization type.
 type ConnectionBasicAuthResponseParameters struct {
 
 	// The user name to use for Basic authorization.
@@ -297,7 +305,7 @@ type ConnectionBasicAuthResponseParameters struct {
 // body parameters per request. An event payload cannot exceed 64 KB.
 type ConnectionBodyParameter struct {
 
-	// Specified whether the value is secret.
+	// Specifies whether the value is secret.
 	IsValueSecret bool
 
 	// The key for the parameter.
@@ -313,7 +321,7 @@ type ConnectionBodyParameter struct {
 // additional header parameters per request. An event payload cannot exceed 64 KB.
 type ConnectionHeaderParameter struct {
 
-	// Specified whether the value is a secret.
+	// Specifies whether the value is a secret.
 	IsValueSecret bool
 
 	// The key for the parameter.
@@ -325,23 +333,23 @@ type ConnectionHeaderParameter struct {
 	noSmithyDocumentSerde
 }
 
-// Contains additional parameters for the connection.
+// Any additional parameters for the connection.
 type ConnectionHttpParameters struct {
 
-	// Contains additional body string parameters for the connection.
+	// Any additional body string parameters for the connection.
 	BodyParameters []ConnectionBodyParameter
 
-	// Contains additional header parameters for the connection.
+	// Any additional header parameters for the connection.
 	HeaderParameters []ConnectionHeaderParameter
 
-	// Contains additional query string parameters for the connection.
+	// Any additional query string parameters for the connection.
 	QueryStringParameters []ConnectionQueryStringParameter
 
 	noSmithyDocumentSerde
 }
 
-// Contains the client response parameters for the connection when OAuth is
-// specified as the authorization type.
+// The client response parameters for the connection when OAuth is specified as
+// the authorization type.
 type ConnectionOAuthClientResponseParameters struct {
 
 	// The client ID associated with the response to the connection request.
@@ -350,16 +358,14 @@ type ConnectionOAuthClientResponseParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response parameters when OAuth is specified as the authorization
-// type.
+// The response parameters when OAuth is specified as the authorization type.
 type ConnectionOAuthResponseParameters struct {
 
 	// The URL to the HTTP endpoint that authorized the request.
 	AuthorizationEndpoint *string
 
-	// A ConnectionOAuthClientResponseParameters object that contains details about
-	// the client parameters returned when OAuth is specified as the authorization
-	// type.
+	// Details about the client parameters returned when OAuth is specified as the
+	// authorization type.
 	ClientParameters *ConnectionOAuthClientResponseParameters
 
 	// The method used to connect to the HTTP endpoint.
@@ -371,9 +377,9 @@ type ConnectionOAuthResponseParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Additional query string parameter for the connection. You can include up to 100
-// additional query string parameters per request. Each additional parameter counts
-// towards the event payload size, which cannot exceed 64 KB.
+// Any additional query string parameter for the connection. You can include up to
+// 100 additional query string parameters per request. Each additional parameter
+// counts towards the event payload size, which cannot exceed 64 KB.
 type ConnectionQueryStringParameter struct {
 
 	// Specifies whether the value is secret.
@@ -388,7 +394,31 @@ type ConnectionQueryStringParameter struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the API key authorization parameters for the connection.
+// The Amazon Resource Name (ARN) of the Amazon VPC Lattice resource configuration
+// for the resource endpoint.
+type ConnectivityResourceConfigurationArn struct {
+
+	// The Amazon Resource Name (ARN) of the Amazon VPC Lattice resource configuration
+	// for the resource endpoint.
+	//
+	// This member is required.
+	ResourceConfigurationArn *string
+
+	noSmithyDocumentSerde
+}
+
+// The parameters for EventBridge to use when invoking the resource endpoint.
+type ConnectivityResourceParameters struct {
+
+	// The parameters for EventBridge to use when invoking the resource endpoint.
+	//
+	// This member is required.
+	ResourceParameters *ConnectivityResourceConfigurationArn
+
+	noSmithyDocumentSerde
+}
+
+// The API key authorization parameters for the connection.
 type CreateConnectionApiKeyAuthRequestParameters struct {
 
 	// The name of the API key to use for authorization.
@@ -404,25 +434,33 @@ type CreateConnectionApiKeyAuthRequestParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the authorization parameters for the connection.
+// The authorization parameters for the connection.
+//
+// You must include only authorization parameters for the AuthorizationType you
+// specify.
 type CreateConnectionAuthRequestParameters struct {
 
-	// A CreateConnectionApiKeyAuthRequestParameters object that contains the API key
-	// authorization parameters to use for the connection.
+	// The API key authorization parameters to use for the connection.
 	ApiKeyAuthParameters *CreateConnectionApiKeyAuthRequestParameters
 
-	// A CreateConnectionBasicAuthRequestParameters object that contains the Basic
-	// authorization parameters to use for the connection.
+	// The Basic authorization parameters to use for the connection.
 	BasicAuthParameters *CreateConnectionBasicAuthRequestParameters
 
-	// A ConnectionHttpParameters object that contains the API key authorization
-	// parameters to use for the connection. Note that if you include additional
-	// parameters for the target of a rule via HttpParameters , including query
-	// strings, the parameters added for the connection take precedence.
+	// If you specify a private OAuth endpoint, the parameters for EventBridge to use
+	// when authenticating against the endpoint.
+	//
+	// For more information, see [Authorization methods for connections] in the Amazon EventBridge User Guide .
+	//
+	// [Authorization methods for connections]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-target-connection-auth.html
+	ConnectivityParameters *ConnectivityResourceParameters
+
+	// The API key authorization parameters to use for the connection. Note that if
+	// you include additional parameters for the target of a rule via HttpParameters ,
+	// including query strings, the parameters added for the connection take
+	// precedence.
 	InvocationHttpParameters *ConnectionHttpParameters
 
-	// A CreateConnectionOAuthRequestParameters object that contains the OAuth
-	// authorization parameters to use for the connection.
+	// The OAuth authorization parameters to use for the connection.
 	OAuthParameters *CreateConnectionOAuthRequestParameters
 
 	noSmithyDocumentSerde
@@ -444,7 +482,7 @@ type CreateConnectionBasicAuthRequestParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the Basic authorization parameters to use for the connection.
+// The Basic authorization parameters to use for the connection.
 type CreateConnectionOAuthClientRequestParameters struct {
 
 	// The client ID to use for OAuth authorization for the connection.
@@ -470,8 +508,7 @@ type CreateConnectionOAuthRequestParameters struct {
 	// This member is required.
 	AuthorizationEndpoint *string
 
-	// A CreateConnectionOAuthClientRequestParameters object that contains the client
-	// parameters for OAuth authorization.
+	// The client parameters for OAuth authorization.
 	//
 	// This member is required.
 	ClientParameters *CreateConnectionOAuthClientRequestParameters
@@ -481,8 +518,7 @@ type CreateConnectionOAuthRequestParameters struct {
 	// This member is required.
 	HttpMethod ConnectionOAuthHttpMethod
 
-	// A ConnectionHttpParameters object that contains details about the additional
-	// parameters to use for the connection.
+	// Details about the additional parameters to use for the connection.
 	OAuthHttpParameters *ConnectionHttpParameters
 
 	noSmithyDocumentSerde
@@ -491,11 +527,52 @@ type CreateConnectionOAuthRequestParameters struct {
 // Configuration details of the Amazon SQS queue for EventBridge to use as a
 // dead-letter queue (DLQ).
 //
-// For more information, see Event retry policy and using dead-letter queues in the EventBridge User Guide.
+// For more information, see [Using dead-letter queues to process undelivered events] in the EventBridge User Guide.
+//
+// [Using dead-letter queues to process undelivered events]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rule-event-delivery.html#eb-rule-dlq
 type DeadLetterConfig struct {
 
 	// The ARN of the SQS queue specified as the target for the dead-letter queue.
 	Arn *string
+
+	noSmithyDocumentSerde
+}
+
+// If the connection uses a private OAuth endpoint, the parameters for EventBridge
+// to use when authenticating against the endpoint.
+//
+// For more information, see [Authorization methods for connections] in the Amazon EventBridge User Guide .
+//
+// [Authorization methods for connections]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-target-connection-auth.html
+type DescribeConnectionConnectivityParameters struct {
+
+	// The parameters for EventBridge to use when invoking the resource endpoint.
+	//
+	// This member is required.
+	ResourceParameters *DescribeConnectionResourceParameters
+
+	noSmithyDocumentSerde
+}
+
+// The parameters for EventBridge to use when invoking the resource endpoint.
+type DescribeConnectionResourceParameters struct {
+
+	// For connections to private APIs, the Amazon Resource Name (ARN) of the resource
+	// association EventBridge created between the connection and the private API's
+	// resource configuration.
+	//
+	// For more information, see [Managing service network resource associations for connections] in the Amazon EventBridge User Guide .
+	//
+	// [Managing service network resource associations for connections]: https://docs.aws.amazon.com/eventbridge/latest/userguide/connection-private.html#connection-private-snra
+	//
+	// This member is required.
+	ResourceAssociationArn *string
+
+	// The Amazon Resource Name (ARN) of the resource configuration for the private
+	// API.
+	//
+	// This member is required.
+	ResourceConfigurationArn *string
 
 	noSmithyDocumentSerde
 }
@@ -1409,16 +1486,16 @@ type RunCommandTarget struct {
 	noSmithyDocumentSerde
 }
 
-// Name/Value pair of a parameter to start execution of a SageMaker Model Building
-// Pipeline.
+// Name/Value pair of a parameter to start execution of a SageMaker AI Model
+// Building Pipeline.
 type SageMakerPipelineParameter struct {
 
-	// Name of parameter to start execution of a SageMaker Model Building Pipeline.
+	// Name of parameter to start execution of a SageMaker AI Model Building Pipeline.
 	//
 	// This member is required.
 	Name *string
 
-	// Value of parameter to start execution of a SageMaker Model Building Pipeline.
+	// Value of parameter to start execution of a SageMaker AI Model Building Pipeline.
 	//
 	// This member is required.
 	Value *string
@@ -1426,11 +1503,11 @@ type SageMakerPipelineParameter struct {
 	noSmithyDocumentSerde
 }
 
-// These are custom parameters to use when the target is a SageMaker Model
+// These are custom parameters to use when the target is a SageMaker AI Model
 // Building Pipeline that starts based on EventBridge events.
 type SageMakerPipelineParameters struct {
 
-	// List of Parameter names and values for SageMaker Model Building Pipeline
+	// List of Parameter names and values for SageMaker AI Model Building Pipeline
 	// execution.
 	PipelineParameterList []SageMakerPipelineParameter
 
@@ -1564,8 +1641,7 @@ type Target struct {
 	// on EventBridge events.
 	RedshiftDataParameters *RedshiftDataParameters
 
-	// The RetryPolicy object that contains the retry policy configuration to use for
-	// the dead-letter queue.
+	// The retry policy configuration to use for the dead-letter queue.
 	RetryPolicy *RetryPolicy
 
 	// The Amazon Resource Name (ARN) of the IAM role to be used for this target when
@@ -1576,10 +1652,10 @@ type Target struct {
 	// Parameters used when you are using the rule to invoke Amazon EC2 Run Command.
 	RunCommandParameters *RunCommandParameters
 
-	// Contains the SageMaker Model Building Pipeline parameters to start execution of
-	// a SageMaker Model Building Pipeline.
+	// Contains the SageMaker AI Model Building Pipeline parameters to start execution
+	// of a SageMaker AI Model Building Pipeline.
 	//
-	// If you specify a SageMaker Model Building Pipeline as a target, you can use
+	// If you specify a SageMaker AI Model Building Pipeline as a target, you can use
 	// this to specify parameters to start a pipeline execution based on EventBridge
 	// events.
 	SageMakerPipelineParameters *SageMakerPipelineParameters
@@ -1599,7 +1675,7 @@ type UpdateConnectionApiKeyAuthRequestParameters struct {
 	// The name of the API key to use for authorization.
 	ApiKeyName *string
 
-	// The value associated with teh API key to use for authorization.
+	// The value associated with the API key to use for authorization.
 	ApiKeyValue *string
 
 	noSmithyDocumentSerde
@@ -1608,26 +1684,30 @@ type UpdateConnectionApiKeyAuthRequestParameters struct {
 // Contains the additional parameters to use for the connection.
 type UpdateConnectionAuthRequestParameters struct {
 
-	// A UpdateConnectionApiKeyAuthRequestParameters object that contains the
-	// authorization parameters for API key authorization.
+	// The authorization parameters for API key authorization.
 	ApiKeyAuthParameters *UpdateConnectionApiKeyAuthRequestParameters
 
-	// A UpdateConnectionBasicAuthRequestParameters object that contains the
-	// authorization parameters for Basic authorization.
+	// The authorization parameters for Basic authorization.
 	BasicAuthParameters *UpdateConnectionBasicAuthRequestParameters
 
-	// A ConnectionHttpParameters object that contains the additional parameters to
-	// use for the connection.
+	// If you specify a private OAuth endpoint, the parameters for EventBridge to use
+	// when authenticating against the endpoint.
+	//
+	// For more information, see [Authorization methods for connections] in the Amazon EventBridge User Guide .
+	//
+	// [Authorization methods for connections]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-target-connection-auth.html
+	ConnectivityParameters *ConnectivityResourceParameters
+
+	// The additional parameters to use for the connection.
 	InvocationHttpParameters *ConnectionHttpParameters
 
-	// A UpdateConnectionOAuthRequestParameters object that contains the authorization
-	// parameters for OAuth authorization.
+	// The authorization parameters for OAuth authorization.
 	OAuthParameters *UpdateConnectionOAuthRequestParameters
 
 	noSmithyDocumentSerde
 }
 
-// Contains the Basic authorization parameters for the connection.
+// The Basic authorization parameters for the connection.
 type UpdateConnectionBasicAuthRequestParameters struct {
 
 	// The password associated with the user name to use for Basic authorization.
@@ -1639,7 +1719,7 @@ type UpdateConnectionBasicAuthRequestParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the OAuth authorization parameters to use for the connection.
+// The OAuth authorization parameters to use for the connection.
 type UpdateConnectionOAuthClientRequestParameters struct {
 
 	// The client ID to use for OAuth authorization.
@@ -1651,15 +1731,14 @@ type UpdateConnectionOAuthClientRequestParameters struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the OAuth request parameters to use for the connection.
+// The OAuth request parameters to use for the connection.
 type UpdateConnectionOAuthRequestParameters struct {
 
 	// The URL to the authorization endpoint when OAuth is specified as the
 	// authorization type.
 	AuthorizationEndpoint *string
 
-	// A UpdateConnectionOAuthClientRequestParameters object that contains the client
-	// parameters to use for the connection when OAuth is specified as the
+	// The client parameters to use for the connection when OAuth is specified as the
 	// authorization type.
 	ClientParameters *UpdateConnectionOAuthClientRequestParameters
 
