@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/hcloud-go/hcloud/metadata"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/metadata"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossiphetzner "k8s.io/kops/protokube/pkg/gossip/hetzner"

@@ -375,8 +375,8 @@ github.com/hashicorp/golang-lru/v2 v2.0.5/go.mod h1:QeFd9opnmA6QUJc5vARoKUSoFhyf
 github.com/hashicorp/memberlist v0.1.4/go.mod h1:ajVTdAv/9Im8oMAAj5G31PhhMCZJV2pPBoIllUwCN7I=
 github.com/hashicorp/memberlist v0.3.1 h1:MXgUXLqva1QvpVEDQW1IQLG0wivQAtmFlHRQ+1vWZfM=
 github.com/hashicorp/memberlist v0.3.1/go.mod h1:MS2lj3INKhZjWNqd3N0m3J+Jxf3DAOnAH9VT3Sh9MUE=
-github.com/hetznercloud/hcloud-go v1.59.2 h1:NkCPwYiPv85FnOV3IW9/gxfW61TPIUSwyPHRSLwCkHA=
-github.com/hetznercloud/hcloud-go v1.59.2/go.mod h1:oTebZCjd+osj75jlI76Z+zjN1sTxmMiQ1MWoO8aRl1c=
+github.com/hetznercloud/hcloud-go/v2 v2.21.1 h1:IH3liW8/cCRjfJ4cyqYvw3s1ek+KWP8dl1roa0lD8JM=
+github.com/hetznercloud/hcloud-go/v2 v2.21.1/go.mod h1:XOaYycZJ3XKMVWzmqQ24/+1V7ormJHmPdck/kxrNnQA=
 github.com/huandu/xstrings v1.5.0 h1:2ag3IFq9ZDANvthTwTiqSSZLjDc+BedvHPAp5tJy2TI=
 github.com/huandu/xstrings v1.5.0/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/imdario/mergo v0.3.16 h1:wwQJbIsHYGMUyLSPrEq1CT16AhnhNJQ51+4fdHUnCl4=

@@ -27,7 +27,7 @@ import (
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
-	hcloudmetadata "github.com/hetznercloud/hcloud-go/hcloud/metadata"
+	hcloudmetadata "github.com/hetznercloud/hcloud-go/v2/hcloud/metadata"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsmodel "k8s.io/kops/pkg/apis/kops/model"

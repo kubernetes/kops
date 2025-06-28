@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
@@ -79,7 +79,7 @@ func listSSHKeys(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	for _, sshKey := range sshKeys {
 		resourceTracker := &resources.Resource{
 			Name:    sshKey.Name,
-			ID:      strconv.Itoa(sshKey.ID),
+			ID:      strconv.FormatInt(sshKey.ID, 10),
 			Type:    resourceTypeSSHKey,
 			Deleter: deleteSSHKey,
 			Obj:     sshKey,
@@ -103,7 +103,7 @@ func listNetworks(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 	for _, network := range networks {
 		resourceTracker := &resources.Resource{
 			Name:    network.Name,
-			ID:      strconv.Itoa(network.ID),
+			ID:      strconv.FormatInt(network.ID, 10),
 			Type:    resourceTypeNetwork,
 			Deleter: deleteNetwork,
 			Obj:     network,
@@ -127,7 +127,7 @@ func listFirewalls(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 	for _, firewall := range firewalls {
 		resourceTracker := &resources.Resource{
 			Name:    firewall.Name,
-			ID:      strconv.Itoa(firewall.ID),
+			ID:      strconv.FormatInt(firewall.ID, 10),
 			Type:    resourceTypeFirewall,
 			Deleter: deleteFirewall,
 			Obj:     firewall,
@@ -151,7 +151,7 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 	for _, loadBalancer := range loadBalancers {
 		resourceTracker := &resources.Resource{
 			Name:    loadBalancer.Name,
-			ID:      strconv.Itoa(loadBalancer.ID),
+			ID:      strconv.FormatInt(loadBalancer.ID, 10),
 			Type:    resourceTypeLoadBalancer,
 			Deleter: deleteLoadBalancer,
 			Obj:     loadBalancer,
@@ -175,7 +175,7 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	for _, server := range servers {
 		resourceTracker := &resources.Resource{
 			Name:    server.Name,
-			ID:      strconv.Itoa(server.ID),
+			ID:      strconv.FormatInt(server.ID, 10),
 			Type:    resourceTypeServer,
 			Deleter: deleteServer,
 			Dumper:  dumpServer,
@@ -204,7 +204,7 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	for _, volume := range volumes {
 		resourceTracker := &resources.Resource{
 			Name:    volume.Name,
-			ID:      strconv.Itoa(volume.ID),
+			ID:      strconv.FormatInt(volume.ID, 10),
 			Type:    resourceTypeVolume,
 			Deleter: deleteVolume,
 			Obj:     volume,

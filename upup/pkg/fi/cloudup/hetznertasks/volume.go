@@ -20,7 +20,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -31,7 +31,7 @@ type Volume struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	ID       *int
+	ID       *int64
 	Location string
 	Size     int
 
@@ -41,7 +41,7 @@ type Volume struct {
 var _ fi.CompareWithID = &Volume{}
 
 func (v *Volume) CompareWithID() *string {
-	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
+	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
 }
 
 func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
@@ -119,7 +119,7 @@ func (_ *Volume) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *Volum
 		}
 
 	} else {
-		volume, _, err := client.Get(context.TODO(), strconv.Itoa(fi.ValueOf(a.ID)))
+		volume, _, err := client.Get(context.TODO(), strconv.FormatInt(fi.ValueOf(a.ID), 10))
 		if err != nil {
 			return err
 		}
