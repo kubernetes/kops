@@ -1,7 +1,9 @@
 module k8s.io/kops
 
 // This should be kept in sync with cloudbuild.yaml and the other go.mod files
-go 1.23.10
+go 1.24.4
+
+godebug default=go1.24
 
 require (
 	cloud.google.com/go/compute/metadata v0.7.0
