@@ -20,9 +20,10 @@ import (
 //
 // Directory buckets - For directory buckets, you must make requests for this API
 // operation to the Regional endpoint. These endpoints support path-style requests
-// in the format https://s3express-control.region_code.amazonaws.com/bucket-name .
-// Virtual-hosted-style requests aren't supported. For more information, see [Regional and Zonal endpoints]in
-// the Amazon S3 User Guide.
+// in the format https://s3express-control.region-code.amazonaws.com/bucket-name .
+// Virtual-hosted-style requests aren't supported. For more information about
+// endpoints in Availability Zones, see [Regional and Zonal endpoints for directory buckets in Availability Zones]in the Amazon S3 User Guide. For more
+// information about endpoints in Local Zones, see [Concepts for directory buckets in Local Zones]in the Amazon S3 User Guide.
 //
 // By default, all buckets have a default encryption configuration that uses
 // server-side encryption with Amazon S3 managed keys (SSE-S3).
@@ -51,8 +52,8 @@ import (
 //     information about the encryption overriding behaviors in directory buckets, see [Specifying server-side encryption with KMS for new object uploads]
 //     .
 //
-//   - Your SSE-KMS configuration can only support 1 [customer managed key]per directory bucket for the
-//     lifetime of the bucket. [Amazon Web Services managed key]( aws/s3 ) isn't supported.
+//   - Your SSE-KMS configuration can only support 1 [customer managed key]per directory bucket's
+//     lifetime. The [Amazon Web Services managed key]( aws/s3 ) isn't supported.
 //
 //   - S3 Bucket Keys are always enabled for GET and PUT operations in a directory
 //     bucket and can’t be disabled. S3 Bucket Keys aren't supported, when you copy
@@ -97,7 +98,7 @@ import (
 //	policies and KMS key policies for the target KMS key.
 //
 // HTTP Host header syntax  Directory buckets - The HTTP Host header syntax is
-// s3express-control.region.amazonaws.com .
+// s3express-control.region-code.amazonaws.com .
 //
 // The following operations are related to PutBucketEncryption :
 //
@@ -106,7 +107,7 @@ import (
 // [DeleteBucketEncryption]
 //
 // [Specifying server-side encryption with KMS for new object uploads]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-specifying-kms-encryption.html
-// [Regional and Zonal endpoints]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-Regions-and-Zones.html
+// [Concepts for directory buckets in Local Zones]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-lzs-for-directory-buckets.html
 // [KMS customer managed key]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#customer-cmk
 // [Amazon S3 Bucket Default Encryption]: https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-encryption.html
 // [CopyObject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
@@ -123,6 +124,7 @@ import (
 // [default bucket encryption]: https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-encryption.html
 // [the import jobs]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-import-job
 // [the Copy operation in Batch Operations]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-objects-Batch-Ops
+// [Regional and Zonal endpoints for directory buckets in Availability Zones]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/endpoint-directory-buckets-AZ.html
 func (c *Client) PutBucketEncryption(ctx context.Context, params *PutBucketEncryptionInput, optFns ...func(*Options)) (*PutBucketEncryptionOutput, error) {
 	if params == nil {
 		params = &PutBucketEncryptionInput{}
@@ -145,12 +147,12 @@ type PutBucketEncryptionInput struct {
 	//
 	// Directory buckets - When you use this operation with a directory bucket, you
 	// must use path-style requests in the format
-	// https://s3express-control.region_code.amazonaws.com/bucket-name .
+	// https://s3express-control.region-code.amazonaws.com/bucket-name .
 	// Virtual-hosted-style requests aren't supported. Directory bucket names must be
-	// unique in the chosen Availability Zone. Bucket names must also follow the format
-	// bucket_base_name--az_id--x-s3 (for example,  DOC-EXAMPLE-BUCKET--usw2-az1--x-s3
-	// ). For information about bucket naming restrictions, see [Directory bucket naming rules]in the Amazon S3 User
-	// Guide
+	// unique in the chosen Zone (Availability Zone or Local Zone). Bucket names must
+	// also follow the format bucket-base-name--zone-id--x-s3 (for example,
+	// DOC-EXAMPLE-BUCKET--usw2-az1--x-s3 ). For information about bucket naming
+	// restrictions, see [Directory bucket naming rules]in the Amazon S3 User Guide
 	//
 	// [Directory bucket naming rules]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-bucket-naming-rules.html
 	//
@@ -162,9 +164,9 @@ type PutBucketEncryptionInput struct {
 	// This member is required.
 	ServerSideEncryptionConfiguration *types.ServerSideEncryptionConfiguration
 
-	// Indicates the algorithm used to create the checksum for the object when you use
-	// the SDK. This header will not provide any additional functionality if you don't
-	// use the SDK. When you send this header, there must be a corresponding
+	// Indicates the algorithm used to create the checksum for the request when you
+	// use the SDK. This header will not provide any additional functionality if you
+	// don't use the SDK. When you send this header, there must be a corresponding
 	// x-amz-checksum or x-amz-trailer header sent. Otherwise, Amazon S3 fails the
 	// request with the HTTP status code 400 Bad Request . For more information, see [Checking object integrity]
 	// in the Amazon S3 User Guide.
@@ -178,7 +180,7 @@ type PutBucketEncryptionInput struct {
 	// [Checking object integrity]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity.html
 	ChecksumAlgorithm types.ChecksumAlgorithm
 
-	// The base64-encoded 128-bit MD5 digest of the server-side encryption
+	// The Base64 encoded 128-bit MD5 digest of the server-side encryption
 	// configuration.
 	//
 	// For requests made using the Amazon Web Services Command Line Interface (CLI) or
@@ -282,6 +284,12 @@ func (c *Client) addOperationPutBucketEncryptionMiddlewares(stack *middleware.St
 	if err = addIsExpressUserAgent(stack); err != nil {
 		return err
 	}
+	if err = addRequestChecksumMetricsTracking(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpPutBucketEncryptionValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -362,9 +370,10 @@ func getPutBucketEncryptionRequestAlgorithmMember(input interface{}) (string, bo
 }
 
 func addPutBucketEncryptionInputChecksumMiddlewares(stack *middleware.Stack, options Options) error {
-	return internalChecksum.AddInputMiddleware(stack, internalChecksum.InputMiddlewareOptions{
+	return addInputChecksumMiddleware(stack, internalChecksum.InputMiddlewareOptions{
 		GetAlgorithm:                     getPutBucketEncryptionRequestAlgorithmMember,
 		RequireChecksum:                  true,
+		RequestChecksumCalculation:       options.RequestChecksumCalculation,
 		EnableTrailingChecksum:           false,
 		EnableComputeSHA256PayloadHash:   true,
 		EnableDecodedContentLengthHeader: true,

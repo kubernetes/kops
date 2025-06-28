@@ -13,7 +13,6 @@ import (
 	smithytime "github.com/aws/smithy-go/time"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	smithywaiter "github.com/aws/smithy-go/waiter"
-	jmespath "github.com/jmespath/go-jmespath"
 	"time"
 )
 
@@ -125,6 +124,9 @@ func (c *Client) addOperationDescribeInstanceHealthMiddlewares(stack *middleware
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribeInstanceHealthValidationMiddleware(stack); err != nil {
@@ -325,29 +327,31 @@ func (w *AnyInstanceInServiceWaiter) WaitForOutput(ctx context.Context, params *
 func anyInstanceInServiceStateRetryable(ctx context.Context, input *DescribeInstanceHealthInput, output *DescribeInstanceHealthOutput, err error) (bool, error) {
 
 	if err == nil {
-		pathValue, err := jmespath.Search("InstanceStates[].State", output)
-		if err != nil {
-			return false, fmt.Errorf("error evaluating waiter state: %w", err)
+		v1 := output.InstanceStates
+		var v2 []string
+		for _, v := range v1 {
+			v3 := v.State
+			if v3 != nil {
+				v2 = append(v2, *v3)
+			}
 		}
-
 		expectedValue := "InService"
-		listOfValues, ok := pathValue.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("waiter comparator expected list got %T", pathValue)
+		var match bool
+		for _, v := range v2 {
+			if string(v) == expectedValue {
+				match = true
+				break
+			}
 		}
 
-		for _, v := range listOfValues {
-			value, ok := v.(*string)
-			if !ok {
-				return false, fmt.Errorf("waiter comparator expected *string value, got %T", pathValue)
-			}
-
-			if string(*value) == expectedValue {
-				return false, nil
-			}
+		if match {
+			return false, nil
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -513,29 +517,20 @@ func (w *InstanceDeregisteredWaiter) WaitForOutput(ctx context.Context, params *
 func instanceDeregisteredStateRetryable(ctx context.Context, input *DescribeInstanceHealthInput, output *DescribeInstanceHealthOutput, err error) (bool, error) {
 
 	if err == nil {
-		pathValue, err := jmespath.Search("InstanceStates[].State", output)
-		if err != nil {
-			return false, fmt.Errorf("error evaluating waiter state: %w", err)
-		}
-
-		expectedValue := "OutOfService"
-		var match = true
-		listOfValues, ok := pathValue.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("waiter comparator expected list got %T", pathValue)
-		}
-
-		if len(listOfValues) == 0 {
-			match = false
-		}
-		for _, v := range listOfValues {
-			value, ok := v.(*string)
-			if !ok {
-				return false, fmt.Errorf("waiter comparator expected *string value, got %T", pathValue)
+		v1 := output.InstanceStates
+		var v2 []string
+		for _, v := range v1 {
+			v3 := v.State
+			if v3 != nil {
+				v2 = append(v2, *v3)
 			}
-
-			if string(*value) != expectedValue {
+		}
+		expectedValue := "OutOfService"
+		match := len(v2) > 0
+		for _, v := range v2 {
+			if string(v) != expectedValue {
 				match = false
+				break
 			}
 		}
 
@@ -556,6 +551,9 @@ func instanceDeregisteredStateRetryable(ctx context.Context, input *DescribeInst
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -719,29 +717,20 @@ func (w *InstanceInServiceWaiter) WaitForOutput(ctx context.Context, params *Des
 func instanceInServiceStateRetryable(ctx context.Context, input *DescribeInstanceHealthInput, output *DescribeInstanceHealthOutput, err error) (bool, error) {
 
 	if err == nil {
-		pathValue, err := jmespath.Search("InstanceStates[].State", output)
-		if err != nil {
-			return false, fmt.Errorf("error evaluating waiter state: %w", err)
-		}
-
-		expectedValue := "InService"
-		var match = true
-		listOfValues, ok := pathValue.([]interface{})
-		if !ok {
-			return false, fmt.Errorf("waiter comparator expected list got %T", pathValue)
-		}
-
-		if len(listOfValues) == 0 {
-			match = false
-		}
-		for _, v := range listOfValues {
-			value, ok := v.(*string)
-			if !ok {
-				return false, fmt.Errorf("waiter comparator expected *string value, got %T", pathValue)
+		v1 := output.InstanceStates
+		var v2 []string
+		for _, v := range v1 {
+			v3 := v.State
+			if v3 != nil {
+				v2 = append(v2, *v3)
 			}
-
-			if string(*value) != expectedValue {
+		}
+		expectedValue := "InService"
+		match := len(v2) > 0
+		for _, v := range v2 {
+			if string(v) != expectedValue {
 				match = false
+				break
 			}
 		}
 
@@ -762,6 +751,9 @@ func instanceInServiceStateRetryable(ctx context.Context, input *DescribeInstanc
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

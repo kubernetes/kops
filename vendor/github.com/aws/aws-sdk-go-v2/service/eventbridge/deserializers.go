@@ -595,6 +595,9 @@ func awsAwsjson11_deserializeOpErrorCreateConnection(response *smithyhttp.Respon
 		errorMessage = bodyInfo.Message
 	}
 	switch {
+	case strings.EqualFold("AccessDeniedException", errorCode):
+		return awsAwsjson11_deserializeErrorAccessDeniedException(response, errorBody)
+
 	case strings.EqualFold("InternalException", errorCode):
 		return awsAwsjson11_deserializeErrorInternalException(response, errorBody)
 
@@ -603,6 +606,12 @@ func awsAwsjson11_deserializeOpErrorCreateConnection(response *smithyhttp.Respon
 
 	case strings.EqualFold("ResourceAlreadyExistsException", errorCode):
 		return awsAwsjson11_deserializeErrorResourceAlreadyExistsException(response, errorBody)
+
+	case strings.EqualFold("ResourceNotFoundException", errorCode):
+		return awsAwsjson11_deserializeErrorResourceNotFoundException(response, errorBody)
+
+	case strings.EqualFold("ThrottlingException", errorCode):
+		return awsAwsjson11_deserializeErrorThrottlingException(response, errorBody)
 
 	default:
 		genericError := &smithy.GenericAPIError{
@@ -6266,6 +6275,9 @@ func awsAwsjson11_deserializeOpErrorUpdateConnection(response *smithyhttp.Respon
 		errorMessage = bodyInfo.Message
 	}
 	switch {
+	case strings.EqualFold("AccessDeniedException", errorCode):
+		return awsAwsjson11_deserializeErrorAccessDeniedException(response, errorBody)
+
 	case strings.EqualFold("ConcurrentModificationException", errorCode):
 		return awsAwsjson11_deserializeErrorConcurrentModificationException(response, errorBody)
 
@@ -6277,6 +6289,9 @@ func awsAwsjson11_deserializeOpErrorUpdateConnection(response *smithyhttp.Respon
 
 	case strings.EqualFold("ResourceNotFoundException", errorCode):
 		return awsAwsjson11_deserializeErrorResourceNotFoundException(response, errorBody)
+
+	case strings.EqualFold("ThrottlingException", errorCode):
+		return awsAwsjson11_deserializeErrorThrottlingException(response, errorBody)
 
 	default:
 		genericError := &smithy.GenericAPIError{
@@ -6523,6 +6538,41 @@ func awsAwsjson11_deserializeOpErrorUpdateEventBus(response *smithyhttp.Response
 		return genericError
 
 	}
+}
+
+func awsAwsjson11_deserializeErrorAccessDeniedException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	output := &types.AccessDeniedException{}
+	err := awsAwsjson11_deserializeDocumentAccessDeniedException(&output, shape)
+
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	return output
 }
 
 func awsAwsjson11_deserializeErrorConcurrentModificationException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
@@ -6910,6 +6960,81 @@ func awsAwsjson11_deserializeErrorResourceNotFoundException(response *smithyhttp
 	return output
 }
 
+func awsAwsjson11_deserializeErrorThrottlingException(response *smithyhttp.Response, errorBody *bytes.Reader) error {
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(errorBody, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	output := &types.ThrottlingException{}
+	err := awsAwsjson11_deserializeDocumentThrottlingException(&output, shape)
+
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return err
+	}
+
+	errorBody.Seek(0, io.SeekStart)
+	return output
+}
+
+func awsAwsjson11_deserializeDocumentAccessDeniedException(v **types.AccessDeniedException, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.AccessDeniedException
+	if *v == nil {
+		sv = &types.AccessDeniedException{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "message", "Message":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ErrorMessage to be of type string, got %T instead", value)
+				}
+				sv.Message = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
 func awsAwsjson11_deserializeDocumentApiDestination(v **types.ApiDestination, value interface{}) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)
@@ -7178,7 +7303,7 @@ func awsAwsjson11_deserializeDocumentArchive(v **types.Archive, value interface{
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected EventBusArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
 			}
@@ -7589,7 +7714,7 @@ func awsAwsjson11_deserializeDocumentConcurrentModificationException(v **types.C
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -7800,6 +7925,11 @@ func awsAwsjson11_deserializeDocumentConnectionAuthResponseParameters(v **types.
 
 		case "BasicAuthParameters":
 			if err := awsAwsjson11_deserializeDocumentConnectionBasicAuthResponseParameters(&sv.BasicAuthParameters, value); err != nil {
+				return err
+			}
+
+		case "ConnectivityParameters":
+			if err := awsAwsjson11_deserializeDocumentDescribeConnectionConnectivityParameters(&sv.ConnectivityParameters, value); err != nil {
 				return err
 			}
 
@@ -8346,6 +8476,91 @@ func awsAwsjson11_deserializeDocumentDeadLetterConfig(v **types.DeadLetterConfig
 					return fmt.Errorf("expected ResourceArn to be of type string, got %T instead", value)
 				}
 				sv.Arn = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentDescribeConnectionConnectivityParameters(v **types.DescribeConnectionConnectivityParameters, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.DescribeConnectionConnectivityParameters
+	if *v == nil {
+		sv = &types.DescribeConnectionConnectivityParameters{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "ResourceParameters":
+			if err := awsAwsjson11_deserializeDocumentDescribeConnectionResourceParameters(&sv.ResourceParameters, value); err != nil {
+				return err
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentDescribeConnectionResourceParameters(v **types.DescribeConnectionResourceParameters, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.DescribeConnectionResourceParameters
+	if *v == nil {
+		sv = &types.DescribeConnectionResourceParameters{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "ResourceAssociationArn":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ResourceAssociationArn to be of type string, got %T instead", value)
+				}
+				sv.ResourceAssociationArn = ptr.String(jtv)
+			}
+
+		case "ResourceConfigurationArn":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ResourceConfigurationArn to be of type string, got %T instead", value)
+				}
+				sv.ResourceConfigurationArn = ptr.String(jtv)
 			}
 
 		default:
@@ -9167,7 +9382,7 @@ func awsAwsjson11_deserializeDocumentIllegalStatusException(v **types.IllegalSta
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9252,7 +9467,7 @@ func awsAwsjson11_deserializeDocumentInternalException(v **types.InternalExcepti
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9292,7 +9507,7 @@ func awsAwsjson11_deserializeDocumentInvalidEventPatternException(v **types.Inva
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9332,7 +9547,7 @@ func awsAwsjson11_deserializeDocumentInvalidStateException(v **types.InvalidStat
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9412,7 +9627,7 @@ func awsAwsjson11_deserializeDocumentLimitExceededException(v **types.LimitExcee
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9452,7 +9667,7 @@ func awsAwsjson11_deserializeDocumentManagedRuleException(v **types.ManagedRuleE
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9528,7 +9743,7 @@ func awsAwsjson11_deserializeDocumentOperationDisabledException(v **types.Operat
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9968,7 +10183,7 @@ func awsAwsjson11_deserializeDocumentPolicyLengthExceededException(v **types.Pol
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10578,7 +10793,7 @@ func awsAwsjson11_deserializeDocumentReplay(v **types.Replay, value interface{})
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected ArchiveArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
 			}
@@ -10844,7 +11059,7 @@ func awsAwsjson11_deserializeDocumentResourceAlreadyExistsException(v **types.Re
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10884,7 +11099,7 @@ func awsAwsjson11_deserializeDocumentResourceNotFoundException(v **types.Resourc
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11849,6 +12064,46 @@ func awsAwsjson11_deserializeDocumentTargetList(v *[]types.Target, value interfa
 
 	}
 	*v = cv
+	return nil
+}
+
+func awsAwsjson11_deserializeDocumentThrottlingException(v **types.ThrottlingException, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.ThrottlingException
+	if *v == nil {
+		sv = &types.ThrottlingException{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "message", "Message":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ErrorMessage to be of type string, got %T instead", value)
+				}
+				sv.Message = ptr.String(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
 	return nil
 }
 
@@ -12884,9 +13139,18 @@ func awsAwsjson11_deserializeOpDocumentDescribeArchiveOutput(v **DescribeArchive
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected EventBusArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
+			}
+
+		case "KmsKeyIdentifier":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KmsKeyIdentifier to be of type string, got %T instead", value)
+				}
+				sv.KmsKeyIdentifier = ptr.String(jtv)
 			}
 
 		case "RetentionDays":
@@ -13019,6 +13283,20 @@ func awsAwsjson11_deserializeOpDocumentDescribeConnectionOutput(v **DescribeConn
 					return fmt.Errorf("expected ConnectionDescription to be of type string, got %T instead", value)
 				}
 				sv.Description = ptr.String(jtv)
+			}
+
+		case "InvocationConnectivityParameters":
+			if err := awsAwsjson11_deserializeDocumentDescribeConnectionConnectivityParameters(&sv.InvocationConnectivityParameters, value); err != nil {
+				return err
+			}
+
+		case "KmsKeyIdentifier":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KmsKeyIdentifier to be of type string, got %T instead", value)
+				}
+				sv.KmsKeyIdentifier = ptr.String(jtv)
 			}
 
 		case "LastAuthorizedTime":
@@ -13572,7 +13850,7 @@ func awsAwsjson11_deserializeOpDocumentDescribeReplayOutput(v **DescribeReplayOu
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected Arn to be of type string, got %T instead", value)
+					return fmt.Errorf("expected ArchiveArn to be of type string, got %T instead", value)
 				}
 				sv.EventSourceArn = ptr.String(jtv)
 			}

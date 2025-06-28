@@ -13,8 +13,8 @@ import (
 // Deletes a security group.
 //
 // If you attempt to delete a security group that is associated with an instance
-// or network interface or is referenced by another security group in the same VPC,
-// the operation fails with DependencyViolation .
+// or network interface, is referenced by another security group in the same VPC,
+// or has a VPC association, the operation fails with DependencyViolation .
 func (c *Client) DeleteSecurityGroup(ctx context.Context, params *DeleteSecurityGroupInput, optFns ...func(*Options)) (*DeleteSecurityGroupOutput, error) {
 	if params == nil {
 		params = &DeleteSecurityGroupInput{}
@@ -50,6 +50,13 @@ type DeleteSecurityGroupInput struct {
 }
 
 type DeleteSecurityGroupOutput struct {
+
+	// The ID of the deleted security group.
+	GroupId *string
+
+	// Returns true if the request succeeds; otherwise, returns an error.
+	Return *bool
+
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
 
@@ -118,6 +125,9 @@ func (c *Client) addOperationDeleteSecurityGroupMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDeleteSecurityGroup(options.Region), middleware.Before); err != nil {

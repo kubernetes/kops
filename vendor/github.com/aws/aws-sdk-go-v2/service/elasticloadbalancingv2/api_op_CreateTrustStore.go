@@ -12,6 +12,10 @@ import (
 )
 
 // Creates a trust store.
+//
+// For more information, see [Mutual TLS for Application Load Balancers].
+//
+// [Mutual TLS for Application Load Balancers]: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/mutual-authentication.html
 func (c *Client) CreateTrustStore(ctx context.Context, params *CreateTrustStoreInput, optFns ...func(*Options)) (*CreateTrustStoreOutput, error) {
 	if params == nil {
 		params = &CreateTrustStoreInput{}
@@ -41,7 +45,7 @@ type CreateTrustStoreInput struct {
 
 	// The name of the trust store.
 	//
-	// This name must be unique per region and cannot be changed after creation.
+	// This name must be unique per region and can't be changed after creation.
 	//
 	// This member is required.
 	Name *string
@@ -129,6 +133,9 @@ func (c *Client) addOperationCreateTrustStoreMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpCreateTrustStoreValidationMiddleware(stack); err != nil {

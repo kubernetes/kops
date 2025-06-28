@@ -3776,6 +3776,32 @@ func awsAwsjson11_serializeDocumentConnectionQueryStringParametersList(v []types
 	return nil
 }
 
+func awsAwsjson11_serializeDocumentConnectivityResourceConfigurationArn(v *types.ConnectivityResourceConfigurationArn, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.ResourceConfigurationArn != nil {
+		ok := object.Key("ResourceConfigurationArn")
+		ok.String(*v.ResourceConfigurationArn)
+	}
+
+	return nil
+}
+
+func awsAwsjson11_serializeDocumentConnectivityResourceParameters(v *types.ConnectivityResourceParameters, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if v.ResourceParameters != nil {
+		ok := object.Key("ResourceParameters")
+		if err := awsAwsjson11_serializeDocumentConnectivityResourceConfigurationArn(v.ResourceParameters, ok); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func awsAwsjson11_serializeDocumentCreateConnectionApiKeyAuthRequestParameters(v *types.CreateConnectionApiKeyAuthRequestParameters, value smithyjson.Value) error {
 	object := value.Object()
 	defer object.Close()
@@ -3807,6 +3833,13 @@ func awsAwsjson11_serializeDocumentCreateConnectionAuthRequestParameters(v *type
 	if v.BasicAuthParameters != nil {
 		ok := object.Key("BasicAuthParameters")
 		if err := awsAwsjson11_serializeDocumentCreateConnectionBasicAuthRequestParameters(v.BasicAuthParameters, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.ConnectivityParameters != nil {
+		ok := object.Key("ConnectivityParameters")
+		if err := awsAwsjson11_serializeDocumentConnectivityResourceParameters(v.ConnectivityParameters, ok); err != nil {
 			return err
 		}
 	}
@@ -4822,6 +4855,13 @@ func awsAwsjson11_serializeDocumentUpdateConnectionAuthRequestParameters(v *type
 		}
 	}
 
+	if v.ConnectivityParameters != nil {
+		ok := object.Key("ConnectivityParameters")
+		if err := awsAwsjson11_serializeDocumentConnectivityResourceParameters(v.ConnectivityParameters, ok); err != nil {
+			return err
+		}
+	}
+
 	if v.InvocationHttpParameters != nil {
 		ok := object.Key("InvocationHttpParameters")
 		if err := awsAwsjson11_serializeDocumentConnectionHttpParameters(v.InvocationHttpParameters, ok); err != nil {
@@ -4989,6 +5029,11 @@ func awsAwsjson11_serializeOpDocumentCreateArchiveInput(v *CreateArchiveInput, v
 		ok.String(*v.EventSourceArn)
 	}
 
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
+	}
+
 	if v.RetentionDays != nil {
 		ok := object.Key("RetentionDays")
 		ok.Integer(*v.RetentionDays)
@@ -5016,6 +5061,18 @@ func awsAwsjson11_serializeOpDocumentCreateConnectionInput(v *CreateConnectionIn
 	if v.Description != nil {
 		ok := object.Key("Description")
 		ok.String(*v.Description)
+	}
+
+	if v.InvocationConnectivityParameters != nil {
+		ok := object.Key("InvocationConnectivityParameters")
+		if err := awsAwsjson11_serializeDocumentConnectivityResourceParameters(v.InvocationConnectivityParameters, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
 	}
 
 	if v.Name != nil {
@@ -6074,6 +6131,11 @@ func awsAwsjson11_serializeOpDocumentUpdateArchiveInput(v *UpdateArchiveInput, v
 		ok.String(*v.EventPattern)
 	}
 
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
+	}
+
 	if v.RetentionDays != nil {
 		ok := object.Key("RetentionDays")
 		ok.Integer(*v.RetentionDays)
@@ -6101,6 +6163,18 @@ func awsAwsjson11_serializeOpDocumentUpdateConnectionInput(v *UpdateConnectionIn
 	if v.Description != nil {
 		ok := object.Key("Description")
 		ok.String(*v.Description)
+	}
+
+	if v.InvocationConnectivityParameters != nil {
+		ok := object.Key("InvocationConnectivityParameters")
+		if err := awsAwsjson11_serializeDocumentConnectivityResourceParameters(v.InvocationConnectivityParameters, ok); err != nil {
+			return err
+		}
+	}
+
+	if v.KmsKeyIdentifier != nil {
+		ok := object.Key("KmsKeyIdentifier")
+		ok.String(*v.KmsKeyIdentifier)
 	}
 
 	if v.Name != nil {

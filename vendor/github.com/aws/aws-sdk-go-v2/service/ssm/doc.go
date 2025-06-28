@@ -11,17 +11,17 @@
 //
 // Related resources
 //
-//   - For information about each of the capabilities that comprise Systems
-//     Manager, see [Systems Manager capabilities]in the Amazon Web Services Systems Manager User Guide.
+//   - For information about each of the tools that comprise Systems Manager, see [Using Systems Manager tools]
+//     in the Amazon Web Services Systems Manager User Guide.
 //
-//   - For details about predefined runbooks for Automation, a capability of
-//     Amazon Web Services Systems Manager, see the [Systems Manager Automation runbook reference].
+//   - For details about predefined runbooks for Automation, a tool in Amazon Web
+//     Services Systems Manager, see the [Systems Manager Automation runbook reference].
 //
-//   - For information about AppConfig, a capability of Systems Manager, see the [AppConfig User Guide]
-//     and the [AppConfig API Reference].
+//   - For information about AppConfig, a tool in Systems Manager, see the [AppConfig User Guide]and the [AppConfig API Reference]
+//     .
 //
-//   - For information about Incident Manager, a capability of Systems Manager,
-//     see the [Systems Manager Incident Manager User Guide]and the [Systems Manager Incident Manager API Reference].
+//   - For information about Incident Manager, a tool in Systems Manager, see the [Systems Manager Incident Manager User Guide]
+//     and the [Systems Manager Incident Manager API Reference].
 //
 // [Amazon Web Services Systems Manager User Guide]: https://docs.aws.amazon.com/systems-manager/latest/userguide/
 // [AppConfig User Guide]: https://docs.aws.amazon.com/appconfig/latest/userguide/
@@ -30,5 +30,5 @@
 // [Systems Manager Incident Manager API Reference]: https://docs.aws.amazon.com/incident-manager/latest/APIReference/
 // [Setting up Amazon Web Services Systems Manager]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up.html
 // [Systems Manager Incident Manager User Guide]: https://docs.aws.amazon.com/incident-manager/latest/userguide/
-// [Systems Manager capabilities]: https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html#systems-manager-capabilities
+// [Using Systems Manager tools]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-tools.html
 package ssm

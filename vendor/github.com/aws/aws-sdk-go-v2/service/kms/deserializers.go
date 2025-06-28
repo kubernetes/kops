@@ -1214,10 +1214,32 @@ func (m *awsAwsjson11_deserializeOpDeleteImportedKeyMaterial) HandleDeserialize(
 	output := &DeleteImportedKeyMaterialOutput{}
 	out.Result = output
 
-	if _, err = io.Copy(ioutil.Discard, response.Body); err != nil {
-		return out, metadata, &smithy.DeserializationError{
-			Err: fmt.Errorf("failed to discard response body, %w", err),
+	var buff [1024]byte
+	ringBuffer := smithyio.NewRingBuffer(buff[:])
+
+	body := io.TeeReader(response.Body, ringBuffer)
+	decoder := json.NewDecoder(body)
+	decoder.UseNumber()
+	var shape interface{}
+	if err := decoder.Decode(&shape); err != nil && err != io.EOF {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
 		}
+		return out, metadata, err
+	}
+
+	err = awsAwsjson11_deserializeOpDocumentDeleteImportedKeyMaterialOutput(&output, shape)
+	if err != nil {
+		var snapshot bytes.Buffer
+		io.Copy(&snapshot, ringBuffer)
+		err = &smithy.DeserializationError{
+			Err:      fmt.Errorf("failed to decode response body, %w", err),
+			Snapshot: snapshot.Bytes(),
+		}
+		return out, metadata, err
 	}
 
 	return out, metadata, err
@@ -8412,7 +8434,7 @@ func awsAwsjson11_deserializeDocumentAlreadyExistsException(v **types.AlreadyExi
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8452,7 +8474,7 @@ func awsAwsjson11_deserializeDocumentCloudHsmClusterInUseException(v **types.Clo
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8492,7 +8514,7 @@ func awsAwsjson11_deserializeDocumentCloudHsmClusterInvalidConfigurationExceptio
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8532,7 +8554,7 @@ func awsAwsjson11_deserializeDocumentCloudHsmClusterNotActiveException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8572,7 +8594,7 @@ func awsAwsjson11_deserializeDocumentCloudHsmClusterNotFoundException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8612,7 +8634,7 @@ func awsAwsjson11_deserializeDocumentCloudHsmClusterNotRelatedException(v **type
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8652,7 +8674,7 @@ func awsAwsjson11_deserializeDocumentConflictException(v **types.ConflictExcepti
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8692,7 +8714,7 @@ func awsAwsjson11_deserializeDocumentCustomKeyStoreHasCMKsException(v **types.Cu
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8732,7 +8754,7 @@ func awsAwsjson11_deserializeDocumentCustomKeyStoreInvalidStateException(v **typ
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8772,7 +8794,7 @@ func awsAwsjson11_deserializeDocumentCustomKeyStoreNameInUseException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -8812,7 +8834,7 @@ func awsAwsjson11_deserializeDocumentCustomKeyStoreNotFoundException(v **types.C
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9001,7 +9023,7 @@ func awsAwsjson11_deserializeDocumentDependencyTimeoutException(v **types.Depend
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9041,7 +9063,7 @@ func awsAwsjson11_deserializeDocumentDisabledException(v **types.DisabledExcepti
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9081,7 +9103,7 @@ func awsAwsjson11_deserializeDocumentDryRunOperationException(v **types.DryRunOp
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9193,7 +9215,7 @@ func awsAwsjson11_deserializeDocumentExpiredImportTokenException(v **types.Expir
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9455,7 +9477,7 @@ func awsAwsjson11_deserializeDocumentIncorrectKeyException(v **types.IncorrectKe
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9495,7 +9517,7 @@ func awsAwsjson11_deserializeDocumentIncorrectKeyMaterialException(v **types.Inc
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9535,7 +9557,7 @@ func awsAwsjson11_deserializeDocumentIncorrectTrustAnchorException(v **types.Inc
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9575,7 +9597,7 @@ func awsAwsjson11_deserializeDocumentInvalidAliasNameException(v **types.Invalid
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9615,7 +9637,7 @@ func awsAwsjson11_deserializeDocumentInvalidArnException(v **types.InvalidArnExc
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9655,7 +9677,7 @@ func awsAwsjson11_deserializeDocumentInvalidCiphertextException(v **types.Invali
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9695,7 +9717,7 @@ func awsAwsjson11_deserializeDocumentInvalidGrantIdException(v **types.InvalidGr
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9735,7 +9757,7 @@ func awsAwsjson11_deserializeDocumentInvalidGrantTokenException(v **types.Invali
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9775,7 +9797,7 @@ func awsAwsjson11_deserializeDocumentInvalidImportTokenException(v **types.Inval
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9815,7 +9837,7 @@ func awsAwsjson11_deserializeDocumentInvalidKeyUsageException(v **types.InvalidK
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -9855,7 +9877,7 @@ func awsAwsjson11_deserializeDocumentInvalidMarkerException(v **types.InvalidMar
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10055,6 +10077,15 @@ func awsAwsjson11_deserializeDocumentKeyMetadata(v **types.KeyMetadata, value in
 					return fmt.Errorf("expected DateType to be a JSON Number, got %T instead", value)
 
 				}
+			}
+
+		case "CurrentKeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.CurrentKeyMaterialId = ptr.String(jtv)
 			}
 
 		case "CustomerMasterKeySpec":
@@ -10271,7 +10302,7 @@ func awsAwsjson11_deserializeDocumentKeyUnavailableException(v **types.KeyUnavai
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10311,7 +10342,7 @@ func awsAwsjson11_deserializeDocumentKMSInternalException(v **types.KMSInternalE
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10351,7 +10382,7 @@ func awsAwsjson11_deserializeDocumentKMSInvalidMacException(v **types.KMSInvalid
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10391,7 +10422,7 @@ func awsAwsjson11_deserializeDocumentKMSInvalidSignatureException(v **types.KMSI
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10431,7 +10462,7 @@ func awsAwsjson11_deserializeDocumentKMSInvalidStateException(v **types.KMSInval
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10471,7 +10502,7 @@ func awsAwsjson11_deserializeDocumentLimitExceededException(v **types.LimitExcee
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10547,7 +10578,7 @@ func awsAwsjson11_deserializeDocumentMalformedPolicyDocumentException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10720,7 +10751,7 @@ func awsAwsjson11_deserializeDocumentNotFoundException(v **types.NotFoundExcepti
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -10830,6 +10861,24 @@ func awsAwsjson11_deserializeDocumentRotationsListEntry(v **types.RotationsListE
 
 	for key, value := range shape {
 		switch key {
+		case "ExpirationModel":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ExpirationModelType to be of type string, got %T instead", value)
+				}
+				sv.ExpirationModel = types.ExpirationModelType(jtv)
+			}
+
+		case "ImportState":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected ImportState to be of type string, got %T instead", value)
+				}
+				sv.ImportState = types.ImportState(jtv)
+			}
+
 		case "KeyId":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -10837,6 +10886,33 @@ func awsAwsjson11_deserializeDocumentRotationsListEntry(v **types.RotationsListE
 					return fmt.Errorf("expected KeyIdType to be of type string, got %T instead", value)
 				}
 				sv.KeyId = ptr.String(jtv)
+			}
+
+		case "KeyMaterialDescription":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KeyMaterialDescriptionType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialDescription = ptr.String(jtv)
+			}
+
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
+			}
+
+		case "KeyMaterialState":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KeyMaterialState to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialState = types.KeyMaterialState(jtv)
 			}
 
 		case "RotationDate":
@@ -10862,6 +10938,22 @@ func awsAwsjson11_deserializeDocumentRotationsListEntry(v **types.RotationsListE
 					return fmt.Errorf("expected RotationType to be of type string, got %T instead", value)
 				}
 				sv.RotationType = types.RotationType(jtv)
+			}
+
+		case "ValidTo":
+			if value != nil {
+				switch jtv := value.(type) {
+				case json.Number:
+					f64, err := jtv.Float64()
+					if err != nil {
+						return err
+					}
+					sv.ValidTo = ptr.Time(smithytime.ParseEpochSeconds(f64))
+
+				default:
+					return fmt.Errorf("expected DateType to be a JSON Number, got %T instead", value)
+
+				}
 			}
 
 		default:
@@ -10980,7 +11072,7 @@ func awsAwsjson11_deserializeDocumentTagException(v **types.TagException, value 
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11054,7 +11146,7 @@ func awsAwsjson11_deserializeDocumentUnsupportedOperationException(v **types.Uns
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11094,7 +11186,7 @@ func awsAwsjson11_deserializeDocumentXksKeyAlreadyInUseException(v **types.XksKe
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11174,7 +11266,7 @@ func awsAwsjson11_deserializeDocumentXksKeyInvalidConfigurationException(v **typ
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11214,7 +11306,7 @@ func awsAwsjson11_deserializeDocumentXksKeyNotFoundException(v **types.XksKeyNot
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11330,7 +11422,7 @@ func awsAwsjson11_deserializeDocumentXksProxyIncorrectAuthenticationCredentialEx
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11370,7 +11462,7 @@ func awsAwsjson11_deserializeDocumentXksProxyInvalidConfigurationException(v **t
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11410,7 +11502,7 @@ func awsAwsjson11_deserializeDocumentXksProxyInvalidResponseException(v **types.
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11450,7 +11542,7 @@ func awsAwsjson11_deserializeDocumentXksProxyUriEndpointInUseException(v **types
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11490,7 +11582,7 @@ func awsAwsjson11_deserializeDocumentXksProxyUriInUseException(v **types.XksProx
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11530,7 +11622,7 @@ func awsAwsjson11_deserializeDocumentXksProxyUriUnreachableException(v **types.X
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11570,7 +11662,7 @@ func awsAwsjson11_deserializeDocumentXksProxyVpcEndpointServiceInUseException(v 
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11610,7 +11702,7 @@ func awsAwsjson11_deserializeDocumentXksProxyVpcEndpointServiceInvalidConfigurat
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11650,7 +11742,7 @@ func awsAwsjson11_deserializeDocumentXksProxyVpcEndpointServiceNotFoundException
 
 	for key, value := range shape {
 		switch key {
-		case "message":
+		case "message", "Message":
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
@@ -11917,6 +12009,15 @@ func awsAwsjson11_deserializeOpDocumentDecryptOutput(v **DecryptOutput, value in
 				sv.KeyId = ptr.String(jtv)
 			}
 
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
+			}
+
 		case "Plaintext":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -11961,6 +12062,55 @@ func awsAwsjson11_deserializeOpDocumentDeleteCustomKeyStoreOutput(v **DeleteCust
 
 	for key, value := range shape {
 		switch key {
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsjson11_deserializeOpDocumentDeleteImportedKeyMaterialOutput(v **DeleteImportedKeyMaterialOutput, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *DeleteImportedKeyMaterialOutput
+	if *v == nil {
+		sv = &DeleteImportedKeyMaterialOutput{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "KeyId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyId = ptr.String(jtv)
+			}
+
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdResponseType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
+			}
+
 		default:
 			_, _ = key, value
 
@@ -12294,6 +12444,15 @@ func awsAwsjson11_deserializeOpDocumentGenerateDataKeyOutput(v **GenerateDataKey
 				sv.KeyId = ptr.String(jtv)
 			}
 
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
+			}
+
 		case "Plaintext":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -12358,6 +12517,15 @@ func awsAwsjson11_deserializeOpDocumentGenerateDataKeyPairOutput(v **GenerateDat
 					return fmt.Errorf("expected KeyIdType to be of type string, got %T instead", value)
 				}
 				sv.KeyId = ptr.String(jtv)
+			}
+
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
 			}
 
 		case "KeyPairSpec":
@@ -12448,6 +12616,15 @@ func awsAwsjson11_deserializeOpDocumentGenerateDataKeyPairWithoutPlaintextOutput
 				sv.KeyId = ptr.String(jtv)
 			}
 
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
+			}
+
 		case "KeyPairSpec":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -12534,6 +12711,15 @@ func awsAwsjson11_deserializeOpDocumentGenerateDataKeyWithoutPlaintextOutput(v *
 					return fmt.Errorf("expected KeyIdType to be of type string, got %T instead", value)
 				}
 				sv.KeyId = ptr.String(jtv)
+			}
+
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
 			}
 
 		default:
@@ -13006,6 +13192,24 @@ func awsAwsjson11_deserializeOpDocumentImportKeyMaterialOutput(v **ImportKeyMate
 
 	for key, value := range shape {
 		switch key {
+		case "KeyId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected KeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyId = ptr.String(jtv)
+			}
+
+		case "KeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.KeyMaterialId = ptr.String(jtv)
+			}
+
 		default:
 			_, _ = key, value
 
@@ -13437,6 +13641,15 @@ func awsAwsjson11_deserializeOpDocumentReEncryptOutput(v **ReEncryptOutput, valu
 				sv.DestinationEncryptionAlgorithm = types.EncryptionAlgorithmSpec(jtv)
 			}
 
+		case "DestinationKeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.DestinationKeyMaterialId = ptr.String(jtv)
+			}
+
 		case "KeyId":
 			if value != nil {
 				jtv, ok := value.(string)
@@ -13462,6 +13675,15 @@ func awsAwsjson11_deserializeOpDocumentReEncryptOutput(v **ReEncryptOutput, valu
 					return fmt.Errorf("expected KeyIdType to be of type string, got %T instead", value)
 				}
 				sv.SourceKeyId = ptr.String(jtv)
+			}
+
+		case "SourceKeyMaterialId":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected BackingKeyIdType to be of type string, got %T instead", value)
+				}
+				sv.SourceKeyMaterialId = ptr.String(jtv)
 			}
 
 		default:

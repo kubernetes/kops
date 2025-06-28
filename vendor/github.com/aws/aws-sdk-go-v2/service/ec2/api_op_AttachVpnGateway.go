@@ -11,8 +11,8 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Attaches a virtual private gateway to a VPC. You can attach one virtual private
-// gateway to one VPC at a time.
+// Attaches an available virtual private gateway to a VPC. You can attach one
+// virtual private gateway to one VPC at a time.
 //
 // For more information, see [Amazon Web Services Site-to-Site VPN] in the Amazon Web Services Site-to-Site VPN User
 // Guide.
@@ -129,6 +129,9 @@ func (c *Client) addOperationAttachVpnGatewayMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpAttachVpnGatewayValidationMiddleware(stack); err != nil {

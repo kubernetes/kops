@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Enables notifications of specified events for a bucket. For more information
 // about event notifications, see [Configuring Event Notifications].
@@ -188,6 +188,9 @@ func (c *Client) addOperationPutBucketNotificationConfigurationMiddlewares(stack
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpPutBucketNotificationConfigurationValidationMiddleware(stack); err != nil {

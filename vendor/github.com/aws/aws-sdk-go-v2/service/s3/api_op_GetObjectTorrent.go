@@ -14,7 +14,7 @@ import (
 	"io"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Returns torrent files from a bucket. BitTorrent can save you bandwidth when
 // you're distributing large files.
@@ -91,9 +91,12 @@ type GetObjectTorrentOutput struct {
 	Body io.ReadCloser
 
 	// If present, indicates that the requester was successfully charged for the
-	// request.
+	// request. For more information, see [Using Requester Pays buckets for storage transfers and usage]in the Amazon Simple Storage Service user
+	// guide.
 	//
 	// This functionality is not supported for directory buckets.
+	//
+	// [Using Requester Pays buckets for storage transfers and usage]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/RequesterPaysBuckets.html
 	RequestCharged types.RequestCharged
 
 	// Metadata pertaining to the operation's result.
@@ -167,6 +170,9 @@ func (c *Client) addOperationGetObjectTorrentMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetObjectTorrentValidationMiddleware(stack); err != nil {

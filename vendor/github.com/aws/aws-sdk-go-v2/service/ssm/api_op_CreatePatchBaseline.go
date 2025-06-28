@@ -58,6 +58,20 @@ type CreatePatchBaselineInput struct {
 	// Applies to Linux managed nodes only.
 	ApprovedPatchesEnableNonSecurity *bool
 
+	// Indicates the status you want to assign to security patches that are available
+	// but not approved because they don't meet the installation criteria specified in
+	// the patch baseline.
+	//
+	// Example scenario: Security patches that you might want installed can be skipped
+	// if you have specified a long period to wait after a patch is released before
+	// installation. If an update to the patch is released during your specified
+	// waiting period, the waiting period for installing the patch starts over. If the
+	// waiting period is too long, multiple versions of the patch could be released but
+	// never installed.
+	//
+	// Supported for Windows Server managed nodes only.
+	AvailableSecurityUpdatesComplianceStatus types.PatchComplianceStatus
+
 	// User-provided idempotency token.
 	ClientToken *string
 
@@ -65,6 +79,10 @@ type CreatePatchBaselineInput struct {
 	Description *string
 
 	// A set of global filters used to include patches in the baseline.
+	//
+	// The GlobalFilters parameter can be configured only by using the CLI or an
+	// Amazon Web Services SDK. It can't be configured from the Patch Manager console,
+	// and its value isn't displayed in the console.
 	GlobalFilters *types.PatchFilterGroup
 
 	// Defines the operating system the patch baseline applies to. The default value
@@ -195,6 +213,9 @@ func (c *Client) addOperationCreatePatchBaselineMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opCreatePatchBaselineMiddleware(stack, options); err != nil {

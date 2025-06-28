@@ -55,6 +55,9 @@ type StartNetworkInsightsAnalysisInput struct {
 	// The Amazon Resource Names (ARN) of the resources that the path must traverse.
 	FilterInArns []string
 
+	// The Amazon Resource Names (ARN) of the resources that the path will ignore.
+	FilterOutArns []string
+
 	// The tags to apply.
 	TagSpecifications []types.TagSpecification
 
@@ -134,6 +137,9 @@ func (c *Client) addOperationStartNetworkInsightsAnalysisMiddlewares(stack *midd
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addIdempotencyToken_opStartNetworkInsightsAnalysisMiddleware(stack, options); err != nil {

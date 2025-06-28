@@ -12,7 +12,7 @@ import (
 
 // Records a heartbeat for the lifecycle action associated with the specified
 // token or instance. This extends the timeout by the length of time defined using
-// the PutLifecycleHookAPI call.
+// the [PutLifecycleHook]API call.
 //
 // This step is a part of the procedure for adding a lifecycle hook to an Auto
 // Scaling group:
@@ -35,12 +35,14 @@ import (
 //   - If you need more time, record the lifecycle action heartbeat to keep the
 //     instance in a wait state.
 //
-//   - If you finish before the timeout period ends, send a callback by using the CompleteLifecycleAction
+//   - If you finish before the timeout period ends, send a callback by using the [CompleteLifecycleAction]
 //     API call.
 //
 // For more information, see [Amazon EC2 Auto Scaling lifecycle hooks] in the Amazon EC2 Auto Scaling User Guide.
 //
+// [CompleteLifecycleAction]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_CompleteLifecycleAction.html
 // [Amazon EC2 Auto Scaling lifecycle hooks]: https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html
+// [PutLifecycleHook]: https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_PutLifecycleHook.html
 func (c *Client) RecordLifecycleActionHeartbeat(ctx context.Context, params *RecordLifecycleActionHeartbeatInput, optFns ...func(*Options)) (*RecordLifecycleActionHeartbeatOutput, error) {
 	if params == nil {
 		params = &RecordLifecycleActionHeartbeatInput{}
@@ -148,6 +150,9 @@ func (c *Client) addOperationRecordLifecycleActionHeartbeatMiddlewares(stack *mi
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpRecordLifecycleActionHeartbeatValidationMiddleware(stack); err != nil {

@@ -7,6 +7,66 @@ import (
 	smithy "github.com/aws/smithy-go"
 )
 
+// The request was rejected because the account making the request is not the
+// management account or delegated administrator account for [centralized root access].
+//
+// [centralized root access]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html#id_root-user-access-management
+type AccountNotManagementOrDelegatedAdministratorException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *AccountNotManagementOrDelegatedAdministratorException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *AccountNotManagementOrDelegatedAdministratorException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *AccountNotManagementOrDelegatedAdministratorException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "AccountNotManagementOrDelegatedAdministratorException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *AccountNotManagementOrDelegatedAdministratorException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
+// The request was rejected because the account making the request is not the
+// management account for the organization.
+type CallerIsNotManagementAccountException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *CallerIsNotManagementAccountException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *CallerIsNotManagementAccountException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *CallerIsNotManagementAccountException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "CallerIsNotManagementAccountException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *CallerIsNotManagementAccountException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
 // The request was rejected because multiple requests to change this object were
 // submitted simultaneously. Wait a few minutes and submit your request again.
 type ConcurrentModificationException struct {
@@ -559,6 +619,64 @@ func (e *OpenIdIdpCommunicationErrorException) ErrorFault() smithy.ErrorFault {
 	return smithy.FaultClient
 }
 
+// The request was rejected because no organization is associated with your
+// account.
+type OrganizationNotFoundException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *OrganizationNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *OrganizationNotFoundException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *OrganizationNotFoundException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "OrganizationNotFoundException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *OrganizationNotFoundException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// The request was rejected because your organization does not have All features
+// enabled. For more information, see [Available feature sets]in the Organizations User Guide.
+//
+// [Available feature sets]: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_getting-started_concepts.html#feature-set
+type OrganizationNotInAllFeaturesModeException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *OrganizationNotInAllFeaturesModeException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *OrganizationNotInAllFeaturesModeException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *OrganizationNotInAllFeaturesModeException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "OrganizationNotInAllFeaturesModeException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *OrganizationNotInAllFeaturesModeException) ErrorFault() smithy.ErrorFault {
+	return smithy.FaultClient
+}
+
 // The request was rejected because the provided password did not meet the
 // requirements imposed by the account password policy.
 type PasswordPolicyViolationException struct {
@@ -668,6 +786,34 @@ func (e *ReportGenerationLimitExceededException) ErrorCode() string {
 func (e *ReportGenerationLimitExceededException) ErrorFault() smithy.ErrorFault {
 	return smithy.FaultClient
 }
+
+// The request was rejected because trusted access is not enabled for IAM in
+// Organizations. For details, see IAM and Organizations in the Organizations User
+// Guide.
+type ServiceAccessNotEnabledException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *ServiceAccessNotEnabledException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *ServiceAccessNotEnabledException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *ServiceAccessNotEnabledException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "ServiceAccessNotEnabledException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *ServiceAccessNotEnabledException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
 // The request processing has failed because of an unknown error, exception or
 // failure.

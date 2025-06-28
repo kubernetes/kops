@@ -21,8 +21,8 @@ import (
 // For more information, see [SSL certificates] in the Application Load Balancers Guide or [Server certificates] in the
 // Network Load Balancers Guide.
 //
-// [Server certificates]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#tls-listener-certificate
-// [SSL certificates]: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#https-listener-certificates
+// [Server certificates]: https://docs.aws.amazon.com/elasticloadbalancing/latest/network/tls-listener-certificates.html
+// [SSL certificates]: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/https-listener-certificates.html
 func (c *Client) DescribeListenerCertificates(ctx context.Context, params *DescribeListenerCertificatesInput, optFns ...func(*Options)) (*DescribeListenerCertificatesOutput, error) {
 	if params == nil {
 		params = &DescribeListenerCertificatesInput{}
@@ -132,6 +132,9 @@ func (c *Client) addOperationDescribeListenerCertificatesMiddlewares(stack *midd
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDescribeListenerCertificatesValidationMiddleware(stack); err != nil {

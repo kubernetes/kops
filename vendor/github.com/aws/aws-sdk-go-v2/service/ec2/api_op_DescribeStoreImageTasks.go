@@ -26,12 +26,12 @@ import (
 // past 31 days can be viewed.
 //
 // To use this API, you must have the required permissions. For more information,
-// see [Permissions for storing and restoring AMIs using Amazon S3]in the Amazon EC2 User Guide.
+// see [Permissions for storing and restoring AMIs using S3]in the Amazon EC2 User Guide.
 //
-// For more information, see [Store and restore an AMI using Amazon S3] in the Amazon EC2 User Guide.
+// For more information, see [Store and restore an AMI using S3] in the Amazon EC2 User Guide.
 //
-// [Store and restore an AMI using Amazon S3]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html
-// [Permissions for storing and restoring AMIs using Amazon S3]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html#ami-s3-permissions
+// [Store and restore an AMI using S3]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-store-restore.html
+// [Permissions for storing and restoring AMIs using S3]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/work-with-ami-store-restore.html#ami-s3-permissions
 func (c *Client) DescribeStoreImageTasks(ctx context.Context, params *DescribeStoreImageTasksInput, optFns ...func(*Options)) (*DescribeStoreImageTasksOutput, error) {
 	if params == nil {
 		params = &DescribeStoreImageTasksInput{}
@@ -164,6 +164,9 @@ func (c *Client) addOperationDescribeStoreImageTasksMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeStoreImageTasks(options.Region), middleware.Before); err != nil {
@@ -429,6 +432,9 @@ func storeImageTaskCompleteStateRetryable(ctx context.Context, input *DescribeSt
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

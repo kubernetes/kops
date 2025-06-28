@@ -48,13 +48,16 @@ type DeactivateMFADeviceInput struct {
 
 	// The name of the user whose MFA device you want to deactivate.
 	//
+	// This parameter is optional. If no user name is included, it defaults to the
+	// principal making the request. When you make this request with root user
+	// credentials, you must use an [AssumeRoot]session to omit the user name.
+	//
 	// This parameter allows (through its [regex pattern]) a string of characters consisting of upper
 	// and lowercase alphanumeric characters with no spaces. You can also include any
 	// of the following characters: _+=,.@-
 	//
+	// [AssumeRoot]: https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoot.html
 	// [regex pattern]: http://wikipedia.org/wiki/regex
-	//
-	// This member is required.
 	UserName *string
 
 	noSmithyDocumentSerde
@@ -129,6 +132,9 @@ func (c *Client) addOperationDeactivateMFADeviceMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeactivateMFADeviceValidationMiddleware(stack); err != nil {

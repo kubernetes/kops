@@ -16,7 +16,7 @@ import (
 // in the Amazon SQS Developer Guide.
 //
 // Short poll is the default behavior where a weighted random set of machines is
-// sampled on a ReceiveMessage call. Thus, only the messages on the sampled
+// sampled on a ReceiveMessage call. Therefore, only the messages on the sampled
 // machines are returned. If the number of messages in the queue is small (fewer
 // than 1,000), you most likely get fewer messages than you requested per
 // ReceiveMessage call. If the number of messages in the queue is extremely small,
@@ -43,20 +43,13 @@ import (
 // You can provide the VisibilityTimeout parameter in your request. The parameter
 // is applied to the messages that Amazon SQS returns in the response. If you don't
 // include the parameter, the overall visibility timeout for the queue is used for
-// the returned messages. For more information, see [Visibility Timeout]in the Amazon SQS Developer
-// Guide.
-//
-// A message that isn't deleted or a message whose visibility isn't extended
-// before the visibility timeout expires counts as a failed receive. Depending on
-// the configuration of the queue, the message might be sent to the dead-letter
-// queue.
+// the returned messages. The default visibility timeout for a queue is 30 seconds.
 //
 // In the future, new attributes might be added. If you write code that calls this
 // action, we recommend that you structure your code so that it can handle new
 // attributes gracefully.
 //
 // [Queue and Message Identifiers]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-message-identifiers.html
-// [Visibility Timeout]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html
 // [Amazon SQS Long Polling]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
 // [RFC1321]: https://www.ietf.org/rfc/rfc1321.txt
 func (c *Client) ReceiveMessage(ctx context.Context, params *ReceiveMessageInput, optFns ...func(*Options)) (*ReceiveMessageOutput, error) {
@@ -74,6 +67,7 @@ func (c *Client) ReceiveMessage(ctx context.Context, params *ReceiveMessageInput
 	return out, nil
 }
 
+// Retrieves one or more messages from a specified queue.
 type ReceiveMessageInput struct {
 
 	// The URL of the Amazon SQS queue from which messages are received.
@@ -83,7 +77,7 @@ type ReceiveMessageInput struct {
 	// This member is required.
 	QueueUrl *string
 
-	//  This parameter has been deprecated but will be supported for backward
+	// This parameter has been discontinued but will be supported for backward
 	// compatibility. To provide attribute names, you are encouraged to use
 	// MessageSystemAttributeNames .
 	//
@@ -251,13 +245,44 @@ type ReceiveMessageInput struct {
 	ReceiveRequestAttemptId *string
 
 	// The duration (in seconds) that the received messages are hidden from subsequent
-	// retrieve requests after being retrieved by a ReceiveMessage request.
+	// retrieve requests after being retrieved by a ReceiveMessage request. If not
+	// specified, the default visibility timeout for the queue is used, which is 30
+	// seconds.
+	//
+	// Understanding VisibilityTimeout :
+	//
+	//   - When a message is received from a queue, it becomes temporarily invisible
+	//   to other consumers for the duration of the visibility timeout. This prevents
+	//   multiple consumers from processing the same message simultaneously. If the
+	//   message is not deleted or its visibility timeout is not extended before the
+	//   timeout expires, it becomes visible again and can be retrieved by other
+	//   consumers.
+	//
+	//   - Setting an appropriate visibility timeout is crucial. If it's too short,
+	//   the message might become visible again before processing is complete, leading to
+	//   duplicate processing. If it's too long, it delays the reprocessing of messages
+	//   if the initial processing fails.
+	//
+	//   - You can adjust the visibility timeout using the --visibility-timeout
+	//   parameter in the receive-message command to match the processing time required
+	//   by your application.
+	//
+	//   - A message that isn't deleted or a message whose visibility isn't extended
+	//   before the visibility timeout expires counts as a failed receive. Depending on
+	//   the configuration of the queue, the message might be sent to the dead-letter
+	//   queue.
+	//
+	// For more information, see [Visibility Timeout] in the Amazon SQS Developer Guide.
+	//
+	// [Visibility Timeout]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html
 	VisibilityTimeout int32
 
 	// The duration (in seconds) for which the call waits for a message to arrive in
 	// the queue before returning. If a message is available, the call returns sooner
 	// than WaitTimeSeconds . If no messages are available and the wait time expires,
-	// the call does not return a message list.
+	// the call does not return a message list. If you are using the Java SDK, it
+	// returns a ReceiveMessageResponse object, which has a empty list instead of a
+	// Null object.
 	//
 	// To avoid HTTP errors, ensure that the HTTP response timeout for ReceiveMessage
 	// requests is longer than the WaitTimeSeconds parameter. For example, with the
@@ -348,6 +373,9 @@ func (c *Client) addOperationReceiveMessageMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpReceiveMessageValidationMiddleware(stack); err != nil {

@@ -15,7 +15,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Creates or modifies the PublicAccessBlock configuration for an Amazon S3
 // bucket. To use this operation, you must have the s3:PutBucketPublicAccessBlock
@@ -190,6 +190,12 @@ func (c *Client) addOperationPutPublicAccessBlockMiddlewares(stack *middleware.S
 	if err = addIsExpressUserAgent(stack); err != nil {
 		return err
 	}
+	if err = addRequestChecksumMetricsTracking(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
+		return err
+	}
 	if err = addOpPutPublicAccessBlockValidationMiddleware(stack); err != nil {
 		return err
 	}
@@ -270,9 +276,10 @@ func getPutPublicAccessBlockRequestAlgorithmMember(input interface{}) (string, b
 }
 
 func addPutPublicAccessBlockInputChecksumMiddlewares(stack *middleware.Stack, options Options) error {
-	return internalChecksum.AddInputMiddleware(stack, internalChecksum.InputMiddlewareOptions{
+	return addInputChecksumMiddleware(stack, internalChecksum.InputMiddlewareOptions{
 		GetAlgorithm:                     getPutPublicAccessBlockRequestAlgorithmMember,
 		RequireChecksum:                  true,
+		RequestChecksumCalculation:       options.RequestChecksumCalculation,
 		EnableTrailingChecksum:           false,
 		EnableComputeSHA256PayloadHash:   true,
 		EnableDecodedContentLengthHeader: true,

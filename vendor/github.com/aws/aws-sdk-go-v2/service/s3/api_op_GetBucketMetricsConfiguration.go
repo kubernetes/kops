@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Gets a metrics configuration (specified by the metrics configuration ID) from
 // the bucket. Note that this doesn't include the daily storage metrics.
@@ -163,6 +163,9 @@ func (c *Client) addOperationGetBucketMetricsConfigurationMiddlewares(stack *mid
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetBucketMetricsConfigurationValidationMiddleware(stack); err != nil {

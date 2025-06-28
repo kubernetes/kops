@@ -43,6 +43,8 @@ type DescribeVpcEndpointsInput struct {
 	//
 	//   - service-name - The name of the service.
 	//
+	//   - service-region - The Region of the service.
+	//
 	//   - tag : - The key/value combination of a tag assigned to the resource. Use the
 	//   tag key in the filter name and the tag value as the filter value. For example,
 	//   to find all resources that have a tag with the key Owner and the value TeamA ,
@@ -59,7 +61,7 @@ type DescribeVpcEndpointsInput struct {
 	//   | available | deleting | deleted | rejected | failed ).
 	//
 	//   - vpc-endpoint-type - The type of VPC endpoint ( Interface | Gateway |
-	//   GatewayLoadBalancer ).
+	//   GatewayLoadBalancer | Resource | ServiceNetwork ).
 	Filters []types.Filter
 
 	// The maximum number of items to return for this request. The request returns a
@@ -155,6 +157,9 @@ func (c *Client) addOperationDescribeVpcEndpointsMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opDescribeVpcEndpoints(options.Region), middleware.Before); err != nil {

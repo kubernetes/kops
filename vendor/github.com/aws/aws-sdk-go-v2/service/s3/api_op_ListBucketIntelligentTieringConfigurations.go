@@ -14,7 +14,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// This operation is not supported by directory buckets.
+// This operation is not supported for directory buckets.
 //
 // Lists the S3 Intelligent-Tiering configuration from the specified bucket.
 //
@@ -72,6 +72,11 @@ type ListBucketIntelligentTieringConfigurationsInput struct {
 	// The ContinuationToken that represents a placeholder from where this request
 	// should begin.
 	ContinuationToken *string
+
+	// The account ID of the expected bucket owner. If the account ID that you provide
+	// does not match the actual owner of the bucket, the request fails with the HTTP
+	// status code 403 Forbidden (access denied).
+	ExpectedBucketOwner *string
 
 	noSmithyDocumentSerde
 }
@@ -175,6 +180,9 @@ func (c *Client) addOperationListBucketIntelligentTieringConfigurationsMiddlewar
 		return err
 	}
 	if err = addIsExpressUserAgent(stack); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpListBucketIntelligentTieringConfigurationsValidationMiddleware(stack); err != nil {

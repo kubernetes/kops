@@ -6,27 +6,40 @@ import (
 	"context"
 	"fmt"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
-// Deregisters the specified AMI. After you deregister an AMI, it can't be used to
-// launch new instances.
+// Deregisters the specified AMI. A deregistered AMI can't be used to launch new
+// instances.
 //
-// If you deregister an AMI that matches a Recycle Bin retention rule, the AMI is
-// retained in the Recycle Bin for the specified retention period. For more
-// information, see [Recycle Bin]in the Amazon EC2 User Guide.
+// If a deregistered EBS-backed AMI matches a Recycle Bin retention rule, it moves
+// to the Recycle Bin for the specified retention period. It can be restored before
+// its retention period expires, after which it is permanently deleted. If the
+// deregistered AMI doesn't match a retention rule, it is permanently deleted
+// immediately. For more information, see [Recover deleted Amazon EBS snapshots and EBS-backed AMIs with Recycle Bin]in the Amazon EBS User Guide.
 //
-// When you deregister an AMI, it doesn't affect any instances that you've already
-// launched from the AMI. You'll continue to incur usage costs for those instances
-// until you terminate them.
+// When deregistering an EBS-backed AMI, you can optionally delete its associated
+// snapshots at the same time. However, if a snapshot is associated with multiple
+// AMIs, it won't be deleted even if specified for deletion, although the AMI will
+// still be deregistered.
 //
-// When you deregister an Amazon EBS-backed AMI, it doesn't affect the snapshot
-// that was created for the root volume of the instance during the AMI creation
-// process. When you deregister an instance store-backed AMI, it doesn't affect the
-// files that you uploaded to Amazon S3 when you created the AMI.
+// Deregistering an AMI does not delete the following:
 //
-// [Recycle Bin]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html
+//   - Instances already launched from the AMI. You'll continue to incur usage
+//     costs for the instances until you terminate them.
+//
+//   - For EBS-backed AMIs: Snapshots that are associated with multiple AMIs.
+//     You'll continue to incur snapshot storage costs.
+//
+//   - For instance store-backed AMIs: The files uploaded to Amazon S3 during AMI
+//     creation. You'll continue to incur S3 storage costs.
+//
+// For more information, see [Deregister an Amazon EC2 AMI] in the Amazon EC2 User Guide.
+//
+// [Deregister an Amazon EC2 AMI]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html
+// [Recover deleted Amazon EBS snapshots and EBS-backed AMIs with Recycle Bin]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin.html
 func (c *Client) DeregisterImage(ctx context.Context, params *DeregisterImageInput, optFns ...func(*Options)) (*DeregisterImageOutput, error) {
 	if params == nil {
 		params = &DeregisterImageInput{}
@@ -50,6 +63,15 @@ type DeregisterImageInput struct {
 	// This member is required.
 	ImageId *string
 
+	// Specifies whether to delete the snapshots associated with the AMI during
+	// deregistration.
+	//
+	// If a snapshot is associated with multiple AMIs, it is not deleted, regardless
+	// of this setting.
+	//
+	// Default: The snapshots are not deleted.
+	DeleteAssociatedSnapshots *bool
+
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have the
 	// required permissions, the error response is DryRunOperation . Otherwise, it is
@@ -60,6 +82,14 @@ type DeregisterImageInput struct {
 }
 
 type DeregisterImageOutput struct {
+
+	// The deletion result for each snapshot associated with the AMI, including the
+	// snapshot ID and its success or error code.
+	DeleteSnapshotResults []types.DeleteSnapshotReturnCode
+
+	// Returns true if the request succeeds; otherwise, it returns an error.
+	Return *bool
+
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
 
@@ -128,6 +158,9 @@ func (c *Client) addOperationDeregisterImageMiddlewares(stack *middleware.Stack,
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpDeregisterImageValidationMiddleware(stack); err != nil {

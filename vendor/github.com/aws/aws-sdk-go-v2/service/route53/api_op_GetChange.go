@@ -11,7 +11,6 @@ import (
 	smithytime "github.com/aws/smithy-go/time"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	smithywaiter "github.com/aws/smithy-go/waiter"
-	jmespath "github.com/jmespath/go-jmespath"
 	"time"
 )
 
@@ -128,6 +127,9 @@ func (c *Client) addOperationGetChangeMiddlewares(stack *middleware.Stack, optio
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpGetChangeValidationMiddleware(stack); err != nil {
@@ -332,22 +334,23 @@ func (w *ResourceRecordSetsChangedWaiter) WaitForOutput(ctx context.Context, par
 func resourceRecordSetsChangedStateRetryable(ctx context.Context, input *GetChangeInput, output *GetChangeOutput, err error) (bool, error) {
 
 	if err == nil {
-		pathValue, err := jmespath.Search("ChangeInfo.Status", output)
-		if err != nil {
-			return false, fmt.Errorf("error evaluating waiter state: %w", err)
+		v1 := output.ChangeInfo
+		var v2 types.ChangeStatus
+		if v1 != nil {
+			v3 := v1.Status
+			v2 = v3
 		}
-
 		expectedValue := "INSYNC"
-		value, ok := pathValue.(types.ChangeStatus)
-		if !ok {
-			return false, fmt.Errorf("waiter comparator expected types.ChangeStatus value, got %T", pathValue)
-		}
-
-		if string(value) == expectedValue {
+		var pathValue string
+		pathValue = string(v2)
+		if pathValue == expectedValue {
 			return false, nil
 		}
 	}
 
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 

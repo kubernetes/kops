@@ -85,6 +85,9 @@ type ReplaceRouteInput struct {
 	// The ID of a network interface.
 	NetworkInterfaceId *string
 
+	// The Amazon Resource Name (ARN) of the ODB network.
+	OdbNetworkArn *string
+
 	// The ID of a transit gateway.
 	TransitGatewayId *string
 
@@ -166,6 +169,9 @@ func (c *Client) addOperationReplaceRouteMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {
+		return err
+	}
+	if err = addCredentialSource(stack, options); err != nil {
 		return err
 	}
 	if err = addOpReplaceRouteValidationMiddleware(stack); err != nil {
