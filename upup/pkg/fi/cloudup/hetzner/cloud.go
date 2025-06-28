@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -245,7 +245,7 @@ func (c *hetznerCloudImplementation) DNS() (dnsprovider.Interface, error) {
 }
 
 func (c *hetznerCloudImplementation) DeleteInstance(instance *cloudinstances.CloudInstance) error {
-	serverID, err := strconv.Atoi(instance.ID)
+	serverID, err := strconv.ParseInt(instance.ID, 10, 64)
 	if err != nil {
 		return fmt.Errorf("failed to convert server ID %q to int: %w", instance.ID, err)
 	}
@@ -256,20 +256,20 @@ func (c *hetznerCloudImplementation) DeleteInstance(instance *cloudinstances.Clo
 }
 
 // deleteServer shuts down and deletes the given server
-func deleteServer(c *hetznerCloudImplementation, id int) error {
+func deleteServer(c *hetznerCloudImplementation, id int64) error {
 	client := c.ServerClient()
 	ctx := context.TODO()
 
 	server := &hcloud.Server{ID: id}
 	_, _, err := client.Shutdown(ctx, server)
 	if err != nil {
-		return fmt.Errorf("failed to stop server %q: %w", strconv.Itoa(id), err)
+		return fmt.Errorf("failed to stop server %q: %w", strconv.FormatInt(id, 10), err)
 	}
 
 	for i := 1; i <= 30; i++ {
 		server, _, err := client.GetByID(ctx, id)
 		if err != nil || server == nil {
-			return fmt.Errorf("failed to get info for server %q: %w", strconv.Itoa(id), err)
+			return fmt.Errorf("failed to get info for server %q: %w", strconv.FormatInt(id, 10), err)
 		}
 
 		if server.Status == hcloud.ServerStatusOff {
@@ -281,7 +281,7 @@ func deleteServer(c *hetznerCloudImplementation, id int) error {
 
 	_, err = client.Delete(ctx, server)
 	if err != nil {
-		return fmt.Errorf("failed to delete server %q: %w", strconv.Itoa(id), err)
+		return fmt.Errorf("failed to delete server %q: %w", strconv.FormatInt(id, 10), err)
 	}
 
 	return nil
@@ -374,7 +374,7 @@ func buildCloudInstanceGroup(ig *kops.InstanceGroup, sg []*hcloud.Server, nodeMa
 			status = cloudinstances.CloudInstanceStatusNeedsUpdate
 		}
 
-		id := strconv.Itoa(server.ID)
+		id := strconv.FormatInt(server.ID, 10)
 		cloudInstance, err := cloudInstanceGroup.NewCloudInstance(id, status, nodeMap[id])
 		if err != nil {
 			return nil, fmt.Errorf("failed to create cloud group instance for server %s(%d): %w", server.Name, server.ID, err)
@@ -398,7 +398,7 @@ func buildCloudInstanceGroup(ig *kops.InstanceGroup, sg []*hcloud.Server, nodeMa
 
 func (c *hetznerCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	for _, cloudInstance := range append(g.NeedUpdate, g.Ready...) {
-		serverID, err := strconv.Atoi(cloudInstance.ID)
+		serverID, err := strconv.ParseInt(cloudInstance.ID, 10, 64)
 		if err != nil {
 			return fmt.Errorf("failed to convert server ID %q to int: %w", cloudInstance.ID, err)
 		}

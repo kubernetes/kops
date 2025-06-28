@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -206,7 +206,7 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 	}
 	userDataHash := safeBytesHash(userDataBytes)
 
-	networkID, err := strconv.Atoi(fi.ValueOf(e.Network.ID))
+	networkID, err := strconv.ParseInt(fi.ValueOf(e.Network.ID), 10, 64)
 	if err != nil {
 		return fmt.Errorf("failed to convert network ID %q to int: %w", fi.ValueOf(e.Network.ID), err)
 	}

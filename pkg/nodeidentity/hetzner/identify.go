@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
@@ -138,7 +138,7 @@ func stringKeyFunc(obj interface{}) (string, error) {
 
 // getServer queries Hetzner Cloud for the server with the specified ID, returning an error if not found
 func (i *nodeIdentifier) getServer(id string) (*hcloud.Server, error) {
-	serverID, err := strconv.Atoi(id)
+	serverID, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert server ID %q to int: %w", id, err)
 	}

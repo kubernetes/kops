@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -40,7 +40,7 @@ type LoadBalancer struct {
 	Lifecycle fi.Lifecycle
 	Network   *Network
 
-	ID       *int
+	ID       *int64
 	Location string
 	Type     string
 	Services []*LoadBalancerService
@@ -56,7 +56,7 @@ type LoadBalancer struct {
 var _ fi.CompareWithID = &LoadBalancer{}
 
 func (v *LoadBalancer) CompareWithID() *string {
-	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
+	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
 }
 
 var _ fi.HasAddress = &LoadBalancer{}
@@ -234,7 +234,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 			return fmt.Errorf("failed to find network for loadbalancer %q", fi.ValueOf(e.Name))
 		}
 
-		networkID, err := strconv.Atoi(fi.ValueOf(e.Network.ID))
+		networkID, err := strconv.ParseInt(fi.ValueOf(e.Network.ID), 10, 64)
 		if err != nil {
 			return fmt.Errorf("failed to convert network ID %q to int: %w", fi.ValueOf(e.Network.ID), err)
 		}
@@ -284,7 +284,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 
 	} else {
 		var err error
-		loadbalancer, _, err := client.Get(ctx, strconv.Itoa(fi.ValueOf(a.ID)))
+		loadbalancer, _, err := client.Get(ctx, strconv.FormatInt(fi.ValueOf(a.ID), 10))
 		if err != nil {
 			return err
 		}

@@ -21,7 +21,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"

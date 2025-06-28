@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"

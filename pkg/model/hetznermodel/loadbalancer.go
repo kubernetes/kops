@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"

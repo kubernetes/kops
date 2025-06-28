@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hetznercloud/hcloud-go/hcloud/metadata"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/metadata"
 	"k8s.io/kops/pkg/bootstrap"
 )
 
@@ -40,5 +40,5 @@ func (h *hetznerAuthenticator) CreateToken(body []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve server ID: %w", err)
 	}
-	return HetznerAuthenticationTokenPrefix + strconv.Itoa(serverID), nil
+	return HetznerAuthenticationTokenPrefix + strconv.FormatInt(serverID, 10), nil
 }

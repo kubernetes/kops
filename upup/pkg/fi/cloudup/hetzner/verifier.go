@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 )
@@ -63,7 +63,7 @@ func (h hetznerVerifier) VerifyToken(ctx context.Context, rawRequest *http.Reque
 	}
 	token = strings.TrimPrefix(token, HetznerAuthenticationTokenPrefix)
 
-	serverID, err := strconv.Atoi(token)
+	serverID, err := strconv.ParseInt(token, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert server ID %q to int: %w", token, err)
 	}
