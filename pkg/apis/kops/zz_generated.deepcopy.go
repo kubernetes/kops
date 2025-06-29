@@ -3963,6 +3963,13 @@ func (in *KubeDNSConfig) DeepCopyInto(out *KubeDNSConfig) {
 		*out = new(NodeLocalDNSConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.PodAnnotations != nil {
+		in, out := &in.PodAnnotations, &out.PodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
