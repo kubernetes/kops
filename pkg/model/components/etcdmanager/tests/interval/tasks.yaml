@@ -78,7 +78,7 @@ Contents: |
     - command:
       - /bin/sh
       - -c
-      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
         --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events
         --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
         --discovery-poll-interval=1m15s --dns-suffix=.internal.minimal.example.com --grpc-port=3997
@@ -86,7 +86,7 @@ Contents: |
         --v=6 --volume-name-tag=k8s.io/etcd/events --volume-provider=aws --volume-tag=k8s.io/etcd/events
         --volume-tag=k8s.io/role/control-plane=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
         > /tmp/pipe 2>&1
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
       name: etcd-manager
       resources:
         requests:
@@ -97,6 +97,10 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
+      - mountPath: /etc/ssl
+        name: ca-certificates
+      - mountPath: /etc/pki
+        name: ca-bundle
       - mountPath: /run
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -186,6 +190,14 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
+    - hostPath:
+        path: /etc/ssl
+        type: DirectoryOrCreate
+      name: ca-certificates
+    - hostPath:
+        path: /etc/pki
+        type: DirectoryOrCreate
+      name: ca-bundle
     - hostPath:
         path: /run
         type: DirectoryOrCreate
@@ -221,7 +233,7 @@ Contents: |
     - command:
       - /bin/sh
       - -c
-      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
         --backup-interval=1h0m0s --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
         --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
         --discovery-poll-interval=1m15s --dns-suffix=.internal.minimal.example.com --grpc-port=3996
@@ -229,7 +241,7 @@ Contents: |
         --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
         --volume-tag=k8s.io/role/control-plane=1 --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
         > /tmp/pipe 2>&1
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
       name: etcd-manager
       resources:
         requests:
@@ -240,6 +252,10 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
+      - mountPath: /etc/ssl
+        name: ca-certificates
+      - mountPath: /etc/pki
+        name: ca-bundle
       - mountPath: /run
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -329,6 +345,14 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
+    - hostPath:
+        path: /etc/ssl
+        type: DirectoryOrCreate
+      name: ca-certificates
+    - hostPath:
+        path: /etc/pki
+        type: DirectoryOrCreate
+      name: ca-bundle
     - hostPath:
         path: /run
         type: DirectoryOrCreate

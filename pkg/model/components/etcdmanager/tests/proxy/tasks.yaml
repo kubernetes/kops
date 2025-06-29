@@ -78,7 +78,7 @@ Contents: |
     - command:
       - /bin/sh
       - -c
-      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
         --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-events
         --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
         --dns-suffix=.internal.minimal.example.com --grpc-port=3997 --peer-urls=https://__name__:2381
@@ -94,7 +94,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
       name: etcd-manager
       resources:
         requests:
@@ -105,6 +105,10 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
+      - mountPath: /etc/ssl
+        name: ca-certificates
+      - mountPath: /etc/pki
+        name: ca-bundle
       - mountPath: /run
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -194,6 +198,14 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
+    - hostPath:
+        path: /etc/ssl
+        type: DirectoryOrCreate
+      name: ca-certificates
+    - hostPath:
+        path: /etc/pki
+        type: DirectoryOrCreate
+      name: ca-bundle
     - hostPath:
         path: /run
         type: DirectoryOrCreate
@@ -229,7 +241,7 @@ Contents: |
     - command:
       - /bin/sh
       - -c
-      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+      - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
         --backup-store=memfs://clusters.example.com/minimal.example.com/backups/etcd-main
         --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
         --dns-suffix=.internal.minimal.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
@@ -245,7 +257,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
       name: etcd-manager
       resources:
         requests:
@@ -256,6 +268,10 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
+      - mountPath: /etc/ssl
+        name: ca-certificates
+      - mountPath: /etc/pki
+        name: ca-bundle
       - mountPath: /run
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -345,6 +361,14 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
+    - hostPath:
+        path: /etc/ssl
+        type: DirectoryOrCreate
+      name: ca-certificates
+    - hostPath:
+        path: /etc/pki
+        type: DirectoryOrCreate
+      name: ca-bundle
     - hostPath:
         path: /run
         type: DirectoryOrCreate
