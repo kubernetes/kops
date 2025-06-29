@@ -11,7 +11,7 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
       --backup-store=memfs://clusters.example.com/minimal-etcd.example.com/backups/etcd/events
       --client-urls=https://__name__:4002 --cluster-name=etcd-events --containerized=true
       --dns-suffix=.internal.minimal-etcd.example.com --grpc-port=3997 --peer-urls=https://__name__:2381
@@ -35,6 +35,8 @@ spec:
     volumeMounts:
     - mountPath: /rootfs
       name: rootfs
+    - mountPath: /etc/ssl
+      name: ca-certificates
     - mountPath: /run
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -124,6 +126,10 @@ spec:
       path: /
       type: Directory
     name: rootfs
+  - hostPath:
+      path: /etc/ssl
+      type: Directory
+    name: ca-certificates
   - hostPath:
       path: /run
       type: DirectoryOrCreate

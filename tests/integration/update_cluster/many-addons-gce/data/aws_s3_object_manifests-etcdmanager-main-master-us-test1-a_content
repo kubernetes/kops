@@ -11,7 +11,7 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /etcd-manager
+    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
       --backup-store=memfs://tests/minimal.example.com/backups/etcd/main --client-urls=https://__name__:4001
       --cluster-name=etcd --containerized=true --dns-suffix=.internal.minimal.example.com
       --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
@@ -21,7 +21,7 @@ spec:
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
     name: etcd-manager
     resources:
       requests:
@@ -32,6 +32,8 @@ spec:
     volumeMounts:
     - mountPath: /rootfs
       name: rootfs
+    - mountPath: /etc/ssl
+      name: ca-certificates
     - mountPath: /run
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -121,6 +123,10 @@ spec:
       path: /
       type: Directory
     name: rootfs
+  - hostPath:
+      path: /etc/ssl
+      type: Directory
+    name: ca-certificates
   - hostPath:
       path: /run
       type: DirectoryOrCreate

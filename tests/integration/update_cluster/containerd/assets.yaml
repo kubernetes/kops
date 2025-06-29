@@ -92,5 +92,5 @@ images:
   download: registry.k8s.io/etcd:3.4.13-0
 - canonical: registry.k8s.io/etcd:3.5.21-0
   download: registry.k8s.io/etcd:3.5.21-0
-- canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
-  download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20241012
+- canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
+  download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
