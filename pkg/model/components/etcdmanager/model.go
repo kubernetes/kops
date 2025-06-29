@@ -185,6 +185,8 @@ spec:
       name: rootfs
     - mountPath: /etc/ssl
       name: ca-certificates
+    - mountPath: /etc/pki
+      name: ca-bundle
     - mountPath: /run
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -200,8 +202,12 @@ spec:
     name: rootfs
   - hostPath:
       path: /etc/ssl
-      type: Directory
+      type: DirectoryOrCreate
     name: ca-certificates
+  - hostPath:
+      path: /etc/pki
+      type: DirectoryOrCreate
+    name: ca-bundle
   - hostPath:
       path: /run
       type: DirectoryOrCreate
