@@ -170,7 +170,10 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.User, "user", options.User, "Existing user in kubeconfig file to use.  Implies --create-kube-config")
 	cmd.RegisterFlagCompletionFunc("user", completeKubecfgUser)
+
 	cmd.Flags().BoolVar(&options.Internal, "internal", options.Internal, "Use the cluster's internal DNS name. Implies --create-kube-config")
+	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
+
 	cmd.Flags().BoolVar(&options.AllowKopsDowngrade, "allow-kops-downgrade", options.AllowKopsDowngrade, "Allow an older version of kOps to update the cluster than last used")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "Instance groups to update (defaults to all if not specified)")
 	cmd.RegisterFlagCompletionFunc("instance-group", completeInstanceGroup(f, &options.InstanceGroups, &options.InstanceGroupRoles))

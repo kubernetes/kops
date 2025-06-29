@@ -19,7 +19,8 @@ kops get instances [CLUSTER] [flags]
 ### Options
 
 ```
-  -h, --help   help for instances
+      --api-server string   Override the API server used when communicating with the cluster kube-apiserver
+  -h, --help                help for instances
 ```
 
 ### Options inherited from parent commands
