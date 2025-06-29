@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
@@ -399,10 +400,43 @@ func Test_BuildComponentConfigFile(t *testing.T) {
 	componentConfig := kops.KubeletConfigSpec{
 		ShutdownGracePeriod:             &metav1.Duration{Duration: 30 * time.Second},
 		ShutdownGracePeriodCriticalPods: &metav1.Duration{Duration: 10 * time.Second},
+		ImageMaximumGCAge:               &metav1.Duration{Duration: 30 * time.Hour},
+		ImageMinimumGCAge:               &metav1.Duration{Duration: 30 * time.Minute},
 	}
 
 	_, err := buildKubeletComponentConfig(&componentConfig, "")
 	if err != nil {
 		t.Errorf("Failed to build component config file: %v", err)
+	}
+}
+
+func Test_Kubelet_BuildFlags(t *testing.T) {
+	grid := []struct {
+		config   kops.KubeletConfigSpec
+		expected string
+	}{
+		{
+			kops.KubeletConfigSpec{
+				ImageMaximumGCAge: &metav1.Duration{Duration: 30 * time.Hour},
+			},
+			"",
+		},
+		{
+			kops.KubeletConfigSpec{
+				ImageMinimumGCAge: &metav1.Duration{Duration: 30 * time.Minute},
+			},
+			"",
+		},
+	}
+
+	for _, g := range grid {
+		actual, err := flagbuilder.BuildFlags(&g.config)
+		if err != nil {
+			t.Errorf("error building flags for %v: %v", g.config, err)
+			continue
+		}
+		if actual != g.expected {
+			t.Errorf("flags did not match.  actual=%q expected=%q", actual, g.expected)
+		}
 	}
 }
