@@ -19,8 +19,10 @@ package model
 import (
 	"context"
 	"fmt"
+	"k8s.io/kops/pkg/flagbuilder"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -396,13 +398,80 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 }
 
 func Test_BuildComponentConfigFile(t *testing.T) {
+	imageMaximumGCAge, imageMinimumGCAge := "30h", "30m"
 	componentConfig := kops.KubeletConfigSpec{
 		ShutdownGracePeriod:             &metav1.Duration{Duration: 30 * time.Second},
 		ShutdownGracePeriodCriticalPods: &metav1.Duration{Duration: 10 * time.Second},
+		ImageMaximumGCAge:               &imageMaximumGCAge,
+		ImageMinimumGCAge:               &imageMinimumGCAge,
 	}
 
 	_, err := buildKubeletComponentConfig(&componentConfig, "")
 	if err != nil {
 		t.Errorf("Failed to build component config file: %v", err)
 	}
+}
+
+func Test_Kubelet_BuildFlags(t *testing.T) {
+	imageMaximumGCAge, imageMinimumGCAge := "30h", "30m"
+	grid := []struct {
+		config   kops.KubeletConfigSpec
+		expected string
+	}{
+		{
+			kops.KubeletConfigSpec{
+				ImageMaximumGCAge: &imageMaximumGCAge,
+			},
+			"",
+		},
+		{
+			kops.KubeletConfigSpec{
+				ImageMinimumGCAge: &imageMinimumGCAge,
+			},
+			"",
+		},
+	}
+
+	for _, g := range grid {
+		actual, err := flagbuilder.BuildFlags(&g.config)
+		if err != nil {
+			t.Errorf("error building flags for %v: %v", g.config, err)
+			continue
+		}
+		if actual != g.expected {
+			t.Errorf("flags did not match.  actual=%q expected=%q", actual, g.expected)
+		}
+	}
+}
+
+func Test_ImageGCParseDurationFail(t *testing.T) {
+	t.Run("should return error when parsing invalid imageMaximumGCAge duration", func(t *testing.T) {
+		imageMaximumGCAge := "30hours"
+		componentConfig := kops.KubeletConfigSpec{
+			ImageMaximumGCAge: &imageMaximumGCAge,
+		}
+		_, err := buildKubeletComponentConfig(&componentConfig, "")
+		if err == nil {
+			t.Fatal("expected error but got nil")
+		}
+		expectedMsg := "failed to parse imageMaximumGCAge (30hours)"
+		if !strings.Contains(err.Error(), expectedMsg) {
+			t.Fatalf("expected error containing %q, got %v", expectedMsg, err)
+		}
+	})
+
+	t.Run("should return error when parsing invalid imageMinimumGCAge duration", func(t *testing.T) {
+		imageMinimumGCAge := "30minute"
+		componentConfig := kops.KubeletConfigSpec{
+			ImageMinimumGCAge: &imageMinimumGCAge,
+		}
+		_, err := buildKubeletComponentConfig(&componentConfig, "")
+		if err == nil {
+			t.Fatal("expected error but got nil")
+		}
+		expectedMsg := "failed to parse imageMinimumGCAge (30minute)"
+		if !strings.Contains(err.Error(), expectedMsg) {
+			t.Fatalf("expected error containing %q, got %v", expectedMsg, err)
+		}
+	})
 }
