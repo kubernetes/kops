@@ -21,11 +21,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
@@ -248,6 +250,25 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec, provider
 	if kubeletConfig.ShutdownGracePeriodCriticalPods != nil {
 		componentConfig.ShutdownGracePeriodCriticalPods = *kubeletConfig.ShutdownGracePeriodCriticalPods
 	}
+	// Convert the string value of ImageMaximumGCAge (if provided) to metav1.Duration.
+	if kubeletConfig.ImageMaximumGCAge != nil {
+		d, err := time.ParseDuration(*kubeletConfig.ImageMaximumGCAge)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse imageMaximumGCAge (%s): %w", *kubeletConfig.ImageMaximumGCAge, err)
+		}
+		// Assign the parsed imageMaximumGCAge duration to the kubelet file configuration
+		componentConfig.ImageMaximumGCAge = metav1.Duration{Duration: d}
+	}
+	// Convert the string value of ImageMinimumGCAge (if provided) to metav1.Duration.
+	if kubeletConfig.ImageMinimumGCAge != nil {
+		d, err := time.ParseDuration(*kubeletConfig.ImageMinimumGCAge)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse imageMinimumGCAge (%s): %w", *kubeletConfig.ImageMinimumGCAge, err)
+		}
+		// Assign the parsed imageMinimumGCAge duration to the kubelet file configuration
+		componentConfig.ImageMinimumGCAge = metav1.Duration{Duration: d}
+	}
+
 	componentConfig.MemorySwap.SwapBehavior = kubeletConfig.MemorySwapBehavior
 
 	s := runtime.NewScheme()

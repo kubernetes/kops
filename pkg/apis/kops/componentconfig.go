@@ -131,12 +131,6 @@ type KubeletConfigSpec struct {
 	// and overrides the default MTU for cases where it cannot be automatically
 	// computed (such as IPSEC).
 	NetworkPluginMTU *int32 `json:"networkPluginMTU,omitempty" flag:"network-plugin-mtu"`
-	// imageMinimumGCAge is the minimum age for an unused image before it is garbage collected. Default: "2m"
-	ImageMinimumGCAge *string `json:"imageMinimumGCAge,omitempty" flag:"image-minimum-gc-age"`
-	// imageMaximumGCAge is the maximum age an image can be unused before it is garbage collected.
-	// The default of this field is "0s", which disables this field--meaning images won't be garbage
-	// collected based on being unused for too long. Default: "0s" (disabled)
-	ImageMaximumGCAge *string `json:"imageMaximumGCAge,omitempty" flag:"image-maximum-gc-age"`
 	// ImageGCHighThresholdPercent is the percent of disk usage after which
 	// image garbage collection is always run.
 	ImageGCHighThresholdPercent *int32 `json:"imageGCHighThresholdPercent,omitempty" flag:"image-gc-high-threshold"`
@@ -233,6 +227,13 @@ type KubeletConfigSpec struct {
 	PodPidsLimit *int64 `json:"podPidsLimit,omitempty" flag:"pod-max-pids"`
 	// ExperimentalAllocatableIgnoreEviction enables ignoring Hard Eviction Thresholds while calculating Node Allocatable
 	ExperimentalAllocatableIgnoreEviction *bool `json:"experimentalAllocatableIgnoreEviction,omitempty" flag:"experimental-allocatable-ignore-eviction"`
+
+	// imageMinimumGCAge is the minimum age for an unused image before it is garbage collected. Default: "2m"
+	ImageMinimumGCAge *string `json:"imageMinimumGCAge,omitempty"`
+	// imageMaximumGCAge is the maximum age an image can be unused before it is garbage collected.
+	// The default of this field is "0s", which disables this field--meaning images won't be garbage
+	// collected based on being unused for too long. Default: "0s" (disabled)
+	ImageMaximumGCAge *string `json:"imageMaximumGCAge,omitempty"`
 
 	// ShutdownGracePeriod specifies the total duration that the node should delay the shutdown by.
 	// Default: 30s
