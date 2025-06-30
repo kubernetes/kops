@@ -49,6 +49,7 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/pkg/nodemodel"
@@ -66,6 +67,8 @@ type ToolboxEnrollOptions struct {
 
 	SSHUser string
 	SSHPort int
+
+	kubeconfig.CreateKubecfgOptions
 }
 
 func (o *ToolboxEnrollOptions) InitDefaults() {
@@ -109,7 +112,7 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 
 	// Enroll the node over SSH.
 	if options.Host != "" {
-		restConfig, err := f.RESTConfig(fullCluster)
+		restConfig, err := f.RESTConfig(ctx, fullCluster, options.CreateKubecfgOptions)
 		if err != nil {
 			return err
 		}

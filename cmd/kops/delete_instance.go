@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/instancegroups"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -71,6 +72,8 @@ type DeleteInstanceOptions struct {
 	InstanceID string
 
 	Surge bool
+
+	kubeconfig.CreateKubecfgOptions
 }
 
 func (o *DeleteInstanceOptions) initDefaults() {
@@ -150,6 +153,8 @@ func NewCmdDeleteInstance(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately delete the instance")
 
+	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
+
 	return cmd
 }
 
@@ -167,12 +172,12 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 	var k8sClient kubernetes.Interface
 	var restConfig *rest.Config
 	if !options.CloudOnly {
-		restConfig, err = f.RESTConfig(cluster)
+		restConfig, err = f.RESTConfig(ctx, cluster, options.CreateKubecfgOptions)
 		if err != nil {
 			return fmt.Errorf("getting rest config: %w", err)
 		}
 
-		httpClient, err := f.HTTPClient(cluster)
+		httpClient, err := f.HTTPClient(restConfig)
 		if err != nil {
 			return fmt.Errorf("getting http client: %w", err)
 		}

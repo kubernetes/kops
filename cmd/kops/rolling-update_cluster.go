@@ -219,6 +219,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "Fail if draining a node fails")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "Fail if the cluster fails to validate")
 
+	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
+
 	cmd.Flags().SetNormalizeFunc(func(f *pflag.FlagSet, name string) pflag.NormalizedName {
 		switch name {
 		case "ig", "instance-groups":
@@ -233,7 +235,6 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
-	f.CreateKubecfgOptions = options.CreateKubecfgOptions
 	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
@@ -247,12 +248,12 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 	var nodes []v1.Node
 	var k8sClient kubernetes.Interface
 	if !options.CloudOnly {
-		restConfig, err := f.RESTConfig(cluster)
+		restConfig, err := f.RESTConfig(ctx, cluster, options.CreateKubecfgOptions)
 		if err != nil {
 			return fmt.Errorf("getting rest config: %w", err)
 		}
 
-		httpClient, err := f.HTTPClient(cluster)
+		httpClient, err := f.HTTPClient(restConfig)
 		if err != nil {
 			return fmt.Errorf("getting http client: %w", err)
 		}
@@ -454,7 +455,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 
 	var clusterValidator validation.ClusterValidator
 	if !options.CloudOnly {
-		restConfig, err := f.RESTConfig(cluster)
+		restConfig, err := f.RESTConfig(ctx, cluster, options.CreateKubecfgOptions)
 		if err != nil {
 			return fmt.Errorf("getting rest config: %w", err)
 		}

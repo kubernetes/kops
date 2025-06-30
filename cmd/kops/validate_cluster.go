@@ -75,6 +75,8 @@ type ValidateClusterOptions struct {
 
 	// filterPodsForValidation is a function that returns true if the pod should be validated
 	filterPodsForValidation func(pod *v1.Pod) bool
+
+	ExportKubeconfigOptions
 }
 
 func (o *ValidateClusterOptions) InitDefaults() {
@@ -117,6 +119,8 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.interval, "interval", options.interval, "Time in duration to wait between validation attempts")
 	cmd.Flags().StringVar(&options.kubeconfig, "kubeconfig", "", "Path to the kubeconfig file")
 
+	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
+
 	return cmd
 }
 
@@ -155,12 +159,12 @@ func RunValidateCluster(ctx context.Context, f *util.Factory, out io.Writer, opt
 		return nil, fmt.Errorf("no InstanceGroup objects found")
 	}
 
-	restConfig, err := f.RESTConfig(cluster)
+	restConfig, err := f.RESTConfig(ctx, cluster, options.CreateKubecfgOptions)
 	if err != nil {
 		return nil, fmt.Errorf("getting rest config: %w", err)
 	}
 
-	httpClient, err := f.HTTPClient(cluster)
+	httpClient, err := f.HTTPClient(restConfig)
 	if err != nil {
 		return nil, fmt.Errorf("getting http client: %w", err)
 	}

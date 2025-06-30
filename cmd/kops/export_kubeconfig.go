@@ -94,8 +94,11 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Lookup("admin").NoOptDefVal = kubeconfig.DefaultKubecfgAdminLifetime.String()
 	cmd.Flags().StringVar(&options.User, "user", options.User, "Existing user in kubeconfig file to use")
 	cmd.RegisterFlagCompletionFunc("user", completeKubecfgUser)
+
 	cmd.Flags().BoolVar(&options.Internal, "internal", options.Internal, "Use the cluster's internal DNS name")
 	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "Use the kOps authentication plugin")
+
+	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
 
 	return cmd
 }

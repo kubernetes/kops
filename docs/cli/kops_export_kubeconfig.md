@@ -31,6 +31,7 @@ kops export kubeconfig [CLUSTER | --all] [flags]
 ```
       --admin duration[=18h0m0s]   Also export a cluster admin user credential with the specified lifetime and add it to the cluster context
       --all                        Export all clusters from the kOps state store
+      --api-server string          Override the API server used when communicating with the cluster kube-apiserver
       --auth-plugin                Use the kOps authentication plugin
   -h, --help                       help for kubeconfig
       --internal                   Use the cluster's internal DNS name
