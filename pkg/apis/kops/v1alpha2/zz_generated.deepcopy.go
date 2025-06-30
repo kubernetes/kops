@@ -4197,12 +4197,12 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 	}
 	if in.ImageMinimumGCAge != nil {
 		in, out := &in.ImageMinimumGCAge, &out.ImageMinimumGCAge
-		*out = new(string)
+		*out = new(v1.Duration)
 		**out = **in
 	}
 	if in.ImageMaximumGCAge != nil {
 		in, out := &in.ImageMaximumGCAge, &out.ImageMaximumGCAge
-		*out = new(string)
+		*out = new(v1.Duration)
 		**out = **in
 	}
 	if in.ImageGCHighThresholdPercent != nil {

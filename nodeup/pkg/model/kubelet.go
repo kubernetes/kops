@@ -248,6 +248,12 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec, provider
 	if kubeletConfig.ShutdownGracePeriodCriticalPods != nil {
 		componentConfig.ShutdownGracePeriodCriticalPods = *kubeletConfig.ShutdownGracePeriodCriticalPods
 	}
+	if kubeletConfig.ImageMaximumGCAge != nil {
+		componentConfig.ImageMaximumGCAge = *kubeletConfig.ImageMaximumGCAge
+	}
+	if kubeletConfig.ImageMinimumGCAge != nil {
+		componentConfig.ImageMinimumGCAge = *kubeletConfig.ImageMinimumGCAge
+	}
 	componentConfig.MemorySwap.SwapBehavior = kubeletConfig.MemorySwapBehavior
 
 	s := runtime.NewScheme()
