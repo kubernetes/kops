@@ -17,15 +17,18 @@ limitations under the License.
 package commandutils
 
 import (
+	"context"
+
 	"k8s.io/client-go/rest"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Factory interface {
 	KopsClient() (simple.Clientset, error)
 	VFSContext() *vfs.VFSContext
-	RESTConfig(cluster *kops.Cluster) (*rest.Config, error)
+	RESTConfig(ctx context.Context, cluster *kops.Cluster, options kubeconfig.CreateKubecfgOptions) (*rest.Config, error)
 }
