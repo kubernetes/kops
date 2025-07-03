@@ -18,6 +18,7 @@ package gcemodel
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -127,8 +128,17 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 				if len(ig.Spec.NodeLabels) > 0 {
 					var nodeLabels string
-					for k, v := range ig.Spec.NodeLabels {
-						nodeLabels += k + "=" + v + ","
+					sortedLabelKeys := make([]string, len(ig.Spec.NodeLabels))
+					i := 0
+					for k := range ig.Spec.NodeLabels {
+						sortedLabelKeys[i] = k
+						i++
+					}
+					slices.SortStableFunc(sortedLabelKeys, func(a, b string) int {
+						return strings.Compare(a, b)
+					})
+					for _, k := range sortedLabelKeys {
+						nodeLabels += k + "=" + ig.Spec.NodeLabels[k] + ","
 					}
 					nodeLabels, _ = strings.CutSuffix(nodeLabels, ",")
 
