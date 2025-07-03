@@ -18,6 +18,7 @@ package gcemodel
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -124,6 +125,30 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
 					autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
 				}
+
+				if len(ig.Spec.NodeLabels) > 0 {
+					var nodeLabels string
+					sortedLabelKeys := make([]string, len(ig.Spec.NodeLabels))
+					i := 0
+					for k := range ig.Spec.NodeLabels {
+						sortedLabelKeys[i] = k
+						i++
+					}
+					slices.SortStableFunc(sortedLabelKeys, func(a, b string) int {
+						return strings.Compare(a, b)
+					})
+					for _, k := range sortedLabelKeys {
+						nodeLabels += k + "=" + ig.Spec.NodeLabels[k] + ","
+					}
+					nodeLabels, _ = strings.CutSuffix(nodeLabels, ",")
+
+					autoscalerEnvVars += ";node_labels=" + nodeLabels
+				}
+
+				if len(ig.Spec.Taints) > 0 {
+					autoscalerEnvVars += ";node_taints=" + strings.Join(ig.Spec.Taints, ",")
+				}
+
 				t.Metadata["kube-env"] = fi.NewStringResource("AUTOSCALER_ENV_VARS: " + autoscalerEnvVars)
 			}
 

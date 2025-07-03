@@ -783,7 +783,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
   metadata = {
     "cluster-name"                    = "ha-gce.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
-    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
+    "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux;node_labels=kops.k8s.io/instancegroup=nodes;node_taints=a=b:c"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-ha-gce-example-com_metadata_user-data")
   }

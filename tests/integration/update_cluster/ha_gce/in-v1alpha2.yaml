@@ -132,9 +132,13 @@ spec:
   machineType: e2-medium
   maxSize: 2
   minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
   role: Node
   subnets:
   - us-test1
+  taints:
+  - a=b:c
   zones:
   - us-test1-a
   - us-test1-b
