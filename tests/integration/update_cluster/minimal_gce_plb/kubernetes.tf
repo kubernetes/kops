@@ -462,8 +462,10 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gc
   target_pools                   = [google_compute_target_pool.api-minimal-gce-plb-example-com.self_link]
   target_size                    = 1
   update_policy {
-    minimal_action = "REPLACE"
-    type           = "OPPORTUNISTIC"
+    max_surge_fixed       = 1
+    max_unavailable_fixed = 1
+    minimal_action        = "REPLACE"
+    type                  = "OPPORTUNISTIC"
   }
   version {
     instance_template = google_compute_instance_template.master-us-test1-a-minimal-gce-plb-example-com.self_link
@@ -480,8 +482,10 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-plb-exampl
   name                           = "a-nodes-minimal-gce-plb-example-com"
   target_size                    = 2
   update_policy {
-    minimal_action = "REPLACE"
-    type           = "OPPORTUNISTIC"
+    max_surge_fixed       = 1
+    max_unavailable_fixed = 1
+    minimal_action        = "REPLACE"
+    type                  = "OPPORTUNISTIC"
   }
   version {
     instance_template = google_compute_instance_template.nodes-minimal-gce-plb-example-com.self_link
