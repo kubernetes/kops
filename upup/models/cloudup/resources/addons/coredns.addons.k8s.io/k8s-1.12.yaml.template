@@ -145,16 +145,18 @@ spec:
 {{ ToYAML .KubeDNS.Affinity | indent 8 }}
 {{- end }}
       topologySpreadConstraints:
+{{- if ne GetCloudProvider "metal" }}
+      # Metal provider doesn't add the "topology.kubernetes.io/zone" label
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
-        whenUnsatisfiable: ScheduleAnyway
+        whenUnsatisfiable: DoNotSchedule
         labelSelector:
           matchLabels:
             k8s-app: kube-dns
+{{- end }}
       - maxSkew: 1
         topologyKey: "kubernetes.io/hostname"
-        # Normally we use DoNotSchedule here, but because CoreDNS autoscales, we cannot guarantee this constraint can be satisfied
-        whenUnsatisfiable: ScheduleAnyway
+        whenUnsatisfiable: DoNotSchedule
         labelSelector:
           matchLabels:
             k8s-app: kube-dns
