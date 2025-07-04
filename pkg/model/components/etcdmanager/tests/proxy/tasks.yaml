@@ -94,7 +94,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250704
       name: etcd-manager
       resources:
         requests:
@@ -105,10 +105,6 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
-      - mountPath: /etc/ssl
-        name: ca-certificates
-      - mountPath: /etc/pki
-        name: ca-bundle
       - mountPath: /run
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -198,14 +194,6 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
-    - hostPath:
-        path: /etc/ssl
-        type: DirectoryOrCreate
-      name: ca-certificates
-    - hostPath:
-        path: /etc/pki
-        type: DirectoryOrCreate
-      name: ca-bundle
     - hostPath:
         path: /run
         type: DirectoryOrCreate
@@ -257,7 +245,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250704
       name: etcd-manager
       resources:
         requests:
@@ -268,10 +256,6 @@ Contents: |
       volumeMounts:
       - mountPath: /rootfs
         name: rootfs
-      - mountPath: /etc/ssl
-        name: ca-certificates
-      - mountPath: /etc/pki
-        name: ca-bundle
       - mountPath: /run
         name: run
       - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -361,14 +345,6 @@ Contents: |
         path: /
         type: Directory
       name: rootfs
-    - hostPath:
-        path: /etc/ssl
-        type: DirectoryOrCreate
-      name: ca-certificates
-    - hostPath:
-        path: /etc/pki
-        type: DirectoryOrCreate
-      name: ca-bundle
     - hostPath:
         path: /run
         type: DirectoryOrCreate

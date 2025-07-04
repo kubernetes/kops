@@ -171,7 +171,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250629
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250704
     resources:
       requests:
         cpu: 100m
@@ -183,10 +183,6 @@ spec:
     # TODO: Would be nice to scope this more tightly, but needed for volume mounting
     - mountPath: /rootfs
       name: rootfs
-    - mountPath: /etc/ssl
-      name: ca-certificates
-    - mountPath: /etc/pki
-      name: ca-bundle
     - mountPath: /run
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
@@ -200,14 +196,6 @@ spec:
       path: /
       type: Directory
     name: rootfs
-  - hostPath:
-      path: /etc/ssl
-      type: DirectoryOrCreate
-    name: ca-certificates
-  - hostPath:
-      path: /etc/pki
-      type: DirectoryOrCreate
-    name: ca-bundle
   - hostPath:
       path: /run
       type: DirectoryOrCreate
