@@ -14,7 +14,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 083087378418c789f6d147109acd8d4af45735fce6651bc6ef7797370ff267d9
+    manifestHash: e20290a5b4c7a1dd1596b4a9adb1e7ecbf9efbe0aa0a51b8e09334c97e1ec9cb
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
