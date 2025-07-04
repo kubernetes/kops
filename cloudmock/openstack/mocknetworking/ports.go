@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 
 	"k8s.io/kops/upup/pkg/fi"
@@ -83,6 +84,22 @@ func (m *MockClient) mockPorts() {
 	m.Mux.HandleFunc("/ports", handler)
 }
 
+func containsAll(list []string, subList []string) bool {
+	for _, item := range subList {
+		if !slices.Contains(list, item) {
+			return false
+		}
+	}
+	return true
+}
+
+func parseTags(tags string) []string {
+	if tags == "" {
+		return []string{}
+	}
+	return strings.Split(tags, ",")
+}
+
 func (m *MockClient) listPorts(w http.ResponseWriter, vals url.Values) {
 	w.WriteHeader(http.StatusOK)
 
@@ -91,6 +108,8 @@ func (m *MockClient) listPorts(w http.ResponseWriter, vals url.Values) {
 	idFilter := vals.Get("id")
 	networkFilter := vals.Get("network_id")
 	deviceFilter := vals.Get("device_id")
+	tags := parseTags(vals.Get("tags"))
+
 	for _, p := range m.ports {
 		if nameFilter != "" && nameFilter != p.Name {
 			continue
@@ -102,6 +121,9 @@ func (m *MockClient) listPorts(w http.ResponseWriter, vals url.Values) {
 			continue
 		}
 		if idFilter != "" && idFilter != p.ID {
+			continue
+		}
+		if len(tags) > 0 && !containsAll(p.Tags, tags) {
 			continue
 		}
 		ports = append(ports, p)
