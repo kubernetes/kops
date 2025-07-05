@@ -20,6 +20,9 @@ import "k8s.io/kops/upup/pkg/fi"
 
 // UpdatePolicy represents a GCE instance group manager UpdatePolicy
 type UpdatePolicy struct {
+	MaxSurgeFixed       int64
+	MaxUnavailableFixed int64
+
 	MinimalAction string
 	Type          string
 }
