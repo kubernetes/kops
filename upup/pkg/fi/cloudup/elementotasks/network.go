@@ -55,6 +55,7 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 		idOrName = fi.ValueOf(v.ID)
 	}
 
+	// for now ID is not used, so the name identifier is: test.k8s
 	if id, err := strconv.Atoi(idOrName); err == nil {
 		network, _, err := client.GetByID(context.TODO(), int(id))
 		if err == nil && network != nil {
@@ -66,6 +67,7 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 		}
 	}
 	network, _, err := client.GetByName(context.TODO(), idOrName)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to find network %q: %w", idOrName, err)
 	}
@@ -144,7 +146,8 @@ func (*Network) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *Net
 	client := t.Cloud.NetworkClient()
 
 	var network *ecloud.Network
-	if a != nil {
+	if a == nil {
+		// Network doesn't exist, create it
 		_, ipRange, err := net.ParseCIDR(e.IPRange)
 		if err != nil {
 			return err
@@ -160,6 +163,7 @@ func (*Network) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *Net
 		}
 		e.ID = fi.PtrTo(strconv.Itoa(network.ID))
 	} else {
+		// Network exists, get it
 		var err error
 		network, _, err = client.GetByName(context.TODO(), fi.ValueOf(e.Name))
 		if err != nil {

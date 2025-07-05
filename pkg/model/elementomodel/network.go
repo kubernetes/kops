@@ -37,10 +37,16 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	if b.Cluster.Spec.Networking.NetworkID == "" {
-		network.IPRange = b.Cluster.Spec.Networking.NetworkCIDR
+		// For Elemento, if NetworkCIDR is not specified, use a default CIDR
+		networkCIDR := b.Cluster.Spec.Networking.NetworkCIDR
+		if networkCIDR == "" {
+			networkCIDR = "10.0.0.0/16" // Default CIDR for Elemento networks
+		}
+
+		network.IPRange = networkCIDR
 		network.Region = b.Region
 		network.Subnets = []string{
-			b.Cluster.Spec.Networking.NetworkCIDR,
+			networkCIDR,
 		}
 		network.Labels = map[string]string{
 			elemento.TagKubernetesClusterName: b.ClusterName(),

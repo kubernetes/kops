@@ -198,6 +198,8 @@ type InstanceGroupSpec struct {
 	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
 	//   'SPOT': heavily discounted, no guaranteed run time.
 	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
+	// Architecture of the instance group
+	Architecture string `json:"architecture,omitempty"`
 }
 
 const (

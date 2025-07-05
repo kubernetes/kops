@@ -18,6 +18,8 @@ package elementomodel
 
 import (
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elementotasks"
 )
 
@@ -27,5 +29,26 @@ type ElementoModelContext struct {
 
 func (b *ElementoModelContext) LinkToNetwork() *elementotasks.Network {
 	name := b.ClusterName()
-	return &elementotasks.Network{Name: &name}
+	network := &elementotasks.Network{Name: &name}
+
+	// If NetworkID is not specified, provide default values
+	if b.Cluster.Spec.Networking.NetworkID == "" {
+		networkCIDR := b.Cluster.Spec.Networking.NetworkCIDR
+		if networkCIDR == "" {
+			networkCIDR = "10.0.0.0/16" // Default CIDR for Elemento networks
+		}
+
+		network.IPRange = networkCIDR
+		network.Region = b.Region
+		network.Subnets = []string{
+			networkCIDR,
+		}
+		network.Labels = map[string]string{
+			elemento.TagKubernetesClusterName: b.ClusterName(),
+		}
+	} else {
+		network.ID = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
+	}
+
+	return network
 }

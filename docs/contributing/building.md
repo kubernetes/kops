@@ -64,7 +64,7 @@ dlv --listen=:2345 --headless=true --api-version=2 exec ${GOPATH}/bin/kops -- <k
 
 #### Example with Environment Variables
 
-To pass environment variables along with Delve, prepend them to the command:
+To pass environment variables to Delve, prepend them to the command as shown in the following example:
 
 ```bash
 S3_REGION=eu-south-1 \

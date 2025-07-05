@@ -40,7 +40,8 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 		   subnet.Zone == "south-america" || 
 		   subnet.Zone == "africa" || 
 		   subnet.Zone == "oceania" || 
-		   subnet.Zone == "antartica" {
+		   subnet.Zone == "antartica" ||
+		   subnet.Zone == "eu-south-1" {
 			// TODO: check if it is works out
 			zoneRegion = subnet.Zone
 		} else {

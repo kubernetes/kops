@@ -17,6 +17,7 @@ limitations under the License.
 package elementomodel
 
 import (
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -65,22 +66,34 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		}
 
 		serverGroup := elementotasks.ServerGroup{
-			Name:       fi.PtrTo(ig.Name),
-			Lifecycle:  b.Lifecycle,
-			SSHKeys:    sshkeyTasks,
-			Network:    b.LinkToNetwork(),
-			Count:      int(igSize),
-			Location:   ig.Spec.Subnets[0],
-			Size:       ig.Spec.MachineType,
-			Image:      ig.Spec.Image,
-			EnableIPv4: true,
-			EnableIPv6: false,
-			UserData:   userData,
-			Labels:     labels,
+			Name:         fi.PtrTo(ig.Name),
+			Lifecycle:    b.Lifecycle,
+			SSHKeys:      sshkeyTasks,
+			Network:      b.LinkToNetwork(),
+			Count:        int(igSize),
+			Location:     ig.Spec.Subnets[0],
+			Size:         ig.Spec.MachineType,
+			Image:        ig.Spec.Image,
+			Architecture: determineArchitecture(ig),
+			EnableIPv4:   true,
+			EnableIPv6:   false,
+			UserData:     userData,
+			Labels:       labels,
 		}
 
 		c.AddTask(&serverGroup)
 	}
 
 	return nil
+}
+
+// determines the appropriate architecture for an instance group
+func determineArchitecture(ig *kops.InstanceGroup) string {
+	// Check if architecture is explicitly specified in the instance group
+	if ig.Spec.Architecture != "" {
+		return ig.Spec.Architecture
+	}
+	
+	// Default to X86_64 for Elemento cloud provider
+	return "X86_64"
 }

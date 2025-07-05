@@ -20,12 +20,12 @@ import (
 	"fmt"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
-	"k8s.io/kops/upup/pkg/fi"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
@@ -46,8 +46,8 @@ type ElementoCloud interface {
 	Region() string
 	DNS() (dnsprovider.Interface, error)
 	NetworkClient() ecloud.NetworkClient // TODO
-	ServerClient() ecloud.ServerClient // TODO
-	SSHKeyClient() ecloud.SSHKeyClient // TODO
+	ServerClient() ecloud.ServerClient   // TODO
+	SSHKeyClient() ecloud.SSHKeyClient   // TODO
 
 	// TODO: Detect and add additional fields here
 }
@@ -63,7 +63,7 @@ type elementoCloudImplementation struct {
 }
 
 func NewElementoCloud(region string) (ElementoCloud, error) {
-	// Elemento does not use an access token, but is previously authenticated with 
+	// Elemento does not use an access token, but is previously authenticated with
 	// the CLI and deamons, you must execute the Electros app to authenticate.
 
 	client, err := ecloud.NewClient("kops-client", "0.1") // TODO
@@ -80,7 +80,7 @@ func NewElementoCloud(region string) (ElementoCloud, error) {
 }
 
 func (c *elementoCloudImplementation) ProviderID() kops.CloudProviderID {
-    return kops.CloudProviderElemento
+	return kops.CloudProviderElemento
 }
 
 func (c *elementoCloudImplementation) Region() string {
@@ -88,10 +88,10 @@ func (c *elementoCloudImplementation) Region() string {
 }
 
 func (c *elementoCloudImplementation) DNS() (dnsprovider.Interface, error) {
-    if c.dns == nil {
-        return nil, fmt.Errorf("DNS provider is not initialized")
-    }
-    return c.dns, nil
+	if c.dns == nil {
+		return nil, fmt.Errorf("DNS provider is not initialized")
+	}
+	return c.dns, nil
 }
 
 func (c *elementoCloudImplementation) NetworkClient() ecloud.NetworkClient {
@@ -146,8 +146,21 @@ func (s *elementoCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error
 }
 
 func (s *elementoCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
-	klog.V(8).Info("Elemento GetApiIngressStatus is not implemented")
-	return nil, fmt.Errorf("GetApiIngressStatus is not implemented yet for Elemento")
+	// klog.V(8).Info("Elemento GetApiIngressStatus is not implemented")
+	// return nil, fmt.Errorf("GetApiIngressStatus is not implemented yet for Elemento")
+	klog.V(8).Info("Elemento GetApiIngressStatus returning mock data")
+
+	//! Mock response with reasonable API ingress statuses
+	return []fi.ApiIngressStatus{
+		{
+			IP:       "10.0.0.1", // Mock internal IP
+			Hostname: "api.internal.cluster.local",
+		},
+		{
+			IP:       "203.0.113.1", // Mock external IP
+			Hostname: "api.cluster.example.com",
+		},
+	}, nil
 }
 
 func (s *elementoCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
