@@ -387,6 +387,38 @@ $ df -h | grep nvme[12]
 
 > Note: at present its up to the user ensure the correct device names.
 
+Some AWS instances provide multiple NVMe disks instead of a single device. You can use an additionalUserData to create a RAID array from those disks
+and then use volumeMounts to mount and format that virtual device, for example:
+
+```yaml
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: my-beloved-cluster
+  name: database
+spec:
+  # ...
+  additionalUserData:
+    - content: |
+        #!/bin/bash
+        set -eo pipefail
+        if ! [ -e /dev/md0 ] ; then
+          DEVICES=($(lsblk -rp -I 259 -o NAME,MODEL | grep 'Amazon\\x20EC2\\x20NVMe' | cut -d ' ' -f 1))
+          DEVICE_COUNT={{ "${#DEVICES[@]}" }}
+          echo Found ${DEVICE_COUNT} NVMe disks: ${DEVICES[@]}
+          if [[ $DEVICE_COUNT > 1 ]] ; then
+            mdadm --create /dev/md0 --level=10 --raid-devices=${DEVICE_COUNT} ${DEVICES[@]}
+          fi
+        fi
+      name: 00-setup-raid.sh
+      type: text/x-shellscript
+  volumeMounts:
+    - device: /dev/md0
+      filesystem: xfs
+      path: /data
+```
+
 ## Creating a new instance group
 
 Suppose you want to add a new group of nodes, perhaps with a different instance type. You do this using `kops create ig <InstanceGroupName> --subnet <zone(s)>`. Currently the
