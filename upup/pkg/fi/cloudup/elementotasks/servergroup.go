@@ -40,9 +40,10 @@ type ServerGroup struct {
 	Count      int
 	NeedUpdate []string
 
-	Location string
-	Size     string
-	Image    string
+	Location     string
+	Size         string
+	Image        string
+	Architecture string
 
 	EnableIPv4 bool
 	EnableIPv6 bool
@@ -50,6 +51,9 @@ type ServerGroup struct {
 	UserData fi.Resource
 
 	Labels map[string]string
+
+	// RootVolumeSize is the size of the root volume in GB
+	RootVolumeSize *int32
 }
 
 func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
@@ -120,6 +124,11 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
 			continue
 		}
+		// TODO: Check root volume size when the ecloud library provides access to it
+		// if server.RootVolumeSize != v.RootVolumeSize {
+		//     actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+		//     continue
+		// }
 	}
 
 	return &actual, nil
@@ -129,7 +138,7 @@ func (v *ServerGroup) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
-func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
+func (*ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 	if e.Name == nil {
 		return fi.RequiredField("Name")
 	}
@@ -145,10 +154,13 @@ func (_ *ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 	if e.UserData == nil {
 		return fi.RequiredField("UserData")
 	}
+	if e.RootVolumeSize != nil && fi.ValueOf(e.RootVolumeSize) <= 0 {
+		return fi.RequiredField("RootVolumeSize must be greater than 0")
+	}
 	return nil
 }
 
-func (_ *ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *ServerGroup) error {
+func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *ServerGroup) error {
 	client := t.Cloud.ServerClient()
 
 	if a != nil {
@@ -224,6 +236,11 @@ func (_ *ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, change
 			},
 			UserData: userData,
 			Labels:   e.Labels,
+		}
+
+		// Add root volume configuration if specified
+		if e.RootVolumeSize != nil {
+			opts.ServerType.Disk = int(fi.ValueOf(e.RootVolumeSize))
 		}
 
 		// Add the SSH keys

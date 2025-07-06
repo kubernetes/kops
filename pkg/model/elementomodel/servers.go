@@ -19,6 +19,7 @@ package elementomodel
 import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
@@ -65,20 +66,34 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 			return err
 		}
 
+		// Determine root volume size
+		var rootVolumeSize *int32
+		if ig.Spec.RootVolume != nil && ig.Spec.RootVolume.Size != nil {
+			rootVolumeSize = ig.Spec.RootVolume.Size
+		} else {
+			// Use default volume size based on role
+			defaultSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+			if err != nil {
+				return err
+			}
+			rootVolumeSize = fi.PtrTo(defaultSize)
+		}
+
 		serverGroup := elementotasks.ServerGroup{
-			Name:         fi.PtrTo(ig.Name),
-			Lifecycle:    b.Lifecycle,
-			SSHKeys:      sshkeyTasks,
-			Network:      b.LinkToNetwork(),
-			Count:        int(igSize),
-			Location:     ig.Spec.Subnets[0],
-			Size:         ig.Spec.MachineType,
-			Image:        ig.Spec.Image,
-			Architecture: determineArchitecture(ig),
-			EnableIPv4:   true,
-			EnableIPv6:   false,
-			UserData:     userData,
-			Labels:       labels,
+			Name:           fi.PtrTo(ig.Name),
+			Lifecycle:      b.Lifecycle,
+			SSHKeys:        sshkeyTasks,
+			Network:        b.LinkToNetwork(),
+			Count:          int(igSize),
+			Location:       ig.Spec.Subnets[0],
+			Size:           ig.Spec.MachineType,
+			Image:          ig.Spec.Image,
+			Architecture:   determineArchitecture(ig),
+			EnableIPv4:     true,
+			EnableIPv6:     false,
+			UserData:       userData,
+			Labels:         labels,
+			RootVolumeSize: rootVolumeSize,
 		}
 
 		c.AddTask(&serverGroup)
@@ -93,7 +108,7 @@ func determineArchitecture(ig *kops.InstanceGroup) string {
 	if ig.Spec.Architecture != "" {
 		return ig.Spec.Architecture
 	}
-	
+
 	// Default to X86_64 for Elemento cloud provider
 	return "X86_64"
 }
