@@ -85,12 +85,12 @@ BUILDFLAGS="-trimpath"
 
 # Go exports:
 LDFLAGS := -ldflags=all=
+EXTRA_LDFLAGS := $(shell go run $(KOPS_ROOT)/tools/gen-ldflags.go $(VERSION))
 
 ifdef STATIC_BUILD
   CGO_ENABLED=0
   export CGO_ENABLED
   EXTRA_BUILDFLAGS=-installsuffix cgo
-  EXTRA_LDFLAGS=-s -w
 endif
 
 
@@ -192,18 +192,18 @@ kops: crossbuild-kops-$(shell go env GOOS)-$(shell go env GOARCH)
 .PHONY: crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64
 crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64: crossbuild-kops-linux-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64
 crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64: crossbuild-kops-darwin-%:
 	mkdir -p ${DIST}/darwin/$*
-	GOOS=darwin GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/darwin/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=darwin GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/darwin/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops
 
 
 .PHONY: crossbuild-kops-windows-amd64
 crossbuild-kops-windows-amd64:
 	mkdir -p ${DIST}/windows/amd64
-	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/amd64/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/amd64/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild
 crossbuild: crossbuild-kops
@@ -214,7 +214,7 @@ crossbuild: crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64 crossbuild-k
 .PHONY: nodeup-amd64 nodeup-arm64
 nodeup-amd64 nodeup-arm64: nodeup-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS}" k8s.io/kops/cmd/nodeup
 
 .PHONY: nodeup
 nodeup: nodeup-amd64
@@ -225,7 +225,7 @@ crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 .PHONY: protokube-amd64 protokube-arm64
 protokube-amd64 protokube-arm64: protokube-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build -tags=peer_name_alternative,peer_name_hash ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
+	GOOS=linux GOARCH=$* go build -tags=peer_name_alternative,peer_name_hash ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS}" k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
 protokube: protokube-amd64
@@ -236,7 +236,7 @@ crossbuild-protokube: protokube-amd64 protokube-arm64
 .PHONY: channels-amd64 channels-arm64
 channels-amd64 channels-arm64: channels-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/channels/cmd/channels
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 .PHONY: channels
 channels: channels-amd64
@@ -301,7 +301,7 @@ push-aws-run-amd64 push-aws-run-arm64: push-aws-run-%: push-%
 
 .PHONY: ${NODEUP}
 ${NODEUP}:
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
+	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/nodeup
 
 .PHONY: dns-controller-push
 dns-controller-push: ko-dns-controller-push
