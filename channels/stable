@@ -110,7 +110,7 @@ spec:
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: Canonical:ubuntu-24_04-lts:server:24.04.20250606
+    - name: Canonical:ubuntu-24_04-lts:server:24.04.202507010
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
