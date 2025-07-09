@@ -44,7 +44,10 @@ func (c *roleAssignmentsClientImpl) Create(
 	parameters authz.RoleAssignmentCreateParameters,
 ) (*authz.RoleAssignment, error) {
 	resp, err := c.c.Create(ctx, scope, roleAssignmentName, parameters, nil)
-	return &resp.RoleAssignment, err
+	if err != nil {
+		return nil, err
+	}
+	return &resp.RoleAssignment, nil
 }
 
 func (c *roleAssignmentsClientImpl) List(ctx context.Context, scope string) ([]*authz.RoleAssignment, error) {

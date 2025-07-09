@@ -67,7 +67,7 @@ func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
 			resourceGroupID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s",
 				b.Cluster.Spec.CloudProvider.Azure.SubscriptionID,
-				b.Cluster.Spec.CloudProvider.Azure.ResourceGroupName,
+				b.Cluster.AzureResourceGroupName(),
 			)
 			c.AddTask(&azuretasks.RoleAssignment{
 				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "owner")),
