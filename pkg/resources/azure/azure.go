@@ -63,6 +63,14 @@ func (g *resourceGetter) resourceGroupName() string {
 	return g.clusterInfo.AzureResourceGroupName
 }
 
+func (g *resourceGetter) resourceGroupID() string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", g.clusterInfo.AzureSubscriptionID, g.clusterInfo.AzureResourceGroupName)
+}
+
+func (g *resourceGetter) storageAccountID() string {
+	return g.clusterInfo.AzureStorageAccountID
+}
+
 func (g *resourceGetter) listResourcesAzure() (map[string]*resources.Resource, error) {
 	rs, err := g.listAll()
 	if err != nil {
@@ -397,11 +405,17 @@ func (g *resourceGetter) listVMScaleSetsAndRoleAssignments(ctx context.Context) 
 		principalIDs[*vmss.Identity.PrincipalID] = vmss
 	}
 
-	ras, err := g.listRoleAssignments(ctx, principalIDs)
+	resourceGroupRAs, err := g.listRoleAssignments(ctx, principalIDs, g.resourceGroupID())
 	if err != nil {
 		return nil, err
 	}
-	rs = append(rs, ras...)
+	rs = append(rs, resourceGroupRAs...)
+
+	storageAccountRAs, err := g.listRoleAssignments(ctx, principalIDs, g.storageAccountID())
+	if err != nil {
+		return nil, err
+	}
+	rs = append(rs, storageAccountRAs...)
 
 	return rs, nil
 }
@@ -509,8 +523,8 @@ func (g *resourceGetter) deleteDisk(_ fi.Cloud, r *resources.Resource) error {
 	return g.cloud.Disk().Delete(context.TODO(), g.resourceGroupName(), r.Name)
 }
 
-func (g *resourceGetter) listRoleAssignments(ctx context.Context, principalIDs map[string]*compute.VirtualMachineScaleSet) ([]*resources.Resource, error) {
-	ras, err := g.cloud.RoleAssignment().List(ctx, g.resourceGroupName())
+func (g *resourceGetter) listRoleAssignments(ctx context.Context, principalIDs map[string]*compute.VirtualMachineScaleSet, scope string) ([]*resources.Resource, error) {
+	ras, err := g.cloud.RoleAssignment().List(ctx, scope)
 	if err != nil {
 		return nil, err
 	}

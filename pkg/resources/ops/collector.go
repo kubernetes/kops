@@ -57,6 +57,8 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster) (map[string]*resources
 	case kops.CloudProviderOpenstack:
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterInfo)
 	case kops.CloudProviderAzure:
+		clusterInfo.AzureStorageAccountID = cluster.Spec.CloudProvider.Azure.StorageAccountID
+		clusterInfo.AzureSubscriptionID = cluster.Spec.CloudProvider.Azure.SubscriptionID
 		clusterInfo.AzureResourceGroupName = cluster.AzureResourceGroupName()
 		clusterInfo.AzureResourceGroupShared = cluster.IsSharedAzureResourceGroup()
 		clusterInfo.AzureNetworkShared = cluster.SharedVPC()

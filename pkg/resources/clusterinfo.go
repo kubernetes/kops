@@ -20,6 +20,8 @@ type ClusterInfo struct {
 	Name        string
 	UsesNoneDNS bool
 	// Azure specific
+	AzureStorageAccountID    string
+	AzureSubscriptionID      string
 	AzureResourceGroupName   string
 	AzureResourceGroupShared bool
 	AzureNetworkShared       bool
