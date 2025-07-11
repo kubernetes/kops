@@ -97,29 +97,35 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 	}
 	c.Image = image
 
-	switch cluster.GetCloudProvider() {
-	case kops.CloudProviderAWS:
-		c.CloudProvider = "aws"
-	case kops.CloudProviderGCE:
-		c.CloudProvider = "gce"
-	case kops.CloudProviderDO:
-		c.CloudProvider = "external"
-	case kops.CloudProviderHetzner:
-		c.CloudProvider = "external"
-	case kops.CloudProviderOpenstack:
-		c.CloudProvider = "openstack"
-	case kops.CloudProviderAzure:
-		c.CloudProvider = "azure"
-	case kops.CloudProviderScaleway:
-		c.CloudProvider = "external"
-	case kops.CloudProviderMetal:
-		c.CloudProvider = "external"
-	default:
-		return fmt.Errorf("unknown cloudprovider %q", cluster.GetCloudProvider())
-	}
+	if b.controlPlaneKubernetesVersion.IsLT("1.33") {
+		if b.controlPlaneKubernetesVersion.IsLT("1.31") {
+			switch cluster.GetCloudProvider() {
+			case kops.CloudProviderAWS:
+				c.CloudProvider = "aws"
+			case kops.CloudProviderGCE:
+				c.CloudProvider = "gce"
+			case kops.CloudProviderDO:
+				c.CloudProvider = "external"
+			case kops.CloudProviderHetzner:
+				c.CloudProvider = "external"
+			case kops.CloudProviderOpenstack:
+				c.CloudProvider = "openstack"
+			case kops.CloudProviderAzure:
+				c.CloudProvider = "azure"
+			case kops.CloudProviderScaleway:
+				c.CloudProvider = "external"
+			case kops.CloudProviderMetal:
+				c.CloudProvider = "external"
+			default:
+				return fmt.Errorf("unknown cloudprovider %q", cluster.GetCloudProvider())
+			}
 
-	if clusterSpec.ExternalCloudControllerManager != nil {
-		c.CloudProvider = "external"
+			if clusterSpec.ExternalCloudControllerManager != nil {
+				c.CloudProvider = "external"
+			}
+		} else {
+			c.CloudProvider = "external"
+		}
 	}
 
 	c.LogLevel = 2

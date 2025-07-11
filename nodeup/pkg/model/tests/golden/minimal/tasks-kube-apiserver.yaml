@@ -24,15 +24,12 @@ contents: |
       - --authorization-mode=AlwaysAllow
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
-      - --cloud-config=/etc/kubernetes/in-tree-cloud.config
-      - --cloud-provider=external
       - --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,NodeRestriction,ResourceQuota
       - --etcd-cafile=/srv/kubernetes/kube-apiserver/etcd-ca.crt
       - --etcd-certfile=/srv/kubernetes/kube-apiserver/etcd-client.crt
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://127.0.0.1:4002
       - --etcd-servers=https://127.0.0.1:4001
-      - --feature-gates=InTreePluginAWSUnregister=true
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
@@ -55,23 +52,44 @@ contents: |
       - --v=2
       command:
       - /go-runner
-      image: registry.k8s.io/kube-apiserver:v1.28.0
+      image: registry.k8s.io/kube-apiserver:v1.33.0
       livenessProbe:
+        failureThreshold: 8
         httpGet:
           host: 127.0.0.1
-          path: /healthz
+          path: /livez
           port: 443
           scheme: HTTPS
-        initialDelaySeconds: 45
+        initialDelaySeconds: 10
+        periodSeconds: 10
         timeoutSeconds: 15
       name: kube-apiserver
       ports:
       - containerPort: 443
         hostPort: 443
         name: https
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          host: 127.0.0.1
+          path: /healthz
+          port: 443
+          scheme: HTTPS
+        periodSeconds: 1
+        timeoutSeconds: 15
       resources:
         requests:
           cpu: 150m
+      startupProbe:
+        failureThreshold: 30
+        httpGet:
+          host: 127.0.0.1
+          path: /livez
+          port: 443
+          scheme: HTTPS
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        timeoutSeconds: 300
       volumeMounts:
       - mountPath: /var/log/kube-apiserver.log
         name: logfile
