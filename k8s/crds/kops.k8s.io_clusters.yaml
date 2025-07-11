@@ -3635,6 +3635,12 @@ spec:
                           config for node local dns by the user - it will include
                           the original CoreFile made by kOps.
                         type: string
+                      ciliumBPFCompatibility:
+                        description: CiliumBPFCompatibility allows user to enable
+                          cilium bpf host routing compatibility mode, which is required
+                          for cilium 1.16.5+ and above, when the user is using cilium
+                          as an externally managed daemonset.
+                        type: boolean
                       cpuRequest:
                         anyOf:
                         - type: integer

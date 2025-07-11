@@ -87,7 +87,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	}
 
 	if kubelet.ClusterDNS == "" {
-		if cluster.Spec.KubeDNS != nil && cluster.Spec.KubeDNS.NodeLocalDNS != nil && fi.ValueOf(cluster.Spec.KubeDNS.NodeLocalDNS.Enabled) {
+		if cluster.Spec.KubeDNS != nil && cluster.Spec.KubeDNS.NodeLocalDNS != nil && fi.ValueOf(cluster.Spec.KubeDNS.NodeLocalDNS.Enabled) && !fi.ValueOf(cluster.Spec.KubeDNS.NodeLocalDNS.CiliumBPFCompatibility) && cluster.Spec.Networking.Cilium == nil {
 			kubelet.ClusterDNS = cluster.Spec.KubeDNS.NodeLocalDNS.LocalIP
 		} else {
 			ip, err := WellKnownServiceIP(&cluster.Spec.Networking, 10)
