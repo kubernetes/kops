@@ -1839,14 +1839,21 @@ func validateNodeLocalDNS(spec *kops.ClusterSpec, fldpath *field.Path) field.Err
 		}
 	}
 
-	if (spec.KubeProxy != nil && spec.KubeProxy.ProxyMode == "ipvs") || spec.Networking.Cilium != nil {
-		if spec.Kubelet != nil && spec.Kubelet.ClusterDNS != "" && spec.Kubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
-			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "Kubelet ClusterDNS must be set to the default IP address for LocalIP"))
+	// Helper function to validate ClusterDNS settings
+	validateClusterDNS := func(kubelet *kops.KubeletConfigSpec, expectedIP string, fieldName string) {
+		if kubelet != nil && kubelet.ClusterDNS != "" && kubelet.ClusterDNS != expectedIP {
+			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"),
+				fmt.Sprintf("%s ClusterDNS must be set to %s but it was set to %s", fieldName, expectedIP, kubelet.ClusterDNS)))
 		}
+	}
 
-		if spec.ControlPlaneKubelet != nil && spec.ControlPlaneKubelet.ClusterDNS != "" && spec.ControlPlaneKubelet.ClusterDNS != spec.KubeDNS.NodeLocalDNS.LocalIP {
-			allErrs = append(allErrs, field.Forbidden(fldpath.Child("kubelet", "clusterDNS"), "ControlPlaneKubelet ClusterDNS must be set to the default IP address for LocalIP"))
-		}
+	// When cilium is used, Node Local DNS pods use the service with a cilium LRP
+	if spec.Networking.Cilium != nil || fi.ValueOf(spec.KubeDNS.NodeLocalDNS.CiliumBPFCompatibility) {
+		validateClusterDNS(spec.Kubelet, spec.KubeDNS.ServerIP, "Kubelet")
+		validateClusterDNS(spec.ControlPlaneKubelet, spec.KubeDNS.ServerIP, "ControlPlaneKubelet")
+	} else if spec.KubeProxy != nil && spec.KubeProxy.ProxyMode == "ipvs" {
+		validateClusterDNS(spec.Kubelet, spec.KubeDNS.NodeLocalDNS.LocalIP, "Kubelet")
+		validateClusterDNS(spec.ControlPlaneKubelet, spec.KubeDNS.NodeLocalDNS.LocalIP, "ControlPlaneKubelet")
 	}
 
 	return allErrs
