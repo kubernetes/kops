@@ -756,6 +756,21 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
+	if b.Cluster.IsKubernetesGTE("1.31") && b.Cluster.GetCloudProvider() == kops.CloudProviderAzure {
+		{
+			key := "azure-cloud-node.addons.k8s.io"
+			id := "k8s-1.31"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.PtrTo(location),
+				Id:       id,
+			})
+		}
+	}
+
 	if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
 		if fi.ValueOf(b.Cluster.Spec.CloudConfig.ManageStorageClasses) {
 			key := "storage-gce.addons.k8s.io"
