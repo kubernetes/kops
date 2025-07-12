@@ -98,7 +98,7 @@ func NewCmdExportKubeconfig(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Internal, "internal", options.Internal, "Use the cluster's internal DNS name")
 	cmd.Flags().BoolVar(&options.UseKopsAuthenticationPlugin, "auth-plugin", options.UseKopsAuthenticationPlugin, "Use the kOps authentication plugin")
 
-	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
+	options.CreateKubecfgOptions.AddFlagsForExport(cmd.Flags())
 
 	return cmd
 }

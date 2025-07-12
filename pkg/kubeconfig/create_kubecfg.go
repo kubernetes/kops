@@ -52,12 +52,33 @@ type CreateKubecfgOptions struct {
 
 	// UseKopsAuthenticationPlugin controls whether we should use the kOps auth helper instead of a static credential
 	UseKopsAuthenticationPlugin bool
+
+	// UseKubeconfig controls whether to use the local kubeconfig instead of generating a new one.
+	// See issue https://github.com/kubernetes/kops/issues/17262
+	UseKubeconfig bool
 }
 
 // AddCommonFlags adds the common flags to the flagset
 // These are the flags that are used when building an internal connection to the cluster.
+// For the export command, we don't want to expose the use-kubeconfig flag, use AddFlagsForExport instead.
 func (o *CreateKubecfgOptions) AddCommonFlags(flagset *pflag.FlagSet) {
+	o.addCommonFlags(flagset, false)
+}
+
+// AddFlagsForExport adds the common flags to the flagset
+// This is used by the export command to avoid exposing the use-kubeconfig flag.
+func (o *CreateKubecfgOptions) AddFlagsForExport(flagset *pflag.FlagSet) {
+	o.addCommonFlags(flagset, true)
+}
+
+// addCommonFlags adds the flags to the flagset
+// These are the flags that are used when building an internal connection to the cluster.
+// If forExport is true, the flagset is used for the export command, and we don't want to expose the use-kubeconfig flag.
+func (o *CreateKubecfgOptions) addCommonFlags(flagset *pflag.FlagSet, forExport bool) {
 	flagset.StringVar(&o.OverrideAPIServer, "api-server", o.OverrideAPIServer, "Override the API server used when communicating with the cluster kube-apiserver")
+	if !forExport {
+		flagset.BoolVar(&o.UseKubeconfig, "use-kubeconfig", o.UseKubeconfig, "Use the server endpoint from the local kubeconfig instead of inferring from cluster name")
+	}
 }
 
 func BuildKubecfg(ctx context.Context, cluster *kops.Cluster, keyStore fi.KeystoreReader, secretStore fi.SecretStore, cloud fi.Cloud, options CreateKubecfgOptions, kopsStateStore string) (*KubeconfigBuilder, error) {
