@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
@@ -34,18 +35,39 @@ import (
 func TestListResourcesAzure(t *testing.T) {
 	const (
 		clusterName    = "cluster"
-		rgName         = "rg"
-		vnetName       = "vnet"
-		vmssName       = "vmss"
-		vmName         = "vmss/0"
-		diskName       = "disk"
-		subnetName     = "sub"
-		rtName         = "rt"
-		raName         = "ra"
 		irrelevantName = "irrelevant"
 		principalID    = "pid"
-		lbName         = "lb"
+		subscriptionID = "00000000-0000-0000-0000-000000000000"
+		rgID           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg"
+		vnetID         = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Network/virtualNetworks/vnet"
+		subnetID       = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Network/virtualNetworks/vnet/subnets/subnet"
+		rtID           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Network/routeTables/rt"
+		vmssID         = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/vmss"
+		vmID           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/vmss/virtualmachines/0"
+		diskID         = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Compute/disks/disk"
+		raID           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Authorization/roleAssignments/ra"
+		lbID           = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Network/loadBalancers/lb"
 	)
+
+	rg, _ := arm.ParseResourceID(rgID)
+	rgName := rg.Name
+	vnet, _ := arm.ParseResourceID(vnetID)
+	vnetName := vnet.Name
+	vmss, _ := arm.ParseResourceID(vmssID)
+	vmssName := vmss.Name
+	vm, _ := arm.ParseResourceID(vmID)
+	vmName := vm.Name
+	disk, _ := arm.ParseResourceID(diskID)
+	diskName := disk.Name
+	subnet, _ := arm.ParseResourceID(subnetID)
+	subnetName := subnet.Name
+	rt, _ := arm.ParseResourceID(rtID)
+	rtName := rt.Name
+	ra, _ := arm.ParseResourceID(raID)
+	raName := ra.Name
+	lb, _ := arm.ParseResourceID(lbID)
+	lbName := lb.Name
+
 	clusterTags := map[string]*string{
 		azure.TagClusterName: to.Ptr(clusterName),
 	}
@@ -54,6 +76,7 @@ func TestListResourcesAzure(t *testing.T) {
 	// Set up resources in the mock clients.
 	rgs := cloud.ResourceGroupsClient.RGs
 	rgs[rgName] = &armresources.ResourceGroup{
+		ID:   to.Ptr(rgID),
 		Name: to.Ptr(rgName),
 		Tags: clusterTags,
 	}
@@ -63,6 +86,7 @@ func TestListResourcesAzure(t *testing.T) {
 
 	vnets := cloud.VirtualNetworksClient.VNets
 	vnets[vnetName] = &network.VirtualNetwork{
+		ID:         to.Ptr(vnetID),
 		Name:       to.Ptr(vnetName),
 		Tags:       clusterTags,
 		Properties: &network.VirtualNetworkPropertiesFormat{},
@@ -73,6 +97,7 @@ func TestListResourcesAzure(t *testing.T) {
 
 	subnets := cloud.SubnetsClient.Subnets
 	subnets[rgName] = &network.Subnet{
+		ID:         to.Ptr(subnetID),
 		Name:       to.Ptr(subnetName),
 		Properties: &network.SubnetPropertiesFormat{},
 	}
@@ -82,6 +107,7 @@ func TestListResourcesAzure(t *testing.T) {
 
 	rts := cloud.RouteTablesClient.RTs
 	rts[rtName] = &network.RouteTable{
+		ID:   to.Ptr(rtID),
 		Name: to.Ptr(rtName),
 		Tags: clusterTags,
 	}
@@ -90,19 +116,13 @@ func TestListResourcesAzure(t *testing.T) {
 	}
 
 	vmsses := cloud.VMScaleSetsClient.VMSSes
-	subnetID := azure.SubnetID{
-		SubscriptionID:     "sid",
-		ResourceGroupName:  rgName,
-		VirtualNetworkName: vnetName,
-		SubnetName:         subnetName,
-	}
 	networkConfig := &compute.VirtualMachineScaleSetNetworkConfiguration{
 		Properties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
 			IPConfigurations: []*compute.VirtualMachineScaleSetIPConfiguration{
 				{
 					Properties: &compute.VirtualMachineScaleSetIPConfigurationProperties{
 						Subnet: &compute.APIEntityReference{
-							ID: to.Ptr(subnetID.String()),
+							ID: to.Ptr(subnetID),
 						},
 					},
 				},
@@ -110,6 +130,7 @@ func TestListResourcesAzure(t *testing.T) {
 		},
 	}
 	vmsses[vmssName] = &compute.VirtualMachineScaleSet{
+		ID:   to.Ptr(vmssID),
 		Name: to.Ptr(vmssName),
 		Tags: clusterTags,
 		Properties: &compute.VirtualMachineScaleSetProperties{
@@ -145,8 +166,10 @@ func TestListResourcesAzure(t *testing.T) {
 
 	disks := cloud.DisksClient.Disks
 	disks[diskName] = &compute.Disk{
-		Name: to.Ptr(diskName),
-		Tags: clusterTags,
+		ID:        to.Ptr(diskID),
+		Name:      to.Ptr(diskName),
+		ManagedBy: to.Ptr(vmID),
+		Tags:      clusterTags,
 	}
 	disks[irrelevantName] = &compute.Disk{
 		Name: to.Ptr(irrelevantName),
@@ -154,6 +177,7 @@ func TestListResourcesAzure(t *testing.T) {
 
 	ras := cloud.RoleAssignmentsClient.RAs
 	ras[raName] = &authz.RoleAssignment{
+		ID:   to.Ptr(raID),
 		Name: to.Ptr(raName),
 		Properties: &authz.RoleAssignmentProperties{
 			Scope:       to.Ptr("scope"),
@@ -166,6 +190,7 @@ func TestListResourcesAzure(t *testing.T) {
 
 	lbs := cloud.LoadBalancersClient.LBs
 	lbs[lbName] = &network.LoadBalancer{
+		ID:         to.Ptr(lbID),
 		Name:       to.Ptr(lbName),
 		Tags:       clusterTags,
 		Properties: &network.LoadBalancerPropertiesFormat{},
@@ -179,6 +204,7 @@ func TestListResourcesAzure(t *testing.T) {
 		cloud: cloud,
 		clusterInfo: resources.ClusterInfo{
 			Name:                     clusterName,
+			AzureSubscriptionID:      subscriptionID,
 			AzureResourceGroupName:   rgName,
 			AzureResourceGroupShared: true,
 		},
@@ -211,56 +237,56 @@ func TestListResourcesAzure(t *testing.T) {
 	}
 	a := toDigests(actual)
 	e := map[string]*resourceDigest{
-		toKey(typeResourceGroup, rgName): {
+		toKey(typeResourceGroup, rgID): {
 			rtype:  typeResourceGroup,
 			name:   rgName,
 			shared: true,
 		},
-		toKey(typeVirtualNetwork, vnetName): {
+		toKey(typeVirtualNetwork, vnetID): {
 			rtype:  typeVirtualNetwork,
 			name:   vnetName,
-			blocks: []string{toKey(typeResourceGroup, rgName)},
+			blocks: []string{toKey(typeResourceGroup, rgID)},
 		},
-		toKey(typeSubnet, subnetName): {
+		toKey(typeSubnet, subnetID): {
 			rtype: typeSubnet,
 			name:  subnetName,
 			blocks: []string{
-				toKey(typeVirtualNetwork, vnetName),
-				toKey(typeResourceGroup, rgName),
+				toKey(typeVirtualNetwork, vnetID),
+				toKey(typeResourceGroup, rgID),
 			},
 		},
-		toKey(typeRouteTable, rtName): {
+		toKey(typeRouteTable, rtID): {
 			rtype:  typeRouteTable,
 			name:   rtName,
-			blocks: []string{toKey(typeResourceGroup, rgName)},
+			blocks: []string{toKey(typeResourceGroup, rgID)},
 		},
-		toKey(typeVMScaleSet, vmssName): {
+		toKey(typeVMScaleSet, vmssID): {
 			rtype: typeVMScaleSet,
 			name:  vmssName,
 			blocks: []string{
-				toKey(typeResourceGroup, rgName),
-				toKey(typeVirtualNetwork, vnetName),
-				toKey(typeSubnet, subnetName),
-				toKey(typeDisk, diskName),
+				toKey(typeResourceGroup, rgID),
+				toKey(typeVirtualNetwork, vnetID),
+				toKey(typeSubnet, subnetID),
 			},
 		},
-		toKey(typeDisk, diskName): {
-			rtype:  typeDisk,
-			name:   diskName,
-			blocks: []string{toKey(typeResourceGroup, rgName)},
+		toKey(typeDisk, diskID): {
+			rtype:   typeDisk,
+			name:    diskName,
+			blocks:  []string{toKey(typeResourceGroup, rgID)},
+			blocked: []string{toKey(typeVMScaleSet, vmssID)},
 		},
-		toKey(typeRoleAssignment, raName): {
+		toKey(typeRoleAssignment, raID): {
 			rtype: typeRoleAssignment,
 			name:  raName,
 			blocks: []string{
-				toKey(typeResourceGroup, rgName),
-				toKey(typeVMScaleSet, vmssName),
+				toKey(typeResourceGroup, rgID),
+				toKey(typeVMScaleSet, vmssID),
 			},
 		},
-		toKey(typeLoadBalancer, lbName): {
+		toKey(typeLoadBalancer, lbID): {
 			rtype:  typeLoadBalancer,
 			name:   lbName,
-			blocks: []string{toKey(typeResourceGroup, rgName)},
+			blocks: []string{toKey(typeResourceGroup, rgID)},
 		},
 	}
 	if !reflect.DeepEqual(a, e) {
