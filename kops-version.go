@@ -16,14 +16,53 @@ limitations under the License.
 
 package kops
 
-// Version can be replaced by build tooling
-var Version = KOPS_RELEASE_VERSION
+import (
+	"fmt"
+	"runtime"
+)
 
 // These constants are parsed by build tooling - be careful about changing the formats
 const (
-	KOPS_RELEASE_VERSION = "1.33.0-beta.1"
-	KOPS_CI_VERSION      = "1.33.0-beta.2"
+	KOPS_RELEASE_VERSION = "1.33.0-alpha.1"
+	KOPS_CI_VERSION      = "1.33.0-alpha.2"
 )
 
-// GitVersion should be replaced by the makefile
-var GitVersion = ""
+var (
+	// Version can be replaced by build tooling
+	Version = KOPS_RELEASE_VERSION
+	// GitVersion is semantic version.
+	GitVersion = "v0.0.0-master+$Format:%h$"
+	// GitCommit sha1 from git, output of "git rev-parse HEAD".
+	GitCommit = "$Format:%H$"
+	// GitCommitDate date from git, output of "git log --format=%cI -n1".
+	GitCommitDate = "1970-01-01T00:00:00Z"
+	// GitTreeState state of git tree, either "clean" or "dirty".
+	GitTreeState = ""
+)
+
+// Info contains versioning information.
+type Info struct {
+	Version       string `json:"version"`
+	GitVersion    string `json:"gitVersion"`
+	GitCommit     string `json:"gitCommit"`
+	GitCommitDate string `json:"gitCommitDate"`
+	GitTreeState  string `json:"gitTreeState"`
+	GoVersion     string `json:"goVersion"`
+	Compiler      string `json:"compiler"`
+	Platform      string `json:"platform"`
+}
+
+// Get returns the overall codebase version. It's for detecting
+// what code a binary was built from.
+func Get() Info {
+	return Info{
+		Version:       Version,
+		GitVersion:    GitVersion,
+		GitCommit:     GitCommit,
+		GitTreeState:  GitTreeState,
+		GitCommitDate: GitCommitDate,
+		GoVersion:     runtime.Version(),
+		Compiler:      runtime.Compiler,
+		Platform:      fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+	}
+}
