@@ -34,6 +34,10 @@ The additional permissions are:
     "ecr:GetAuthorizationToken",
     "ecr:GetDownloadUrlForLayer",
     "ecr:GetRepositoryPolicy",
+    "ecr:ReplicateImage",
+    "ecr:BatchImportUpstreamImage",
+    "ecr:CreateRepository",
+    "ecr:TagResource",
     "ecr:ListImages"
   ],
   "Resource": [
