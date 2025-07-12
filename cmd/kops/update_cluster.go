@@ -412,6 +412,10 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		}
 		firstRun = !hasKubeconfig
 
+		if c.CreateKubecfgOptions.UseKubeconfig {
+			klog.Infof("hint: passing --create-kube-config=true causes the kubeconfig to be overwritten, you may not want to use this flag with --use-kubeconfig=false")
+		}
+
 		klog.Infof("Exporting kubeconfig for cluster")
 
 		conf, err := kubeconfig.BuildKubecfg(

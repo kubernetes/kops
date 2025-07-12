@@ -35,6 +35,7 @@ kops validate cluster [CLUSTER] [flags]
       --interval duration   Time in duration to wait between validation attempts (default 10s)
       --kubeconfig string   Path to the kubeconfig file
   -o, --output string       Output format. One of json|yaml|table. (default "table")
+      --use-kubeconfig      Use the server endpoint from the local kubeconfig instead of inferring from cluster name
       --wait duration       Amount of time to wait for the cluster to become ready
 ```
 

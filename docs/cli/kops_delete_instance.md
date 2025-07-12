@@ -37,6 +37,7 @@ kops delete instance INSTANCE|NODE [flags]
   -h, --help                          help for instance
       --post-drain-delay duration     Time to wait after draining each node (default 5s)
       --surge                         Surge by detaching the node from the ASG before deletion (default true)
+      --use-kubeconfig                Use the server endpoint from the local kubeconfig instead of inferring from cluster name
       --validate-count int32          Number of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration   Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                           Specify --yes to immediately delete the instance

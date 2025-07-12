@@ -29,6 +29,7 @@ kops toolbox enroll [CLUSTER] [flags]
       --instance-group string   Name of instance-group to join
       --ssh-port int            port for ssh (default 22)
       --ssh-user string         user for ssh (default "root")
+      --use-kubeconfig          Use the server endpoint from the local kubeconfig instead of inferring from cluster name
 ```
 
 ### Options inherited from parent commands

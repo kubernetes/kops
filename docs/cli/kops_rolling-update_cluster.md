@@ -74,6 +74,7 @@ kops rolling-update cluster [CLUSTER] [flags]
   -i, --interactive                       Prompt to continue after each instance is updated
       --node-interval duration            Time to wait between restarting worker nodes (default 15s)
       --post-drain-delay duration         Time to wait after draining each node (default 5s)
+      --use-kubeconfig                    Use the server endpoint from the local kubeconfig instead of inferring from cluster name
       --validate-count int32              Number of times that a cluster needs to be validated after single node update (default 2)
       --validation-timeout duration       Maximum time to wait for a cluster to validate (default 15m0s)
   -y, --yes                               Perform rolling update immediately; without --yes rolling-update executes a dry-run
