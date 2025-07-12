@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -188,13 +189,17 @@ func (f *clusterInfo) RESTConfig(ctx context.Context) (*rest.Config, error) {
 			return nil, err
 		}
 
-		restConfig.UserAgent = "kops"
-		restConfig.Burst = 50
-		restConfig.QPS = 20
+		configureRESTConfig(restConfig)
 
 		f.cachedRESTConfig = restConfig
 	}
 	return f.cachedRESTConfig, nil
+}
+
+func configureRESTConfig(restConfig *rest.Config) {
+	restConfig.UserAgent = "kops"
+	restConfig.Burst = 50
+	restConfig.QPS = 20
 }
 
 func (f *Factory) HTTPClient(restConfig *rest.Config) (*http.Client, error) {
@@ -270,6 +275,31 @@ func (f *Factory) buildRESTConfig(ctx context.Context, cluster *kops.Cluster, op
 	// backwards compatibility
 	if options.Admin == 0 {
 		options.Admin = kubeconfig.DefaultKubecfgAdminLifetime
+	}
+
+	if options.UseKubeconfig {
+		// Get the kubeconfig from the context
+		klog.Infof("--use-kubeconfig is set; loading connectivity information from kubeconfig (instead of generating it)")
+
+		clusterName := cluster.ObjectMeta.Name
+
+		clientGetter := genericclioptions.NewConfigFlags(true)
+		contextName := clusterName
+		clientGetter.Context = &contextName
+
+		restConfig, err := clientGetter.ToRESTConfig()
+		if err != nil {
+			return nil, fmt.Errorf("loading kubecfg settings for %q: %w", clusterName, err)
+		}
+
+		configureRESTConfig(restConfig)
+
+		if options.OverrideAPIServer != "" {
+			klog.Infof("overriding API server with %q", options.OverrideAPIServer)
+			restConfig.Host = options.OverrideAPIServer
+		}
+
+		return restConfig, nil
 	}
 
 	conf, err := kubeconfig.BuildKubecfg(

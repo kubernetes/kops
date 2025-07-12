@@ -40,6 +40,7 @@ kops update cluster [CLUSTER] [flags]
       --prune                          Delete old revisions of cloud resources that were needed during an upgrade
       --ssh-public-key string          SSH public key to use (deprecated: use kops create secret instead)
       --target target                  Target - "direct", "terraform" (default direct)
+      --use-kubeconfig                 Use the server endpoint from the local kubeconfig instead of inferring from cluster name
       --user string                    Existing user in kubeconfig file to use.  Implies --create-kube-config
   -y, --yes                            Create cloud resources, without --yes update is in dry run mode
 ```
