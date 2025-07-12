@@ -95,9 +95,6 @@ ${KOPS} create cluster --cloud=metal metal.k8s.local --zones main --networking c
 # TODO: is this the best option?
 ${KOPS} edit cluster metal.k8s.local  --set spec.api.publicName=10.123.45.10
 
-# Use latest etcd-manager image (while we're adding features)
-${KOPS} edit cluster metal.k8s.local --set 'spec.etcdClusters[*].manager.image=us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-static:latest'
-
 # Use 1.31 kubernetes so we get kube-apiserver fixes
 export KOPS_RUN_TOO_NEW_VERSION=1
 "${KOPS}" edit cluster metal.k8s.local "--set=cluster.spec.kubernetesVersion=1.31.0"
