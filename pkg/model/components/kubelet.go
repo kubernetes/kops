@@ -166,11 +166,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	// Prevent image GC from pruning the pause image
 	// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2040-kubelet-cri#pinned-images
 	image := "registry.k8s.io/pause:3.9"
-	var err error
-	if image, err = b.AssetBuilder.RemapImage(image); err != nil {
-		return err
-	}
-	kubelet.PodInfraContainerImage = image
+	kubelet.PodInfraContainerImage = b.AssetBuilder.RemapImage(image)
 
 	if kubelet.FeatureGates == nil {
 		kubelet.FeatureGates = make(map[string]string)
