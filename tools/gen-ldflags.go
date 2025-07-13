@@ -24,7 +24,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 // genLDFlags generates linker flags (-ldflags) for injecting version info into the binary.
@@ -32,8 +31,6 @@ func genLDFlags(ver string) string {
 	var ldflagsStr string
 	ldflagsStr = "-s -w -X k8s.io/kops.Version=" + ver + " "
 	ldflagsStr = ldflagsStr + "-X k8s.io/kops.GitVersion=" + version() + " "
-	ldflagsStr = ldflagsStr + "-X k8s.io/kops.GitCommit=" + commitID() + " "
-	ldflagsStr = ldflagsStr + "-X k8s.io/kops.GitCommitDate=" + commitTime().Format(time.RFC3339) + " "
 	ldflagsStr = ldflagsStr + "-X k8s.io/kops.GitTreeState=" + treeState() + " "
 	return ldflagsStr
 }
@@ -52,46 +49,6 @@ func version() string {
 		os.Exit(1)
 	}
 	return strings.TrimSpace(string(tag))
-}
-
-// commitID returns the full commit hash of the last Git commit.
-// Equivalent to: git log --format="%H" -n1
-func commitID() string {
-	var (
-		commit []byte
-		e      error
-	)
-	cmdName := "git"
-	cmdArgs := []string{"log", "--format=%H", "-n1"}
-	if commit, e = exec.Command(cmdName, cmdArgs...).Output(); e != nil {
-		fmt.Fprintln(os.Stderr, "Error generating git commit-id: ", e)
-		os.Exit(1)
-	}
-
-	return strings.TrimSpace(string(commit))
-}
-
-// commitTime returns the UTC time of the most recent Git commit.
-func commitTime() time.Time {
-	// git log --format=%cI -n1
-	var (
-		commitUnix []byte
-		err        error
-	)
-	cmdName := "git"
-	cmdArgs := []string{"log", "--format=%cI", "-n1"}
-	if commitUnix, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error generating git commit-time: ", err)
-		os.Exit(1)
-	}
-
-	t, err := time.Parse(time.RFC3339, strings.TrimSpace(string(commitUnix)))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error generating git commit-time: ", err)
-		os.Exit(1)
-	}
-
-	return t.UTC()
 }
 
 // treeState returns the working tree state: "clean" or "dirty".

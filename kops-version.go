@@ -19,6 +19,7 @@ package kops
 import (
 	"fmt"
 	"runtime"
+	"runtime/debug"
 )
 
 // These constants are parsed by build tooling - be careful about changing the formats
@@ -32,13 +33,33 @@ var (
 	Version = KOPS_RELEASE_VERSION
 	// GitVersion is semantic version.
 	GitVersion = "v0.0.0-master+$Format:%h$"
-	// GitCommit sha1 from git, output of "git rev-parse HEAD".
-	GitCommit = "$Format:%H$"
-	// GitCommitDate date from git, output of "git log --format=%cI -n1".
-	GitCommitDate = "1970-01-01T00:00:00Z"
 	// GitTreeState state of git tree, either "clean" or "dirty".
 	GitTreeState = ""
+	// gitCommit sha1 from git
+	gitCommit = ""
+	// gitCommitDate date from git
+	gitCommitDate = ""
 )
+
+const (
+	commitKey     = "vcs.revision"
+	commitDateKey = "vcs.time"
+)
+
+func init() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
+	for _, setting := range info.Settings {
+		if setting.Key == commitKey {
+			gitCommit = setting.Value
+		}
+		if setting.Key == commitDateKey {
+			gitCommitDate = setting.Value
+		}
+	}
+}
 
 // Info contains versioning information.
 type Info struct {
@@ -58,9 +79,9 @@ func Get() Info {
 	return Info{
 		Version:       Version,
 		GitVersion:    GitVersion,
-		GitCommit:     GitCommit,
 		GitTreeState:  GitTreeState,
-		GitCommitDate: GitCommitDate,
+		GitCommit:     gitCommit,
+		GitCommitDate: gitCommitDate,
 		GoVersion:     runtime.Version(),
 		Compiler:      runtime.Compiler,
 		Platform:      fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),

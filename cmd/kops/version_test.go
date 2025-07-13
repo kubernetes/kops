@@ -19,10 +19,11 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/kops/cmd/kops/util"
-	"testing"
 )
 
 func TestRunVersion(t *testing.T) {
