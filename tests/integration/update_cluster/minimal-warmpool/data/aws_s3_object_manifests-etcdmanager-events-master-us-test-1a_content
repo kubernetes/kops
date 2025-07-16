@@ -22,7 +22,7 @@ spec:
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250704
+    image: kops.k8s.io/remapped-image/etcd-manager/etcd-manager-slim:v3.0.20250704
     name: etcd-manager
     resources:
       requests:
@@ -49,7 +49,7 @@ spec:
     - --src=/ko-app/kops-utils-cp
     command:
     - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.33.0-beta.1
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.33.0-beta.1
     name: kops-utils-cp
     resources: {}
     volumeMounts:
@@ -61,7 +61,7 @@ spec:
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/etcd:3.4.13-0
+    image: kops.k8s.io/remapped-image/etcd:3.4.13-0
     name: init-etcd-3-4-13
     resources: {}
     volumeMounts:
@@ -73,7 +73,7 @@ spec:
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/etcd:3.5.21-0
+    image: kops.k8s.io/remapped-image/etcd:3.5.21-0
     name: init-etcd-3-5-21
     resources: {}
     volumeMounts:
@@ -86,7 +86,7 @@ spec:
     - --src=/opt/etcd-v3.4.13/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.33.0-beta.1
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.33.0-beta.1
     name: init-etcd-symlinks-3-4-13
     resources: {}
     volumeMounts:
@@ -107,7 +107,7 @@ spec:
     - --src=/opt/etcd-v3.5.21/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.33.0-beta.1
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.33.0-beta.1
     name: init-etcd-symlinks-3-5-21
     resources: {}
     volumeMounts:

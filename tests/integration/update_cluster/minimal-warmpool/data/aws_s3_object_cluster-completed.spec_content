@@ -6,6 +6,8 @@ metadata:
 spec:
   api:
     dns: {}
+  assets:
+    containerProxy: kops.k8s.io/remapped-image
   authorization:
     alwaysAllow: {}
   channel: stable
@@ -79,7 +81,7 @@ spec:
     - https://127.0.0.1:4001
     etcdServersOverrides:
     - /events#https://127.0.0.1:4002
-    image: registry.k8s.io/kube-apiserver:v1.32.0
+    image: kops.k8s.io/remapped-image/kube-apiserver:v1.32.0
     kubeletPreferredAddressTypes:
     - InternalIP
     - Hostname
@@ -105,7 +107,7 @@ spec:
     clusterCIDR: 100.96.0.0/11
     clusterName: minimal-warmpool.example.com
     configureCloudRoutes: false
-    image: registry.k8s.io/kube-controller-manager:v1.32.0
+    image: kops.k8s.io/remapped-image/kube-controller-manager:v1.32.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -127,10 +129,10 @@ spec:
   kubeProxy:
     clusterCIDR: 100.96.0.0/11
     cpuRequest: 100m
-    image: registry.k8s.io/kube-proxy:v1.32.0
+    image: kops.k8s.io/remapped-image/kube-proxy:v1.32.0
     logLevel: 2
   kubeScheduler:
-    image: registry.k8s.io/kube-scheduler:v1.32.0
+    image: kops.k8s.io/remapped-image/kube-scheduler:v1.32.0
     leaderElection:
       leaderElect: true
     logLevel: 2
@@ -145,7 +147,7 @@ spec:
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.9
+    podInfraContainerImage: kops.k8s.io/remapped-image/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -165,7 +167,7 @@ spec:
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.9
+    podInfraContainerImage: kops.k8s.io/remapped-image/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
