@@ -207,7 +207,7 @@ spec:
           value: "false"
         - name: WORKERS
           value: "10"
-        image: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.22.0
+        image: kops.k8s.io/remapped-image/aws-ec2/aws-node-termination-handler:v1.22.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

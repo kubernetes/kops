@@ -26,7 +26,7 @@ KeypairIDs:
 KubeProxy:
   clusterCIDR: 100.96.0.0/11
   cpuRequest: 100m
-  image: registry.k8s.io/kube-proxy:v1.32.0
+  image: kops.k8s.io/remapped-image/kube-proxy:v1.32.0
   logLevel: 2
 KubeletConfig:
   anonymousAuth: false
@@ -41,7 +41,7 @@ KubeletConfig:
   logLevel: 2
   nodeLabels:
     node-role.kubernetes.io/node: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.9
+  podInfraContainerImage: kops.k8s.io/remapped-image/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -61,7 +61,7 @@ containerdConfig:
 usesLegacyGossip: false
 usesNoneDNS: false
 warmPoolImages:
-- quay.io/cilium/cilium:v1.16.7
-- quay.io/cilium/operator:v1.16.7
-- registry.k8s.io/kube-proxy:v1.32.0
-- registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0
+- kops.k8s.io/remapped-image/cilium/cilium:v1.16.7
+- kops.k8s.io/remapped-image/cilium/operator:v1.16.7
+- kops.k8s.io/remapped-image/kube-proxy:v1.32.0
+- kops.k8s.io/remapped-image/provider-aws/cloud-controller-manager:v1.31.0

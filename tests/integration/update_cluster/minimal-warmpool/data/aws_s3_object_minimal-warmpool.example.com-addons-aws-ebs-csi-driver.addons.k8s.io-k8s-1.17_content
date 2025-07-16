@@ -664,7 +664,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.38.1
+        image: kops.k8s.io/remapped-image/ebs-csi-driver/aws-ebs-csi-driver:v1.38.1
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -711,7 +711,7 @@ spec:
           value: /csi/csi.sock
         - name: DRIVER_REG_SOCK_PATH
           value: /var/lib/kubelet/plugins/ebs.csi.aws.com/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.12.0-eks-1-32-1
+        image: kops.k8s.io/remapped-image/eks-distro/kubernetes-csi/node-driver-registrar:v2.12.0-eks-1-32-1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
@@ -741,7 +741,7 @@ spec:
           name: probe-dir
       - args:
         - --csi-address=/csi/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.14.0-eks-1-32-1
+        image: kops.k8s.io/remapped-image/eks-distro/kubernetes-csi/livenessprobe:v2.14.0-eks-1-32-1
         imagePullPolicy: IfNotPresent
         name: liveness-probe
         resources:
@@ -908,7 +908,7 @@ spec:
               key: endpoint
               name: aws-meta
               optional: true
-        image: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.38.1
+        image: kops.k8s.io/remapped-image/ebs-csi-driver/aws-ebs-csi-driver:v1.38.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5
@@ -963,7 +963,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v5.1.0-eks-1-32-1
+        image: kops.k8s.io/remapped-image/eks-distro/kubernetes-csi/external-provisioner:v5.1.0-eks-1-32-1
         imagePullPolicy: IfNotPresent
         name: csi-provisioner
         resources:
@@ -992,7 +992,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.7.0-eks-1-32-1
+        image: kops.k8s.io/remapped-image/eks-distro/kubernetes-csi/external-attacher:v4.7.0-eks-1-32-1
         imagePullPolicy: IfNotPresent
         name: csi-attacher
         resources:
@@ -1025,7 +1025,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.5.0
+        image: kops.k8s.io/remapped-image/ebs-csi-driver/volume-modifier-for-k8s:v0.5.0
         imagePullPolicy: IfNotPresent
         name: volumemodifier
         resources:
@@ -1055,7 +1055,7 @@ spec:
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.12.0-eks-1-32-1
+        image: kops.k8s.io/remapped-image/eks-distro/kubernetes-csi/external-resizer:v1.12.0-eks-1-32-1
         imagePullPolicy: IfNotPresent
         name: csi-resizer
         resources:
@@ -1074,7 +1074,7 @@ spec:
           name: socket-dir
       - args:
         - --csi-address=/csi/csi.sock
-        image: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.14.0-eks-1-32-1
+        image: kops.k8s.io/remapped-image/eks-distro/kubernetes-csi/livenessprobe:v2.14.0-eks-1-32-1
         imagePullPolicy: IfNotPresent
         name: liveness-probe
         resources:
