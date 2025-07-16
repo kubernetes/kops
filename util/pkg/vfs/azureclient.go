@@ -23,11 +23,9 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-	"k8s.io/klog/v2"
 )
 
 func newAzureClient(ctx context.Context) (*azblob.Client, error) {
-	klog.Infof("New Azure Blob client")
 	accountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
 	if accountName == "" {
 		return nil, fmt.Errorf("AZURE_STORAGE_ACCOUNT must be set")

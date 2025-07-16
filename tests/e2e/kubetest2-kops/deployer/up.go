@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	osexec "os/exec"
 	"path"
 	"strconv"
@@ -31,6 +32,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
+	"k8s.io/kops/tests/e2e/kubetest2-kops/azure"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/do"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/kops"
@@ -190,6 +192,15 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		} else {
 			args = appendIfUnset(args, "--master-size", "c5.large")
 		}
+	case "azure":
+		// TODO: Check why Azure requires --network-cidr
+		args = appendIfUnset(args, "--network-cidr", "10.0.0.0/16")
+		args = appendIfUnset(args, "--cloud-labels", "DO-NOT-DELETE=kOps")
+		args = appendIfUnset(args, "--control-plane-size", "Standard_D4s_v3")
+		args = appendIfUnset(args, "--node-size", "Standard_D2s_v3")
+		// TODO: Check if we can use "kops" as SSH user
+		args = appendIfUnset(args, "--azure-admin-user", "ubuntu")
+		args = appendIfUnset(args, "--azure-subscription-id", os.Getenv("AZURE_SUBSCRIPTION_ID"))
 	case "gce":
 		if isArm {
 			args = appendIfUnset(args, "--master-size", "t2a-standard-2")
@@ -346,6 +357,8 @@ func (d *deployer) zones() ([]string, error) {
 	switch d.CloudProvider {
 	case "aws":
 		return aws.RandomZones(d.ControlPlaneCount)
+	case "azure":
+		return azure.RandomZones(1)
 	case "gce":
 		return gce.RandomZones(1)
 	case "digitalocean":

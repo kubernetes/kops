@@ -148,7 +148,7 @@ func (t *Tester) addProviderFlag() error {
 
 	provider := ""
 	switch cluster.Spec.LegacyCloudProvider {
-	case "aws", "gce":
+	case "aws", "azure", "gce":
 		provider = cluster.Spec.LegacyCloudProvider
 	case "digitalocean":
 	default:
@@ -253,6 +253,8 @@ func (t *Tester) addRegionFlag() error {
 	case "aws":
 		zone := cluster.Spec.Subnets[0].Zone
 		region = zone[:len(zone)-1]
+	case "azure":
+		region = cluster.Spec.Subnets[0].Region
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
 	default:
