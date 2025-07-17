@@ -359,9 +359,9 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 	if !c.IgnoreKubeletVersionSkew {
 		minControlPlaneRunningVersion, err = checkControlPlaneRunningVersion(ctx, cluster.ObjectMeta.Name, minControlPlaneRunningVersion)
 		if err != nil {
-			klog.Warningf("error checking control plane running version, assuming no k8s upgrade in progress: %v", err)
+			klog.V(2).Infof("error checking control plane running version, assuming no k8s upgrade in progress: %v", err)
 		} else {
-			klog.V(2).Infof("successfully checked control plane running version: %v", minControlPlaneRunningVersion)
+			klog.V(2).Infof("found control plane running version: %v", minControlPlaneRunningVersion)
 		}
 	}
 	applyCmd := &cloudup.ApplyClusterCmd{
