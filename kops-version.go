@@ -16,14 +16,74 @@ limitations under the License.
 
 package kops
 
-// Version can be replaced by build tooling
-var Version = KOPS_RELEASE_VERSION
+import (
+	"fmt"
+	"runtime"
+	"runtime/debug"
+)
 
 // These constants are parsed by build tooling - be careful about changing the formats
 const (
-	KOPS_RELEASE_VERSION = "1.33.0-beta.1"
-	KOPS_CI_VERSION      = "1.33.0-beta.2"
+	KOPS_RELEASE_VERSION = "1.33.0-alpha.1"
+	KOPS_CI_VERSION      = "1.33.0-alpha.2"
 )
 
-// GitVersion should be replaced by the makefile
-var GitVersion = ""
+var (
+	// Version can be replaced by build tooling
+	Version = KOPS_RELEASE_VERSION
+	// GitVersion is semantic version.
+	GitVersion = "v0.0.0-master+$Format:%h$"
+	// GitTreeState state of git tree, either "clean" or "dirty".
+	GitTreeState = ""
+	// gitCommit sha1 from git
+	gitCommit = ""
+	// gitCommitDate date from git
+	gitCommitDate = ""
+)
+
+const (
+	commitKey     = "vcs.revision"
+	commitDateKey = "vcs.time"
+)
+
+func init() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
+	for _, setting := range info.Settings {
+		if setting.Key == commitKey {
+			gitCommit = setting.Value
+		}
+		if setting.Key == commitDateKey {
+			gitCommitDate = setting.Value
+		}
+	}
+}
+
+// Info contains versioning information.
+type Info struct {
+	Version       string `json:"version"`
+	GitVersion    string `json:"gitVersion"`
+	GitCommit     string `json:"gitCommit"`
+	GitCommitDate string `json:"gitCommitDate"`
+	GitTreeState  string `json:"gitTreeState"`
+	GoVersion     string `json:"goVersion"`
+	Compiler      string `json:"compiler"`
+	Platform      string `json:"platform"`
+}
+
+// Get returns the overall codebase version. It's for detecting
+// what code a binary was built from.
+func Get() Info {
+	return Info{
+		Version:       Version,
+		GitVersion:    GitVersion,
+		GitTreeState:  GitTreeState,
+		GitCommit:     gitCommit,
+		GitCommitDate: gitCommitDate,
+		GoVersion:     runtime.Version(),
+		Compiler:      runtime.Compiler,
+		Platform:      fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+	}
+}
