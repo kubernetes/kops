@@ -75,7 +75,7 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		}).Build(); err != nil {
 			return nil, fmt.Errorf("stage via krel push: %w", err)
 		}
-		kubeBaseURL := "https://storage.googleapis.com/" + mat[1] + "/kubernetes/latest.txt"
+		kubeBaseURL := "https://dl.k8s.io/" + mat[1] + "/kubernetes/latest.txt"
 
 		results = &BuildResults{
 			KubernetesBaseURL: kubeBaseURL,
