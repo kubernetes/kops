@@ -148,8 +148,10 @@ func (t *Tester) addProviderFlag() error {
 
 	provider := ""
 	switch cluster.Spec.LegacyCloudProvider {
-	case "aws", "azure", "gce":
+	case "aws", "gce":
 		provider = cluster.Spec.LegacyCloudProvider
+	case "azure":
+		// TODO: Enable when Azure Disk and FIle CSI drivers are added
 	case "digitalocean":
 	default:
 		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.LegacyCloudProvider)
