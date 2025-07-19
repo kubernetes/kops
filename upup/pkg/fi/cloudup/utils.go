@@ -157,6 +157,9 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloudTags := map[string]string{azure.TagClusterName: cluster.ObjectMeta.Name}
+			for k, v := range cluster.Spec.CloudLabels {
+				cloudTags[k] = v
+			}
 
 			subscriptionID := cluster.Spec.CloudProvider.Azure.SubscriptionID
 			resourceGroupName := cluster.Spec.CloudProvider.Azure.ResourceGroupName

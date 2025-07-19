@@ -150,6 +150,8 @@ func (t *Tester) addProviderFlag() error {
 	switch cluster.Spec.LegacyCloudProvider {
 	case "aws", "gce":
 		provider = cluster.Spec.LegacyCloudProvider
+	case "azure":
+		// TODO: Enable when Azure Disk and FIle CSI drivers are added
 	case "digitalocean":
 	default:
 		klog.Warningf("unhandled cluster.spec.cloudProvider %q for determining ginkgo Provider", cluster.Spec.LegacyCloudProvider)
@@ -253,6 +255,8 @@ func (t *Tester) addRegionFlag() error {
 	case "aws":
 		zone := cluster.Spec.Subnets[0].Zone
 		region = zone[:len(zone)-1]
+	case "azure":
+		region = cluster.Spec.Subnets[0].Region
 	case "gce":
 		region = cluster.Spec.Subnets[0].Region
 	default:
