@@ -45,10 +45,13 @@ func NewCmdToolboxEnroll(f commandutils.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.ClusterName, "cluster", options.ClusterName, "Name of cluster to join")
 	cmd.Flags().StringVar(&options.InstanceGroup, "instance-group", options.InstanceGroup, "Name of instance-group to join")
+	cmd.Flags().StringSliceVar(&options.PodCIDRs, "pod-cidr", options.PodCIDRs, "IP Address range to use for pods that run on this node")
 
 	cmd.Flags().StringVar(&options.Host, "host", options.Host, "IP/hostname for machine to add")
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "user for ssh")
 	cmd.Flags().IntVar(&options.SSHPort, "ssh-port", options.SSHPort, "port for ssh")
+
+	cmd.Flags().BoolVar(&options.BuildHost, "build-host", options.BuildHost, "only build the host resource, don't apply it or enroll the node")
 
 	options.CreateKubecfgOptions.AddCommonFlags(cmd.Flags())
 
