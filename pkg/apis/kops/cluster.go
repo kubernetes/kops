@@ -625,6 +625,8 @@ type NodeLocalDNSConfig struct {
 	// PodAnnotations makes possible to add additional annotations to node-local-dns.
 	// Default: none
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+	// CiliumBPFCompatibility allows user to enable cilium bpf host routing compatibility mode, which is required for cilium 1.16.5+ and above, when the user is using cilium as an externally managed daemonset.
+	CiliumBPFCompatibility *bool `json:"ciliumBPFCompatibility,omitempty"`
 }
 
 type ExternalDNSProvider string
