@@ -70,24 +70,11 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 		}
 	}
 
-	setNetworkCIDR := (cloud.ProviderID() == kops.CloudProviderAWS) || (cloud.ProviderID() == kops.CloudProviderAzure)
-	if setNetworkCIDR && c.Spec.Networking.NetworkCIDR == "" {
+	if cloud.ProviderID() == kops.CloudProviderAWS && c.Spec.Networking.NetworkCIDR == "" {
 		if c.SharedVPC() {
-			var vpcInfo *fi.VPCInfo
-			var err error
-			if cloud.ProviderID() == kops.CloudProviderAzure {
-				if c.Spec.CloudProvider.Azure == nil || c.Spec.CloudProvider.Azure.ResourceGroupName == "" {
-					return fmt.Errorf("missing required --azure-resource-group-name when specifying Network ID")
-				}
-				vpcInfo, err = cloud.(azure.AzureCloud).FindVNetInfo(c.Spec.Networking.NetworkID, c.Spec.CloudProvider.Azure.ResourceGroupName)
-				if err != nil {
-					return err
-				}
-			} else {
-				vpcInfo, err = cloud.FindVPCInfo(c.Spec.Networking.NetworkID)
-				if err != nil {
-					return err
-				}
+			vpcInfo, err := cloud.FindVPCInfo(c.Spec.Networking.NetworkID)
+			if err != nil {
+				return err
 			}
 			if vpcInfo == nil {
 				return fmt.Errorf("unable to find Network ID %q", c.Spec.Networking.NetworkID)
@@ -97,15 +84,34 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 				return fmt.Errorf("unable to infer NetworkCIDR from Network ID, please specify --network-cidr")
 			}
 		} else {
-			if cloud.ProviderID() == kops.CloudProviderAWS {
-				// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
-				c.Spec.Networking.NetworkCIDR = "172.20.0.0/16"
-			}
+			// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
+			c.Spec.Networking.NetworkCIDR = "172.20.0.0/16"
 		}
 
 		// Amazon VPC CNI uses the same network
 		if c.Spec.Networking.AmazonVPC != nil && c.Spec.Networking.NonMasqueradeCIDR != "::/0" {
 			c.Spec.Networking.NonMasqueradeCIDR = c.Spec.Networking.NetworkCIDR
+		}
+	}
+
+	if cloud.ProviderID() == kops.CloudProviderAzure && c.Spec.Networking.NetworkCIDR == "" {
+		if c.SharedVPC() {
+			if c.Spec.CloudProvider.Azure == nil || c.Spec.CloudProvider.Azure.ResourceGroupName == "" {
+				return fmt.Errorf("missing required --azure-resource-group-name when specifying Network ID")
+			}
+			vpcInfo, err := cloud.(azure.AzureCloud).FindVNetInfo(c.Spec.Networking.NetworkID, c.Spec.CloudProvider.Azure.ResourceGroupName)
+			if err != nil {
+				return err
+			}
+			if vpcInfo == nil {
+				return fmt.Errorf("unable to find Network ID %q", c.Spec.Networking.NetworkID)
+			}
+			c.Spec.Networking.NetworkCIDR = vpcInfo.CIDR
+			if c.Spec.Networking.NetworkCIDR == "" {
+				return fmt.Errorf("unable to infer NetworkCIDR from Network ID, please specify --network-cidr")
+			}
+		} else {
+			c.Spec.Networking.NetworkCIDR = "10.0.0.0/16"
 		}
 	}
 

@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	osexec "os/exec"
 	"path"
 	"strconv"
@@ -193,14 +192,11 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 			args = appendIfUnset(args, "--master-size", "c5.large")
 		}
 	case "azure":
-		// TODO: Check why Azure requires --network-cidr
-		args = appendIfUnset(args, "--network-cidr", "10.0.0.0/16")
 		args = appendIfUnset(args, "--cloud-labels", "DO-NOT-DELETE=kOps")
 		args = appendIfUnset(args, "--control-plane-size", "Standard_D4s_v3")
 		args = appendIfUnset(args, "--node-size", "Standard_D2s_v3")
 		// TODO: Check if we can use "kops" as SSH user
 		args = appendIfUnset(args, "--azure-admin-user", "ubuntu")
-		args = appendIfUnset(args, "--azure-subscription-id", os.Getenv("AZURE_SUBSCRIPTION_ID"))
 	case "gce":
 		if isArm {
 			args = appendIfUnset(args, "--master-size", "t2a-standard-2")
