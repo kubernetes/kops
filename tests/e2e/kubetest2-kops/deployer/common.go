@@ -73,6 +73,15 @@ func (d *deployer) initialize() error {
 			d.SSHPublicKeyPath = publicKeyPath
 			d.SSHPrivateKeyPath = privateKeyPath
 		}
+	case "azure":
+		publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
+		if err != nil {
+			return err
+		}
+		d.SSHPublicKeyPath = publicKeyPath
+		d.SSHPrivateKeyPath = privateKeyPath
+		// TODO: Check if we can use "kops" as SSH user
+		d.SSHUser = "ubuntu"
 	case "digitalocean":
 		if d.SSHPrivateKeyPath == "" {
 			d.SSHPrivateKeyPath = os.Getenv("DO_SSH_PRIVATE_KEY_FILE")
@@ -180,6 +189,7 @@ func (d *deployer) verifyKopsFlags() error {
 
 	switch d.CloudProvider {
 	case "aws":
+	case "azure":
 	case "gce":
 	case "digitalocean":
 	default:
@@ -222,6 +232,16 @@ func (d *deployer) env() []string {
 		// Recognized by the e2e framework
 		// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L59-L62
 		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
+	} else if d.CloudProvider == "azure" {
+		// Pass through some env vars if set
+		for _, k := range []string{"AZURE_TENANT_ID", "AZURE_SUBSCRIPTION_ID", "AZURE_CLIENT_ID", "AZURE_FEDERATED_TOKEN_FILE", "AZURE_STORAGE_ACCOUNT"} {
+			v := os.Getenv(k)
+			if v != "" {
+				vars = append(vars, k+"="+v)
+			} else {
+				klog.Warningf("Azure env var %q not found or empty", k)
+			}
+		}
 	} else if d.CloudProvider == "digitalocean" {
 		// Pass through some env vars if set
 		for _, k := range []string{"DIGITALOCEAN_ACCESS_TOKEN", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"} {
@@ -229,7 +249,7 @@ func (d *deployer) env() []string {
 			if v != "" {
 				vars = append(vars, k+"="+v)
 			} else {
-				klog.Warningf("DO env var %s is empty..", k)
+				klog.Warningf("DO env var %q not found or empty", k)
 			}
 		}
 	}
@@ -339,6 +359,9 @@ func (d *deployer) stateStore() string {
 			}
 			d.createBucket = true
 			ss = "s3://" + bucketName
+		case "azure":
+			// TODO: Use dynamic container name
+			ss = "azureblob://cluster-state"
 		case "gce":
 			d.createBucket = true
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
