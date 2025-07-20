@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	osexec "os/exec"
 	"path"
 	"strconv"
@@ -198,7 +197,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--node-size", "Standard_D2s_v3")
 		// TODO: Check if we can use "kops" as SSH user
 		args = appendIfUnset(args, "--azure-admin-user", "ubuntu")
-		args = appendIfUnset(args, "--azure-subscription-id", os.Getenv("AZURE_SUBSCRIPTION_ID"))
 	case "gce":
 		if isArm {
 			args = appendIfUnset(args, "--master-size", "t2a-standard-2")

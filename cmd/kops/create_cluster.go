@@ -536,6 +536,16 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		c.NetworkID = c.OpenstackNetworkID
 	}
 
+	if featureflag.Azure.Enabled() {
+		if c.AzureSubscriptionID == "" {
+			if id, ok := os.LookupEnv("AZURE_SUBSCRIPTION_ID"); ok {
+				c.AzureSubscriptionID = id
+			} else {
+				return fmt.Errorf("--azure-subscription-id is required")
+			}
+		}
+	}
+
 	clusterResult, err := cloudup.NewCluster(&c.NewClusterOptions, clientset)
 	if err != nil {
 		return err
