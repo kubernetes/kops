@@ -334,10 +334,14 @@ func (e *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 
 	cloud := awsup.GetCloud(c)
 
+	filters := make([]ec2types.Filter, 0)
+	if e.ID != nil {
+		filters = append(filters, awsup.NewEC2Filter("group-id", *e.ID))
+	} else {
+		return nil, nil
+	}
 	request := &ec2.DescribeSecurityGroupRulesInput{
-		Filters: []ec2types.Filter{
-			awsup.NewEC2Filter("group-id", *e.ID),
-		},
+		Filters: filters,
 	}
 
 	response, err := cloud.EC2().DescribeSecurityGroupRules(ctx, request)
