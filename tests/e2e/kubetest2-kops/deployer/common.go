@@ -80,8 +80,7 @@ func (d *deployer) initialize() error {
 		}
 		d.SSHPublicKeyPath = publicKeyPath
 		d.SSHPrivateKeyPath = privateKeyPath
-		// TODO: Check if we can use "kops" as SSH user
-		d.SSHUser = "ubuntu"
+		d.SSHUser = "kops"
 	case "digitalocean":
 		if d.SSHPrivateKeyPath == "" {
 			d.SSHPrivateKeyPath = os.Getenv("DO_SSH_PRIVATE_KEY_FILE")

@@ -176,6 +176,9 @@ func (o *NewClusterOptions) InitDefaults() {
 	o.EtcdClusters = []string{"main", "events"}
 	o.Networking = "cilium"
 	o.InstanceManager = "cloudgroups"
+
+	// Azure-specific
+	o.AzureAdminUser = "kops"
 }
 
 type NewClusterResult struct {
