@@ -195,8 +195,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--cloud-labels", "DO-NOT-DELETE=kOps")
 		args = appendIfUnset(args, "--control-plane-size", "Standard_D4s_v3")
 		args = appendIfUnset(args, "--node-size", "Standard_D2s_v3")
-		// TODO: Check if we can use "kops" as SSH user
-		args = appendIfUnset(args, "--azure-admin-user", "ubuntu")
 	case "gce":
 		if isArm {
 			args = appendIfUnset(args, "--master-size", "t2a-standard-2")

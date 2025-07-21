@@ -118,6 +118,8 @@ type Config struct {
 	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 
 	// Azure-specific
+	// AzureAdminUser is the admin user of VMs.
+	AzureAdminUser string `json:",omitempty"`
 	// AzureLocation is the location of the resource group that the cluster is deployed in.
 	AzureLocation string `json:",omitempty"`
 	// AzureSubscriptionID is the ID of the Azure Subscription that the cluster is deployed in.
@@ -280,6 +282,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.AzureResourceGroup = cluster.AzureResourceGroupName()
 		config.AzureRouteTableName = cluster.AzureRouteTableName()
 		config.Networking.NetworkID = cluster.Spec.Networking.NetworkID
+		config.AzureAdminUser = cluster.Spec.CloudProvider.Azure.AdminUser
 	}
 
 	if cluster.Spec.CloudProvider.GCE != nil {
