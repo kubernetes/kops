@@ -33,6 +33,12 @@ import (
 	kopsversion "k8s.io/kops"
 )
 
+const (
+	defaultAWSNetworkCIDR    = "172.20.0.0/16"
+	defaultAzureNetworkCIDR  = "10.0.0.0/16"
+	defaultNonMasqueradeCIDR = "100.64.0.0/10"
+)
+
 // PerformAssignments populates values that are required and immutable
 // For example, it assigns stable Keys to InstanceGroups & Masters, and
 // it assigns CIDRs to subnets
@@ -85,7 +91,7 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 			}
 		} else {
 			// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
-			c.Spec.Networking.NetworkCIDR = "172.20.0.0/16"
+			c.Spec.Networking.NetworkCIDR = defaultAWSNetworkCIDR
 		}
 
 		// Amazon VPC CNI uses the same network
@@ -111,12 +117,12 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 				return fmt.Errorf("unable to infer NetworkCIDR from Network ID, please specify --network-cidr")
 			}
 		} else {
-			c.Spec.Networking.NetworkCIDR = "10.0.0.0/16"
+			c.Spec.Networking.NetworkCIDR = defaultAzureNetworkCIDR
 		}
 	}
 
 	if c.Spec.Networking.NonMasqueradeCIDR == "" {
-		c.Spec.Networking.NonMasqueradeCIDR = "100.64.0.0/10"
+		c.Spec.Networking.NonMasqueradeCIDR = defaultNonMasqueradeCIDR
 	}
 
 	// TODO: Unclear this should be here - it isn't too hard to change
