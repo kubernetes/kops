@@ -42,7 +42,7 @@ func (m *instanceComputeMetadata) GetTags() (map[string]string, error) {
 	tags := map[string]string{}
 	l := strings.Split(m.Tags, ";")
 	for _, t := range l {
-		tl := strings.Split(t, ":")
+		tl := strings.SplitN(t, ":", 2)
 		if len(tl) != 2 {
 			return nil, fmt.Errorf("unexpected tag format: %s", tl)
 		}
