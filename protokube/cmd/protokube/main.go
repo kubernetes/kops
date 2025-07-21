@@ -91,71 +91,6 @@ func run() error {
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
 
-	var cloudProvider protokube.CloudProvider
-	if cloud == "aws" {
-		awsCloudProvider, err := protokube.NewAWSCloudProvider()
-		if err != nil {
-			klog.Errorf("Error initializing AWS: %q", err)
-			os.Exit(1)
-		}
-		cloudProvider = awsCloudProvider
-
-	} else if cloud == "digitalocean" {
-		doCloudProvider, err := protokube.NewDOCloudProvider()
-		if err != nil {
-			klog.Errorf("Error initializing DigitalOcean: %q", err)
-			os.Exit(1)
-		}
-		cloudProvider = doCloudProvider
-
-	} else if cloud == "hetzner" {
-		hetznerCloudProvider, err := protokube.NewHetznerCloudProvider()
-		if err != nil {
-			klog.Errorf("error initializing Hetzner Cloud: %q", err)
-			os.Exit(1)
-		}
-		cloudProvider = hetznerCloudProvider
-
-	} else if cloud == "gce" {
-		gceCloudProvider, err := protokube.NewGCECloudProvider()
-		if err != nil {
-			klog.Errorf("Error initializing GCE: %q", err)
-			os.Exit(1)
-		}
-
-		cloudProvider = gceCloudProvider
-
-	} else if cloud == "openstack" {
-		osCloudProvider, err := protokube.NewOpenStackCloudProvider()
-		if err != nil {
-			klog.Errorf("Error initializing OpenStack: %q", err)
-			os.Exit(1)
-		}
-		cloudProvider = osCloudProvider
-
-	} else if cloud == "azure" {
-		azureVolumes, err := protokube.NewAzureCloudProvider()
-		if err != nil {
-			klog.Errorf("Error initializing Azure: %q", err)
-			os.Exit(1)
-		}
-		cloudProvider = azureVolumes
-
-	} else if cloud == "scaleway" {
-		scwCloudProvider, err := protokube.NewScwCloudProvider()
-		if err != nil {
-			klog.Errorf("Error initializing Scaleway: %q", err)
-			os.Exit(1)
-		}
-		cloudProvider = scwCloudProvider
-
-	} else if cloud == "metal" {
-		cloudProvider = nil
-	} else {
-		klog.Errorf("Unknown cloud %q", cloud)
-		os.Exit(1)
-	}
-
 	if dnsInternalSuffix == "" {
 		if clusterID == "" {
 			return fmt.Errorf("cluster-id is required when dns-internal-suffix is not set")
@@ -164,7 +99,6 @@ func run() error {
 		dnsInternalSuffix = ".internal." + clusterID
 		klog.Infof("Setting dns-internal-suffix to %q", dnsInternalSuffix)
 	}
-
 	// Make sure it's actually a suffix (starts with .)
 	if !strings.HasPrefix(dnsInternalSuffix, ".") {
 		dnsInternalSuffix = "." + dnsInternalSuffix
@@ -174,10 +108,37 @@ func run() error {
 	if containerized {
 		rootfs = "/rootfs/"
 	}
-
 	protokube.RootFS = rootfs
 
 	if gossip {
+		var cloudProvider protokube.CloudProvider
+		var err error
+		switch cloud {
+		case "aws":
+			cloudProvider, err = protokube.NewAWSCloudProvider()
+		case "digitalocean":
+			cloudProvider, err = protokube.NewDOCloudProvider()
+		case "hetzner":
+			cloudProvider, err = protokube.NewHetznerCloudProvider()
+		case "gce":
+			cloudProvider, err = protokube.NewGCECloudProvider()
+		case "openstack":
+			cloudProvider, err = protokube.NewOpenStackCloudProvider()
+		case "azure":
+			cloudProvider, err = protokube.NewAzureCloudProvider()
+		case "scaleway":
+			cloudProvider, err = protokube.NewScwCloudProvider()
+		case "metal":
+			cloudProvider = nil
+		default:
+			klog.Errorf("Unknown cloud %q", cloud)
+			os.Exit(1)
+		}
+		if err != nil {
+			klog.Errorf("Error initializing cloud %q: %s", cloud, err)
+			os.Exit(1)
+		}
+
 		if cloudProvider == nil {
 			return fmt.Errorf("gossip not supported with cloudprovider %q", cloud)
 		}
