@@ -192,7 +192,9 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 			args = appendIfUnset(args, "--master-size", "c5.large")
 		}
 	case "azure":
-		args = appendIfUnset(args, "--cloud-labels", "DO-NOT-DELETE=kOps")
+		// Ensure https://github.com/Azure/rg-cleanup deletes removes resources
+		args = appendIfUnset(args, "--cloud-labels", "creationTimestamp="+time.Now().Format(time.RFC3339))
+		// Use SKUs for which there is enough quota
 		args = appendIfUnset(args, "--control-plane-size", "Standard_D4s_v3")
 		args = appendIfUnset(args, "--node-size", "Standard_D2s_v3")
 	case "gce":
