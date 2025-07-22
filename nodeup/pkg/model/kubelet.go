@@ -31,7 +31,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
@@ -242,6 +242,9 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec, provider
 	componentConfig := kubelet.KubeletConfiguration{}
 	if providerID != "" {
 		componentConfig.ProviderID = providerID
+	}
+	if kubeletConfig.CrashLoopBackOffMaxContainerRestartPeriod != nil {
+		componentConfig.CrashLoopBackOff.MaxContainerRestartPeriod = kubeletConfig.CrashLoopBackOffMaxContainerRestartPeriod
 	}
 	if kubeletConfig.ShutdownGracePeriod != nil {
 		componentConfig.ShutdownGracePeriod = *kubeletConfig.ShutdownGracePeriod
@@ -495,7 +498,7 @@ func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContex
 				APIVersion:           "credentialprovider.kubelet.k8s.io/v1",
 				Name:                 "ecr-credential-provider",
 				MatchImages:          registryList,
-				DefaultCacheDuration: &v1.Duration{Duration: cacheDuration},
+				DefaultCacheDuration: &metav1.Duration{Duration: cacheDuration},
 				Args:                 []string{"get-credentials"},
 				Env: []kubeletv1.ExecEnvVar{
 					{
@@ -687,6 +690,11 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 	c := b.NodeupConfig.KubeletConfig
 
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+
+	// Wait less for pods to restart, especially during the bootstrap sequence
+	if b.IsKubernetesGTE("1.35") && b.IsMaster {
+		c.CrashLoopBackOffMaxContainerRestartPeriod = &metav1.Duration{Duration: time.Minute}
+	}
 
 	// Respect any MaxPods value the user sets explicitly.
 	if (b.NodeupConfig.Networking.AmazonVPC != nil || (b.NodeupConfig.Networking.Cilium != nil && b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni)) && c.MaxPods == nil {
