@@ -117,8 +117,13 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 	}
 
 	if a == nil {
-		if _, err := cloud.Compute().Disks().Insert(t.Cloud.Project(), *e.Zone, disk); err != nil {
+		op, err := cloud.Compute().Disks().Insert(t.Cloud.Project(), *e.Zone, disk)
+		if err != nil {
 			return fmt.Errorf("error creating Disk: %v", err)
+		}
+		err = cloud.WaitForOp(op)
+		if err != nil {
+			return fmt.Errorf("error during Disk creation: %v", err)
 		}
 	}
 
