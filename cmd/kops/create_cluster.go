@@ -766,8 +766,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		if autoloadSSHPublicKeys {
 			// Load from default locations, if found
 			sshPublicKeyPaths := []string{
-				"~/.ssh/id_rsa.pub",
 				"~/.ssh/id_ed25519.pub",
+				"~/.ssh/id_rsa.pub",
 			}
 			var merr error
 			for _, sshPublicKeyPath := range sshPublicKeyPaths {
