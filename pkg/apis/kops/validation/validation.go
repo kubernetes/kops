@@ -57,7 +57,7 @@ func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
 		errs := utilvalidation.IsDNS1123Subdomain(clusterName)
 		if len(errs) != 0 {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), clusterName, fmt.Sprintf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))))
-		} else if !strings.Contains(clusterName, ".") {
+		} else if !strings.Contains(clusterName, ".") && !cluster.UsesNoneDNS() {
 			// Tolerate if this is a cluster we are importing for upgrade
 			if cluster.ObjectMeta.Annotations[kops.AnnotationNameManagement] != kops.AnnotationValueManagementImported {
 				allErrs = append(allErrs, field.Invalid(field.NewPath("objectMeta", "name"), clusterName, "Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)"))
