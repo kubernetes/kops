@@ -229,7 +229,7 @@ func TestVMScaleSetFind(t *testing.T) {
 			EnableIPForwarding: to.Ptr(true),
 			IPConfigurations: []*compute.VirtualMachineScaleSetIPConfiguration{
 				{
-					Name:       to.Ptr("vmss-ipconfig"),
+					Name:       to.Ptr("vmss"),
 					Properties: ipConfigProperties,
 				},
 			},
