@@ -319,6 +319,9 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	switch cloudProvider {
 	case "aws":
 		suffix = dnsDomain
+	case "azure":
+		// Azure uses --dns=none and the domain is not needed
+		suffix = ""
 	default:
 		suffix = "k8s.local"
 	}
@@ -337,7 +340,12 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	if len(jobName) > gcpLimit && cloudProvider == "gce" {
 		jobName = jobName[:gcpLimit]
 	}
-	return fmt.Sprintf("%v.%v", jobName, suffix), nil
+
+	if suffix != "" {
+		jobName = jobType + "." + suffix
+	}
+
+	return jobName, nil
 }
 
 // stateStore returns the kops state store to use
