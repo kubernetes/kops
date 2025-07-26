@@ -212,7 +212,7 @@ func TestVMScaleSetFind(t *testing.T) {
 		PrivateIPAddressVersion: to.Ptr(compute.IPVersionIPv4),
 	}
 	ipConfigProperties.PublicIPAddressConfiguration = &compute.VirtualMachineScaleSetPublicIPAddressConfiguration{
-		Name: to.Ptr("vmss-publicipconfig"),
+		Name: to.Ptr("vmss"),
 		Properties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
 			PublicIPAddressVersion: to.Ptr(compute.IPVersionIPv4),
 		},

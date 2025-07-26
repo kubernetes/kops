@@ -308,7 +308,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 	}
 	if *e.RequirePublicIP {
 		ipConfigProperties.PublicIPAddressConfiguration = &compute.VirtualMachineScaleSetPublicIPAddressConfiguration{
-			Name: to.Ptr(name + "-publicipconfig"),
+			Name: to.Ptr(name),
 			Properties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
 				PublicIPAddressVersion: to.Ptr(compute.IPVersionIPv4),
 			},
