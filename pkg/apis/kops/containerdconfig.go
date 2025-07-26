@@ -21,8 +21,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// NvidiaDefaultDriverPackage is the nvidia driver default version
-const NvidiaDefaultDriverPackage = "nvidia-driver-535-server"
+const (
+	// NvidiaDefaultDriverPackage is the nvidia driver default version
+	NvidiaDefaultDriverPackage = "nvidia-driver-535-server"
+	// NvidiaDevicePluginImage is the Nvidia K8s device plugin container image
+	NvidiaDevicePluginImage = "nvcr.io/nvidia/k8s-device-plugin:v0.17.3"
+)
 
 // ContainerdConfig is the configuration for containerd
 type ContainerdConfig struct {
@@ -67,11 +71,13 @@ type NRIConfig struct {
 
 type NvidiaGPUConfig struct {
 	// Package is the name of the nvidia driver package that will be installed.
-	// Default is "nvidia-headless-510-server".
+	// Default is "nvidia-driver-535-server".
 	DriverPackage string `json:"package,omitempty"`
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
-	// They will only be installed on intances that has an Nvidia GPU.
+	// They will only be installed on instances that has an Nvidia GPU.
 	Enabled *bool `json:"enabled,omitempty"`
+	// Image defines the container image used to deploy the Nvidia Kubernetes Device Plugin.
+	DevicePluginImage string `json:"image,omitempty"`
 	// DCGMExporterConfig configures the DCGM exporter
 	DCGMExporter *DCGMExporterConfig `json:"dcgmExporter,omitempty"`
 }

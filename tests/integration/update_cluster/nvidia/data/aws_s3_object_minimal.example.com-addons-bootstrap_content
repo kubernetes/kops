@@ -92,7 +92,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: nvidia.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 5c2ea4e24c2272166a0bef02986a881160d23c39df8c7a5951a894702199d8a4
+    manifestHash: 6233f19a8b22836db6e6a25a121990ab77ea14c4e235a83004710afb515c8ff7
     name: nvidia.addons.k8s.io
     selector:
       k8s-addon: nvidia.addons.k8s.io

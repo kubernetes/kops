@@ -58,12 +58,14 @@ Networking:
   serviceClusterIPRange: 100.64.0.0/13
 NvidiaGPU:
   enabled: true
+  image: nvcr.io/nvidia/k8s-device-plugin:v0.17.3
   package: nvidia-driver-535-server
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
   nvidiaGPU:
     enabled: true
+    image: nvcr.io/nvidia/k8s-device-plugin:v0.17.3
     package: nvidia-driver-535-server
   runc:
     version: 1.2.4
