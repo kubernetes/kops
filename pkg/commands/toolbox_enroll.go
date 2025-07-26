@@ -67,6 +67,12 @@ type ToolboxEnrollOptions struct {
 	SSHUser string
 	SSHPort int
 
+	// BuildHost is a flag to only build the host resource, don't apply it or enroll the node
+	BuildHost bool
+
+	// PodCIDRs is the list of IP Address ranges to use for pods that run on this node
+	PodCIDRs []string
+
 	kubeconfig.CreateKubecfgOptions
 }
 
@@ -85,6 +91,11 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 	if options.InstanceGroup == "" {
 		return fmt.Errorf("instance-group is required")
 	}
+	if options.Host == "" {
+		// Technically we could build the host resource without the PKI, but this isn't the case we are targeting right now.
+		return fmt.Errorf("host is required")
+	}
+
 	clientset, err := f.KopsClient()
 	if err != nil {
 		return err
@@ -100,40 +111,11 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 	if err != nil {
 		return err
 	}
-	fullInstanceGroup, err := configBuilder.GetFullInstanceGroup(ctx)
-	if err != nil {
-		return err
-	}
-	bootstrapData, err := configBuilder.GetBootstrapData(ctx)
-	if err != nil {
-		return err
-	}
 
 	// Enroll the node over SSH.
-	if options.Host != "" {
-		restConfig, err := f.RESTConfig(ctx, fullCluster, options.CreateKubecfgOptions)
-		if err != nil {
-			return err
-		}
-
-		if err := enrollHost(ctx, fullInstanceGroup, options, bootstrapData, restConfig); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnrollOptions, bootstrapData *BootstrapData, restConfig *rest.Config) error {
-	scheme := runtime.NewScheme()
-	if err := v1alpha2.AddToScheme(scheme); err != nil {
-		return fmt.Errorf("building kubernetes scheme: %w", err)
-	}
-	kubeClient, err := client.New(restConfig, client.Options{
-		Scheme: scheme,
-	})
+	restConfig, err := f.RESTConfig(ctx, fullCluster, options.CreateKubecfgOptions)
 	if err != nil {
-		return fmt.Errorf("building kubernetes client: %w", err)
+		return err
 	}
 
 	sudo := true
@@ -147,6 +129,39 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 	}
 	defer sshTarget.Close()
 
+	hostData, err := buildHostData(ctx, sshTarget, options)
+	if err != nil {
+		return err
+	}
+
+	if options.BuildHost {
+		klog.Infof("building host data for %+v", hostData)
+		b, err := yaml.Marshal(hostData)
+		if err != nil {
+			return fmt.Errorf("error marshalling host data: %w", err)
+		}
+		fmt.Fprintf(out, "%s\n", string(b))
+		return nil
+	}
+
+	fullInstanceGroup, err := configBuilder.GetFullInstanceGroup(ctx)
+	if err != nil {
+		return err
+	}
+	bootstrapData, err := configBuilder.GetBootstrapData(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := enrollHost(ctx, fullInstanceGroup, bootstrapData, restConfig, hostData, sshTarget); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// buildHostData builds an instance of the Host CRD, based on information in the options and by SSHing to the target host.
+func buildHostData(ctx context.Context, sshTarget *SSHHost, options *ToolboxEnrollOptions) (*v1alpha2.Host, error) {
 	publicKeyPath := "/etc/kubernetes/kops/pki/machine/public.pem"
 
 	publicKeyBytes, err := sshTarget.readFile(ctx, publicKeyPath)
@@ -154,19 +169,20 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 		if errors.Is(err, fs.ErrNotExist) {
 			publicKeyBytes = nil
 		} else {
-			return fmt.Errorf("error reading public key %q: %w", publicKeyPath, err)
+			return nil, fmt.Errorf("error reading public key %q: %w", publicKeyPath, err)
 		}
 	}
 
+	// Create the key if it doesn't exist
 	publicKeyBytes = bytes.TrimSpace(publicKeyBytes)
 	if len(publicKeyBytes) == 0 {
-		if _, err := sshTarget.runScript(ctx, scriptCreateKey, ExecOptions{Sudo: sudo, Echo: true}); err != nil {
-			return err
+		if _, err := sshTarget.runScript(ctx, scriptCreateKey, ExecOptions{Echo: true}); err != nil {
+			return nil, err
 		}
 
 		b, err := sshTarget.readFile(ctx, publicKeyPath)
 		if err != nil {
-			return fmt.Errorf("error reading public key %q (after creation): %w", publicKeyPath, err)
+			return nil, fmt.Errorf("error reading public key %q (after creation): %w", publicKeyPath, err)
 		}
 		publicKeyBytes = b
 	}
@@ -174,14 +190,37 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 
 	hostname, err := sshTarget.getHostname(ctx)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	host := &v1alpha2.Host{}
+	host.SetGroupVersionKind(v1alpha2.SchemeGroupVersion.WithKind("Host"))
+	host.Namespace = "kops-system"
+	host.Name = hostname
+	host.Spec.InstanceGroup = options.InstanceGroup
+	host.Spec.PublicKey = string(publicKeyBytes)
+	host.Spec.PodCIDRs = options.PodCIDRs
+
+	return host, nil
+}
+
+func enrollHost(ctx context.Context, ig *kops.InstanceGroup, bootstrapData *BootstrapData, restConfig *rest.Config, hostData *v1alpha2.Host, sshTarget *SSHHost) error {
+	scheme := runtime.NewScheme()
+	if err := v1alpha2.AddToScheme(scheme); err != nil {
+		return fmt.Errorf("building kubernetes scheme: %w", err)
+	}
+	kubeClient, err := client.New(restConfig, client.Options{
+		Scheme: scheme,
+	})
+	if err != nil {
+		return fmt.Errorf("building kubernetes client: %w", err)
 	}
 
 	// We can't create the host resource in the API server for control-plane nodes,
 	// because the API server (likely) isn't running yet.
 	if !ig.IsControlPlane() {
-		if err := createHostResourceInAPIServer(ctx, options, hostname, publicKeyBytes, kubeClient); err != nil {
-			return err
+		if err := kubeClient.Create(ctx, hostData); err != nil {
+			return fmt.Errorf("failed to create host %s/%s: %w", hostData.Namespace, hostData.Name, err)
 		}
 	}
 
@@ -192,24 +231,10 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, options *ToolboxEnr
 	}
 
 	if len(bootstrapData.NodeupScript) != 0 {
-		if _, err := sshTarget.runScript(ctx, string(bootstrapData.NodeupScript), ExecOptions{Sudo: sudo, Echo: true}); err != nil {
+		if _, err := sshTarget.runScript(ctx, string(bootstrapData.NodeupScript), ExecOptions{Echo: true}); err != nil {
 			return err
 		}
 	}
-	return nil
-}
-
-func createHostResourceInAPIServer(ctx context.Context, options *ToolboxEnrollOptions, nodeName string, publicKey []byte, client client.Client) error {
-	host := &v1alpha2.Host{}
-	host.Namespace = "kops-system"
-	host.Name = nodeName
-	host.Spec.InstanceGroup = options.InstanceGroup
-	host.Spec.PublicKey = string(publicKey)
-
-	if err := client.Create(ctx, host); err != nil {
-		return fmt.Errorf("failed to create host %s/%s: %w", host.Namespace, host.Name, err)
-	}
-
 	return nil
 }
 
@@ -323,7 +348,7 @@ func (s *SSHHost) runScript(ctx context.Context, script string, options ExecOpti
 	p := vfs.NewSSHPath(s.sshClient, s.hostname, scriptPath, s.sudo)
 
 	defer func() {
-		if _, err := s.runCommand(ctx, "rm -rf "+tempDir, ExecOptions{Sudo: s.sudo, Echo: false}); err != nil {
+		if _, err := s.runCommand(ctx, "rm -rf "+tempDir, ExecOptions{Echo: false}); err != nil {
 			klog.Warningf("error cleaning up temp directory %q: %v", tempDir, err)
 		}
 	}()
@@ -344,7 +369,6 @@ type CommandOutput struct {
 
 // ExecOptions holds options for running a command remotely.
 type ExecOptions struct {
-	Sudo bool
 	Echo bool
 }
 
@@ -361,10 +385,11 @@ func (s *SSHHost) runCommand(ctx context.Context, command string, options ExecOp
 	session.Stderr = &output.Stderr
 
 	if options.Echo {
-		session.Stdout = io.MultiWriter(os.Stdout, session.Stdout)
+		// We send both to stderr, so we don't "corrupt" stdout
+		session.Stdout = io.MultiWriter(os.Stderr, session.Stdout)
 		session.Stderr = io.MultiWriter(os.Stderr, session.Stderr)
 	}
-	if options.Sudo {
+	if s.sudo {
 		command = "sudo " + command
 	}
 	if err := session.Run(command); err != nil {
@@ -376,7 +401,7 @@ func (s *SSHHost) runCommand(ctx context.Context, command string, options ExecOp
 // getHostname gets the hostname of the SSH target.
 // This is used as the node name when registering the node.
 func (s *SSHHost) getHostname(ctx context.Context) (string, error) {
-	output, err := s.runCommand(ctx, "hostname", ExecOptions{Sudo: false, Echo: true})
+	output, err := s.runCommand(ctx, "hostname", ExecOptions{Echo: true})
 	if err != nil {
 		return "", fmt.Errorf("failed to get hostname: %w", err)
 	}
