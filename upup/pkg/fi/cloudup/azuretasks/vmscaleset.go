@@ -334,7 +334,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 			EnableIPForwarding: to.Ptr(true),
 			IPConfigurations: []*compute.VirtualMachineScaleSetIPConfiguration{
 				{
-					Name:       to.Ptr(name + "-ipconfig"),
+					Name:       to.Ptr(name),
 					Properties: ipConfigProperties,
 				},
 			},
