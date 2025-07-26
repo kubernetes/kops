@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/blang/semver/v4"
@@ -963,6 +964,13 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 			}
 			if k.ShutdownGracePeriod.Duration.Seconds() < k.ShutdownGracePeriodCriticalPods.Seconds() {
 				allErrs = append(allErrs, field.Invalid(kubeletPath.Child("shutdownGracePeriodCriticalPods"), k.ShutdownGracePeriodCriticalPods.String(), "shutdownGracePeriodCriticalPods cannot be greater than shutdownGracePeriod"))
+			}
+		}
+
+		containerRestartPeriod := k.CrashLoopBackOffMaxContainerRestartPeriod
+		if containerRestartPeriod != nil {
+			if containerRestartPeriod.Duration < time.Second || containerRestartPeriod.Duration > 300*time.Second {
+				allErrs = append(allErrs, field.Invalid(kubeletPath.Child("crashLoopBackOffMaxContainerRestartPeriod"), containerRestartPeriod.String(), "crashLoopBackOffMaxContainerRestartPeriod must be a value between 1s and 300s"))
 			}
 		}
 

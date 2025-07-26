@@ -4388,6 +4388,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.CrashLoopBackOffMaxContainerRestartPeriod != nil {
+		in, out := &in.CrashLoopBackOffMaxContainerRestartPeriod, &out.CrashLoopBackOffMaxContainerRestartPeriod
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 
