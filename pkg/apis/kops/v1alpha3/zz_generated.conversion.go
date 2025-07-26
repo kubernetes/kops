@@ -6919,6 +6919,7 @@ func autoConvert_v1alpha3_NodeLocalDNSConfig_To_kops_NodeLocalDNSConfig(in *Node
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.PodAnnotations = in.PodAnnotations
+	out.CiliumBPFCompatibility = in.CiliumBPFCompatibility
 	return nil
 }
 
@@ -6937,6 +6938,7 @@ func autoConvert_kops_NodeLocalDNSConfig_To_v1alpha3_NodeLocalDNSConfig(in *kops
 	out.MemoryRequest = in.MemoryRequest
 	out.CPURequest = in.CPURequest
 	out.PodAnnotations = in.PodAnnotations
+	out.CiliumBPFCompatibility = in.CiliumBPFCompatibility
 	return nil
 }
 

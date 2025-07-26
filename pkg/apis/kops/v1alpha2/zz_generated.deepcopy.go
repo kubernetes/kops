@@ -5018,6 +5018,11 @@ func (in *NodeLocalDNSConfig) DeepCopyInto(out *NodeLocalDNSConfig) {
 			(*out)[key] = val
 		}
 	}
+	if in.CiliumBPFCompatibility != nil {
+		in, out := &in.CiliumBPFCompatibility, &out.CiliumBPFCompatibility
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
