@@ -57,8 +57,14 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	// Set default log level to INFO
 	containerd.LogLevel = fi.PtrTo("info")
 
-	if containerd.NvidiaGPU != nil && fi.ValueOf(containerd.NvidiaGPU.Enabled) && containerd.NvidiaGPU.DriverPackage == "" {
-		containerd.NvidiaGPU.DriverPackage = kops.NvidiaDefaultDriverPackage
+	if containerd.NvidiaGPU != nil && fi.ValueOf(containerd.NvidiaGPU.Enabled) {
+		if containerd.NvidiaGPU.DriverPackage == "" {
+			containerd.NvidiaGPU.DriverPackage = kops.NvidiaDefaultDriverPackage
+		}
+
+		if containerd.NvidiaGPU.ImageTag == "" {
+			containerd.NvidiaGPU.ImageTag = kops.NvidiaDevicePluginImageTag
+		}
 	}
 
 	return nil

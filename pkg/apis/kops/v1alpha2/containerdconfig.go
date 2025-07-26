@@ -69,6 +69,8 @@ type NvidiaGPUConfig struct {
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
 	// They will only be installed on intances that has an Nvidia GPU.
 	Enabled *bool `json:"enabled,omitempty"`
+	// ImageTag specifies the container image tag for the Nvidia K8s Device Plugin image.
+	ImageTag string `json:"tag,omitempty"`
 	// DCGMExporterConfig configures the DCGM exporter
 	DCGMExporter *DCGMExporterConfig `json:"dcgmExporter,omitempty"`
 }

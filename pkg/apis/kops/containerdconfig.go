@@ -24,6 +24,9 @@ import (
 // NvidiaDefaultDriverPackage is the nvidia driver default version
 const NvidiaDefaultDriverPackage = "nvidia-driver-535-server"
 
+// NvidiaDevicePluginImageTag is the Nvidia K8s device plugin container image tag
+const NvidiaDevicePluginImageTag = "v0.17.3"
+
 // ContainerdConfig is the configuration for containerd
 type ContainerdConfig struct {
 	// Address of containerd's GRPC server (default "/run/containerd/containerd.sock").
@@ -67,11 +70,13 @@ type NRIConfig struct {
 
 type NvidiaGPUConfig struct {
 	// Package is the name of the nvidia driver package that will be installed.
-	// Default is "nvidia-headless-510-server".
+	// Default is "nvidia-driver-535-server".
 	DriverPackage string `json:"package,omitempty"`
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
-	// They will only be installed on intances that has an Nvidia GPU.
+	// They will only be installed on instances that has an Nvidia GPU.
 	Enabled *bool `json:"enabled,omitempty"`
+	// ImageTag specifies the container image tag for the Nvidia K8s Device Plugin image.
+	ImageTag string `json:"tag,omitempty"`
 	// DCGMExporterConfig configures the DCGM exporter
 	DCGMExporter *DCGMExporterConfig `json:"dcgmExporter,omitempty"`
 }

@@ -932,10 +932,14 @@ spec:
                           Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
                           They will only be installed on intances that has an Nvidia GPU.
                         type: boolean
+                      tag:
+                        description: |-
+                          Tag determines the image version to be used for the Nvidia K8s device plugin image.
+                        type: string
                       package:
                         description: |-
                           Package is the name of the nvidia driver package that will be installed.
-                          Default is "nvidia-headless-460-server".
+                          Default is "nvidia-driver-535-server".
                         type: string
                     type: object
                   packages:
