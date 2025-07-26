@@ -328,7 +328,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 	}
 
 	networkConfig := &compute.VirtualMachineScaleSetNetworkConfiguration{
-		Name: to.Ptr(name + "-netconfig"),
+		Name: to.Ptr(name),
 		Properties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
 			Primary:            to.Ptr(true),
 			EnableIPForwarding: to.Ptr(true),
