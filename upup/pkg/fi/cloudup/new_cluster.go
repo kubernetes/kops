@@ -19,6 +19,7 @@ package cloudup
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -179,6 +180,7 @@ func (o *NewClusterOptions) InitDefaults() {
 
 	// Azure-specific
 	o.AzureAdminUser = "kops"
+	o.AzureSubscriptionID = os.Getenv("AZURE_SUBSCRIPTION_ID")
 }
 
 type NewClusterResult struct {

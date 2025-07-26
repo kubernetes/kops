@@ -537,12 +537,8 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if featureflag.Azure.Enabled() {
-		if c.AzureSubscriptionID == "" {
-			if id, ok := os.LookupEnv("AZURE_SUBSCRIPTION_ID"); ok {
-				c.AzureSubscriptionID = id
-			} else {
-				return fmt.Errorf("--azure-subscription-id is required")
-			}
+		if c.CloudProvider == "azure" && c.AzureSubscriptionID == "" {
+			return fmt.Errorf("--azure-subscription-id is required")
 		}
 	}
 
