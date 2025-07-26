@@ -18,8 +18,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+
+	"sigs.k8s.io/yaml"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops"
@@ -57,6 +60,7 @@ func NewCmdVersion(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().BoolVar(&options.short, "short", options.short, "only print the main kOps version. Useful for scripting.")
 	cmd.Flags().BoolVar(&options.server, "server", options.server, "show the kOps version that made the last change to the state store.")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "One of 'yaml' or 'json'.")
 
 	return cmd
 }
@@ -65,43 +69,69 @@ type VersionOptions struct {
 	short       bool
 	server      bool
 	ClusterName string
+	Output      string
+}
+
+// Version is a struct for version information
+type Version struct {
+	ClientVersion *kops.Info `json:"clientVersion,omitempty" yaml:"clientVersion,omitempty"`
+	ServerVersion string     `json:"serverVersion,omitempty" yaml:"serverVersion,omitempty"`
 }
 
 // RunVersion implements the version command logic
 func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
-	if options.short {
-		s := kops.Version
-		_, err := fmt.Fprintf(out, "%s\n", s)
-		if err != nil {
-			return err
-		}
-		if options.server {
-			server := serverVersion(f, options)
-
-			_, err := fmt.Fprintf(out, "%s\n", server)
-			return err
-		}
-
-		return nil
-	} else {
-		client := kops.Version
-		if kops.GitVersion != "" {
-			client += " (git-" + kops.GitVersion + ")"
-		}
-
-		{
-			_, err := fmt.Fprintf(out, "Client version: %s\n", client)
+	var versionInfo Version
+	clientVersion := kops.Get()
+	versionInfo.ClientVersion = &clientVersion
+	if options.server {
+		versionInfo.ServerVersion = serverVersion(f, options)
+	}
+	switch options.Output {
+	case "":
+		if options.short {
+			_, err := fmt.Fprintf(out, "%s\n", versionInfo.ClientVersion.Version)
 			if err != nil {
 				return err
 			}
-		}
-		if options.server {
-			server := serverVersion(f, options)
+			if options.server {
+				_, err := fmt.Fprintf(out, "%s\n", versionInfo.ServerVersion)
+				return err
+			}
+			return nil
+		} else {
+			client := versionInfo.ClientVersion.Version
+			if versionInfo.ClientVersion.GitVersion != "" {
+				client += " (git-" + versionInfo.ClientVersion.GitVersion + ")"
+			}
 
-			_, err := fmt.Fprintf(out, "Last applied server version: %s\n", server)
+			{
+				_, err := fmt.Fprintf(out, "Client Version: %s\n", client)
+				if err != nil {
+					return err
+				}
+			}
+			if options.server {
+				_, err := fmt.Fprintf(out, "Last applied server version: %s\n", versionInfo.ServerVersion)
+				return err
+			}
+			return nil
+		}
+	case OutputYaml:
+		marshalled, err := yaml.Marshal(&versionInfo)
+		if err != nil {
 			return err
 		}
-		return nil
+		_, err = fmt.Fprintln(out, string(marshalled))
+		return err
+	case OutputJSON:
+		marshalled, err := json.MarshalIndent(&versionInfo, "", "  ")
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(out, string(marshalled))
+		return err
+	default:
+		return fmt.Errorf("VersionOptions were not validated: --output=%q should have been rejected", options.Output)
 	}
 }
 
