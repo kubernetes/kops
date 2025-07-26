@@ -308,7 +308,7 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 	}
 	if *e.RequirePublicIP {
 		ipConfigProperties.PublicIPAddressConfiguration = &compute.VirtualMachineScaleSetPublicIPAddressConfiguration{
-			Name: to.Ptr(name + "-publicipconfig"),
+			Name: to.Ptr(name),
 			Properties: &compute.VirtualMachineScaleSetPublicIPAddressConfigurationProperties{
 				PublicIPAddressVersion: to.Ptr(compute.IPVersionIPv4),
 			},
@@ -328,13 +328,13 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 	}
 
 	networkConfig := &compute.VirtualMachineScaleSetNetworkConfiguration{
-		Name: to.Ptr(name + "-netconfig"),
+		Name: to.Ptr(name),
 		Properties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
 			Primary:            to.Ptr(true),
 			EnableIPForwarding: to.Ptr(true),
 			IPConfigurations: []*compute.VirtualMachineScaleSetIPConfiguration{
 				{
-					Name:       to.Ptr(name + "-ipconfig"),
+					Name:       to.Ptr(name),
 					Properties: ipConfigProperties,
 				},
 			},
