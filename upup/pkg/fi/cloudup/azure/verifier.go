@@ -91,7 +91,7 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	}
 	nodeName := strings.ToLower(*vm.Properties.OSProfile.ComputerName)
 
-	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName+"-netconfig", nil)
+	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName, nil)
 	if err != nil {
 		return nil, fmt.Errorf("getting info for VMSS network interface %q #%s: %w", vmssName, vmssIndex, err)
 	}

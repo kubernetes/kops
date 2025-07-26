@@ -223,7 +223,7 @@ func TestVMScaleSetFind(t *testing.T) {
 		},
 	}
 	networkConfig := &compute.VirtualMachineScaleSetNetworkConfiguration{
-		Name: to.Ptr("vmss-netconfig"),
+		Name: to.Ptr("vmss"),
 		Properties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
 			Primary:            to.Ptr(true),
 			EnableIPForwarding: to.Ptr(true),
