@@ -26,10 +26,12 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/klog/v2"
@@ -241,6 +243,9 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec, provider
 	componentConfig := kubelet.KubeletConfiguration{}
 	if providerID != "" {
 		componentConfig.ProviderID = providerID
+	}
+	componentConfig.CrashLoopBackOff = kubelet.CrashLoopBackOffConfig{
+		MaxContainerRestartPeriod: kubeletConfig.CrashLoopBackOffMaxContainerRestartPeriod,
 	}
 	if kubeletConfig.ShutdownGracePeriod != nil {
 		componentConfig.ShutdownGracePeriod = *kubeletConfig.ShutdownGracePeriod
@@ -647,6 +652,17 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 	c := b.NodeupConfig.KubeletConfig
 
 	c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+
+	// Wait less for pods to restart, especially during the bootstrap sequence
+	if b.IsMaster && c.CrashLoopBackOffMaxContainerRestartPeriod == nil {
+		c.CrashLoopBackOffMaxContainerRestartPeriod = &metav1.Duration{Duration: time.Minute}
+	}
+	if c.CrashLoopBackOffMaxContainerRestartPeriod != nil {
+		if c.FeatureGates == nil {
+			c.FeatureGates = make(map[string]string)
+		}
+		c.FeatureGates["KubeletCrashLoopBackOffMax"] = "true"
+	}
 
 	// Respect any MaxPods value the user sets explicitly.
 	if (b.NodeupConfig.Networking.AmazonVPC != nil || (b.NodeupConfig.Networking.Cilium != nil && b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni)) && c.MaxPods == nil {

@@ -241,6 +241,8 @@ type KubeletConfigSpec struct {
 	// MemorySwapBehavior defines how swap is used by container workloads.
 	// Supported values: LimitedSwap, "UnlimitedSwap.
 	MemorySwapBehavior string `json:"memorySwapBehavior,omitempty"`
+	// CrashLoopBackOffMaxContainerRestartPeriod is the maximum duration the backoff delay can accrue to for container restarts, minimum 1 second, maximum 300 seconds. If not set, defaults to the internal crashloopbackoff maximum (300s).
+	CrashLoopBackOffMaxContainerRestartPeriod *metav1.Duration `json:"crashLoopBackOffMaxContainerRestartPeriod,omitempty"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy

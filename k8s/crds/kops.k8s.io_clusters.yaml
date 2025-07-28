@@ -4115,6 +4115,12 @@ spec:
                     description: CpuManagerPolicy allows for changing the default
                       policy of None to static
                     type: string
+                  crashLoopBackOffMaxContainerRestartPeriod:
+                    description: CrashLoopBackOffMaxContainerRestartPeriod is the
+                      maximum duration the backoff delay can accrue to for container
+                      restarts, minimum 1 second, maximum 300 seconds. If not set,
+                      defaults to the internal crashloopbackoff maximum (300s).
+                    type: string
                   dockerDisableSharedPID:
                     description: DockerDisableSharedPID was removed.
                     type: boolean
@@ -4567,6 +4573,12 @@ spec:
                   cpuManagerPolicy:
                     description: CpuManagerPolicy allows for changing the default
                       policy of None to static
+                    type: string
+                  crashLoopBackOffMaxContainerRestartPeriod:
+                    description: CrashLoopBackOffMaxContainerRestartPeriod is the
+                      maximum duration the backoff delay can accrue to for container
+                      restarts, minimum 1 second, maximum 300 seconds. If not set,
+                      defaults to the internal crashloopbackoff maximum (300s).
                     type: string
                   dockerDisableSharedPID:
                     description: DockerDisableSharedPID was removed.
