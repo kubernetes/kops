@@ -61,6 +61,7 @@ containerdConfig:
   runc:
     version: 1.2.4
   skipInstall: true
+  useECRCredentialsForMirrors: true
   version: 1.7.25
 usesLegacyGossip: false
 usesNoneDNS: false
