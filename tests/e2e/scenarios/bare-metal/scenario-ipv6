@@ -46,11 +46,20 @@ trap cleanup EXIT
 rm -rf ${WORKDIR}/s3
 mkdir -p ${WORKDIR}/s3/
 
+IPV6_PREFIX=fd00:10:123:45:
 IPV4_PREFIX=10.123.45.
 
 VM0_IP=${IPV4_PREFIX}10
 VM1_IP=${IPV4_PREFIX}11
 VM2_IP=${IPV4_PREFIX}12
+
+VM0_IPV6=${IPV6_PREFIX}a::
+VM1_IPV6=${IPV6_PREFIX}b::
+VM2_IPV6=${IPV6_PREFIX}c::
+
+VM0_POD_CIDR=${IPV6_PREFIX}a::/96
+VM1_POD_CIDR=${IPV6_PREFIX}b::/96
+VM2_POD_CIDR=${IPV6_PREFIX}c::/96
 
 # Start our VMs
 ${REPO_ROOT}/tests/e2e/scenarios/bare-metal/start-vms
@@ -76,6 +85,74 @@ ssh -o StrictHostKeyChecking=accept-new root@${VM2_IP} uptime
 
 cd ${REPO_ROOT}
 
+# Configure IPv6 networking
+function configure_ipv6() {
+  local hostname=$1
+  local node_ip=$2
+  local ipv6_ip=$3
+  local ipv6_range=$4
+
+  ssh root@${node_ip} ip link
+  ssh root@${node_ip} ip -6 addr add ${ipv6_range} dev enp0s3
+
+  # Set our node as the default route
+  # (otherwise the kubelet will not discover the IPv6 addresses in ResolveBindAddress)
+  # node-to-node routes will be discovered by radvd
+  ssh root@${node_ip} ip -6 route add ${IPV6_PREFIX}0::/96 dev enp0s3
+  ssh root@${node_ip} ip -6 route add default via ${IPV6_PREFIX}0::
+
+  cat <<EOF | ssh root@${node_ip} tee /etc/resolv.conf
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 2001:4860:4860::8888
+nameserver 2001:4860:4860::8844
+EOF
+
+  # Ensure /etc/hosts has an entry for the host
+  cat <<EOF | ssh root@${node_ip} tee -a /etc/hosts
+::1 ${hostname} localhost
+EOF
+
+  cat << EOF | ssh root@${node_ip} tee /etc/radvd.conf
+interface enp0s3
+{
+  AdvSendAdvert on;
+  AdvDefaultLifetime 0; # Not a default router
+  route ${ipv6_range}
+  {
+  };
+};
+EOF
+
+  ssh root@${node_ip} apt-get update
+  ssh root@${node_ip} apt-get install -y radvd
+  ssh root@${node_ip} systemctl restart radvd
+
+  ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra=2
+  ssh root@${node_ip} sysctl net.ipv6.conf.enp0s3.accept_ra_rt_info_max_plen=96
+
+  
+  ssh root@${node_ip} ip -6 addr
+  ssh root@${node_ip} ip -6 route
+}
+
+# Configure our IPv6 addresses on the bridge
+sudo ip address add ${IPV6_PREFIX}0::/96 dev br0 || true
+sudo sysctl net.ipv6.conf.br0.accept_ra=2
+sudo sysctl net.ipv6.conf.br0.accept_ra_rt_info_max_plen=96
+
+# Configure the VMs on the bridge
+configure_ipv6 vm0 ${VM0_IP} ${VM0_IPV6} ${VM0_POD_CIDR}
+configure_ipv6 vm1 ${VM1_IP} ${VM1_IPV6} ${VM1_POD_CIDR}
+configure_ipv6 vm2 ${VM2_IP} ${VM2_IPV6} ${VM2_POD_CIDR}
+
+ip -6 route
+
+# Check the VMs are OK
+ping6 -c 1 ${VM0_IPV6}
+ping6 -c 1 ${VM1_IPV6}
+ping6 -c 1 ${VM2_IPV6}
+
 # Enable feature flag for bare metal
 export KOPS_FEATURE_FLAGS=Metal
 
@@ -94,54 +171,53 @@ export KOPS_STATE_STORE=s3://kops-state-store/
 aws --version
 aws s3 ls s3://kops-state-store || aws s3 mb s3://kops-state-store
 
+export CLUSTER_NAME=metalipv6.k8s.local
+
 # List clusters (there should not be any yet)
 ${KOPS} get cluster || true
 
 # Create a cluster
-${KOPS} create cluster --cloud=metal metal.k8s.local --zones main --networking cni
+${KOPS} create cluster --cloud=metal ${CLUSTER_NAME} --zones main --networking cni --ipv6
 
 # Set the IP ingress, required for metal cloud
 # TODO: is this the best option?
-${KOPS} edit cluster metal.k8s.local  --set spec.api.publicName=${VM0_IP}
+${KOPS} edit cluster ${CLUSTER_NAME} --set spec.api.publicName=${VM0_IPV6}
 
-# Use latest etcd-manager image (while we're adding features)
-#${KOPS} edit cluster metal.k8s.local --set 'spec.etcdClusters[*].manager.image=us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-slim:v3.0.20250628-7-ga7be11fb'
-
-# Use 1.31 kubernetes so we get kube-apiserver fixes
+# Use 1.32 kubernetes so we get https://github.com/kubernetes/kubernetes/pull/125337
 export KOPS_RUN_TOO_NEW_VERSION=1
-"${KOPS}" edit cluster metal.k8s.local "--set=cluster.spec.kubernetesVersion=1.31.0"
+"${KOPS}" edit cluster ${CLUSTER_NAME} "--set=cluster.spec.kubernetesVersion=1.32.0"
 
 # List clusters
 ${KOPS} get cluster
 ${KOPS} get cluster -oyaml
 
 # List instance groups
-${KOPS} get ig --name metal.k8s.local
-${KOPS} get ig --name metal.k8s.local -oyaml
+${KOPS} get ig --name ${CLUSTER_NAME}
+${KOPS} get ig --name ${CLUSTER_NAME} -oyaml
 
 # Apply basic configuration
-${KOPS} update cluster metal.k8s.local
-${KOPS} update cluster metal.k8s.local --yes --admin
+${KOPS} update cluster ${CLUSTER_NAME}
+${KOPS} update cluster ${CLUSTER_NAME} --yes --admin
+
 
 # Enroll the control-plane VM
-${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group control-plane-main --host ${VM0_IP} --v=2
+${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group control-plane-main --host ${VM0_IP} --pod-cidr ${VM0_POD_CIDR} --v=2
 
 # Manual creation of "volumes" for etcd, and setting up peer nodes
 cat <<EOF | ssh root@${VM0_IP} tee -a /etc/hosts
 
 # Hosts added for etcd discovery
-${VM0_IP} node0.main.metal.k8s.local
-${VM0_IP} node0.events.metal.k8s.local
+${VM0_IP} node0.main.${CLUSTER_NAME}
+${VM0_IP} node0.events.${CLUSTER_NAME}
 EOF
 
 ssh root@${VM0_IP} cat /etc/hosts
 
-ssh root@${VM0_IP} mkdir -p /mnt/disks/metal.k8s.local--main--0/mnt
-ssh root@${VM0_IP} touch    /mnt/disks/metal.k8s.local--main--0/mnt/please-create-new-cluster
+ssh root@${VM0_IP} mkdir -p /mnt/disks/${CLUSTER_NAME}--main--0/mnt
+ssh root@${VM0_IP} touch    /mnt/disks/${CLUSTER_NAME}--main--0/mnt/please-create-new-cluster
 
-ssh root@${VM0_IP} mkdir -p /mnt/disks/metal.k8s.local--events--0/mnt
-ssh root@${VM0_IP} touch    /mnt/disks/metal.k8s.local--events--0/mnt/please-create-new-cluster
-
+ssh root@${VM0_IP} mkdir -p /mnt/disks/${CLUSTER_NAME}--events--0/mnt
+ssh root@${VM0_IP} touch    /mnt/disks/${CLUSTER_NAME}--events--0/mnt/please-create-new-cluster
 
 echo "Waiting for kube to start"
 # Wait for kube-apiserver to be ready, timeout after 10 minutes
@@ -151,6 +227,13 @@ for i in {1..60}; do
   fi
   sleep 10
 done
+
+# Create CRD and namespace for host records
+kubectl create ns kops-system
+kubectl apply -f ${REPO_ROOT}/k8s/crds/kops.k8s.io_hosts.yaml
+
+# Create the host record (we can't auto create for control plane nodes)
+${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group control-plane-main --host ${VM0_IP} --pod-cidr ${VM0_POD_CIDR} --v=2 --build-host | kubectl apply -f -
 
 kubectl get nodes
 kubectl get pods -A
@@ -162,9 +245,6 @@ sleep 10
 kubectl get nodes
 kubectl get pods -A
 
-# For host records
-kubectl create ns kops-system
-kubectl apply -f ${REPO_ROOT}/k8s/crds/kops.k8s.io_hosts.yaml
 
 # kops-controller extra permissions
 kubectl apply --server-side -f - <<EOF
@@ -206,21 +286,22 @@ EOF
 
 function enroll_node() {
   local node_ip=$1
+  local pod_cidr=$2
 
 # Manual "discovery" for control-plane endpoints
 # TODO: Replace with well-known IP
 cat <<EOF | ssh root@${node_ip} tee -a /etc/hosts
 
 # Hosts added for leader discovery
-${VM0_IP} kops-controller.internal.metal.k8s.local
-${VM0_IP} api.internal.metal.k8s.local
+${VM0_IP} kops-controller.internal.${CLUSTER_NAME}
+${VM0_IP} api.internal.${CLUSTER_NAME}
 EOF
 
-timeout 10m ${KOPS} toolbox enroll --cluster metal.k8s.local --instance-group nodes-main --host ${node_ip} --v=2
+timeout 10m ${KOPS} toolbox enroll --cluster ${CLUSTER_NAME} --instance-group nodes-main --host ${node_ip} --pod-cidr ${pod_cidr} --v=2
 }
 
-enroll_node ${VM1_IP}
-enroll_node ${VM2_IP}
+enroll_node ${VM1_IP} ${VM1_POD_CIDR}
+enroll_node ${VM2_IP} ${VM2_POD_CIDR}
 
 echo "Waiting 30 seconds for nodes to be ready"
 sleep 30
@@ -231,7 +312,7 @@ kubectl get nodes -o yaml
 kubectl get pods -A
 
 # Ensure the cluster passes validation
-${KOPS} validate cluster metal.k8s.local --wait=10m
+${KOPS} validate cluster ${CLUSTER_NAME} --wait=10m
 
 # Run a few bare-metal e2e tests
 echo "running e2e tests"

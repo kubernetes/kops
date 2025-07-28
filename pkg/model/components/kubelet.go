@@ -124,30 +124,37 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 
 	cloudProvider := cluster.GetCloudProvider()
 	klog.V(1).Infof("Cloud Provider: %s", cloudProvider)
-	if cloudProvider != kops.CloudProviderMetal {
-		if b.controlPlaneKubernetesVersion.IsLT("1.31") {
-			switch cloudProvider {
-			case kops.CloudProviderAWS:
-				kubelet.CloudProvider = "aws"
-			case kops.CloudProviderGCE:
-				kubelet.CloudProvider = "gce"
-			case kops.CloudProviderDO:
-				kubelet.CloudProvider = "external"
-			case kops.CloudProviderHetzner:
-				kubelet.CloudProvider = "external"
-			case kops.CloudProviderOpenstack:
-				kubelet.CloudProvider = "openstack"
-			case kops.CloudProviderAzure:
-				kubelet.CloudProvider = "azure"
-			case kops.CloudProviderScaleway:
-				kubelet.CloudProvider = "external"
-			default:
-				kubelet.CloudProvider = "external"
-			}
+	if b.controlPlaneKubernetesVersion.IsLT("1.31") {
+		switch cloudProvider {
+		case kops.CloudProviderAWS:
+			kubelet.CloudProvider = "aws"
+		case kops.CloudProviderGCE:
+			kubelet.CloudProvider = "gce"
+		case kops.CloudProviderDO:
+			kubelet.CloudProvider = "external"
+		case kops.CloudProviderHetzner:
+			kubelet.CloudProvider = "external"
+		case kops.CloudProviderOpenstack:
+			kubelet.CloudProvider = "openstack"
+		case kops.CloudProviderAzure:
+			kubelet.CloudProvider = "azure"
+		case kops.CloudProviderScaleway:
+			kubelet.CloudProvider = "external"
+		case kops.CloudProviderMetal:
+			kubelet.CloudProvider = ""
+		default:
+			kubelet.CloudProvider = "external"
+		}
 
-			if cluster.Spec.ExternalCloudControllerManager != nil {
-				kubelet.CloudProvider = "external"
-			}
+		if cluster.Spec.ExternalCloudControllerManager != nil {
+			kubelet.CloudProvider = "external"
+		}
+	} else {
+		if cloudProvider == kops.CloudProviderMetal {
+			// metal does not (yet) have a cloud-controller-manager, so we don't need to set the cloud-provider flag
+			// If we do set it to external, kubelet will taint the node with the node.kops.k8s.io/uninitialized taint
+			// and there is no cloud-controller-manager to remove it
+			kubelet.CloudProvider = ""
 		} else {
 			kubelet.CloudProvider = "external"
 		}

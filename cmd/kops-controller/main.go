@@ -392,6 +392,12 @@ func setupCloudIPAM(ctx context.Context, mgr manager.Manager, opt *config.Option
 			return fmt.Errorf("creating gce IPAM controller: %w", err)
 		}
 		controller = ipamController
+	case "metal":
+		ipamController, err := controllers.NewMetalIPAMReconciler(ctx, mgr)
+		if err != nil {
+			return fmt.Errorf("creating metal IPAM controller: %w", err)
+		}
+		controller = ipamController
 	default:
 		return fmt.Errorf("kOps IPAM controller is not supported on cloud %q", opt.Cloud)
 	}
