@@ -54,6 +54,8 @@ type ContainerdConfig struct {
 	SeLinuxEnabled bool `json:"selinuxEnabled,omitempty"`
 	// NRI configures the Node Resource Interface.
 	NRI *NRIConfig `json:"nri,omitempty"`
+	// Enables Kubelet ECR Credential helper to pass credentials to containerd mirrors, to use ECR as a pull-through cache
+	UseECRCredentialsForMirrors bool `json:"useECRCredentialsForMirrors,omitempty"`
 }
 
 type NRIConfig struct {

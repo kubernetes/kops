@@ -11,6 +11,7 @@ spec:
   configBase: memfs://clusters.example.com/containerd.example.com
   containerRuntime: containerd
   containerd:
+    useECRCredentialsForMirrors: true
     skipInstall: true
     registryMirrors:
       docker.io:
