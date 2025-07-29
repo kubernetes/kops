@@ -2034,6 +2034,7 @@ k8s.io/kubectl/pkg/util/term
 k8s.io/kubectl/pkg/validation
 # k8s.io/kubelet v0.33.2
 ## explicit; go 1.24.0
+k8s.io/kubelet/config/v1
 k8s.io/kubelet/config/v1beta1
 # k8s.io/mount-utils v0.33.2
 ## explicit; go 1.24.0

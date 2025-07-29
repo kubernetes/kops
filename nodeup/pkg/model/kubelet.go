@@ -26,12 +26,15 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -41,6 +44,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
+	kubeletv1 "k8s.io/kubelet/config/v1"
 	kubelet "k8s.io/kubelet/config/v1beta1"
 )
 
@@ -467,25 +471,65 @@ func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContex
 	}
 
 	{
-		configContent := `apiVersion: kubelet.config.k8s.io/v1
-kind: CredentialProviderConfig
-providers:
-  - name: ecr-credential-provider
-    matchImages:
-      - "*.dkr.ecr.*.amazonaws.com"
-      - "*.dkr.ecr.*.amazonaws.com.cn"
-      - "*.dkr.ecr-fips.*.amazonaws.com"
-      - "*.dkr.ecr.us-iso-east-1.c2s.ic.gov"
-      - "*.dkr.ecr.us-isob-east-1.sc2s.sgov.gov"
-    defaultCacheDuration: "12h"
-    apiVersion: credentialprovider.kubelet.k8s.io/v1
-    args:
-      - get-credentials
-`
+
+		providerConfig := &kubeletv1.CredentialProviderConfig{}
+
+		// Build the list of container registry globs to match
+		registryList := []string{
+			"*.dkr.ecr.*.amazonaws.com",
+			"*.dkr.ecr.*.amazonaws.com.cn",
+			"*.dkr.ecr-fips.*.amazonaws.com",
+			"*.dkr.ecr.us-iso-east-1.c2s.ic.gov",
+		}
+
+		containerd := b.NodeupConfig.ContainerdConfig
+		if containerd.UseECRCredentialsForMirrors {
+			for name := range containerd.RegistryMirrors {
+				registryList = append(registryList, name)
+			}
+		}
+
+		cacheDuration, err := time.ParseDuration("12h")
+		if err != nil {
+			return err
+		}
+
+		providerConfig.Providers = []kubeletv1.CredentialProvider{
+			{
+				APIVersion:           "credentialprovider.kubelet.k8s.io/v1",
+				Name:                 "ecr-credential-provider",
+				MatchImages:          registryList,
+				DefaultCacheDuration: &v1.Duration{Duration: cacheDuration},
+				Args:                 []string{"get-credentials"},
+				Env: []kubeletv1.ExecEnvVar{
+					{
+						Name:  "AWS_REGION",
+						Value: b.Cloud.Region(),
+					},
+				},
+			},
+		}
+
+		sch := runtime.NewScheme()
+		if err := kubeletv1.AddToScheme(sch); err != nil {
+			return err
+		}
+
+		gv := kubeletv1.SchemeGroupVersion
+		codecFactory := serializer.NewCodecFactory(sch)
+		info, ok := runtime.SerializerInfoForMediaType(codecFactory.SupportedMediaTypes(), "application/yaml")
+		if !ok {
+			return fmt.Errorf("failed to find serializer")
+		}
+		encoder := codecFactory.EncoderForVersion(info.Serializer, gv)
+		var w bytes.Buffer
+		if err := encoder.Encode(providerConfig, &w); err != nil {
+			return err
+		}
 
 		t := &nodetasks.File{
 			Path:     credentialProviderConfigFilePath,
-			Contents: fi.NewStringResource(configContent),
+			Contents: fi.NewBytesResource(w.Bytes()),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0644"),
 		}
