@@ -66,11 +66,13 @@ type NRIConfig struct {
 
 type NvidiaGPUConfig struct {
 	// Package is the name of the nvidia driver package that will be installed.
-	// Default is "nvidia-headless-460-server".
+	// Default is "nvidia-driver-535-server".
 	DriverPackage string `json:"package,omitempty"`
 	// Enabled determines if kOps will install the Nvidia GPU runtime and drivers.
 	// They will only be installed on intances that has an Nvidia GPU.
 	Enabled *bool `json:"enabled,omitempty"`
+	// Image defines the container image used to deploy the Nvidia Kubernetes Device Plugin.
+	DevicePluginImage string `json:"image,omitempty"`
 	// DCGMExporterConfig configures the DCGM exporter
 	DCGMExporter *DCGMExporterConfig `json:"dcgmExporter,omitempty"`
 }

@@ -6777,6 +6777,7 @@ func Convert_kops_NodeTerminationHandlerSpec_To_v1alpha2_NodeTerminationHandlerS
 func autoConvert_v1alpha2_NvidiaGPUConfig_To_kops_NvidiaGPUConfig(in *NvidiaGPUConfig, out *kops.NvidiaGPUConfig, s conversion.Scope) error {
 	out.DriverPackage = in.DriverPackage
 	out.Enabled = in.Enabled
+	out.DevicePluginImage = in.DevicePluginImage
 	if in.DCGMExporter != nil {
 		in, out := &in.DCGMExporter, &out.DCGMExporter
 		*out = new(kops.DCGMExporterConfig)
@@ -6797,6 +6798,7 @@ func Convert_v1alpha2_NvidiaGPUConfig_To_kops_NvidiaGPUConfig(in *NvidiaGPUConfi
 func autoConvert_kops_NvidiaGPUConfig_To_v1alpha2_NvidiaGPUConfig(in *kops.NvidiaGPUConfig, out *NvidiaGPUConfig, s conversion.Scope) error {
 	out.DriverPackage = in.DriverPackage
 	out.Enabled = in.Enabled
+	out.DevicePluginImage = in.DevicePluginImage
 	if in.DCGMExporter != nil {
 		in, out := &in.DCGMExporter, &out.DCGMExporter
 		*out = new(DCGMExporterConfig)
