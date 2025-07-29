@@ -342,7 +342,7 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	}
 
 	if suffix != "" {
-		jobName = jobType + "." + suffix
+		jobName = jobName + "." + suffix
 	}
 
 	return jobName, nil
