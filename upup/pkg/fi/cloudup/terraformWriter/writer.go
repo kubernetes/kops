@@ -115,7 +115,7 @@ func (t *TerraformWriter) EnsureTerraformProvider(name string, arguments map[str
 			// already exists and matches
 			return existing
 		}
-		klog.Fatalf("attempt to add different tfProvider with key %q", key)
+		klog.Fatalf("attempt to add different tfProvider with key %q, arguments: %q vs %q", key, tfProvider.Arguments, existing.Arguments)
 	}
 	t.Providers[key] = tfProvider
 	return tfProvider
