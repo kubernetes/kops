@@ -4235,6 +4235,7 @@ func Convert_kops_HostList_To_v1alpha2_HostList(in *kops.HostList, out *HostList
 func autoConvert_v1alpha2_HostSpec_To_kops_HostSpec(in *HostSpec, out *kops.HostSpec, s conversion.Scope) error {
 	out.PublicKey = in.PublicKey
 	out.InstanceGroup = in.InstanceGroup
+	out.PodCIDRs = in.PodCIDRs
 	return nil
 }
 
@@ -4246,6 +4247,7 @@ func Convert_v1alpha2_HostSpec_To_kops_HostSpec(in *HostSpec, out *kops.HostSpec
 func autoConvert_kops_HostSpec_To_v1alpha2_HostSpec(in *kops.HostSpec, out *HostSpec, s conversion.Scope) error {
 	out.PublicKey = in.PublicKey
 	out.InstanceGroup = in.InstanceGroup
+	out.PodCIDRs = in.PodCIDRs
 	return nil
 }
 
