@@ -20,6 +20,8 @@ package internalversion
 
 type ClusterExpansion interface{}
 
+type HostExpansion interface{}
+
 type InstanceGroupExpansion interface{}
 
 type KeysetExpansion interface{}
