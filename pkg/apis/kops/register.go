@@ -63,6 +63,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&KeysetList{},
 		&SSHCredential{},
 		&SSHCredentialList{},
+		&Host{},
+		&HostList{},
 	)
 	// metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
