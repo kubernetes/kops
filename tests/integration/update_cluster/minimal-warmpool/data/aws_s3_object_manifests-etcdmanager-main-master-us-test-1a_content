@@ -61,7 +61,7 @@ spec:
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: kops.k8s.io/remapped-image/etcd:3.4.13-0
+    image: kops.k8s.io/remapped-image/etcd:v3.4.13
     name: init-etcd-3-4-13
     resources: {}
     volumeMounts:
@@ -73,7 +73,7 @@ spec:
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: kops.k8s.io/remapped-image/etcd:3.5.21-0
+    image: kops.k8s.io/remapped-image/etcd:v3.5.21
     name: init-etcd-3-5-21
     resources: {}
     volumeMounts:
