@@ -31,8 +31,8 @@ spec:
       image: nvcr.io/nvidia/k8s-device-plugin:v0.17.3
       package: nvidia-driver-535-server
     runc:
-      version: 1.2.4
-    version: 1.7.25
+      version: 1.3.0
+    version: 1.7.28
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:
