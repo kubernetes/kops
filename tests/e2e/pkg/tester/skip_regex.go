@@ -50,6 +50,10 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	skipRegex := skipRegexBase
 
+	//.Skip.broken.test,.see.https://github.com/kubernetes/kubernetes/pull/133262
+	skipRegex += "|blackbox.*should.not.be.able.to.pull.image.from.invalid.registry"
+	skipRegex += "|blackbox.*should.be.able.to.pull.from.private.registry.with.secret"
+
 	if !isPre28 {
 		// K8s 1.28 promoted ProxyTerminatingEndpoints to GA, but it has limited CNI support
 		// https://github.com/kubernetes/kubernetes/pull/117718
