@@ -48,9 +48,9 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 				Version: fi.PtrTo("1.1.5"),
 			}
 		default:
-			containerd.Version = fi.PtrTo("1.7.25")
+			containerd.Version = fi.PtrTo("1.7.28")
 			containerd.Runc = &kops.Runc{
-				Version: fi.PtrTo("1.2.4"),
+				Version: fi.PtrTo("1.3.0"),
 			}
 		}
 	}
