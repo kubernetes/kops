@@ -499,8 +499,8 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	for name, endpoints := range containerd.RegistryMirrors {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)
 	}
+	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "default_runtime_name"}, "runc")
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "runtime_type"}, "io.containerd.runc.v2")
-	// only enable systemd cgroups for kubernetes >= 1.20
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "runc", "options", "SystemdCgroup"}, true)
 	if b.NodeupConfig.UsesKubenet {
 		// Using containerd with Kubenet requires special configuration.
@@ -545,7 +545,7 @@ func appendNvidiaGPURuntimeConfig(config *toml.Tree) error {
 			"privileged_without_host_devices": false,
 			"runtime_engine":                  "",
 			"runtime_root":                    "",
-			"runtime_type":                    "io.containerd.runc.v1",
+			"runtime_type":                    "io.containerd.runc.v2",
 			"options": map[string]interface{}{
 				"SystemdCgroup": true,
 				"BinaryName":    "/usr/bin/nvidia-container-runtime",
@@ -557,7 +557,6 @@ func appendNvidiaGPURuntimeConfig(config *toml.Tree) error {
 	}
 
 	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes", "nvidia"}, gpuConfig)
-	config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "default_runtime_name"}, "runc")
 
 	return nil
 }
