@@ -76,9 +76,9 @@ fi
 
 # Download boot disk
 cd ${WORKDIR}
-if [[ ! -f debian-12-generic-amd64-20240702-1796.qcow2 ]]; then
-  echo "Downloading debian-12-generic-amd64-20240702-1796.qcow2"
-  wget --no-verbose -N https://cloud.debian.org/images/cloud/bookworm/20240702-1796/debian-12-generic-amd64-20240702-1796.qcow2
+if [[ ! -f debian-12-generic-amd64-20250703-2162.qcow2 ]]; then
+  echo "Downloading debian-12-generic-amd64-20250703-2162.qcow2"
+  wget --no-verbose -N https://cloud.debian.org/images/cloud/bookworm/20250703-2162/debian-12-generic-amd64-20250703-2162.qcow2
 fi
 
 # Create bridge
@@ -183,7 +183,7 @@ EOF
 
   genisoimage  -output seed.iso -volid cidata -joliet -rock user-data meta-data
 
-  qemu-img create -b ../debian-12-generic-amd64-20240702-1796.qcow2 -F qcow2 -f qcow2 root.qcow2 20G
+  qemu-img create -b ../debian-12-generic-amd64-20250703-2162.qcow2 -F qcow2 -f qcow2 root.qcow2 20G
 
   # TODO: Create tuntap with user $(whoami) - might need less sudo?
   sudo ip tuntap add dev tap-${vm_name} mode tap
