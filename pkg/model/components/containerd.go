@@ -47,8 +47,13 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.1.5"),
 			}
-		default:
+		case b.IsKubernetesLT("1.32"):
 			containerd.Version = fi.PtrTo("1.7.28")
+			containerd.Runc = &kops.Runc{
+				Version: fi.PtrTo("1.3.0"),
+			}
+		default:
+			containerd.Version = fi.PtrTo("2.1.4")
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.3.0"),
 			}

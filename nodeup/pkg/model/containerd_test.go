@@ -200,12 +200,13 @@ func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
 	originalConfig := `version = 2
 [plugins]
   [plugins."io.containerd.grpc.v1.cri"]
-	[plugins."io.containerd.grpc.v1.cri".containerd]
-	  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-		[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-		  runtime_type = "io.containerd.runc.v2"
-		  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-			SystemdCgroup = true
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      default_runtime_name = "runc"
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          runtime_type = "io.containerd.runc.v2"
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+            SystemdCgroup = true
 `
 
 	expectedNewConfig := `version = 2
@@ -223,7 +224,7 @@ func TestAppendGPURuntimeContainerdConfig(t *testing.T) {
           privileged_without_host_devices = false
           runtime_engine = ""
           runtime_root = ""
-          runtime_type = "io.containerd.runc.v1"
+          runtime_type = "io.containerd.runc.v2"
 
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
             BinaryName = "/usr/bin/nvidia-container-runtime"

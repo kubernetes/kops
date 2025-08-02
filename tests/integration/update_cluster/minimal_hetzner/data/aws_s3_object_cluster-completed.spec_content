@@ -28,7 +28,7 @@ spec:
     logLevel: info
     runc:
       version: 1.3.0
-    version: 1.7.28
+    version: 2.1.4
   etcdClusters:
   - backups:
       backupStore: memfs://tests/minimal.example.com/backups/etcd/main
