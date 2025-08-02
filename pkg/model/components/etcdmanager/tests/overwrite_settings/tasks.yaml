@@ -127,7 +127,7 @@ Contents: |
       - --src=/usr/local/bin/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:3.4.13-0
+      image: registry.k8s.io/etcd:v3.4.13
       name: init-etcd-3-4-13
       resources: {}
       volumeMounts:
@@ -139,7 +139,7 @@ Contents: |
       - --src=/usr/local/bin/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:3.5.21-0
+      image: registry.k8s.io/etcd:v3.5.21
       name: init-etcd-3-5-21
       resources: {}
       volumeMounts:
@@ -272,7 +272,7 @@ Contents: |
       - --src=/usr/local/bin/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:3.4.13-0
+      image: registry.k8s.io/etcd:v3.4.13
       name: init-etcd-3-4-13
       resources: {}
       volumeMounts:
@@ -284,7 +284,7 @@ Contents: |
       - --src=/usr/local/bin/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:3.5.21-0
+      image: registry.k8s.io/etcd:v3.5.21
       name: init-etcd-3-5-21
       resources: {}
       volumeMounts:

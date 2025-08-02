@@ -88,9 +88,9 @@ images:
   download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.33.0-beta.1
 - canonical: registry.k8s.io/kops/kops-utils-cp:1.33.0-beta.1
   download: registry.k8s.io/kops/kops-utils-cp:1.33.0-beta.1
-- canonical: registry.k8s.io/etcd:3.4.13-0
-  download: registry.k8s.io/etcd:3.4.13-0
-- canonical: registry.k8s.io/etcd:3.5.21-0
-  download: registry.k8s.io/etcd:3.5.21-0
+- canonical: registry.k8s.io/etcd:v3.4.13
+  download: registry.k8s.io/etcd:v3.4.13
+- canonical: registry.k8s.io/etcd:v3.5.21
+  download: registry.k8s.io/etcd:v3.5.21
 - canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250704
   download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250704
