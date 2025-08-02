@@ -32,6 +32,7 @@ contents: |
         conf_template = "/etc/containerd/config-cni.template"
 
       [plugins."io.containerd.grpc.v1.cri".containerd]
+        default_runtime_name = "runc"
 
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
 

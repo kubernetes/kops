@@ -30,7 +30,7 @@ spec:
     logLevel: info
     runc:
       version: 1.3.0
-    version: 1.7.28
+    version: 2.1.4
   dnsZone: private.example.com
   etcdClusters:
   - backups:
