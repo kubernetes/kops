@@ -21,6 +21,7 @@ import (
 	"net"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
@@ -57,16 +58,16 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Network:   network,
 			Family:    gcetasks.AddressFamilyIPv4,
-			SourceRanges: []string{
+			SourceRanges: sets.New(
 				// IP ranges for load balancer health checks
 				// https://cloud.google.com/load-balancing/docs/health-checks
 				"35.191.0.0/16",
 				"130.211.0.0/22",
 				"209.85.204.0/22",
 				"209.85.152.0/22",
-			},
+			),
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
-			Allowed:    []string{"tcp"},
+			Allowed:    sets.New("tcp"),
 		})
 	}
 
@@ -82,7 +83,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:    allProtocols,
+			Allowed:    sets.New(allProtocols...),
 		}
 		c.AddTask(t)
 	}
@@ -99,7 +100,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
-			Allowed:    allProtocols,
+			Allowed:    sets.New(allProtocols...),
 		}
 		c.AddTask(t)
 	}
@@ -116,7 +117,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:    allProtocols,
+			Allowed:    sets.New(allProtocols...),
 		}
 		c.AddTask(t)
 	}
@@ -133,25 +134,25 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Network:    network,
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
-			Allowed: []string{
+			Allowed: sets.New(
 				fmt.Sprintf("tcp:%d", wellknownports.KubeAPIServer),
 				fmt.Sprintf("tcp:%d", wellknownports.KubeletAPI),
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
-			},
+			),
 		}
 		if b.Cluster.UsesLegacyGossip() {
-			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.DNSControllerGossipMemberlist))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.ProtokubeGossipMemberlist))
+			t.Allowed.Insert(fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
+			t.Allowed.Insert(fmt.Sprintf("tcp:%d", wellknownports.DNSControllerGossipMemberlist))
+			t.Allowed.Insert(fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
+			t.Allowed.Insert(fmt.Sprintf("tcp:%d", wellknownports.ProtokubeGossipMemberlist))
 		}
 		if b.NetworkingIsCalico() {
-			t.Allowed = append(t.Allowed, "ipip")
+			t.Allowed.Insert("ipip")
 		}
 		if b.NetworkingIsCilium() {
-			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.VxlanUDP))
+			t.Allowed.Insert(fmt.Sprintf("udp:%d", wellknownports.VxlanUDP))
 			if model.UseCiliumEtcd(b.Cluster) {
-				t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.EtcdCiliumClientPort))
+				t.Allowed.Insert(fmt.Sprintf("tcp:%d", wellknownports.EtcdCiliumClientPort))
 			}
 		}
 		c.AddTask(t)
@@ -174,9 +175,9 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			b.AddFirewallRulesTasks(c, "pod-cidrs-to-node", &gcetasks.FirewallRule{
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
-				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
+				SourceRanges: sets.New(b.Cluster.Spec.Networking.PodCIDR),
 				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-				Allowed:      allProtocols,
+				Allowed:      sets.New(allProtocols...),
 			})
 		}
 	}
@@ -189,9 +190,9 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 // Furthermore, an empty SourceRange with empty SourceTags is interpreted as allow-everything,
 // but we intend for it to block everything; so we can Disabled to achieve the desired blocking.
 func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext, name string, rule *gcetasks.FirewallRule) {
-	var ipv4SourceRanges []string
-	var ipv6SourceRanges []string
-	for _, sourceRange := range rule.SourceRanges {
+	ipv4SourceRanges := sets.New[string]()
+	ipv6SourceRanges := sets.New[string]()
+	for sourceRange := range rule.SourceRanges {
 		_, cidr, err := net.ParseCIDR(sourceRange)
 		if err != nil {
 			klog.Fatalf("failed to parse invalid sourceRange %q", sourceRange)
@@ -199,9 +200,9 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 
 		// Split into ipv4s and ipv6s, but treat IPv4-mapped IPv6 addresses as IPv6
 		if cidr.IP.To4() != nil && !strings.Contains(sourceRange, ":") {
-			ipv4SourceRanges = append(ipv4SourceRanges, sourceRange)
+			ipv4SourceRanges.Insert(sourceRange)
 		} else {
-			ipv6SourceRanges = append(ipv6SourceRanges, sourceRange)
+			ipv6SourceRanges.Insert(sourceRange)
 		}
 	}
 
@@ -214,7 +215,7 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 			// This is helpful because empty SourceRanges and SourceTags are interpreted as allow everything,
 			// but the intent is usually to block everything, which can be achieved with Disabled=true.
 			ipv4.Disabled = true
-			ipv4.SourceRanges = []string{"0.0.0.0/0"}
+			ipv4.SourceRanges = sets.New("0.0.0.0/0")
 		}
 	}
 	c.AddTask(&ipv4)
@@ -227,16 +228,16 @@ func (b *GCEModelContext) AddFirewallRulesTasks(c *fi.CloudupModelBuilderContext
 		if len(ipv6.SourceRanges) == 0 {
 			// We specify explicitly so the rule is in IPv6 mode
 			ipv6.Disabled = true
-			ipv6.SourceRanges = []string{"::/0"}
+			ipv6.SourceRanges = sets.New("::/0")
 		}
 	}
-	var ipv6Allowed []string
-	for _, allowed := range ipv6.Allowed {
+	ipv6Allowed := sets.New[string]()
+	for allowed := range ipv6.Allowed {
 		// Map icmp to icmpv6; easier than maintaining separate lists
 		if allowed == "icmp" {
 			allowed = "58" // 58 == the IANA protocol number for ICMPv6
 		}
-		ipv6Allowed = append(ipv6Allowed, allowed)
+		ipv6Allowed.Insert(allowed)
 	}
 	ipv6.Allowed = ipv6Allowed
 	c.AddTask(&ipv6)
