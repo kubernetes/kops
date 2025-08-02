@@ -85,10 +85,10 @@ func (t *Tester) setSkipRegexFlag() error {
 
 		if k8sVersion.Minor < 34 {
 			// This seems to be specific to the kube-proxy replacement
-			// < 33 so we look at this again
+			// < 34 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
 			// https://github.com/kubernetes/kubernetes/issues/129221
-			// < 33 so we look at this again
+			// < 34 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 
@@ -114,13 +114,24 @@ func (t *Tester) setSkipRegexFlag() error {
 			// Ref: https://github.com/kubernetes/kubernetes/issues/126903
 			skipRegex += "|KubeProxy.should.update.metric.for.tracking.accepted.packets.destined.for.localhost.nodeports"
 		}
+	} else if networking.Calico != nil {
+		if cluster.Spec.LegacyCloudProvider == "gce" && k8sVersion.Minor < 34 {
+			// < 34 so we look at this again
+			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
+		}
 	} else if networking.Flannel != nil {
-		if k8sVersion.Minor < 33 {
-			// < 33 so we look at this again
-			skipRegex += "|Services should implement NodePort and HealthCheckNodePort correctly when ExternalTrafficPolicy changes"
+		if k8sVersion.Minor < 34 {
+			// < 34 so we look at this again
+			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
+		if k8sVersion.Minor < 35 {
+			// < 35 so we look at this again
+			skipRegex += "|Networking.Granular.Checks:.Services.should.function.for.service.endpoints.using.hostNetwork"
+			// < 35 so we look at this again
+			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
+		}
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
