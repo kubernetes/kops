@@ -80,7 +80,7 @@ bare-metal machine.
 ```
 mkdir vm1
 cd vm1
-wget -O debian11.qcow2 https://cloud.debian.org/images/cloud/bullseye/20231013-1532/debian-11-nocloud-amd64-20231013-1532.qcow2
+wget -O debian11.qcow2 https://cloud.debian.org/images/cloud/bookworm/20250703-2162/debian-12-generic-amd64-20250703-2162.qcow2
 
 qemu-img create -o backing_file=debian11.qcow2,backing_fmt=qcow2 -f qcow2 vm1-root.qcow2 10G
 
