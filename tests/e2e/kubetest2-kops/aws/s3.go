@@ -43,6 +43,13 @@ type Client struct {
 	stsClient *sts.Client
 }
 
+type BucketType string
+
+const (
+	BucketTypeStateStore     BucketType = "state"
+	BucketTypeDiscoveryStore BucketType = "discovery"
+)
+
 // NewAWSClient returns a new instance of awsClient configured to work in the default region (us-east-2).
 func NewClient(ctx context.Context) (*Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(ctx,
@@ -58,7 +65,7 @@ func NewClient(ctx context.Context) (*Client, error) {
 }
 
 // BucketName constructs an unique bucket name using the AWS account ID in the default region (us-east-2).
-func (c Client) BucketName(ctx context.Context) (string, error) {
+func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, error) {
 	// Construct the bucket name based on the ProwJob ID (if running in Prow) or AWS account ID (if running outside
 	// Prow) and the current timestamp
 	var identifier string
@@ -72,7 +79,7 @@ func (c Client) BucketName(ctx context.Context) (string, error) {
 		identifier = *callerIdentity.Account
 	}
 	timestamp := time.Now().Format("20060102150405")
-	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s", identifier, timestamp)
+	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s-%s", bucketType, identifier, timestamp)
 
 	bucket = strings.ToLower(bucket)
 	// Only allow lowercase letters, numbers, and hyphens

@@ -359,7 +359,7 @@ func (d *deployer) stateStore() string {
 		switch d.CloudProvider {
 		case "aws":
 			ctx := context.Background()
-			bucketName, err := d.aws.BucketName(ctx)
+			bucketName, err := d.aws.BucketName(ctx, aws.BucketTypeStateStore)
 			if err != nil {
 				klog.Fatalf("Failed to generate bucket name: %v", err)
 				return ""
@@ -390,7 +390,14 @@ func (d *deployer) discoveryStore() string {
 	if discovery == "" {
 		switch d.CloudProvider {
 		case "aws":
-			discovery = "s3://k8s-kops-ci-prow"
+			ctx := context.Background()
+			bucketName, err := d.aws.BucketName(ctx, aws.BucketTypeDiscoveryStore)
+			if err != nil {
+				klog.Fatalf("Failed to generate bucket name: %v", err)
+				return ""
+			}
+			d.createBucket = true
+			discovery = "s3://" + bucketName
 		}
 	}
 	d.discoveryStoreName = discovery
