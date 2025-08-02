@@ -332,13 +332,19 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 
 		for zone, targetSize := range instanceCountByZone {
 			name := gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)
+			updatePolicy := &gcetasks.UpdatePolicy{
+				MaxSurgeFixed:       1,
+				MaxUnavailableFixed: 1,
+				MinimalAction:       "REPLACE",
+				Type:                "OPPORTUNISTIC",
+			}
 
 			t := &gcetasks.InstanceGroupManager{
 				Name:                        s(name),
 				Lifecycle:                   b.Lifecycle,
 				Zone:                        s(zone),
 				TargetSize:                  fi.PtrTo(int64(targetSize)),
-				UpdatePolicy:                &gcetasks.UpdatePolicy{MinimalAction: "REPLACE", Type: "OPPORTUNISTIC"},
+				UpdatePolicy:                updatePolicy,
 				BaseInstanceName:            s(ig.ObjectMeta.Name),
 				InstanceTemplate:            instanceTemplate,
 				ListManagedInstancesResults: "PAGINATED",
