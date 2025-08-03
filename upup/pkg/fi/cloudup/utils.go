@@ -162,7 +162,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			subscriptionID := cluster.Spec.CloudProvider.Azure.SubscriptionID
-			resourceGroupName := cluster.Spec.CloudProvider.Azure.ResourceGroupName
+			resourceGroupName := cluster.AzureResourceGroupName()
 			azureCloud, err := azure.NewAzureCloud(subscriptionID, resourceGroupName, region, cloudTags)
 			if err != nil {
 				return nil, err
