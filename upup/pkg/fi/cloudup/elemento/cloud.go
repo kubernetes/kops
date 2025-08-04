@@ -45,9 +45,9 @@ type ElementoCloud interface {
 
 	Region() string
 	DNS() (dnsprovider.Interface, error)
-	NetworkClient() ecloud.NetworkClient // TODO
+	NetworkClient() ecloud.NetworkClient
 	ServerClient() ecloud.ServerClient 
-	SSHKeyClient() ecloud.SSHKeyClient   // TODO
+	SSHKeyClient() ecloud.SSHKeyClient  
 	VolumeClient() ecloud.VolumeClient	
 
 	// TODO: Detect and add additional fields here
@@ -67,7 +67,7 @@ func NewElementoCloud(region string) (ElementoCloud, error) {
 	// Elemento does not use an access token, but is previously authenticated with
 	// the CLI and deamons, you must execute the Electros app to authenticate.
 
-	client, err := ecloud.NewClient("kops-client", "0.1") // TODO
+	client, err := ecloud.NewClient("kops-client", "0.1")
 
 	if err != nil {
 		return nil, fmt.Errorf("creating client for Elemento Cloud: %w", err)

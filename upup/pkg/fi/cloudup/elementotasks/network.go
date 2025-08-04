@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strconv"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/kops/upup/pkg/fi"
@@ -53,19 +52,16 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 	idOrName := fi.ValueOf(v.Name)
 	if v.ID != nil {
 		idOrName = fi.ValueOf(v.ID)
-	}
-
-	// for now ID is not used, so the name identifier is: test.k8s
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		network, _, err := client.GetByID(context.TODO(), int(id))
+		network, _, err := client.GetByID(context.TODO(), idOrName)
 		if err == nil && network != nil {
 			return &Network{
 				Name:      v.Name,
 				Lifecycle: v.Lifecycle,
-				ID:        fi.PtrTo(strconv.Itoa(network.ID)),
+				ID:        fi.PtrTo(network.ID),
 			}, nil
 		}
 	}
+	
 	network, _, err := client.GetByName(context.TODO(), idOrName)
 
 	if err != nil {
@@ -81,7 +77,7 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 	matches := &Network{
 		Name:      v.Name,
 		Lifecycle: v.Lifecycle,
-		ID:        fi.PtrTo(strconv.Itoa(network.ID)),
+		ID:        fi.PtrTo(network.ID),
 	}
 
 	if v.ID == nil {
@@ -161,7 +157,7 @@ func (*Network) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *Net
 		if err != nil {
 			return err
 		}
-		e.ID = fi.PtrTo(strconv.Itoa(network.ID))
+		e.ID = fi.PtrTo(network.ID)
 	} else {
 		// Network exists, get it
 		var err error

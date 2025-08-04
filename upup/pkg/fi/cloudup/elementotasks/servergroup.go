@@ -22,7 +22,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/rand"
-	"strconv"
 	"strings"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
@@ -69,7 +68,7 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 		LabelSelector: strings.Join(labelSelector, ","),
 	}
 	serverListOptions := ecloud.ServerListOpts{ListOpts: listOptions}
-	servers, err := client.AllWithOpts(context.TODO(), serverListOptions)
+	servers, _, err := client.List(context.TODO(), serverListOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -216,16 +215,12 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 		// Append a random/unique ID to the node name
 		name := fmt.Sprintf("%s-%x", fi.ValueOf(e.Name), rand.Int63())
 
-		id, err := strconv.Atoi(fi.ValueOf(e.Network.ID))
-		if err != nil {
-			return err
-		}
 		opts := ecloud.ServerCreateOpts{
 			Name:             name,
 			StartAfterCreate: fi.PtrTo(true),
 			Networks: []*ecloud.Network{
 				{
-					ID: id,
+					ID: fi.ValueOf(e.Network.ID),
 				},
 			},
 			Datacenter: &ecloud.Datacenter{

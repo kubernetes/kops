@@ -101,7 +101,7 @@ func (v *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 	return nil
 }
 
-func (_ *SSHKey) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *SSHKey) error {
+func (*SSHKey) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *SSHKey) error {
 	client := t.Cloud.SSHKeyClient()
 	if a == nil {
 		name := fi.ValueOf(e.Name)
