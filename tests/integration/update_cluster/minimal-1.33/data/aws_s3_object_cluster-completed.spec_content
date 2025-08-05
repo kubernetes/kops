@@ -170,6 +170,8 @@ spec:
     clusterDomain: cluster.local
     enableDebuggingHandlers: true
     evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    featureGates:
+      ImageVolume: "true"
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
     podInfraContainerImage: registry.k8s.io/pause:3.9
