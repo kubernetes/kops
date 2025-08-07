@@ -274,10 +274,6 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		return fmt.Errorf("must configure at least one ControlPlane InstanceGroup")
 	}
 
-	if nodeGroupCount == 0 {
-		return fmt.Errorf("must configure at least one Node InstanceGroup")
-	}
-
 	for _, g := range groups {
 		errs := CrossValidateInstanceGroup(g, c, cloud, strict)
 

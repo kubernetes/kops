@@ -175,6 +175,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	sshPublicKey := ""
 	associatePublicIP := false
 	encryptEtcdStorage := false
+	nodeCount := int32(0)
 
 	cmd := &cobra.Command{
 		Use:               "cluster [CLUSTER]",
@@ -192,6 +193,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			if cmd.Flag("encrypt-etcd-storage").Changed {
 				options.EncryptEtcdStorage = &encryptEtcdStorage
+			}
+
+			if cmd.Flag("node-count").Changed {
+				options.NodeCount = &nodeCount
 			}
 
 			if sshPublicKey != "" {
@@ -268,7 +273,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.ControlPlaneCount, "master-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().MarkDeprecated("master-count", "use --control-plane-count instead")
 	cmd.Flags().Int32Var(&options.ControlPlaneCount, "control-plane-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
-	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Total number of worker nodes. Defaults to one node per zone")
+	cmd.Flags().Int32Var(&nodeCount, "node-count", 0, "Total number of worker nodes. Defaults to one node per zone")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Machine image for all instances")
 	cmd.RegisterFlagCompletionFunc("image", completeInstanceImage)

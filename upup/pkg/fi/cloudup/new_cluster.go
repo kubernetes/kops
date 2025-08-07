@@ -134,7 +134,7 @@ type NewClusterOptions struct {
 
 	// NodeCount is the number of nodes to create. Defaults to leaving the count unspecified
 	// on the InstanceGroup, which results in a count of 2.
-	NodeCount int32
+	NodeCount *int32
 	// Bastion enables the creation of a Bastion instance.
 	Bastion bool
 	// BastionLoadBalancerType is the bastion loadbalancer type to use; "public" or "internal".
@@ -1040,9 +1040,15 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 	var nodes []*api.InstanceGroup
 
 	if featureflag.AWSSingleNodesInstanceGroup.Enabled() && cloudProvider == api.CloudProviderAWS && len(opt.SubnetIDs) == 0 {
-		nodeCount := opt.NodeCount
-		if nodeCount == 0 {
+		var nodeCount int32
+		if opt.NodeCount == nil {
 			nodeCount = 1
+		} else {
+			nodeCount = fi.ValueOf(opt.NodeCount)
+			if nodeCount == 0 {
+				// If the node count is 0, there's nothing to do
+				return nil, nil
+			}
 		}
 
 		g := &api.InstanceGroup{}
@@ -1078,19 +1084,25 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 
 	// The node count is the number of zones unless explicitly set
 	// We then divvy up amongst the zones
-	numZones := len(opt.Zones)
-	nodeCount := opt.NodeCount
-	if nodeCount == 0 {
-		// If node count is not specified, default to the number of zones
-		nodeCount = int32(numZones)
+	numZones := int32(len(opt.Zones))
+	var nodeCount int32
+	if opt.NodeCount == nil {
+		// If the node count is not specified, default to the number of zones
+		nodeCount = numZones
+	} else {
+		nodeCount = fi.ValueOf(opt.NodeCount)
+		if nodeCount == 0 {
+			// If the node count is 0, there's nothing to do
+			return nil, nil
+		}
 	}
 
 	countPerIG := nodeCount / int32(numZones)
-	remainder := int(nodeCount) % numZones
+	remainder := nodeCount % numZones
 
 	for i, zone := range opt.Zones {
 		count := countPerIG
-		if i < remainder {
+		if i < int(remainder) {
 			count++
 		}
 

@@ -399,6 +399,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["ParseTaint"] = util.ParseTaint
 
+	dest["IsControlPlaneOnly"] = tf.IsControlPlaneOnly
+
 	dest["KarpenterEnabled"] = func() bool {
 		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
 	}
@@ -509,6 +511,22 @@ func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 		}
 	}
 	return false
+}
+
+// IsControlPlaneOnly returns true if the cluster has only control plane node(s). False otherwise.
+func (tf *TemplateFunctions) IsControlPlaneOnly() bool {
+	var cp, wn int
+	for _, ig := range tf.InstanceGroups {
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleControlPlane:
+			cp++
+		case kops.InstanceGroupRoleNode:
+			wn++
+		default:
+			// Ignore Bastion and APIServer
+		}
+	}
+	return cp > 0 && wn == 0
 }
 
 // CloudControllerConfigArgv returns the args to external cloud controller

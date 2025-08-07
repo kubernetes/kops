@@ -44,7 +44,10 @@ func TestDeepValidate_NoNodeZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure at least one Node InstanceGroup")
+	err := validation.DeepValidate(c, groups, true, vfs.Context, nil)
+	if err != nil {
+		t.Fatalf("Expected no error from DeepValidate, got %v", err)
+	}
 }
 
 func TestDeepValidate_NoMasterZones(t *testing.T) {
