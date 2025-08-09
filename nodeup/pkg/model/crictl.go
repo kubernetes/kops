@@ -33,6 +33,11 @@ type CrictlBuilder struct {
 var _ fi.NodeupModelBuilder = &CrictlBuilder{}
 
 func (b *CrictlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
+	if b.skipInstall() {
+		klog.V(8).Info("won't install crictl")
+		return nil
+	}
+
 	assets := b.Assets.FindMatches(regexp.MustCompile(`^crictl$`))
 	if len(assets) == 0 {
 		klog.Warning("unable to find any crictl binaries in assets")
@@ -64,4 +69,14 @@ func (b *CrictlBuilder) binaryPath() string {
 		path = "/home/kubernetes/bin"
 	}
 	return path
+}
+
+func (b *CrictlBuilder) skipInstall() bool {
+	containerd := b.NodeupConfig.ContainerdConfig
+
+	if containerd == nil {
+		return false
+	}
+
+	return containerd.SkipInstall && !containerd.InstallCriCtl
 }

@@ -18,6 +18,7 @@ package model
 
 import (
 	"path/filepath"
+	"regexp"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,24 +34,28 @@ var _ fi.NodeupModelBuilder = &NerdctlBuilder{}
 
 func (b *NerdctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.skipInstall() {
-		klog.Info("containerd.skipInstall is set to true; won't install nerdctl")
+		klog.V(8).Info("won't install nerdctl")
 		return nil
 	}
 
-	assetName := "nerdctl"
-	assetPath := ""
-	asset, err := b.Assets.Find(assetName, assetPath)
-	if err != nil {
-		klog.Warningf("unable to locate asset %q: %v", assetName, err)
+	assets := b.Assets.FindMatches(regexp.MustCompile(`^nerdctl$`))
+	if len(assets) == 0 {
+		klog.Warning("unable to find any nerdctl binaries in assets")
+		return nil
+	}
+	if len(assets) > 1 {
+		klog.Warning("multiple nerdctl binaries are found")
 		return nil
 	}
 
-	c.AddTask(&nodetasks.File{
-		Path:     b.nerdctlPath(),
-		Contents: asset,
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0755"),
-	})
+	for k, v := range assets {
+		c.AddTask(&nodetasks.File{
+			Path:     filepath.Join(b.binaryPath(), k),
+			Contents: v,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		})
+	}
 
 	return nil
 }
@@ -64,19 +69,14 @@ func (b *NerdctlBuilder) binaryPath() string {
 		path = "/home/kubernetes/bin"
 	}
 	return path
-
-}
-
-func (b *NerdctlBuilder) nerdctlPath() string {
-	return filepath.Join(b.binaryPath(), "nerdctl")
 }
 
 func (b *NerdctlBuilder) skipInstall() bool {
-	d := b.NodeupConfig.ContainerdConfig
+	containerd := b.NodeupConfig.ContainerdConfig
 
-	if d == nil {
+	if containerd == nil {
 		return false
 	}
 
-	return d.SkipInstall
+	return containerd.SkipInstall && !containerd.InstallNerdCtl
 }
