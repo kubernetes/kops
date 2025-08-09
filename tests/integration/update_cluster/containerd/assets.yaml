@@ -17,12 +17,6 @@ files:
 - canonical: https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.amd64
   download: https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.amd64
   sha: 028986516ab5646370edce981df2d8e8a8d12188deaf837142a02097000ae2f2
-- canonical: https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
-  download: https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
-  sha: 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7
-- canonical: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
-  download: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
-  sha: d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb
 - canonical: https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
   download: https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
   sha: bda9b2324c96693b38c41ecea051bab4c7c434be5683050b5e19025b50dbc0bf
@@ -41,12 +35,6 @@ files:
 - canonical: https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.arm64
   download: https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.arm64
   sha: 85c5e4e4f72e442c8c17bac07527cd4f961ee48e4f2b71797f7533c94f4a52b9
-- canonical: https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
-  download: https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
-  sha: d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d
-- canonical: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
-  download: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
-  sha: 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925
 images:
 - canonical: registry.k8s.io/kube-apiserver:v1.32.0
   download: registry.k8s.io/kube-apiserver:v1.32.0
