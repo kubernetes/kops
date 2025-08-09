@@ -60,6 +60,10 @@ type ContainerdConfig struct {
 	NRI *NRIConfig `json:"nri,omitempty"`
 	// Enables Kubelet ECR Credential helper to pass credentials to containerd mirrors, to use ECR as a pull-through cache
 	UseECRCredentialsForMirrors bool `json:"useECRCredentialsForMirrors,omitempty"`
+	// InstallCriCtl installs crictl (default "false").
+	InstallCriCtl bool `json:"installCriCtl,omitempty"`
+	// InstallNerdCtl installs nerdctl (default "false").
+	InstallNerdCtl bool `json:"installNerdCtl,omitempty"`
 }
 
 type NRIConfig struct {
