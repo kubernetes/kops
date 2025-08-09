@@ -362,6 +362,10 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addECRPermissions(p)
 	}
 
+	if b.Cluster.Spec.Containerd != nil && b.Cluster.Spec.Containerd.UseECRCredentialsForMirrors {
+		addECRPullThroughPermissions(p)
+	}
+
 	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p)
 	}
@@ -430,6 +434,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addECRPermissions(p)
 	}
 
+	if b.Cluster.Spec.Containerd != nil && b.Cluster.Spec.Containerd.UseECRCredentialsForMirrors {
+		addECRPullThroughPermissions(p)
+	}
+
 	if b.Cluster.Spec.Networking.AmazonVPC != nil {
 		addAmazonVPCCNIPermissions(p)
 	}
@@ -463,6 +471,10 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
+	}
+
+	if b.Cluster.Spec.Containerd != nil && b.Cluster.Spec.Containerd.UseECRCredentialsForMirrors {
+		addECRPullThroughPermissions(p)
 	}
 
 	if b.Cluster.Spec.Networking.AmazonVPC != nil {
@@ -773,6 +785,17 @@ func addECRPermissions(p *Policy) {
 		"ecr:DescribeRepositories",
 		"ecr:ListImages",
 		"ecr:BatchGetImage",
+	)
+}
+
+func addECRPullThroughPermissions(p *Policy) {
+	// Permissions needed for ECR pull-through cache functionality
+	// These permissions are only needed when UseECRCredentialsForMirrors is enabled
+	p.unconditionalAction.Insert(
+		"ecr:ReplicateImage",
+		"ecr:BatchImportUpstreamImage",
+		"ecr:CreateRepository",
+		"ecr:TagResource",
 	)
 }
 

@@ -319,6 +319,7 @@ containerdConfig:
   runc:
     version: 1.3.0
   skipInstall: true
+  useECRCredentialsForMirrors: true
   version: 1.7.28
 etcdManifests:
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main-master-us-test-1a.yaml
