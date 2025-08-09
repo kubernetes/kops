@@ -125,7 +125,7 @@ ClusterName: minimal-gce-ilb.example.com
 ConfigBase: memfs://tests/minimal-gce-ilb.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: j6AKRN/XYFgIxec3tKyTfSidFtj65+1E9dnYq1UTm4E=
+NodeupConfigHash: HkCRRrcgP4idORi4824o11VONkMrfRW6jZQn3Tf766w=
 
 __EOF_KUBE_ENV
 
