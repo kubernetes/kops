@@ -19,6 +19,7 @@ package kops
 import (
 	"fmt"
 
+	"github.com/blang/semver/v4"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -945,6 +946,29 @@ func (c *Cluster) InstallCNIAssets() bool {
 	return c.Spec.Networking.AmazonVPC == nil &&
 		c.Spec.Networking.Calico == nil &&
 		c.Spec.Networking.Cilium == nil
+}
+
+func (c *Cluster) HasImageVolumesSupport() bool {
+	// Image Volumes was added to Kubernetes v1.31
+	// https://kubernetes.io/blog/2024/08/16/kubernetes-1-31-image-volume-source/
+	// Image Volumes graduated to beta in Kubernetes v1.33
+	// https://kubernetes.io/blog/2025/04/29/kubernetes-v1-33-image-volume-beta/
+	if c.IsKubernetesLT("1.33.0") {
+		return false
+	}
+	if c.Spec.Containerd == nil || c.Spec.Containerd.Version == nil {
+		return false
+	}
+	sv, err := semver.ParseTolerant(*c.Spec.Containerd.Version)
+	if err != nil {
+		return false
+	}
+	// Image Volumes was released in Containerd v2.1.0
+	// https://github.com/containerd/containerd/releases/tag/v2.1.0
+	if sv.LT(semver.MustParse("2.1.0")) {
+		return false
+	}
+	return true
 }
 
 func (c *Cluster) APIInternalName() string {

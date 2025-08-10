@@ -40,6 +40,20 @@ var _ loader.ClusterOptionsBuilder = &EtcdManagerOptionsBuilder{}
 func (b *EtcdManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	clusterSpec := &o.Spec
 
+	// Image Volumes will become GA in Kubernetes 1.35
+	// https://github.com/kubernetes/enhancements/pull/5450
+	if b.ControlPlaneKubernetesVersion().IsLT("1.35.0") && o.HasImageVolumesSupport() {
+		if clusterSpec.ControlPlaneKubelet == nil {
+			clusterSpec.ControlPlaneKubelet = &kops.KubeletConfigSpec{}
+		}
+		if clusterSpec.ControlPlaneKubelet.FeatureGates == nil {
+			clusterSpec.ControlPlaneKubelet.FeatureGates = make(map[string]string)
+		}
+		if _, found := clusterSpec.ControlPlaneKubelet.FeatureGates["ImageVolume"]; !found {
+			clusterSpec.ControlPlaneKubelet.FeatureGates["ImageVolume"] = "true"
+		}
+	}
+
 	for i := range clusterSpec.EtcdClusters {
 		etcdCluster := &clusterSpec.EtcdClusters[i]
 		if etcdCluster.Backups == nil {

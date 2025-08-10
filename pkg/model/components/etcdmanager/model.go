@@ -236,7 +236,22 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		}
 	}
 
-	{
+	if b.Cluster.HasImageVolumesSupport() {
+		for _, etcdVersion := range etcdSupportedVersions() {
+			if etcdVersion.SymlinkToVersion == "" {
+				volume := v1.Volume{
+					Name: "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
+					VolumeSource: v1.VolumeSource{
+						Image: &v1.ImageVolumeSource{
+							Reference:  b.AssetBuilder.RemapImage(etcdVersion.Image),
+							PullPolicy: v1.PullIfNotPresent,
+						},
+					},
+				}
+				pod.Spec.Volumes = append(pod.Spec.Volumes, volume)
+			}
+		}
+	} else {
 		utilMounts := []v1.VolumeMount{
 			{
 				MountPath: "/opt",
@@ -331,6 +346,20 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 
 		// Remap image via AssetBuilder
 		container.Image = b.AssetBuilder.RemapImage(container.Image)
+
+		if b.Cluster.HasImageVolumesSupport() {
+			for _, etcdVersion := range etcdSupportedVersions() {
+				volumeMount := v1.VolumeMount{
+					MountPath: "/opt/etcd-v" + etcdVersion.Version,
+				}
+				if etcdVersion.SymlinkToVersion == "" {
+					volumeMount.Name = "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-")
+				} else {
+					volumeMount.Name = "etcd-v" + strings.ReplaceAll(etcdVersion.SymlinkToVersion, ".", "-")
+				}
+				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+			}
+		}
 	}
 
 	var clientHost string

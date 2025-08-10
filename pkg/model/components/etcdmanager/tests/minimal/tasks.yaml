@@ -102,80 +102,34 @@ Contents: |
         name: pki
       - mountPath: /opt
         name: opt
+      - mountPath: /opt/etcd-v3.4.13
+        name: etcd-v3-4-13
+      - mountPath: /opt/etcd-v3.4.3
+        name: etcd-v3-4-13
+      - mountPath: /opt/etcd-v3.5.0
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.1
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.13
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.17
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.21
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.3
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.4
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.6
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.7
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.9
+        name: etcd-v3-5-21
       - mountPath: /var/log/etcd.log
         name: varlogetcd
     hostNetwork: true
     hostPID: true
-    initContainers:
-    - args:
-      - --target-dir=/opt/kops-utils/
-      - --src=/ko-app/kops-utils-cp
-      command:
-      - /ko-app/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: kops-utils-cp
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --target-dir=/opt/etcd-v3.4.13
-      - --src=/usr/local/bin/etcd
-      - --src=/usr/local/bin/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:v3.4.13
-      name: init-etcd-3-4-13
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --target-dir=/opt/etcd-v3.5.21
-      - --src=/usr/local/bin/etcd
-      - --src=/usr/local/bin/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:v3.5.21
-      name: init-etcd-3-5-21
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --symlink
-      - --target-dir=/opt/etcd-v3.4.3
-      - --src=/opt/etcd-v3.4.13/etcd
-      - --src=/opt/etcd-v3.4.13/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: init-etcd-symlinks-3-4-13
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --symlink
-      - --target-dir=/opt/etcd-v3.5.0
-      - --target-dir=/opt/etcd-v3.5.1
-      - --target-dir=/opt/etcd-v3.5.13
-      - --target-dir=/opt/etcd-v3.5.17
-      - --target-dir=/opt/etcd-v3.5.3
-      - --target-dir=/opt/etcd-v3.5.4
-      - --target-dir=/opt/etcd-v3.5.6
-      - --target-dir=/opt/etcd-v3.5.7
-      - --target-dir=/opt/etcd-v3.5.9
-      - --src=/opt/etcd-v3.5.21/etcd
-      - --src=/opt/etcd-v3.5.21/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: init-etcd-symlinks-3-5-21
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
     priorityClassName: system-cluster-critical
     tolerations:
     - key: CriticalAddonsOnly
@@ -195,6 +149,14 @@ Contents: |
       name: pki
     - emptyDir: {}
       name: opt
+    - image:
+        pullPolicy: IfNotPresent
+        reference: registry.k8s.io/etcd:v3.4.13
+      name: etcd-v3-4-13
+    - image:
+        pullPolicy: IfNotPresent
+        reference: registry.k8s.io/etcd:v3.5.21
+      name: etcd-v3-5-21
     - hostPath:
         path: /var/log/etcd-events.log
         type: FileOrCreate
@@ -244,80 +206,34 @@ Contents: |
         name: pki
       - mountPath: /opt
         name: opt
+      - mountPath: /opt/etcd-v3.4.13
+        name: etcd-v3-4-13
+      - mountPath: /opt/etcd-v3.4.3
+        name: etcd-v3-4-13
+      - mountPath: /opt/etcd-v3.5.0
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.1
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.13
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.17
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.21
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.3
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.4
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.6
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.7
+        name: etcd-v3-5-21
+      - mountPath: /opt/etcd-v3.5.9
+        name: etcd-v3-5-21
       - mountPath: /var/log/etcd.log
         name: varlogetcd
     hostNetwork: true
     hostPID: true
-    initContainers:
-    - args:
-      - --target-dir=/opt/kops-utils/
-      - --src=/ko-app/kops-utils-cp
-      command:
-      - /ko-app/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: kops-utils-cp
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --target-dir=/opt/etcd-v3.4.13
-      - --src=/usr/local/bin/etcd
-      - --src=/usr/local/bin/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:v3.4.13
-      name: init-etcd-3-4-13
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --target-dir=/opt/etcd-v3.5.21
-      - --src=/usr/local/bin/etcd
-      - --src=/usr/local/bin/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:v3.5.21
-      name: init-etcd-3-5-21
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --symlink
-      - --target-dir=/opt/etcd-v3.4.3
-      - --src=/opt/etcd-v3.4.13/etcd
-      - --src=/opt/etcd-v3.4.13/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: init-etcd-symlinks-3-4-13
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --symlink
-      - --target-dir=/opt/etcd-v3.5.0
-      - --target-dir=/opt/etcd-v3.5.1
-      - --target-dir=/opt/etcd-v3.5.13
-      - --target-dir=/opt/etcd-v3.5.17
-      - --target-dir=/opt/etcd-v3.5.3
-      - --target-dir=/opt/etcd-v3.5.4
-      - --target-dir=/opt/etcd-v3.5.6
-      - --target-dir=/opt/etcd-v3.5.7
-      - --target-dir=/opt/etcd-v3.5.9
-      - --src=/opt/etcd-v3.5.21/etcd
-      - --src=/opt/etcd-v3.5.21/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: init-etcd-symlinks-3-5-21
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
     priorityClassName: system-cluster-critical
     tolerations:
     - key: CriticalAddonsOnly
@@ -337,6 +253,14 @@ Contents: |
       name: pki
     - emptyDir: {}
       name: opt
+    - image:
+        pullPolicy: IfNotPresent
+        reference: registry.k8s.io/etcd:v3.4.13
+      name: etcd-v3-4-13
+    - image:
+        pullPolicy: IfNotPresent
+        reference: registry.k8s.io/etcd:v3.5.21
+      name: etcd-v3-5-21
     - hostPath:
         path: /var/log/etcd.log
         type: FileOrCreate
