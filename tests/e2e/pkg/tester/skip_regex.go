@@ -83,12 +83,12 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/kubernetes/blob/418ae605ec1b788d43bff7ac44af66d8b669b833/test/e2e/network/networking.go#L135
 		skipRegex += "|should.check.kube-proxy.urls"
 
-		if k8sVersion.Minor < 34 {
+		if k8sVersion.Minor < 35 {
 			// This seems to be specific to the kube-proxy replacement
-			// < 34 so we look at this again
+			// < 35 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
 			// https://github.com/kubernetes/kubernetes/issues/129221
-			// < 34 so we look at this again
+			// < 35 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 
@@ -107,21 +107,21 @@ func (t *Tester) setSkipRegexFlag() error {
 			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 		}
 
-		if k8sVersion.Minor < 34 {
-			// < 34 so we revisit this in future
+		if k8sVersion.Minor < 35 {
+			// < 35 so we revisit this in future
 			// This test checks for kube-proxy on port 10249 (`127.0.0.1:10249/proxyMode`)
 			// It appears that the cilium kube-proxy replacement does not implement this.
 			// Ref: https://github.com/kubernetes/kubernetes/issues/126903
 			skipRegex += "|KubeProxy.should.update.metric.for.tracking.accepted.packets.destined.for.localhost.nodeports"
 		}
 	} else if networking.Calico != nil {
-		if cluster.Spec.LegacyCloudProvider == "gce" && k8sVersion.Minor < 34 {
-			// < 34 so we look at this again
+		if cluster.Spec.LegacyCloudProvider == "gce" && k8sVersion.Minor < 35 {
+			// < 35 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.Flannel != nil {
-		if k8sVersion.Minor < 34 {
-			// < 34 so we look at this again
+		if k8sVersion.Minor < 35 {
+			// < 35 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.KubeRouter != nil {
@@ -183,8 +183,8 @@ func (t *Tester) setSkipRegexFlag() error {
 	// ref: https://github.com/kubernetes/kubernetes/issues/123255
 	// ref: https://github.com/kubernetes/kubernetes/issues/121018
 	// ref: https://github.com/kubernetes/kubernetes/pull/126896
-	// < 34 so we look at this again
-	if k8sVersion.Minor < 34 {
+	// < 35 so we look at this again
+	if k8sVersion.Minor < 35 {
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
