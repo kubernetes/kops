@@ -47,7 +47,9 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.1.5"),
 			}
-		case b.IsKubernetesLT("1.32"):
+		case b.IsKubernetesLT("1.30"):
+			// containerd 2.1 support Kubernetes 1.30+
+			// https://github.com/containerd/containerd/pull/11819
 			containerd.Version = fi.PtrTo("1.7.28")
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.3.0"),
