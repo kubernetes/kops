@@ -42,7 +42,7 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	// Image Volumes will become GA in Kubernetes 1.35
 	// https://github.com/kubernetes/enhancements/pull/5450
-	if b.ControlPlaneKubernetesVersion().IsLT("1.35.0") && o.HasImageVolumesSupport() {
+	if b.ControlPlaneKubernetesVersion().IsLT("1.36.0") && o.HasImageVolumesSupport() {
 		if clusterSpec.ControlPlaneKubelet == nil {
 			clusterSpec.ControlPlaneKubelet = &kops.KubeletConfigSpec{}
 		}
