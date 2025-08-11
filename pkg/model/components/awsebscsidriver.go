@@ -43,8 +43,7 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	c := aws.EBSCSIDriver
 
 	if c.Version == nil {
-		version := "v1.38.1"
-		c.Version = &version
+		c.Version = fi.PtrTo("v1.47.0")
 	}
 
 	return nil

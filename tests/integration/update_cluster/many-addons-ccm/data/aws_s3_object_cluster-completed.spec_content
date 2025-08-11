@@ -16,7 +16,7 @@ spec:
   cloudConfig:
     awsEBSCSIDriver:
       hostNetwork: true
-      version: v1.38.1
+      version: v1.47.0
     manageStorageClasses: true
   cloudControllerManager:
     allocateNodeCIDRs: true
