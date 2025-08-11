@@ -70,20 +70,18 @@ images:
   download: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.22.0
 - canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0
   download: registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0
-- canonical: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.38.1
-  download: public.ecr.aws/ebs-csi-driver/aws-ebs-csi-driver:v1.38.1
-- canonical: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.12.0-eks-1-32-1
-  download: public.ecr.aws/eks-distro/kubernetes-csi/node-driver-registrar:v2.12.0-eks-1-32-1
-- canonical: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.14.0-eks-1-32-1
-  download: public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.14.0-eks-1-32-1
-- canonical: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v5.1.0-eks-1-32-1
-  download: public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v5.1.0-eks-1-32-1
-- canonical: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.7.0-eks-1-32-1
-  download: public.ecr.aws/eks-distro/kubernetes-csi/external-attacher:v4.7.0-eks-1-32-1
-- canonical: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.5.0
-  download: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.5.0
-- canonical: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.12.0-eks-1-32-1
-  download: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.12.0-eks-1-32-1
+- canonical: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.47.0
+  download: registry.k8s.io/provider-aws/aws-ebs-csi-driver:v1.47.0
+- canonical: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.14.0
+  download: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.14.0
+- canonical: registry.k8s.io/sig-storage/livenessprobe:v2.16.0
+  download: registry.k8s.io/sig-storage/livenessprobe:v2.16.0
+- canonical: registry.k8s.io/sig-storage/csi-provisioner:v5.3.0
+  download: registry.k8s.io/sig-storage/csi-provisioner:v5.3.0
+- canonical: registry.k8s.io/sig-storage/csi-attacher:v4.9.0
+  download: registry.k8s.io/sig-storage/csi-attacher:v4.9.0
+- canonical: registry.k8s.io/sig-storage/csi-resizer:v1.14.0
+  download: registry.k8s.io/sig-storage/csi-resizer:v1.14.0
 - canonical: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-alpha.1
   download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-alpha.1
 - canonical: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
