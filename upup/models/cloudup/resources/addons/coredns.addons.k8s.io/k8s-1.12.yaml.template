@@ -155,7 +155,7 @@ spec:
       # Metal provider doesn't add the "topology.kubernetes.io/zone" label
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
-        whenUnsatisfiable: DoNotSchedule
+        whenUnsatisfiable: ScheduleAnyway
         labelSelector:
           matchLabels:
             k8s-app: kube-dns
