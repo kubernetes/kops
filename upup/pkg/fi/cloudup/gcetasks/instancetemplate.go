@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -411,6 +412,12 @@ func (a ByKey) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByKey) Less(i, j int) bool { return a[i].Key < a[j].Key }
 
 func matches(l, r *compute.InstanceTemplate) bool {
+	normalizeServiceAccount := func(v *compute.ServiceAccount) *compute.ServiceAccount {
+		c := *v
+		c.Scopes = slices.Clone(c.Scopes)
+		sort.Strings(c.Scopes)
+		return &c
+	}
 	normalizeInstanceProperties := func(v *compute.InstanceProperties) *compute.InstanceProperties {
 		c := *v
 		if c.Metadata != nil {
@@ -418,6 +425,11 @@ func matches(l, r *compute.InstanceTemplate) bool {
 			c.Metadata = &cm
 			c.Metadata.Fingerprint = ""
 			sort.Sort(ByKey(c.Metadata.Items))
+		}
+		if c.ServiceAccounts != nil {
+			for i, serviceAccount := range c.ServiceAccounts {
+				c.ServiceAccounts[i] = normalizeServiceAccount(serviceAccount)
+			}
 		}
 		// Ignore output fields
 		for _, ni := range c.NetworkInterfaces {
