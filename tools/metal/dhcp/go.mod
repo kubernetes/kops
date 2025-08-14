@@ -1,6 +1,6 @@
 module github.com/kubernetes/kops/tools/metal/dhcp
 
-go 1.24.4
+go 1.25.0
 
 require github.com/insomniacslk/dhcp v0.0.0-20240812123929-b105c29bd1b5
 
