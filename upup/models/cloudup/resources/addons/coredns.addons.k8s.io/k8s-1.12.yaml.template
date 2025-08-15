@@ -138,7 +138,7 @@ spec:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
         {{- end }}
-        {{- if KarpenterEnabled }}
+        {{- if or IsControlPlaneOnly KarpenterEnabled }}
         - key: node-role.kubernetes.io/master
           operator: Exists
         - key: node-role.kubernetes.io/control-plane
