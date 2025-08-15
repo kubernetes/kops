@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strconv"
 
+	"github.com/opencontainers/selinux/go-selinux"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -46,6 +48,11 @@ func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode
 	}
 
 	_, err = EnsureFileOwner(destPath, owner, group)
+	if err != nil {
+		return err
+	}
+
+	err = EnsureFileSELinuxLabel(destPath)
 	if err != nil {
 		return err
 	}
@@ -118,6 +125,22 @@ func EnsureFileMode(destPath string, fileMode os.FileMode) (bool, error) {
 	}
 	changed = true
 	return changed, nil
+}
+
+func EnsureFileSELinuxLabel(destPath string) error {
+	// GetEnabled caches its results (= it's cheap) and works on all platforms incl. Windows
+	if !selinux.GetEnabled() {
+		return nil
+	}
+
+	// This is Linux and SELinux is enabled in the kernel.
+	cmd := exec.Command("restorecon", "-v", destPath)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error running restorecon on %q: %v: %s", destPath, err, output)
+	}
+
+	return nil
 }
 
 func fileHasHash(f string, expected *hashing.Hash) (bool, error) {
