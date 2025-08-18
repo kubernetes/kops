@@ -3,8 +3,9 @@
     {
       "Action": [
         "ec2:CreateFleet",
+        "ec2:CreateLaunchTemplate",
         "ec2:CreateTags",
-        "ec2:DescribeAvailabilityZones",
+        "ec2:DeleteLaunchTemplate",
         "ec2:DescribeImages",
         "ec2:DescribeInstanceTypeOfferings",
         "ec2:DescribeInstanceTypes",
@@ -15,7 +16,12 @@
         "ec2:DescribeSubnets",
         "ec2:RunInstances",
         "ec2:TerminateInstances",
+        "iam:AddRoleToInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:GetInstanceProfile",
         "iam:PassRole",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:TagInstanceProfile",
         "pricing:GetProducts",
         "ssm:GetParameter"
       ],
