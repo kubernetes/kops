@@ -39,9 +39,11 @@ func (b *KarpenterOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		c.Image = "public.ecr.aws/karpenter/controller:v0.31.3"
 	}
 
-	if c.LogEncoding == "" {
-		c.LogEncoding = "console"
-	}
+	// LogEncoding is no longer supported
+	// https://github.com/aws/karpenter-provider-aws/pull/6586
+	//if c.LogEncoding == "" {
+	//	c.LogEncoding = "console"
+	//}
 
 	if c.LogLevel == "" {
 		c.LogLevel = "debug"

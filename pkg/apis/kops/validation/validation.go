@@ -289,6 +289,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
 		}
+		if spec.Karpenter.LogEncoding != "" {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("logEncoding"), "logEncoding is deprecated"))
+		}
 	}
 
 	if spec.CertManager != nil && fi.ValueOf(spec.CertManager.Enabled) {

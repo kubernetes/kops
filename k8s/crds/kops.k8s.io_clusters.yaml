@@ -1622,6 +1622,7 @@ spec:
                   image:
                     type: string
                   logEncoding:
+                    description: LogEncoding is deprecated and has no effect.
                     type: string
                   logLevel:
                     type: string
