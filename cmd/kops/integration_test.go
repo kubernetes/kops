@@ -948,8 +948,8 @@ func TestKarpenter(t *testing.T) {
 		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withServiceAccountRole("karpenter.kube-system", true)
 	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
-		"aws_launch_template_karpenter-nodes-single-machinetype.minimal.example.com_user_data",
-		"aws_launch_template_karpenter-nodes-default.minimal.example.com_user_data",
+		"aws_s3_object_nodeupscript-karpenter-nodes-single-machinetype_content",
+		"aws_s3_object_nodeupscript-karpenter-nodes-default_content",
 		"aws_s3_object_nodeupconfig-karpenter-nodes-single-machinetype_content",
 		"aws_s3_object_nodeupconfig-karpenter-nodes-default_content",
 	)
