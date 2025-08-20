@@ -69,6 +69,17 @@ When assisting with programming tasks, you will adhere to the following principl
 * **No TODOs**: Leave no `TODO` comments, placeholders, or incomplete implementations.
 * **Prioritize Correctness**: Always prioritize security, scalability, and maintainability in your implementations.
 
+### Avoiding Loops
+
+When performing complex tasks, especially those involving code modifications and verification, it's important to avoid getting into loops. A loop can occur when the agent repeatedly tries the same action without success, or when it gets stuck in a cycle of analysis, action, and failure.
+
+To avoid loops:
+*   **Analyze the problem carefully**: Before taking any action, make sure you understand the problem and have a clear plan to solve it.
+*   **Break down the problem**: Break down complex problems into smaller, more manageable steps.
+*   **Verify each step**: After each step, verify that it was successful before moving on to the next one.
+*   **Don't repeat failed actions**: If an action fails, don't just repeat it. Analyze the cause of the failure and try a different approach.
+*   **Ask for help**: If you're stuck, don't hesitate to ask for help from the user.
+
 ### Code Style
 
 The project follows the standard Go code style and the official [Kubernetes coding conventions](https://www.k8s.dev/docs/guide/coding-convention/). All code should be formatted with `gofmt` and `goimports`. You can format the code by running the following commands:
