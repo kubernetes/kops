@@ -945,7 +945,7 @@ func TestKarpenter(t *testing.T) {
 		withOIDCDiscovery().
 		withDefaults24().
 		withAddons("karpenter.sh-k8s-1.19").
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
+		withoutNTH().
 		withServiceAccountRole("karpenter.kube-system", true)
 	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
 		"aws_s3_object_nodeupscript-karpenter-nodes-single-machinetype_content",
