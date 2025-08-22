@@ -944,6 +944,7 @@ func TestKarpenter(t *testing.T) {
 	test := newIntegrationTest("minimal.example.com", "karpenter").
 		withOIDCDiscovery().
 		withDefaults24().
+		withoutNTH().
 		withAddons("karpenter.sh-k8s-1.19").
 		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
 		withServiceAccountRole("karpenter.kube-system", true)
