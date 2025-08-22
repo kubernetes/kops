@@ -120,40 +120,21 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
 	kubelet.KubeconfigPath = kubeconfigPath
 
+	cloudProvider := cluster.GetCloudProvider()
+
 	kubelet.CgroupRoot = "/"
 
-	cloudProvider := cluster.GetCloudProvider()
 	klog.V(1).Infof("Cloud Provider: %s", cloudProvider)
-	if cloudProvider != kops.CloudProviderMetal {
-		if b.controlPlaneKubernetesVersion.IsLT("1.31") {
-			switch cloudProvider {
-			case kops.CloudProviderAWS:
-				kubelet.CloudProvider = "aws"
-			case kops.CloudProviderGCE:
-				kubelet.CloudProvider = "gce"
-			case kops.CloudProviderDO:
-				kubelet.CloudProvider = "external"
-			case kops.CloudProviderHetzner:
-				kubelet.CloudProvider = "external"
-			case kops.CloudProviderOpenstack:
-				kubelet.CloudProvider = "openstack"
-			case kops.CloudProviderAzure:
-				kubelet.CloudProvider = "azure"
-			case kops.CloudProviderScaleway:
-				kubelet.CloudProvider = "external"
-			default:
-				kubelet.CloudProvider = "external"
-			}
+	if cloudProvider == kops.CloudProviderAWS {
+		kubelet.CloudProvider = "aws"
+	}
 
-			if cluster.Spec.ExternalCloudControllerManager != nil {
-				kubelet.CloudProvider = "external"
-			}
-		} else {
-			kubelet.CloudProvider = "external"
-		}
+	if cloudProvider == kops.CloudProviderDO {
+		kubelet.CloudProvider = "external"
 	}
 
 	if cloudProvider == kops.CloudProviderGCE {
+		kubelet.CloudProvider = "gce"
 		kubelet.HairpinMode = "promiscuous-bridge"
 
 		if cluster.Spec.CloudConfig == nil {
@@ -161,6 +142,26 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 		}
 		cluster.Spec.CloudProvider.GCE.Multizone = fi.PtrTo(true)
 		cluster.Spec.CloudProvider.GCE.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+	}
+
+	if cloudProvider == kops.CloudProviderHetzner {
+		kubelet.CloudProvider = "external"
+	}
+
+	if cloudProvider == kops.CloudProviderOpenstack {
+		kubelet.CloudProvider = "openstack"
+	}
+
+	if cloudProvider == kops.CloudProviderAzure {
+		kubelet.CloudProvider = "azure"
+	}
+
+	if cloudProvider == kops.CloudProviderScaleway {
+		kubelet.CloudProvider = "external"
+	}
+
+	if cluster.Spec.ExternalCloudControllerManager != nil {
+		kubelet.CloudProvider = "external"
 	}
 
 	// Prevent image GC from pruning the pause image
