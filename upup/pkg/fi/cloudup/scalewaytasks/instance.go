@@ -92,7 +92,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 				alreadyTagged = true
 			}
 		}
-		if alreadyTagged == true {
+		if alreadyTagged {
 			continue
 		}
 
@@ -107,7 +107,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		if err != nil {
 			return nil, fmt.Errorf("checking image differences in server %s (%s): %w", server.Name, server.ID, err)
 		}
-		if diff == true {
+		if diff {
 			needsUpdate = append(needsUpdate, server.ID)
 			continue
 		}
@@ -117,7 +117,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		if err != nil {
 			return nil, fmt.Errorf("checking user-data differences in server %s (%s): %w", server.Name, server.ID, err)
 		}
-		if diff == true {
+		if diff {
 			needsUpdate = append(needsUpdate, server.ID)
 		}
 	}
@@ -457,7 +457,7 @@ func findFirstFreeIndex(existing []*instance.Server) int {
 				break
 			}
 		}
-		if found == false {
+		if !found {
 			return index
 		}
 	}
