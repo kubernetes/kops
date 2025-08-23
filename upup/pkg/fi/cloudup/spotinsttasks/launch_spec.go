@@ -160,7 +160,7 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 	// Image.
 	{
 		//		convert spec from api that reply for multi arch data only in spec.images
-		if spec.Images != nil && len(spec.Images) > 1 {
+		if len(spec.Images) > 1 {
 			spec.SetImageId(fi.PtrTo(fi.ValueOf(spec.Images[0].ImageId)))
 			actual.OtherArchitectureImages = append(actual.OtherArchitectureImages, fi.ValueOf(spec.Images[1].ImageId))
 		}
