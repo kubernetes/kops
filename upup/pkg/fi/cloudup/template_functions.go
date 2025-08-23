@@ -131,10 +131,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	}
 
 	dest["GossipEnabled"] = func() bool {
-		if cluster.UsesLegacyGossip() {
-			return true
-		}
-		return false
+		return cluster.UsesLegacyGossip()
 	}
 	dest["PublishesDNSRecords"] = func() bool {
 		return cluster.PublishesDNSRecords()

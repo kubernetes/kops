@@ -66,10 +66,7 @@ func (c *openstackCloud) CreateInstance(opt servers.CreateOptsBuilder, scheduler
 }
 
 func IsPortInUse(err error) bool {
-	if gophercloud.ResponseCodeIs(err, http.StatusConflict) {
-		return true
-	}
-	return false
+	return gophercloud.ResponseCodeIs(err, http.StatusConflict)
 }
 
 // waitForStatusActive uses gopherclouds WaitFor() func to determine when the server becomes "ACTIVE".
