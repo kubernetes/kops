@@ -142,8 +142,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	}
 
 	// Load the container image
-	var args []string
-	args = []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
+	args := []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
 	human := strings.Join(args, " ")
 
 	klog.Infof("running command %s", human)
