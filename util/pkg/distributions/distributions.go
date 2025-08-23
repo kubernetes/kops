@@ -91,6 +91,8 @@ func (d *Distribution) HasDNF() bool {
 		return d.version >= 8
 	case "fedora":
 		return d.version >= 22
+	case "amazonlinux2":
+		return false
 	default:
 		klog.Warningf("unknown project for HasDNF (%q), assuming does support dnf", d.project)
 		return true
