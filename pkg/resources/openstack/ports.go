@@ -39,10 +39,7 @@ func (os *clusterDiscoveryOS) ListPorts(network networks.Network) ([]*resources.
 		return nil, err
 	}
 
-	preExistingNet := true
-	if os.clusterName == network.Name {
-		preExistingNet = false
-	}
+	preExistingNet := os.clusterName != network.Name
 
 	filteredPorts := []ports.Port{}
 	if preExistingNet {

@@ -706,10 +706,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	sgMap := make(map[string]*openstacktasks.SecurityGroup)
 
-	useVIPACL := false
-	if b.UseLoadBalancerForAPI() && b.UseVIPACL() {
-		useVIPACL = true
-	}
+	useVIPACL := b.UseLoadBalancerForAPI() && b.UseVIPACL()
 	sg := &openstacktasks.SecurityGroup{
 		Name:             s(b.APIResourceName()),
 		Lifecycle:        b.Lifecycle,

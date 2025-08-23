@@ -116,11 +116,7 @@ func NewLBTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle, 
 		return nil, err
 	}
 
-	secGroup := true
-	if find != nil && find.SecurityGroup == nil {
-		secGroup = false
-	}
-
+	secGroup := find == nil || find.SecurityGroup != nil
 	actual := &LB{
 		ID:        fi.PtrTo(lb.ID),
 		Name:      fi.PtrTo(lb.Name),
