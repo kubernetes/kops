@@ -101,8 +101,8 @@ func TestTaintsApplied(t *testing.T) {
 }
 
 func stringSlicesEqual(exp, other []string) bool {
-	sort.Sort(sort.StringSlice(exp))
-	sort.Sort(sort.StringSlice(other))
+	sort.Strings(exp)
+	sort.Strings(other)
 	if exp == nil && other != nil {
 		return false
 	}
