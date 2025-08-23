@@ -1633,7 +1633,8 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 
 	expectedFilenames := i.expectTerraformFilenames
 
-	if phase == cloudup.PhaseSecurity {
+	switch phase {
+	case cloudup.PhaseSecurity:
 		expectedFilenames = []string{
 			"aws_iam_role_masters." + i.clusterName + "_policy",
 			"aws_iam_role_nodes." + i.clusterName + "_policy",
@@ -1648,7 +1649,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 				"aws_launch_template_bastion." + i.clusterName + "_user_data",
 			}...)
 		}
-	} else if phase == cloudup.PhaseCluster {
+	case cloudup.PhaseCluster:
 		expectedFilenames = []string{
 			"aws_launch_template_nodes." + i.clusterName + "_user_data",
 		}

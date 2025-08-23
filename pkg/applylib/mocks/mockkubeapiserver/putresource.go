@@ -62,9 +62,10 @@ func (req *putResource) Run(s *MockKubeAPIServer) error {
 
 	var updated *unstructured.Unstructured
 
-	if req.SubResource == "" {
+	switch req.SubResource {
+	case "":
 		updated = body
-	} else if req.SubResource == "status" {
+	case "status":
 		updated = existing.DeepCopyObject().(*unstructured.Unstructured)
 		newStatus := body.Object["status"]
 		if newStatus == nil {
@@ -72,7 +73,7 @@ func (req *putResource) Run(s *MockKubeAPIServer) error {
 			return fmt.Errorf("status not specified on status subresource update")
 		}
 		updated.Object["status"] = newStatus
-	} else {
+	default:
 		// TODO: We need to implement put properly
 		return fmt.Errorf("unknown subresource %q", req.SubResource)
 	}

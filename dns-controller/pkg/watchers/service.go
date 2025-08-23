@@ -152,7 +152,8 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) string {
 	if len(specExternal) != 0 || len(specInternal) != 0 {
 		var ingresses []dns.Record
 
-		if service.Spec.Type == v1.ServiceTypeLoadBalancer {
+		switch service.Spec.Type {
+		case v1.ServiceTypeLoadBalancer:
 			for i := range service.Status.LoadBalancer.Ingress {
 				ingress := &service.Status.LoadBalancer.Ingress[i]
 				if ingress.Hostname != "" {
@@ -175,7 +176,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) string {
 					klog.V(4).Infof("Found A record for service %s/%s: %q", service.Namespace, service.Name, ingress.IP)
 				}
 			}
-		} else if service.Spec.Type == v1.ServiceTypeNodePort {
+		case v1.ServiceTypeNodePort:
 			var roleType string
 			if len(specExternal) != 0 && len(specInternal) != 0 {
 				klog.Warningln("DNS Records not possible for both Internal and Externals IPs.")
@@ -190,7 +191,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) string {
 				Value:      dns.AliasForNodesInRole("node", roleType),
 			})
 			klog.V(4).Infof("Setting internal alias for NodePort service %s/%s", service.Namespace, service.Name)
-		} else {
+		default:
 			// TODO: Emit event so that users are informed of this
 			klog.V(2).Infof("Cannot expose service %s/%s of type %q", service.Namespace, service.Name, service.Spec.Type)
 		}

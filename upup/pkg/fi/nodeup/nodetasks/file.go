@@ -243,7 +243,8 @@ func (_ *File) RenderLocal(_ *local.LocalTarget, a, e, changes *File) error {
 	}
 
 	changed := false
-	if e.Type == FileType_Symlink {
+	switch e.Type {
+	case FileType_Symlink:
 		if changes.Symlink != nil {
 			// This will currently fail if the target already exists.
 			// That's probably a good thing for now ... it is hard to know what to do here!
@@ -254,7 +255,7 @@ func (_ *File) RenderLocal(_ *local.LocalTarget, a, e, changes *File) error {
 			}
 			changed = true
 		}
-	} else if e.Type == FileType_Directory {
+	case FileType_Directory:
 		if a == nil {
 			parent := filepath.Dir(strings.TrimSuffix(e.Path, "/"))
 			err := os.MkdirAll(parent, dirMode)
@@ -268,7 +269,7 @@ func (_ *File) RenderLocal(_ *local.LocalTarget, a, e, changes *File) error {
 			}
 			changed = true
 		}
-	} else if e.Type == FileType_File {
+	case FileType_File:
 		if changes.Contents != nil {
 			err = fi.WriteFile(e.Path, e.Contents, fileMode, dirMode, fi.ValueOf(e.Owner), fi.ValueOf(e.Group))
 			if err != nil {
@@ -276,7 +277,7 @@ func (_ *File) RenderLocal(_ *local.LocalTarget, a, e, changes *File) error {
 			}
 			changed = true
 		}
-	} else {
+	default:
 		return fmt.Errorf("File type=%q not valid/supported", e.Type)
 	}
 

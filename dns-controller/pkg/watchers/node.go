@@ -201,9 +201,10 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 
 		for _, a := range node.Status.Addresses {
 			var roleType string
-			if a.Type == v1.NodeInternalIP {
+			switch a.Type {
+			case v1.NodeInternalIP:
 				roleType = dns.RoleTypeInternal
-			} else if a.Type == v1.NodeExternalIP {
+			case v1.NodeExternalIP:
 				roleType = dns.RoleTypeExternal
 			}
 			var recordType dns.RecordType = dns.RecordTypeA
