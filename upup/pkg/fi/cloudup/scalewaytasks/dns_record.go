@@ -112,10 +112,8 @@ func (_ *DNSRecord) CheckChanges(actual, expected, changes *DNSRecord) error {
 }
 
 func (d *DNSRecord) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *DNSRecord) error {
-	cloud := t.Cloud.(scaleway.ScwCloud)
-
 	if actual != nil {
-		recordUpdated, err := cloud.DomainService().UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
+		recordUpdated, err := t.Cloud.DomainService().UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 			DNSZone: fi.ValueOf(actual.DNSZone),
 			Changes: []*domain.RecordChange{
 				{
@@ -138,7 +136,7 @@ func (d *DNSRecord) RenderScw(t *scaleway.ScwAPITarget, actual, expected, change
 		return nil
 	}
 
-	recordCreated, err := cloud.DomainService().UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
+	recordCreated, err := t.Cloud.DomainService().UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{
 		DNSZone: fi.ValueOf(expected.DNSZone),
 		Changes: []*domain.RecordChange{
 			{
