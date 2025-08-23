@@ -36,7 +36,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
@@ -63,7 +62,7 @@ var (
 
 type ValidateClusterOptions struct {
 	ClusterName        string
-	InstanceGroupRoles []kops.InstanceGroupRole
+	InstanceGroupRoles []kopsapi.InstanceGroupRole
 	output             string
 	wait               time.Duration
 	count              int
@@ -71,7 +70,7 @@ type ValidateClusterOptions struct {
 	kubeconfig         string
 
 	// filterInstanceGroups is a function that returns true if the instance group should be validated
-	filterInstanceGroups func(ig *kops.InstanceGroup) bool
+	filterInstanceGroups func(ig *kopsapi.InstanceGroup) bool
 
 	// filterPodsForValidation is a function that returns true if the pod should be validated
 	filterPodsForValidation func(pod *v1.Pod) bool

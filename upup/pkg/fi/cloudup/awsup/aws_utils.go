@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -75,7 +74,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 	}
 
 	for _, r := range allRegions {
-		name := awsv2.ToString(r.RegionName)
+		name := aws.ToString(r.RegionName)
 		if name == region {
 			return nil
 		}
