@@ -58,7 +58,7 @@ func EncodeGCELabel(s string) string {
 
 // DecodeGCELabel reverse EncodeGCELabel, taking the encoded RFC1035 compatible value back to a string
 func DecodeGCELabel(s string) (string, error) {
-	uriForm := strings.Replace(s, "-", "%", -1)
+	uriForm := strings.ReplaceAll(s, "-", "%")
 	v, err := url.QueryUnescape(uriForm)
 	if err != nil {
 		return "", fmt.Errorf("cannot decode GCE label: %q", s)

@@ -196,6 +196,6 @@ func restNamespaceForClusterName(clusterName string) string {
 	// We are not allowed dots, so we map them to dashes
 	// This can conflict, but this will simply be a limitation that we pass on to the user
 	// i.e. it will not be possible to create a.b.example.com and a-b.example.com
-	namespace := strings.Replace(clusterName, ".", "-", -1)
+	namespace := strings.ReplaceAll(clusterName, ".", "-")
 	return namespace
 }

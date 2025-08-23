@@ -39,7 +39,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return nil
 	}
 
-	clusterName := strings.Replace(b.ClusterName(), ".", "-", -1)
+	clusterName := strings.ReplaceAll(b.ClusterName(), ".", "-")
 	vpcName := "vpc-" + clusterName
 
 	// Create a separate vpc for this cluster.

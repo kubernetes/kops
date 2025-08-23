@@ -295,7 +295,7 @@ func (c *doCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]fi
 			return false, fmt.Errorf("LoadBalancers.List returned error: %v", err)
 		}
 
-		lbName := "api-" + strings.Replace(cluster.Name, ".", "-", -1)
+		lbName := "api-" + strings.ReplaceAll(cluster.Name, ".", "-")
 
 		for _, lb := range loadBalancers {
 			if lb.Name == lbName {
@@ -352,7 +352,7 @@ func findEtcdStatus(c *doCloudImplementation, cluster *kops.Cluster) ([]kops.Etc
 			klog.V(8).Infof("findEtcdStatus status (from cloud): checking if volume with tag %q belongs to cluster", myTag)
 			// check if volume belongs to this cluster.
 			// tag will be in the format "KubernetesCluster:dev5-k8s-local" (where clusterName is dev5.k8s.local)
-			clusterName := strings.Replace(cluster.Name, ".", "-", -1)
+			clusterName := strings.ReplaceAll(cluster.Name, ".", "-")
 			if strings.Contains(myTag, fmt.Sprintf("%s:%s", TagKubernetesClusterNamePrefix, clusterName)) {
 				klog.V(10).Infof("findEtcdStatus cluster comparison matched for tag: %v", myTag)
 				// this volume belongs to our cluster, add this to our etcdClusterSpec.
@@ -453,7 +453,7 @@ func findInstanceGroups(c *doCloudImplementation, clusterName string) ([]DOInsta
 	var result []DOInstanceGroup
 	instanceGroupMap := make(map[string][]string) // map of instance group name with droplet ids
 
-	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
+	clusterTag := "KubernetesCluster:" + strings.ReplaceAll(clusterName, ".", "-")
 	droplets, err := c.GetAllDropletsByTag(clusterTag)
 	if err != nil {
 		return nil, fmt.Errorf("get all droplets for tag %s returned error. Error=%v", clusterTag, err)

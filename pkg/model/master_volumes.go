@@ -287,7 +287,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
 	// GCE disk names must match the following regular expression: '[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?'
-	prefix = strings.Replace(prefix, ".", "-", -1)
+	prefix = strings.ReplaceAll(prefix, ".", "-")
 	if strings.IndexByte("0123456789-", prefix[0]) != -1 {
 		prefix = "d" + prefix
 	}

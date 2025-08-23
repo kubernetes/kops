@@ -58,7 +58,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if osSpec.Router == nil || osSpec.Router.ExternalNetwork == nil {
 		needRouter = false
 	}
-	routerName := strings.Replace(clusterName, ".", "-", -1)
+	routerName := strings.ReplaceAll(clusterName, ".", "-")
 	for _, sp := range b.Cluster.Spec.Networking.Subnets {
 		// assumes that we do not need to create routers if we use existing subnets
 		if sp.ID != "" {

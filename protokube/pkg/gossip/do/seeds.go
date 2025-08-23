@@ -44,7 +44,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	for _, droplet := range droplets {
 		for _, dropTag := range droplet.Tags {
 			klog.V(4).Infof("Get Seeds - droplet found=%s,SeedProvider Tag=%s", dropTag, p.tag)
-			if strings.Contains(dropTag, strings.Replace(p.tag, ".", "-", -1)) {
+			if strings.Contains(dropTag, strings.ReplaceAll(p.tag, ".", "-")) {
 				klog.V(4).Infof("Tag matched for droplet tag =%s. Getting private IP", p.tag)
 				ip, err := droplet.PrivateIPv4()
 				if err == nil {

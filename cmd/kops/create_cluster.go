@@ -858,7 +858,7 @@ func parseCloudLabels(s string) (map[string]string, error) {
 	// Replace commas with newlines to allow a single pass with csv.Reader.
 	// We can't use csv.Reader for the initial split because it would see each key=value record as a single field
 	// and significantly complicates using quoted fields as keys or values.
-	records := strings.Replace(s, ",", "\n", -1)
+	records := strings.ReplaceAll(s, ",", "\n")
 
 	// Let the CSV library do the heavy-lifting in handling nested ='s
 	r := csv.NewReader(strings.NewReader(records))

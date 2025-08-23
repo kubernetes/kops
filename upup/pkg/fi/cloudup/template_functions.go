@@ -95,7 +95,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["SharedVPC"] = tf.SharedVPC
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["replace"] = func(s, find, replace string) string {
-		return strings.Replace(s, find, replace, -1)
+		return strings.ReplaceAll(s, find, replace)
 	}
 	dest["joinHostPort"] = net.JoinHostPort
 
@@ -380,7 +380,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	if cluster.Spec.CloudProvider.AWS != nil && cluster.Spec.CloudProvider.AWS.NodeTerminationHandler != nil {
 		dest["DefaultQueueName"] = func() string {
-			s := strings.Replace(tf.ClusterName(), ".", "-", -1)
+			s := strings.ReplaceAll(tf.ClusterName(), ".", "-")
 			domain := ".amazonaws.com/"
 			if strings.Contains(tf.Region, "cn-") {
 				domain = ".amazonaws.com.cn/"

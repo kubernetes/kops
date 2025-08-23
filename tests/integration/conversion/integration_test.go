@@ -132,8 +132,8 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 		actualString := strings.TrimSpace(strings.Join(actual, "\n---\n\n"))
 		expectedString := strings.TrimSpace(string(expectedBytes))
 
-		actualString = strings.Replace(actualString, "\r", "", -1)
-		expectedString = strings.Replace(expectedString, "\r", "", -1)
+		actualString = strings.ReplaceAll(actualString, "\r", "")
+		expectedString = strings.ReplaceAll(expectedString, "\r", "")
 
 		if actualString != expectedString {
 			diffString := diff.FormatDiff(expectedString, actualString)

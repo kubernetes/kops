@@ -689,7 +689,7 @@ func (_ *NetworkLoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e
 }
 
 func (e *NetworkLoadBalancer) TerraformName() string {
-	tfName := strings.Replace(fi.ValueOf(e.Name), ".", "-", -1)
+	tfName := strings.ReplaceAll(fi.ValueOf(e.Name), ".", "-")
 	return tfName
 }
 

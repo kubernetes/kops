@@ -46,6 +46,6 @@ func (m *ManagedZonesService) List(project string) interfaces.ManagedZonesListCa
 }
 
 func (m *ManagedZonesService) NewManagedZone(dnsName string) interfaces.ManagedZone {
-	name := "x" + strings.Replace(string(uuid.NewUUID()), "-", "", -1)[0:30] // Unique name, strip out the "-" chars to shorten it, start with a lower case alpha, and truncate to Cloud DNS 32 character limit
+	name := "x" + strings.ReplaceAll(string(uuid.NewUUID()), "-", "")[0:30] // Unique name, strip out the "-" chars to shorten it, start with a lower case alpha, and truncate to Cloud DNS 32 character limit
 	return &ManagedZone{impl: &dns.ManagedZone{Name: name, Description: "Kubernetes Federated Service", DnsName: dnsName}}
 }

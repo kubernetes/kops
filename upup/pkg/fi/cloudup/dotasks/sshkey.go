@@ -171,7 +171,7 @@ func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SS
 	if e.IsExistingKey() {
 		return nil
 	}
-	tfName := strings.Replace(*e.Name, ":", "", -1)
+	tfName := strings.ReplaceAll(*e.Name, ":", "")
 	publicKey, err := t.AddFileResource("digitalocean_ssh_key", tfName, "public_key", e.PublicKey, false)
 	if err != nil {
 		return fmt.Errorf("error rendering PublicKey: %v", err)
@@ -198,7 +198,7 @@ func (e *SSHKey) TerraformLink() *terraformWriter.Literal {
 	if e.IsExistingKey() {
 		return terraformWriter.LiteralFromStringValue(*e.Name)
 	}
-	tfName := strings.Replace(*e.Name, ":", "", -1)
+	tfName := strings.ReplaceAll(*e.Name, ":", "")
 	return terraformWriter.LiteralProperty("digitalocean_ssh_key", tfName, "id")
 }
 

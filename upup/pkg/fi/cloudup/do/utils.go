@@ -20,6 +20,6 @@ import "strings"
 
 func SafeClusterName(clusterName string) string {
 	// DO does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 	return safeClusterName
 }

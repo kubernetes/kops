@@ -39,7 +39,7 @@ const (
 
 func (os *clusterDiscoveryOS) ListNetwork() ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
-	routerName := strings.Replace(os.clusterName, ".", "-", -1)
+	routerName := strings.ReplaceAll(os.clusterName, ".", "-")
 
 	projectNetworks, err := os.osCloud.ListNetworks(networks.ListOpts{})
 	if err != nil {
