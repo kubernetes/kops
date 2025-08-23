@@ -607,7 +607,7 @@ func (a ByScoreDescending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a ByScoreDescending) Less(i, j int) bool {
 	if a[i].score != a[j].score {
 		// ! to sort highest score first
-		return !(a[i].score < a[j].score)
+		return a[i].score >= a[j].score
 	}
 	// Use name to break ties consistently
 	return a[i].subnet.Name < a[j].subnet.Name
