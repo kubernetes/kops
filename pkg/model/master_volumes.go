@@ -320,8 +320,6 @@ func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.CloudupModelBuilderContext,
 		Labels:    tags,
 	}
 	c.AddTask(t)
-
-	return
 }
 
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
@@ -430,6 +428,4 @@ func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.CloudupModelBuilderContext
 		Type:      fi.PtrTo(string(instance.VolumeVolumeTypeBSSD)),
 	}
 	c.AddTask(t)
-
-	return
 }
