@@ -108,7 +108,6 @@ func writeLocalsOutputs(buf *bytes.Buffer, outputs map[string]terraformWriter.Ou
 		toElement(&output{Value: locals[tfName]}).Write(buf, 0, fmt.Sprintf("output %q", tfName))
 		buf.WriteString("\n")
 	}
-	return
 }
 
 func (t *TerraformTarget) writeProviders(buf *bytes.Buffer) {

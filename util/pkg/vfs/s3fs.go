@@ -696,7 +696,8 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 	}
 
 	// render DO's terraform
-	if p.scheme == "do" {
+	switch p.scheme {
+	case "do":
 
 		content, err := w.AddFileBytes("digitalocean_spaces_bucket_object", name, "content", bytes, false)
 		if err != nil {
@@ -719,7 +720,7 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		return w.RenderResource("digitalocean_spaces_bucket_object", name, tf)
 
 		// render Scaleway's Terraform objects
-	} else if p.scheme == "scw" {
+	case "scw":
 
 		content, err := w.AddFileBytes("scaleway_object", name, "content", bytes, false)
 		if err != nil {
@@ -733,7 +734,7 @@ func (p *S3Path) RenderTerraform(w *terraformWriter.TerraformWriter, name string
 		}
 		return w.RenderResource("scaleway_object", name, tf)
 
-	} else {
+	default:
 		bucketDetails, err := p.getBucketDetails(ctx)
 		if err != nil {
 			return err

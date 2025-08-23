@@ -92,7 +92,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 				alreadyTagged = true
 			}
 		}
-		if alreadyTagged == true {
+		if alreadyTagged {
 			continue
 		}
 
@@ -107,7 +107,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		if err != nil {
 			return nil, fmt.Errorf("checking image differences in server %s (%s): %w", server.Name, server.ID, err)
 		}
-		if diff == true {
+		if diff {
 			needsUpdate = append(needsUpdate, server.ID)
 			continue
 		}
@@ -117,7 +117,7 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		if err != nil {
 			return nil, fmt.Errorf("checking user-data differences in server %s (%s): %w", server.Name, server.ID, err)
 		}
-		if diff == true {
+		if diff {
 			needsUpdate = append(needsUpdate, server.ID)
 		}
 	}
@@ -175,8 +175,7 @@ func (_ *Instance) CheckChanges(actual, expected, changes *Instance) error {
 }
 
 func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *Instance) error {
-	cloud := t.Cloud.(scaleway.ScwCloud)
-	instanceService := cloud.InstanceService()
+	instanceService := t.Cloud.InstanceService()
 	zone := scw.Zone(fi.ValueOf(expected.Zone))
 
 	userData, err := fi.ResourceAsBytes(*expected.UserData)
@@ -216,7 +215,7 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	// If newInstanceCount > 0, we need to create new instances for this group
 	for i := 0; i < newInstanceCount; i++ {
 		// We create a unique name for each server
-		uniqueName, err := uniqueName(cloud, scaleway.ClusterNameFromTags(expected.Tags), fi.ValueOf(expected.Name))
+		uniqueName, err := uniqueName(t.Cloud, scaleway.ClusterNameFromTags(expected.Tags), fi.ValueOf(expected.Name))
 		if err != nil {
 			return fmt.Errorf("error rendering server group %s: computing unique name for server: %w", fi.ValueOf(expected.Name), err)
 		}
@@ -288,14 +287,14 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 	// If newInstanceCount < 0, we need to delete instances of this group
 	if newInstanceCount < 0 {
 
-		igInstances, err := cloud.GetClusterServers(cloud.ClusterName(actual.Tags), actual.Name)
+		igInstances, err := t.Cloud.GetClusterServers(t.Cloud.ClusterName(actual.Tags), actual.Name)
 		if err != nil {
 			return fmt.Errorf("error deleting instance: %w", err)
 		}
 
 		for i := 0; i > newInstanceCount; i-- {
 			toDelete := igInstances[i*-1]
-			err = cloud.DeleteServer(toDelete)
+			err = t.Cloud.DeleteServer(toDelete)
 			if err != nil {
 				return fmt.Errorf("error deleting instance of group %s: %w", toDelete.Name, err)
 			}
@@ -457,7 +456,7 @@ func findFirstFreeIndex(existing []*instance.Server) int {
 				break
 			}
 		}
-		if found == false {
+		if !found {
 			return index
 		}
 	}

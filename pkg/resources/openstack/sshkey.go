@@ -29,8 +29,8 @@ const (
 )
 
 func openstackKeyPairName(org string) string {
-	name := strings.Replace(org, ".", "-", -1)
-	name = strings.Replace(name, ":", "_", -1)
+	name := strings.ReplaceAll(org, ".", "-")
+	name = strings.ReplaceAll(name, ":", "_")
 	return name
 }
 

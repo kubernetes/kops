@@ -62,7 +62,7 @@ func (p *PoolMonitor) Find(context *fi.CloudupContext) (*PoolMonitor, error) {
 	if err != nil {
 		return nil, err
 	}
-	if rs == nil || len(rs) == 0 {
+	if len(rs) == 0 {
 		return nil, nil
 	} else if len(rs) != 1 {
 		return nil, fmt.Errorf("found multiple monitors with name: %s", fi.ValueOf(p.Name))

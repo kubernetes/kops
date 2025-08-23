@@ -192,14 +192,8 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	hasGPU := false
-	clusterNvidia := false
-	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(cluster.Spec.Containerd.NvidiaGPU.Enabled) {
-		clusterNvidia = true
-	}
-	igNvidia := false
-	if ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(ig.Spec.Containerd.NvidiaGPU.Enabled) {
-		igNvidia = true
-	}
+	clusterNvidia := cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(cluster.Spec.Containerd.NvidiaGPU.Enabled)
+	igNvidia := ig.Spec.Containerd != nil && ig.Spec.Containerd.NvidiaGPU != nil && fi.ValueOf(ig.Spec.Containerd.NvidiaGPU.Enabled)
 
 	switch cluster.GetCloudProvider() {
 	case kops.CloudProviderAWS:

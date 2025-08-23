@@ -795,7 +795,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	}
 
 	for _, path := range b.SSLHostPaths() {
-		name := strings.Replace(path, "/", "", -1)
+		name := strings.ReplaceAll(path, "/", "")
 		kubemanifest.AddHostPathMapping(pod, container, name, path)
 	}
 

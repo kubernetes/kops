@@ -265,7 +265,7 @@ func (b *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 		}
 	case kops.CloudProviderScaleway:
 		for k, v := range b.Cluster.Spec.CloudLabels {
-			if k == scaleway.TagClusterName && shared == true {
+			if k == scaleway.TagClusterName && shared {
 				klog.V(4).Infof("Skipping %q tag for shared resource", scaleway.TagClusterName)
 				continue
 			}

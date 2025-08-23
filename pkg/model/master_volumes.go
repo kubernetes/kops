@@ -287,7 +287,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
 	// GCE disk names must match the following regular expression: '[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?'
-	prefix = strings.Replace(prefix, ".", "-", -1)
+	prefix = strings.ReplaceAll(prefix, ".", "-")
 	if strings.IndexByte("0123456789-", prefix[0]) != -1 {
 		prefix = "d" + prefix
 	}
@@ -320,8 +320,6 @@ func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.CloudupModelBuilderContext,
 		Labels:    tags,
 	}
 	c.AddTask(t)
-
-	return
 }
 
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
@@ -430,6 +428,4 @@ func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.CloudupModelBuilderContext
 		Type:      fi.PtrTo(string(instance.VolumeVolumeTypeBSSD)),
 	}
 	c.AddTask(t)
-
-	return
 }

@@ -89,10 +89,10 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 			DestinationAddressPrefix: rule.Properties.DestinationAddressPrefix,
 			DestinationPortRange:     rule.Properties.DestinationPortRange,
 		}
-		if rule.Properties.SourceAddressPrefixes != nil && len(rule.Properties.SourceAddressPrefixes) > 0 {
+		if len(rule.Properties.SourceAddressPrefixes) > 0 {
 			nsr.SourceAddressPrefixes = rule.Properties.SourceAddressPrefixes
 		}
-		if rule.Properties.SourceApplicationSecurityGroups != nil && len(rule.Properties.SourceApplicationSecurityGroups) > 0 {
+		if len(rule.Properties.SourceApplicationSecurityGroups) > 0 {
 			var sasgs []*string
 			for _, sasg := range rule.Properties.SourceApplicationSecurityGroups {
 				asg, err := azure.ParseApplicationSecurityGroupID(*sasg.ID)
@@ -105,10 +105,10 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 			}
 			nsr.SourceApplicationSecurityGroupNames = sasgs
 		}
-		if rule.Properties.DestinationAddressPrefixes != nil && len(rule.Properties.DestinationAddressPrefixes) > 0 {
+		if len(rule.Properties.DestinationAddressPrefixes) > 0 {
 			nsr.DestinationAddressPrefixes = rule.Properties.DestinationAddressPrefixes
 		}
-		if rule.Properties.DestinationApplicationSecurityGroups != nil && len(rule.Properties.DestinationApplicationSecurityGroups) > 0 {
+		if len(rule.Properties.DestinationApplicationSecurityGroups) > 0 {
 			var dasgs []*string
 			for _, dasg := range rule.Properties.DestinationApplicationSecurityGroups {
 				asg, err := azure.ParseApplicationSecurityGroupID(*dasg.ID)

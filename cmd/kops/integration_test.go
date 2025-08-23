@@ -1605,7 +1605,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceScheduledChange_event_pattern",
-			"aws_sqs_queue_" + strings.Replace(i.clusterName, ".", "-", -1) + "-nth_policy",
+			"aws_sqs_queue_" + strings.ReplaceAll(i.clusterName, ".", "-") + "-nth_policy",
 		}...)
 	}
 	if i.nthRebalance {
@@ -1633,7 +1633,8 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 
 	expectedFilenames := i.expectTerraformFilenames
 
-	if phase == cloudup.PhaseSecurity {
+	switch phase {
+	case cloudup.PhaseSecurity:
 		expectedFilenames = []string{
 			"aws_iam_role_masters." + i.clusterName + "_policy",
 			"aws_iam_role_nodes." + i.clusterName + "_policy",
@@ -1648,7 +1649,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 				"aws_launch_template_bastion." + i.clusterName + "_user_data",
 			}...)
 		}
-	} else if phase == cloudup.PhaseCluster {
+	case cloudup.PhaseCluster:
 		expectedFilenames = []string{
 			"aws_launch_template_nodes." + i.clusterName + "_user_data",
 		}

@@ -47,19 +47,20 @@ func parsePEMPublicKey(pemData []byte) (crypto.PublicKey, error) {
 			return nil, fmt.Errorf("could not parse private key")
 		}
 
-		if block.Type == "RSA PUBLIC KEY" {
+		switch block.Type {
+		case "RSA PUBLIC KEY":
 			k, err := x509.ParsePKCS1PublicKey(block.Bytes)
 			if err != nil {
 				return nil, err
 			}
 			return k, nil
-		} else if block.Type == "PUBLIC KEY" {
+		case "PUBLIC KEY":
 			k, err := x509.ParsePKIXPublicKey(block.Bytes)
 			if err != nil {
 				return nil, err
 			}
 			return k.(crypto.PublicKey), nil
-		} else {
+		default:
 			klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 		}
 

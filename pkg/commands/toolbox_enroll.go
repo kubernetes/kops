@@ -118,10 +118,7 @@ func RunToolboxEnroll(ctx context.Context, f commandutils.Factory, out io.Writer
 		return err
 	}
 
-	sudo := true
-	if options.SSHUser == "root" {
-		sudo = false
-	}
+	sudo := options.SSHUser != "root"
 
 	sshTarget, err := NewSSHHost(ctx, options.Host, options.SSHPort, options.SSHUser, sudo)
 	if err != nil {

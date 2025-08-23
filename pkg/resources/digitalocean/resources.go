@@ -75,7 +75,7 @@ func listDroplets(cloud fi.Cloud, clusterName string) ([]*resources.Resource, er
 	c := cloud.(do.DOCloud)
 	var resourceTrackers []*resources.Resource
 
-	clusterTag := "KubernetesCluster:" + strings.Replace(clusterName, ".", "-", -1)
+	clusterTag := "KubernetesCluster:" + strings.ReplaceAll(clusterName, ".", "-")
 
 	droplets, err := c.GetAllDropletsByTag(clusterTag)
 	if err != nil {
@@ -102,7 +102,7 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	c := cloud.(do.DOCloud)
 	var resourceTrackers []*resources.Resource
 
-	volumeMatch := strings.Replace(clusterName, ".", "-", -1)
+	volumeMatch := strings.ReplaceAll(clusterName, ".", "-")
 
 	volumes, err := c.GetAllVolumesByRegion()
 	if err != nil {
@@ -220,7 +220,7 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 	c := cloud.(do.DOCloud)
 	var resourceTrackers []*resources.Resource
 
-	clusterTag := "KubernetesCluster-Master:" + strings.Replace(clusterName, ".", "-", -1)
+	clusterTag := "KubernetesCluster-Master:" + strings.ReplaceAll(clusterName, ".", "-")
 
 	lbs, err := c.GetAllLoadBalancers()
 	if err != nil {

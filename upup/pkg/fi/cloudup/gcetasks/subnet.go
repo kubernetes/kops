@@ -195,7 +195,8 @@ func updateSecondaryRanges(cloud gce.GCECloud, op string, e *Subnet) error {
 	}
 
 	// Cannot add and remove ranges in the same call
-	if op == "add" {
+	switch op {
+	case "add":
 		patch := false
 		for k, v := range expectedRanges {
 			if actualRanges[k] != v {
@@ -211,7 +212,7 @@ func updateSecondaryRanges(cloud gce.GCECloud, op string, e *Subnet) error {
 		if !patch {
 			return nil
 		}
-	} else if op == "remove" {
+	case "remove":
 		patch := false
 		if len(actualRanges) != len(expectedRanges) {
 			patch = true

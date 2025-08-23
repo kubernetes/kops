@@ -374,7 +374,7 @@ func NormalizeImage(a *AssetBuilder, image string) string {
 		if !strings.HasPrefix(normalized, registryMirror+"/") {
 			// We can't nest arbitrarily
 			// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
-			normalized = strings.Replace(normalized, "/", "-", -1)
+			normalized = strings.ReplaceAll(normalized, "/", "-")
 			normalized = registryMirror + "/" + normalized
 		}
 		image = normalized

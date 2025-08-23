@@ -706,10 +706,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	sgMap := make(map[string]*openstacktasks.SecurityGroup)
 
-	useVIPACL := false
-	if b.UseLoadBalancerForAPI() && b.UseVIPACL() {
-		useVIPACL = true
-	}
+	useVIPACL := b.UseLoadBalancerForAPI() && b.UseVIPACL()
 	sg := &openstacktasks.SecurityGroup{
 		Name:             s(b.APIResourceName()),
 		Lifecycle:        b.Lifecycle,
@@ -729,11 +726,12 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle:   b.Lifecycle,
 			RemoveGroup: false,
 		}
-		if role == kops.InstanceGroupRoleBastion {
+		switch role {
+		case kops.InstanceGroupRoleBastion:
 			sg.RemoveExtraRules = []string{"port=22"}
-		} else if role == kops.InstanceGroupRoleNode {
+		case kops.InstanceGroupRoleNode:
 			sg.RemoveExtraRules = []string{"port=22", "port=10250"}
-		} else if role == kops.InstanceGroupRoleControlPlane {
+		case kops.InstanceGroupRoleControlPlane:
 			sg.RemoveExtraRules = []string{"port=22", "port=443", "port=10250"}
 		}
 		c.AddTask(sg)

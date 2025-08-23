@@ -56,7 +56,7 @@ func (o *LifecycleTestOptions) AddDefaults() {
 		o.Version = "v1alpha2"
 	}
 	if o.ClusterName == "" {
-		o.ClusterName = strings.Replace(o.SrcDir, "_", "", -1) + ".example.com"
+		o.ClusterName = strings.ReplaceAll(o.SrcDir, "_", "") + ".example.com"
 	}
 
 	o.SrcDir = "../../tests/integration/update_cluster/" + o.SrcDir

@@ -302,7 +302,7 @@ func (c *VFSCAStore) AddSSHPublicKey(ctx context.Context, pubkey []byte) error {
 
 func (c *VFSCAStore) buildSSHPublicKeyPath(id string) vfs.Path {
 	// id is fingerprint with colons, but we store without colons
-	id = strings.Replace(id, ":", "", -1)
+	id = strings.ReplaceAll(id, ":", "")
 	return c.basedir.Join("ssh", "public", "admin", id)
 }
 

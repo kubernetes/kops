@@ -47,10 +47,7 @@ func BuildChanges(a, e, changes interface{}) bool {
 	}
 
 	va := reflect.ValueOf(a)
-	aIsNil := false
-	if va.IsNil() {
-		aIsNil = true
-	}
+	aIsNil := va.IsNil()
 	if !aIsNil {
 		va = va.Elem()
 

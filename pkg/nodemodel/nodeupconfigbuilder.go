@@ -369,9 +369,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderAzure:
 		// Use any IP address that is found (including public ones)
-		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
-			controlPlaneIPs = append(controlPlaneIPs, additionalIP)
-		}
+		controlPlaneIPs = append(controlPlaneIPs, wellKnownAddresses[wellknownservices.KubeAPIServer]...)
 	}
 
 	if cluster.UsesNoneDNS() {

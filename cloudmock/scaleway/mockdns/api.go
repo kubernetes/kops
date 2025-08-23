@@ -107,7 +107,7 @@ func (f *FakeDomainAPI) UpdateDNSZoneRecords(req *domain.UpdateDNSZoneRecordsReq
 					break
 				}
 			}
-			if found == false {
+			if !found {
 				return nil, fmt.Errorf("could not find record %s to delete", *change.Delete.ID)
 			}
 

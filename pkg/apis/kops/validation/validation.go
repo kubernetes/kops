@@ -1629,13 +1629,14 @@ func validateCalicoAutoDetectionMethod(fldPath *field.Path, runtime string, vers
 	case "can-reach":
 		destStr := method[1]
 		ip := netutils.ParseIPSloppy(destStr)
-		if version == ipv4.Version {
+		switch version {
+		case ipv4.Version:
 			if ip == nil || ip.To4() == nil {
 				return field.ErrorList{field.Invalid(fldPath, runtime, "must be a valid IPv4 address")}
 			} else {
 				return nil
 			}
-		} else if version == ipv6.Version {
+		case ipv6.Version:
 			if ip == nil || ip.To4() != nil {
 				return field.ErrorList{field.Invalid(fldPath, runtime, "must be a valid IPv6 address")}
 			} else {

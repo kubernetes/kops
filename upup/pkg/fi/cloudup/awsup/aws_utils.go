@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsv2 "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
 	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -75,7 +74,7 @@ func ValidateRegion(ctx context.Context, region string) error {
 	}
 
 	for _, r := range allRegions {
-		name := awsv2.ToString(r.RegionName)
+		name := aws.ToString(r.RegionName)
 		if name == region {
 			return nil
 		}
@@ -215,7 +214,7 @@ func GetClusterName40(cluster string) string {
 // GetResourceName32 will attempt to calculate a meaningful name for a resource given a prefix
 // Will never return a string longer than 32 chars
 func GetResourceName32(cluster string, prefix string) string {
-	s := prefix + "-" + strings.Replace(cluster, ".", "-", -1)
+	s := prefix + "-" + strings.ReplaceAll(cluster, ".", "-")
 
 	// We always compute the hash and add it, lest we trick users into assuming that we never do this
 	opt := truncate.TruncateStringOptions{

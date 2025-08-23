@@ -39,10 +39,7 @@ const (
 func (os *clusterDiscoveryOS) DeleteSubnetLBs(subnet subnets.Subnet) ([]*resources.Resource, error) {
 	var resourceTrackers []*resources.Resource
 
-	preExistingSubnet := false
-	if !strings.HasSuffix(subnet.Name, os.clusterName) {
-		preExistingSubnet = true
-	}
+	preExistingSubnet := !strings.HasSuffix(subnet.Name, os.clusterName)
 
 	opts := loadbalancers.ListOpts{
 		VipSubnetID: subnet.ID,

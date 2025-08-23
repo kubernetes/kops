@@ -114,8 +114,6 @@ func (*SSHKey) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *SS
 		return nil
 	}
 
-	cloud := t.Cloud.(scaleway.ScwCloud)
-
 	name := fi.ValueOf(expected.Name)
 	if name == "" {
 		return fi.RequiredField("Name")
@@ -133,7 +131,7 @@ func (*SSHKey) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *SS
 		keyArgs.PublicKey = d
 	}
 
-	key, err := cloud.IamService().CreateSSHKey(keyArgs)
+	key, err := t.Cloud.IamService().CreateSSHKey(keyArgs)
 	if err != nil {
 		return fmt.Errorf("error creating SSH keypair: %w", err)
 	}

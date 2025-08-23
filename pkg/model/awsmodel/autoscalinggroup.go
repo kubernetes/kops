@@ -311,11 +311,12 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		lt.HTTPTokens = fi.PtrTo(ec2types.LaunchTemplateHttpTokensStateOptional)
 	}
 
-	if rootVolumeType == ec2types.VolumeTypeIo1 || rootVolumeType == ec2types.VolumeTypeIo2 {
+	switch rootVolumeType {
+	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
 		if ig.Spec.RootVolume == nil || fi.ValueOf(ig.Spec.RootVolume.IOPS) < 100 {
 			lt.RootVolumeIops = fi.PtrTo(int32(DefaultVolumeIonIops))
 		}
-	} else if rootVolumeType == ec2types.VolumeTypeGp3 {
+	case ec2types.VolumeTypeGp3:
 		if ig.Spec.RootVolume == nil || fi.ValueOf(ig.Spec.RootVolume.IOPS) < 3000 {
 			lt.RootVolumeIops = fi.PtrTo(int32(DefaultVolumeGp3Iops))
 		}
@@ -324,7 +325,7 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 		} else {
 			lt.RootVolumeThroughput = fi.PtrTo(int32(fi.ValueOf(ig.Spec.RootVolume.Throughput)))
 		}
-	} else {
+	default:
 		lt.RootVolumeIops = nil
 	}
 

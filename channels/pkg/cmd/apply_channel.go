@@ -24,7 +24,6 @@ import (
 	"os"
 
 	"github.com/blang/semver/v4"
-	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/spf13/cobra"
 	"go.uber.org/multierr"
@@ -120,7 +119,7 @@ func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, opt
 	return applyMenu(ctx, menu, f.VFSContext(), k8sClient, cmClient, dynamicClient, restMapper, options.Yes)
 }
 
-func applyMenu(ctx context.Context, menu *channels.AddonMenu, vfsContext *vfs.VFSContext, k8sClient kubernetes.Interface, cmClient versioned.Interface, dynamicClient dynamic.Interface, restMapper *restmapper.DeferredDiscoveryRESTMapper, apply bool) error {
+func applyMenu(ctx context.Context, menu *channels.AddonMenu, vfsContext *vfs.VFSContext, k8sClient kubernetes.Interface, cmClient certmanager.Interface, dynamicClient dynamic.Interface, restMapper *restmapper.DeferredDiscoveryRESTMapper, apply bool) error {
 	// channelVersions is the list of installed addons in the cluster.
 	// It is keyed by <namespace>:<addon name>.
 	channelVersions, err := getChannelVersions(ctx, k8sClient)
@@ -198,7 +197,7 @@ func applyMenu(ctx context.Context, menu *channels.AddonMenu, vfsContext *vfs.VF
 	return merr
 }
 
-func getUpdates(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernetes.Interface, cmClient versioned.Interface, channelVersions map[string]*channels.ChannelVersion) ([]*channels.AddonUpdate, []*channels.Addon, error) {
+func getUpdates(ctx context.Context, menu *channels.AddonMenu, k8sClient kubernetes.Interface, cmClient certmanager.Interface, channelVersions map[string]*channels.ChannelVersion) ([]*channels.AddonUpdate, []*channels.Addon, error) {
 	var updates []*channels.AddonUpdate
 	var needUpdates []*channels.Addon
 	for _, addon := range menu.Addons {

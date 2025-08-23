@@ -283,10 +283,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 			totalSize += targetSizes[i]
 		}
 		i := 0
-		for {
-			if totalSize >= minSize {
-				break
-			}
+		for totalSize < minSize {
 			targetSizes[i]++
 			totalSize++
 

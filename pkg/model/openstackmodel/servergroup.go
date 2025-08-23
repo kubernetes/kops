@@ -88,7 +88,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 		return err
 	}
 
-	sshKeyName := strings.Replace(sshKeyNameFull, ":", "_", -1)
+	sshKeyName := strings.ReplaceAll(sshKeyNameFull, ":", "_")
 
 	igMeta := make(map[string]string)
 	cloudTags, err := b.KopsModelContext.CloudTagsForInstanceGroup(ig)
@@ -145,8 +145,8 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 	for i := int32(0); i < *ig.Spec.MinSize; i++ {
 		// FIXME: Must ensure 63 or less characters
 		// replace all dots and _ with -, this is needed to get external cloudprovider working
-		iName := strings.Replace(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName())), "_", "-", -1)
-		instanceName := fi.PtrTo(strings.Replace(iName, ".", "-", -1))
+		iName := strings.ReplaceAll(strings.ToLower(fmt.Sprintf("%s-%d.%s", ig.Name, i+1, b.ClusterName())), "_", "-")
+		instanceName := fi.PtrTo(strings.ReplaceAll(iName, ".", "-"))
 
 		var az *string
 		var subnets []*openstacktasks.Subnet
@@ -175,13 +175,13 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 		}
 		// Create instance port task
 		portName := fmt.Sprintf("%s-%s", "port", *instanceName)
-		portTagKopsName := strings.Replace(
-			strings.Replace(
+		portTagKopsName := strings.ReplaceAll(
+			strings.ReplaceAll(
 				strings.ToLower(
 					fmt.Sprintf("port-%s-%d", ig.Name, i+1),
 				),
-				"_", "-", -1,
-			), ".", "-", -1,
+				"_", "-",
+			), ".", "-",
 		)
 		portTask := &openstacktasks.Port{
 			Name:              fi.PtrTo(portName),

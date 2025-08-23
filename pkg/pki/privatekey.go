@@ -190,20 +190,21 @@ func parsePEMPrivateKey(pemData []byte) (crypto.Signer, error) {
 			return nil, fmt.Errorf("could not parse private key (unable to decode PEM)")
 		}
 
-		if block.Type == "RSA PRIVATE KEY" {
+		switch block.Type {
+		case "RSA PRIVATE KEY":
 			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParsePKCS1PrivateKey(block.Bytes)
-		} else if block.Type == "EC PRIVATE KEY" {
+		case "EC PRIVATE KEY":
 			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			return x509.ParseECPrivateKey(block.Bytes)
-		} else if block.Type == "PRIVATE KEY" {
+		case "PRIVATE KEY":
 			klog.V(10).Infof("Parsing pem block: %q", block.Type)
 			k, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err != nil {
 				return nil, err
 			}
 			return k.(crypto.Signer), nil
-		} else {
+		default:
 			klog.Infof("Ignoring unexpected PEM block: %q", block.Type)
 		}
 

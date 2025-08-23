@@ -2184,13 +2184,14 @@ func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
 	if cluster.Spec.API.LoadBalancer == nil {
 		return "", nil
 	}
-	if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic {
+	switch cluster.Spec.API.LoadBalancer.Class {
+	case kops.LoadBalancerClassClassic:
 		if lb, err := cloud.FindELBByNameTag(name); err != nil {
 			return "", fmt.Errorf("error looking for AWS ELB: %v", err)
 		} else if lb != nil {
 			return aws.ToString(lb.DNSName), nil
 		}
-	} else if cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork {
+	case kops.LoadBalancerClassNetwork:
 		allLoadBalancers, err := ListELBV2LoadBalancers(ctx, cloud)
 		if err != nil {
 			return "", fmt.Errorf("looking for AWS NLB: %w", err)
@@ -2406,7 +2407,7 @@ func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs 
 		if iface.PrivateIpAddress != nil {
 			addrs = append(addrs, *iface.PrivateIpAddress)
 		}
-		if iface.Ipv6Addresses != nil && len(iface.Ipv6Addresses) > 0 {
+		if len(iface.Ipv6Addresses) > 0 {
 			addrs = append(addrs, *iface.Ipv6Addresses[0].Ipv6Address)
 		}
 		if iface.Association != nil && iface.Association.PublicIp != nil {

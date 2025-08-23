@@ -69,7 +69,7 @@ func GetClusterID() (string, error) {
 
 	for _, dropletTag := range dropletTags {
 		if strings.Contains(dropletTag, "KubernetesCluster:") {
-			clusterID = strings.Replace(dropletTag, ".", "-", -1)
+			clusterID = strings.ReplaceAll(dropletTag, ".", "-")
 
 			tokens := strings.Split(clusterID, ":")
 			if len(tokens) != 2 {
@@ -181,7 +181,7 @@ func (d *DOCloudProvider) getEtcdClusterSpec(vol godo.Volume) (*etcd.EtcdCluster
 
 func (d *DOCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
 	for _, dropletTag := range d.dropletTags {
-		if strings.Contains(dropletTag, strings.Replace(d.ClusterID, ".", "-", -1)) {
+		if strings.Contains(dropletTag, strings.ReplaceAll(d.ClusterID, ".", "-")) {
 			return gossipdo.NewSeedProvider(d.godoClient, dropletTag)
 		}
 	}

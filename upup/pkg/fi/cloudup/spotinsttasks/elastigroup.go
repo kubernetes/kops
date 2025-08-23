@@ -271,7 +271,7 @@ func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
 
 		// Tags.
 		{
-			if lc.Tags != nil && len(lc.Tags) > 0 {
+			if len(lc.Tags) > 0 {
 				actual.Tags = make(map[string]string)
 				for _, tag := range lc.Tags {
 					actual.Tags[fi.ValueOf(tag.Key)] = fi.ValueOf(tag.Value)
@@ -350,7 +350,7 @@ func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
 		{
 			associatePublicIP := false
 
-			if lc.NetworkInterfaces != nil && len(lc.NetworkInterfaces) > 0 {
+			if len(lc.NetworkInterfaces) > 0 {
 				for _, iface := range lc.NetworkInterfaces {
 					if fi.ValueOf(iface.AssociatePublicIPAddress) {
 						associatePublicIP = true

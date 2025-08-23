@@ -58,7 +58,7 @@ func ClusterPrefixedName(objectName string, clusterName string, maxLength int) s
 	}
 
 	// GCE does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 
 	opt := truncate.TruncateStringOptions{
 		MaxLength:     prefixLength,
@@ -79,7 +79,7 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 	}
 
 	// GCE does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 
 	opt := truncate.TruncateStringOptions{
 		MaxLength:     suffixLength,
@@ -95,7 +95,7 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 // deprecated: prefer ClusterSuffixedName
 func SafeClusterName(clusterName string) string {
 	// GCE does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 	return safeClusterName
 }
 
@@ -113,7 +113,7 @@ func LabelForCluster(clusterName string) Label {
 // SafeTruncatedClusterName returns a safe and truncated cluster name
 func SafeTruncatedClusterName(clusterName string, maxLength int) string {
 	// GCE does not support . in tags / names
-	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
 
 	opt := truncate.TruncateStringOptions{
 		MaxLength:     maxLength,

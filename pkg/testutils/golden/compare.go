@@ -53,8 +53,8 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 	expected := strings.TrimSpace(string(expectedBytes))
 
 	// on windows, with git set to autocrlf, the reference files on disk have windows line endings
-	expected = strings.Replace(expected, "\r\n", "\n", -1)
-	actual = strings.Replace(actual, "\r\n", "\n", -1)
+	expected = strings.ReplaceAll(expected, "\r\n", "\n")
+	actual = strings.ReplaceAll(actual, "\r\n", "\n")
 
 	if actual == expected && err == nil {
 		return

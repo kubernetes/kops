@@ -520,7 +520,8 @@ func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageCl
 	ig := instanceGroup
 	ig.Spec.MachineType = instanceSelections[0]
 
-	if usageClass == ec2types.UsageClassTypeSpot {
+	switch usageClass {
+	case ec2types.UsageClassTypeSpot:
 		ondemandBase := int64(0)
 		ondemandAboveBase := int64(0)
 		spotAllocationStrategy := "capacity-optimized"
@@ -530,11 +531,11 @@ func decorateWithMixedInstancesPolicy(instanceGroup *kops.InstanceGroup, usageCl
 			OnDemandAboveBase:      &ondemandAboveBase,
 			SpotAllocationStrategy: &spotAllocationStrategy,
 		}
-	} else if usageClass == ec2types.UsageClassTypeOnDemand {
+	case ec2types.UsageClassTypeOnDemand:
 		ig.Spec.MixedInstancesPolicy = &kops.MixedInstancesPolicySpec{
 			Instances: instanceSelections,
 		}
-	} else {
+	default:
 		return nil, fmt.Errorf("error node usage class not supported")
 	}
 
