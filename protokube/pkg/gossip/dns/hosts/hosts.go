@@ -151,11 +151,7 @@ func UpdateHostsFileWithRecords(p string, mutator func(guarded []string) (*HostM
 	}
 
 	// Ensure a single blank line
-	for {
-		if len(out) == 0 {
-			break
-		}
-
+	for len(out) > 0 {
 		if out[len(out)-1] != "" {
 			break
 		}
