@@ -161,7 +161,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		klog.Infof("bootstrap %s read err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(fmt.Sprintf("bootstrap %s failed to read body: %v", r.RemoteAddr, err)))
+		_, _ = fmt.Fprintf(w, "bootstrap %s failed to read body: %v", r.RemoteAddr, err)
 		return
 	}
 
@@ -208,7 +208,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(body, req); err != nil {
 		klog.Infof("bootstrap %s decode err: %v", r.RemoteAddr, err)
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(fmt.Sprintf("failed to decode: %v", err)))
+		_, _ = fmt.Fprintf(w, "failed to decode: %v", err)
 		return
 	}
 
@@ -264,7 +264,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			klog.Infof("bootstrap %s cert %q issue err: %v", r.RemoteAddr, name, err)
 			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(fmt.Sprintf("failed to issue %q: %v", name, err)))
+			_, _ = fmt.Fprintf(w, "failed to issue %q: %v", name, err)
 			return
 		}
 		resp.Certs[name] = cert

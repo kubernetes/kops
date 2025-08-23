@@ -299,7 +299,7 @@ func AWSMultipartMIME(bootScript string, ig *kops.InstanceGroup) (string, error)
 			return "", err
 		}
 
-		writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
+		fmt.Fprintf(writer, "Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)
 		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
 
 		var err error
@@ -317,7 +317,7 @@ func AWSMultipartMIME(bootScript string, ig *kops.InstanceGroup) (string, error)
 			}
 		}
 
-		writer.Write([]byte(fmt.Sprintf("\r\n--%s--\r\n", boundary)))
+		fmt.Fprintf(writer, "\r\n--%s--\r\n", boundary)
 
 		writer.Flush()
 		mimeWriter.Close()
