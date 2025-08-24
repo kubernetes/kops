@@ -36,7 +36,7 @@ download-or-bust() {
   local -r file="$1"
   local -r hash="$2"
   local -a urls
-  mapfile -t urls < <(split-commas "$3")
+  IFS=, read -r -a urls <<< "$3"
 
   if [[ -f "${file}" ]]; then
     if ! validate-hash "${file}" "${hash}"; then
@@ -85,10 +85,6 @@ validate-hash() {
     echo "== File ${file} is corrupted; hash ${actual} doesn't match expected ${expected} =="
     return 1
   fi
-}
-
-function split-commas() {
-  echo "$1" | tr "," "\n"
 }
 
 function download-release() {
