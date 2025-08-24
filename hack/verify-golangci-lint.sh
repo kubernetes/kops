@@ -28,9 +28,11 @@ export GOBIN="${TOOLS_BIN}"
 PATH="${GOBIN}:${PATH}"
 
 # Install golangci-lint
-if ! command -v golangci-lint &> /dev/null; then
+if ! command -v golangci-lint &>/dev/null; then
   cd "${KOPS_ROOT}/hack" || exit 1
-  go install github.com/golangci/golangci-lint/cmd/golangci-lint
+  go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+  GOLANGCI_LINT_VERSION=$(go list -m -f '{{.Version}}' github.com/golangci/golangci-lint/v2)
+  echo "golangci-lint version: ${GOLANGCI_LINT_VERSION}"
 fi
 
 cd "${KOPS_ROOT}"
@@ -39,9 +41,9 @@ cd "${KOPS_ROOT}"
 echo 'running golangci-lint ' >&2
 res=0
 if [[ "$#" -gt 0 ]]; then
-    golangci-lint run "$@" >&2 || res=$?
+  golangci-lint run "$@" >&2 || res=$?
 else
-    golangci-lint run ./... >&2 || res=$?
+  golangci-lint run ./... >&2 || res=$?
 fi
 
 # print a message based on the result

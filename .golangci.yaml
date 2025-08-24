@@ -1,35 +1,46 @@
+version: "2"
 run:
-  timeout: 30m
-  go: "1.24"
-
-issues:
-  max-same-issues: 0
-  # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    # exclude ineffassing linter for generated files for conversion
-    - path: conversion\.go
-      linters:
-        - ineffassign
-  exclude-files:
-    - "^zz_generated.*"
-
+  go: "1.25"
 linters:
-  disable-all: true
+  default: none
   enable:
     - govet
     - ineffassign
     - staticcheck
-    - tenv
-
-linters-settings: # please keep this alphabetized
-  staticcheck:
-    checks: [
-        "all",
-        "-ST1000", # Incorrect or missing package comment
-        "-ST1003", # Poorly chosen identifier
-        "-ST1005", # Incorrectly formatted error string
-        "-ST1006", # Poorly chosen receiver name
-        "-ST1012", # Poorly chosen name for error variable
-        "-ST1016", # Use consistent method receiver names
-        "-SA1019", # Using a deprecated function, variable, constant or field
-      ]
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - -QF1008 # ignore omit embbed fields from selector expressions
+        - -ST1000 # Incorrect or missing package comment
+        - -ST1003 # Poorly chosen identifier
+        - -ST1005 # Incorrectly formatted error string
+        - -ST1006 # Poorly chosen receiver name
+        - -ST1012 # Poorly chosen name for error variable
+        - -ST1016 # Use consistent method receiver names
+        - -SA1019 # Using a deprecated function, variable, constant or field
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - ineffassign
+        path: conversion\.go
+    paths:
+      - ^zz_generated.*
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-same-issues: 0
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
