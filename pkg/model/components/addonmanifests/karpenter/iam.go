@@ -47,26 +47,45 @@ func (r *ServiceAccount) ServiceAccount() (types.NamespacedName, bool) {
 }
 
 func addKarpenterPermissions(p *iam.Policy) {
+	// https://karpenter.sh/v1.6/getting-started/migrating-from-cas/#create-iam-roles
+	// Karpenter
 	p.AddUnconditionalActions(
-		// Not included because we require Karpenter
-		// use existing kOps instance group launch templates
-		// "ec2:CreateLaunchTemplate",
-		// "ec2:DeleteLaunchTemplate",
-		"ec2:CreateFleet",
-		"ec2:CreateTags",
-		"ec2:DescribeAvailabilityZones",
-		"ec2:DescribeImages",
-		"ec2:DescribeInstanceTypeOfferings",
-		"ec2:DescribeInstanceTypes",
-		"ec2:DescribeInstances",
-		"ec2:DescribeLaunchTemplates",
-		"ec2:DescribeSecurityGroups",
-		"ec2:DescribeSpotPriceHistory",
-		"ec2:DescribeSubnets",
-		"ec2:RunInstances",
-		"ec2:TerminateInstances",
-		"iam:PassRole",
-		"pricing:GetProducts",
 		"ssm:GetParameter",
+		"ec2:DescribeImages",
+		"ec2:RunInstances",
+		"ec2:DescribeSubnets",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeLaunchTemplates",
+		"ec2:DescribeInstances",
+		"ec2:DescribeInstanceTypes",
+		"ec2:DescribeInstanceTypeOfferings",
+		"ec2:DeleteLaunchTemplate",
+		"ec2:CreateTags",
+		"ec2:CreateLaunchTemplate",
+		"ec2:CreateFleet",
+		"ec2:DescribeSpotPriceHistory",
+		"pricing:GetProducts",
+	)
+	// ConditionalEC2Termination
+	p.AddUnconditionalActions(
+		"ec2:TerminateInstances",
+	)
+	// PassNodeIAMRole
+	p.AddUnconditionalActions(
+		"iam:PassRole",
+	)
+	// AllowScopedInstanceProfileTagActions
+	p.AddUnconditionalActions(
+		"iam:TagInstanceProfile",
+	)
+	// AllowScopedInstanceProfileActions
+	p.AddUnconditionalActions(
+		"iam:AddRoleToInstanceProfile",
+		"iam:RemoveRoleFromInstanceProfile",
+		"iam:DeleteInstanceProfile",
+	)
+	// AllowInstanceProfileReadActions
+	p.AddUnconditionalActions(
+		"iam:GetInstanceProfile",
 	)
 }

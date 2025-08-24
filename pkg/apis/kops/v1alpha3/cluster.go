@@ -258,12 +258,13 @@ type ScalewaySpec struct {
 
 type KarpenterConfig struct {
 	Enabled       bool               `json:"enabled,omitempty"`
-	LogEncoding   string             `json:"logEncoding,omitempty"`
 	LogLevel      string             `json:"logLevel,omitempty"`
 	Image         string             `json:"image,omitempty"`
 	MemoryLimit   *resource.Quantity `json:"memoryLimit,omitempty"`
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
 	CPURequest    *resource.Quantity `json:"cpuRequest,omitempty"`
+	// LogEncoding is deprecated and has no effect.
+	LogEncoding string `json:"logEncoding,omitempty"`
 }
 
 // ServiceAccountIssuerDiscoveryConfig configures an OIDC Issuer.

@@ -757,32 +757,7 @@ func getKarpenterGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kop
 func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGroup, nodes []v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	ctx := context.TODO()
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
-	instances := make(map[string]*ec2types.Instance)
-	updatedInstances := make(map[string]*ec2types.Instance)
 	clusterName := c.Tags()[TagClusterName]
-	var version string
-
-	{
-		input := &ec2.DescribeLaunchTemplatesInput{
-			Filters: []ec2types.Filter{
-				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
-				NewEC2Filter("tag:"+TagClusterName, clusterName),
-			},
-		}
-		var list []ec2types.LaunchTemplate
-		paginator := ec2.NewDescribeLaunchTemplatesPaginator(c.EC2(), input)
-		for paginator.HasMorePages() {
-			page, err := paginator.NextPage(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("error listing launch templates: %v", err)
-			}
-			list = append(list, page.LaunchTemplates...)
-		}
-		lt := list[0]
-		versionNumber := *lt.LatestVersionNumber
-		version = strconv.Itoa(int(versionNumber))
-
-	}
 
 	karpenterGroup := &cloudinstances.CloudInstanceGroup{
 		InstanceGroup: ig,
@@ -805,51 +780,12 @@ func buildKarpenterGroup(c AWSCloud, cluster *kops.Cluster, ig *kops.InstanceGro
 		for _, r := range result.Reservations {
 			for _, i := range r.Instances {
 				id := aws.ToString(i.InstanceId)
-				instances[id] = &i
+				cloudInstance, _ := karpenterGroup.NewCloudInstance(aws.ToString(i.InstanceId), cloudinstances.CloudInstanceStatusUpToDate, nodeMap[id])
+				addCloudInstanceData(cloudInstance, &i)
 			}
 		}
 	}
 
-	klog.V(2).Infof("found %d karpenter instances", len(instances))
-
-	{
-		req := &ec2.DescribeInstancesInput{
-			Filters: []ec2types.Filter{
-				NewEC2Filter("tag:"+identity_aws.CloudTagInstanceGroupName, ig.ObjectMeta.Name),
-				NewEC2Filter("tag:"+TagClusterName, clusterName),
-				NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"),
-				NewEC2Filter("tag:aws:ec2launchtemplate:version", version),
-			},
-		}
-
-		result, err := c.EC2().DescribeInstances(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, r := range result.Reservations {
-			for _, i := range r.Instances {
-				id := aws.ToString(i.InstanceId)
-				updatedInstances[id] = &i
-			}
-		}
-	}
-	klog.V(2).Infof("found %d updated instances", len(updatedInstances))
-
-	{
-		for _, instance := range instances {
-			id := *instance.InstanceId
-			_, ready := updatedInstances[id]
-			var status string
-			if ready {
-				status = cloudinstances.CloudInstanceStatusUpToDate
-			} else {
-				status = cloudinstances.CloudInstanceStatusNeedsUpdate
-			}
-			cloudInstance, _ := karpenterGroup.NewCloudInstance(id, status, nodeMap[id])
-			addCloudInstanceData(cloudInstance, instance)
-		}
-	}
 	return karpenterGroup, nil
 }
 
