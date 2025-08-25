@@ -121,6 +121,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
 	dest["GetClusterAutoscalerNodeGroups"] = tf.GetClusterAutoscalerNodeGroups
 	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
+	dest["HasMultiZoneNodes"] = tf.HasMultiZoneNodes
 	dest["ControlPlaneControllerReplicas"] = tf.ControlPlaneControllerReplicas
 	dest["APIServerNodeRole"] = tf.APIServerNodeRole
 	dest["APIInternalName"] = tf.Cluster.APIInternalName
@@ -506,6 +507,17 @@ func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 		}
 	}
 	return false
+}
+
+// HasMultiZoneNodes returns true if the cluster has more than one zone for nodes. False otherwise.
+func (tf *TemplateFunctions) HasMultiZoneNodes() bool {
+	zones := make(map[string]bool)
+	for _, subnet := range tf.Cluster.Spec.Networking.Subnets {
+		if subnet.Zone != "" {
+			zones[subnet.Zone] = true
+		}
+	}
+	return len(zones) > 1
 }
 
 // CloudControllerConfigArgv returns the args to external cloud controller

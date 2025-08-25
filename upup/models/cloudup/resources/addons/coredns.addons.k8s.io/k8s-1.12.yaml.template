@@ -151,7 +151,7 @@ spec:
 {{ ToYAML .KubeDNS.Affinity | indent 8 }}
 {{- end }}
       topologySpreadConstraints:
-{{- if ne GetCloudProvider "metal" }}
+{{- if and HasMultiZoneNodes (ne GetCloudProvider "metal") }}
       # Metal provider doesn't add the "topology.kubernetes.io/zone" label
       - maxSkew: 1
         topologyKey: "topology.kubernetes.io/zone"
