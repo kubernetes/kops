@@ -6,8 +6,12 @@ linters:
   enable:
     - govet
     - ineffassign
+    - misspell
     - staticcheck
+    - unused
   settings:
+    misspell:
+      locale: US
     staticcheck:
       checks:
         - all
