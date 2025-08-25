@@ -52,6 +52,7 @@ require (
 	github.com/gophercloud/gophercloud/v2 v2.7.0
 	github.com/hetznercloud/hcloud-go/v2 v2.21.1
 	github.com/jacksontj/memberlistmesh v0.0.0-20190905163944-93462b9d2bb7
+	github.com/opencontainers/selinux v1.11.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.9
 	github.com/prometheus/client_golang v1.22.0
