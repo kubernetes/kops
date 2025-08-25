@@ -195,6 +195,11 @@ func TestCreateClusterKarpenter(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/karpenter", "v1alpha2")
 }
 
+// TestCreateClusterZeroNodes runs kops create cluster --node-count=0
+func TestCreateClusterZeroNodes(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/zero-nodes", "v1alpha2")
+}
+
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
 	ctx := context.Background()
 
