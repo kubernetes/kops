@@ -371,12 +371,3 @@ func (s *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	s.t.Fatalf("unexpected request %+v", req)
 	return nil, fmt.Errorf("unexpected request")
 }
-
-type mockHTTPTransport struct {
-	t *testing.T
-}
-
-func (s *mockHTTPTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	s.t.Fatalf("unexpected request %+v", req)
-	return nil, fmt.Errorf("unexpected request")
-}

@@ -526,26 +526,6 @@ func evaluateBindAddress(bindAddress string) (string, error) {
 	return bindAddress, nil
 }
 
-// kernelHasFilesystem checks if /proc/filesystems contains the specified filesystem
-func kernelHasFilesystem(fs string) (bool, error) {
-	contents, err := os.ReadFile("/proc/filesystems")
-	if err != nil {
-		return false, fmt.Errorf("error reading /proc/filesystems: %v", err)
-	}
-
-	for _, line := range strings.Split(string(contents), "\n") {
-		tokens := strings.Fields(line)
-		for _, token := range tokens {
-			// Technically we should skip "nodev", but it doesn't matter
-			if token == fs {
-				return true, nil
-			}
-		}
-	}
-
-	return false, nil
-}
-
 // modprobe will exec `modprobe <module>`
 func modprobe(module string) error {
 	klog.Infof("Doing modprobe for module %v", module)

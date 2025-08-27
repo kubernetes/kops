@@ -869,24 +869,6 @@ func (e *AutoscalingGroup) getLBsToDetach(currentLBs []*ClassicLoadBalancer) []s
 	return lbsToDetach
 }
 
-// getTGsToDetach loops through the currently set LBs and builds a list of
-// target groups to be detached from the Autoscaling Group
-func (e *AutoscalingGroup) getTGsToDetach(currentTGs []*TargetGroup) []*string {
-	tgsToDetach := []*string{}
-	desiredTGs := map[string]bool{}
-
-	for _, v := range e.TargetGroups {
-		desiredTGs[*v.ARN] = true
-	}
-
-	for _, v := range currentTGs {
-		if _, ok := desiredTGs[*v.ARN]; !ok {
-			tgsToDetach = append(tgsToDetach, v.ARN)
-		}
-	}
-	return tgsToDetach
-}
-
 // sliceChunks returns a chunked slice
 func sliceChunks(slice []string, chunkSize int) [][]string {
 	var chunks [][]string

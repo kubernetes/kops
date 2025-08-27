@@ -29,7 +29,6 @@ import (
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
 
-	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdo "k8s.io/kops/protokube/pkg/gossip/do"
 )
@@ -152,31 +151,6 @@ func NewDOCloud() (*godo.Client, error) {
 	client := godo.NewClient(oauthClient)
 
 	return client, nil
-}
-
-// getEtcdClusterSpec returns etcd.EtcdClusterSpec which holds
-// necessary information required for starting an etcd server.
-// DigitalOcean support on kops only supports single master setup for now
-// but in the future when it supports multiple masters this method be
-// updated to handle that case.
-// TODO: use tags once it's supported for volumes
-func (d *DOCloudProvider) getEtcdClusterSpec(vol godo.Volume) (*etcd.EtcdClusterSpec, error) {
-	nodeName := d.dropletName
-
-	var clusterKey string
-	if strings.Contains(vol.Name, "etcd-main") {
-		clusterKey = "main"
-	} else if strings.Contains(vol.Name, "etcd-events") {
-		clusterKey = "events"
-	} else {
-		return nil, fmt.Errorf("could not determine etcd cluster type for volume: %s", vol.Name)
-	}
-
-	return &etcd.EtcdClusterSpec{
-		ClusterKey: clusterKey,
-		NodeName:   nodeName,
-		NodeNames:  []string{nodeName},
-	}, nil
 }
 
 func (d *DOCloudProvider) GossipSeeds() (gossip.SeedProvider, error) {
