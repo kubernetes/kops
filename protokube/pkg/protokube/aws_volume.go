@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -35,8 +34,6 @@ import (
 
 // AWSCloudProvider defines the AWS cloud provider implementation
 type AWSCloudProvider struct {
-	mutex sync.Mutex
-
 	clusterTag string
 	deviceMap  map[string]string
 	ec2        ec2.DescribeInstancesAPIClient

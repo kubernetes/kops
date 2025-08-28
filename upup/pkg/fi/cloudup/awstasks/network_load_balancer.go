@@ -765,12 +765,6 @@ type deleteNLB struct {
 	obj *awsup.LoadBalancerInfo
 }
 
-func buildDeleteNLB(obj *awsup.LoadBalancerInfo) *deleteNLB {
-	d := &deleteNLB{}
-	d.obj = obj
-	return d
-}
-
 var _ fi.CloudupDeletion = &deleteNLB{}
 
 func (d *deleteNLB) Delete(t fi.CloudupTarget) error {

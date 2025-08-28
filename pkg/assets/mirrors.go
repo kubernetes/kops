@@ -22,12 +22,6 @@ import (
 	"k8s.io/kops"
 )
 
-const (
-	// defaultKopsMirrorBase will be detected and automatically set to pull from the defaultKopsMirrors
-	kopsDefaultBase      = "https://artifacts.k8s.io/binaries/kops/%s/"
-	githubKopsMirrorBase = "https://github.com/kubernetes/kops/releases/download/v%s/"
-)
-
 type mirrorConfig struct {
 	Base    string
 	Mirrors []string

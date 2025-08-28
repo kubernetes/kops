@@ -28,7 +28,6 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/multierr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
@@ -40,8 +39,6 @@ import (
 
 type ApplyChannelOptions struct {
 	Yes bool
-
-	configFlags genericclioptions.ConfigFlags
 }
 
 func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
