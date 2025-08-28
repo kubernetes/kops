@@ -146,23 +146,25 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 			if runcAsset != nil {
 				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(runcAsset))
 			}
-			nerdctlAsset, err := wellknownassets.FindNerdctlAsset(ig, assetBuilder, arch)
-			if err != nil {
-				return nil, err
+			if ig.RawClusterSpec().Containerd.InstallNerdCtl {
+				nerdctlAsset, err := wellknownassets.FindNerdctlAsset(ig, assetBuilder, arch)
+				if err != nil {
+					return nil, err
+				}
+				if nerdctlAsset != nil {
+					kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(nerdctlAsset))
+				}
 			}
-			if nerdctlAsset != nil {
-				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(nerdctlAsset))
+			if ig.RawClusterSpec().Containerd.InstallCriCtl {
+				crictlAsset, err := wellknownassets.FindCrictlAsset(ig, assetBuilder, arch)
+				if err != nil {
+					return nil, err
+				}
+				if crictlAsset != nil {
+					kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(crictlAsset))
+				}
 			}
 		}
-
-		crictlAsset, err := wellknownassets.FindCrictlAsset(ig, assetBuilder, arch)
-		if err != nil {
-			return nil, err
-		}
-		if crictlAsset != nil {
-			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(crictlAsset))
-		}
-
 	}
 
 	return &KubernetesFileAssets{

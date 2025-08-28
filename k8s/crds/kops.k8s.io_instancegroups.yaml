@@ -133,6 +133,12 @@ spec:
                     description: ConfigOverride is the complete containerd config
                       file provided by the user.
                     type: string
+                  installCriCtl:
+                    description: InstallCriCtl installs crictl (default "false").
+                    type: boolean
+                  installNerdCtl:
+                    description: InstallNerdCtl installs nerdctl (default "false").
+                    type: boolean
                   logLevel:
                     description: LogLevel controls the logging details [trace, debug,
                       info, warn, error, fatal, panic] (default "info").

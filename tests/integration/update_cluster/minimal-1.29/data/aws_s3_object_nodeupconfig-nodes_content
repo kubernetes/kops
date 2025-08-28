@@ -6,8 +6,6 @@ Assets:
   - 754a71ed60a4bd08726c3af705a7d55ee3df03122b12e389fdba4bea35d7dd7e@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz,https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz
   - 7a8c262deb63becc877e82d23749e4f99f4a17e8e660f9b8c257ca87a5c056b6@https://github.com/containerd/containerd/releases/download/v1.7.28/containerd-1.7.28-linux-amd64.tar.gz
   - 028986516ab5646370edce981df2d8e8a8d12188deaf837142a02097000ae2f2@https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.amd64
-  - 71aee9d987b7fad0ff2ade50b038ad7e2356324edc02c54045960a3521b3e6a7@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-amd64.tar.gz
-  - d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz
   arm64:
   - 0e0e4544c2a0a3475529154b7534d0d58683466efa04a2bb2e763b476db0bb16@https://dl.k8s.io/release/v1.29.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.29.0/bin/linux/arm64/kubelet
   - 8f7a4bd6bae900a4ddab12bd1399aa652c0d59ea508f39b910e111d248893ff7@https://dl.k8s.io/release/v1.29.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.29.0/bin/linux/arm64/kubectl
@@ -15,8 +13,6 @@ Assets:
   - de7a666fd6ad83a228086bd55756db62ef335a193d1b143d910b69f079e30598@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.3.0/cni-plugins-linux-arm64-v1.3.0.tgz,https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-arm64-v1.3.0.tgz
   - 97457594ff8549cb82d664306593cafd3d2c781c706f9fffed885a46d8919bec@https://github.com/containerd/containerd/releases/download/v1.7.28/containerd-1.7.28-linux-arm64.tar.gz
   - 85c5e4e4f72e442c8c17bac07527cd4f961ee48e4f2b71797f7533c94f4a52b9@https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.arm64
-  - d8df47708ca57b9cd7f498055126ba7dcfc811d9ba43aae1830c93a09e70e22d@https://github.com/containerd/nerdctl/releases/download/v1.7.4/nerdctl-1.7.4-linux-arm64.tar.gz
-  - 0b615cfa00c331fb9c4524f3d4058a61cc487b33a3436d1269e7832cf283f925@https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-arm64.tar.gz
 CAs: {}
 ClusterName: minimal.example.com
 Hooks:
