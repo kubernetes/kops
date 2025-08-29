@@ -361,7 +361,9 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      {{- if not IsControlPlaneMode }}
       priorityClassName: system-cluster-critical
+      {{- end }}
       tolerations:
         {{- if KubeDNS.Tolerations }}
 {{ ToYAML .KubeDNS.Tolerations | indent 8 }}
