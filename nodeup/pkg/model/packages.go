@@ -35,8 +35,6 @@ var _ fi.NodeupModelBuilder = &PackagesBuilder{}
 func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// kubelet needs:
 	//   conntrack  - kops #5671
-	//   ebtables - kops #1711
-	//   ethtool - kops #1830
 	if b.Distribution.IsDebianFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
 		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
@@ -44,8 +42,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			c.AddTask(&nodetasks.Package{Name: "cgroupfs-mount"})
 		}
 		c.AddTask(&nodetasks.Package{Name: "conntrack"})
-		c.AddTask(&nodetasks.Package{Name: "ebtables"})
-		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
 		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
@@ -54,7 +50,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
 		c.AddTask(&nodetasks.Package{Name: "pigz"})
-		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
@@ -63,8 +58,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	} else if b.Distribution.IsRHELFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
 		c.AddTask(&nodetasks.Package{Name: "conntrack-tools"})
-		c.AddTask(&nodetasks.Package{Name: "ebtables"})
-		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 		if b.Distribution == distributions.DistributionAmazonLinux2023 {
 			// install iptables-nft in al2023 (NOT the iptables-legacy!)
 			c.AddTask(&nodetasks.Package{Name: "iptables-nft"})
@@ -76,7 +69,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
-		c.AddTask(&nodetasks.Package{Name: "socat"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Handle some packages differently for each distro
 		// Amazon Linux 2 doesn't have SELinux enabled by default
