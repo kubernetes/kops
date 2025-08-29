@@ -30,14 +30,19 @@ func (m *Model) toggleSelect() {
 		return
 	}
 
-	rows := make([]Row, len(m.GetVisibleRows()))
-	copy(rows, m.GetVisibleRows())
+	rows := m.GetVisibleRows()
 
-	currentSelectedState := rows[m.rowCursorIndex].selected
+	rowID := rows[m.rowCursorIndex].id
 
-	rows[m.rowCursorIndex].selected = !currentSelectedState
+	currentSelectedState := false
 
-	m.rows = rows
+	for i := range m.rows {
+		if m.rows[i].id == rowID {
+			currentSelectedState = m.rows[i].selected
+			m.rows[i].selected = !m.rows[i].selected
+		}
+	}
+
 	m.visibleRowCacheUpdated = false
 
 	m.appendUserEvent(UserEventRowSelectToggled{

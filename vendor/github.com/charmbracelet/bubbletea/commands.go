@@ -13,18 +13,22 @@ import (
 //		       return tea.Batch(someCommand, someOtherCommand)
 //	    }
 func Batch(cmds ...Cmd) Cmd {
-	var validCmds []Cmd
+	var validCmds []Cmd //nolint:prealloc
 	for _, c := range cmds {
 		if c == nil {
 			continue
 		}
 		validCmds = append(validCmds, c)
 	}
-	if len(validCmds) == 0 {
+	switch len(validCmds) {
+	case 0:
 		return nil
-	}
-	return func() Msg {
-		return BatchMsg(validCmds)
+	case 1:
+		return validCmds[0]
+	default:
+		return func() Msg {
+			return BatchMsg(validCmds)
+		}
 	}
 }
 
@@ -90,11 +94,16 @@ type sequenceMsg []Cmd
 //
 // Every is analogous to Tick in the Elm Architecture.
 func Every(duration time.Duration, fn func(time.Time) Msg) Cmd {
+	n := time.Now()
+	d := n.Truncate(duration).Add(duration).Sub(n)
+	t := time.NewTimer(d)
 	return func() Msg {
-		n := time.Now()
-		d := n.Truncate(duration).Add(duration).Sub(n)
-		t := time.NewTimer(d)
-		return fn(<-t.C)
+		ts := <-t.C
+		t.Stop()
+		for len(t.C) > 0 {
+			<-t.C
+		}
+		return fn(ts)
 	}
 }
 
@@ -137,9 +146,14 @@ func Every(duration time.Duration, fn func(time.Time) Msg) Cmd {
 //	    return m, nil
 //	}
 func Tick(d time.Duration, fn func(time.Time) Msg) Cmd {
+	t := time.NewTimer(d)
 	return func() Msg {
-		t := time.NewTimer(d)
-		return fn(<-t.C)
+		ts := <-t.C
+		t.Stop()
+		for len(t.C) > 0 {
+			<-t.C
+		}
+		return fn(ts)
 	}
 }
 
@@ -168,5 +182,35 @@ func Sequentially(cmds ...Cmd) Cmd {
 			}
 		}
 		return nil
+	}
+}
+
+// setWindowTitleMsg is an internal message used to set the window title.
+type setWindowTitleMsg string
+
+// SetWindowTitle produces a command that sets the terminal title.
+//
+// For example:
+//
+//	func (m model) Init() Cmd {
+//	    // Set title.
+//	    return tea.SetWindowTitle("My App")
+//	}
+func SetWindowTitle(title string) Cmd {
+	return func() Msg {
+		return setWindowTitleMsg(title)
+	}
+}
+
+type windowSizeMsg struct{}
+
+// WindowSize is a command that queries the terminal for its current size. It
+// delivers the results to Update via a [WindowSizeMsg]. Keep in mind that
+// WindowSizeMsgs will automatically be delivered to Update when the [Program]
+// starts and when the window dimensions change so in many cases you will not
+// need to explicitly invoke this command.
+func WindowSize() Cmd {
+	return func() Msg {
+		return windowSizeMsg{}
 	}
 }

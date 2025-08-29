@@ -125,9 +125,17 @@ func (m Model) OnLastPage() bool {
 	return m.Page == m.TotalPages-1
 }
 
+// OnFirstPage returns whether or not we're on the first page.
+func (m Model) OnFirstPage() bool {
+	return m.Page == 0
+}
+
+// Option is used to set options in New.
+type Option func(*Model)
+
 // New creates a new model with defaults.
-func New() Model {
-	return Model{
+func New(opts ...Option) Model {
+	m := Model{
 		Type:         Arabic,
 		Page:         0,
 		PerPage:      1,
@@ -137,12 +145,32 @@ func New() Model {
 		InactiveDot:  "○",
 		ArabicFormat: "%d/%d",
 	}
+
+	for _, opt := range opts {
+		opt(&m)
+	}
+
+	return m
 }
 
 // NewModel creates a new model with defaults.
 //
 // Deprecated: use [New] instead.
 var NewModel = New
+
+// WithTotalPages sets the total pages.
+func WithTotalPages(totalPages int) Option {
+	return func(m *Model) {
+		m.TotalPages = totalPages
+	}
+}
+
+// WithPerPage sets the total pages.
+func WithPerPage(perPage int) Option {
+	return func(m *Model) {
+		m.PerPage = perPage
+	}
+}
 
 // Update is the Tea update function which binds keystrokes to pagination.
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {

@@ -23,16 +23,20 @@ type Filter struct {
 	// the service code to see all products for a specific service, filter by just the
 	// attribute name to see a specific attribute for multiple services, or use both a
 	// service code and an attribute name to retrieve only products that match both
-	// fields. Valid values include: ServiceCode , and all attribute names For example,
-	// you can filter by the AmazonEC2 service code and the volumeType attribute name
-	// to get the prices for only Amazon EC2 volumes.
+	// fields.
+	//
+	// Valid values include: ServiceCode , and all attribute names
+	//
+	// For example, you can filter by the AmazonEC2 service code and the volumeType
+	// attribute name to get the prices for only Amazon EC2 volumes.
 	//
 	// This member is required.
 	Field *string
 
-	// The type of filter that you want to use. Valid values are: TERM_MATCH .
-	// TERM_MATCH returns only products that match both the given filter field and the
-	// given value.
+	// The type of filter that you want to use.
+	//
+	// Valid values are: TERM_MATCH . TERM_MATCH returns only products that match both
+	// the given filter field and the given value.
 	//
 	// This member is required.
 	Type FilterType
@@ -48,11 +52,14 @@ type Filter struct {
 	noSmithyDocumentSerde
 }
 
-// This feature is in preview release and is subject to change. Your use of Amazon
-// Web Services Price List API is subject to the Beta Service Participation terms
-// of the Amazon Web Services Service Terms (https://aws.amazon.com/service-terms/)
-// (Section 1.10). This is the type of price list references that match your
-// request.
+//	This feature is in preview release and is subject to change. Your use of
+//
+// Amazon Web Services Price List API is subject to the Beta Service Participation
+// terms of the [Amazon Web Services Service Terms](Section 1.10).
+//
+// This is the type of price list references that match your request.
+//
+// [Amazon Web Services Service Terms]: https://aws.amazon.com/service-terms/
 type PriceList struct {
 
 	// The three alphabetical character ISO-4217 currency code the Price List files
@@ -60,20 +67,24 @@ type PriceList struct {
 	CurrencyCode *string
 
 	// The format you want to retrieve your Price List files. The FileFormat can be
-	// obtained from the ListPriceList (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
-	// response.
+	// obtained from the [ListPriceList]ListPriceList response.
+	//
+	// [ListPriceList]: https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html
 	FileFormats []string
 
 	// The unique identifier that maps to where your Price List files are located.
-	// PriceListArn can be obtained from the ListPriceList (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html)
-	// response.
+	// PriceListArn can be obtained from the [ListPriceList]ListPriceList response.
+	//
+	// [ListPriceList]: https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_ListPriceLists.html
 	PriceListArn *string
 
 	// This is used to filter the Price List by Amazon Web Services Region. For
 	// example, to get the price list only for the US East (N. Virginia) Region, use
 	// us-east-1 . If nothing is specified, you retrieve price lists for all applicable
-	// Regions. The available RegionCode list can be retrieved from GetAttributeValues (https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_GetAttributeValues.html)
+	// Regions. The available RegionCode list can be retrieved from [GetAttributeValues]GetAttributeValues
 	// API.
+	//
+	// [GetAttributeValues]: https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_GetAttributeValues.html
 	RegionCode *string
 
 	noSmithyDocumentSerde

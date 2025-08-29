@@ -1,6 +1,7 @@
 package table
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -28,8 +29,21 @@ type Model struct {
 	missingDataIndicator interface{}
 
 	// Interaction
-	focused        bool
-	keyMap         KeyMap
+	focused bool
+	keyMap  KeyMap
+
+	// Taken from: 'Bubbles/List'
+	// Additional key mappings for the short and full help views. This allows
+	// you to add additional key mappings to the help menu without
+	// re-implementing the help component. Of course, you can also disable the
+	// list's help component and implement a new one if you need more
+	// flexibility.
+	// You have to supply a keybinding like this:
+	// key.NewBinding( key.WithKeys("shift+left"), key.WithHelp("shift+←", "scroll left"))
+	// It needs both 'WithKeys' and 'WithHelp'
+	additionalShortHelpKeys func() []key.Binding
+	additionalFullHelpKeys  func() []key.Binding
+
 	selectableRows bool
 	rowCursorIndex int
 
@@ -40,6 +54,7 @@ type Model struct {
 	baseStyle      lipgloss.Style
 	highlightStyle lipgloss.Style
 	headerStyle    lipgloss.Style
+	rowStyleFunc   func(RowStyleFuncInput) lipgloss.Style
 	border         Border
 	selectedText   string
 	unselectedText string
@@ -82,6 +97,16 @@ type Model struct {
 
 	// Calculated maximum column we can scroll to before the last is displayed
 	maxHorizontalColumnIndex int
+
+	// Minimum total height of the table
+	minimumHeight int
+
+	// Internal cached calculation, the height of the header and footer
+	// including borders. Used to determine how many padding rows to add.
+	metaHeight int
+
+	// If true, the table will be multiline
+	multiline bool
 }
 
 // New creates a new table ready for further modifications.

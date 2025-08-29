@@ -22,8 +22,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli"
-	"github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector"
+	"github.com/aws/amazon-ec2-instance-selector/v3/pkg/cli"
+	"github.com/aws/amazon-ec2-instance-selector/v3/pkg/selector"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

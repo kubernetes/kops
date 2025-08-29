@@ -101,6 +101,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmd := m.BlinkCmd()
 		return m, cmd
 
+	case tea.FocusMsg:
+		return m, m.Focus()
+
+	case tea.BlurMsg:
+		m.Blur()
+		return m, nil
+
 	case BlinkMsg:
 		// We're choosy about whether to accept blinkMsgs so that our cursor
 		// only exactly when it should.
@@ -138,6 +145,10 @@ func (m Model) Mode() Mode {
 //
 // For available cursor modes, see type CursorMode.
 func (m *Model) SetMode(mode Mode) tea.Cmd {
+	// Adjust the mode value if it's value is out of range
+	if mode < CursorBlink || mode > CursorHide {
+		return nil
+	}
 	m.mode = mode
 	m.Blink = m.mode == CursorHide || !m.focus
 	if mode == CursorBlink {

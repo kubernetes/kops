@@ -3,22 +3,27 @@ package lipgloss
 import (
 	"strings"
 
-	"github.com/mattn/go-runewidth"
-	"github.com/muesli/reflow/ansi"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/muesli/termenv"
+	"github.com/rivo/uniseg"
 )
 
 // Border contains a series of values which comprise the various parts of a
 // border.
 type Border struct {
-	Top         string
-	Bottom      string
-	Left        string
-	Right       string
-	TopLeft     string
-	TopRight    string
-	BottomRight string
-	BottomLeft  string
+	Top          string
+	Bottom       string
+	Left         string
+	Right        string
+	TopLeft      string
+	TopRight     string
+	BottomLeft   string
+	BottomRight  string
+	MiddleLeft   string
+	MiddleRight  string
+	Middle       string
+	MiddleTop    string
+	MiddleBottom string
 }
 
 // GetTopSize returns the width of the top border. If borders contain runes of
@@ -32,7 +37,7 @@ func (b Border) GetTopSize() int {
 // runes of varying widths, the widest rune is returned. If no border exists on
 // the right edge, 0 is returned.
 func (b Border) GetRightSize() int {
-	return getBorderEdgeWidth(b.TopRight, b.Top, b.BottomRight)
+	return getBorderEdgeWidth(b.TopRight, b.Right, b.BottomRight)
 }
 
 // GetBottomSize returns the width of the bottom border. If borders contain
@@ -46,7 +51,7 @@ func (b Border) GetBottomSize() int {
 // of varying widths, the widest rune is returned. If no border exists on the
 // left edge, 0 is returned.
 func (b Border) GetLeftSize() int {
-	return getBorderEdgeWidth(b.TopLeft, b.Left, b.TopRight)
+	return getBorderEdgeWidth(b.TopLeft, b.Left, b.BottomLeft)
 }
 
 func getBorderEdgeWidth(borderParts ...string) (maxWidth int) {
@@ -63,25 +68,35 @@ var (
 	noBorder = Border{}
 
 	normalBorder = Border{
-		Top:         "─",
-		Bottom:      "─",
-		Left:        "│",
-		Right:       "│",
-		TopLeft:     "┌",
-		TopRight:    "┐",
-		BottomLeft:  "└",
-		BottomRight: "┘",
+		Top:          "─",
+		Bottom:       "─",
+		Left:         "│",
+		Right:        "│",
+		TopLeft:      "┌",
+		TopRight:     "┐",
+		BottomLeft:   "└",
+		BottomRight:  "┘",
+		MiddleLeft:   "├",
+		MiddleRight:  "┤",
+		Middle:       "┼",
+		MiddleTop:    "┬",
+		MiddleBottom: "┴",
 	}
 
 	roundedBorder = Border{
-		Top:         "─",
-		Bottom:      "─",
-		Left:        "│",
-		Right:       "│",
-		TopLeft:     "╭",
-		TopRight:    "╮",
-		BottomLeft:  "╰",
-		BottomRight: "╯",
+		Top:          "─",
+		Bottom:       "─",
+		Left:         "│",
+		Right:        "│",
+		TopLeft:      "╭",
+		TopRight:     "╮",
+		BottomLeft:   "╰",
+		BottomRight:  "╯",
+		MiddleLeft:   "├",
+		MiddleRight:  "┤",
+		Middle:       "┼",
+		MiddleTop:    "┬",
+		MiddleBottom: "┴",
 	}
 
 	blockBorder = Border{
@@ -118,36 +133,51 @@ var (
 	}
 
 	thickBorder = Border{
-		Top:         "━",
-		Bottom:      "━",
-		Left:        "┃",
-		Right:       "┃",
-		TopLeft:     "┏",
-		TopRight:    "┓",
-		BottomLeft:  "┗",
-		BottomRight: "┛",
+		Top:          "━",
+		Bottom:       "━",
+		Left:         "┃",
+		Right:        "┃",
+		TopLeft:      "┏",
+		TopRight:     "┓",
+		BottomLeft:   "┗",
+		BottomRight:  "┛",
+		MiddleLeft:   "┣",
+		MiddleRight:  "┫",
+		Middle:       "╋",
+		MiddleTop:    "┳",
+		MiddleBottom: "┻",
 	}
 
 	doubleBorder = Border{
-		Top:         "═",
-		Bottom:      "═",
-		Left:        "║",
-		Right:       "║",
-		TopLeft:     "╔",
-		TopRight:    "╗",
-		BottomLeft:  "╚",
-		BottomRight: "╝",
+		Top:          "═",
+		Bottom:       "═",
+		Left:         "║",
+		Right:        "║",
+		TopLeft:      "╔",
+		TopRight:     "╗",
+		BottomLeft:   "╚",
+		BottomRight:  "╝",
+		MiddleLeft:   "╠",
+		MiddleRight:  "╣",
+		Middle:       "╬",
+		MiddleTop:    "╦",
+		MiddleBottom: "╩",
 	}
 
 	hiddenBorder = Border{
-		Top:         " ",
-		Bottom:      " ",
-		Left:        " ",
-		Right:       " ",
-		TopLeft:     " ",
-		TopRight:    " ",
-		BottomLeft:  " ",
-		BottomRight: " ",
+		Top:          " ",
+		Bottom:       " ",
+		Left:         " ",
+		Right:        " ",
+		TopLeft:      " ",
+		TopRight:     " ",
+		BottomLeft:   " ",
+		BottomRight:  " ",
+		MiddleLeft:   " ",
+		MiddleRight:  " ",
+		Middle:       " ",
+		MiddleTop:    " ",
+		MiddleBottom: " ",
 	}
 )
 
@@ -346,16 +376,12 @@ func (s Style) applyBorder(str string) string {
 
 // Render the horizontal (top or bottom) portion of a border.
 func renderHorizontalEdge(left, middle, right string, width int) string {
-	if width < 1 {
-		return ""
-	}
-
 	if middle == "" {
 		middle = " "
 	}
 
-	leftWidth := ansi.PrintableRuneWidth(left)
-	rightWidth := ansi.PrintableRuneWidth(right)
+	leftWidth := ansi.StringWidth(left)
+	rightWidth := ansi.StringWidth(right)
 
 	runes := []rune(middle)
 	j := 0
@@ -368,7 +394,7 @@ func renderHorizontalEdge(left, middle, right string, width int) string {
 		if j >= len(runes) {
 			j = 0
 		}
-		i += ansi.PrintableRuneWidth(string(runes[j]))
+		i += ansi.StringWidth(string(runes[j]))
 	}
 	out.WriteString(right)
 
@@ -381,7 +407,7 @@ func (s Style) styleBorder(border string, fg, bg TerminalColor) string {
 		return border
 	}
 
-	var style = termenv.Style{}
+	style := termenv.Style{}
 
 	if fg != noColor {
 		style = style.Foreground(fg.color(s.r))
@@ -393,13 +419,18 @@ func (s Style) styleBorder(border string, fg, bg TerminalColor) string {
 	return style.Styled(border)
 }
 
-func maxRuneWidth(str string) (width int) {
-	for _, r := range str {
-		w := runewidth.RuneWidth(r)
+func maxRuneWidth(str string) int {
+	var width int
+
+	state := -1
+	for len(str) > 0 {
+		var w int
+		_, str, w, state = uniseg.FirstGraphemeClusterInString(str, state)
 		if w > width {
 			width = w
 		}
 	}
+
 	return width
 }
 

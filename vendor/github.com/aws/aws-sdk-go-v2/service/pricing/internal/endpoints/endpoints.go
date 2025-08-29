@@ -94,7 +94,7 @@ var partitionRegexp = struct {
 	AwsUsGov *regexp.Regexp
 }{
 
-	Aws:      regexp.MustCompile("^(us|eu|ap|sa|ca|me|af|il)\\-\\w+\\-\\d+$"),
+	Aws:      regexp.MustCompile("^(us|eu|ap|sa|ca|me|af|il|mx)\\-\\w+\\-\\d+$"),
 	AwsCn:    regexp.MustCompile("^cn\\-\\w+\\-\\d+$"),
 	AwsIso:   regexp.MustCompile("^us\\-iso\\-\\w+\\-\\d+$"),
 	AwsIsoB:  regexp.MustCompile("^us\\-isob\\-\\w+\\-\\d+$"),
@@ -171,6 +171,9 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing.{region}.api.amazonwebservices.com.cn",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 			{
 				Variant: endpoints.FIPSVariant,
@@ -178,6 +181,9 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing-fips.{region}.amazonaws.com.cn",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 			{
 				Variant: endpoints.FIPSVariant | endpoints.DualStackVariant,
@@ -185,6 +191,9 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing-fips.{region}.api.amazonwebservices.com.cn",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 			{
 				Variant: 0,
@@ -192,10 +201,18 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing.{region}.amazonaws.com.cn",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 		},
 		RegionRegex:    partitionRegexp.AwsCn,
 		IsRegionalized: true,
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "cn-northwest-1",
+			}: endpoints.Endpoint{},
+		},
 	},
 	{
 		ID: "aws-iso",
@@ -206,6 +223,9 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing-fips.{region}.c2s.ic.gov",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 			{
 				Variant: 0,
@@ -213,10 +233,18 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing.{region}.c2s.ic.gov",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 		},
 		RegionRegex:    partitionRegexp.AwsIso,
 		IsRegionalized: true,
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "us-iso-east-1",
+			}: endpoints.Endpoint{},
+		},
 	},
 	{
 		ID: "aws-iso-b",
@@ -227,6 +255,9 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing-fips.{region}.sc2s.sgov.gov",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 			{
 				Variant: 0,
@@ -234,10 +265,18 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing.{region}.sc2s.sgov.gov",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 		},
 		RegionRegex:    partitionRegexp.AwsIsoB,
 		IsRegionalized: true,
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "us-isob-east-1",
+			}: endpoints.Endpoint{},
+		},
 	},
 	{
 		ID: "aws-iso-e",
@@ -269,6 +308,9 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing-fips.{region}.csp.hci.ic.gov",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 			{
 				Variant: 0,
@@ -276,10 +318,18 @@ var defaultPartitions = endpoints.Partitions{
 				Hostname:          "api.pricing.{region}.csp.hci.ic.gov",
 				Protocols:         []string{"https"},
 				SignatureVersions: []string{"v4"},
+				CredentialScope: endpoints.CredentialScope{
+					Service: "pricing",
+				},
 			},
 		},
 		RegionRegex:    partitionRegexp.AwsIsoF,
 		IsRegionalized: true,
+		Endpoints: endpoints.Endpoints{
+			endpoints.EndpointKey{
+				Region: "us-isof-south-1",
+			}: endpoints.Endpoint{},
+		},
 	},
 	{
 		ID: "aws-us-gov",

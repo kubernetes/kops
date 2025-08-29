@@ -26,7 +26,7 @@ type DefaultItem interface {
 ```
 
 You can see a working example in our [Kancli][kancli] project built
-explicitly for a tutorial on lists and composite views in Bubble Tea. 
+explicitly for a tutorial on lists and composite views in Bubble Tea.
 
 [VIDEO](https://youtu.be/ZA93qgdLUzM)
 
@@ -64,9 +64,8 @@ example][listDefault].
 For full control over the way list items are rendered you can also define your
 own `ItemDelegate` too ([example][customDelegate]).
 
-
 [kancli]: https://github.com/charmbracelet/kancli/blob/main/main.go#L45
-[itemDelegate]: https://pkg.go.dev/github.com/charmbracelet/bubbles@v0.10.2/list#ItemDelegate
+[itemDelegate]: https://pkg.go.dev/github.com/charmbracelet/bubbles/list#ItemDelegate
 [replacedLine]: https://github.com/charmbracelet/bubbletea/blob/master/examples/list-default/main.go#L77
 [listDefault]: https://github.com/charmbracelet/bubbletea/tree/master/examples/list-default
-[customDelegate]: https://github.com/charmbracelet/bubbletea/blob/a6f46172ec4436991b90c2270253b2d212de7ef3/examples/list-simple/main.go#L28-L49
+[customDelegate]: https://github.com/charmbracelet/bubbletea/blob/master/examples/list-simple/main.go#L29-L50
