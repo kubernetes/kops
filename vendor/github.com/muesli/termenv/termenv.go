@@ -2,6 +2,7 @@ package termenv
 
 import (
 	"errors"
+	"os"
 
 	"github.com/mattn/go-isatty"
 )
@@ -12,15 +13,15 @@ var (
 )
 
 const (
-	// Escape character
+	// Escape character.
 	ESC = '\x1b'
-	// Bell
+	// Bell.
 	BEL = '\a'
-	// Control Sequence Introducer
+	// Control Sequence Introducer.
 	CSI = string(ESC) + "["
-	// Operating System Command
+	// Operating System Command.
 	OSC = string(ESC) + "]"
-	// String Terminator
+	// String Terminator.
 	ST = string(ESC) + `\`
 )
 
@@ -31,11 +32,11 @@ func (o *Output) isTTY() bool {
 	if len(o.environ.Getenv("CI")) > 0 {
 		return false
 	}
-	if o.TTY() == nil {
-		return false
+	if f, ok := o.Writer().(*os.File); ok {
+		return isatty.IsTerminal(f.Fd())
 	}
 
-	return isatty.IsTerminal(o.TTY().Fd())
+	return false
 }
 
 // ColorProfile returns the supported color profile:

@@ -19,7 +19,7 @@ func (m Model) renderFooter(width int, includeTop bool) string {
 	styleFooter := m.baseStyle.Copy().Inherit(m.border.styleFooter).Width(width - borderAdjustment)
 
 	if includeTop {
-		styleFooter.BorderTop(true)
+		styleFooter = styleFooter.BorderTop(true)
 	}
 
 	if m.staticFooter != "" {

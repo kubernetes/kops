@@ -2,6 +2,7 @@ package lipgloss
 
 import (
 	"io"
+	"sync"
 
 	"github.com/muesli/termenv"
 )
@@ -15,11 +16,17 @@ var renderer = &Renderer{
 // Renderer is a lipgloss terminal renderer.
 type Renderer struct {
 	output            *termenv.Output
-	hasDarkBackground *bool
-}
+	colorProfile      termenv.Profile
+	hasDarkBackground bool
 
-// RendererOption is a function that can be used to configure a [Renderer].
-type RendererOption func(r *Renderer)
+	getColorProfile      sync.Once
+	explicitColorProfile bool
+
+	getBackgroundColor      sync.Once
+	explicitBackgroundColor bool
+
+	mtx sync.RWMutex
+}
 
 // DefaultRenderer returns the default renderer.
 func DefaultRenderer() *Renderer {
@@ -43,17 +50,32 @@ func NewRenderer(w io.Writer, opts ...termenv.OutputOption) *Renderer {
 
 // Output returns the termenv output.
 func (r *Renderer) Output() *termenv.Output {
+	r.mtx.RLock()
+	defer r.mtx.RUnlock()
 	return r.output
 }
 
 // SetOutput sets the termenv output.
 func (r *Renderer) SetOutput(o *termenv.Output) {
+	r.mtx.Lock()
+	defer r.mtx.Unlock()
 	r.output = o
 }
 
 // ColorProfile returns the detected termenv color profile.
 func (r *Renderer) ColorProfile() termenv.Profile {
-	return r.output.Profile
+	r.mtx.RLock()
+	defer r.mtx.RUnlock()
+
+	if !r.explicitColorProfile {
+		r.getColorProfile.Do(func() {
+			// NOTE: we don't need to lock here because sync.Once provides its
+			// own locking mechanism.
+			r.colorProfile = r.output.EnvColorProfile()
+		})
+	}
+
+	return r.colorProfile
 }
 
 // ColorProfile returns the detected termenv color profile.
@@ -78,7 +100,11 @@ func ColorProfile() termenv.Profile {
 //
 // This function is thread-safe.
 func (r *Renderer) SetColorProfile(p termenv.Profile) {
-	r.output.Profile = p
+	r.mtx.Lock()
+	defer r.mtx.Unlock()
+
+	r.colorProfile = p
+	r.explicitColorProfile = true
 }
 
 // SetColorProfile sets the color profile on the default renderer. This
@@ -110,10 +136,18 @@ func HasDarkBackground() bool {
 // background. A dark background can either be auto-detected, or set explicitly
 // on the renderer.
 func (r *Renderer) HasDarkBackground() bool {
-	if r.hasDarkBackground != nil {
-		return *r.hasDarkBackground
+	r.mtx.RLock()
+	defer r.mtx.RUnlock()
+
+	if !r.explicitBackgroundColor {
+		r.getBackgroundColor.Do(func() {
+			// NOTE: we don't need to lock here because sync.Once provides its
+			// own locking mechanism.
+			r.hasDarkBackground = r.output.HasDarkBackground()
+		})
 	}
-	return r.output.HasDarkBackground()
+
+	return r.hasDarkBackground
 }
 
 // SetHasDarkBackground sets the background color detection value for the
@@ -139,5 +173,9 @@ func SetHasDarkBackground(b bool) {
 //
 // This function is thread-safe.
 func (r *Renderer) SetHasDarkBackground(b bool) {
-	r.hasDarkBackground = &b
+	r.mtx.Lock()
+	defer r.mtx.Unlock()
+
+	r.hasDarkBackground = b
+	r.explicitBackgroundColor = true
 }

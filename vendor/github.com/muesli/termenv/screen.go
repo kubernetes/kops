@@ -71,234 +71,234 @@ const (
 
 // Reset the terminal to its default style, removing any active styles.
 func (o Output) Reset() {
-	fmt.Fprint(o.tty, CSI+ResetSeq+"m")
+	fmt.Fprint(o.w, CSI+ResetSeq+"m") //nolint:errcheck
 }
 
 // SetForegroundColor sets the default foreground color.
 func (o Output) SetForegroundColor(color Color) {
-	fmt.Fprintf(o.tty, OSC+SetForegroundColorSeq, color)
+	fmt.Fprintf(o.w, OSC+SetForegroundColorSeq, color) //nolint:errcheck
 }
 
 // SetBackgroundColor sets the default background color.
 func (o Output) SetBackgroundColor(color Color) {
-	fmt.Fprintf(o.tty, OSC+SetBackgroundColorSeq, color)
+	fmt.Fprintf(o.w, OSC+SetBackgroundColorSeq, color) //nolint:errcheck
 }
 
 // SetCursorColor sets the cursor color.
 func (o Output) SetCursorColor(color Color) {
-	fmt.Fprintf(o.tty, OSC+SetCursorColorSeq, color)
+	fmt.Fprintf(o.w, OSC+SetCursorColorSeq, color) //nolint:errcheck
 }
 
 // RestoreScreen restores a previously saved screen state.
 func (o Output) RestoreScreen() {
-	fmt.Fprint(o.tty, CSI+RestoreScreenSeq)
+	fmt.Fprint(o.w, CSI+RestoreScreenSeq) //nolint:errcheck
 }
 
 // SaveScreen saves the screen state.
 func (o Output) SaveScreen() {
-	fmt.Fprint(o.tty, CSI+SaveScreenSeq)
+	fmt.Fprint(o.w, CSI+SaveScreenSeq) //nolint:errcheck
 }
 
 // AltScreen switches to the alternate screen buffer. The former view can be
 // restored with ExitAltScreen().
 func (o Output) AltScreen() {
-	fmt.Fprint(o.tty, CSI+AltScreenSeq)
+	fmt.Fprint(o.w, CSI+AltScreenSeq) //nolint:errcheck
 }
 
 // ExitAltScreen exits the alternate screen buffer and returns to the former
 // terminal view.
 func (o Output) ExitAltScreen() {
-	fmt.Fprint(o.tty, CSI+ExitAltScreenSeq)
+	fmt.Fprint(o.w, CSI+ExitAltScreenSeq) //nolint:errcheck
 }
 
 // ClearScreen clears the visible portion of the terminal.
 func (o Output) ClearScreen() {
-	fmt.Fprintf(o.tty, CSI+EraseDisplaySeq, 2)
+	fmt.Fprintf(o.w, CSI+EraseDisplaySeq, 2) //nolint:errcheck,mnd
 	o.MoveCursor(1, 1)
 }
 
 // MoveCursor moves the cursor to a given position.
 func (o Output) MoveCursor(row int, column int) {
-	fmt.Fprintf(o.tty, CSI+CursorPositionSeq, row, column)
+	fmt.Fprintf(o.w, CSI+CursorPositionSeq, row, column) //nolint:errcheck
 }
 
 // HideCursor hides the cursor.
 func (o Output) HideCursor() {
-	fmt.Fprint(o.tty, CSI+HideCursorSeq)
+	fmt.Fprint(o.w, CSI+HideCursorSeq) //nolint:errcheck
 }
 
 // ShowCursor shows the cursor.
 func (o Output) ShowCursor() {
-	fmt.Fprint(o.tty, CSI+ShowCursorSeq)
+	fmt.Fprint(o.w, CSI+ShowCursorSeq) //nolint:errcheck
 }
 
 // SaveCursorPosition saves the cursor position.
 func (o Output) SaveCursorPosition() {
-	fmt.Fprint(o.tty, CSI+SaveCursorPositionSeq)
+	fmt.Fprint(o.w, CSI+SaveCursorPositionSeq) //nolint:errcheck
 }
 
 // RestoreCursorPosition restores a saved cursor position.
 func (o Output) RestoreCursorPosition() {
-	fmt.Fprint(o.tty, CSI+RestoreCursorPositionSeq)
+	fmt.Fprint(o.w, CSI+RestoreCursorPositionSeq) //nolint:errcheck
 }
 
 // CursorUp moves the cursor up a given number of lines.
 func (o Output) CursorUp(n int) {
-	fmt.Fprintf(o.tty, CSI+CursorUpSeq, n)
+	fmt.Fprintf(o.w, CSI+CursorUpSeq, n) //nolint:errcheck
 }
 
 // CursorDown moves the cursor down a given number of lines.
 func (o Output) CursorDown(n int) {
-	fmt.Fprintf(o.tty, CSI+CursorDownSeq, n)
+	fmt.Fprintf(o.w, CSI+CursorDownSeq, n) //nolint:errcheck
 }
 
 // CursorForward moves the cursor up a given number of lines.
 func (o Output) CursorForward(n int) {
-	fmt.Fprintf(o.tty, CSI+CursorForwardSeq, n)
+	fmt.Fprintf(o.w, CSI+CursorForwardSeq, n) //nolint:errcheck
 }
 
 // CursorBack moves the cursor backwards a given number of cells.
 func (o Output) CursorBack(n int) {
-	fmt.Fprintf(o.tty, CSI+CursorBackSeq, n)
+	fmt.Fprintf(o.w, CSI+CursorBackSeq, n) //nolint:errcheck
 }
 
 // CursorNextLine moves the cursor down a given number of lines and places it at
 // the beginning of the line.
 func (o Output) CursorNextLine(n int) {
-	fmt.Fprintf(o.tty, CSI+CursorNextLineSeq, n)
+	fmt.Fprintf(o.w, CSI+CursorNextLineSeq, n) //nolint:errcheck
 }
 
 // CursorPrevLine moves the cursor up a given number of lines and places it at
 // the beginning of the line.
 func (o Output) CursorPrevLine(n int) {
-	fmt.Fprintf(o.tty, CSI+CursorPreviousLineSeq, n)
+	fmt.Fprintf(o.w, CSI+CursorPreviousLineSeq, n) //nolint:errcheck
 }
 
 // ClearLine clears the current line.
 func (o Output) ClearLine() {
-	fmt.Fprint(o.tty, CSI+EraseEntireLineSeq)
+	fmt.Fprint(o.w, CSI+EraseEntireLineSeq) //nolint:errcheck
 }
 
 // ClearLineLeft clears the line to the left of the cursor.
 func (o Output) ClearLineLeft() {
-	fmt.Fprint(o.tty, CSI+EraseLineLeftSeq)
+	fmt.Fprint(o.w, CSI+EraseLineLeftSeq) //nolint:errcheck
 }
 
 // ClearLineRight clears the line to the right of the cursor.
 func (o Output) ClearLineRight() {
-	fmt.Fprint(o.tty, CSI+EraseLineRightSeq)
+	fmt.Fprint(o.w, CSI+EraseLineRightSeq) //nolint:errcheck
 }
 
 // ClearLines clears a given number of lines.
 func (o Output) ClearLines(n int) {
-	clearLine := fmt.Sprintf(CSI+EraseLineSeq, 2)
+	clearLine := fmt.Sprintf(CSI+EraseLineSeq, 2) //nolint:mnd
 	cursorUp := fmt.Sprintf(CSI+CursorUpSeq, 1)
-	fmt.Fprint(o.tty, clearLine+strings.Repeat(cursorUp+clearLine, n))
+	fmt.Fprint(o.w, clearLine+strings.Repeat(cursorUp+clearLine, n)) //nolint:errcheck
 }
 
 // ChangeScrollingRegion sets the scrolling region of the terminal.
 func (o Output) ChangeScrollingRegion(top, bottom int) {
-	fmt.Fprintf(o.tty, CSI+ChangeScrollingRegionSeq, top, bottom)
+	fmt.Fprintf(o.w, CSI+ChangeScrollingRegionSeq, top, bottom) //nolint:errcheck
 }
 
 // InsertLines inserts the given number of lines at the top of the scrollable
 // region, pushing lines below down.
 func (o Output) InsertLines(n int) {
-	fmt.Fprintf(o.tty, CSI+InsertLineSeq, n)
+	fmt.Fprintf(o.w, CSI+InsertLineSeq, n) //nolint:errcheck
 }
 
 // DeleteLines deletes the given number of lines, pulling any lines in
 // the scrollable region below up.
 func (o Output) DeleteLines(n int) {
-	fmt.Fprintf(o.tty, CSI+DeleteLineSeq, n)
+	fmt.Fprintf(o.w, CSI+DeleteLineSeq, n) //nolint:errcheck
 }
 
 // EnableMousePress enables X10 mouse mode. Button press events are sent only.
 func (o Output) EnableMousePress() {
-	fmt.Fprint(o.tty, CSI+EnableMousePressSeq)
+	fmt.Fprint(o.w, CSI+EnableMousePressSeq) //nolint:errcheck
 }
 
 // DisableMousePress disables X10 mouse mode.
 func (o Output) DisableMousePress() {
-	fmt.Fprint(o.tty, CSI+DisableMousePressSeq)
+	fmt.Fprint(o.w, CSI+DisableMousePressSeq) //nolint:errcheck
 }
 
 // EnableMouse enables Mouse Tracking mode.
 func (o Output) EnableMouse() {
-	fmt.Fprint(o.tty, CSI+EnableMouseSeq)
+	fmt.Fprint(o.w, CSI+EnableMouseSeq) //nolint:errcheck
 }
 
 // DisableMouse disables Mouse Tracking mode.
 func (o Output) DisableMouse() {
-	fmt.Fprint(o.tty, CSI+DisableMouseSeq)
+	fmt.Fprint(o.w, CSI+DisableMouseSeq) //nolint:errcheck
 }
 
 // EnableMouseHilite enables Hilite Mouse Tracking mode.
 func (o Output) EnableMouseHilite() {
-	fmt.Fprint(o.tty, CSI+EnableMouseHiliteSeq)
+	fmt.Fprint(o.w, CSI+EnableMouseHiliteSeq) //nolint:errcheck
 }
 
 // DisableMouseHilite disables Hilite Mouse Tracking mode.
 func (o Output) DisableMouseHilite() {
-	fmt.Fprint(o.tty, CSI+DisableMouseHiliteSeq)
+	fmt.Fprint(o.w, CSI+DisableMouseHiliteSeq) //nolint:errcheck
 }
 
 // EnableMouseCellMotion enables Cell Motion Mouse Tracking mode.
 func (o Output) EnableMouseCellMotion() {
-	fmt.Fprint(o.tty, CSI+EnableMouseCellMotionSeq)
+	fmt.Fprint(o.w, CSI+EnableMouseCellMotionSeq) //nolint:errcheck
 }
 
 // DisableMouseCellMotion disables Cell Motion Mouse Tracking mode.
 func (o Output) DisableMouseCellMotion() {
-	fmt.Fprint(o.tty, CSI+DisableMouseCellMotionSeq)
+	fmt.Fprint(o.w, CSI+DisableMouseCellMotionSeq) //nolint:errcheck
 }
 
 // EnableMouseAllMotion enables All Motion Mouse mode.
 func (o Output) EnableMouseAllMotion() {
-	fmt.Fprint(o.tty, CSI+EnableMouseAllMotionSeq)
+	fmt.Fprint(o.w, CSI+EnableMouseAllMotionSeq) //nolint:errcheck
 }
 
 // DisableMouseAllMotion disables All Motion Mouse mode.
 func (o Output) DisableMouseAllMotion() {
-	fmt.Fprint(o.tty, CSI+DisableMouseAllMotionSeq)
+	fmt.Fprint(o.w, CSI+DisableMouseAllMotionSeq) //nolint:errcheck
 }
 
 // EnableMouseExtendedMotion enables Extended Mouse mode (SGR). This should be
 // enabled in conjunction with EnableMouseCellMotion, and EnableMouseAllMotion.
 func (o Output) EnableMouseExtendedMode() {
-	fmt.Fprint(o.tty, CSI+EnableMouseExtendedModeSeq)
+	fmt.Fprint(o.w, CSI+EnableMouseExtendedModeSeq) //nolint:errcheck
 }
 
 // DisableMouseExtendedMotion disables Extended Mouse mode (SGR).
 func (o Output) DisableMouseExtendedMode() {
-	fmt.Fprint(o.tty, CSI+DisableMouseExtendedModeSeq)
+	fmt.Fprint(o.w, CSI+DisableMouseExtendedModeSeq) //nolint:errcheck
 }
 
 // EnableMousePixelsMotion enables Pixel Motion Mouse mode (SGR-Pixels). This
 // should be enabled in conjunction with EnableMouseCellMotion, and
 // EnableMouseAllMotion.
 func (o Output) EnableMousePixelsMode() {
-	fmt.Fprint(o.tty, CSI+EnableMousePixelsModeSeq)
+	fmt.Fprint(o.w, CSI+EnableMousePixelsModeSeq) //nolint:errcheck
 }
 
 // DisableMousePixelsMotion disables Pixel Motion Mouse mode (SGR-Pixels).
 func (o Output) DisableMousePixelsMode() {
-	fmt.Fprint(o.tty, CSI+DisableMousePixelsModeSeq)
+	fmt.Fprint(o.w, CSI+DisableMousePixelsModeSeq) //nolint:errcheck
 }
 
 // SetWindowTitle sets the terminal window title.
 func (o Output) SetWindowTitle(title string) {
-	fmt.Fprintf(o.tty, OSC+SetWindowTitleSeq, title)
+	fmt.Fprintf(o.w, OSC+SetWindowTitleSeq, title) //nolint:errcheck
 }
 
 // EnableBracketedPaste enables bracketed paste.
 func (o Output) EnableBracketedPaste() {
-	fmt.Fprintf(o.tty, CSI+EnableBracketedPasteSeq)
+	fmt.Fprintf(o.w, CSI+EnableBracketedPasteSeq) //nolint:errcheck
 }
 
 // DisableBracketedPaste disables bracketed paste.
 func (o Output) DisableBracketedPaste() {
-	fmt.Fprintf(o.tty, CSI+DisableBracketedPasteSeq)
+	fmt.Fprintf(o.w, CSI+DisableBracketedPasteSeq) //nolint:errcheck
 }
 
 // Legacy functions.

@@ -4,7 +4,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/muesli/reflow/ansi"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // Position represents a position along a horizontal or vertical axis. It's in
@@ -52,7 +52,7 @@ func PlaceHorizontal(width int, pos Position, str string, opts ...WhitespaceOpti
 
 // PlaceHorizontal places a string or text block horizontally in an unstyled
 // block of a given width. If the given width is shorter than the max width of
-// the string (measured by it's longest line) this will be a noöp.
+// the string (measured by its longest line) this will be a noöp.
 func (r *Renderer) PlaceHorizontal(width int, pos Position, str string, opts ...WhitespaceOption) string {
 	lines, contentWidth := getLines(str)
 	gap := width - contentWidth
@@ -66,9 +66,9 @@ func (r *Renderer) PlaceHorizontal(width int, pos Position, str string, opts ...
 	var b strings.Builder
 	for i, l := range lines {
 		// Is this line shorter than the longest line?
-		short := max(0, contentWidth-ansi.PrintableRuneWidth(l))
+		short := max(0, contentWidth-ansi.StringWidth(l))
 
-		switch pos {
+		switch pos { //nolint:exhaustive
 		case Left:
 			b.WriteString(l)
 			b.WriteString(ws.render(gap + short))
@@ -106,7 +106,7 @@ func PlaceVertical(height int, pos Position, str string, opts ...WhitespaceOptio
 
 // PlaceVertical places a string or text block vertically in an unstyled block
 // of a given height. If the given height is shorter than the height of the
-// string (measured by it's newlines) then this will be a noöp.
+// string (measured by its newlines) then this will be a noöp.
 func (r *Renderer) PlaceVertical(height int, pos Position, str string, opts ...WhitespaceOption) string {
 	contentHeight := strings.Count(str, "\n") + 1
 	gap := height - contentHeight
@@ -121,7 +121,7 @@ func (r *Renderer) PlaceVertical(height int, pos Position, str string, opts ...W
 	emptyLine := ws.render(width)
 	b := strings.Builder{}
 
-	switch pos {
+	switch pos { //nolint:exhaustive
 	case Top:
 		b.WriteString(str)
 		b.WriteRune('\n')

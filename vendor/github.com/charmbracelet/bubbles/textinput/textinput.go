@@ -1,6 +1,7 @@
 package textinput
 
 import (
+	"reflect"
 	"strings"
 	"time"
 	"unicode"
@@ -12,11 +13,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	rw "github.com/mattn/go-runewidth"
+	"github.com/rivo/uniseg"
 )
 
 // Internal messages for clipboard operations.
-type pasteMsg string
-type pasteErrMsg struct{ error }
+type (
+	pasteMsg    string
+	pasteErrMsg struct{ error }
+)
 
 // EchoMode sets the input behavior of the text input field.
 type EchoMode int
@@ -32,8 +36,6 @@ const (
 	// EchoNone displays nothing as characters are entered. This is commonly
 	// seen for password fields on the command line.
 	EchoNone
-
-	// EchoOnEdit.
 )
 
 // ValidateFunc is a function that returns an error if the input is invalid.
@@ -54,6 +56,9 @@ type KeyMap struct {
 	LineStart               key.Binding
 	LineEnd                 key.Binding
 	Paste                   key.Binding
+	AcceptSuggestion        key.Binding
+	NextSuggestion          key.Binding
+	PrevSuggestion          key.Binding
 }
 
 // DefaultKeyMap is the default set of key bindings for navigating and acting
@@ -61,8 +66,8 @@ type KeyMap struct {
 var DefaultKeyMap = KeyMap{
 	CharacterForward:        key.NewBinding(key.WithKeys("right", "ctrl+f")),
 	CharacterBackward:       key.NewBinding(key.WithKeys("left", "ctrl+b")),
-	WordForward:             key.NewBinding(key.WithKeys("alt+right", "alt+f")),
-	WordBackward:            key.NewBinding(key.WithKeys("alt+left", "alt+b")),
+	WordForward:             key.NewBinding(key.WithKeys("alt+right", "ctrl+right", "alt+f")),
+	WordBackward:            key.NewBinding(key.WithKeys("alt+left", "ctrl+left", "alt+b")),
 	DeleteWordBackward:      key.NewBinding(key.WithKeys("alt+backspace", "ctrl+w")),
 	DeleteWordForward:       key.NewBinding(key.WithKeys("alt+delete", "alt+d")),
 	DeleteAfterCursor:       key.NewBinding(key.WithKeys("ctrl+k")),
@@ -72,6 +77,9 @@ var DefaultKeyMap = KeyMap{
 	LineStart:               key.NewBinding(key.WithKeys("home", "ctrl+a")),
 	LineEnd:                 key.NewBinding(key.WithKeys("end", "ctrl+e")),
 	Paste:                   key.NewBinding(key.WithKeys("ctrl+v")),
+	AcceptSuggestion:        key.NewBinding(key.WithKeys("tab")),
+	NextSuggestion:          key.NewBinding(key.WithKeys("down", "ctrl+n")),
+	PrevSuggestion:          key.NewBinding(key.WithKeys("up", "ctrl+p")),
 }
 
 // Model is the Bubble Tea model for this text input element.
@@ -95,6 +103,7 @@ type Model struct {
 	PromptStyle      lipgloss.Style
 	TextStyle        lipgloss.Style
 	PlaceholderStyle lipgloss.Style
+	CompletionStyle  lipgloss.Style
 
 	// Deprecated: use Cursor.Style instead.
 	CursorStyle lipgloss.Style
@@ -134,6 +143,15 @@ type Model struct {
 
 	// rune sanitizer for input.
 	rsan runeutil.Sanitizer
+
+	// Should the input suggest to complete
+	ShowSuggestions bool
+
+	// suggestions is a list of suggestions that may be used to complete the
+	// input.
+	suggestions            [][]rune
+	matchedSuggestions     [][]rune
+	currentSuggestionIndex int
 }
 
 // New creates a new model with default settings.
@@ -143,12 +161,15 @@ func New() Model {
 		EchoCharacter:    '*',
 		CharLimit:        0,
 		PlaceholderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
+		ShowSuggestions:  false,
+		CompletionStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
 		Cursor:           cursor.New(),
 		KeyMap:           DefaultKeyMap,
 
-		value: nil,
-		focus: false,
-		pos:   0,
+		suggestions: [][]rune{},
+		value:       nil,
+		focus:       false,
+		pos:         0,
 	}
 }
 
@@ -162,19 +183,14 @@ func (m *Model) SetValue(s string) {
 	// Clean up any special characters in the input provided by the
 	// caller. This avoids bugs due to e.g. tab characters and whatnot.
 	runes := m.san().Sanitize([]rune(s))
-	m.setValueInternal(runes)
+	err := m.validate(runes)
+	m.setValueInternal(runes, err)
 }
 
-func (m *Model) setValueInternal(runes []rune) {
-	if m.Validate != nil {
-		if err := m.Validate(string(runes)); err != nil {
-			m.Err = err
-			return
-		}
-	}
+func (m *Model) setValueInternal(runes []rune, err error) {
+	m.Err = err
 
 	empty := len(m.value) == 0
-	m.Err = nil
 
 	if m.CharLimit > 0 && len(runes) > m.CharLimit {
 		m.value = runes[:m.CharLimit]
@@ -239,6 +255,16 @@ func (m *Model) Reset() {
 	m.SetCursor(0)
 }
 
+// SetSuggestions sets the suggestions for the input.
+func (m *Model) SetSuggestions(suggestions []string) {
+	m.suggestions = make([][]rune, len(suggestions))
+	for i, s := range suggestions {
+		m.suggestions[i] = []rune(s)
+	}
+
+	m.updateSuggestions()
+}
+
 // rsan initializes or retrieves the rune sanitizer.
 func (m *Model) san() runeutil.Sanitizer {
 	if m.rsan == nil {
@@ -268,7 +294,7 @@ func (m *Model) insertRunesFromUserInput(v []rune) {
 		// If there's not enough space to paste the whole thing cut the pasted
 		// runes down so they'll fit.
 		if availSpace < len(paste) {
-			paste = paste[:len(paste)-availSpace]
+			paste = paste[:availSpace]
 		}
 	}
 
@@ -277,8 +303,6 @@ func (m *Model) insertRunesFromUserInput(v []rune) {
 	tailSrc := m.value[m.pos:]
 	tail := make([]rune, len(tailSrc))
 	copy(tail, tailSrc)
-
-	oldPos := m.pos
 
 	// Insert pasted runes
 	for _, r := range paste {
@@ -294,17 +318,14 @@ func (m *Model) insertRunesFromUserInput(v []rune) {
 
 	// Put it all back together
 	value := append(head, tail...)
-	m.setValueInternal(value)
-
-	if m.Err != nil {
-		m.pos = oldPos
-	}
+	inputErr := m.validate(value)
+	m.setValueInternal(value, inputErr)
 }
 
 // If a max width is defined, perform some logic to treat the visible area
 // as a horizontally scrolling viewport.
 func (m *Model) handleOverflow() {
-	if m.Width <= 0 || rw.StringWidth(string(m.value)) <= m.Width {
+	if m.Width <= 0 || uniseg.StringWidth(string(m.value)) <= m.Width {
 		m.offset = 0
 		m.offsetRight = len(m.value)
 		return
@@ -349,6 +370,7 @@ func (m *Model) handleOverflow() {
 // deleteBeforeCursor deletes all text before the cursor.
 func (m *Model) deleteBeforeCursor() {
 	m.value = m.value[m.pos:]
+	m.Err = m.validate(m.value)
 	m.offset = 0
 	m.SetCursor(0)
 }
@@ -358,6 +380,7 @@ func (m *Model) deleteBeforeCursor() {
 // masked input.
 func (m *Model) deleteAfterCursor() {
 	m.value = m.value[:m.pos]
+	m.Err = m.validate(m.value)
 	m.SetCursor(len(m.value))
 }
 
@@ -403,6 +426,7 @@ func (m *Model) deleteWordBackward() {
 	} else {
 		m.value = append(m.value[:m.pos], m.value[oldPos:]...)
 	}
+	m.Err = m.validate(m.value)
 }
 
 // deleteWordForward deletes the word right to the cursor. If input is masked
@@ -442,6 +466,7 @@ func (m *Model) deleteWordForward() {
 	} else {
 		m.value = append(m.value[:oldPos], m.value[m.pos:]...)
 	}
+	m.Err = m.validate(m.value)
 
 	m.SetCursor(oldPos)
 }
@@ -513,7 +538,7 @@ func (m *Model) wordForward() {
 func (m Model) echoTransform(v string) string {
 	switch m.EchoMode {
 	case EchoPassword:
-		return strings.Repeat(string(m.EchoCharacter), rw.StringWidth(v))
+		return strings.Repeat(string(m.EchoCharacter), uniseg.StringWidth(v))
 	case EchoNone:
 		return ""
 	case EchoNormal:
@@ -529,6 +554,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// Need to check for completion before, because key is configurable and might be double assigned
+	keyMsg, ok := msg.(tea.KeyMsg)
+	if ok && key.Matches(keyMsg, m.KeyMap.AcceptSuggestion) {
+		if m.canAcceptSuggestion() {
+			m.value = append(m.value, m.matchedSuggestions[m.currentSuggestionIndex][len(m.value):]...)
+			m.CursorEnd()
+		}
+	}
+
 	// Let's remember where the position of the cursor currently is so that if
 	// the cursor position changes, we can reset the blink.
 	oldPos := m.pos //nolint
@@ -537,12 +571,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.KeyMap.DeleteWordBackward):
-			m.Err = nil
 			m.deleteWordBackward()
 		case key.Matches(msg, m.KeyMap.DeleteCharacterBackward):
 			m.Err = nil
 			if len(m.value) > 0 {
 				m.value = append(m.value[:max(0, m.pos-1)], m.value[m.pos:]...)
+				m.Err = m.validate(m.value)
 				if m.pos > 0 {
 					m.SetCursor(m.pos - 1)
 				}
@@ -559,13 +593,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			if m.pos < len(m.value) {
 				m.SetCursor(m.pos + 1)
 			}
-		case key.Matches(msg, m.KeyMap.DeleteWordBackward):
-			m.deleteWordBackward()
 		case key.Matches(msg, m.KeyMap.LineStart):
 			m.CursorStart()
 		case key.Matches(msg, m.KeyMap.DeleteCharacterForward):
 			if len(m.value) > 0 && m.pos < len(m.value) {
 				m.value = append(m.value[:m.pos], m.value[m.pos+1:]...)
+				m.Err = m.validate(m.value)
 			}
 		case key.Matches(msg, m.KeyMap.LineEnd):
 			m.CursorEnd()
@@ -577,10 +610,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, Paste
 		case key.Matches(msg, m.KeyMap.DeleteWordForward):
 			m.deleteWordForward()
+		case key.Matches(msg, m.KeyMap.NextSuggestion):
+			m.nextSuggestion()
+		case key.Matches(msg, m.KeyMap.PrevSuggestion):
+			m.previousSuggestion()
 		default:
 			// Input one or more regular characters.
 			m.insertRunesFromUserInput(msg.Runes)
 		}
+
+		// Check again if can be completed
+		// because value might be something that does not match the completion prefix
+		m.updateSuggestions()
 
 	case pasteMsg:
 		m.insertRunesFromUserInput([]rune(msg))
@@ -622,14 +663,28 @@ func (m Model) View() string {
 		m.Cursor.SetChar(char)
 		v += m.Cursor.View()                                   // cursor and text under it
 		v += styleText(m.echoTransform(string(value[pos+1:]))) // text after cursor
+		v += m.completionView(0)                               // suggested completion
 	} else {
-		m.Cursor.SetChar(" ")
-		v += m.Cursor.View()
+		if m.canAcceptSuggestion() {
+			suggestion := m.matchedSuggestions[m.currentSuggestionIndex]
+			if len(value) < len(suggestion) {
+				m.Cursor.TextStyle = m.CompletionStyle
+				m.Cursor.SetChar(m.echoTransform(string(suggestion[pos])))
+				v += m.Cursor.View()
+				v += m.completionView(1)
+			} else {
+				m.Cursor.SetChar(" ")
+				v += m.Cursor.View()
+			}
+		} else {
+			m.Cursor.SetChar(" ")
+			v += m.Cursor.View()
+		}
 	}
 
 	// If a max width and background color were set fill the empty spaces with
 	// the background color.
-	valWidth := rw.StringWidth(string(value))
+	valWidth := uniseg.StringWidth(string(value))
 	if m.Width > 0 && valWidth <= m.Width {
 		padding := max(0, m.Width-valWidth)
 		if valWidth+padding <= m.Width && pos < len(value) {
@@ -645,16 +700,37 @@ func (m Model) View() string {
 func (m Model) placeholderView() string {
 	var (
 		v     string
-		p     = m.Placeholder
+		p     = []rune(m.Placeholder)
 		style = m.PlaceholderStyle.Inline(true).Render
 	)
 
 	m.Cursor.TextStyle = m.PlaceholderStyle
-	m.Cursor.SetChar(p[:1])
+	m.Cursor.SetChar(string(p[:1]))
 	v += m.Cursor.View()
 
-	// The rest of the placeholder text
-	v += style(p[1:])
+	// If the entire placeholder is already set and no padding is needed, finish
+	if m.Width < 1 && len(p) <= 1 {
+		return m.PromptStyle.Render(m.Prompt) + v
+	}
+
+	// If Width is set then size placeholder accordingly
+	if m.Width > 0 {
+		// available width is width - len + cursor offset of 1
+		minWidth := lipgloss.Width(m.Placeholder)
+		availWidth := m.Width - minWidth + 1
+
+		// if width < len, 'subtract'(add) number to len and dont add padding
+		if availWidth < 0 {
+			minWidth += availWidth
+			availWidth = 0
+		}
+		// append placeholder[len] - cursor, append padding
+		v += style(string(p[1:minWidth]))
+		v += style(strings.Repeat(" ", availWidth))
+	} else {
+		// if there is no width, the placeholder can be any length
+		v += style(string(p[1:]))
+	}
 
 	return m.PromptStyle.Render(m.Prompt) + v
 }
@@ -720,4 +796,93 @@ func (m Model) CursorMode() CursorMode {
 // Deprecated: use cursor.SetMode().
 func (m *Model) SetCursorMode(mode CursorMode) tea.Cmd {
 	return m.Cursor.SetMode(cursor.Mode(mode))
+}
+
+func (m Model) completionView(offset int) string {
+	var (
+		value = m.value
+		style = m.PlaceholderStyle.Inline(true).Render
+	)
+
+	if m.canAcceptSuggestion() {
+		suggestion := m.matchedSuggestions[m.currentSuggestionIndex]
+		if len(value) < len(suggestion) {
+			return style(string(suggestion[len(value)+offset:]))
+		}
+	}
+	return ""
+}
+
+// AvailableSuggestions returns the list of available suggestions.
+func (m *Model) AvailableSuggestions() []string {
+	suggestions := make([]string, len(m.suggestions))
+	for i, s := range m.suggestions {
+		suggestions[i] = string(s)
+	}
+
+	return suggestions
+}
+
+// CurrentSuggestion returns the currently selected suggestion.
+func (m *Model) CurrentSuggestion() string {
+	if m.currentSuggestionIndex >= len(m.matchedSuggestions) {
+		return ""
+	}
+
+	return string(m.matchedSuggestions[m.currentSuggestionIndex])
+}
+
+// canAcceptSuggestion returns whether there is an acceptable suggestion to
+// autocomplete the current value.
+func (m *Model) canAcceptSuggestion() bool {
+	return len(m.matchedSuggestions) > 0
+}
+
+// updateSuggestions refreshes the list of matching suggestions.
+func (m *Model) updateSuggestions() {
+	if !m.ShowSuggestions {
+		return
+	}
+
+	if len(m.value) <= 0 || len(m.suggestions) <= 0 {
+		m.matchedSuggestions = [][]rune{}
+		return
+	}
+
+	matches := [][]rune{}
+	for _, s := range m.suggestions {
+		suggestion := string(s)
+
+		if strings.HasPrefix(strings.ToLower(suggestion), strings.ToLower(string(m.value))) {
+			matches = append(matches, []rune(suggestion))
+		}
+	}
+	if !reflect.DeepEqual(matches, m.matchedSuggestions) {
+		m.currentSuggestionIndex = 0
+	}
+
+	m.matchedSuggestions = matches
+}
+
+// nextSuggestion selects the next suggestion.
+func (m *Model) nextSuggestion() {
+	m.currentSuggestionIndex = (m.currentSuggestionIndex + 1)
+	if m.currentSuggestionIndex >= len(m.matchedSuggestions) {
+		m.currentSuggestionIndex = 0
+	}
+}
+
+// previousSuggestion selects the previous suggestion.
+func (m *Model) previousSuggestion() {
+	m.currentSuggestionIndex = (m.currentSuggestionIndex - 1)
+	if m.currentSuggestionIndex < 0 {
+		m.currentSuggestionIndex = len(m.matchedSuggestions) - 1
+	}
+}
+
+func (m Model) validate(v []rune) error {
+	if m.Validate != nil {
+		return m.Validate(string(v))
+	}
+	return nil
 }

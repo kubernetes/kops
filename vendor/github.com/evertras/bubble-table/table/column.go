@@ -76,3 +76,43 @@ func (c Column) WithFormatString(fmtString string) Column {
 func (c *Column) isFlex() bool {
 	return c.flexFactor != 0
 }
+
+// Title returns the title of the column.
+func (c Column) Title() string {
+	return c.title
+}
+
+// Key returns the key of the column.
+func (c Column) Key() string {
+	return c.key
+}
+
+// Width returns the width of the column.
+func (c Column) Width() int {
+	return c.width
+}
+
+// FlexFactor returns the flex factor of the column.
+func (c Column) FlexFactor() int {
+	return c.flexFactor
+}
+
+// IsFlex returns whether the column is a flex column.
+func (c Column) IsFlex() bool {
+	return c.isFlex()
+}
+
+// Filterable returns whether the column is filterable.
+func (c Column) Filterable() bool {
+	return c.filterable
+}
+
+// Style returns the style of the column.
+func (c Column) Style() lipgloss.Style {
+	return c.style
+}
+
+// FmtString returns the format string of the column.
+func (c Column) FmtString() string {
+	return c.fmtString
+}

@@ -15,7 +15,6 @@ import (
 // Note that if a key is disabled (via key.Binding.SetEnabled) it will not be
 // rendered in the help view, so in theory generated help should self-manage.
 type KeyMap interface {
-
 	// ShortHelp returns a slice of bindings to be displayed in the short
 	// version of the help. The help bubble will render help in the order in
 	// which the help items are returned here.
@@ -82,10 +81,10 @@ func New() Model {
 			ShortKey:       keyStyle,
 			ShortDesc:      descStyle,
 			ShortSeparator: sepStyle,
-			Ellipsis:       sepStyle.Copy(),
-			FullKey:        keyStyle.Copy(),
-			FullDesc:       descStyle.Copy(),
-			FullSeparator:  sepStyle.Copy(),
+			Ellipsis:       sepStyle,
+			FullKey:        keyStyle,
+			FullDesc:       descStyle,
+			FullSeparator:  sepStyle,
 		},
 	}
 }
@@ -118,7 +117,7 @@ func (m Model) ShortHelpView(bindings []key.Binding) string {
 
 	var b strings.Builder
 	var totalWidth int
-	var separator = m.Styles.ShortSeparator.Inline(true).Render(m.ShortSeparator)
+	separator := m.Styles.ShortSeparator.Inline(true).Render(m.ShortSeparator)
 
 	for i, kb := range bindings {
 		if !kb.Enabled() {
@@ -215,9 +214,8 @@ func (m Model) FullHelpView(groups [][]key.Binding) string {
 			if m.Width > 0 && totalWidth > m.Width {
 				break
 			}
+			out = append(out, sep)
 		}
-
-		out = append(out, sep)
 	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, out...)

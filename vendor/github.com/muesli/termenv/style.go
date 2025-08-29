@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mattn/go-runewidth"
+	"github.com/rivo/uniseg"
 )
 
 // Sequence definitions.
@@ -122,5 +122,5 @@ func (t Style) CrossOut() Style {
 
 // Width returns the width required to print all runes in Style.
 func (t Style) Width() int {
-	return runewidth.StringWidth(t.string)
+	return uniseg.StringWidth(t.string)
 }

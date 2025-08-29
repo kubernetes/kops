@@ -80,6 +80,14 @@ func (m *Model) GetHeaderVisibility() bool {
 	return m.headerVisible
 }
 
+// GetFooterVisibility returns true if the footer has been set to
+// visible (default) or false if the footer has been set to hidden.
+// Note that even if the footer is visible it will only be rendered if
+// it has contents.
+func (m *Model) GetFooterVisibility() bool {
+	return m.footerVisible
+}
+
 // GetPaginationWrapping returns true if pagination wrapping is enabled, or false
 // if disabled.  If disabled, navigating through pages will stop at the first
 // and last pages.

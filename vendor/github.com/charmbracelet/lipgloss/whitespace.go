@@ -3,7 +3,7 @@ package lipgloss
 import (
 	"strings"
 
-	"github.com/muesli/reflow/ansi"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/muesli/termenv"
 )
 
@@ -15,7 +15,7 @@ type whitespace struct {
 }
 
 // newWhitespace creates a new whitespace renderer. The order of the options
-// matters, it you'r using WithWhitespaceRenderer, make sure it comes first as
+// matters, if you're using WithWhitespaceRenderer, make sure it comes first as
 // other options might depend on it.
 func newWhitespace(r *Renderer, opts ...WhitespaceOption) *whitespace {
 	w := &whitespace{
@@ -45,12 +45,12 @@ func (w whitespace) render(width int) string {
 		if j >= len(r) {
 			j = 0
 		}
-		i += ansi.PrintableRuneWidth(string(r[j]))
+		i += ansi.StringWidth(string(r[j]))
 	}
 
 	// Fill any extra gaps white spaces. This might be necessary if any runes
 	// are more than one cell wide, which could leave a one-rune gap.
-	short := width - ansi.PrintableRuneWidth(b.String())
+	short := width - ansi.StringWidth(b.String())
 	if short > 0 {
 		b.WriteString(strings.Repeat(" ", short))
 	}

@@ -2,8 +2,10 @@ package table
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/reflow/wordwrap"
 )
 
 // RowData is a map of string column keys to interface{} data.  Data with a key
@@ -20,13 +22,21 @@ type Row struct {
 	Data  RowData
 
 	selected bool
+
+	// id is an internal unique ID to match rows after they're copied
+	id uint32
 }
+
+var lastRowID uint32 = 1
 
 // NewRow creates a new row and copies the given row data.
 func NewRow(data RowData) Row {
 	row := Row{
 		Data: make(map[string]interface{}),
+		id:   lastRowID,
 	}
+
+	atomic.AddUint32(&lastRowID, 1)
 
 	for key, val := range data {
 		// Doesn't deep copy val, but close enough for now...
@@ -43,7 +53,7 @@ func (r Row) WithStyle(style lipgloss.Style) Row {
 	return r
 }
 
-//nolint:nestif // This has many ifs, but they're short
+//nolint:nestif,cyclop // This has many ifs, but they're short
 func (m Model) renderRowColumnData(row Row, column Column, rowStyle lipgloss.Style, borderStyle lipgloss.Style) string {
 	cellStyle := rowStyle.Copy().Inherit(column.style).Inherit(m.baseStyle)
 
@@ -61,20 +71,20 @@ func (m Model) renderRowColumnData(row Row, column Column, rowStyle lipgloss.Sty
 	} else if column.key == columnKeyOverflowLeft {
 		str = "<"
 	} else {
+		fmtString := "%v"
+
 		var data interface{}
 
 		if entry, exists := row.Data[column.key]; exists {
 			data = entry
+
+			if column.fmtString != "" {
+				fmtString = column.fmtString
+			}
 		} else if m.missingDataIndicator != nil {
 			data = m.missingDataIndicator
 		} else {
 			data = ""
-		}
-
-		fmtString := "%v"
-
-		if column.fmtString != "" {
-			fmtString = column.fmtString
 		}
 
 		switch entry := data.(type) {
@@ -86,31 +96,63 @@ func (m Model) renderRowColumnData(row Row, column Column, rowStyle lipgloss.Sty
 		}
 	}
 
+	if m.multiline {
+		str = wordwrap.String(str, column.width)
+		cellStyle = cellStyle.Align(lipgloss.Top)
+	} else {
+		str = limitStr(str, column.width)
+	}
+
 	cellStyle = cellStyle.Inherit(borderStyle)
-	cellStr := cellStyle.Render(limitStr(str, column.width))
+	cellStr := cellStyle.Render(str)
 
 	return cellStr
+}
+
+func (m Model) renderRow(rowIndex int, last bool) string {
+	row := m.GetVisibleRows()[rowIndex]
+	highlighted := rowIndex == m.rowCursorIndex
+
+	rowStyle := row.Style.Copy()
+
+	if m.rowStyleFunc != nil {
+		styleResult := m.rowStyleFunc(RowStyleFuncInput{
+			Index:         rowIndex,
+			Row:           row,
+			IsHighlighted: m.focused && highlighted,
+		})
+
+		rowStyle = rowStyle.Inherit(styleResult)
+	} else if m.focused && highlighted {
+		rowStyle = rowStyle.Inherit(m.highlightStyle)
+	}
+
+	return m.renderRowData(row, rowStyle, last)
+}
+
+func (m Model) renderBlankRow(last bool) string {
+	return m.renderRowData(NewRow(nil), lipgloss.NewStyle(), last)
 }
 
 // This is long and could use some refactoring in the future, but not quite sure
 // how to pick it apart yet.
 //
 //nolint:funlen, cyclop, gocognit
-func (m Model) renderRow(rowIndex int, last bool) string {
+func (m Model) renderRowData(row Row, rowStyle lipgloss.Style, last bool) string {
 	numColumns := len(m.columns)
-	row := m.GetVisibleRows()[rowIndex]
-	highlighted := rowIndex == m.rowCursorIndex
-	totalRenderedWidth := 0
 
 	columnStrings := []string{}
-
-	rowStyle := row.Style.Copy()
-
-	if m.focused && highlighted {
-		rowStyle = rowStyle.Inherit(m.highlightStyle)
-	}
+	totalRenderedWidth := 0
 
 	stylesInner, stylesLast := m.styleRows()
+
+	maxCellHeight := 1
+	if m.multiline {
+		for _, column := range m.columns {
+			cellStr := m.renderRowColumnData(row, column, rowStyle, lipgloss.NewStyle())
+			maxCellHeight = max(maxCellHeight, lipgloss.Height(cellStr))
+		}
+	}
 
 	for columnIndex, column := range m.columns {
 		var borderStyle lipgloss.Style
@@ -121,6 +163,7 @@ func (m Model) renderRow(rowIndex int, last bool) string {
 		} else {
 			rowStyles = stylesLast
 		}
+		rowStyle = rowStyle.Copy().Height(maxCellHeight)
 
 		if m.horizontalScrollOffsetCol > 0 && columnIndex == m.horizontalScrollFreezeColumnsCount {
 			var borderStyle lipgloss.Style

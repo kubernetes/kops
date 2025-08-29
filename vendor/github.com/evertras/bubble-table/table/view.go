@@ -6,8 +6,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// View renders the table.  It does not end in a newline, so that it can be
+// View renders the table. It does not end in a newline, so that it can be
 // composed with other elements more consistently.
+//
+//nolint:cyclop
 func (m Model) View() string {
 	// Safety valve for empty tables
 	if len(m.columns) == 0 {
@@ -21,17 +23,24 @@ func (m Model) View() string {
 	headers := m.renderHeaders()
 
 	startRowIndex, endRowIndex := m.VisibleIndices()
+	numRows := endRowIndex - startRowIndex + 1
+
+	padding := m.calculatePadding(numRows)
 
 	if m.headerVisible {
 		rowStrs = append(rowStrs, headers)
-	} else if endRowIndex-startRowIndex > 0 {
+	} else if numRows > 0 || padding > 0 {
 		//nolint: gomnd // This is just getting the first newlined substring
 		split := strings.SplitN(headers, "\n", 2)
 		rowStrs = append(rowStrs, split[0])
 	}
 
 	for i := startRowIndex; i <= endRowIndex; i++ {
-		rowStrs = append(rowStrs, m.renderRow(i, i == endRowIndex))
+		rowStrs = append(rowStrs, m.renderRow(i, padding == 0 && i == endRowIndex))
+	}
+
+	for i := 1; i <= padding; i++ {
+		rowStrs = append(rowStrs, m.renderBlankRow(i == padding))
 	}
 
 	var footer string

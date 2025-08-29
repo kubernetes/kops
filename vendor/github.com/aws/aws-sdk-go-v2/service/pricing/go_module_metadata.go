@@ -3,4 +3,4 @@
 package pricing
 
 // goModuleVersion is the tagged release for this module
-const goModuleVersion = "1.21.6"
+const goModuleVersion = "1.32.17"

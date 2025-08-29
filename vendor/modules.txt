@@ -146,16 +146,16 @@ github.com/armon/go-metrics
 # github.com/atotto/clipboard v0.1.4
 ## explicit
 github.com/atotto/clipboard
-# github.com/aws/amazon-ec2-instance-selector/v2 v2.4.2-0.20231216170552-14d4dfcbaadf
-## explicit; go 1.20
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/awsapi
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/bytequantity
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/cli
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/ec2pricing
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/instancetypes
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/selector/outputs
-github.com/aws/amazon-ec2-instance-selector/v2/pkg/sorter
+# github.com/aws/amazon-ec2-instance-selector/v3 v3.1.1
+## explicit; go 1.23
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/awsapi
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/bytequantity
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/cli
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/ec2pricing
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/instancetypes
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/selector
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/selector/outputs
+github.com/aws/amazon-ec2-instance-selector/v3/pkg/sorter
 # github.com/aws/aws-sdk-go v1.55.5
 ## explicit; go 1.19
 github.com/aws/aws-sdk-go/aws
@@ -320,8 +320,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared/config
 github.com/aws/aws-sdk-go-v2/service/kms
 github.com/aws/aws-sdk-go-v2/service/kms/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/kms/types
-# github.com/aws/aws-sdk-go-v2/service/pricing v1.21.6
-## explicit; go 1.15
+# github.com/aws/aws-sdk-go-v2/service/pricing v1.32.17
+## explicit; go 1.22
 github.com/aws/aws-sdk-go-v2/service/pricing
 github.com/aws/aws-sdk-go-v2/service/pricing/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/pricing/types
@@ -425,8 +425,8 @@ github.com/chai2010/gettext-go
 github.com/chai2010/gettext-go/mo
 github.com/chai2010/gettext-go/plural
 github.com/chai2010/gettext-go/po
-# github.com/charmbracelet/bubbles v0.16.1
-## explicit; go 1.17
+# github.com/charmbracelet/bubbles v0.20.0
+## explicit; go 1.18
 github.com/charmbracelet/bubbles/cursor
 github.com/charmbracelet/bubbles/help
 github.com/charmbracelet/bubbles/key
@@ -436,15 +436,20 @@ github.com/charmbracelet/bubbles/runeutil
 github.com/charmbracelet/bubbles/spinner
 github.com/charmbracelet/bubbles/textinput
 github.com/charmbracelet/bubbles/viewport
-# github.com/charmbracelet/bubbletea v0.24.2
-## explicit; go 1.17
+# github.com/charmbracelet/bubbletea v1.3.3
+## explicit; go 1.18
 github.com/charmbracelet/bubbletea
-# github.com/charmbracelet/lipgloss v0.7.1
-## explicit; go 1.17
+# github.com/charmbracelet/lipgloss v1.0.0
+## explicit; go 1.18
 github.com/charmbracelet/lipgloss
-# github.com/containerd/console v1.0.4
-## explicit; go 1.13
-github.com/containerd/console
+# github.com/charmbracelet/x/ansi v0.8.0
+## explicit; go 1.18
+github.com/charmbracelet/x/ansi
+github.com/charmbracelet/x/ansi/kitty
+github.com/charmbracelet/x/ansi/parser
+# github.com/charmbracelet/x/term v0.2.1
+## explicit; go 1.18
+github.com/charmbracelet/x/term
 # github.com/containerd/containerd v1.7.27
 ## explicit; go 1.21
 github.com/containerd/containerd/archive/compression
@@ -497,6 +502,9 @@ github.com/docker/docker-credential-helpers/credentials
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
 github.com/emicklei/go-restful/v3/log
+# github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f
+## explicit; go 1.16
+github.com/erikgeiser/coninput
 # github.com/evanphx/json-patch v5.9.11+incompatible
 ## explicit
 github.com/evanphx/json-patch
@@ -504,8 +512,8 @@ github.com/evanphx/json-patch
 ## explicit; go 1.18
 github.com/evanphx/json-patch/v5
 github.com/evanphx/json-patch/v5/internal/json
-# github.com/evertras/bubble-table v0.15.2
-## explicit; go 1.17
+# github.com/evertras/bubble-table v0.17.1
+## explicit; go 1.18
 github.com/evertras/bubble-table/table
 # github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f
 ## explicit; go 1.15
@@ -773,9 +781,6 @@ github.com/hetznercloud/hcloud-go/v2/hcloud/schema
 # github.com/huandu/xstrings v1.5.0
 ## explicit; go 1.12
 github.com/huandu/xstrings
-# github.com/imdario/mergo v0.3.16
-## explicit; go 1.13
-github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
@@ -826,7 +831,7 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-localereader v0.0.1
 ## explicit
 github.com/mattn/go-localereader
-# github.com/mattn/go-runewidth v0.0.14
+# github.com/mattn/go-runewidth v0.0.16
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
 # github.com/miekg/dns v1.1.62
@@ -867,7 +872,7 @@ github.com/modern-go/reflect2
 # github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00
 ## explicit
 github.com/monochromegane/go-gitignore
-# github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b
+# github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6
 ## explicit; go 1.17
 github.com/muesli/ansi
 github.com/muesli/ansi/compressor
@@ -879,8 +884,7 @@ github.com/muesli/cancelreader
 github.com/muesli/reflow/ansi
 github.com/muesli/reflow/truncate
 github.com/muesli/reflow/wordwrap
-github.com/muesli/reflow/wrap
-# github.com/muesli/termenv v0.15.2
+# github.com/muesli/termenv v0.16.0
 ## explicit; go 1.17
 github.com/muesli/termenv
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
@@ -953,8 +957,8 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/rivo/uniseg v0.2.0
-## explicit; go 1.12
+# github.com/rivo/uniseg v0.4.7
+## explicit; go 1.18
 github.com/rivo/uniseg
 # github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
@@ -962,7 +966,7 @@ github.com/russross/blackfriday/v2
 # github.com/sagikazarmark/locafero v0.7.0
 ## explicit; go 1.21
 github.com/sagikazarmark/locafero
-# github.com/sahilm/fuzzy v0.1.0
+# github.com/sahilm/fuzzy v0.1.1
 ## explicit
 github.com/sahilm/fuzzy
 # github.com/samber/lo v1.50.0

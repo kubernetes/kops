@@ -1,9 +1,38 @@
 package table
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
 )
+
+// RowStyleFuncInput is the input to the style function that can
+// be applied to each row.  This is useful for things like zebra
+// striping or other data-based styles.
+//
+// Note that we use a struct here to allow for future expansion
+// while keeping backwards compatibility.
+type RowStyleFuncInput struct {
+	// Index is the index of the row, starting at 0.
+	Index int
+
+	// Row is the full row data.
+	Row Row
+
+	// IsHighlighted is true if the row is currently highlighted.
+	IsHighlighted bool
+}
+
+// WithRowStyleFunc sets a function that can be used to apply a style to each row
+// based on the row data.  This is useful for things like zebra striping or other
+// data-based styles.  It can be safely set to nil to remove it later.
+// This style is applied after the base style and before individual row styles.
+// This will override any HighlightStyle settings.
+func (m Model) WithRowStyleFunc(f func(RowStyleFuncInput) lipgloss.Style) Model {
+	m.rowStyleFunc = f
+
+	return m
+}
 
 // WithHighlightedRow sets the highlighted row to the given index.
 func (m Model) WithHighlightedRow(index int) Model {
@@ -112,7 +141,8 @@ func (m Model) SelectedRows() []Row {
 }
 
 // HighlightStyle sets a custom style to use when the row is being highlighted
-// by the cursor.
+// by the cursor.  This should not be used with WithRowStyleFunc.  Instead, use
+// the IsHighlighted field in the style function.
 func (m Model) HighlightStyle(style lipgloss.Style) Model {
 	m.highlightStyle = style
 
@@ -132,6 +162,10 @@ func (m Model) Filtered(filtered bool) Model {
 	m.filtered = filtered
 	m.visibleRowCacheUpdated = false
 
+	if m.minimumHeight > 0 {
+		m.recalculateHeight()
+	}
+
 	return m
 }
 
@@ -145,6 +179,10 @@ func (m Model) StartFilterTyping() Model {
 // WithStaticFooter adds a footer that only displays the given text.
 func (m Model) WithStaticFooter(footer string) Model {
 	m.staticFooter = footer
+
+	if m.minimumHeight > 0 {
+		m.recalculateHeight()
+	}
 
 	return m
 }
@@ -160,12 +198,20 @@ func (m Model) WithPageSize(pageSize int) Model {
 		m.currentPage = maxPages - 1
 	}
 
+	if m.minimumHeight > 0 {
+		m.recalculateHeight()
+	}
+
 	return m
 }
 
 // WithNoPagination disables pagination in the table.
 func (m Model) WithNoPagination() Model {
 	m.pageSize = 0
+
+	if m.minimumHeight > 0 {
+		m.recalculateHeight()
+	}
 
 	return m
 }
@@ -211,6 +257,15 @@ func (m Model) WithTargetWidth(totalWidth int) Model {
 	return m
 }
 
+// WithMinimumHeight sets the minimum total height of the table, including borders.
+func (m Model) WithMinimumHeight(minimumHeight int) Model {
+	m.minimumHeight = minimumHeight
+
+	m.recalculateHeight()
+
+	return m
+}
+
 // PageDown goes to the next page of a paginated table, wrapping to the first
 // page if the table is already on the last page.
 func (m Model) PageDown() Model {
@@ -248,7 +303,6 @@ func (m Model) WithCurrentPage(currentPage int) Model {
 	if m.pageSize == 0 || currentPage == m.CurrentPage() {
 		return m
 	}
-
 	if currentPage < 1 {
 		currentPage = 1
 	} else {
@@ -258,7 +312,6 @@ func (m Model) WithCurrentPage(currentPage int) Model {
 			currentPage = maxPages
 		}
 	}
-
 	m.currentPage = currentPage - 1
 	m.rowCursorIndex = m.currentPage * m.pageSize
 
@@ -273,6 +326,11 @@ func (m Model) WithColumns(columns []Column) Model {
 	copy(m.columns, columns)
 
 	m.recalculateWidth()
+
+	if m.selectableRows {
+		// Re-add the selectable column
+		m = m.SelectableRows(true)
+	}
 
 	return m
 }
@@ -310,12 +368,20 @@ func (m Model) WithFilterInputValue(value string) Model {
 func (m Model) WithFooterVisibility(visibility bool) Model {
 	m.footerVisible = visibility
 
+	if m.minimumHeight > 0 {
+		m.recalculateHeight()
+	}
+
 	return m
 }
 
 // WithHeaderVisibility sets the visibility of the header.
 func (m Model) WithHeaderVisibility(visibility bool) Model {
 	m.headerVisible = visibility
+
+	if m.minimumHeight > 0 {
+		m.recalculateHeight()
+	}
 
 	return m
 }
@@ -388,6 +454,31 @@ func (m Model) WithAllRowsDeselected() Model {
 	}
 
 	m.rows = rows
+
+	return m
+}
+
+// WithMultiline sets whether or not to wrap text in cells to multiple lines.
+func (m Model) WithMultiline(multiline bool) Model {
+	m.multiline = multiline
+
+	return m
+}
+
+// WithAdditionalShortHelpKeys enables you to add more keybindings to the 'short help' view.
+func (m Model) WithAdditionalShortHelpKeys(keys []key.Binding) Model {
+	m.additionalShortHelpKeys = func() []key.Binding {
+		return keys
+	}
+
+	return m
+}
+
+// WithAdditionalFullHelpKeys enables you to add more keybindings to the 'full help' view.
+func (m Model) WithAdditionalFullHelpKeys(keys []key.Binding) Model {
+	m.additionalFullHelpKeys = func() []key.Binding {
+		return keys
+	}
 
 	return m
 }

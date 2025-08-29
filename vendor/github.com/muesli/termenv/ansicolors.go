@@ -1,6 +1,6 @@
 package termenv
 
-// ANSI color codes
+// ANSI color codes.
 const (
 	ANSIBlack ANSIColor = iota
 	ANSIRed

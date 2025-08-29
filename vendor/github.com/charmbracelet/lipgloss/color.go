@@ -20,7 +20,7 @@ var noColor = NoColor{}
 //
 // Example usage:
 //
-//	var style = someStyle.Copy().Background(lipgloss.NoColor{})
+//	var style = someStyle.Background(lipgloss.NoColor{})
 type NoColor struct{}
 
 func (NoColor) color(*Renderer) termenv.Color {
@@ -35,7 +35,7 @@ func (NoColor) color(*Renderer) termenv.Color {
 //
 // Deprecated.
 func (n NoColor) RGBA() (r, g, b, a uint32) {
-	return 0x0, 0x0, 0x0, 0xFFFF
+	return 0x0, 0x0, 0x0, 0xFFFF //nolint:gomnd
 }
 
 // Color specifies a color by hex or ANSI value. For example:
@@ -123,7 +123,7 @@ type CompleteColor struct {
 
 func (c CompleteColor) color(r *Renderer) termenv.Color {
 	p := r.ColorProfile()
-	switch p {
+	switch p { //nolint:exhaustive
 	case termenv.TrueColor:
 		return p.Color(c.TrueColor)
 	case termenv.ANSI256:
@@ -146,7 +146,7 @@ func (c CompleteColor) RGBA() (r, g, b, a uint32) {
 	return termenv.ConvertToRGB(c.color(renderer)).RGBA()
 }
 
-// CompleteColor specifies exact values for truecolor, ANSI256, and ANSI color
+// CompleteAdaptiveColor specifies exact values for truecolor, ANSI256, and ANSI color
 // profiles, with separate options for light and dark backgrounds. Automatic
 // color degradation will not be performed.
 type CompleteAdaptiveColor struct {
