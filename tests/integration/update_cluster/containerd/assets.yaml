@@ -58,14 +58,14 @@ images:
   download: registry.k8s.io/kube-scheduler:v1.32.0
 - canonical: registry.k8s.io/kube-proxy:v1.32.0
   download: registry.k8s.io/kube-proxy:v1.32.0
-- canonical: registry.k8s.io/kops/kops-controller:1.32.1
-  download: registry.k8s.io/kops/kops-controller:1.32.1
+- canonical: registry.k8s.io/kops/kops-controller:1.32.2
+  download: registry.k8s.io/kops/kops-controller:1.32.2
 - canonical: registry.k8s.io/coredns/coredns:v1.11.3
   download: registry.k8s.io/coredns/coredns:v1.11.3
 - canonical: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.8.9
   download: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.8.9
-- canonical: registry.k8s.io/kops/dns-controller:1.32.1
-  download: registry.k8s.io/kops/dns-controller:1.32.1
+- canonical: registry.k8s.io/kops/dns-controller:1.32.2
+  download: registry.k8s.io/kops/dns-controller:1.32.2
 - canonical: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.22.0
   download: public.ecr.aws/aws-ec2/aws-node-termination-handler:v1.22.0
 - canonical: registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0
@@ -84,10 +84,10 @@ images:
   download: public.ecr.aws/ebs-csi-driver/volume-modifier-for-k8s:v0.5.0
 - canonical: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.12.0-eks-1-32-1
   download: public.ecr.aws/eks-distro/kubernetes-csi/external-resizer:v1.12.0-eks-1-32-1
-- canonical: registry.k8s.io/kops/kube-apiserver-healthcheck:1.32.1
-  download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.32.1
-- canonical: registry.k8s.io/kops/kops-utils-cp:1.32.1
-  download: registry.k8s.io/kops/kops-utils-cp:1.32.1
+- canonical: registry.k8s.io/kops/kube-apiserver-healthcheck:1.32.2
+  download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.32.2
+- canonical: registry.k8s.io/kops/kops-utils-cp:1.32.2
+  download: registry.k8s.io/kops/kops-utils-cp:1.32.2
 - canonical: registry.k8s.io/etcd:3.4.13-0
   download: registry.k8s.io/etcd:3.4.13-0
 - canonical: registry.k8s.io/etcd:3.5.21-0
