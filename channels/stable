@@ -119,14 +119,20 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.34.0"
+    recommendedVersion: 1.34.0
+    requiredVersion: 1.34.0
+  - range: ">=1.33.0"
+    recommendedVersion: 1.33.4
+    requiredVersion: 1.33.0
   - range: ">=1.32.0"
-    recommendedVersion: 1.32.4
+    recommendedVersion: 1.32.8
     requiredVersion: 1.32.0
   - range: ">=1.31.0"
-    recommendedVersion: 1.31.8
+    recommendedVersion: 1.31.12
     requiredVersion: 1.31.0
   - range: ">=1.30.0"
-    recommendedVersion: 1.30.12
+    recommendedVersion: 1.30.14
     requiredVersion: 1.30.0
   - range: ">=1.29.0"
     recommendedVersion: 1.29.15
@@ -189,36 +195,44 @@ spec:
     recommendedVersion: 1.11.10
     requiredVersion: 1.11.10
   kopsVersions:
+  - range: ">=1.34.0-alpha.1"
+    recommendedVersion: "1.33.1"
+    #requiredVersion: 1.34.0
+    kubernetesVersion: 1.34.0
+  - range: ">=1.33.0-alpha.1"
+    recommendedVersion: "1.33.1"
+    #requiredVersion: 1.33.0
+    kubernetesVersion: 1.33.4
   - range: ">=1.32.0-alpha.1"
-    recommendedVersion: "1.31.0-beta.1"
+    recommendedVersion: "1.33.1"
     #requiredVersion: 1.32.0
-    kubernetesVersion: 1.32.4
+    kubernetesVersion: 1.32.8
   - range: ">=1.31.0-alpha.1"
-    recommendedVersion: "1.31.0-beta.1"
+    recommendedVersion: "1.33.1"
     #requiredVersion: 1.31.0
-    kubernetesVersion: 1.31.8
+    kubernetesVersion: 1.31.12
   - range: ">=1.30.0-alpha.1"
-    recommendedVersion: "1.30.3"
+    recommendedVersion: "1.33.1"
     #requiredVersion: 1.30.0
-    kubernetesVersion: 1.30.12
+    kubernetesVersion: 1.30.14
   - range: ">=1.29.0-alpha.1"
-    recommendedVersion: "1.30.3"
+    recommendedVersion: "1.33.1"
     #requiredVersion: 1.29.0
     kubernetesVersion: 1.29.15
   - range: ">=1.28.0-alpha.1"
-    recommendedVersion: "1.30.3"
+    recommendedVersion: "1.33.1"
     #requiredVersion: 1.28.0
     kubernetesVersion: 1.28.15
   - range: ">=1.27.0-alpha.1"
-    recommendedVersion: "1.30.3"
+    recommendedVersion: "1.32.2"
     #requiredVersion: 1.27.0
     kubernetesVersion: 1.27.16
   - range: ">=1.26.0-alpha.1"
-    recommendedVersion: "1.30.3"
+    recommendedVersion: "1.31.0"
     #requiredVersion: 1.26.0
     kubernetesVersion: 1.26.15
   - range: ">=1.25.0-alpha.1"
-    recommendedVersion: "1.30.3"
+    recommendedVersion: "1.30.4"
     #requiredVersion: 1.25.0
     kubernetesVersion: 1.25.16
   - range: ">=1.24.0-alpha.1"
