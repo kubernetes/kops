@@ -48,6 +48,11 @@ func (t *Tester) setSkipRegexFlag() error {
 	skipRegex += "|blackbox.*should.not.be.able.to.pull.image.from.invalid.registry"
 	skipRegex += "|blackbox.*should.be.able.to.pull.from.private.registry.with.secret"
 
+	// K8s 1.28 promoted ProxyTerminatingEndpoints to GA, but it has limited CNI support
+	// https://github.com/kubernetes/kubernetes/pull/117718
+	// https://github.com/cilium/cilium/issues/27358
+	skipRegex += "|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local"
+
 	networking := cluster.Spec.LegacyNetworking
 	switch {
 	case networking.Kubenet != nil, networking.Canal != nil, networking.Cilium != nil:
