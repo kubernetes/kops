@@ -25,7 +25,7 @@ spec:
   iam: {}
   kubelet:
     anonymousAuth: false
-  kubernetesVersion: v1.27.0
+  kubernetesVersion: v1.34.0
   masterPublicName: api.privatedns1.example.com
   networkCIDR: 172.20.0.0/16
   networking:
