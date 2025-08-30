@@ -68,7 +68,12 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
 	if policy := r.UpdatePolicy; policy != nil {
-		actual.UpdatePolicy = &UpdatePolicy{MinimalAction: policy.MinimalAction, Type: policy.Type}
+		actual.UpdatePolicy = &UpdatePolicy{
+			MinimalAction:       policy.MinimalAction,
+			Type:                policy.Type,
+			MaxSurgeFixed:       policy.MaxSurge.Fixed,
+			MaxUnavailableFixed: policy.MaxUnavailable.Fixed,
+		}
 	}
 
 	for _, targetPool := range r.TargetPools {
@@ -111,8 +116,10 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 
 	if policy := e.UpdatePolicy; policy != nil {
 		i.UpdatePolicy = &compute.InstanceGroupManagerUpdatePolicy{
-			MinimalAction: policy.MinimalAction,
-			Type:          policy.Type,
+			MaxSurge:       &compute.FixedOrPercent{Fixed: policy.MaxSurgeFixed},
+			MaxUnavailable: &compute.FixedOrPercent{Fixed: policy.MaxUnavailableFixed},
+			MinimalAction:  policy.MinimalAction,
+			Type:           policy.Type,
 		}
 	}
 
@@ -199,8 +206,10 @@ type terraformInstanceGroupManager struct {
 }
 
 type terraformUpdatePolicy struct {
-	MinimalAction string `cty:"minimal_action"`
-	Type          string `cty:"type"`
+	MaxSurgeFixed       int64  `cty:"max_surge_fixed"`
+	MaxUnavailableFixed int64  `cty:"max_unavailable_fixed"`
+	MinimalAction       string `cty:"minimal_action"`
+	Type                string `cty:"type"`
 }
 
 type terraformVersion struct {
@@ -220,8 +229,10 @@ func (_ *InstanceGroupManager) RenderTerraform(t *terraform.TerraformTarget, a, 
 	}
 	if policy := e.UpdatePolicy; policy != nil {
 		tf.UpdatePolicy = &terraformUpdatePolicy{
-			MinimalAction: policy.MinimalAction,
-			Type:          policy.Type,
+			MaxSurgeFixed:       policy.MaxSurgeFixed,
+			MaxUnavailableFixed: policy.MaxUnavailableFixed,
+			MinimalAction:       policy.MinimalAction,
+			Type:                policy.Type,
 		}
 	}
 	tf.Version = &terraformVersion{
