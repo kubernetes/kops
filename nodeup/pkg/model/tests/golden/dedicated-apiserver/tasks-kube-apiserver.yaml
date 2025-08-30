@@ -32,7 +32,7 @@ contents: |
       - --etcd-keyfile=/srv/kubernetes/kube-apiserver/etcd-client.key
       - --etcd-servers-overrides=/events#https://events.etcd.internal.minimal.example.com:4002
       - --etcd-servers=https://main.etcd.internal.minimal.example.com:4001
-      - --feature-gates=CSIMigrationAWS=true,InTreePluginAWSUnregister=true
+      - --feature-gates=InTreePluginAWSUnregister=true
       - --kubelet-client-certificate=/srv/kubernetes/kube-apiserver/kubelet-api.crt
       - --kubelet-client-key=/srv/kubernetes/kube-apiserver/kubelet-api.key
       - --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP

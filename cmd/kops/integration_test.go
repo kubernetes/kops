@@ -247,28 +247,6 @@ func TestMinimalAWS(t *testing.T) {
 }
 
 // TestMinimal runs the test on a minimum configuration
-func TestMinimal_v1_27(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "minimal-1.27").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum configuration
-func TestMinimal_v1_28(t *testing.T) {
-	newIntegrationTest("minimal.example.com", "minimal-1.28").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_29(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.29").
 		withAddons(
@@ -719,15 +697,6 @@ func TestPrivateCiliumENI(t *testing.T) {
 			dnsControllerAddon,
 			awsCCMAddon,
 		).
-		runTestTerraformAWS(t)
-}
-
-// TestPrivateCanal runs the test on a configuration with private topology, canal networking
-func TestPrivateCanal(t *testing.T) {
-	newIntegrationTest("privatecanal.example.com", "privatecanal").
-		withPrivate().
-		withDefaultAddons30().
-		withAddons(canalAddon).
 		runTestTerraformAWS(t)
 }
 
