@@ -70,6 +70,9 @@ func (d *deployer) Up() error {
 			if err := d.aws.EnsureS3Bucket(ctx, d.stateStore(), false); err != nil {
 				return err
 			}
+			if err := d.aws.EnsureS3Bucket(ctx, d.discoveryStore(), true); err != nil {
+				return err
+			}
 		case "gce":
 			if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject, false); err != nil {
 				return err
