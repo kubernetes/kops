@@ -68,6 +68,11 @@ func (d *Distribution) IsDebianFamily() bool {
 	return d.packageFormat == "deb"
 }
 
+// IsDebian returns true if this distribution is Debian
+func (d *Distribution) IsDebian() bool {
+	return d.project == "debian"
+}
+
 // IsUbuntu returns true if this distribution is Ubuntu (but not debian)
 func (d *Distribution) IsUbuntu() bool {
 	return d.project == "ubuntu"
