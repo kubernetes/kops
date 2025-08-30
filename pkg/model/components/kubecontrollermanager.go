@@ -161,10 +161,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 		if _, found := kcm.FeatureGates["InTreePluginAWSUnregister"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.31") {
 			kcm.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
-
-		if _, found := kcm.FeatureGates["CSIMigrationAWS"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.27") {
-			kcm.FeatureGates["CSIMigrationAWS"] = "true"
-		}
 	}
 
 	return nil

@@ -194,10 +194,6 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		if _, found := c.FeatureGates["InTreePluginAWSUnregister"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.31") {
 			c.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
-
-		if _, found := c.FeatureGates["CSIMigrationAWS"]; !found && b.ControlPlaneKubernetesVersion().IsLT("1.27") {
-			c.FeatureGates["CSIMigrationAWS"] = "true"
-		}
 	}
 
 	return nil

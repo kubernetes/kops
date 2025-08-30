@@ -48,7 +48,7 @@ func TestTaintsApplied(t *testing.T) {
 		expectTaints []string
 	}{
 		{
-			version:      "1.28.0",
+			version:      "1.29.0",
 			taints:       []string{"foo", "bar", "baz"},
 			expectTaints: []string{"foo", "bar", "baz", "node-role.kubernetes.io/control-plane=:NoSchedule"},
 		},

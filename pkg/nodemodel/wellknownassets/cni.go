@@ -95,12 +95,7 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 			cniAssetURL = defaultCNIAssetAmd64K8s_30
 		case ig.KubernetesVersion().IsGTE("1.29"):
 			cniAssetURL = defaultCNIAssetAmd64K8s_29
-		case ig.KubernetesVersion().IsGTE("1.27"):
-			cniAssetURL = defaultCNIAssetAmd64K8s_27
-		default:
-			cniAssetURL = defaultCNIAssetAmd64K8s_22
 		}
-		klog.V(2).Infof("Adding default ARM64 CNI plugin binaries asset: %s", cniAssetURL)
 	case architectures.ArchitectureArm64:
 		switch {
 		case ig.KubernetesVersion().IsGTE("1.32"):
@@ -111,14 +106,15 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 			cniAssetURL = defaultCNIAssetArm64K8s_30
 		case ig.KubernetesVersion().IsGTE("1.29"):
 			cniAssetURL = defaultCNIAssetArm64K8s_29
-		case ig.KubernetesVersion().IsGTE("1.27"):
-			cniAssetURL = defaultCNIAssetArm64K8s_27
-		default:
-			cniAssetURL = defaultCNIAssetArm64K8s_22
 		}
-		klog.V(2).Infof("Adding default AMD64 CNI plugin binaries asset: %s", cniAssetURL)
 	default:
 		return nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
+	}
+
+	if cniAssetURL == "" {
+		return nil, fmt.Errorf("unknown CNI plugin binaries asset: %s", arch)
+	} else {
+		klog.V(2).Infof("Adding CNI plugin binaries asset: %s", cniAssetURL)
 	}
 
 	u, err := url.Parse(cniAssetURL)

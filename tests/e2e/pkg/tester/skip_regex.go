@@ -33,12 +33,6 @@ func (t *Tester) setSkipRegexFlag() error {
 		return nil
 	}
 
-	kopsVersion, err := t.getKopsVersion()
-	if err != nil {
-		return err
-	}
-	isPre28 := kopsVersion < "1.28"
-
 	cluster, err := t.getKopsCluster()
 	if err != nil {
 		return err
@@ -53,13 +47,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	//.Skip.broken.test,.see.https://github.com/kubernetes/kubernetes/pull/133262
 	skipRegex += "|blackbox.*should.not.be.able.to.pull.image.from.invalid.registry"
 	skipRegex += "|blackbox.*should.be.able.to.pull.from.private.registry.with.secret"
-
-	if !isPre28 {
-		// K8s 1.28 promoted ProxyTerminatingEndpoints to GA, but it has limited CNI support
-		// https://github.com/kubernetes/kubernetes/pull/117718
-		// https://github.com/cilium/cilium/issues/27358
-		skipRegex += "|fallback.to.local.terminating.endpoints.when.there.are.no.ready.endpoints.with.externalTrafficPolicy.Local"
-	}
 
 	networking := cluster.Spec.LegacyNetworking
 	switch {
@@ -90,21 +77,6 @@ func (t *Tester) setSkipRegexFlag() error {
 			// https://github.com/kubernetes/kubernetes/issues/129221
 			// < 35 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
-		}
-
-		if isPre28 {
-			// These may be fixed in Cilium 1.13 but skipping for now
-			skipRegex += "|Service.with.multiple.ports.specified.in.multiple.EndpointSlices"
-			// https://github.com/cilium/cilium/issues/18241
-			skipRegex += "|Services.should.create.endpoints.for.unready.pods"
-			skipRegex += "|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true"
-		}
-		if k8sVersion.Minor < 27 {
-			// Partially implemented in Cilium 1.13 but kops doesn't enable it
-			// Ref: https://github.com/cilium/cilium/pull/20033
-			// K8s 1.27+ added [Serial] to the test case, which is skipped by default
-			// Ref: https://github.com/kubernetes/kubernetes/pull/113335
-			skipRegex += "|should.create.a.Pod.with.SCTP.HostPort"
 		}
 
 		if k8sVersion.Minor < 35 {

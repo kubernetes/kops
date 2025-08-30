@@ -73,7 +73,7 @@ func UseExternalKubeletCredentialProvider(k8sVersion *KubernetesVersion, cloudPr
 	case kops.CloudProviderGCE:
 		return k8sVersion.IsGTE("1.29")
 	case kops.CloudProviderAWS:
-		return k8sVersion.IsGTE("1.27")
+		return true
 	default:
 		return false
 	}

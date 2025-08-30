@@ -183,10 +183,6 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 		if _, found := kubelet.FeatureGates["InTreePluginAWSUnregister"]; !found && kubernetesVersion.IsLT("1.31") {
 			kubelet.FeatureGates["InTreePluginAWSUnregister"] = "true"
 		}
-
-		if _, found := kubelet.FeatureGates["CSIMigrationAWS"]; !found && kubernetesVersion.IsLT("1.27") {
-			kubelet.FeatureGates["CSIMigrationAWS"] = "true"
-		}
 	}
 
 	// Set systemd as the default cgroup driver for kubelet

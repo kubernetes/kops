@@ -307,8 +307,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 
 	if ig.Spec.InstanceMetadata != nil && ig.Spec.InstanceMetadata.HTTPTokens != nil {
 		lt.HTTPTokens = fi.PtrTo(ec2types.LaunchTemplateHttpTokensState(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPTokens)))
-	} else if b.IsKubernetesLT("1.27") {
-		lt.HTTPTokens = fi.PtrTo(ec2types.LaunchTemplateHttpTokensStateOptional)
 	}
 
 	switch rootVolumeType {

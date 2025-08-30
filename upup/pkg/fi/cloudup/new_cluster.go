@@ -937,12 +937,6 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 				g.Spec.Zones = []string{zone}
 			}
 
-			if cluster.IsKubernetesLT("1.27") && cloudProvider == api.CloudProviderAWS {
-				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPTokens: fi.PtrTo("required"),
-				}
-			}
-
 			for i, size := range opt.ControlPlaneSizes {
 				if i == 0 {
 					g.Spec.MachineType = size
@@ -1117,15 +1111,6 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 			g.Spec.Zones = []string{zone}
 		}
 
-		if cluster.IsKubernetesLT("1.27") {
-			if cloudProvider == api.CloudProviderAWS {
-				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
-				}
-			}
-		}
-
 		if cloudProvider == api.CloudProviderGCE {
 			if g.Spec.NodeLabels == nil {
 				g.Spec.NodeLabels = make(map[string]string)
@@ -1160,13 +1145,6 @@ func setupKarpenterNodes(cluster *api.Cluster) ([]*api.InstanceGroup, error) {
 	g.Spec.Role = api.InstanceGroupRoleNode
 	g.Spec.Manager = api.InstanceManagerKarpenter
 	g.ObjectMeta.Name = "nodes"
-
-	if cluster.IsKubernetesLT("1.27") {
-		g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-			HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-			HTTPTokens:              fi.PtrTo("required"),
-		}
-	}
 
 	return []*api.InstanceGroup{g}, nil
 }
@@ -1208,15 +1186,6 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnets
 
 		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
-		}
-
-		if cluster.IsKubernetesLT("1.27") {
-			if cloudProvider == api.CloudProviderAWS {
-				g.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-					HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-					HTTPTokens:              fi.PtrTo("required"),
-				}
-			}
 		}
 
 		nodes = append(nodes, g)
@@ -1404,15 +1373,6 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 			}
 			if cluster.GetCloudProvider() == api.CloudProviderGCE {
 				bastionGroup.Spec.Zones = allZones.List()
-			}
-
-			if cluster.IsKubernetesLT("1.27") {
-				if cluster.GetCloudProvider() == api.CloudProviderAWS {
-					bastionGroup.Spec.InstanceMetadata = &api.InstanceMetadataOptions{
-						HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
-						HTTPTokens:              fi.PtrTo("required"),
-					}
-				}
 			}
 
 			bastionGroup.Spec.Image = opt.BastionImage
