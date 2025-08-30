@@ -380,7 +380,6 @@ spec:
             memory: 10Mi
       nodeSelector:
         kubernetes.io/os: linux
-      priorityClassName: system-cluster-critical
       serviceAccountName: coredns-autoscaler
       tolerations:
       - key: CriticalAddonsOnly

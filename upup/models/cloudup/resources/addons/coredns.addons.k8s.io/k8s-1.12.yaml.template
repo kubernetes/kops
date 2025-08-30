@@ -138,7 +138,7 @@ spec:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
         {{- end }}
-        {{- if KarpenterEnabled }}
+        {{- if IsControlPlaneMode }}
         - key: node-role.kubernetes.io/master
           operator: Exists
         - key: node-role.kubernetes.io/control-plane
@@ -361,7 +361,9 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      {{- if not IsControlPlaneMode }}
       priorityClassName: system-cluster-critical
+      {{- end }}
       tolerations:
         {{- if KubeDNS.Tolerations }}
 {{ ToYAML .KubeDNS.Tolerations | indent 8 }}

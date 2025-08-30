@@ -74,19 +74,26 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			}
 		}
 
-		task, err := b.buildLaunchTemplateTask(c, name, ig)
+		// Always create the user data, even for Karpenter manged instance groups
+		// Kaprenter expects the user data to be available in the state store:
+		// ${KOPS_STATE_STORE}/${CLUSTER_NAME}/igconfig/node/${IG_NAME}/nodeupscript.sh
+		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
 			return err
 		}
-		c.AddTask(task)
 
-		// @step: now lets build the autoscaling group task
 		if ig.Spec.Manager != "Karpenter" {
+			lt, err := b.buildLaunchTemplateTask(c, name, ig, userData)
+			if err != nil {
+				return err
+			}
+			c.AddTask(lt)
+
 			asg, err := b.buildAutoScalingGroupTask(c, name, ig)
 			if err != nil {
 				return err
 			}
-			asg.LaunchTemplate = task
+			asg.LaunchTemplate = lt
 			c.AddTask(asg)
 
 			warmPool := b.Cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(ig)
@@ -136,7 +143,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 }
 
 // buildLaunchTemplateTask is responsible for creating the template task into the aws model
-func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupModelBuilderContext, name string, ig *kops.InstanceGroup) (*awstasks.LaunchTemplate, error) {
+func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupModelBuilderContext, name string, ig *kops.InstanceGroup, userData fi.Resource) (*awstasks.LaunchTemplate, error) {
 	// @step: add the iam instance profile
 	link, err := b.LinkToIAMInstanceProfile(ig)
 	if err != nil {
@@ -178,11 +185,6 @@ func (b *AutoscalingGroupModelBuilder) buildLaunchTemplateTask(c *fi.CloudupMode
 	tags, err := b.CloudTagsForInstanceGroup(ig)
 	if err != nil {
 		return nil, fmt.Errorf("error building cloud tags: %v", err)
-	}
-
-	userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
-	if err != nil {
-		return nil, err
 	}
 
 	lt := &awstasks.LaunchTemplate{
