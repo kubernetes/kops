@@ -1195,13 +1195,14 @@ func addCiliumEniPermissions(p *Policy) {
 		"ec2:UnassignPrivateIpAddresses",
 		"ec2:CreateNetworkInterface",
 		"ec2:DescribeNetworkInterfaces",
-		"ec2:DescribeVpcPeeringConnections",
 		"ec2:DescribeSecurityGroups",
-		"ec2:DetachNetworkInterface",
 		"ec2:DeleteNetworkInterface",
 		"ec2:ModifyNetworkInterfaceAttribute",
 		"ec2:DescribeVpcs",
 		"ec2:CreateTags",
+		"ec2:DescribeRouteTables",
+		"ec2:DescribeTags",
+		"ec2:DescribeInstances",
 	)
 }
 

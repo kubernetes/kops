@@ -1,13 +1,21 @@
 # This file is only used to help generate the .yaml.template file
 hubble:
+  enabled: true
   metrics:
     enabled: [drop]
   relay:
     enabled: true
+  tls:
+    auto:
+      method: "certmanager"
+      certManagerIssuerRef:
+        name: "networking.cilium.io"
+        kind: "Issuer"
 ingressController:
   enabled: true
   secretsNamespace:
     create: false
+    name: kube-system
 serviceAccounts:
   envoy:
     create: false
@@ -16,9 +24,14 @@ envoy:
 envoyConfig:
   secretsNamespace:
     create: false
+    name: kube-system
 gatewayAPI:
+  enabled: true
+  gatewayClass:
+    create: "true"
   secretsNamespace:
     create: false
+    name: kube-system
 bgpControlPlane:
   secretsNamespace:
     create: false
@@ -28,6 +41,35 @@ updateStrategy:
 monitor:
   enabled: true
 ipv4:
-  enabled: false
-ipv6:
   enabled: true
+ipv6:
+  enabled: false
+tls:
+  secretsNamespace:
+    create: false
+    name: kube-system
+  secretSync:
+    enabled: false
+operator:
+  podDisruptionBudget:
+    enabled: true
+etcd:
+  enabled: true
+  ssl: true
+  endpoints:
+  - "https://{{ APIInternalName }}:4003"
+encryption:
+  enabled: true
+prometheus:
+  enabled: true
+  metrics:
+  - +metric_foo
+bpf:
+  masquerade: false
+identityChangeGracePeriod: 5s
+cni:
+  chainingMode: none
+disableEndpointCRD: true
+localRedirectPolicy: true
+loadBalancer:
+  serviceTopology: true
