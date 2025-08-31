@@ -211,11 +211,9 @@ func (b *ContainerdBuilder) buildSystemdService(containerdVersion semver.Version
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
-	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" {
-		cgroup := b.NodeupConfig.KubeletConfig.RuntimeCgroups
-		if cgroup != "" {
-			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
-		}
+	cgroup := b.NodeupConfig.KubeletConfig.RuntimeCgroups
+	if cgroup != "" {
+		manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
 	}
 
 	manifestString := manifest.Render()

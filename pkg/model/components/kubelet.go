@@ -186,9 +186,10 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	}
 
 	// Set systemd as the default cgroup driver for kubelet
-	if kubelet.CgroupDriver == "" {
-		kubelet.CgroupDriver = "systemd"
-	}
+	// In Kubernetes 1.34, with the KubeletCgroupDriverFromCRI feature gate enabled and a container runtime
+	// that supports the RuntimeConfig CRI RPC, the kubelet automatically detects the appropriate cgroup driver
+	// from the runtime, and ignores the cgroupDriver setting within the kubelet configuration.
+	kubelet.CgroupDriver = "systemd"
 
 	if kubelet.ProtectKernelDefaults == nil {
 		kubelet.ProtectKernelDefaults = fi.PtrTo(true)

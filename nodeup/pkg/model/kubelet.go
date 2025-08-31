@@ -193,48 +193,45 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	}
 
-	if kubeletConfig.CgroupDriver == "systemd" {
-
-		{
-			cgroup := kubeletConfig.KubeletCgroups
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
-
-		}
-		{
-			cgroup := kubeletConfig.RuntimeCgroups
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
-
-		}
-		/* Kubelet incorrectly interprets this value when CgroupDriver is systemd
-		See https://github.com/kubernetes/kubernetes/issues/101189
-		{
-			cgroup := kubeletConfig.KubeReservedCgroup
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
-		}
-		*/
-
-		{
-			cgroup := kubeletConfig.SystemCgroups
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
+	{
+		cgroup := kubeletConfig.KubeletCgroups
+		if cgroup != "" {
+			c.EnsureTask(b.buildCgroupService(cgroup))
 		}
 
-		/* This suffers from the same issue as KubeReservedCgroup
-		{
-			cgroup := kubeletConfig.SystemReservedCgroup
-			if cgroup != "" {
-				c.EnsureTask(b.buildCgroupService(cgroup))
-			}
-		}
-		*/
 	}
+	{
+		cgroup := kubeletConfig.RuntimeCgroups
+		if cgroup != "" {
+			c.EnsureTask(b.buildCgroupService(cgroup))
+		}
+
+	}
+	/* Kubelet incorrectly interprets this value when CgroupDriver is systemd
+	See https://github.com/kubernetes/kubernetes/issues/101189
+	{
+		cgroup := kubeletConfig.KubeReservedCgroup
+		if cgroup != "" {
+			c.EnsureTask(b.buildCgroupService(cgroup))
+		}
+	}
+	*/
+
+	{
+		cgroup := kubeletConfig.SystemCgroups
+		if cgroup != "" {
+			c.EnsureTask(b.buildCgroupService(cgroup))
+		}
+	}
+
+	/* This suffers from the same issue as KubeReservedCgroup
+	{
+		cgroup := kubeletConfig.SystemReservedCgroup
+		if cgroup != "" {
+			c.EnsureTask(b.buildCgroupService(cgroup))
+		}
+	}
+	*/
 
 	c.AddTask(b.buildSystemdService())
 
@@ -413,11 +410,9 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
-	if b.NodeupConfig.KubeletConfig.CgroupDriver == "systemd" {
-		cgroup := b.NodeupConfig.KubeletConfig.KubeletCgroups
-		if cgroup != "" {
-			manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
-		}
+	cgroup := b.NodeupConfig.KubeletConfig.KubeletCgroups
+	if cgroup != "" {
+		manifest.Set("Service", "Slice", strings.Trim(cgroup, "/")+".slice")
 	}
 
 	manifestString := manifest.Render()
