@@ -1655,7 +1655,7 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       tolerations:
-      - operator: Exists
+        - operator: Exists
       volumes:
         # For sharing configuration between the "config" initContainer and the agent
       - name: tmp
@@ -1714,13 +1714,13 @@ spec:
           items:
           - key: etcd-config
             path: etcd.config
-        # To read the Cilium etcd secrets in case the user might want to use TLS
+        # To read the k8s etcd secrets in case the user might want to use TLS
       - name: etcd-secrets
         hostPath:
           path: /etc/kubernetes/pki/cilium
           type: Directory
 {{- end }}
-      # To read the clustermesh configuration
+        # To read the clustermesh configuration
       - name: clustermesh-secrets
         projected:
           # note: the leading zero means this number is in octal representation: do not remove it
