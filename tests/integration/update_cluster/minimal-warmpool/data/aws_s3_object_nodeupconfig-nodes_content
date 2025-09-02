@@ -57,8 +57,9 @@ containerdConfig:
 usesLegacyGossip: false
 usesNoneDNS: false
 warmPoolImages:
-- kops.k8s.io/remapped-image/cilium/cilium:v1.16.7
-- kops.k8s.io/remapped-image/cilium/operator:v1.16.7
+- kops.k8s.io/remapped-image/cilium/cilium:v1.17.7@sha256:b22440f49c61195171aca585c7a57c6a8867271e43a5abc38f2a2f561436ff86
+- kops.k8s.io/remapped-image/cilium/hubble-relay:v1.17.7@sha256:9394312ce65c3c253a8c26a6c292f58736e75c78d1446ecfcd244f1418bebe77
+- kops.k8s.io/remapped-image/cilium/operator-generic:v1.17.7@sha256:a610be2562d0f5a8945a27df7d5681711263ce92e09947e867fc37fc9ab08788
 - kops.k8s.io/remapped-image/kube-proxy:v1.32.0
 - kops.k8s.io/remapped-image/provider-aws/aws-ebs-csi-driver:v1.47.0
 - kops.k8s.io/remapped-image/provider-aws/cloud-controller-manager:v1.31.0
