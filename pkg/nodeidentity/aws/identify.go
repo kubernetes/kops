@@ -170,7 +170,7 @@ func (i *nodeIdentifier) getInstance(ctx context.Context, instanceID string) (*e
 	}
 
 	// @check we found some instances
-	if len(resp.Reservations) <= 0 || len(resp.Reservations[0].Instances) <= 0 {
+	if len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
 		return nil, fmt.Errorf("missing instance id: %s", instanceID)
 	}
 	if len(resp.Reservations[0].Instances) > 1 {
