@@ -107,9 +107,7 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 			Name: loadBalancer.Name,
 			ID:   loadBalancer.ID,
 			Type: resourceTypeLoadBalancer,
-			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-				return deleteLoadBalancer(cloud, tracker)
-			},
+			Deleter: deleteLoadBalancer,
 			Obj: loadBalancer,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
@@ -131,9 +129,7 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			Name: server.Name,
 			ID:   server.ID,
 			Type: resourceTypeServer,
-			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-				return deleteServer(cloud, tracker)
-			},
+			Deleter: deleteServer,
 			Obj: server,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
@@ -159,9 +155,7 @@ func listServerIPs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 			Name: ip.Address.String(),
 			ID:   ip.ID,
 			Type: resourceTypeServerIP,
-			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-				return deleteServerIP(cloud, tracker)
-			},
+			Deleter: deleteServerIP,
 			Obj: ip,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
@@ -183,9 +177,7 @@ func listSSHKeys(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			Name: sshkey.Name,
 			ID:   sshkey.ID,
 			Type: resourceTypeSSHKey,
-			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-				return deleteSSHKey(cloud, tracker)
-			},
+			Deleter: deleteSSHKey,
 			Obj: sshkey,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
@@ -207,9 +199,7 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 			Name: volume.Name,
 			ID:   volume.ID,
 			Type: resourceTypeVolume,
-			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
-				return deleteVolume(cloud, tracker)
-			},
+			Deleter: deleteVolume,
 			Obj: volume,
 		}
 		if volume.Server != nil {

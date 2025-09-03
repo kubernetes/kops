@@ -134,9 +134,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 						sortedLabelKeys[i] = k
 						i++
 					}
-					slices.SortStableFunc(sortedLabelKeys, func(a, b string) int {
-						return strings.Compare(a, b)
-					})
+					slices.SortStableFunc(sortedLabelKeys, strings.Compare)
 					for _, k := range sortedLabelKeys {
 						nodeLabels += k + "=" + ig.Spec.NodeLabels[k] + ","
 					}
