@@ -45,18 +45,11 @@ func (m *MockEC2) DescribeDhcpOptions(ctx context.Context, request *ec2.Describe
 	for id, dhcpOptions := range m.DhcpOptions {
 		allFiltersMatch := true
 		for _, filter := range request.Filters {
-			match := false
-			switch *filter.Name {
-			// case "vpc-id":
-			// 	if *subnet.main.VpcId == *filter.Values[0] {
-			// 		match = true
-			// 	}
-			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2types.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
-				}
+			var match bool
+			if strings.HasPrefix(*filter.Name, "tag:") {
+				match = m.hasTag(ec2types.ResourceTypeDhcpOptions, *dhcpOptions.DhcpOptionsId, filter)
+			} else {
+				return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 			}
 
 			if !match {

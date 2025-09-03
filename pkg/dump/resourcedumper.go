@@ -265,8 +265,7 @@ func (d *resourceDumper) dumpGVRNamespaces(ctx context.Context, jobs chan gvrNam
 }
 
 func maskObject(obj runtime.Object) error {
-	switch obj.GetObjectKind().GroupVersionKind() {
-	case schema.GroupVersionKind{Group: "", Version: "v1", Kind: "Secret"}:
+	if obj.GetObjectKind().GroupVersionKind() == (schema.GroupVersionKind{Group: "", Version: "v1", Kind: "Secret"}) {
 		unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
 		if err != nil {
 			return err

@@ -221,8 +221,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		for _, addon := range b.ClusterAddons {
 			applyToCluster := true
 
-			switch addon.GroupVersionKind().GroupKind() {
-			case schema.GroupKind{Group: "kubescheduler.config.k8s.io", Kind: "KubeSchedulerConfiguration"}:
+			if addon.GroupVersionKind().GroupKind() == (schema.GroupKind{Group: "kubescheduler.config.k8s.io", Kind: "KubeSchedulerConfiguration"}) {
 				applyToCluster = false
 			}
 

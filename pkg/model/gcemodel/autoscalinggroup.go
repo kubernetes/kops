@@ -342,8 +342,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			}
 
 			// Attach masters to load balancer if we're using one
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleControlPlane:
+			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {

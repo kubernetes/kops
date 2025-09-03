@@ -123,8 +123,7 @@ func (c *ClientsetSecretStore) ListSecrets() ([]string, error) {
 	for i := range list.Items {
 		keyset := &list.Items[i]
 
-		switch keyset.Spec.Type {
-		case kops.SecretTypeSecret:
+		if keyset.Spec.Type == kops.SecretTypeSecret {
 			name := strings.TrimPrefix(keyset.Name, NamePrefix)
 			names = append(names, name)
 		}
