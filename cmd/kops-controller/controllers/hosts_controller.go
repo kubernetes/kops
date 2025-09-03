@@ -114,7 +114,7 @@ func (r *HostsReconciler) updateHosts(ctx context.Context, endpointsList *corev1
 		}
 		suffix := ".internal." + r.clusterName
 		if !strings.HasSuffix(hostname, suffix) {
-			hostname = hostname + suffix
+			hostname += suffix
 		} else {
 			klog.Warningf("endpoints %s/%s found with full internal name for discovery label %q; use short name %q instead", endpoints.Name, endpoints.Namespace, kops.DiscoveryLabelKey, strings.TrimSuffix(hostname, suffix))
 		}
