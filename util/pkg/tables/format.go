@@ -121,9 +121,7 @@ func (t *Table) Render(items interface{}, out io.Writer, columnNames ...string) 
 	}
 
 	SortByFunction(n, func(i, j int) {
-		row := rows[i]
-		rows[i] = rows[j]
-		rows[j] = row
+		rows[i], rows[j] = rows[j], rows[i]
 	}, func(i, j int) bool {
 		l := rows[i]
 		r := rows[j]
