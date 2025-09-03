@@ -58,7 +58,7 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on AWS
-func New(ctx context.Context, CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+func New(ctx context.Context, cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	config, err := awsconfig.LoadDefaultConfig(ctx, awslog.WithAWSLogger())
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %v", err)
@@ -77,7 +77,7 @@ func New(ctx context.Context, CacheNodeidentityInfo bool) (nodeidentity.Identifi
 	return &nodeIdentifier{
 		ec2Client:    ec2Client,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
-		cacheEnabled: CacheNodeidentityInfo,
+		cacheEnabled: cacheNodeidentityInfo,
 	}, nil
 }
 

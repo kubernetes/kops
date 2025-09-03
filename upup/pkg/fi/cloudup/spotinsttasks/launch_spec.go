@@ -1175,11 +1175,11 @@ func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) 
 
 	return out
 }
-func buildImages(cloud awsup.AWSCloud, ImageID *string, OtherArchitectureImages []string) ([]*aws.Images, error) {
+func buildImages(cloud awsup.AWSCloud, imageID *string, OtherArchitectureImages []string) ([]*aws.Images, error) {
 	var imagesSlice []*aws.Images
 	var imageIndex = 0
-	if ImageID != nil {
-		image, err := resolveImage(cloud, fi.ValueOf(ImageID))
+	if imageID != nil {
+		image, err := resolveImage(cloud, fi.ValueOf(imageID))
 		if err != nil {
 			return nil, err
 		}

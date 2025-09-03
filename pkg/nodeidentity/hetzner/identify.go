@@ -46,7 +46,7 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Hetzner Cloud
-func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+func New(cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	hcloudToken := os.Getenv("HCLOUD_TOKEN")
 	if hcloudToken == "" {
 		return nil, fmt.Errorf("%s is required", "HCLOUD_TOKEN")
@@ -59,7 +59,7 @@ func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	return &nodeIdentifier{
 		client:       hcloudClient,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
-		cacheEnabled: CacheNodeidentityInfo,
+		cacheEnabled: cacheNodeidentityInfo,
 	}, nil
 }
 
