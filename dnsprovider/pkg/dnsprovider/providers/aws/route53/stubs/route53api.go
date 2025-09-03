@@ -56,7 +56,7 @@ func NewRoute53APIStub() *Route53APIStub {
 
 func (r *Route53APIStub) ListResourceRecordSets(ctx context.Context, input *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error) {
 	output := &route53.ListResourceRecordSetsOutput{} // TODO: Support optional input args.
-	if len(r.recordSets) <= 0 {
+	if len(r.recordSets) == 0 {
 		output.ResourceRecordSets = []route53types.ResourceRecordSet{}
 	} else if _, ok := r.recordSets[*input.HostedZoneId]; !ok {
 		output.ResourceRecordSets = []route53types.ResourceRecordSet{}

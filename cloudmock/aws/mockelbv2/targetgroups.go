@@ -42,24 +42,24 @@ func (m *MockELBV2) DescribeTargetGroups(ctx context.Context, request *elbv2.Des
 	var tgs []elbv2types.TargetGroup
 	for _, tg := range m.TargetGroups {
 		match := false
-
-		if len(request.TargetGroupArns) > 0 {
+		switch {
+		case len(request.TargetGroupArns) > 0:
 			for _, name := range request.TargetGroupArns {
 				if aws.ToString(tg.description.TargetGroupArn) == name {
 					match = true
 				}
 			}
-		} else if request.LoadBalancerArn != nil {
+		case request.LoadBalancerArn != nil:
 			if len(tg.description.LoadBalancerArns) > 0 && tg.description.LoadBalancerArns[0] == aws.ToString(request.LoadBalancerArn) {
 				match = true
 			}
-		} else if len(request.Names) > 0 {
+		case len(request.Names) > 0:
 			for _, name := range request.Names {
 				if aws.ToString(tg.description.TargetGroupName) == name {
 					match = true
 				}
 			}
-		} else {
+		default:
 			match = true
 		}
 

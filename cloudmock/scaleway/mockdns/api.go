@@ -80,14 +80,14 @@ func (f *FakeDomainAPI) ListDNSZoneRecords(req *domain.ListDNSZoneRecordsRequest
 
 func (f *FakeDomainAPI) UpdateDNSZoneRecords(req *domain.UpdateDNSZoneRecordsRequest, opts ...scw.RequestOption) (*domain.UpdateDNSZoneRecordsResponse, error) {
 	for _, change := range req.Changes {
-
-		if change.Add != nil {
+		switch {
+		case change.Add != nil:
 			for _, toAdd := range change.Add.Records {
 				toAdd.ID = uuid.New().String()
 				f.Records[toAdd.Name] = toAdd
 			}
 
-		} else if change.Set != nil {
+		case change.Set != nil:
 			if len(change.Set.Records) != 1 {
 				fmt.Printf("only 1 record change will be applied from %d changes requested", len(change.Set.Records))
 			}
@@ -98,7 +98,7 @@ func (f *FakeDomainAPI) UpdateDNSZoneRecords(req *domain.UpdateDNSZoneRecordsReq
 				toUpsert.ID = *change.Set.ID
 				f.Records[toUpsert.Name] = toUpsert
 			}
-		} else if change.Delete != nil {
+		case change.Delete != nil:
 			found := false
 			for name, record := range f.Records {
 				if record.ID == *change.Delete.ID {
@@ -111,7 +111,7 @@ func (f *FakeDomainAPI) UpdateDNSZoneRecords(req *domain.UpdateDNSZoneRecordsReq
 				return nil, fmt.Errorf("could not find record %s to delete", *change.Delete.ID)
 			}
 
-		} else {
+		default:
 			return nil, fmt.Errorf("mock DNS not implemented for this method")
 		}
 	}

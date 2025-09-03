@@ -42,7 +42,7 @@ const GroupName = "kops.k8s.io"
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha2"}
 
 //// Kind takes an unqualified kind and returns a Group qualified GroupKind
-//func Kind(kind string) schema.GroupKind {
+// func Kind(kind string) schema.GroupKind {
 //	return SchemeGroupVersion.WithKind(kind).GroupKind()
 //}
 //

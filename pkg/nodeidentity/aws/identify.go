@@ -58,7 +58,7 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on AWS
-func New(ctx context.Context, CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+func New(ctx context.Context, cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	config, err := awsconfig.LoadDefaultConfig(ctx, awslog.WithAWSLogger())
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %v", err)
@@ -77,7 +77,7 @@ func New(ctx context.Context, CacheNodeidentityInfo bool) (nodeidentity.Identifi
 	return &nodeIdentifier{
 		ec2Client:    ec2Client,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
-		cacheEnabled: CacheNodeidentityInfo,
+		cacheEnabled: cacheNodeidentityInfo,
 	}, nil
 }
 
@@ -170,7 +170,7 @@ func (i *nodeIdentifier) getInstance(ctx context.Context, instanceID string) (*e
 	}
 
 	// @check we found some instances
-	if len(resp.Reservations) <= 0 || len(resp.Reservations[0].Instances) <= 0 {
+	if len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
 		return nil, fmt.Errorf("missing instance id: %s", instanceID)
 	}
 	if len(resp.Reservations[0].Instances) > 1 {

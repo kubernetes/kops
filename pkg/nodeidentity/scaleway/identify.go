@@ -47,7 +47,7 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Scaleway
-func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+func New(cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	profile, err := scaleway.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	return &nodeIdentifier{
 		client:       scwClient,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
-		cacheEnabled: CacheNodeidentityInfo,
+		cacheEnabled: cacheNodeidentityInfo,
 	}, nil
 }
 

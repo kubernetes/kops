@@ -79,11 +79,12 @@ func GetConfirm(c *ConfirmArgs) (bool, error) {
 
 		responseLower := strings.ToLower(response)
 		// make sure the response is valid
-		if okayResponses.Has(responseLower) {
+		switch {
+		case okayResponses.Has(responseLower):
 			return true, nil
-		} else if nokayResponses.Has(responseLower) {
+		case nokayResponses.Has(responseLower):
 			return false, nil
-		} else if c.Default != "" && response == "" {
+		case c.Default != "" && response == "":
 			if string(c.Default[0]) == "y" {
 				return true, nil
 			}

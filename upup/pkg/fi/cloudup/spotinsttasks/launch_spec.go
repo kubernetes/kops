@@ -411,7 +411,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Image.
 	{
-		if e.ImageID != nil && len(e.OtherArchitectureImages) == 0 { //old api
+		if e.ImageID != nil && len(e.OtherArchitectureImages) == 0 { // old api
 			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
@@ -635,7 +635,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Image.
 	{
-		if changes.ImageID != nil { //old api
+		if changes.ImageID != nil { // old api
 			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
@@ -1175,11 +1175,11 @@ func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) 
 
 	return out
 }
-func buildImages(cloud awsup.AWSCloud, ImageID *string, OtherArchitectureImages []string) ([]*aws.Images, error) {
+func buildImages(cloud awsup.AWSCloud, imageID *string, OtherArchitectureImages []string) ([]*aws.Images, error) {
 	var imagesSlice []*aws.Images
 	var imageIndex = 0
-	if ImageID != nil {
-		image, err := resolveImage(cloud, fi.ValueOf(ImageID))
+	if imageID != nil {
+		image, err := resolveImage(cloud, fi.ValueOf(imageID))
 		if err != nil {
 			return nil, err
 		}

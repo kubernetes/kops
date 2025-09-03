@@ -400,11 +400,12 @@ func findEtcdStatus(c *doCloudImplementation, cluster *kops.Cluster) ([]kops.Etc
 
 func (c *doCloudImplementation) getEtcdClusterSpec(volumeName string, dropletName string) (*etcd.EtcdClusterSpec, error) {
 	var clusterKey string
-	if strings.Contains(volumeName, "etcd-main") {
+	switch {
+	case strings.Contains(volumeName, "etcd-main"):
 		clusterKey = "main"
-	} else if strings.Contains(volumeName, "etcd-events") {
+	case strings.Contains(volumeName, "etcd-events"):
 		clusterKey = "events"
-	} else {
+	default:
 		return nil, fmt.Errorf("could not determine etcd cluster type for volume: %s", volumeName)
 	}
 

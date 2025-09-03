@@ -48,7 +48,7 @@ type nodeIdentifier struct {
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on OpenStack
-func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
+func New(cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	env, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	return &nodeIdentifier{
 		novaClient:   novaClient,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
-		cacheEnabled: CacheNodeidentityInfo,
+		cacheEnabled: cacheNodeidentityInfo,
 	}, nil
 }
 

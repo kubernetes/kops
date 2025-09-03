@@ -91,14 +91,11 @@ func (m *MockEC2) DescribeVolumes(ctx context.Context, request *ec2.DescribeVolu
 	for _, volume := range m.Volumes {
 		allFiltersMatch := true
 		for _, filter := range request.Filters {
-			match := false
-			switch *filter.Name {
-			default:
-				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2types.ResourceTypeVolume, *volume.VolumeId, filter)
-				} else {
-					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
-				}
+			var match bool
+			if strings.HasPrefix(*filter.Name, "tag:") {
+				match = m.hasTag(ec2types.ResourceTypeVolume, *volume.VolumeId, filter)
+			} else {
+				return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 			}
 
 			if !match {

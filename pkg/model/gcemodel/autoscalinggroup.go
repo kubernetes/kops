@@ -134,9 +134,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 						sortedLabelKeys[i] = k
 						i++
 					}
-					slices.SortStableFunc(sortedLabelKeys, func(a, b string) int {
-						return strings.Compare(a, b)
-					})
+					slices.SortStableFunc(sortedLabelKeys, strings.Compare)
 					for _, k := range sortedLabelKeys {
 						nodeLabels += k + "=" + ig.Spec.NodeLabels[k] + ","
 					}
@@ -233,11 +231,11 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 			t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
 
-			//labels, err := b.CloudTagsForInstanceGroup(ig)
-			//if err != nil {
+			// labels, err := b.CloudTagsForInstanceGroup(ig)
+			// if err != nil {
 			//	return fmt.Errorf("error building cloud tags: %v", err)
-			//}
-			//t.Labels = labels
+			// }
+			// t.Labels = labels
 
 			t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
 			for _, accelerator := range ig.Spec.GuestAccelerators {
@@ -342,8 +340,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			}
 
 			// Attach masters to load balancer if we're using one
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleControlPlane:
+			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {

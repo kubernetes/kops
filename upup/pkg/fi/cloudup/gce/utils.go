@@ -92,7 +92,7 @@ func ClusterSuffixedName(objectName string, clusterName string, maxLength int) s
 }
 
 // SafeClusterName returns a safe cluster name
-// deprecated: prefer ClusterSuffixedName
+// Deprecated: prefer ClusterSuffixedName
 func SafeClusterName(clusterName string) string {
 	// GCE does not support . in tags / names
 	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")

@@ -26,7 +26,7 @@ type instanceActionsResponse struct {
 }
 
 func (m *MockClient) mockInstanceActions() {
-	//re := regexp.MustCompile(`/servers/(.*?)/os-instance-actions/?`)
+	// re := regexp.MustCompile(`/servers/(.*?)/os-instance-actions/?`)
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		m.mutex.Lock()

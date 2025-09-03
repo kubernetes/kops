@@ -61,8 +61,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			return fmt.Errorf("cannot parse cluster path %q: %w", clusterPath, err)
 		}
 
-		switch p := p.(type) {
-		case *vfs.GSPath:
+		if p, ok := p.(*vfs.GSPath); ok {
 			// It's not ideal that we have to do this at the bucket level,
 			// but GCS doesn't seem to have a way to do subtrees (like AWS IAM does)
 			// Note this permission only lets us list objects, not read them

@@ -43,31 +43,32 @@ func (m *MockEC2) CreateTags(ctx context.Context, request *ec2.CreateTagsInput, 
 
 func (m *MockEC2) addTags(resourceId string, tags ...ec2types.Tag) {
 	var resourceType ec2types.ResourceType
-	if strings.HasPrefix(resourceId, "subnet-") {
+	switch {
+	case strings.HasPrefix(resourceId, "subnet-"):
 		resourceType = ec2types.ResourceTypeSubnet
-	} else if strings.HasPrefix(resourceId, "vpc-") {
+	case strings.HasPrefix(resourceId, "vpc-"):
 		resourceType = ec2types.ResourceTypeVpc
-	} else if strings.HasPrefix(resourceId, "sg-") {
+	case strings.HasPrefix(resourceId, "sg-"):
 		resourceType = ec2types.ResourceTypeSecurityGroup
-	} else if strings.HasPrefix(resourceId, "vol-") {
+	case strings.HasPrefix(resourceId, "vol-"):
 		resourceType = ec2types.ResourceTypeVolume
-	} else if strings.HasPrefix(resourceId, "igw-") {
+	case strings.HasPrefix(resourceId, "igw-"):
 		resourceType = ec2types.ResourceTypeInternetGateway
-	} else if strings.HasPrefix(resourceId, "eigw-") {
+	case strings.HasPrefix(resourceId, "eigw-"):
 		resourceType = ec2types.ResourceTypeEgressOnlyInternetGateway
-	} else if strings.HasPrefix(resourceId, "nat-") {
+	case strings.HasPrefix(resourceId, "nat-"):
 		resourceType = ec2types.ResourceTypeNatgateway
-	} else if strings.HasPrefix(resourceId, "dopt-") {
+	case strings.HasPrefix(resourceId, "dopt-"):
 		resourceType = ec2types.ResourceTypeDhcpOptions
-	} else if strings.HasPrefix(resourceId, "rtb-") {
+	case strings.HasPrefix(resourceId, "rtb-"):
 		resourceType = ec2types.ResourceTypeRouteTable
-	} else if strings.HasPrefix(resourceId, "eipalloc-") {
+	case strings.HasPrefix(resourceId, "eipalloc-"):
 		resourceType = ec2types.ResourceTypeElasticIp
-	} else if strings.HasPrefix(resourceId, "lt-") {
+	case strings.HasPrefix(resourceId, "lt-"):
 		resourceType = ec2types.ResourceTypeLaunchTemplate
-	} else if strings.HasPrefix(resourceId, "key-") {
+	case strings.HasPrefix(resourceId, "key-"):
 		resourceType = ec2types.ResourceTypeKeyPair
-	} else {
+	default:
 		klog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
 	}
 	for _, tag := range tags {
@@ -83,7 +84,8 @@ func (m *MockEC2) addTags(resourceId string, tags ...ec2types.Tag) {
 
 func (m *MockEC2) hasTag(resourceType ec2types.ResourceType, resourceId string, filter ec2types.Filter) bool {
 	name := *filter.Name
-	if strings.HasPrefix(name, "tag:") {
+	switch {
+	case strings.HasPrefix(name, "tag:"):
 		tagKey := name[4:]
 
 		for _, tag := range m.Tags {
@@ -103,7 +105,7 @@ func (m *MockEC2) hasTag(resourceType ec2types.ResourceType, resourceId string, 
 				}
 			}
 		}
-	} else if name == "tag-key" {
+	case name == "tag-key":
 		for _, tag := range m.Tags {
 			if *tag.ResourceId != resourceId {
 				continue
@@ -117,7 +119,7 @@ func (m *MockEC2) hasTag(resourceType ec2types.ResourceType, resourceId string, 
 				}
 			}
 		}
-	} else {
+	default:
 		klog.Fatalf("Unsupported filter: %v", filter)
 	}
 	return false
