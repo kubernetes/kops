@@ -46,7 +46,8 @@ func (m *MockELBV2) AddTags(ctx context.Context, request *elbv2.AddTagsInput, op
 				}
 				if !found {
 					tags := m.Tags[arn]
-					tags.Tags = append(m.Tags[arn].Tags, reqTag)
+					tags.Tags = append(tags.Tags, reqTag)
+					m.Tags[arn] = tags
 				}
 			}
 		} else {
