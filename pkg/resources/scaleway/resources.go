@@ -104,11 +104,11 @@ func listLoadBalancers(cloud fi.Cloud, clusterName string) ([]*resources.Resourc
 	resourceTrackers := []*resources.Resource(nil)
 	for _, loadBalancer := range lbs {
 		resourceTracker := &resources.Resource{
-			Name: loadBalancer.Name,
-			ID:   loadBalancer.ID,
-			Type: resourceTypeLoadBalancer,
+			Name:    loadBalancer.Name,
+			ID:      loadBalancer.ID,
+			Type:    resourceTypeLoadBalancer,
 			Deleter: deleteLoadBalancer,
-			Obj: loadBalancer,
+			Obj:     loadBalancer,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -126,11 +126,11 @@ func listServers(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	resourceTrackers := []*resources.Resource(nil)
 	for _, server := range servers {
 		resourceTracker := &resources.Resource{
-			Name: server.Name,
-			ID:   server.ID,
-			Type: resourceTypeServer,
+			Name:    server.Name,
+			ID:      server.ID,
+			Type:    resourceTypeServer,
 			Deleter: deleteServer,
-			Obj: server,
+			Obj:     server,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -152,11 +152,11 @@ func listServerIPs(cloud fi.Cloud, clusterName string) ([]*resources.Resource, e
 	resourceTrackers := []*resources.Resource(nil)
 	for _, ip := range ips.IPs {
 		resourceTracker := &resources.Resource{
-			Name: ip.Address.String(),
-			ID:   ip.ID,
-			Type: resourceTypeServerIP,
+			Name:    ip.Address.String(),
+			ID:      ip.ID,
+			Type:    resourceTypeServerIP,
 			Deleter: deleteServerIP,
-			Obj: ip,
+			Obj:     ip,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -174,11 +174,11 @@ func listSSHKeys(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	resourceTrackers := []*resources.Resource(nil)
 	for _, sshkey := range sshkeys {
 		resourceTracker := &resources.Resource{
-			Name: sshkey.Name,
-			ID:   sshkey.ID,
-			Type: resourceTypeSSHKey,
+			Name:    sshkey.Name,
+			ID:      sshkey.ID,
+			Type:    resourceTypeSSHKey,
 			Deleter: deleteSSHKey,
-			Obj: sshkey,
+			Obj:     sshkey,
 		}
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
@@ -196,11 +196,11 @@ func listVolumes(cloud fi.Cloud, clusterName string) ([]*resources.Resource, err
 	resourceTrackers := []*resources.Resource(nil)
 	for _, volume := range volumes {
 		resourceTracker := &resources.Resource{
-			Name: volume.Name,
-			ID:   volume.ID,
-			Type: resourceTypeVolume,
+			Name:    volume.Name,
+			ID:      volume.ID,
+			Type:    resourceTypeVolume,
 			Deleter: deleteVolume,
-			Obj: volume,
+			Obj:     volume,
 		}
 		if volume.Server != nil {
 			resourceTracker.Blocked = []string{resourceTypeServer + ":" + volume.Server.ID}
