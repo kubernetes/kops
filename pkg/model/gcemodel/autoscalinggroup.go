@@ -233,11 +233,11 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 			t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
 
-			//labels, err := b.CloudTagsForInstanceGroup(ig)
-			//if err != nil {
+			// labels, err := b.CloudTagsForInstanceGroup(ig)
+			// if err != nil {
 			//	return fmt.Errorf("error building cloud tags: %v", err)
-			//}
-			//t.Labels = labels
+			// }
+			// t.Labels = labels
 
 			t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
 			for _, accelerator := range ig.Spec.GuestAccelerators {

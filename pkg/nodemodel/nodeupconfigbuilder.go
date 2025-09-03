@@ -489,7 +489,7 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 	// TODO: Exclude images that only run on control-plane nodes in a generic way
 	desiredImagePrefixes := []string{
 		// Ignore images hosted in private ECR repositories as containerd cannot actually pull these
-		//"602401143452.dkr.ecr.us-west-2.amazonaws.com/", // Amazon VPC CNI
+		// "602401143452.dkr.ecr.us-west-2.amazonaws.com/", // Amazon VPC CNI
 		// Ignore images hosted on docker.io until a solution for rate limiting is implemented
 		//"docker.io/calico/",
 		//"docker.io/cilium/",

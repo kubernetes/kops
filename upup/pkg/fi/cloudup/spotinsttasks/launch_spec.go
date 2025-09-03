@@ -411,7 +411,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Image.
 	{
-		if e.ImageID != nil && len(e.OtherArchitectureImages) == 0 { //old api
+		if e.ImageID != nil && len(e.OtherArchitectureImages) == 0 { // old api
 			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err
@@ -635,7 +635,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 	// Image.
 	{
-		if changes.ImageID != nil { //old api
+		if changes.ImageID != nil { // old api
 			image, err := resolveImage(cloud, fi.ValueOf(e.ImageID))
 			if err != nil {
 				return err

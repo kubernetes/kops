@@ -100,7 +100,7 @@ func (l *Templates) executeTemplate(key string, d string) (string, error) {
 	t := template.New(key)
 
 	funcMap := make(template.FuncMap)
-	//funcMap["Args"] = func() []string {
+	// funcMap["Args"] = func() []string {
 	//	return args
 	//}
 	//funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {

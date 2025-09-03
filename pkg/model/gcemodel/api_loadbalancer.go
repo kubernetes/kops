@@ -230,7 +230,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				},
 			}
 			// We previously created a forwarding rule which was external; prune it
-			fr.PruneForwardingRulesWithName(b.NameForForwardingRule("kops-controller")) //, "Removing legacy external load balancer for kops-controller")
+			fr.PruneForwardingRulesWithName(b.NameForForwardingRule("kops-controller")) // , "Removing legacy external load balancer for kops-controller")
 
 			c.AddTask(fr)
 		}

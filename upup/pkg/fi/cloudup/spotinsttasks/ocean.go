@@ -721,7 +721,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			changed = true
 		}
 
-		//Spread nodes by.
+		// Spread nodes by.
 		if changes.SpreadNodesBy != nil {
 			if ocean.Strategy == nil {
 				ocean.Strategy = new(aws.Strategy)
