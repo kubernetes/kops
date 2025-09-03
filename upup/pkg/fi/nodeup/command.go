@@ -133,13 +133,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var nodeupConfig nodeup.Config
 	var nodeupConfigHash [32]byte
-	if nodeConfig != nil {
+	switch {
+	case nodeConfig != nil:
 		if err := utils.YamlUnmarshal([]byte(nodeConfig.NodeupConfig), &nodeupConfig); err != nil {
 			return fmt.Errorf("error parsing BootConfig config response: %v", err)
 		}
 		nodeupConfigHash = sha256.Sum256([]byte(nodeConfig.NodeupConfig))
 		nodeupConfig.CAs[fi.CertificateIDCA] = bootConfig.ConfigServer.CACertificates
-	} else if bootConfig.InstanceGroupName != "" {
+	case bootConfig.InstanceGroupName != "":
 		nodeupConfigLocation := configBase.Join("igconfig", bootConfig.InstanceGroupRole.ToLowerString(), bootConfig.InstanceGroupName, "nodeupconfig.yaml")
 
 		b, err := nodeupConfigLocation.ReadFile(ctx)
@@ -151,7 +152,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error parsing NodeupConfig %q: %v", nodeupConfigLocation, err)
 		}
 		nodeupConfigHash = sha256.Sum256(b)
-	} else {
+	default:
 		return fmt.Errorf("no instance group defined in nodeup config")
 	}
 
@@ -207,9 +208,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	var secretStore fi.SecretStoreReader
 	var keyStore fi.KeystoreReader
-	if nodeConfig != nil {
+	switch {
+	case nodeConfig != nil:
 		modelContext.SecretStore = configserver.NewSecretStore(nodeConfig.NodeSecrets)
-	} else if nodeupConfig.ConfigStore != nil && nodeupConfig.ConfigStore.Secrets != "" {
+	case nodeupConfig.ConfigStore != nil && nodeupConfig.ConfigStore.Secrets != "":
 		klog.Infof("Building SecretStore at %q", nodeupConfig.ConfigStore.Secrets)
 		p, err := vfs.Context.BuildVfsPath(nodeupConfig.ConfigStore.Secrets)
 		if err != nil {
@@ -218,7 +220,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 		secretStore = secrets.NewVFSSecretStoreReader(p)
 		modelContext.SecretStore = secretStore
-	} else {
+	default:
 		return fmt.Errorf("SecretStore not set")
 	}
 

@@ -80,27 +80,28 @@ func ParseGoogleCloudURL(u string) (*GoogleCloudURL, error) {
 			return nil, fmt.Errorf("invalid google cloud URL (unexpected end): %q", u)
 		}
 		t := tokens[pos]
-		if t == "projects" {
+		switch {
+		case t == "projects":
 			pos++
 			if pos >= len(tokens) {
 				return nil, fmt.Errorf("invalid google cloud URL (unexpected projects): %q", u)
 			}
 			parsed.Project = tokens[pos]
-		} else if t == "zones" {
+		case t == "zones":
 			pos++
 			if pos >= len(tokens) {
 				return nil, fmt.Errorf("invalid google cloud URL (unexpected zones): %q", u)
 			}
 			parsed.Zone = tokens[pos]
-		} else if t == "regions" && ((pos + 2) < len(tokens)) {
+		case t == "regions" && ((pos + 2) < len(tokens)):
 			pos++
 			if pos >= len(tokens) {
 				return nil, fmt.Errorf("invalid google cloud URL (unexpected regions): %q", u)
 			}
 			parsed.Region = tokens[pos]
-		} else if t == "global" {
+		case t == "global":
 			parsed.Global = true
-		} else {
+		default:
 			parsed.Type = tokens[pos]
 			pos++
 			if pos >= len(tokens) {

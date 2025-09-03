@@ -294,11 +294,12 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	config.Openstack = cluster.Spec.CloudProvider.Openstack
 
-	if instanceGroup.Spec.UpdatePolicy != nil {
+	switch {
+	case instanceGroup.Spec.UpdatePolicy != nil:
 		config.UpdatePolicy = *instanceGroup.Spec.UpdatePolicy
-	} else if cluster.Spec.UpdatePolicy != nil {
+	case cluster.Spec.UpdatePolicy != nil:
 		config.UpdatePolicy = *cluster.Spec.UpdatePolicy
-	} else {
+	default:
 		config.UpdatePolicy = kops.UpdatePolicyAutomatic
 	}
 
