@@ -213,9 +213,10 @@ type KubeletConfigSpec struct {
 	// rotateCertificates enables client certificate rotation.
 	RotateCertificates *bool `json:"rotateCertificates,omitempty" flag:"rotate-certificates"`
 	// Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
-	// (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
+	// DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
 	ProtectKernelDefaults *bool `json:"protectKernelDefaults,omitempty" flag:"protect-kernel-defaults"`
-	// CgroupDriver allows the explicit setting of the kubelet cgroup driver. If omitted, defaults to cgroupfs.
+	// CgroupDriver allows the explicit setting of the kubelet cgroup driver.
+	// DEPRECATED: The cgroup driver is automatically detected.
 	CgroupDriver string `json:"cgroupDriver,omitempty" flag:"cgroup-driver"`
 	// HousekeepingInterval allows to specify interval between container housekeepings.
 	HousekeepingInterval *metav1.Duration `json:"housekeepingInterval,omitempty" flag:"housekeeping-interval"`

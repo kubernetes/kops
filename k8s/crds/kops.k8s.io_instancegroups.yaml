@@ -475,8 +475,9 @@ spec:
                       that will be used to get client certificate for kubelet
                     type: string
                   cgroupDriver:
-                    description: CgroupDriver allows the explicit setting of the kubelet
-                      cgroup driver. If omitted, defaults to cgroupfs.
+                    description: |-
+                      CgroupDriver allows the explicit setting of the kubelet cgroup driver.
+                      DEPRECATED: The cgroup driver is automatically detected.
                     type: string
                   cgroupRoot:
                     description: cgroupRoot is the root cgroup to use for pods. This
@@ -740,7 +741,7 @@ spec:
                   protectKernelDefaults:
                     description: |-
                       Default kubelet behaviour for kernel tuning. If set, kubelet errors if any of kernel tunables is different than kubelet defaults.
-                      (DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
+                      DEPRECATED: This parameter should be set via the config file specified by the Kubelet's --config flag.
                     type: boolean
                   readOnlyPort:
                     description: ReadOnlyPort is the port used by the kubelet api

@@ -38,9 +38,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.Distribution.IsDebianFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
 		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
-		if (b.Distribution.IsDebian() && b.Distribution.Version() < 13) || (b.Distribution.IsUbuntu() && b.Distribution.Version() < 25.10) {
-			c.AddTask(&nodetasks.Package{Name: "cgroupfs-mount"})
-		}
 		c.AddTask(&nodetasks.Package{Name: "conntrack"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
 		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
@@ -75,10 +72,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		if b.Distribution != distributions.DistributionAmazonLinux2 {
 			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
 			c.AddTask(&nodetasks.Package{Name: "pigz"})
-		}
-		// RHEL9 and Rocky 9 do not have libcgroup
-		if b.Distribution != distributions.DistributionRhel9 && b.Distribution != distributions.DistributionRocky9 {
-			c.AddTask(&nodetasks.Package{Name: "libcgroup"})
 		}
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
