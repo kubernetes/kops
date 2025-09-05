@@ -183,7 +183,7 @@ func (b *ContainerdBuilder) buildSystemdService(containerdVersion semver.Version
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "containerd container runtime")
 	manifest.Set("Unit", "Documentation", "https://containerd.io")
-	manifest.Set("Unit", "After", "network.target local-fs.target")
+	manifest.Set("Unit", "After", "network.target dbus.service")
 
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/containerd")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
