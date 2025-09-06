@@ -726,6 +726,12 @@ spec:
         - effect: NoExecute
           operator: Exists
           tolerationSeconds: 300
+        {{- if IsControlPlaneMode }}
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        {{- end }}
       {{ end }}
       securityContext:
         fsGroup: 1000

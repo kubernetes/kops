@@ -1,0 +1,48 @@
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/os
+          operator: In
+          values:
+          - linux
+        - key: karpenter.sh/provisioner-name
+          operator: DoesNotExist
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+      - matchExpressions:
+        - key: kubernetes.io/os
+          operator: In
+          values:
+          - linux
+        - key: karpenter.sh/provisioner-name
+          operator: DoesNotExist
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+controller:
+  resources:
+    requests:
+      cpu: "{{ or .Karpenter.CPURequest \"500m\" }}"
+      memory: "{{ or .Karpenter.MemoryRequest \"1Gi\" }}"
+    limits:
+      memory: "{{ or .Karpenter.MemoryLimit \"1Gi\" }}"
+  env:
+  - name: AWS_REGION
+    value: "{{ Region }}"
+logLevel: "{{ .Karpenter.LogLevel }}"
+replicas: 1
+settings:
+  clusterEndpoint: "{{ printf \"https://{{ APIInternalName }}\" }}"
+  clusterName: "{{ printf \"{{ ClusterName }}\" }}"
+tolerations:
+- key: node-role.kubernetes.io/master
+  operator: Exists
+- key: node-role.kubernetes.io/control-plane
+  operator: Exists
+- key: CriticalAddonsOnly
+  operator: Exists
+topologySpreadConstraints:
+- maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: ScheduleAnyway

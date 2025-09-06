@@ -28,7 +28,6 @@ When defining a new function:
 package cloudup
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -41,10 +40,8 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	kopsroot "k8s.io/kops"
@@ -396,11 +393,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["ParseTaint"] = util.ParseTaint
 
-	dest["KarpenterEnabled"] = func() bool {
+	// IsControlPlaneMode signals that kOps is used to bootstrap the control plane and the nodes will be created by other means
+	// e.g. by Karpenter or Cluster API
+	dest["IsControlPlaneMode"] = func() bool {
 		return cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
-	}
-	dest["KarpenterInstanceTypes"] = func(ig kops.InstanceGroupSpec) ([]string, error) {
-		return karpenterInstanceTypes(tf.cloud.(awsup.AWSCloud), ig)
 	}
 
 	dest["PodIdentityWebhookConfigMapData"] = tf.podIdentityWebhookConfigMapData
@@ -1012,116 +1008,6 @@ func (tf *TemplateFunctions) podIdentityWebhookConfigMapData() (string, error) {
 	}
 	jsonBytes, err := json.Marshal(mappings)
 	return fmt.Sprintf("%q", jsonBytes), err
-}
-
-func karpenterInstanceTypes(cloud awsup.AWSCloud, ig kops.InstanceGroupSpec) ([]string, error) {
-	ctx := context.TODO()
-	var mixedInstancesPolicy *kops.MixedInstancesPolicySpec
-
-	if ig.MachineType == "" && ig.MixedInstancesPolicy == nil {
-		// Karpenter thinks all clusters run VPC CNI and schedules thinking Node Capacity is constrainted by number of ENIs.
-
-		// cpuMin is the reasonable lower limit for a Kubernetes Node
-		// Generally, it also avoids instances Karpenter thinks it can only schedule 4 Pods on.
-		cpuMin := resource.MustParse("2")
-		memoryMin := resource.MustParse(("2G"))
-
-		mixedInstancesPolicy = &kops.MixedInstancesPolicySpec{
-			InstanceRequirements: &kops.InstanceRequirementsSpec{
-				CPU: &kops.MinMaxSpec{
-					Min: &cpuMin,
-				},
-				Memory: &kops.MinMaxSpec{
-					Min: &memoryMin,
-				},
-			},
-		}
-	}
-	if ig.MixedInstancesPolicy != nil {
-		mixedInstancesPolicy = ig.MixedInstancesPolicy
-	}
-
-	if mixedInstancesPolicy != nil {
-		if len(mixedInstancesPolicy.Instances) > 0 {
-			return mixedInstancesPolicy.Instances, nil
-		}
-		if mixedInstancesPolicy.InstanceRequirements != nil {
-			instanceRequirements := mixedInstancesPolicy.InstanceRequirements
-			ami, err := cloud.ResolveImage(ig.Image)
-			if err != nil {
-				return nil, err
-			}
-			arch := ami.Architecture
-			hv := ami.VirtualizationType
-
-			ir := &ec2types.InstanceRequirementsRequest{
-				VCpuCount:            &ec2types.VCpuCountRangeRequest{},
-				MemoryMiB:            &ec2types.MemoryMiBRequest{},
-				BurstablePerformance: ec2types.BurstablePerformanceIncluded,
-				InstanceGenerations:  []ec2types.InstanceGeneration{ec2types.InstanceGenerationCurrent},
-			}
-			cpu := instanceRequirements.CPU
-			if cpu != nil {
-				if cpu.Max != nil {
-					cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
-					ir.VCpuCount.Max = fi.PtrTo(int32(cpuMax))
-				}
-				cpu := instanceRequirements.CPU
-				if cpu != nil {
-					if cpu.Max != nil {
-						cpuMax, _ := instanceRequirements.CPU.Max.AsInt64()
-						ir.VCpuCount.Max = fi.PtrTo(int32(cpuMax))
-					}
-					if cpu.Min != nil {
-						cpuMin, _ := instanceRequirements.CPU.Min.AsInt64()
-						ir.VCpuCount.Min = fi.PtrTo(int32(cpuMin))
-					}
-				} else {
-					ir.VCpuCount.Min = fi.PtrTo(int32(0))
-				}
-
-				memory := instanceRequirements.Memory
-				if memory != nil {
-					if memory.Max != nil {
-						memoryMax := instanceRequirements.Memory.Max.ScaledValue(resource.Mega)
-						ir.MemoryMiB.Max = fi.PtrTo(int32(memoryMax))
-					}
-					if memory.Min != nil {
-						memoryMin := instanceRequirements.Memory.Min.ScaledValue(resource.Mega)
-						ir.MemoryMiB.Min = fi.PtrTo(int32(memoryMin))
-					}
-				} else {
-					ir.MemoryMiB.Min = fi.PtrTo(int32(0))
-				}
-
-				ir.AcceleratorCount = &ec2types.AcceleratorCountRequest{
-					Min: fi.PtrTo(int32(0)),
-					Max: fi.PtrTo(int32(0)),
-				}
-
-				response, err := cloud.EC2().GetInstanceTypesFromInstanceRequirements(ctx,
-					&ec2.GetInstanceTypesFromInstanceRequirementsInput{
-						ArchitectureTypes:    []ec2types.ArchitectureType{ec2types.ArchitectureType(arch)},
-						VirtualizationTypes:  []ec2types.VirtualizationType{hv},
-						InstanceRequirements: ir,
-					},
-				)
-				if err != nil {
-					return nil, err
-				}
-				types := []string{}
-				for _, it := range response.InstanceTypes {
-					types = append(types, *it.InstanceType)
-				}
-				if len(types) == 0 {
-					return nil, fmt.Errorf("no instances matched requirements")
-				}
-				return types, nil
-			}
-		}
-	}
-
-	return []string{ig.MachineType}, nil
 }
 
 func (tf *TemplateFunctions) kopsFeatureEnabled(featureName string) (bool, error) {

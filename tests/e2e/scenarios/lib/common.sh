@@ -45,8 +45,6 @@ if [[ -z "${DISCOVERY_STORE-}" ]]; then
     DISCOVERY_STORE="${KOPS_STATE_STORE-}"
 fi
 
-export GO111MODULE=on
-
 if [[ -z "${AWS_SSH_PRIVATE_KEY_FILE-}" ]]; then
     export AWS_SSH_PRIVATE_KEY_FILE="${HOME}/.ssh/id_rsa"
 fi
@@ -55,8 +53,9 @@ if [[ -z "${AWS_SSH_PUBLIC_KEY_FILE-}" ]]; then
 fi
 
 KUBETEST2="kubetest2 kops -v=2 --cloud-provider=${CLOUD_PROVIDER} --cluster-name=${CLUSTER_NAME:-} --kops-root=${REPO_ROOT}"
-KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS:-}"
-
+if [[ -n "${ADMIN_ACCESS-}" ]]; then
+  KUBETEST2="${KUBETEST2} --admin-access=${ADMIN_ACCESS}"
+fi
 if [[ -n "${GCP_PROJECT-}" ]]; then
   KUBETEST2="${KUBETEST2} --gcp-project=${GCP_PROJECT}"
 fi

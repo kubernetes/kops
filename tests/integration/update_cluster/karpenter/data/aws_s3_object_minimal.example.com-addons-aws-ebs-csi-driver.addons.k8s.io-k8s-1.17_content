@@ -1112,6 +1112,10 @@ spec:
       - effect: NoExecute
         operator: Exists
         tolerationSeconds: 300
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:

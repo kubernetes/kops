@@ -4,8 +4,6 @@ locals {
   iam_openid_connect_provider_issuer                 = "discovery.example.com/minimal.example.com"
   kube-system-aws-cloud-controller-manager_role_arn  = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.arn
   kube-system-aws-cloud-controller-manager_role_name = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.name
-  kube-system-aws-node-termination-handler_role_arn  = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.arn
-  kube-system-aws-node-termination-handler_role_name = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.name
   kube-system-dns-controller_role_arn                = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.arn
   kube-system-dns-controller_role_name               = aws_iam_role.dns-controller-kube-system-sa-minimal-example-com.name
   kube-system-ebs-csi-controller-sa_role_arn         = aws_iam_role.ebs-csi-controller-sa-kube-system-sa-minimal-example-com.arn
@@ -48,14 +46,6 @@ output "kube-system-aws-cloud-controller-manager_role_arn" {
 
 output "kube-system-aws-cloud-controller-manager_role_name" {
   value = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.name
-}
-
-output "kube-system-aws-node-termination-handler_role_arn" {
-  value = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.arn
-}
-
-output "kube-system-aws-node-termination-handler_role_name" {
-  value = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.name
 }
 
 output "kube-system-dns-controller_role_arn" {
@@ -178,11 +168,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com"
     value               = "master-us-test-1a.masters.minimal.example.com"
   }
   tag {
-    key                 = "aws-node-termination-handler/managed"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
     propagate_at_launch = true
     value               = ""
@@ -243,11 +228,6 @@ resource "aws_autoscaling_group" "nodes-minimal-example-com" {
     value               = "nodes.minimal.example.com"
   }
   tag {
-    key                 = "aws-node-termination-handler/managed"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"
     propagate_at_launch = true
     value               = ""
@@ -268,82 +248,6 @@ resource "aws_autoscaling_group" "nodes-minimal-example-com" {
     value               = "owned"
   }
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-example-com.id]
-}
-
-resource "aws_autoscaling_lifecycle_hook" "master-us-test-1a-NTHLifecycleHook" {
-  autoscaling_group_name = aws_autoscaling_group.master-us-test-1a-masters-minimal-example-com.id
-  default_result         = "CONTINUE"
-  heartbeat_timeout      = 300
-  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
-  name                   = "master-us-test-1a-NTHLifecycleHook"
-}
-
-resource "aws_autoscaling_lifecycle_hook" "nodes-NTHLifecycleHook" {
-  autoscaling_group_name = aws_autoscaling_group.nodes-minimal-example-com.id
-  default_result         = "CONTINUE"
-  heartbeat_timeout      = 300
-  lifecycle_transition   = "autoscaling:EC2_INSTANCE_TERMINATING"
-  name                   = "nodes-NTHLifecycleHook"
-}
-
-resource "aws_cloudwatch_event_rule" "minimal-example-com-ASGLifecycle" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-ASGLifecycle_event_pattern")
-  name          = "minimal.example.com-ASGLifecycle"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com-ASGLifecycle"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-}
-
-resource "aws_cloudwatch_event_rule" "minimal-example-com-InstanceScheduledChange" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-InstanceScheduledChange_event_pattern")
-  name          = "minimal.example.com-InstanceScheduledChange"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com-InstanceScheduledChange"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-}
-
-resource "aws_cloudwatch_event_rule" "minimal-example-com-InstanceStateChange" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-InstanceStateChange_event_pattern")
-  name          = "minimal.example.com-InstanceStateChange"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com-InstanceStateChange"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-}
-
-resource "aws_cloudwatch_event_rule" "minimal-example-com-SpotInterruption" {
-  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-SpotInterruption_event_pattern")
-  name          = "minimal.example.com-SpotInterruption"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal.example.com-SpotInterruption"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
-}
-
-resource "aws_cloudwatch_event_target" "minimal-example-com-ASGLifecycle-Target" {
-  arn  = aws_sqs_queue.minimal-example-com-nth.arn
-  rule = aws_cloudwatch_event_rule.minimal-example-com-ASGLifecycle.id
-}
-
-resource "aws_cloudwatch_event_target" "minimal-example-com-InstanceScheduledChange-Target" {
-  arn  = aws_sqs_queue.minimal-example-com-nth.arn
-  rule = aws_cloudwatch_event_rule.minimal-example-com-InstanceScheduledChange.id
-}
-
-resource "aws_cloudwatch_event_target" "minimal-example-com-InstanceStateChange-Target" {
-  arn  = aws_sqs_queue.minimal-example-com-nth.arn
-  rule = aws_cloudwatch_event_rule.minimal-example-com-InstanceStateChange.id
-}
-
-resource "aws_cloudwatch_event_target" "minimal-example-com-SpotInterruption-Target" {
-  arn  = aws_sqs_queue.minimal-example-com-nth.arn
-  rule = aws_cloudwatch_event_rule.minimal-example-com-SpotInterruption.id
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-example-com" {
@@ -423,18 +327,6 @@ resource "aws_iam_role" "aws-cloud-controller-manager-kube-system-sa-minimal-exa
   }
 }
 
-resource "aws_iam_role" "aws-node-termination-handler-kube-system-sa-minimal-example-com" {
-  assume_role_policy = file("${path.module}/data/aws_iam_role_aws-node-termination-handler.kube-system.sa.minimal.example.com_policy")
-  name               = "aws-node-termination-handler.kube-system.sa.minimal.example.com"
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "aws-node-termination-handler.kube-system.sa.minimal.example.com"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-    "service-account.kops.k8s.io/name"          = "aws-node-termination-handler"
-    "service-account.kops.k8s.io/namespace"     = "kube-system"
-  }
-}
-
 resource "aws_iam_role" "dns-controller-kube-system-sa-minimal-example-com" {
   assume_role_policy = file("${path.module}/data/aws_iam_role_dns-controller.kube-system.sa.minimal.example.com_policy")
   name               = "dns-controller.kube-system.sa.minimal.example.com"
@@ -497,12 +389,6 @@ resource "aws_iam_role_policy" "aws-cloud-controller-manager-kube-system-sa-mini
   role   = aws_iam_role.aws-cloud-controller-manager-kube-system-sa-minimal-example-com.name
 }
 
-resource "aws_iam_role_policy" "aws-node-termination-handler-kube-system-sa-minimal-example-com" {
-  name   = "aws-node-termination-handler.kube-system.sa.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_aws-node-termination-handler.kube-system.sa.minimal.example.com_policy")
-  role   = aws_iam_role.aws-node-termination-handler-kube-system-sa-minimal-example-com.name
-}
-
 resource "aws_iam_role_policy" "dns-controller-kube-system-sa-minimal-example-com" {
   name   = "dns-controller.kube-system.sa.minimal.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_dns-controller.kube-system.sa.minimal.example.com_policy")
@@ -552,156 +438,6 @@ resource "aws_key_pair" "kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663
   }
 }
 
-resource "aws_launch_template" "karpenter-nodes-default-minimal-example-com" {
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      encrypted             = true
-      iops                  = 3000
-      throughput            = 125
-      volume_size           = 128
-      volume_type           = "gp3"
-    }
-  }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.nodes-minimal-example-com.id
-  }
-  image_id = "ami-12345678"
-  key_name = aws_key_pair.kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
-  lifecycle {
-    create_before_destroy = true
-  }
-  metadata_options {
-    http_endpoint               = "enabled"
-    http_protocol_ipv6          = "disabled"
-    http_put_response_hop_limit = 1
-    http_tokens                 = "required"
-  }
-  monitoring {
-    enabled = false
-  }
-  name = "karpenter-nodes-default.minimal.example.com"
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    ipv6_address_count          = 0
-    security_groups             = [aws_security_group.nodes-minimal-example-com.id]
-  }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "KubernetesCluster"                                                           = "minimal.example.com"
-      "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
-      "aws-node-termination-handler/managed"                                        = ""
-      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
-      "k8s.io/role/node"                                                            = "1"
-      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-default"
-      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
-    }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "KubernetesCluster"                                                           = "minimal.example.com"
-      "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
-      "aws-node-termination-handler/managed"                                        = ""
-      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
-      "k8s.io/role/node"                                                            = "1"
-      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-default"
-      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
-    }
-  }
-  tags = {
-    "KubernetesCluster"                                                           = "minimal.example.com"
-    "Name"                                                                        = "karpenter-nodes-default.minimal.example.com"
-    "aws-node-termination-handler/managed"                                        = ""
-    "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-default"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
-    "k8s.io/role/node"                                                            = "1"
-    "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-default"
-    "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
-  }
-  user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes-default.minimal.example.com_user_data")
-}
-
-resource "aws_launch_template" "karpenter-nodes-single-machinetype-minimal-example-com" {
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      delete_on_termination = true
-      encrypted             = true
-      iops                  = 3000
-      throughput            = 125
-      volume_size           = 128
-      volume_type           = "gp3"
-    }
-  }
-  iam_instance_profile {
-    name = aws_iam_instance_profile.nodes-minimal-example-com.id
-  }
-  image_id = "ami-12345678"
-  key_name = aws_key_pair.kubernetes-minimal-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id
-  lifecycle {
-    create_before_destroy = true
-  }
-  metadata_options {
-    http_endpoint               = "enabled"
-    http_protocol_ipv6          = "disabled"
-    http_put_response_hop_limit = 1
-    http_tokens                 = "required"
-  }
-  monitoring {
-    enabled = false
-  }
-  name = "karpenter-nodes-single-machinetype.minimal.example.com"
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    ipv6_address_count          = 0
-    security_groups             = [aws_security_group.nodes-minimal-example-com.id]
-  }
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "KubernetesCluster"                                                           = "minimal.example.com"
-      "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
-      "aws-node-termination-handler/managed"                                        = ""
-      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
-      "k8s.io/role/node"                                                            = "1"
-      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-single-machinetype"
-      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
-    }
-  }
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "KubernetesCluster"                                                           = "minimal.example.com"
-      "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
-      "aws-node-termination-handler/managed"                                        = ""
-      "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
-      "k8s.io/role/node"                                                            = "1"
-      "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-single-machinetype"
-      "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
-    }
-  }
-  tags = {
-    "KubernetesCluster"                                                           = "minimal.example.com"
-    "Name"                                                                        = "karpenter-nodes-single-machinetype.minimal.example.com"
-    "aws-node-termination-handler/managed"                                        = ""
-    "k8s.io/cluster-autoscaler/node-template/label/karpenter.sh/provisioner-name" = "karpenter-nodes-single-machinetype"
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node"  = ""
-    "k8s.io/role/node"                                                            = "1"
-    "kops.k8s.io/instancegroup"                                                   = "karpenter-nodes-single-machinetype"
-    "kubernetes.io/cluster/minimal.example.com"                                   = "owned"
-  }
-  user_data = filebase64("${path.module}/data/aws_launch_template_karpenter-nodes-single-machinetype.minimal.example.com_user_data")
-}
-
 resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   block_device_mappings {
     device_name = "/dev/xvda"
@@ -748,7 +484,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                                                     = "minimal.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
-      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -763,7 +498,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                                                     = "minimal.example.com"
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
-      "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -776,7 +510,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
   tags = {
     "KubernetesCluster"                                                                                     = "minimal.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
-    "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
@@ -830,7 +563,6 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal.example.com"
       "Name"                                                                       = "nodes.minimal.example.com"
-      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -842,7 +574,6 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
     tags = {
       "KubernetesCluster"                                                          = "minimal.example.com"
       "Name"                                                                       = "nodes.minimal.example.com"
-      "aws-node-termination-handler/managed"                                       = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
       "k8s.io/role/node"                                                           = "1"
       "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -852,7 +583,6 @@ resource "aws_launch_template" "nodes-minimal-example-com" {
   tags = {
     "KubernetesCluster"                                                          = "minimal.example.com"
     "Name"                                                                       = "nodes.minimal.example.com"
-    "aws-node-termination-handler/managed"                                       = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
     "k8s.io/role/node"                                                           = "1"
     "kops.k8s.io/instancegroup"                                                  = "nodes"
@@ -1032,14 +762,6 @@ resource "aws_s3_object" "minimal-example-com-addons-limit-range-addons-k8s-io" 
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-example-com-addons-node-termination-handler-aws-k8s-1-11" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-node-termination-handler.aws-k8s-1.11_content")
-  key                    = "clusters.example.com/minimal.example.com/addons/node-termination-handler.aws/k8s-1.11.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-example-com-addons-storage-aws-addons-k8s-io-v1-15-0" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-storage-aws.addons.k8s.io-v1.15.0_content")
@@ -1076,6 +798,22 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-nodes_content")
   key                    = "clusters.example.com/minimal.example.com/igconfig/node/nodes/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nodeupscript-karpenter-nodes-default" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nodeupscript-karpenter-nodes-default_content")
+  key                    = "clusters.example.com/minimal.example.com/igconfig/node/karpenter-nodes-default/nodeupscript.sh"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nodeupscript-karpenter-nodes-single-machinetype" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nodeupscript-karpenter-nodes-single-machinetype_content")
+  key                    = "clusters.example.com/minimal.example.com/igconfig/node/karpenter-nodes-single-machinetype/nodeupscript.sh"
   provider               = aws.files
   server_side_encryption = "AES256"
 }
@@ -1226,17 +964,6 @@ resource "aws_security_group_rule" "from-nodes-minimal-example-com-ingress-udp-1
   source_security_group_id = aws_security_group.nodes-minimal-example-com.id
   to_port                  = 65535
   type                     = "ingress"
-}
-
-resource "aws_sqs_queue" "minimal-example-com-nth" {
-  message_retention_seconds = 300
-  name                      = "minimal-example-com-nth"
-  policy                    = file("${path.module}/data/aws_sqs_queue_minimal-example-com-nth_policy")
-  tags = {
-    "KubernetesCluster"                         = "minimal.example.com"
-    "Name"                                      = "minimal-example-com-nth"
-    "kubernetes.io/cluster/minimal.example.com" = "owned"
-  }
 }
 
 resource "aws_subnet" "us-test-1a-minimal-example-com" {
