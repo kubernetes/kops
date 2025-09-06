@@ -35,18 +35,17 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o *kops.Cluster) err
 	if clusterSpec.CloudProvider.AWS == nil {
 		return nil
 	}
+	if clusterSpec.Karpenter != nil && clusterSpec.Karpenter.Enabled {
+		// Karpenter manages its own NTH, so we disable the NTH addon.
+		// https://karpenter.sh/docs/troubleshooting/#aws-node-termination-handler-nth-interactions
+		return nil
+	}
 	if clusterSpec.CloudProvider.AWS.NodeTerminationHandler == nil {
 		clusterSpec.CloudProvider.AWS.NodeTerminationHandler = &kops.NodeTerminationHandlerSpec{}
 	}
 	nth := clusterSpec.CloudProvider.AWS.NodeTerminationHandler
 	if nth.Enabled == nil {
-		if clusterSpec.Karpenter != nil && clusterSpec.Karpenter.Enabled {
-			// Karpenter manages its own NTH, so we disable the NTH addon.
-			// https://karpenter.sh/docs/troubleshooting/#aws-node-termination-handler-nth-interactions
-			nth.Enabled = fi.PtrTo(false)
-		} else {
-			nth.Enabled = fi.PtrTo(true)
-		}
+		nth.Enabled = fi.PtrTo(true)
 	}
 	if !fi.ValueOf(nth.Enabled) {
 		return nil

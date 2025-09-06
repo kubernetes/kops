@@ -1898,6 +1898,9 @@ func validateMetricsServer(cluster *kops.Cluster, spec *kops.MetricsServerConfig
 }
 
 func validateNodeTerminationHandler(cluster *kops.Cluster, spec *kops.NodeTerminationHandlerSpec, fldPath *field.Path) (allErrs field.ErrorList) {
+	if (spec.Enabled == nil || *spec.Enabled) && cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "nodeTerminationHandler cannot be used in conjunction with Karpenter"))
+	}
 	if spec.IsQueueMode() {
 		if spec.EnableSpotInterruptionDraining != nil && !*spec.EnableSpotInterruptionDraining {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableSpotInterruptionDraining"), "spot interruption draining cannot be disabled in Queue Processor mode"))
