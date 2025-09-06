@@ -2075,7 +2075,7 @@ metadata:
     app.kubernetes.io/version: "1.6.2"
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas false }}
   revisionHistoryLimit: 10
   strategy:
     rollingUpdate:
@@ -2098,7 +2098,12 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       priorityClassName: "system-cluster-critical"
+      {{ if not IsIPv6Only }}
+      dnsPolicy: Default
+      {{ else }}
+      # Must use ClusterFirst on IPv6 clusters in order to get DNS64
       dnsPolicy: ClusterFirst
+      {{ end }}
       schedulerName: "default-scheduler"
       containers:
       - name: controller

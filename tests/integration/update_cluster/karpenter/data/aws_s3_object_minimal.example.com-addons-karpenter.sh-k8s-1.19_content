@@ -2542,7 +2542,7 @@ spec:
         - mountPath: /var/run/secrets/amazonaws.com/
           name: token-amazonaws-com
           readOnly: true
-      dnsPolicy: ClusterFirst
+      dnsPolicy: Default
       nodeSelector:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
