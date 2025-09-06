@@ -61,7 +61,7 @@ func (b *CrictlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 }
 
 func (b *CrictlBuilder) binaryPath() string {
-	path := "/usr/local/bin"
+	path := "/home/kubernetes/bin"
 	if b.Distribution == distributions.DistributionFlatcar {
 		path = "/opt/kops/bin"
 	}
