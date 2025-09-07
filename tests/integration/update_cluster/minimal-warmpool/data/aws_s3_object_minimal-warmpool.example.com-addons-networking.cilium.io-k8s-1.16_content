@@ -50,52 +50,145 @@ metadata:
 apiVersion: v1
 data:
   agent-health-port: "9879"
+  agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   auto-direct-node-routes: "false"
-  bpf-ct-global-any-max: "262144"
-  bpf-ct-global-tcp-max: "524288"
-  bpf-lb-algorithm: random
-  bpf-lb-maglev-table-size: "16381"
+  bpf-distributed-lru: "false"
+  bpf-events-drop-enabled: "true"
+  bpf-events-policy-verdict-enabled: "true"
+  bpf-events-trace-enabled: "true"
+  bpf-lb-acceleration: disabled
+  bpf-lb-algorithm-annotation: "false"
+  bpf-lb-external-clusterip: "false"
   bpf-lb-map-max: "65536"
+  bpf-lb-mode-annotation: "false"
+  bpf-lb-sock: "false"
   bpf-lb-sock-hostns-only: "false"
-  bpf-nat-global-max: "524288"
-  bpf-neigh-global-max: "524288"
+  bpf-lb-source-range-all-types: "false"
+  bpf-map-dynamic-size-ratio: "0.0025"
   bpf-policy-map-max: "16384"
+  bpf-policy-stats-map-max: "65536"
+  bpf-root: /sys/fs/bpf
   cgroup-root: /run/cilium/cgroupv2
+  cilium-endpoint-gc-interval: 5m0s
   cluster-name: default
+  cluster-pool-ipv4-mask-size: "24"
+  clustermesh-enable-endpoint-sync: "false"
+  clustermesh-enable-mcs-api: "false"
   cni-exclusive: "true"
   cni-log-file: /var/run/cilium/cilium-cni.log
+  custom-cni-conf: "false"
+  datapath-mode: veth
   debug: "false"
+  debug-verbose: ""
+  default-lb-service-ipam: lbipam
+  direct-routing-skip-unreachable: "false"
   disable-cnp-status-updates: "true"
   disable-endpoint-crd: "false"
+  dnsproxy-enable-transparent-mode: "true"
+  dnsproxy-socket-linger-timeout: "10"
+  egress-gateway-reconciliation-trigger-interval: 1s
+  enable-auto-protect-node-port-range: "true"
+  enable-bpf-clock-probe: "false"
   enable-bpf-masquerade: "false"
   enable-endpoint-health-checking: "true"
+  enable-endpoint-lockdown-on-policy-overflow: "false"
+  enable-health-check-loadbalancer-ip: "false"
+  enable-health-check-nodeport: "true"
+  enable-health-checking: "true"
+  enable-internal-traffic-policy: "true"
   enable-ipv4: "true"
+  enable-ipv4-big-tcp: "false"
   enable-ipv4-masquerade: "true"
   enable-ipv6: "false"
+  enable-ipv6-big-tcp: "false"
   enable-ipv6-masquerade: "false"
+  enable-k8s-networkpolicy: "true"
+  enable-l2-neigh-discovery: "false"
   enable-l7-proxy: "true"
+  enable-lb-ipam: "true"
   enable-local-redirect-policy: "false"
+  enable-masquerade-to-route-source: "false"
   enable-node-port: "false"
+  enable-node-selector-labels: "false"
+  enable-non-default-deny-policies: "true"
+  enable-policy: default
   enable-remote-node-identity: "true"
+  enable-sctp: "false"
   enable-service-topology: "false"
+  enable-source-ip-verification: "true"
+  enable-svc-source-range-check: "true"
+  enable-tcx: "true"
   enable-unreachable-routes: "false"
+  enable-vtep: "false"
+  enable-well-known-identities: "false"
+  enable-xt-socket-fallback: "true"
+  envoy-access-log-buffer-size: "4096"
+  envoy-base-id: "0"
+  envoy-keep-cap-netbindservice: "false"
+  external-envoy-proxy: "false"
+  health-check-icmp-failure-threshold: "3"
+  http-retry-count: "3"
   identity-allocation-mode: crd
   identity-change-grace-period: 5s
+  identity-gc-interval: 15m0s
+  identity-heartbeat-timeout: 30m0s
+  identity-management-mode: agent
   install-iptables-rules: "true"
+  install-no-conntrack-iptables-rules: "false"
   ipam: kubernetes
+  ipam-cilium-node-update-rate: 15s
+  iptables-random-fully: "false"
+  k8s-require-ipv4-pod-cidr: "false"
+  k8s-require-ipv6-pod-cidr: "false"
   kube-proxy-replacement: "false"
+  max-connected-clusters: "255"
+  mesh-auth-enabled: "true"
+  mesh-auth-gc-interval: 5m0s
+  mesh-auth-queue-size: "1024"
+  mesh-auth-rotated-identities-queue-size: "1024"
+  metrics-sampling-interval: 5m
   monitor-aggregation: medium
+  monitor-aggregation-flags: all
+  monitor-aggregation-interval: 5s
+  nat-map-stats-entries: "32"
+  nat-map-stats-interval: 30s
+  node-port-bind-protection: "true"
+  nodeport-addresses: ""
   nodes-gc-interval: 5m0s
   operator-api-serve-addr: 127.0.0.1:9234
+  policy-cidr-match-mode: ""
+  policy-default-local-cluster: "false"
   preallocate-bpf-maps: "false"
+  procfs: /host/proc
+  proxy-connect-timeout: "2"
+  proxy-idle-timeout-seconds: "60"
+  proxy-initial-fetch-timeout: "30"
+  proxy-max-concurrent-retries: "128"
+  proxy-max-connection-duration-seconds: "0"
+  proxy-max-requests-per-connection: "0"
+  proxy-xff-num-trusted-hops-egress: "0"
+  proxy-xff-num-trusted-hops-ingress: "0"
   remove-cilium-node-taints: "true"
   routing-mode: tunnel
+  service-no-backend-response: reject
   set-cilium-is-up-condition: "true"
   set-cilium-node-taints: "true"
-  sidecar-istio-proxy-image: cilium/istio_proxy
+  synchronize-k8s-nodes: "true"
   tofqdns-dns-reject-response-code: refused
+  tofqdns-enable-dns-compression: "true"
   tofqdns-enable-poller: "false"
+  tofqdns-endpoint-max-ip-per-hostname: "1000"
+  tofqdns-idle-connection-grace-period: 0s
+  tofqdns-max-deferred-connection-deletes: "10000"
+  tofqdns-preallocate-identities: "true"
+  tofqdns-proxy-response-max-delay: 100ms
   tunnel-protocol: vxlan
+  tunnel-source-port-range: 0-0
+  unmanaged-pod-watcher-interval: "15"
+  vtep-cidr: ""
+  vtep-endpoint: ""
+  vtep-mac: ""
+  vtep-mask: ""
   write-cni-conf-when-ready: /host/etc/cni/net.d/05-cilium.conflist
 kind: ConfigMap
 metadata:
