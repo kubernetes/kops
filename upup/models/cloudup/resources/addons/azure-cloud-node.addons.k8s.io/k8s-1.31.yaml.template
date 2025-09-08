@@ -82,6 +82,8 @@ spec:
         - --node-name=$(NODE_NAME)
         - --v=4
         env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: "{{ APIInternalName }}"
         - name: NODE_NAME
           valueFrom:
             fieldRef:
