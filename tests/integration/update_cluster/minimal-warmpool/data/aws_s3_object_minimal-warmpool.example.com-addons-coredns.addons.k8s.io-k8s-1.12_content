@@ -135,7 +135,7 @@ spec:
       - args:
         - -conf
         - /etc/coredns/Corefile
-        image: kops.k8s.io/remapped-image/coredns/coredns:v1.11.4
+        image: kops.k8s.io/remapped-image/coredns/coredns:v1.12.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 5

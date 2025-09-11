@@ -48,8 +48,8 @@ images:
   download: registry.k8s.io/kube-proxy:v1.32.0
 - canonical: registry.k8s.io/kops/kops-controller:1.34.0-alpha.1
   download: registry.k8s.io/kops/kops-controller:1.34.0-alpha.1
-- canonical: registry.k8s.io/coredns/coredns:v1.11.4
-  download: registry.k8s.io/coredns/coredns:v1.11.4
+- canonical: registry.k8s.io/coredns/coredns:v1.12.4
+  download: registry.k8s.io/coredns/coredns:v1.12.4
 - canonical: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
   download: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
 - canonical: registry.k8s.io/kops/dns-controller:1.34.0-alpha.1
