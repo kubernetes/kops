@@ -6,6 +6,10 @@ metadata:
 spec:
   awsLoadBalancerController:
     enabled: true
+    cpuRequest: "150m"
+    cpuLimit: "300m"
+    memoryRequest: "300Mi"
+    memoryLimit: "600Mi"
   certManager:
     enabled: true
   clusterAutoscaler:

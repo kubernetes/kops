@@ -9,7 +9,11 @@ spec:
   authorization:
     alwaysAllow: {}
   awsLoadBalancerController:
+    cpuLimit: 300m
+    cpuRequest: 150m
     enabled: true
+    memoryLimit: 600Mi
+    memoryRequest: 300Mi
   certManager:
     enabled: true
   channel: stable

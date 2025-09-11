@@ -1292,11 +1292,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 200m
-            memory: 500Mi
+            cpu: {{ or .CPULimit "200m" }}
+            memory: {{ or .MemoryLimit "500Mi" }}
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: {{ or .CPURequest "100m" }}
+            memory: {{ or .MemoryRequest "200Mi" }}
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

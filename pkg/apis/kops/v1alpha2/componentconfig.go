@@ -1283,6 +1283,18 @@ type LoadBalancerControllerSpec struct {
 	// EnableShield specifies whether the controller can enable Shield Advanced.
 	// Default: false
 	EnableShield bool `json:"enableShield,omitempty"`
+	// CPURequest, cpu request compute resource for AWS Load Balancer Controller.
+	// Default: 100m
+	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// CPULimit, cpu limit compute resource for AWS Load Balancer Controller.
+	// Default: 200m
+	CPULimit *resource.Quantity `json:"cpuLimit,omitempty"`
+	// MemoryRequest, memory request compute resource for AWS Load Balancer Controller.
+	// Default: 200Mi
+	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
+	// MemoryLimit, memory limit compute resource for AWS Load Balancer Controller.
+	// Default: 500Mi
+	MemoryLimit *resource.Quantity `json:"memoryLimit,omitempty"`
 }
 
 // HasAdmissionController checks if a specific admission controller is enabled
