@@ -20,6 +20,10 @@ AWS Load Balancer Controller offers additional functionality for provisioning EL
 spec:
   awsLoadBalancerController:
     enabled: true
+    cpuRequest: "100m"
+    cpuLimit: "200m"
+    memoryRequest: "200Mi"
+    memoryLimit: "500Mi"
 ```
 
 Though the AWS Load Balancer Controller can integrate the AWS WAF and
@@ -37,6 +41,10 @@ spec:
     enabled: true
     enableWAF: true
     enableWAFv2: true
+    cpuRequest: "100m"
+    cpuLimit: "200m"
+    memoryRequest: "200Mi"
+    memoryLimit: "500Mi"
 ```
 
 Note that the controller will only succeed in associating one WAF with

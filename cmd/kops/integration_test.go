@@ -814,6 +814,24 @@ func TestAWSLBController(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestAWSLBControllerResources runs a simple configuration, but with AWS LB controller with custom resources
+func TestAWSLBControllerResources(t *testing.T) {
+	newIntegrationTest("minimal.example.com", "aws-lb-controller-resources").
+		withOIDCDiscovery().
+		withServiceAccountRole("dns-controller.kube-system", true).
+		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
+		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
+		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
+		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
+		withAddons("aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
+			"certmanager.io-k8s-1.16",
+			awsEBSCSIAddon,
+			dnsControllerAddon,
+			awsCCMAddon,
+		).
+		runTestTerraformAWS(t)
+}
+
 func TestManyAddons(t *testing.T) {
 	newIntegrationTest("many-addons.example.com", "many-addons").
 		withAddons(
