@@ -17,8 +17,8 @@ limitations under the License.
 package elemento
 
 import (
+	"context"
 	"fmt"
-
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -88,6 +88,62 @@ func (c *elementoCloudImplementation) Region() string {
 	return c.region
 }
 
+func (c *elementoCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
+
+	serverGroups, err := findServerGroups(c, cluster.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find server groups: %v", err)
+	}
+
+	cloudInstanceGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	for name, serverGroup := range serverGroups {
+		var instanceGroup *kops.InstanceGroup
+		for _, ig := range instanceGroups {
+			groupName := fmt.Sprintf("%s-%s", cluster.Name, ig.Name)
+			if name == groupName {
+				instanceGroup = ig
+				break
+			}
+		}
+		if instanceGroup == nil {
+			if warnUnmatched {
+				klog.Warningf("Server group %q has no corresponding instance group", name)
+			}
+			continue
+		}
+
+		cloudInstanceGroups[instanceGroup.Name], err = buildCloudInstanceGroup(instanceGroup, serverGroup, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build cloud instance group for instance group %q: %w", instanceGroup.Name, err)
+		}
+	}
+
+	return cloudInstanceGroups, nil
+}
+
+// findServerGroups finds all server groups belonging to the cluster
+func findServerGroups(c *elementoCloudImplementation, clusterName string) (map[string][]*ecloud.Server, error) {
+	servers, err := c.GetServers(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list servers: %w", err)
+	}
+
+	serverGroups := make(map[string][]*ecloud.Server)
+	for _, server := range servers {
+		instanceGroupNameLabel, ok := server.Labels[TagKubernetesInstanceGroup]
+		if !ok {
+			klog.Warningf("failed to find instance group name for server %s(%s)", server.Name, server.ID)
+			continue
+		}
+
+		instanceGroupName := fmt.Sprintf("%s-%s", clusterName, instanceGroupNameLabel)
+		serverGroups[instanceGroupName] = append(serverGroups[instanceGroupName], server)
+	}
+
+	return serverGroups, nil
+}
+
 func (c *elementoCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	if c.dns == nil {
 		return nil, fmt.Errorf("DNS provider is not initialized")
@@ -111,6 +167,40 @@ func (c *elementoCloudImplementation) VolumeClient() ecloud.VolumeClient {
 	return c.Client.Volume
 }
 
+func buildCloudInstanceGroup(ig *kops.InstanceGroup, sg []*ecloud.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	cloudInstanceGroup := &cloudinstances.CloudInstanceGroup{
+		HumanName:     ig.Name,
+		InstanceGroup: ig,
+		Raw:           sg,
+		MinSize:       int(fi.ValueOf(ig.Spec.MinSize)),
+		TargetSize:    int(fi.ValueOf(ig.Spec.MinSize)),
+		MaxSize:       int(fi.ValueOf(ig.Spec.MaxSize)),
+	}
+
+	for _, server := range sg {
+		status := cloudinstances.CloudInstanceStatusUpToDate
+		if _, ok := server.Labels[TagKubernetesInstanceNeedsUpdate]; ok {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
+
+		cloudInstance, err := cloudInstanceGroup.NewCloudInstance(server.ID, status, nodeMap[server.ID])
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cloud group instance for server %s(%s): %w", server.Name, server.ID, err)
+		}
+
+		// Add additional instance info
+		cloudInstance.State = cloudinstances.State(server.Status)
+		if role, ok := server.Labels[TagKubernetesInstanceRole]; ok {
+			cloudInstance.Roles = append(cloudInstance.Roles, role)
+		}
+		if server.ServerType != nil {
+			cloudInstance.MachineType = server.ServerType.Name
+		}
+	}
+
+	return cloudInstanceGroup, nil
+}
+
 func (s *elementoCloudImplementation) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
 	toDelete := append(group.NeedUpdate, group.Ready...)
 	for _, cloudInstance := range toDelete {
@@ -120,6 +210,24 @@ func (s *elementoCloudImplementation) DeleteGroup(group *cloudinstances.CloudIns
 		}
 	}
 	return nil
+}
+
+func (c *elementoCloudImplementation) GetServers(clusterName string) ([]*ecloud.Server, error) {
+	client := c.ServerClient()
+
+	labelSelector := TagKubernetesClusterName + "=" + clusterName
+	listOptions := ecloud.ListOpts{
+		PerPage:       50,
+		LabelSelector: labelSelector,
+	}
+	serverListOptions := ecloud.ServerListOpts{ListOpts: listOptions}
+
+	matches, _, err := client.List(context.TODO(), serverListOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get servers matching label selector %q: %w", labelSelector, err)
+	}
+
+	return matches, nil
 }
 
 // TODO: All the following functions are not implemented yet
@@ -158,19 +266,10 @@ func (s *elementoCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster)
 	//! Mock response with reasonable API ingress statuses
 	return []fi.ApiIngressStatus{
 		{
-			IP:       "10.0.0.1", // Mock internal IP
+			IP:       "51.159.157.254", // Mock internal IP
 			Hostname: "api.internal.cluster.local",
 		},
-		{
-			IP:       "203.0.113.1", // Mock external IP
-			Hostname: "api.cluster.example.com",
-		},
 	}, nil
-}
-
-func (s *elementoCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	klog.V(8).Info("Elemento GetCloudGroups is not implemented")
-	return nil, fmt.Errorf("GetCloudGroups is not implemented yet for Elemento")
 }
 
 // func findServerGroups(s *elementoCloudImplementation, clusterName string) (map[string][]*instance.Server, error) {

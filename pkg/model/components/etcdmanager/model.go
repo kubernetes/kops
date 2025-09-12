@@ -42,7 +42,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
-	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/exec"
@@ -527,16 +526,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			}
 			config.VolumeNameTag = fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, instanceGroupName)
 		
-		case kops.CloudProviderElemento:
-			config.VolumeProvider = "elemento"
-
-			config.VolumeTag = []string{
-				fmt.Sprintf("%s=%s", elemento.TagKubernetesClusterName, b.Cluster.Name),
-				fmt.Sprintf("%s=%s", elemento.TagKubernetesVolumeRole, etcdCluster.Name),
-			}
-			config.VolumeNameTag = fmt.Sprintf("%s=%s", elemento.TagKubernetesInstanceGroup, instanceGroupName)
-
-		case kops.CloudProviderMetal:
+		case kops.CloudProviderMetal, kops.CloudProviderElemento:
 			config.VolumeProvider = "external"
 			config.BackupStore = "file:///mnt/disks/backups"
 			config.VolumeTag = []string{

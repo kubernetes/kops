@@ -95,3 +95,5 @@ _rundir
 
 # Ignore vendor directory
 vendor/
+
+*.txt
