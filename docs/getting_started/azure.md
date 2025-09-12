@@ -1,214 +1,92 @@
 # Getting Started with kOps on Azure
 
-Azure support on kOps is currently in alpha. The original issue
-ticket is [#3957](https://github.com/kubernetes/kops/issues/3957).
+**WARNING**: Azure support on kOps is currently in **alpha**, which means that it is in the early stages of development and subject to change, please use with caution.
 
-Please see [#10412](https://github.com/kubernetes/kops/issues/10412)
-for the remaining items and limitations. For example, Azure DNS is not
-currently supported, and clusters need to be created with [Gossip
-DNS](https://kops.sigs.k8s.io/gossip/).
+## Features
 
-# Create Creation Steps
+* Create, update and delete clusters
+* Create, edit and delete instance groups
+* ...
 
-## Step 1. Install Azure CLI
+## Requirements
 
-First, install Azure CLI.
+* Latest kOps version installed
+* kubectl installed
+* Azure CLI installed
+* Azure account with **Contributor** permissions for the cluster subscription and an existing storage account
+* SSH key, both `id_ed25519` and `id_rsa` keys are supported
 
-```bash
-$ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-```
+## Environment Variables
 
-Then type the following command to login to Azure. This will redirect
-you to the browser login.
+### Enable Azure
 
-```bash
-$ az login
-
-...
-
-You have logged in. Now let us find all the subscriptions to which you have access...
-[
-  {
-	"cloudName": "AzureCloud",
-	"homeTenantId": "76253...",
-	"id": "7e232...",
-	"isDefault": true,
-	"managedByTenants": [],
-	"name": "Your name...",
-	"state": "Enabled",
-	"tenantId": "76253...",
-	"user": {
-	  "name": "...",
-	  "type": "user"
-	}
-  },
- ...
-]
-```
-
-One Azure account has one or more than one “subscription”, which
-serves as a single billing unit for Azure resources. Set the env var
-`AZURE_SUBSCRIPTION_ID` to the ID of the subscription you want to
-use.
+Since Azure support is currently in **alpha**, it is feature gated and you will need to set:
 
 ```bash
-$ export AZURE_SUBSCRIPTION_ID=7e232...
+export KOPS_FEATURE_FLAGS="Azure"
 ```
-
-## Step 2. Create a Container in Azure Blob
-
-Next, create an Azure Blob storage container for the kOps cluster store.
-
-First, you need to create a resource group, which provides an isolated
-namespace for resources.
+### Azure-specific
 
 ```bash
-$ az group create --name kops-test --location eastus
-{
-  "id": "/subscriptions/7e232.../resourceGroups/kops-test",
-  "location": "eastus",
-  "managedBy": null,
-  "name": "kops-test",
-  "properties": {
-	"provisioningState": "Succeeded"
-  },
-  "tags": null,
-  "type": "Microsoft.Resources/resourceGroups"
-}
+export AZURE_SUBSCRIPTION_ID=<subscription-id>
+export AZURE_STORAGE_ACCOUNT=<storage-account-name>
 ```
 
-Then create a storage account for the resource group. The storage
-account provides an isolated namespace for all storage resources. The
-name must be unique across all Azure accounts.
+### kOps-specific
 
 ```bash
-$ az storage account create --name kopstest --resource-group kops-test
+export KOPS_STATE_STORE=azureblob://<container-name>
 ```
 
-Set the env var `AZURE_STORAGE_ACCOUNT` to the storage account name for later use.
+## Creating a Single Master Cluster
 
 ```bash
-$ export AZURE_STORAGE_ACCOUNT=kopstest
+# Create a cluster in zone northeurope-1
+kops create cluster --cloud azure --name my.k8s --zones northeurope-1 --azure-admin-user ubuntu --yes
+# Validate the cluster
+kops validate cluster --name my.k8s --wait=10m
+# Export the kubeconfig file with the cluster admin user (make sure you keep this user safe!)
+kops export kubeconfig --name my.k8s --admin
 ```
 
-Then create a blob container.
+## Updating a Cluster
 
 ```bash
-$ az storage container create --name cluster-configs
-{
-  "created": true
-}
+# Edit the cluster configuration
+kops edit cluster --name my.k8s 
+# Edit the nodes instance group configuration
+kops edit ig --name my.k8s nodes 
+# Preview the changes to be applied to the cluster
+kops update cluster --name my.k8s 
+# Apply the changes to the cluster
+kops update cluster --name my.k8s --yes 
+# Preview the node that need to be updated
+kops rolling-update cluster --name my.k8s 
+# Replace the nodes that need to be updated
+kops rolling-update cluster --name my.k8s --yes 
 ```
 
-You can confirm that the container has been successfully created from
-Storage Exporter or via `az storage container list`.
+## Deleting a Cluster
 
 ```bash
-$ az storage container list --output table
-Name             Lease Status    Last Modified
----------------  --------------  -------------------------
-cluster-configs  unlocked        2020-10-06T21:12:36+00:00
+# Preview the resources to be deleted
+kops delete cluster --name my.k8s 
+# Delete all the cluster resources
+kops delete cluster --name my.k8s --yes 
 ```
 
-Set the env var `KOPS_STATE_STORE` to the container name URL using kOps' `azureblob://` protocol.
-The URL may include a path within the container.
-kOps stores all of its cluster configuration within this path.
+## TODO
 
-```bash
-export KOPS_STATE_STORE=azureblob://cluster-configs
-```
+kOps for Azure currently does not support the following features:
 
-## Step 3. Set up Credentials for kOps
+* Azure AD Workload Identity
+* Azure Disk volumes
+* Azure Load Balancer
+* Autoscaling (using Cluster Autoscaler or Karpenter)
+* Terraform support
+* Multi-master clusters
+* ...
 
-Use the following commands to generate kOps credentials.
+## Next steps
 
-First, create a service principal in Active Directory.
-
-```bash
-$ az ad sp create-for-rbac --name kops-test --role owner --sdk-auth
-
-{
-  "clientId": "8c6fddb5...",
-  "clientSecret": "dUFzX1...",
-  "subscriptionId": "7e232...",
-  "tenantId": "76253...",
-  ...
-}
-```
-
-Set corresponding env vars:
-
-- Set `AZURE_TENANT_ID` to the `tenantId` of the output
-- Set `AZURE_CLIENT_ID` to the `clienteId` of the output
-- Set `AZURE_CLIENT_SECRET` to the `clientSecret` of the output.
-
-```bash
-$ export AZURE_TENANT_ID="76253..."
-$ export AZURE_CLIENT_ID="8c6fddb5..."
-$ export AZURE_CLIENT_SECRET="dUFzX1..."
-```
-
-## Step 4. Run kOps Commands
-
-Use the following command to create cluster configs in the blob container.
-The command line flags prefixed with `--azure-` are for
-Azure-specific configurations.
-
-```bash
-$ export KOPS_FEATURE_FLAGS=Azure
-
-$ kops create cluster \
-  --cloud azure \
-  --name my-azure.k8s.local \
-  --zones eastus-1 \
-  --network-cidr 172.16.0.0/16 \
-  --networking calico \
-  --azure-subscription-id "${AZURE_SUBSCRIPTION_ID}" \
-  --azure-tenant-id "${AZURE_TENANT_ID}" \
-  --azure-resource-group-name kops-test \
-  --azure-route-table-name kops-test \
-  --azure-admin-user ubuntu
-```
-
-Confirm that config files are created in Blob storage.
-
-```bash
-$ az storage blob list --container-name cluster-configs --output table
-```
-
-Use the following command to preview the Azure resources
-kOps will create for the k8s cluster.
-
-```bash
-$ kops update cluster  \
-  --name my-azure.k8s.local
-```
-
-Now add the `--yes` flag to have kOps provision the resources
-and create the cluster. This will also add a kubeconfig context
-for the cluster.
-
-```bash
-$ kops update cluster  \
-  --name my-azure.k8s.local \
-  --yes
-```
-
-It may take a few minutes for the cluster's API server to become
-reachable. Please run basic kubectl commands like `kubectl get
-namespaces` to verify the API server is reachable.
-
-Currently kOps creates the following resources in Azure:
-
-- Virtual Machine Scale Sets (equivalent to AWS Auto Scaling Groups)
-- Managed Disks (equivalent to AWS Elastic Volume Storage)
-- Virtual network
-- Subnet
-- Route Table
-- Role Assignment
-
-By default, kOps create two VM Scale Sets - one for the k8s master and the
-other for worker nodes. Managed Disks are used as etcd volumes ("main"
-database and "event" database) and attached to the K8s master
-VMs. Role assignments are needed to grant API access and Blob storage
-access to the VMs.
+Now that you have a working kOps cluster, read through the recommendations for [production setups guide](production.md) to learn more about how to configure kOps for production workloads.
