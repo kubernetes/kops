@@ -321,6 +321,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.PrefixBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.NerdctlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CrictlBuilder{NodeupModelContext: modelContext})
+	// Cloud-specific configuration
+	loader.Builders = append(loader.Builders, &model.AzureBuilder{NodeupModelContext: modelContext})
 
 	loader.Builders = append(loader.Builders, &networking.CommonBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &networking.CalicoBuilder{NodeupModelContext: modelContext})
