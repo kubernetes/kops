@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.16
+FROM alpine:3.22
 
 RUN apk add --no-cache \
   bash \
