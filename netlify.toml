@@ -2,5 +2,4 @@
 [build]
 publish = "site"
 command = "make build-docs-netlify"
-# available here https://github.com/netlify/build-image/blob/focal/included_software.md#languages
-environment = { PYTHON_VERSION = "3.8" }
+environment = { PYTHON_VERSION = "3.12" }
