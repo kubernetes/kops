@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	_ "embed"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -28,7 +29,6 @@ import (
 	"github.com/pelletier/go-toml"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
@@ -93,6 +93,9 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	return nil
 }
 
+//go:embed resources/containerd-license.txt
+var ContainerdLicense string
+
 // installContainerd installs the binaries and services to run containerd.
 // We break it out because on immutable OSes we only configure containerd, we don't install it.
 func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) error {
@@ -100,7 +103,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 	{
 		t := &nodetasks.File{
 			Path:     "/usr/share/doc/containerd/apache.txt",
-			Contents: fi.NewStringResource(resources.ContainerdApache2License),
+			Contents: fi.NewStringResource(ContainerdLicense),
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)
