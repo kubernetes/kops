@@ -122,8 +122,7 @@ mode: "0755"
 path: /usr/sbin/runc
 type: file
 ---
-contents: |2
-
+contents: |2-
 
                                    Apache License
                              Version 2.0, January 2004
