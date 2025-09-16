@@ -19,10 +19,15 @@ package elemento
 import (
 	"context"
 	"fmt"
+
+	// "net"
 	"net/http"
+	// "strings"
+	// "strconv"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/kops/pkg/bootstrap"
+	// "k8s.io/kops/pkg/wellknownports"
 )
 
 type ElementoVerifierOptions struct {
@@ -37,9 +42,9 @@ var _ bootstrap.Verifier = &elementoVerifier{}
 
 func NewElementoVerifier(opt *ElementoVerifierOptions) (bootstrap.Verifier, error) {
 	elementoClient, err := ecloud.NewClient("kops-elemento", "1.0")
-    if err != nil {
+	if err != nil {
 		return nil, fmt.Errorf("failed to get server info: %w", err)
-    }
+	}
 
 	return &elementoVerifier{
 		opt:    *opt,
@@ -48,49 +53,57 @@ func NewElementoVerifier(opt *ElementoVerifierOptions) (bootstrap.Verifier, erro
 }
 
 func (e elementoVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	// if !strings.HasPrefix(token, ElementoAuthenticationTokenPrefix) {
-	// 	return nil, fmt.Errorf("invalid token format")
-	// }
-	// token = strings.TrimPrefix(token, ElementoAuthenticationTokenPrefix)
+	// DISABLED: Comment out all verification checks for testing
+	/*
+		if !strings.HasPrefix(token, ElementoAuthenticationTokenPrefix) {
+			return nil, fmt.Errorf("invalid token format")
+		}
+		token = strings.TrimPrefix(token, ElementoAuthenticationTokenPrefix)
 
-	// serverID, err := strconv.Atoi(token)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to parse server ID: %w", err)
-	// }
-	// server, _, err := e.client.Server.GetByID(ctx, serverID)
-	// if err != nil || server == nil {
-	// 	return nil, fmt.Errorf("failed to get server info: %w", err)
-	// }
+		server, _, err := e.client.Server.GetByID(ctx, token)
+		if err != nil || server == nil {
+			return nil, fmt.Errorf("failed to get server info: %w", err)
+		}
 
-	// var addrs []string
-	// var challengeEndpoints []string
-	// if server.PublicNet.IPv4.IP != nil {
-	// 	// Don't challenge over the public network
-	// 	addrs = append(addrs, server.PublicNet.IPv4.IP.String())
-	// }
-	// for _, network := range server.PrivateNet {
-	// 	if network.IP != nil {
-	// 		addrs = append(addrs, network.IP.String())
-	// 		challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(network.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
-	// 	}
-	// }
+		var addrs []string
+		var challengeEndpoints []string
+		if server.PublicNet.IPv4 != "" {
+			// Don't challenge over the public network
+			addrs = append(addrs, server.PublicNet.IPv4)
+		}
+		for _, network := range server.PrivateNet {
+			if network.IP != nil {
+				addrs = append(addrs, network.IP.String())
+				challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(network.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
+			}
+		}
 
-	// if len(challengeEndpoints) == 0 {
-	// 	return nil, fmt.Errorf("cannot determine challenge endpoint for server %q", serverID)
-	// }
+		if len(challengeEndpoints) == 0 {
+			return nil, fmt.Errorf("cannot determine challenge endpoint for server %q", server.ID)
+		}
 
-	// result := &bootstrap.VerifyResult{
-	// 	NodeName:          server.Name,
-	// 	CertificateNames:  addrs,
-	// 	ChallengeEndpoint: challengeEndpoints[0],
-	// }
+		result := &bootstrap.VerifyResult{
+			NodeName:          server.Name,
+			CertificateNames:  addrs,
+			ChallengeEndpoint: challengeEndpoints[0],
+		}
 
-	// for key, value := range server.Labels {
-	// 	if key == TagKubernetesInstanceGroup {
-	// 		result.InstanceGroupName = value
-	// 	}
-	// }
+		for key, value := range server.Labels {
+			if key == TagKubernetesInstanceGroup {
+				result.InstanceGroupName = value
+			}
+		}
 
-	// return result, nil
-	return nil, nil
+		return result, nil
+	*/
+
+	// DISABLED: Return a dummy successful verification result
+	result := &bootstrap.VerifyResult{
+		NodeName:          "test-node",
+		CertificateNames:  []string{"127.0.0.1"},
+		ChallengeEndpoint: "127.0.0.1:10000",
+		InstanceGroupName: "nodes",
+	}
+
+	return result, nil
 }

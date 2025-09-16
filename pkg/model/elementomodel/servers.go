@@ -17,6 +17,9 @@ limitations under the License.
 package elementomodel
 
 import (
+	"fmt"
+	"io"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
@@ -66,6 +69,17 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 			return err
 		}
 
+		// For debugging: wrap the userData to print it when it's ready
+		if userData != nil {
+			userData = &debugUserDataResource{
+				Resource:      userData,
+				instanceGroup: ig.Name,
+			}
+		}
+
+		fmt.Printf("CREATING server group for instance group %q with size %d\n", ig.Name, igSize)
+		fmt.Printf("--- End of UserData ---\n")
+
 		// Determine root volume size
 		var rootVolumeSize *int32
 		if ig.Spec.RootVolume != nil && ig.Spec.RootVolume.Size != nil {
@@ -111,4 +125,31 @@ func determineArchitecture(ig *kops.InstanceGroup) string {
 
 	// Default to X86_64 for Elemento cloud provider
 	return "X86_64"
+}
+
+// debugUserDataResource is a wrapper that prints userData content when it's accessed
+type debugUserDataResource struct {
+	fi.Resource
+	instanceGroup string
+	printed       bool
+}
+
+func (d *debugUserDataResource) Open() (io.Reader, error) {
+	reader, err := d.Resource.Open()
+	if err != nil {
+		return reader, err
+	}
+
+	// Print the content only once when it's first accessed
+	if !d.printed {
+		d.printed = true
+		content, readErr := fi.ResourceAsString(d.Resource)
+		if readErr == nil {
+			fmt.Printf("=== UserData for instance group %q ===\n", d.instanceGroup)
+			fmt.Printf("%s\n", content)
+			fmt.Printf("=== End UserData for %q ===\n", d.instanceGroup)
+		}
+	}
+
+	return reader, err
 }

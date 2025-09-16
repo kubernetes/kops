@@ -525,7 +525,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", scaleway.TagNameRolePrefix, scaleway.TagRoleControlPlane),
 			}
 			config.VolumeNameTag = fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, instanceGroupName)
-		
+
 		case kops.CloudProviderMetal, kops.CloudProviderElemento:
 			config.VolumeProvider = "external"
 			config.BackupStore = "file:///mnt/disks/backups"

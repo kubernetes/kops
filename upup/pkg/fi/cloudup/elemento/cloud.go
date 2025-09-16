@@ -19,6 +19,7 @@ package elemento
 import (
 	"context"
 	"fmt"
+
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -46,9 +47,9 @@ type ElementoCloud interface {
 	Region() string
 	DNS() (dnsprovider.Interface, error)
 	NetworkClient() ecloud.NetworkClient
-	ServerClient() ecloud.ServerClient 
-	SSHKeyClient() ecloud.SSHKeyClient  
-	VolumeClient() ecloud.VolumeClient	
+	ServerClient() ecloud.ServerClient
+	SSHKeyClient() ecloud.SSHKeyClient
+	VolumeClient() ecloud.VolumeClient
 
 	// TODO: Detect and add additional fields here
 }
@@ -67,11 +68,16 @@ func NewElementoCloud(region string) (ElementoCloud, error) {
 	// Elemento does not use an access token, but is previously authenticated with
 	// the CLI and deamons, you must execute the Electros app to authenticate.
 
+	klog.V(2).Infof("Creating ecloud client for region %s", region)
+
 	client, err := ecloud.NewClient("kops-client", "0.1")
 
 	if err != nil {
+		klog.Errorf("Failed to create ecloud client: %v", err)
 		return nil, fmt.Errorf("creating client for Elemento Cloud: %w", err)
 	}
+
+	klog.V(2).Infof("Successfully created ecloud client")
 
 	return &elementoCloudImplementation{
 		Client: client,
@@ -156,6 +162,7 @@ func (c *elementoCloudImplementation) NetworkClient() ecloud.NetworkClient {
 }
 
 func (c *elementoCloudImplementation) ServerClient() ecloud.ServerClient {
+	klog.V(2).Infof("ECLOUD_DEBUG: Returning ServerClient instance")
 	return c.Client.Server
 }
 

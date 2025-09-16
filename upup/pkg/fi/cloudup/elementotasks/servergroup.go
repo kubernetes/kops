@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 )
@@ -68,11 +69,25 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 		LabelSelector: strings.Join(labelSelector, ","),
 	}
 	serverListOptions := ecloud.ServerListOpts{ListOpts: listOptions}
+
+	fmt.Printf("ECLOUD: Finding servers for group %q with labelSelector: %s\n",
+		fi.ValueOf(v.Name), strings.Join(labelSelector, ","))
+	fmt.Printf("ECLOUD: Calling client.List() with options: %+v\n", serverListOptions)
+	klog.V(2).Infof("ECLOUD: Finding servers for group %q", fi.ValueOf(v.Name))
+
 	servers, _, err := client.List(context.TODO(), serverListOptions)
 	if err != nil {
+		fmt.Printf("ECLOUD: ERROR listing servers: %v\n", err)
 		return nil, err
 	}
+
+	fmt.Printf("ECLOUD: Found %d existing servers for group %q\n", len(servers), fi.ValueOf(v.Name))
+	for i, server := range servers {
+		fmt.Printf("ECLOUD: Server %d: %s (Labels: %v)\n", i, server.Name, server.Labels)
+	}
+
 	if len(servers) == 0 {
+		fmt.Printf("ECLOUD: No existing servers found for group %q\n", fi.ValueOf(v.Name))
 		return nil, nil
 	}
 
@@ -162,14 +177,20 @@ func (*ServerGroup) CheckChanges(a, e, changes *ServerGroup) error {
 func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes *ServerGroup) error {
 	client := t.Cloud.ServerClient()
 
+	fmt.Printf("ECLOUD: RenderElemento called for group %q\n", fi.ValueOf(e.Name))
+
 	if a != nil {
+		fmt.Printf("ECLOUD: Found %d servers needing update\n", len(a.NeedUpdate))
 		// Add "kops.k8s.io/needs-update" label to servers needing update
 		for _, serverName := range a.NeedUpdate {
+			fmt.Printf("ECLOUD: Marking server %q as needing update\n", serverName)
 			server, _, err := client.GetByName(context.TODO(), serverName)
 			if err != nil {
+				fmt.Printf("ECLOUD: ERROR getting server %q: %v\n", serverName, err)
 				return err
 			}
 			if server == nil {
+				fmt.Printf("ECLOUD: Server %q not found, skipping update\n", serverName)
 				continue
 			}
 
@@ -179,8 +200,10 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 				Labels: server.Labels,
 			})
 			if err != nil {
+				fmt.Printf("ECLOUD: ERROR updating server %q labels: %v\n", serverName, err)
 				return err
 			}
+			fmt.Printf("ECLOUD: Successfully marked server %q as needing update\n", serverName)
 		}
 	}
 
@@ -190,7 +213,11 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 	}
 	expectedCount := e.Count
 
+	fmt.Printf("ECLOUD: Server count analysis - Expected: %d, Actual: %d, Need to create: %d\n",
+		expectedCount, actualCount, expectedCount-actualCount)
+
 	if actualCount >= expectedCount {
+		fmt.Printf("ECLOUD: No new servers needed for group %q\n", fi.ValueOf(e.Name))
 		return nil
 	}
 
@@ -210,6 +237,9 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 		return err
 	}
 	userDataHash := safeBytesHash(userDataBytes)
+
+	fmt.Printf("=== ECLOUD: About to create %d servers for group %q ===\n", expectedCount-actualCount, fi.ValueOf(e.Name))
+	fmt.Printf("ECLOUD: UserData length: %d bytes, hash: %s\n", len(userData), userDataHash)
 
 	for i := 1; i <= expectedCount-actualCount; i++ {
 		// Append a random/unique ID to the node name
@@ -246,10 +276,17 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 		// Add the user-data hash label
 		opts.Labels[elemento.TagKubernetesInstanceUserData] = userDataHash
 
+		fmt.Printf("ECLOUD: Creating server %q with options: Location=%s, Size=%s, Image=%s\n",
+			name, e.Location, e.Size, e.Image)
+		fmt.Printf("ECLOUD: Server %q UserData preview: %.200s...\n", name, userData)
+		fmt.Printf("ECLOUD: Calling client.Create() for server %q\n", name)
+
 		_, _, err = client.Create(context.TODO(), opts)
 		if err != nil {
+			fmt.Printf("ECLOUD: ERROR creating server %q: %v\n", name, err)
 			return err
 		}
+		fmt.Printf("ECLOUD: Successfully created server %q\n", name)
 	}
 
 	return nil

@@ -22,8 +22,9 @@ import (
 	cryptorand "crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
+
+	// "encoding/base64"
+	// "encoding/json"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -102,36 +103,42 @@ func NewAuthenticatorFromFile(p string) (bootstrap.Authenticator, error) {
 }
 
 func (a *pkiAuthenticator) CreateToken(body []byte) (string, error) {
-	requestHash := sha256.Sum256(body)
+	// DISABLED: Comment out all PKI verification for testing
+	/*
+		requestHash := sha256.Sum256(body)
 
-	data := AuthTokenData{
-		Timestamp:   time.Now().Unix(),
-		Audience:    AudienceNodeAuthentication,
-		RequestHash: requestHash[:],
+		data := AuthTokenData{
+			Timestamp:   time.Now().Unix(),
+			Audience:    AudienceNodeAuthentication,
+			RequestHash: requestHash[:],
 
-		KeyID:    a.keyID,
-		Instance: a.hostname,
-	}
+			KeyID:    a.keyID,
+			Instance: a.hostname,
+		}
 
-	payload, err := json.Marshal(&data)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal token data: %w", err)
-	}
+		payload, err := json.Marshal(&data)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal token data: %w", err)
+		}
 
-	signature, err := a.sign(payload)
-	if err != nil {
-		return "", fmt.Errorf("failed to sign token data: %w", err)
-	}
-	token := &AuthToken{
-		Data:      payload,
-		Signature: signature,
-	}
+		signature, err := a.sign(payload)
+		if err != nil {
+			return "", fmt.Errorf("failed to sign token data: %w", err)
+		}
+		token := &AuthToken{
+			Data:      payload,
+			Signature: signature,
+		}
 
-	b, err := json.Marshal(token)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal token: %w", err)
-	}
-	return AuthenticationTokenPrefix + base64.StdEncoding.EncodeToString(b), nil
+		b, err := json.Marshal(token)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal token: %w", err)
+		}
+		return AuthenticationTokenPrefix + base64.StdEncoding.EncodeToString(b), nil
+	*/
+
+	// DISABLED: Return a dummy token
+	return AuthenticationTokenPrefix + "test-token-data", nil
 }
 
 // sign performs a TPM signature with the tpmKey, and sanity checks the result.

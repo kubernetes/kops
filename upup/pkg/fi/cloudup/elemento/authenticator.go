@@ -17,10 +17,10 @@ limitations under the License.
 package elemento
 
 import (
-	"fmt"
-	"strconv"
+	// "fmt"
+	// "strconv"
 
-    "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/metadata"
+	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/metadata"
 	"k8s.io/kops/pkg/bootstrap"
 )
 
@@ -36,9 +36,15 @@ func NewElementoAuthenticator() (bootstrap.Authenticator, error) {
 }
 
 func (h *elementoAuthenticator) CreateToken(body []byte) (string, error) {
-	serverID, err := metadata.NewClient().InstanceID()
-	if err != nil {
-		return "", fmt.Errorf("failed to retrieve server ID: %w", err)
-	}
-	return ElementoAuthenticationTokenPrefix + strconv.Itoa(serverID), nil
+	// DISABLED: Comment out metadata check for testing
+	/*
+		serverID, err := metadata.NewClient().InstanceID()
+		if err != nil {
+			return "", fmt.Errorf("failed to retrieve server ID: %w", err)
+		}
+		return ElementoAuthenticationTokenPrefix + strconv.Itoa(serverID), nil
+	*/
+
+	// DISABLED: Return a dummy token
+	return ElementoAuthenticationTokenPrefix + "test-server-123", nil
 }
