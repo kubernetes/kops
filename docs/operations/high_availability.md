@@ -4,7 +4,7 @@
 
 For testing purposes, Kubernetes works just fine with a single control-plane node. However, when the control-plane node becomes unavailable, for example due to upgrade or instance failure, the Kubernetes API will be unavailable. Pods and services that are running in the cluster continue to operate as long as they do not depend on interacting with the API, but operations such as adding nodes, scaling pods, replacing terminated pods will not work. Running `kubectl` will also not work. 
 
-kOps runs each control-plane node in a dedicated autoscaling groups (ASG) and stores data on EBS volumes. That way, if a control-plane node node is terminated the ASG will launch a new control-plane node instance with the control-plane node's volume. Because of the dedicated EBS volumes, each control-plane node is bound to a fixed Availability Zone (AZ). If the AZ becomes unavailable, the control-plane node instance in that AZ will also become unavailable.
+kOps runs each control-plane node in a dedicated autoscaling groups (ASG) and stores data on EBS volumes. That way, if a control-plane node is terminated the ASG will launch a new control-plane instance with the control-plane node's volume. Because of the dedicated EBS volumes, each control-plane node is bound to a fixed Availability Zone (AZ). If the AZ becomes unavailable, the control-plane instance in that AZ will also become unavailable.
 
 For production use, you therefore want to run Kubernetes in a HA setup with multiple control-plane nodes. With multiple control-plane nodes, you will be able both to do graceful (zero-downtime) upgrades and you will be able to survive AZ failures.
 
