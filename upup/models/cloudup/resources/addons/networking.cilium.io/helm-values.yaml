@@ -4,10 +4,17 @@ hubble:
     enabled: [drop]
   relay:
     enabled: true
+  tls:
+    auto:
+      method: "certmanager"
+      certManagerIssuerRef:
+        name: "networking.cilium.io"
+        kind: "Issuer"
 ingressController:
   enabled: true
   secretsNamespace:
     create: false
+    name: kube-system
 serviceAccounts:
   envoy:
     create: false
@@ -16,9 +23,14 @@ envoy:
 envoyConfig:
   secretsNamespace:
     create: false
+    name: kube-system
 gatewayAPI:
+  enabled: true
+  gatewayClass:
+    create: "true"
   secretsNamespace:
     create: false
+    name: kube-system
 bgpControlPlane:
   secretsNamespace:
     create: false
@@ -28,6 +40,20 @@ updateStrategy:
 monitor:
   enabled: true
 ipv4:
-  enabled: false
+  enabled: true
 ipv6:
+  enabled: false
+tls:
+  secretsNamespace:
+    create: false
+    name: kube-system
+  secretSync:
+    enabled: false
+operator:
+  podDisruptionBudget:
+    enabled: true
+etcd:
+  enabled: true
+  ssl: true
+encryption:
   enabled: true
