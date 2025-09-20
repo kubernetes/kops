@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
@@ -544,17 +544,12 @@ spec:
                 type: object
               role:
                 description: |-
-                  Role is the AWS identity that nodes use. This field is immutable.
+                  Role is the AWS identity that nodes use.
                   This field is mutually exclusive from instanceProfile.
-                  Marking this field as immutable avoids concerns around terminating managed instance profiles from running instances.
-                  This field may be made mutable in the future, assuming the correct garbage collection and drift handling is implemented
-                  for the old instance profiles on an update.
                 type: string
                 x-kubernetes-validations:
                 - message: role cannot be empty
                   rule: self != ''
-                - message: immutable field changed
-                  rule: self == oldSelf
               securityGroupSelectorTerms:
                 description: SecurityGroupSelectorTerms is a list of security group
                   selector terms. The terms are ORed.
@@ -664,11 +659,6 @@ spec:
             x-kubernetes-validations:
             - message: must specify exactly one of ['role', 'instanceProfile']
               rule: (has(self.role) && !has(self.instanceProfile)) || (!has(self.role)
-                && has(self.instanceProfile))
-            - message: changing from 'instanceProfile' to 'role' is not supported.
-                You must delete and recreate this node class if you want to change
-                this.
-              rule: (has(oldSelf.role) && has(self.role)) || (has(oldSelf.instanceProfile)
                 && has(self.instanceProfile))
             - message: if set, amiFamily must be 'AL2' or 'Custom' when using an AL2
                 alias
@@ -928,7 +918,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
@@ -1090,8 +1080,8 @@ spec:
                           "karpenter.k8s.aws/instance-network-bandwidth", "karpenter.k8s.aws/instance-gpu-name",
                           "karpenter.k8s.aws/instance-gpu-manufacturer", "karpenter.k8s.aws/instance-gpu-count",
                           "karpenter.k8s.aws/instance-gpu-memory", "karpenter.k8s.aws/instance-accelerator-name",
-                          "karpenter.k8s.aws/instance-accelerator-manufacturer", "karpenter.k8s.aws/instance-accelerator-count"]
-                          || !self.find("^([^/]+)").endsWith("karpenter.k8s.aws")
+                          "karpenter.k8s.aws/instance-accelerator-manufacturer", "karpenter.k8s.aws/instance-accelerator-count",
+                          "karpenter.k8s.aws/instance-capability-flex"] || !self.find("^([^/]+)").endsWith("karpenter.k8s.aws")
                     minValues:
                       description: |-
                         This field is ALPHA and can be dropped or replaced at any time
@@ -1184,9 +1174,8 @@ spec:
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
                       type: string
                     timeAdded:
-                      description: |-
-                        TimeAdded represents the time at which the taint was added.
-                        It is only written for NoExecute taints.
+                      description: TimeAdded represents the time at which the taint
+                        was added.
                       format: date-time
                       type: string
                     value:
@@ -1221,9 +1210,8 @@ spec:
                       pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
                       type: string
                     timeAdded:
-                      description: |-
-                        TimeAdded represents the time at which the taint was added.
-                        It is only written for NoExecute taints.
+                      description: TimeAdded represents the time at which the taint
+                        was added.
                       format: date-time
                       type: string
                     value:
@@ -1367,7 +1355,269 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.18.0
+    controller-gen.kubebuilder.io/version: v0.19.0
+  creationTimestamp: null
+  labels:
+    addon.kops.k8s.io/name: karpenter.sh
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: karpenter.sh
+  name: nodeoverlays.karpenter.sh
+spec:
+  group: karpenter.sh
+  names:
+    categories:
+    - karpenter
+    kind: NodeOverlay
+    listKind: NodeOverlayList
+    plural: nodeoverlays
+    shortNames:
+    - overlays
+    singular: nodeoverlay
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.weight
+      name: Weight
+      priority: 1
+      type: integer
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              capacity:
+                additionalProperties:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
+                description: |-
+                  Capacity adds extended resources only, and does not replace any existing resources.
+                  These extended resources are appended to the node's existing resource list.
+                  Note: This field does not modify or override standard resources like cpu, memory, ephemeral-storage, or pods.
+                type: object
+                x-kubernetes-validations:
+                - message: invalid resource restricted
+                  rule: self.all(x, !(x in ['cpu', 'memory', 'ephemeral-storage',
+                    'pods']))
+              price:
+                description: Price specifies amount for an instance types that match
+                  the specified labels. Users can override prices using a signed float
+                  representing the price override
+                pattern: ^\d+(\.\d+)?$
+                type: string
+              priceAdjustment:
+                description: |-
+                  PriceAdjustment specifies the price change for matching instance types. Accepts either:
+                  - A fixed price modifier (e.g., -0.5, 1.2)
+                  - A percentage modifier (e.g., +10% for increase, -15% for decrees)
+                pattern: ^(([+-]{1}(\d*\.?\d+))|(\+{1}\d*\.?\d+%)|(^(-\d{1,2}(\.\d+)?%)$)|(-100%))$
+                type: string
+              requirements:
+                description: |-
+                  Requirements constrain when this NodeOverlay is applied during scheduling simulations.
+                  These requirements can match:
+                  - Well-known labels (e.g., node.kubernetes.io/instance-type, karpenter.sh/nodepool)
+                  - Custom labels from NodePool's spec.template.labels
+                items:
+                  description: |-
+                    A node selector requirement is a selector that contains values, a key, and an operator
+                    that relates the key and values.
+                  properties:
+                    key:
+                      description: The label key that the selector applies to.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
+                      type: string
+                      x-kubernetes-validations:
+                      - message: label domain "kubernetes.io" is restricted
+                        rule: self in ["beta.kubernetes.io/instance-type", "failure-domain.beta.kubernetes.io/region",
+                          "beta.kubernetes.io/os", "beta.kubernetes.io/arch", "failure-domain.beta.kubernetes.io/zone",
+                          "topology.kubernetes.io/zone", "topology.kubernetes.io/region",
+                          "node.kubernetes.io/instance-type", "kubernetes.io/arch",
+                          "kubernetes.io/os", "node.kubernetes.io/windows-build"]
+                          || self.find("^([^/]+)").endsWith("node.kubernetes.io")
+                          || self.find("^([^/]+)").endsWith("node-restriction.kubernetes.io")
+                          || !self.find("^([^/]+)").endsWith("kubernetes.io")
+                      - message: label domain "k8s.io" is restricted
+                        rule: self.find("^([^/]+)").endsWith("kops.k8s.io") || !self.find("^([^/]+)").endsWith("k8s.io")
+                      - message: label domain "karpenter.sh" is restricted
+                        rule: self in ["karpenter.sh/capacity-type", "karpenter.sh/nodepool"]
+                          || !self.find("^([^/]+)").endsWith("karpenter.sh")
+                      - message: label "kubernetes.io/hostname" is restricted
+                        rule: self != "kubernetes.io/hostname"
+                      - message: label domain "karpenter.k8s.aws" is restricted
+                        rule: self in ["karpenter.k8s.aws/ec2nodeclass", "karpenter.k8s.aws/instance-encryption-in-transit-supported",
+                          "karpenter.k8s.aws/instance-category", "karpenter.k8s.aws/instance-hypervisor",
+                          "karpenter.k8s.aws/instance-family", "karpenter.k8s.aws/instance-generation",
+                          "karpenter.k8s.aws/instance-local-nvme", "karpenter.k8s.aws/instance-size",
+                          "karpenter.k8s.aws/instance-cpu", "karpenter.k8s.aws/instance-cpu-manufacturer",
+                          "karpenter.k8s.aws/instance-cpu-sustained-clock-speed-mhz",
+                          "karpenter.k8s.aws/instance-memory", "karpenter.k8s.aws/instance-ebs-bandwidth",
+                          "karpenter.k8s.aws/instance-network-bandwidth", "karpenter.k8s.aws/instance-gpu-name",
+                          "karpenter.k8s.aws/instance-gpu-manufacturer", "karpenter.k8s.aws/instance-gpu-count",
+                          "karpenter.k8s.aws/instance-gpu-memory", "karpenter.k8s.aws/instance-accelerator-name",
+                          "karpenter.k8s.aws/instance-accelerator-manufacturer", "karpenter.k8s.aws/instance-accelerator-count",
+                          "karpenter.k8s.aws/instance-capability-flex"] || !self.find("^([^/]+)").endsWith("karpenter.k8s.aws")
+                    operator:
+                      description: |-
+                        Represents a key's relationship to a set of values.
+                        Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+                      enum:
+                      - In
+                      - NotIn
+                      - Exists
+                      - DoesNotExist
+                      - Gt
+                      - Lt
+                      type: string
+                    values:
+                      description: |-
+                        An array of string values. If the operator is In or NotIn,
+                        the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                        the values array must be empty. If the operator is Gt or Lt, the values
+                        array must have a single element, which will be interpreted as an integer.
+                        This array is replaced during a strategic merge patch.
+                      items:
+                        type: string
+                      maxLength: 63
+                      pattern: ^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$
+                      type: array
+                      x-kubernetes-list-type: atomic
+                  required:
+                  - key
+                  - operator
+                  type: object
+                maxItems: 100
+                type: array
+                x-kubernetes-validations:
+                - message: requirements with operator 'NotIn' must have a value defined
+                  rule: 'self.all(x, x.operator == ''NotIn'' ? x.values.size() !=
+                    0 : true)'
+                - message: requirements with operator 'In' must have a value defined
+                  rule: 'self.all(x, x.operator == ''In'' ? x.values.size() != 0 :
+                    true)'
+                - message: requirements operator 'Gt' or 'Lt' must have a single positive
+                    integer value
+                  rule: 'self.all(x, (x.operator == ''Gt'' || x.operator == ''Lt'')
+                    ? (x.values.size() == 1 && int(x.values[0]) >= 0) : true)'
+              weight:
+                description: |-
+                  Weight defines the priority of this NodeOverlay when overriding node attributes.
+                  NodeOverlays with higher numerical weights take precedence over those with lower weights.
+                  If no weight is specified, the NodeOverlay is treated as having a weight of 0.
+                  When multiple NodeOverlays have identical weights, they are merged in alphabetical order.
+                format: int32
+                maximum: 10000
+                minimum: 1
+                type: integer
+            required:
+            - requirements
+            type: object
+            x-kubernetes-validations:
+            - message: cannot set both 'price' and 'priceAdjustment'
+              rule: '!has(self.price) || !has(self.priceAdjustment)'
+          status:
+            description: NodeOverlayStatus defines the observed state of NodeOverlay
+            properties:
+              conditions:
+                description: Conditions contains signals for health and readiness
+                items:
+                  description: Condition aliases the upstream type and adds additional
+                    helper methods
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
   creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: karpenter.sh
@@ -1600,7 +1850,8 @@ spec:
                             "karpenter.k8s.aws/instance-gpu-manufacturer", "karpenter.k8s.aws/instance-gpu-count",
                             "karpenter.k8s.aws/instance-gpu-memory", "karpenter.k8s.aws/instance-accelerator-name",
                             "karpenter.k8s.aws/instance-accelerator-manufacturer",
-                            "karpenter.k8s.aws/instance-accelerator-count"] || !x.find("^([^/]+)").endsWith("karpenter.k8s.aws"))
+                            "karpenter.k8s.aws/instance-accelerator-count", "karpenter.k8s.aws/instance-capability-flex"]
+                            || !x.find("^([^/]+)").endsWith("karpenter.k8s.aws"))
                     type: object
                   spec:
                     description: |-
@@ -1699,8 +1950,9 @@ spec:
                                   "karpenter.k8s.aws/instance-gpu-name", "karpenter.k8s.aws/instance-gpu-manufacturer",
                                   "karpenter.k8s.aws/instance-gpu-count", "karpenter.k8s.aws/instance-gpu-memory",
                                   "karpenter.k8s.aws/instance-accelerator-name", "karpenter.k8s.aws/instance-accelerator-manufacturer",
-                                  "karpenter.k8s.aws/instance-accelerator-count"]
-                                  || !self.find("^([^/]+)").endsWith("karpenter.k8s.aws")
+                                  "karpenter.k8s.aws/instance-accelerator-count",
+                                  "karpenter.k8s.aws/instance-capability-flex"] ||
+                                  !self.find("^([^/]+)").endsWith("karpenter.k8s.aws")
                             minValues:
                               description: |-
                                 This field is ALPHA and can be dropped or replaced at any time
@@ -1781,9 +2033,8 @@ spec:
                               pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
                               type: string
                             timeAdded:
-                              description: |-
-                                TimeAdded represents the time at which the taint was added.
-                                It is only written for NoExecute taints.
+                              description: TimeAdded represents the time at which
+                                the taint was added.
                               format: date-time
                               type: string
                             value:
@@ -1820,9 +2071,8 @@ spec:
                               pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(\/))?([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$
                               type: string
                             timeAdded:
-                              description: |-
-                                TimeAdded represents the time at which the taint was added.
-                                It is only written for NoExecute taints.
+                              description: TimeAdded represents the time at which
+                                the taint was added.
                               format: date-time
                               type: string
                             value:
@@ -1967,8 +2217,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
   namespace: kube-system
@@ -1991,8 +2241,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
   namespace: kube-system
@@ -2008,8 +2258,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
   name: karpenter-admin
@@ -2051,8 +2301,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter-core
 rules:
@@ -2063,6 +2313,8 @@ rules:
   - nodepools/status
   - nodeclaims
   - nodeclaims/status
+  - nodeoverlays
+  - nodeoverlays/status
   verbs:
   - get
   - list
@@ -2131,6 +2383,7 @@ rules:
   resources:
   - nodepools
   - nodepools/status
+  - nodeoverlays/status
   verbs:
   - update
   - patch
@@ -2173,8 +2426,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
 rules:
@@ -2206,8 +2459,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter-core
 roleRef:
@@ -2230,8 +2483,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
 roleRef:
@@ -2254,8 +2507,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
   namespace: kube-system
@@ -2294,8 +2547,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter-dns
   namespace: kube-system
@@ -2320,8 +2573,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
   namespace: kube-system
@@ -2345,8 +2598,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter-dns
   namespace: kube-system
@@ -2370,8 +2623,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
   namespace: kube-system
@@ -2397,8 +2650,8 @@ metadata:
     app.kubernetes.io/instance: karpenter
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: karpenter
-    app.kubernetes.io/version: 1.6.2
-    helm.sh/chart: karpenter-1.6.2
+    app.kubernetes.io/version: 1.7.1
+    helm.sh/chart: karpenter-1.7.1
     k8s-addon: karpenter.sh
   name: karpenter
   namespace: kube-system
@@ -2470,6 +2723,12 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: CPU_REQUESTS
+          valueFrom:
+            resourceFieldRef:
+              containerName: controller
+              divisor: 1m
+              resource: requests.cpu
         - name: MEMORY_LIMIT
           valueFrom:
             resourceFieldRef:
@@ -2477,7 +2736,7 @@ spec:
               divisor: "0"
               resource: limits.memory
         - name: FEATURE_GATES
-          value: ReservedCapacity=true,SpotToSpotConsolidation=false,NodeRepair=false
+          value: ReservedCapacity=true,SpotToSpotConsolidation=false,NodeRepair=false,NodeOverlay=false
         - name: BATCH_MAX_DURATION
           value: 10s
         - name: BATCH_IDLE_DURATION
