@@ -6104,6 +6104,10 @@ func autoConvert_v1alpha2_LoadBalancerControllerSpec_To_kops_LoadBalancerControl
 	out.EnableWAF = in.EnableWAF
 	out.EnableWAFv2 = in.EnableWAFv2
 	out.EnableShield = in.EnableShield
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
@@ -6118,6 +6122,10 @@ func autoConvert_kops_LoadBalancerControllerSpec_To_v1alpha2_LoadBalancerControl
 	out.EnableWAF = in.EnableWAF
 	out.EnableWAFv2 = in.EnableWAFv2
 	out.EnableShield = in.EnableShield
+	out.CPURequest = in.CPURequest
+	out.CPULimit = in.CPULimit
+	out.MemoryRequest = in.MemoryRequest
+	out.MemoryLimit = in.MemoryLimit
 	return nil
 }
 
