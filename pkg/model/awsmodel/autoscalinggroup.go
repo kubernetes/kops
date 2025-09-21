@@ -478,6 +478,9 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
 				if b.Cluster.UsesNoneDNS() && ig.IsControlPlane() {
 					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("kops-controller"))
+					if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+						t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("etcd-cilium"))
+					}
 				}
 				if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
 					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tls"))
