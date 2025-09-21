@@ -175,14 +175,27 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		if b.Cluster.UsesNoneDNS() {
-			nlbListener := &awstasks.NetworkLoadBalancerListener{
-				Name:                fi.PtrTo(b.NLBListenerName("api", wellknownports.KopsControllerPort)),
-				Lifecycle:           b.Lifecycle,
-				NetworkLoadBalancer: b.LinkToNLB("api"),
-				Port:                wellknownports.KopsControllerPort,
-				TargetGroup:         b.LinkToTargetGroup("kops-controller"),
+			{
+				nlbListener := &awstasks.NetworkLoadBalancerListener{
+					Name:                fi.PtrTo(b.NLBListenerName("api", wellknownports.KopsControllerPort)),
+					Lifecycle:           b.Lifecycle,
+					NetworkLoadBalancer: b.LinkToNLB("api"),
+					Port:                wellknownports.KopsControllerPort,
+					TargetGroup:         b.LinkToTargetGroup("kops-controller"),
+				}
+				nlbListeners = append(nlbListeners, nlbListener)
 			}
-			nlbListeners = append(nlbListeners, nlbListener)
+
+			if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+				nlbListener := &awstasks.NetworkLoadBalancerListener{
+					Name:                fi.PtrTo(b.NLBListenerName("etcd-cilium", wellknownports.EtcdCiliumClientPort)),
+					Lifecycle:           b.Lifecycle,
+					NetworkLoadBalancer: b.LinkToNLB("api"),
+					Port:                wellknownports.EtcdCiliumClientPort,
+					TargetGroup:         b.LinkToTargetGroup("etcd-cilium"),
+				}
+				nlbListeners = append(nlbListeners, nlbListener)
+			}
 		}
 
 		if lbSpec.SecurityGroupOverride != nil {
@@ -328,28 +341,55 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 
 			if b.Cluster.UsesNoneDNS() {
-				groupName := b.NLBTargetGroupName("kops-controller")
-				groupTags := b.CloudTags(groupName, false)
+				{
+					groupName := b.NLBTargetGroupName("kops-controller")
+					groupTags := b.CloudTags(groupName, false)
 
-				// Override the returned name to be the expected NLB TG name
-				groupTags["Name"] = groupName
+					// Override the returned name to be the expected NLB TG name
+					groupTags["Name"] = groupName
 
-				tg := &awstasks.TargetGroup{
-					Name:               fi.PtrTo(groupName),
-					Lifecycle:          b.Lifecycle,
-					VPC:                b.LinkToVPC(),
-					Tags:               groupTags,
-					Protocol:           elbv2types.ProtocolEnumTcp,
-					Port:               fi.PtrTo(int32(wellknownports.KopsControllerPort)),
-					Attributes:         groupAttrs,
-					Interval:           fi.PtrTo(int32(10)),
-					HealthyThreshold:   fi.PtrTo(int32(2)),
-					UnhealthyThreshold: fi.PtrTo(int32(2)),
-					Shared:             fi.PtrTo(false),
+					tg := &awstasks.TargetGroup{
+						Name:               fi.PtrTo(groupName),
+						Lifecycle:          b.Lifecycle,
+						VPC:                b.LinkToVPC(),
+						Tags:               groupTags,
+						Protocol:           elbv2types.ProtocolEnumTcp,
+						Port:               fi.PtrTo(int32(wellknownports.KopsControllerPort)),
+						Attributes:         groupAttrs,
+						Interval:           fi.PtrTo(int32(10)),
+						HealthyThreshold:   fi.PtrTo(int32(2)),
+						UnhealthyThreshold: fi.PtrTo(int32(2)),
+						Shared:             fi.PtrTo(false),
+					}
+					tg.CreateNewRevisionsWith(nlb)
+
+					c.AddTask(tg)
 				}
-				tg.CreateNewRevisionsWith(nlb)
 
-				c.AddTask(tg)
+				if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+					groupName := b.NLBTargetGroupName("etcd-cilium")
+					groupTags := b.CloudTags(groupName, false)
+
+					// Override the returned name to be the expected NLB TG name
+					groupTags["Name"] = groupName
+
+					tg := &awstasks.TargetGroup{
+						Name:               fi.PtrTo(groupName),
+						Lifecycle:          b.Lifecycle,
+						VPC:                b.LinkToVPC(),
+						Tags:               groupTags,
+						Protocol:           elbv2types.ProtocolEnumTcp,
+						Port:               fi.PtrTo(int32(wellknownports.EtcdCiliumClientPort)),
+						Attributes:         groupAttrs,
+						Interval:           fi.PtrTo(int32(10)),
+						HealthyThreshold:   fi.PtrTo(int32(2)),
+						UnhealthyThreshold: fi.PtrTo(int32(2)),
+						Shared:             fi.PtrTo(false),
+					}
+					tg.CreateNewRevisionsWith(nlb)
+
+					c.AddTask(tg)
+				}
 			}
 
 			if lbSpec.SSLCertificate != "" {
@@ -576,18 +616,34 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				ToPort:        fi.PtrTo(int32(4)),
 			})
 			if b.Cluster.UsesNoneDNS() {
-				nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsController)
-				clb.WellKnownServices = append(clb.WellKnownServices, wellknownservices.KopsController)
+				{
+					nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsController)
+					clb.WellKnownServices = append(clb.WellKnownServices, wellknownservices.KopsController)
 
-				c.AddTask(&awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),
-					Lifecycle:     b.SecurityLifecycle,
-					FromPort:      fi.PtrTo(int32(wellknownports.KopsControllerPort)),
-					Protocol:      fi.PtrTo("tcp"),
-					SecurityGroup: masterGroup.Task,
-					ToPort:        fi.PtrTo(int32(wellknownports.KopsControllerPort)),
-					SourceGroup:   lbSG,
-				})
+					c.AddTask(&awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),
+						Lifecycle:     b.SecurityLifecycle,
+						FromPort:      fi.PtrTo(int32(wellknownports.KopsControllerPort)),
+						Protocol:      fi.PtrTo("tcp"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.PtrTo(int32(wellknownports.KopsControllerPort)),
+						SourceGroup:   lbSG,
+					})
+				}
+
+				if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+					nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.EtcdCilium)
+
+					c.AddTask(&awstasks.SecurityGroupRule{
+						Name:          fi.PtrTo(fmt.Sprintf("etcd-cilium-elb-to-cp%s", suffix)),
+						Lifecycle:     b.SecurityLifecycle,
+						FromPort:      fi.PtrTo(int32(wellknownports.EtcdCiliumClientPort)),
+						Protocol:      fi.PtrTo("tcp"),
+						SecurityGroup: masterGroup.Task,
+						ToPort:        fi.PtrTo(int32(wellknownports.EtcdCiliumClientPort)),
+						SourceGroup:   lbSG,
+					})
+				}
 			}
 		}
 	}
