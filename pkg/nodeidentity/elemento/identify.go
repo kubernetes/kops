@@ -23,11 +23,11 @@ import (
 	"time"
 
 	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/schema"
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+
 	// "k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodelabels"
@@ -47,12 +47,12 @@ type nodeIdentifier struct {
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Elemento
 func New(CacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	elementoClient, err := ecloud.NewClient("kops-elemento", "1.0") 
+	elementoClient, err := ecloud.NewClient("kops-elemento", "1.0")
 
 	if err != nil {
 		return nil, fmt.Errorf("creating client for Elemento Cloud: %w", err)
 	}
-	
+
 	return &nodeIdentifier{
 		client:       elementoClient,
 		cache:        expirationcache.NewTTLStore(stringKeyFunc, cacheTTL),
@@ -104,7 +104,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 			case kops.InstanceGroupRoleAPIServer:
 				labels[nodelabels.RoleLabelAPIServer16] = ""
 			default:
-				klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.UniqueID)
+				klog.Warningf("Unknown node role %q for server %s(%s)", value, server.Name, server.ID)
 			}
 		case strings.HasPrefix(key, elemento.TagKubernetesNodeLabelPrefix):
 			labels[strings.TrimPrefix(key, elemento.TagKubernetesNodeLabelPrefix)] = value
@@ -113,7 +113,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	info := &nodeidentity.Info{
 		InstanceID: serverID,
-		Labels:	labels,
+		Labels:     labels,
 	}
 
 	// If cache is enabled, store the node information in the cache
@@ -134,8 +134,8 @@ func stringKeyFunc(obj interface{}) (string, error) {
 }
 
 // getServer retrieves the server information from Elemento for the given server ID
-func (i *nodeIdentifier) getServer(id string) (*schema.Server, error) {
-	server, err := i.client.Server.GetByID(context.TODO(), id)
+func (i *nodeIdentifier) getServer(id string) (*ecloud.Server, error) {
+	server, _, err := i.client.Server.GetByID(context.TODO(), id)
 	if err != nil || server == nil {
 		return nil, fmt.Errorf("failed to get info for server %q: %w", id, err)
 	}
