@@ -50,6 +50,7 @@ type ElementoCloud interface {
 	ServerClient() ecloud.ServerClient
 	SSHKeyClient() ecloud.SSHKeyClient
 	VolumeClient() ecloud.VolumeClient
+	NodeupClient(ctx context.Context) ecloud.NodeupClient
 
 	// TODO: Detect and add additional fields here
 }
@@ -172,6 +173,10 @@ func (c *elementoCloudImplementation) SSHKeyClient() ecloud.SSHKeyClient {
 
 func (c *elementoCloudImplementation) VolumeClient() ecloud.VolumeClient {
 	return c.Client.Volume
+}
+
+func (c *elementoCloudImplementation) NodeupClient(ctx context.Context) ecloud.NodeupClient {
+	return c.Client.Nodeup
 }
 
 func buildCloudInstanceGroup(ig *kops.InstanceGroup, sg []*ecloud.Server, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {

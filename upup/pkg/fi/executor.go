@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
 	"k8s.io/klog/v2"
 )
 
@@ -187,6 +188,11 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 		return fmt.Errorf("Unable to execute tasks (circular dependency): %s", strings.Join(notDone, ", "))
 	}
 
+	// Execute final ecloud task after all other tasks are completed
+	if err := e.executeFinalECloudTask(ctx); err != nil {
+		return fmt.Errorf("failed to execute final ecloud task: %v", err)
+	}
+
 	return nil
 }
 
@@ -231,4 +237,55 @@ func (e *executor[T]) forkJoin(ctx context.Context, tasks []*taskState[T]) []err
 	wg.Wait()
 
 	return results
+}
+
+// executeFinalECloudTask runs after all other tasks have completed successfully
+func (e *executor[T]) executeFinalECloudTask(ctx context.Context) error {
+	klog.Infof("Executing final ecloud task...")
+
+	// Check if this is a CloudupSubContext (for cloudup operations)
+	if cloudupContext, ok := any(e.context).(*Context[CloudupSubContext]); ok {
+		// Import the ecloud package functionality here
+		return e.executeECloudFinalTask(ctx, cloudupContext)
+	}
+
+	klog.V(2).Infof("Skipping ecloud final task - not a cloudup context")
+	return nil
+}
+
+func (e *executor[T]) executeECloudFinalTask(ctx context.Context, cloudupContext *Context[CloudupSubContext]) error {
+	klog.Infof("Calling ecloud library final function...")
+
+	// Use reflection to check if the cloud provider is Elemento and call the final function
+	cloud := cloudupContext.T.Cloud
+	if cloud == nil {
+		klog.V(2).Infof("No cloud provider found, skipping ecloud final task")
+		return nil
+	}
+
+	// Check if the cloud provider is Elemento and execute cluster startup
+	if elementoCloud, isElemento := cloud.(interface {
+		NodeupClient(ctx context.Context) ecloud.NodeupClient
+	}); isElemento {
+		klog.Infof("Executing Elemento cloud provider cluster startup...")
+
+		// Get cluster name from context
+		clusterName := ""
+		if cloudupContext.T.Cluster != nil && cloudupContext.T.Cluster.ObjectMeta.Name != "" {
+			clusterName = cloudupContext.T.Cluster.ObjectMeta.Name
+		}
+
+		// Get the nodeup client and execute cluster startup
+		nodeupClient := elementoCloud.NodeupClient(ctx)
+		if _, err := nodeupClient.ExecuteClusterStartup(ctx, clusterName); err != nil {
+			return fmt.Errorf("elemento cluster startup failed: %v", err)
+		}
+
+		klog.Infof("Elemento cluster startup completed successfully for cluster: %s", clusterName)
+	} else {
+		klog.V(2).Infof("Cloud provider does not support elemento cluster startup, skipping")
+	}
+
+	klog.Infof("Final ecloud task completed successfully")
+	return nil
 }
