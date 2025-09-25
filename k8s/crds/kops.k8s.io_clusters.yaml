@@ -264,6 +264,24 @@ spec:
                 description: AWSLoadbalancerControllerConfig determines the AWS LB
                   controller configuration.
                 properties:
+                  cpuLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      CPULimit, cpu limit compute resource for AWS Load Balancer Controller.
+                      Default: 200m
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  cpuRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      CPURequest, cpu request compute resource for AWS Load Balancer Controller.
+                      Default: 100m
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   enableShield:
                     description: |-
                       EnableShield specifies whether the controller can enable Shield Advanced.
@@ -284,6 +302,24 @@ spec:
                       Enabled enables the loadbalancer controller.
                       Default: false
                     type: boolean
+                  memoryLimit:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      MemoryLimit, memory limit compute resource for AWS Load Balancer Controller.
+                      Default: 500Mi
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  memoryRequest:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      MemoryRequest, memory request compute resource for AWS Load Balancer Controller.
+                      Default: 200Mi
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   version:
                     description: Version is the container image tag used.
                     type: string

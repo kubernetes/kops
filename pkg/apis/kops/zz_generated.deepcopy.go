@@ -4729,6 +4729,26 @@ func (in *LoadBalancerControllerSpec) DeepCopyInto(out *LoadBalancerControllerSp
 		*out = new(string)
 		**out = **in
 	}
+	if in.CPURequest != nil {
+		in, out := &in.CPURequest, &out.CPURequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.CPULimit != nil {
+		in, out := &in.CPULimit, &out.CPULimit
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.MemoryRequest != nil {
+		in, out := &in.MemoryRequest, &out.MemoryRequest
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.MemoryLimit != nil {
+		in, out := &in.MemoryLimit, &out.MemoryLimit
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	return
 }
 
