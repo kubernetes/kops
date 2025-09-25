@@ -1,4 +1,4 @@
-# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/v1.19.3/config/master/aws-k8s-cni.yaml
+# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/v1.20.2/config/master/aws-k8s-cni.yaml
 ---
 # Source: aws-vpc-cni/crds/customresourcedefinition.yaml
 apiVersion: apiextensions.k8s.io/v1
@@ -61,7 +61,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.3
-  creationTimestamp: null
   labels:
     app.kubernetes.io/name: amazon-network-policy-controller-k8s
   name: policyendpoints.networking.k8s.aws
@@ -301,7 +300,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.19.3"
+    app.kubernetes.io/version: "v1.20.2"
 ---
 # Source: aws-vpc-cni/templates/configmap.yaml
 apiVersion: v1
@@ -313,7 +312,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.19.3"
+    app.kubernetes.io/version: "v1.20.2"
 data:
   enable-windows-ipam: "false"
   enable-network-policy-controller: "false"
@@ -332,7 +331,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.19.3"
+    app.kubernetes.io/version: "v1.20.2"
 rules:
   - apiGroups:
       - crd.k8s.amazonaws.com
@@ -385,7 +384,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.19.3"
+    app.kubernetes.io/version: "v1.20.2"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -405,7 +404,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.19.3"
+    app.kubernetes.io/version: "v1.20.2"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -426,7 +425,8 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.19.3" }}"
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.20.2" }}"
+        imagePullPolicy: IfNotPresent
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
             value: "false"
@@ -451,7 +451,7 @@ spec:
 {{ end }}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.19.3" }}"
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.20.2" }}"
           ports:
             - containerPort: 61678
               name: metrics
@@ -521,7 +521,7 @@ spec:
             # - name: NETWORK_POLICY_ENFORCING_MODE
             #   value: "standard"
             - name: VPC_CNI_VERSION
-              value: "v1.19.3"
+              value: "v1.20.2"
             # - name: WARM_ENI_TARGET
             #   value: "1"
             # - name: WARM_PREFIX_TARGET
@@ -558,7 +558,11 @@ spec:
           - mountPath: /run/xtables.lock
             name: xtables-lock
         - name: aws-eks-nodeagent
-          image: "{{- or .Networking.AmazonVPC.NetworkPolicyAgentImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.2.0" }}"
+          image: "{{- or .Networking.AmazonVPC.NetworkPolicyAgentImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.2.6" }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8162
+              name: agentmetrics
           env:
             - name: MY_NODE_NAME
               valueFrom:
@@ -574,6 +578,7 @@ spec:
             - --metrics-bind-addr=:8162
             - --health-probe-bind-addr=:8163
             - --conntrack-cache-cleanup-period=300
+            - --log-level=debug
           resources:
             requests:
               cpu: 25m

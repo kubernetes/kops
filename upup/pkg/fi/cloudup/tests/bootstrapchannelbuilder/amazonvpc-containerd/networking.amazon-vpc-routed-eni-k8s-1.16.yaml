@@ -309,7 +309,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.3
+    app.kubernetes.io/version: v1.20.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -334,7 +334,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.3
+    app.kubernetes.io/version: v1.20.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: amazon-vpc-cni
@@ -351,7 +351,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.3
+    app.kubernetes.io/version: v1.20.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -432,7 +432,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.3
+    app.kubernetes.io/version: v1.20.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -456,7 +456,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.19.3
+    app.kubernetes.io/version: v1.20.2
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -545,7 +545,7 @@ spec:
         - name: WARM_PREFIX_TARGET
           value: "1"
         - name: VPC_CNI_VERSION
-          value: v1.19.3
+          value: v1.20.2
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
@@ -558,7 +558,7 @@ spec:
               fieldPath: metadata.name
         - name: CLUSTER_NAME
           value: minimal.example.com
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.19.3
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.20.2
         livenessProbe:
           exec:
             command:
@@ -609,14 +609,19 @@ spec:
         - --metrics-bind-addr=:8162
         - --health-probe-bind-addr=:8163
         - --conntrack-cache-cleanup-period=300
+        - --log-level=debug
         env:
         - name: MY_NODE_NAME
           valueFrom:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.2.0
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.2.6
+        imagePullPolicy: IfNotPresent
         name: aws-eks-nodeagent
+        ports:
+        - containerPort: 8162
+          name: agentmetrics
         resources:
           requests:
             cpu: 25m
@@ -641,7 +646,8 @@ spec:
           value: "false"
         - name: ENABLE_IPv6
           value: "false"
-        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.19.3
+        image: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.20.2
+        imagePullPolicy: IfNotPresent
         name: aws-vpc-cni-init
         resources:
           requests:
