@@ -1456,12 +1456,13 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 		{
 			Input: kops.ClusterSpec{
 				Kubelet: &kops.KubeletConfigSpec{
-					ClusterDNS: "169.254.20.10",
+					ClusterDNS: "100.64.0.10",
 				},
 				KubeProxy: &kops.KubeProxyConfig{
 					ProxyMode: "iptables",
 				},
 				KubeDNS: &kops.KubeDNSConfig{
+					ServerIP: "100.64.0.10",
 					Provider: "CoreDNS",
 					NodeLocalDNS: &kops.NodeLocalDNSConfig{
 						Enabled: fi.PtrTo(true),
@@ -1470,6 +1471,26 @@ func Test_Validate_NodeLocalDNS(t *testing.T) {
 				},
 				Networking: kops.NetworkingSpec{
 					Cilium: &kops.CiliumNetworkingSpec{},
+				},
+			},
+			ExpectedErrors: []string{},
+		},
+		{
+			Input: kops.ClusterSpec{
+				Kubelet: &kops.KubeletConfigSpec{
+					ClusterDNS: "100.64.0.10",
+				},
+				KubeProxy: &kops.KubeProxyConfig{
+					ProxyMode: "iptables",
+				},
+				KubeDNS: &kops.KubeDNSConfig{
+					ServerIP: "100.64.0.10",
+					Provider: "CoreDNS",
+					NodeLocalDNS: &kops.NodeLocalDNSConfig{
+						Enabled:                fi.PtrTo(true),
+						LocalIP:                "169.254.20.10",
+						CiliumBPFCompatibility: fi.PtrTo(true),
+					},
 				},
 			},
 			ExpectedErrors: []string{},
