@@ -188,6 +188,12 @@ func (b *ContainerdBuilder) buildSystemdService(containerdVersion semver.Version
 	manifest.Set("Unit", "Documentation", "https://containerd.io")
 	manifest.Set("Unit", "After", "network.target dbus.service")
 
+	// Restore the default SELinux security contexts for the containerd and runc binaries
+	if b.Distribution.IsRHELFamily() && b.NodeupConfig.ContainerdConfig != nil && b.NodeupConfig.ContainerdConfig.SeLinuxEnabled {
+		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/sbin/runc'")
+		manifest.Set("Service", "ExecStartPre", "/bin/sh -c 'restorecon -v /usr/bin/containerd*'")
+	}
+
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/containerd")
 	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStartPre", "-/sbin/modprobe overlay")
