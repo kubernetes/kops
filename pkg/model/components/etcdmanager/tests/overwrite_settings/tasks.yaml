@@ -146,13 +146,13 @@ Contents: |
       - mountPath: /opt
         name: opt
     - args:
-      - --target-dir=/opt/etcd-v3.6.4
+      - --target-dir=/opt/etcd-v3.6.5
       - --src=/usr/local/bin/etcd
       - --src=/usr/local/bin/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:v3.6.4
-      name: init-etcd-3-6-4
+      image: registry.k8s.io/etcd:v3.6.5
+      name: init-etcd-3-6-5
       resources: {}
       volumeMounts:
       - mountPath: /opt
@@ -187,19 +187,6 @@ Contents: |
       - /opt/kops-utils/kops-utils-cp
       image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
       name: init-etcd-symlinks-3-5-21
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --symlink
-      - --target-dir=/opt/etcd-v3.6.1
-      - --src=/opt/etcd-v3.6.4/etcd
-      - --src=/opt/etcd-v3.6.4/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: init-etcd-symlinks-3-6-4
       resources: {}
       volumeMounts:
       - mountPath: /opt
@@ -316,13 +303,13 @@ Contents: |
       - mountPath: /opt
         name: opt
     - args:
-      - --target-dir=/opt/etcd-v3.6.4
+      - --target-dir=/opt/etcd-v3.6.5
       - --src=/usr/local/bin/etcd
       - --src=/usr/local/bin/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/etcd:v3.6.4
-      name: init-etcd-3-6-4
+      image: registry.k8s.io/etcd:v3.6.5
+      name: init-etcd-3-6-5
       resources: {}
       volumeMounts:
       - mountPath: /opt
@@ -357,19 +344,6 @@ Contents: |
       - /opt/kops-utils/kops-utils-cp
       image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
       name: init-etcd-symlinks-3-5-21
-      resources: {}
-      volumeMounts:
-      - mountPath: /opt
-        name: opt
-    - args:
-      - --symlink
-      - --target-dir=/opt/etcd-v3.6.1
-      - --src=/opt/etcd-v3.6.4/etcd
-      - --src=/opt/etcd-v3.6.4/etcdctl
-      command:
-      - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
-      name: init-etcd-symlinks-3-6-4
       resources: {}
       volumeMounts:
       - mountPath: /opt

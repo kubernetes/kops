@@ -62,10 +62,8 @@ spec:
       name: etcd-v3-5-21
     - mountPath: /opt/etcd-v3.5.9
       name: etcd-v3-5-21
-    - mountPath: /opt/etcd-v3.6.1
-      name: etcd-v3-6-4
-    - mountPath: /opt/etcd-v3.6.4
-      name: etcd-v3-6-4
+    - mountPath: /opt/etcd-v3.6.5
+      name: etcd-v3-6-5
     - mountPath: /var/log/etcd.log
       name: varlogetcd
   hostNetwork: true
@@ -99,8 +97,8 @@ spec:
     name: etcd-v3-5-21
   - image:
       pullPolicy: IfNotPresent
-      reference: registry.k8s.io/etcd:v3.6.4
-    name: etcd-v3-6-4
+      reference: registry.k8s.io/etcd:v3.6.5
+    name: etcd-v3-6-5
   - hostPath:
       path: /var/log/etcd-events.log
       type: FileOrCreate
