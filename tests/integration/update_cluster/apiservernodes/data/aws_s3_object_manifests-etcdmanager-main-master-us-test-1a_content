@@ -45,25 +45,27 @@ spec:
     - mountPath: /opt/etcd-v3.4.3
       name: etcd-v3-4-13
     - mountPath: /opt/etcd-v3.5.0
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.1
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.13
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.17
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.21
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
+    - mountPath: /opt/etcd-v3.5.23
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.3
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.4
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.6
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.7
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.5.9
-      name: etcd-v3-5-21
+      name: etcd-v3-5-23
     - mountPath: /opt/etcd-v3.6.5
       name: etcd-v3-6-5
     - mountPath: /var/log/etcd.log
@@ -95,8 +97,8 @@ spec:
     name: etcd-v3-4-13
   - image:
       pullPolicy: IfNotPresent
-      reference: registry.k8s.io/etcd:v3.5.21
-    name: etcd-v3-5-21
+      reference: registry.k8s.io/etcd:v3.5.23
+    name: etcd-v3-5-23
   - image:
       pullPolicy: IfNotPresent
       reference: registry.k8s.io/etcd:v3.6.5

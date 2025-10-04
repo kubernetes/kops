@@ -64,7 +64,7 @@ spec:
     manager:
       backupRetentionDays: 90
     name: main
-    version: 3.5.21
+    version: 3.5.23
   - backups:
       backupStore: memfs://tests/many-addons.example.com/backups/etcd/events
     etcdMembers:
@@ -73,7 +73,7 @@ spec:
     manager:
       backupRetentionDays: 90
     name: events
-    version: 3.5.21
+    version: 3.5.23
   externalDns:
     provider: dns-controller
   iam:
