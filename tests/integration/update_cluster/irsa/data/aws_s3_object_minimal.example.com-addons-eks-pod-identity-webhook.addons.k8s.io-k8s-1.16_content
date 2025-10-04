@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -14,7 +13,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -36,7 +34,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -57,7 +54,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -78,7 +74,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -98,7 +93,6 @@ subjects:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -112,7 +106,6 @@ spec:
       app: pod-identity-webhook
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: pod-identity-webhook
         kops.k8s.io/managed-by: kops
@@ -171,7 +164,6 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -199,7 +191,6 @@ kind: MutatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: kube-system/pod-identity-webhook
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -245,7 +236,6 @@ metadata:
     prometheus.io/port: "9999"
     prometheus.io/scheme: http
     prometheus.io/scrape: "true"
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -271,7 +261,6 @@ metadata:
     prometheus.io/port: "9999"
     prometheus.io/scheme: http
     prometheus.io/scrape: "true"
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -284,7 +273,6 @@ metadata:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: eks-pod-identity-webhook.addons.k8s.io
     app.kubernetes.io/managed-by: kops

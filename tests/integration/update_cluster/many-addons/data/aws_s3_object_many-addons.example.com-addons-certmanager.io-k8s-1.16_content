@@ -1,7 +1,6 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -260,7 +259,6 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -799,7 +797,6 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -2862,7 +2859,6 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -5559,7 +5555,6 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8255,7 +8250,6 @@ spec:
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8503,7 +8497,6 @@ apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cainjector
@@ -8521,7 +8514,6 @@ apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8539,7 +8531,6 @@ apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -8557,7 +8548,6 @@ apiVersion: v1
 data: null
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -8574,7 +8564,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cainjector
@@ -8647,7 +8636,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8698,7 +8686,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8749,7 +8736,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8823,7 +8809,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -8894,7 +8879,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9004,7 +8988,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9078,7 +9061,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9117,7 +9099,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9165,7 +9146,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9191,7 +9171,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9239,7 +9218,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -9262,7 +9240,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cainjector
@@ -9286,7 +9263,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9310,7 +9286,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9334,7 +9309,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9358,7 +9332,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9382,7 +9355,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9406,7 +9378,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9430,7 +9401,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9454,7 +9424,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9478,7 +9447,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -9503,7 +9471,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cainjector
@@ -9538,7 +9505,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9572,7 +9538,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -9607,7 +9572,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cainjector
@@ -9632,7 +9596,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9658,7 +9621,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -9684,7 +9646,6 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9712,7 +9673,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -9740,7 +9700,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cainjector
@@ -9760,7 +9719,6 @@ spec:
       app.kubernetes.io/name: cainjector
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: cainjector
         app.kubernetes.io/component: cainjector
@@ -9814,7 +9772,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: cert-manager
@@ -9838,7 +9795,6 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "9402"
         prometheus.io/scrape: "true"
-      creationTimestamp: null
       labels:
         app: cert-manager
         app.kubernetes.io/component: controller
@@ -9904,7 +9860,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -9924,7 +9879,6 @@ spec:
       app.kubernetes.io/name: webhook
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: webhook
         app.kubernetes.io/component: webhook
@@ -10012,7 +9966,6 @@ kind: MutatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from-secret: kube-system/cert-manager-webhook-ca
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook
@@ -10054,7 +10007,6 @@ kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from-secret: kube-system/cert-manager-webhook-ca
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: certmanager.io
     app: webhook

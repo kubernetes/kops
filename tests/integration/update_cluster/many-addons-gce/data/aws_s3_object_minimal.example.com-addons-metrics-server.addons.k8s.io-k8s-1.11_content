@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -14,7 +13,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -39,7 +37,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -67,7 +64,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -88,7 +84,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -108,7 +103,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -128,7 +122,6 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -149,7 +142,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -163,7 +155,6 @@ spec:
       k8s-app: metrics-server
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: metrics-server
         kops.k8s.io/managed-by: kops
@@ -241,7 +232,6 @@ spec:
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -262,7 +252,6 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: metrics-server.addons.k8s.io
     app.kubernetes.io/managed-by: kops

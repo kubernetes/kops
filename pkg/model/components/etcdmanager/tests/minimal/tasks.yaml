@@ -68,7 +68,6 @@ Contents: |
   apiVersion: v1
   kind: Pod
   metadata:
-    creationTimestamp: null
     labels:
       k8s-app: etcd-manager-events
     name: etcd-manager-events
@@ -178,7 +177,6 @@ Contents: |
   apiVersion: v1
   kind: Pod
   metadata:
-    creationTimestamp: null
     labels:
       k8s-app: etcd-manager-main
     name: etcd-manager-main

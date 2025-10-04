@@ -3,7 +3,6 @@ kind: Pod
 metadata:
   annotations:
     dns.alpha.kubernetes.io/internal: events.etcd.internal.minimal.example.com
-  creationTimestamp: null
   labels:
     k8s-app: etcd-manager-events
   name: etcd-manager-events

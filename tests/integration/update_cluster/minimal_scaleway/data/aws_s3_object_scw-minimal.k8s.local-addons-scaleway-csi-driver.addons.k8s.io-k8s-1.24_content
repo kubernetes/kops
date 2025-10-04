@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -21,7 +20,6 @@ type: Opaque
 apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -37,7 +35,6 @@ allowVolumeExpansion: true
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -52,7 +49,6 @@ reclaimPolicy: Delete
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -65,7 +61,6 @@ spec:
       app: scaleway-csi-node
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: scaleway-csi-node
         kops.k8s.io/managed-by: kops
@@ -160,7 +155,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -173,7 +167,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -198,7 +191,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -221,7 +213,6 @@ metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-csi/external-snapshotter/pull/419
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -369,7 +360,6 @@ metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-csi/external-snapshotter/pull/419
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -834,7 +824,6 @@ metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-csi/external-snapshotter/pull/419
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1218,7 +1207,6 @@ deletionPolicy: Delete
 driver: csi.scaleway.com
 kind: VolumeSnapshotClass
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1230,7 +1218,6 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1244,7 +1231,6 @@ spec:
       app: scaleway-csi-controller
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: scaleway-csi-controller
         kops.k8s.io/managed-by: kops
@@ -1370,7 +1356,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1383,7 +1368,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1481,7 +1465,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1501,7 +1484,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1556,7 +1538,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1576,7 +1557,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1693,7 +1673,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1713,7 +1692,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1767,7 +1745,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: scaleway-csi-driver.addons.k8s.io
     app.kubernetes.io/managed-by: kops

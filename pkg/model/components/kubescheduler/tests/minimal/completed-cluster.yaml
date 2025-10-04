@@ -1,5 +1,4 @@
 metadata:
-  creationTimestamp: null
   name: minimal.example.com
 spec:
   api: {}

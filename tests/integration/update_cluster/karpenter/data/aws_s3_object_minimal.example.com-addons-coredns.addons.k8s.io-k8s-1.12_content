@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -15,7 +14,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -48,7 +46,6 @@ kind: ClusterRoleBinding
 metadata:
   annotations:
     rbac.authorization.kubernetes.io/autoupdate: "true"
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -91,7 +88,6 @@ data:
     }
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     addonmanager.kubernetes.io/mode: EnsureExists
@@ -105,7 +101,6 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -126,7 +121,6 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: kube-dns
         kops.k8s.io/managed-by: kops
@@ -218,7 +212,6 @@ metadata:
   annotations:
     prometheus.io/port: "9153"
     prometheus.io/scrape: "true"
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -249,7 +242,6 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -267,7 +259,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -280,7 +271,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -323,7 +313,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -343,7 +332,6 @@ subjects:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -358,7 +346,6 @@ spec:
       k8s-app: coredns-autoscaler
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: coredns-autoscaler
         kops.k8s.io/managed-by: kops

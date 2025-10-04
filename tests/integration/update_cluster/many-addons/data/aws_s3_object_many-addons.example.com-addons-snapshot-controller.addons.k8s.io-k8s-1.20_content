@@ -4,7 +4,6 @@ metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-csi/external-snapshotter/pull/419
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -158,7 +157,6 @@ metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-csi/external-snapshotter/pull/419
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -639,7 +637,6 @@ metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-csi/external-snapshotter/pull/419
     controller-gen.kubebuilder.io/version: v0.4.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1026,7 +1023,6 @@ status:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1039,7 +1035,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1064,7 +1059,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1146,7 +1140,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1166,7 +1159,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1186,7 +1178,6 @@ subjects:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1206,7 +1197,6 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: snapshot-controller
         kops.k8s.io/managed-by: kops
@@ -1238,7 +1228,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app: snapshot-validation
@@ -1253,7 +1242,6 @@ spec:
       app: snapshot-validation
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: snapshot-validation
         kops.k8s.io/managed-by: kops
@@ -1295,7 +1283,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1317,7 +1304,6 @@ kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: kube-system/snapshot-validation-service
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1355,7 +1341,6 @@ webhooks:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: snapshot-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops

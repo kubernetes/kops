@@ -1,6 +1,5 @@
 {
   "metadata": {
-    "creationTimestamp": null,
     "managedFields": [
       {
         "manager": "kube-controller-manager",
