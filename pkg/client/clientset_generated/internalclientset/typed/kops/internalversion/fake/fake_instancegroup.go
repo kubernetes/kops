@@ -19,111 +19,32 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	gentype "k8s.io/client-go/gentype"
 	kops "k8s.io/kops/pkg/apis/kops"
+	internalversion "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internalversion"
 )
 
-// FakeInstanceGroups implements InstanceGroupInterface
-type FakeInstanceGroups struct {
+// fakeInstanceGroups implements InstanceGroupInterface
+type fakeInstanceGroups struct {
+	*gentype.FakeClientWithList[*kops.InstanceGroup, *kops.InstanceGroupList]
 	Fake *FakeKops
-	ns   string
 }
 
-var instancegroupsResource = kops.SchemeGroupVersion.WithResource("instancegroups")
-
-var instancegroupsKind = kops.SchemeGroupVersion.WithKind("InstanceGroup")
-
-// Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
-func (c *FakeInstanceGroups) Get(ctx context.Context, name string, options v1.GetOptions) (result *kops.InstanceGroup, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(instancegroupsResource, c.ns, name), &kops.InstanceGroup{})
-
-	if obj == nil {
-		return nil, err
+func newFakeInstanceGroups(fake *FakeKops, namespace string) internalversion.InstanceGroupInterface {
+	return &fakeInstanceGroups{
+		gentype.NewFakeClientWithList[*kops.InstanceGroup, *kops.InstanceGroupList](
+			fake.Fake,
+			namespace,
+			kops.SchemeGroupVersion.WithResource("instancegroups"),
+			kops.SchemeGroupVersion.WithKind("InstanceGroup"),
+			func() *kops.InstanceGroup { return &kops.InstanceGroup{} },
+			func() *kops.InstanceGroupList { return &kops.InstanceGroupList{} },
+			func(dst, src *kops.InstanceGroupList) { dst.ListMeta = src.ListMeta },
+			func(list *kops.InstanceGroupList) []*kops.InstanceGroup { return gentype.ToPointerSlice(list.Items) },
+			func(list *kops.InstanceGroupList, items []*kops.InstanceGroup) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*kops.InstanceGroup), err
-}
-
-// List takes label and field selectors, and returns the list of InstanceGroups that match those selectors.
-func (c *FakeInstanceGroups) List(ctx context.Context, opts v1.ListOptions) (result *kops.InstanceGroupList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(instancegroupsResource, instancegroupsKind, c.ns, opts), &kops.InstanceGroupList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &kops.InstanceGroupList{ListMeta: obj.(*kops.InstanceGroupList).ListMeta}
-	for _, item := range obj.(*kops.InstanceGroupList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested instanceGroups.
-func (c *FakeInstanceGroups) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(instancegroupsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a instanceGroup and creates it.  Returns the server's representation of the instanceGroup, and an error, if there is any.
-func (c *FakeInstanceGroups) Create(ctx context.Context, instanceGroup *kops.InstanceGroup, opts v1.CreateOptions) (result *kops.InstanceGroup, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(instancegroupsResource, c.ns, instanceGroup), &kops.InstanceGroup{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.InstanceGroup), err
-}
-
-// Update takes the representation of a instanceGroup and updates it. Returns the server's representation of the instanceGroup, and an error, if there is any.
-func (c *FakeInstanceGroups) Update(ctx context.Context, instanceGroup *kops.InstanceGroup, opts v1.UpdateOptions) (result *kops.InstanceGroup, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(instancegroupsResource, c.ns, instanceGroup), &kops.InstanceGroup{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.InstanceGroup), err
-}
-
-// Delete takes name of the instanceGroup and deletes it. Returns an error if one occurs.
-func (c *FakeInstanceGroups) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(instancegroupsResource, c.ns, name, opts), &kops.InstanceGroup{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeInstanceGroups) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(instancegroupsResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &kops.InstanceGroupList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched instanceGroup.
-func (c *FakeInstanceGroups) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.InstanceGroup, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(instancegroupsResource, c.ns, name, pt, data, subresources...), &kops.InstanceGroup{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.InstanceGroup), err
 }

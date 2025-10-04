@@ -40,7 +40,7 @@ GOBIN := $(shell go env GOPATH)/bin
 endif
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
-CODEGEN_VERSION=v0.29.0
+CODEGEN_VERSION=v0.34.1
 
 KO=go run github.com/google/ko@v0.18.0
 
@@ -155,17 +155,17 @@ clean:
 codegen:
 	go build -o ${KOPS_ROOT}/_output/bin/ k8s.io/kops/upup/tools/generators/...
 	${KOPS_ROOT}/_output/bin/fitask \
-		--input-dirs k8s.io/kops/upup/pkg/fi/... \
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
-		--output-base ${KOPS_ROOT}
+		--output-base ${KOPS_ROOT} \
+		k8s.io/kops/upup/pkg/fi/...
 
 .PHONY: verify-codegen
 verify-codegen:
 	go build -o ${KOPS_ROOT}/_output/bin/ k8s.io/kops/upup/tools/generators/...
 	${KOPS_ROOT}/_output/bin/fitask --verify-only \
-		--input-dirs k8s.io/kops/upup/pkg/fi/... \
 		--go-header-file hack/boilerplate/boilerplate.generatego.txt \
-		--output-base ${KOPS_ROOT}
+		--output-base ${KOPS_ROOT} \
+		k8s.io/kops/upup/pkg/fi/...
 
 .PHONY: protobuf
 protobuf:
@@ -435,54 +435,58 @@ apimachinery: apimachinery-codegen goimports
 apimachinery-codegen: apimachinery-codegen-conversion apimachinery-codegen-deepcopy apimachinery-codegen-defaulter apimachinery-codegen-client
 
 .PHONY: apimachinery-codegen-conversion
-apimachinery-codegen-conversion: export GOPATH=
 apimachinery-codegen-conversion:
-	go run k8s.io/code-generator/cmd/conversion-gen@${CODEGEN_VERSION} --skip-unsafe=true --v=0 --input-dirs ./pkg/apis/kops/v1alpha2 \
-		 --output-base=./ --output-file-base=zz_generated.conversion \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	go run k8s.io/code-generator/cmd/conversion-gen@${CODEGEN_VERSION} --skip-unsafe=true --v=0 \
+		 --output-file=zz_generated.conversion.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops/v1alpha2
 	grep 'requires manual conversion' ${KOPS_ROOT}/pkg/apis/kops/v1alpha2/zz_generated.conversion.go ; [ $$? -eq 1 ]
-	go run k8s.io/code-generator/cmd/conversion-gen@${CODEGEN_VERSION} --skip-unsafe=true --v=0 --input-dirs ./pkg/apis/kops/v1alpha3 \
-		 --output-base=./ --output-file-base=zz_generated.conversion \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	go run k8s.io/code-generator/cmd/conversion-gen@${CODEGEN_VERSION} --skip-unsafe=true --v=0 \
+		 --output-file=zz_generated.conversion.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops/v1alpha3
 	grep 'requires manual conversion' ${KOPS_ROOT}/pkg/apis/kops/v1alpha3/zz_generated.conversion.go ; [ $$? -eq 1 ]
 
 .PHONY: apimachinery-codegen-deepcopy
-apimachinery-codegen-deepcopy: export GOPATH=
 apimachinery-codegen-deepcopy:
-	go run k8s.io/code-generator/cmd/deepcopy-gen@${CODEGEN_VERSION} --v=0 --input-dirs ./pkg/apis/kops \
-		 --output-base=./ --output-file-base=zz_generated.deepcopy \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
-	go run k8s.io/code-generator/cmd/deepcopy-gen@${CODEGEN_VERSION} --v=0 --input-dirs ./pkg/apis/kops/v1alpha2 \
-		 --output-base=./ --output-file-base=zz_generated.deepcopy \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
-	go run k8s.io/code-generator/cmd/deepcopy-gen@${CODEGEN_VERSION} --v=0 --input-dirs ./pkg/apis/kops/v1alpha3 \
-		 --output-base=./ --output-file-base=zz_generated.deepcopy \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	go run k8s.io/code-generator/cmd/deepcopy-gen@${CODEGEN_VERSION} --v=0 \
+		 --output-file=zz_generated.deepcopy.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops
+	go run k8s.io/code-generator/cmd/deepcopy-gen@${CODEGEN_VERSION} --v=0 \
+		 --output-file=zz_generated.deepcopy.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops/v1alpha2
+	go run k8s.io/code-generator/cmd/deepcopy-gen@${CODEGEN_VERSION} --v=0 \
+		 --output-file=zz_generated.deepcopy.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops/v1alpha3
 
 .PHONY: apimachinery-codegen-defaulter
-apimachinery-codegen-defaulter: export GOPATH=
 apimachinery-codegen-defaulter:
-	go run k8s.io/code-generator/cmd/defaulter-gen@${CODEGEN_VERSION} --v=0 --input-dirs ./pkg/apis/kops/v1alpha2 \
-		 --output-base=./ --output-file-base=zz_generated.defaults \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
-	go run k8s.io/code-generator/cmd/defaulter-gen@${CODEGEN_VERSION} --v=0 --input-dirs ./pkg/apis/kops/v1alpha3 \
-		 --output-base=./ --output-file-base=zz_generated.defaults \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+	go run k8s.io/code-generator/cmd/defaulter-gen@${CODEGEN_VERSION} --v=0 \
+		 --output-file=zz_generated.defaults.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops/v1alpha2
+	go run k8s.io/code-generator/cmd/defaulter-gen@${CODEGEN_VERSION} --v=0 \
+		 --output-file=zz_generated.defaults.go \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 ./pkg/apis/kops/v1alpha3
 
 .PHONY: apimachinery-codegen-client
-apimachinery-codegen-client: export GOPATH=
-apimachinery-codegen-client: TMPDIR := $(shell mktemp -d)
 apimachinery-codegen-client:
 	go run k8s.io/code-generator/cmd/client-gen@${CODEGEN_VERSION} --v=0 \
-		 --input-base=k8s.io/kops/pkg/apis --input-dirs=. --input="kops/,kops/v1alpha2,kops/v1alpha3" \
-		 --output-package=k8s.io/kops/pkg/client/clientset_generated/ --output-base=$(TMPDIR) \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
+		 --input-base=k8s.io/kops/pkg/apis --input="kops/,kops/v1alpha2,kops/v1alpha3" \
+		 --output-dir=pkg/client/clientset_generated/ \
+		 --output-pkg=k8s.io/kops/pkg/client/clientset_generated/ \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 .
 	go run k8s.io/code-generator/cmd/client-gen@${CODEGEN_VERSION} --v=0 --clientset-name="clientset" \
-		 --input-base=k8s.io/kops/pkg/apis --input-dirs=. --input="kops/,kops/v1alpha2,kops/v1alpha3" \
-		 --output-package=k8s.io/kops/pkg/client/clientset_generated/ --output-base=$(TMPDIR) \
-		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt"
-	cp -r $(TMPDIR)/k8s.io/kops/pkg .
-	rm -rf $(TMPDIR)
+		 --input-base=k8s.io/kops/pkg/apis --input="kops/,kops/v1alpha2,kops/v1alpha3" \
+		 --output-dir=pkg/client/clientset_generated/ \
+		 --output-pkg=k8s.io/kops/pkg/client/clientset_generated/ \
+		 --go-header-file "hack/boilerplate/boilerplate.generatego.txt" \
+		 .
 
 .PHONY: verify-apimachinery
 verify-apimachinery:

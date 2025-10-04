@@ -19,14 +19,13 @@ limitations under the License.
 package v1alpha3
 
 import (
-	"context"
-	"time"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
-	v1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
+	gentype "k8s.io/client-go/gentype"
+	kopsv1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
 	scheme "k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
 )
 
@@ -38,141 +37,32 @@ type HostsGetter interface {
 
 // HostInterface has methods to work with Host resources.
 type HostInterface interface {
-	Create(ctx context.Context, host *v1alpha3.Host, opts v1.CreateOptions) (*v1alpha3.Host, error)
-	Update(ctx context.Context, host *v1alpha3.Host, opts v1.UpdateOptions) (*v1alpha3.Host, error)
+	Create(ctx context.Context, host *kopsv1alpha3.Host, opts v1.CreateOptions) (*kopsv1alpha3.Host, error)
+	Update(ctx context.Context, host *kopsv1alpha3.Host, opts v1.UpdateOptions) (*kopsv1alpha3.Host, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha3.Host, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha3.HostList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*kopsv1alpha3.Host, error)
+	List(ctx context.Context, opts v1.ListOptions) (*kopsv1alpha3.HostList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Host, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kopsv1alpha3.Host, err error)
 	HostExpansion
 }
 
 // hosts implements HostInterface
 type hosts struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithList[*kopsv1alpha3.Host, *kopsv1alpha3.HostList]
 }
 
 // newHosts returns a Hosts
 func newHosts(c *KopsV1alpha3Client, namespace string) *hosts {
 	return &hosts{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithList[*kopsv1alpha3.Host, *kopsv1alpha3.HostList](
+			"hosts",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *kopsv1alpha3.Host { return &kopsv1alpha3.Host{} },
+			func() *kopsv1alpha3.HostList { return &kopsv1alpha3.HostList{} },
+		),
 	}
-}
-
-// Get takes name of the host, and returns the corresponding host object, and an error if there is any.
-func (c *hosts) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Host, err error) {
-	result = &v1alpha3.Host{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("hosts").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Hosts that match those selectors.
-func (c *hosts) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.HostList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	result = &v1alpha3.HostList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("hosts").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested hosts.
-func (c *hosts) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("hosts").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch(ctx)
-}
-
-// Create takes the representation of a host and creates it.  Returns the server's representation of the host, and an error, if there is any.
-func (c *hosts) Create(ctx context.Context, host *v1alpha3.Host, opts v1.CreateOptions) (result *v1alpha3.Host, err error) {
-	result = &v1alpha3.Host{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("hosts").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(host).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Update takes the representation of a host and updates it. Returns the server's representation of the host, and an error, if there is any.
-func (c *hosts) Update(ctx context.Context, host *v1alpha3.Host, opts v1.UpdateOptions) (result *v1alpha3.Host, err error) {
-	result = &v1alpha3.Host{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("hosts").
-		Name(host.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(host).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Delete takes name of the host and deletes it. Returns an error if one occurs.
-func (c *hosts) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("hosts").
-		Name(name).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *hosts) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	var timeout time.Duration
-	if listOpts.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
-	}
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("hosts").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// Patch applies the patch and returns the patched host.
-func (c *hosts) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Host, err error) {
-	result = &v1alpha3.Host{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("hosts").
-		Name(name).
-		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
 }

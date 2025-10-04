@@ -19,111 +19,32 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	gentype "k8s.io/client-go/gentype"
 	v1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
+	kopsv1alpha3 "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/v1alpha3"
 )
 
-// FakeClusters implements ClusterInterface
-type FakeClusters struct {
+// fakeClusters implements ClusterInterface
+type fakeClusters struct {
+	*gentype.FakeClientWithList[*v1alpha3.Cluster, *v1alpha3.ClusterList]
 	Fake *FakeKopsV1alpha3
-	ns   string
 }
 
-var clustersResource = v1alpha3.SchemeGroupVersion.WithResource("clusters")
-
-var clustersKind = v1alpha3.SchemeGroupVersion.WithKind("Cluster")
-
-// Get takes name of the cluster, and returns the corresponding cluster object, and an error if there is any.
-func (c *FakeClusters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Cluster, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(clustersResource, c.ns, name), &v1alpha3.Cluster{})
-
-	if obj == nil {
-		return nil, err
+func newFakeClusters(fake *FakeKopsV1alpha3, namespace string) kopsv1alpha3.ClusterInterface {
+	return &fakeClusters{
+		gentype.NewFakeClientWithList[*v1alpha3.Cluster, *v1alpha3.ClusterList](
+			fake.Fake,
+			namespace,
+			v1alpha3.SchemeGroupVersion.WithResource("clusters"),
+			v1alpha3.SchemeGroupVersion.WithKind("Cluster"),
+			func() *v1alpha3.Cluster { return &v1alpha3.Cluster{} },
+			func() *v1alpha3.ClusterList { return &v1alpha3.ClusterList{} },
+			func(dst, src *v1alpha3.ClusterList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha3.ClusterList) []*v1alpha3.Cluster { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1alpha3.ClusterList, items []*v1alpha3.Cluster) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1alpha3.Cluster), err
-}
-
-// List takes label and field selectors, and returns the list of Clusters that match those selectors.
-func (c *FakeClusters) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.ClusterList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(clustersResource, clustersKind, c.ns, opts), &v1alpha3.ClusterList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha3.ClusterList{ListMeta: obj.(*v1alpha3.ClusterList).ListMeta}
-	for _, item := range obj.(*v1alpha3.ClusterList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested clusters.
-func (c *FakeClusters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(clustersResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a cluster and creates it.  Returns the server's representation of the cluster, and an error, if there is any.
-func (c *FakeClusters) Create(ctx context.Context, cluster *v1alpha3.Cluster, opts v1.CreateOptions) (result *v1alpha3.Cluster, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(clustersResource, c.ns, cluster), &v1alpha3.Cluster{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha3.Cluster), err
-}
-
-// Update takes the representation of a cluster and updates it. Returns the server's representation of the cluster, and an error, if there is any.
-func (c *FakeClusters) Update(ctx context.Context, cluster *v1alpha3.Cluster, opts v1.UpdateOptions) (result *v1alpha3.Cluster, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(clustersResource, c.ns, cluster), &v1alpha3.Cluster{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha3.Cluster), err
-}
-
-// Delete takes name of the cluster and deletes it. Returns an error if one occurs.
-func (c *FakeClusters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(clustersResource, c.ns, name, opts), &v1alpha3.Cluster{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeClusters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(clustersResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha3.ClusterList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched cluster.
-func (c *FakeClusters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Cluster, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(clustersResource, c.ns, name, pt, data, subresources...), &v1alpha3.Cluster{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha3.Cluster), err
 }

@@ -19,111 +19,30 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	gentype "k8s.io/client-go/gentype"
 	v1alpha2 "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	kopsv1alpha2 "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/v1alpha2"
 )
 
-// FakeHosts implements HostInterface
-type FakeHosts struct {
+// fakeHosts implements HostInterface
+type fakeHosts struct {
+	*gentype.FakeClientWithList[*v1alpha2.Host, *v1alpha2.HostList]
 	Fake *FakeKopsV1alpha2
-	ns   string
 }
 
-var hostsResource = v1alpha2.SchemeGroupVersion.WithResource("hosts")
-
-var hostsKind = v1alpha2.SchemeGroupVersion.WithKind("Host")
-
-// Get takes name of the host, and returns the corresponding host object, and an error if there is any.
-func (c *FakeHosts) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha2.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(hostsResource, c.ns, name), &v1alpha2.Host{})
-
-	if obj == nil {
-		return nil, err
+func newFakeHosts(fake *FakeKopsV1alpha2, namespace string) kopsv1alpha2.HostInterface {
+	return &fakeHosts{
+		gentype.NewFakeClientWithList[*v1alpha2.Host, *v1alpha2.HostList](
+			fake.Fake,
+			namespace,
+			v1alpha2.SchemeGroupVersion.WithResource("hosts"),
+			v1alpha2.SchemeGroupVersion.WithKind("Host"),
+			func() *v1alpha2.Host { return &v1alpha2.Host{} },
+			func() *v1alpha2.HostList { return &v1alpha2.HostList{} },
+			func(dst, src *v1alpha2.HostList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha2.HostList) []*v1alpha2.Host { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1alpha2.HostList, items []*v1alpha2.Host) { list.Items = gentype.FromPointerSlice(items) },
+		),
+		fake,
 	}
-	return obj.(*v1alpha2.Host), err
-}
-
-// List takes label and field selectors, and returns the list of Hosts that match those selectors.
-func (c *FakeHosts) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.HostList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(hostsResource, hostsKind, c.ns, opts), &v1alpha2.HostList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha2.HostList{ListMeta: obj.(*v1alpha2.HostList).ListMeta}
-	for _, item := range obj.(*v1alpha2.HostList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested hosts.
-func (c *FakeHosts) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(hostsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a host and creates it.  Returns the server's representation of the host, and an error, if there is any.
-func (c *FakeHosts) Create(ctx context.Context, host *v1alpha2.Host, opts v1.CreateOptions) (result *v1alpha2.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(hostsResource, c.ns, host), &v1alpha2.Host{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha2.Host), err
-}
-
-// Update takes the representation of a host and updates it. Returns the server's representation of the host, and an error, if there is any.
-func (c *FakeHosts) Update(ctx context.Context, host *v1alpha2.Host, opts v1.UpdateOptions) (result *v1alpha2.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(hostsResource, c.ns, host), &v1alpha2.Host{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha2.Host), err
-}
-
-// Delete takes name of the host and deletes it. Returns an error if one occurs.
-func (c *FakeHosts) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(hostsResource, c.ns, name, opts), &v1alpha2.Host{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeHosts) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(hostsResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha2.HostList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched host.
-func (c *FakeHosts) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha2.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(hostsResource, c.ns, name, pt, data, subresources...), &v1alpha2.Host{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha2.Host), err
 }
