@@ -62,7 +62,7 @@ func (s *NetworkingSpec) IsEmpty() bool {
 // ConfiguredOptions returns the set of networking options that are configured (non-nil)
 // in the struct.  We only expect a single option to be configured.
 func (s *NetworkingSpec) ConfiguredOptions() sets.Set[string] {
-	options, err := reflectutils.FindSetFields(s, "classic", "kubenet", "external", "cni", "kopeio", "weave", "flannel", "calico", "canal", "kuberouter", "romana", "amazonvpc", "cilium", "lyftvpc", "gce", "kindnet")
+	options, err := reflectutils.FindSetFields(s, "classic", "kubenet", "external", "cni", "kopeio", "weave", "flannel", "calico", "kuberouter", "romana", "amazonvpc", "cilium", "lyftvpc", "gce", "kindnet")
 	if err != nil {
 		klog.Fatalf("error getting configured options: %v", err)
 	}

@@ -67,7 +67,6 @@ Several CNI providers are currently built into kOps:
 
 * [AWS VPC](networking/aws-vpc.md)
 * [Calico](networking/calico.md)
-* [Canal](networking/canal.md)
 * [Cilium](networking/cilium.md)
 * [Flannel](networking/flannel.md)
 * [Kindnet](networking/kindnet.md)
