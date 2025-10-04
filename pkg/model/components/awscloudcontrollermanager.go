@@ -75,18 +75,20 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 	if eccm.Image == "" {
 		// See https://us.gcr.io/k8s-artifacts-prod/provider-aws/cloud-controller-manager
 		switch b.ControlPlaneKubernetesVersion().Minor() {
-		case 27:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.27.9"
-		case 28:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.28.9"
 		case 29:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.29.6"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.29.8"
 		case 30:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.30.3"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.30.9"
 		case 31:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.8"
+		case 32:
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.32.5"
+		case 33:
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.33.2"
+		case 34:
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.34.0"
 		default:
-			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.31.0"
+			eccm.Image = "registry.k8s.io/provider-aws/cloud-controller-manager:v1.34.0"
 		}
 	}
 

@@ -87,7 +87,7 @@ spec:
             secretKeyRef:
               key: network
               name: hcloud
-        image: hetznercloud/hcloud-cloud-controller-manager:v1.19.0
+        image: hetznercloud/hcloud-cloud-controller-manager:v1.27.0
         name: hcloud-cloud-controller-manager
         ports:
         - containerPort: 8233
