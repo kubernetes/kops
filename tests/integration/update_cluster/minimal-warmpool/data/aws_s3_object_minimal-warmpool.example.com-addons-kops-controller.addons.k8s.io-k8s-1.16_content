@@ -21,7 +21,7 @@ metadata:
     app.kubernetes.io/managed-by: kops
     k8s-addon: kops-controller.addons.k8s.io
     k8s-app: kops-controller
-    version: v1.34.0-alpha.1
+    version: v1.34.0-beta.1
   name: kops-controller
   namespace: kube-system
 spec:
@@ -36,7 +36,7 @@ spec:
         k8s-addon: kops-controller.addons.k8s.io
         k8s-app: kops-controller
         kops.k8s.io/managed-by: kops
-        version: v1.34.0-alpha.1
+        version: v1.34.0-beta.1
     spec:
       affinity:
         nodeAffinity:
@@ -62,7 +62,7 @@ spec:
           value: 127.0.0.1
         - name: KOPS_RUN_TOO_NEW_VERSION
           value: "1"
-        image: kops.k8s.io/remapped-image/kops/kops-controller:1.34.0-alpha.1
+        image: kops.k8s.io/remapped-image/kops/kops-controller:1.34.0-beta.1
         name: kops-controller
         resources:
           requests:
