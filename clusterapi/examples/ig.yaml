@@ -1,0 +1,17 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: capi-nodes
+  namespace: kube-system
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-lts-amd64
+  machineType: e2-medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    cloud.google.com/metadata-proxy-ready: "true"
+  role: Node
+  subnets:
+  - us-east4
+  zones:
+  - us-east4-a

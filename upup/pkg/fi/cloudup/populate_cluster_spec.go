@@ -69,14 +69,13 @@ func PopulateClusterSpec(ctx context.Context, clientset simple.Clientset, cluste
 	return c.fullCluster, nil
 }
 
-// Here be dragons
-//
-// This function has some `interesting` things going on.
-// In an effort to let the cluster.Spec fall through I am
-// hard coding topology in two places.. It seems and feels
-// very wrong.. but at least now my new cluster.Spec.Topology
-// struct is falling through..
-// @kris-nova
+// run implements the main logic of "filling in" the details of a cluster.
+// Some logic is built into this function (and probably should be refactored out),
+// but the majority of the logic is delegated to OptionsBuilder implementations.
+// So that we don't have to be very careful about convergence, we run the list of OptionsBuilders
+// repeatedly until convergence (defined as no changes).
+// In general, an OptionsBuilder should populate only if the field is not already set
+// (it may have been set by a user).
 func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientset) error {
 	if errs := validation.ValidateCluster(c.InputCluster, false, clientset.VFSContext()); len(errs) != 0 {
 		return errs.ToAggregate()

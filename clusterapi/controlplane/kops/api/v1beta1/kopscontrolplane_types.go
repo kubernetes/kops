@@ -40,6 +40,17 @@ type KopsControlPlaneMachineTemplate struct {
 
 // KopsControlPlaneStatus defines the observed state of KopsControlPlane.
 type KopsControlPlaneStatus struct {
+	// KopsControllerEndpoint represents the endpoints used to communicate with the control plane.
+	SystemEndpoints []SystemEndpoint `json:"systemEndpoints,omitempty"`
+}
+
+// SystemEndpoint represents a reachable Kubernetes API endpoint.
+type SystemEndpoint struct {
+	// The hostname on which the API server is serving.
+	Host string `json:"host"`
+	// The hostname on which the API server is serving.
+	Type  string `json:"type"`
+	Scope string `json:"scope"`
 }
 
 // +kubebuilder:object:root=true
