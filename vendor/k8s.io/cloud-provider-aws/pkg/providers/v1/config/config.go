@@ -1,12 +1,20 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"net/url"
+
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
+	smithyendpoints "github.com/aws/smithy-go/endpoints"
 
 	"k8s.io/klog/v2"
 )
@@ -87,7 +95,7 @@ type CloudConfig struct {
 		// Override to regex validating whether or not instance types require instance topology
 		// to get a definitive response. This will impact whether or not the node controller will
 		// block on getting instance topology information for nodes.
-		// See pkg/resourcemanagers/topology.go for more details.
+		// See pkg/providers/v1/topology.go for more details.
 		//
 		// WARNING: Updating the default behavior and corresponding unit tests would be a much safer option.
 		SupportedTopologyInstanceTypePattern string `json:"supportedTopologyInstanceTypePattern,omitempty" yaml:"supportedTopologyInstanceTypePattern,omitempty"`
@@ -118,25 +126,25 @@ type CloudConfig struct {
 // EC2Metadata is an abstraction over the AWS metadata service.
 type EC2Metadata interface {
 	// Query the EC2 metadata service (used to discover instance-id etc)
-	GetMetadata(path string) (string, error)
-	Region() (string, error)
+	GetMetadata(ctx context.Context, params *imds.GetMetadataInput, optFns ...func(*imds.Options)) (*imds.GetMetadataOutput, error)
+	GetRegion(ctx context.Context, params *imds.GetRegionInput, optFns ...func(*imds.Options)) (*imds.GetRegionOutput, error)
 }
 
 // GetRegion returns the AWS region from the config, if set, or gets it from the metadata
 // service if unset and sets in config
-func (cfg *CloudConfig) GetRegion(metadata EC2Metadata) (string, error) {
+func (cfg *CloudConfig) GetRegion(ctx context.Context, metadata EC2Metadata) (string, error) {
 	if cfg.Global.Region != "" {
 		return cfg.Global.Region, nil
 	}
 
 	klog.Info("Loading region from metadata service")
-	region, err := metadata.Region()
+	region, err := metadata.GetRegion(ctx, &imds.GetRegionInput{})
 	if err != nil {
 		return "", err
 	}
 
-	cfg.Global.Region = region
-	return region, nil
+	cfg.Global.Region = region.Region
+	return region.Region, nil
 }
 
 // ValidateOverrides ensures overrides are correct
@@ -178,34 +186,224 @@ func (cfg *CloudConfig) ValidateOverrides() error {
 	return nil
 }
 
-// GetResolver computes the correct resolver to use
-func (cfg *CloudConfig) GetResolver() endpoints.ResolverFunc {
-	defaultResolver := endpoints.DefaultResolver()
-	defaultResolverFn := func(service, region string,
-		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
-		return defaultResolver.EndpointFor(service, region, optFns...)
-	}
-	if len(cfg.ServiceOverride) == 0 {
-		return defaultResolverFn
-	}
-
-	return func(service, region string,
-		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
-		for _, override := range cfg.ServiceOverride {
-			if override.Service == service && override.Region == region {
-				return endpoints.ResolvedEndpoint{
-					URL:           override.URL,
-					SigningRegion: override.SigningRegion,
-					SigningMethod: override.SigningMethod,
-					SigningName:   override.SigningName,
-				}, nil
-			}
+// GetEC2EndpointOpts returns client configuration options that override
+// the signing name and region, if appropriate.
+func (cfg *CloudConfig) GetEC2EndpointOpts(region string) []func(*ec2.Options) {
+	opts := []func(*ec2.Options){}
+	for _, override := range cfg.ServiceOverride {
+		if override.Service == ec2.ServiceID && override.Region == region {
+			opts = append(opts,
+				ec2.WithSigV4SigningName(override.SigningName),
+				ec2.WithSigV4SigningRegion(override.SigningRegion),
+			)
 		}
-		return defaultResolver.EndpointFor(service, region, optFns...)
 	}
+	return opts
+}
+
+// GetCustomEC2Resolver returns an endpoint resolver for EC2 Clients
+func (cfg *CloudConfig) GetCustomEC2Resolver() ec2.EndpointResolverV2 {
+	return &EC2Resolver{
+		Resolver: ec2.NewDefaultEndpointResolverV2(),
+		Cfg:      cfg,
+	}
+}
+
+// EC2Resolver overrides the endpoint for an AWS SDK Go V2 EC2 Client,
+// using the provided CloudConfig to determine if an override
+// is appropriate.
+type EC2Resolver struct {
+	Resolver ec2.EndpointResolverV2
+	Cfg      *CloudConfig
+}
+
+// ResolveEndpoint resolves the endpoint, overriding when custom configurations are set.
+func (r *EC2Resolver) ResolveEndpoint(
+	ctx context.Context, params ec2.EndpointParameters,
+) (
+	endpoint smithyendpoints.Endpoint, err error,
+) {
+	for _, override := range r.Cfg.ServiceOverride {
+		if override.Service == ec2.ServiceID && override.Region == aws.ToString(params.Region) {
+			customURL, err := url.Parse(override.URL)
+			if err != nil {
+				return smithyendpoints.Endpoint{}, fmt.Errorf("could not parse override URL, %w", err)
+			}
+			return smithyendpoints.Endpoint{
+				URI: *customURL,
+			}, nil
+		}
+	}
+	return r.Resolver.ResolveEndpoint(ctx, params)
+}
+
+// GetELBEndpointOpts returns client configuration options that override
+// the signing name and region, if appropriate.
+func (cfg *CloudConfig) GetELBEndpointOpts(region string) []func(*elb.Options) {
+	opts := []func(*elb.Options){}
+	for _, override := range cfg.ServiceOverride {
+		if override.Service == elb.ServiceID && override.Region == region {
+			opts = append(opts,
+				elb.WithSigV4SigningName(override.SigningName),
+				elb.WithSigV4SigningRegion(override.SigningRegion),
+			)
+		}
+	}
+	return opts
+}
+
+// GetCustomELBResolver returns an endpoint resolver for ELB Clients
+func (cfg *CloudConfig) GetCustomELBResolver() elb.EndpointResolverV2 {
+	return &ELBResolver{
+		Resolver: elb.NewDefaultEndpointResolverV2(),
+		Cfg:      cfg,
+	}
+}
+
+// ELBResolver overrides the endpoint for an AWS SDK Go V2 ELB Client,
+// using the provided CloudConfig to determine if an override
+// is appropriate.
+type ELBResolver struct {
+	Resolver elb.EndpointResolverV2
+	Cfg      *CloudConfig
+}
+
+// ResolveEndpoint resolves the endpoint, overriding when custom configurations are set.
+func (r *ELBResolver) ResolveEndpoint(
+	ctx context.Context, params elb.EndpointParameters,
+) (
+	endpoint smithyendpoints.Endpoint, err error,
+) {
+	for _, override := range r.Cfg.ServiceOverride {
+		if override.Service == elb.ServiceID && override.Region == aws.ToString(params.Region) {
+			customURL, err := url.Parse(override.URL)
+			if err != nil {
+				return smithyendpoints.Endpoint{}, fmt.Errorf("could not parse override URL, %w", err)
+			}
+			return smithyendpoints.Endpoint{
+				URI: *customURL,
+			}, nil
+		}
+	}
+	return r.Resolver.ResolveEndpoint(ctx, params)
+}
+
+// GetELBV2EndpointOpts returns client configuration options that override
+// the signing name and region, if appropriate.
+func (cfg *CloudConfig) GetELBV2EndpointOpts(region string) []func(*elbv2.Options) {
+	opts := []func(*elbv2.Options){}
+	for _, override := range cfg.ServiceOverride {
+		if override.Service == elbv2.ServiceID && override.Region == region {
+			opts = append(opts,
+				elbv2.WithSigV4SigningName(override.SigningName),
+				elbv2.WithSigV4SigningRegion(override.SigningRegion),
+			)
+		}
+	}
+	return opts
+}
+
+// GetCustomELBV2Resolver returns an endpoint resolver for ELB Clients
+func (cfg *CloudConfig) GetCustomELBV2Resolver() elbv2.EndpointResolverV2 {
+	return &ELBV2Resolver{
+		Resolver: elbv2.NewDefaultEndpointResolverV2(),
+		Cfg:      cfg,
+	}
+}
+
+// ELBV2Resolver overrides the endpoint for an AWS SDK Go V2 ELB Client,
+// using the provided CloudConfig to determine if an override
+// is appropriate.
+type ELBV2Resolver struct {
+	Resolver elbv2.EndpointResolverV2
+	Cfg      *CloudConfig
+}
+
+// ResolveEndpoint resolves the endpoint, overriding when custom configurations are set.
+func (r *ELBV2Resolver) ResolveEndpoint(
+	ctx context.Context, params elbv2.EndpointParameters,
+) (
+	endpoint smithyendpoints.Endpoint, err error,
+) {
+	for _, override := range r.Cfg.ServiceOverride {
+		if override.Service == elbv2.ServiceID && override.Region == aws.ToString(params.Region) {
+			customURL, err := url.Parse(override.URL)
+			if err != nil {
+				return smithyendpoints.Endpoint{}, fmt.Errorf("could not parse override URL, %w", err)
+			}
+			return smithyendpoints.Endpoint{
+				URI: *customURL,
+			}, nil
+		}
+	}
+	return r.Resolver.ResolveEndpoint(ctx, params)
+}
+
+// GetKMSEndpointOpts returns client configuration options that override
+// the signing name and region, if appropriate.
+func (cfg *CloudConfig) GetKMSEndpointOpts(region string) []func(*kms.Options) {
+	opts := []func(*kms.Options){}
+	for _, override := range cfg.ServiceOverride {
+		if override.Service == kms.ServiceID && override.Region == region {
+			opts = append(opts,
+				kms.WithSigV4SigningName(override.SigningName),
+				kms.WithSigV4SigningRegion(override.SigningRegion),
+			)
+		}
+	}
+	return opts
+}
+
+// GetCustomKMSResolver returns an endpoint resolver for KMS Clients
+func (cfg *CloudConfig) GetCustomKMSResolver() kms.EndpointResolverV2 {
+	return &KMSResolver{
+		Resolver: kms.NewDefaultEndpointResolverV2(),
+		Cfg:      cfg,
+	}
+}
+
+// KMSResolver overrides the endpoint for an AWS SDK Go V2 KMS Client,
+// using the provided CloudConfig to determine if an override
+// is appropriate.
+type KMSResolver struct {
+	Resolver kms.EndpointResolverV2
+	Cfg      *CloudConfig
+}
+
+// ResolveEndpoint resolves the endpoint, overriding when custom configurations are set.
+func (r *KMSResolver) ResolveEndpoint(
+	ctx context.Context, params kms.EndpointParameters,
+) (
+	endpoint smithyendpoints.Endpoint, err error,
+) {
+	for _, override := range r.Cfg.ServiceOverride {
+		if override.Service == kms.ServiceID && override.Region == aws.ToString(params.Region) {
+			customURL, err := url.Parse(override.URL)
+			if err != nil {
+				return smithyendpoints.Endpoint{}, fmt.Errorf("could not parse override URL, %w", err)
+			}
+			return smithyendpoints.Endpoint{
+				URI: *customURL,
+			}, nil
+		}
+	}
+	return r.Resolver.ResolveEndpoint(ctx, params)
+}
+
+// GetIMDSEndpointOpts overrides the endpoint URL for IMDS clients
+func (cfg *CloudConfig) GetIMDSEndpointOpts() []func(*imds.Options) {
+	opts := []func(*imds.Options){}
+	for _, override := range cfg.ServiceOverride {
+		if override.Service == imds.ServiceID {
+			opts = append(opts, func(o *imds.Options) {
+				o.Endpoint = override.URL
+			})
+		}
+	}
+	return opts
 }
 
 // SDKProvider can be used by variants to add their own handlers
 type SDKProvider interface {
-	AddHandlers(regionName string, h *request.Handlers)
+	AddMiddleware(ctx context.Context, regionName string, cfg *aws.Config)
 }

@@ -277,7 +277,7 @@
                   "type": "string"
                 },
                 "pageSize": {
-                  "description": "The maximum number of pools to return. If unspecified, at most 50 pools will be returned. The maximum value is 1000; values above 1000 are truncated to 1000.",
+                  "description": "The maximum number of pools to return. The default value is 50. The maximum value is 100.",
                   "format": "int32",
                   "location": "query",
                   "type": "integer"
@@ -858,6 +858,388 @@
                       "scopes": [
                         "https://www.googleapis.com/auth/cloud-platform"
                       ]
+                    }
+                  }
+                },
+                "scimTenants": {
+                  "methods": {
+                    "create": {
+                      "description": "Creates a new WorkforcePoolProviderScimTenant in a WorkforcePoolProvider. You cannot reuse the name of a deleted scim tenant until 30 days after deletion.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants",
+                      "httpMethod": "POST",
+                      "id": "iam.locations.workforcePools.providers.scimTenants.create",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "parent": {
+                          "description": "Required. The parent to create scim tenant. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "workforcePoolProviderScimTenantId": {
+                          "description": "Required. The ID to use for the scim tenant, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-].",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+parent}/scimTenants",
+                      "request": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "response": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "delete": {
+                      "description": "Deletes a WorkforcePoolProviderScimTenant. You can undelete a scim tenant for 30 days. After 30 days, deletion is permanent. You cannot update deleted scim tenants. However, you can view and list them.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
+                      "httpMethod": "DELETE",
+                      "id": "iam.locations.workforcePools.providers.scimTenants.delete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the scim tenant to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "get": {
+                      "description": "Gets an individual WorkforcePoolProviderScimTenant.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
+                      "httpMethod": "GET",
+                      "id": "iam.locations.workforcePools.providers.scimTenants.get",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the scim tenant to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "response": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "list": {
+                      "description": "Lists all non-deleted WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted scim tenants are also listed.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants",
+                      "httpMethod": "GET",
+                      "id": "iam.locations.workforcePools.providers.scimTenants.list",
+                      "parameterOrder": [
+                        "parent"
+                      ],
+                      "parameters": {
+                        "pageSize": {
+                          "description": "Optional. The maximum number of scim tenants to return. If unspecified, at most 1 scim tenant will be returned.",
+                          "format": "int32",
+                          "location": "query",
+                          "type": "integer"
+                        },
+                        "pageToken": {
+                          "description": "Optional. A page token, received from a previous `ListScimTenants` call. Provide this to retrieve the subsequent page.",
+                          "location": "query",
+                          "type": "string"
+                        },
+                        "parent": {
+                          "description": "Required. The parent to list scim tenants. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "showDeleted": {
+                          "description": "Optional. Whether to return soft-deleted scim tenants.",
+                          "location": "query",
+                          "type": "boolean"
+                        }
+                      },
+                      "path": "v1/{+parent}/scimTenants",
+                      "response": {
+                        "$ref": "ListWorkforcePoolProviderScimTenantsResponse"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "patch": {
+                      "description": "Updates an existing WorkforcePoolProviderScimTenant.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
+                      "httpMethod": "PATCH",
+                      "id": "iam.locations.workforcePools.providers.scimTenants.patch",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Identifier. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        },
+                        "updateMask": {
+                          "description": "Optional. The list of fields to update.",
+                          "format": "google-fieldmask",
+                          "location": "query",
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}",
+                      "request": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "response": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    },
+                    "undelete": {
+                      "description": "Undeletes a WorkforcePoolProviderScimTenant, as long as it was deleted fewer than 30 days ago.",
+                      "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}:undelete",
+                      "httpMethod": "POST",
+                      "id": "iam.locations.workforcePools.providers.scimTenants.undelete",
+                      "parameterOrder": [
+                        "name"
+                      ],
+                      "parameters": {
+                        "name": {
+                          "description": "Required. The name of the scim tenant to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "location": "path",
+                          "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "path": "v1/{+name}:undelete",
+                      "request": {
+                        "$ref": "UndeleteWorkforcePoolProviderScimTenantRequest"
+                      },
+                      "response": {
+                        "$ref": "WorkforcePoolProviderScimTenant"
+                      },
+                      "scopes": [
+                        "https://www.googleapis.com/auth/cloud-platform"
+                      ]
+                    }
+                  },
+                  "resources": {
+                    "tokens": {
+                      "methods": {
+                        "create": {
+                          "description": "Creates a new WorkforcePoolProviderScimToken in a WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM token until 30 days after deletion.",
+                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens",
+                          "httpMethod": "POST",
+                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.create",
+                          "parameterOrder": [
+                            "parent"
+                          ],
+                          "parameters": {
+                            "parent": {
+                              "description": "Required. The parent tenant to create scim token. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
+                              "location": "path",
+                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "workforcePoolProviderScimTokenId": {
+                              "description": "Required. The ID to use for the scim token, which becomes the final component of the resource name. This value should be 4-32 characters and follow this pattern: \"([a-z]([a-z0-9\\\\-]{2,30}[a-z0-9]))\"",
+                              "location": "query",
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+parent}/tokens",
+                          "request": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "response": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "delete": {
+                          "description": "Deletes a WorkforcePoolProviderScimToken. You can undelete a scim token for 30 days. After 30 days, deletion is permanent. You cannot update deleted scim tokens. However, you can view and list them.",
+                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
+                          "httpMethod": "DELETE",
+                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.delete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the scim token to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "location": "path",
+                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "get": {
+                          "description": "Gets an individual WorkforcePoolProviderScimToken.",
+                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
+                          "httpMethod": "GET",
+                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.get",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the scim token to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "location": "path",
+                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "response": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "list": {
+                          "description": "Lists all non-deleted WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.",
+                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens",
+                          "httpMethod": "GET",
+                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.list",
+                          "parameterOrder": [
+                            "parent"
+                          ],
+                          "parameters": {
+                            "pageSize": {
+                              "description": "Optional. The maximum number of scim tokens to return. If unspecified, at most 2 scim tokens will be returned.",
+                              "format": "int32",
+                              "location": "query",
+                              "type": "integer"
+                            },
+                            "pageToken": {
+                              "description": "Optional. A page token, received from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to retrieve the subsequent page.",
+                              "location": "query",
+                              "type": "string"
+                            },
+                            "parent": {
+                              "description": "Required. The parent to list scim tokens. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
+                              "location": "path",
+                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "showDeleted": {
+                              "description": "Optional. Whether to return soft-deleted scim tokens.",
+                              "location": "query",
+                              "type": "boolean"
+                            }
+                          },
+                          "path": "v1/{+parent}/tokens",
+                          "response": {
+                            "$ref": "ListWorkforcePoolProviderScimTokensResponse"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "patch": {
+                          "description": "Updates an existing WorkforcePoolProviderScimToken.",
+                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
+                          "httpMethod": "PATCH",
+                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.patch",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Identifier. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "location": "path",
+                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            },
+                            "updateMask": {
+                              "description": "Optional. The list of fields to update.",
+                              "format": "google-fieldmask",
+                              "location": "query",
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}",
+                          "request": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "response": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        },
+                        "undelete": {
+                          "description": "Undeletes a WorkforcePoolProviderScimToken, as long as it was deleted fewer than 30 days ago.",
+                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}:undelete",
+                          "httpMethod": "POST",
+                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.undelete",
+                          "parameterOrder": [
+                            "name"
+                          ],
+                          "parameters": {
+                            "name": {
+                              "description": "Required. The name of the scim token to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "location": "path",
+                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
+                              "required": true,
+                              "type": "string"
+                            }
+                          },
+                          "path": "v1/{+name}:undelete",
+                          "request": {
+                            "$ref": "UndeleteWorkforcePoolProviderScimTokenRequest"
+                          },
+                          "response": {
+                            "$ref": "WorkforcePoolProviderScimToken"
+                          },
+                          "scopes": [
+                            "https://www.googleapis.com/auth/cloud-platform"
+                          ]
+                        }
+                      }
                     }
                   }
                 }
@@ -1529,34 +1911,6 @@
             },
             "workloadIdentityPools": {
               "methods": {
-                "addAttestationRule": {
-                  "description": "Add an AttestationRule on a WorkloadIdentityPoolManagedIdentity. The total attestation rules after addition must not exceed 50.",
-                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:addAttestationRule",
-                  "httpMethod": "POST",
-                  "id": "iam.projects.locations.workloadIdentityPools.addAttestationRule",
-                  "parameterOrder": [
-                    "resource"
-                  ],
-                  "parameters": {
-                    "resource": {
-                      "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
-                      "location": "path",
-                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-                      "required": true,
-                      "type": "string"
-                    }
-                  },
-                  "path": "v1/{+resource}:addAttestationRule",
-                  "request": {
-                    "$ref": "AddAttestationRuleRequest"
-                  },
-                  "response": {
-                    "$ref": "Operation"
-                  },
-                  "scopes": [
-                    "https://www.googleapis.com/auth/cloud-platform"
-                  ]
-                },
                 "create": {
                   "description": "Creates a new WorkloadIdentityPool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
@@ -1709,47 +2063,6 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
-                "listAttestationRules": {
-                  "description": "List all AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
-                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:listAttestationRules",
-                  "httpMethod": "GET",
-                  "id": "iam.projects.locations.workloadIdentityPools.listAttestationRules",
-                  "parameterOrder": [
-                    "resource"
-                  ],
-                  "parameters": {
-                    "filter": {
-                      "description": "Optional. A query filter. Supports the following function: * `container_ids()`: Returns only the AttestationRules under the specific container ids. The function expects a comma-delimited list with only project numbers and must use the format `projects/`. For example: `container_ids(projects/, projects/,...)`.",
-                      "location": "query",
-                      "type": "string"
-                    },
-                    "pageSize": {
-                      "description": "Optional. The maximum number of AttestationRules to return. If unspecified, at most 50 AttestationRules are returned. The maximum value is 100; values above 100 are truncated to 100.",
-                      "format": "int32",
-                      "location": "query",
-                      "type": "integer"
-                    },
-                    "pageToken": {
-                      "description": "Optional. A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
-                      "location": "query",
-                      "type": "string"
-                    },
-                    "resource": {
-                      "description": "Required. The resource name of the managed identity or namespace resource to list attestation rules of.",
-                      "location": "path",
-                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-                      "required": true,
-                      "type": "string"
-                    }
-                  },
-                  "path": "v1/{+resource}:listAttestationRules",
-                  "response": {
-                    "$ref": "ListAttestationRulesResponse"
-                  },
-                  "scopes": [
-                    "https://www.googleapis.com/auth/cloud-platform"
-                  ]
-                },
                 "patch": {
                   "description": "Updates an existing WorkloadIdentityPool.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
@@ -1776,62 +2089,6 @@
                   "path": "v1/{+name}",
                   "request": {
                     "$ref": "WorkloadIdentityPool"
-                  },
-                  "response": {
-                    "$ref": "Operation"
-                  },
-                  "scopes": [
-                    "https://www.googleapis.com/auth/cloud-platform"
-                  ]
-                },
-                "removeAttestationRule": {
-                  "description": "Remove an AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
-                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:removeAttestationRule",
-                  "httpMethod": "POST",
-                  "id": "iam.projects.locations.workloadIdentityPools.removeAttestationRule",
-                  "parameterOrder": [
-                    "resource"
-                  ],
-                  "parameters": {
-                    "resource": {
-                      "description": "Required. The resource name of the managed identity or namespace resource to remove an attestation rule from.",
-                      "location": "path",
-                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-                      "required": true,
-                      "type": "string"
-                    }
-                  },
-                  "path": "v1/{+resource}:removeAttestationRule",
-                  "request": {
-                    "$ref": "RemoveAttestationRuleRequest"
-                  },
-                  "response": {
-                    "$ref": "Operation"
-                  },
-                  "scopes": [
-                    "https://www.googleapis.com/auth/cloud-platform"
-                  ]
-                },
-                "setAttestationRules": {
-                  "description": "Set all AttestationRule on a WorkloadIdentityPoolManagedIdentity. A maximum of 50 AttestationRules can be set.",
-                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:setAttestationRules",
-                  "httpMethod": "POST",
-                  "id": "iam.projects.locations.workloadIdentityPools.setAttestationRules",
-                  "parameterOrder": [
-                    "resource"
-                  ],
-                  "parameters": {
-                    "resource": {
-                      "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
-                      "location": "path",
-                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
-                      "required": true,
-                      "type": "string"
-                    }
-                  },
-                  "path": "v1/{+resource}:setAttestationRules",
-                  "request": {
-                    "$ref": "SetAttestationRulesRequest"
                   },
                   "response": {
                     "$ref": "Operation"
@@ -2321,7 +2578,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Output only. The resource name of the managed identity.",
+                              "description": "Identifier. The resource name of the managed identity.",
                               "location": "path",
                               "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
                               "required": true,
@@ -2691,7 +2948,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Output only. The resource name of the provider.",
+                          "description": "Identifier. The resource name of the provider.",
                           "location": "path",
                           "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
                           "required": true,
@@ -3898,7 +4155,7 @@
       }
     }
   },
-  "revision": "20250619",
+  "revision": "20250919",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -4750,6 +5007,44 @@
           "items": {
             "$ref": "WorkforcePoolProviderKey"
           },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkforcePoolProviderScimTenantsResponse": {
+      "description": "Response message for ListWorkforcePoolProviderScimTenants.",
+      "id": "ListWorkforcePoolProviderScimTenantsResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "Optional. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workforcePoolProviderScimTenants": {
+          "description": "Output only. A list of scim tenants.",
+          "items": {
+            "$ref": "WorkforcePoolProviderScimTenant"
+          },
+          "readOnly": true,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListWorkforcePoolProviderScimTokensResponse": {
+      "description": "Response message for ListWorkforcePoolProviderScimTokens.",
+      "id": "ListWorkforcePoolProviderScimTokensResponse",
+      "properties": {
+        "nextPageToken": {
+          "description": "Optional. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "type": "string"
+        },
+        "workforcePoolProviderScimTokens": {
+          "description": "Output only. A list of scim tokens.",
+          "items": {
+            "$ref": "WorkforcePoolProviderScimToken"
+          },
+          "readOnly": true,
           "type": "array"
         }
       },
@@ -5872,6 +6167,18 @@
       "properties": {},
       "type": "object"
     },
+    "UndeleteWorkforcePoolProviderScimTenantRequest": {
+      "description": "Request message for UndeleteWorkforcePoolProviderScimTenant.",
+      "id": "UndeleteWorkforcePoolProviderScimTenantRequest",
+      "properties": {},
+      "type": "object"
+    },
+    "UndeleteWorkforcePoolProviderScimTokenRequest": {
+      "description": "Request message for UndeleteWorkforcePoolProviderScimToken.",
+      "id": "UndeleteWorkforcePoolProviderScimTokenRequest",
+      "properties": {},
+      "type": "object"
+    },
     "UndeleteWorkforcePoolRequest": {
       "description": "Request message for UndeleteWorkforcePool.",
       "id": "UndeleteWorkforcePoolRequest",
@@ -5935,7 +6242,7 @@
           "description": "Optional. Configure access restrictions on the workforce pool users. This is an optional field. If specified web sign-in can be restricted to given set of services or programmatic sign-in can be disabled for pool users."
         },
         "description": {
-          "description": "Optional. A user-specified description of the pool. Cannot exceed 256 characters.",
+          "description": "Optional. A description of the pool. Cannot exceed 256 characters.",
           "type": "string"
         },
         "disabled": {
@@ -5943,7 +6250,7 @@
           "type": "boolean"
         },
         "displayName": {
-          "description": "Optional. A user-specified display name of the pool in Google Cloud Console. Cannot exceed 32 characters.",
+          "description": "Optional. A display name for the pool. Cannot exceed 32 characters.",
           "type": "string"
         },
         "expireTime": {
@@ -5999,7 +6306,7 @@
           "type": "object"
         },
         "description": {
-          "description": "Optional. A user-specified description of the provider. Cannot exceed 256 characters.",
+          "description": "Optional. A description of the provider. Cannot exceed 256 characters.",
           "type": "string"
         },
         "detailedAuditLogging": {
@@ -6011,14 +6318,18 @@
           "type": "boolean"
         },
         "displayName": {
-          "description": "Optional. A user-specified display name for the provider. Cannot exceed 32 characters.",
+          "description": "Optional. A display name for the provider. Cannot exceed 32 characters.",
           "type": "string"
         },
         "expireTime": {
-          "description": "Output only. Time after which the workload pool provider will be permanently purged and cannot be recovered.",
+          "description": "Output only. Time after which the workforce identity pool provider will be permanently purged and cannot be recovered.",
           "format": "google-datetime",
           "readOnly": true,
           "type": "string"
+        },
+        "extendedAttributesOauth2Client": {
+          "$ref": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client",
+          "description": "Optional. The configuration for OAuth 2.0 client used to get the extended group memberships for user identities. Only the `AZURE_AD_GROUPS_ID` attribute type is supported. Extended groups supports a subset of Google Cloud services. When the user accesses these services, extended group memberships override the mapped `google.groups` attribute. Extended group memberships cannot be used in attribute mapping or attribute condition expressions. To keep extended group memberships up to date, extended groups are retrieved when the user signs in and at regular intervals during the user's active session. Each user identity in the workforce identity pool must map to a unique Microsoft Entra ID user."
         },
         "extraAttributesOauth2Client": {
           "$ref": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client",
@@ -6102,6 +6413,93 @@
       },
       "type": "object"
     },
+    "WorkforcePoolProviderScimTenant": {
+      "description": "Represents a scim tenant. Used for provisioning and managing identity data (such as Users and Groups) in cross-domain environments.",
+      "id": "WorkforcePoolProviderScimTenant",
+      "properties": {
+        "baseUri": {
+          "description": "Output only. Represents the base URI as defined in [RFC 7644, Section 1.3](https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must use this as the root address for managing resources under the tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/",
+          "readOnly": true,
+          "type": "string"
+        },
+        "claimMapping": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional. Maps BYOID claims to SCIM claims.",
+          "type": "object"
+        },
+        "description": {
+          "description": "Optional. The description of the scim tenant. Cannot exceed 256 characters.",
+          "type": "string"
+        },
+        "displayName": {
+          "description": "Optional. The display name of the scim tenant. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Identifier. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
+          "type": "string"
+        },
+        "purgeTime": {
+          "description": "Output only. The timestamp when the scim tenant is going to be purged.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the tenant.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The tenant is active and may be used to provision users and groups.",
+            "The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "WorkforcePoolProviderScimToken": {
+      "description": "Represents a token for the WorkforcePoolProviderScimTenant. Used for authenticating SCIM Provisioning requests.",
+      "id": "WorkforcePoolProviderScimToken",
+      "properties": {
+        "displayName": {
+          "description": "Optional. The display name of the scim token. Cannot exceed 32 characters.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Identifier. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+          "type": "string"
+        },
+        "securityToken": {
+          "description": "Output only. The token string. Provide this to the IdP for authentication. Will be set only during creation.",
+          "readOnly": true,
+          "type": "string"
+        },
+        "state": {
+          "description": "Output only. The state of the token.",
+          "enum": [
+            "STATE_UNSPECIFIED",
+            "ACTIVE",
+            "DELETED"
+          ],
+          "enumDescriptions": [
+            "State unspecified.",
+            "The tenant is active and may be used to provision users and groups.",
+            "The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
+          ],
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "WorkloadIdentityPool": {
       "description": "Represents a collection of workload identities. You can define IAM policies to grant these identities access to Google Cloud resources.",
       "id": "WorkloadIdentityPool",
@@ -6174,11 +6572,11 @@
       "id": "WorkloadIdentityPoolManagedIdentity",
       "properties": {
         "description": {
-          "description": "A description of the managed identity. Cannot exceed 256 characters.",
+          "description": "Optional. A description of the managed identity. Cannot exceed 256 characters.",
           "type": "string"
         },
         "disabled": {
-          "description": "Whether the managed identity is disabled. If disabled, credentials may no longer be issued for the identity, however existing credentials will still be accepted until they expire.",
+          "description": "Optional. Whether the managed identity is disabled. If disabled, credentials may no longer be issued for the identity, however existing credentials will still be accepted until they expire.",
           "type": "boolean"
         },
         "expireTime": {
@@ -6188,8 +6586,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Output only. The resource name of the managed identity.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the managed identity.",
           "type": "string"
         },
         "state": {
@@ -6215,11 +6612,11 @@
       "id": "WorkloadIdentityPoolNamespace",
       "properties": {
         "description": {
-          "description": "A description of the namespace. Cannot exceed 256 characters.",
+          "description": "Optional. A description of the namespace. Cannot exceed 256 characters.",
           "type": "string"
         },
         "disabled": {
-          "description": "Whether the namespace is disabled. If disabled, credentials may no longer be issued for identities within this namespace, however existing credentials will still be accepted until they expire.",
+          "description": "Optional. Whether the namespace is disabled. If disabled, credentials may no longer be issued for identities within this namespace, however existing credentials will still be accepted until they expire.",
           "type": "boolean"
         },
         "expireTime": {
@@ -6300,8 +6697,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Output only. The resource name of the provider.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the provider.",
           "type": "string"
         },
         "oidc": {

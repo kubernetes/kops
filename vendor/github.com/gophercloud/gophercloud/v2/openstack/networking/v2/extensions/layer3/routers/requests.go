@@ -8,6 +8,12 @@ import (
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
 
+// ListOptsBuilder allows extensions to add additional parameters to the List
+// request.
+type ListOptsBuilder interface {
+	ToRouterListQuery() (string, error)
+}
+
 // ListOpts allows the filtering and sorting of paginated collections through
 // the API. Filtering is achieved by passing in struct field values that map to
 // the floating IP attributes you want to see returned. SortKey allows you to
@@ -33,19 +39,31 @@ type ListOpts struct {
 	RevisionNumber *int   `q:"revision_number"`
 }
 
+// ToRouterListQuery formats a ListOpts into a query string.
+func (opts ListOpts) ToRouterListQuery() (string, error) {
+	q, err := gophercloud.BuildQueryString(&opts)
+	if err != nil {
+		return "", err
+	}
+	return q.String(), nil
+}
+
 // List returns a Pager which allows you to iterate over a collection of
 // routers. It accepts a ListOpts struct, which allows you to filter and sort
 // the returned collection for greater efficiency.
 //
 // Default policy settings return only those routers that are owned by the
 // tenant who submits the request, unless an admin user submits the request.
-func List(c *gophercloud.ServiceClient, opts ListOpts) pagination.Pager {
-	q, err := gophercloud.BuildQueryString(&opts)
-	if err != nil {
-		return pagination.Pager{Err: err}
+func List(c *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
+	url := rootURL(c)
+	if opts != nil {
+		query, err := opts.ToRouterListQuery()
+		if err != nil {
+			return pagination.Pager{Err: err}
+		}
+		url += query
 	}
-	u := rootURL(c) + q.String()
-	return pagination.NewPager(c, u, func(r pagination.PageResult) pagination.Page {
+	return pagination.NewPager(c, url, func(r pagination.PageResult) pagination.Page {
 		return RouterPage{pagination.LinkedPageBase{PageResult: r}}
 	})
 }

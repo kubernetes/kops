@@ -19,16 +19,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
-	"time"
 )
-
-func deserializeS3Expires(v string) (*time.Time, error) {
-	t, err := smithytime.ParseHTTPDate(v)
-	if err != nil {
-		return nil, nil
-	}
-	return &t, nil
-}
 
 type awsAwsjson11_deserializeOpActivateEventSource struct {
 }
@@ -9645,6 +9636,55 @@ func awsAwsjson11_deserializeDocumentLimitExceededException(v **types.LimitExcee
 	return nil
 }
 
+func awsAwsjson11_deserializeDocumentLogConfig(v **types.LogConfig, value interface{}) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	if value == nil {
+		return nil
+	}
+
+	shape, ok := value.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected JSON type %v", value)
+	}
+
+	var sv *types.LogConfig
+	if *v == nil {
+		sv = &types.LogConfig{}
+	} else {
+		sv = *v
+	}
+
+	for key, value := range shape {
+		switch key {
+		case "IncludeDetail":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected IncludeDetail to be of type string, got %T instead", value)
+				}
+				sv.IncludeDetail = types.IncludeDetail(jtv)
+			}
+
+		case "Level":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected Level to be of type string, got %T instead", value)
+				}
+				sv.Level = types.Level(jtv)
+			}
+
+		default:
+			_, _ = key, value
+
+		}
+	}
+	*v = sv
+	return nil
+}
+
 func awsAwsjson11_deserializeDocumentManagedRuleException(v **types.ManagedRuleException, value interface{}) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)
@@ -12573,6 +12613,11 @@ func awsAwsjson11_deserializeOpDocumentCreateEventBusOutput(v **CreateEventBusOu
 				sv.KmsKeyIdentifier = ptr.String(jtv)
 			}
 
+		case "LogConfig":
+			if err := awsAwsjson11_deserializeDocumentLogConfig(&sv.LogConfig, value); err != nil {
+				return err
+			}
+
 		default:
 			_, _ = key, value
 
@@ -13601,6 +13646,11 @@ func awsAwsjson11_deserializeOpDocumentDescribeEventBusOutput(v **DescribeEventB
 					return fmt.Errorf("expected Timestamp to be a JSON Number, got %T instead", value)
 
 				}
+			}
+
+		case "LogConfig":
+			if err := awsAwsjson11_deserializeDocumentLogConfig(&sv.LogConfig, value); err != nil {
+				return err
 			}
 
 		case "Name":
@@ -15461,6 +15511,11 @@ func awsAwsjson11_deserializeOpDocumentUpdateEventBusOutput(v **UpdateEventBusOu
 					return fmt.Errorf("expected KmsKeyIdentifier to be of type string, got %T instead", value)
 				}
 				sv.KmsKeyIdentifier = ptr.String(jtv)
+			}
+
+		case "LogConfig":
+			if err := awsAwsjson11_deserializeDocumentLogConfig(&sv.LogConfig, value); err != nil {
+				return err
 			}
 
 		case "Name":

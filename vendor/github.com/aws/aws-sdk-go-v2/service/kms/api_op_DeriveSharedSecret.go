@@ -182,30 +182,33 @@ type DeriveSharedSecretInput struct {
 	// [Using a grant token]: https://docs.aws.amazon.com/kms/latest/developerguide/using-grant-token.html
 	GrantTokens []string
 
-	// A signed [attestation document] from an Amazon Web Services Nitro enclave and the encryption
-	// algorithm to use with the enclave's public key. The only valid encryption
-	// algorithm is RSAES_OAEP_SHA_256 .
+	// A signed [attestation document] from an Amazon Web Services Nitro enclave or NitroTPM, and the
+	// encryption algorithm to use with the public key in the attestation document. The
+	// only valid encryption algorithm is RSAES_OAEP_SHA_256 .
 	//
 	// This parameter only supports attestation documents for Amazon Web Services
-	// Nitro Enclaves. To call DeriveSharedSecret for an Amazon Web Services Nitro
-	// Enclaves, use the [Amazon Web Services Nitro Enclaves SDK]to generate the attestation document and then use the
-	// Recipient parameter from any Amazon Web Services SDK to provide the attestation
-	// document for the enclave.
+	// Nitro Enclaves or Amazon Web Services NitroTPM. To call DeriveSharedSecret
+	// generate an attestation document use either [Amazon Web Services Nitro Enclaves SDK]for an Amazon Web Services Nitro
+	// Enclaves or [Amazon Web Services NitroTPM tools]for Amazon Web Services NitroTPM. Then use the Recipient parameter
+	// from any Amazon Web Services SDK to provide the attestation document for the
+	// attested environment.
 	//
 	// When you use this parameter, instead of returning a plaintext copy of the
 	// shared secret, KMS encrypts the plaintext shared secret under the public key in
 	// the attestation document, and returns the resulting ciphertext in the
 	// CiphertextForRecipient field in the response. This ciphertext can be decrypted
-	// only with the private key in the enclave. The CiphertextBlob field in the
-	// response contains the encrypted shared secret derived from the KMS key specified
-	// by the KeyId parameter and public key specified by the PublicKey parameter. The
-	// SharedSecret field in the response is null or empty.
+	// only with the private key in the attested environment. The CiphertextBlob field
+	// in the response contains the encrypted shared secret derived from the KMS key
+	// specified by the KeyId parameter and public key specified by the PublicKey
+	// parameter. The SharedSecret field in the response is null or empty.
 	//
 	// For information about the interaction between KMS and Amazon Web Services Nitro
-	// Enclaves, see [How Amazon Web Services Nitro Enclaves uses KMS]in the Key Management Service Developer Guide.
+	// Enclaves or Amazon Web Services NitroTPM, see [Cryptographic attestation support in KMS]in the Key Management Service
+	// Developer Guide.
 	//
+	// [Cryptographic attestation support in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/cryptographic-attestation.html
+	// [Amazon Web Services NitroTPM tools]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/attestation-get-doc.html
 	// [attestation document]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave-how.html#term-attestdoc
-	// [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
 	// [Amazon Web Services Nitro Enclaves SDK]: https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk
 	Recipient *types.RecipientInfo
 
@@ -214,15 +217,17 @@ type DeriveSharedSecretInput struct {
 
 type DeriveSharedSecretOutput struct {
 
-	// The plaintext shared secret encrypted with the public key in the attestation
-	// document.
+	// The plaintext shared secret encrypted with the public key from the attestation
+	// document. This ciphertext can be decrypted only by using a private key from the
+	// attested environment.
 	//
 	// This field is included in the response only when the Recipient parameter in the
 	// request includes a valid attestation document from an Amazon Web Services Nitro
-	// enclave. For information about the interaction between KMS and Amazon Web
-	// Services Nitro Enclaves, see [How Amazon Web Services Nitro Enclaves uses KMS]in the Key Management Service Developer Guide.
+	// enclave or NitroTPM. For information about the interaction between KMS and
+	// Amazon Web Services Nitro Enclaves or Amazon Web Services NitroTPM, see [Cryptographic attestation support in KMS]in the
+	// Key Management Service Developer Guide.
 	//
-	// [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
+	// [Cryptographic attestation support in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/cryptographic-attestation.html
 	CiphertextForRecipient []byte
 
 	// Identifies the key agreement algorithm used to derive the shared secret.
@@ -341,6 +346,36 @@ func (c *Client) addOperationDeriveSharedSecretMiddlewares(stack *middleware.Sta
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

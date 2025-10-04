@@ -12,7 +12,9 @@ import (
 // principal can be an IAM user, an IAM role, or the Amazon Web Services account
 // root user within the reported Organizations entity.
 //
-// This data type is a response element in the GetOrganizationsAccessReport operation.
+// This data type is a response element in the [GetOrganizationsAccessReport] operation.
+//
+// [GetOrganizationsAccessReport]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetOrganizationsAccessReport.html
 type AccessDetail struct {
 
 	// The name of the service in which access was attempted.
@@ -72,12 +74,15 @@ type AccessDetail struct {
 
 // Contains information about an Amazon Web Services access key.
 //
-// This data type is used as a response element in the CreateAccessKey and ListAccessKeys operations.
+// This data type is used as a response element in the [CreateAccessKey] and [ListAccessKeys] operations.
 //
-// The SecretAccessKey value is returned only in response to CreateAccessKey. You can get a
+// The SecretAccessKey value is returned only in response to [CreateAccessKey]. You can get a
 // secret access key only when you first create an access key; you cannot recover
 // the secret access key later. If you lose a secret access key, you must create a
 // new access key.
+//
+// [CreateAccessKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateAccessKey.html
+// [ListAccessKeys]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAccessKeys.html
 type AccessKey struct {
 
 	// The ID for this access key.
@@ -110,7 +115,9 @@ type AccessKey struct {
 // Contains information about the last time an Amazon Web Services access key was
 // used since IAM began tracking this information on April 22, 2015.
 //
-// This data type is used as a response element in the GetAccessKeyLastUsed operation.
+// This data type is used as a response element in the [GetAccessKeyLastUsed] operation.
+//
+// [GetAccessKeyLastUsed]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccessKeyLastUsed.html
 type AccessKeyLastUsed struct {
 
 	// The Amazon Web Services Region where this access key was most recently used.
@@ -163,7 +170,9 @@ type AccessKeyLastUsed struct {
 // Contains information about an Amazon Web Services access key, without its
 // secret key.
 //
-// This data type is used as a response element in the ListAccessKeys operation.
+// This data type is used as a response element in the [ListAccessKeys] operation.
+//
+// [ListAccessKeys]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAccessKeys.html
 type AccessKeyMetadata struct {
 
 	// The ID for this access key.
@@ -207,11 +216,15 @@ type AttachedPermissionsBoundary struct {
 // Contains information about an attached policy.
 //
 // An attached policy is a managed policy that has been attached to a user, group,
-// or role. This data type is used as a response element in the ListAttachedGroupPolicies, ListAttachedRolePolicies, ListAttachedUserPolicies, and GetAccountAuthorizationDetails
+// or role. This data type is used as a response element in the [ListAttachedGroupPolicies], [ListAttachedRolePolicies], [ListAttachedUserPolicies], and [GetAccountAuthorizationDetails]
 // operations.
 //
 // For more information about managed policies, refer to [Managed policies and inline policies] in the IAM User Guide.
 //
+// [ListAttachedUserPolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAttachedUserPolicies.html
+// [ListAttachedGroupPolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAttachedGroupPolicies.html
+// [ListAttachedRolePolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAttachedRolePolicies.html
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type AttachedPolicy struct {
 
@@ -235,7 +248,10 @@ type AttachedPolicy struct {
 // values) to use in the simulation. This information is used when evaluating the
 // Condition elements of the input policies.
 //
-// This data type is used as an input parameter to SimulateCustomPolicy and SimulatePrincipalPolicy.
+// This data type is used as an input parameter to [SimulateCustomPolicy] and [SimulatePrincipalPolicy].
+//
+// [SimulatePrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulatePrincipalPolicy.html
+// [SimulateCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulateCustomPolicy.html
 type ContextEntry struct {
 
 	// The full name of a condition context key, including the service prefix. For
@@ -256,7 +272,9 @@ type ContextEntry struct {
 
 // The reason that the service-linked role deletion failed.
 //
-// This data type is used as a response element in the GetServiceLinkedRoleDeletionStatus operation.
+// This data type is used as a response element in the [GetServiceLinkedRoleDeletionStatus] operation.
+//
+// [GetServiceLinkedRoleDeletionStatus]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLinkedRoleDeletionStatus.html
 type DeletionTaskFailureReasonType struct {
 
 	// A short description of the reason that the service-linked role deletion failed.
@@ -277,7 +295,9 @@ type DeletionTaskFailureReasonType struct {
 // were last used in an attempt to access the specified Amazon Web Services
 // service.
 //
-// This data type is a response element in the GetServiceLastAccessedDetailsWithEntities operation.
+// This data type is a response element in the [GetServiceLastAccessedDetailsWithEntities] operation.
+//
+// [GetServiceLastAccessedDetailsWithEntities]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetailsWithEntities.html
 type EntityDetails struct {
 
 	// The EntityInfo object that contains details about the entity (user or role).
@@ -301,7 +321,9 @@ type EntityDetails struct {
 
 // Contains details about the specified entity (user or role).
 //
-// This data type is an element of the EntityDetails object.
+// This data type is an element of the [EntityDetails] object.
+//
+// [EntityDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_EntityDetails.html
 type EntityInfo struct {
 
 	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
@@ -341,7 +363,11 @@ type EntityInfo struct {
 
 // Contains information about the reason that the operation failed.
 //
-// This data type is used as a response element in the GetOrganizationsAccessReport, GetServiceLastAccessedDetails, and GetServiceLastAccessedDetailsWithEntities operations.
+// This data type is used as a response element in the [GetOrganizationsAccessReport], [GetServiceLastAccessedDetails], and [GetServiceLastAccessedDetailsWithEntities] operations.
+//
+// [GetServiceLastAccessedDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetails.html
+// [GetOrganizationsAccessReport]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetOrganizationsAccessReport.html
+// [GetServiceLastAccessedDetailsWithEntities]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetailsWithEntities.html
 type ErrorDetails struct {
 
 	// The error code associated with the operation failure.
@@ -359,7 +385,10 @@ type ErrorDetails struct {
 
 // Contains the results of a simulation.
 //
-// This data type is used by the return parameter of SimulateCustomPolicy and SimulatePrincipalPolicy.
+// This data type is used by the return parameter of [SimulateCustomPolicy] and [SimulatePrincipalPolicy].
+//
+// [SimulatePrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulatePrincipalPolicy.html
+// [SimulateCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulateCustomPolicy.html
 type EvaluationResult struct {
 
 	// The name of the API operation tested on the indicated resource.
@@ -409,7 +438,10 @@ type EvaluationResult struct {
 	// the resource in a simulation is "*", either explicitly, or when the ResourceArns
 	// parameter blank. If you include a list of resources, then any missing context
 	// values are instead included under the ResourceSpecificResults section. To
-	// discover the context keys used by a set of policies, you can call GetContextKeysForCustomPolicyor GetContextKeysForPrincipalPolicy.
+	// discover the context keys used by a set of policies, you can call [GetContextKeysForCustomPolicy]or [GetContextKeysForPrincipalPolicy].
+	//
+	// [GetContextKeysForPrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForPrincipalPolicy.html
+	// [GetContextKeysForCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForCustomPolicy.html
 	MissingContextValues []string
 
 	// A structure that details how Organizations and its service control policies
@@ -432,11 +464,15 @@ type EvaluationResult struct {
 //
 // This data type is used as a response element in the following operations:
 //
-// # CreateGroup
+// [CreateGroup]
 //
-// # GetGroup
+// [GetGroup]
 //
-// ListGroups
+// [ListGroups]
+//
+// [GetGroup]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetGroup.html
+// [CreateGroup]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateGroup.html
+// [ListGroups]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListGroups.html
 type Group struct {
 
 	//  The Amazon Resource Name (ARN) specifying the group. For more information
@@ -480,7 +516,9 @@ type Group struct {
 
 // Contains information about an IAM group, including all of the group's policies.
 //
-// This data type is used as a response element in the GetAccountAuthorizationDetails operation.
+// This data type is used as a response element in the [GetAccountAuthorizationDetails] operation.
+//
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 type GroupDetail struct {
 
 	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
@@ -525,13 +563,18 @@ type GroupDetail struct {
 //
 // This data type is used as a response element in the following operations:
 //
-// # CreateInstanceProfile
+// [CreateInstanceProfile]
 //
-// # GetInstanceProfile
+// [GetInstanceProfile]
 //
-// # ListInstanceProfiles
+// [ListInstanceProfiles]
 //
-// ListInstanceProfilesForRole
+// [ListInstanceProfilesForRole]
+//
+// [ListInstanceProfilesForRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfilesForRole.html
+// [GetInstanceProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetInstanceProfile.html
+// [CreateInstanceProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateInstanceProfile.html
+// [ListInstanceProfiles]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListInstanceProfiles.html
 type InstanceProfile struct {
 
 	//  The Amazon Resource Name (ARN) specifying the instance profile. For more
@@ -586,7 +629,9 @@ type InstanceProfile struct {
 // Contains details about the permissions policies that are attached to the
 // specified identity (user, group, or role).
 //
-// This data type is used as a response element in the ListPoliciesGrantingServiceAccess operation.
+// This data type is used as a response element in the [ListPoliciesGrantingServiceAccess] operation.
+//
+// [ListPoliciesGrantingServiceAccess]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPoliciesGrantingServiceAccess.html
 type ListPoliciesGrantingServiceAccessEntry struct {
 
 	// The PoliciesGrantingServiceAccess object that contains details about the policy.
@@ -609,7 +654,10 @@ type ListPoliciesGrantingServiceAccessEntry struct {
 
 // Contains the user name and password create date for a user.
 //
-// This data type is used as a response element in the CreateLoginProfile and GetLoginProfile operations.
+// This data type is used as a response element in the [CreateLoginProfile] and [GetLoginProfile] operations.
+//
+// [GetLoginProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetLoginProfile.html
+// [CreateLoginProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateLoginProfile.html
 type LoginProfile struct {
 
 	// The date when the password for the user was created.
@@ -633,10 +681,11 @@ type LoginProfile struct {
 // versions, and the number of principal entities (users, groups, and roles) that
 // the policy is attached to.
 //
-// This data type is used as a response element in the GetAccountAuthorizationDetails operation.
+// This data type is used as a response element in the [GetAccountAuthorizationDetails] operation.
 //
 // For more information about managed policies, see [Managed policies and inline policies] in the IAM User Guide.
 //
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type ManagedPolicyDetail struct {
 
@@ -714,7 +763,9 @@ type ManagedPolicyDetail struct {
 
 // Contains information about an MFA device.
 //
-// This data type is used as a response element in the ListMFADevices operation.
+// This data type is used as a response element in the [ListMFADevices] operation.
+//
+// [ListMFADevices]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListMFADevices.html
 type MFADevice struct {
 
 	// The date when the MFA device was enabled for the user.
@@ -764,7 +815,9 @@ type OrganizationsDecisionDetail struct {
 
 // Contains information about the account password policy.
 //
-// This data type is used as a response element in the GetAccountPasswordPolicy operation.
+// This data type is used as a response element in the [GetAccountPasswordPolicy] operation.
+//
+// [GetAccountPasswordPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountPasswordPolicy.html
 type PasswordPolicy struct {
 
 	// Specifies whether IAM users are allowed to change their own password. Gives IAM
@@ -836,10 +889,13 @@ type PermissionsBoundaryDecisionDetail struct {
 
 // Contains information about a managed policy.
 //
-// This data type is used as a response element in the CreatePolicy, GetPolicy, and ListPolicies operations.
+// This data type is used as a response element in the [CreatePolicy], [GetPolicy], and [ListPolicies] operations.
 //
 // For more information about managed policies, refer to [Managed policies and inline policies] in the IAM User Guide.
 //
+// [CreatePolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicy.html
+// [ListPolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPolicies.html
+// [GetPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type Policy struct {
 
@@ -866,8 +922,11 @@ type Policy struct {
 
 	// A friendly description of the policy.
 	//
-	// This element is included in the response to the GetPolicy operation. It is not included
-	// in the response to the ListPoliciesoperation.
+	// This element is included in the response to the [GetPolicy] operation. It is not included
+	// in the response to the [ListPolicies]operation.
+	//
+	// [ListPolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPolicies.html
+	// [GetPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicy.html
 	Description *string
 
 	// Specifies whether the policy can be attached to an IAM user, group, or role.
@@ -918,7 +977,9 @@ type Policy struct {
 
 // Contains information about an IAM policy, including the policy document.
 //
-// This data type is used as a response element in the GetAccountAuthorizationDetails operation.
+// This data type is used as a response element in the [GetAccountAuthorizationDetails] operation.
+//
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 type PolicyDetail struct {
 
 	// The policy document.
@@ -933,7 +994,9 @@ type PolicyDetail struct {
 // Contains details about the permissions policies that are attached to the
 // specified identity (user, group, or role).
 //
-// This data type is an element of the ListPoliciesGrantingServiceAccessEntry object.
+// This data type is an element of the [ListPoliciesGrantingServiceAccessEntry] object.
+//
+// [ListPoliciesGrantingServiceAccessEntry]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPoliciesGrantingServiceAccessEntry.html
 type PolicyGrantingServiceAccess struct {
 
 	// The policy name.
@@ -980,10 +1043,11 @@ type PolicyGrantingServiceAccess struct {
 
 // Contains information about a group that a managed policy is attached to.
 //
-// This data type is used as a response element in the ListEntitiesForPolicy operation.
+// This data type is used as a response element in the [ListEntitiesForPolicy] operation.
 //
 // For more information about managed policies, refer to [Managed policies and inline policies] in the IAM User Guide.
 //
+// [ListEntitiesForPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListEntitiesForPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type PolicyGroup struct {
 
@@ -1001,10 +1065,11 @@ type PolicyGroup struct {
 
 // Contains information about a role that a managed policy is attached to.
 //
-// This data type is used as a response element in the ListEntitiesForPolicy operation.
+// This data type is used as a response element in the [ListEntitiesForPolicy] operation.
 //
 // For more information about managed policies, refer to [Managed policies and inline policies] in the IAM User Guide.
 //
+// [ListEntitiesForPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListEntitiesForPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type PolicyRole struct {
 
@@ -1022,10 +1087,11 @@ type PolicyRole struct {
 
 // Contains information about a user that a managed policy is attached to.
 //
-// This data type is used as a response element in the ListEntitiesForPolicy operation.
+// This data type is used as a response element in the [ListEntitiesForPolicy] operation.
 //
 // For more information about managed policies, refer to [Managed policies and inline policies] in the IAM User Guide.
 //
+// [ListEntitiesForPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListEntitiesForPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type PolicyUser struct {
 
@@ -1043,10 +1109,14 @@ type PolicyUser struct {
 
 // Contains information about a version of a managed policy.
 //
-// This data type is used as a response element in the CreatePolicyVersion, GetPolicyVersion, ListPolicyVersions, and GetAccountAuthorizationDetails operations.
+// This data type is used as a response element in the [CreatePolicyVersion], [GetPolicyVersion], [ListPolicyVersions], and [GetAccountAuthorizationDetails] operations.
 //
 // For more information about managed policies, refer to [Managed policies and inline policies] in the IAM User Guide.
 //
+// [CreatePolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicyVersion.html
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
+// [GetPolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html
+// [ListPolicyVersions]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPolicyVersions.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 type PolicyVersion struct {
 
@@ -1057,8 +1127,8 @@ type PolicyVersion struct {
 
 	// The policy document.
 	//
-	// The policy document is returned in the response to the GetPolicyVersion and GetAccountAuthorizationDetails operations. It is
-	// not returned in the response to the CreatePolicyVersionor ListPolicyVersions operations.
+	// The policy document is returned in the response to the [GetPolicyVersion] and [GetAccountAuthorizationDetails] operations. It is
+	// not returned in the response to the [CreatePolicyVersion]or [ListPolicyVersions] operations.
 	//
 	// The policy document returned in this structure is URL-encoded compliant with [RFC 3986].
 	// You can use a URL decoding method to convert the policy back to plain JSON text.
@@ -1066,7 +1136,11 @@ type PolicyVersion struct {
 	// java.net.URLDecoder utility class in the Java SDK. Other languages and SDKs
 	// provide similar functionality.
 	//
+	// [CreatePolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicyVersion.html
 	// [RFC 3986]: https://tools.ietf.org/html/rfc3986
+	// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
+	// [GetPolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html
+	// [ListPolicyVersions]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPolicyVersions.html
 	Document *string
 
 	// Specifies whether the policy version is set as the policy's default version.
@@ -1084,7 +1158,9 @@ type PolicyVersion struct {
 // Contains the row and column of a location of a Statement element in a policy
 // document.
 //
-// This data type is used as a member of the Statement type.
+// This data type is used as a member of the [Statement] type.
+//
+// [Statement]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_Statement.html
 type Position struct {
 
 	// The column in the line containing the specified position in the document.
@@ -1099,7 +1175,9 @@ type Position struct {
 // Contains the result of the simulation of a single API operation call on a
 // single resource.
 //
-// This data type is used by a member of the EvaluationResult data type.
+// This data type is used by a member of the [EvaluationResult] data type.
+//
+// [EvaluationResult]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_EvaluationResult.html
 type ResourceSpecificResult struct {
 
 	// The result of the simulation of the simulated API operation on the resource
@@ -1132,7 +1210,10 @@ type ResourceSpecificResult struct {
 	// do not specify individual resources, by setting ResourceArns to "*" or by not
 	// including the ResourceArns parameter, then any missing context values are
 	// instead included under the EvaluationResults section. To discover the context
-	// keys used by a set of policies, you can call GetContextKeysForCustomPolicyor GetContextKeysForPrincipalPolicy.
+	// keys used by a set of policies, you can call [GetContextKeysForCustomPolicy]or [GetContextKeysForPrincipalPolicy].
+	//
+	// [GetContextKeysForPrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForPrincipalPolicy.html
+	// [GetContextKeysForCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForCustomPolicy.html
 	MissingContextValues []string
 
 	// Contains information about the effect that a permissions boundary has on a
@@ -1221,7 +1302,9 @@ type Role struct {
 
 // Contains information about an IAM role, including all of the role's policies.
 //
-// This data type is used as a response element in the GetAccountAuthorizationDetails operation.
+// This data type is used as a response element in the [GetAccountAuthorizationDetails] operation.
+//
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 type RoleDetail struct {
 
 	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web
@@ -1300,8 +1383,10 @@ type RoleDetail struct {
 // might have been used more than 400 days ago. For more information, see [Regions where data is tracked]in the
 // IAM user Guide.
 //
-// This data type is returned as a response element in the GetRole and GetAccountAuthorizationDetails operations.
+// This data type is returned as a response element in the [GetRole] and [GetAccountAuthorizationDetails] operations.
 //
+// [GetRole]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetRole.html
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 // [Regions where data is tracked]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period
 type RoleLastUsed struct {
 
@@ -1324,7 +1409,9 @@ type RoleLastUsed struct {
 // An object that contains details about how a service-linked role is used, if
 // that information is returned by the service.
 //
-// This data type is used as a response element in the GetServiceLinkedRoleDeletionStatus operation.
+// This data type is used as a response element in the [GetServiceLinkedRoleDeletionStatus] operation.
+//
+// [GetServiceLinkedRoleDeletionStatus]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLinkedRoleDeletionStatus.html
 type RoleUsageType struct {
 
 	// The name of the Region where the service-linked role is being used.
@@ -1338,7 +1425,9 @@ type RoleUsageType struct {
 
 // Contains the private keys for the SAML provider.
 //
-// This data type is used as a response element in the GetSAMLProvider operation.
+// This data type is used as a response element in the [GetSAMLProvider] operation.
+//
+// [GetSAMLProvider]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetSAMLProvider.html
 type SAMLPrivateKey struct {
 
 	// The unique identifier for the SAML private key.
@@ -1369,7 +1458,9 @@ type SAMLProviderListEntry struct {
 
 // Contains information about a server certificate.
 //
-// This data type is used as a response element in the GetServerCertificate operation.
+// This data type is used as a response element in the [GetServerCertificate] operation.
+//
+// [GetServerCertificate]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServerCertificate.html
 type ServerCertificate struct {
 
 	// The contents of the public key certificate.
@@ -1398,7 +1489,10 @@ type ServerCertificate struct {
 // Contains information about a server certificate without its certificate body,
 // certificate chain, and private key.
 //
-// This data type is used as a response element in the UploadServerCertificate and ListServerCertificates operations.
+// This data type is used as a response element in the [UploadServerCertificate] and [ListServerCertificates] operations.
+//
+// [ListServerCertificates]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListServerCertificates.html
+// [UploadServerCertificate]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_UploadServerCertificate.html
 type ServerCertificateMetadata struct {
 
 	//  The Amazon Resource Name (ARN) specifying the server certificate. For more
@@ -1442,7 +1536,9 @@ type ServerCertificateMetadata struct {
 
 // Contains details about the most recent attempt to access the service.
 //
-// This data type is used as a response element in the GetServiceLastAccessedDetails operation.
+// This data type is used as a response element in the [GetServiceLastAccessedDetails] operation.
+//
+// [GetServiceLastAccessedDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetails.html
 type ServiceLastAccessed struct {
 
 	// The name of the service in which access was attempted.
@@ -1509,9 +1605,10 @@ type ServiceLastAccessed struct {
 	// This field is null if there no tracked actions or if the principal did not use
 	// the tracked actions within the [tracking period]. This field is also null if the report was
 	// generated at the service level and not the action level. For more information,
-	// see the Granularity field in GenerateServiceLastAccessedDetails.
+	// see the Granularity field in [GenerateServiceLastAccessedDetails].
 	//
 	// [tracking period]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period
+	// [GenerateServiceLastAccessedDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GenerateServiceLastAccessedDetails.html
 	TrackedActionsLastAccessed []TrackedActionLastAccessed
 
 	noSmithyDocumentSerde
@@ -1532,23 +1629,10 @@ type ServiceSpecificCredential struct {
 	// This member is required.
 	ServiceName *string
 
-	// The generated password for the service-specific credential.
-	//
-	// This member is required.
-	ServicePassword *string
-
 	// The unique identifier for the service-specific credential.
 	//
 	// This member is required.
 	ServiceSpecificCredentialId *string
-
-	// The generated user name for the service-specific credential. This value is
-	// generated by combining the IAM user's name combined with the ID number of the
-	// Amazon Web Services account, as in jane-at-123456789012 , for example. This
-	// value cannot be configured by the user.
-	//
-	// This member is required.
-	ServiceUserName *string
 
 	// The status of the service-specific credential. Active means that the key is
 	// valid for API calls, while Inactive means it is not.
@@ -1560,6 +1644,29 @@ type ServiceSpecificCredential struct {
 	//
 	// This member is required.
 	UserName *string
+
+	// The date and time when the service specific credential expires. This field is
+	// only present for Bedrock API keys that were created with an expiration period.
+	ExpirationDate *time.Time
+
+	// For Bedrock API keys, this is the public portion of the credential that
+	// includes the IAM user name and a suffix containing version and creation
+	// information.
+	ServiceCredentialAlias *string
+
+	// For Bedrock API keys, this is the secret portion of the credential that should
+	// be used to authenticate API calls. This value is returned only when the
+	// credential is created.
+	ServiceCredentialSecret *string
+
+	// The generated password for the service-specific credential.
+	ServicePassword *string
+
+	// The generated user name for the service-specific credential. This value is
+	// generated by combining the IAM user's name combined with the ID number of the
+	// Amazon Web Services account, as in jane-at-123456789012 , for example. This
+	// value cannot be configured by the user.
+	ServiceUserName *string
 
 	noSmithyDocumentSerde
 }
@@ -1584,11 +1691,6 @@ type ServiceSpecificCredentialMetadata struct {
 	// This member is required.
 	ServiceSpecificCredentialId *string
 
-	// The generated user name for the service-specific credential.
-	//
-	// This member is required.
-	ServiceUserName *string
-
 	// The status of the service-specific credential. Active means that the key is
 	// valid for API calls, while Inactive means it is not.
 	//
@@ -1600,12 +1702,27 @@ type ServiceSpecificCredentialMetadata struct {
 	// This member is required.
 	UserName *string
 
+	// The date and time when the service specific credential expires. This field is
+	// only present for Bedrock API keys that were created with an expiration period.
+	ExpirationDate *time.Time
+
+	// For Bedrock API keys, this is the public portion of the credential that
+	// includes the IAM user name and a suffix containing version and creation
+	// information.
+	ServiceCredentialAlias *string
+
+	// The generated user name for the service-specific credential.
+	ServiceUserName *string
+
 	noSmithyDocumentSerde
 }
 
 // Contains information about an X.509 signing certificate.
 //
-// This data type is used as a response element in the UploadSigningCertificate and ListSigningCertificates operations.
+// This data type is used as a response element in the [UploadSigningCertificate] and [ListSigningCertificates] operations.
+//
+// [ListSigningCertificates]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListSigningCertificates.html
+// [UploadSigningCertificate]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_UploadSigningCertificate.html
 type SigningCertificate struct {
 
 	// The contents of the signing certificate.
@@ -1637,7 +1754,10 @@ type SigningCertificate struct {
 
 // Contains information about an SSH public key.
 //
-// This data type is used as a response element in the GetSSHPublicKey and UploadSSHPublicKey operations.
+// This data type is used as a response element in the [GetSSHPublicKey] and [UploadSSHPublicKey] operations.
+//
+// [UploadSSHPublicKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_UploadSSHPublicKey.html
+// [GetSSHPublicKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetSSHPublicKey.html
 type SSHPublicKey struct {
 
 	// The MD5 message digest of the SSH public key.
@@ -1678,7 +1798,9 @@ type SSHPublicKey struct {
 // Contains information about an SSH public key, without the key's body or
 // fingerprint.
 //
-// This data type is used as a response element in the ListSSHPublicKeys operation.
+// This data type is used as a response element in the [ListSSHPublicKeys] operation.
+//
+// [ListSSHPublicKeys]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListSSHPublicKeys.html
 type SSHPublicKeyMetadata struct {
 
 	// The unique identifier for the SSH public key.
@@ -1711,7 +1833,9 @@ type SSHPublicKeyMetadata struct {
 // Contains a reference to a Statement element in a policy document that
 // determines the result of the simulation.
 //
-// This data type is used by the MatchedStatements member of the EvaluationResult type.
+// This data type is used by the MatchedStatements member of the [EvaluationResult] type.
+//
+// [EvaluationResult]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_EvaluationResult.html
 type Statement struct {
 
 	// The row and column of the end of a Statement in an IAM policy.
@@ -1747,10 +1871,6 @@ type Tag struct {
 	// number associated with the different cost centers in your company. Typically,
 	// many resources have tags with the same key name but with different values.
 	//
-	// Amazon Web Services always interprets the tag Value as a single string. If you
-	// need to store an array, you can store comma-separated values in the string.
-	// However, you must interpret the value in your code.
-	//
 	// This member is required.
 	Value *string
 
@@ -1760,7 +1880,9 @@ type Tag struct {
 // Contains details about the most recent attempt to access an action within the
 // service.
 //
-// This data type is used as a response element in the GetServiceLastAccessedDetails operation.
+// This data type is used as a response element in the [GetServiceLastAccessedDetails] operation.
+//
+// [GetServiceLastAccessedDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetails.html
 type TrackedActionLastAccessed struct {
 
 	// The name of the tracked action to which access was attempted. Tracked actions
@@ -1804,11 +1926,15 @@ type TrackedActionLastAccessed struct {
 //
 // This data type is used as a response element in the following operations:
 //
-// # CreateUser
+// [CreateUser]
 //
-// # GetUser
+// [GetUser]
 //
-// ListUsers
+// [ListUsers]
+//
+// [ListUsers]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListUsers.html
+// [CreateUser]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateUser.html
+// [GetUser]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetUser.html
 type User struct {
 
 	// The Amazon Resource Name (ARN) that identifies the user. For more information
@@ -1865,10 +1991,12 @@ type User struct {
 	// user does not currently have a password but had one in the past, then this field
 	// contains the date and time the most recent password was used.
 	//
-	// This value is returned only in the GetUser and ListUsers operations.
+	// This value is returned only in the [GetUser] and [ListUsers] operations.
 	//
 	// [Credential reports]: https://docs.aws.amazon.com/IAM/latest/UserGuide/credential-reports.html
+	// [ListUsers]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListUsers.html
 	// [ISO 8601 date-time format]: http://www.iso.org/iso/iso8601
+	// [GetUser]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetUser.html
 	PasswordLastUsed *time.Time
 
 	// For more information about permissions boundaries, see [Permissions boundaries for IAM identities] in the IAM User Guide.
@@ -1888,7 +2016,9 @@ type User struct {
 // Contains information about an IAM user, including all the user's policies and
 // all the IAM groups the user is in.
 //
-// This data type is used as a response element in the GetAccountAuthorizationDetails operation.
+// This data type is used as a response element in the [GetAccountAuthorizationDetails] operation.
+//
+// [GetAccountAuthorizationDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccountAuthorizationDetails.html
 type UserDetail struct {
 
 	// The Amazon Resource Name (ARN). ARNs are unique identifiers for Amazon Web

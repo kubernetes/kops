@@ -62,7 +62,9 @@ type CreateAccessKeyInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful CreateAccessKey request.
+// Contains the response to a successful [CreateAccessKey] request.
+//
+// [CreateAccessKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateAccessKey.html
 type CreateAccessKeyOutput struct {
 
 	// A structure with details about the access key.
@@ -159,6 +161,36 @@ func (c *Client) addOperationCreateAccessKeyMiddlewares(stack *middleware.Stack,
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

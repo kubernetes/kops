@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/errors"
@@ -50,7 +49,7 @@ func (s *API) WaitForDNSZone(
 	}
 
 	dnsZone, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			listReq := &ListDNSZonesRequest{
 				DNSZones: req.DNSZones,
 			}
@@ -108,7 +107,7 @@ func (s *API) WaitForDNSRecordExist(
 	}
 
 	dns, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			// listing dns zone records and take the first one
 			DNSRecords, err := s.ListDNSZoneRecords(&ListDNSZoneRecordsRequest{
 				Name:    req.RecordName,
@@ -171,7 +170,7 @@ func (s *RegistrarAPI) WaitForOrderDomain(
 	var lastStatus DomainStatus
 
 	domain, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			resp, err := s.GetDomain(&RegistrarAPIGetDomainRequest{
 				Domain: req.Domain,
 			}, opts...)
@@ -190,7 +189,7 @@ func (s *RegistrarAPI) WaitForOrderDomain(
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("waiting for domain %s failed, last known status: %s", req.Domain, lastStatus))
+		return nil, errors.Wrap(err, "waiting for domain %s failed, last known status: %s", req.Domain, lastStatus)
 	}
 
 	return domain.(*Domain), nil
@@ -225,7 +224,7 @@ func (s *RegistrarAPI) WaitForAutoRenewStatus(req *WaitForAutoRenewStatusRequest
 	var lastStatus DomainFeatureStatus
 
 	domainResult, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			resp, err := s.GetDomain(&RegistrarAPIGetDomainRequest{
 				Domain: req.Domain,
 			}, opts...)
@@ -243,7 +242,7 @@ func (s *RegistrarAPI) WaitForAutoRenewStatus(req *WaitForAutoRenewStatusRequest
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("waiting for auto_renew to reach a terminal state for domain %s failed, last known status: %s", req.Domain, lastStatus))
+		return nil, errors.Wrap(err, "waiting for auto_renew to reach a terminal state for domain %s failed, last known status: %s", req.Domain, lastStatus)
 	}
 	return domainResult.(*Domain), nil
 }
@@ -277,7 +276,7 @@ func (s *RegistrarAPI) WaitForDNSSECStatus(req *WaitForDNSSECStatusRequest, opts
 	var lastStatus DomainFeatureStatus
 
 	domainResult, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			// Retrieve the domain.
 			resp, err := s.GetDomain(&RegistrarAPIGetDomainRequest{
 				Domain: req.Domain,
@@ -297,7 +296,7 @@ func (s *RegistrarAPI) WaitForDNSSECStatus(req *WaitForDNSSECStatusRequest, opts
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("waiting for dnssec to reach a terminal state for domain %s failed, last known status: %s", req.Domain, lastStatus))
+		return nil, errors.Wrap(err, "waiting for dnssec to reach a terminal state for domain %s failed, last known status: %s", req.Domain, lastStatus)
 	}
 	return domainResult.(*Domain), nil
 }

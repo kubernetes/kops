@@ -81,11 +81,12 @@ func LoadFromOrNew(directoryPath string, region string, ttl time.Duration, ec2Cl
 		itCache = cache.New(0, 0)
 	}
 	return &Provider{
-		Region:        region,
-		DirectoryPath: expandedDirPath,
-		ec2Client:     ec2Client,
-		cache:         itCache,
-		logger:        log.New(io.Discard, "", 0),
+		Region:         region,
+		DirectoryPath:  expandedDirPath,
+		ec2Client:      ec2Client,
+		cache:          itCache,
+		FullRefreshTTL: ttl,
+		logger:         log.New(io.Discard, "", 0),
 	}, nil
 }
 

@@ -5,6 +5,7 @@ type ServerType struct {
 	ID           int64   `json:"id"`
 	Name         string  `json:"name"`
 	Description  string  `json:"description"`
+	Category     string  `json:"category"`
 	Cores        int     `json:"cores"`
 	Memory       float32 `json:"memory"`
 	Disk         int     `json:"disk"`
@@ -16,7 +17,20 @@ type ServerType struct {
 	// Use [ServerType.Prices] instead to get the included traffic for each location.
 	IncludedTraffic int64                    `json:"included_traffic"`
 	Prices          []PricingServerTypePrice `json:"prices"`
-	Deprecated      bool                     `json:"deprecated"`
+
+	// Deprecated: [ServerType.Deprecated] is deprecated and will gradually be phased out starting 2025-09-24.
+	// To learn about deprecations affecting individual locations you can use [ServerType.Locations] instead.
+	Deprecated bool `json:"deprecated"`
+	// Deprecated: [ServerType.DeprecatableResource] is deprecated and will gradually be phased out starting 2025-09-24.
+	// To learn about deprecations affecting individual locations you can use [ServerType.Locations] instead.
+	DeprecatableResource
+
+	Locations []ServerTypeLocation `json:"locations"`
+}
+
+type ServerTypeLocation struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
 	DeprecatableResource
 }
 

@@ -1679,7 +1679,7 @@ type Policy struct {
 	// this resource for the user's convenience. Has no effect on the policy's
 	// function.
 	Description string `json:"description,omitempty"`
-	// Dns64Config: Configurations related to DNS64 for this Policy.
+	// Dns64Config: Configurations related to DNS64 for this policy.
 	Dns64Config *PolicyDns64Config `json:"dns64Config,omitempty"`
 	// EnableInboundForwarding: Allows networks bound to this policy to receive DNS
 	// queries sent by VMs or applications over VPN connections. When enabled, a
@@ -1804,7 +1804,8 @@ func (s PolicyDns64Config) MarshalJSON() ([]byte, error) {
 }
 
 type PolicyDns64ConfigScope struct {
-	// AllQueries: Controls whether DNS64 is enabled globally at the network level.
+	// AllQueries: Controls whether DNS64 is enabled globally for all networks
+	// bound to the policy.
 	AllQueries bool   `json:"allQueries,omitempty"`
 	Kind       string `json:"kind,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "AllQueries") to
@@ -4727,7 +4728,7 @@ type PoliciesCreateCall struct {
 	header_    http.Header
 }
 
-// Create: Creates a new Policy.
+// Create: Creates a new policy.
 //
 // - project: Identifies the project addressed by this request.
 func (r *PoliciesService) Create(project string, policy *Policy) *PoliciesCreateCall {
@@ -4838,7 +4839,7 @@ type PoliciesDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a previously created Policy. Fails if the policy is still
+// Delete: Deletes a previously created policy. Fails if the policy is still
 // being referenced by a network.
 //
 // - policy: User given friendly name of the policy addressed by this request.
@@ -4925,7 +4926,7 @@ type PoliciesGetCall struct {
 	header_      http.Header
 }
 
-// Get: Fetches the representation of an existing Policy.
+// Get: Fetches the representation of an existing policy.
 //
 // - policy: User given friendly name of the policy addressed by this request.
 // - project: Identifies the project addressed by this request.
@@ -5045,7 +5046,7 @@ type PoliciesListCall struct {
 	header_      http.Header
 }
 
-// List: Enumerates all Policies associated with a project.
+// List: Enumerates all policies associated with a project.
 //
 // - project: Identifies the project addressed by this request.
 func (r *PoliciesService) List(project string) *PoliciesListCall {
@@ -5193,7 +5194,7 @@ type PoliciesPatchCall struct {
 	header_    http.Header
 }
 
-// Patch: Applies a partial update to an existing Policy.
+// Patch: Applies a partial update to an existing policy.
 //
 // - policy: User given friendly name of the policy addressed by this request.
 // - project: Identifies the project addressed by this request.
@@ -5309,7 +5310,7 @@ type PoliciesUpdateCall struct {
 	header_    http.Header
 }
 
-// Update: Updates an existing Policy.
+// Update: Updates an existing policy.
 //
 // - policy: User given friendly name of the policy addressed by this request.
 // - project: Identifies the project addressed by this request.
@@ -5931,7 +5932,8 @@ func (c *ResourceRecordSetsListCall) MaxResults(maxResults int64) *ResourceRecor
 }
 
 // Name sets the optional parameter "name": Restricts the list to return only
-// records with this fully qualified domain name.
+// records with this fully qualified domain name. Mutually exclusive with the
+// {@code filter} field.
 func (c *ResourceRecordSetsListCall) Name(name string) *ResourceRecordSetsListCall {
 	c.urlParams_.Set("name", name)
 	return c
@@ -5947,6 +5949,7 @@ func (c *ResourceRecordSetsListCall) PageToken(pageToken string) *ResourceRecord
 
 // Type sets the optional parameter "type": Restricts the list to return only
 // records of this type. If present, the "name" parameter must also be present.
+// Mutually exclusive with the {@code filter} field.
 func (c *ResourceRecordSetsListCall) Type(type_ string) *ResourceRecordSetsListCall {
 	c.urlParams_.Set("type", type_)
 	return c

@@ -145,6 +145,9 @@ func (c *Config) String() string {
 	c2 := c.clone()
 	c2.SecretKey = hideSecretKey(c2.SecretKey)
 	for _, p := range c2.Profiles {
+		if p == nil {
+			continue
+		}
 		p.SecretKey = hideSecretKey(p.SecretKey)
 	}
 

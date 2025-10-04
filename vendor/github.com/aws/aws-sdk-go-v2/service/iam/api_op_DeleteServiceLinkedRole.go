@@ -18,7 +18,7 @@ import (
 // not complete, then the DeletionTaskId of the earlier request is returned.
 //
 // If you submit a deletion request for a service-linked role whose linked service
-// is still accessing a resource, then the deletion task fails. If it fails, the GetServiceLinkedRoleDeletionStatus
+// is still accessing a resource, then the deletion task fails. If it fails, the [GetServiceLinkedRoleDeletionStatus]
 // operation returns the reason for the failure, usually including the resources
 // that must be deleted. To delete the service-linked role, you must first remove
 // those resources from the linked service and then submit the deletion request
@@ -30,6 +30,7 @@ import (
 //
 // [Roles terms and concepts: Amazon Web Services service-linked role]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html#iam-term-service-linked-role
 // [Amazon Web Services documentation]: http://docs.aws.amazon.com/
+// [GetServiceLinkedRoleDeletionStatus]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLinkedRoleDeletionStatus.html
 func (c *Client) DeleteServiceLinkedRole(ctx context.Context, params *DeleteServiceLinkedRoleInput, optFns ...func(*Options)) (*DeleteServiceLinkedRoleOutput, error) {
 	if params == nil {
 		params = &DeleteServiceLinkedRoleInput{}
@@ -155,6 +156,36 @@ func (c *Client) addOperationDeleteServiceLinkedRoleMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

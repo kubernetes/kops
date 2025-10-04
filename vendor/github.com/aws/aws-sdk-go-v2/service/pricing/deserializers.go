@@ -1649,7 +1649,7 @@ func awsAwsjson11_deserializeOpDocumentDescribeServicesOutput(v **DescribeServic
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+					return fmt.Errorf("expected FormatVersion to be of type string, got %T instead", value)
 				}
 				sv.FormatVersion = ptr.String(jtv)
 			}
@@ -1788,7 +1788,7 @@ func awsAwsjson11_deserializeOpDocumentGetProductsOutput(v **GetProductsOutput, 
 			if value != nil {
 				jtv, ok := value.(string)
 				if !ok {
-					return fmt.Errorf("expected String to be of type string, got %T instead", value)
+					return fmt.Errorf("expected FormatVersion to be of type string, got %T instead", value)
 				}
 				sv.FormatVersion = ptr.String(jtv)
 			}

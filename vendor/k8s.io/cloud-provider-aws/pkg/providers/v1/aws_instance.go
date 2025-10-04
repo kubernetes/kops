@@ -17,10 +17,12 @@ limitations under the License.
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"k8s.io/apimachinery/pkg/types"
+	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/cloud-provider-aws/pkg/providers/v1/iface"
 )
 
@@ -47,25 +49,25 @@ type awsInstance struct {
 }
 
 // newAWSInstance creates a new awsInstance object
-func newAWSInstance(ec2Service iface.EC2, instance *ec2.Instance) *awsInstance {
+func newAWSInstance(ec2Service iface.EC2, instance *ec2types.Instance) *awsInstance {
 	az := ""
 	if instance.Placement != nil {
-		az = aws.StringValue(instance.Placement.AvailabilityZone)
+		az = aws.ToString(instance.Placement.AvailabilityZone)
 	}
 	self := &awsInstance{
 		ec2:              ec2Service,
-		awsID:            aws.StringValue(instance.InstanceId),
+		awsID:            aws.ToString(instance.InstanceId),
 		nodeName:         mapInstanceToNodeName(instance),
 		availabilityZone: az,
-		instanceType:     aws.StringValue(instance.InstanceType),
-		vpcID:            aws.StringValue(instance.VpcId),
-		subnetID:         aws.StringValue(instance.SubnetId),
+		instanceType:     string(instance.InstanceType),
+		vpcID:            aws.ToString(instance.VpcId),
+		subnetID:         aws.ToString(instance.SubnetId),
 	}
 
 	return self
 }
 
 // Gets the full information about this instance from the EC2 API
-func (i *awsInstance) describeInstance() (*ec2.Instance, error) {
-	return describeInstance(i.ec2, InstanceID(i.awsID))
+func (i *awsInstance) describeInstance(ctx context.Context) (*ec2types.Instance, error) {
+	return describeInstance(ctx, i.ec2, InstanceID(i.awsID))
 }

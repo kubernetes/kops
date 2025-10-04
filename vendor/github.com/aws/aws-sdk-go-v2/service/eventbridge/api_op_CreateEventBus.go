@@ -94,6 +94,13 @@ type CreateEventBusInput struct {
 	// [CreateDiscoverer]: https://docs.aws.amazon.com/eventbridge/latest/schema-reference/v1-discoverers.html#CreateDiscoverer
 	KmsKeyIdentifier *string
 
+	// The logging configuration settings for the event bus.
+	//
+	// For more information, see [Configuring logs for event buses] in the EventBridge User Guide.
+	//
+	// [Configuring logs for event buses]: https://docs.aws.amazon.com/eb-event-bus-logs.html
+	LogConfig *types.LogConfig
+
 	// Tags to associate with the event bus.
 	Tags []types.Tag
 
@@ -123,6 +130,13 @@ type CreateEventBusOutput struct {
 	//
 	// [Data encryption in EventBridge]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-encryption.html
 	KmsKeyIdentifier *string
+
+	// The logging configuration settings for the event bus.
+	//
+	// For more information, see [Configuring logs for event buses] in the EventBridge User Guide.
+	//
+	// [Configuring logs for event buses]: https://docs.aws.amazon.com/eb-event-bus-logs.html
+	LogConfig *types.LogConfig
 
 	// Metadata pertaining to the operation's result.
 	ResultMetadata middleware.Metadata
@@ -216,6 +230,36 @@ func (c *Client) addOperationCreateEventBusMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

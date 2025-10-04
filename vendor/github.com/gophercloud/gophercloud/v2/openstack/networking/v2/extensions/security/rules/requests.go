@@ -7,41 +7,60 @@ import (
 	"github.com/gophercloud/gophercloud/v2/pagination"
 )
 
+// ListOptsBuilder allows extensions to add additional parameters to the List
+// request.
+type ListOptsBuilder interface {
+	ToSecGroupListQuery() (string, error)
+}
+
 // ListOpts allows the filtering and sorting of paginated collections through
 // the API. Filtering is achieved by passing in struct field values that map to
 // the security group rule attributes you want to see returned. SortKey allows
 // you to sort by a particular network attribute. SortDir sets the direction,
 // and is either `asc' or `desc'. Marker and Limit are used for pagination.
 type ListOpts struct {
-	Direction      string `q:"direction"`
-	EtherType      string `q:"ethertype"`
-	ID             string `q:"id"`
-	Description    string `q:"description"`
-	PortRangeMax   int    `q:"port_range_max"`
-	PortRangeMin   int    `q:"port_range_min"`
-	Protocol       string `q:"protocol"`
-	RemoteGroupID  string `q:"remote_group_id"`
-	RemoteIPPrefix string `q:"remote_ip_prefix"`
-	SecGroupID     string `q:"security_group_id"`
-	TenantID       string `q:"tenant_id"`
-	ProjectID      string `q:"project_id"`
-	Limit          int    `q:"limit"`
-	Marker         string `q:"marker"`
-	SortKey        string `q:"sort_key"`
-	SortDir        string `q:"sort_dir"`
-	RevisionNumber *int   `q:"revision_number"`
+	Direction            string `q:"direction"`
+	EtherType            string `q:"ethertype"`
+	ID                   string `q:"id"`
+	Description          string `q:"description"`
+	PortRangeMax         int    `q:"port_range_max"`
+	PortRangeMin         int    `q:"port_range_min"`
+	Protocol             string `q:"protocol"`
+	RemoteAddressGroupID string `q:"remote_address_group_id"`
+	RemoteGroupID        string `q:"remote_group_id"`
+	RemoteIPPrefix       string `q:"remote_ip_prefix"`
+	SecGroupID           string `q:"security_group_id"`
+	TenantID             string `q:"tenant_id"`
+	ProjectID            string `q:"project_id"`
+	Limit                int    `q:"limit"`
+	Marker               string `q:"marker"`
+	SortKey              string `q:"sort_key"`
+	SortDir              string `q:"sort_dir"`
+	RevisionNumber       *int   `q:"revision_number"`
+}
+
+// ToSecGroupListQuery formats a ListOpts into a query string.
+func (opts ListOpts) ToSecGroupListQuery() (string, error) {
+	q, err := gophercloud.BuildQueryString(&opts)
+	if err != nil {
+		return "", err
+	}
+	return q.String(), nil
 }
 
 // List returns a Pager which allows you to iterate over a collection of
 // security group rules. It accepts a ListOpts struct, which allows you to filter
 // and sort the returned collection for greater efficiency.
-func List(c *gophercloud.ServiceClient, opts ListOpts) pagination.Pager {
-	q, err := gophercloud.BuildQueryString(&opts)
-	if err != nil {
-		return pagination.Pager{Err: err}
+func List(c *gophercloud.ServiceClient, opts ListOptsBuilder) pagination.Pager {
+	url := rootURL(c)
+	if opts != nil {
+		query, err := opts.ToSecGroupListQuery()
+		if err != nil {
+			return pagination.Pager{Err: err}
+		}
+		url += query
 	}
-	u := rootURL(c) + q.String()
-	return pagination.NewPager(c, u, func(r pagination.PageResult) pagination.Page {
+	return pagination.NewPager(c, url, func(r pagination.PageResult) pagination.Page {
 		return SecGroupRulePage{pagination.LinkedPageBase{PageResult: r}}
 	})
 }
@@ -106,7 +125,7 @@ type CreateOpts struct {
 
 	// The maximum port number in the range that is matched by the security group
 	// rule. The PortRangeMin attribute constrains the PortRangeMax attribute. If
-	// the protocol is ICMP, this value must be an ICMP type.
+	// the protocol is ICMP, this value must be an ICMP code.
 	PortRangeMax int `json:"port_range_max,omitempty"`
 
 	// The minimum port number in the range that is matched by the security group
@@ -119,12 +138,16 @@ type CreateOpts struct {
 	// "tcp", "udp", "icmp" or an empty string.
 	Protocol RuleProtocol `json:"protocol,omitempty"`
 
+	// The remote address group ID to be associated with this security group rule.
+	// You can specify either RemoteAddressGroupID, RemoteGroupID, or RemoteIPPrefix
+	RemoteAddressGroupID string `json:"remote_address_group_id,omitempty"`
+
 	// The remote group ID to be associated with this security group rule. You can
-	// specify either RemoteGroupID or RemoteIPPrefix.
+	// specify either RemoteAddressGroupID,RemoteGroupID or RemoteIPPrefix.
 	RemoteGroupID string `json:"remote_group_id,omitempty"`
 
 	// The remote IP prefix to be associated with this security group rule. You can
-	// specify either RemoteGroupID or RemoteIPPrefix. This attribute matches the
+	// specify either RemoteAddressGroupID,RemoteGroupID or RemoteIPPrefix. This attribute matches the
 	// specified IP prefix as the source IP address of the IP packet.
 	RemoteIPPrefix string `json:"remote_ip_prefix,omitempty"`
 

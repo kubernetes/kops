@@ -15,25 +15,35 @@ import (
 // attached to the user manually, or the deletion fails. For more information, see [Deleting an IAM user]
 // . Before attempting to delete a user, remove the following items:
 //
-//   - Password (DeleteLoginProfile )
+//   - Password ([DeleteLoginProfile] )
 //
-//   - Access keys (DeleteAccessKey )
+//   - Access keys ([DeleteAccessKey] )
 //
-//   - Signing certificate (DeleteSigningCertificate )
+//   - Signing certificate ([DeleteSigningCertificate] )
 //
-//   - SSH public key (DeleteSSHPublicKey )
+//   - SSH public key ([DeleteSSHPublicKey] )
 //
-//   - Git credentials (DeleteServiceSpecificCredential )
+//   - Git credentials ([DeleteServiceSpecificCredential] )
 //
-//   - Multi-factor authentication (MFA) device (DeactivateMFADevice , DeleteVirtualMFADevice)
+//   - Multi-factor authentication (MFA) device ([DeactivateMFADevice] , [DeleteVirtualMFADevice])
 //
-//   - Inline policies (DeleteUserPolicy )
+//   - Inline policies ([DeleteUserPolicy] )
 //
-//   - Attached managed policies (DetachUserPolicy )
+//   - Attached managed policies ([DetachUserPolicy] )
 //
-//   - Group memberships (RemoveUserFromGroup )
+//   - Group memberships ([RemoveUserFromGroup] )
 //
+// [DetachUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DetachUserPolicy.html
+// [DeleteAccessKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteAccessKey.html
+// [DeleteVirtualMFADevice]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteVirtualMFADevice.html
 // [Deleting an IAM user]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_manage.html#id_users_deleting_cli
+// [DeleteUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteUserPolicy.html
+// [RemoveUserFromGroup]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_RemoveUserFromGroup.html
+// [DeleteLoginProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteLoginProfile.html
+// [DeleteServiceSpecificCredential]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteServiceSpecificCredential.html
+// [DeleteSigningCertificate]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteSigningCertificate.html
+// [DeleteSSHPublicKey]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeleteSSHPublicKey.html
+// [DeactivateMFADevice]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeactivateMFADevice.html
 func (c *Client) DeleteUser(ctx context.Context, params *DeleteUserInput, optFns ...func(*Options)) (*DeleteUserOutput, error) {
 	if params == nil {
 		params = &DeleteUserInput{}
@@ -158,6 +168,36 @@ func (c *Client) addOperationDeleteUserMiddlewares(stack *middleware.Stack, opti
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

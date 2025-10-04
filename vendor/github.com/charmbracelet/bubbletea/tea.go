@@ -16,6 +16,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
@@ -23,8 +24,10 @@ import (
 
 	"github.com/charmbracelet/x/term"
 	"github.com/muesli/cancelreader"
-	"golang.org/x/sync/errgroup"
 )
+
+// ErrProgramPanic is returned by [Program.Run] when the program recovers from a panic.
+var ErrProgramPanic = errors.New("program experienced a panic")
 
 // ErrProgramKilled is returned by [Program.Run] when the program gets killed.
 var ErrProgramKilled = errors.New("program was killed")
@@ -69,7 +72,7 @@ const (
 	customInput
 )
 
-// String implements the stringer interface for [inputType]. It is inteded to
+// String implements the stringer interface for [inputType]. It is intended to
 // be used in testing.
 func (i inputType) String() string {
 	return [...]string{
@@ -146,6 +149,12 @@ type Program struct {
 
 	inputType inputType
 
+	// externalCtx is a context that was passed in via WithContext, otherwise defaulting
+	// to ctx.Background() (in case it was not), the internal context is derived from it.
+	externalCtx context.Context
+
+	// ctx is the programs's internal context for signalling internal teardown.
+	// It is built and derived from the externalCtx in NewProgram().
 	ctx    context.Context
 	cancel context.CancelFunc
 
@@ -183,6 +192,9 @@ type Program struct {
 	// fps is the frames per second we should set on the renderer, if
 	// applicable,
 	fps int
+
+	// mouseMode is true if the program should enable mouse mode on Windows.
+	mouseMode bool
 }
 
 // Quit is a special command that tells the Bubble Tea program to exit.
@@ -207,7 +219,7 @@ func Suspend() Msg {
 // You can send this message with [Suspend()].
 type SuspendMsg struct{}
 
-// ResumeMsg can be listen to to do something once a program is resumed back
+// ResumeMsg can be listen to do something once a program is resumed back
 // from a suspend state.
 type ResumeMsg struct{}
 
@@ -239,11 +251,11 @@ func NewProgram(model Model, opts ...ProgramOption) *Program {
 
 	// A context can be provided with a ProgramOption, but if none was provided
 	// we'll use the default background context.
-	if p.ctx == nil {
-		p.ctx = context.Background()
+	if p.externalCtx == nil {
+		p.externalCtx = context.Background()
 	}
 	// Initialize context and teardown channel.
-	p.ctx, p.cancel = context.WithCancel(p.ctx)
+	p.ctx, p.cancel = context.WithCancel(p.externalCtx)
 
 	// if no output was set, set it to stdout
 	if p.output == nil {
@@ -342,7 +354,11 @@ func (p *Program) handleCommands(cmds chan Cmd) chan struct{} {
 				go func() {
 					// Recover from panics.
 					if !p.startupOptions.has(withoutCatchPanics) {
-						defer p.recoverFromPanic()
+						defer func() {
+							if r := recover(); r != nil {
+								p.recoverFromGoPanic(r)
+							}
+						}()
 					}
 
 					msg := cmd() // this can be long.
@@ -413,8 +429,24 @@ func (p *Program) eventLoop(model Model, cmds chan Cmd) (Model, error) {
 				// mouse mode (1006) is a no-op if the terminal doesn't support it.
 				p.renderer.enableMouseSGRMode()
 
+				// XXX: This is used to enable mouse mode on Windows. We need
+				// to reinitialize the cancel reader to get the mouse events to
+				// work.
+				if runtime.GOOS == "windows" && !p.mouseMode {
+					p.mouseMode = true
+					p.initCancelReader(true) //nolint:errcheck,gosec
+				}
+
 			case disableMouseMsg:
 				p.disableMouse()
+
+				// XXX: On Windows, mouse mode is enabled on the input reader
+				// level. We need to instruct the input reader to stop reading
+				// mouse events.
+				if runtime.GOOS == "windows" && p.mouseMode {
+					p.mouseMode = false
+					p.initCancelReader(true) //nolint:errcheck,gosec
+				}
 
 			case showCursorMsg:
 				p.renderer.showCursor()
@@ -439,38 +471,12 @@ func (p *Program) eventLoop(model Model, cmds chan Cmd) (Model, error) {
 				p.exec(msg.cmd, msg.fn)
 
 			case BatchMsg:
-				for _, cmd := range msg {
-					cmds <- cmd
-				}
+				go p.execBatchMsg(msg)
 				continue
 
 			case sequenceMsg:
-				go func() {
-					// Execute commands one at a time, in order.
-					for _, cmd := range msg {
-						if cmd == nil {
-							continue
-						}
-
-						msg := cmd()
-						if batchMsg, ok := msg.(BatchMsg); ok {
-							g, _ := errgroup.WithContext(p.ctx)
-							for _, cmd := range batchMsg {
-								cmd := cmd
-								g.Go(func() error {
-									p.Send(cmd())
-									return nil
-								})
-							}
-
-							//nolint:errcheck
-							g.Wait() // wait for all commands from batch msg to finish
-							continue
-						}
-
-						p.Send(msg)
-					}
-				}()
+				go p.execSequenceMsg(msg)
+				continue
 
 			case setWindowTitleMsg:
 				p.SetWindowTitle(string(msg))
@@ -486,20 +492,98 @@ func (p *Program) eventLoop(model Model, cmds chan Cmd) (Model, error) {
 
 			var cmd Cmd
 			model, cmd = model.Update(msg) // run update
-			cmds <- cmd                    // process command (if any)
+
+			select {
+			case <-p.ctx.Done():
+				return model, nil
+			case cmds <- cmd: // process command (if any)
+			}
+
 			p.renderer.write(model.View()) // send view to renderer
 		}
 	}
 }
 
+func (p *Program) execSequenceMsg(msg sequenceMsg) {
+	if !p.startupOptions.has(withoutCatchPanics) {
+		defer func() {
+			if r := recover(); r != nil {
+				p.recoverFromGoPanic(r)
+			}
+		}()
+	}
+
+	// Execute commands one at a time, in order.
+	for _, cmd := range msg {
+		if cmd == nil {
+			continue
+		}
+		msg := cmd()
+		switch msg := msg.(type) {
+		case BatchMsg:
+			p.execBatchMsg(msg)
+		case sequenceMsg:
+			p.execSequenceMsg(msg)
+		default:
+			p.Send(msg)
+		}
+	}
+}
+
+func (p *Program) execBatchMsg(msg BatchMsg) {
+	if !p.startupOptions.has(withoutCatchPanics) {
+		defer func() {
+			if r := recover(); r != nil {
+				p.recoverFromGoPanic(r)
+			}
+		}()
+	}
+
+	// Execute commands one at a time.
+	var wg sync.WaitGroup
+	for _, cmd := range msg {
+		if cmd == nil {
+			continue
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if !p.startupOptions.has(withoutCatchPanics) {
+				defer func() {
+					if r := recover(); r != nil {
+						p.recoverFromGoPanic(r)
+					}
+				}()
+			}
+
+			msg := cmd()
+			switch msg := msg.(type) {
+			case BatchMsg:
+				p.execBatchMsg(msg)
+			case sequenceMsg:
+				p.execSequenceMsg(msg)
+			default:
+				p.Send(msg)
+			}
+		}()
+	}
+
+	wg.Wait() // wait for all commands from batch msg to finish
+}
+
 // Run initializes the program and runs its event loops, blocking until it gets
 // terminated by either [Program.Quit], [Program.Kill], or its signal handler.
 // Returns the final model.
-func (p *Program) Run() (Model, error) {
+func (p *Program) Run() (returnModel Model, returnErr error) {
 	p.handlers = channelHandlers{}
 	cmds := make(chan Cmd)
-	p.errs = make(chan error)
-	p.finished = make(chan struct{}, 1)
+	p.errs = make(chan error, 1)
+
+	p.finished = make(chan struct{})
+	defer func() {
+		close(p.finished)
+	}()
 
 	defer p.cancel()
 
@@ -548,7 +632,12 @@ func (p *Program) Run() (Model, error) {
 
 	// Recover from panics.
 	if !p.startupOptions.has(withoutCatchPanics) {
-		defer p.recoverFromPanic()
+		defer func() {
+			if r := recover(); r != nil {
+				returnErr = fmt.Errorf("%w: %w", ErrProgramKilled, ErrProgramPanic)
+				p.recoverFromPanic(r)
+			}
+		}()
 	}
 
 	// If no renderer is set use the standard one.
@@ -579,6 +668,11 @@ func (p *Program) Run() (Model, error) {
 		p.renderer.enableMouseAllMotion()
 		p.renderer.enableMouseSGRMode()
 	}
+
+	// XXX: Should we enable mouse mode on Windows?
+	// This needs to happen before initializing the cancel and input reader.
+	p.mouseMode = p.startupOptions&withMouseCellMotion != 0 || p.startupOptions&withMouseAllMotion != 0
+
 	if p.startupOptions&withReportFocus != 0 {
 		p.renderer.enableReportFocus()
 	}
@@ -607,7 +701,7 @@ func (p *Program) Run() (Model, error) {
 
 	// Subscribe to user input.
 	if p.input != nil {
-		if err := p.initCancelReader(); err != nil {
+		if err := p.initCancelReader(false); err != nil {
 			return model, err
 		}
 	}
@@ -620,11 +714,27 @@ func (p *Program) Run() (Model, error) {
 
 	// Run event loop, handle updates and draw.
 	model, err := p.eventLoop(model, cmds)
-	killed := p.ctx.Err() != nil || err != nil
-	if killed && err == nil {
-		err = fmt.Errorf("%w: %s", ErrProgramKilled, p.ctx.Err())
+
+	if err == nil && len(p.errs) > 0 {
+		err = <-p.errs // Drain a leftover error in case eventLoop crashed
 	}
-	if err == nil {
+
+	killed := p.externalCtx.Err() != nil || p.ctx.Err() != nil || err != nil
+	if killed {
+		if err == nil && p.externalCtx.Err() != nil {
+			// Return also as context error the cancellation of an external context.
+			// This is the context the user knows about and should be able to act on.
+			err = fmt.Errorf("%w: %w", ErrProgramKilled, p.externalCtx.Err())
+		} else if err == nil && p.ctx.Err() != nil {
+			// Return only that the program was killed (not the internal mechanism).
+			// The user does not know or need to care about the internal program context.
+			err = ErrProgramKilled
+		} else {
+			// Return that the program was killed and also the error that caused it.
+			err = fmt.Errorf("%w: %w", ErrProgramKilled, err)
+		}
+	} else {
+		// Graceful shutdown of the program (not killed):
 		// Ensure we rendered the final state of the model.
 		p.renderer.write(model.View())
 	}
@@ -679,11 +789,11 @@ func (p *Program) Quit() {
 	p.Send(Quit())
 }
 
-// Kill stops the program immediately and restores the former terminal state.
+// Kill signals the program to stop immediately and restore the former terminal state.
 // The final render that you would normally see when quitting will be skipped.
 // [program.Run] returns a [ErrProgramKilled] error.
 func (p *Program) Kill() {
-	p.shutdown(true)
+	p.cancel()
 }
 
 // Wait waits/blocks until the underlying Program finished shutting down.
@@ -692,7 +802,11 @@ func (p *Program) Wait() {
 }
 
 // shutdown performs operations to free up resources and restore the terminal
-// to its original state.
+// to its original state. It is called once at the end of the program's lifetime.
+//
+// This method should not be called to signal the program to be killed/shutdown.
+// Doing so can lead to race conditions with the eventual call at the program's end.
+// As alternatives, the [Quit] or [Kill] convenience methods should be used instead.
 func (p *Program) shutdown(kill bool) {
 	p.cancel()
 
@@ -719,19 +833,30 @@ func (p *Program) shutdown(kill bool) {
 	}
 
 	_ = p.restoreTerminalState()
-	if !kill {
-		p.finished <- struct{}{}
-	}
 }
 
 // recoverFromPanic recovers from a panic, prints the stack trace, and restores
 // the terminal to a usable state.
-func (p *Program) recoverFromPanic() {
-	if r := recover(); r != nil {
-		p.shutdown(true)
-		fmt.Printf("Caught panic:\n\n%s\n\nRestoring terminal...\n\n", r)
-		debug.PrintStack()
+func (p *Program) recoverFromPanic(r interface{}) {
+	select {
+	case p.errs <- ErrProgramPanic:
+	default:
 	}
+	p.shutdown(true) // Ok to call here, p.Run() cannot do it anymore.
+	fmt.Printf("Caught panic:\n\n%s\n\nRestoring terminal...\n\n", r)
+	debug.PrintStack()
+}
+
+// recoverFromGoPanic recovers from a goroutine panic, prints a stack trace and
+// signals for the program to be killed and terminal restored to a usable state.
+func (p *Program) recoverFromGoPanic(r interface{}) {
+	select {
+	case p.errs <- ErrProgramPanic:
+	default:
+	}
+	p.cancel()
+	fmt.Printf("Caught goroutine panic:\n\n%s\n\nRestoring terminal...\n\n", r)
+	debug.PrintStack()
 }
 
 // ReleaseTerminal restores the original terminal state and cancels the input
@@ -763,7 +888,7 @@ func (p *Program) RestoreTerminal() error {
 	if err := p.initTerminal(); err != nil {
 		return err
 	}
-	if err := p.initCancelReader(); err != nil {
+	if err := p.initCancelReader(false); err != nil {
 		return err
 	}
 	if p.altScreenWasActive {

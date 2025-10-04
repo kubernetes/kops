@@ -9,6 +9,9 @@ import (
 
 // Pricing specifies pricing information for various resources.
 type Pricing struct {
+	Currency string
+	VATRate  string
+
 	Image ImagePricing
 	// Deprecated: [Pricing.FloatingIP] is deprecated, use [Pricing.FloatingIPs] instead.
 	FloatingIP  FloatingIPPricing

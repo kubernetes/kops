@@ -335,8 +335,44 @@ func (r *resolver) ResolveEndpoint(
 		return endpoint, fmt.Errorf("endpoint parameters are not valid, %w", err)
 	}
 	_UseDualStack := *params.UseDualStack
+	_ = _UseDualStack
 	_UseFIPS := *params.UseFIPS
+	_ = _UseFIPS
 
+	if !(params.Endpoint != nil) {
+		if exprVal := params.Region; exprVal != nil {
+			_Region := *exprVal
+			_ = _Region
+			if exprVal := awsrulesfn.GetPartition(_Region); exprVal != nil {
+				_PartitionResult := *exprVal
+				_ = _PartitionResult
+				if _PartitionResult.Name == "aws-us-gov" {
+					if _UseFIPS == true {
+						if _UseDualStack == true {
+							uriString := func() string {
+								var out strings.Builder
+								out.WriteString("https://events.")
+								out.WriteString(_Region)
+								out.WriteString(".")
+								out.WriteString(_PartitionResult.DualStackDnsSuffix)
+								return out.String()
+							}()
+
+							uri, err := url.Parse(uriString)
+							if err != nil {
+								return endpoint, fmt.Errorf("Failed to parse uri: %s", uriString)
+							}
+
+							return smithyendpoints.Endpoint{
+								URI:     *uri,
+								Headers: http.Header{},
+							}, nil
+						}
+					}
+				}
+			}
+		}
+	}
 	if exprVal := params.EndpointId; exprVal != nil {
 		_EndpointId := *exprVal
 		_ = _EndpointId

@@ -100,14 +100,19 @@ var (
 	}
 
 	blockBorder = Border{
-		Top:         "█",
-		Bottom:      "█",
-		Left:        "█",
-		Right:       "█",
-		TopLeft:     "█",
-		TopRight:    "█",
-		BottomLeft:  "█",
-		BottomRight: "█",
+		Top:          "█",
+		Bottom:       "█",
+		Left:         "█",
+		Right:        "█",
+		TopLeft:      "█",
+		TopRight:     "█",
+		BottomLeft:   "█",
+		BottomRight:  "█",
+		MiddleLeft:   "█",
+		MiddleRight:  "█",
+		Middle:       "█",
+		MiddleTop:    "█",
+		MiddleBottom: "█",
 	}
 
 	outerHalfBlockBorder = Border{
@@ -179,6 +184,38 @@ var (
 		MiddleTop:    " ",
 		MiddleBottom: " ",
 	}
+
+	markdownBorder = Border{
+		Top:          "-",
+		Bottom:       "-",
+		Left:         "|",
+		Right:        "|",
+		TopLeft:      "|",
+		TopRight:     "|",
+		BottomLeft:   "|",
+		BottomRight:  "|",
+		MiddleLeft:   "|",
+		MiddleRight:  "|",
+		Middle:       "|",
+		MiddleTop:    "|",
+		MiddleBottom: "|",
+	}
+
+	asciiBorder = Border{
+		Top:          "-",
+		Bottom:       "-",
+		Left:         "|",
+		Right:        "|",
+		TopLeft:      "+",
+		TopRight:     "+",
+		BottomLeft:   "+",
+		BottomRight:  "+",
+		MiddleLeft:   "+",
+		MiddleRight:  "+",
+		Middle:       "+",
+		MiddleTop:    "+",
+		MiddleBottom: "+",
+	}
 )
 
 // NormalBorder returns a standard-type border with a normal weight and 90
@@ -226,13 +263,23 @@ func HiddenBorder() Border {
 	return hiddenBorder
 }
 
+// MarkdownBorder return a table border in markdown style.
+//
+// Make sure to disable top and bottom border for the best result. This will
+// ensure that the output is valid markdown.
+//
+//	table.New().Border(lipgloss.MarkdownBorder()).BorderTop(false).BorderBottom(false)
+func MarkdownBorder() Border {
+	return markdownBorder
+}
+
+// ASCIIBorder returns a table border with ASCII characters.
+func ASCIIBorder() Border {
+	return asciiBorder
+}
+
 func (s Style) applyBorder(str string) string {
 	var (
-		topSet    = s.isSet(borderTopKey)
-		rightSet  = s.isSet(borderRightKey)
-		bottomSet = s.isSet(borderBottomKey)
-		leftSet   = s.isSet(borderLeftKey)
-
 		border    = s.getBorderStyle()
 		hasTop    = s.getAsBool(borderTopKey, false)
 		hasRight  = s.getAsBool(borderRightKey, false)
@@ -252,7 +299,7 @@ func (s Style) applyBorder(str string) string {
 
 	// If a border is set and no sides have been specifically turned on or off
 	// render borders on all sides.
-	if border != noBorder && !(topSet || rightSet || bottomSet || leftSet) {
+	if s.implicitBorders() {
 		hasTop = true
 		hasRight = true
 		hasBottom = true

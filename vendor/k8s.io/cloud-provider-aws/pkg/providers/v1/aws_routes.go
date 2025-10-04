@@ -20,22 +20,23 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 
 	cloudprovider "k8s.io/cloud-provider"
 )
 
-func (c *Cloud) findRouteTable(clusterName string) (*ec2.RouteTable, error) {
+func (c *Cloud) findRouteTable(ctx context.Context, clusterName string) (*ec2types.RouteTable, error) {
 	// This should be unnecessary (we already filter on TagNameKubernetesCluster,
 	// and something is broken if cluster name doesn't match, but anyway...
 	// TODO: All clouds should be cluster-aware by default
-	var tables []*ec2.RouteTable
+	var tables []ec2types.RouteTable
 
 	if c.cfg.Global.RouteTableID != "" {
-		request := &ec2.DescribeRouteTablesInput{Filters: []*ec2.Filter{newEc2Filter("route-table-id", c.cfg.Global.RouteTableID)}}
-		response, err := c.ec2.DescribeRouteTables(request)
+		request := &ec2.DescribeRouteTablesInput{Filters: []ec2types.Filter{newEc2Filter("route-table-id", c.cfg.Global.RouteTableID)}}
+		response, err := c.ec2.DescribeRouteTables(ctx, request)
 		if err != nil {
 			return nil, err
 		}
@@ -43,7 +44,7 @@ func (c *Cloud) findRouteTable(clusterName string) (*ec2.RouteTable, error) {
 		tables = response
 	} else {
 		request := &ec2.DescribeRouteTablesInput{}
-		response, err := c.ec2.DescribeRouteTables(request)
+		response, err := c.ec2.DescribeRouteTables(ctx, request)
 		if err != nil {
 			return nil, err
 		}
@@ -62,37 +63,37 @@ func (c *Cloud) findRouteTable(clusterName string) (*ec2.RouteTable, error) {
 	if len(tables) != 1 {
 		return nil, fmt.Errorf("found multiple matching AWS route tables for AWS cluster: %s", clusterName)
 	}
-	return tables[0], nil
+	return &tables[0], nil
 }
 
 // ListRoutes implements Routes.ListRoutes
 // List all routes that match the filter
 func (c *Cloud) ListRoutes(ctx context.Context, clusterName string) ([]*cloudprovider.Route, error) {
-	table, err := c.findRouteTable(clusterName)
+	table, err := c.findRouteTable(ctx, clusterName)
 	if err != nil {
 		return nil, err
 	}
 
 	var routes []*cloudprovider.Route
-	var instanceIDs []*string
+	var instanceIDs []string
 
 	for _, r := range table.Routes {
-		instanceID := aws.StringValue(r.InstanceId)
+		instanceID := aws.ToString(r.InstanceId)
 
 		if instanceID == "" {
 			continue
 		}
 
-		instanceIDs = append(instanceIDs, &instanceID)
+		instanceIDs = append(instanceIDs, instanceID)
 	}
 
-	instances, err := c.getInstancesByIDs(instanceIDs)
+	instances, err := c.getInstancesByIDs(ctx, instanceIDs)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, r := range table.Routes {
-		destinationCIDR := aws.StringValue(r.DestinationCidrBlock)
+		destinationCIDR := aws.ToString(r.DestinationCidrBlock)
 		if destinationCIDR == "" {
 			continue
 		}
@@ -103,14 +104,14 @@ func (c *Cloud) ListRoutes(ctx context.Context, clusterName string) ([]*cloudpro
 		}
 
 		// Capture blackhole routes
-		if aws.StringValue(r.State) == ec2.RouteStateBlackhole {
+		if r.State == ec2types.RouteStateBlackhole {
 			route.Blackhole = true
 			routes = append(routes, route)
 			continue
 		}
 
 		// Capture instance routes
-		instanceID := aws.StringValue(r.InstanceId)
+		instanceID := aws.ToString(r.InstanceId)
 		if instanceID != "" {
 			_, found := instances[instanceID]
 			if found {
@@ -130,12 +131,12 @@ func (c *Cloud) ListRoutes(ctx context.Context, clusterName string) ([]*cloudpro
 }
 
 // Sets the instance attribute "source-dest-check" to the specified value
-func (c *Cloud) configureInstanceSourceDestCheck(instanceID string, sourceDestCheck bool) error {
+func (c *Cloud) configureInstanceSourceDestCheck(ctx context.Context, instanceID string, sourceDestCheck bool) error {
 	request := &ec2.ModifyInstanceAttributeInput{}
 	request.InstanceId = aws.String(instanceID)
-	request.SourceDestCheck = &ec2.AttributeBooleanValue{Value: aws.Bool(sourceDestCheck)}
+	request.SourceDestCheck = &ec2types.AttributeBooleanValue{Value: aws.Bool(sourceDestCheck)}
 
-	_, err := c.ec2.ModifyInstanceAttribute(request)
+	_, err := c.ec2.ModifyInstanceAttribute(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error configuring source-dest-check on instance %s: %q", instanceID, err)
 	}
@@ -145,46 +146,46 @@ func (c *Cloud) configureInstanceSourceDestCheck(instanceID string, sourceDestCh
 // CreateRoute implements Routes.CreateRoute
 // Create the described route
 func (c *Cloud) CreateRoute(ctx context.Context, clusterName string, nameHint string, route *cloudprovider.Route) error {
-	instance, err := c.getInstanceByNodeName(route.TargetNode)
+	instance, err := c.getInstanceByNodeName(ctx, route.TargetNode)
 	if err != nil {
 		return err
 	}
 
 	// In addition to configuring the route itself, we also need to configure the instance to accept that traffic
 	// On AWS, this requires turning source-dest checks off
-	err = c.configureInstanceSourceDestCheck(aws.StringValue(instance.InstanceId), false)
+	err = c.configureInstanceSourceDestCheck(ctx, aws.ToString(instance.InstanceId), false)
 	if err != nil {
 		return err
 	}
 
-	table, err := c.findRouteTable(clusterName)
+	table, err := c.findRouteTable(ctx, clusterName)
 	if err != nil {
 		return err
 	}
 
-	var deleteRoute *ec2.Route
+	var deleteRoute *ec2types.Route
 	for _, r := range table.Routes {
-		destinationCIDR := aws.StringValue(r.DestinationCidrBlock)
+		destinationCIDR := aws.ToString(r.DestinationCidrBlock)
 
 		if destinationCIDR != route.DestinationCIDR {
 			continue
 		}
 
-		if aws.StringValue(r.State) == ec2.RouteStateBlackhole {
-			deleteRoute = r
+		if r.State == ec2types.RouteStateBlackhole {
+			deleteRoute = &r
 		}
 	}
 
 	if deleteRoute != nil {
-		klog.Infof("deleting blackholed route: %s", aws.StringValue(deleteRoute.DestinationCidrBlock))
+		klog.Infof("deleting blackholed route: %s", aws.ToString(deleteRoute.DestinationCidrBlock))
 
 		request := &ec2.DeleteRouteInput{}
 		request.DestinationCidrBlock = deleteRoute.DestinationCidrBlock
 		request.RouteTableId = table.RouteTableId
 
-		_, err = c.ec2.DeleteRoute(request)
+		_, err = c.ec2.DeleteRoute(ctx, request)
 		if err != nil {
-			return fmt.Errorf("error deleting blackholed AWS route (%s): %q", aws.StringValue(deleteRoute.DestinationCidrBlock), err)
+			return fmt.Errorf("error deleting blackholed AWS route (%s): %q", aws.ToString(deleteRoute.DestinationCidrBlock), err)
 		}
 	}
 
@@ -194,7 +195,7 @@ func (c *Cloud) CreateRoute(ctx context.Context, clusterName string, nameHint st
 	request.InstanceId = instance.InstanceId
 	request.RouteTableId = table.RouteTableId
 
-	_, err = c.ec2.CreateRoute(request)
+	_, err = c.ec2.CreateRoute(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error creating AWS route (%s): %q", route.DestinationCIDR, err)
 	}
@@ -205,7 +206,7 @@ func (c *Cloud) CreateRoute(ctx context.Context, clusterName string, nameHint st
 // DeleteRoute implements Routes.DeleteRoute
 // Delete the specified route
 func (c *Cloud) DeleteRoute(ctx context.Context, clusterName string, route *cloudprovider.Route) error {
-	table, err := c.findRouteTable(clusterName)
+	table, err := c.findRouteTable(ctx, clusterName)
 	if err != nil {
 		return err
 	}
@@ -214,7 +215,7 @@ func (c *Cloud) DeleteRoute(ctx context.Context, clusterName string, route *clou
 	request.DestinationCidrBlock = aws.String(route.DestinationCIDR)
 	request.RouteTableId = table.RouteTableId
 
-	_, err = c.ec2.DeleteRoute(request)
+	_, err = c.ec2.DeleteRoute(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error deleting AWS route (%s): %q", route.DestinationCIDR, err)
 	}

@@ -74,7 +74,7 @@ func (c *Cloud) getAdditionalLabels(ctx context.Context, zoneName string, instan
 	// If zone ID label is already set, skip.
 	if _, ok := existingLabels[LabelZoneID]; !ok {
 		// Add the zone ID to the additional labels
-		zoneID, err := c.zoneCache.getZoneIDByZoneName(zoneName)
+		zoneID, err := c.zoneCache.getZoneIDByZoneName(ctx, zoneName)
 		if err != nil {
 			return nil, err
 		}
@@ -146,7 +146,7 @@ func (c *Cloud) InstanceMetadata(ctx context.Context, node *v1.Node) (*cloudprov
 			return nil, err
 		}
 	} else {
-		instance, err := c.getInstanceByID(string(instanceID))
+		instance, err := c.getInstanceByID(ctx, string(instanceID))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get instance by ID %s: %w", instanceID, err)
 		}

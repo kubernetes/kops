@@ -14,7 +14,7 @@ import (
 // Creates a new version of the specified managed policy. To update a managed
 // policy, you create a new policy version. A managed policy can have up to five
 // versions. If the policy has five versions, you must delete an existing version
-// using DeletePolicyVersionbefore you create a new version.
+// using [DeletePolicyVersion]before you create a new version.
 //
 // Optionally, you can set the new version as the policy's default version. The
 // default version is the version that is in effect for the IAM users, groups, and
@@ -22,6 +22,7 @@ import (
 //
 // For more information about managed policy versions, see [Versioning for managed policies] in the IAM User Guide.
 //
+// [DeletePolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeletePolicyVersion.html
 // [Versioning for managed policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html
 func (c *Client) CreatePolicyVersion(ctx context.Context, params *CreatePolicyVersionInput, optFns ...func(*Options)) (*CreatePolicyVersionOutput, error) {
 	if params == nil {
@@ -95,7 +96,9 @@ type CreatePolicyVersionInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful CreatePolicyVersion request.
+// Contains the response to a successful [CreatePolicyVersion] request.
+//
+// [CreatePolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreatePolicyVersion.html
 type CreatePolicyVersionOutput struct {
 
 	// A structure containing details about the new policy version.
@@ -193,6 +196,36 @@ func (c *Client) addOperationCreatePolicyVersionMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

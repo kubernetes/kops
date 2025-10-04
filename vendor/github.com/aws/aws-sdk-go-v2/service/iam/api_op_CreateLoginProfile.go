@@ -16,12 +16,13 @@ import (
 // Console.
 //
 // You can use the CLI, the Amazon Web Services API, or the Users page in the IAM
-// console to create a password for any IAM user. Use ChangePasswordto update your own existing
+// console to create a password for any IAM user. Use [ChangePassword]to update your own existing
 // password in the My Security Credentials page in the Amazon Web Services
 // Management Console.
 //
 // For more information about managing passwords, see [Managing passwords] in the IAM User Guide.
 //
+// [ChangePassword]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ChangePassword.html
 // [Managing passwords]: https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_ManagingLogins.html
 func (c *Client) CreateLoginProfile(ctx context.Context, params *CreateLoginProfileInput, optFns ...func(*Options)) (*CreateLoginProfileOutput, error) {
 	if params == nil {
@@ -78,7 +79,9 @@ type CreateLoginProfileInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful CreateLoginProfile request.
+// Contains the response to a successful [CreateLoginProfile] request.
+//
+// [CreateLoginProfile]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_CreateLoginProfile.html
 type CreateLoginProfileOutput struct {
 
 	// A structure containing the user name and password create date.
@@ -175,6 +178,36 @@ func (c *Client) addOperationCreateLoginProfileMiddlewares(stack *middleware.Sta
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

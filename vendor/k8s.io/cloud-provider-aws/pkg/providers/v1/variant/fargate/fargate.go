@@ -1,12 +1,13 @@
 package fargate
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	awssdk "github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	v1 "k8s.io/api/core/v1"
 	cloudprovider "k8s.io/cloud-provider"
@@ -25,11 +26,11 @@ const (
 type fargateVariant struct {
 	cloudConfig *config.CloudConfig
 	ec2API      iface.EC2
-	credentials *credentials.Credentials
+	credentials aws.CredentialsProvider
 	provider    config.SDKProvider
 }
 
-func (f *fargateVariant) Initialize(cloudConfig *config.CloudConfig, credentials *credentials.Credentials, provider config.SDKProvider, ec2API iface.EC2, region string) error {
+func (f *fargateVariant) Initialize(cloudConfig *config.CloudConfig, credentials aws.CredentialsProvider, provider config.SDKProvider, ec2API iface.EC2, region string) error {
 	f.cloudConfig = cloudConfig
 	f.ec2API = ec2API
 	f.credentials = credentials
@@ -41,8 +42,8 @@ func (f *fargateVariant) InstanceTypeByProviderID(instanceID string) (string, er
 	return "", nil
 }
 
-func (f *fargateVariant) GetZone(instanceID, vpcID, region string) (cloudprovider.Zone, error) {
-	eni, err := f.DescribeNetworkInterfaces(f.ec2API, instanceID, vpcID)
+func (f *fargateVariant) GetZone(ctx context.Context, instanceID, vpcID, region string) (cloudprovider.Zone, error) {
+	eni, err := f.DescribeNetworkInterfaces(ctx, f.ec2API, instanceID, vpcID)
 	if eni == nil || err != nil {
 		return cloudprovider.Zone{}, err
 	}
@@ -56,8 +57,8 @@ func (f *fargateVariant) IsSupportedNode(nodeName string) bool {
 	return strings.HasPrefix(nodeName, fargateNodeNamePrefix)
 }
 
-func (f *fargateVariant) NodeAddresses(instanceID, vpcID string) ([]v1.NodeAddress, error) {
-	eni, err := f.DescribeNetworkInterfaces(f.ec2API, instanceID, vpcID)
+func (f *fargateVariant) NodeAddresses(ctx context.Context, instanceID, vpcID string) ([]v1.NodeAddress, error) {
+	eni, err := f.DescribeNetworkInterfaces(ctx, f.ec2API, instanceID, vpcID)
 	if eni == nil || err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func (f *fargateVariant) NodeAddresses(instanceID, vpcID string) ([]v1.NodeAddre
 	for _, family := range f.cloudConfig.Global.NodeIPFamilies {
 		switch family {
 		case "ipv4":
-			nodeAddresses := getNodeAddressesForFargateNode(awssdk.StringValue(eni.PrivateDnsName), awssdk.StringValue(eni.PrivateIpAddress))
+			nodeAddresses := getNodeAddressesForFargateNode(aws.ToString(eni.PrivateDnsName), aws.ToString(eni.PrivateIpAddress))
 			addresses = append(addresses, nodeAddresses...)
 		case "ipv6":
 			if eni.Ipv6Addresses == nil || len(eni.Ipv6Addresses) == 0 {
@@ -76,29 +77,29 @@ func (f *fargateVariant) NodeAddresses(instanceID, vpcID string) ([]v1.NodeAddre
 				continue
 			}
 			internalIPv6Address := eni.Ipv6Addresses[0].Ipv6Address
-			nodeAddresses := getNodeAddressesForFargateNode(awssdk.StringValue(eni.PrivateDnsName), awssdk.StringValue(internalIPv6Address))
+			nodeAddresses := getNodeAddressesForFargateNode(aws.ToString(eni.PrivateDnsName), aws.ToString(internalIPv6Address))
 			addresses = append(addresses, nodeAddresses...)
 		}
 	}
 	return addresses, nil
 }
 
-func (f *fargateVariant) InstanceExists(instanceID, vpcID string) (bool, error) {
-	eni, err := f.DescribeNetworkInterfaces(f.ec2API, instanceID, vpcID)
+func (f *fargateVariant) InstanceExists(ctx context.Context, instanceID, vpcID string) (bool, error) {
+	eni, err := f.DescribeNetworkInterfaces(ctx, f.ec2API, instanceID, vpcID)
 	return eni != nil, err
 }
 
-func (f *fargateVariant) InstanceShutdown(instanceID, vpcID string) (bool, error) {
-	eni, err := f.DescribeNetworkInterfaces(f.ec2API, instanceID, vpcID)
+func (f *fargateVariant) InstanceShutdown(ctx context.Context, instanceID, vpcID string) (bool, error) {
+	eni, err := f.DescribeNetworkInterfaces(ctx, f.ec2API, instanceID, vpcID)
 	return eni != nil, err
 }
 
-func newEc2Filter(name string, values ...string) *ec2.Filter {
-	filter := &ec2.Filter{
-		Name: awssdk.String(name),
+func newEc2Filter(name string, values ...string) ec2types.Filter {
+	filter := ec2types.Filter{
+		Name: aws.String(name),
 	}
 	for _, value := range values {
-		filter.Values = append(filter.Values, awssdk.String(value))
+		filter.Values = append(filter.Values, value)
 	}
 	return filter
 }
@@ -116,10 +117,10 @@ func nodeNameToIPAddress(nodeName string) string {
 }
 
 // DescribeNetworkInterfaces returns network interface information for the given DNS name.
-func (f *fargateVariant) DescribeNetworkInterfaces(ec2API iface.EC2, instanceID, vpcID string) (*ec2.NetworkInterface, error) {
+func (f *fargateVariant) DescribeNetworkInterfaces(ctx context.Context, ec2API iface.EC2, instanceID, vpcID string) (*ec2types.NetworkInterface, error) {
 	eniEndpoint := strings.TrimPrefix(instanceID, fargateNodeNamePrefix)
 
-	filters := []*ec2.Filter{
+	filters := []ec2types.Filter{
 		newEc2Filter("attachment.status", "attached"),
 		newEc2Filter("vpc-id", vpcID),
 	}
@@ -137,7 +138,7 @@ func (f *fargateVariant) DescribeNetworkInterfaces(ec2API iface.EC2, instanceID,
 		Filters: filters,
 	}
 
-	eni, err := ec2API.DescribeNetworkInterfaces(request)
+	eni, err := ec2API.DescribeNetworkInterfaces(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -146,9 +147,9 @@ func (f *fargateVariant) DescribeNetworkInterfaces(ec2API iface.EC2, instanceID,
 	}
 	if len(eni.NetworkInterfaces) != 1 {
 		// This should not be possible - ids should be unique
-		return nil, fmt.Errorf("multiple interfaces found with same id %q", eni.NetworkInterfaces)
+		return nil, fmt.Errorf("multiple interfaces found with same id %+v", eni.NetworkInterfaces)
 	}
-	return eni.NetworkInterfaces[0], nil
+	return &eni.NetworkInterfaces[0], nil
 }
 
 func init() {

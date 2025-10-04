@@ -53,7 +53,7 @@ const (
 func (enum BearerType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_bearer_type"
+		return string(BearerTypeUnknownBearerType)
 	}
 	return string(enum)
 }
@@ -95,7 +95,7 @@ const (
 func (enum GracePeriodType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_grace_period_type"
+		return string(GracePeriodTypeUnknownGracePeriodType)
 	}
 	return string(enum)
 }
@@ -147,7 +147,7 @@ const (
 func (enum ListAPIKeysRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListAPIKeysRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -200,7 +200,7 @@ const (
 func (enum ListApplicationsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListApplicationsRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -251,7 +251,7 @@ const (
 func (enum ListGroupsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListGroupsRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -298,7 +298,7 @@ const (
 func (enum ListJWTsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListJWTsRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -339,7 +339,7 @@ const (
 func (enum ListLogsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListLogsRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -382,7 +382,7 @@ const (
 func (enum ListPermissionSetsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "name_asc"
+		return string(ListPermissionSetsRequestOrderByNameAsc)
 	}
 	return string(enum)
 }
@@ -427,7 +427,7 @@ const (
 func (enum ListPoliciesRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "policy_name_asc"
+		return string(ListPoliciesRequestOrderByPolicyNameAsc)
 	}
 	return string(enum)
 }
@@ -468,7 +468,7 @@ const (
 func (enum ListQuotaRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "name_asc"
+		return string(ListQuotaRequestOrderByNameAsc)
 	}
 	return string(enum)
 }
@@ -515,7 +515,7 @@ const (
 func (enum ListSSHKeysRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListSSHKeysRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -574,7 +574,7 @@ const (
 func (enum ListUsersRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_asc"
+		return string(ListUsersRequestOrderByCreatedAtAsc)
 	}
 	return string(enum)
 }
@@ -620,7 +620,7 @@ const (
 func (enum LocalityType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "global"
+		return string(LocalityTypeGlobal)
 	}
 	return string(enum)
 }
@@ -664,7 +664,7 @@ const (
 func (enum LogAction) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_action"
+		return string(LogActionUnknownAction)
 	}
 	return string(enum)
 }
@@ -713,7 +713,7 @@ const (
 func (enum LogResourceType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_resource_type"
+		return string(LogResourceTypeUnknownResourceType)
 	}
 	return string(enum)
 }
@@ -760,7 +760,7 @@ const (
 func (enum PermissionSetScopeType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_scope_type"
+		return string(PermissionSetScopeTypeUnknownScopeType)
 	}
 	return string(enum)
 }
@@ -789,6 +789,133 @@ func (enum *PermissionSetScopeType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type SamlCertificateOrigin string
+
+const (
+	// Unknown certificate origin.
+	SamlCertificateOriginUnknownCertificateOrigin = SamlCertificateOrigin("unknown_certificate_origin")
+	// Certificate from Scaleway.
+	SamlCertificateOriginScaleway = SamlCertificateOrigin("scaleway")
+	// Certificate from Identity Provider.
+	SamlCertificateOriginIdentityProvider = SamlCertificateOrigin("identity_provider")
+)
+
+func (enum SamlCertificateOrigin) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(SamlCertificateOriginUnknownCertificateOrigin)
+	}
+	return string(enum)
+}
+
+func (enum SamlCertificateOrigin) Values() []SamlCertificateOrigin {
+	return []SamlCertificateOrigin{
+		"unknown_certificate_origin",
+		"scaleway",
+		"identity_provider",
+	}
+}
+
+func (enum SamlCertificateOrigin) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SamlCertificateOrigin) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SamlCertificateOrigin(SamlCertificateOrigin(tmp).String())
+	return nil
+}
+
+type SamlCertificateType string
+
+const (
+	// Unknown certificate type.
+	SamlCertificateTypeUnknownCertificateType = SamlCertificateType("unknown_certificate_type")
+	// Signing certificate.
+	SamlCertificateTypeSigning = SamlCertificateType("signing")
+	// Encryption certificate.
+	SamlCertificateTypeEncryption = SamlCertificateType("encryption")
+)
+
+func (enum SamlCertificateType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(SamlCertificateTypeUnknownCertificateType)
+	}
+	return string(enum)
+}
+
+func (enum SamlCertificateType) Values() []SamlCertificateType {
+	return []SamlCertificateType{
+		"unknown_certificate_type",
+		"signing",
+		"encryption",
+	}
+}
+
+func (enum SamlCertificateType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SamlCertificateType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SamlCertificateType(SamlCertificateType(tmp).String())
+	return nil
+}
+
+type SamlStatus string
+
+const (
+	SamlStatusUnknownSamlStatus      = SamlStatus("unknown_saml_status")
+	SamlStatusValid                  = SamlStatus("valid")
+	SamlStatusMissingCertificate     = SamlStatus("missing_certificate")
+	SamlStatusMissingEntityID        = SamlStatus("missing_entity_id")
+	SamlStatusMissingSingleSignOnURL = SamlStatus("missing_single_sign_on_url")
+)
+
+func (enum SamlStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(SamlStatusUnknownSamlStatus)
+	}
+	return string(enum)
+}
+
+func (enum SamlStatus) Values() []SamlStatus {
+	return []SamlStatus{
+		"unknown_saml_status",
+		"valid",
+		"missing_certificate",
+		"missing_entity_id",
+		"missing_single_sign_on_url",
+	}
+}
+
+func (enum SamlStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SamlStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SamlStatus(SamlStatus(tmp).String())
+	return nil
+}
+
 type UserStatus string
 
 const (
@@ -803,7 +930,7 @@ const (
 func (enum UserStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_status"
+		return string(UserStatusUnknownStatus)
 	}
 	return string(enum)
 }
@@ -846,7 +973,7 @@ const (
 func (enum UserType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_type"
+		return string(UserTypeUnknownType)
 	}
 	return string(enum)
 }
@@ -1329,6 +1456,26 @@ type SSHKey struct {
 	Disabled bool `json:"disabled"`
 }
 
+// SamlCertificate: saml certificate.
+type SamlCertificate struct {
+	// ID: ID of the SAML certificate.
+	ID string `json:"id"`
+
+	// Type: type of the SAML certificate.
+	// Default value: unknown_certificate_type
+	Type SamlCertificateType `json:"type"`
+
+	// Origin: origin of the SAML certificate.
+	// Default value: unknown_certificate_origin
+	Origin SamlCertificateOrigin `json:"origin"`
+
+	// Content: content of the SAML certificate.
+	Content string `json:"content"`
+
+	// ExpiresAt: date and time of the SAML certificate expiration.
+	ExpiresAt *time.Time `json:"expires_at"`
+}
+
 // User: user.
 type User struct {
 	// ID: ID of user.
@@ -1374,9 +1521,9 @@ type User struct {
 	// Deprecated: TwoFactorEnabled: deprecated, use "mfa" instead.
 	TwoFactorEnabled *bool `json:"two_factor_enabled,omitempty"`
 
-	// Status: status of user invitation.
+	// Deprecated: Status: status of user invitation.
 	// Default value: unknown_status
-	Status UserStatus `json:"status"`
+	Status *UserStatus `json:"status,omitempty"`
 
 	// Mfa: defines whether MFA is enabled.
 	Mfa bool `json:"mfa"`
@@ -1389,6 +1536,13 @@ type User struct {
 
 	// Locked: defines whether the user is locked.
 	Locked bool `json:"locked"`
+}
+
+// SamlServiceProvider: saml service provider.
+type SamlServiceProvider struct {
+	EntityID string `json:"entity_id"`
+
+	AssertionConsumerServiceURL string `json:"assertion_consumer_service_url"`
 }
 
 // AddGroupMemberRequest: add group member request.
@@ -1415,6 +1569,19 @@ type AddGroupMembersRequest struct {
 
 	// ApplicationIDs: iDs of the applications to add.
 	ApplicationIDs []string `json:"application_ids"`
+}
+
+// AddSamlCertificateRequest: add saml certificate request.
+type AddSamlCertificateRequest struct {
+	// SamlID: ID of the SAML configuration.
+	SamlID string `json:"-"`
+
+	// Type: type of the SAML certificate.
+	// Default value: unknown_certificate_type
+	Type SamlCertificateType `json:"type"`
+
+	// Content: content of the SAML certificate.
+	Content string `json:"content"`
 }
 
 // ClonePolicyRequest: clone policy request.
@@ -1585,6 +1752,18 @@ type DeleteSSHKeyRequest struct {
 	SSHKeyID string `json:"-"`
 }
 
+// DeleteSamlCertificateRequest: delete saml certificate request.
+type DeleteSamlCertificateRequest struct {
+	// CertificateID: ID of the certificate to delete.
+	CertificateID string `json:"-"`
+}
+
+// DeleteSamlRequest: delete saml request.
+type DeleteSamlRequest struct {
+	// SamlID: ID of the SAML configuration.
+	SamlID string `json:"-"`
+}
+
 // DeleteUserMFAOTPRequest: delete user mfaotp request.
 type DeleteUserMFAOTPRequest struct {
 	// UserID: user ID of the MFA OTP.
@@ -1595,6 +1774,12 @@ type DeleteUserMFAOTPRequest struct {
 type DeleteUserRequest struct {
 	// UserID: ID of the user to delete.
 	UserID string `json:"-"`
+}
+
+// EnableOrganizationSamlRequest: enable organization saml request.
+type EnableOrganizationSamlRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
 }
 
 // EncodedJWT: encoded jwt.
@@ -1637,6 +1822,18 @@ type GetJWTRequest struct {
 type GetLogRequest struct {
 	// LogID: ID of the log.
 	LogID string `json:"-"`
+}
+
+// GetOrganizationRequest: get organization request.
+type GetOrganizationRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
+}
+
+// GetOrganizationSamlRequest: get organization saml request.
+type GetOrganizationSamlRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
 }
 
 // GetOrganizationSecuritySettingsRequest: get organization security settings request.
@@ -1682,6 +1879,27 @@ type GetUserConnectionsResponse struct {
 type GetUserRequest struct {
 	// UserID: ID of the user to find.
 	UserID string `json:"-"`
+}
+
+// InitiateUserConnectionRequest: initiate user connection request.
+type InitiateUserConnectionRequest struct {
+	// UserID: ID of the user that will be added to your connection.
+	UserID string `json:"-"`
+}
+
+// InitiateUserConnectionResponse: initiate user connection response.
+type InitiateUserConnectionResponse struct {
+	// Token: token to be used in JoinUserConnection.
+	Token string `json:"token"`
+}
+
+// JoinUserConnectionRequest: join user connection request.
+type JoinUserConnectionRequest struct {
+	// UserID: user ID.
+	UserID string `json:"-"`
+
+	// Token: a token returned by InitiateUserConnection.
+	Token string `json:"token"`
 }
 
 // ListAPIKeysRequest: list api keys request.
@@ -1747,7 +1965,7 @@ func (r *ListAPIKeysResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListAPIKeysResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListAPIKeysResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListAPIKeysResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1803,7 +2021,7 @@ func (r *ListApplicationsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListApplicationsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListApplicationsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListApplicationsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1874,7 +2092,7 @@ func (r *ListGroupsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListGroupsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListGroupsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListGroupsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1892,7 +2110,7 @@ type ListJWTsRequest struct {
 	OrderBy ListJWTsRequestOrderBy `json:"-"`
 
 	// AudienceID: ID of the user to search.
-	AudienceID *string `json:"-"`
+	AudienceID string `json:"-"`
 
 	// PageSize: number of results per page. Value must be between 1 and 100.
 	PageSize *uint32 `json:"-"`
@@ -1919,7 +2137,7 @@ func (r *ListJWTsResponse) UnsafeGetTotalCount() uint64 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListJWTsResponse) UnsafeAppend(res interface{}) (uint64, error) {
+func (r *ListJWTsResponse) UnsafeAppend(res any) (uint64, error) {
 	results, ok := res.(*ListJWTsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1980,7 +2198,7 @@ func (r *ListLogsResponse) UnsafeGetTotalCount() uint64 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListLogsResponse) UnsafeAppend(res interface{}) (uint64, error) {
+func (r *ListLogsResponse) UnsafeAppend(res any) (uint64, error) {
 	results, ok := res.(*ListLogsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2024,7 +2242,7 @@ func (r *ListPermissionSetsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListPermissionSetsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListPermissionSetsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListPermissionSetsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2092,7 +2310,7 @@ func (r *ListPoliciesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListPoliciesResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListPoliciesResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListPoliciesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2139,7 +2357,7 @@ func (r *ListQuotaResponse) UnsafeGetTotalCount() uint64 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListQuotaResponse) UnsafeAppend(res interface{}) (uint64, error) {
+func (r *ListQuotaResponse) UnsafeAppend(res any) (uint64, error) {
 	results, ok := res.(*ListQuotaResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2179,7 +2397,7 @@ func (r *ListRulesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListRulesResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListRulesResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListRulesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2232,7 +2450,7 @@ func (r *ListSSHKeysResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListSSHKeysResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListSSHKeysResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListSSHKeysResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2241,6 +2459,18 @@ func (r *ListSSHKeysResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	r.SSHKeys = append(r.SSHKeys, results.SSHKeys...)
 	r.TotalCount += uint32(len(results.SSHKeys))
 	return uint32(len(results.SSHKeys)), nil
+}
+
+// ListSamlCertificatesRequest: list saml certificates request.
+type ListSamlCertificatesRequest struct {
+	// SamlID: ID of the SAML configuration.
+	SamlID string `json:"-"`
+}
+
+// ListSamlCertificatesResponse: list saml certificates response.
+type ListSamlCertificatesResponse struct {
+	// Certificates: list of SAML certificates.
+	Certificates []*SamlCertificate `json:"certificates"`
 }
 
 // ListUsersRequest: list users request.
@@ -2289,7 +2519,7 @@ func (r *ListUsersResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListUsersResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListUsersResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListUsersResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2309,6 +2539,24 @@ type LockUserRequest struct {
 // MFAOTP: mfaotp.
 type MFAOTP struct {
 	Secret string `json:"secret"`
+}
+
+// MigrateOrganizationGuestsRequest: migrate organization guests request.
+type MigrateOrganizationGuestsRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
+}
+
+// Organization: organization.
+type Organization struct {
+	// ID: ID of the Organization.
+	ID string `json:"id"`
+
+	// Name: name of the Organization.
+	Name string `json:"name"`
+
+	// Alias: alias of the Organization.
+	Alias string `json:"alias"`
 }
 
 // OrganizationSecuritySettings: organization security settings.
@@ -2337,6 +2585,34 @@ type RemoveGroupMemberRequest struct {
 	ApplicationID *string `json:"application_id,omitempty"`
 }
 
+// RemoveUserConnectionRequest: remove user connection request.
+type RemoveUserConnectionRequest struct {
+	// UserID: ID of the user you want to manage the connection for.
+	UserID string `json:"-"`
+
+	// TargetUserID: ID of the user you want to remove from your connection.
+	TargetUserID string `json:"target_user_id"`
+}
+
+// Saml: saml.
+type Saml struct {
+	// ID: ID of the SAML configuration.
+	ID string `json:"id"`
+
+	// Status: status of the SAML configuration.
+	// Default value: unknown_saml_status
+	Status SamlStatus `json:"status"`
+
+	// ServiceProvider: service Provider information.
+	ServiceProvider *SamlServiceProvider `json:"service_provider"`
+
+	// EntityID: entity ID of the SAML Identity Provider.
+	EntityID string `json:"entity_id"`
+
+	// SingleSignOnURL: single Sign-On URL of the SAML Identity Provider.
+	SingleSignOnURL string `json:"single_sign_on_url"`
+}
+
 // SetGroupMembersRequest: set group members request.
 type SetGroupMembersRequest struct {
 	GroupID string `json:"-"`
@@ -2344,6 +2620,15 @@ type SetGroupMembersRequest struct {
 	UserIDs []string `json:"user_ids"`
 
 	ApplicationIDs []string `json:"application_ids"`
+}
+
+// SetOrganizationAliasRequest: set organization alias request.
+type SetOrganizationAliasRequest struct {
+	// OrganizationID: ID of the Organization.
+	OrganizationID string `json:"-"`
+
+	// Alias: alias of the Organization.
+	Alias string `json:"alias"`
 }
 
 // SetRulesRequest: set rules request.
@@ -2464,6 +2749,18 @@ type UpdateSSHKeyRequest struct {
 
 	// Disabled: enable or disable the SSH key.
 	Disabled *bool `json:"disabled,omitempty"`
+}
+
+// UpdateSamlRequest: update saml request.
+type UpdateSamlRequest struct {
+	// SamlID: ID of the SAML configuration.
+	SamlID string `json:"-"`
+
+	// EntityID: entity ID of the SAML Identity Provider.
+	EntityID *string `json:"entity_id,omitempty"`
+
+	// SingleSignOnURL: single Sign-On URL of the SAML Identity Provider.
+	SingleSignOnURL *string `json:"single_sign_on_url,omitempty"`
 }
 
 // UpdateUserPasswordRequest: update user password request.
@@ -2772,7 +3069,7 @@ func (s *API) DeleteUser(req *DeleteUserRequest, opts ...scw.RequestOption) erro
 	return nil
 }
 
-// CreateUser: Create a new user. You must define the `organization_id` and the `email` in your request.
+// CreateUser: Create a new user. You must define the `organization_id` in your request. If you are adding a member, enter the member's details. If you are adding a guest, you must define the `email` and not add the member attribute.
 func (s *API) CreateUser(req *CreateUserRequest, opts ...scw.RequestOption) (*User, error) {
 	var err error
 
@@ -3031,6 +3328,83 @@ func (s *API) GetUserConnections(req *GetUserConnectionsRequest, opts ...scw.Req
 	return &resp, nil
 }
 
+// InitiateUserConnection:
+func (s *API) InitiateUserConnection(req *InitiateUserConnectionRequest, opts ...scw.RequestOption) (*InitiateUserConnectionResponse, error) {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return nil, errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/initiate-connection",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp InitiateUserConnectionResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// JoinUserConnection:
+func (s *API) JoinUserConnection(req *JoinUserConnectionRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/join-connection",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// RemoveUserConnection:
+func (s *API) RemoveUserConnection(req *RemoveUserConnectionRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if fmt.Sprint(req.UserID) == "" {
+		return errors.New("field UserID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/users/" + fmt.Sprint(req.UserID) + "/remove-connection",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // ListApplications: List the applications of an Organization. By default, the applications listed are ordered by creation date in ascending order. This can be modified via the `order_by` field. You must define the `organization_id` in the query path of your request. You can also define additional parameters for your query such as `application_ids`.
 func (s *API) ListApplications(req *ListApplicationsRequest, opts ...scw.RequestOption) (*ListApplicationsResponse, error) {
 	var err error
@@ -3243,7 +3617,7 @@ func (s *API) CreateGroup(req *CreateGroupRequest, opts ...scw.RequestOption) (*
 	return &resp, nil
 }
 
-// GetGroup: Retrive information about a given group, specified by the `group_id` parameter. The group's full details, including `user_ids` and `application_ids` are returned in the response.
+// GetGroup: Retrieve information about a given group, specified by the `group_id` parameter. The group's full details, including `user_ids` and `application_ids` are returned in the response.
 func (s *API) GetGroup(req *GetGroupRequest, opts ...scw.RequestOption) (*Group, error) {
 	var err error
 
@@ -3319,7 +3693,7 @@ func (s *API) SetGroupMembers(req *SetGroupMembersRequest, opts ...scw.RequestOp
 	return &resp, nil
 }
 
-// AddGroupMember: Add a user or an application to a group. You can specify a `user_id` and and `application_id` in the body of your request. Note that you can only add one of each per request.
+// AddGroupMember: Add a user or an application to a group. You can specify a `user_id` and `application_id` in the body of your request. Note that you can only add one of each per request.
 func (s *API) AddGroupMember(req *AddGroupMemberRequest, opts ...scw.RequestOption) (*Group, error) {
 	var err error
 
@@ -3373,7 +3747,7 @@ func (s *API) AddGroupMembers(req *AddGroupMembersRequest, opts ...scw.RequestOp
 	return &resp, nil
 }
 
-// RemoveGroupMember: Remove a user or an application from a group. You can specify a `user_id` and and `application_id` in the body of your request. Note that you can only remove one of each per request. Removing a user from a group means that any permissions given to them via the group (i.e. from an attached policy) will no longer apply. Be sure you want to remove these permissions from the user before proceeding.
+// RemoveGroupMember: Remove a user or an application from a group. You can specify a `user_id` and `application_id` in the body of your request. Note that you can only remove one of each per request. Removing a user from a group means that any permissions given to them via the group (i.e. from an attached policy) will no longer apply. Be sure you want to remove these permissions from the user before proceeding.
 func (s *API) RemoveGroupMember(req *RemoveGroupMemberRequest, opts ...scw.RequestOption) (*Group, error) {
 	var err error
 
@@ -3740,7 +4114,7 @@ func (s *API) CreateAPIKey(req *CreateAPIKeyRequest, opts ...scw.RequestOption) 
 	return &resp, nil
 }
 
-// GetAPIKey: Retrive information about an API key, specified by the `access_key` parameter. The API key's details, including either the `user_id` or `application_id` of its bearer are returned in the response. Note that the string value for the `secret_key` is nullable, and therefore is not displayed in the response. The `secret_key` value is only displayed upon API key creation.
+// GetAPIKey: Retrieve information about an API key, specified by the `access_key` parameter. The API key's details, including either the `user_id` or `application_id` of its bearer are returned in the response. Note that the string value for the `secret_key` is nullable, and therefore is not displayed in the response. The `secret_key` value is only displayed upon API key creation.
 func (s *API) GetAPIKey(req *GetAPIKeyRequest, opts ...scw.RequestOption) (*APIKey, error) {
 	var err error
 
@@ -4091,4 +4465,263 @@ func (s *API) UpdateOrganizationSecuritySettings(req *UpdateOrganizationSecurity
 		return nil, err
 	}
 	return &resp, nil
+}
+
+// SetOrganizationAlias: This will fail if an alias has already been defined. Please contact support if you need to change your Organization's alias.
+func (s *API) SetOrganizationAlias(req *SetOrganizationAliasRequest, opts ...scw.RequestOption) (*Organization, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return nil, errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "PUT",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "/alias",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Organization
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// GetOrganization: Get your Organization's IAM information.
+func (s *API) GetOrganization(req *GetOrganizationRequest, opts ...scw.RequestOption) (*Organization, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return nil, errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "",
+	}
+
+	var resp Organization
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// MigrateOrganizationGuests: Migrate the organization's guests to IAM members.
+func (s *API) MigrateOrganizationGuests(req *MigrateOrganizationGuestsRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "/migrate-guests",
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetOrganizationSaml: Get SAML Identity Provider configuration of an Organization.
+func (s *API) GetOrganizationSaml(req *GetOrganizationSamlRequest, opts ...scw.RequestOption) (*Saml, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return nil, errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "/saml",
+	}
+
+	var resp Saml
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// EnableOrganizationSaml: Enable SAML Identity Provider for an Organization.
+func (s *API) EnableOrganizationSaml(req *EnableOrganizationSamlRequest, opts ...scw.RequestOption) (*Saml, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if fmt.Sprint(req.OrganizationID) == "" {
+		return nil, errors.New("field OrganizationID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/organizations/" + fmt.Sprint(req.OrganizationID) + "/saml",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Saml
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UpdateSaml: Update SAML Identity Provider configuration.
+func (s *API) UpdateSaml(req *UpdateSamlRequest, opts ...scw.RequestOption) (*Saml, error) {
+	var err error
+
+	if fmt.Sprint(req.SamlID) == "" {
+		return nil, errors.New("field SamlID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "PATCH",
+		Path:   "/iam/v1alpha1/saml/" + fmt.Sprint(req.SamlID) + "",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Saml
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// DeleteSaml: Disable SAML Identity Provider for an Organization.
+func (s *API) DeleteSaml(req *DeleteSamlRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if fmt.Sprint(req.SamlID) == "" {
+		return errors.New("field SamlID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "DELETE",
+		Path:   "/iam/v1alpha1/saml/" + fmt.Sprint(req.SamlID) + "",
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ListSamlCertificates: List SAML certificates.
+func (s *API) ListSamlCertificates(req *ListSamlCertificatesRequest, opts ...scw.RequestOption) (*ListSamlCertificatesResponse, error) {
+	var err error
+
+	if fmt.Sprint(req.SamlID) == "" {
+		return nil, errors.New("field SamlID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/iam/v1alpha1/saml/" + fmt.Sprint(req.SamlID) + "/certificates",
+	}
+
+	var resp ListSamlCertificatesResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// AddSamlCertificate: Add a SAML certificate.
+func (s *API) AddSamlCertificate(req *AddSamlCertificateRequest, opts ...scw.RequestOption) (*SamlCertificate, error) {
+	var err error
+
+	if fmt.Sprint(req.SamlID) == "" {
+		return nil, errors.New("field SamlID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "POST",
+		Path:   "/iam/v1alpha1/saml/" + fmt.Sprint(req.SamlID) + "/certificates",
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp SamlCertificate
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// DeleteSamlCertificate: Delete a SAML certificate.
+func (s *API) DeleteSamlCertificate(req *DeleteSamlCertificateRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if fmt.Sprint(req.CertificateID) == "" {
+		return errors.New("field CertificateID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "DELETE",
+		Path:   "/iam/v1alpha1/saml-certificates/" + fmt.Sprint(req.CertificateID) + "",
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
 }

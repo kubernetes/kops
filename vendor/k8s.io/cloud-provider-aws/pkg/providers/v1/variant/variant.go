@@ -1,13 +1,14 @@
 package variant
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
 	v1 "k8s.io/api/core/v1"
 	cloudprovider "k8s.io/cloud-provider"
 
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"k8s.io/cloud-provider-aws/pkg/providers/v1/config"
 	"k8s.io/cloud-provider-aws/pkg/providers/v1/iface"
@@ -18,13 +19,13 @@ var variants = make(map[string]Variant)
 
 // Variant is a slightly different type of node
 type Variant interface {
-	Initialize(cloudConfig *config.CloudConfig, credentials *credentials.Credentials,
+	Initialize(cloudConfig *config.CloudConfig, credentials aws.CredentialsProvider,
 		provider config.SDKProvider, ec2API iface.EC2, region string) error
 	IsSupportedNode(nodeName string) bool
-	NodeAddresses(instanceID, vpcID string) ([]v1.NodeAddress, error)
-	GetZone(instanceID, vpcID, region string) (cloudprovider.Zone, error)
-	InstanceExists(instanceID, vpcID string) (bool, error)
-	InstanceShutdown(instanceID, vpcID string) (bool, error)
+	NodeAddresses(ctx context.Context, instanceID, vpcID string) ([]v1.NodeAddress, error)
+	GetZone(ctx context.Context, instanceID, vpcID, region string) (cloudprovider.Zone, error)
+	InstanceExists(ctx context.Context, instanceID, vpcID string) (bool, error)
+	InstanceShutdown(ctx context.Context, instanceID, vpcID string) (bool, error)
 	InstanceTypeByProviderID(id string) (string, error)
 }
 

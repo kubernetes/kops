@@ -52,8 +52,14 @@ type CreateVolumeInput struct {
 	// The ID of the Availability Zone in which to create the volume. For example,
 	// us-east-1a .
 	//
-	// This member is required.
+	// Either AvailabilityZone or AvailabilityZoneId must be specified, but not both.
 	AvailabilityZone *string
+
+	// The ID of the Availability Zone in which to create the volume. For example,
+	// use1-az1 .
+	//
+	// Either AvailabilityZone or AvailabilityZoneId must be specified, but not both.
+	AvailabilityZoneId *string
 
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency of
 	// the request. For more information, see [Ensure Idempotency].
@@ -86,7 +92,7 @@ type CreateVolumeInput struct {
 	//
 	// The following are the supported values for each volume type:
 	//
-	//   - gp3 : 3,000 - 16,000 IOPS
+	//   - gp3 : 3,000 - 80,000 IOPS
 	//
 	//   - io1 : 100 - 64,000 IOPS
 	//
@@ -149,7 +155,9 @@ type CreateVolumeInput struct {
 	//
 	// The following are the supported volumes sizes for each volume type:
 	//
-	//   - gp2 and gp3 : 1 - 16,384 GiB
+	//   - gp2 : 1 - 16,384 GiB
+	//
+	//   - gp3 : 1 - 65,536 GiB
 	//
 	//   - io1 : 4 - 16,384 GiB
 	//
@@ -167,11 +175,11 @@ type CreateVolumeInput struct {
 	// The tags to apply to the volume during creation.
 	TagSpecifications []types.TagSpecification
 
-	// The throughput to provision for a volume, with a maximum of 1,000 MiB/s.
+	// The throughput to provision for a volume, with a maximum of 2,000 MiB/s.
 	//
 	// This parameter is valid only for gp3 volumes.
 	//
-	// Valid Range: Minimum value of 125. Maximum value of 1000.
+	// Valid Range: Minimum value of 125. Maximum value of 2,000.
 	Throughput *int32
 
 	// Specifies the Amazon EBS Provisioned Rate for Volume Initialization (volume
@@ -235,6 +243,9 @@ type CreateVolumeOutput struct {
 
 	// The Availability Zone for the volume.
 	AvailabilityZone *string
+
+	// The ID of the Availability Zone for the volume.
+	AvailabilityZoneId *string
 
 	// The time stamp when volume creation was initiated.
 	CreateTime *time.Time
@@ -373,9 +384,6 @@ func (c *Client) addOperationCreateVolumeMiddlewares(stack *middleware.Stack, op
 	if err = addIdempotencyToken_opCreateVolumeMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addOpCreateVolumeValidationMiddleware(stack); err != nil {
-		return err
-	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opCreateVolume(options.Region), middleware.Before); err != nil {
 		return err
 	}
@@ -392,6 +400,36 @@ func (c *Client) addOperationCreateVolumeMiddlewares(stack *middleware.Stack, op
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

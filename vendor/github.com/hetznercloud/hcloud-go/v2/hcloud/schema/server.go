@@ -362,6 +362,7 @@ type ServerActionAttachToNetworkRequest struct {
 	Network  int64     `json:"network"`
 	IP       *string   `json:"ip,omitempty"`
 	AliasIPs []*string `json:"alias_ips,omitempty"`
+	IPRange  *string   `json:"ip_range,omitempty"`
 }
 
 // ServerActionAttachToNetworkResponse defines the schema of the response when

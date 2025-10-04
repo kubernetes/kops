@@ -43,9 +43,9 @@ import (
 // authoritative source for information about all API calls and whether they were
 // successful or denied access. For more information, see [Logging IAM events with CloudTrail]in the IAM User Guide.
 //
-// This operation returns a JobId . Use this parameter in the GetOrganizationsAccessReport operation to check
+// This operation returns a JobId . Use this parameter in the [GetOrganizationsAccessReport] operation to check
 // the status of the report generation. To check the status of this request, use
-// the JobId parameter in the GetOrganizationsAccessReport operation and test the JobStatus response
+// the JobId parameter in the [GetOrganizationsAccessReport] operation and test the JobStatus response
 // parameter. When the job is complete, you can retrieve the report.
 //
 // To generate a service last accessed data report for entities, specify an entity
@@ -120,6 +120,7 @@ import (
 // [Logging IAM events with CloudTrail]: https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html
 // [Refining permissions using service last accessed data]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html
 // [Reducing permissions using service last accessed data]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html
+// [GetOrganizationsAccessReport]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetOrganizationsAccessReport.html
 // [Evaluating policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics
 // [Reducing policy scope by viewing user activity]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html
 func (c *Client) GenerateOrganizationsAccessReport(ctx context.Context, params *GenerateOrganizationsAccessReportInput, optFns ...func(*Options)) (*GenerateOrganizationsAccessReportOutput, error) {
@@ -161,7 +162,9 @@ type GenerateOrganizationsAccessReportInput struct {
 
 type GenerateOrganizationsAccessReportOutput struct {
 
-	// The job identifier that you can use in the GetOrganizationsAccessReport operation.
+	// The job identifier that you can use in the [GetOrganizationsAccessReport] operation.
+	//
+	// [GetOrganizationsAccessReport]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetOrganizationsAccessReport.html
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
@@ -256,6 +259,36 @@ func (c *Client) addOperationGenerateOrganizationsAccessReportMiddlewares(stack 
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

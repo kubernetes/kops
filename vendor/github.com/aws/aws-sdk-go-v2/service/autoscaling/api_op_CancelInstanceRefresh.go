@@ -45,6 +45,13 @@ type CancelInstanceRefreshInput struct {
 	// This member is required.
 	AutoScalingGroupName *string
 
+	// When cancelling an instance refresh, this indicates whether to wait for
+	// in-flight launches and terminations to complete. The default is true.
+	//
+	// When set to false, Amazon EC2 Auto Scaling cancels the instance refresh without
+	// waiting for any pending launches or terminations to complete.
+	WaitForTransitioningInstances *bool
+
 	noSmithyDocumentSerde
 }
 
@@ -146,6 +153,36 @@ func (c *Client) addOperationCancelInstanceRefreshMiddlewares(stack *middleware.
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

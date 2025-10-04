@@ -46,5 +46,5 @@
 // [Amazon Web Services SDKs]: http://aws.amazon.com/tools/#sdk
 // [Making API Requests]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-making-api-requests.html
 // [Amazon SQS Message Attributes]: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-metadata.html#sqs-message-attributes
-// [Amazon SQS in the Command Line Interface]: http://docs.aws.amazon.com/cli/latest/reference/sqs/index.html
+// [Amazon SQS in the Command Line Interface]: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sqs/index.html
 package sqs

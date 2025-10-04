@@ -1,9 +1,7 @@
 package client
 
 import (
-	"crypto/x509"
 	"fmt"
-	"io"
 	"net/http"
 
 	sabi "github.com/google/go-sev-guest/abi"
@@ -11,12 +9,8 @@ import (
 	tg "github.com/google/go-tdx-guest/client"
 	tabi "github.com/google/go-tdx-guest/client/linuxabi"
 	tpb "github.com/google/go-tdx-guest/proto/tdx"
+	"github.com/google/go-tpm-tools/internal"
 	pb "github.com/google/go-tpm-tools/proto/attest"
-)
-
-const (
-	maxIssuingCertificateURLs = 3
-	maxCertChainLength        = 4
 )
 
 // TEEDevice is an interface to add an attestation report from a TEE technology's
@@ -49,6 +43,7 @@ type AttestOpts struct {
 	// Currently, we only support PCR replay for PCRs orthogonal to those in the
 	// firmware event log, where PCRs 0-9 and 14 are often measured. If the two
 	// logs overlap, server-side verification using this library may fail.
+	// Deprecated: Manually populate the pb.Attestation instead.
 	CanonicalEventLog []byte
 	// If non-nil, will be used to fetch the AK certificate chain for validation.
 	// Key.Attest() will construct the certificate chain by making GET requests to
@@ -64,77 +59,11 @@ type AttestOpts struct {
 	// depending on the technology's size. Leaving this nil is not recommended. If
 	// nil, then TEEDevice must be nil.
 	TEENonce []byte
-}
-
-// Given a certificate, iterates through its IssuingCertificateURLs and returns
-// the certificate that signed it. If the certificate lacks an
-// IssuingCertificateURL, return nil. If fetching the certificates fails or the
-// cert chain is malformed, return an error.
-func fetchIssuingCertificate(client *http.Client, cert *x509.Certificate) (*x509.Certificate, error) {
-	// Check if we should event attempt fetching.
-	if cert == nil || len(cert.IssuingCertificateURL) == 0 {
-		return nil, nil
-	}
-	// For each URL, fetch and parse the certificate, then verify whether it signed cert.
-	// If successful, return the parsed certificate. If any step in this process fails, try the next url.
-	// If all the URLs fail, return the last error we got.
-	// TODO(Issue #169): Return a multi-error here
-	var lastErr error
-	for i, url := range cert.IssuingCertificateURL {
-		// Limit the number of attempts.
-		if i >= maxIssuingCertificateURLs {
-			break
-		}
-		resp, err := client.Get(url)
-		if err != nil {
-			lastErr = fmt.Errorf("failed to retrieve certificate at %v: %w", url, err)
-			continue
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			lastErr = fmt.Errorf("certificate retrieval from %s returned non-OK status: %v", url, resp.StatusCode)
-			continue
-		}
-		certBytes, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			lastErr = fmt.Errorf("failed to read response body from %s: %w", url, err)
-			continue
-		}
-
-		parsedCert, err := x509.ParseCertificate(certBytes)
-		if err != nil {
-			lastErr = fmt.Errorf("failed to parse response from %s into a certificate: %w", url, err)
-			continue
-		}
-
-		// Check if the parsed certificate signed the current one.
-		if err = cert.CheckSignatureFrom(parsedCert); err != nil {
-			lastErr = fmt.Errorf("parent certificate from %s did not sign child: %w", url, err)
-			continue
-		}
-		return parsedCert, nil
-	}
-	return nil, lastErr
-}
-
-// Constructs the certificate chain for the key's certificate.
-// If an error is encountered in the process, return what has been constructed so far.
-func (k *Key) getCertificateChain(client *http.Client) ([][]byte, error) {
-	var certs [][]byte
-	currentCert := k.cert
-	for len(certs) <= maxCertChainLength {
-		issuingCert, err := fetchIssuingCertificate(client, currentCert)
-		if err != nil {
-			return nil, err
-		}
-		if issuingCert == nil {
-			return certs, nil
-		}
-		certs = append(certs, issuingCert.Raw)
-		currentCert = issuingCert
-	}
-	return nil, fmt.Errorf("max certificate chain length (%v) exceeded", maxCertChainLength)
+	// HashNonce will apply the attestation key's signing scheme hash algorithm
+	// to the input Nonce field and use the resulting digest in place of the
+	// original Nonce.
+	// Nonce must still be unique and application-specific.
+	HashNonce bool
 }
 
 // SevSnpQuoteProvider encapsulates the SEV-SNP attestation device to add its attestation report
@@ -352,7 +281,7 @@ func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 	if len(opts.Nonce) == 0 {
 		return nil, fmt.Errorf("provided nonce must not be empty")
 	}
-	sels, err := allocatedPCRs(k.rw)
+	sels, err := AllocatedPCRs(k.rw)
 	if err != nil {
 		return nil, err
 	}
@@ -362,8 +291,16 @@ func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 		return nil, fmt.Errorf("failed to encode public area: %w", err)
 	}
 	attestation.AkCert = k.CertDERBytes()
+	extraData := opts.Nonce
+	if opts.HashNonce {
+		var err error
+		extraData, err = internal.HashNonce(k.PublicArea(), extraData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to hash the input nonce: %w", err)
+		}
+	}
 	for _, sel := range sels {
-		quote, err := k.Quote(sel, opts.Nonce)
+		quote, err := k.Quote(sel, extraData)
 		if err != nil {
 			return nil, err
 		}
@@ -383,12 +320,13 @@ func (k *Key) Attest(opts AttestOpts) (*pb.Attestation, error) {
 	// Attempt to construct certificate chain. fetchIssuingCertificate checks if
 	// AK cert is present and contains intermediate cert URLs.
 	if opts.CertChainFetcher != nil {
-		attestation.IntermediateCerts, err = k.getCertificateChain(opts.CertChainFetcher)
+		attestation.IntermediateCerts, err = internal.GetCertificateChain(k.cert, opts.CertChainFetcher)
 		if err != nil {
 			return nil, fmt.Errorf("fetching certificate chain: %w", err)
 		}
 	}
 
+	// TODO: issues/504 this should be outside of this function, not related to TPM attestation
 	if err := getTEEAttestationReport(&attestation, opts); err != nil {
 		return nil, fmt.Errorf("collecting TEE attestation report: %w", err)
 	}

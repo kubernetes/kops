@@ -96,6 +96,7 @@ type Metadata struct {
 	Organization   string `json:"organization,omitempty"`
 	Project        string `json:"project,omitempty"`
 	CommercialType string `json:"commercial_type,omitempty"`
+	Image          Image  `json:"image,omitempty"`
 	// PublicIP IPv4 only
 	PublicIP struct {
 		ID               string `json:"id"`

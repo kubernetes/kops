@@ -34,13 +34,13 @@ type PrimaryIPDNSPTR struct {
 // PrimaryIPCreateOpts defines the request to
 // create a Primary IP.
 type PrimaryIPCreateRequest struct {
-	Name         string            `json:"name"`
-	Type         string            `json:"type"`
-	AssigneeType string            `json:"assignee_type"`
-	AssigneeID   *int64            `json:"assignee_id,omitempty"`
-	Labels       map[string]string `json:"labels,omitempty"`
-	AutoDelete   *bool             `json:"auto_delete,omitempty"`
-	Datacenter   string            `json:"datacenter,omitempty"`
+	Name         string             `json:"name"`
+	Type         string             `json:"type"`
+	AssigneeType string             `json:"assignee_type"`
+	AssigneeID   *int64             `json:"assignee_id,omitempty"`
+	Labels       *map[string]string `json:"labels,omitempty"`
+	AutoDelete   *bool              `json:"auto_delete,omitempty"`
+	Datacenter   string             `json:"datacenter,omitempty"`
 }
 
 // PrimaryIPCreateResponse defines the schema of the response
@@ -63,9 +63,9 @@ type PrimaryIPListResponse struct {
 // PrimaryIPUpdateOpts defines the request to
 // update a Primary IP.
 type PrimaryIPUpdateRequest struct {
-	Name       string            `json:"name,omitempty"`
-	Labels     map[string]string `json:"labels,omitempty"`
-	AutoDelete *bool             `json:"auto_delete,omitempty"`
+	Name       string             `json:"name,omitempty"`
+	Labels     *map[string]string `json:"labels,omitempty"`
+	AutoDelete *bool              `json:"auto_delete,omitempty"`
 }
 
 // PrimaryIPUpdateResponse defines the response

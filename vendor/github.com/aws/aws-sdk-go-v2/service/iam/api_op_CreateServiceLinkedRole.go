@@ -73,7 +73,9 @@ type CreateServiceLinkedRoleInput struct {
 
 type CreateServiceLinkedRoleOutput struct {
 
-	// A Role object that contains details about the newly created role.
+	// A [Role] object that contains details about the newly created role.
+	//
+	// [Role]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_Role.html
 	Role *types.Role
 
 	// Metadata pertaining to the operation's result.
@@ -168,6 +170,36 @@ func (c *Client) addOperationCreateServiceLinkedRoleMiddlewares(stack *middlewar
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

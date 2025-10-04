@@ -45,8 +45,12 @@ type GetAccessKeyLastUsedInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful GetAccessKeyLastUsed request. It is also returned as a member
-// of the AccessKeyMetaDatastructure returned by the ListAccessKeys action.
+// Contains the response to a successful [GetAccessKeyLastUsed] request. It is also returned as a member
+// of the [AccessKeyMetaData]structure returned by the [ListAccessKeys] action.
+//
+// [AccessKeyMetaData]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_AccessKeyMetaData.html
+// [ListAccessKeys]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAccessKeys.html
+// [GetAccessKeyLastUsed]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetAccessKeyLastUsed.html
 type GetAccessKeyLastUsedOutput struct {
 
 	// Contains information about the last time the access key was used.
@@ -147,6 +151,36 @@ func (c *Client) addOperationGetAccessKeyLastUsedMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

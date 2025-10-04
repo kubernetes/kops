@@ -12001,6 +12001,11 @@ func awsAwsquery_serializeOpDocumentCreateServiceSpecificCredentialInput(v *Crea
 	object := value.Object()
 	_ = object
 
+	if v.CredentialAgeDays != nil {
+		objectKey := object.Key("CredentialAgeDays")
+		objectKey.Integer(*v.CredentialAgeDays)
+	}
+
 	if v.ServiceName != nil {
 		objectKey := object.Key("ServiceName")
 		objectKey.String(*v.ServiceName)
@@ -13526,6 +13531,21 @@ func awsAwsquery_serializeOpDocumentListServerCertificateTagsInput(v *ListServer
 func awsAwsquery_serializeOpDocumentListServiceSpecificCredentialsInput(v *ListServiceSpecificCredentialsInput, value query.Value) error {
 	object := value.Object()
 	_ = object
+
+	if v.AllUsers != nil {
+		objectKey := object.Key("AllUsers")
+		objectKey.Boolean(*v.AllUsers)
+	}
+
+	if v.Marker != nil {
+		objectKey := object.Key("Marker")
+		objectKey.String(*v.Marker)
+	}
+
+	if v.MaxItems != nil {
+		objectKey := object.Key("MaxItems")
+		objectKey.Integer(*v.MaxItems)
+	}
 
 	if v.ServiceName != nil {
 		objectKey := object.Key("ServiceName")

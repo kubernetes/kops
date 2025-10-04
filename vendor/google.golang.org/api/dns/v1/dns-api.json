@@ -807,7 +807,7 @@
     "policies": {
       "methods": {
         "create": {
-          "description": "Creates a new Policy.",
+          "description": "Creates a new policy.",
           "flatPath": "dns/v1/projects/{project}/policies",
           "httpMethod": "POST",
           "id": "dns.policies.create",
@@ -840,7 +840,7 @@
           ]
         },
         "delete": {
-          "description": "Deletes a previously created Policy. Fails if the policy is still being referenced by a network.",
+          "description": "Deletes a previously created policy. Fails if the policy is still being referenced by a network.",
           "flatPath": "dns/v1/projects/{project}/policies/{policy}",
           "httpMethod": "DELETE",
           "id": "dns.policies.delete",
@@ -874,7 +874,7 @@
           ]
         },
         "get": {
-          "description": "Fetches the representation of an existing Policy.",
+          "description": "Fetches the representation of an existing policy.",
           "flatPath": "dns/v1/projects/{project}/policies/{policy}",
           "httpMethod": "GET",
           "id": "dns.policies.get",
@@ -913,7 +913,7 @@
           ]
         },
         "list": {
-          "description": "Enumerates all Policies associated with a project.",
+          "description": "Enumerates all policies associated with a project.",
           "flatPath": "dns/v1/projects/{project}/policies",
           "httpMethod": "GET",
           "id": "dns.policies.list",
@@ -951,7 +951,7 @@
           ]
         },
         "patch": {
-          "description": "Applies a partial update to an existing Policy.",
+          "description": "Applies a partial update to an existing policy.",
           "flatPath": "dns/v1/projects/{project}/policies/{policy}",
           "httpMethod": "PATCH",
           "id": "dns.policies.patch",
@@ -991,7 +991,7 @@
           ]
         },
         "update": {
-          "description": "Updates an existing Policy.",
+          "description": "Updates an existing policy.",
           "flatPath": "dns/v1/projects/{project}/policies/{policy}",
           "httpMethod": "PUT",
           "id": "dns.policies.update",
@@ -1237,7 +1237,7 @@
               "type": "integer"
             },
             "name": {
-              "description": "Restricts the list to return only records with this fully qualified domain name.",
+              "description": "Restricts the list to return only records with this fully qualified domain name. Mutually exclusive with the {@code filter} field.",
               "location": "query",
               "type": "string"
             },
@@ -1253,7 +1253,7 @@
               "type": "string"
             },
             "type": {
-              "description": "Restricts the list to return only records of this type. If present, the \"name\" parameter must also be present.",
+              "description": "Restricts the list to return only records of this type. If present, the \"name\" parameter must also be present. Mutually exclusive with the {@code filter} field.",
               "location": "query",
               "type": "string"
             }
@@ -1824,7 +1824,7 @@
       }
     }
   },
-  "revision": "20250411",
+  "revision": "20250828",
   "rootUrl": "https://dns.googleapis.com/",
   "schemas": {
     "Change": {
@@ -2759,7 +2759,7 @@
         },
         "dns64Config": {
           "$ref": "PolicyDns64Config",
-          "description": "Configurations related to DNS64 for this Policy."
+          "description": "Configurations related to DNS64 for this policy."
         },
         "enableInboundForwarding": {
           "description": "Allows networks bound to this policy to receive DNS queries sent by VMs or applications over VPN connections. When enabled, a virtual IP address is allocated from each of the subnetworks that are bound to this policy.",
@@ -2858,7 +2858,7 @@
       "id": "PolicyDns64ConfigScope",
       "properties": {
         "allQueries": {
-          "description": "Controls whether DNS64 is enabled globally at the network level.",
+          "description": "Controls whether DNS64 is enabled globally for all networks bound to the policy.",
           "type": "boolean"
         },
         "kind": {

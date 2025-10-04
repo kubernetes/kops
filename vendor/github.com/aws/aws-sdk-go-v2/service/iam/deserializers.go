@@ -23,16 +23,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-	"time"
 )
-
-func deserializeS3Expires(v string) (*time.Time, error) {
-	t, err := smithytime.ParseHTTPDate(v)
-	if err != nil {
-		return nil, nil
-	}
-	return &t, nil
-}
 
 type awsAwsquery_deserializeOpAddClientIDToOpenIDConnectProvider struct {
 }
@@ -15367,6 +15358,9 @@ func awsAwsquery_deserializeOpErrorUpdateAccessKey(response *smithyhttp.Response
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("InvalidInput", errorCode):
+		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
+
 	case strings.EqualFold("LimitExceeded", errorCode):
 		return awsAwsquery_deserializeErrorLimitExceededException(response, errorBody)
 
@@ -16403,6 +16397,9 @@ func awsAwsquery_deserializeOpErrorUpdateSigningCertificate(response *smithyhttp
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("InvalidInput", errorCode):
+		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
+
 	case strings.EqualFold("LimitExceeded", errorCode):
 		return awsAwsquery_deserializeErrorLimitExceededException(response, errorBody)
 
@@ -16486,6 +16483,9 @@ func awsAwsquery_deserializeOpErrorUpdateSSHPublicKey(response *smithyhttp.Respo
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("InvalidInput", errorCode):
+		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
+
 	case strings.EqualFold("NoSuchEntity", errorCode):
 		return awsAwsquery_deserializeErrorNoSuchEntityException(response, errorBody)
 
@@ -26387,6 +26387,49 @@ func awsAwsquery_deserializeDocumentServiceSpecificCredential(v **types.ServiceS
 				sv.CreateDate = ptr.Time(t)
 			}
 
+		case strings.EqualFold("ExpirationDate", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				t, err := smithytime.ParseDateTime(xtv)
+				if err != nil {
+					return err
+				}
+				sv.ExpirationDate = ptr.Time(t)
+			}
+
+		case strings.EqualFold("ServiceCredentialAlias", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.ServiceCredentialAlias = ptr.String(xtv)
+			}
+
+		case strings.EqualFold("ServiceCredentialSecret", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.ServiceCredentialSecret = ptr.String(xtv)
+			}
+
 		case strings.EqualFold("ServiceName", t.Name.Local):
 			val, err := decoder.Value()
 			if err != nil {
@@ -26516,6 +26559,36 @@ func awsAwsquery_deserializeDocumentServiceSpecificCredentialMetadata(v **types.
 					return err
 				}
 				sv.CreateDate = ptr.Time(t)
+			}
+
+		case strings.EqualFold("ExpirationDate", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				t, err := smithytime.ParseDateTime(xtv)
+				if err != nil {
+					return err
+				}
+				sv.ExpirationDate = ptr.Time(t)
+			}
+
+		case strings.EqualFold("ServiceCredentialAlias", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.ServiceCredentialAlias = ptr.String(xtv)
 			}
 
 		case strings.EqualFold("ServiceName", t.Name.Local):
@@ -33094,6 +33167,35 @@ func awsAwsquery_deserializeOpDocumentListServiceSpecificCredentialsOutput(v **L
 		originalDecoder := decoder
 		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
 		switch {
+		case strings.EqualFold("IsTruncated", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv, err := strconv.ParseBool(string(val))
+				if err != nil {
+					return fmt.Errorf("expected booleanType to be of type *bool, got %T instead", val)
+				}
+				sv.IsTruncated = xtv
+			}
+
+		case strings.EqualFold("Marker", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.Marker = ptr.String(xtv)
+			}
+
 		case strings.EqualFold("ServiceSpecificCredentials", t.Name.Local):
 			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
 			if err := awsAwsquery_deserializeDocumentServiceSpecificCredentialsListType(&sv.ServiceSpecificCredentials, nodeDecoder); err != nil {

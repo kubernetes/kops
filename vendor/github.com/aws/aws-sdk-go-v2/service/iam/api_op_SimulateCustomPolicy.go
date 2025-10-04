@@ -20,13 +20,13 @@ import (
 // operations. You can simulate resources that don't exist in your account.
 //
 // If you want to simulate existing policies that are attached to an IAM user,
-// group, or role, use SimulatePrincipalPolicyinstead.
+// group, or role, use [SimulatePrincipalPolicy]instead.
 //
 // Context keys are variables that are maintained by Amazon Web Services and its
 // services and which provide details about the context of an API query request.
 // You can use the Condition element of an IAM policy to evaluate context keys. To
 // get the list of context keys that the policies require for correct simulation,
-// use GetContextKeysForCustomPolicy.
+// use [GetContextKeysForCustomPolicy].
 //
 // If the output is long, you can use MaxItems and Marker parameters to paginate
 // the results.
@@ -39,7 +39,9 @@ import (
 // For more information about using the policy simulator, see [Testing IAM policies with the IAM policy simulator]in the IAM User
 // Guide.
 //
+// [GetContextKeysForCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetContextKeysForCustomPolicy.html
 // [Testing IAM policies with the IAM policy simulator]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html
+// [SimulatePrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulatePrincipalPolicy.html
 func (c *Client) SimulateCustomPolicy(ctx context.Context, params *SimulateCustomPolicyInput, optFns ...func(*Options)) (*SimulateCustomPolicyOutput, error) {
 	if params == nil {
 		params = &SimulateCustomPolicyInput{}
@@ -255,7 +257,10 @@ type SimulateCustomPolicyInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful SimulatePrincipalPolicy or SimulateCustomPolicy request.
+// Contains the response to a successful [SimulatePrincipalPolicy] or [SimulateCustomPolicy] request.
+//
+// [SimulatePrincipalPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulatePrincipalPolicy.html
+// [SimulateCustomPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulateCustomPolicy.html
 type SimulateCustomPolicyOutput struct {
 
 	// The results of the simulation.
@@ -365,6 +370,36 @@ func (c *Client) addOperationSimulateCustomPolicyMiddlewares(stack *middleware.S
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -24,8 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
@@ -125,12 +127,12 @@ func mapToAWSInstanceIDsTolerant(nodes []*v1.Node) []InstanceID {
 }
 
 // Gets the full information about this instance from the EC2 API
-func describeInstance(ec2Client iface.EC2, instanceID InstanceID) (*ec2.Instance, error) {
+func describeInstance(ctx context.Context, ec2Client iface.EC2, instanceID InstanceID) (*ec2types.Instance, error) {
 	request := &ec2.DescribeInstancesInput{
-		InstanceIds: []*string{instanceID.awsString()},
+		InstanceIds: []string{string(instanceID)},
 	}
 
-	instances, err := ec2Client.DescribeInstances(request)
+	instances, err := ec2Client.DescribeInstances(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +142,7 @@ func describeInstance(ec2Client iface.EC2, instanceID InstanceID) (*ec2.Instance
 	if len(instances) > 1 {
 		return nil, fmt.Errorf("multiple instances found for instance: %s", instanceID)
 	}
-	return instances[0], nil
+	return &instances[0], nil
 }
 
 // instanceCache manages the cache of DescribeInstances
@@ -154,20 +156,20 @@ type instanceCache struct {
 
 // Gets the full information about these instance from the EC2 API. Caller must have acquired c.mutex before
 // calling describeAllInstancesUncached.
-func (c *instanceCache) describeAllInstancesUncached() (*allInstancesSnapshot, error) {
+func (c *instanceCache) describeAllInstancesUncached(ctx context.Context) (*allInstancesSnapshot, error) {
 	now := time.Now()
 
 	klog.V(4).Infof("EC2 DescribeInstances - fetching all instances")
 
-	var filters []*ec2.Filter
-	instances, err := c.cloud.describeInstances(filters)
+	var filters []ec2types.Filter
+	instances, err := c.cloud.describeInstances(ctx, filters)
 	if err != nil {
 		return nil, err
 	}
 
-	m := make(map[InstanceID]*ec2.Instance)
+	m := make(map[InstanceID]*ec2types.Instance)
 	for _, i := range instances {
-		id := InstanceID(aws.StringValue(i.InstanceId))
+		id := InstanceID(aws.ToString(i.InstanceId))
 		m[id] = i
 	}
 
@@ -194,7 +196,7 @@ type cacheCriteria struct {
 }
 
 // describeAllInstancesCached returns all instances, using cached results if applicable
-func (c *instanceCache) describeAllInstancesCached(criteria cacheCriteria) (*allInstancesSnapshot, error) {
+func (c *instanceCache) describeAllInstancesCached(ctx context.Context, criteria cacheCriteria) (*allInstancesSnapshot, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.snapshot != nil && c.snapshot.MeetsCriteria(criteria) {
@@ -202,7 +204,7 @@ func (c *instanceCache) describeAllInstancesCached(criteria cacheCriteria) (*all
 		return c.snapshot, nil
 	}
 
-	return c.describeAllInstancesUncached()
+	return c.describeAllInstancesUncached(ctx)
 }
 
 // olderThan is a simple helper to encapsulate timestamp comparison
@@ -238,12 +240,12 @@ func (s *allInstancesSnapshot) MeetsCriteria(criteria cacheCriteria) bool {
 // along with the timestamp for cache-invalidation purposes
 type allInstancesSnapshot struct {
 	timestamp time.Time
-	instances map[InstanceID]*ec2.Instance
+	instances map[InstanceID]*ec2types.Instance
 }
 
 // FindInstances returns the instances corresponding to the specified ids.  If an id is not found, it is ignored.
-func (s *allInstancesSnapshot) FindInstances(ids []InstanceID) map[InstanceID]*ec2.Instance {
-	m := make(map[InstanceID]*ec2.Instance)
+func (s *allInstancesSnapshot) FindInstances(ids []InstanceID) map[InstanceID]*ec2types.Instance {
+	m := make(map[InstanceID]*ec2types.Instance)
 	for _, id := range ids {
 		instance := s.instances[id]
 		if instance != nil {

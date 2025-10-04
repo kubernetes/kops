@@ -13,13 +13,14 @@ import (
 // Lists the names of the inline policies embedded in the specified IAM user.
 //
 // An IAM user can also have managed policies attached to it. To list the managed
-// policies that are attached to a user, use ListAttachedUserPolicies. For more information about
+// policies that are attached to a user, use [ListAttachedUserPolicies]. For more information about
 // policies, see [Managed policies and inline policies]in the IAM User Guide.
 //
 // You can paginate the results using the MaxItems and Marker parameters. If there
 // are no inline policies embedded with the specified user, the operation returns
 // an empty list.
 //
+// [ListAttachedUserPolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAttachedUserPolicies.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) ListUserPolicies(ctx context.Context, params *ListUserPoliciesInput, optFns ...func(*Options)) (*ListUserPoliciesOutput, error) {
 	if params == nil {
@@ -69,7 +70,9 @@ type ListUserPoliciesInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful ListUserPolicies request.
+// Contains the response to a successful [ListUserPolicies] request.
+//
+// [ListUserPolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListUserPolicies.html
 type ListUserPoliciesOutput struct {
 
 	// A list of policy names.
@@ -181,6 +184,36 @@ func (c *Client) addOperationListUserPoliciesMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {
