@@ -977,23 +977,6 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	if b.Cluster.Spec.Networking.Canal != nil {
-		key := "networking.projectcalico.org.canal"
-
-		{
-			id := "k8s-1.25"
-			location := key + "/" + id + ".yaml"
-
-			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
-				Id:       id,
-			})
-			addon.BuildPrune = true
-		}
-	}
-
 	if b.Cluster.Spec.Networking.KubeRouter != nil {
 		key := "networking.kuberouter"
 

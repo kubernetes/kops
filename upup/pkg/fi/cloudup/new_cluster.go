@@ -1215,8 +1215,6 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		}
 	case "calico":
 		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
-	case "canal":
-		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
 	case "kube-router":
 		cluster.Spec.Networking.KubeRouter = &api.KuberouterNetworkingSpec{}
 		if cluster.Spec.KubeProxy == nil {

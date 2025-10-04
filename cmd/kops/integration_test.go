@@ -223,7 +223,6 @@ const (
 	scwCSIAddon = "scaleway-csi-driver.addons.k8s.io-k8s-1.24"
 
 	calicoAddon  = "networking.projectcalico.org-k8s-1.25"
-	canalAddon   = "networking.projectcalico.org.canal-k8s-1.25"
 	ciliumAddon  = "networking.cilium.io-k8s-1.16"
 	flannelAddon = "networking.flannel-k8s-1.25"
 	kindnetAddon = "networking.kindnet-k8s-1.32"

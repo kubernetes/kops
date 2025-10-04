@@ -1623,7 +1623,6 @@ the removal of fields no longer in use.
 | networking.amazonvpc                                   | networking.amazonVPC                                           |
 | networking.amazonvpc.imageName                         | networking.amazonVPC.image                                     |
 | networking.amazonvpc.initImageName                     | networking.amazonVPC.initImage                                 |
-| networking.canal.disableFlannelForwardRules            | networking.canal.flanneldIptablesForwardRules (value inverted) |
 | networking.cilium.disableMasquerade                    | networking.cilium.masquerade (value inverted)                  |
 | networking.cilium.IPTablesRulesNoinstall               | networking.cilium.installIptablesRules (value inverted)        |
 | networking.cilium.toFqdnsDnsRejectResponseCode         | networking.cilium.toFQDNsDNSRejectResponseCode                 |

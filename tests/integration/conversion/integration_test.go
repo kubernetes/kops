@@ -48,11 +48,6 @@ func TestConversionAzure(t *testing.T) {
 	runTest(t, "azure", "v1alpha3", "v1alpha2")
 }
 
-func TestConversionCanal(t *testing.T) {
-	runTest(t, "canal", "v1alpha2", "v1alpha3")
-	runTest(t, "canal", "v1alpha3", "v1alpha2")
-}
-
 func TestConversionCilium(t *testing.T) {
 	runTest(t, "cilium", "v1alpha2", "v1alpha3")
 	runTest(t, "cilium", "v1alpha3", "v1alpha2")

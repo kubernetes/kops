@@ -205,18 +205,6 @@ func TestSetupNetworking(t *testing.T) {
 		},
 		{
 			options: NewClusterOptions{
-				Networking: "canal",
-			},
-			expected: api.Cluster{
-				Spec: api.ClusterSpec{
-					Networking: api.NetworkingSpec{
-						Canal: &api.CanalNetworkingSpec{},
-					},
-				},
-			},
-		},
-		{
-			options: NewClusterOptions{
 				Networking: "kube-router",
 			},
 			expected: api.Cluster{
