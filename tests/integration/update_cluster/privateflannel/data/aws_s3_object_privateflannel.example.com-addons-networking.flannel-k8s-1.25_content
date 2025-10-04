@@ -106,7 +106,7 @@ data:
   net-conf.json: |-
     {
       "Network": "100.64.0.0/10",
-      "EnableNFTables": true,
+      "EnableNFTables": false,
       "Backend": {
         "Type": "vxlan"
       }
@@ -179,7 +179,9 @@ spec:
               fieldPath: metadata.namespace
         - name: EVENT_QUEUE_DEPTH
           value: "5000"
-        image: ghcr.io/flannel-io/flannel:v0.26.4
+        - name: CONT_WHEN_CACHE_NOT_READY
+          value: "false"
+        image: ghcr.io/flannel-io/flannel:v0.27.4
         name: kube-flannel
         resources:
           requests:
@@ -206,7 +208,7 @@ spec:
         - /opt/cni/bin/flannel
         command:
         - cp
-        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.6.2-flannel1
+        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.8.0-flannel1
         name: install-cni-plugin
         volumeMounts:
         - mountPath: /opt/cni/bin
@@ -217,7 +219,7 @@ spec:
         - /etc/cni/net.d/10-flannel.conflist
         command:
         - cp
-        image: ghcr.io/flannel-io/flannel:v0.26.4
+        image: ghcr.io/flannel-io/flannel:v0.27.4
         name: install-cni
         volumeMounts:
         - mountPath: /etc/cni/net.d
