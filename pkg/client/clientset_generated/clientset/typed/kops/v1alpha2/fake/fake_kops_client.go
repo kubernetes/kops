@@ -29,23 +29,23 @@ type FakeKopsV1alpha2 struct {
 }
 
 func (c *FakeKopsV1alpha2) Clusters(namespace string) v1alpha2.ClusterInterface {
-	return &FakeClusters{c, namespace}
+	return newFakeClusters(c, namespace)
 }
 
 func (c *FakeKopsV1alpha2) Hosts(namespace string) v1alpha2.HostInterface {
-	return &FakeHosts{c, namespace}
+	return newFakeHosts(c, namespace)
 }
 
 func (c *FakeKopsV1alpha2) InstanceGroups(namespace string) v1alpha2.InstanceGroupInterface {
-	return &FakeInstanceGroups{c, namespace}
+	return newFakeInstanceGroups(c, namespace)
 }
 
 func (c *FakeKopsV1alpha2) Keysets(namespace string) v1alpha2.KeysetInterface {
-	return &FakeKeysets{c, namespace}
+	return newFakeKeysets(c, namespace)
 }
 
 func (c *FakeKopsV1alpha2) SSHCredentials(namespace string) v1alpha2.SSHCredentialInterface {
-	return &FakeSSHCredentials{c, namespace}
+	return newFakeSSHCredentials(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate

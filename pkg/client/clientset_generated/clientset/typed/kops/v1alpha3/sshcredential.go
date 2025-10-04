@@ -19,14 +19,13 @@ limitations under the License.
 package v1alpha3
 
 import (
-	"context"
-	"time"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
-	v1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
+	gentype "k8s.io/client-go/gentype"
+	kopsv1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
 	scheme "k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
 )
 
@@ -38,141 +37,32 @@ type SSHCredentialsGetter interface {
 
 // SSHCredentialInterface has methods to work with SSHCredential resources.
 type SSHCredentialInterface interface {
-	Create(ctx context.Context, sSHCredential *v1alpha3.SSHCredential, opts v1.CreateOptions) (*v1alpha3.SSHCredential, error)
-	Update(ctx context.Context, sSHCredential *v1alpha3.SSHCredential, opts v1.UpdateOptions) (*v1alpha3.SSHCredential, error)
+	Create(ctx context.Context, sSHCredential *kopsv1alpha3.SSHCredential, opts v1.CreateOptions) (*kopsv1alpha3.SSHCredential, error)
+	Update(ctx context.Context, sSHCredential *kopsv1alpha3.SSHCredential, opts v1.UpdateOptions) (*kopsv1alpha3.SSHCredential, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha3.SSHCredential, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha3.SSHCredentialList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*kopsv1alpha3.SSHCredential, error)
+	List(ctx context.Context, opts v1.ListOptions) (*kopsv1alpha3.SSHCredentialList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.SSHCredential, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kopsv1alpha3.SSHCredential, err error)
 	SSHCredentialExpansion
 }
 
 // sSHCredentials implements SSHCredentialInterface
 type sSHCredentials struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithList[*kopsv1alpha3.SSHCredential, *kopsv1alpha3.SSHCredentialList]
 }
 
 // newSSHCredentials returns a SSHCredentials
 func newSSHCredentials(c *KopsV1alpha3Client, namespace string) *sSHCredentials {
 	return &sSHCredentials{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithList[*kopsv1alpha3.SSHCredential, *kopsv1alpha3.SSHCredentialList](
+			"sshcredentials",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *kopsv1alpha3.SSHCredential { return &kopsv1alpha3.SSHCredential{} },
+			func() *kopsv1alpha3.SSHCredentialList { return &kopsv1alpha3.SSHCredentialList{} },
+		),
 	}
-}
-
-// Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
-func (c *sSHCredentials) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.SSHCredential, err error) {
-	result = &v1alpha3.SSHCredential{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
-func (c *sSHCredentials) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.SSHCredentialList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	result = &v1alpha3.SSHCredentialList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested sSHCredentials.
-func (c *sSHCredentials) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch(ctx)
-}
-
-// Create takes the representation of a sSHCredential and creates it.  Returns the server's representation of the sSHCredential, and an error, if there is any.
-func (c *sSHCredentials) Create(ctx context.Context, sSHCredential *v1alpha3.SSHCredential, opts v1.CreateOptions) (result *v1alpha3.SSHCredential, err error) {
-	result = &v1alpha3.SSHCredential{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(sSHCredential).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Update takes the representation of a sSHCredential and updates it. Returns the server's representation of the sSHCredential, and an error, if there is any.
-func (c *sSHCredentials) Update(ctx context.Context, sSHCredential *v1alpha3.SSHCredential, opts v1.UpdateOptions) (result *v1alpha3.SSHCredential, err error) {
-	result = &v1alpha3.SSHCredential{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		Name(sSHCredential.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(sSHCredential).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Delete takes name of the sSHCredential and deletes it. Returns an error if one occurs.
-func (c *sSHCredentials) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		Name(name).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *sSHCredentials) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	var timeout time.Duration
-	if listOpts.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
-	}
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// Patch applies the patch and returns the patched sSHCredential.
-func (c *sSHCredentials) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.SSHCredential, err error) {
-	result = &v1alpha3.SSHCredential{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		Name(name).
-		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
 }

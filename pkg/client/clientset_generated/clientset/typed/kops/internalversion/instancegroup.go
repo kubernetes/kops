@@ -19,13 +19,12 @@ limitations under the License.
 package internalversion
 
 import (
-	"context"
-	"time"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
+	gentype "k8s.io/client-go/gentype"
 	kops "k8s.io/kops/pkg/apis/kops"
 	scheme "k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
 )
@@ -51,128 +50,19 @@ type InstanceGroupInterface interface {
 
 // instanceGroups implements InstanceGroupInterface
 type instanceGroups struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithList[*kops.InstanceGroup, *kops.InstanceGroupList]
 }
 
 // newInstanceGroups returns a InstanceGroups
 func newInstanceGroups(c *KopsClient, namespace string) *instanceGroups {
 	return &instanceGroups{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithList[*kops.InstanceGroup, *kops.InstanceGroupList](
+			"instancegroups",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *kops.InstanceGroup { return &kops.InstanceGroup{} },
+			func() *kops.InstanceGroupList { return &kops.InstanceGroupList{} },
+		),
 	}
-}
-
-// Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
-func (c *instanceGroups) Get(ctx context.Context, name string, options v1.GetOptions) (result *kops.InstanceGroup, err error) {
-	result = &kops.InstanceGroup{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of InstanceGroups that match those selectors.
-func (c *instanceGroups) List(ctx context.Context, opts v1.ListOptions) (result *kops.InstanceGroupList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	result = &kops.InstanceGroupList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested instanceGroups.
-func (c *instanceGroups) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch(ctx)
-}
-
-// Create takes the representation of a instanceGroup and creates it.  Returns the server's representation of the instanceGroup, and an error, if there is any.
-func (c *instanceGroups) Create(ctx context.Context, instanceGroup *kops.InstanceGroup, opts v1.CreateOptions) (result *kops.InstanceGroup, err error) {
-	result = &kops.InstanceGroup{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(instanceGroup).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Update takes the representation of a instanceGroup and updates it. Returns the server's representation of the instanceGroup, and an error, if there is any.
-func (c *instanceGroups) Update(ctx context.Context, instanceGroup *kops.InstanceGroup, opts v1.UpdateOptions) (result *kops.InstanceGroup, err error) {
-	result = &kops.InstanceGroup{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		Name(instanceGroup.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(instanceGroup).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Delete takes name of the instanceGroup and deletes it. Returns an error if one occurs.
-func (c *instanceGroups) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		Name(name).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *instanceGroups) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	var timeout time.Duration
-	if listOpts.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
-	}
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// Patch applies the patch and returns the patched instanceGroup.
-func (c *instanceGroups) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.InstanceGroup, err error) {
-	result = &kops.InstanceGroup{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("instancegroups").
-		Name(name).
-		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
 }

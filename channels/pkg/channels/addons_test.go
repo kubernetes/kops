@@ -140,7 +140,7 @@ func Test_GetRequiredUpdates(t *testing.T) {
 			Name: "kube-system",
 		},
 	}
-	fakek8s := fakekubernetes.NewSimpleClientset(kubeSystem)
+	fakek8s := fakekubernetes.NewClientset(kubeSystem)
 	fakecm := fakecertmanager.NewSimpleClientset()
 	addon := &Addon{
 		Name: "test",
@@ -271,7 +271,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 
 		existingChannels := FindChannelVersions(kubeSystem)
 
-		fakek8s := fakekubernetes.NewSimpleClientset(objects...)
+		fakek8s := fakekubernetes.NewClientset(objects...)
 		fakecm := fakecertmanager.NewSimpleClientset()
 
 		addon := g.newAddon
@@ -333,7 +333,7 @@ func Test_InstallPKI(t *testing.T) {
 			Name: "kube-system",
 		},
 	}
-	fakek8s := fakekubernetes.NewSimpleClientset(kubeSystem)
+	fakek8s := fakekubernetes.NewClientset(kubeSystem)
 	fakecm := fakecertmanager.NewSimpleClientset()
 	addon := &Addon{
 		Name: "test",

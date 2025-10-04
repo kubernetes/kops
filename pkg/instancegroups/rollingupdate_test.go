@@ -52,7 +52,7 @@ const (
 )
 
 func getTestSetup() (*RollingUpdateCluster, *awsup.MockAWSCloud) {
-	k8sClient := fake.NewSimpleClientset()
+	k8sClient := fake.NewClientset()
 
 	mockcloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	mockAutoscaling := &mockautoscaling.MockAutoscaling{

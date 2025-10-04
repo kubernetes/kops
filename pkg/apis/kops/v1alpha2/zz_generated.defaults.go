@@ -40,16 +40,6 @@ func SetObjectDefaults_Cluster(in *Cluster) {
 		for i := range in.Spec.KubeAPIServer.Env {
 			a := &in.Spec.KubeAPIServer.Env[i]
 			if a.ValueFrom != nil {
-				if a.ValueFrom.ConfigMapKeyRef != nil {
-					if a.ValueFrom.ConfigMapKeyRef.LocalObjectReference.Name == "" {
-						a.ValueFrom.ConfigMapKeyRef.LocalObjectReference.Name = ""
-					}
-				}
-				if a.ValueFrom.SecretKeyRef != nil {
-					if a.ValueFrom.SecretKeyRef.LocalObjectReference.Name == "" {
-						a.ValueFrom.SecretKeyRef.LocalObjectReference.Name = ""
-					}
-				}
 				if a.ValueFrom.FileKeyRef != nil {
 					if a.ValueFrom.FileKeyRef.Optional == nil {
 						var ptrVar1 bool = false

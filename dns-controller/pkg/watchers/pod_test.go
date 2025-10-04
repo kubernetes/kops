@@ -52,7 +52,7 @@ func TestPodController(t *testing.T) {
 		},
 	}
 
-	client := fake.NewSimpleClientset()
+	client := fake.NewClientset()
 	pods := client.CoreV1().Pods("kube-system")
 
 	_, err := pods.Create(ctx, pspec, metav1.CreateOptions{})

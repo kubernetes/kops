@@ -19,111 +19,34 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	gentype "k8s.io/client-go/gentype"
 	v1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
+	kopsv1alpha3 "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/v1alpha3"
 )
 
-// FakeSSHCredentials implements SSHCredentialInterface
-type FakeSSHCredentials struct {
+// fakeSSHCredentials implements SSHCredentialInterface
+type fakeSSHCredentials struct {
+	*gentype.FakeClientWithList[*v1alpha3.SSHCredential, *v1alpha3.SSHCredentialList]
 	Fake *FakeKopsV1alpha3
-	ns   string
 }
 
-var sshcredentialsResource = v1alpha3.SchemeGroupVersion.WithResource("sshcredentials")
-
-var sshcredentialsKind = v1alpha3.SchemeGroupVersion.WithKind("SSHCredential")
-
-// Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
-func (c *FakeSSHCredentials) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.SSHCredential, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(sshcredentialsResource, c.ns, name), &v1alpha3.SSHCredential{})
-
-	if obj == nil {
-		return nil, err
+func newFakeSSHCredentials(fake *FakeKopsV1alpha3, namespace string) kopsv1alpha3.SSHCredentialInterface {
+	return &fakeSSHCredentials{
+		gentype.NewFakeClientWithList[*v1alpha3.SSHCredential, *v1alpha3.SSHCredentialList](
+			fake.Fake,
+			namespace,
+			v1alpha3.SchemeGroupVersion.WithResource("sshcredentials"),
+			v1alpha3.SchemeGroupVersion.WithKind("SSHCredential"),
+			func() *v1alpha3.SSHCredential { return &v1alpha3.SSHCredential{} },
+			func() *v1alpha3.SSHCredentialList { return &v1alpha3.SSHCredentialList{} },
+			func(dst, src *v1alpha3.SSHCredentialList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha3.SSHCredentialList) []*v1alpha3.SSHCredential {
+				return gentype.ToPointerSlice(list.Items)
+			},
+			func(list *v1alpha3.SSHCredentialList, items []*v1alpha3.SSHCredential) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1alpha3.SSHCredential), err
-}
-
-// List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
-func (c *FakeSSHCredentials) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.SSHCredentialList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(sshcredentialsResource, sshcredentialsKind, c.ns, opts), &v1alpha3.SSHCredentialList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha3.SSHCredentialList{ListMeta: obj.(*v1alpha3.SSHCredentialList).ListMeta}
-	for _, item := range obj.(*v1alpha3.SSHCredentialList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested sSHCredentials.
-func (c *FakeSSHCredentials) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(sshcredentialsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a sSHCredential and creates it.  Returns the server's representation of the sSHCredential, and an error, if there is any.
-func (c *FakeSSHCredentials) Create(ctx context.Context, sSHCredential *v1alpha3.SSHCredential, opts v1.CreateOptions) (result *v1alpha3.SSHCredential, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(sshcredentialsResource, c.ns, sSHCredential), &v1alpha3.SSHCredential{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha3.SSHCredential), err
-}
-
-// Update takes the representation of a sSHCredential and updates it. Returns the server's representation of the sSHCredential, and an error, if there is any.
-func (c *FakeSSHCredentials) Update(ctx context.Context, sSHCredential *v1alpha3.SSHCredential, opts v1.UpdateOptions) (result *v1alpha3.SSHCredential, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(sshcredentialsResource, c.ns, sSHCredential), &v1alpha3.SSHCredential{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha3.SSHCredential), err
-}
-
-// Delete takes name of the sSHCredential and deletes it. Returns an error if one occurs.
-func (c *FakeSSHCredentials) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(sshcredentialsResource, c.ns, name, opts), &v1alpha3.SSHCredential{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeSSHCredentials) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(sshcredentialsResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha3.SSHCredentialList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched sSHCredential.
-func (c *FakeSSHCredentials) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.SSHCredential, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(sshcredentialsResource, c.ns, name, pt, data, subresources...), &v1alpha3.SSHCredential{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha3.SSHCredential), err
 }

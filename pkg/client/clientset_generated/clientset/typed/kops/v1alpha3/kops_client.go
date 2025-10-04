@@ -19,11 +19,11 @@ limitations under the License.
 package v1alpha3
 
 import (
-	"net/http"
+	http "net/http"
 
 	rest "k8s.io/client-go/rest"
-	v1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
-	"k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
+	kopsv1alpha3 "k8s.io/kops/pkg/apis/kops/v1alpha3"
+	scheme "k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
 )
 
 type KopsV1alpha3Interface interface {
@@ -65,9 +65,7 @@ func (c *KopsV1alpha3Client) SSHCredentials(namespace string) SSHCredentialInter
 // where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*KopsV1alpha3Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
-		return nil, err
-	}
+	setConfigDefaults(&config)
 	httpClient, err := rest.HTTPClientFor(&config)
 	if err != nil {
 		return nil, err
@@ -79,9 +77,7 @@ func NewForConfig(c *rest.Config) (*KopsV1alpha3Client, error) {
 // Note the http client provided takes precedence over the configured transport values.
 func NewForConfigAndClient(c *rest.Config, h *http.Client) (*KopsV1alpha3Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
-		return nil, err
-	}
+	setConfigDefaults(&config)
 	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
@@ -104,17 +100,15 @@ func New(c rest.Interface) *KopsV1alpha3Client {
 	return &KopsV1alpha3Client{c}
 }
 
-func setConfigDefaults(config *rest.Config) error {
-	gv := v1alpha3.SchemeGroupVersion
+func setConfigDefaults(config *rest.Config) {
+	gv := kopsv1alpha3.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-
-	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate

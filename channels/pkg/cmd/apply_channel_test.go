@@ -46,7 +46,7 @@ func TestGetUpdates(t *testing.T) {
 			},
 		},
 	}
-	k8sClient := fakek8s.NewSimpleClientset(&kubeSystemNS, &defaultNS)
+	k8sClient := fakek8s.NewClientset(&kubeSystemNS, &defaultNS)
 	ctx := context.Background()
 
 	channelVersions, err := getChannelVersions(ctx, k8sClient)

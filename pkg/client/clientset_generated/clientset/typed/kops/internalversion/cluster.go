@@ -19,13 +19,12 @@ limitations under the License.
 package internalversion
 
 import (
-	"context"
-	"time"
+	context "context"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
+	gentype "k8s.io/client-go/gentype"
 	kops "k8s.io/kops/pkg/apis/kops"
 	scheme "k8s.io/kops/pkg/client/clientset_generated/clientset/scheme"
 )
@@ -51,128 +50,19 @@ type ClusterInterface interface {
 
 // clusters implements ClusterInterface
 type clusters struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithList[*kops.Cluster, *kops.ClusterList]
 }
 
 // newClusters returns a Clusters
 func newClusters(c *KopsClient, namespace string) *clusters {
 	return &clusters{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithList[*kops.Cluster, *kops.ClusterList](
+			"clusters",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *kops.Cluster { return &kops.Cluster{} },
+			func() *kops.ClusterList { return &kops.ClusterList{} },
+		),
 	}
-}
-
-// Get takes name of the cluster, and returns the corresponding cluster object, and an error if there is any.
-func (c *clusters) Get(ctx context.Context, name string, options v1.GetOptions) (result *kops.Cluster, err error) {
-	result = &kops.Cluster{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("clusters").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Clusters that match those selectors.
-func (c *clusters) List(ctx context.Context, opts v1.ListOptions) (result *kops.ClusterList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	result = &kops.ClusterList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("clusters").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested clusters.
-func (c *clusters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("clusters").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch(ctx)
-}
-
-// Create takes the representation of a cluster and creates it.  Returns the server's representation of the cluster, and an error, if there is any.
-func (c *clusters) Create(ctx context.Context, cluster *kops.Cluster, opts v1.CreateOptions) (result *kops.Cluster, err error) {
-	result = &kops.Cluster{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("clusters").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(cluster).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Update takes the representation of a cluster and updates it. Returns the server's representation of the cluster, and an error, if there is any.
-func (c *clusters) Update(ctx context.Context, cluster *kops.Cluster, opts v1.UpdateOptions) (result *kops.Cluster, err error) {
-	result = &kops.Cluster{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("clusters").
-		Name(cluster.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(cluster).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Delete takes name of the cluster and deletes it. Returns an error if one occurs.
-func (c *clusters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("clusters").
-		Name(name).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *clusters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	var timeout time.Duration
-	if listOpts.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
-	}
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("clusters").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// Patch applies the patch and returns the patched cluster.
-func (c *clusters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.Cluster, err error) {
-	result = &kops.Cluster{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("clusters").
-		Name(name).
-		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
 }

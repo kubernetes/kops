@@ -19,111 +19,30 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	gentype "k8s.io/client-go/gentype"
 	kops "k8s.io/kops/pkg/apis/kops"
+	internalversion "k8s.io/kops/pkg/client/clientset_generated/internalclientset/typed/kops/internalversion"
 )
 
-// FakeHosts implements HostInterface
-type FakeHosts struct {
+// fakeHosts implements HostInterface
+type fakeHosts struct {
+	*gentype.FakeClientWithList[*kops.Host, *kops.HostList]
 	Fake *FakeKops
-	ns   string
 }
 
-var hostsResource = kops.SchemeGroupVersion.WithResource("hosts")
-
-var hostsKind = kops.SchemeGroupVersion.WithKind("Host")
-
-// Get takes name of the host, and returns the corresponding host object, and an error if there is any.
-func (c *FakeHosts) Get(ctx context.Context, name string, options v1.GetOptions) (result *kops.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(hostsResource, c.ns, name), &kops.Host{})
-
-	if obj == nil {
-		return nil, err
+func newFakeHosts(fake *FakeKops, namespace string) internalversion.HostInterface {
+	return &fakeHosts{
+		gentype.NewFakeClientWithList[*kops.Host, *kops.HostList](
+			fake.Fake,
+			namespace,
+			kops.SchemeGroupVersion.WithResource("hosts"),
+			kops.SchemeGroupVersion.WithKind("Host"),
+			func() *kops.Host { return &kops.Host{} },
+			func() *kops.HostList { return &kops.HostList{} },
+			func(dst, src *kops.HostList) { dst.ListMeta = src.ListMeta },
+			func(list *kops.HostList) []*kops.Host { return gentype.ToPointerSlice(list.Items) },
+			func(list *kops.HostList, items []*kops.Host) { list.Items = gentype.FromPointerSlice(items) },
+		),
+		fake,
 	}
-	return obj.(*kops.Host), err
-}
-
-// List takes label and field selectors, and returns the list of Hosts that match those selectors.
-func (c *FakeHosts) List(ctx context.Context, opts v1.ListOptions) (result *kops.HostList, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewListAction(hostsResource, hostsKind, c.ns, opts), &kops.HostList{})
-
-	if obj == nil {
-		return nil, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &kops.HostList{ListMeta: obj.(*kops.HostList).ListMeta}
-	for _, item := range obj.(*kops.HostList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested hosts.
-func (c *FakeHosts) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(hostsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a host and creates it.  Returns the server's representation of the host, and an error, if there is any.
-func (c *FakeHosts) Create(ctx context.Context, host *kops.Host, opts v1.CreateOptions) (result *kops.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(hostsResource, c.ns, host), &kops.Host{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.Host), err
-}
-
-// Update takes the representation of a host and updates it. Returns the server's representation of the host, and an error, if there is any.
-func (c *FakeHosts) Update(ctx context.Context, host *kops.Host, opts v1.UpdateOptions) (result *kops.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(hostsResource, c.ns, host), &kops.Host{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.Host), err
-}
-
-// Delete takes name of the host and deletes it. Returns an error if one occurs.
-func (c *FakeHosts) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(hostsResource, c.ns, name, opts), &kops.Host{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeHosts) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(hostsResource, c.ns, listOpts)
-
-	_, err := c.Fake.Invokes(action, &kops.HostList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched host.
-func (c *FakeHosts) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *kops.Host, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(hostsResource, c.ns, name, pt, data, subresources...), &kops.Host{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.Host), err
 }
