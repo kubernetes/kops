@@ -29,7 +29,7 @@ import (
 
 func Test_IsPKIInstalled(t *testing.T) {
 	ctx := context.Background()
-	fakek8s := fakekubernetes.NewSimpleClientset(&corev1.Namespace{
+	fakek8s := fakekubernetes.NewClientset(&corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "kube-sysetem",
 		},
@@ -47,7 +47,7 @@ func Test_IsPKIInstalled(t *testing.T) {
 		t.Error("claims PKI installed when it is not")
 	}
 
-	fakek8s = fakekubernetes.NewSimpleClientset(
+	fakek8s = fakekubernetes.NewClientset(
 		&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "kube-sysetem",

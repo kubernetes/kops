@@ -41,7 +41,7 @@ import (
 func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *openstack.MockCloud) {
 	vfs.Context.ResetMemfsContext(true)
 
-	k8sClient := fake.NewSimpleClientset()
+	k8sClient := fake.NewClientset()
 
 	mockcloud := testutils.SetupMockOpenstack()
 
