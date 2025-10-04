@@ -31,7 +31,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.21
+    version: 3.5.23
   - backups:
       backupStore: memfs://tests/scw-minimal.k8s.local/backups/etcd/events
     cpuRequest: 100m
@@ -42,7 +42,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.21
+    version: 3.5.23
   externalDns:
     provider: dns-controller
   iam:
