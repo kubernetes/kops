@@ -17,11 +17,12 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"k8s.io/klog/v2"
 )
 
@@ -37,8 +38,8 @@ type zoneCache struct {
 	zoneNameToDetails map[string]zoneDetails
 }
 
-func (z *zoneCache) getZoneIDByZoneName(zoneName string) (string, error) {
-	zoneNameToDetails, err := z.getZoneDetailsByNames([]string{zoneName})
+func (z *zoneCache) getZoneIDByZoneName(ctx context.Context, zoneName string) (string, error) {
+	zoneNameToDetails, err := z.getZoneDetailsByNames(ctx, []string{zoneName})
 	if err != nil {
 		return "", err
 	}
@@ -53,14 +54,14 @@ func (z *zoneCache) getZoneIDByZoneName(zoneName string) (string, error) {
 
 // Get the zone details by zone names and load from the cache if available as
 // zone information should never change.
-func (z *zoneCache) getZoneDetailsByNames(zoneNames []string) (map[string]zoneDetails, error) {
+func (z *zoneCache) getZoneDetailsByNames(ctx context.Context, zoneNames []string) (map[string]zoneDetails, error) {
 	if len(zoneNames) == 0 {
 		return map[string]zoneDetails{}, nil
 	}
 
 	if z.shouldPopulateCache(zoneNames) {
 		// Populate the cache if it hasn't been populated yet
-		err := z.populate()
+		err := z.populate(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -103,12 +104,12 @@ func (z *zoneCache) shouldPopulateCache(zoneNames []string) bool {
 
 // Populates the zone cache. If cache is already populated, it will overwrite entries,
 // which is useful when accounts get access to new zones.
-func (z *zoneCache) populate() error {
+func (z *zoneCache) populate(ctx context.Context) error {
 	z.mutex.Lock()
 	defer z.mutex.Unlock()
 
 	azRequest := &ec2.DescribeAvailabilityZonesInput{}
-	zones, err := z.cloud.ec2.DescribeAvailabilityZones(azRequest)
+	zones, err := z.cloud.ec2.DescribeAvailabilityZones(ctx, azRequest)
 	if err != nil {
 		return fmt.Errorf("error describe availability zones: %q", err)
 	}
@@ -119,11 +120,11 @@ func (z *zoneCache) populate() error {
 	}
 
 	for _, zone := range zones {
-		name := aws.StringValue(zone.ZoneName)
+		name := aws.ToString(zone.ZoneName)
 		z.zoneNameToDetails[name] = zoneDetails{
 			name:     name,
-			id:       aws.StringValue(zone.ZoneId),
-			zoneType: aws.StringValue(zone.ZoneType),
+			id:       aws.ToString(zone.ZoneId),
+			zoneType: aws.ToString(zone.ZoneType),
 		}
 	}
 

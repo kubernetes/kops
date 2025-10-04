@@ -19,9 +19,11 @@ import (
 // IAM resource-listing operations return a subset of the available attributes for
 // the resource. For example, this operation does not return tags, even though they
 // are an attribute of the returned object. To view tag information for a virtual
-// MFA device, see ListMFADeviceTags.
+// MFA device, see [ListMFADeviceTags].
 //
 // You can paginate the results using the MaxItems and Marker parameters.
+//
+// [ListMFADeviceTags]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListMFADeviceTags.html
 func (c *Client) ListVirtualMFADevices(ctx context.Context, params *ListVirtualMFADevicesInput, optFns ...func(*Options)) (*ListVirtualMFADevicesOutput, error) {
 	if params == nil {
 		params = &ListVirtualMFADevicesInput{}
@@ -64,7 +66,9 @@ type ListVirtualMFADevicesInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful ListVirtualMFADevices request.
+// Contains the response to a successful [ListVirtualMFADevices] request.
+//
+// [ListVirtualMFADevices]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListVirtualMFADevices.html
 type ListVirtualMFADevicesOutput struct {
 
 	//  The list of virtual MFA devices in the current account that match the
@@ -174,6 +178,36 @@ func (c *Client) addOperationListVirtualMFADevicesMiddlewares(stack *middleware.
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

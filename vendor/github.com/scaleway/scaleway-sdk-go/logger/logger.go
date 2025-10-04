@@ -28,13 +28,13 @@ var severityName = []string{
 // Logger does underlying logging work for scaleway-sdk-go.
 type Logger interface {
 	// Debugf logs to DEBUG log. Arguments are handled in the manner of fmt.Printf.
-	Debugf(format string, args ...interface{})
+	Debugf(format string, args ...any)
 	// Infof logs to INFO log. Arguments are handled in the manner of fmt.Printf.
-	Infof(format string, args ...interface{})
+	Infof(format string, args ...any)
 	// Warningf logs to WARNING log. Arguments are handled in the manner of fmt.Printf.
-	Warningf(format string, args ...interface{})
+	Warningf(format string, args ...any)
 	// Errorf logs to ERROR log. Arguments are handled in the manner of fmt.Printf.
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 	// ShouldLog reports whether verbosity level l is at least the requested verbose level.
 	ShouldLog(level LogLevel) bool
 }

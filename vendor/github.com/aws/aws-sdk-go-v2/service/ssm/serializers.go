@@ -14128,6 +14128,11 @@ func awsAwsjson11_serializeOpDocumentGetDeployablePatchSnapshotForInstanceInput(
 		ok.String(*v.SnapshotId)
 	}
 
+	if v.UseS3DualStackEndpoint {
+		ok := object.Key("UseS3DualStackEndpoint")
+		ok.Boolean(v.UseS3DualStackEndpoint)
+	}
+
 	return nil
 }
 

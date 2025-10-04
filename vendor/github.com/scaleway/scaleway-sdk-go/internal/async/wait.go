@@ -15,7 +15,7 @@ type IntervalStrategy func() <-chan time.Time
 // WaitSyncConfig defines the waiting options.
 type WaitSyncConfig struct {
 	// This method will be called from another goroutine.
-	Get              func() (value interface{}, isTerminal bool, err error)
+	Get              func() (value any, isTerminal bool, err error)
 	IntervalStrategy IntervalStrategy
 	Timeout          time.Duration
 }
@@ -38,7 +38,7 @@ func FibonacciIntervalStrategy(base time.Duration, factor float32) IntervalStrat
 }
 
 // WaitSync waits and returns when a given stop condition is true or if an error occurs.
-func WaitSync(config *WaitSyncConfig) (terminalValue interface{}, err error) {
+func WaitSync(config *WaitSyncConfig) (terminalValue any, err error) {
 	// initialize configuration
 	if config.IntervalStrategy == nil {
 		config.IntervalStrategy = LinearIntervalStrategy(defaultInterval)
@@ -48,7 +48,7 @@ func WaitSync(config *WaitSyncConfig) (terminalValue interface{}, err error) {
 		config.Timeout = defaultTimeout
 	}
 
-	resultValue := make(chan interface{})
+	resultValue := make(chan any)
 	resultErr := make(chan error)
 	timeout := make(chan bool)
 

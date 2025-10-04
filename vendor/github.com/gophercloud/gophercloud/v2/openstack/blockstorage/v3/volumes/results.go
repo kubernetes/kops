@@ -399,3 +399,8 @@ type ReImageResult struct {
 type ResetStatusResult struct {
 	gophercloud.ErrResult
 }
+
+// UnmanageResult contains the response error from a Unmanage request.
+type UnmanageResult struct {
+	gophercloud.ErrResult
+}

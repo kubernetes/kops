@@ -51,6 +51,10 @@ func IsZone(s string) bool {
 
 // IsURL returns true if the given string has a valid URL format.
 func IsURL(s string) bool {
+	if s == "" {
+		return false
+	}
+
 	_, err := url.Parse(s)
 	return err == nil
 }

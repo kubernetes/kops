@@ -27,6 +27,25 @@ func (AccessRequestStatus) Values() []AccessRequestStatus {
 	}
 }
 
+type AccessType string
+
+// Enum values for AccessType
+const (
+	AccessTypeStandard   AccessType = "Standard"
+	AccessTypeJustintime AccessType = "JustInTime"
+)
+
+// Values returns all known values for AccessType. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (AccessType) Values() []AccessType {
+	return []AccessType{
+		"Standard",
+		"JustInTime",
+	}
+}
+
 type AssociationComplianceSeverity string
 
 // Enum values for AssociationComplianceSeverity
@@ -2258,6 +2277,7 @@ const (
 	SessionFilterKeyOwner         SessionFilterKey = "Owner"
 	SessionFilterKeyStatus        SessionFilterKey = "Status"
 	SessionFilterKeySessionId     SessionFilterKey = "SessionId"
+	SessionFilterKeyAccessType    SessionFilterKey = "AccessType"
 )
 
 // Values returns all known values for SessionFilterKey. Note that this can be
@@ -2272,6 +2292,7 @@ func (SessionFilterKey) Values() []SessionFilterKey {
 		"Owner",
 		"Status",
 		"SessionId",
+		"AccessType",
 	}
 }
 

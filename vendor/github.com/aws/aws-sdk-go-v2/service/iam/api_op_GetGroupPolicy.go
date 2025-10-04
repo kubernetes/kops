@@ -17,15 +17,17 @@ import (
 // use a URL decoding method to convert the policy back to plain JSON text. For
 // example, if you use Java, you can use the decode method of the
 // java.net.URLDecoder utility class in the Java SDK. Other languages and SDKs
-// provide similar functionality.
+// provide similar functionality, and some SDKs do this decoding automatically.
 //
 // An IAM group can also have managed policies attached to it. To retrieve a
-// managed policy document that is attached to a group, use GetPolicyto determine the
-// policy's default version, then use GetPolicyVersionto retrieve the policy document.
+// managed policy document that is attached to a group, use [GetPolicy]to determine the
+// policy's default version, then use [GetPolicyVersion]to retrieve the policy document.
 //
 // For more information about policies, see [Managed policies and inline policies] in the IAM User Guide.
 //
 // [RFC 3986]: https://tools.ietf.org/html/rfc3986
+// [GetPolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html
+// [GetPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) GetGroupPolicy(ctx context.Context, params *GetGroupPolicyInput, optFns ...func(*Options)) (*GetGroupPolicyOutput, error) {
 	if params == nil {
@@ -69,7 +71,9 @@ type GetGroupPolicyInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful GetGroupPolicy request.
+// Contains the response to a successful [GetGroupPolicy] request.
+//
+// [GetGroupPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetGroupPolicy.html
 type GetGroupPolicyOutput struct {
 
 	// The group the policy is associated with.
@@ -183,6 +187,36 @@ func (c *Client) addOperationGetGroupPolicyMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

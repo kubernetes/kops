@@ -69,7 +69,7 @@ func waitForLb(timeout *time.Duration, retryInterval *time.Duration, getLB func(
 	}
 
 	lb, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			res, err := getLB()
 			if err != nil {
 				return nil, false, err
@@ -130,7 +130,7 @@ func waitForLbInstances(timeout *time.Duration, retryInterval *time.Duration, ge
 	}
 
 	lb, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			res, err := getLB()
 			if err != nil {
 				return nil, false, err
@@ -181,7 +181,7 @@ func waitForPNLb(timeout *time.Duration, retryInterval *time.Duration, getPNs fu
 	}
 
 	pn, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			pns, err := getPNs()
 
 			for _, pn := range pns {
@@ -256,7 +256,7 @@ func waitForLBCertificate(timeout *time.Duration, retryInterval *time.Duration, 
 	}
 
 	crt, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, bool, error) {
+		Get: func() (any, bool, error) {
 			res, err := getCertificate()
 			if err != nil {
 				return nil, false, err

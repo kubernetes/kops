@@ -112,7 +112,7 @@ type ReceiveMessageInput struct {
 	//   calls the SendMessageaction.
 	//
 	//   - MessageGroupId – Returns the value provided by the producer that calls the SendMessage
-	//   action. Messages with the same MessageGroupId are returned in sequence.
+	//   action.
 	//
 	//   - SequenceNumber – Returns the value provided by Amazon SQS.
 	//
@@ -181,7 +181,7 @@ type ReceiveMessageInput struct {
 	//   calls the SendMessageaction.
 	//
 	//   - MessageGroupId – Returns the value provided by the producer that calls the SendMessage
-	//   action. Messages with the same MessageGroupId are returned in sequence.
+	//   action.
 	//
 	//   - SequenceNumber – Returns the value provided by Amazon SQS.
 	//
@@ -227,7 +227,7 @@ type ReceiveMessageInput struct {
 	//   - While messages with a particular MessageGroupId are invisible, no more
 	//   messages belonging to the same MessageGroupId are returned until the
 	//   visibility timeout expires. You can still receive messages with another
-	//   MessageGroupId as long as it is also visible.
+	//   MessageGroupId from your FIFO queue as long as they are visible.
 	//
 	//   - If a caller of ReceiveMessage can't track the ReceiveRequestAttemptId , no
 	//   retries work until the original visibility timeout expires. As a result, delays
@@ -397,6 +397,36 @@ func (c *Client) addOperationReceiveMessageMiddlewares(stack *middleware.Stack, 
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

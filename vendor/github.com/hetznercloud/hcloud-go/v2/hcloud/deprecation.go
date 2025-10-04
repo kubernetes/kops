@@ -22,8 +22,8 @@ type DeprecationInfo struct {
 	UnavailableAfter time.Time
 }
 
-// DeprecatableResource implements the [Deprecatable] interface and can be embedded in structs for Resources that can be
-// deprecated.
+// DeprecatableResource implements the [Deprecatable] interface and can be embedded in structs for Resources that can
+// be deprecated.
 type DeprecatableResource struct {
 	Deprecation *DeprecationInfo
 }

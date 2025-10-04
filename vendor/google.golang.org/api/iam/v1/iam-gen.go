@@ -221,6 +221,7 @@ func NewLocationsWorkforcePoolsProvidersService(s *Service) *LocationsWorkforceP
 	rs := &LocationsWorkforcePoolsProvidersService{s: s}
 	rs.Keys = NewLocationsWorkforcePoolsProvidersKeysService(s)
 	rs.Operations = NewLocationsWorkforcePoolsProvidersOperationsService(s)
+	rs.ScimTenants = NewLocationsWorkforcePoolsProvidersScimTenantsService(s)
 	return rs
 }
 
@@ -230,6 +231,8 @@ type LocationsWorkforcePoolsProvidersService struct {
 	Keys *LocationsWorkforcePoolsProvidersKeysService
 
 	Operations *LocationsWorkforcePoolsProvidersOperationsService
+
+	ScimTenants *LocationsWorkforcePoolsProvidersScimTenantsService
 }
 
 func NewLocationsWorkforcePoolsProvidersKeysService(s *Service) *LocationsWorkforcePoolsProvidersKeysService {
@@ -259,6 +262,27 @@ func NewLocationsWorkforcePoolsProvidersOperationsService(s *Service) *Locations
 }
 
 type LocationsWorkforcePoolsProvidersOperationsService struct {
+	s *Service
+}
+
+func NewLocationsWorkforcePoolsProvidersScimTenantsService(s *Service) *LocationsWorkforcePoolsProvidersScimTenantsService {
+	rs := &LocationsWorkforcePoolsProvidersScimTenantsService{s: s}
+	rs.Tokens = NewLocationsWorkforcePoolsProvidersScimTenantsTokensService(s)
+	return rs
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsService struct {
+	s *Service
+
+	Tokens *LocationsWorkforcePoolsProvidersScimTenantsTokensService
+}
+
+func NewLocationsWorkforcePoolsProvidersScimTenantsTokensService(s *Service) *LocationsWorkforcePoolsProvidersScimTenantsTokensService {
+	rs := &LocationsWorkforcePoolsProvidersScimTenantsTokensService{s: s}
+	return rs
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensService struct {
 	s *Service
 }
 
@@ -1976,6 +2000,66 @@ func (s ListWorkforcePoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// ListWorkforcePoolProviderScimTenantsResponse: Response message for
+// ListWorkforcePoolProviderScimTenants.
+type ListWorkforcePoolProviderScimTenantsResponse struct {
+	// NextPageToken: Optional. A token, which can be sent as `page_token` to
+	// retrieve the next page. If this field is omitted, there are no subsequent
+	// pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+	// WorkforcePoolProviderScimTenants: Output only. A list of scim tenants.
+	WorkforcePoolProviderScimTenants []*WorkforcePoolProviderScimTenant `json:"workforcePoolProviderScimTenants,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s ListWorkforcePoolProviderScimTenantsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkforcePoolProviderScimTenantsResponse
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// ListWorkforcePoolProviderScimTokensResponse: Response message for
+// ListWorkforcePoolProviderScimTokens.
+type ListWorkforcePoolProviderScimTokensResponse struct {
+	// NextPageToken: Optional. A token, which can be sent as `page_token` to
+	// retrieve the next page. If this field is omitted, there are no subsequent
+	// pages.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+	// WorkforcePoolProviderScimTokens: Output only. A list of scim tokens.
+	WorkforcePoolProviderScimTokens []*WorkforcePoolProviderScimToken `json:"workforcePoolProviderScimTokens,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "NextPageToken") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s ListWorkforcePoolProviderScimTokensResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod ListWorkforcePoolProviderScimTokensResponse
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // ListWorkforcePoolProvidersResponse: Response message for
 // ListWorkforcePoolProviders.
 type ListWorkforcePoolProvidersResponse struct {
@@ -3570,6 +3654,16 @@ type UndeleteWorkforcePoolProviderKeyRequest struct {
 type UndeleteWorkforcePoolProviderRequest struct {
 }
 
+// UndeleteWorkforcePoolProviderScimTenantRequest: Request message for
+// UndeleteWorkforcePoolProviderScimTenant.
+type UndeleteWorkforcePoolProviderScimTenantRequest struct {
+}
+
+// UndeleteWorkforcePoolProviderScimTokenRequest: Request message for
+// UndeleteWorkforcePoolProviderScimToken.
+type UndeleteWorkforcePoolProviderScimTokenRequest struct {
+}
+
 // UndeleteWorkforcePoolRequest: Request message for UndeleteWorkforcePool.
 type UndeleteWorkforcePoolRequest struct {
 }
@@ -3637,15 +3731,15 @@ type WorkforcePool struct {
 	// restricted to given set of services or programmatic sign-in can be disabled
 	// for pool users.
 	AccessRestrictions *AccessRestrictions `json:"accessRestrictions,omitempty"`
-	// Description: Optional. A user-specified description of the pool. Cannot
-	// exceed 256 characters.
+	// Description: Optional. A description of the pool. Cannot exceed 256
+	// characters.
 	Description string `json:"description,omitempty"`
 	// Disabled: Optional. Disables the workforce pool. You cannot use a disabled
 	// pool to exchange tokens, or use existing tokens to access resources. If the
 	// pool is re-enabled, existing tokens grant access again.
 	Disabled bool `json:"disabled,omitempty"`
-	// DisplayName: Optional. A user-specified display name of the pool in Google
-	// Cloud Console. Cannot exceed 32 characters.
+	// DisplayName: Optional. A display name for the pool. Cannot exceed 32
+	// characters.
 	DisplayName string `json:"displayName,omitempty"`
 	// ExpireTime: Output only. Time after which the workforce pool will be
 	// permanently purged and cannot be recovered.
@@ -3760,8 +3854,8 @@ type WorkforcePoolProvider struct {
 	// `sub` claim of the incoming credential to the `subject` attribute on a
 	// Google token: ``` {"google.subject": "assertion.sub"} ```
 	AttributeMapping map[string]string `json:"attributeMapping,omitempty"`
-	// Description: Optional. A user-specified description of the provider. Cannot
-	// exceed 256 characters.
+	// Description: Optional. A description of the provider. Cannot exceed 256
+	// characters.
 	Description string `json:"description,omitempty"`
 	// DetailedAuditLogging: Optional. If true, populates additional debug
 	// information in Cloud Audit Logs for this provider. Logged attribute mappings
@@ -3772,12 +3866,23 @@ type WorkforcePoolProvider struct {
 	// disabled provider to exchange tokens. However, existing tokens still grant
 	// access.
 	Disabled bool `json:"disabled,omitempty"`
-	// DisplayName: Optional. A user-specified display name for the provider.
-	// Cannot exceed 32 characters.
+	// DisplayName: Optional. A display name for the provider. Cannot exceed 32
+	// characters.
 	DisplayName string `json:"displayName,omitempty"`
-	// ExpireTime: Output only. Time after which the workload pool provider will be
-	// permanently purged and cannot be recovered.
+	// ExpireTime: Output only. Time after which the workforce identity pool
+	// provider will be permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
+	// ExtendedAttributesOauth2Client: Optional. The configuration for OAuth 2.0
+	// client used to get the extended group memberships for user identities. Only
+	// the `AZURE_AD_GROUPS_ID` attribute type is supported. Extended groups
+	// supports a subset of Google Cloud services. When the user accesses these
+	// services, extended group memberships override the mapped `google.groups`
+	// attribute. Extended group memberships cannot be used in attribute mapping or
+	// attribute condition expressions. To keep extended group memberships up to
+	// date, extended groups are retrieved when the user signs in and at regular
+	// intervals during the user's active session. Each user identity in the
+	// workforce identity pool must map to a unique Microsoft Entra ID user.
+	ExtendedAttributesOauth2Client *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client `json:"extendedAttributesOauth2Client,omitempty"`
 	// ExtraAttributesOauth2Client: Optional. The configuration for OAuth 2.0
 	// client used to get the additional user attributes. This should be used when
 	// users can't get the desired claims in authentication credentials. Currently
@@ -3873,6 +3978,104 @@ func (s WorkforcePoolProviderKey) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// WorkforcePoolProviderScimTenant: Represents a scim tenant. Used for
+// provisioning and managing identity data (such as Users and Groups) in
+// cross-domain environments.
+type WorkforcePoolProviderScimTenant struct {
+	// BaseUri: Output only. Represents the base URI as defined in RFC 7644,
+	// Section 1.3 (https://datatracker.ietf.org/doc/html/rfc7644#section-1.3).
+	// Clients must use this as the root address for managing resources under the
+	// tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/
+	BaseUri string `json:"baseUri,omitempty"`
+	// ClaimMapping: Optional. Maps BYOID claims to SCIM claims.
+	ClaimMapping map[string]string `json:"claimMapping,omitempty"`
+	// Description: Optional. The description of the scim tenant. Cannot exceed 256
+	// characters.
+	Description string `json:"description,omitempty"`
+	// DisplayName: Optional. The display name of the scim tenant. Cannot exceed 32
+	// characters.
+	DisplayName string `json:"displayName,omitempty"`
+	// Name: Identifier. The resource name of the SCIM Tenant. Format:
+	// `locations/{location}/workforcePools/{workforce_pool}/providers/
+	// {workforce_pool_provider}/scimTenants/{scim_tenant}`
+	Name string `json:"name,omitempty"`
+	// PurgeTime: Output only. The timestamp when the scim tenant is going to be
+	// purged.
+	PurgeTime string `json:"purgeTime,omitempty"`
+	// State: Output only. The state of the tenant.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "ACTIVE" - The tenant is active and may be used to provision users and
+	// groups.
+	//   "DELETED" - The tenant is soft-deleted. Soft-deleted tenants are
+	// permanently deleted after approximately 30 days.
+	State string `json:"state,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "BaseUri") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "BaseUri") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s WorkforcePoolProviderScimTenant) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkforcePoolProviderScimTenant
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// WorkforcePoolProviderScimToken: Represents a token for the
+// WorkforcePoolProviderScimTenant. Used for authenticating SCIM Provisioning
+// requests.
+type WorkforcePoolProviderScimToken struct {
+	// DisplayName: Optional. The display name of the scim token. Cannot exceed 32
+	// characters.
+	DisplayName string `json:"displayName,omitempty"`
+	// Name: Identifier. The resource name of the SCIM Token. Format:
+	// `locations/{location}/workforcePools/{workforce_pool}/providers/
+	// {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`
+	Name string `json:"name,omitempty"`
+	// SecurityToken: Output only. The token string. Provide this to the IdP for
+	// authentication. Will be set only during creation.
+	SecurityToken string `json:"securityToken,omitempty"`
+	// State: Output only. The state of the token.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "ACTIVE" - The tenant is active and may be used to provision users and
+	// groups.
+	//   "DELETED" - The tenant is soft-deleted. Soft-deleted tenants are
+	// permanently deleted after approximately 30 days.
+	State string `json:"state,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the server.
+	googleapi.ServerResponse `json:"-"`
+	// ForceSendFields is a list of field names (e.g. "DisplayName") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DisplayName") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s WorkforcePoolProviderScimToken) MarshalJSON() ([]byte, error) {
+	type NoMethod WorkforcePoolProviderScimToken
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // WorkloadIdentityPool: Represents a collection of workload identities. You
 // can define IAM policies to grant these identities access to Google Cloud
 // resources.
@@ -3953,17 +4156,17 @@ func (s WorkloadIdentityPool) MarshalJSON() ([]byte, error) {
 // WorkloadIdentityPoolManagedIdentity: Represents a managed identity for a
 // workload identity pool namespace.
 type WorkloadIdentityPoolManagedIdentity struct {
-	// Description: A description of the managed identity. Cannot exceed 256
-	// characters.
+	// Description: Optional. A description of the managed identity. Cannot exceed
+	// 256 characters.
 	Description string `json:"description,omitempty"`
-	// Disabled: Whether the managed identity is disabled. If disabled, credentials
-	// may no longer be issued for the identity, however existing credentials will
-	// still be accepted until they expire.
+	// Disabled: Optional. Whether the managed identity is disabled. If disabled,
+	// credentials may no longer be issued for the identity, however existing
+	// credentials will still be accepted until they expire.
 	Disabled bool `json:"disabled,omitempty"`
 	// ExpireTime: Output only. Time after which the managed identity will be
 	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Output only. The resource name of the managed identity.
+	// Name: Identifier. The resource name of the managed identity.
 	Name string `json:"name,omitempty"`
 	// State: Output only. The state of the managed identity.
 	//
@@ -4000,11 +4203,12 @@ func (s WorkloadIdentityPoolManagedIdentity) MarshalJSON() ([]byte, error) {
 // WorkloadIdentityPoolNamespace: Represents a namespace for a workload
 // identity pool. Namespaces are used to segment identities within the pool.
 type WorkloadIdentityPoolNamespace struct {
-	// Description: A description of the namespace. Cannot exceed 256 characters.
+	// Description: Optional. A description of the namespace. Cannot exceed 256
+	// characters.
 	Description string `json:"description,omitempty"`
-	// Disabled: Whether the namespace is disabled. If disabled, credentials may no
-	// longer be issued for identities within this namespace, however existing
-	// credentials will still be accepted until they expire.
+	// Disabled: Optional. Whether the namespace is disabled. If disabled,
+	// credentials may no longer be issued for identities within this namespace,
+	// however existing credentials will still be accepted until they expire.
 	Disabled bool `json:"disabled,omitempty"`
 	// ExpireTime: Output only. Time after which the namespace will be permanently
 	// purged and cannot be recovered.
@@ -4125,7 +4329,7 @@ type WorkloadIdentityPoolProvider struct {
 	// ExpireTime: Output only. Time after which the workload identity pool
 	// provider will be permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Output only. The resource name of the provider.
+	// Name: Identifier. The resource name of the provider.
 	Name string `json:"name,omitempty"`
 	// Oidc: An OpenId Connect 1.0 identity provider.
 	Oidc *Oidc `json:"oidc,omitempty"`
@@ -4898,8 +5102,7 @@ func (r *LocationsWorkforcePoolsService) List(location string) *LocationsWorkfor
 }
 
 // PageSize sets the optional parameter "pageSize": The maximum number of pools
-// to return. If unspecified, at most 50 pools will be returned. The maximum
-// value is 1000; values above 1000 are truncated to 1000.
+// to return. The default value is 50. The maximum value is 100.
 func (c *LocationsWorkforcePoolsListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
@@ -7086,6 +7289,1421 @@ func (c *LocationsWorkforcePoolsProvidersOperationsGetCall) Do(opts ...googleapi
 		return nil, err
 	}
 	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.operations.get", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsCreateCall struct {
+	s                               *Service
+	parent                          string
+	workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant
+	urlParams_                      gensupport.URLParams
+	ctx_                            context.Context
+	header_                         http.Header
+}
+
+// Create: Creates a new WorkforcePoolProviderScimTenant in a
+// WorkforcePoolProvider. You cannot reuse the name of a deleted scim tenant
+// until 30 days after deletion.
+//
+//   - parent: The parent to create scim tenant. Format:
+//     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Create(parent string, workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workforcepoolproviderscimtenant = workforcepoolproviderscimtenant
+	return c
+}
+
+// WorkforcePoolProviderScimTenantId sets the optional parameter
+// "workforcePoolProviderScimTenantId": Required. The ID to use for the scim
+// tenant, which becomes the final component of the resource name. This value
+// should be 4-32 characters, and may contain the characters [a-z0-9-].
+func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) WorkforcePoolProviderScimTenantId(workforcePoolProviderScimTenantId string) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
+	c.urlParams_.Set("workforcePoolProviderScimTenantId", workforcePoolProviderScimTenantId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.workforcepoolproviderscimtenant)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/scimTenants")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.create", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.create" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimTenant.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimTenant, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimTenant{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.create", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a WorkforcePoolProviderScimTenant. You can undelete a scim
+// tenant for 30 days. After 30 days, deletion is permanent. You cannot update
+// deleted scim tenants. However, you can view and list them.
+//
+//   - name: The name of the scim tenant to delete. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Delete(name string) *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.delete", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.delete" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimTenant.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimTenant, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimTenant{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.delete", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual WorkforcePoolProviderScimTenant.
+//
+//   - name: The name of the scim tenant to retrieve. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Get(name string) *LocationsWorkforcePoolsProvidersScimTenantsGetCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersScimTenantsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.get", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimTenant.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsGetCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimTenant, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimTenant{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.get", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted WorkforcePoolProviderScimTenants in a
+// WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted scim
+// tenants are also listed.
+//
+//   - parent: The parent to list scim tenants. Format:
+//     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsService) List(parent string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number of scim
+// tenants to return. If unspecified, at most 1 scim tenant will be returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListScimTenants` call. Provide this to retrieve the
+// subsequent page.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted scim tenants.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/scimTenants")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.list", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.list" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListWorkforcePoolProviderScimTenantsResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) Do(opts ...googleapi.CallOption) (*ListWorkforcePoolProviderScimTenantsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListWorkforcePoolProviderScimTenantsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.list", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) Pages(ctx context.Context, f func(*ListWorkforcePoolProviderScimTenantsResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsPatchCall struct {
+	s                               *Service
+	name                            string
+	workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant
+	urlParams_                      gensupport.URLParams
+	ctx_                            context.Context
+	header_                         http.Header
+}
+
+// Patch: Updates an existing WorkforcePoolProviderScimTenant.
+//
+//   - name: Identifier. The resource name of the SCIM Tenant. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/
+//     {workforce_pool_provider}/scimTenants/{scim_tenant}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Patch(name string, workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.workforcepoolproviderscimtenant = workforcepoolproviderscimtenant
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": The list of fields to
+// update.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.workforcepoolproviderscimtenant)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.patch" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimTenant.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimTenant, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimTenant{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.patch", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall struct {
+	s                                              *Service
+	name                                           string
+	undeleteworkforcepoolproviderscimtenantrequest *UndeleteWorkforcePoolProviderScimTenantRequest
+	urlParams_                                     gensupport.URLParams
+	ctx_                                           context.Context
+	header_                                        http.Header
+}
+
+// Undelete: Undeletes a WorkforcePoolProviderScimTenant, as long as it was
+// deleted fewer than 30 days ago.
+//
+//   - name: The name of the scim tenant to undelete. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Undelete(name string, undeleteworkforcepoolproviderscimtenantrequest *UndeleteWorkforcePoolProviderScimTenantRequest) *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteworkforcepoolproviderscimtenantrequest = undeleteworkforcepoolproviderscimtenantrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.undeleteworkforcepoolproviderscimtenantrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.undelete", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.undelete" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimTenant.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimTenant, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimTenant{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.undelete", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall struct {
+	s                              *Service
+	parent                         string
+	workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken
+	urlParams_                     gensupport.URLParams
+	ctx_                           context.Context
+	header_                        http.Header
+}
+
+// Create: Creates a new WorkforcePoolProviderScimToken in a
+// WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM
+// token until 30 days after deletion.
+//
+//   - parent: The parent tenant to create scim token. Format:
+//     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}'.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Create(parent string, workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	c.workforcepoolproviderscimtoken = workforcepoolproviderscimtoken
+	return c
+}
+
+// WorkforcePoolProviderScimTokenId sets the optional parameter
+// "workforcePoolProviderScimTokenId": Required. The ID to use for the scim
+// token, which becomes the final component of the resource name. This value
+// should be 4-32 characters and follow this pattern: "(a-z
+// ([a-z0-9\\-]{2,30}[a-z0-9]))"
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) WorkforcePoolProviderScimTokenId(workforcePoolProviderScimTokenId string) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
+	c.urlParams_.Set("workforcePoolProviderScimTokenId", workforcePoolProviderScimTokenId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.workforcepoolproviderscimtoken)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/tokens")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.create", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.create" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimToken.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimToken, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimToken{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.create", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall struct {
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a WorkforcePoolProviderScimToken. You can undelete a scim
+// token for 30 days. After 30 days, deletion is permanent. You cannot update
+// deleted scim tokens. However, you can view and list them.
+//
+//   - name: The name of the scim token to delete. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}/tokens/{token}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Delete(name string) *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.delete", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.delete" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimToken.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimToken, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimToken{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.delete", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall struct {
+	s            *Service
+	name         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Gets an individual WorkforcePoolProviderScimToken.
+//
+//   - name: The name of the scim token to retrieve. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}/tokens/{token}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Get(name string) *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.get", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimToken.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimToken, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimToken{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.get", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists all non-deleted WorkforcePoolProviderScimTokenss in a
+// WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then
+// deleted SCIM tokens are also listed.
+//
+//   - parent: The parent to list scim tokens. Format:
+//     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}'.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) List(parent string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number of scim
+// tokens to return. If unspecified, at most 2 scim tokens will be returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to
+// retrieve the subsequent page.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ShowDeleted sets the optional parameter "showDeleted": Whether to return
+// soft-deleted scim tokens.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) IfNoneMatch(entityTag string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/tokens")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.list", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.list" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListWorkforcePoolProviderScimTokensResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) Do(opts ...googleapi.CallOption) (*ListWorkforcePoolProviderScimTokensResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListWorkforcePoolProviderScimTokensResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.list", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) Pages(ctx context.Context, f func(*ListWorkforcePoolProviderScimTokensResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall struct {
+	s                              *Service
+	name                           string
+	workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken
+	urlParams_                     gensupport.URLParams
+	ctx_                           context.Context
+	header_                        http.Header
+}
+
+// Patch: Updates an existing WorkforcePoolProviderScimToken.
+//
+//   - name: Identifier. The resource name of the SCIM Token. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/
+//     {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Patch(name string, workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.workforcepoolproviderscimtoken = workforcepoolproviderscimtoken
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": The list of fields to
+// update.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.workforcepoolproviderscimtoken)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.patch" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimToken.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimToken, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimToken{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.patch", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall struct {
+	s                                             *Service
+	name                                          string
+	undeleteworkforcepoolproviderscimtokenrequest *UndeleteWorkforcePoolProviderScimTokenRequest
+	urlParams_                                    gensupport.URLParams
+	ctx_                                          context.Context
+	header_                                       http.Header
+}
+
+// Undelete: Undeletes a WorkforcePoolProviderScimToken, as long as it was
+// deleted fewer than 30 days ago.
+//
+//   - name: The name of the scim token to undelete. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
+//     scimTenants/{scim_tenant}/tokens/{token}`.
+func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Undelete(name string, undeleteworkforcepoolproviderscimtokenrequest *UndeleteWorkforcePoolProviderScimTokenRequest) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
+	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.name = name
+	c.undeleteworkforcepoolproviderscimtokenrequest = undeleteworkforcepoolproviderscimtokenrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.undeleteworkforcepoolproviderscimtokenrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"name": c.name,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.undelete", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.undelete" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *WorkforcePoolProviderScimToken.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimToken, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &WorkforcePoolProviderScimToken{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.undelete", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -9641,112 +11259,6 @@ func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Do(opts ...googleapi
 	return ret, nil
 }
 
-type ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall struct {
-	s                         *Service
-	resource                  string
-	addattestationrulerequest *AddAttestationRuleRequest
-	urlParams_                gensupport.URLParams
-	ctx_                      context.Context
-	header_                   http.Header
-}
-
-// AddAttestationRule: Add an AttestationRule on a
-// WorkloadIdentityPoolManagedIdentity. The total attestation rules after
-// addition must not exceed 50.
-//
-//   - resource: The resource name of the managed identity or namespace resource
-//     to add an attestation rule to.
-func (r *ProjectsLocationsWorkloadIdentityPoolsService) AddAttestationRule(resource string, addattestationrulerequest *AddAttestationRuleRequest) *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall {
-	c := &ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.resource = resource
-	c.addattestationrulerequest = addattestationrulerequest
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
-// details.
-func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method.
-func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns a http.Header that can be modified by the caller to add
-// headers to the request.
-func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.addattestationrulerequest)
-	if err != nil {
-		return nil, err
-	}
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:addAttestationRule")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"resource": c.resource,
-	})
-	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.addAttestationRule", "request", internallog.HTTPRequest(req, body.Bytes()))
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "iam.projects.locations.workloadIdentityPools.addAttestationRule" call.
-// Any non-2xx status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was returned.
-func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, gensupport.WrapError(&googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		})
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, gensupport.WrapError(err)
-	}
-	ret := &Operation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	b, err := gensupport.DecodeResponseBytes(target, res)
-	if err != nil {
-		return nil, err
-	}
-	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.addAttestationRule", "response", internallog.HTTPResponse(res, b))
-	return ret, nil
-}
-
 type ProjectsLocationsWorkloadIdentityPoolsCreateCall struct {
 	s                    *Service
 	parent               string
@@ -10336,165 +11848,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Pages(ctx context.Conte
 	}
 }
 
-type ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall struct {
-	s            *Service
-	resource     string
-	urlParams_   gensupport.URLParams
-	ifNoneMatch_ string
-	ctx_         context.Context
-	header_      http.Header
-}
-
-// ListAttestationRules: List all AttestationRule on a
-// WorkloadIdentityPoolManagedIdentity.
-//
-//   - resource: The resource name of the managed identity or namespace resource
-//     to list attestation rules of.
-func (r *ProjectsLocationsWorkloadIdentityPoolsService) ListAttestationRules(resource string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c := &ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.resource = resource
-	return c
-}
-
-// Filter sets the optional parameter "filter": A query filter. Supports the
-// following function: * `container_ids()`: Returns only the AttestationRules
-// under the specific container ids. The function expects a comma-delimited
-// list with only project numbers and must use the format `projects/`. For
-// example: `container_ids(projects/, projects/,...)`.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Filter(filter string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c.urlParams_.Set("filter", filter)
-	return c
-}
-
-// PageSize sets the optional parameter "pageSize": The maximum number of
-// AttestationRules to return. If unspecified, at most 50 AttestationRules are
-// returned. The maximum value is 100; values above 100 are truncated to 100.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
-	return c
-}
-
-// PageToken sets the optional parameter "pageToken": A page token, received
-// from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to
-// retrieve the subsequent page.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c.urlParams_.Set("pageToken", pageToken)
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
-// details.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// IfNoneMatch sets an optional parameter which makes the operation fail if the
-// object's ETag matches the given value. This is useful for getting updates
-// only after the object has changed since the last request.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c.ifNoneMatch_ = entityTag
-	return c
-}
-
-// Context sets the context to be used in this call's Do method.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns a http.Header that can be modified by the caller to add
-// headers to the request.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
-	if c.ifNoneMatch_ != "" {
-		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
-	}
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:listAttestationRules")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("GET", urls, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"resource": c.resource,
-	})
-	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.listAttestationRules", "request", internallog.HTTPRequest(req, nil))
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "iam.projects.locations.workloadIdentityPools.listAttestationRules" call.
-// Any non-2xx status code is an error. Response headers are in either
-// *ListAttestationRulesResponse.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was because
-// http.StatusNotModified was returned.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Do(opts ...googleapi.CallOption) (*ListAttestationRulesResponse, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, gensupport.WrapError(&googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		})
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, gensupport.WrapError(err)
-	}
-	ret := &ListAttestationRulesResponse{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	b, err := gensupport.DecodeResponseBytes(target, res)
-	if err != nil {
-		return nil, err
-	}
-	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.listAttestationRules", "response", internallog.HTTPResponse(res, b))
-	return ret, nil
-}
-
-// Pages invokes f for each page of results.
-// A non-nil error returned from f will halt the iteration.
-// The provided context supersedes any context provided to the Context method.
-func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Pages(ctx context.Context, f func(*ListAttestationRulesResponse) error) error {
-	c.ctx_ = ctx
-	defer c.PageToken(c.urlParams_.Get("pageToken"))
-	for {
-		x, err := c.Do()
-		if err != nil {
-			return err
-		}
-		if err := f(x); err != nil {
-			return err
-		}
-		if x.NextPageToken == "" {
-			return nil
-		}
-		c.PageToken(x.NextPageToken)
-	}
-}
-
 type ProjectsLocationsWorkloadIdentityPoolsPatchCall struct {
 	s                    *Service
 	name                 string
@@ -10602,217 +11955,6 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.patch", "response", internallog.HTTPResponse(res, b))
-	return ret, nil
-}
-
-type ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall struct {
-	s                            *Service
-	resource                     string
-	removeattestationrulerequest *RemoveAttestationRuleRequest
-	urlParams_                   gensupport.URLParams
-	ctx_                         context.Context
-	header_                      http.Header
-}
-
-// RemoveAttestationRule: Remove an AttestationRule on a
-// WorkloadIdentityPoolManagedIdentity.
-//
-//   - resource: The resource name of the managed identity or namespace resource
-//     to remove an attestation rule from.
-func (r *ProjectsLocationsWorkloadIdentityPoolsService) RemoveAttestationRule(resource string, removeattestationrulerequest *RemoveAttestationRuleRequest) *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall {
-	c := &ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.resource = resource
-	c.removeattestationrulerequest = removeattestationrulerequest
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
-// details.
-func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method.
-func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns a http.Header that can be modified by the caller to add
-// headers to the request.
-func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.removeattestationrulerequest)
-	if err != nil {
-		return nil, err
-	}
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:removeAttestationRule")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"resource": c.resource,
-	})
-	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.removeAttestationRule", "request", internallog.HTTPRequest(req, body.Bytes()))
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "iam.projects.locations.workloadIdentityPools.removeAttestationRule" call.
-// Any non-2xx status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was returned.
-func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, gensupport.WrapError(&googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		})
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, gensupport.WrapError(err)
-	}
-	ret := &Operation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	b, err := gensupport.DecodeResponseBytes(target, res)
-	if err != nil {
-		return nil, err
-	}
-	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.removeAttestationRule", "response", internallog.HTTPResponse(res, b))
-	return ret, nil
-}
-
-type ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall struct {
-	s                          *Service
-	resource                   string
-	setattestationrulesrequest *SetAttestationRulesRequest
-	urlParams_                 gensupport.URLParams
-	ctx_                       context.Context
-	header_                    http.Header
-}
-
-// SetAttestationRules: Set all AttestationRule on a
-// WorkloadIdentityPoolManagedIdentity. A maximum of 50 AttestationRules can be
-// set.
-//
-//   - resource: The resource name of the managed identity or namespace resource
-//     to add an attestation rule to.
-func (r *ProjectsLocationsWorkloadIdentityPoolsService) SetAttestationRules(resource string, setattestationrulesrequest *SetAttestationRulesRequest) *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall {
-	c := &ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.resource = resource
-	c.setattestationrulesrequest = setattestationrulesrequest
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
-// details.
-func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method.
-func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns a http.Header that can be modified by the caller to add
-// headers to the request.
-func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.setattestationrulesrequest)
-	if err != nil {
-		return nil, err
-	}
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setAttestationRules")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"resource": c.resource,
-	})
-	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.setAttestationRules", "request", internallog.HTTPRequest(req, body.Bytes()))
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "iam.projects.locations.workloadIdentityPools.setAttestationRules" call.
-// Any non-2xx status code is an error. Response headers are in either
-// *Operation.ServerResponse.Header or (if a response was returned at all) in
-// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
-// whether the returned error was because http.StatusNotModified was returned.
-func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, gensupport.WrapError(&googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		})
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, gensupport.WrapError(err)
-	}
-	ret := &Operation{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	b, err := gensupport.DecodeResponseBytes(target, res)
-	if err != nil {
-		return nil, err
-	}
-	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.setAttestationRules", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12586,7 +13728,7 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall 
 // Patch: Updates an existing WorkloadIdentityPoolManagedIdentity in a
 // WorkloadIdentityPoolNamespace.
 //
-// - name: Output only. The resource name of the managed identity.
+// - name: Identifier. The resource name of the managed identity.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService) Patch(name string, workloadidentitypoolmanagedidentity *WorkloadIdentityPoolManagedIdentity) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13937,7 +15079,7 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall struct {
 
 // Patch: Updates an existing WorkloadIdentityPoolProvider.
 //
-// - name: Output only. The resource name of the provider.
+// - name: Identifier. The resource name of the provider.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Patch(name string, workloadidentitypoolprovider *WorkloadIdentityPoolProvider) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name

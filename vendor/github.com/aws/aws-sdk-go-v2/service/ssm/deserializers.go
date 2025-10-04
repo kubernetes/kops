@@ -19,16 +19,7 @@ import (
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"io"
 	"strings"
-	"time"
 )
-
-func deserializeS3Expires(v string) (*time.Time, error) {
-	t, err := smithytime.ParseHTTPDate(v)
-	if err != nil {
-		return nil, nil
-	}
-	return &t, nil
-}
 
 type awsAwsjson11_deserializeOpAddTagsToResource struct {
 }
@@ -1034,6 +1025,9 @@ func awsAwsjson11_deserializeOpErrorCreateDocument(response *smithyhttp.Response
 	case strings.EqualFold("MaxDocumentSizeExceeded", errorCode):
 		return awsAwsjson11_deserializeErrorMaxDocumentSizeExceeded(response, errorBody)
 
+	case strings.EqualFold("TooManyUpdates", errorCode):
+		return awsAwsjson11_deserializeErrorTooManyUpdates(response, errorBody)
+
 	default:
 		genericError := &smithy.GenericAPIError{
 			Code:    errorCode,
@@ -1996,6 +1990,9 @@ func awsAwsjson11_deserializeOpErrorDeleteDocument(response *smithyhttp.Response
 
 	case strings.EqualFold("InvalidDocumentOperation", errorCode):
 		return awsAwsjson11_deserializeErrorInvalidDocumentOperation(response, errorBody)
+
+	case strings.EqualFold("TooManyUpdates", errorCode):
+		return awsAwsjson11_deserializeErrorTooManyUpdates(response, errorBody)
 
 	default:
 		genericError := &smithy.GenericAPIError{
@@ -16402,6 +16399,9 @@ func awsAwsjson11_deserializeOpErrorUpdateDocumentMetadata(response *smithyhttp.
 
 	case strings.EqualFold("InvalidDocumentVersion", errorCode):
 		return awsAwsjson11_deserializeErrorInvalidDocumentVersion(response, errorBody)
+
+	case strings.EqualFold("TooManyUpdates", errorCode):
+		return awsAwsjson11_deserializeErrorTooManyUpdates(response, errorBody)
 
 	default:
 		genericError := &smithy.GenericAPIError{
@@ -42542,6 +42542,15 @@ func awsAwsjson11_deserializeDocumentSession(v **types.Session, value interface{
 
 	for key, value := range shape {
 		switch key {
+		case "AccessType":
+			if value != nil {
+				jtv, ok := value.(string)
+				if !ok {
+					return fmt.Errorf("expected AccessType to be of type string, got %T instead", value)
+				}
+				sv.AccessType = types.AccessType(jtv)
+			}
+
 		case "Details":
 			if value != nil {
 				jtv, ok := value.(string)

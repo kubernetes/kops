@@ -1,12 +1,11 @@
 kind: Addons
 metadata:
-  creationTimestamp: null
   name: bootstrap
 spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: cbc4da8c9ba886db6855594c0621f0be05d19ff1686f86cce9d5b77e3c69878d
+    manifestHash: fed9f81c2200b1dccd4f1db028a1929ff96eeae27ccda080b38416ee89db9424
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -14,48 +13,48 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 78ad87951b1032d79e4ed336d96c4b025b8d804e9592692d27c5265466bb29a6
+    manifestHash: 16ecf18f288de83df5d967a66a216b063a44f1d62fc5fd671e068b316bcb907a
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
-    manifestHash: 01c120e887bd98d82ef57983ad58a0b22bc85efb48108092a24c4b82e4c9ea81
+    manifestHash: da91eb5cf9a29f1b03510007d6d54603aef2fc23a305abc9ba496c510dfd3bc7
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
     version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
-    manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
+    manifestHash: 686cc69e559a1c6f5e8b94e38de54a575a25c432ed5ceec565244b965fb5f07f
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 476b81600621de2ab7b294695a7fd3da4af31646a9caea6eb1b2cfa554326736
+    manifestHash: c5262407ca9861abd2e555122dfc8e06ef3794af3259a82bb7da18a5c1c08554
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.24
     manifest: scaleway-cloud-controller.addons.k8s.io/k8s-1.24.yaml
-    manifestHash: 62cf06c0ba8f17ad6a877108c1f4bb26a167791aac8c3c6f04804c9e2f61ddab
+    manifestHash: fb9f1a97680793793c38db19bbfe317b58628b6bc9bca16a4124afe9539aa294
     name: scaleway-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: scaleway-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.24
     manifest: scaleway-csi-driver.addons.k8s.io/k8s-1.24.yaml
-    manifestHash: 2554dd398751e893238ff86413a584cd33fc7ce9a3ab17358db1691f1d21f576
+    manifestHash: c9048192cf937ebef8f5d537c8ba7d3dd9c8392591e57220b3380adb50388d89
     name: scaleway-csi-driver.addons.k8s.io
     selector:
       k8s-addon: scaleway-csi-driver.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.15.yaml
-    manifestHash: 8866e1fa6631dcfd19d23952fa9148c8067c48f93d324b89d9257e285d1f3ef8
+    manifestHash: bd39764fa09c8e75831372a8aa3281586f471d52626568ccbe23f69fecf50aa5
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:

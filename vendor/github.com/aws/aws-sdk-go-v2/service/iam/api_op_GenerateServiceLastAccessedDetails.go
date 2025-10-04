@@ -33,7 +33,7 @@ import (
 // parameter in the following operations to retrieve the following details from
 // your report:
 //
-// GetServiceLastAccessedDetails
+// [GetServiceLastAccessedDetails]
 //   - – Use this operation for users, groups, roles, or policies to list every
 //     Amazon Web Services service that the resource could access using permissions
 //     policies. For each service, the response includes information about the most
@@ -44,7 +44,7 @@ import (
 //	role within a session, or by the same user when used to call
 //	GetServiceLastAccessedDetail .
 //
-// GetServiceLastAccessedDetailsWithEntities
+// [GetServiceLastAccessedDetailsWithEntities]
 //   - – Use this operation for groups and policies to list information about the
 //     associated entities (users or roles) that attempted to access a specific Amazon
 //     Web Services service.
@@ -54,7 +54,7 @@ import (
 // parameter.
 //
 // For additional information about the permissions policies that allow an
-// identity (user, group, or role) to access specific services, use the ListPoliciesGrantingServiceAccessoperation.
+// identity (user, group, or role) to access specific services, use the [ListPoliciesGrantingServiceAccess]operation.
 //
 // Service last accessed data does not use other policy types when determining
 // whether a resource could access a service. These other policy types include
@@ -67,9 +67,12 @@ import (
 // IAM User Guide.
 //
 // [Logging IAM events with CloudTrail]: https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html
+// [GetServiceLastAccessedDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetails.html
+// [ListPoliciesGrantingServiceAccess]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPoliciesGrantingServiceAccess.html
 // [Reducing permissions using service last accessed data]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html
 // [Regions where data is tracked]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period
 // [Evaluating policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics
+// [GetServiceLastAccessedDetailsWithEntities]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetailsWithEntities.html
 // [IAM action last accessed information services and actions]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor-action-last-accessed.html
 func (c *Client) GenerateServiceLastAccessedDetails(ctx context.Context, params *GenerateServiceLastAccessedDetailsInput, optFns ...func(*Options)) (*GenerateServiceLastAccessedDetailsOutput, error) {
 	if params == nil {
@@ -108,9 +111,12 @@ type GenerateServiceLastAccessedDetailsInput struct {
 
 type GenerateServiceLastAccessedDetailsOutput struct {
 
-	// The JobId that you can use in the GetServiceLastAccessedDetails or GetServiceLastAccessedDetailsWithEntities operations. The JobId returned by
+	// The JobId that you can use in the [GetServiceLastAccessedDetails] or [GetServiceLastAccessedDetailsWithEntities] operations. The JobId returned by
 	// GenerateServiceLastAccessedDetail must be used by the same role within a
 	// session, or by the same user when used to call GetServiceLastAccessedDetail .
+	//
+	// [GetServiceLastAccessedDetails]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetails.html
+	// [GetServiceLastAccessedDetailsWithEntities]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetServiceLastAccessedDetailsWithEntities.html
 	JobId *string
 
 	// Metadata pertaining to the operation's result.
@@ -205,6 +211,36 @@ func (c *Client) addOperationGenerateServiceLastAccessedDetailsMiddlewares(stack
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

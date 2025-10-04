@@ -1,3 +1,68 @@
+# v1.45.6 (2025-09-26)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.5 (2025-09-24)
+
+* **Documentation**: Documentation only updates for KMS.
+
+# v1.45.4 (2025-09-23)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.3 (2025-09-10)
+
+* No change notes available for this release.
+
+# v1.45.2 (2025-09-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.1 (2025-08-29)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.45.0 (2025-08-27)
+
+* **Feature**: Remove incorrect endpoint tests
+* **Dependency Update**: Update to smithy-go v1.23.0.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.44.2 (2025-08-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.44.1 (2025-08-20)
+
+* **Bug Fix**: Remove unused deserialization code.
+
+# v1.44.0 (2025-08-11)
+
+* **Feature**: Add support for configuring per-service Options via callback on global config.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.43.0 (2025-08-04)
+
+* **Feature**: Support configurable auth scheme preferences in service clients via AWS_AUTH_SCHEME_PREFERENCE in the environment, auth_scheme_preference in the config file, and through in-code settings on LoadDefaultConfig and client constructor methods.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.42.1 (2025-07-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.42.0 (2025-07-28)
+
+* **Feature**: Add support for HTTP interceptors.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.41.4 (2025-07-25)
+
+* **Documentation**: Doc only update: fixed grammatical errors.
+
+# v1.41.3 (2025-07-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.41.2 (2025-06-26)
 
 * **Documentation**: This release updates AWS CLI examples for KMS APIs.

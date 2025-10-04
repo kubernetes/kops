@@ -2,8 +2,7 @@ Base: null
 Contents: |
   apiVersion: v1
   kind: Pod
-  metadata:
-    creationTimestamp: null
+  metadata: {}
   spec:
     containers:
     - args:

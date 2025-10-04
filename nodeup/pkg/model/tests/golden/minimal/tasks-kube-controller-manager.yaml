@@ -2,7 +2,6 @@ contents: |
   apiVersion: v1
   kind: Pod
   metadata:
-    creationTimestamp: null
     labels:
       k8s-app: kube-controller-manager
     name: kube-controller-manager

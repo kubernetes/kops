@@ -2660,7 +2660,7 @@
       }
     }
   },
-  "revision": "20250603",
+  "revision": "20250812",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2818,6 +2818,10 @@
           "deprecated": true,
           "description": "Configuration for the Kubernetes Dashboard. This addon is deprecated, and will be disabled in 1.15. It is recommended to use the Cloud Console to manage and monitor your Kubernetes clusters, workloads and applications. For more information, see: https://{$universe.dns_names.final_documentation_domain}/kubernetes-engine/docs/concepts/dashboards"
         },
+        "lustreCsiDriverConfig": {
+          "$ref": "LustreCsiDriverConfig",
+          "description": "Configuration for the Lustre CSI driver."
+        },
         "networkPolicyConfig": {
           "$ref": "NetworkPolicyConfig",
           "description": "Configuration for NetworkPolicy. This only tracks whether the addon is enabled or not on the Master, it does not track whether network policy is enabled for the nodes."
@@ -2939,7 +2943,12 @@
     "AutoIpamConfig": {
       "description": "AutoIpamConfig contains all information related to Auto IPAM",
       "id": "AutoIpamConfig",
-      "properties": {},
+      "properties": {
+        "enabled": {
+          "description": "The flag that enables Auto IPAM on this cluster",
+          "type": "boolean"
+        }
+      },
       "type": "object"
     },
     "AutoMonitoringConfig": {
@@ -2987,6 +2996,10 @@
         "enabled": {
           "description": "Enable Autopilot",
           "type": "boolean"
+        },
+        "privilegedAdmissionConfig": {
+          "$ref": "PrivilegedAdmissionConfig",
+          "description": "PrivilegedAdmissionConfig is the configuration related to privileged admission control."
         },
         "workloadPolicyConfig": {
           "$ref": "WorkloadPolicyConfig",
@@ -3227,6 +3240,32 @@
         "standardRolloutPolicy": {
           "$ref": "StandardRolloutPolicy",
           "description": "Standard policy for the blue-green upgrade."
+        }
+      },
+      "type": "object"
+    },
+    "BootDisk": {
+      "description": "BootDisk specifies the boot disk configuration for nodepools.",
+      "id": "BootDisk",
+      "properties": {
+        "diskType": {
+          "description": "Disk type of the boot disk. (i.e. Hyperdisk-Balanced, PD-Balanced, etc.)",
+          "type": "string"
+        },
+        "provisionedIops": {
+          "description": "For Hyperdisk-Balanced only, the provisioned IOPS config value.",
+          "format": "int64",
+          "type": "string"
+        },
+        "provisionedThroughput": {
+          "description": "For Hyperdisk-Balanced only, the provisioned throughput config value.",
+          "format": "int64",
+          "type": "string"
+        },
+        "sizeGb": {
+          "description": "Disk size in GB. Replaces NodeConfig.disk_size_gb",
+          "format": "int64",
+          "type": "string"
         }
       },
       "type": "object"
@@ -3763,6 +3802,10 @@
           ],
           "type": "string"
         },
+        "defaultComputeClassConfig": {
+          "$ref": "DefaultComputeClassConfig",
+          "description": "Default compute class is a configuration for default compute class."
+        },
         "enableNodeAutoprovisioning": {
           "description": "Enables automatic node pool creation and deletion.",
           "type": "boolean"
@@ -3992,6 +4035,10 @@
         "desiredNetworkPerformanceConfig": {
           "$ref": "ClusterNetworkPerformanceConfig",
           "description": "The desired network performance config."
+        },
+        "desiredNetworkTierConfig": {
+          "$ref": "NetworkTierConfig",
+          "description": "The desired network tier configuration for the cluster."
         },
         "desiredNodeKubeletConfig": {
           "$ref": "NodeKubeletConfig",
@@ -4567,6 +4614,17 @@
       },
       "type": "object"
     },
+    "DefaultComputeClassConfig": {
+      "description": "DefaultComputeClassConfig defines default compute class configuration.",
+      "id": "DefaultComputeClassConfig",
+      "properties": {
+        "enabled": {
+          "description": "Enables default compute class.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "DefaultSnatStatus": {
       "description": "DefaultSnatStatus contains the desired state of whether default sNAT should be disabled on the cluster.",
       "id": "DefaultSnatStatus",
@@ -4683,6 +4741,99 @@
       },
       "type": "object"
     },
+    "EvictionGracePeriod": {
+      "description": "Eviction grace periods are grace periods for each eviction signal.",
+      "id": "EvictionGracePeriod",
+      "properties": {
+        "imagefsAvailable": {
+          "description": "Optional. Grace period for eviction due to imagefs available signal. Sample format: \"10s\". Must be \u003e= 0. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "imagefsInodesFree": {
+          "description": "Optional. Grace period for eviction due to imagefs inodes free signal. Sample format: \"10s\". Must be \u003e= 0. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "memoryAvailable": {
+          "description": "Optional. Grace period for eviction due to memory available signal. Sample format: \"10s\". Must be \u003e= 0. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "nodefsAvailable": {
+          "description": "Optional. Grace period for eviction due to nodefs available signal. Sample format: \"10s\". Must be \u003e= 0. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "nodefsInodesFree": {
+          "description": "Optional. Grace period for eviction due to nodefs inodes free signal. Sample format: \"10s\". Must be \u003e= 0. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "pidAvailable": {
+          "description": "Optional. Grace period for eviction due to pid available signal. Sample format: \"10s\". Must be \u003e= 0. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "EvictionMinimumReclaim": {
+      "description": "Eviction minimum reclaims are the resource amounts of minimum reclaims for each eviction signal.",
+      "id": "EvictionMinimumReclaim",
+      "properties": {
+        "imagefsAvailable": {
+          "description": "Optional. Minimum reclaim for eviction due to imagefs available signal. Only take percentage value for now. Sample format: \"10%\". Must be \u003c=10%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "imagefsInodesFree": {
+          "description": "Optional. Minimum reclaim for eviction due to imagefs inodes free signal. Only take percentage value for now. Sample format: \"10%\". Must be \u003c=10%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "memoryAvailable": {
+          "description": "Optional. Minimum reclaim for eviction due to memory available signal. Only take percentage value for now. Sample format: \"10%\". Must be \u003c=10%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "nodefsAvailable": {
+          "description": "Optional. Minimum reclaim for eviction due to nodefs available signal. Only take percentage value for now. Sample format: \"10%\". Must be \u003c=10%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "nodefsInodesFree": {
+          "description": "Optional. Minimum reclaim for eviction due to nodefs inodes free signal. Only take percentage value for now. Sample format: \"10%\". Must be \u003c=10%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "pidAvailable": {
+          "description": "Optional. Minimum reclaim for eviction due to pid available signal. Only take percentage value for now. Sample format: \"10%\". Must be \u003c=10%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "EvictionSignals": {
+      "description": "Eviction signals are the current state of a particular resource at a specific point in time. The kubelet uses eviction signals to make eviction decisions by comparing the signals to eviction thresholds, which are the minimum amount of the resource that should be available on the node.",
+      "id": "EvictionSignals",
+      "properties": {
+        "imagefsAvailable": {
+          "description": "Optional. Amount of storage available on filesystem that container runtime uses for storing images layers. If the container filesystem and image filesystem are not separate, then imagefs can store both image layers and writeable layers. Defines the amount of \"imagefs.available\" signal in kubelet. Default is unset, if not specified in the kubelet config. It takses percentage value for now. Sample format: \"30%\". Must be \u003e= 15% and \u003c= 50%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "imagefsInodesFree": {
+          "description": "Optional. Amount of inodes available on filesystem that container runtime uses for storing images layers. Defines the amount of \"imagefs.inodesFree\" signal in kubelet. Default is unset, if not specified in the kubelet config. Linux only. It takses percentage value for now. Sample format: \"30%\". Must be \u003e= 5% and \u003c= 50%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "memoryAvailable": {
+          "description": "Optional. Memory available (i.e. capacity - workingSet), in bytes. Defines the amount of \"memory.available\" signal in kubelet. Default is unset, if not specified in the kubelet config. Format: positive number + unit, e.g. 100Ki, 10Mi, 5Gi. Valid units are Ki, Mi, Gi. Must be \u003e= 100Mi and \u003c= 50% of the node's memory. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "nodefsAvailable": {
+          "description": "Optional. Amount of storage available on filesystem that kubelet uses for volumes, daemon logs, etc. Defines the amount of \"nodefs.available\" signal in kubelet. Default is unset, if not specified in the kubelet config. It takses percentage value for now. Sample format: \"30%\". Must be \u003e= 10% and \u003c= 50%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "nodefsInodesFree": {
+          "description": "Optional. Amount of inodes available on filesystem that kubelet uses for volumes, daemon logs, etc. Defines the amount of \"nodefs.inodesFree\" signal in kubelet. Default is unset, if not specified in the kubelet config. Linux only. It takses percentage value for now. Sample format: \"30%\". Must be \u003e= 5% and \u003c= 50%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        },
+        "pidAvailable": {
+          "description": "Optional. Amount of PID available for pod allocation. Defines the amount of \"pid.available\" signal in kubelet. Default is unset, if not specified in the kubelet config. It takses percentage value for now. Sample format: \"30%\". Must be \u003e= 10% and \u003c= 50%. See https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "FastSocket": {
       "description": "Configuration of Fast Socket feature.",
       "id": "FastSocket",
@@ -4729,6 +4880,18 @@
         "membership": {
           "description": "Output only. The full resource name of the registered fleet membership of the cluster, in the format `//gkehub.googleapis.com/projects/*/locations/*/memberships/*`.",
           "readOnly": true,
+          "type": "string"
+        },
+        "membershipType": {
+          "description": "The type of the cluster's fleet membership.",
+          "enum": [
+            "MEMBERSHIP_TYPE_UNSPECIFIED",
+            "LIGHTWEIGHT"
+          ],
+          "enumDescriptions": [
+            "The MembershipType is not set.",
+            "The membership supports only lightweight compatible features."
+          ],
           "type": "string"
         },
         "preRegistered": {
@@ -5117,6 +5280,10 @@
           ],
           "type": "string"
         },
+        "networkTierConfig": {
+          "$ref": "NetworkTierConfig",
+          "description": "Cluster-level network tier configuration is used to determine the default network tier for external IP addresses on cluster resources, such as node pools and load balancers."
+        },
         "nodeIpv4Cidr": {
           "deprecated": true,
           "description": "This field is deprecated, use node_ipv4_cidr_block.",
@@ -5351,8 +5518,44 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "The Linux kernel parameters to be applied to the nodes and all pods running on the nodes. The following parameters are supported. net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog net.core.rmem_max net.core.rmem_default net.core.wmem_default net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.netfilter.nf_conntrack_max net.netfilter.nf_conntrack_buckets net.netfilter.nf_conntrack_tcp_timeout_close_wait net.netfilter.nf_conntrack_tcp_timeout_time_wait net.netfilter.nf_conntrack_tcp_timeout_established net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax kernel.shmall vm.max_map_count",
+          "description": "The Linux kernel parameters to be applied to the nodes and all pods running on the nodes. The following parameters are supported. net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog net.core.rmem_max net.core.rmem_default net.core.wmem_default net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.ipv4.tcp_max_orphans net.netfilter.nf_conntrack_max net.netfilter.nf_conntrack_buckets net.netfilter.nf_conntrack_tcp_timeout_close_wait net.netfilter.nf_conntrack_tcp_timeout_time_wait net.netfilter.nf_conntrack_tcp_timeout_established net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax kernel.shmall fs.aio-max-nr fs.file-max fs.inotify.max_user_instances fs.inotify.max_user_watches fs.nr_open vm.dirty_background_ratio vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_writeback_centisecs vm.max_map_count vm.overcommit_memory vm.overcommit_ratio vm.vfs_cache_pressure vm.swappiness vm.watermark_scale_factor vm.min_free_kbytes",
           "type": "object"
+        },
+        "transparentHugepageDefrag": {
+          "description": "Optional. Defines the transparent hugepage defrag configuration on the node. VM hugepage allocation can be managed by either limiting defragmentation for delayed allocation or skipping it entirely for immediate allocation only. See https://docs.kernel.org/admin-guide/mm/transhuge.html for more details.",
+          "enum": [
+            "TRANSPARENT_HUGEPAGE_DEFRAG_UNSPECIFIED",
+            "TRANSPARENT_HUGEPAGE_DEFRAG_ALWAYS",
+            "TRANSPARENT_HUGEPAGE_DEFRAG_DEFER",
+            "TRANSPARENT_HUGEPAGE_DEFRAG_DEFER_WITH_MADVISE",
+            "TRANSPARENT_HUGEPAGE_DEFRAG_MADVISE",
+            "TRANSPARENT_HUGEPAGE_DEFRAG_NEVER"
+          ],
+          "enumDescriptions": [
+            "Default value. GKE will not modify the kernel configuration.",
+            "It means that an application requesting THP will stall on allocation failure and directly reclaim pages and compact memory in an effort to allocate a THP immediately.",
+            "It means that an application will wake kswapd in the background to reclaim pages and wake kcompactd to compact memory so that THP is available in the near future. It’s the responsibility of khugepaged to then install the THP pages later.",
+            "It means that an application will enter direct reclaim and compaction like always, but only for regions that have used madvise(MADV_HUGEPAGE); all other regions will wake kswapd in the background to reclaim pages and wake kcompactd to compact memory so that THP is available in the near future.",
+            "It means that an application will enter direct reclaim like always but only for regions that are have used madvise(MADV_HUGEPAGE). This is the default kernel configuration.",
+            "It means that an application will never enter direct reclaim or compaction."
+          ],
+          "type": "string"
+        },
+        "transparentHugepageEnabled": {
+          "description": "Optional. Transparent hugepage support for anonymous memory can be entirely disabled (mostly for debugging purposes) or only enabled inside MADV_HUGEPAGE regions (to avoid the risk of consuming more memory resources) or enabled system wide. See https://docs.kernel.org/admin-guide/mm/transhuge.html for more details.",
+          "enum": [
+            "TRANSPARENT_HUGEPAGE_ENABLED_UNSPECIFIED",
+            "TRANSPARENT_HUGEPAGE_ENABLED_ALWAYS",
+            "TRANSPARENT_HUGEPAGE_ENABLED_MADVISE",
+            "TRANSPARENT_HUGEPAGE_ENABLED_NEVER"
+          ],
+          "enumDescriptions": [
+            "Default value. GKE will not modify the kernel configuration.",
+            "Transparent hugepage support for anonymous memory is enabled system wide.",
+            "Transparent hugepage support for anonymous memory is enabled inside MADV_HUGEPAGE regions. This is the default kernel configuration.",
+            "Transparent hugepage support for anonymous memory is disabled."
+          ],
+          "type": "string"
         }
       },
       "type": "object"
@@ -5507,6 +5710,22 @@
             "maximum logging throughput variant."
           ],
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "LustreCsiDriverConfig": {
+      "description": "Configuration for the Lustre CSI driver.",
+      "id": "LustreCsiDriverConfig",
+      "properties": {
+        "enableLegacyLustrePort": {
+          "deprecated": true,
+          "description": "If set to true, the Lustre CSI driver will install Lustre kernel modules using port 6988. This serves as a workaround for a port conflict with the gke-metadata-server. This field is required ONLY under the following conditions: 1. The GKE node version is older than 1.33.2-gke.4655000. 2. You're connecting to a Lustre instance that has the 'gke-support-enabled' flag.",
+          "type": "boolean"
+        },
+        "enabled": {
+          "description": "Whether the Lustre CSI driver is enabled for this cluster.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -5948,6 +6167,29 @@
       },
       "type": "object"
     },
+    "NetworkTierConfig": {
+      "description": "NetworkTierConfig contains network tier information.",
+      "id": "NetworkTierConfig",
+      "properties": {
+        "networkTier": {
+          "description": "Network tier configuration.",
+          "enum": [
+            "NETWORK_TIER_UNSPECIFIED",
+            "NETWORK_TIER_DEFAULT",
+            "NETWORK_TIER_PREMIUM",
+            "NETWORK_TIER_STANDARD"
+          ],
+          "enumDescriptions": [
+            "By default, use project-level configuration. When unspecified, the behavior defaults to NETWORK_TIER_DEFAULT. For cluster updates, this implies no action (no-op).",
+            "Default network tier. Use project-level configuration. User can specify this value, meaning they want to keep the same behaviour as before cluster level network tier configuration is introduced. This field ensures backward compatibility for the network tier of cluster resources, such as node pools and load balancers, for their external IP addresses.",
+            "Premium network tier.",
+            "Standard network tier."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "NodeAffinity": {
       "description": "Specifies the NodeAffinity key, values, and affinity operator according to [shared sole tenant node group affinities](https://{$universe.dns_names.final_documentation_domain}/compute/docs/nodes/sole-tenant-nodes#node_affinity_and_anti-affinity).",
       "id": "NodeAffinity",
@@ -5994,6 +6236,10 @@
         "advancedMachineFeatures": {
           "$ref": "AdvancedMachineFeatures",
           "description": "Advanced features for the Compute Engine VM."
+        },
+        "bootDisk": {
+          "$ref": "BootDisk",
+          "description": "The boot disk configuration for the node pool."
         },
         "bootDiskKmsKey": {
           "description": " The Customer Managed Encryption Key used to encrypt the boot disk attached to each node in the node pool. This should be of the form projects/[KEY_PROJECT_ID]/locations/[LOCATION]/keyRings/[RING_NAME]/cryptoKeys/[KEY_NAME]. For more information about protecting resources with Cloud KMS Keys please see: https://{$universe.dns_names.final_documentation_domain}/compute/docs/disks/customer-managed-encryption",
@@ -6269,6 +6515,23 @@
           "description": "Control the CPU management policy on the node. See https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/ The following values are allowed. * \"none\": the default, which represents the existing scheduling behavior. * \"static\": allows pods with certain resource characteristics to be granted increased CPU affinity and exclusivity on the node. The default value is 'none' if unspecified.",
           "type": "string"
         },
+        "evictionMaxPodGracePeriodSeconds": {
+          "description": "Optional. eviction_max_pod_grace_period_seconds is the maximum allowed grace period (in seconds) to use when terminating pods in response to a soft eviction threshold being met. This value effectively caps the Pod's terminationGracePeriodSeconds value during soft evictions. Default: 0. Range: [0, 300].",
+          "format": "int32",
+          "type": "integer"
+        },
+        "evictionMinimumReclaim": {
+          "$ref": "EvictionMinimumReclaim",
+          "description": "Optional. eviction_minimum_reclaim is a map of signal names to quantities that defines minimum reclaims, which describe the minimum amount of a given resource the kubelet will reclaim when performing a pod eviction while that resource is under pressure."
+        },
+        "evictionSoft": {
+          "$ref": "EvictionSignals",
+          "description": "Optional. eviction_soft is a map of signal names to quantities that defines soft eviction thresholds. Each signal is compared to its corresponding threshold to determine if a pod eviction should occur."
+        },
+        "evictionSoftGracePeriod": {
+          "$ref": "EvictionGracePeriod",
+          "description": "Optional. eviction_soft_grace_period is a map of signal names to quantities that defines grace periods for each soft eviction signal. The grace period is the amount of time that a pod must be under pressure before an eviction occurs."
+        },
         "imageGcHighThresholdPercent": {
           "description": "Optional. Defines the percent of disk usage after which image garbage collection is always run. The percent is calculated as this field value out of 100. The value must be between 10 and 85, inclusive and greater than image_gc_low_threshold_percent. The default value is 85 if unspecified.",
           "format": "int32",
@@ -6291,6 +6554,11 @@
           "description": "Enable or disable Kubelet read only port.",
           "type": "boolean"
         },
+        "maxParallelImagePulls": {
+          "description": "Optional. Defines the maximum number of image pulls in parallel. The range is 2 to 5, inclusive. The default value is 2 or 3 depending on the disk type. See https://kubernetes.io/docs/concepts/containers/images/#maximum-parallel-image-pulls for more details.",
+          "format": "int32",
+          "type": "integer"
+        },
         "memoryManager": {
           "$ref": "MemoryManager",
           "description": "Optional. Controls NUMA-aware Memory Manager configuration on the node. For more information, see: https://kubernetes.io/docs/tasks/administer-cluster/memory-manager/"
@@ -6299,6 +6567,10 @@
           "description": "Set the Pod PID limits. See https://kubernetes.io/docs/concepts/policy/pid-limiting/#pod-pid-limits Controls the maximum number of processes allowed to run in a pod. The value must be greater than or equal to 1024 and less than 4194304.",
           "format": "int64",
           "type": "string"
+        },
+        "singleProcessOomKill": {
+          "description": "Optional. Defines whether to enable single process OOM killer. If true, will prevent the memory.oom.group flag from being set for container cgroups in cgroups v2. This causes processes in the container to be OOM killed individually instead of as a group.",
+          "type": "boolean"
         },
         "topologyManager": {
           "$ref": "TopologyManager",
@@ -6370,6 +6642,11 @@
           "$ref": "NetworkPerformanceConfig",
           "description": "Network bandwidth tier configuration."
         },
+        "networkTierConfig": {
+          "$ref": "NetworkTierConfig",
+          "description": "Output only. The network tier configuration for the node pool inherits from the cluster-level configuration and remains immutable throughout the node pool's lifecycle, including during upgrades.",
+          "readOnly": true
+        },
         "podCidrOverprovisionConfig": {
           "$ref": "PodCIDROverprovisionConfig",
           "description": "[PRIVATE FIELD] Pod CIDR size overprovisioning config for the nodepool. Pod CIDR size per node depends on max_pods_per_node. By default, the value of max_pods_per_node is rounded off to next power of 2 and we then double that to get the size of pod CIDR block per node. Example: max_pods_per_node of 30 would result in 64 IPs (/26). This config can disable the doubling of IPs (we still round off to next power of 2) Example: max_pods_per_node of 30 will result in 32 IPs (/27) when overprovisioning is disabled."
@@ -6386,6 +6663,11 @@
         },
         "podRange": {
           "description": "The ID of the secondary range for pod IPs. If `create_pod_range` is true, this ID is used for the new range. If `create_pod_range` is false, uses an existing secondary range with this ID. Only applicable if `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed after the node pool has been created.",
+          "type": "string"
+        },
+        "subnetwork": {
+          "description": "Output only. The subnetwork path for the node pool. Format: projects/{project}/regions/{region}/subnetworks/{subnetwork} If the cluster is associated with multiple subnetworks, the subnetwork for the node pool is picked based on the IP utilization during node pool creation and is immutable.",
+          "readOnly": true,
           "type": "string"
         }
       },
@@ -7137,6 +7419,20 @@
       },
       "type": "object"
     },
+    "PrivilegedAdmissionConfig": {
+      "description": "PrivilegedAdmissionConfig stores the list of authorized allowlist paths for the cluster.",
+      "id": "PrivilegedAdmissionConfig",
+      "properties": {
+        "allowlistPaths": {
+          "description": "The customer allowlist Cloud Storage paths for the cluster. These paths are used with the `--autopilot-privileged-admission` flag to authorize privileged workloads in Autopilot clusters. Paths can be GKE-owned, in the format `gke:////`, or customer-owned, in the format `gs:///`. Wildcards (`*`) are supported to authorize all allowlists under specific paths or directories. Example: `gs://my-bucket/*` will authorize all allowlists under the `my-bucket` bucket.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "PubSub": {
       "description": "Pub/Sub specific notification config.",
       "id": "PubSub",
@@ -7458,6 +7754,22 @@
       },
       "type": "object"
     },
+    "RotationConfig": {
+      "description": "RotationConfig is config for secret manager auto rotation.",
+      "id": "RotationConfig",
+      "properties": {
+        "enabled": {
+          "description": "Whether the rotation is enabled.",
+          "type": "boolean"
+        },
+        "rotationInterval": {
+          "description": "The interval between two consecutive rotations. Default rotation interval is 2 minutes.",
+          "format": "google-duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "SandboxConfig": {
       "description": "SandboxConfig contains configurations of the sandbox to use for the node.",
       "id": "SandboxConfig",
@@ -7513,6 +7825,10 @@
         "enabled": {
           "description": "Enable/Disable Secret Manager Config.",
           "type": "boolean"
+        },
+        "rotationConfig": {
+          "$ref": "RotationConfig",
+          "description": "Rotation config for secret manager."
         }
       },
       "type": "object"
@@ -8102,6 +8418,11 @@
       "description": "SoleTenantConfig contains the NodeAffinities to specify what shared sole tenant node groups should back the node pool.",
       "id": "SoleTenantConfig",
       "properties": {
+        "minNodeCpus": {
+          "description": "Optional. The minimum number of virtual CPUs this instance will consume when running on a sole-tenant node. This field can only be set if the node pool is created in a shared sole-tenant node group.",
+          "format": "int32",
+          "type": "integer"
+        },
         "nodeAffinities": {
           "description": "NodeAffinities used to match to a shared sole tenant node group.",
           "items": {
@@ -8259,7 +8580,8 @@
             "SET_BY_OPERATOR",
             "CLOUD_KMS_KEY_ERROR",
             "CA_EXPIRING",
-            "NODE_SERVICE_ACCOUNT_MISSING_PERMISSIONS"
+            "NODE_SERVICE_ACCOUNT_MISSING_PERMISSIONS",
+            "CLOUD_KMS_KEY_DESTROYED"
           ],
           "enumDescriptions": [
             "UNKNOWN indicates a generic condition.",
@@ -8269,7 +8591,8 @@
             "Cluster state was manually changed by an SRE due to a system logic error.",
             "Unable to perform an encrypt operation against the CloudKMS key used for etcd level encryption.",
             "Cluster CA is expiring soon.",
-            "Node service account is missing permissions."
+            "Node service account is missing permissions.",
+            "Cloud KMS key version used for etcd level encryption has been destroyed. This is a permanent error."
           ],
           "type": "string"
         },
@@ -8397,6 +8720,10 @@
             "$ref": "AcceleratorConfig"
           },
           "type": "array"
+        },
+        "bootDisk": {
+          "$ref": "BootDisk",
+          "description": "The desired boot disk config for nodes in the node pool. Initiates an upgrade operation that migrates the nodes in the node pool to the specified boot disk config."
         },
         "clusterId": {
           "deprecated": true,

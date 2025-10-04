@@ -353,6 +353,7 @@ type LoadBalancerActionChangeAlgorithmResponse struct {
 type LoadBalancerActionAttachToNetworkRequest struct {
 	Network int64   `json:"network"`
 	IP      *string `json:"ip,omitempty"`
+	IPRange *string `json:"ip_range,omitempty"`
 }
 
 type LoadBalancerActionAttachToNetworkResponse struct {

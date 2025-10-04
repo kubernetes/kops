@@ -3,7 +3,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -286,7 +285,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -742,7 +740,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/component: controller
@@ -757,7 +754,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -804,7 +800,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1206,7 +1201,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1228,7 +1222,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1249,7 +1242,6 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1270,7 +1262,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/component: controller
@@ -1291,7 +1282,6 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: aws-load-balancer-controller
@@ -1390,7 +1380,6 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1412,7 +1401,6 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1430,7 +1418,6 @@ kind: MutatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: kube-system/aws-load-balancer-serving-cert
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1524,7 +1511,6 @@ kind: ValidatingWebhookConfiguration
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: kube-system/aws-load-balancer-serving-cert
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1605,7 +1591,6 @@ webhooks:
 apiVersion: elbv2.k8s.aws/v1beta1
 kind: IngressClassParams
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1618,7 +1603,6 @@ metadata:
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -1637,7 +1621,6 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/component: controller

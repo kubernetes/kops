@@ -50,6 +50,12 @@ func SetObjectDefaults_Cluster(in *Cluster) {
 						a.ValueFrom.SecretKeyRef.LocalObjectReference.Name = ""
 					}
 				}
+				if a.ValueFrom.FileKeyRef != nil {
+					if a.ValueFrom.FileKeyRef.Optional == nil {
+						var ptrVar1 bool = false
+						a.ValueFrom.FileKeyRef.Optional = &ptrVar1
+					}
+				}
 			}
 		}
 	}

@@ -19,16 +19,21 @@ import (
 // Retrieves information about the specified managed policy, including the
 // policy's default version and the total number of IAM users, groups, and roles to
 // which the policy is attached. To retrieve the list of the specific users,
-// groups, and roles that the policy is attached to, use ListEntitiesForPolicy. This operation returns
+// groups, and roles that the policy is attached to, use [ListEntitiesForPolicy]. This operation returns
 // metadata about the policy. To retrieve the actual policy document for a specific
-// version of the policy, use GetPolicyVersion.
+// version of the policy, use [GetPolicyVersion].
 //
 // This operation retrieves information about managed policies. To retrieve
 // information about an inline policy that is embedded with an IAM user, group, or
-// role, use GetUserPolicy, GetGroupPolicy, or GetRolePolicy.
+// role, use [GetUserPolicy], [GetGroupPolicy], or [GetRolePolicy].
 //
 // For more information about policies, see [Managed policies and inline policies] in the IAM User Guide.
 //
+// [ListEntitiesForPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListEntitiesForPolicy.html
+// [GetRolePolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetRolePolicy.html
+// [GetPolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html
+// [GetGroupPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetGroupPolicy.html
+// [GetUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetUserPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) GetPolicy(ctx context.Context, params *GetPolicyInput, optFns ...func(*Options)) (*GetPolicyOutput, error) {
 	if params == nil {
@@ -61,7 +66,9 @@ type GetPolicyInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful GetPolicy request.
+// Contains the response to a successful [GetPolicy] request.
+//
+// [GetPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicy.html
 type GetPolicyOutput struct {
 
 	// A structure containing details about the policy.
@@ -159,6 +166,36 @@ func (c *Client) addOperationGetPolicyMiddlewares(stack *middleware.Stack, optio
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

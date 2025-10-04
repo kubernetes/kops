@@ -6681,6 +6681,11 @@ func awsAwsquery_serializeOpDocumentCancelInstanceRefreshInput(v *CancelInstance
 		objectKey.String(*v.AutoScalingGroupName)
 	}
 
+	if v.WaitForTransitioningInstances != nil {
+		objectKey := object.Key("WaitForTransitioningInstances")
+		objectKey.Boolean(*v.WaitForTransitioningInstances)
+	}
+
 	return nil
 }
 

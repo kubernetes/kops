@@ -54,14 +54,14 @@ import (
 // keys or particular trusted accounts. For details, see [Best practices for IAM policies]in the Key Management
 // Service Developer Guide.
 //
-// Decrypt also supports [Amazon Web Services Nitro Enclaves], which provide an isolated compute environment in Amazon
-// EC2. To call Decrypt for a Nitro enclave, use the [Amazon Web Services Nitro Enclaves SDK] or any Amazon Web Services
-// SDK. Use the Recipient parameter to provide the attestation document for the
-// enclave. Instead of the plaintext data, the response includes the plaintext data
-// encrypted with the public key from the attestation document (
-// CiphertextForRecipient ). For information about the interaction between KMS and
-// Amazon Web Services Nitro Enclaves, see [How Amazon Web Services Nitro Enclaves uses KMS]in the Key Management Service Developer
-// Guide.
+// Decrypt also supports [Amazon Web Services Nitro Enclaves] and NitroTPM, which provide attested environments in
+// Amazon EC2. To call Decrypt for a Nitro enclave or NitroTPM, use the [Amazon Web Services Nitro Enclaves SDK] or any
+// Amazon Web Services SDK. Use the Recipient parameter to provide the attestation
+// document for the attested environment. Instead of the plaintext data, the
+// response includes the plaintext data encrypted with the public key from the
+// attestation document ( CiphertextForRecipient ). For information about the
+// interaction between KMS and Amazon Web Services Nitro Enclaves or Amazon Web
+// Services NitroTPM, see [Cryptographic attestation support in KMS]in the Key Management Service Developer Guide.
 //
 // The KMS key that you use for this operation must be in a compatible key state.
 // For details, see [Key states of KMS keys]in the Key Management Service Developer Guide.
@@ -86,13 +86,13 @@ import (
 // more information, see [KMS eventual consistency].
 //
 // [Amazon Web Services Encryption SDK]: https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/
+// [Cryptographic attestation support in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/cryptographic-attestation.html
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [kms:Decrypt]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [Asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [Amazon Web Services Nitro Enclaves]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nitro-enclave.html
 // [Amazon S3 client-side encryption]: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingClientSideEncryption.html
 // [Best practices for IAM policies]: https://docs.aws.amazon.com/kms/latest/developerguide/iam-policies.html#iam-policies-best-practices
-// [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
 // [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
 // [Amazon Web Services Nitro Enclaves SDK]: https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk
 func (c *Client) Decrypt(ctx context.Context, params *DecryptInput, optFns ...func(*Options)) (*DecryptOutput, error) {
@@ -194,25 +194,26 @@ type DecryptInput struct {
 	// and alias ARN, use ListAliases.
 	KeyId *string
 
-	// A signed [attestation document] from an Amazon Web Services Nitro enclave and the encryption
-	// algorithm to use with the enclave's public key. The only valid encryption
-	// algorithm is RSAES_OAEP_SHA_256 .
+	// A signed [attestation document] from an Amazon Web Services Nitro enclave or NitroTPM, and the
+	// encryption algorithm to use with the public key in the attestation document. The
+	// only valid encryption algorithm is RSAES_OAEP_SHA_256 .
 	//
-	// This parameter only supports attestation documents for Amazon Web Services
-	// Nitro Enclaves. To include this parameter, use the [Amazon Web Services Nitro Enclaves SDK]or any Amazon Web Services
-	// SDK.
+	// This parameter supports the [Amazon Web Services Nitro Enclaves SDK] or any Amazon Web Services SDK for Amazon Web
+	// Services Nitro Enclaves. It supports any Amazon Web Services SDK for Amazon Web
+	// Services NitroTPM.
 	//
 	// When you use this parameter, instead of returning the plaintext data, KMS
 	// encrypts the plaintext data with the public key in the attestation document, and
 	// returns the resulting ciphertext in the CiphertextForRecipient field in the
 	// response. This ciphertext can be decrypted only with the private key in the
-	// enclave. The Plaintext field in the response is null or empty.
+	// attested environment. The Plaintext field in the response is null or empty.
 	//
 	// For information about the interaction between KMS and Amazon Web Services Nitro
-	// Enclaves, see [How Amazon Web Services Nitro Enclaves uses KMS]in the Key Management Service Developer Guide.
+	// Enclaves or Amazon Web Services NitroTPM, see [Cryptographic attestation support in KMS]in the Key Management Service
+	// Developer Guide.
 	//
+	// [Cryptographic attestation support in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/cryptographic-attestation.html
 	// [attestation document]: https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave-concepts.html#term-attestdoc
-	// [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
 	// [Amazon Web Services Nitro Enclaves SDK]: https://docs.aws.amazon.com/enclaves/latest/user/developing-applications.html#sdk
 	Recipient *types.RecipientInfo
 
@@ -221,14 +222,17 @@ type DecryptInput struct {
 
 type DecryptOutput struct {
 
-	// The plaintext data encrypted with the public key in the attestation document.
+	// The plaintext data encrypted with the public key from the attestation document.
+	// This ciphertext can be decrypted only by using a private key from the attested
+	// environment.
 	//
 	// This field is included in the response only when the Recipient parameter in the
 	// request includes a valid attestation document from an Amazon Web Services Nitro
-	// enclave. For information about the interaction between KMS and Amazon Web
-	// Services Nitro Enclaves, see [How Amazon Web Services Nitro Enclaves uses KMS]in the Key Management Service Developer Guide.
+	// enclave or NitroTPM. For information about the interaction between KMS and
+	// Amazon Web Services Nitro Enclaves or Amazon Web Services NitroTPM, see [Cryptographic attestation support in KMS]in the
+	// Key Management Service Developer Guide.
 	//
-	// [How Amazon Web Services Nitro Enclaves uses KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html
+	// [Cryptographic attestation support in KMS]: https://docs.aws.amazon.com/kms/latest/developerguide/cryptographic-attestation.html
 	CiphertextForRecipient []byte
 
 	// The encryption algorithm that was used to decrypt the ciphertext.
@@ -344,6 +348,36 @@ func (c *Client) addOperationDecryptMiddlewares(stack *middleware.Stack, options
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

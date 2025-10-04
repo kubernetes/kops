@@ -921,6 +921,33 @@ type KinesisParameters struct {
 	noSmithyDocumentSerde
 }
 
+// The logging configuration settings for the event bus.
+//
+// For more information, see [Configuring logs for event buses] in the EventBridge User Guide.
+//
+// [Configuring logs for event buses]: https://docs.aws.amazon.com/eb-event-bus-logs.html
+type LogConfig struct {
+
+	// Whether EventBridge include detailed event information in the records it
+	// generates. Detailed data can be useful for troubleshooting and debugging. This
+	// information includes details of the event itself, as well as target details.
+	//
+	// For more information, see [Including detail data in event bus logs] in the EventBridge User Guide.
+	//
+	// [Including detail data in event bus logs]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-bus-logs.html#eb-event-logs-data
+	IncludeDetail IncludeDetail
+
+	// The level of logging detail to include. This applies to all log destinations
+	// for the event bus.
+	//
+	// For more information, see [Specifying event bus log level] in the EventBridge User Guide.
+	//
+	// [Specifying event bus log level]: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-bus-logs.html#eb-event-bus-logs-level
+	Level Level
+
+	noSmithyDocumentSerde
+}
+
 // This structure specifies the network configuration for an ECS task.
 type NetworkConfiguration struct {
 

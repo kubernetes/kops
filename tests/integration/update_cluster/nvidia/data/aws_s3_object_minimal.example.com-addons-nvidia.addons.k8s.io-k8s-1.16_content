@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: nvidia.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -14,7 +13,6 @@ spec:
       name: nvidia-device-plugin-ds
   template:
     metadata:
-      creationTimestamp: null
       labels:
         kops.k8s.io/managed-by: kops
         name: nvidia-device-plugin-ds
@@ -53,7 +51,6 @@ apiVersion: node.k8s.io/v1
 handler: nvidia
 kind: RuntimeClass
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: nvidia.addons.k8s.io
     app.kubernetes.io/managed-by: kops

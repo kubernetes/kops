@@ -12,11 +12,9 @@
 
 ✨ **`samber/lo` is a Lodash-style Go library based on Go 1.18+ Generics.**
 
-This project started as an experiment with the new generics implementation. It may look like [Lodash](https://github.com/lodash/lodash) in some aspects. I used to code with the fantastic ["go-funk"](https://github.com/thoas/go-funk) package, but "go-funk" uses reflection and therefore is not typesafe.
+A utility library based on Go 1.18+ generics that makes it easier to work with slices, maps, strings, channels, and functions. It provides dozens of handy methods to simplify common coding tasks and improve code readability. It may look like [Lodash](https://github.com/lodash/lodash) in some aspects.
 
-As expected, benchmarks demonstrate that generics are much faster than implementations based on the "reflect" package. Benchmarks also show similar performance gains compared to pure `for` loops. [See below](#-benchmark).
-
-In the future, 5 to 10 helpers will overlap with those coming into the Go standard library (under package names `slices` and `maps`). I feel this library is legitimate and offers many more valuable abstractions.
+5 to 10 helpers may overlap with those from the Go standard library, in packages `slices` and `maps`. I feel this library is legitimate and offers many more valuable abstractions.
 
 **See also:**
 
@@ -25,7 +23,7 @@ In the future, 5 to 10 helpers will overlap with those coming into the Go standa
 
 **Why this name?**
 
-I wanted a **short name**, similar to "Lodash" and no Go package uses this name.
+I wanted a **short name**, similar to "Lodash", and no Go package uses this name.
 
 ![lo](img/logo-full.png)
 
@@ -59,8 +57,6 @@ Then use one of the helpers below:
 names := lo.Uniq([]string{"Samuel", "John", "Samuel"})
 // []string{"Samuel", "John"}
 ```
-
-Most of the time, the compiler will be able to infer the type so that you can call: `lo.Uniq([]string{...})`.
 
 ### Tips for lazy developers
 
@@ -330,6 +326,8 @@ Error handling:
 - [TryWithErrorValue](#trywitherrorvalue)
 - [TryCatchWithErrorValue](#trycatchwitherrorvalue)
 - [ErrorsAs](#errorsas)
+- [Assert](#assert)
+- [Assertf](#assertf)
 
 Constraints:
 
@@ -398,7 +396,7 @@ import lom "github.com/samber/lo/mutable"
 
 list := []int{1, 2, 3, 4}
 lom.Map(list, func(x int) int {
-    return i*2
+    return x*2
 })
 // []int{2, 4, 6, 8}
 ```
@@ -1775,7 +1773,7 @@ str := lo.Capitalize("heLLO")
 
 ### Ellipsis
 
-Trims and truncates a string to a specified length and appends an ellipsis if truncated.
+Trims and truncates a string to a specified length **in bytes** and appends an ellipsis if truncated. If the string contains non-ASCII characters (which may occupy multiple bytes in UTF-8), truncating by byte length may split a character in the middle, potentially resulting in garbled output.
 
 ```go
 str := lo.Ellipsis("  Lorem Ipsum  ", 5)
@@ -2777,7 +2775,7 @@ Search the maximum time.Time of a collection.
 Returns zero value when the collection is empty.
 
 ```go
-latest := lo.Latest([]time.Time{time.Now(), time.Time{}})
+latest := lo.Latest(time.Now(), time.Time{})
 // 2023-04-01 01:02:03 +0000 UTC
 ```
 
@@ -2850,7 +2848,7 @@ last, ok := lo.Last([]int{})
 
 ### LastOrEmpty
 
-Returns the first element of a collection or zero value if empty.
+Returns the last element of a collection or zero value if empty.
 
 ```go
 last := lo.LastOrEmpty([]int{1, 2, 3})
@@ -2862,7 +2860,7 @@ last := lo.LastOrEmpty([]int{})
 
 ### LastOr
 
-Returns the first element of a collection or the fallback value if empty.
+Returns the last element of a collection or the fallback value if empty.
 
 ```go
 last := lo.LastOr([]int{1, 2, 3}, 245)
@@ -4098,6 +4096,40 @@ if rateLimitErr, ok := lo.ErrorsAs[*RateLimitError](err); ok {
 ```
 
 [[play](https://go.dev/play/p/8wk5rH8UfrE)]
+
+### Assert
+
+Does nothing when the condition is `true`, otherwise it panics with an optional message.
+
+Think twice before using it, given that [Go intentionally omits assertions from its standard library](https://go.dev/doc/faq#assertions).
+
+```go
+age := getUserAge()
+
+lo.Assert(age >= 15)
+```
+
+```go
+age := getUserAge()
+
+lo.Assert(age >= 15, "user age must be >= 15")
+```
+
+[[play](https://go.dev/play/p/Xv8LLKBMNwI)]
+
+### Assertf
+
+Like `Assert`, but with `fmt.Printf`-like formatting.
+
+Think twice before using it, given that [Go intentionally omits assertions from its standard library](https://go.dev/doc/faq#assertions).
+
+```go
+age := getUserAge()
+
+lo.Assertf(age >= 15, "user age must be >= 15, got %d", age)
+```
+
+[[play](https://go.dev/play/p/TVPEmVcyrdY)]
 
 ## 🛩 Benchmark
 

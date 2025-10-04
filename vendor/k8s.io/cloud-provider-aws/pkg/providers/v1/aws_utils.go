@@ -19,30 +19,29 @@ package aws
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-func stringSetToPointers(in sets.String) []*string {
+func stringSetToList(in sets.Set[string]) []string {
 	if in == nil {
 		return nil
 	}
-	out := make([]*string, 0, len(in))
+	out := make([]string, 0, len(in))
 	for k := range in {
-		out = append(out, aws.String(k))
+		out = append(out, k)
 	}
 	return out
 }
 
-func stringSetFromPointers(in []*string) sets.String {
+func stringSetFromList(in []string) sets.Set[string] {
 	if in == nil {
 		return nil
 	}
-	out := sets.NewString()
+	out := sets.New[string]()
 	for i := range in {
-		out.Insert(aws.StringValue(in[i]))
+		out.Insert(in[i])
 	}
 	return out
 }

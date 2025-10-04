@@ -1,3 +1,148 @@
+# v1.254.1 (2025-09-26)
+
+* **Documentation**: This release includes documentation updates for Amazon EBS General Purpose SSD (gp3) volumes with larger size and higher IOPS and throughput.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.254.0 (2025-09-23)
+
+* **Feature**: Add Amazon EC2 R8gn instance types
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.253.0 (2025-09-18)
+
+* **Feature**: Allowed AMIs adds support for four new parameters - marketplaceProductCodes, deprecationTimeCondition, creationDateCondition and imageNames
+
+# v1.252.0 (2025-09-17)
+
+* **Feature**: Add mac-m4.metal and mac-m4pro.metal instance types.
+
+# v1.251.2 (2025-09-10)
+
+* No change notes available for this release.
+
+# v1.251.1 (2025-09-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.251.0 (2025-09-04)
+
+* **Feature**: Add m8i, m8i-flex and i8ge instance types.
+
+# v1.250.0 (2025-09-02)
+
+* **Feature**: MaximumEbsAttachments and AttachmentLimitType fields added to DescribeInstanceTypesResponse. G6f, Gr6f, R8i, R8i-flex and p5.4xlarge instance types added to InstanceTypes enum.
+
+# v1.249.0 (2025-08-29)
+
+* **Feature**: Release shows new route types such as filtered and advertisement.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.248.0 (2025-08-28)
+
+* **Feature**: This release adds support for copying Amazon EBS snapshot and AMIs to and from Local Zones.
+
+# v1.247.1 (2025-08-27)
+
+* **Dependency Update**: Update to smithy-go v1.23.0.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.247.0 (2025-08-26)
+
+* **Feature**: Add new APIs for viewing how your shared AMIs are used by other accounts, and identify resources in your account that are dependent on particular AMIs
+
+# v1.246.0 (2025-08-25)
+
+* **Feature**: Added IPv6 support for AWS Client VPN.
+
+# v1.245.2 (2025-08-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.245.1 (2025-08-20)
+
+* **Bug Fix**: Remove unused deserialization code.
+
+# v1.245.0 (2025-08-19)
+
+* **Feature**: Add support for "warning" volume status.
+
+# v1.244.0 (2025-08-14)
+
+* **Feature**: This release adds ModifyInstanceConnectEndpoint API to update configurations on existing EC2 Instance Connect Endpoints and improves IPv6 support through dualstack DNS names for EC2 Instance Connect Endpoints.
+
+# v1.243.0 (2025-08-12)
+
+* **Feature**: Release to allow route table association with a PublicIpv4Pool.
+
+# v1.242.0 (2025-08-11)
+
+* **Feature**: Add support for configuring per-service Options via callback on global config.
+* **Feature**: This release adds AvailabilityZoneId support for CreateVolume, DescribeVolume, LaunchTemplates, RunInstances, DescribeInstances, CreateDefaultSubnet, SpotInstances, and CreateDefaultSubnet APIs.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.241.0 (2025-08-06)
+
+* **Feature**: Mark Elastic Inference Accelerators and Elastic Graphics Processor parameters as deprecated on the RunInstances and LaunchTemplate APIs.
+
+# v1.240.0 (2025-08-04)
+
+* **Feature**: Support configurable auth scheme preferences in service clients via AWS_AUTH_SCHEME_PREFERENCE in the environment, auth_scheme_preference in the config file, and through in-code settings on LoadDefaultConfig and client constructor methods.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.239.0 (2025-07-31)
+
+* **Feature**: Added support for the force option for the EC2 instance terminate command. This feature enables customers to recover resources associated with an instance stuck in the shutting-down state as a result of rare issues caused by a frozen operating system or an underlying hardware problem.
+
+# v1.238.0 (2025-07-30)
+
+* **Feature**: Release to show the next hop IP address for routes propagated by VPC Route Server into VPC route tables.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.237.0 (2025-07-28)
+
+* **Feature**: Add support for HTTP interceptors.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.236.0 (2025-07-25)
+
+* **Feature**: Transit Gateway native integration with AWS Network Firewall. Adding new enum value for the new Transit Gateway Attachment type.
+
+# v1.235.0 (2025-07-23)
+
+* **Feature**: Added support for skip-os-shutdown option for the EC2 instance stop and terminate operations. This feature enables customers to bypass the graceful OS shutdown, supporting faster state transitions when instance data preservation isn't critical.
+
+# v1.234.0 (2025-07-21)
+
+* **Feature**: This release adds support for C8gn, F2 and P6e-GB200 Instance types
+
+# v1.233.1 (2025-07-19)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.233.0 (2025-07-17)
+
+* **Feature**: AWS Free Tier Version2 Support
+
+# v1.232.0 (2025-07-15)
+
+* **Feature**: This release adds support for volume initialization status, which enables you to monitor when the initialization process for an EBS volume is completed. This release also adds IPv6 support to EC2 Instance Connect Endpoints, allowing you to connect to your EC2 Instance via a private IPv6 address.
+
+# v1.231.0 (2025-07-09)
+
+* **Feature**: Adds support to Capacity Blocks for ML for purchasing EC2 P6e-GB200 UltraServers. Customers can now purchase u-p6e-gb200x72 and u-p6e-gb200x36 UltraServers. Adds new DescribeCapacityBlocks andDescribeCapacityBlockStatus APIs. Adds support for CapacityBlockId to DescribeInstanceTopology.
+
+# v1.230.0 (2025-07-03)
+
+* **Feature**: This release adds GroupOwnerId as a response member to the DescribeSecurityGroupVpcAssociations API and also adds waiters for SecurityGroupVpcAssociations (SecurityGroupVpcAssociationAssociated and SecurityGroupVpcAssociationDisassociated).
+
+# v1.229.0 (2025-07-02)
+
+* **Feature**: AWS Site-to-Site VPN now supports IPv6 addresses on outer tunnel IPs, making it easier for customers to build or transition to IPv6-only networks.
+
+# v1.228.0 (2025-07-01)
+
+* **Feature**: Add Context to GetInstanceTypesFromInstanceRequirements API
+
 # v1.227.0 (2025-06-26)
 
 * **Feature**: This release adds support for OdbNetworkArn as a target in VPC Route Tables

@@ -56,7 +56,7 @@ const (
 func (enum ContactEmailStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "email_status_unknown"
+		return string(ContactEmailStatusEmailStatusUnknown)
 	}
 	return string(enum)
 }
@@ -109,7 +109,7 @@ const (
 func (enum ContactExtensionFRMode) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "mode_unknown"
+		return string(ContactExtensionFRModeModeUnknown)
 	}
 	return string(enum)
 }
@@ -190,7 +190,7 @@ const (
 func (enum ContactExtensionNLLegalForm) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "legal_form_unknown"
+		return string(ContactExtensionNLLegalFormLegalFormUnknown)
 	}
 	return string(enum)
 }
@@ -253,7 +253,7 @@ const (
 func (enum ContactLegalForm) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "legal_form_unknown"
+		return string(ContactLegalFormLegalFormUnknown)
 	}
 	return string(enum)
 }
@@ -297,7 +297,7 @@ const (
 func (enum ContactStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "status_unknown"
+		return string(ContactStatusStatusUnknown)
 	}
 	return string(enum)
 }
@@ -343,7 +343,7 @@ const (
 func (enum DNSZoneStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown"
+		return string(DNSZoneStatusUnknown)
 	}
 	return string(enum)
 }
@@ -407,7 +407,7 @@ const (
 func (enum DSRecordAlgorithm) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "rsamd5"
+		return string(DSRecordAlgorithmRsamd5)
 	}
 	return string(enum)
 }
@@ -461,7 +461,7 @@ const (
 func (enum DSRecordDigestType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "sha_1"
+		return string(DSRecordDigestTypeSha1)
 	}
 	return string(enum)
 }
@@ -508,7 +508,7 @@ const (
 func (enum DomainFeatureStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "feature_status_unknown"
+		return string(DomainFeatureStatusFeatureStatusUnknown)
 	}
 	return string(enum)
 }
@@ -558,7 +558,7 @@ const (
 func (enum DomainRegistrationStatusTransferStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "status_unknown"
+		return string(DomainRegistrationStatusTransferStatusStatusUnknown)
 	}
 	return string(enum)
 }
@@ -625,7 +625,7 @@ const (
 func (enum DomainStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "status_unknown"
+		return string(DomainStatusStatusUnknown)
 	}
 	return string(enum)
 }
@@ -680,7 +680,7 @@ const (
 func (enum HostStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_status"
+		return string(HostStatusUnknownStatus)
 	}
 	return string(enum)
 }
@@ -709,6 +709,72 @@ func (enum *HostStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type InboundTransferStatus string
+
+const (
+	// Unknown status.
+	InboundTransferStatusUnknown = InboundTransferStatus("unknown")
+	// Domain transfer in progress.
+	InboundTransferStatusInProgress = InboundTransferStatus("in_progress")
+	// Domain successfully transferred.
+	InboundTransferStatusDone = InboundTransferStatus("done")
+	// Internal error.
+	InboundTransferStatusErrInternal = InboundTransferStatus("err_internal")
+	// Domain is in a pending status.
+	InboundTransferStatusErrDomainPending = InboundTransferStatus("err_domain_pending")
+	// Domain is already being transferred.
+	InboundTransferStatusErrAlreadyTransferring = InboundTransferStatus("err_already_transferring")
+	// Domain transfer is prohibited (transfer/update prohibited status or is currently locked).
+	InboundTransferStatusErrTransferProhibited = InboundTransferStatus("err_transfer_prohibited")
+	// Transfer is not supported for this TLD or the domain is premium.
+	InboundTransferStatusErrTransferImpossible = InboundTransferStatus("err_transfer_impossible")
+	// Invalid authcode.
+	InboundTransferStatusErrInvalidAuthcode = InboundTransferStatus("err_invalid_authcode")
+	// Domain name was created less than 60 days ago.
+	InboundTransferStatusErrDomainTooYoung = InboundTransferStatus("err_domain_too_young")
+	// Too many transfer requests for this domain name.
+	InboundTransferStatusErrTooManyRequests = InboundTransferStatus("err_too_many_requests")
+)
+
+func (enum InboundTransferStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return string(InboundTransferStatusUnknown)
+	}
+	return string(enum)
+}
+
+func (enum InboundTransferStatus) Values() []InboundTransferStatus {
+	return []InboundTransferStatus{
+		"unknown",
+		"in_progress",
+		"done",
+		"err_internal",
+		"err_domain_pending",
+		"err_already_transferring",
+		"err_transfer_prohibited",
+		"err_transfer_impossible",
+		"err_invalid_authcode",
+		"err_domain_too_young",
+		"err_too_many_requests",
+	}
+}
+
+func (enum InboundTransferStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *InboundTransferStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = InboundTransferStatus(InboundTransferStatus(tmp).String())
+	return nil
+}
+
 type LinkedProduct string
 
 const (
@@ -721,7 +787,7 @@ const (
 func (enum LinkedProduct) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_product"
+		return string(LinkedProductUnknownProduct)
 	}
 	return string(enum)
 }
@@ -763,7 +829,7 @@ const (
 func (enum ListContactsRequestRole) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_role"
+		return string(ListContactsRequestRoleUnknownRole)
 	}
 	return string(enum)
 }
@@ -804,7 +870,7 @@ const (
 func (enum ListDNSZoneRecordsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "name_asc"
+		return string(ListDNSZoneRecordsRequestOrderByNameAsc)
 	}
 	return string(enum)
 }
@@ -855,7 +921,7 @@ const (
 func (enum ListDNSZonesRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "domain_asc"
+		return string(ListDNSZonesRequestOrderByDomainAsc)
 	}
 	return string(enum)
 }
@@ -900,7 +966,7 @@ const (
 func (enum ListDomainsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "domain_asc"
+		return string(ListDomainsRequestOrderByDomainAsc)
 	}
 	return string(enum)
 }
@@ -939,7 +1005,7 @@ const (
 func (enum ListRenewableDomainsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "domain_asc"
+		return string(ListRenewableDomainsRequestOrderByDomainAsc)
 	}
 	return string(enum)
 }
@@ -990,7 +1056,7 @@ const (
 func (enum ListTasksRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "domain_desc"
+		return string(ListTasksRequestOrderByDomainDesc)
 	}
 	return string(enum)
 }
@@ -1035,7 +1101,7 @@ const (
 func (enum ListTldsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "name_asc"
+		return string(ListTldsRequestOrderByNameAsc)
 	}
 	return string(enum)
 }
@@ -1074,7 +1140,7 @@ const (
 func (enum RawFormat) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_raw_format"
+		return string(RawFormatUnknownRawFormat)
 	}
 	return string(enum)
 }
@@ -1115,7 +1181,7 @@ const (
 func (enum RecordHTTPServiceConfigStrategy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "random"
+		return string(RecordHTTPServiceConfigStrategyRandom)
 	}
 	return string(enum)
 }
@@ -1195,7 +1261,7 @@ const (
 func (enum RecordType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown"
+		return string(RecordTypeUnknown)
 	}
 	return string(enum)
 }
@@ -1258,7 +1324,7 @@ const (
 func (enum RenewableDomainStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown"
+		return string(RenewableDomainStatusUnknown)
 	}
 	return string(enum)
 }
@@ -1305,7 +1371,7 @@ const (
 func (enum SSLCertificateStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown"
+		return string(SSLCertificateStatusUnknown)
 	}
 	return string(enum)
 }
@@ -1355,7 +1421,7 @@ const (
 func (enum TaskStatus) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unavailable"
+		return string(TaskStatusUnavailable)
 	}
 	return string(enum)
 }
@@ -1442,7 +1508,7 @@ const (
 func (enum TaskType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown"
+		return string(TaskTypeUnknown)
 	}
 	return string(enum)
 }
@@ -1701,8 +1767,7 @@ type RecordChangeAdd struct {
 }
 
 // RecordChangeClear: record change clear.
-type RecordChangeClear struct {
-}
+type RecordChangeClear struct{}
 
 // RecordChangeDelete: record change delete.
 type RecordChangeDelete struct {
@@ -2028,6 +2093,34 @@ type DomainSummary struct {
 	PendingTrade bool `json:"pending_trade"`
 }
 
+// InboundTransfer: inbound transfer.
+type InboundTransfer struct {
+	// ID: the unique identifier of the inbound transfer.
+	ID string `json:"id"`
+
+	// CreatedAt: the creation date of the inbound transfer.
+	CreatedAt *time.Time `json:"created_at"`
+
+	// LastUpdatedAt: the last modification date of the inbound transfer.
+	LastUpdatedAt *time.Time `json:"last_updated_at"`
+
+	// ProjectID: the project ID associated with the inbound transfer.
+	ProjectID string `json:"project_id"`
+
+	// Domain: the domain associated with the inbound transfer.
+	Domain string `json:"domain"`
+
+	// Status: inbound transfer status.
+	// Default value: unknown
+	Status InboundTransferStatus `json:"status"`
+
+	// Message: human-friendly message to describe the current inbound transfer status.
+	Message string `json:"message"`
+
+	// TaskID: the unique identifier of the associated task.
+	TaskID string `json:"task_id"`
+}
+
 // RenewableDomain: renewable domain.
 type RenewableDomain struct {
 	Domain string `json:"domain"`
@@ -2146,8 +2239,7 @@ type ClearDNSZoneRecordsRequest struct {
 }
 
 // ClearDNSZoneRecordsResponse: clear dns zone records response.
-type ClearDNSZoneRecordsResponse struct {
-}
+type ClearDNSZoneRecordsResponse struct{}
 
 // CloneDNSZoneRequest: clone dns zone request.
 type CloneDNSZoneRequest struct {
@@ -2193,8 +2285,7 @@ type DeleteDNSZoneRequest struct {
 }
 
 // DeleteDNSZoneResponse: delete dns zone response.
-type DeleteDNSZoneResponse struct {
-}
+type DeleteDNSZoneResponse struct{}
 
 // DeleteDNSZoneTsigKeyRequest: delete dns zone tsig key request.
 type DeleteDNSZoneTsigKeyRequest struct {
@@ -2202,8 +2293,7 @@ type DeleteDNSZoneTsigKeyRequest struct {
 }
 
 // DeleteExternalDomainResponse: delete external domain response.
-type DeleteExternalDomainResponse struct {
-}
+type DeleteExternalDomainResponse struct{}
 
 // DeleteSSLCertificateRequest: delete ssl certificate request.
 type DeleteSSLCertificateRequest struct {
@@ -2211,8 +2301,7 @@ type DeleteSSLCertificateRequest struct {
 }
 
 // DeleteSSLCertificateResponse: delete ssl certificate response.
-type DeleteSSLCertificateResponse struct {
-}
+type DeleteSSLCertificateResponse struct{}
 
 // Domain: domain.
 type Domain struct {
@@ -2376,7 +2465,7 @@ func (r *ListContactsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListContactsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListContactsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListContactsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2448,7 +2537,7 @@ func (r *ListDNSZoneRecordsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListDNSZoneRecordsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListDNSZoneRecordsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListDNSZoneRecordsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2486,7 +2575,7 @@ func (r *ListDNSZoneVersionRecordsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListDNSZoneVersionRecordsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListDNSZoneVersionRecordsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListDNSZoneVersionRecordsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2524,7 +2613,7 @@ func (r *ListDNSZoneVersionsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListDNSZoneVersionsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListDNSZoneVersionsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListDNSZoneVersionsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2592,7 +2681,7 @@ func (r *ListDNSZonesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListDNSZonesResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListDNSZonesResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListDNSZonesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2618,7 +2707,7 @@ func (r *ListDomainHostsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListDomainHostsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListDomainHostsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListDomainHostsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2644,7 +2733,7 @@ func (r *ListDomainsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListDomainsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListDomainsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListDomainsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2653,6 +2742,32 @@ func (r *ListDomainsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	r.Domains = append(r.Domains, results.Domains...)
 	r.TotalCount += uint32(len(results.Domains))
 	return uint32(len(results.Domains)), nil
+}
+
+// ListInboundTransfersResponse: list inbound transfers response.
+type ListInboundTransfersResponse struct {
+	TotalCount uint32 `json:"total_count"`
+
+	InboundTransfers []*InboundTransfer `json:"inbound_transfers"`
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListInboundTransfersResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListInboundTransfersResponse) UnsafeAppend(res any) (uint32, error) {
+	results, ok := res.(*ListInboundTransfersResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.InboundTransfers = append(r.InboundTransfers, results.InboundTransfers...)
+	r.TotalCount += uint32(len(results.InboundTransfers))
+	return uint32(len(results.InboundTransfers)), nil
 }
 
 // ListRenewableDomainsResponse: list renewable domains response.
@@ -2670,7 +2785,7 @@ func (r *ListRenewableDomainsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListRenewableDomainsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListRenewableDomainsResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListRenewableDomainsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2707,7 +2822,7 @@ func (r *ListSSLCertificatesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListSSLCertificatesResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListSSLCertificatesResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListSSLCertificatesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2733,7 +2848,7 @@ func (r *ListTasksResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListTasksResponse) UnsafeAppend(res interface{}) (uint32, error) {
+func (r *ListTasksResponse) UnsafeAppend(res any) (uint32, error) {
 	results, ok := res.(*ListTasksResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2761,7 +2876,7 @@ func (r *ListTldsResponse) UnsafeGetTotalCount() uint64 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListTldsResponse) UnsafeAppend(res interface{}) (uint64, error) {
+func (r *ListTldsResponse) UnsafeAppend(res any) (uint64, error) {
 	results, ok := res.(*ListTldsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2977,6 +3092,19 @@ type RegistrarAPIListDomainsRequest struct {
 	Domain *string `json:"-"`
 }
 
+// RegistrarAPIListInboundTransfersRequest: registrar api list inbound transfers request.
+type RegistrarAPIListInboundTransfersRequest struct {
+	Page int32 `json:"-"`
+
+	PageSize *uint32 `json:"-"`
+
+	ProjectID string `json:"-"`
+
+	OrganizationID string `json:"-"`
+
+	Domain string `json:"-"`
+}
+
 // RegistrarAPIListRenewableDomainsRequest: registrar api list renewable domains request.
 type RegistrarAPIListRenewableDomainsRequest struct {
 	Page *int32 `json:"-"`
@@ -3188,8 +3316,7 @@ type RestoreDNSZoneVersionRequest struct {
 }
 
 // RestoreDNSZoneVersionResponse: restore dns zone version response.
-type RestoreDNSZoneVersionResponse struct {
-}
+type RestoreDNSZoneVersionResponse struct{}
 
 // SearchAvailableDomainsResponse: search available domains response.
 type SearchAvailableDomainsResponse struct {
@@ -3970,6 +4097,47 @@ func (s *RegistrarAPI) ListTasks(req *RegistrarAPIListTasksRequest, opts ...scw.
 	}
 
 	var resp ListTasksResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// ListInboundTransfers:
+func (s *RegistrarAPI) ListInboundTransfers(req *RegistrarAPIListInboundTransfersRequest, opts ...scw.RequestOption) (*ListInboundTransfersResponse, error) {
+	var err error
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	if req.ProjectID == "" {
+		defaultProjectID, _ := s.client.GetDefaultProjectID()
+		req.ProjectID = defaultProjectID
+	}
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "project_id", req.ProjectID)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "domain", req.Domain)
+
+	scwReq := &scw.ScalewayRequest{
+		Method: "GET",
+		Path:   "/domain/v2beta1/inbound-transfers",
+		Query:  query,
+	}
+
+	var resp ListInboundTransfersResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {

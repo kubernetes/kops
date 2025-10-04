@@ -68,7 +68,7 @@ import (
 //
 // [new key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-import-key-material.html
 // [on-demand rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-on-demand.html
-// [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-cmk
+// [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-key
 // [automatic key rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-enable-disable.html
 // [kms:RotateKeyOnDemand]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#multi-region-rotate
@@ -76,7 +76,7 @@ import (
 // [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
 // [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
-// [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-cmk
+// [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-key
 // [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) RotateKeyOnDemand(ctx context.Context, params *RotateKeyOnDemandInput, optFns ...func(*Options)) (*RotateKeyOnDemandOutput, error) {
@@ -222,6 +222,36 @@ func (c *Client) addOperationRotateKeyOnDemandMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

@@ -66,8 +66,9 @@ type UpdateHealthCheckInput struct {
 	//
 	// After you disable a health check, Route 53 considers the status of the health
 	// check to always be healthy. If you configured DNS failover, Route 53 continues
-	// to route traffic to the corresponding resources. If you want to stop routing
-	// traffic to a resource, change the value of [Inverted].
+	// to route traffic to the corresponding resources. Additionally, in disabled
+	// state, you can also invert the status of the health check to route traffic
+	// differently. For more information, see [Inverted].
 	//
 	// Charges for a health check still apply when the health check is disabled. For
 	// more information, see [Amazon Route 53 Pricing].
@@ -422,6 +423,36 @@ func (c *Client) addOperationUpdateHealthCheckMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

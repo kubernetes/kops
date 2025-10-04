@@ -73,7 +73,7 @@ const (
 	policyDebugBit        = 19
 	policySingleSocketBit = 20
 
-	maxPlatformInfoBit = 1
+	maxPlatformInfoBit = 5
 
 	signatureOffset = 0x2A0
 	ecdsaRSsize     = 72 // From the ECDSA-P384-SHA384 format in SEV SNP API specification.
@@ -132,10 +132,14 @@ const (
 	// ReportVersion2 is set by the SNP API specification
 	// https://web.archive.org/web/20231222054111if_/http://www.amd.com/content/dam/amd/en/documents/epyc-technical-docs/specifications/56860.pdf
 	ReportVersion2 = 2
+	// MinSupportedReportVersion is the lowest attestation report version that this library supports.
+	MinSupportedReportVersion = 2
 
 	// ReportVersion3 is set by the SNP API specification
 	// https://www.amd.com/system/files/TechDocs/56860.pdf
 	ReportVersion3 = 3
+	// MaxSupportedReportVersion is the highest attestation report version that this library supports.
+	MaxSupportedReportVersion = 4
 )
 
 // CertTableHeaderEntry defines an entry of the beginning of an extended attestation report which
@@ -186,6 +190,16 @@ type SnpPlatformInfo struct {
 	// TSMEEnabled represents if the platform that produced the attestation report has transparent
 	// secure memory encryption (TSME) enabled.
 	TSMEEnabled bool
+	// ECCEnabled indicates that the platform is using error correcting codes for memory.
+	// Present when EccMemReporting feature bit is set.
+	ECCEnabled bool
+	// RAPLDisabled indicates that the RAPL is disabled.
+	RAPLDisabled bool
+	// CiphertextHidingDRAMEnabled indicates cypher text hiding is enabled for DRAM.
+	CiphertextHidingDRAMEnabled bool
+	// AliasCheckComplete indicates that alias detection has completed since the last system reset and there are no aliasing addresses.
+	// Mitigation for https://badram.eu/, see https://www.amd.com/en/resources/product-security/bulletin/amd-sb-3015.html#mitigation.
+	AliasCheckComplete bool
 }
 
 // SnpPolicy represents the bitmask guest policy that governs the VM's behavior from launch.
@@ -244,8 +258,12 @@ func SnpPolicyToBytes(policy SnpPolicy) uint64 {
 // unrecognized bits.
 func ParseSnpPlatformInfo(platformInfo uint64) (SnpPlatformInfo, error) {
 	result := SnpPlatformInfo{
-		SMTEnabled:  (platformInfo & (1 << 0)) != 0,
-		TSMEEnabled: (platformInfo & (1 << 1)) != 0,
+		SMTEnabled:                  (platformInfo & (1 << 0)) != 0,
+		TSMEEnabled:                 (platformInfo & (1 << 1)) != 0,
+		ECCEnabled:                  (platformInfo & (1 << 2)) != 0,
+		RAPLDisabled:                (platformInfo & (1 << 3)) != 0,
+		CiphertextHidingDRAMEnabled: (platformInfo & (1 << 4)) != 0,
+		AliasCheckComplete:          (platformInfo & (1 << 5)) != 0,
 	}
 	reserved := platformInfo & ^uint64((1<<(maxPlatformInfoBit+1))-1)
 	if reserved != 0 {
@@ -488,7 +506,7 @@ func ReportToProto(data []uint8) (*pb.Report, error) {
 	r.ReportedTcb = binary.LittleEndian.Uint64(data[0x180:0x188])
 
 	mbzLo := 0x188
-	if r.Version == ReportVersion3 {
+	if r.Version >= ReportVersion3 {
 		mbzLo = 0x18B
 		r.Cpuid1EaxFms = FmsToCpuid1Eax(data[0x188], data[0x189], data[0x18A])
 	}
@@ -589,8 +607,8 @@ func ValidateReportFormat(r []byte) error {
 	}
 
 	version := binary.LittleEndian.Uint32(r[0x00:0x04])
-	if version != ReportVersion2 && version != ReportVersion3 {
-		return fmt.Errorf("report version is: %d. Expected %d or %d", version, ReportVersion2, ReportVersion3)
+	if version < MinSupportedReportVersion || version > MaxSupportedReportVersion {
+		return fmt.Errorf("report version is: %d. Expected between %d and %d", version, MinSupportedReportVersion, MaxSupportedReportVersion)
 	}
 
 	policy := binary.LittleEndian.Uint64(r[0x08:0x10])
@@ -635,7 +653,7 @@ func ReportToAbiBytes(r *pb.Report) ([]byte, error) {
 	binary.LittleEndian.PutUint64(data[0x180:0x188], r.ReportedTcb)
 
 	// Add CPUID information if this is a version 3 report.
-	if r.Version == ReportVersion3 {
+	if r.Version >= ReportVersion3 {
 		family, model, stepping := FmsFromCpuid1Eax(r.Cpuid1EaxFms)
 		data[0x188] = family
 		data[0x189] = model

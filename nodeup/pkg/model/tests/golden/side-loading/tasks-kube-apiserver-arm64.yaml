@@ -6,7 +6,6 @@ contents: |
       dns.alpha.kubernetes.io/external: api.minimal.example.com
       dns.alpha.kubernetes.io/internal: api.internal.minimal.example.com
       kubectl.kubernetes.io/default-container: kube-apiserver
-    creationTimestamp: null
     labels:
       k8s-app: kube-apiserver
     name: kube-apiserver

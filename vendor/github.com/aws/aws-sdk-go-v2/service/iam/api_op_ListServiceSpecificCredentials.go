@@ -36,6 +36,22 @@ func (c *Client) ListServiceSpecificCredentials(ctx context.Context, params *Lis
 
 type ListServiceSpecificCredentialsInput struct {
 
+	// A flag indicating whether to list service specific credentials for all users.
+	// This parameter cannot be specified together with UserName. When true, returns
+	// all credentials associated with the specified service.
+	AllUsers *bool
+
+	// Use this parameter only when paginating results and only after you receive a
+	// response indicating that the results are truncated. Set it to the value of the
+	// Marker from the response that you received to indicate where the next call
+	// should start.
+	Marker *string
+
+	// Use this only when paginating results to indicate the maximum number of items
+	// you want in the response. If additional items exist beyond the maximum you
+	// specify, the IsTruncated response element is true.
+	MaxItems *int32
+
 	// Filters the returned results to only those for the specified Amazon Web
 	// Services service. If not specified, then Amazon Web Services returns
 	// service-specific credentials for all services.
@@ -56,6 +72,15 @@ type ListServiceSpecificCredentialsInput struct {
 }
 
 type ListServiceSpecificCredentialsOutput struct {
+
+	// A flag that indicates whether there are more items to return. If your results
+	// were truncated, you can make a subsequent pagination request using the Marker
+	// request parameter to retrieve more items.
+	IsTruncated bool
+
+	// When IsTruncated is true, this element is present and contains the value to use
+	// for the Marker parameter in a subsequent pagination request.
+	Marker *string
 
 	// A list of structures that each contain details about a service-specific
 	// credential.
@@ -150,6 +175,36 @@ func (c *Client) addOperationListServiceSpecificCredentialsMiddlewares(stack *mi
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

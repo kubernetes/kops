@@ -173,3 +173,81 @@ func (r *Zone) UnmarshalJSON(b []byte) error {
 
 	return err
 }
+
+// ZoneShare represents a shared zone.
+type ZoneShare struct {
+	// ID uniquely identifies this zone share.
+	ID string `json:"id"`
+
+	// ZoneID is the ID of the zone being shared.
+	ZoneID string `json:"zone_id"`
+
+	// ProjectID is the ID of the project with which the zone is shared.
+	ProjectID string `json:"project_id"`
+
+	// TargetProjectID is the ID of the project with which the zone is shared.
+	TargetProjectID string `json:"target_project_id"`
+
+	// CreatedAt is the date when the zone share was created.
+	CreatedAt time.Time `json:"-"`
+
+	// UpdatedAt is the date when the zone share was last updated.
+	UpdatedAt time.Time `json:"-"`
+}
+
+func (r *ZoneShare) UnmarshalJSON(b []byte) error {
+	type tmp ZoneShare
+	var s struct {
+		tmp
+		CreatedAt gophercloud.JSONRFC3339MilliNoZ `json:"created_at"`
+		UpdatedAt gophercloud.JSONRFC3339MilliNoZ `json:"updated_at"`
+	}
+
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
+	}
+	*r = ZoneShare(s.tmp)
+
+	r.CreatedAt = time.Time(s.CreatedAt)
+	r.UpdatedAt = time.Time(s.UpdatedAt)
+
+	return nil
+}
+
+// ZoneShareResult is the result of a GetZoneShare request.
+type ZoneShareResult struct {
+	gophercloud.Result
+}
+
+// Extract interprets a GetResult, CreateResult or UpdateResult as a Zone.
+// An error is returned if the original call or the extraction failed.
+func (r ZoneShareResult) Extract() (*ZoneShare, error) {
+	var s *ZoneShare
+	err := r.ExtractInto(&s)
+	return s, err
+}
+
+// ZoneSharePage is a single page of ZoneShare results.
+type ZoneSharePage struct {
+	pagination.LinkedPageBase
+}
+
+// IsEmpty returns true if the page contains no results.
+func (r ZoneSharePage) IsEmpty() (bool, error) {
+	if r.StatusCode == 204 {
+		return true, nil
+	}
+
+	s, err := ExtractZoneShares(r)
+	return len(s) == 0, err
+}
+
+// ExtractZoneShares extracts a slice of ZoneShares from a List result.
+func ExtractZoneShares(r pagination.Page) ([]ZoneShare, error) {
+	var s struct {
+		ZoneShares []ZoneShare `json:"shared_zones"`
+	}
+	err := (r.(ZoneSharePage)).ExtractInto(&s)
+	return s.ZoneShares, err
+}

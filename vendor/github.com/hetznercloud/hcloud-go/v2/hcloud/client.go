@@ -304,6 +304,7 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 		return nil, err
 	}
 	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Accept", "application/json")
 
 	if !c.tokenValid {
 		return nil, errors.New("Authorization token contains invalid characters")

@@ -1,7 +1,6 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -24,7 +23,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -37,7 +35,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -184,7 +181,6 @@ data:
   write-cni-conf-when-ready: /host/etc/cni/net.d/05-cilium.conflist
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -197,7 +193,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -310,7 +305,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -539,7 +533,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -560,7 +553,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -581,7 +573,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -604,7 +595,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -626,7 +616,6 @@ subjects:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -650,7 +639,6 @@ spec:
         container.apparmor.security.beta.kubernetes.io/clean-cilium-state: unconfined
         container.apparmor.security.beta.kubernetes.io/mount-cgroup: unconfined
         kubectl.kubernetes.io/default-container: cilium-agent
-      creationTimestamp: null
       labels:
         app.kubernetes.io/name: cilium-agent
         app.kubernetes.io/part-of: cilium
@@ -1065,7 +1053,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.cilium.io
     app.kubernetes.io/managed-by: kops
@@ -1089,7 +1076,6 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/name: cilium-operator
         app.kubernetes.io/part-of: cilium

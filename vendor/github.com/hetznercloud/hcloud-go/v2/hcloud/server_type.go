@@ -15,6 +15,7 @@ type ServerType struct {
 	ID           int64
 	Name         string
 	Description  string
+	Category     string
 	Cores        int
 	Memory       float32
 	Disk         int
@@ -26,7 +27,12 @@ type ServerType struct {
 	// Use [ServerType.Pricings] instead to get the included traffic for each location.
 	IncludedTraffic int64
 	Pricings        []ServerTypeLocationPricing
+
+	// Deprecated: [ServerType.DeprecatableResource] is deprecated and will gradually be phased out starting 2025-09-24.
+	// To learn about deprecations affecting individual locations you can use [ServerType.Locations] instead.
 	DeprecatableResource
+
+	Locations []ServerTypeLocation
 }
 
 // StorageType specifies the type of storage.
@@ -50,6 +56,11 @@ const (
 	// CPUTypeDedicated is the type for dedicated CPU.
 	CPUTypeDedicated CPUType = "dedicated"
 )
+
+type ServerTypeLocation struct {
+	Location *Location
+	DeprecatableResource
+}
 
 // ServerTypeClient is a client for the server types API.
 type ServerTypeClient struct {

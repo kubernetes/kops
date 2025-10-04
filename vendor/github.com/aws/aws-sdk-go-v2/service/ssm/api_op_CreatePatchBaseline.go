@@ -113,10 +113,19 @@ type CreatePatchBaselineInput struct {
 	//
 	// BLOCK  All OSs: Packages in the rejected patches list, and packages that
 	// include them as dependencies, aren't installed by Patch Manager under any
-	// circumstances. If a package was installed before it was added to the rejected
-	// patches list, or is installed outside of Patch Manager afterward, it's
-	// considered noncompliant with the patch baseline and its status is reported as
-	// INSTALLED_REJECTED .
+	// circumstances.
+	//
+	// State value assignment for patch compliance:
+	//
+	//   - If a package was installed before it was added to the rejected patches
+	//   list, or is installed outside of Patch Manager afterward, it's considered
+	//   noncompliant with the patch baseline and its status is reported as
+	//   INSTALLED_REJECTED .
+	//
+	//   - If an update attempts to install a dependency package that is now rejected
+	//   by the baseline, when previous versions of the package were not rejected, the
+	//   package being updated is reported as MISSING for SCAN operations and as FAILED
+	//   for INSTALL operations.
 	RejectedPatchesAction types.PatchAction
 
 	// Information about the patches to use to update the managed nodes, including
@@ -240,6 +249,36 @@ func (c *Client) addOperationCreatePatchBaselineMiddlewares(stack *middleware.St
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

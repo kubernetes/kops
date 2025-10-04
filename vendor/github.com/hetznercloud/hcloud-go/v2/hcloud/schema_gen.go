@@ -79,6 +79,7 @@ You can find a documentation of goverter here: https://goverter.jmattheis.de/
 // goverter:extend stringMapToStringMapPtr
 // goverter:extend int64SlicePtrFromCertificatePtrSlice
 // goverter:extend stringSlicePtrFromStringSlice
+// goverter:extend locationFromServerTypeLocationSchema
 type converter interface {
 
 	// goverter:map Error.Code ErrorCode
@@ -162,9 +163,16 @@ type converter interface {
 	// goverter:map Prices Pricings
 	ServerTypeFromSchema(schema.ServerType) *ServerType
 
+	// goverter:map . Location
+	serverTypeLocationFromSchema(schema.ServerTypeLocation) ServerTypeLocation
+
 	// goverter:map Pricings Prices
 	// goverter:map DeprecatableResource.Deprecation Deprecated | isDeprecationNotNil
 	SchemaFromServerType(*ServerType) schema.ServerType
+
+	// goverter:map Location.ID ID
+	// goverter:map Location.Name Name
+	schemaFromServerTypeLocation(location ServerTypeLocation) schema.ServerTypeLocation
 
 	ImageFromSchema(schema.Image) *Image
 
@@ -981,4 +989,11 @@ func stringSlicePtrFromStringSlice(s []string) *[]string {
 		return nil
 	}
 	return &s
+}
+
+func locationFromServerTypeLocationSchema(serverTypeLocation schema.ServerTypeLocation) *Location {
+	return &Location{
+		ID:   serverTypeLocation.ID,
+		Name: serverTypeLocation.Name,
+	}
 }

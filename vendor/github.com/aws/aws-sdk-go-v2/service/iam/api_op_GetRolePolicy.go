@@ -17,11 +17,11 @@ import (
 // use a URL decoding method to convert the policy back to plain JSON text. For
 // example, if you use Java, you can use the decode method of the
 // java.net.URLDecoder utility class in the Java SDK. Other languages and SDKs
-// provide similar functionality.
+// provide similar functionality, and some SDKs do this decoding automatically.
 //
 // An IAM role can also have managed policies attached to it. To retrieve a
-// managed policy document that is attached to a role, use GetPolicyto determine the
-// policy's default version, then use GetPolicyVersionto retrieve the policy document.
+// managed policy document that is attached to a role, use [GetPolicy]to determine the
+// policy's default version, then use [GetPolicyVersion]to retrieve the policy document.
 //
 // For more information about policies, see [Managed policies and inline policies] in the IAM User Guide.
 //
@@ -29,6 +29,8 @@ import (
 //
 // [RFC 3986]: https://tools.ietf.org/html/rfc3986
 // [IAM roles]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html
+// [GetPolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html
+// [GetPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicy.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) GetRolePolicy(ctx context.Context, params *GetRolePolicyInput, optFns ...func(*Options)) (*GetRolePolicyOutput, error) {
 	if params == nil {
@@ -72,7 +74,9 @@ type GetRolePolicyInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful GetRolePolicy request.
+// Contains the response to a successful [GetRolePolicy] request.
+//
+// [GetRolePolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetRolePolicy.html
 type GetRolePolicyOutput struct {
 
 	// The policy document.
@@ -186,6 +190,36 @@ func (c *Client) addOperationGetRolePolicyMiddlewares(stack *middleware.Stack, o
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

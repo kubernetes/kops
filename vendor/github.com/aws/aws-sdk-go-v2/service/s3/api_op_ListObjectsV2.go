@@ -149,6 +149,9 @@ type ListObjectsV2Input struct {
 
 	// A delimiter is a character that you use to group keys.
 	//
+	// CommonPrefixes is filtered out from results if it is not lexicographically
+	// greater than the StartAfter value.
+	//
 	//   - Directory buckets - For directory buckets, / is the only supported delimiter.
 	//
 	//   - Directory buckets - When you query ListObjectsV2 with a delimiter during
@@ -438,6 +441,36 @@ func (c *Client) addOperationListObjectsV2Middlewares(stack *middleware.Stack, o
 		return err
 	}
 	if err = addSerializeImmutableHostnameBucketMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

@@ -1550,6 +1550,12 @@ type ComplianceExecutionSummary struct {
 	// The time the execution ran as a datetime object that is saved in the following
 	// format: yyyy-MM-dd'T'HH:mm:ss'Z'
 	//
+	// For State Manager associations, this timestamp represents when the compliance
+	// status was captured and reported by the Systems Manager service, not when the
+	// underlying association was actually executed on the managed node. To track
+	// actual association execution times, use the DescribeAssociationExecutionTargetscommand or check the association
+	// execution history in the Systems Manager console.
+	//
 	// This member is required.
 	ExecutionTime *time.Time
 
@@ -1577,6 +1583,13 @@ type ComplianceItem struct {
 
 	// A summary for the compliance item. The summary includes an execution ID, the
 	// execution type (for example, command), and the execution time.
+	//
+	// For State Manager associations, the ExecutionTime value represents when the
+	// compliance status was captured and aggregated by the Systems Manager service,
+	// not necessarily when the underlying association was executed on the managed
+	// node. State Manager updates compliance status for all associations on an
+	// instance whenever any association executes, which means multiple associations
+	// may show the same execution time even if they were executed at different times.
 	ExecutionSummary *ComplianceExecutionSummary
 
 	// An ID for the compliance item. For example, if the compliance item is a Windows
@@ -2697,7 +2710,7 @@ type InstanceInformationStringFilter struct {
 	// The filter key name to describe your managed nodes.
 	//
 	// Valid filter key values: ActivationIds | AgentVersion | AssociationStatus |
-	// IamRole | InstanceIds | PingStatus | PlatformTypes | ResourceType | SourceIds |
+	// IamRole | InstanceIds | PingStatus | PlatformType | ResourceType | SourceIds |
 	// SourceTypes | "tag-key" | "tag: {keyname}
 	//
 	//   - Valid values for the AssociationStatus filter key: Success | Pending | Failed
@@ -3127,6 +3140,32 @@ type InventoryDeletionSummaryItem struct {
 }
 
 // One or more filters. Use a filter to return a more specific list of results.
+//
+// Example formats for the aws ssm get-inventory command:
+//
+//	--filters
+//	Key=AWS:InstanceInformation.AgentType,Values=amazon-ssm-agent,Type=Equal
+//
+//	--filters Key=AWS:InstanceInformation.AgentVersion,Values=3.3.2299.0,Type=Equal
+//
+//	--filters
+//	Key=AWS:InstanceInformation.ComputerName,Values=ip-192.0.2.0.us-east-2.compute.internal,Type=Equal
+//
+//	--filters
+//	Key=AWS:InstanceInformation.InstanceId,Values=i-0a4cd6ceffEXAMPLE,i-1a2b3c4d5e6EXAMPLE,Type=Equal
+//
+//	--filters Key=AWS:InstanceInformation.InstanceStatus,Values=Active,Type=Equal
+//
+//	--filters Key=AWS:InstanceInformation.IpAddress,Values=198.51.100.0,Type=Equal
+//
+//	--filters Key=AWS:InstanceInformation.PlatformName,Values="Amazon
+//	Linux",Type=Equal
+//
+//	--filters Key=AWS:InstanceInformation.PlatformType,Values=Linux,Type=Equal
+//
+//	--filters Key=AWS:InstanceInformation.PlatformVersion,Values=2023,Type=BeginWith
+//
+//	--filters Key=AWS:InstanceInformation.ResourceType,Values=EC2Instance,Type=Equal
 type InventoryFilter struct {
 
 	// The name of the filter key.
@@ -3134,9 +3173,7 @@ type InventoryFilter struct {
 	// This member is required.
 	Key *string
 
-	// Inventory filter values. Example: inventory filter where managed node IDs are
-	// specified as values Key=AWS:InstanceInformation.InstanceId,Values=
-	// i-a12b3c4d5e6g, i-1a2b3c4d5e6,Type=Equal .
+	// Inventory filter values.
 	//
 	// This member is required.
 	Values []string
@@ -5087,7 +5124,9 @@ type PatchRuleGroup struct {
 // only.
 type PatchSource struct {
 
-	// The value of the yum repo configuration. For example:
+	// The value of the repo configuration.
+	//
+	// Example for yum repositories
 	//
 	//     [main]
 	//
@@ -5098,9 +5137,22 @@ type PatchSource struct {
 	//     enabled=1
 	//
 	// For information about other options available for your yum repository
-	// configuration, see [dnf.conf(5)].
+	// configuration, see [dnf.conf(5)]on the man7.org website.
+	//
+	// Examples for Ubuntu Server and Debian Server
+	//
+	//     deb http://security.ubuntu.com/ubuntu jammy main
+	//
+	//     deb https://site.example.com/debian distribution component1 component2
+	//     component3
+	//
+	// Repo information for Ubuntu Server repositories must be specifed in a single
+	// line. For more examples and information, see [jammy (5) sources.list.5.gz]on the Ubuntu Server Manuals
+	// website and [sources.list format]on the Debian Wiki.
 	//
 	// [dnf.conf(5)]: https://man7.org/linux/man-pages/man5/dnf.conf.5.html
+	// [jammy (5) sources.list.5.gz]: https://manpages.ubuntu.com/manpages/jammy/man5/sources.list.5.html
+	// [sources.list format]: https://wiki.debian.org/SourcesList#sources.list_format
 	//
 	// This member is required.
 	Configuration *string
@@ -5615,6 +5667,12 @@ type ServiceSetting struct {
 // Information about a Session Manager connection to a managed node.
 type Session struct {
 
+	// Standard access type is the default for Session Manager sessions. JustInTime is
+	// the access type for [Just-in-time node access].
+	//
+	// [Just-in-time node access]: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-just-in-time-node-access.html
+	AccessType AccessType
+
 	// Reserved for future use.
 	Details *string
 
@@ -5962,6 +6020,8 @@ type TargetLocation struct {
 
 	// Indicates whether to include child organizational units (OUs) that are children
 	// of the targeted OUs. The default is false .
+	//
+	// This parameter is not supported by State Manager.
 	IncludeChildOrganizationUnits bool
 
 	// The Amazon Web Services Regions targeted by the current Automation execution.
@@ -5973,10 +6033,12 @@ type TargetLocation struct {
 
 	// The maximum number of Amazon Web Services Regions and Amazon Web Services
 	// accounts allowed to run the Automation concurrently.
+	// TargetLocationMaxConcurrency has a default value of 1.
 	TargetLocationMaxConcurrency *string
 
 	// The maximum number of errors allowed before the system stops queueing
 	// additional Automation executions for the currently running Automation.
+	// TargetLocationMaxErrors has a default value of 0.
 	TargetLocationMaxErrors *string
 
 	// A list of key-value mappings to target resources. If you specify values for

@@ -3004,7 +3004,7 @@
       }
     }
   },
-  "revision": "20250611",
+  "revision": "20250723",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -3136,11 +3136,13 @@
           "description": "Optional. The format of communication supported by the callout extension. If not specified, the default value `EXT_PROC_GRPC` is used.",
           "enum": [
             "WIRE_FORMAT_UNSPECIFIED",
-            "EXT_PROC_GRPC"
+            "EXT_PROC_GRPC",
+            "EXT_AUTHZ_GRPC"
           ],
           "enumDescriptions": [
             "Not specified.",
-            "The extension service uses ext_proc gRPC API over a gRPC stream. This is the default value if the wire format is not specified. The backend service for the extension must use HTTP2 or H2C as the protocol. All `supported_events` for a client request are sent as part of the same gRPC stream."
+            "The extension service uses ext_proc gRPC API over a gRPC stream. This is the default value if the wire format is not specified. The backend service for the extension must use HTTP2 or H2C as the protocol. All `supported_events` for a client request are sent as part of the same gRPC stream.",
+            "The extension service uses Envoy's `ext_authz` gRPC API. The backend service for the extension must use HTTP2, or H2C as the protocol. `EXT_AUTHZ_GRPC` is only supported for `AuthzExtension` resources."
           ],
           "type": "string"
         }
@@ -3331,7 +3333,7 @@
       "id": "ExtensionChain",
       "properties": {
         "extensions": {
-          "description": "Required. A set of extensions to execute for the matching request. At least one extension is required. Up to 3 extensions can be defined for each extension chain for `LbTrafficExtension` resource. `LbRouteExtension` chains are limited to 1 extension per extension chain.",
+          "description": "Required. A set of extensions to execute for the matching request. At least one extension is required. Up to 3 extensions can be defined for each extension chain for `LbTrafficExtension` resource. `LbRouteExtension` and `LbEdgeExtension` chains are limited to 1 extension per extension chain.",
           "items": {
             "$ref": "ExtensionChainExtension"
           },
@@ -3380,11 +3382,11 @@
           "type": "string"
         },
         "service": {
-          "description": "Required. The reference to the service that runs the extension. To configure a callout extension, `service` must be a fully-qualified reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in the format: `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/backendServices/{backendService}` or `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServices/{backendService}`. To configure a plugin extension, `service` must be a reference to a [`WasmPlugin` resource](https://cloud.google.com/service-extensions/docs/reference/rest/v1beta1/projects.locations.wasmPlugins) in the format: `projects/{project}/locations/{location}/wasmPlugins/{plugin}` or `//networkservices.googleapis.com/projects/{project}/locations/{location}/wasmPlugins/{wasmPlugin}`. Plugin extensions are currently supported for the `LbTrafficExtension` and the `LbRouteExtension` resources.",
+          "description": "Required. The reference to the service that runs the extension. To configure a callout extension, `service` must be a fully-qualified reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in the format: `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/backendServices/{backendService}` or `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServices/{backendService}`. To configure a plugin extension, `service` must be a reference to a [`WasmPlugin` resource](https://cloud.google.com/service-extensions/docs/reference/rest/v1beta1/projects.locations.wasmPlugins) in the format: `projects/{project}/locations/{location}/wasmPlugins/{plugin}` or `//networkservices.googleapis.com/projects/{project}/locations/{location}/wasmPlugins/{wasmPlugin}`. Plugin extensions are currently supported for the `LbTrafficExtension`, the `LbRouteExtension`, and the `LbEdgeExtension` resources.",
           "type": "string"
         },
         "supportedEvents": {
-          "description": "Optional. A set of events during request or response processing for which this extension is called. This field is required for the `LbTrafficExtension` resource. It is optional for the `LbRouteExtension` resource. If unspecified `REQUEST_HEADERS` event is assumed as supported.",
+          "description": "Optional. A set of events during request or response processing for which this extension is called. For the `LbTrafficExtension` resource, this field is required. For the `LbRouteExtension` resource, this field is optional. If unspecified, `REQUEST_HEADERS` event is assumed as supported. For the `LbEdgeExtension` resource, this field is required and must only contain `REQUEST_HEADERS` event.",
           "items": {
             "enum": [
               "EVENT_TYPE_UNSPECIFIED",
@@ -3503,7 +3505,7 @@
           "type": "string"
         },
         "ports": {
-          "description": "Required. One or more port numbers (1-65535), on which the Gateway will receive traffic. The proxy binds to the specified ports. Gateways of type 'SECURE_WEB_GATEWAY' are limited to 1 port. Gateways of type 'OPEN_MESH' listen on 0.0.0.0 for IPv4 and :: for IPv6 and support multiple ports.",
+          "description": "Required. One or more port numbers (1-65535), on which the Gateway will receive traffic. The proxy binds to the specified ports. Gateways of type 'SECURE_WEB_GATEWAY' are limited to 5 ports. Gateways of type 'OPEN_MESH' listen on 0.0.0.0 for IPv4 and :: for IPv6 and support multiple ports.",
           "items": {
             "format": "int32",
             "type": "integer"
@@ -5890,7 +5892,7 @@
           "type": "boolean"
         },
         "minLogLevel": {
-          "description": "Non-empty default. Specificies the lowest level of the plugin logs that are exported to Cloud Logging. This setting relates to the logs generated by using logging statements in your Wasm code. This field is can be set only if logging is enabled for the plugin. If the field is not provided when logging is enabled, it is set to `INFO` by default.",
+          "description": "Non-empty default. Specifies the lowest level of the plugin logs that are exported to Cloud Logging. This setting relates to the logs generated by using logging statements in your Wasm code. This field is can be set only if logging is enabled for the plugin. If the field is not provided when logging is enabled, it is set to `INFO` by default.",
           "enum": [
             "LOG_LEVEL_UNSPECIFIED",
             "TRACE",
@@ -5946,12 +5948,12 @@
           "type": "string"
         },
         "imageDigest": {
-          "description": "Output only. The resolved digest for the image specified in the `image` field. The digest is resolved during the creation of `WasmPluginVersion` resource. This field holds the digest value, regardless of whether a tag or digest was originally specified in the `image` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin image. The value is calculated based on the `image_uri` field. If the `image_uri` field refers to a container image, the digest value is obtained from the container image. If the `image_uri` field refers to a generic artifact, the digest value is calculated based on the contents of the file.",
           "readOnly": true,
           "type": "string"
         },
         "imageUri": {
-          "description": "Optional. URI of the container image containing the plugin, stored in the Artifact Registry. When a new `WasmPluginVersion` resource is created, the digest of the container image is saved in the `image_digest` field. When downloading an image, the digest value is used instead of an image tag.",
+          "description": "Optional. URI of the image containing the Wasm module, stored in Artifact Registry. The URI can refer to one of the following repository formats: * Container images: the `image_uri` must point to a container that contains a single file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `image_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `image_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `image_digest` field.",
           "type": "string"
         },
         "labels": {
@@ -5971,12 +5973,12 @@
           "type": "string"
         },
         "pluginConfigDigest": {
-          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of `plugin_config_data` or the container image defined by the `plugin_config_uri` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of `plugin_config_data` field or the image defined by the `plugin_config_uri` field.",
           "readOnly": true,
           "type": "string"
         },
         "pluginConfigUri": {
-          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The container image must contain only a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the container image is saved in the `plugin_config_digest` field.",
+          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The URI can refer to one of the following repository formats: * Container images: the `plugin_config_uri` must point to a container that contains a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `plugin_config_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `plugin_config_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `plugin_config_digest` field.",
           "type": "string"
         },
         "updateTime": {
@@ -6003,12 +6005,12 @@
           "type": "string"
         },
         "imageDigest": {
-          "description": "Output only. The resolved digest for the image specified in `image`. The digest is resolved during the creation of a `WasmPluginVersion` resource. This field holds the digest value regardless of whether a tag or digest was originally specified in the `image` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin image. The value is calculated based on the `image_uri` field. If the `image_uri` field refers to a container image, the digest value is obtained from the container image. If the `image_uri` field refers to a generic artifact, the digest value is calculated based on the contents of the file.",
           "readOnly": true,
           "type": "string"
         },
         "imageUri": {
-          "description": "Optional. URI of the container image containing the Wasm module, stored in the Artifact Registry. The container image must contain only a single file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the URI gets resolved to an image digest and saved in the `image_digest` field.",
+          "description": "Optional. URI of the image containing the Wasm module, stored in Artifact Registry. The URI can refer to one of the following repository formats: * Container images: the `image_uri` must point to a container that contains a single file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `image_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `image_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `image_digest` field.",
           "type": "string"
         },
         "labels": {
@@ -6024,12 +6026,12 @@
           "type": "string"
         },
         "pluginConfigDigest": {
-          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of the `plugin_config_data` field or the container image defined by the `plugin_config_uri` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of `plugin_config_data` field or the image defined by the `plugin_config_uri` field.",
           "readOnly": true,
           "type": "string"
         },
         "pluginConfigUri": {
-          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The container image must contain only a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the container image is saved in the `plugin_config_digest` field.",
+          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The URI can refer to one of the following repository formats: * Container images: the `plugin_config_uri` must point to a container that contains a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `plugin_config_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `plugin_config_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `plugin_config_digest` field.",
           "type": "string"
         },
         "updateTime": {

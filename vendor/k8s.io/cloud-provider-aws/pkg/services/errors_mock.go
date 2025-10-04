@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/aws/smithy-go"
 )
 
@@ -14,6 +16,7 @@ type MockAPIError struct {
 // NewMockAPIError returns a new APIError
 func NewMockAPIError(code string, message string) smithy.APIError {
 	return &MockAPIError{
+		error:   errors.New(message),
 		code:    code,
 		message: message,
 	}

@@ -157,5 +157,12 @@ Example of Attaching a Volume to an Instance
 	if err != nil {
 		panic(err)
 	}
+
+Example of Unmanaging a Volume
+
+	err := volumes.Unmanage(context.TODO(), client, volume.ID).ExtractErr()
+	if err != nil {
+		panic(err)
+	}
 */
 package volumes

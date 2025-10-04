@@ -264,10 +264,10 @@ func (s *settings) validate() error {
 
 	// API URL.
 	if !validation.IsURL(s.apiURL) {
-		return NewInvalidClientOptionError("invalid url %s", s.apiURL)
+		return NewInvalidClientOptionError("invalid API url '%s'", s.apiURL)
 	}
 	if s.apiURL[len(s.apiURL)-1:] == "/" {
-		return NewInvalidClientOptionError("invalid url %s it should not have a trailing slash", s.apiURL)
+		return NewInvalidClientOptionError("invalid API url '%s' it should not have a trailing slash", s.apiURL)
 	}
 
 	// TODO: check for max s.defaultPageSize

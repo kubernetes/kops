@@ -21,7 +21,7 @@ type GatewayInfo struct {
 // router.
 type ExternalFixedIP struct {
 	IPAddress string `json:"ip_address,omitempty"`
-	SubnetID  string `json:"subnet_id"`
+	SubnetID  string `json:"subnet_id,omitempty"`
 }
 
 // Route is a possible route in a router.
@@ -82,10 +82,48 @@ type Router struct {
 	RevisionNumber int `json:"revision_number"`
 
 	// Timestamp when the router was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"-"`
 
 	// Timestamp when the router was last updated
-	UpdatedAt time.Time `json:"updated_at"`
+	UpdatedAt time.Time `json:"-"`
+}
+
+func (r *Router) UnmarshalJSON(b []byte) error {
+	type tmp Router
+
+	// Support for older neutron time format
+	var s1 struct {
+		tmp
+		CreatedAt gophercloud.JSONRFC3339NoZ `json:"created_at"`
+		UpdatedAt gophercloud.JSONRFC3339NoZ `json:"updated_at"`
+	}
+
+	err := json.Unmarshal(b, &s1)
+	if err == nil {
+		*r = Router(s1.tmp)
+		r.CreatedAt = time.Time(s1.CreatedAt)
+		r.UpdatedAt = time.Time(s1.UpdatedAt)
+
+		return nil
+	}
+
+	// Support for newer neutron time format
+	var s2 struct {
+		tmp
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+	}
+
+	err = json.Unmarshal(b, &s2)
+	if err != nil {
+		return err
+	}
+
+	*r = Router(s2.tmp)
+	r.CreatedAt = time.Time(s2.CreatedAt)
+	r.UpdatedAt = time.Time(s2.UpdatedAt)
+
+	return nil
 }
 
 // RouterPage is the page returned by a pager when traversing over a
@@ -122,11 +160,14 @@ func (r RouterPage) IsEmpty() (bool, error) {
 // and extracts the elements into a slice of Router structs. In other words,
 // a generic collection is mapped into a relevant slice.
 func ExtractRouters(r pagination.Page) ([]Router, error) {
-	var s struct {
-		Routers []Router `json:"routers"`
-	}
-	err := (r.(RouterPage)).ExtractInto(&s)
-	return s.Routers, err
+	var s []Router
+	err := ExtractRoutersInto(r, &s)
+	return s, err
+}
+
+// ExtractRoutersInto extracts the elements into a slice of Router structs.
+func ExtractRoutersInto(r pagination.Page, v any) error {
+	return r.(RouterPage).Result.ExtractIntoSlicePtr(v, "routers")
 }
 
 type commonResult struct {

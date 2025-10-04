@@ -27,7 +27,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
 
 // deleteTagsBatcher contains the batcher details
@@ -43,7 +43,7 @@ func newDeleteTagsBatcher(ctx context.Context, ec2api iface.EC2) *deleteTagsBatc
 		MaxTimeout:    1 * time.Second,
 		MaxItems:      50,
 		RequestHasher: deleteTagsHasher,
-		BatchExecutor: execDeleteTagsBatch(ec2api),
+		BatchExecutor: execDeleteTagsBatch(ctx, ec2api),
 	}
 	return &deleteTagsBatcher{batcher: batcher.NewBatcher(ctx, options)}
 }
@@ -67,7 +67,7 @@ func deleteTagsHasher(ctx context.Context, input *ec2.DeleteTagsInput) uint64 {
 	return hash
 }
 
-func execDeleteTagsBatch(ec2api iface.EC2) batcher.BatchExecutor[ec2.DeleteTagsInput, ec2.DeleteTagsOutput] {
+func execDeleteTagsBatch(ctx context.Context, ec2api iface.EC2) batcher.BatchExecutor[ec2.DeleteTagsInput, ec2.DeleteTagsOutput] {
 	return func(ctx context.Context, inputs []*ec2.DeleteTagsInput) []batcher.Result[ec2.DeleteTagsOutput] {
 		results := make([]batcher.Result[ec2.DeleteTagsOutput], len(inputs))
 		firstInput := inputs[0]
@@ -80,7 +80,7 @@ func execDeleteTagsBatch(ec2api iface.EC2) batcher.BatchExecutor[ec2.DeleteTagsI
 			Tags:      firstInput.Tags,
 		}
 		klog.Infof("Batched delete tags %v", batchedInput)
-		output, err := ec2api.DeleteTags(batchedInput)
+		output, err := ec2api.DeleteTags(ctx, batchedInput)
 
 		if err != nil {
 			klog.Errorf("Error occurred trying to batch tag resources, trying individually, %v", err)
@@ -89,7 +89,7 @@ func execDeleteTagsBatch(ec2api iface.EC2) batcher.BatchExecutor[ec2.DeleteTagsI
 				wg.Add(1)
 				go func(input *ec2.DeleteTagsInput) {
 					defer wg.Done()
-					out, err := ec2api.DeleteTags(input)
+					out, err := ec2api.DeleteTags(ctx, input)
 					results[idx] = batcher.Result[ec2.DeleteTagsOutput]{Output: out, Err: err}
 
 				}(input)

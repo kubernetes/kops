@@ -124,7 +124,6 @@ func TestVFSCAStoreRoundTrip(t *testing.T) {
 apiVersion: kops.k8s.io/v1alpha2
 kind: Keyset
 metadata:
-  creationTimestamp: null
   name: kubernetes-ca
 spec:
   keys:

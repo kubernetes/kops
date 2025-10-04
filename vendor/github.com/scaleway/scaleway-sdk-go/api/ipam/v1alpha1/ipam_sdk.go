@@ -53,7 +53,7 @@ const (
 func (enum ListIPsRequestOrderBy) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "created_at_desc"
+		return string(ListIPsRequestOrderByCreatedAtDesc)
 	}
 	return string(enum)
 }
@@ -108,12 +108,13 @@ const (
 	ResourceTypeAppleSiliconPrivateNic = ResourceType("apple_silicon_private_nic")
 	ResourceTypeServerlessContainer    = ResourceType("serverless_container")
 	ResourceTypeServerlessFunction     = ResourceType("serverless_function")
+	ResourceTypeVpnGateway             = ResourceType("vpn_gateway")
 )
 
 func (enum ResourceType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "unknown_type"
+		return string(ResourceTypeUnknownType)
 	}
 	return string(enum)
 }
@@ -141,6 +142,7 @@ func (enum ResourceType) Values() []ResourceType {
 		"apple_silicon_private_nic",
 		"serverless_container",
 		"serverless_function",
+		"vpn_gateway",
 	}
 }
 
@@ -281,7 +283,7 @@ func (r *ListIPsResponse) UnsafeGetTotalCount() uint64 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint64, error) {
+func (r *ListIPsResponse) UnsafeAppend(res any) (uint64, error) {
 	results, ok := res.(*ListIPsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -303,6 +305,7 @@ func NewAPI(client *scw.Client) *API {
 		client: client,
 	}
 }
+
 func (s *API) Regions() []scw.Region {
 	return []scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}
 }

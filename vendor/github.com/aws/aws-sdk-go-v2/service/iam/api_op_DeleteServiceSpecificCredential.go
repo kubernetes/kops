@@ -29,11 +29,12 @@ func (c *Client) DeleteServiceSpecificCredential(ctx context.Context, params *De
 type DeleteServiceSpecificCredentialInput struct {
 
 	// The unique identifier of the service-specific credential. You can get this
-	// value by calling ListServiceSpecificCredentials.
+	// value by calling [ListServiceSpecificCredentials].
 	//
 	// This parameter allows (through its [regex pattern]) a string of characters that can consist of
 	// any upper or lowercased letter or digit.
 	//
+	// [ListServiceSpecificCredentials]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListServiceSpecificCredentials.html
 	// [regex pattern]: http://wikipedia.org/wiki/regex
 	//
 	// This member is required.
@@ -146,6 +147,36 @@ func (c *Client) addOperationDeleteServiceSpecificCredentialMiddlewares(stack *m
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

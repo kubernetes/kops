@@ -1,7 +1,6 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -20,7 +19,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -33,7 +31,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -46,7 +43,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -94,7 +90,6 @@ data:
   veth_mtu: "0"
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -109,7 +104,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -316,7 +310,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -505,7 +498,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -693,7 +685,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -765,7 +756,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -1034,7 +1024,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -1106,7 +1095,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -2319,7 +2307,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3207,7 +3194,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3268,7 +3254,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3382,7 +3367,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3507,7 +3491,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3574,7 +3557,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3638,7 +3620,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3764,7 +3745,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -3823,7 +3803,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -4163,7 +4142,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -5032,7 +5010,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -5091,7 +5068,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -5984,7 +5960,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -6498,7 +6473,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -7372,7 +7346,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -7444,7 +7417,6 @@ metadata:
     api-approved.kubernetes.io: https://github.com/kubernetes-sigs/network-policy-api/pull/30
     policy.networking.k8s.io/bundle-version: v0.1.1
     policy.networking.k8s.io/channel: experimental
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -8533,7 +8505,6 @@ metadata:
     api-approved.kubernetes.io: https://github.com/kubernetes-sigs/network-policy-api/pull/30
     policy.networking.k8s.io/bundle-version: v0.1.1
     policy.networking.k8s.io/channel: experimental
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9593,7 +9564,6 @@ status:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9691,7 +9661,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9875,7 +9844,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9918,7 +9886,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9937,7 +9904,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9957,7 +9923,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9977,7 +9942,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -9997,7 +9961,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -10017,7 +9980,6 @@ subjects:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -10031,7 +9993,6 @@ spec:
       k8s-app: calico-node
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: calico-node
         kops.k8s.io/managed-by: kops
@@ -10329,7 +10290,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.projectcalico.org
     app.kubernetes.io/managed-by: kops
@@ -10346,7 +10306,6 @@ spec:
     type: Recreate
   template:
     metadata:
-      creationTimestamp: null
       labels:
         k8s-app: calico-kube-controllers
         kops.k8s.io/managed-by: kops

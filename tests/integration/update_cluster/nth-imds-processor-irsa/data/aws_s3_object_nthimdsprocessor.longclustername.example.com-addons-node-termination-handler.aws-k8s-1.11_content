@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
     app.kubernetes.io/instance: aws-node-termination-handler
@@ -19,7 +18,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
     app.kubernetes.io/instance: aws-node-termination-handler
@@ -77,7 +75,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
     app.kubernetes.io/instance: aws-node-termination-handler
@@ -101,7 +98,6 @@ subjects:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: node-termination-handler.aws
     app.kubernetes.io/component: daemonset
@@ -122,7 +118,6 @@ spec:
       kubernetes.io/os: linux
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/component: daemonset
         app.kubernetes.io/instance: aws-node-termination-handler

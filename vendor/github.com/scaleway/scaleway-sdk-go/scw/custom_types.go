@@ -198,7 +198,7 @@ func (tsp TimeSeriesPoint) MarshalJSON() ([]byte, error) {
 }
 
 func (tsp *TimeSeriesPoint) UnmarshalJSON(b []byte) error {
-	point := [2]interface{}{}
+	point := [2]any{}
 
 	err := json.Unmarshal(b, &point)
 	if err != nil {
@@ -381,7 +381,7 @@ func splitFloatString(input string) (units int64, nanos int32, err error) {
 //		"Foo": "Bar",
 //	}
 //	values["Baz"] = "Qux"
-type JSONObject map[string]interface{}
+type JSONObject map[string]any
 
 // EscapeMode is the mode that should be use for escaping a value
 type EscapeMode uint
@@ -462,7 +462,7 @@ func (d Decimal) String() string {
 }
 
 func (d Decimal) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
+	return json.Marshal(map[string]any{
 		"value": d.String(),
 	})
 }

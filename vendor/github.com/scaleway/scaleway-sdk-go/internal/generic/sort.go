@@ -7,7 +7,7 @@ import (
 
 // SortSliceByField sorts given slice of struct by passing the specified field to given compare function
 // given slice must be a slice of Ptr
-func SortSliceByField(list interface{}, field string, compare func(interface{}, interface{}) bool) {
+func SortSliceByField(list any, field string, compare func(any, any) bool) {
 	listValue := reflect.ValueOf(list)
 	sort.SliceStable(list, func(i, j int) bool {
 		field1 := listValue.Index(i).Elem().FieldByName(field).Interface()

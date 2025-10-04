@@ -14,13 +14,14 @@ import (
 // role.
 //
 // An IAM role can also have managed policies attached to it. To list the managed
-// policies that are attached to a role, use ListAttachedRolePolicies. For more information about
+// policies that are attached to a role, use [ListAttachedRolePolicies]. For more information about
 // policies, see [Managed policies and inline policies]in the IAM User Guide.
 //
 // You can paginate the results using the MaxItems and Marker parameters. If there
 // are no inline policies embedded with the specified role, the operation returns
 // an empty list.
 //
+// [ListAttachedRolePolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListAttachedRolePolicies.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) ListRolePolicies(ctx context.Context, params *ListRolePoliciesInput, optFns ...func(*Options)) (*ListRolePoliciesOutput, error) {
 	if params == nil {
@@ -70,7 +71,9 @@ type ListRolePoliciesInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful ListRolePolicies request.
+// Contains the response to a successful [ListRolePolicies] request.
+//
+// [ListRolePolicies]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListRolePolicies.html
 type ListRolePoliciesOutput struct {
 
 	// A list of policy names.
@@ -182,6 +185,36 @@ func (c *Client) addOperationListRolePoliciesMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

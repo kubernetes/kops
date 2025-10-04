@@ -18,15 +18,16 @@ import (
 // You can have a maximum of two sets of service-specific credentials for each
 // supported service per user.
 //
-// You can create service-specific credentials for CodeCommit and Amazon Keyspaces
-// (for Apache Cassandra).
+// You can create service-specific credentials for Amazon Bedrock, CodeCommit and
+// Amazon Keyspaces (for Apache Cassandra).
 //
-// You can reset the password to a new service-generated value by calling ResetServiceSpecificCredential.
+// You can reset the password to a new service-generated value by calling [ResetServiceSpecificCredential].
 //
-// For more information about service-specific credentials, see [Using IAM with CodeCommit: Git credentials, SSH keys, and Amazon Web Services access keys] in the IAM User
+// For more information about service-specific credentials, see [Service-specific credentials for IAM users] in the IAM User
 // Guide.
 //
-// [Using IAM with CodeCommit: Git credentials, SSH keys, and Amazon Web Services access keys]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_ssh-keys.html
+// [ResetServiceSpecificCredential]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ResetServiceSpecificCredential.html
+// [Service-specific credentials for IAM users]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_bedrock.html
 func (c *Client) CreateServiceSpecificCredential(ctx context.Context, params *CreateServiceSpecificCredentialInput, optFns ...func(*Options)) (*CreateServiceSpecificCredentialOutput, error) {
 	if params == nil {
 		params = &CreateServiceSpecificCredentialInput{}
@@ -64,6 +65,11 @@ type CreateServiceSpecificCredentialInput struct {
 	// This member is required.
 	UserName *string
 
+	// The number of days until the service specific credential expires. This field is
+	// only valid for Bedrock API keys and must be a positive integer. When not
+	// specified, the credential will not expire.
+	CredentialAgeDays *int32
+
 	noSmithyDocumentSerde
 }
 
@@ -73,7 +79,9 @@ type CreateServiceSpecificCredentialOutput struct {
 	// credential.
 	//
 	// This is the only time that the password for this credential set is available.
-	// It cannot be recovered later. Instead, you must reset the password with ResetServiceSpecificCredential.
+	// It cannot be recovered later. Instead, you must reset the password with [ResetServiceSpecificCredential].
+	//
+	// [ResetServiceSpecificCredential]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ResetServiceSpecificCredential.html
 	ServiceSpecificCredential *types.ServiceSpecificCredential
 
 	// Metadata pertaining to the operation's result.
@@ -168,6 +176,36 @@ func (c *Client) addOperationCreateServiceSpecificCredentialMiddlewares(stack *m
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

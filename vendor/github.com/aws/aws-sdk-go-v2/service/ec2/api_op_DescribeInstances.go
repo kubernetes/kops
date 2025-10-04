@@ -83,6 +83,8 @@ type DescribeInstancesInput struct {
 	//
 	//   - availability-zone - The Availability Zone of the instance.
 	//
+	//   - availability-zone-id - The ID of the Availability Zone of the instance.
+	//
 	//   - block-device-mapping.attach-time - The attach time for an EBS volume mapped
 	//   to the instance, for example, 2022-09-15T17:15:20.000Z .
 	//
@@ -379,13 +381,13 @@ type DescribeInstancesInput struct {
 	//
 	//   - platform-details - The platform ( Linux/UNIX | Red Hat BYOL Linux | Red Hat
 	//   Enterprise Linux | Red Hat Enterprise Linux with HA | Red Hat Enterprise
-	//   Linux with SQL Server Standard and HA | Red Hat Enterprise Linux with SQL
-	//   Server Enterprise and HA | Red Hat Enterprise Linux with SQL Server Standard |
-	//   Red Hat Enterprise Linux with SQL Server Web | Red Hat Enterprise Linux with
-	//   SQL Server Enterprise | SQL Server Enterprise | SQL Server Standard | SQL
-	//   Server Web | SUSE Linux | Ubuntu Pro | Windows | Windows BYOL | Windows with
-	//   SQL Server Enterprise | Windows with SQL Server Standard | Windows with SQL
-	//   Server Web ).
+	//   Linux with High Availability | Red Hat Enterprise Linux with SQL Server
+	//   Standard and HA | Red Hat Enterprise Linux with SQL Server Enterprise and HA |
+	//   Red Hat Enterprise Linux with SQL Server Standard | Red Hat Enterprise Linux
+	//   with SQL Server Web | Red Hat Enterprise Linux with SQL Server Enterprise |
+	//   SQL Server Enterprise | SQL Server Standard | SQL Server Web | SUSE Linux |
+	//   Ubuntu Pro | Windows | Windows BYOL | Windows with SQL Server Enterprise |
+	//   Windows with SQL Server Standard | Windows with SQL Server Web ).
 	//
 	//   - private-dns-name - The private IPv4 DNS name of the instance.
 	//
@@ -597,6 +599,36 @@ func (c *Client) addOperationDescribeInstancesMiddlewares(stack *middleware.Stac
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {

@@ -1,3 +1,24 @@
+# v1.34.3 (2025-04-10)
+
+* No change notes available for this release.
+
+# v1.34.2 (2025-04-03)
+
+* No change notes available for this release.
+
+# v1.34.1 (2025-03-04.2)
+
+* **Bug Fix**: Add assurance test for operation order.
+
+# v1.34.0 (2025-02-28)
+
+* **Feature**: Update GetProducts and DescribeServices API request input validations.
+
+# v1.33.0 (2025-02-27)
+
+* **Feature**: Track credential providers via User-Agent Feature ids
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.32.17 (2025-02-18)
 
 * **Bug Fix**: Bump go version to 1.22

@@ -485,6 +485,8 @@ type AddonsConfig struct {
 	// applications. For more information, see:
 	// https://{$universe.dns_names.final_documentation_domain}/kubernetes-engine/docs/concepts/dashboards
 	KubernetesDashboard *KubernetesDashboard `json:"kubernetesDashboard,omitempty"`
+	// LustreCsiDriverConfig: Configuration for the Lustre CSI driver.
+	LustreCsiDriverConfig *LustreCsiDriverConfig `json:"lustreCsiDriverConfig,omitempty"`
 	// NetworkPolicyConfig: Configuration for NetworkPolicy. This only tracks
 	// whether the addon is enabled or not on the Master, it does not track whether
 	// network policy is enabled for the nodes.
@@ -643,6 +645,24 @@ func (s AuthenticatorGroupsConfig) MarshalJSON() ([]byte, error) {
 
 // AutoIpamConfig: AutoIpamConfig contains all information related to Auto IPAM
 type AutoIpamConfig struct {
+	// Enabled: The flag that enables Auto IPAM on this cluster
+	Enabled bool `json:"enabled,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Enabled") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AutoIpamConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod AutoIpamConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
 // AutoMonitoringConfig: AutoMonitoringConfig defines the configuration for GKE
@@ -706,6 +726,9 @@ func (s AutoUpgradeOptions) MarshalJSON() ([]byte, error) {
 type Autopilot struct {
 	// Enabled: Enable Autopilot
 	Enabled bool `json:"enabled,omitempty"`
+	// PrivilegedAdmissionConfig: PrivilegedAdmissionConfig is the configuration
+	// related to privileged admission control.
+	PrivilegedAdmissionConfig *PrivilegedAdmissionConfig `json:"privilegedAdmissionConfig,omitempty"`
 	// WorkloadPolicyConfig: WorkloadPolicyConfig is the configuration related to
 	// GCW workload policy
 	WorkloadPolicyConfig *WorkloadPolicyConfig `json:"workloadPolicyConfig,omitempty"`
@@ -1012,6 +1035,37 @@ type BlueGreenSettings struct {
 
 func (s BlueGreenSettings) MarshalJSON() ([]byte, error) {
 	type NoMethod BlueGreenSettings
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// BootDisk: BootDisk specifies the boot disk configuration for nodepools.
+type BootDisk struct {
+	// DiskType: Disk type of the boot disk. (i.e. Hyperdisk-Balanced, PD-Balanced,
+	// etc.)
+	DiskType string `json:"diskType,omitempty"`
+	// ProvisionedIops: For Hyperdisk-Balanced only, the provisioned IOPS config
+	// value.
+	ProvisionedIops int64 `json:"provisionedIops,omitempty,string"`
+	// ProvisionedThroughput: For Hyperdisk-Balanced only, the provisioned
+	// throughput config value.
+	ProvisionedThroughput int64 `json:"provisionedThroughput,omitempty,string"`
+	// SizeGb: Disk size in GB. Replaces NodeConfig.disk_size_gb
+	SizeGb int64 `json:"sizeGb,omitempty,string"`
+	// ForceSendFields is a list of field names (e.g. "DiskType") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "DiskType") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s BootDisk) MarshalJSON() ([]byte, error) {
+	type NoMethod BootDisk
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -1534,6 +1588,9 @@ type ClusterAutoscaling struct {
 	//   "OPTIMIZE_UTILIZATION" - Prioritize optimizing utilization of resources.
 	//   "BALANCED" - Use default (balanced) autoscaling configuration.
 	AutoscalingProfile string `json:"autoscalingProfile,omitempty"`
+	// DefaultComputeClassConfig: Default compute class is a configuration for
+	// default compute class.
+	DefaultComputeClassConfig *DefaultComputeClassConfig `json:"defaultComputeClassConfig,omitempty"`
 	// EnableNodeAutoprovisioning: Enables automatic node pool creation and
 	// deletion.
 	EnableNodeAutoprovisioning bool `json:"enableNodeAutoprovisioning,omitempty"`
@@ -1743,6 +1800,9 @@ type ClusterUpdate struct {
 	DesiredMonitoringService string `json:"desiredMonitoringService,omitempty"`
 	// DesiredNetworkPerformanceConfig: The desired network performance config.
 	DesiredNetworkPerformanceConfig *ClusterNetworkPerformanceConfig `json:"desiredNetworkPerformanceConfig,omitempty"`
+	// DesiredNetworkTierConfig: The desired network tier configuration for the
+	// cluster.
+	DesiredNetworkTierConfig *NetworkTierConfig `json:"desiredNetworkTierConfig,omitempty"`
 	// DesiredNodeKubeletConfig: The desired node kubelet config for the cluster.
 	DesiredNodeKubeletConfig *NodeKubeletConfig `json:"desiredNodeKubeletConfig,omitempty"`
 	// DesiredNodePoolAutoConfigKubeletConfig: The desired node kubelet config for
@@ -2427,6 +2487,29 @@ func (s DatabaseEncryption) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// DefaultComputeClassConfig: DefaultComputeClassConfig defines default compute
+// class configuration.
+type DefaultComputeClassConfig struct {
+	// Enabled: Enables default compute class.
+	Enabled bool `json:"enabled,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Enabled") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s DefaultComputeClassConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod DefaultComputeClassConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // DefaultSnatStatus: DefaultSnatStatus contains the desired state of whether
 // default sNAT should be disabled on the cluster.
 type DefaultSnatStatus struct {
@@ -2610,6 +2693,169 @@ func (s EphemeralStorageLocalSsdConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// EvictionGracePeriod: Eviction grace periods are grace periods for each
+// eviction signal.
+type EvictionGracePeriod struct {
+	// ImagefsAvailable: Optional. Grace period for eviction due to imagefs
+	// available signal. Sample format: "10s". Must be >= 0. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	ImagefsAvailable string `json:"imagefsAvailable,omitempty"`
+	// ImagefsInodesFree: Optional. Grace period for eviction due to imagefs inodes
+	// free signal. Sample format: "10s". Must be >= 0. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	ImagefsInodesFree string `json:"imagefsInodesFree,omitempty"`
+	// MemoryAvailable: Optional. Grace period for eviction due to memory available
+	// signal. Sample format: "10s". Must be >= 0. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	MemoryAvailable string `json:"memoryAvailable,omitempty"`
+	// NodefsAvailable: Optional. Grace period for eviction due to nodefs available
+	// signal. Sample format: "10s". Must be >= 0. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	NodefsAvailable string `json:"nodefsAvailable,omitempty"`
+	// NodefsInodesFree: Optional. Grace period for eviction due to nodefs inodes
+	// free signal. Sample format: "10s". Must be >= 0. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	NodefsInodesFree string `json:"nodefsInodesFree,omitempty"`
+	// PidAvailable: Optional. Grace period for eviction due to pid available
+	// signal. Sample format: "10s". Must be >= 0. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	PidAvailable string `json:"pidAvailable,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ImagefsAvailable") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ImagefsAvailable") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s EvictionGracePeriod) MarshalJSON() ([]byte, error) {
+	type NoMethod EvictionGracePeriod
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// EvictionMinimumReclaim: Eviction minimum reclaims are the resource amounts
+// of minimum reclaims for each eviction signal.
+type EvictionMinimumReclaim struct {
+	// ImagefsAvailable: Optional. Minimum reclaim for eviction due to imagefs
+	// available signal. Only take percentage value for now. Sample format: "10%".
+	// Must be <=10%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	ImagefsAvailable string `json:"imagefsAvailable,omitempty"`
+	// ImagefsInodesFree: Optional. Minimum reclaim for eviction due to imagefs
+	// inodes free signal. Only take percentage value for now. Sample format:
+	// "10%". Must be <=10%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	ImagefsInodesFree string `json:"imagefsInodesFree,omitempty"`
+	// MemoryAvailable: Optional. Minimum reclaim for eviction due to memory
+	// available signal. Only take percentage value for now. Sample format: "10%".
+	// Must be <=10%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	MemoryAvailable string `json:"memoryAvailable,omitempty"`
+	// NodefsAvailable: Optional. Minimum reclaim for eviction due to nodefs
+	// available signal. Only take percentage value for now. Sample format: "10%".
+	// Must be <=10%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	NodefsAvailable string `json:"nodefsAvailable,omitempty"`
+	// NodefsInodesFree: Optional. Minimum reclaim for eviction due to nodefs
+	// inodes free signal. Only take percentage value for now. Sample format:
+	// "10%". Must be <=10%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	NodefsInodesFree string `json:"nodefsInodesFree,omitempty"`
+	// PidAvailable: Optional. Minimum reclaim for eviction due to pid available
+	// signal. Only take percentage value for now. Sample format: "10%". Must be
+	// <=10%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	PidAvailable string `json:"pidAvailable,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ImagefsAvailable") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ImagefsAvailable") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s EvictionMinimumReclaim) MarshalJSON() ([]byte, error) {
+	type NoMethod EvictionMinimumReclaim
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// EvictionSignals: Eviction signals are the current state of a particular
+// resource at a specific point in time. The kubelet uses eviction signals to
+// make eviction decisions by comparing the signals to eviction thresholds,
+// which are the minimum amount of the resource that should be available on the
+// node.
+type EvictionSignals struct {
+	// ImagefsAvailable: Optional. Amount of storage available on filesystem that
+	// container runtime uses for storing images layers. If the container
+	// filesystem and image filesystem are not separate, then imagefs can store
+	// both image layers and writeable layers. Defines the amount of
+	// "imagefs.available" signal in kubelet. Default is unset, if not specified in
+	// the kubelet config. It takses percentage value for now. Sample format:
+	// "30%". Must be >= 15% and <= 50%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	ImagefsAvailable string `json:"imagefsAvailable,omitempty"`
+	// ImagefsInodesFree: Optional. Amount of inodes available on filesystem that
+	// container runtime uses for storing images layers. Defines the amount of
+	// "imagefs.inodesFree" signal in kubelet. Default is unset, if not specified
+	// in the kubelet config. Linux only. It takses percentage value for now.
+	// Sample format: "30%". Must be >= 5% and <= 50%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	ImagefsInodesFree string `json:"imagefsInodesFree,omitempty"`
+	// MemoryAvailable: Optional. Memory available (i.e. capacity - workingSet), in
+	// bytes. Defines the amount of "memory.available" signal in kubelet. Default
+	// is unset, if not specified in the kubelet config. Format: positive number +
+	// unit, e.g. 100Ki, 10Mi, 5Gi. Valid units are Ki, Mi, Gi. Must be >= 100Mi
+	// and <= 50% of the node's memory. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	MemoryAvailable string `json:"memoryAvailable,omitempty"`
+	// NodefsAvailable: Optional. Amount of storage available on filesystem that
+	// kubelet uses for volumes, daemon logs, etc. Defines the amount of
+	// "nodefs.available" signal in kubelet. Default is unset, if not specified in
+	// the kubelet config. It takses percentage value for now. Sample format:
+	// "30%". Must be >= 10% and <= 50%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	NodefsAvailable string `json:"nodefsAvailable,omitempty"`
+	// NodefsInodesFree: Optional. Amount of inodes available on filesystem that
+	// kubelet uses for volumes, daemon logs, etc. Defines the amount of
+	// "nodefs.inodesFree" signal in kubelet. Default is unset, if not specified in
+	// the kubelet config. Linux only. It takses percentage value for now. Sample
+	// format: "30%". Must be >= 5% and <= 50%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	NodefsInodesFree string `json:"nodefsInodesFree,omitempty"`
+	// PidAvailable: Optional. Amount of PID available for pod allocation. Defines
+	// the amount of "pid.available" signal in kubelet. Default is unset, if not
+	// specified in the kubelet config. It takses percentage value for now. Sample
+	// format: "30%". Must be >= 10% and <= 50%. See
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/#eviction-signals
+	PidAvailable string `json:"pidAvailable,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "ImagefsAvailable") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "ImagefsAvailable") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s EvictionSignals) MarshalJSON() ([]byte, error) {
+	type NoMethod EvictionSignals
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // FastSocket: Configuration of Fast Socket feature.
 type FastSocket struct {
 	// Enabled: Whether Fast Socket features are enabled in the node pool.
@@ -2670,6 +2916,13 @@ type Fleet struct {
 	// membership of the cluster, in the format
 	// `//gkehub.googleapis.com/projects/*/locations/*/memberships/*`.
 	Membership string `json:"membership,omitempty"`
+	// MembershipType: The type of the cluster's fleet membership.
+	//
+	// Possible values:
+	//   "MEMBERSHIP_TYPE_UNSPECIFIED" - The MembershipType is not set.
+	//   "LIGHTWEIGHT" - The membership supports only lightweight compatible
+	// features.
+	MembershipType string `json:"membershipType,omitempty"`
 	// PreRegistered: Output only. Whether the cluster has been registered through
 	// the fleet API.
 	PreRegistered bool `json:"preRegistered,omitempty"`
@@ -3231,6 +3484,10 @@ type IPAllocationPolicy struct {
 	//   "INTERNAL" - Access type internal (all v6 addresses are internal IPs)
 	//   "EXTERNAL" - Access type external (all v6 addresses are external IPs)
 	Ipv6AccessType string `json:"ipv6AccessType,omitempty"`
+	// NetworkTierConfig: Cluster-level network tier configuration is used to
+	// determine the default network tier for external IP addresses on cluster
+	// resources, such as node pools and load balancers.
+	NetworkTierConfig *NetworkTierConfig `json:"networkTierConfig,omitempty"`
 	// NodeIpv4Cidr: This field is deprecated, use node_ipv4_cidr_block.
 	NodeIpv4Cidr string `json:"nodeIpv4Cidr,omitempty"`
 	// NodeIpv4CidrBlock: The IP address range of the instance IPs in this cluster.
@@ -3560,14 +3817,63 @@ type LinuxNodeConfig struct {
 	// net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog
 	// net.core.rmem_max net.core.rmem_default net.core.wmem_default
 	// net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem
-	// net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.netfilter.nf_conntrack_max
-	// net.netfilter.nf_conntrack_buckets
+	// net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.ipv4.tcp_max_orphans
+	// net.netfilter.nf_conntrack_max net.netfilter.nf_conntrack_buckets
 	// net.netfilter.nf_conntrack_tcp_timeout_close_wait
 	// net.netfilter.nf_conntrack_tcp_timeout_time_wait
 	// net.netfilter.nf_conntrack_tcp_timeout_established
 	// net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax kernel.shmall
-	// vm.max_map_count
+	// fs.aio-max-nr fs.file-max fs.inotify.max_user_instances
+	// fs.inotify.max_user_watches fs.nr_open vm.dirty_background_ratio
+	// vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_writeback_centisecs
+	// vm.max_map_count vm.overcommit_memory vm.overcommit_ratio
+	// vm.vfs_cache_pressure vm.swappiness vm.watermark_scale_factor
+	// vm.min_free_kbytes
 	Sysctls map[string]string `json:"sysctls,omitempty"`
+	// TransparentHugepageDefrag: Optional. Defines the transparent hugepage defrag
+	// configuration on the node. VM hugepage allocation can be managed by either
+	// limiting defragmentation for delayed allocation or skipping it entirely for
+	// immediate allocation only. See
+	// https://docs.kernel.org/admin-guide/mm/transhuge.html for more details.
+	//
+	// Possible values:
+	//   "TRANSPARENT_HUGEPAGE_DEFRAG_UNSPECIFIED" - Default value. GKE will not
+	// modify the kernel configuration.
+	//   "TRANSPARENT_HUGEPAGE_DEFRAG_ALWAYS" - It means that an application
+	// requesting THP will stall on allocation failure and directly reclaim pages
+	// and compact memory in an effort to allocate a THP immediately.
+	//   "TRANSPARENT_HUGEPAGE_DEFRAG_DEFER" - It means that an application will
+	// wake kswapd in the background to reclaim pages and wake kcompactd to compact
+	// memory so that THP is available in the near future. It’s the
+	// responsibility of khugepaged to then install the THP pages later.
+	//   "TRANSPARENT_HUGEPAGE_DEFRAG_DEFER_WITH_MADVISE" - It means that an
+	// application will enter direct reclaim and compaction like always, but only
+	// for regions that have used madvise(MADV_HUGEPAGE); all other regions will
+	// wake kswapd in the background to reclaim pages and wake kcompactd to compact
+	// memory so that THP is available in the near future.
+	//   "TRANSPARENT_HUGEPAGE_DEFRAG_MADVISE" - It means that an application will
+	// enter direct reclaim like always but only for regions that are have used
+	// madvise(MADV_HUGEPAGE). This is the default kernel configuration.
+	//   "TRANSPARENT_HUGEPAGE_DEFRAG_NEVER" - It means that an application will
+	// never enter direct reclaim or compaction.
+	TransparentHugepageDefrag string `json:"transparentHugepageDefrag,omitempty"`
+	// TransparentHugepageEnabled: Optional. Transparent hugepage support for
+	// anonymous memory can be entirely disabled (mostly for debugging purposes) or
+	// only enabled inside MADV_HUGEPAGE regions (to avoid the risk of consuming
+	// more memory resources) or enabled system wide. See
+	// https://docs.kernel.org/admin-guide/mm/transhuge.html for more details.
+	//
+	// Possible values:
+	//   "TRANSPARENT_HUGEPAGE_ENABLED_UNSPECIFIED" - Default value. GKE will not
+	// modify the kernel configuration.
+	//   "TRANSPARENT_HUGEPAGE_ENABLED_ALWAYS" - Transparent hugepage support for
+	// anonymous memory is enabled system wide.
+	//   "TRANSPARENT_HUGEPAGE_ENABLED_MADVISE" - Transparent hugepage support for
+	// anonymous memory is enabled inside MADV_HUGEPAGE regions. This is the
+	// default kernel configuration.
+	//   "TRANSPARENT_HUGEPAGE_ENABLED_NEVER" - Transparent hugepage support for
+	// anonymous memory is disabled.
+	TransparentHugepageEnabled string `json:"transparentHugepageEnabled,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "CgroupMode") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -3820,6 +4126,35 @@ type LoggingVariantConfig struct {
 
 func (s LoggingVariantConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod LoggingVariantConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// LustreCsiDriverConfig: Configuration for the Lustre CSI driver.
+type LustreCsiDriverConfig struct {
+	// EnableLegacyLustrePort: If set to true, the Lustre CSI driver will install
+	// Lustre kernel modules using port 6988. This serves as a workaround for a
+	// port conflict with the gke-metadata-server. This field is required ONLY
+	// under the following conditions: 1. The GKE node version is older than
+	// 1.33.2-gke.4655000. 2. You're connecting to a Lustre instance that has the
+	// 'gke-support-enabled' flag.
+	EnableLegacyLustrePort bool `json:"enableLegacyLustrePort,omitempty"`
+	// Enabled: Whether the Lustre CSI driver is enabled for this cluster.
+	Enabled bool `json:"enabled,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "EnableLegacyLustrePort") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "EnableLegacyLustrePort") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s LustreCsiDriverConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod LustreCsiDriverConfig
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
@@ -4424,6 +4759,41 @@ func (s NetworkTags) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// NetworkTierConfig: NetworkTierConfig contains network tier information.
+type NetworkTierConfig struct {
+	// NetworkTier: Network tier configuration.
+	//
+	// Possible values:
+	//   "NETWORK_TIER_UNSPECIFIED" - By default, use project-level configuration.
+	// When unspecified, the behavior defaults to NETWORK_TIER_DEFAULT. For cluster
+	// updates, this implies no action (no-op).
+	//   "NETWORK_TIER_DEFAULT" - Default network tier. Use project-level
+	// configuration. User can specify this value, meaning they want to keep the
+	// same behaviour as before cluster level network tier configuration is
+	// introduced. This field ensures backward compatibility for the network tier
+	// of cluster resources, such as node pools and load balancers, for their
+	// external IP addresses.
+	//   "NETWORK_TIER_PREMIUM" - Premium network tier.
+	//   "NETWORK_TIER_STANDARD" - Standard network tier.
+	NetworkTier string `json:"networkTier,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "NetworkTier") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "NetworkTier") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s NetworkTierConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkTierConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // NodeAffinity: Specifies the NodeAffinity key, values, and affinity operator
 // according to shared sole tenant node group affinities
 // (https://{$universe.dns_names.final_documentation_domain}/compute/docs/nodes/sole-tenant-nodes#node_affinity_and_anti-affinity).
@@ -4468,6 +4838,8 @@ type NodeConfig struct {
 	Accelerators []*AcceleratorConfig `json:"accelerators,omitempty"`
 	// AdvancedMachineFeatures: Advanced features for the Compute Engine VM.
 	AdvancedMachineFeatures *AdvancedMachineFeatures `json:"advancedMachineFeatures,omitempty"`
+	// BootDisk: The boot disk configuration for the node pool.
+	BootDisk *BootDisk `json:"bootDisk,omitempty"`
 	// BootDiskKmsKey:  The Customer Managed Encryption Key used to encrypt the
 	// boot disk attached to each node in the node pool. This should be of the form
 	// projects/[KEY_PROJECT_ID]/locations/[LOCATION]/keyRings/[RING_NAME]/cryptoKey
@@ -4747,6 +5119,27 @@ type NodeKubeletConfig struct {
 	// resource characteristics to be granted increased CPU affinity and
 	// exclusivity on the node. The default value is 'none' if unspecified.
 	CpuManagerPolicy string `json:"cpuManagerPolicy,omitempty"`
+	// EvictionMaxPodGracePeriodSeconds: Optional.
+	// eviction_max_pod_grace_period_seconds is the maximum allowed grace period
+	// (in seconds) to use when terminating pods in response to a soft eviction
+	// threshold being met. This value effectively caps the Pod's
+	// terminationGracePeriodSeconds value during soft evictions. Default: 0.
+	// Range: [0, 300].
+	EvictionMaxPodGracePeriodSeconds int64 `json:"evictionMaxPodGracePeriodSeconds,omitempty"`
+	// EvictionMinimumReclaim: Optional. eviction_minimum_reclaim is a map of
+	// signal names to quantities that defines minimum reclaims, which describe the
+	// minimum amount of a given resource the kubelet will reclaim when performing
+	// a pod eviction while that resource is under pressure.
+	EvictionMinimumReclaim *EvictionMinimumReclaim `json:"evictionMinimumReclaim,omitempty"`
+	// EvictionSoft: Optional. eviction_soft is a map of signal names to quantities
+	// that defines soft eviction thresholds. Each signal is compared to its
+	// corresponding threshold to determine if a pod eviction should occur.
+	EvictionSoft *EvictionSignals `json:"evictionSoft,omitempty"`
+	// EvictionSoftGracePeriod: Optional. eviction_soft_grace_period is a map of
+	// signal names to quantities that defines grace periods for each soft eviction
+	// signal. The grace period is the amount of time that a pod must be under
+	// pressure before an eviction occurs.
+	EvictionSoftGracePeriod *EvictionGracePeriod `json:"evictionSoftGracePeriod,omitempty"`
 	// ImageGcHighThresholdPercent: Optional. Defines the percent of disk usage
 	// after which image garbage collection is always run. The percent is
 	// calculated as this field value out of 100. The value must be between 10 and
@@ -4778,6 +5171,12 @@ type NodeKubeletConfig struct {
 	// InsecureKubeletReadonlyPortEnabled: Enable or disable Kubelet read only
 	// port.
 	InsecureKubeletReadonlyPortEnabled bool `json:"insecureKubeletReadonlyPortEnabled,omitempty"`
+	// MaxParallelImagePulls: Optional. Defines the maximum number of image pulls
+	// in parallel. The range is 2 to 5, inclusive. The default value is 2 or 3
+	// depending on the disk type. See
+	// https://kubernetes.io/docs/concepts/containers/images/#maximum-parallel-image-pulls
+	// for more details.
+	MaxParallelImagePulls int64 `json:"maxParallelImagePulls,omitempty"`
 	// MemoryManager: Optional. Controls NUMA-aware Memory Manager configuration on
 	// the node. For more information, see:
 	// https://kubernetes.io/docs/tasks/administer-cluster/memory-manager/
@@ -4787,6 +5186,11 @@ type NodeKubeletConfig struct {
 	// Controls the maximum number of processes allowed to run in a pod. The value
 	// must be greater than or equal to 1024 and less than 4194304.
 	PodPidsLimit int64 `json:"podPidsLimit,omitempty,string"`
+	// SingleProcessOomKill: Optional. Defines whether to enable single process OOM
+	// killer. If true, will prevent the memory.oom.group flag from being set for
+	// container cgroups in cgroups v2. This causes processes in the container to
+	// be OOM killed individually instead of as a group.
+	SingleProcessOomKill bool `json:"singleProcessOomKill,omitempty"`
 	// TopologyManager: Optional. Controls Topology Manager configuration on the
 	// node. For more information, see:
 	// https://kubernetes.io/docs/tasks/administer-cluster/topology-manager/
@@ -4888,6 +5292,10 @@ type NodeNetworkConfig struct {
 	EnablePrivateNodes bool `json:"enablePrivateNodes,omitempty"`
 	// NetworkPerformanceConfig: Network bandwidth tier configuration.
 	NetworkPerformanceConfig *NetworkPerformanceConfig `json:"networkPerformanceConfig,omitempty"`
+	// NetworkTierConfig: Output only. The network tier configuration for the node
+	// pool inherits from the cluster-level configuration and remains immutable
+	// throughout the node pool's lifecycle, including during upgrades.
+	NetworkTierConfig *NetworkTierConfig `json:"networkTierConfig,omitempty"`
 	// PodCidrOverprovisionConfig: [PRIVATE FIELD] Pod CIDR size overprovisioning
 	// config for the nodepool. Pod CIDR size per node depends on
 	// max_pods_per_node. By default, the value of max_pods_per_node is rounded off
@@ -4916,6 +5324,12 @@ type NodeNetworkConfig struct {
 	// `ip_allocation_policy.use_ip_aliases` is true. This field cannot be changed
 	// after the node pool has been created.
 	PodRange string `json:"podRange,omitempty"`
+	// Subnetwork: Output only. The subnetwork path for the node pool. Format:
+	// projects/{project}/regions/{region}/subnetworks/{subnetwork} If the cluster
+	// is associated with multiple subnetworks, the subnetwork for the node pool is
+	// picked based on the IP utilization during node pool creation and is
+	// immutable.
+	Subnetwork string `json:"subnetwork,omitempty"`
 	// ForceSendFields is a list of field names (e.g.
 	// "AdditionalNodeNetworkConfigs") to unconditionally include in API requests.
 	// By default, fields with empty or default values are omitted from API
@@ -5823,6 +6237,35 @@ func (s PrivateRegistryAccessConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// PrivilegedAdmissionConfig: PrivilegedAdmissionConfig stores the list of
+// authorized allowlist paths for the cluster.
+type PrivilegedAdmissionConfig struct {
+	// AllowlistPaths: The customer allowlist Cloud Storage paths for the cluster.
+	// These paths are used with the `--autopilot-privileged-admission` flag to
+	// authorize privileged workloads in Autopilot clusters. Paths can be
+	// GKE-owned, in the format `gke:////`, or customer-owned, in the format
+	// `gs:///`. Wildcards (`*`) are supported to authorize all allowlists under
+	// specific paths or directories. Example: `gs://my-bucket/*` will authorize
+	// all allowlists under the `my-bucket` bucket.
+	AllowlistPaths []string `json:"allowlistPaths,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "AllowlistPaths") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "AllowlistPaths") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s PrivilegedAdmissionConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod PrivilegedAdmissionConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // PubSub: Pub/Sub specific notification config.
 type PubSub struct {
 	// Enabled: Enable notifications for Pub/Sub.
@@ -6341,6 +6784,31 @@ func (s RollbackNodePoolUpgradeRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// RotationConfig: RotationConfig is config for secret manager auto rotation.
+type RotationConfig struct {
+	// Enabled: Whether the rotation is enabled.
+	Enabled bool `json:"enabled,omitempty"`
+	// RotationInterval: The interval between two consecutive rotations. Default
+	// rotation interval is 2 minutes.
+	RotationInterval string `json:"rotationInterval,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Enabled") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s RotationConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod RotationConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // SandboxConfig: SandboxConfig contains configurations of the sandbox to use
 // for the node.
 type SandboxConfig struct {
@@ -6409,6 +6877,8 @@ type SecondaryBootDiskUpdateStrategy struct {
 type SecretManagerConfig struct {
 	// Enabled: Enable/Disable Secret Manager Config.
 	Enabled bool `json:"enabled,omitempty"`
+	// RotationConfig: Rotation config for secret manager.
+	RotationConfig *RotationConfig `json:"rotationConfig,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
@@ -7156,18 +7626,22 @@ func (s ShieldedNodes) MarshalJSON() ([]byte, error) {
 // SoleTenantConfig: SoleTenantConfig contains the NodeAffinities to specify
 // what shared sole tenant node groups should back the node pool.
 type SoleTenantConfig struct {
+	// MinNodeCpus: Optional. The minimum number of virtual CPUs this instance will
+	// consume when running on a sole-tenant node. This field can only be set if
+	// the node pool is created in a shared sole-tenant node group.
+	MinNodeCpus int64 `json:"minNodeCpus,omitempty"`
 	// NodeAffinities: NodeAffinities used to match to a shared sole tenant node
 	// group.
 	NodeAffinities []*NodeAffinity `json:"nodeAffinities,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "NodeAffinities") to
+	// ForceSendFields is a list of field names (e.g. "MinNodeCpus") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "NodeAffinities") to include in
-	// API requests with the JSON null value. By default, fields with empty values
-	// are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "MinNodeCpus") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -7417,6 +7891,8 @@ type StatusCondition struct {
 	//   "CA_EXPIRING" - Cluster CA is expiring soon.
 	//   "NODE_SERVICE_ACCOUNT_MISSING_PERMISSIONS" - Node service account is
 	// missing permissions.
+	//   "CLOUD_KMS_KEY_DESTROYED" - Cloud KMS key version used for etcd level
+	// encryption has been destroyed. This is a permanent error.
 	Code string `json:"code,omitempty"`
 	// Message: Human-friendly representation of the condition
 	Message string `json:"message,omitempty"`
@@ -7622,6 +8098,10 @@ type UpdateNodePoolRequest struct {
 	// https://{$universe.dns_names.final_documentation_domain}/compute/docs/gpus
 	// for more information about support for GPUs.
 	Accelerators []*AcceleratorConfig `json:"accelerators,omitempty"`
+	// BootDisk: The desired boot disk config for nodes in the node pool. Initiates
+	// an upgrade operation that migrates the nodes in the node pool to the
+	// specified boot disk config.
+	BootDisk *BootDisk `json:"bootDisk,omitempty"`
 	// ClusterId: Deprecated. The name of the cluster to upgrade. This field has
 	// been deprecated and replaced by the name field.
 	ClusterId string `json:"clusterId,omitempty"`

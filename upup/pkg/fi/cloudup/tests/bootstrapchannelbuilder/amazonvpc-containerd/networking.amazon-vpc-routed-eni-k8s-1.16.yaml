@@ -1,7 +1,6 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/managed-by: kops
@@ -65,7 +64,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.3
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/managed-by: kops
@@ -303,7 +301,6 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/instance: aws-vpc-cni
@@ -328,7 +325,6 @@ data:
   warm-prefix-target: "0"
 kind: ConfigMap
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/instance: aws-vpc-cni
@@ -345,7 +341,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/instance: aws-vpc-cni
@@ -426,7 +421,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/instance: aws-vpc-cni
@@ -450,7 +444,6 @@ subjects:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  creationTimestamp: null
   labels:
     addon.kops.k8s.io/name: networking.amazon-vpc-routed-eni
     app.kubernetes.io/instance: aws-vpc-cni
@@ -467,7 +460,6 @@ spec:
       k8s-app: aws-node
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/instance: aws-vpc-cni
         app.kubernetes.io/name: aws-node

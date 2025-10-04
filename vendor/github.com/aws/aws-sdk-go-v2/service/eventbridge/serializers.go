@@ -4152,6 +4152,23 @@ func awsAwsjson11_serializeDocumentKinesisParameters(v *types.KinesisParameters,
 	return nil
 }
 
+func awsAwsjson11_serializeDocumentLogConfig(v *types.LogConfig, value smithyjson.Value) error {
+	object := value.Object()
+	defer object.Close()
+
+	if len(v.IncludeDetail) > 0 {
+		ok := object.Key("IncludeDetail")
+		ok.String(string(v.IncludeDetail))
+	}
+
+	if len(v.Level) > 0 {
+		ok := object.Key("Level")
+		ok.String(string(v.Level))
+	}
+
+	return nil
+}
+
 func awsAwsjson11_serializeDocumentNetworkConfiguration(v *types.NetworkConfiguration, value smithyjson.Value) error {
 	object := value.Object()
 	defer object.Close()
@@ -5150,6 +5167,13 @@ func awsAwsjson11_serializeOpDocumentCreateEventBusInput(v *CreateEventBusInput,
 	if v.KmsKeyIdentifier != nil {
 		ok := object.Key("KmsKeyIdentifier")
 		ok.String(*v.KmsKeyIdentifier)
+	}
+
+	if v.LogConfig != nil {
+		ok := object.Key("LogConfig")
+		if err := awsAwsjson11_serializeDocumentLogConfig(v.LogConfig, ok); err != nil {
+			return err
+		}
 	}
 
 	if v.Name != nil {
@@ -6247,6 +6271,13 @@ func awsAwsjson11_serializeOpDocumentUpdateEventBusInput(v *UpdateEventBusInput,
 	if v.KmsKeyIdentifier != nil {
 		ok := object.Key("KmsKeyIdentifier")
 		ok.String(*v.KmsKeyIdentifier)
+	}
+
+	if v.LogConfig != nil {
+		ok := object.Key("LogConfig")
+		if err := awsAwsjson11_serializeDocumentLogConfig(v.LogConfig, ok); err != nil {
+			return err
+		}
 	}
 
 	if v.Name != nil {

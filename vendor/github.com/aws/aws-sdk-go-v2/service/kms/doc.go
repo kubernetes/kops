@@ -9,9 +9,9 @@
 // This guide describes the KMS operations that you can call programmatically. For
 // general information about KMS, see the [Key Management Service Developer Guide].
 //
-// KMS has replaced the term customer master key (CMK) with KMS key and KMS key.
-// The concept has not changed. To prevent breaking changes, KMS is keeping some
-// variations of this term.
+// KMS has replaced the term customer master key (CMK) with Key Management Service
+// key and KMS key. The concept has not changed. To prevent breaking changes, KMS
+// is keeping some variations of this term.
 //
 // Amazon Web Services provides SDKs that consist of libraries and sample code for
 // various programming languages and platforms (Java, Rust, Python, Ruby, .Net,

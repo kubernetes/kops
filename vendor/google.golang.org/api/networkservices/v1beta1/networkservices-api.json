@@ -1439,6 +1439,188 @@
                 }
               }
             },
+            "lbTcpExtensions": {
+              "methods": {
+                "create": {
+                  "description": "Creates a new `LbTcpExtension` resource in a given project and location.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/lbTcpExtensions",
+                  "httpMethod": "POST",
+                  "id": "networkservices.projects.locations.lbTcpExtensions.create",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "lbTcpExtensionId": {
+                      "description": "Required. User-provided ID of the `LbTcpExtension` resource to be created.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The parent resource of the `LbTcpExtension` resource. Must be in the format `projects/{project}/locations/{location}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, ignores the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+parent}/lbTcpExtensions",
+                  "request": {
+                    "$ref": "LbTcpExtension"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "delete": {
+                  "description": "Deletes the specified `LbTcpExtension` resource.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/lbTcpExtensions/{lbTcpExtensionsId}",
+                  "httpMethod": "DELETE",
+                  "id": "networkservices.projects.locations.lbTcpExtensions.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the `LbTcpExtension` resource to delete. Must be in the format `projects/{project}/locations/{location}/LbTcpExtensions/{lb_tcp_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/lbTcpExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for at least 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, ignores the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+name}",
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "get": {
+                  "description": "Gets details of the specified `LbTcpExtension` resource.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/lbTcpExtensions/{lbTcpExtensionsId}",
+                  "httpMethod": "GET",
+                  "id": "networkservices.projects.locations.lbTcpExtensions.get",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. A name of the `LbTcpExtension` resource to get. Must be in the format `projects/{project}/locations/{location}/LbTcpExtensions/{lb_tcp_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/lbTcpExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+name}",
+                  "response": {
+                    "$ref": "LbTcpExtension"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "list": {
+                  "description": "Lists `LbTcpExtension` resources in a given project and location.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/lbTcpExtensions",
+                  "httpMethod": "GET",
+                  "id": "networkservices.projects.locations.lbTcpExtensions.list",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "filter": {
+                      "description": "Optional. Filtering results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "orderBy": {
+                      "description": "Optional. Hint for how to order the results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Optional. Requested page size. The server might return fewer items than requested. If unspecified, the server picks an appropriate default.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "Optional. A token identifying a page of results that the server returns.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The project and location from which the `LbTcpExtension` resources are listed, specified in the following format: `projects/{project}/locations/{location}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+parent}/lbTcpExtensions",
+                  "response": {
+                    "$ref": "ListLbTcpExtensionsResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "patch": {
+                  "description": "Updates the parameters of the specified `LbTcpExtension` resource.",
+                  "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/lbTcpExtensions/{lbTcpExtensionsId}",
+                  "httpMethod": "PATCH",
+                  "id": "networkservices.projects.locations.lbTcpExtensions.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. Identifier. Name of the `LbTcpExtension` resource in the following format: `projects/{project}/locations/{location}/LbTcpExtension/{lb_tcp_extension}`",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/lbTcpExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for at least 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, ignores the second request. This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Optional. Used to specify the fields to be overwritten in the `LbTcpExtension` resource by the update. The fields specified in the update_mask are relative to the resource, not the full request. A field is overwritten if it is in the mask. If the user does not specify a mask, then all fields are overwritten.",
+                      "format": "google-fieldmask",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1beta1/{+name}",
+                  "request": {
+                    "$ref": "LbTcpExtension"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              }
+            },
             "lbTrafficExtensions": {
               "methods": {
                 "create": {
@@ -2913,7 +3095,7 @@
       }
     }
   },
-  "revision": "20250611",
+  "revision": "20250730",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuthzExtension": {
@@ -2997,11 +3179,13 @@
           "description": "Optional. The format of communication supported by the callout extension. If not specified, the default value `EXT_PROC_GRPC` is used.",
           "enum": [
             "WIRE_FORMAT_UNSPECIFIED",
-            "EXT_PROC_GRPC"
+            "EXT_PROC_GRPC",
+            "EXT_AUTHZ_GRPC"
           ],
           "enumDescriptions": [
             "Not specified.",
-            "The extension service uses ext_proc gRPC API over a gRPC stream. This is the default value if the wire format is not specified. The backend service for the extension must use HTTP2 or H2C as the protocol. All `supported_events` for a client request are sent as part of the same gRPC stream."
+            "The extension service uses ext_proc gRPC API over a gRPC stream. This is the default value if the wire format is not specified. The backend service for the extension must use HTTP2 or H2C as the protocol. All `supported_events` for a client request are sent as part of the same gRPC stream.",
+            "The extension service uses Envoy's `ext_authz` gRPC API. The backend service for the extension must use HTTP2, or H2C as the protocol. `EXT_AUTHZ_GRPC` is only supported for `AuthzExtension` resources."
           ],
           "type": "string"
         }
@@ -3108,7 +3292,7 @@
       "id": "ExtensionChain",
       "properties": {
         "extensions": {
-          "description": "Required. A set of extensions to execute for the matching request. At least one extension is required. Up to 3 extensions can be defined for each extension chain for `LbTrafficExtension` resource. `LbRouteExtension` chains are limited to 1 extension per extension chain.",
+          "description": "Required. A set of extensions to execute for the matching request. At least one extension is required. Up to 3 extensions can be defined for each extension chain for `LbTrafficExtension` resource. `LbRouteExtension` and `LbEdgeExtension` chains are limited to 1 extension per extension chain.",
           "items": {
             "$ref": "ExtensionChainExtension"
           },
@@ -3189,11 +3373,11 @@
           "type": "string"
         },
         "service": {
-          "description": "Required. The reference to the service that runs the extension. To configure a callout extension, `service` must be a fully-qualified reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in the format: `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/backendServices/{backendService}` or `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServices/{backendService}`. To configure a plugin extension, `service` must be a reference to a [`WasmPlugin` resource](https://cloud.google.com/service-extensions/docs/reference/rest/v1beta1/projects.locations.wasmPlugins) in the format: `projects/{project}/locations/{location}/wasmPlugins/{plugin}` or `//networkservices.googleapis.com/projects/{project}/locations/{location}/wasmPlugins/{wasmPlugin}`. Plugin extensions are currently supported for the `LbTrafficExtension` and the `LbRouteExtension` resources.",
+          "description": "Required. The reference to the service that runs the extension. To configure a callout extension, `service` must be a fully-qualified reference to a [backend service](https://cloud.google.com/compute/docs/reference/rest/v1/backendServices) in the format: `https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/backendServices/{backendService}` or `https://www.googleapis.com/compute/v1/projects/{project}/global/backendServices/{backendService}`. To configure a plugin extension, `service` must be a reference to a [`WasmPlugin` resource](https://cloud.google.com/service-extensions/docs/reference/rest/v1beta1/projects.locations.wasmPlugins) in the format: `projects/{project}/locations/{location}/wasmPlugins/{plugin}` or `//networkservices.googleapis.com/projects/{project}/locations/{location}/wasmPlugins/{wasmPlugin}`. Plugin extensions are currently supported for the `LbTrafficExtension`, the `LbRouteExtension`, and the `LbEdgeExtension` resources.",
           "type": "string"
         },
         "supportedEvents": {
-          "description": "Optional. A set of events during request or response processing for which this extension is called. This field is required for the `LbTrafficExtension` resource. It is optional for the `LbRouteExtension` resource. If unspecified `REQUEST_HEADERS` event is assumed as supported.",
+          "description": "Optional. A set of events during request or response processing for which this extension is called. For the `LbTrafficExtension` resource, this field is required. For the `LbRouteExtension` resource, this field is optional. If unspecified, `REQUEST_HEADERS` event is assumed as supported. For the `LbEdgeExtension` resource, this field is required and must only contain `REQUEST_HEADERS` event.",
           "items": {
             "enum": [
               "EVENT_TYPE_UNSPECIFIED",
@@ -3312,7 +3496,7 @@
           "type": "string"
         },
         "ports": {
-          "description": "Required. One or more port numbers (1-65535), on which the Gateway will receive traffic. The proxy binds to the specified ports. Gateways of type 'SECURE_WEB_GATEWAY' are limited to 1 port. Gateways of type 'OPEN_MESH' listen on 0.0.0.0 for IPv4 and :: for IPv6 and support multiple ports.",
+          "description": "Required. One or more port numbers (1-65535), on which the Gateway will receive traffic. The proxy binds to the specified ports. Gateways of type 'SECURE_WEB_GATEWAY' are limited to 5 ports. Gateways of type 'OPEN_MESH' listen on 0.0.0.0 for IPv4 and :: for IPv6 and support multiple ports.",
           "items": {
             "format": "int32",
             "type": "integer"
@@ -4262,7 +4446,7 @@
       "type": "object"
     },
     "LbEdgeExtension": {
-      "description": "`LbEdgeExtension` is a resource that lets the extension service influence the Backend Service selection or Cloud CDN cache keys by modifying the request headers.",
+      "description": "`LbEdgeExtension` is a resource that lets the extension service influence the selection of backend services and Cloud CDN cache keys by modifying request headers.",
       "id": "LbEdgeExtension",
       "properties": {
         "createTime": {
@@ -4297,7 +4481,7 @@
           "type": "object"
         },
         "loadBalancingScheme": {
-          "description": "Required. All backend services and forwarding rules referenced by this extension must share the same load balancing scheme. Supported values: `EXTERNAL_MANAGED`. For more information, refer to [Backend services overview](https://cloud.google.com/load-balancing/docs/backend-service).",
+          "description": "Required. All forwarding rules referenced by this extension must share the same load balancing scheme. Supported values: `EXTERNAL_MANAGED`.",
           "enum": [
             "LOAD_BALANCING_SCHEME_UNSPECIFIED",
             "INTERNAL_MANAGED",
@@ -4383,6 +4567,68 @@
         "name": {
           "description": "Required. Identifier. Name of the `LbRouteExtension` resource in the following format: `projects/{project}/locations/{location}/lbRouteExtensions/{lb_route_extension}`.",
           "type": "string"
+        },
+        "updateTime": {
+          "description": "Output only. The timestamp when the resource was updated.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "LbTcpExtension": {
+      "description": "`LbTcpExtension` is a resource that allows traffic forwarding to different backend services to make allow/deny decisions on TCP connections for all L7 Load Balancers within a network. Currently only internal load-balancers are supported.",
+      "id": "LbTcpExtension",
+      "properties": {
+        "createTime": {
+          "description": "Output only. The timestamp when the resource was created.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional. A human-readable description of the resource.",
+          "type": "string"
+        },
+        "extensionChains": {
+          "description": "Required. A set of ordered extension chains that contain the match conditions and extensions to execute. Match conditions for each extension chain are evaluated in sequence for a given request. The first extension chain that has a condition that matches the request is executed. Any subsequent extension chains do not execute. Limited to 5 extension chains per resource.",
+          "items": {
+            "$ref": "ExtensionChain"
+          },
+          "type": "array"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional. Set of labels associated with the `LbTcpExtension` resource. The format must comply with [the requirements for labels](/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
+          "type": "object"
+        },
+        "loadBalancingScheme": {
+          "description": "Required. All backend services and forwarding rules referenced by this extension must share the same load balancing scheme. Supported values: `INTERNAL_MANAGED`. For more information, refer to [Backend services overview](https://cloud.google.com/load-balancing/docs/backend-service).",
+          "enum": [
+            "LOAD_BALANCING_SCHEME_UNSPECIFIED",
+            "INTERNAL_MANAGED",
+            "EXTERNAL_MANAGED"
+          ],
+          "enumDescriptions": [
+            "Default value. Do not use.",
+            "Signifies that this is used for Internal HTTP(S) Load Balancing.",
+            "Signifies that this is used for External Managed HTTP(S) Load Balancing."
+          ],
+          "type": "string"
+        },
+        "name": {
+          "description": "Required. Identifier. Name of the `LbTcpExtension` resource in the following format: `projects/{project}/locations/{location}/LbTcpExtension/{lb_tcp_extension}`",
+          "type": "string"
+        },
+        "networks": {
+          "description": "Optional. If set, this `LbTcpExtension` resource applies to all `ForwardingRule` resources in these VPC networks. Values should be relative resource names identifying VPC networks, for example `projects/*/global/networks/network-1`. Currently limited to 1 network per resource. Limited to 1 network per resource.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         },
         "updateTime": {
           "description": "Output only. The timestamp when the resource was updated.",
@@ -4646,6 +4892,31 @@
           "description": "The list of `LbRouteExtension` resources.",
           "items": {
             "$ref": "LbRouteExtension"
+          },
+          "type": "array"
+        },
+        "nextPageToken": {
+          "description": "A token identifying a page of results that the server returns.",
+          "type": "string"
+        },
+        "unreachable": {
+          "description": "Locations that could not be reached.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ListLbTcpExtensionsResponse": {
+      "description": "Message for response to listing `LbTcpExtension` resources.",
+      "id": "ListLbTcpExtensionsResponse",
+      "properties": {
+        "lbTcpExtensions": {
+          "description": "The list of `LbTcpExtension` resources.",
+          "items": {
+            "$ref": "LbTcpExtension"
           },
           "type": "array"
         },
@@ -5754,7 +6025,7 @@
           "type": "boolean"
         },
         "minLogLevel": {
-          "description": "Non-empty default. Specificies the lowest level of the plugin logs that are exported to Cloud Logging. This setting relates to the logs generated by using logging statements in your Wasm code. This field is can be set only if logging is enabled for the plugin. If the field is not provided when logging is enabled, it is set to `INFO` by default.",
+          "description": "Non-empty default. Specifies the lowest level of the plugin logs that are exported to Cloud Logging. This setting relates to the logs generated by using logging statements in your Wasm code. This field is can be set only if logging is enabled for the plugin. If the field is not provided when logging is enabled, it is set to `INFO` by default.",
           "enum": [
             "LOG_LEVEL_UNSPECIFIED",
             "TRACE",
@@ -5810,12 +6081,12 @@
           "type": "string"
         },
         "imageDigest": {
-          "description": "Output only. The resolved digest for the image specified in the `image` field. The digest is resolved during the creation of `WasmPluginVersion` resource. This field holds the digest value, regardless of whether a tag or digest was originally specified in the `image` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin image. The value is calculated based on the `image_uri` field. If the `image_uri` field refers to a container image, the digest value is obtained from the container image. If the `image_uri` field refers to a generic artifact, the digest value is calculated based on the contents of the file.",
           "readOnly": true,
           "type": "string"
         },
         "imageUri": {
-          "description": "Optional. URI of the container image containing the plugin, stored in the Artifact Registry. When a new `WasmPluginVersion` resource is created, the digest of the container image is saved in the `image_digest` field. When downloading an image, the digest value is used instead of an image tag.",
+          "description": "Optional. URI of the image containing the Wasm module, stored in Artifact Registry. The URI can refer to one of the following repository formats: * Container images: the `image_uri` must point to a container that contains a single file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `image_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `image_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `image_digest` field.",
           "type": "string"
         },
         "labels": {
@@ -5835,12 +6106,12 @@
           "type": "string"
         },
         "pluginConfigDigest": {
-          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of `plugin_config_data` or the container image defined by the `plugin_config_uri` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of `plugin_config_data` field or the image defined by the `plugin_config_uri` field.",
           "readOnly": true,
           "type": "string"
         },
         "pluginConfigUri": {
-          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The container image must contain only a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the container image is saved in the `plugin_config_digest` field.",
+          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The URI can refer to one of the following repository formats: * Container images: the `plugin_config_uri` must point to a container that contains a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `plugin_config_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `plugin_config_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `plugin_config_digest` field.",
           "type": "string"
         },
         "updateTime": {
@@ -5867,12 +6138,12 @@
           "type": "string"
         },
         "imageDigest": {
-          "description": "Output only. The resolved digest for the image specified in `image`. The digest is resolved during the creation of a `WasmPluginVersion` resource. This field holds the digest value regardless of whether a tag or digest was originally specified in the `image` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin image. The value is calculated based on the `image_uri` field. If the `image_uri` field refers to a container image, the digest value is obtained from the container image. If the `image_uri` field refers to a generic artifact, the digest value is calculated based on the contents of the file.",
           "readOnly": true,
           "type": "string"
         },
         "imageUri": {
-          "description": "Optional. URI of the container image containing the Wasm module, stored in the Artifact Registry. The container image must contain only a single file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the URI gets resolved to an image digest and saved in the `image_digest` field.",
+          "description": "Optional. URI of the image containing the Wasm module, stored in Artifact Registry. The URI can refer to one of the following repository formats: * Container images: the `image_uri` must point to a container that contains a single file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `image_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `image_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.wasm`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `image_digest` field.",
           "type": "string"
         },
         "labels": {
@@ -5888,12 +6159,12 @@
           "type": "string"
         },
         "pluginConfigDigest": {
-          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of the `plugin_config_data` field or the container image defined by the `plugin_config_uri` field.",
+          "description": "Output only. This field holds the digest (usually checksum) value for the plugin configuration. The value is calculated based on the contents of `plugin_config_data` field or the image defined by the `plugin_config_uri` field.",
           "readOnly": true,
           "type": "string"
         },
         "pluginConfigUri": {
-          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The container image must contain only a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the container image is saved in the `plugin_config_digest` field.",
+          "description": "URI of the plugin configuration stored in the Artifact Registry. The configuration is provided to the plugin at runtime through the `ON_CONFIGURE` callback. The URI can refer to one of the following repository formats: * Container images: the `plugin_config_uri` must point to a container that contains a single file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the digest of the image is saved in the `plugin_config_digest` field. When pulling a container image from Artifact Registry, the digest value is used instead of an image tag. * Generic artifacts: the `plugin_config_uri` must be in this format: `projects/{project}/locations/{location}/repositories/{repository}/ genericArtifacts/{package}:{version}`. The specified package and version must contain a file with the name `plugin.config`. When a new `WasmPluginVersion` resource is created, the checksum of the contents of the file is saved in the `plugin_config_digest` field.",
           "type": "string"
         },
         "updateTime": {

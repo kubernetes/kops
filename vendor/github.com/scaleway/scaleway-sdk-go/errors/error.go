@@ -26,14 +26,14 @@ func (e *Error) Error() string {
 func (e *Error) IsScwSdkError() {}
 
 // New creates a new error with that same interface as fmt.Errorf
-func New(format string, args ...interface{}) *Error {
+func New(format string, args ...any) *Error {
 	return &Error{
 		Str: fmt.Sprintf(format, args...),
 	}
 }
 
 // Wrap an error with additional information
-func Wrap(err error, format string, args ...interface{}) *Error {
+func Wrap(err error, format string, args ...any) *Error {
 	return &Error{
 		Err: err,
 		Str: fmt.Sprintf(format, args...),

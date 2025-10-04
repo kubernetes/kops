@@ -1,12 +1,11 @@
 kind: Addons
 metadata:
-  creationTimestamp: null
   name: bootstrap
 spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 07fcc2a9174cc80cce3a02523161693db9403b65286f7b005efc707b360dae66
+    manifestHash: 8cb1bbd2f16d989a6416fbbc1e953140f05d005981b63a94fac742632ed5f02b
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -14,41 +13,41 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: bf4a66eb6914bbae0410494a11bdc8e5d36dcc3129529e488457f5f36e4d55c9
+    manifestHash: 3091c744b367fba44c4be785383ba55dfaf6367ef8fb6d0c8dde4c8afb89be93
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.9
     manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
-    manifestHash: 01c120e887bd98d82ef57983ad58a0b22bc85efb48108092a24c4b82e4c9ea81
+    manifestHash: da91eb5cf9a29f1b03510007d6d54603aef2fc23a305abc9ba496c510dfd3bc7
     name: kubelet-api.rbac.addons.k8s.io
     selector:
       k8s-addon: kubelet-api.rbac.addons.k8s.io
     version: 9.99.0
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
-    manifestHash: 2d55c3bc5e354e84a3730a65b42f39aba630a59dc8d32b30859fcce3d3178bc2
+    manifestHash: 686cc69e559a1c6f5e8b94e38de54a575a25c432ed5ceec565244b965fb5f07f
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.12
     manifest: dns-controller.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 4547fd9281fdef75bb50e82a90136a721fe7bd01a42d58dbe837a422cf54466d
+    manifestHash: 9c57a5e2c600d731c0eca6f82fbd981fe0ecd0e45f474a84219f9c764b95db67
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: c2a7f4f3e7e67c2ed9b3d934daf84d979272502b78d30d37c80a81baa22e5936
+    manifestHash: a0c643828c618f921000511048940da2edea477b11f8ce85b13ebaf584144d5a
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.11
     manifest: metrics-server.addons.k8s.io/k8s-1.11.yaml
-    manifestHash: f858a160d2ed56d622fb7d3cbcb589ddbb2aa2b83677a505f46330ba42c81bb7
+    manifestHash: 9b398a807369c3ebbbe3a6fadd2f9bfbe919d147f384eab966f2ce093c87c869
     name: metrics-server.addons.k8s.io
     needsPKI: true
     selector:
@@ -56,7 +55,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: bba88365b9dd15b4c4e303fee1b522de3a038ea5d7244eeaa6e1b970e619f18d
+    manifestHash: 608dc2fe9e3f79cc702cdd1697c9e0d4febbcc6893f140a018fb6fa4f4a000b6
     name: certmanager.io
     prune:
       kinds:
@@ -112,7 +111,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.11
     manifest: node-termination-handler.aws/k8s-1.11.yaml
-    manifestHash: 9b029a1d1cf9052871d0f5c53d2876054ca11c8151e3ec62ed6623519b044bf4
+    manifestHash: 99972ae7939d45821087a288508df804977dc54ba008056abd874960e390f204
     name: node-termination-handler.aws
     prune:
       kinds:
@@ -163,7 +162,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.17
     manifest: node-problem-detector.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 2184f20ded053de803f02517754d43cbcf905d42f5f24c14db1d438552cddd60
+    manifestHash: d314de35564b6e42fb23fa3257ea76ea8b535ad5556b67aca6abe38090a4288a
     name: node-problem-detector.addons.k8s.io
     prune:
       kinds:
@@ -212,7 +211,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: 0242da3de2a57325be6959a8aa3e58fe5c2099e2b53db502501f2ba11bd69afe
+    manifestHash: aae9daba9c9ddadef1d7a1256698ab867b67f94441d5ff143ef88b0cc1106ead
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
@@ -220,14 +219,14 @@ spec:
     version: 9.99.0
   - id: v1.15.0
     manifest: storage-aws.addons.k8s.io/v1.15.0.yaml
-    manifestHash: 4e2cda50cd5048133aad1b5e28becb60f4629d3f9e09c514a2757c27998b4200
+    manifestHash: 4065da166f272f6fdd34db6bb66ae6da239d01d91d5c7b391a88be1f5f2bc02e
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.16
     manifest: networking.amazon-vpc-routed-eni/k8s-1.16.yaml
-    manifestHash: c9f1c2a044d44f9eb7c9f3b186f174f8ff9201a24c3a0c4f3d175327260ac51f
+    manifestHash: 8b3c3de579568b69eed4c682ab1c3940e696e8498f00f8c9e28d9474982baf31
     name: networking.amazon-vpc-routed-eni
     needsRollingUpdate: all
     selector:
@@ -235,21 +234,21 @@ spec:
     version: 9.99.0
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 1b5b7422b12e6e018629f38ead12d89df5d46e5ee4e7f1cbb56b5c0d67ed02e3
+    manifestHash: 68d638cd19ac4641ed9cabc7610a10709d88f779cfb8ce4adf76118ffca07cdd
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.17
     manifest: aws-ebs-csi-driver.addons.k8s.io/k8s-1.17.yaml
-    manifestHash: 61554e406972f1f327e88bbfcd3d0cd4474f18484e3e346abb6524e5b12be986
+    manifestHash: 7e342803517549dd51beff09760efd193800cf856c3020fbcc408672df1a368d
     name: aws-ebs-csi-driver.addons.k8s.io
     selector:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
     version: 9.99.0
   - id: k8s-1.20
     manifest: snapshot-controller.addons.k8s.io/k8s-1.20.yaml
-    manifestHash: a52f39f0320ab2785f0d26373791a2e851acd9a0839aa7fbd4187e7b8a20d546
+    manifestHash: 8b15d04b65bbd16d721708d22d438830e09714d2044a6e137e8a3b4943076f0c
     name: snapshot-controller.addons.k8s.io
     needsPKI: true
     selector:

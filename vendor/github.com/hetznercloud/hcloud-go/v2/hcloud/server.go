@@ -905,6 +905,7 @@ type ServerAttachToNetworkOpts struct {
 	Network  *Network
 	IP       net.IP
 	AliasIPs []net.IP
+	IPRange  *net.IPNet
 }
 
 // AttachToNetwork attaches a server to a network.
@@ -922,6 +923,10 @@ func (c *ServerClient) AttachToNetwork(ctx context.Context, server *Server, opts
 	}
 	for _, aliasIP := range opts.AliasIPs {
 		reqBody.AliasIPs = append(reqBody.AliasIPs, Ptr(aliasIP.String()))
+	}
+
+	if opts.IPRange != nil {
+		reqBody.IPRange = Ptr(opts.IPRange.String())
 	}
 
 	respBody, resp, err := postRequest[schema.ServerActionAttachToNetworkResponse](ctx, c.client, reqPath, reqBody)
@@ -1054,7 +1059,7 @@ func (c *ServerClient) GetMetrics(ctx context.Context, server *Server, opts Serv
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
 	if server == nil {
-		return nil, nil, missingArgument("server", server)
+		return nil, nil, invalidArgument("server", server, emptyValue(server))
 	}
 
 	if err := opts.Validate(); err != nil {

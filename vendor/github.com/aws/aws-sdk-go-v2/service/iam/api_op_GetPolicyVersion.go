@@ -18,20 +18,24 @@ import (
 // use a URL decoding method to convert the policy back to plain JSON text. For
 // example, if you use Java, you can use the decode method of the
 // java.net.URLDecoder utility class in the Java SDK. Other languages and SDKs
-// provide similar functionality.
+// provide similar functionality, and some SDKs do this decoding automatically.
 //
-// To list the available versions for a policy, use ListPolicyVersions.
+// To list the available versions for a policy, use [ListPolicyVersions].
 //
 // This operation retrieves information about managed policies. To retrieve
 // information about an inline policy that is embedded in a user, group, or role,
-// use GetUserPolicy, GetGroupPolicy, or GetRolePolicy.
+// use [GetUserPolicy], [GetGroupPolicy], or [GetRolePolicy].
 //
 // For more information about the types of policies, see [Managed policies and inline policies] in the IAM User Guide.
 //
 // For more information about managed policy versions, see [Versioning for managed policies] in the IAM User Guide.
 //
 // [RFC 3986]: https://tools.ietf.org/html/rfc3986
+// [GetRolePolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetRolePolicy.html
+// [GetGroupPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetGroupPolicy.html
+// [GetUserPolicy]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetUserPolicy.html
 // [Versioning for managed policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html
+// [ListPolicyVersions]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListPolicyVersions.html
 // [Managed policies and inline policies]: https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html
 func (c *Client) GetPolicyVersion(ctx context.Context, params *GetPolicyVersionInput, optFns ...func(*Options)) (*GetPolicyVersionOutput, error) {
 	if params == nil {
@@ -75,7 +79,9 @@ type GetPolicyVersionInput struct {
 	noSmithyDocumentSerde
 }
 
-// Contains the response to a successful GetPolicyVersion request.
+// Contains the response to a successful [GetPolicyVersion] request.
+//
+// [GetPolicyVersion]: https://docs.aws.amazon.com/IAM/latest/APIReference/API_GetPolicyVersion.html
 type GetPolicyVersionOutput struct {
 
 	// A structure containing details about the policy version.
@@ -173,6 +179,36 @@ func (c *Client) addOperationGetPolicyVersionMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAttempt(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptExecution(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSerialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterSigning(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptTransmit(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
+		return err
+	}
+	if err = addInterceptAfterDeserialization(stack, options); err != nil {
 		return err
 	}
 	if err = addSpanInitializeStart(stack); err != nil {
