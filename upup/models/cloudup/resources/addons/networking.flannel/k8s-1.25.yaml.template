@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.26.4/Documentation/kube-flannel.yml
+# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.27.4/Documentation/kube-flannel.yml
 ---
 kind: Namespace
 apiVersion: v1
@@ -92,7 +92,7 @@ data:
   net-conf.json: |
     {
       "Network": "{{ .Networking.NonMasqueradeCIDR }}",
-      "EnableNFTables": true,
+      "EnableNFTables": false,
       "Backend": {
         "Type": "{{ FlannelBackendType }}"
       }
@@ -135,7 +135,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.6.2-flannel1
+        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.8.0-flannel1
         command:
         - cp
         args:
@@ -146,7 +146,7 @@ spec:
         - name: cni-plugin
           mountPath: /opt/cni/bin
       - name: install-cni
-        image: ghcr.io/flannel-io/flannel:v0.26.4
+        image: ghcr.io/flannel-io/flannel:v0.27.4
         command:
         - cp
         args:
@@ -160,7 +160,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: ghcr.io/flannel-io/flannel:v0.26.4
+        image: ghcr.io/flannel-io/flannel:v0.27.4
         command:
         - /opt/bin/flanneld
         args:
@@ -191,6 +191,8 @@ spec:
               fieldPath: metadata.namespace
         - name: EVENT_QUEUE_DEPTH
           value: "5000"
+        - name: CONT_WHEN_CACHE_NOT_READY
+          value: "false"
         volumeMounts:
         - name: run
           mountPath: /run/flannel
