@@ -43,16 +43,20 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		v, err := util.ParseKubernetesVersion(clusterSpec.KubernetesVersion)
 		if err == nil {
 			switch v.Minor {
-			case 27:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.27.7"
-			case 28:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.28.4"
 			case 29:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.29.2"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.29.5"
 			case 30:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.0"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.6"
+			case 31:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.31.4"
+			case 32:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.3"
+			case 33:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.33.1"
+			case 34:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.34.0"
 			default:
-				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.30.0"
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.34.0"
 			}
 		}
 		cas.Image = fi.PtrTo(image)
