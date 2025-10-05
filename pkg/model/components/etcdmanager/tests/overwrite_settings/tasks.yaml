@@ -114,7 +114,7 @@ Contents: |
       - --src=/ko-app/kops-utils-cp
       command:
       - /ko-app/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
+      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
       name: kops-utils-cp
       resources: {}
       volumeMounts:
@@ -163,7 +163,7 @@ Contents: |
       - --src=/opt/etcd-v3.4.13/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
+      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
       name: init-etcd-symlinks-3-4-13
       resources: {}
       volumeMounts:
@@ -184,7 +184,7 @@ Contents: |
       - --src=/opt/etcd-v3.5.21/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
+      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
       name: init-etcd-symlinks-3-5-21
       resources: {}
       volumeMounts:
@@ -270,7 +270,7 @@ Contents: |
       - --src=/ko-app/kops-utils-cp
       command:
       - /ko-app/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
+      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
       name: kops-utils-cp
       resources: {}
       volumeMounts:
@@ -319,7 +319,7 @@ Contents: |
       - --src=/opt/etcd-v3.4.13/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
+      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
       name: init-etcd-symlinks-3-4-13
       resources: {}
       volumeMounts:
@@ -340,7 +340,7 @@ Contents: |
       - --src=/opt/etcd-v3.5.21/etcdctl
       command:
       - /opt/kops-utils/kops-utils-cp
-      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-alpha.1
+      image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
       name: init-etcd-symlinks-3-5-21
       resources: {}
       volumeMounts:
