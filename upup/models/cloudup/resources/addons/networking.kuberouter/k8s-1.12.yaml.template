@@ -1,4 +1,4 @@
-# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.6.0/daemonset/kubeadm-kuberouter.yaml
+# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/refs/tags/v2.6.1/daemonset/kubeadm-kuberouter-all-features-dsr.yaml
 
 apiVersion: v1
 kind: ConfigMap
@@ -25,10 +25,10 @@ data:
              }
           },
           {
-             "type": "portmap",
-             "capabilities": {
-                "snat": true,
-                "portMappings": true
+             "type":"portmap",
+             "capabilities":{
+                "snat":true,
+                "portMappings":true
              }
           }
        ]
@@ -54,16 +54,16 @@ spec:
         tier: node
     spec:
       priorityClassName: system-node-critical
-{{ if ContainerdSELinuxEnabled }}
+      {{ if ContainerdSELinuxEnabled }}
       securityContext:
         seLinuxOptions:
           type: spc_t
           level: s0
-{{ end }}
+      {{ end }}
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v2.5.0
+        image: docker.io/cloudnativelabs/kube-router:v2.6.1
         args:
         - --run-router=true
         - --run-firewall=true
@@ -93,7 +93,7 @@ spec:
           periodSeconds: 3
         resources:
           requests:
-            cpu: 100m
+            cpu: 250m
             memory: 250Mi
         securityContext:
           privileged: true
@@ -112,12 +112,12 @@ spec:
         - name: rt-tables
           mountPath: /etc/iproute2/rt_tables
           readOnly: false
-        - name: containerd-sock
-          mountPath: /run/containerd/containerd.sock
+        - name: run-containerd
+          mountPath: /run/containerd/
           readOnly: true
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v2.5.0
+        image: docker.io/cloudnativelabs/kube-router:v2.6.1
         command:
         - /bin/sh
         - -c
@@ -129,16 +129,27 @@ spec:
             TMP=/etc/cni/net.d/.tmp-kuberouter-cfg;
             cp /etc/kube-router/cni-conf.json ${TMP};
             mv ${TMP} /etc/cni/net.d/10-kuberouter.conflist;
-          fi
+          fi;
+          if [ -x /usr/local/bin/cni-install ]; then
+            /usr/local/bin/cni-install;
+          fi;
         volumeMounts:
-        - mountPath: /etc/cni/net.d
-          name: cni-conf-dir
-        - mountPath: /etc/kube-router
-          name: kube-router-cfg
+        - name: cni-conf-dir
+          mountPath: /etc/cni/net.d
+        - name: kube-router-cfg
+          mountPath: /etc/kube-router
+        - name: host-opt
+          mountPath: /opt
       hostNetwork: true
+      hostIPC: true
       hostPID: true
       tolerations:
-      - operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       volumes:
       - name: lib-modules
         hostPath:
@@ -156,13 +167,19 @@ spec:
         hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
+      # To mount the hosts iproute2 configuration
       - name: rt-tables
         hostPath:
           path: /etc/iproute2/rt_tables
           type: FileOrCreate
-      - name: containerd-sock
+      # To mount the hosts containerd socket.
+      # We must mount the whole directory as the socket file might change due to containerd restarts
+      - name: run-containerd
         hostPath:
-          path: /run/containerd/containerd.sock
+          path: /var/run/containerd/
+      - name: host-opt
+        hostPath:
+          path: /opt
 ---
 apiVersion: v1
 kind: ServiceAccount
