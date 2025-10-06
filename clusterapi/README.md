@@ -22,8 +22,9 @@ kops validate cluster --wait=10m
 
 # Install CAPI and CAPG
 ```
-cd clusterapi
-kubectl apply ---server-side -f manifests/build
+REPO_ROOT=$(git rev-parse --show-toplevel)
+kustomize build ${REPO_ROOT}/clusterapi/manifests/cluster-api | kubectl apply --server-side -f -
+kustomize build ${REPO_ROOT}/clusterapi/manifests/cluster-api-provider-gcp | kubectl apply --server-side -f -
 ```
 
 # Install our CRDs
