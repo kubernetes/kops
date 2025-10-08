@@ -86,6 +86,9 @@ type deployer struct {
 
 	BuildOptions *builder.BuildOptions
 
+	// EnvFile is the path to a file that will be written containing the env vars, in particular KOPS_STATE_STORE
+	EnvFile string `flag:"env-file" desc:"The path to a file that will be written containing the env vars, in particular KOPS_STATE_STORE"`
+
 	// manifestPath is the location of the rendered manifest based on TemplatePath
 	manifestPath string
 	terraform    *target.Terraform

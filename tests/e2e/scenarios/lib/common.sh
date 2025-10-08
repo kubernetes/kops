@@ -142,11 +142,20 @@ function kops-up() {
       KOPS_CONTROL_PLANE_COUNT=${KOPS_CONTROL_PLANE_SIZE}
     fi
 
+    if [[ -z "${ENV_FILE-}" ]]; then
+        ENV_FILE="${WORKSPACE}/env"
+    fi
+
     ${KUBETEST2} \
         --up \
+        --env-file="${ENV_FILE}" \
         --kops-binary-path="${KOPS}" \
         --kubernetes-version="${K8S_VERSION}" \
         --create-args="${create_args}" \
         --control-plane-count="${KOPS_CONTROL_PLANE_COUNT:-1}" \
         --template-path="${KOPS_TEMPLATE-}"
+
+    # Source the env file to get exported variables, in particular KOPS_STATE_STORE
+    . "${ENV_FILE}"
+    export KOPS_STATE_STORE
 }
