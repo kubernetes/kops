@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	osexec "os/exec"
 	"path"
 	"strconv"
@@ -41,6 +42,8 @@ import (
 )
 
 func (d *deployer) Up() error {
+	ctx := context.TODO()
+
 	if err := d.init(); err != nil {
 		return err
 	}
@@ -92,6 +95,11 @@ func (d *deployer) Up() error {
 		return err
 	}
 
+	// Write out the env file for kops
+	if err := d.writeEnvFile(ctx); err != nil {
+		return fmt.Errorf("error writing env file %q: %v", d.EnvFile, err)
+	}
+
 	if d.TemplatePath != "" {
 		values, err := d.templateValues(zones, adminAccess)
 		if err != nil {
@@ -129,6 +137,25 @@ func (d *deployer) Up() error {
 		klog.V(1).Infof("cluster reported as up")
 	} else {
 		klog.Errorf("cluster reported as down")
+	}
+	return nil
+}
+
+// writeEnvFile writes out the env file (if EnvFile is specified)
+// This allows us to dynamically generate KOPS_STATE_STORE, but still call kops commands
+func (d *deployer) writeEnvFile(ctx context.Context) error {
+	log := klog.FromContext(ctx)
+
+	if d.EnvFile == "" {
+		log.V(2).Info("no env file specified, skipping write of env file")
+		return nil
+	}
+
+	log.V(2).Info("writing env file", "path", d.EnvFile)
+	env := d.env()
+	data := strings.Join(env, "\n") + "\n"
+	if err := os.WriteFile(d.EnvFile, []byte(data), 0o644); err != nil {
+		return fmt.Errorf("error writing env file %q: %v", d.EnvFile, err)
 	}
 	return nil
 }
