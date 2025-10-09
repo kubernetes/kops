@@ -66,8 +66,11 @@ kubectl apply --server-side -f "${REPO_ROOT}/clusterapi/examples/capi-loopback.y
 "${KOPS}" get cluster clusterapi.k8s.local -oyaml | kubectl apply --server-side -n kube-system -f -
 
 # Create a MachineDeployment matching our configuration
-# shellcheck disable=SC2002
-cat "${REPO_ROOT}/clusterapi/examples/machinedeployment-direct.yaml" | IMAGE_ID=projects/ubuntu-os-cloud/global/images/family/ubuntu-2404-lts-amd64 GCP_NODE_MACHINE_TYPE=e2-medium KUBERNETES_VERSION=v1.34.0 WORKER_MACHINE_COUNT=1 GCP_ZONE=us-east4-a GCP_SUBNET=us-east4-clusterapi-k8s-local CLUSTER_NAME=clusterapi.k8s.local CLUSTER_NAME_ESCAPED=clusterapi-k8s-local envsubst | kubectl apply --server-side -n kube-system -f -
+"${KOPS}" toolbox clusterapi generate machinedeployment \
+  --cluster clusterapi.k8s.local \
+  --name clusterapi-k8s-local-md-0 \
+  --namespace kube-system | kubectl apply --server-side -n kube-system -f -
+
 
 cd "${REPO_ROOT}/clusterapi"
 go run . & # TODO: embed into kops-controller
