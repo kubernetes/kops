@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,32 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package toolbox
 
 import (
 	"io"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/pkg/commands/commandutils"
-	"k8s.io/kops/pkg/commands/toolbox"
+	"k8s.io/kops/pkg/commands/toolbox/clusterapi"
 	"k8s.io/kubectl/pkg/util/i18n"
 )
 
-var toolboxShort = i18n.T(`Miscellaneous, experimental, or infrequently used commands.`)
-
-func NewCmdToolbox(f commandutils.Factory, out io.Writer) *cobra.Command {
+func BuildClusterAPICommand(f commandutils.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "toolbox",
-		Short: toolboxShort,
+		Use:   "clusterapi",
+		Short: i18n.T(`ClusterAPI commands`),
 	}
 
-	cmd.AddCommand(NewCmdToolboxDump(f, out))
-	cmd.AddCommand(NewCmdToolboxEnroll(f, out))
-	cmd.AddCommand(NewCmdToolboxTemplate(f, out))
-	cmd.AddCommand(NewCmdToolboxInstanceSelector(f, out))
-	cmd.AddCommand(NewCmdToolboxAddons(out))
-
-	cmd.AddCommand(toolbox.BuildClusterAPICommand(f, out))
+	cmd.AddCommand(clusterapi.BuildGenerateCommand(f, out))
 
 	return cmd
 }
