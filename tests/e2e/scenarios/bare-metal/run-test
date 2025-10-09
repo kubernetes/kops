@@ -19,6 +19,9 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+export CI=1
+echo "Running with CI=${CI:-}"
+
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd ${REPO_ROOT}
 
