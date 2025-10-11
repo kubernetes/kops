@@ -237,6 +237,9 @@ spec:
                         description: Version used to pick the runc package.
                         type: string
                     type: object
+                  sandboxImage:
+                    description: SandboxImage is the image used for the sandbox container.
+                    type: string
                   selinuxEnabled:
                     description: SelinuxEnabled enables SELinux support
                     type: boolean
@@ -724,10 +727,6 @@ spec:
                     description: |-
                       PodCIDR is the CIDR to use for pod IP addresses, only used in standalone mode.
                       In cluster mode, this is obtained from the master.
-                    type: string
-                  podInfraContainerImage:
-                    description: PodInfraContainerImage is the image whose network/ipc
-                      containers in each pod will use.
                     type: string
                   podManifestPath:
                     description: config is the path to the config file or directory
