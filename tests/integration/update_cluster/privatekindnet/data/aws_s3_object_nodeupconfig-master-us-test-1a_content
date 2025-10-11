@@ -65,8 +65,8 @@ Assets:
   - 1511f6c003ace805eafeb1132727791326283cff88a923d76329e1892bba7a10@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.4.1/cni-plugins-linux-amd64-v1.4.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.4.1/cni-plugins-linux-amd64-v1.4.1.tgz
   - 7a8c262deb63becc877e82d23749e4f99f4a17e8e660f9b8c257ca87a5c056b6@https://github.com/containerd/containerd/releases/download/v1.7.28/containerd-1.7.28-linux-amd64.tar.gz
   - 028986516ab5646370edce981df2d8e8a8d12188deaf837142a02097000ae2f2@https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.amd64
-  - f90ed6dcef534e6d1ae17907dc7eb40614b8945ad4af7f0e98d2be7cde8165c6@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-amd64
-  - 9992e7eb2a2e93f799e5a9e98eb718637433524bc65f630357201a79f49b13d0@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-amd64
+  - 86189e1e8de9692eb02daf2f06db8495f687ce2c4ba09a6b64f135990dfb315d@https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/amd64/protokube,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/protokube-linux-amd64
+  - 0172d3c560aebe1eb4e8599f71c0d8fc68e4eca880add8031de41c8057ca8e3c@https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/amd64/channels,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/channels-linux-amd64
   arm64:
   - fa887647422d34f3c7cc5b30fefcf97084d2c3277eff237c5808685ba8e4b15a@https://dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubelet
   - 669af0cf520757298ea60a8b6eb6b719ba443a9c7d35f36d3fb2fd7513e8c7d2@https://dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.30.0/bin/linux/arm64/kubectl
@@ -74,8 +74,8 @@ Assets:
   - 72644e13557cda8a5b39baf97fc5e93d23fdf7baba7700000e7e9efd8bdf9234@https://storage.googleapis.com/k8s-artifacts-cni/release/v1.4.1/cni-plugins-linux-arm64-v1.4.1.tgz,https://github.com/containernetworking/plugins/releases/download/v1.4.1/cni-plugins-linux-arm64-v1.4.1.tgz
   - 97457594ff8549cb82d664306593cafd3d2c781c706f9fffed885a46d8919bec@https://github.com/containerd/containerd/releases/download/v1.7.28/containerd-1.7.28-linux-arm64.tar.gz
   - 85c5e4e4f72e442c8c17bac07527cd4f961ee48e4f2b71797f7533c94f4a52b9@https://github.com/opencontainers/runc/releases/download/v1.3.0/runc.arm64
-  - 2f599c3d54f4c4bdbcc95aaf0c7b513a845d8f9503ec5b34c9f86aa1bc34fc0c@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/protokube-linux-arm64
-  - 9d842e3636a95de2315cdea2be7a282355aac0658ef0b86d5dc2449066538f13@https://artifacts.k8s.io/binaries/kops/1.21.0-alpha.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.21.0-alpha.1/channels-linux-arm64
+  - 25b57b0555fad42e5762246334681bf1c943794fcecdb680a79e482be5c08815@https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/arm64/protokube,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/protokube-linux-arm64
+  - 04470f8313796032fce85b974da4fc26420f36931e574fff6d117d21caf22770@https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/arm64/channels,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/channels-linux-arm64
 CAs:
   apiserver-aggregator-ca: |
     -----BEGIN CERTIFICATE-----
