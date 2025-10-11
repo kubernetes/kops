@@ -44,7 +44,6 @@ KubeletConfig:
   nodeLabels:
     karpenter.sh/provisioner-name: karpenter-nodes-default
     node-role.kubernetes.io/node: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -62,6 +61,7 @@ containerdConfig:
   logLevel: info
   runc:
     version: 1.3.0
+  sandboxImage: registry.k8s.io/pause:3.10.1
   version: 2.1.4
 usesLegacyGossip: false
 usesNoneDNS: false
