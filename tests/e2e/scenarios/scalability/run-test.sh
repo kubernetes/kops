@@ -30,12 +30,6 @@ if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
 fi
 
-# A temp patch for kubetest2 https://github.com/kubernetes-sigs/kubetest2/pull/256
-git clone https://github.com/kubernetes-sigs/kubetest2.git /tmp/kubetest2
-pushd /tmp/kubetest2
-make install-all
-popd 
-
 # Default cloud provider to aws
 if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
   CLOUD_PROVIDER="aws"
@@ -65,6 +59,8 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--node-volume-size=20")
   create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
   create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}")
+  # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
+  create_args+=("--dns=none")
 fi
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
@@ -72,7 +68,13 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--node-volume-size=30")
   create_args+=("--master-volume-size=1000")
   create_args+=("--gce-service-account=default")
-  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20241219}")
+  create_args+=("--topology=private")
+  create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}")
+  create_args+=("--etcd-storage-type=hyperdisk-balanced")
+  create_args+=("--set spec.networking.podCIDR=10.64.0.0/11")
+  create_args+=("--set spec.networking.subnets[0].cidr=10.96.0.0/15")
+  create_args+=("--set spec.networking.serviceClusterIPRange=10.98.0.0/15")
+  create_args+=("--set spec.networking.nonMasqueradeCIDR=10.64.0.0/10")
 fi
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
@@ -108,8 +110,6 @@ create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
 # this is required for prometheus to scrape kube-proxy metrics endpoint
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
-# TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
-create_args+=("--dns=none")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 
@@ -145,8 +145,12 @@ KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
-  KUBETEST2_ARGS+=("--boskos-resource-type=scalability-scale-project")
-  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=pd-ssd")
+  if [[ -n "${GCP_PROJECT:-}" ]]; then
+    KUBETEST2_ARGS+=("--gcp-project=${GCP_PROJECT}")
+  else
+    KUBETEST2_ARGS+=("--boskos-resource-type=${BOSKOS_RESOURCE_TYPE:-scalability-project}")
+  fi
+  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=hyperdisk-balanced")
 fi
 
 # More time for bigger clusters
@@ -199,6 +203,5 @@ kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/experiments/enable_restart_count_check.yaml \
   # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml \
   # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml \
-  # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
   # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml \
   # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/access-tokens/config.yaml \
