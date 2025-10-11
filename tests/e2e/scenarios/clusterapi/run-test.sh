@@ -79,7 +79,7 @@ kubectl apply --server-side -f "${REPO_ROOT}/clusterapi/examples/capi-loopback.y
   --name clusterapi-k8s-local-md-0 \
   --namespace kube-system | kubectl apply --server-side -n kube-system -f -
 
-# Debug: print output from kops-controller
+# Debug: log kops-controller
 kubectl logs -n kube-system -l k8s-app=kops-controller --follow &
 
 # Wait for the MachineDeployment machines to become ready
