@@ -279,7 +279,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				fmt.Printf("\n")
 				fmt.Printf("%s\n", starline)
 				fmt.Printf("\n")
-				return nil, fmt.Errorf("kops version older than last used to update the cluster")
+				// return nil, fmt.Errorf("kops version older than last used to update the cluster")
 			}
 		} else if err != os.ErrNotExist {
 			return nil, fmt.Errorf("error reading last kops version used to update: %v", err)
