@@ -76,6 +76,9 @@ cd "${REPO_ROOT}/clusterapi"
 go run . & # TODO: embed into kops-controller
 CLUSTERAPI_CONTROLLER_PID=$!
 
+# Debug: log kops-controller
+kubectl logs -n kube-system -l k8s-app=kops-controller --follow &
+
 # Wait for the MachineDeployment machines to become ready
 kubectl wait --for=condition=Available -n kube-system machinedeployment/clusterapi-k8s-local-md-0-us-east4-a --timeout=10m
 kubectl wait --for=condition=MachinesReady -n kube-system machinedeployment/clusterapi-k8s-local-md-0-us-east4-a --timeout=10m
