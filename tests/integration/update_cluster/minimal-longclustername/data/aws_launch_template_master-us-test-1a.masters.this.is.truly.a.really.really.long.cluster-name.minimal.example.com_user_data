@@ -126,7 +126,7 @@ ClusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 ConfigBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 4redO3HoscuZJrnYCtD/Q882z8RI2XOPt0SXphTn9HY=
+NodeupConfigHash: vNcHHav+IMKhhJ3fnnB9QekuePH9Bw9I08OOHDbaW1E=
 
 __EOF_KUBE_ENV
 

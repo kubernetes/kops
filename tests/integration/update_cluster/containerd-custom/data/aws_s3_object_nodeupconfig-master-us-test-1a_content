@@ -286,7 +286,6 @@ KubeletConfig:
     kops.k8s.io/kops-controller-pki: ""
     node-role.kubernetes.io/control-plane: ""
     node.kubernetes.io/exclude-from-external-load-balancers: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -316,6 +315,7 @@ containerdConfig:
     - https://registry-1.docker.io
   runc:
     version: 1.3.0
+  sandboxImage: registry.k8s.io/pause:3.10.1
   skipInstall: true
   useECRCredentialsForMirrors: true
   version: 2.1.4

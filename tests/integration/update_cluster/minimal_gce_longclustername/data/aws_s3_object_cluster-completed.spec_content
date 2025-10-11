@@ -34,6 +34,7 @@ spec:
     logLevel: info
     runc:
       version: 1.3.0
+    sandboxImage: registry.k8s.io/pause:3.10.1
     version: 2.1.4
   dnsZone: "1"
   etcdClusters:
@@ -156,7 +157,6 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
@@ -178,7 +178,6 @@ spec:
     hairpinMode: promiscuous-bridge
     kubeconfigPath: /var/lib/kubelet/kubeconfig
     logLevel: 2
-    podInfraContainerImage: registry.k8s.io/pause:3.9
     podManifestPath: /etc/kubernetes/manifests
     protectKernelDefaults: true
     registerSchedulable: true
