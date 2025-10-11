@@ -72,6 +72,8 @@ type GCEIPAMReconciler struct {
 }
 
 // +kubebuilder:rbac:groups=,resources=nodes,verbs=get;list;watch;patch
+// +kubebuilder:rbac:groups=cluster.x-k8s.io,resources=machines,verbs=get;list;watch
+
 // Reconcile is the main reconciler function that observes node changes.
 func (r *GCEIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.log.WithValues("node", req.NamespacedName)

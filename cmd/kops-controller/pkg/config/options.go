@@ -40,6 +40,9 @@ type Options struct {
 
 	// Discovery configures options relating to discovery, particularly for gossip mode.
 	Discovery *DiscoveryOptions `json:"discovery,omitempty"`
+
+	// EnableCAPI enables support for Cluster API (CAPI) resources.
+	EnableCAPI bool `json:"enableCAPI,omitempty"`
 }
 
 func (o *Options) PopulateDefaults() {

@@ -158,4 +158,8 @@ function kops-up() {
     # Source the env file to get exported variables, in particular KOPS_STATE_STORE
     . "${ENV_FILE}"
     export KOPS_STATE_STORE
+    if [[ -n "${GCP_PROJECT:-}" ]]; then
+        export GCP_PROJECT
+        gcloud config set project "${GCP_PROJECT}"
+    fi
 }
