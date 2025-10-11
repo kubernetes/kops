@@ -1501,7 +1501,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.21.0-alpha.1")
+	h.MockKopsVersion("1.34.0-beta.1")
 	h.SetupMockAWS()
 
 	expectedFilenames := i.expectTerraformFilenames
@@ -1591,7 +1591,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.21.0-alpha.1")
+	h.MockKopsVersion("1.34.0-beta.1")
 	h.SetupMockAWS()
 	phaseName := string(phase)
 	if phaseName == "" {
@@ -1639,7 +1639,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.21.0-alpha.1")
+	h.MockKopsVersion("1.34.0-beta.1")
 	h.SetupMockGCE()
 
 	expectedFilenames := i.expectTerraformFilenames
@@ -1691,7 +1691,7 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.21.0-alpha.1")
+	h.MockKopsVersion("1.34.0-beta.1")
 
 	expectedFilenames := i.expectTerraformFilenames
 
@@ -1732,7 +1732,7 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	h.MockKopsVersion("1.21.0-alpha.1")
+	h.MockKopsVersion("1.34.0-beta.1")
 
 	expectedFilenames := i.expectTerraformFilenames
 
