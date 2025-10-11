@@ -930,7 +930,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		return nil
 	}
 
-	kopsVersion, err := semver.Parse(kopsbase.KOPS_RELEASE_VERSION)
+	kopsVersion, err := semver.Parse(kopsbase.Version)
 	if err != nil {
 		klog.Warningf("unable to parse kops version %q", kopsVersion)
 	} else {
