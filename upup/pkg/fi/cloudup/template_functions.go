@@ -410,7 +410,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["IsKubernetesLT"] = tf.IsKubernetesLT
 
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
-	dest["KopsVersion"] = func() string { return kopsroot.KOPS_RELEASE_VERSION }
+	dest["KopsVersion"] = func() string { return kopsroot.Version }
+	dest["KopsVersionImageTag"] = func() string { return kopsroot.KopsVersionImageTag() }
+	dest["KopsVersionForLabel"] = func() string {
+		// Labels follow strict rules: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character
+		// By convention we use a v prefix here
+		return "v" + strings.ReplaceAll(kopsroot.Version, "+", "-")
+	}
 
 	dest["ContainerdSELinuxEnabled"] = func() bool {
 		if cluster.Spec.Containerd != nil {

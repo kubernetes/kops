@@ -403,9 +403,9 @@ func (c *Channel) GetPackageVersion(name string, kubernetesVersion *semver.Versi
 		}
 
 		if pkg.KopsVersion != "" {
-			kopsVersion, err := util.ParseVersion(kopsbase.KOPS_RELEASE_VERSION)
+			kopsVersion, err := util.ParseVersion(kopsbase.Version)
 			if err != nil {
-				return nil, fmt.Errorf("parsing kops version %q: %w", kopsbase.KOPS_RELEASE_VERSION, err)
+				return nil, fmt.Errorf("parsing kops version %q: %w", kopsbase.Version, err)
 			}
 
 			versionRange, err := semver.ParseRange(pkg.KopsVersion)

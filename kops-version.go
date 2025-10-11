@@ -16,8 +16,17 @@ limitations under the License.
 
 package kops
 
+import "strings"
+
 // Version can be replaced by build tooling
 var Version = KOPS_RELEASE_VERSION
+
+// KopsVersionImageTag is like Version, but with + replaced by - (so it can be used in docker tags)
+func KopsVersionImageTag() string {
+	tag := Version
+	// We replace + with - so that we can use the tag in docker image tags
+	return strings.ReplaceAll(tag, "+", "-")
+}
 
 // These constants are parsed by build tooling - be careful about changing the formats
 const (

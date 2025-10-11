@@ -54,8 +54,8 @@ unexport AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_STORAGE_ACCOUNT AZURE_SUBSCRI
 
 
 VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
+IMAGE_TAG=$(shell tools/get_version.sh | grep IMAGE_TAG | awk '{print $$2}')
 
-KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
 KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
 
 # kops local location
@@ -66,17 +66,13 @@ GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
 # We lock the versions of our controllers also
 # We need to keep in sync with:
 #   pkg/model/components/etcdmanager/model.go
-KOPS_UTILS_CP_TAG=1.34.0-beta.1
-KOPS_UTILS_CP_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_UTILS_CP_TAG | awk '{print $$2}')
+KOPS_UTILS_CP_TAG=$(IMAGE_TAG)
 #   upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.34.0-beta.1
-DNS_CONTROLLER_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_DNS_CONTROLLER_TAG | awk '{print $$2}')
+DNS_CONTROLLER_TAG=$(IMAGE_TAG)
 #   upup/models/cloudup/resources/addons/kops-controller.addons.k8s.io/
-KOPS_CONTROLLER_TAG=1.34.0-beta.1
-KOPS_CONTROLLER_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KOPS_CONTROLLER_TAG | awk '{print $$2}')
+KOPS_CONTROLLER_TAG=$(IMAGE_TAG)
 #   pkg/model/components/kubeapiserver/model.go
-KUBE_APISERVER_HEALTHCHECK_TAG=1.34.0-beta.1
-KUBE_APISERVER_HEALTHCHECK_PUSH_TAG=$(shell tools/get_workspace_status.sh | grep STABLE_KUBE_APISERVER_HEALTHCHECK_TAG | awk '{print $$2}')
+KUBE_APISERVER_HEALTHCHECK_TAG=$(IMAGE_TAG)
 
 CGO_ENABLED=0
 export CGO_ENABLED
@@ -308,14 +304,14 @@ dns-controller-push: ko-dns-controller-push
 
 .PHONY: ko-dns-controller-push
 ko-dns-controller-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
 
 .PHONY: kops-utils-cp-push
 kops-utils-cp-push: ko-kops-utils-cp-push
 
 .PHONY: ko-kops-utils-cp-push
 ko-kops-utils-cp-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-utils-cp" ${KO} build --tags ${KOPS_UTILS_CP_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-utils-cp/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-utils-cp" ${KO} build --tags ${KOPS_UTILS_CP_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-utils-cp/
 
 # --------------------------------------------------
 # development targets
@@ -409,6 +405,8 @@ quick-ci: verify-crds verify-goimports govet verify-boilerplate verify-versions 
 
 # --------------------------------------------------
 # release tasks
+
+KOPS_RELEASE_VERSION:=$(shell grep 'KOPS_RELEASE_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
 
 .PHONY: release-tag
 release-tag:
@@ -762,7 +760,7 @@ kops-controller-push: ko-kops-controller-push
 
 .PHONY: ko-kops-controller-push
 ko-kops-controller-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" ${KO} build --tags ${KOPS_CONTROLLER_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
 
 #------------------------------------------------------
 # kube-apiserver-healthcheck
@@ -772,7 +770,7 @@ kube-apiserver-healthcheck-push: ko-kube-apiserver-healthcheck-push
 
 .PHONY: ko-kube-apiserver-healthcheck-push
 ko-kube-apiserver-healthcheck-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_PUSH_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
 
 #------------------------------------------------------
 # CloudBuild artifacts
