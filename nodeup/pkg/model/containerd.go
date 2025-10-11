@@ -500,8 +500,8 @@ func (b *ContainerdBuilder) buildContainerdConfig() (string, error) {
 	if containerd.SeLinuxEnabled {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "enable_selinux"}, true)
 	}
-	if b.NodeupConfig.KubeletConfig.PodInfraContainerImage != "" {
-		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "sandbox_image"}, b.NodeupConfig.KubeletConfig.PodInfraContainerImage)
+	if containerd.SandboxImage != nil {
+		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "sandbox_image"}, fi.ValueOf(containerd.SandboxImage))
 	}
 	for name, endpoints := range containerd.RegistryMirrors {
 		config.SetPath([]string{"plugins", "io.containerd.grpc.v1.cri", "registry", "mirrors", name, "endpoint"}, endpoints)

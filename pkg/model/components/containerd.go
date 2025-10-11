@@ -22,6 +22,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
+const (
+	DefaultSandboxImage = "registry.k8s.io/pause:3.10.1"
+)
+
 // ContainerdOptionsBuilder adds options for containerd to the model
 type ContainerdOptionsBuilder struct {
 	*OptionsContext
@@ -39,7 +43,7 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	containerd := clusterSpec.Containerd
 
-	// Set version based on Kubernetes version
+	// Set the version based on Kubernetes version
 	if fi.ValueOf(containerd.Version) == "" {
 		switch {
 		case b.IsKubernetesLT("1.32"):
@@ -54,8 +58,13 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			}
 		}
 	}
-	// Set default log level to INFO
+	// Set the default log level to INFO
 	containerd.LogLevel = fi.PtrTo("info")
+
+	// Set the sandbox image used to scope pod shared resources used by the pod's containers.
+	if fi.ValueOf(containerd.SandboxImage) == "" {
+		containerd.SandboxImage = fi.PtrTo(b.AssetBuilder.RemapImage(DefaultSandboxImage))
+	}
 
 	if containerd.NvidiaGPU != nil && fi.ValueOf(containerd.NvidiaGPU.Enabled) {
 		if containerd.NvidiaGPU.DriverPackage == "" {

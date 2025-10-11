@@ -35,7 +35,6 @@ KubeletConfig:
   logLevel: 2
   nodeLabels:
     node-role.kubernetes.io/node: ""
-  podInfraContainerImage: registry.k8s.io/pause:3.9
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
@@ -58,6 +57,7 @@ containerdConfig:
     - https://registry-1.docker.io
   runc:
     version: 1.3.0
+  sandboxImage: registry.k8s.io/pause:3.10.1
   skipInstall: true
   useECRCredentialsForMirrors: true
   version: 2.1.4

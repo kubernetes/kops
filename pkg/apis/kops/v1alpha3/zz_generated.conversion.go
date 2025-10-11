@@ -3565,6 +3565,7 @@ func autoConvert_v1alpha3_ContainerdConfig_To_kops_ContainerdConfig(in *Containe
 	out.UseECRCredentialsForMirrors = in.UseECRCredentialsForMirrors
 	out.InstallCriCtl = in.InstallCriCtl
 	out.InstallNerdCtl = in.InstallNerdCtl
+	out.SandboxImage = in.SandboxImage
 	return nil
 }
 
@@ -3623,6 +3624,7 @@ func autoConvert_kops_ContainerdConfig_To_v1alpha3_ContainerdConfig(in *kops.Con
 	out.UseECRCredentialsForMirrors = in.UseECRCredentialsForMirrors
 	out.InstallCriCtl = in.InstallCriCtl
 	out.InstallNerdCtl = in.InstallNerdCtl
+	out.SandboxImage = in.SandboxImage
 	return nil
 }
 
