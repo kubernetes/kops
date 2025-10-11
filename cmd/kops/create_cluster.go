@@ -907,7 +907,7 @@ func completeZone(options *CreateClusterOptions, rootCommand *RootCmd) func(cmd 
 }
 
 func completeKubernetesVersion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	kopsVersion, err := kopsutil.ParseKubernetesVersion(kopsbase.KOPS_RELEASE_VERSION)
+	kopsVersion, err := kopsutil.ParseKubernetesVersion(kopsbase.Version)
 	if err != nil {
 		commandutils.CompletionError("parsing kops version", err)
 	}
