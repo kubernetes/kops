@@ -251,7 +251,12 @@ func (d *deployer) env() []string {
 				klog.Warningf("DO env var %q not found or empty", k)
 			}
 		}
+	} else if d.CloudProvider == "gce" {
+		if d.GCPProject != "" {
+			vars = append(vars, fmt.Sprintf("GCP_PROJECT=%v", d.GCPProject))
+		}
 	}
+
 	if d.KopsBaseURL != "" {
 		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.KopsBaseURL))
 	} else if baseURL := os.Getenv("KOPS_BASE_URL"); baseURL != "" {
