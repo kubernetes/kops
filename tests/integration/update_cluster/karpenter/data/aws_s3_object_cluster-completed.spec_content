@@ -57,7 +57,7 @@ spec:
   karpenter:
     cpuRequest: 100m
     enabled: true
-    image: public.ecr.aws/karpenter/controller:1.6.2
+    image: public.ecr.aws/karpenter/controller:1.8.1
     logEncoding: console
     logLevel: debug
     memoryLimit: 2Gi
