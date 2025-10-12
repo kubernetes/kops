@@ -68,6 +68,8 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		return DistributionUbuntu2204, nil
 	case "ubuntu-24.04":
 		return DistributionUbuntu2404, nil
+	case "ubuntu-25.10":
+		return DistributionUbuntu2510, nil
 	}
 
 	// Some distros have a more verbose VERSION_ID
