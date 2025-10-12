@@ -8,3 +8,5 @@ Networking: calico
 KubernetesVersion: v1.23.0
 InstanceManager: karpenter
 DiscoveryStore: memfs://kops-state-store
+Sets:
+- cluster.spec.karpenter.featureGates=StaticCapacity=true
