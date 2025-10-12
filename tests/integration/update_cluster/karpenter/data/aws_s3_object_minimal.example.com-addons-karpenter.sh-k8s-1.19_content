@@ -2769,7 +2769,7 @@ spec:
               divisor: "0"
               resource: limits.memory
         - name: FEATURE_GATES
-          value: ReservedCapacity=true,SpotToSpotConsolidation=false,NodeRepair=false,NodeOverlay=false,StaticCapacity=false
+          value: StaticCapacity=true
         - name: BATCH_MAX_DURATION
           value: 10s
         - name: BATCH_IDLE_DURATION
