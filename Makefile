@@ -257,9 +257,7 @@ gcs-upload-and-tag: gsutil gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
 
 # gcs-publish-ci is the entry point for CI testing
-# In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
-gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
 gcs-publish-ci: gsutil version-dist-ci
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}

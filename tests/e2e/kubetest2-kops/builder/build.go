@@ -83,15 +83,25 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		return results, nil
 	}
 
-	cmd := exec.Command("make", "gcs-publish-ci")
-	cmd.SetEnv(
+	args := []string{"make", "gcs-publish-ci"}
+	cmd := exec.Command(args[0], args[1:]...)
+	env := []string{
 		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
 		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
 		fmt.Sprintf("GCS_LOCATION=%v", gcsLocation),
 		fmt.Sprintf("GOPATH=%v", os.Getenv("GOPATH")),
-	)
+	}
+	// We need to "forward" some variables, in particular the variables like "CI" that change the version we use
+	for _, k := range []string{"CI"} {
+		v := os.Getenv(k)
+		if v != "" {
+			env = append(env, fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+	cmd.SetEnv(env...)
 	cmd.SetDir(b.KopsRoot)
 	exec.InheritOutput(cmd)
+	klog.Infof("Executing %q (in %v) with env %v", strings.Join(args, " "), b.KopsRoot, env)
 	if err := cmd.Run(); err != nil {
 		return nil, err
 	}
