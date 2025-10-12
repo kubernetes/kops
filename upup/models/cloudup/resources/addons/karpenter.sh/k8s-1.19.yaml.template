@@ -1,5 +1,5 @@
 #helm template karpenter oci://public.ecr.aws/karpenter/karpenter \
-#  --version 1.7.1 \
+#  --version 1.8.1 \
 #  --include-crds \
 #  --namespace kube-system \
 #  --values helm-values.yaml
@@ -269,6 +269,12 @@ spec:
                         description: ID is the capacity reservation id in EC2
                         pattern: ^cr-[0-9a-z]+$
                         type: string
+                      instanceMatchCriteria:
+                        description: InstanceMatchCriteria specifies how instances are matched to capacity reservations.
+                        enum:
+                          - open
+                          - targeted
+                        type: string
                       ownerID:
                         description: Owner is the owner id for the ami.
                         pattern: ^[0-9]{12}$
@@ -288,10 +294,10 @@ spec:
                   maxItems: 30
                   type: array
                   x-kubernetes-validations:
-                    - message: expected at least one, got none, ['tags', 'id']
-                      rule: self.all(x, has(x.tags) || has(x.id))
-                    - message: '''id'' is mutually exclusive, cannot be set along with tags in a capacity reservation selector term'
-                      rule: '!self.all(x, has(x.id) && (has(x.tags) || has(x.ownerID)))'
+                    - message: expected at least one, got none, ['tags', 'id', 'instanceMatchCriteria']
+                      rule: self.all(x, has(x.tags) || has(x.id) || has(x.instanceMatchCriteria))
+                    - message: '''id'' is mutually exclusive, cannot be set along with other fields in a capacity reservation selector term'
+                      rule: '!self.all(x, has(x.id) && (has(x.tags) || has(x.ownerID) || has(x.instanceMatchCriteria)))'
                 context:
                   description: |-
                     Context is a Reserved field in EC2 APIs
@@ -315,6 +321,11 @@ spec:
                   enum:
                     - RAID0
                   type: string
+                ipPrefixCount:
+                  description: IPPrefixCount sets the number of IPv4 prefixes to be automatically assigned to the network interface.
+                  format: int32
+                  minimum: 0
+                  type: integer
                 kubelet:
                   description: |-
                     Kubelet defines args to be used when configuring kubelet on provisioned nodes.
@@ -1499,7 +1510,7 @@ spec:
         - jsonPath: .spec.template.spec.nodeClassRef.name
           name: NodeClass
           type: string
-        - jsonPath: .status.resources.nodes
+        - jsonPath: .status.nodes
           name: Nodes
           type: string
         - jsonPath: .status.conditions[?(@.type=="Ready")].status
@@ -1601,6 +1612,7 @@ spec:
                                 - Empty
                                 - Drifted
                               type: string
+                            maxItems: 50
                             type: array
                           schedule:
                             description: |-
@@ -1623,6 +1635,7 @@ spec:
                         ConsolidateAfter is the duration the controller will wait
                         before attempting to terminate nodes that are underutilized.
                         Refer to ConsolidationPolicy for how underutilization is considered.
+                        When replicas is set, ConsolidateAfter is simply ignored
                       pattern: ^(([0-9]+(s|m|h))+|Never)$
                       type: string
                     consolidationPolicy:
@@ -1630,6 +1643,7 @@ spec:
                       description: |-
                         ConsolidationPolicy describes which nodes Karpenter can disrupt through its consolidation
                         algorithm. This policy defaults to "WhenEmptyOrUnderutilized" if not specified
+                        When replicas is set, ConsolidationPolicy is simply ignored
                       enum:
                         - WhenEmpty
                         - WhenEmptyOrUnderutilized
@@ -1644,8 +1658,24 @@ spec:
                       - type: string
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
-                  description: Limits define a set of bounds for provisioning capacity.
+                  description: |-
+                    Limits define a set of bounds for provisioning capacity.
+                    Limits other than limits.nodes is not supported when replicas is set.
                   type: object
+                replicas:
+                  description: |-
+                    Replicas is the desired number of nodes for the NodePool. When specified, the NodePool will
+                    maintain this fixed number of replicas rather than scaling based on pod demand.
+                    When replicas is set:
+                      - The following fields are ignored:
+                          * disruption.consolidationPolicy
+                          * disruption.consolidateAfter
+                      - Only limits.nodes is supported; other resource limits (e.g., CPU, memory) must not be specified.
+                      - Weight is not supported.
+                    Note: This field is alpha.
+                  format: int64
+                  minimum: 0
+                  type: integer
                 template:
                   description: |-
                     Template contains the template of possibilities for the provisioning logic to launch a NodeClaim with.
@@ -1909,6 +1939,7 @@ spec:
                     numerical weight indicates that this nodepool will be ordered
                     ahead of other nodepools with lower weights. A nodepool with no weight
                     will be treated as if it is a nodepool with a weight of 0.
+                    Weight is not supported when replicas is set.
                   format: int32
                   maximum: 100
                   minimum: 1
@@ -1916,6 +1947,13 @@ spec:
               required:
                 - template
               type: object
+              x-kubernetes-validations:
+                - message: Cannot transition NodePool between static (replicas set) and dynamic (replicas unset) provisioning modes
+                  rule: has(self.replicas) == has(oldSelf.replicas)
+                - message: only 'limits.nodes' is supported on static NodePools
+                  rule: '!has(self.replicas) || (!has(self.limits) || size(self.limits) == 0 || (size(self.limits) == 1 && ''nodes'' in self.limits))'
+                - message: '''weight'' is not supported on static NodePools'
+                  rule: '!has(self.replicas) || !has(self.weight)'
             status:
               description: NodePoolStatus defines the observed state of NodePool
               properties:
@@ -1981,6 +2019,11 @@ spec:
                     the actual NodeClass Generation, NodeRegistrationHealthy status condition on the NodePool will be reset
                   format: int64
                   type: integer
+                nodes:
+                  default: 0
+                  description: Nodes is the count of nodes associated with this NodePool
+                  format: int64
+                  type: integer
                 resources:
                   additionalProperties:
                     anyOf:
@@ -1997,6 +2040,9 @@ spec:
       served: true
       storage: true
       subresources:
+        scale:
+          specReplicasPath: .spec.replicas
+          statusReplicasPath: .status.nodes
         status: {}
 
 ---
@@ -2007,10 +2053,10 @@ metadata:
   name: karpenter
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 spec:
   maxUnavailable: 1
@@ -2026,10 +2072,10 @@ metadata:
   name: karpenter
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: false
 ---
@@ -2040,10 +2086,10 @@ metadata:
   name: karpenter-admin
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups: ["karpenter.sh"]
@@ -2059,10 +2105,10 @@ kind: ClusterRole
 metadata:
   name: karpenter-core
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 rules:
   # Read
@@ -2110,10 +2156,10 @@ kind: ClusterRole
 metadata:
   name: karpenter
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 rules:
   # Read
@@ -2131,10 +2177,10 @@ kind: ClusterRoleBinding
 metadata:
   name: karpenter-core
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -2151,10 +2197,10 @@ kind: ClusterRoleBinding
 metadata:
   name: karpenter
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -2172,10 +2218,10 @@ metadata:
   name: karpenter
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 rules:
   # Read
@@ -2201,10 +2247,10 @@ metadata:
   name: karpenter-dns
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 rules:
   # Read
@@ -2220,10 +2266,10 @@ metadata:
   name: karpenter
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -2241,10 +2287,10 @@ metadata:
   name: karpenter-dns
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -2262,10 +2308,10 @@ metadata:
   name: karpenter
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
@@ -2285,10 +2331,10 @@ metadata:
   name: karpenter
   namespace: kube-system
   labels:
-    helm.sh/chart: karpenter-1.7.1
+    helm.sh/chart: karpenter-1.8.1
     app.kubernetes.io/name: karpenter
     app.kubernetes.io/instance: karpenter
-    app.kubernetes.io/version: "1.7.1"
+    app.kubernetes.io/version: "1.8.1"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: {{ ControlPlaneControllerReplicas false }}
@@ -2367,7 +2413,7 @@ spec:
                   divisor: "0"
                   resource: limits.memory
             - name: FEATURE_GATES
-              value: "ReservedCapacity=true,SpotToSpotConsolidation=false,NodeRepair=false,NodeOverlay=false"
+              value: "ReservedCapacity=true,SpotToSpotConsolidation=false,NodeRepair=false,NodeOverlay=false,StaticCapacity=false"
             - name: BATCH_MAX_DURATION
               value: "10s"
             - name: BATCH_IDLE_DURATION
@@ -2384,6 +2430,8 @@ spec:
               value: "0.075"
             - name: RESERVED_ENIS
               value: "0"
+            - name: IGNORE_DRA_REQUESTS
+              value: "true"
             - name: AWS_REGION
               value: '{{ Region }}'
           ports:
