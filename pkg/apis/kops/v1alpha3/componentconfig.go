@@ -57,8 +57,8 @@ type KubeletConfigSpec struct {
 	// HostnameOverride is not admin-configurable.
 	HostnameOverride string `json:"-"`
 	// PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
-	// DEPRECATED: Image garbage collector will get sandbox image information from CRI
-	PodInfraContainerImage string `json:"-"`
+	// DEPRECATED: Image garbage collector will get sandbox image information from CRI.
+	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty"`
 	// SeccompDefault enables the use of `RuntimeDefault` as the default seccomp profile for all workloads.
 	SeccompDefault *bool `json:"seccompDefault,omitempty" flag:"seccomp-default"`
 	// SeccompProfileRoot is the directory path for seccomp profiles.

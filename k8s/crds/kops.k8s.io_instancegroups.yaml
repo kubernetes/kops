@@ -728,6 +728,11 @@ spec:
                       PodCIDR is the CIDR to use for pod IP addresses, only used in standalone mode.
                       In cluster mode, this is obtained from the master.
                     type: string
+                  podInfraContainerImage:
+                    description: |-
+                      PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
+                      DEPRECATED: Image garbage collector will get sandbox image information from CRI.
+                    type: string
                   podManifestPath:
                     description: config is the path to the config file or directory
                       of files
