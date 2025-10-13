@@ -1,0 +1,13 @@
+PRETTY_NAME="Ubuntu 25.10"
+NAME="Ubuntu"
+VERSION_ID="25.10"
+VERSION="25.10 (Questing Quokka)"
+VERSION_CODENAME=questing
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=questing
+LOGO=ubuntu-logo
