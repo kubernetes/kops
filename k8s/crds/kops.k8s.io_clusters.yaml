@@ -1037,6 +1037,9 @@ spec:
                         description: Version used to pick the runc package.
                         type: string
                     type: object
+                  sandboxImage:
+                    description: SandboxImage is the image used for the sandbox container.
+                    type: string
                   selinuxEnabled:
                     description: SelinuxEnabled enables SELinux support
                     type: boolean
@@ -4411,8 +4414,9 @@ spec:
                       In cluster mode, this is obtained from the master.
                     type: string
                   podInfraContainerImage:
-                    description: PodInfraContainerImage is the image whose network/ipc
-                      containers in each pod will use.
+                    description: |-
+                      PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
+                      DEPRECATED: Image garbage collector will get sandbox image information from CRI.
                     type: string
                   podManifestPath:
                     description: config is the path to the config file or directory
@@ -4865,8 +4869,9 @@ spec:
                       In cluster mode, this is obtained from the master.
                     type: string
                   podInfraContainerImage:
-                    description: PodInfraContainerImage is the image whose network/ipc
-                      containers in each pod will use.
+                    description: |-
+                      PodInfraContainerImage is the image whose network/ipc containers in each pod will use.
+                      DEPRECATED: Image garbage collector will get sandbox image information from CRI.
                     type: string
                   podManifestPath:
                     description: config is the path to the config file or directory

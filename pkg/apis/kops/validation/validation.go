@@ -913,6 +913,14 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 		}
 
 		{
+			if k.PodInfraContainerImage != "" {
+				allErrs = append(allErrs, field.Forbidden(
+					kubeletPath.Child("podInfraContainerImage"),
+					"pod-infra-container-image flag was deprecated in 1.24 and removed in 1.35, use containerd.sandboxImage instead"))
+			}
+		}
+
+		{
 			// Flag removed in 1.10
 			if k.RequireKubeconfig != nil {
 				allErrs = append(allErrs, field.Forbidden(

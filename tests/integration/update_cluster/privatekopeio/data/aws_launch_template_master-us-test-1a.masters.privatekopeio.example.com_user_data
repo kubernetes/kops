@@ -126,7 +126,7 @@ ClusterName: privatekopeio.example.com
 ConfigBase: memfs://clusters.example.com/privatekopeio.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: aW98Rpp82Qr6neNaGwzjLHAxp21h60RXktTJFD7dWzc=
+NodeupConfigHash: C5Iv+a5OC4GA8IN2dysgJjCjN+/jUvUOCqE6uE9+9Jg=
 
 __EOF_KUBE_ENV
 

@@ -1557,6 +1557,11 @@ func (in *ContainerdConfig) DeepCopyInto(out *ContainerdConfig) {
 		*out = new(NRIConfig)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.SandboxImage != nil {
+		in, out := &in.SandboxImage, &out.SandboxImage
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

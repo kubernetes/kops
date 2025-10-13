@@ -64,6 +64,8 @@ type ContainerdConfig struct {
 	InstallCriCtl bool `json:"installCriCtl,omitempty"`
 	// InstallNerdCtl installs nerdctl (default "false").
 	InstallNerdCtl bool `json:"installNerdCtl,omitempty"`
+	// SandboxImage is the image used for the sandbox container.
+	SandboxImage *string `json:"sandboxImage,omitempty"`
 }
 
 type NRIConfig struct {
