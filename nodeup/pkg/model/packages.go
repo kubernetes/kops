@@ -45,7 +45,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
-		c.AddTask(&nodetasks.Package{Name: "pigz"})
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
@@ -69,7 +68,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// Amazon Linux 2 doesn't have SELinux enabled by default
 		if b.Distribution != distributions.DistributionAmazonLinux2 {
 			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
-			c.AddTask(&nodetasks.Package{Name: "pigz"})
 		}
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
