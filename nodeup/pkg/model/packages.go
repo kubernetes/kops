@@ -42,7 +42,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
 		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
-		c.AddTask(&nodetasks.Package{Name: "libltdl7"})
 		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
@@ -62,7 +61,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			c.AddTask(&nodetasks.Package{Name: "iptables"})
 		}
 		c.AddTask(&nodetasks.Package{Name: "libseccomp"})
-		c.AddTask(&nodetasks.Package{Name: "libtool-ltdl"})
 		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
