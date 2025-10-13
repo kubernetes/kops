@@ -23,6 +23,7 @@ spec:
   karpenter:
     cpuRequest: 100m
     enabled: true
+    featureGates: StaticCapacity=true
     memoryRequest: 500Mi
     memoryLimit: 2Gi
   kubelet:

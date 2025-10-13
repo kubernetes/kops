@@ -22,6 +22,7 @@ kops-acquire-latest
 NETWORKING=cilium
 OVERRIDES="${OVERRIDES-} --instance-manager=karpenter"
 OVERRIDES="${OVERRIDES} --control-plane-size=c6g.large"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.karpenter.featureGates=StaticCapacity=true"
 
 kops-up
 
@@ -78,42 +79,13 @@ spec:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
         name: default
-  limits:
-    cpu: 10
+  replicas: 4
   disruption:
     consolidationPolicy: WhenEmpty
     consolidateAfter: 30m
 YAML
 
-# Create a deployment that will force nodes to be created
-kubectl apply -f - <<YAML
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: node-hold
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: node-hold
-  template:
-    metadata:
-      labels:
-        app: node-hold
-    spec:
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app: node-hold
-      containers:
-        - name: pause
-          image: registry.k8s.io/pause:3.10.1
-YAML
-
-# Wait for the nodes to be provisioned
+# Wait for the nodes to start being provisioned
 sleep 30
 # Wait for the nodes to be ready
 "${KOPS}" validate cluster --wait=10m

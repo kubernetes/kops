@@ -38,6 +38,7 @@ spec:
     useServiceAccountExternalPermissions: true
   karpenter:
     enabled: true
+    featureGates: StaticCapacity=true
   kubelet:
     anonymousAuth: false
   kubernetesApiAccess:
