@@ -19,8 +19,6 @@ package nodetasks
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"syscall"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
@@ -83,13 +81,13 @@ func (_ *UpdatePackages) RenderLocal(t *local.LocalTarget, a, e, changes *Update
 	} else {
 		return fmt.Errorf("unsupported package system")
 	}
-	klog.Infof("running command %s", args)
-	cmd := exec.Command(args[0], args[1:]...)
-	output, err := cmd.CombinedOutput()
-	// 'yum check-update' exits with 100 if it finds updates; treat it like a success
-	if exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(); err != nil && exitCode != 100 {
-		return fmt.Errorf("error update packages: %v: %s", err, string(output))
-	}
+	klog.Infof("NOT running command %s", args)
+	//cmd := exec.Command(args[0], args[1:]...)
+	//output, err := cmd.CombinedOutput()
+	//// 'yum check-update' exits with 100 if it finds updates; treat it like a success
+	//if exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus(); err != nil && exitCode != 100 {
+	//	return fmt.Errorf("error update packages: %v: %s", err, string(output))
+	//}
 
 	return nil
 }

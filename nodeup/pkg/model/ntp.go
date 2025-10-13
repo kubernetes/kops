@@ -65,7 +65,7 @@ func (b *NTPBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 		c.AddTask((&nodetasks.Service{Name: "systemd-timesyncd"}).InitDefaults())
 	} else if b.Distribution.IsDebianFamily() {
-		c.AddTask(&nodetasks.Package{Name: "chrony"})
+		//c.AddTask(&nodetasks.Package{Name: "chrony"})
 		if ntpHost != "" {
 			c.AddTask(b.buildChronydConf("/etc/chrony/chrony.conf", ntpHost))
 		}
