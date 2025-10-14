@@ -188,6 +188,13 @@ else
 EOL
 fi
 
+# Allow override of test config for specialized tests (e.g., DRA)
+if [[ -n "${KOPS_CL2_TEST_CONFIG:-}" ]]; then
+  TEST_CONFIG="${GOPATH}/src/k8s.io/perf-tests/clusterloader2/${KOPS_CL2_TEST_CONFIG}"
+else
+  TEST_CONFIG="${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml"
+fi
+
 kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   --up \
   --kubernetes-version="${K8S_VERSION}" \
