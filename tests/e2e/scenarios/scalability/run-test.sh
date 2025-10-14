@@ -203,7 +203,7 @@ kubetest2 kops "${KUBETEST2_ARGS[@]}" \
   -- \
   --provider="${CLOUD_PROVIDER}" \
   --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
-  --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
+  --test-configs="${TEST_CONFIG}" \
   --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml \
   --extra-args="--experimental-prometheus-snapshot-to-report-dir=true" \
   --kube-config="${HOME}/.kube/config"
