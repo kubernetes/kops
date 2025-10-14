@@ -336,7 +336,8 @@ func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
 
 		klog.Infof("Terminating %d EC2 instances", len(ids))
 		request := &ec2.TerminateInstancesInput{
-			InstanceIds: ids,
+			InstanceIds:    ids,
+			SkipOsShutdown: aws.Bool(true),
 		}
 		ids = []string{}
 		_, err := c.EC2().TerminateInstances(ctx, request)
