@@ -147,6 +147,19 @@ func setType(v reflect.Value, newValue string) error {
 			name, value, _ := strings.Cut(newValue, "=")
 			v.SetMapIndex(reflect.ValueOf(name), reflect.ValueOf(intstr.Parse(value)))
 
+		case "map[string][]string":
+			name, value, _ := strings.Cut(newValue, "=")
+			tokens := strings.Split(value, ",")
+			valueArray := reflect.MakeSlice(reflect.TypeOf(tokens), 0, v.Len()+len(tokens))
+			for _, s := range tokens {
+				valueItem := reflect.New(reflect.TypeOf(s))
+				if err := setType(valueItem.Elem(), s); err != nil {
+					return err
+				}
+				valueArray = reflect.Append(valueArray, valueItem.Elem())
+			}
+			v.SetMapIndex(reflect.ValueOf(name), valueArray)
+
 		default:
 			return fmt.Errorf("unhandled type %q", t)
 		}
