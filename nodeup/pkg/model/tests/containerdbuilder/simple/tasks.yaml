@@ -1,6 +1,6 @@
 contents: |
   {
-      "cniVersion": "0.4.0",
+      "cniVersion": "1.0.0",
       "name": "k8s-pod-network",
       "plugins": [
           {
