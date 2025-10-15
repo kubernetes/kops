@@ -55,7 +55,7 @@ echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 create_args=()
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16,10.5.0.0/16,10.6.0.0/16,10.7.0.0/16,10.8.0.0/16,10.9.0.0/16,10.10.0.0/16,10.11.0.0/16,10.12.0.0/16")
-  create_args+=("--node-size=t3a.medium,t3.medium,t2.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c4.large,c7a.large,r5a.large,r6a.large,m7a.large")
+  create_args+=("--node-size=t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large")
   create_args+=("--node-volume-size=20")
   create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
   create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}")
