@@ -25,7 +25,7 @@ import (
 	// "strings"
 	// "strconv"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	"k8s.io/kops/pkg/bootstrap"
 	// "k8s.io/kops/pkg/wellknownports"
 )

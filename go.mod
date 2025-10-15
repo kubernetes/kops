@@ -15,7 +15,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v1.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.1
-	github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.2
+	github.com/Elemento-Modular-Cloud/ecloud-go v0.0.2
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/apparentlymart/go-cidr v1.1.0
@@ -102,7 +102,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0
 )
 
-replace github.com/Elemento-Modular-Cloud/tesi-paolobeci v0.0.2 => ../tesi-paolobeci
+replace github.com/Elemento-Modular-Cloud/ecloud-go v0.0.2 => ../ecloud-go
 
 require (
 	cloud.google.com/go/auth v0.9.5 // indirect
@@ -284,4 +284,4 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.18.1 // indirect
 )
 
-replace github.com/Elemento-Modular-Cloud/tesi-paolobeci => ../tesi-paolobeci
+replace github.com/Elemento-Modular-Cloud/ecloud-go => ../ecloud-go

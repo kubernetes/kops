@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
@@ -30,36 +30,36 @@ import (
 
 // +kops:fitask
 type SSHKey struct {
-    Name      *string
-    Lifecycle fi.Lifecycle
+	Name      *string
+	Lifecycle fi.Lifecycle
 
-    ID        *int
-    PublicKey string
+	ID        *int
+	PublicKey string
 
-    Labels map[string]string
+	Labels map[string]string
 }
 
 var _ fi.CompareWithID = &SSHKey{}
 
 func (v *SSHKey) CompareWithID() *string {
-    return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
+	return fi.PtrTo(strconv.Itoa(fi.ValueOf(v.ID)))
 }
 
 func (v *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
-    cloud := c.T.Cloud.(elemento.ElementoCloud)
-    client := cloud.SSHKeyClient()
+	cloud := c.T.Cloud.(elemento.ElementoCloud)
+	client := cloud.SSHKeyClient()
 
-    sshkeys, err := client.All(context.TODO())
-    if err != nil {
-        return nil, err
-    }
+	sshkeys, err := client.All(context.TODO())
+	if err != nil {
+		return nil, err
+	}
 
-    for _, sshkey := range sshkeys {
-        fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(v.PublicKey)
-        if err != nil {
-            return nil, err
-        }
-        if sshkey.Fingerprint == fingerprint {
+	for _, sshkey := range sshkeys {
+		fingerprint, err := pki.ComputeOpenSSHKeyFingerprint(v.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		if sshkey.Fingerprint == fingerprint {
 			matches := &SSHKey{
 				Name:      v.Name,
 				Lifecycle: v.Lifecycle,
@@ -70,17 +70,17 @@ func (v *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
 			v.ID = matches.ID
 			return matches, nil
 		}
-    }
+	}
 
-    return nil, nil
+	return nil, nil
 }
 
 func (v *SSHKey) Run(c *fi.CloudupContext) error {
-    return fi.CloudupDefaultDeltaRunMethod(v, c)
+	return fi.CloudupDefaultDeltaRunMethod(v, c)
 }
 
 func (v *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
-    if a != nil {
+	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}

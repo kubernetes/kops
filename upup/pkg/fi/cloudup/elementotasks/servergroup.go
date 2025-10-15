@@ -24,7 +24,7 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"

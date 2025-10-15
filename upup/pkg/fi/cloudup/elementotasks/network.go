@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/elemento"
 )
@@ -61,7 +61,7 @@ func (v *Network) Find(c *fi.CloudupContext) (*Network, error) {
 			}, nil
 		}
 	}
-	
+
 	network, _, err := client.GetByName(context.TODO(), idOrName)
 
 	if err != nil {

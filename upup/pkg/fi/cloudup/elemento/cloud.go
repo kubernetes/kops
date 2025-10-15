@@ -19,8 +19,9 @@ package elemento
 import (
 	"context"
 	"fmt"
+	"os"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
@@ -278,7 +279,7 @@ func (s *elementoCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster)
 	//! Mock response with reasonable API ingress statuses
 	return []fi.ApiIngressStatus{
 		{
-			IP:       "51.159.157.254", // Mock internal IP
+			IP:       os.Getenv("ATOMOS_SERVER"), // Mock internal IP
 			Hostname: "api.internal.cluster.local",
 		},
 	}, nil

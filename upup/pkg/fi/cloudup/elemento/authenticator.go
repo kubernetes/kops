@@ -20,7 +20,7 @@ import (
 	// "fmt"
 	// "strconv"
 
-	// "github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud/metadata"
+	// "github.com/Elemento-Modular-Cloud/ecloud-go/ecloud/metadata"
 	"k8s.io/kops/pkg/bootstrap"
 )
 

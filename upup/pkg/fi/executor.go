@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Elemento-Modular-Cloud/tesi-paolobeci/ecloud"
+	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	"k8s.io/klog/v2"
 )
 
@@ -254,7 +254,7 @@ func (e *executor[T]) executeFinalECloudTask(ctx context.Context) error {
 }
 
 func (e *executor[T]) executeECloudFinalTask(ctx context.Context, cloudupContext *Context[CloudupSubContext]) error {
-	klog.Infof("Calling ecloud library final function...")
+	klog.Infof("Executing final ecloud task...")
 
 	// Use reflection to check if the cloud provider is Elemento and call the final function
 	cloud := cloudupContext.T.Cloud
@@ -277,7 +277,7 @@ func (e *executor[T]) executeECloudFinalTask(ctx context.Context, cloudupContext
 
 		// Get the nodeup client and execute cluster startup
 		nodeupClient := elementoCloud.NodeupClient(ctx)
-		if _, err := nodeupClient.ExecuteClusterStartup(ctx, clusterName); err != nil {
+		if _, err := nodeupClient.ExecuteClusterStartupClient(ctx, clusterName); err != nil {
 			return fmt.Errorf("elemento cluster startup failed: %v", err)
 		}
 
