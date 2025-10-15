@@ -431,7 +431,7 @@ func (b *ContainerdBuilder) buildCNIConfigTemplateFile(c *fi.NodeupModelBuilderC
 	// Based on https://github.com/kubernetes/kubernetes/blob/15a8a8ec4a3275a33b7f8eb3d4d98db2abad55b7/cluster/gce/gci/configure-helper.sh#L2911-L2937
 
 	contents := `{
-    "cniVersion": "0.4.0",
+    "cniVersion": "1.0.0",
     "name": "k8s-pod-network",
     "plugins": [
         {
