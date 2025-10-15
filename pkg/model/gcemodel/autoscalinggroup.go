@@ -84,6 +84,15 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			if err != nil {
 				return nil, err
 			}
+
+			HasExternalIP := fi.PtrTo(false)
+			if subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion() {
+				HasExternalIP = fi.PtrTo(true)
+			}
+			if ig.Spec.AssociatePublicIP != nil {
+				HasExternalIP = ig.Spec.AssociatePublicIP
+			}
+
 			t := &gcetasks.InstanceTemplate{
 				Name:           s(name),
 				NamePrefix:     s(namePrefix),
@@ -97,7 +106,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
 				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
-				HasExternalIP: fi.PtrTo(subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion()),
+				HasExternalIP: HasExternalIP,
 
 				Scopes: []string{
 					"compute-rw",
