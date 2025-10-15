@@ -25,6 +25,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -105,7 +106,8 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 // This allows for dumping log on nodes even if they don't register as a kubernetes
 // node, or if a node fails to register, or if the whole cluster fails to start.
 func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, maxNodesToDump int, additionalIPs, additionalPrivateIPs []string) error {
-	var special, regular, dumped []*corev1.Node
+	var special, regular []*corev1.Node
+	var dumped []string
 
 	log.Printf("starting to dump %d nodes fetched through the Kubernetes APIs", len(nodes.Items))
 	for i := range nodes.Items {
@@ -129,11 +131,11 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, max
 
 	for i := range special {
 		node := special[i]
-		err := d.dumpRegistered(ctx, node)
+		ip, err := d.dumpRegistered(ctx, node)
 		if err != nil {
 			log.Printf("could not dump node %s: %v", node.Name, err)
 		} else {
-			dumped = append(dumped, node)
+			dumped = append(dumped, ip)
 		}
 	}
 
@@ -143,11 +145,11 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, max
 			return nil
 		}
 		node := regular[i]
-		err := d.dumpRegistered(ctx, node)
+		ip, err := d.dumpRegistered(ctx, node)
 		if err != nil {
 			log.Printf("could not dump node %s: %v", node.Name, err)
 		} else {
-			dumped = append(dumped, node)
+			dumped = append(dumped, ip)
 		}
 	}
 
@@ -161,6 +163,7 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, max
 		if err != nil {
 			return err
 		}
+		dumped = append(dumped, ip)
 	}
 
 	notDumped = findInstancesNotDumped(additionalPrivateIPs, dumped)
@@ -173,15 +176,16 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, max
 		if err != nil {
 			return err
 		}
+		dumped = append(dumped, ip)
 	}
 
 	return nil
 }
 
-func (d *logDumper) dumpRegistered(ctx context.Context, node *corev1.Node) error {
+func (d *logDumper) dumpRegistered(ctx context.Context, node *corev1.Node) (string, error) {
 	if ctx.Err() != nil {
 		log.Printf("stopping dumping nodes: %v", ctx.Err())
-		return ctx.Err()
+		return "", ctx.Err()
 	}
 
 	var publicIP, privateIP string
@@ -197,14 +201,14 @@ func (d *logDumper) dumpRegistered(ctx context.Context, node *corev1.Node) error
 	}
 
 	if publicIP != "" {
-		return d.dumpNode(ctx, node.Name, publicIP, false)
+		return publicIP, d.dumpNode(ctx, node.Name, publicIP, false)
 	} else {
 		useBastion := true
 		if !d.sshClientFactory.HasBastion() {
 			klog.Warningf("no bastion address set, will attempt to connect to node %s directly via private IP %v", node.Name, privateIP)
 			useBastion = false
 		}
-		return d.dumpNode(ctx, node.Name, privateIP, useBastion)
+		return privateIP, d.dumpNode(ctx, node.Name, privateIP, useBastion)
 	}
 }
 
@@ -223,17 +227,10 @@ func (d *logDumper) dumpNotRegistered(ctx context.Context, ip string, useBastion
 }
 
 // findInstancesNotDumped returns ips from the slice that do not appear as any address of the nodes
-func findInstancesNotDumped(ips []string, dumped []*corev1.Node) []string {
+func findInstancesNotDumped(ips, dumped []string) []string {
 	var notDumped []string
-	dumpedAddresses := make(map[string]bool)
-	for _, node := range dumped {
-		for _, address := range node.Status.Addresses {
-			dumpedAddresses[address.Address] = true
-		}
-	}
-
 	for _, ip := range ips {
-		if !dumpedAddresses[ip] {
+		if !slices.Contains(dumped, ip) {
 			notDumped = append(notDumped, ip)
 		}
 	}
