@@ -328,8 +328,12 @@ func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
 	c := cloud.(awsup.AWSCloud)
 
 	var ids []string
+	var hasXenHyervisor bool
 	for i, instance := range t {
 		ids = append(ids, instance.ID)
+		if instance.Obj.(ec2types.Instance).Hypervisor == ec2types.HypervisorTypeXen {
+			hasXenHyervisor = true
+		}
 		if len(ids) < 100 && i < len(t)-1 {
 			continue
 		}
@@ -339,7 +343,12 @@ func DeleteInstances(cloud fi.Cloud, t []*resources.Resource) error {
 			InstanceIds:    ids,
 			SkipOsShutdown: aws.Bool(true),
 		}
+		if hasXenHyervisor {
+			// SkipOsShutdown is not supported on Xen instance types.
+			request.SkipOsShutdown = aws.Bool(false)
+		}
 		ids = []string{}
+		hasXenHyervisor = false
 		_, err := c.EC2().TerminateInstances(ctx, request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
