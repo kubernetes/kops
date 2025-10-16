@@ -194,6 +194,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		}
 		args = append(args, createArgs...)
 	}
+	args = append(args, "--cloud-labels", strings.Join(d.Tags, ","))
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 
 	// Dont set --master-count if either --control-plane-count or --master-count
