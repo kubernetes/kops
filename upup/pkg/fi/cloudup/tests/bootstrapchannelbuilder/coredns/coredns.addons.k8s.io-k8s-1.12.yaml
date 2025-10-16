@@ -69,7 +69,7 @@ data:
     .:53 {
         errors
         health {
-          lameduck 5s
+          lameduck 10s
         }
         ready
         kubernetes cluster.local. in-addr.arpa ip6.arpa {
@@ -173,10 +173,13 @@ spec:
           name: metrics
           protocol: TCP
         readinessProbe:
+          failureThreshold: 1
           httpGet:
             path: /ready
             port: 8181
             scheme: HTTP
+          periodSeconds: 5
+          timeoutSeconds: 5
         resources:
           limits:
             memory: 170Mi
