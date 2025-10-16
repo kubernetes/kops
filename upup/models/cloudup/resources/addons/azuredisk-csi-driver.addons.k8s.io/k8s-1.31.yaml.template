@@ -1,5 +1,5 @@
-# Azure Disk CSI Driver v1.31.0
-# Based on https://github.com/kubernetes-sigs/azuredisk-csi-driver/tree/master/deploy/v1.31.0
+# Azure Disk CSI Driver v1.33.5
+# Based on https://github.com/kubernetes-sigs/azuredisk-csi-driver/tree/master/deploy/v1.33.5
 
 ---
 apiVersion: v1
@@ -130,7 +130,7 @@ spec:
       serviceAccountName: csi-azuredisk-controller-sa
       nodeSelector:
         kubernetes.io/os: linux
-        kubernetes.io/role: master
+        node-role.kubernetes.io/control-plane: ""
       priorityClassName: system-cluster-critical
       securityContext:
         seccompProfile:
@@ -150,7 +150,7 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: csi-provisioner
-          image: mcr.microsoft.com/oss/kubernetes-csi/csi-provisioner:v5.1.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/csi-provisioner:v5.3.0
           args:
             - "--feature-gates=Topology=true,HonorPVReclaimPolicy=true"
             - "--csi-address=$(ADDRESS)"
@@ -182,7 +182,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: csi-attacher
-          image: mcr.microsoft.com/oss/kubernetes-csi/csi-attacher:v4.7.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/csi-attacher:v4.10.0
           args:
             - "-v=2"
             - "-csi-address=$(ADDRESS)"
@@ -211,7 +211,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: csi-snapshotter
-          image: mcr.microsoft.com/oss/kubernetes-csi/csi-snapshotter:v8.1.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/csi-snapshotter:v8.3.0
           args:
             - "-csi-address=$(ADDRESS)"
             - "-leader-election"
@@ -238,7 +238,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: csi-resizer
-          image: mcr.microsoft.com/oss/kubernetes-csi/csi-resizer:v1.12.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/csi-resizer:v1.14.0
           args:
             - "-csi-address=$(ADDRESS)"
             - "-v=2"
@@ -266,7 +266,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: liveness-probe
-          image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.14.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.17.0
           args:
             - --csi-address=/csi/csi.sock
             - --probe-timeout=3s
@@ -288,7 +288,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: azuredisk
-          image: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi:v1.31.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi:v1.33.5
           imagePullPolicy: IfNotPresent
           args:
             - "--v=5"
@@ -392,7 +392,7 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-          image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.14.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/livenessprobe:v2.17.0
           args:
             - --csi-address=/csi/csi.sock
             - --probe-timeout=3s
@@ -411,7 +411,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: node-driver-registrar
-          image: mcr.microsoft.com/oss/kubernetes-csi/csi-node-driver-registrar:v2.12.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/csi-node-driver-registrar:v2.14.0
           args:
             - --csi-address=$(ADDRESS)
             - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
@@ -447,7 +447,7 @@ spec:
                 - ALL
             readOnlyRootFilesystem: true
         - name: azuredisk
-          image: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi:v1.31.0
+          image: mcr.microsoft.com/oss/kubernetes-csi/azuredisk-csi:v1.33.5
           imagePullPolicy: IfNotPresent
           args:
             - "--v=5"
@@ -546,7 +546,7 @@ metadata:
     app.kubernetes.io/name: azuredisk-csi-driver
     app.kubernetes.io/component: csi-driver
   annotations:
-    csiDriver: v1.31.0
+    csiDriver: v1.33.5
     snapshot: v6.2.1
 spec:
   attachRequired: true
