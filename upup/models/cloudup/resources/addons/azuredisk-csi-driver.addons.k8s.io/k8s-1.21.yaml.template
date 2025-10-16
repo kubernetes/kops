@@ -1,6 +1,7 @@
 # Azure Disk CSI Driver
 # Based on https://github.com/kubernetes-sigs/azuredisk-csi-driver
 
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:

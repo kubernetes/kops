@@ -768,12 +768,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Id:       id,
 			})
 		}
-	}
-
-	if b.Cluster.IsKubernetesGTE("1.21") && b.Cluster.GetCloudProvider() == kops.CloudProviderAzure {
 		{
 			key := "azuredisk-csi-driver.addons.k8s.io"
-			id := "k8s-1.21"
+			id := "k8s-1.31"
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
@@ -1140,7 +1137,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 		if b.Cluster.Spec.CloudProvider.AWS != nil &&
 			(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Managed == nil || fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Managed)) {
-			key := "aws-ebs-csi-driver.addons.k8s.io"
+			key := "aws-ebs-csi-driver.addons.k8s.iyuo"
 
 			{
 				id := "k8s-1.17"
