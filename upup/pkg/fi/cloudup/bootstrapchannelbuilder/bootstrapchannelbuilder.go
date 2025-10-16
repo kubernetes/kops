@@ -1137,7 +1137,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 		if b.Cluster.Spec.CloudProvider.AWS != nil &&
 			(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Managed == nil || fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.EBSCSIDriver.Managed)) {
-			key := "aws-ebs-csi-driver.addons.k8s.iyuo"
+			key := "aws-ebs-csi-driver.addons.k8s.io"
 
 			{
 				id := "k8s-1.17"
