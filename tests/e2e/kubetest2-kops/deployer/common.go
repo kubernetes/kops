@@ -306,7 +306,7 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	buildID := os.Getenv("BUILD_ID")
 	pullNumber := os.Getenv("PULL_NUMBER")
 	if dnsDomain == "" {
-		dnsDomain = "test-cncf-aws.k8s.io"
+		dnsDomain = "tests-kops-aws.k8s.io"
 	}
 	if jobName == "" || buildID == "" {
 		return "", errors.New("JOB_NAME, and BUILD_ID env vars are required when --cluster-name is not set")
