@@ -78,6 +78,8 @@ type deployer struct {
 	SSHPublicKeyPath  string `flag:"ssh-public-key" desc:"The path to the public key passed to the cloud provider"`
 	SSHUser           string `flag:"ssh-user" desc:"The SSH user to use for SSH access to instances"`
 
+	Tags []string `flag:"tags" desc:"Tags to apply to the cluster resources in key=value format"`
+
 	TerraformVersion string `flag:"terraform-version" desc:"The version of terraform to use for applying the cluster"`
 
 	ArtifactsDir string `flag:"-"`
@@ -140,6 +142,10 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		BoskosResourceType:      "gce-project",
 		BoskosAcquireTimeout:    5 * time.Minute,
 		BoskosHeartbeatInterval: 5 * time.Minute,
+		Tags: []string{
+			"group=sig-cluster-lifecycle",
+			"subproject=kops",
+		},
 	}
 	dir, err := defaultArtifactsDir()
 	if err != nil {
