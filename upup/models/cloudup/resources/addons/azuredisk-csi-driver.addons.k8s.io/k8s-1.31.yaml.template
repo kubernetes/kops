@@ -461,7 +461,7 @@ spec:
       hostNetwork: true
       serviceAccountName: csi-azuredisk-controller-sa
       nodeSelector:
-        kubernetes.io/os: linux  # add "kubernetes.io/role: master" to run controller on master node
+        kubernetes.io/os: linux  # add "node-role.kubernetes.io/control-plane: "" " to run controller on master node
       priorityClassName: system-cluster-critical
       securityContext:
         seccompProfile:
@@ -621,7 +621,7 @@ spec:
             - "--metrics-address=0.0.0.0:29604"
             - "--user-agent-suffix=OSS-kubectl"
             - "--disable-avset-nodes=false"
-            - "--allow-empty-cloud-config=false"
+            - "--allow-empty-cloud-config=true"
           ports:
             - containerPort: 29604
               name: metrics
