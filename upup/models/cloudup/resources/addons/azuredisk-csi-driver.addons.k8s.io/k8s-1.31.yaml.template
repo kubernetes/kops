@@ -130,6 +130,7 @@ spec:
       serviceAccountName: csi-azuredisk-controller-sa
       nodeSelector:
         kubernetes.io/os: linux
+        kubernetes.io/role: master
       priorityClassName: system-cluster-critical
       securityContext:
         seccompProfile:
