@@ -226,7 +226,7 @@ type CalicoNetworkingSpec struct {
 	VXLANMode string `json:"vxlanMode,omitempty"`
 	// WireguardEnabled enables WireGuard encryption for all on-the-wire pod-to-pod traffic
 	// (default: false)
-	WireguardEnabled bool `json:"wireguardEnabled,omitempty"`
+	WireguardEnabled *bool `json:"wireguardEnabled,omitempty"`
 }
 
 // CanalNetworkingSpec declares that we want Canal networking

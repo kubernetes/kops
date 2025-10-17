@@ -430,6 +430,11 @@ func (in *CalicoNetworkingSpec) DeepCopyInto(out *CalicoNetworkingSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.WireguardEnabled != nil {
+		in, out := &in.WireguardEnabled, &out.WireguardEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

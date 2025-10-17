@@ -1602,7 +1602,7 @@ func validateNetworkingCalico(c *kops.ClusterSpec, v *kops.CalicoNetworkingSpec,
 				fmt.Sprintf("Unable to set number of Typha replicas to less than 0, you've specified %d", v.TyphaReplicas)))
 	}
 
-	if v.WireguardEnabled && c.IsIPv6Only() {
+	if fi.ValueOf(v.WireguardEnabled) && c.IsIPv6Only() {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("wireguardEnabled"), `WireGuard is not supported on IPv6 clusters`))
 	}
 
