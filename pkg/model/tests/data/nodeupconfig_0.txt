@@ -38,7 +38,7 @@ Networking:
       host: example.com
       port: 80
   nonMasqueradeCIDR: 10.100.0.0/16
-UpdatePolicy: automatic
+UpdatePolicy: external
 configStore: {}
 containerdConfig:
   logLevel: info

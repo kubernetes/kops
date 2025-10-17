@@ -149,7 +149,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal-etcd.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: sVaequi5EDWoi7YXdE2bMBobMvzL9iG+K+7fqTHqfmc=
+NodeupConfigHash: 511oM9pywKbUGCnmYuSsp+nn8uC71wxpPs0/srLZJEA=
 
 __EOF_KUBE_ENV
 

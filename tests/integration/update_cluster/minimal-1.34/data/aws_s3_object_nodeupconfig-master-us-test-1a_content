@@ -302,7 +302,7 @@ KubernetesVersion: 1.34.0-alpha.1
 Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
-UpdatePolicy: automatic
+UpdatePolicy: external
 channels:
 - memfs://tests/minimal.example.com/addons/bootstrap-channel.yaml
 configStore:

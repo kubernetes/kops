@@ -49,7 +49,7 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 ServiceNodePortRange: 28000-32767
-UpdatePolicy: automatic
+UpdatePolicy: external
 containerdConfig:
   logLevel: info
   runc:

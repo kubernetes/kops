@@ -299,7 +299,7 @@ Networking:
   cilium: {}
   nonMasqueradeCIDR: ::/0
   serviceClusterIPRange: fd00:5e4f:ce::/108
-UpdatePolicy: automatic
+UpdatePolicy: external
 channels:
 - memfs://clusters.example.com/minimal-ipv6.example.com/addons/bootstrap-channel.yaml
 configStore:

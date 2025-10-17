@@ -55,7 +55,7 @@ NvidiaGPU:
   enabled: true
   image: nvcr.io/nvidia/k8s-device-plugin:v0.17.3
   package: nvidia-driver-535-server
-UpdatePolicy: automatic
+UpdatePolicy: external
 containerdConfig:
   logLevel: info
   nvidiaGPU:

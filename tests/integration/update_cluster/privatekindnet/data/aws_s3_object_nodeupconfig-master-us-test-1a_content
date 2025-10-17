@@ -309,7 +309,7 @@ Networking:
   kindnet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
-UpdatePolicy: automatic
+UpdatePolicy: external
 channels:
 - memfs://clusters.example.com/privatekindnet.example.com/addons/bootstrap-channel.yaml
 configStore:

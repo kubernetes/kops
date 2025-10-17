@@ -41,7 +41,7 @@ KubeletConfig:
 KubernetesVersion: 1.20.0
 Networking:
   nonMasqueradeCIDR: 10.100.0.0/16
-UpdatePolicy: automatic
+UpdatePolicy: external
 containerdConfig:
   logLevel: info
 usesLegacyGossip: false

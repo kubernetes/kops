@@ -48,7 +48,7 @@ Networking:
   kindnet: {}
   nonMasqueradeCIDR: ::/0
   serviceClusterIPRange: fd00:5e4f:ce::/108
-UpdatePolicy: automatic
+UpdatePolicy: external
 containerdConfig:
   logLevel: info
   runc:

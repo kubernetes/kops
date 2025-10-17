@@ -149,7 +149,7 @@ ConfigServer:
   - https://kops-controller.internal.privateciliumadvanced.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: MxshikRq4/T70nQmmndhWykh9QCmJtO+wuHdaBjjB9Y=
+NodeupConfigHash: hxJr5gSp4Y8v1yl0jy11cnogDetZ9Ka+7Lsyv6A0M0M=
 
 __EOF_KUBE_ENV
 

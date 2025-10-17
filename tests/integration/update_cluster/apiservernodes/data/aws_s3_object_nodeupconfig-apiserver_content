@@ -181,7 +181,7 @@ KubernetesVersion: 1.34.0
 Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
-UpdatePolicy: automatic
+UpdatePolicy: external
 configStore:
   keypairs: memfs://clusters.example.com/minimal.example.com/pki
   secrets: memfs://clusters.example.com/minimal.example.com/secrets
