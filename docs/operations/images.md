@@ -20,11 +20,12 @@ image: ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/e
 
 ## Security Updates
 
-Automated security updates are handled by kOps for Debian, Flatcar and Ubuntu distros. This can be disabled by editing the cluster configuration:
+As of kOps 1.35, automated security updates are disabled by default to minimize the risk that node updates disrupt the cluster. Instead, we recommend updating instance group images on a regular cadence.
+To enable automatic security updates for Debian, Flatcar, or Ubuntu, edit the cluster or instance group configuration to include:
 
 ```yaml
 spec:
-  updatePolicy: external
+  updatePolicy: automatic
 ```
 
 ## Distros Support Matrix
