@@ -1083,10 +1083,10 @@ func (d *clusterDiscoveryGCE) listBackendServices() ([]*resources.Resource, erro
 	svcs, err := c.Compute().RegionBackendServices().List(context.Background(), c.Project(), c.Region())
 	if err != nil {
 		if gce.IsNotFound(err) {
-			klog.Infof("backend services not found, assuming none exist in project: %q region: %q", c.Project(), c.Region())
+			klog.Infof("BackendService not found, assuming none exist in project: %q region: %q", c.Project(), c.Region())
 			return nil, nil
 		}
-		return nil, fmt.Errorf("Failed to list backend services: %w", err)
+		return nil, fmt.Errorf("failed to list backend services: %w", err)
 	}
 	// TODO: cache, for efficiency, if needed.
 	// Find all relevant backend services by finding all the cluster's IGMs, and then
@@ -1106,6 +1106,10 @@ func (d *clusterDiscoveryGCE) listBackendServices() ([]*resources.Resource, erro
 				Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
 					op, err := c.Compute().RegionBackendServices().Delete(c.Project(), c.Region(), svc.Name)
 					if err != nil {
+						if gce.IsNotFound(err) {
+							klog.Infof("BackendService not found, assuming deleted: %q", op.SelfLink)
+							return nil
+						}
 						return err
 					}
 					return c.WaitForOp(op)
@@ -1146,6 +1150,10 @@ func (d *clusterDiscoveryGCE) listHealthchecks() ([]*resources.Resource, error) 
 			Deleter: func(cloud fi.Cloud, r *resources.Resource) error {
 				op, err := c.Compute().RegionHealthChecks().Delete(c.Project(), c.Region(), gce.LastComponent(hc))
 				if err != nil {
+					if gce.IsNotFound(err) {
+						klog.Infof("Healthcheck not found, assuming deleted: %q", op.SelfLink)
+						return nil
+					}
 					return err
 				}
 				return c.WaitForOp(op)
@@ -1221,7 +1229,7 @@ func deleteNetwork(cloud fi.Cloud, r *resources.Resource) error {
 	op, err := c.Compute().Networks().Delete(u.Project, u.Name)
 	if err != nil {
 		if gce.IsNotFound(err) {
-			klog.Infof("network not found, assuming deleted: %q", o.SelfLink)
+			klog.Infof("Network not found, assuming deleted: %q", o.SelfLink)
 			return nil
 		}
 		return fmt.Errorf("error deleting network %s: %v", o.SelfLink, err)
