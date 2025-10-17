@@ -37,7 +37,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	//   conntrack  - kops #5671
 	if b.Distribution.IsDebianFamily() {
 		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
-		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
 		c.AddTask(&nodetasks.Package{Name: "conntrack"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
 		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
