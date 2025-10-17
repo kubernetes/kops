@@ -36,8 +36,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// kubelet needs:
 	//   conntrack  - kops #5671
 	if b.Distribution.IsDebianFamily() {
-		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
-		c.AddTask(&nodetasks.Package{Name: "conntrack"})
 		c.AddTask(&nodetasks.Package{Name: "iptables"})
 		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
@@ -50,8 +48,6 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})
 		}
 	} else if b.Distribution.IsRHELFamily() {
-		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_centos.yaml
-		c.AddTask(&nodetasks.Package{Name: "conntrack-tools"})
 		if b.Distribution == distributions.DistributionAmazonLinux2023 {
 			// install iptables-nft in al2023 (NOT the iptables-legacy!)
 			c.AddTask(&nodetasks.Package{Name: "iptables-nft"})
