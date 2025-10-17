@@ -18,13 +18,11 @@ package deployer
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/kops"
-	"sigs.k8s.io/kubetest2/pkg/boskos"
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
@@ -86,16 +84,5 @@ func (d *deployer) Down() error {
 		}
 	}
 
-	if d.boskos != nil {
-		klog.V(2).Info("releasing boskos project")
-		err := boskos.Release(
-			d.boskos,
-			[]string{d.GCPProject},
-			d.boskosHeartbeatClose,
-		)
-		if err != nil {
-			return fmt.Errorf("down failed to release boskos project: %s", err)
-		}
-	}
-	return nil
+	return d.releaseBoskosResources()
 }
