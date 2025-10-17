@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -65,9 +66,9 @@ var _ fi.NodeupHasDependencies = &Package{}
 func (e *Package) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
 	var deps []fi.NodeupTask
 
-	// UpdatePackages before we install any packages
+	// AptSource before we install any packages
 	for _, v := range tasks {
-		if _, ok := v.(*UpdatePackages); ok {
+		if _, ok := v.(*AptSource); ok {
 			deps = append(deps, v)
 		}
 	}
@@ -320,11 +321,37 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			pkgs = append(pkgs, e.Name)
 		}
 
-		var args []string
 		env := os.Environ()
 		if d.IsDebianFamily() {
-			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
+		}
+
+		if d.IsDebianFamily() {
+			// Each time apt-get install is run, the timestamp of /var/lib/dpkg/status is updated.
+			// To avoid unnecessary apt-get update calls, we check the timestamp of this file.
+			// If it is newer than 10 minutes, we skip apt-get update.
+			stat, err := os.Stat("/var/lib/dpkg/status")
+			if err != nil {
+				klog.Infof("Error getting dpkg status info: %v", err)
+			} else {
+				if stat.ModTime().After(time.Now().Add(-10 * time.Minute)) {
+					klog.Infof("Skipping package install as /var/lib/dpkg/status is newer than 10 minutes")
+				} else {
+					args := []string{"apt-get", "update"}
+					klog.Infof("Running command %s", args)
+					cmd := exec.Command(args[0], args[1:]...)
+					cmd.Env = env
+					output, err := cmd.CombinedOutput()
+					if err != nil {
+						klog.Infof("Error fetching the latest list of available packages: %v:\n%s", err, string(output))
+					}
+				}
+			}
+		}
+
+		var args []string
+		if d.IsDebianFamily() {
+			args = []string{"apt-get", "install", "--yes", "--no-install-recommends"}
 		} else if d.IsRHELFamily() {
 
 			if d.HasDNF() {
@@ -337,7 +364,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		}
 		args = append(args, pkgs...)
 
-		klog.Infof("running command %s", args)
+		klog.Infof("Running command %s", args)
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = env
 		output, err := cmd.CombinedOutput()
@@ -350,7 +377,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			if strings.Contains(string(output), "dpkg --configure -a") {
 				klog.Warningf("found error requiring dpkg repair: %q", string(output))
 				args := []string{"dpkg", "--configure", "-a"}
-				klog.Infof("running command %s", args)
+				klog.Infof("Running command %s", args)
 				cmd := exec.Command(args[0], args[1:]...)
 				dpkgOutput, err := cmd.CombinedOutput()
 				if err != nil {

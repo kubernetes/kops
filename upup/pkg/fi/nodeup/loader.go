@@ -20,9 +20,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 type Loader struct {
@@ -41,18 +39,6 @@ func (l *Loader) Build() (map[string]fi.NodeupTask, error) {
 			return nil, fmt.Errorf("building %s: %v", reflect.TypeOf(builder), err)
 		}
 		tasks = context.Tasks
-	}
-
-	// If there is a package task, we need an update packages task
-	for _, t := range tasks {
-		if _, ok := t.(*nodetasks.Package); ok {
-			klog.Infof("Package task found; adding UpdatePackages task")
-			tasks["UpdatePackages"] = nodetasks.NewUpdatePackages()
-			break
-		}
-	}
-	if tasks["UpdatePackages"] == nil {
-		klog.Infof("No package task found; won't update packages")
 	}
 
 	return tasks, nil
