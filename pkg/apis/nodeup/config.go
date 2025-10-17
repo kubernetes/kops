@@ -300,7 +300,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	case cluster.Spec.UpdatePolicy != nil:
 		config.UpdatePolicy = *cluster.Spec.UpdatePolicy
 	default:
-		config.UpdatePolicy = kops.UpdatePolicyAutomatic
+		config.UpdatePolicy = kops.UpdatePolicyExternal
 	}
 
 	if cluster.InstallCNIAssets() {

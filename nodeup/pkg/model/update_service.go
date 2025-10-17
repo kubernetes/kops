@@ -83,7 +83,7 @@ func (b *UpdateServiceBuilder) buildFlatcarSystemdService(c *fi.NodeupModelBuild
 func (b *UpdateServiceBuilder) buildDebianPackage(c *fi.NodeupModelBuilderContext) {
 	contents := ""
 	if b.NodeupConfig.UpdatePolicy == kops.UpdatePolicyExternal {
-		klog.Infof("UpdatePolicy requests automatic updates; skipping installation of package %q", debianPackageName)
+		klog.Info("UpdatePolicy requests disabling automatic updates")
 		contents = `APT::Periodic::Enable "0";
 `
 	} else {
