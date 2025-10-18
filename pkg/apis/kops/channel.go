@@ -322,7 +322,7 @@ func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.V
 			}
 
 			if !versionRange(kubernetesVersion) {
-				klog.V(2).Infof("Kubernetes version %q does not match range: %s", kubernetesVersion, image.KubernetesVersion)
+				klog.V(6).Infof("Kubernetes version %q does not match range: %s", kubernetesVersion, image.KubernetesVersion)
 				continue
 			}
 		}
@@ -397,7 +397,7 @@ func (c *Channel) GetPackageVersion(name string, kubernetesVersion *semver.Versi
 			}
 
 			if !versionRange(*kubernetesVersion) {
-				klog.V(2).Infof("Kubernetes version %q does not match range: %s", kubernetesVersion, pkg.KubernetesVersion)
+				klog.V(6).Infof("Kubernetes version %q does not match range: %s", kubernetesVersion, pkg.KubernetesVersion)
 				continue
 			}
 		}
