@@ -908,6 +908,11 @@ func (tf *TemplateFunctions) KopsControllerEnv() []corev1.EnvVar {
 		envMap["KOPS_RUN_TOO_NEW_VERSION"] = v
 	}
 
+	// If our assets are served from a custom base URL, we need to pass that to kops-controller for cluster-api etc.
+	if v := os.Getenv("KOPS_BASE_URL"); v != "" {
+		envMap["KOPS_BASE_URL"] = v
+	}
+
 	return envMap.ToEnvVars()
 }
 
