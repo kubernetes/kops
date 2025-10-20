@@ -36,16 +36,16 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	// kubelet needs:
 	//   conntrack  - kops #5671
 	if b.Distribution.IsDebianFamily() {
-		// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
-		c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
-		c.AddTask(&nodetasks.Package{Name: "conntrack"})
-		c.AddTask(&nodetasks.Package{Name: "iptables"})
-		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
-		c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
-		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
-			c.AddTask(&nodetasks.Package{Name: "nftables"})
-		}
-		c.AddTask(&nodetasks.Package{Name: "util-linux"})
+		//// From containerd: https://github.com/containerd/cri/blob/master/contrib/ansible/tasks/bootstrap_ubuntu.yaml
+		//c.AddTask(&nodetasks.Package{Name: "bridge-utils"})
+		//c.AddTask(&nodetasks.Package{Name: "conntrack"})
+		//c.AddTask(&nodetasks.Package{Name: "iptables"})
+		//c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
+		//c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
+		//if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
+		//	c.AddTask(&nodetasks.Package{Name: "nftables"})
+		//}
+		//c.AddTask(&nodetasks.Package{Name: "util-linux"})
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
 			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})

@@ -40,7 +40,7 @@ metadata:
 spec:
   amiFamily: Custom
   amiSelectorTerms:
-    - ssmParameter: /aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id
+    - ssmParameter: /aws/service/canonical/ubuntu/server/25.10/stable/current/arm64/hvm/ebs-gp3/ami-id
   associatePublicIPAddress: true
   tags:
     KubernetesCluster: ${CLUSTER_NAME}
@@ -59,13 +59,13 @@ spec:
 YAML
 
 # Create a NodePool for Karpenter
-# Effectively disable consolidation for 30 minutes to avoid flakes in the tests
 kubectl apply -f - <<YAML
 apiVersion: karpenter.sh/v1
 kind: NodePool
 metadata:
   name: default
 spec:
+  replicas: 1
   template:
     spec:
       requirements:
@@ -79,14 +79,90 @@ spec:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
         name: default
-  replicas: 4
-  disruption:
-    consolidationPolicy: WhenEmpty
-    consolidateAfter: 30m
 YAML
-
 # Wait for the nodes to start being provisioned
-sleep 30
+sleep 10
+# Wait for the nodes to be ready
+"${KOPS}" validate cluster --wait=10m
+
+# Increase NodePool for Karpenter
+kubectl apply -f - <<YAML
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default
+spec:
+  replicas: 2
+  template:
+    spec:
+      requirements:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["m6g.large"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+YAML
+# Wait for the nodes to start being provisioned
+sleep 10
+# Wait for the nodes to be ready
+"${KOPS}" validate cluster --wait=10m
+
+# Increase NodePool for Karpenter
+kubectl apply -f - <<YAML
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default
+spec:
+  replicas: 3
+  template:
+    spec:
+      requirements:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["m6g.large"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+YAML
+# Wait for the nodes to start being provisioned
+sleep 10
+# Wait for the nodes to be ready
+"${KOPS}" validate cluster --wait=10m
+
+# Increase NodePool for Karpenter
+kubectl apply -f - <<YAML
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default
+spec:
+  replicas: 4
+  template:
+    spec:
+      requirements:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["m6g.large"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+YAML
+# Wait for the nodes to start being provisioned
+sleep 10
 # Wait for the nodes to be ready
 "${KOPS}" validate cluster --wait=10m
 
