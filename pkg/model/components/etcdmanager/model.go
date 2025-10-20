@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+	kopsversion "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
@@ -208,7 +209,7 @@ spec:
     emptyDir: {}
 `
 
-const kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1"
+var kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:" + kopsversion.KopsVersionImageTag()
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instanceGroupName string) (*v1.Pod, error) {

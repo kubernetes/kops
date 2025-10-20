@@ -5,4 +5,3 @@
 ./hooks/nvidia-device-plugin/image/files/nvidia-device-plugin.sh
 ./hooks/nvidia-device-plugin/image/run.sh
 ./hooks/prepull-images/image/run.sh
-./tools/get_workspace_status.sh

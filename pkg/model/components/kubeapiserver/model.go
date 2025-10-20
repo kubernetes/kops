@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
+	kopsversion "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8scodecs"
@@ -80,7 +81,7 @@ kind: Pod
 spec:
   containers:
   - name: healthcheck
-    image: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-beta.1
+    image: registry.k8s.io/kops/kube-apiserver-healthcheck:%s
     livenessProbe:
       httpGet:
         # The sidecar serves a healthcheck on the same port,
@@ -113,7 +114,7 @@ spec:
 func (b *KubeApiserverBuilder) buildHealthcheckSidecar() (*corev1.Pod, error) {
 	// TODO: pull from bundle
 	bundle := "(embedded kube-apiserver-healthcheck manifest)"
-	manifest := []byte(fmt.Sprintf(defaultManifest, wellknownports.KubeAPIServerHealthCheck))
+	manifest := []byte(fmt.Sprintf(defaultManifest, kopsversion.KopsVersionImageTag(), wellknownports.KubeAPIServerHealthCheck))
 
 	var pod *corev1.Pod
 	var container *corev1.Container

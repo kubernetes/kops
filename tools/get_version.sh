@@ -44,3 +44,7 @@ if [[ -n "${CI}" ]]; then
 fi
 
 echo "VERSION ${VERSION}"
+
+# IMAGE_TAG is like VERSION, but with + replaced by - (so it can be used in docker tags)
+IMAGE_TAG="${VERSION/+/-}"
+echo "IMAGE_TAG ${IMAGE_TAG}"
