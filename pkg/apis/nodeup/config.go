@@ -313,7 +313,9 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	}
 
 	if cluster.Spec.Networking.Calico != nil {
-		config.Networking.Calico = &kops.CalicoNetworkingSpec{}
+		config.Networking.Calico = &kops.CalicoNetworkingSpec{
+			WireguardEnabled: cluster.Spec.Networking.Calico.WireguardEnabled,
+		}
 	}
 
 	if cluster.Spec.Networking.Cilium != nil {

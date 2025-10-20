@@ -10184,7 +10184,7 @@ spec:
               value: "{{- .Networking.Calico.PrometheusProcessMetricsEnabled }}"
             # Enable WireGuard encryption for all on-the-wire pod-to-pod traffic
             - name: FELIX_WIREGUARDENABLED
-              value: "{{ .Networking.Calico.WireguardEnabled }}"
+              value: "{{ WithDefaultBool .Networking.Calico.WireguardEnabled false }}"
             # Enable support for HTTP forward proxy
             {{ range $name, $value := ProxyEnv }}
             - name: {{ $name }}

@@ -31,11 +31,12 @@ var _ fi.NodeupModelBuilder = &CalicoBuilder{}
 
 // Build is responsible for performing setup for Calico.
 func (b *CalicoBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.NodeupConfig.Networking.Calico == nil {
+	calico := b.NodeupConfig.Networking.Calico
+	if calico == nil {
 		return nil
 	}
 
-	if b.Distribution.IsUbuntu() {
+	if b.Distribution.IsUbuntu() && !b.IsIPv6Only() && (calico.WireguardEnabled == nil || *calico.WireguardEnabled) {
 		c.AddTask(&nodetasks.Package{Name: "wireguard"})
 	}
 
