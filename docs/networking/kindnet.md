@@ -10,7 +10,7 @@ Kindnet focuses on providing essential networking functionality without unnecess
 
 ## Installing
 
-To install [kindnet](https://github.com/aojea/kindnet) - use `--networking kindnet`.
+To install [kindnet](https://github.com/kubernetes-sigs/kindnet) - use `--networking kindnet`.
 
 ```sh
 export ZONES=mylistofzone
@@ -25,6 +25,6 @@ kops create cluster \
 
 For problems with kindnet please post an issue to Github:
 
-- [Kindnet Issues](https://github.com/aojea/kindnet/issues)
+- [Kindnet Issues](https://github.com/kubernetes-sigs/kindnet/issues)
 
 You can learn more about the different configurations options in https://kindnet.es/
