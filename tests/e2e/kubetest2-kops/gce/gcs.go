@@ -17,14 +17,22 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"os"
 	"strings"
-	"time"
 
+	"cloud.google.com/go/iam"
+	"cloud.google.com/go/storage"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/kubetest2/pkg/exec"
+)
+
+const (
+	defaultRegion = "us-central1"
 )
 
 func GCSBucketName(projectID, prefix string) string {
@@ -41,57 +49,69 @@ func GCSBucketName(projectID, prefix string) string {
 }
 
 func EnsureGCSBucket(bucketPath, projectID string, public bool) error {
-	lsArgs := []string{
-		"gsutil", "ls", "-b",
-	}
-	if projectID != "" {
-		lsArgs = append(lsArgs, "-p", projectID)
-	}
-	lsArgs = append(lsArgs, bucketPath)
+	// TODO: Detect the GCP region used
+	return EnsureGCSBucketWithRegion(bucketPath, projectID, defaultRegion, public)
+}
 
-	klog.Info(strings.Join(lsArgs, " "))
-	cmd := exec.Command(lsArgs[0], lsArgs[1:]...)
-
-	output, err := exec.CombinedOutputLines(cmd)
-	if err == nil {
-		return nil
-	} else if len(output) != 1 || !strings.Contains(output[0], "BucketNotFound") {
-		klog.Info(output)
-		return err
-	}
-
-	mbArgs := []string{
-		"gsutil", "mb",
-	}
-	if projectID != "" {
-		mbArgs = append(mbArgs, "-p", projectID)
-	}
-	mbArgs = append(mbArgs, bucketPath)
-
-	klog.Info(strings.Join(mbArgs, " "))
-	cmd = exec.Command(mbArgs[0], mbArgs[1:]...)
-
-	exec.InheritOutput(cmd)
-	err = cmd.Run()
+func EnsureGCSBucketWithRegion(bucketPath, projectID string, region string, public bool) error {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create storage client: %w", err)
+	}
+	defer client.Close()
+
+	// Extract bucket name from gs:// path if the bucket's URI is provided
+	bucketName := strings.TrimPrefix(bucketPath, "gs://")
+	bucketName = strings.TrimSuffix(bucketName, "/")
+
+	bucket := client.Bucket(bucketName)
+
+	// Check if bucket exists
+	klog.Infof("Checking if bucket %s exists", bucketName)
+	_, err = bucket.Attrs(ctx)
+	if err == nil {
+		klog.Infof("Bucket %s already exists", bucketName)
+		return nil
+	}
+
+	// If error is not "bucket doesn't exist", return error
+	if errors.Is(err, storage.ErrBucketNotExist) {
+		return fmt.Errorf("error checking bucket: %w", err)
+	}
+
+	// Create the bucket
+	klog.Infof("Creating bucket %s in project %s", bucketName, projectID)
+	bucketAttrs := &storage.BucketAttrs{
+		Location:     region,
+		LocationType: "region",
+		UniformBucketLevelAccess: storage.UniformBucketLevelAccess{
+			Enabled: true,
+		},
+		SoftDeletePolicy: &storage.SoftDeletePolicy{
+			RetentionDuration: 0,
+		},
+	}
+
+	if err := bucket.Create(ctx, projectID, bucketAttrs); err != nil {
+		return fmt.Errorf("failed to create bucket: %w", err)
 	}
 
 	if public {
-		iamArgs := []string{
-			"gsutil", "iam", "ch", "allUsers:objectViewer",
-		}
-		iamArgs = append(iamArgs, bucketPath)
-		klog.Info(strings.Join(iamArgs, " "))
-		// GCS APIs are strongly consistent but this should help with flakes
-		time.Sleep(10 * time.Second)
-		cmd = exec.Command(iamArgs[0], iamArgs[1:]...)
-		exec.InheritOutput(cmd)
-		err = cmd.Run()
+		klog.Infof("Making bucket %s public", bucketName)
+		policy, err := bucket.IAM().Policy(ctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get bucket IAM policy: %w", err)
+		}
+
+		// Add allUsers as objectViewer
+		policy.Add(iam.AllUsers, "roles/storage.objectViewer")
+
+		if err := bucket.IAM().SetPolicy(ctx, policy); err != nil {
+			return fmt.Errorf("failed to set bucket IAM policy: %w", err)
 		}
 	}
+
 	return nil
 }
 
