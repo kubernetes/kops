@@ -109,8 +109,8 @@ func main() {
 	}
 
 	kubeConfig := ctrl.GetConfigOrDie()
-	kubeConfig.Burst = 200
-	kubeConfig.QPS = 100
+	kubeConfig.Burst = 300
+	kubeConfig.QPS = 150
 
 	mgr, err := ctrl.NewManager(kubeConfig, ctrl.Options{
 		Scheme: scheme,
