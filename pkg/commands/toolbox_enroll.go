@@ -423,11 +423,11 @@ type BootstrapData struct {
 // ConfigBuilder builds bootstrap configuration for a node.
 type ConfigBuilder struct {
 	// ClusterName is the name of the cluster to build.
-	// Required.
+	// Required (unless Cluster is set).
 	ClusterName string
 
 	// InstanceGroupName is the name of the InstanceGroup we are building configuration for.
-	// Required.
+	// Required (unless InstanceGroup is set).
 	InstanceGroupName string
 
 	// Clientset is the clientset to use to query for clusters / instancegroups etc

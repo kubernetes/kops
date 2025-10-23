@@ -19,11 +19,12 @@ package clusterapi
 import (
 	"fmt"
 
+	"k8s.io/kops/pkg/client/simple"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-func RegisterControllers(mgr manager.Manager) error {
-	if err := NewKopsConfigReconciler(mgr); err != nil {
+func RegisterControllers(mgr manager.Manager, clientset simple.Clientset) error {
+	if err := NewKopsConfigReconciler(mgr, clientset); err != nil {
 		return fmt.Errorf("error creating KopsConfig controller: %w", err)
 	}
 

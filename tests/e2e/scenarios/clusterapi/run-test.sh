@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-REPO_ROOT=$(git rev-parse --show-toplevel);
+
+set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "${REPO_ROOT}/"
 
 # Enable feature flag for CAPI support
 export KOPS_FEATURE_FLAGS=ClusterAPI
@@ -29,7 +33,7 @@ OVERRIDES="${OVERRIDES-} --node-count=2" # We need at least 2 nodes for CoreDNS 
 OVERRIDES="${OVERRIDES} --gce-service-account=default" # Use default service account because boskos permissions are limited
 
 # Create kOps cluster
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
 
 kops-acquire-latest
 
@@ -61,9 +65,9 @@ kubectl wait --for=condition=Available --timeout=5m -n cert-manager deployment/c
 
 # Install cluster-api core and cluster-api-provider-gcp
 kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api"
-kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api-provider-gcp"
-
 kubectl wait --for=condition=Available --timeout=5m -n capi-system deployment/capi-controller-manager
+
+kubectl apply --server-side -k "${REPO_ROOT}/clusterapi/manifests/cluster-api-provider-gcp"
 kubectl wait --for=condition=Available --timeout=5m -n capg-system deployment/capg-controller-manager
 
 

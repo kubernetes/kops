@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/controllers/clusterapi"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
@@ -136,6 +137,8 @@ func main() {
 		capiManager = nodeidentityclusterapi.NewManager(mgr.GetClient())
 	}
 
+	var clientset simple.Clientset
+
 	if opt.Server != nil {
 		var verifiers []bootstrap.Verifier
 		var err error
@@ -225,6 +228,7 @@ func main() {
 			setupLog.Error(err, "unable to create server")
 			os.Exit(1)
 		}
+		clientset = srv.GetClientset()
 		mgr.Add(srv)
 	}
 
@@ -249,7 +253,11 @@ func main() {
 	// +kubebuilder:scaffold:builder
 
 	if opt.CAPI.IsEnabled() {
-		if err := clusterapi.RegisterControllers(mgr); err != nil {
+		if clientset == nil {
+			setupLog.Error(fmt.Errorf("clientset is not initialized"), "registering Cluster API controllers")
+			os.Exit(1)
+		}
+		if err := clusterapi.RegisterControllers(mgr, clientset); err != nil {
 			setupLog.Error(err, "registering Cluster API controllers")
 			os.Exit(1)
 		}
