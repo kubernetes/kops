@@ -685,6 +685,13 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		config.CacheNodeidentityInfo = true
 	}
 
+	if featureflag.ClusterAPI.Enabled() {
+		enabled := true
+		config.CAPI = &kopscontrollerconfig.CAPIOptions{
+			Enabled: &enabled,
+		}
+	}
+
 	{
 		certNames := []string{"kubelet", "kubelet-server"}
 		signingCAs := []string{fi.CertificateIDCA}
@@ -899,6 +906,11 @@ func (tf *TemplateFunctions) KopsControllerEnv() []corev1.EnvVar {
 	// (if building bootstrap configuration on the fly)
 	if v := os.Getenv("KOPS_RUN_TOO_NEW_VERSION"); v != "" {
 		envMap["KOPS_RUN_TOO_NEW_VERSION"] = v
+	}
+
+	// If our assets are served from a custom base URL, we need to pass that to kops-controller for cluster-api etc.
+	if v := os.Getenv("KOPS_BASE_URL"); v != "" {
+		envMap["KOPS_BASE_URL"] = v
 	}
 
 	return envMap.ToEnvVars()

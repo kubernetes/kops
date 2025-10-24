@@ -272,7 +272,7 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(resp)
-	klog.Infof("bootstrap %s %s success", r.RemoteAddr, id.NodeName)
+	klog.Infof("bootstrap %s (req.includeNodeConfig: %t, req.certs.#: %d, req.keypairs.#: %d) success", r.RemoteAddr, req.IncludeNodeConfig, len(req.Certs), len(req.KeypairIDs))
 }
 
 func (s *Server) issueCert(ctx context.Context, name string, pubKey string, id *bootstrap.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {

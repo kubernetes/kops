@@ -54,6 +54,8 @@ unexport AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_STORAGE_ACCOUNT AZURE_SUBSCRI
 
 
 VERSION=$(shell tools/get_version.sh | grep VERSION | awk '{print $$2}')
+export VERSION
+
 IMAGE_TAG=$(shell tools/get_version.sh | grep IMAGE_TAG | awk '{print $$2}')
 
 KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' kops-version.go | awk '{print $$3}' | sed -e 's_"__g')
@@ -62,6 +64,7 @@ KOPS_CI_VERSION:=$(shell grep 'KOPS_CI_VERSION\s*=' kops-version.go | awk '{prin
 KOPS=${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops
 
 GITSHA := $(shell cd ${KOPS_ROOT}; git describe --always)
+export GITSHA
 
 # We lock the versions of our controllers also
 # We need to keep in sync with:

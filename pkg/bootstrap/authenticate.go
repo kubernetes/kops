@@ -20,6 +20,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+
+	"k8s.io/kops/pkg/nodeidentity/clusterapi"
 )
 
 var ErrAlreadyExists = errors.New("node already exists")
@@ -36,6 +38,9 @@ type VerifyResult struct {
 
 	// InstanceGroupName is the name of the kops InstanceGroup this node is a member of.
 	InstanceGroupName string
+
+	// CAPIMachine is the Cluster API Machine object corresponding to this node, if available.
+	CAPIMachine *clusterapi.Machine
 
 	// CertificateNames is the alternate names the node is authorized to use for certificates.
 	CertificateNames []string

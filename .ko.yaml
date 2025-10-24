@@ -1,0 +1,4 @@
+defaultLdflags:
+- -s -w
+- -X k8s.io/kops.Version={{.Env.VERSION}}
+- -X k8s.io/kops.GitVersion={{.Env.GITSHA}}

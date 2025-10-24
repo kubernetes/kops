@@ -10,6 +10,6 @@ spec:
       - name: manager
         args:
         - --leader-elect
-        - --metrics-bind-addr=localhost:8080
+        #- --metrics-bind-addr=localhost:8080
         #- --feature-gates=MachinePool=${EXP_MACHINE_POOL:=false},ClusterResourceSet=${EXP_CLUSTER_RESOURCE_SET:=false},ClusterTopology=${CLUSTER_TOPOLOGY:=false},RuntimeSDK=${EXP_RUNTIME_SDK:=false},MachineSetPreflightChecks=${EXP_MACHINE_SET_PREFLIGHT_CHECKS:=false}
         - --feature-gates=MachinePool=false,ClusterResourceSet=false,ClusterTopology=false,RuntimeSDK=false,MachineSetPreflightChecks=false

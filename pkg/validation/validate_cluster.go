@@ -206,6 +206,8 @@ var masterStaticPods = []string{
 func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
 	nodeInstanceGroupMapping map[string]*kops.InstanceGroup, podValidationFilter func(pod *v1.Pod) bool,
 ) error {
+	log := klog.FromContext(ctx)
+
 	masterWithoutPod := map[string]map[string]bool{}
 	nodeByAddress := map[string]string{}
 
@@ -274,6 +276,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		for _, container := range pod.Status.ContainerStatuses {
 			if !container.Ready {
 				notready = append(notready, container.Name)
+				log.V(2).Info("container not ready", "pod", pod.Name, "container", container.Name, "state", container.State)
 			}
 		}
 		if len(notready) != 0 {

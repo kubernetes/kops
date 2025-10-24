@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capi-controller-manager
+  namespace: capi-system
+spec:
+  template:
+    spec:
+      containers:
+      - image: registry.k8s.io/cluster-api/cluster-api-controller:v1.11.1
+        imagePullPolicy: IfNotPresent
+        name: manager

@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonAnnotations:
+  api-approved.kubernetes.io: https://github.com/kubernetes/enhancements/pull/1111
+
+resources:
+- crds/kops.k8s.io_clusters.yaml
+- crds/kops.k8s.io_instancegroups.yaml

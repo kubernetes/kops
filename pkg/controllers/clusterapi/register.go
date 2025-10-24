@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2025 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package clusterapi
 
-//go:generate go run sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0 output:dir=config/crds crd:crdVersions=v1 paths=./bootstrap/kops/api/...;./controlplane/kops/api/...
+import (
+	"fmt"
 
-//go:generate go run sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0 object paths=./snapshot/cluster-api/...;./bootstrap/kops/api/...;./controlplane/kops/api/...
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+)
+
+func RegisterControllers(mgr manager.Manager) error {
+	if err := NewKopsConfigReconciler(mgr); err != nil {
+		return fmt.Errorf("error creating KopsConfig controller: %w", err)
+	}
+
+	if err := NewClusterReconciler(mgr); err != nil {
+		return fmt.Errorf("error creating Cluster controller: %w", err)
+	}
+
+	return nil
+}

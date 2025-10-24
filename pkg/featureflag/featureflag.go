@@ -98,6 +98,8 @@ var (
 	Metal = new("Metal", Bool(false))
 	// AWSSingleNodesInstanceGroup enables the creation of a single node instance group instead of one per availability zone.
 	AWSSingleNodesInstanceGroup = new("AWSSingleNodesInstanceGroup", Bool(false))
+	// ClusterAPI enables support for Cluster API (CAPI) resources.
+	ClusterAPI = new("ClusterAPI", Bool(false))
 )
 
 // FeatureFlag defines a feature flag

@@ -670,7 +670,7 @@ func (b *ConfigBuilder) GetAssetBuilder(ctx context.Context) (*assets.AssetBuild
 		return nil, err
 	}
 
-	// ApplyClusterCmd is get the assets.
+	// ApplyClusterCmd is used to get the assets.
 	// We use DryRun and GetAssets to do this without applying any changes.
 	apply := &cloudup.ApplyClusterCmd{
 		Cloud:      cloud,

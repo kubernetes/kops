@@ -29,15 +29,19 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/klog/v2"
 	"k8s.io/klog/v2/klogr"
+	bootstrapapi "k8s.io/kops/clusterapi/bootstrap/kops/api/v1beta1"
+	controlplaneapi "k8s.io/kops/clusterapi/controlplane/kops/api/v1beta1"
 	"k8s.io/kops/cmd/kops-controller/controllers"
 	"k8s.io/kops/cmd/kops-controller/pkg/config"
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
+	"k8s.io/kops/pkg/controllers/clusterapi"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
+	nodeidentityclusterapi "k8s.io/kops/pkg/nodeidentity/clusterapi"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityhetzner "k8s.io/kops/pkg/nodeidentity/hetzner"
@@ -102,7 +106,7 @@ func main() {
 
 	ctrl.SetLogger(klogr.New())
 
-	scheme, err := buildScheme()
+	scheme, err := buildScheme(&opt)
 	if err != nil {
 		setupLog.Error(err, "error building scheme")
 		os.Exit(1)
@@ -127,6 +131,11 @@ func main() {
 
 	vfsContext := vfs.NewVFSContext()
 
+	var capiManager *nodeidentityclusterapi.Manager
+	if opt.CAPI.IsEnabled() {
+		capiManager = nodeidentityclusterapi.NewManager(mgr.GetClient())
+	}
+
 	if opt.Server != nil {
 		var verifiers []bootstrap.Verifier
 		var err error
@@ -139,7 +148,7 @@ func main() {
 			verifiers = append(verifiers, verifier)
 		}
 		if opt.Server.Provider.GCE != nil {
-			verifier, err := gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE)
+			verifier, err := gcetpmverifier.NewTPMVerifier(opt.Server.Provider.GCE, capiManager)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
@@ -239,6 +248,13 @@ func main() {
 
 	// +kubebuilder:scaffold:builder
 
+	if opt.CAPI.IsEnabled() {
+		if err := clusterapi.RegisterControllers(mgr); err != nil {
+			setupLog.Error(err, "registering Cluster API controllers")
+			os.Exit(1)
+		}
+	}
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
@@ -246,7 +262,7 @@ func main() {
 	}
 }
 
-func buildScheme() (*runtime.Scheme, error) {
+func buildScheme(opt *config.Options) (*runtime.Scheme, error) {
 	scheme := runtime.NewScheme()
 	if err := corev1.AddToScheme(scheme); err != nil {
 		return nil, fmt.Errorf("error registering corev1: %v", err)
@@ -258,10 +274,24 @@ func buildScheme() (*runtime.Scheme, error) {
 	if err := coordinationv1.AddToScheme(scheme); err != nil {
 		return nil, fmt.Errorf("error registering coordinationv1: %v", err)
 	}
+	if opt.CAPI.IsEnabled() {
+		if err := bootstrapapi.AddToScheme(scheme); err != nil {
+			return nil, fmt.Errorf("error registering kops bootstrap cluster API: %v", err)
+		}
+		if err := controlplaneapi.AddToScheme(scheme); err != nil {
+			return nil, fmt.Errorf("error registering kops control-plane cluster API: %v", err)
+		}
+	}
+
 	return scheme, nil
 }
 
 func addNodeController(ctx context.Context, mgr manager.Manager, vfsContext *vfs.VFSContext, opt *config.Options) error {
+	var capiManager *nodeidentityclusterapi.Manager
+	if opt.CAPI.IsEnabled() {
+		capiManager = nodeidentityclusterapi.NewManager(mgr.GetClient())
+	}
+
 	var legacyIdentifier nodeidentity.LegacyIdentifier
 	var identifier nodeidentity.Identifier
 	var err error
@@ -269,43 +299,43 @@ func addNodeController(ctx context.Context, mgr manager.Manager, vfsContext *vfs
 	case "aws":
 		identifier, err = nodeidentityaws.New(ctx, opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "gce":
-		legacyIdentifier, err = nodeidentitygce.New()
+		identifier, err = nodeidentitygce.New(opt.ClusterName, capiManager)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "openstack":
 		identifier, err = nodeidentityos.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "digitalocean":
 		legacyIdentifier, err = nodeidentitydo.New()
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "hetzner":
 		identifier, err = nodeidentityhetzner.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %w", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "azure":
 		identifier, err = nodeidentityazure.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %v", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "scaleway":
 		identifier, err = nodeidentityscw.New(opt.CacheNodeidentityInfo)
 		if err != nil {
-			return fmt.Errorf("error building identifier: %w", err)
+			return fmt.Errorf("error building node identifier: %w", err)
 		}
 
 	case "metal":
