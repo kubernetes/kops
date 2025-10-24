@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/util/pkg/distributions"
@@ -198,7 +197,7 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 		}
 	}
 
-	if c.T.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal || !installed {
+	if !installed {
 		return nil, nil
 	}
 
@@ -246,7 +245,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 		healthy = fi.PtrTo(true)
 	}
 
-	if c.T.NodeupConfig.UpdatePolicy != kops.UpdatePolicyExternal || !installed {
+	if !installed {
 		return nil, nil
 	}
 
