@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# Copyright 2025 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "${REPO_ROOT}"
+
+# Free up disk space on GitHub Actions runners
+# Based on https://github.com/apache/flink/blob/02d30ace69dc18555a5085eccf70ee884e73a16e/tools/azure-pipelines/free_disk_space.sh
+
+if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
+  echo "Not running on GitHub Actions; skipping disk space cleanup (for safety)"
+  exit 1
+fi
+
+echo "=============================================================================="
+echo "Freeing up disk space on CI system"
+echo "=============================================================================="
+
+echo "Before cleanup:"
+echo "** 100 largest packages:"
+dpkg-query -Wf '${Installed-Size}\t${Status;1}\t${Package}\n' | sort -n | tail -n 100
+echo "** Disk usage:"
+df -h
+
+echo "Removing man-db (to speed up further removals)"
+sudo apt-get remove -y man-db || true
+
+echo "Removing large packages"
+sudo apt-get remove -y '^mysql-server-.*' || true
+sudo apt-get remove -y '^dotnet-.*' || true
+sudo apt-get remove -y '^llvm-.*' '^libllvm.*' '^libclang.*' || true
+# Hard to remove gcc because it is a dependency for many things
+#sudo apt-get remove -y '^gcc-.*' '^g\+\+.*' '^gfortran-.*' '^cpp-.*' || true
+sudo apt-get remove -y '^openjdk.*' '^temurin-.*' ca-certificates-java || true
+sudo apt-get remove -y 'php.*' || true
+sudo apt-get remove -y '^ruby.*' || true
+sudo apt-get remove -y microsoft-edge-stable google-chrome-stable firefox powershell mercurial-common
+sudo apt-get autoremove -y
+sudo apt-get clean
+
+echo "Removing large directories"
+# deleting 15GB
+rm -rf /usr/share/dotnet/
+
+
+echo "After cleanup:"
+echo "** 100 largest packages:"
+dpkg-query -Wf '${Installed-Size}\t${Status;1}\t${Package}\n' | sort -n | tail -n 100
+echo "** Disk usage:"
+df -h
