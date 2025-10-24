@@ -27,9 +27,6 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}" || return
 
-# Dev environments typically do not need to test multiple architectures
-KOPS_ARCH=amd64
-export KOPS_ARCH
 
 # Configure aws cli to talk to local storage
 aws configure --profile metal set aws_access_key_id accesskey
@@ -46,7 +43,7 @@ aws configure --profile metal set s3.multipart_threshold 64GB
 export UPLOAD_DEST=s3://kops-dev-build/
 aws --version
 aws s3 ls "${UPLOAD_DEST}" || aws s3 mb "${UPLOAD_DEST}" || return
-make kops-install dev-version-dist-${KOPS_ARCH} || return
+make kops-install dev-version-dist || return
 
 hack/upload .build/upload/ "${UPLOAD_DEST}" || return
 
