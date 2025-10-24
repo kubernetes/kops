@@ -874,6 +874,7 @@ func AddCCMPermissions(p *Policy, cloudRoutes bool) {
 		"ec2:DescribeSecurityGroups",
 		"ec2:DescribeSubnets",
 		"ec2:DescribeVpcs",
+		"ec2:DescribeInstanceTopology",
 		"elasticloadbalancing:DescribeLoadBalancers",
 		"elasticloadbalancing:DescribeLoadBalancerAttributes",
 		"elasticloadbalancing:DescribeListeners",
