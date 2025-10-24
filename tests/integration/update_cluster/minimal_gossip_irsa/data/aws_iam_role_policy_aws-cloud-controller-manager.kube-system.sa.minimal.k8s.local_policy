@@ -38,6 +38,7 @@
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeTags",
         "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeInstanceTopology",
         "ec2:DescribeInstances",
         "ec2:DescribeRegions",
         "ec2:DescribeRouteTables",
