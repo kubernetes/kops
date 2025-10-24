@@ -27,12 +27,17 @@ jobs:
         with:
           go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
+      - name: dev/tasks/free-disk-space-on-github-actions-runner
+        working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
+        run: |
+          dev/tasks/free-disk-space-on-github-actions-runner
+
       - name: tests/e2e/scenarios/bare-metal/run-test
         working-directory: ${{ env.GOPATH }}/src/k8s.io/kops
         run: |
           CHANGED_VERSION=$(git diff --name-only HEAD~2 | grep -E '^kops-version\.go$' || true)
           if [ -z "${CHANGED_VERSION}" ]
-          then 
+          then
             timeout 60m tests/e2e/scenarios/bare-metal/run-test
           else
             echo "kops-version.go has been modified, skipping test"
