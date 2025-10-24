@@ -269,6 +269,9 @@ func (_ *Package) CheckChanges(a, e, changes *Package) error {
 // It just avoids unnecessary failures from running e.g. concurrent apt-get installs
 var packageManagerLock sync.Mutex
 
+// packageManagerLastUpdated is the last time the package manager update was done
+var packageManagerLastUpdated time.Time
+
 func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) error {
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
@@ -326,27 +329,18 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			env = append(env, "DEBIAN_FRONTEND=noninteractive")
 		}
 
-		if d.IsDebianFamily() {
-			// Each time apt-get install is run, the timestamp of /var/lib/dpkg/status is updated.
-			// To avoid unnecessary apt-get update calls, we check the timestamp of this file.
-			// If it is newer than 10 minutes, we skip apt-get update.
-			stat, err := os.Stat("/var/lib/dpkg/status")
+		// If the package manager update was less than 10 minutes ago, skip updating the package list.
+		if d.IsDebianFamily() && time.Since(packageManagerLastUpdated) > 10*time.Minute {
+			args := []string{"apt-get", "update"}
+			klog.Infof("Running command %s", args)
+			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Env = env
+			output, err := cmd.CombinedOutput()
 			if err != nil {
-				klog.Infof("Error getting dpkg status info: %v", err)
-			} else {
-				if stat.ModTime().After(time.Now().Add(-10 * time.Minute)) {
-					klog.Infof("Skipping package install as /var/lib/dpkg/status is newer than 10 minutes")
-				} else {
-					args := []string{"apt-get", "update"}
-					klog.Infof("Running command %s", args)
-					cmd := exec.Command(args[0], args[1:]...)
-					cmd.Env = env
-					output, err := cmd.CombinedOutput()
-					if err != nil {
-						klog.Infof("Error fetching the latest list of available packages: %v:\n%s", err, string(output))
-					}
-				}
+				return fmt.Errorf("error fetching the list of available packages: %v:\n%s", err, string(output))
 			}
+			// Successful package list update, updating the last updated time.
+			packageManagerLastUpdated = time.Now()
 		}
 
 		var args []string
@@ -387,6 +381,8 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			}
 			return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
 		}
+		// Successful package install, updating the last updated time.
+		packageManagerLastUpdated = time.Now()
 	} else {
 		if changes.Healthy != nil {
 			if d.IsDebianFamily() {
