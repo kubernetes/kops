@@ -293,6 +293,9 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 	}
 	name := gce.ClusterSuffixedName(prefix, b.Cluster.ObjectMeta.Name, 63)
 
+	volumeIops := fi.ValueOf(m.VolumeIOPS)
+	volumeThroughput := fi.ValueOf(m.VolumeThroughput)
+
 	t := &gcetasks.Disk{
 		Name:      fi.PtrTo(name),
 		Lifecycle: b.Lifecycle,
@@ -301,6 +304,13 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 		SizeGB:     fi.PtrTo(int64(volumeSize)),
 		VolumeType: fi.PtrTo(volumeType),
 		Labels:     tags,
+	}
+
+	if volumeIops > 0 {
+		t.VolumeIops = fi.PtrTo(int64(volumeIops))
+	}
+	if volumeThroughput > 0 {
+		t.VolumeThroughput = fi.PtrTo(int64(volumeThroughput))
 	}
 
 	c.AddTask(t)
