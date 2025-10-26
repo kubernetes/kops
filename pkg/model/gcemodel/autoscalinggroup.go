@@ -65,9 +65,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		{
 			var volumeSize int32
 			var volumeType string
+			var volumeIops int32
+			var volumeThroughput int32
 			if ig.Spec.RootVolume != nil {
 				volumeSize = fi.ValueOf(ig.Spec.RootVolume.Size)
 				volumeType = fi.ValueOf(ig.Spec.RootVolume.Type)
+				volumeIops = fi.ValueOf(ig.Spec.RootVolume.IOPS)
+				volumeThroughput = fi.ValueOf(ig.Spec.RootVolume.Throughput)
 			}
 			if volumeSize == 0 {
 				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
@@ -118,6 +122,13 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 					gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),
 					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
 				},
+			}
+
+			if volumeIops > 0 {
+				t.BootDiskIOPS = i64(int64(volumeIops))
+			}
+			if volumeThroughput > 0 {
+				t.BootDiskThroughput = i64(int64(volumeThroughput))
 			}
 
 			if startupScript != nil {

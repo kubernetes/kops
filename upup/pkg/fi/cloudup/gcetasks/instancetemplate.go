@@ -57,9 +57,11 @@ type InstanceTemplate struct {
 	Preemptible          *bool
 	GCPProvisioningModel *string
 
-	BootDiskImage  *string
-	BootDiskSizeGB *int64
-	BootDiskType   *string
+	BootDiskImage      *string
+	BootDiskSizeGB     *int64
+	BootDiskType       *string
+	BootDiskIOPS       *int64
+	BootDiskThroughput *int64
 
 	CanIPForward  *bool
 	Subnet        *Subnet
@@ -133,6 +135,12 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 		actual.BootDiskImage = fi.PtrTo(bootDiskImage)
 		actual.BootDiskType = &p.Disks[0].InitializeParams.DiskType
 		actual.BootDiskSizeGB = &p.Disks[0].InitializeParams.DiskSizeGb
+		if p.Disks[0].InitializeParams.ProvisionedIops > 0 {
+			actual.BootDiskIOPS = &p.Disks[0].InitializeParams.ProvisionedIops
+		}
+		if p.Disks[0].InitializeParams.ProvisionedThroughput > 0 {
+			actual.BootDiskThroughput = &p.Disks[0].InitializeParams.ProvisionedThroughput
+		}
 
 		if p.Scheduling != nil {
 			actual.Preemptible = &p.Scheduling.Preemptible
@@ -239,7 +247,7 @@ func (e *InstanceTemplate) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
-func (_ *InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {
+func (*InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {
 	if fi.ValueOf(e.BootDiskImage) == "" {
 		return fi.RequiredField("BootDiskImage")
 	}
@@ -290,6 +298,14 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		Mode:       "READ_WRITE",
 		Type:       "PERSISTENT",
 	})
+
+	if e.BootDiskIOPS != nil {
+		disks[0].InitializeParams.ProvisionedIops = *e.BootDiskIOPS
+	}
+
+	if e.BootDiskThroughput != nil {
+		disks[0].InitializeParams.ProvisionedThroughput = *e.BootDiskThroughput
+	}
 
 	var tags *compute.Tags
 	if e.Tags != nil {
@@ -521,15 +537,17 @@ type terraformInstanceTemplateAttachedDisk struct {
 	DeviceName string `cty:"device_name"`
 
 	// scratch vs persistent
-	Type        string `cty:"type"`
-	Boot        bool   `cty:"boot"`
-	DiskName    string `cty:"disk_name"`
-	SourceImage string `cty:"source_image"`
-	Source      string `cty:"source"`
-	Interface   string `cty:"interface"`
-	Mode        string `cty:"mode"`
-	DiskType    string `cty:"disk_type"`
-	DiskSizeGB  int64  `cty:"disk_size_gb"`
+	Type                  string `cty:"type"`
+	Boot                  bool   `cty:"boot"`
+	DiskName              string `cty:"disk_name"`
+	SourceImage           string `cty:"source_image"`
+	Source                string `cty:"source"`
+	Interface             string `cty:"interface"`
+	Mode                  string `cty:"mode"`
+	DiskType              string `cty:"disk_type"`
+	DiskSizeGB            int64  `cty:"disk_size_gb"`
+	ProvisionedIops       int64  `cty:"provisioned_iops"`
+	ProvisionedThroughput int64  `cty:"provisioned_throughput"`
 }
 
 type terraformNetworkInterface struct {
@@ -648,6 +666,13 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			DiskType:    d.InitializeParams.DiskType,
 			DiskSizeGB:  d.InitializeParams.DiskSizeGb,
 			Type:        d.Type,
+		}
+		if d.InitializeParams.ProvisionedIops > 0 {
+			tfd.ProvisionedIops = d.InitializeParams.ProvisionedIops
+		}
+
+		if d.InitializeParams.ProvisionedThroughput > 0 {
+			tfd.ProvisionedThroughput = d.InitializeParams.ProvisionedThroughput
 		}
 		tf.Disks = append(tf.Disks, tfd)
 	}

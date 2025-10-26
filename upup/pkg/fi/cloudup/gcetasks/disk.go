@@ -35,10 +35,12 @@ type Disk struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	VolumeType *string
-	SizeGB     *int64
-	Zone       *string
-	Labels     map[string]string
+	VolumeType       *string
+	SizeGB           *int64
+	VolumeIops       *int64
+	VolumeThroughput *int64
+	Zone             *string
+	Labels           map[string]string
 }
 
 var _ fi.CompareWithID = &Disk{}
@@ -63,6 +65,8 @@ func (e *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 	actual.VolumeType = fi.PtrTo(gce.LastComponent(r.Type))
 	actual.Zone = fi.PtrTo(gce.LastComponent(r.Zone))
 	actual.SizeGB = &r.SizeGb
+	actual.VolumeIops = &r.ProvisionedIops
+	actual.VolumeThroughput = &r.ProvisionedThroughput
 
 	actual.Labels = r.Labels
 
@@ -86,7 +90,7 @@ func (e *Disk) Run(c *fi.CloudupContext) error {
 	return fi.CloudupDefaultDeltaRunMethod(e, c)
 }
 
-func (_ *Disk) CheckChanges(a, e, changes *Disk) error {
+func (*Disk) CheckChanges(a, e, changes *Disk) error {
 	if a != nil {
 		if changes.SizeGB != nil {
 			return fi.CannotChangeField("SizeGB")
@@ -105,7 +109,7 @@ func (_ *Disk) CheckChanges(a, e, changes *Disk) error {
 	return nil
 }
 
-func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
+func (*Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 	cloud := t.Cloud
 	typeURL := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/diskTypes/%s",
 		cloud.Project(),
@@ -116,6 +120,13 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 		Name:   *e.Name,
 		SizeGb: *e.SizeGB,
 		Type:   typeURL,
+	}
+
+	if e.VolumeIops != nil {
+		disk.ProvisionedIops = *e.VolumeIops
+	}
+	if e.VolumeThroughput != nil {
+		disk.ProvisionedThroughput = *e.VolumeThroughput
 	}
 
 	if a == nil {
@@ -164,14 +175,16 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 }
 
 type terraformDisk struct {
-	Name       *string           `cty:"name"`
-	VolumeType *string           `cty:"type"`
-	SizeGB     *int64            `cty:"size"`
-	Zone       *string           `cty:"zone"`
-	Labels     map[string]string `cty:"labels"`
+	Name                  *string           `cty:"name"`
+	VolumeType            *string           `cty:"type"`
+	SizeGB                *int64            `cty:"size"`
+	ProvisionedIops       *int64            `cty:"provisioned_iops"`
+	ProvisionedThroughput *int64            `cty:"provisioned_throughput"`
+	Zone                  *string           `cty:"zone"`
+	Labels                map[string]string `cty:"labels"`
 }
 
-func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) error {
+func (*Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) error {
 	cloud := t.Cloud.(gce.GCECloud)
 
 	labels := make(map[string]string)
@@ -184,6 +197,12 @@ func (_ *Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk
 		SizeGB:     e.SizeGB,
 		Zone:       e.Zone,
 		Labels:     labels,
+	}
+	if e.VolumeIops != nil {
+		tf.ProvisionedIops = e.VolumeIops
+	}
+	if e.VolumeThroughput != nil {
+		tf.ProvisionedThroughput = e.VolumeThroughput
 	}
 	return t.RenderResource("google_compute_disk", *e.Name, tf)
 }

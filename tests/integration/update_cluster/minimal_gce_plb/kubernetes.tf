@@ -492,17 +492,19 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-plb-exampl
 resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-plb-example-com" {
   can_ip_forward = true
   disk {
-    auto_delete  = true
-    boot         = true
-    device_name  = "persistent-disks-0"
-    disk_name    = ""
-    disk_size_gb = 64
-    disk_type    = "pd-standard"
-    interface    = ""
-    mode         = "READ_WRITE"
-    source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
-    type         = "PERSISTENT"
+    auto_delete            = true
+    boot                   = true
+    device_name            = "persistent-disks-0"
+    disk_name              = ""
+    disk_size_gb           = 64
+    disk_type              = "pd-standard"
+    interface              = ""
+    mode                   = "READ_WRITE"
+    provisioned_iops       = 0
+    provisioned_throughput = 0
+    source                 = ""
+    source_image           = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
+    type                   = "PERSISTENT"
   }
   labels = {
     "k8s-io-cluster-name"       = "minimal-gce-plb-example-com"
@@ -513,7 +515,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-plb-e
   lifecycle {
     create_before_destroy = true
   }
-  machine_type = "e2-medium"
+  machine_type = "c4-standard-4"
   metadata = {
     "cluster-name"                    = "minimal-gce-plb.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
@@ -542,17 +544,19 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-plb-e
 resource "google_compute_instance_template" "nodes-minimal-gce-plb-example-com" {
   can_ip_forward = true
   disk {
-    auto_delete  = true
-    boot         = true
-    device_name  = "persistent-disks-0"
-    disk_name    = ""
-    disk_size_gb = 128
-    disk_type    = "pd-standard"
-    interface    = ""
-    mode         = "READ_WRITE"
-    source       = ""
-    source_image = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
-    type         = "PERSISTENT"
+    auto_delete            = true
+    boot                   = true
+    device_name            = "persistent-disks-0"
+    disk_name              = ""
+    disk_size_gb           = 128
+    disk_type              = "pd-standard"
+    interface              = ""
+    mode                   = "READ_WRITE"
+    provisioned_iops       = 0
+    provisioned_throughput = 0
+    source                 = ""
+    source_image           = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
+    type                   = "PERSISTENT"
   }
   labels = {
     "k8s-io-cluster-name"   = "minimal-gce-plb-example-com"
@@ -562,7 +566,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-plb-example-com" 
   lifecycle {
     create_before_destroy = true
   }
-  machine_type = "e2-medium"
+  machine_type = "c4-standard-8"
   metadata = {
     "cluster-name"                    = "minimal-gce-plb.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
