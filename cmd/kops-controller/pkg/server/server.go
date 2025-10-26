@@ -126,6 +126,10 @@ func NewServer(vfsContext *vfs.VFSContext, opt *config.Options, verifier bootstr
 	return s, nil
 }
 
+func (s *Server) GetClientset() simple.Clientset {
+	return s.clientset
+}
+
 func (s *Server) NeedLeaderElection() bool {
 	return false
 }
