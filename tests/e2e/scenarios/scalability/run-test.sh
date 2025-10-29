@@ -30,6 +30,12 @@ if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
 fi
 
+# Default Scale Scenario to performance
+if [[ -z "${SCALE_SCENARIO:-}" ]]; then
+  SCALE_SCENARIO="performance"
+  export SCALE_SCENARIO
+fi
+
 # Default cloud provider to aws
 if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
   CLOUD_PROVIDER="aws"
@@ -69,23 +75,29 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--master-volume-size=1000")
   create_args+=("--gce-service-account=default")
   create_args+=("--topology=private")
+  create_args+=("--bastion")
   create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}")
-  create_args+=("--etcd-storage-type=hyperdisk-balanced")
-  create_args+=("--set spec.networking.podCIDR=10.64.0.0/11")
-  create_args+=("--set spec.networking.subnets[0].cidr=10.96.0.0/15")
-  create_args+=("--set spec.networking.serviceClusterIPRange=10.98.0.0/15")
+  create_args+=("--set spec.networking.podCIDR=10.64.0.0/10")
+  create_args+=("--set spec.networking.subnets[0].cidr=10.128.0.0/15")
+  create_args+=("--set spec.networking.serviceClusterIPRange=10.130.0.0/15")
   create_args+=("--set spec.networking.nonMasqueradeCIDR=10.64.0.0/10")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=hyperdisk-balanced")
 fi
 create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
   create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
 fi
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
-create_args+=("--set spec.etcdClusters[0].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
-create_args+=("--set spec.etcdClusters[1].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
+create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
+create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
 create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=10")
 create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
+create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/livez")
+create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/readyz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/metrics")
 create_args+=("--set spec.kubeScheduler.kubeAPIQPS=500")
 create_args+=("--set spec.kubeScheduler.kubeAPIBurst=500")
@@ -99,7 +111,7 @@ create_args+=("--set spec.kubeControllerManager.enableProfiling=true")
 create_args+=("--set spec.kubeControllerManager.enableContentionProfiling=true")
 # inflight requests are bit higher than what currently upstream uses for GCE scale tests
 create_args+=("--set spec.kubeAPIServer.maxRequestsInflight=800")
-create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=400")
+create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=0")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 create_args+=("--set spec.kubeAPIServer.logLevel=2")
@@ -118,18 +130,10 @@ create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   # Enable creating a single nodes instance group
   KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeIOPS=6000")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeIOPS=6000")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeIOPS=6000")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeThroughput=1000")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeThroughput=1000")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeThroughput=1000")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeSize=120")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeSize=120")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeSize=120")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[0].volumeType=io1")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[1].volumeType=io1")
-  create_args+=("--set spec.etcdClusters[0].etcdMembers[2].volumeType=io1")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=6000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io1")
 
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
@@ -140,9 +144,14 @@ KUBETEST2_ARGS+=("-v=2")
 KUBETEST2_ARGS+=("--max-nodes-to-dump=${MAX_NODES_TO_DUMP:-5}")
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
-KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
+fi
 
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   if [[ -n "${GCP_PROJECT:-}" ]]; then
@@ -151,10 +160,13 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
     KUBETEST2_ARGS+=("--boskos-resource-type=${BOSKOS_RESOURCE_TYPE:-scalability-project}")
   fi
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=hyperdisk-balanced")
+  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.iops=10000")
+  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.throughput=1000")
+  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.associatePublicIP=true")
 fi
 
 # More time for bigger clusters
-KUBETEST2_ARGS+=("--validation-wait=55m")
+KUBETEST2_ARGS+=("--validation-wait=75m")
 KUBETEST2_ARGS+=("--validation-count=3")
 KUBETEST2_ARGS+=("--validation-interval=60s")
 
@@ -172,7 +184,7 @@ fi
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
 export CL2_PROMETHEUS_TOLERATE_MASTER="true"
-if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
@@ -188,20 +200,41 @@ else
 EOL
 fi
 
-kubetest2 kops "${KUBETEST2_ARGS[@]}" \
-  --up \
-  --kubernetes-version="${K8S_VERSION}" \
-  --create-args="${create_args[*]}" \
-  --test=clusterloader2 \
-  -- \
-  --provider="${CLOUD_PROVIDER}" \
-  --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
-  --test-configs="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml \
-  --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml \
-  --extra-args="--experimental-prometheus-snapshot-to-report-dir=true" \
-  --kube-config="${HOME}/.kube/config"
-  # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/experiments/enable_restart_count_check.yaml \
-  # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml \
-  # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml \
-  # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml \
-  # --test-overrides="${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/access-tokens/config.yaml \
+CLUSTERLOADER2_ARGS=()
+if [[ -n "${KOPS_CL2_TEST_CONFIG}" ]]; then
+  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/${KOPS_CL2_TEST_CONFIG}")
+else
+  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/access-tokens/config.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/enable_restart_count_check.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml")
+  CLUSTERLOADER2_ARGS+=("--extra-args=--experimental-prometheus-snapshot-to-report-dir=true")
+fi
+
+if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+    --up \
+    --kubernetes-version="${K8S_VERSION}" \
+    --create-args="${create_args[*]}" \
+    --test=kops \
+    -- \
+    --test-package-url=https://storage.googleapis.com/k8s-release-dev \
+    --test-package-dir=ci \
+    --test-package-marker=latest.txt \
+    --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]\[KubeUp\]" \
+    --parallel=25
+else
+  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+    --up \
+    --kubernetes-version="${K8S_VERSION}" \
+    --create-args="${create_args[*]}" \
+    --test=clusterloader2 \
+    -- \
+    --provider="${CLOUD_PROVIDER}" \
+    --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
+    --kube-config="${HOME}/.kube/config" \
+    "${CLUSTERLOADER2_ARGS[@]}"
+fi
