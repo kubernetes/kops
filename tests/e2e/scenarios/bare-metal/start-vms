@@ -57,7 +57,7 @@ if ! qemu-system-x86_64 --version; then
 fi
 
 # Enable KVM on github actions
-if [[ "${USER}" == "runner" ]]; then
+if [[ "${USER:-}" == "runner" ]]; then
   if [[ ! -e /dev/kvm ]]; then
     echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
     sudo udevadm control --reload-rules
