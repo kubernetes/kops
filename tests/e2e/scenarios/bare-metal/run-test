@@ -19,8 +19,9 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-export CI=1
-echo "Running with CI=${CI:-}"
+if [[ "${CI:-}" == "true" && -n "${PROW_JOB_ID:-}" ]]; then
+  apt update && apt install sudo -y
+fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd ${REPO_ROOT}
