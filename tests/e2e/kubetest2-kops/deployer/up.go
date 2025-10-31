@@ -168,15 +168,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--set", "cluster.spec.nodePortAccess=0.0.0.0/0",
-	}
-
-	version, err := kops.GetVersion(d.KopsBinaryPath)
-	if err != nil {
-		return err
-	}
-	if version > "1.29" {
-		// Requires https://github.com/kubernetes/kops/pull/16128
-		args = append(args, "--set", `spec.containerd.configAdditions=plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`)
+		"--set", `spec.containerd.configAdditions=plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`,
 	}
 
 	if yes {
@@ -265,12 +257,12 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	cmd.SetEnv(d.env()...)
 
 	exec.InheritOutput(cmd)
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
 
-	if d.setInstanceGroupOverrides(); err != nil {
+	if err = d.setInstanceGroupOverrides(); err != nil {
 		return err
 	}
 

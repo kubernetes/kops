@@ -21,11 +21,10 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
-	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|nfs|NFS|Gluster|NodeProblemDetector"
+	skipRegexBase = "\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|nfs|NFS"
 )
 
 func (t *Tester) setSkipRegexFlag() error {
@@ -59,6 +58,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|Services.*rejected.*endpoints"
 	}
 	if networking.Cilium != nil {
+		// Cilium upstream skip references: https://github.com/cilium/cilium/blob/main/.github/workflows/k8s-kind-network-e2e.yaml#L210
 		// https://github.com/cilium/cilium/issues/10002
 		skipRegex += "|TCP.CLOSE_WAIT"
 		// https://github.com/cilium/cilium/issues/15361
@@ -75,38 +75,33 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/kubernetes/blob/418ae605ec1b788d43bff7ac44af66d8b669b833/test/e2e/network/networking.go#L135
 		skipRegex += "|should.check.kube-proxy.urls"
 
-		if k8sVersion.Minor < 35 {
+		if k8sVersion.Minor < 36 {
 			// This seems to be specific to the kube-proxy replacement
-			// < 35 so we look at this again
+			// < 36 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
 			// https://github.com/kubernetes/kubernetes/issues/129221
-			// < 35 so we look at this again
+			// < 36 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
+			// < 36 so we look at this again
+			skipRegex += "|Networking.Granular.Checks:.Services.should.function.for.service.endpoints.using.hostNetwork"
 		}
 
-		if k8sVersion.Minor < 35 {
-			// < 35 so we revisit this in future
-			// This test checks for kube-proxy on port 10249 (`127.0.0.1:10249/proxyMode`)
-			// It appears that the cilium kube-proxy replacement does not implement this.
-			// Ref: https://github.com/kubernetes/kubernetes/issues/126903
-			skipRegex += "|KubeProxy.should.update.metric.for.tracking.accepted.packets.destined.for.localhost.nodeports"
-		}
 	} else if networking.Calico != nil {
 		if cluster.Spec.LegacyCloudProvider == "gce" && k8sVersion.Minor < 35 {
 			// < 35 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.Flannel != nil {
-		if k8sVersion.Minor < 35 {
-			// < 35 so we look at this again
+		if k8sVersion.Minor < 36 {
+			// < 36 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
-		if k8sVersion.Minor < 35 {
-			// < 35 so we look at this again
+		if k8sVersion.Minor < 36 {
+			// < 36 so we look at this again
 			skipRegex += "|Networking.Granular.Checks:.Services.should.function.for.service.endpoints.using.hostNetwork"
-			// < 35 so we look at this again
+			// < 36 so we look at this again
 			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.Kubenet != nil {
@@ -119,39 +114,11 @@ func (t *Tester) setSkipRegexFlag() error {
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "gce" {
-		// Firewall tests expect a specific format for cluster and control plane host names
-		// which kOps does not match
-		// ref: https://github.com/kubernetes/kubernetes/blob/1bd00776b5d78828a065b5c21e7003accc308a06/test/e2e/framework/providers/gce/firewall.go#L92-L100
-		skipRegex += "|Firewall"
-		// kube-dns tests are not skipped automatically if a cluster uses CoreDNS instead
-		skipRegex += "|kube-dns"
 		// this test assumes the cluster runs COS but kOps uses Ubuntu by default
 		// ref: https://github.com/kubernetes/test-infra/pull/22190
 		skipRegex += "|should.be.mountable.when.non-attachable"
 		// The in-tree driver and its E2E tests use `topology.kubernetes.io/zone` but the CSI driver uses `topology.gke.io/zone`
 		skipRegex += "|In-tree.Volumes.\\[Driver:.gcepd\\].*topology.should.provision.a.volume.and.schedule.a.pod.with.AllowedTopologies"
-
-		// this tests assumes a custom config for containerd:
-		// https://github.com/kubernetes/test-infra/blob/578d86a7be187214be6ccd60e6ea7317b51aeb15/jobs/e2e_node/containerd/config.toml#L19-L21
-		// ref: https://github.com/kubernetes/kubernetes/pull/104803
-		skipRegex += "|RuntimeClass.should.run"
-		// https://github.com/kubernetes/kubernetes/pull/108694
-		skipRegex += "|Metadata.Concealment"
-
-		if k8sVersion.Minor >= 31 {
-			// Most e2e framework code for the in-tree provider has been removed but some test cases remain
-			// https://github.com/kubernetes/kubernetes/pull/124519
-			// https://github.com/kubernetes/test-infra/pull/33222
-			skipRegex += "\\[sig-cloud-provider-gcp\\]"
-		}
-	}
-
-	if k8sVersion.Minor >= 22 {
-		// this test was being skipped automatically because it isn't applicable with CSIMigration=true which is default
-		// but skipping logic has been changed and now the test is planned for removal
-		// Should be skipped on all versions we enable CSI drivers on
-		// ref: https://github.com/kubernetes/kubernetes/pull/109649#issuecomment-1108574843
-		skipRegex += "|should.verify.that.all.nodes.have.volume.limits"
 	}
 
 	// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
@@ -163,10 +130,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	// < 35 so we look at this again
 	if k8sVersion.Minor < 35 {
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
-	}
-
-	if cluster.Spec.CloudConfig != nil && cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil && fi.ValueOf(cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled) {
-		skipRegex += "|In-tree.Volumes.\\[Driver:.aws\\]"
 	}
 
 	for _, subnet := range cluster.Spec.Subnets {
