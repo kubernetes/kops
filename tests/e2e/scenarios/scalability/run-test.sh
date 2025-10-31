@@ -75,7 +75,6 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--master-volume-size=1000")
   create_args+=("--gce-service-account=default")
   create_args+=("--topology=private")
-  create_args+=("--bastion")
   create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}")
   create_args+=("--set spec.networking.podCIDR=10.64.0.0/10")
   create_args+=("--set spec.networking.subnets[0].cidr=10.128.0.0/15")
