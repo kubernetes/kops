@@ -31,6 +31,11 @@ import (
 	"k8s.io/kops/pkg/wellknownports"
 )
 
+const (
+	// InstanceGroupNameTag is the key of the tag used to identify an instance group that VM belongs to.
+	InstanceGroupNameTag = "kops.k8s.io_instancegroup"
+)
+
 type AzureVerifierOptions struct {
 	ClusterName string `json:"clusterName,omitempty"`
 }
@@ -63,52 +68,94 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		return nil, bootstrap.ErrNotThisVerifier
 	}
 
+	var nodeName, igName string
+	var addrs, challengeEndpoints []string
+
 	v := strings.Split(strings.TrimPrefix(token, AzureAuthenticationTokenPrefix), " ")
-	if len(v) != 3 {
+	switch len(v) {
+	case 2:
+		vmId := v[0]
+		vmName := v[1]
+
+		vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("getting info for VM %q: %w", vmName, err)
+		}
+		if vm.Properties == nil || vm.Properties.VMID == nil {
+			return nil, fmt.Errorf("determining VMID for VM %q", vmName)
+		}
+		if vmId != *vm.Properties.VMID {
+			return nil, fmt.Errorf("matching VMID %q to VM %q", vmId, vmName)
+		}
+		if vm.Properties.OSProfile == nil || vm.Properties.OSProfile.ComputerName == nil || *vm.Properties.OSProfile.ComputerName == "" {
+			return nil, fmt.Errorf("determining ComputerName for VM %q", vmName)
+		}
+
+		nodeName = strings.ToLower(*vm.Properties.OSProfile.ComputerName)
+
+		if v, ok := vm.Tags[InstanceGroupNameTag]; !ok || v == nil {
+			return nil, fmt.Errorf("determining IG name for VM %q", vmName)
+		}
+		igName = *vm.Tags[InstanceGroupNameTag]
+
+		ni, err := a.client.nisClient.Get(ctx, a.client.resourceGroup, nodeName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("getting info for VM network interface %q: %w", vmName, err)
+		}
+
+		for _, ipc := range ni.Properties.IPConfigurations {
+			if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
+				addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
+				challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.Properties.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
+			}
+		}
+
+	case 3:
+		vmId := v[0]
+		vmssName := v[1]
+		vmssIndex := v[2]
+
+		if !strings.HasSuffix(vmssName, "."+a.clusterName) {
+			return nil, fmt.Errorf("matching cluster name %q to VMSS %q", a.clusterName, vmssName)
+		}
+		igName = strings.TrimSuffix(vmssName, "."+a.clusterName)
+
+		vm, err := a.client.vmssVMsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, nil)
+		if err != nil {
+			return nil, fmt.Errorf("getting info for VMSS VM %q #%s: %w", vmssName, vmssIndex, err)
+		}
+		if vm.Properties == nil || vm.Properties.VMID == nil {
+			return nil, fmt.Errorf("determining VMID for VMSS %q VM #%s", vmssName, vmssIndex)
+		}
+		if vmId != *vm.Properties.VMID {
+			return nil, fmt.Errorf("matching VMID %q to VMSS %q VM #%s", vmId, vmssName, vmssIndex)
+		}
+		if vm.Properties.OSProfile == nil || vm.Properties.OSProfile.ComputerName == nil || *vm.Properties.OSProfile.ComputerName == "" {
+			return nil, fmt.Errorf("determining ComputerName for VMSS %q VM #%s", vmssName, vmssIndex)
+		}
+		nodeName = strings.ToLower(*vm.Properties.OSProfile.ComputerName)
+
+		ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("getting info for VMSS VM network interface %q #%s: %w", vmssName, vmssIndex, err)
+		}
+
+		for _, ipc := range ni.Properties.IPConfigurations {
+			if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
+				addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
+				challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.Properties.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
+			}
+		}
+
+	default:
 		return nil, fmt.Errorf("incorrect token format")
 	}
-	vmId := v[0]
-	vmssName := v[1]
-	vmssIndex := v[2]
 
-	if !strings.HasSuffix(vmssName, "."+a.clusterName) {
-		return nil, fmt.Errorf("matching cluster name %q to VMSS %q", a.clusterName, vmssName)
-	}
-	igName := strings.TrimSuffix(vmssName, "."+a.clusterName)
-
-	vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, nil)
-	if err != nil {
-		return nil, fmt.Errorf("getting info for VMSS virtual machine %q #%s: %w", vmssName, vmssIndex, err)
-	}
-	if vm.Properties == nil || vm.Properties.VMID == nil {
-		return nil, fmt.Errorf("determining VMID for VMSS %q virtual machine #%s", vmssName, vmssIndex)
-	}
-	if vmId != *vm.Properties.VMID {
-		return nil, fmt.Errorf("matching VMID %q to VMSS %q virtual machine #%s", vmId, vmssName, vmssIndex)
-	}
-	if vm.Properties.OSProfile == nil || vm.Properties.OSProfile.ComputerName == nil || *vm.Properties.OSProfile.ComputerName == "" {
-		return nil, fmt.Errorf("determining ComputerName for VMSS %q virtual machine #%s", vmssName, vmssIndex)
-	}
-	nodeName := strings.ToLower(*vm.Properties.OSProfile.ComputerName)
-
-	ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName, nil)
-	if err != nil {
-		return nil, fmt.Errorf("getting info for VMSS network interface %q #%s: %w", vmssName, vmssIndex, err)
-	}
-
-	var addrs []string
-	var challengeEndpoints []string
-	for _, ipc := range ni.Properties.IPConfigurations {
-		if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
-			addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
-			challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.Properties.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
-		}
-	}
 	if len(addrs) == 0 {
-		return nil, fmt.Errorf("determining challenge endpoint for VMSS %q virtual machine #%s", vmssName, vmssIndex)
+		return nil, fmt.Errorf("determining certificate alternate names for node %q", nodeName)
 	}
 	if len(challengeEndpoints) == 0 {
-		return nil, fmt.Errorf("determining challenge endpoint for VMSS %q virtual machine #%s", vmssName, vmssIndex)
+		return nil, fmt.Errorf("determining challenge endpoint for node %q", nodeName)
 	}
 
 	result := &bootstrap.VerifyResult{
@@ -125,7 +172,8 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 type client struct {
 	resourceGroup string
 	nisClient     *network.InterfacesClient
-	vmsClient     *compute.VirtualMachineScaleSetVMsClient
+	vmsClient     *compute.VirtualMachinesClient
+	vmssVMsClient *compute.VirtualMachineScaleSetVMsClient
 }
 
 // newClient returns a new Client.
@@ -150,7 +198,11 @@ func newClient() (*client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("creating interfaces client: %w", err)
 	}
-	vmsClient, err := compute.NewVirtualMachineScaleSetVMsClient(m.Compute.SubscriptionID, cred, nil)
+	vmsClient, err := compute.NewVirtualMachinesClient(m.Compute.SubscriptionID, cred, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating VMs client: %w", err)
+	}
+	vmssVMsClient, err := compute.NewVirtualMachineScaleSetVMsClient(m.Compute.SubscriptionID, cred, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating VMSSVMs client: %w", err)
 	}
@@ -159,5 +211,6 @@ func newClient() (*client, error) {
 		resourceGroup: m.Compute.ResourceGroupName,
 		nisClient:     nisClient,
 		vmsClient:     vmsClient,
+		vmssVMsClient: vmssVMsClient,
 	}, nil
 }

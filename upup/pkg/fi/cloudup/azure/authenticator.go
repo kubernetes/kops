@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"strings"
 
+	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 )
 
@@ -42,22 +43,27 @@ func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("querying instance metadata: %w", err)
 	}
-
-	vmId := m.Compute.VMID
-	if vmId == "" {
+	if m.Compute == nil || m.Compute.VMID == "" {
 		return "", fmt.Errorf("missing virtual machine ID")
 	}
 
-	// The fully qualified VMSS VM resource ID format is:
-	// /subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Compute/virtualMachineScaleSets/VMSS_NAME/virtualMachines/VMSS_INDEX
-	r := strings.Split(m.Compute.ResourceID, "/")
-	if len(r) != 11 || r[7] != "virtualMachineScaleSets" || r[9] != "virtualMachines" {
-		return "", fmt.Errorf("unexpected resource ID format: %q", m.Compute.ResourceID)
-	}
-	vmssName := r[8]
-	vmssIndex := r[10]
+	token := m.Compute.VMID
 
-	return AzureAuthenticationTokenPrefix + vmId + " " + vmssName + " " + vmssIndex, nil
+	// This should be a fully qualified VM resource ID.
+	r := strings.Split(m.Compute.ResourceID, "/")
+	switch len(r) {
+	case 11:
+		if r[7] == "virtualMachineScaleSets" && r[9] == "virtualMachines" {
+			token += " " + r[8] + " " + r[10]
+		}
+	case 9:
+		if r[7] == "virtualMachines" {
+			token += " " + r[8]
+		}
+	}
+
+	klog.Info(token)
+	return AzureAuthenticationTokenPrefix + token, nil
 }
 
 type instanceComputeMetadata struct {
