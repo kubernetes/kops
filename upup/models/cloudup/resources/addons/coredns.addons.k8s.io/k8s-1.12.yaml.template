@@ -62,8 +62,8 @@ metadata:
       addonmanager.kubernetes.io/mode: EnsureExists
 data:
   Corefile: |
-  {{- if KubeDNS.ExternalCoreFile }}
-{{ KubeDNS.ExternalCoreFile | indent 4 }}
+  {{- if kubeDNS.ExternalCoreFile }}
+{{ kubeDNS.ExternalCoreFile | indent 4 }}
   {{- else }}
     .:53 {
         errors
@@ -71,7 +71,7 @@ data:
           lameduck 10s
         }
         ready
-        kubernetes {{ KubeDNS.Domain }}. in-addr.arpa ip6.arpa {
+        kubernetes {{ kubeDNS.Domain }}. in-addr.arpa ip6.arpa {
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
           ttl 30
@@ -83,7 +83,7 @@ data:
         }
     {{- end }}
         prometheus :9153
-        forward . {{ or (join " " KubeDNS.UpstreamNameservers) "/etc/resolv.conf" }} {
+        forward . {{ or (join " " kubeDNS.UpstreamNameservers) "/etc/resolv.conf" }} {
           max_concurrent 1000
         }
         cache 30
@@ -122,9 +122,9 @@ spec:
     metadata:
       labels:
         k8s-app: kube-dns
-      {{- if KubeDNS.PodAnnotations }}
+      {{- if kubeDNS.PodAnnotations }}
       annotations:
-        {{- range $key, $value := KubeDNS.PodAnnotations }}
+        {{- range $key, $value := kubeDNS.PodAnnotations }}
         {{ $key }}: "{{ $value }}"
         {{- end }}
       {{- end }}
@@ -132,8 +132,8 @@ spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
       tolerations:
-        {{- if KubeDNS.Tolerations }}
-{{ ToYAML .KubeDNS.Tolerations | indent 8 }}
+        {{- if kubeDNS.Tolerations }}
+{{ ToYAML .kubeDNS.Tolerations | indent 8 }}
         {{- else }}
         - key: "CriticalAddonsOnly"
           operator: "Exists"
@@ -146,9 +146,9 @@ spec:
         {{- end }}
       nodeSelector:
         kubernetes.io/os: linux
-{{- if .KubeDNS.Affinity }}
+{{- if .kubeDNS.Affinity }}
       affinity:
-{{ ToYAML .KubeDNS.Affinity | indent 8 }}
+{{ ToYAML .kubeDNS.Affinity | indent 8 }}
 {{- end }}
       topologySpreadConstraints:
 {{- if ne GetCloudProvider "metal" }}
@@ -168,14 +168,14 @@ spec:
             k8s-app: kube-dns
       containers:
       - name: coredns
-        image: {{ if KubeDNS.CoreDNSImage }}{{ KubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.12.4{{ end }}
+        image: {{ if kubeDNS.CoreDNSImage }}{{ kubeDNS.CoreDNSImage }}{{ else }}registry.k8s.io/coredns/coredns:v1.12.4{{ end }}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
-            memory: {{ KubeDNS.MemoryLimit }}
+            memory: {{ kubeDNS.MemoryLimit }}
           requests:
-            cpu: {{ KubeDNS.CPURequest }}
-            memory: {{ KubeDNS.MemoryRequest }}
+            cpu: {{ kubeDNS.CPURequest }}
+            memory: {{ kubeDNS.MemoryRequest }}
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
         - name: config-volume
@@ -257,7 +257,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: {{ KubeDNS.ServerIP }}
+  clusterIP: {{ kubeDNS.ServerIP }}
   ports:
   - name: dns
     port: 53
@@ -349,7 +349,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: {{ if KubeDNS.CPAImage }}{{ KubeDNS.CPAImage }}{{ else }}registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0{{ end }}
+        image: {{ if kubeDNS.CPAImage }}{{ kubeDNS.CPAImage }}{{ else }}registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0{{ end }}
         resources:
             requests:
                 cpu: "20m"
@@ -368,8 +368,8 @@ spec:
       priorityClassName: system-cluster-critical
       {{- end }}
       tolerations:
-        {{- if KubeDNS.Tolerations }}
-{{ ToYAML .KubeDNS.Tolerations | indent 8 }}
+        {{- if kubeDNS.Tolerations }}
+{{ ToYAML .kubeDNS.Tolerations | indent 8 }}
         {{- else }}
         - key: "CriticalAddonsOnly"
           operator: "Exists"
@@ -377,8 +377,8 @@ spec:
       serviceAccountName: coredns-autoscaler
       nodeSelector:
         kubernetes.io/os: linux
-{{- if .KubeDNS.Affinity }}
+{{- if .kubeDNS.Affinity }}
       affinity:
-{{ ToYAML .KubeDNS.Affinity | indent 8 }}
+{{ ToYAML .kubeDNS.Affinity | indent 8 }}
 {{- end }}
 ---
