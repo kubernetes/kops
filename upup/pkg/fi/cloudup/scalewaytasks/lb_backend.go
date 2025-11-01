@@ -221,7 +221,7 @@ func (l *LBBackend) RenderTerraform(t *terraform.TerraformTarget, actual, expect
 	for _, server := range servers {
 		tfInstance := server.(terraformInstance)
 		if role := scaleway.InstanceRoleFromTags(tfInstance.Tags); role == scaleway.TagRoleControlPlane {
-			serverIPs = append(serverIPs, terraformWriter.LiteralProperty("scaleway_instance_server", fi.ValueOf(tfInstance.Name), "private_ip"))
+			serverIPs = append(serverIPs, terraformWriter.LiteralProperty("scaleway_instance_server", fi.ValueOf(tfInstance.Name), "private_ips[0].address"))
 		}
 	}
 
