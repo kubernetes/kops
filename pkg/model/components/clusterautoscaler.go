@@ -43,6 +43,10 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		v, err := util.ParseKubernetesVersion(clusterSpec.KubernetesVersion)
 		if err == nil {
 			switch v.Minor {
+			case 27:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.27.7"
+			case 28:
+				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.28.4"
 			case 29:
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.29.5"
 			case 30:
