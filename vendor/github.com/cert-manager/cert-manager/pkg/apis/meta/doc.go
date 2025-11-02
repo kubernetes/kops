@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +groupName=meta.cert-manager.io
-
 // Package meta contains meta types for cert-manager APIs
 package meta
 

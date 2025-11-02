@@ -2000,14 +2000,15 @@ func (s ListWorkforcePoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// ListWorkforcePoolProviderScimTenantsResponse: Response message for
-// ListWorkforcePoolProviderScimTenants.
+// ListWorkforcePoolProviderScimTenantsResponse: Agentspace only. Response
+// message for ListWorkforcePoolProviderScimTenants.
 type ListWorkforcePoolProviderScimTenantsResponse struct {
-	// NextPageToken: Optional. A token, which can be sent as `page_token` to
-	// retrieve the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: Optional. Agentspace only. A token, which can be sent as
+	// `page_token` to retrieve the next page. If this field is omitted, there are
+	// no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-	// WorkforcePoolProviderScimTenants: Output only. A list of scim tenants.
+	// WorkforcePoolProviderScimTenants: Output only. Agentspace only. A list of
+	// SCIM tenants.
 	WorkforcePoolProviderScimTenants []*WorkforcePoolProviderScimTenant `json:"workforcePoolProviderScimTenants,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -2030,14 +2031,15 @@ func (s ListWorkforcePoolProviderScimTenantsResponse) MarshalJSON() ([]byte, err
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// ListWorkforcePoolProviderScimTokensResponse: Response message for
-// ListWorkforcePoolProviderScimTokens.
+// ListWorkforcePoolProviderScimTokensResponse: Agentspace only. Response
+// message for ListWorkforcePoolProviderScimTokens.
 type ListWorkforcePoolProviderScimTokensResponse struct {
-	// NextPageToken: Optional. A token, which can be sent as `page_token` to
-	// retrieve the next page. If this field is omitted, there are no subsequent
-	// pages.
+	// NextPageToken: Optional. Agentspace only. A token, which can be sent as
+	// `page_token` to retrieve the next page. If this field is omitted, there are
+	// no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-	// WorkforcePoolProviderScimTokens: Output only. A list of scim tokens.
+	// WorkforcePoolProviderScimTokens: Output only. Agentspace only. A list of
+	// SCIM tokens.
 	WorkforcePoolProviderScimTokens []*WorkforcePoolProviderScimToken `json:"workforcePoolProviderScimTokens,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -3654,13 +3656,13 @@ type UndeleteWorkforcePoolProviderKeyRequest struct {
 type UndeleteWorkforcePoolProviderRequest struct {
 }
 
-// UndeleteWorkforcePoolProviderScimTenantRequest: Request message for
-// UndeleteWorkforcePoolProviderScimTenant.
+// UndeleteWorkforcePoolProviderScimTenantRequest: Agentspace only. Request
+// message for UndeleteWorkforcePoolProviderScimTenant.
 type UndeleteWorkforcePoolProviderScimTenantRequest struct {
 }
 
-// UndeleteWorkforcePoolProviderScimTokenRequest: Request message for
-// UndeleteWorkforcePoolProviderScimToken.
+// UndeleteWorkforcePoolProviderScimTokenRequest: Agentspace only. Request
+// message for UndeleteWorkforcePoolProviderScimToken.
 type UndeleteWorkforcePoolProviderScimTokenRequest struct {
 }
 
@@ -3849,7 +3851,7 @@ type WorkforcePoolProvider struct {
 	// to access a JSON representation of the authentication credential issued by
 	// the provider. The maximum length of an attribute mapping expression is 2048
 	// characters. When evaluated, the total size of all mapped attributes must not
-	// exceed 4KB. For OIDC providers, you must supply a custom mapping that
+	// exceed 16 KB. For OIDC providers, you must supply a custom mapping that
 	// includes the `google.subject` attribute. For example, the following maps the
 	// `sub` claim of the incoming credential to the `subject` attribute on a
 	// Google token: ``` {"google.subject": "assertion.sub"} ```
@@ -3896,6 +3898,18 @@ type WorkforcePoolProvider struct {
 	Oidc *GoogleIamAdminV1WorkforcePoolProviderOidc `json:"oidc,omitempty"`
 	// Saml: A SAML identity provider configuration.
 	Saml *GoogleIamAdminV1WorkforcePoolProviderSaml `json:"saml,omitempty"`
+	// ScimUsage: Optional. Agentspace only. Specifies whether the workforce
+	// identity pool provider uses SCIM-managed groups instead of the
+	// `google.groups` attribute mapping for authorization checks. The `scim_usage`
+	// and `extended_attributes_oauth2_client` fields are mutually exclusive. A
+	// request that enables both fields on the same workforce identity pool
+	// provider will produce an error.
+	//
+	// Possible values:
+	//   "SCIM_USAGE_UNSPECIFIED" - Agentspace only. Do not use SCIM data.
+	//   "ENABLED_FOR_GROUPS" - Agentspace only. SCIM sync is enabled and
+	// SCIM-managed groups are used for authorization checks.
+	ScimUsage string `json:"scimUsage,omitempty"`
 	// State: Output only. The state of the provider.
 	//
 	// Possible values:
@@ -3954,7 +3968,8 @@ type WorkforcePoolProviderKey struct {
 	// Use: Required. The purpose of the key.
 	//
 	// Possible values:
-	//   "KEY_USE_UNSPECIFIED" - KeyUse unspecified.
+	//   "KEY_USE_UNSPECIFIED" - KeyUse unspecified. Do not use. The purpose of the
+	// key must be specified.
 	//   "ENCRYPTION" - The key is used for encryption.
 	Use string `json:"use,omitempty"`
 
@@ -3978,38 +3993,42 @@ func (s WorkforcePoolProviderKey) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkforcePoolProviderScimTenant: Represents a scim tenant. Used for
-// provisioning and managing identity data (such as Users and Groups) in
-// cross-domain environments.
+// WorkforcePoolProviderScimTenant: Agentspace only. Represents a SCIM tenant.
+// Used for provisioning and managing identity data (such as Users and Groups)
+// in cross-domain environments.
 type WorkforcePoolProviderScimTenant struct {
-	// BaseUri: Output only. Represents the base URI as defined in RFC 7644,
-	// Section 1.3 (https://datatracker.ietf.org/doc/html/rfc7644#section-1.3).
-	// Clients must use this as the root address for managing resources under the
-	// tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/
+	// BaseUri: Output only. Agentspace only. Represents the base URI as defined in
+	// RFC 7644, Section 1.3
+	// (https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must
+	// use this as the root address for managing resources under the tenant.
+	// Format: https://iamscim.googleapis.com/{version}/{tenant_id}/
 	BaseUri string `json:"baseUri,omitempty"`
-	// ClaimMapping: Optional. Maps BYOID claims to SCIM claims.
+	// ClaimMapping: Optional. Agentspace only. Maps BYOID claims to SCIM claims.
 	ClaimMapping map[string]string `json:"claimMapping,omitempty"`
-	// Description: Optional. The description of the scim tenant. Cannot exceed 256
-	// characters.
+	// Description: Optional. Agentspace only. The description of the SCIM tenant.
+	// Cannot exceed 256 characters.
 	Description string `json:"description,omitempty"`
-	// DisplayName: Optional. The display name of the scim tenant. Cannot exceed 32
-	// characters.
+	// DisplayName: Optional. Agentspace only. The display name of the SCIM tenant.
+	// Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-	// Name: Identifier. The resource name of the SCIM Tenant. Format:
-	// `locations/{location}/workforcePools/{workforce_pool}/providers/
+	// Name: Identifier. Agentspace only. The resource name of the SCIM Tenant.
+	// Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
 	// {workforce_pool_provider}/scimTenants/{scim_tenant}`
 	Name string `json:"name,omitempty"`
-	// PurgeTime: Output only. The timestamp when the scim tenant is going to be
-	// purged.
+	// PurgeTime: Output only. Agentspace only. The timestamp that represents the
+	// time when the SCIM tenant is purged.
 	PurgeTime string `json:"purgeTime,omitempty"`
-	// State: Output only. The state of the tenant.
+	// ServiceAgent: Output only. Service Agent created by SCIM Tenant API. SCIM
+	// tokens created under this tenant will be attached to this service agent.
+	ServiceAgent string `json:"serviceAgent,omitempty"`
+	// State: Output only. Agentspace only. The state of the tenant.
 	//
 	// Possible values:
-	//   "STATE_UNSPECIFIED" - State unspecified.
-	//   "ACTIVE" - The tenant is active and may be used to provision users and
-	// groups.
-	//   "DELETED" - The tenant is soft-deleted. Soft-deleted tenants are
-	// permanently deleted after approximately 30 days.
+	//   "STATE_UNSPECIFIED" - Agentspace only. State unspecified.
+	//   "ACTIVE" - Agentspace only. The tenant is active and may be used to
+	// provision users and groups.
+	//   "DELETED" - Agentspace only. The tenant is soft-deleted. Soft-deleted
+	// tenants are permanently deleted after approximately 30 days.
 	State string `json:"state,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -4032,28 +4051,28 @@ func (s WorkforcePoolProviderScimTenant) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkforcePoolProviderScimToken: Represents a token for the
-// WorkforcePoolProviderScimTenant. Used for authenticating SCIM Provisioning
+// WorkforcePoolProviderScimToken: Agentspace only. Represents a token for the
+// WorkforcePoolProviderScimTenant. Used for authenticating SCIM provisioning
 // requests.
 type WorkforcePoolProviderScimToken struct {
-	// DisplayName: Optional. The display name of the scim token. Cannot exceed 32
-	// characters.
+	// DisplayName: Optional. Agentspace only. The display name of the SCIM token.
+	// Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-	// Name: Identifier. The resource name of the SCIM Token. Format:
-	// `locations/{location}/workforcePools/{workforce_pool}/providers/
+	// Name: Identifier. Agentspace only. The resource name of the SCIM Token.
+	// Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
 	// {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`
 	Name string `json:"name,omitempty"`
-	// SecurityToken: Output only. The token string. Provide this to the IdP for
-	// authentication. Will be set only during creation.
+	// SecurityToken: Output only. Agentspace only. The token string. Provide this
+	// to the IdP for authentication. Will be set only during creation.
 	SecurityToken string `json:"securityToken,omitempty"`
-	// State: Output only. The state of the token.
+	// State: Output only. Agentspace only. The state of the token.
 	//
 	// Possible values:
-	//   "STATE_UNSPECIFIED" - State unspecified.
-	//   "ACTIVE" - The tenant is active and may be used to provision users and
-	// groups.
-	//   "DELETED" - The tenant is soft-deleted. Soft-deleted tenants are
-	// permanently deleted after approximately 30 days.
+	//   "STATE_UNSPECIFIED" - Agentspace only. State unspecified.
+	//   "ACTIVE" - Agentspace only. The token is active and may be used to
+	// provision users and groups.
+	//   "DELETED" - Agentspace only. The token is soft-deleted. Soft-deleted
+	// tokens are permanently deleted after approximately 30 days.
 	State string `json:"state,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -4166,7 +4185,7 @@ type WorkloadIdentityPoolManagedIdentity struct {
 	// ExpireTime: Output only. Time after which the managed identity will be
 	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Identifier. The resource name of the managed identity.
+	// Name: Output only. The resource name of the managed identity.
 	Name string `json:"name,omitempty"`
 	// State: Output only. The state of the managed identity.
 	//
@@ -4329,7 +4348,7 @@ type WorkloadIdentityPoolProvider struct {
 	// ExpireTime: Output only. Time after which the workload identity pool
 	// provider will be permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Identifier. The resource name of the provider.
+	// Name: Output only. The resource name of the provider.
 	Name string `json:"name,omitempty"`
 	// Oidc: An OpenId Connect 1.0 identity provider.
 	Oidc *Oidc `json:"oidc,omitempty"`
@@ -7301,11 +7320,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsCreateCall struct {
 	header_                         http.Header
 }
 
-// Create: Creates a new WorkforcePoolProviderScimTenant in a
-// WorkforcePoolProvider. You cannot reuse the name of a deleted scim tenant
+// Create: Agentspace only. Creates a new WorkforcePoolProviderScimTenant in a
+// WorkforcePoolProvider. You cannot reuse the name of a deleted SCIM tenant
 // until 30 days after deletion.
 //
-//   - parent: The parent to create scim tenant. Format:
+//   - parent: Agentspace only. The parent to create SCIM tenant. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Create(parent string, workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7315,9 +7334,10 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Create(parent strin
 }
 
 // WorkforcePoolProviderScimTenantId sets the optional parameter
-// "workforcePoolProviderScimTenantId": Required. The ID to use for the scim
-// tenant, which becomes the final component of the resource name. This value
-// should be 4-32 characters, and may contain the characters [a-z0-9-].
+// "workforcePoolProviderScimTenantId": Required. Agentspace only. The ID to
+// use for the SCIM tenant, which becomes the final component of the resource
+// name. This value should be 4-32 characters, containing the characters
+// [a-z0-9-].
 func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) WorkforcePoolProviderScimTenantId(workforcePoolProviderScimTenantId string) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
 	c.urlParams_.Set("workforcePoolProviderScimTenantId", workforcePoolProviderScimTenantId)
 	return c
@@ -7416,16 +7436,23 @@ type LocationsWorkforcePoolsProvidersScimTenantsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkforcePoolProviderScimTenant. You can undelete a scim
-// tenant for 30 days. After 30 days, deletion is permanent. You cannot update
-// deleted scim tenants. However, you can view and list them.
+// Delete: Agentspace only. Deletes a WorkforcePoolProviderScimTenant. You can
+// undelete a SCIM tenant for 30 days. After 30 days, deletion is permanent.
+// You cannot update deleted SCIM tenants. However, you can view and list them.
 //
-//   - name: The name of the scim tenant to delete. Format:
+//   - name: Agentspace only. The name of the scim tenant to delete. Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Delete(name string) *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
+	return c
+}
+
+// HardDelete sets the optional parameter "hardDelete": Deletes the SCIM tenant
+// immediately. This operation cannot be undone.
+func (c *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall) HardDelete(hardDelete bool) *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall {
+	c.urlParams_.Set("hardDelete", fmt.Sprint(hardDelete))
 	return c
 }
 
@@ -7519,9 +7546,9 @@ type LocationsWorkforcePoolsProvidersScimTenantsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets an individual WorkforcePoolProviderScimTenant.
+// Get: Agentspace only. Gets an individual WorkforcePoolProviderScimTenant.
 //
-//   - name: The name of the scim tenant to retrieve. Format:
+//   - name: Agentspace only. The name of the SCIM tenant to retrieve. Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Get(name string) *LocationsWorkforcePoolsProvidersScimTenantsGetCall {
@@ -7631,11 +7658,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all non-deleted WorkforcePoolProviderScimTenants in a
-// WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted scim
-// tenants are also listed.
+// List: Agentspace only. Lists all non-deleted
+// WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If
+// `show_deleted` is set to `true`, then deleted SCIM tenants are also listed.
 //
-//   - parent: The parent to list scim tenants. Format:
+//   - parent: Agentspace only. The parent to list SCIM tenants. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) List(parent string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7643,23 +7670,24 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsService) List(parent string)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number of scim
-// tenants to return. If unspecified, at most 1 scim tenant will be returned.
+// PageSize sets the optional parameter "pageSize": Agentspace only. The
+// maximum number of SCIM tenants to return. If unspecified, at most 1 scim
+// tenant will be returned.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token, received
-// from a previous `ListScimTenants` call. Provide this to retrieve the
-// subsequent page.
+// PageToken sets the optional parameter "pageToken": Agentspace only. A page
+// token, received from a previous `ListScimTenants` call. Provide this to
+// retrieve the subsequent page.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to return
-// soft-deleted scim tenants.
+// ShowDeleted sets the optional parameter "showDeleted": Agentspace only.
+// Whether to return soft-deleted SCIM tenants.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
@@ -7787,10 +7815,10 @@ type LocationsWorkforcePoolsProvidersScimTenantsPatchCall struct {
 	header_                         http.Header
 }
 
-// Patch: Updates an existing WorkforcePoolProviderScimTenant.
+// Patch: Agentspace only. Updates an existing WorkforcePoolProviderScimTenant.
 //
-//   - name: Identifier. The resource name of the SCIM Tenant. Format:
-//     `locations/{location}/workforcePools/{workforce_pool}/providers/
+//   - name: Identifier. Agentspace only. The resource name of the SCIM Tenant.
+//     Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
 //     {workforce_pool_provider}/scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Patch(name string, workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7799,8 +7827,8 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Patch(name string, 
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": The list of fields to
-// update.
+// UpdateMask sets the optional parameter "updateMask": Agentspace only. The
+// list of fields to update.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
@@ -7900,10 +7928,10 @@ type LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall struct {
 	header_                                        http.Header
 }
 
-// Undelete: Undeletes a WorkforcePoolProviderScimTenant, as long as it was
-// deleted fewer than 30 days ago.
+// Undelete: Agentspace only. Undeletes a WorkforcePoolProviderScimTenant, that
+// was deleted fewer than 30 days ago.
 //
-//   - name: The name of the scim tenant to undelete. Format:
+//   - name: Agentspace only. The name of the SCIM tenant to undelete. Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Undelete(name string, undeleteworkforcepoolproviderscimtenantrequest *UndeleteWorkforcePoolProviderScimTenantRequest) *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall {
@@ -8007,11 +8035,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall struct {
 	header_                        http.Header
 }
 
-// Create: Creates a new WorkforcePoolProviderScimToken in a
+// Create: Agentspace only. Creates a new WorkforcePoolProviderScimToken in a
 // WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM
 // token until 30 days after deletion.
 //
-//   - parent: The parent tenant to create scim token. Format:
+//   - parent: Agentspace only. The parent tenant to create SCIM token. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Create(parent string, workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
@@ -8022,9 +8050,9 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Create(parent
 }
 
 // WorkforcePoolProviderScimTokenId sets the optional parameter
-// "workforcePoolProviderScimTokenId": Required. The ID to use for the scim
-// token, which becomes the final component of the resource name. This value
-// should be 4-32 characters and follow this pattern: "(a-z
+// "workforcePoolProviderScimTokenId": Required. Agentspace only. The ID to use
+// for the SCIM token, which becomes the final component of the resource name.
+// This value should be 4-32 characters and follow the pattern: "(a-z
 // ([a-z0-9\\-]{2,30}[a-z0-9]))"
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) WorkforcePoolProviderScimTokenId(workforcePoolProviderScimTokenId string) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
 	c.urlParams_.Set("workforcePoolProviderScimTokenId", workforcePoolProviderScimTokenId)
@@ -8124,11 +8152,12 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Deletes a WorkforcePoolProviderScimToken. You can undelete a scim
-// token for 30 days. After 30 days, deletion is permanent. You cannot update
-// deleted scim tokens. However, you can view and list them.
+// Delete: Agentspace only. Deletes a WorkforcePoolProviderScimToken. You can
+// undelete a SCIM token for 30 days. After 30 days, the SCIM token is
+// permanently deleted. You cannot update deleted SCIM tokens, however, you can
+// view and list them.
 //
-//   - name: The name of the scim token to delete. Format:
+//   - name: Agentspace only. The name of the SCIM token to delete. Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Delete(name string) *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall {
@@ -8227,9 +8256,9 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets an individual WorkforcePoolProviderScimToken.
+// Get: Agentspace only. Gets an individual WorkforcePoolProviderScimToken.
 //
-//   - name: The name of the scim token to retrieve. Format:
+//   - name: Agentspace only. The name of the SCIM token to retrieve. Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Get(name string) *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall {
@@ -8339,11 +8368,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all non-deleted WorkforcePoolProviderScimTokenss in a
-// WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then
-// deleted SCIM tokens are also listed.
+// List: Agentspace only. Lists all non-deleted
+// WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If
+// `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.
 //
-//   - parent: The parent to list scim tokens. Format:
+//   - parent: Agentspace only. The parent to list SCIM tokens. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) List(parent string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
@@ -8352,23 +8381,24 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) List(parent s
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": The maximum number of scim
-// tokens to return. If unspecified, at most 2 scim tokens will be returned.
+// PageSize sets the optional parameter "pageSize": Agentspace only. The
+// maximum number of scim tokens to return. If unspecified, at most 2 SCIM
+// tokens will be returned.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": A page token, received
-// from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to
-// retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": Agentspace only. A page
+// token, received from a previous `ListWorkforcePoolProviderScimTokens` call.
+// Provide this to retrieve the subsequent page.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Whether to return
-// soft-deleted scim tokens.
+// ShowDeleted sets the optional parameter "showDeleted": Agentspace only.
+// Whether to return soft-deleted scim tokens.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
@@ -8496,10 +8526,10 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall struct {
 	header_                        http.Header
 }
 
-// Patch: Updates an existing WorkforcePoolProviderScimToken.
+// Patch: Agentspace only. Updates an existing WorkforcePoolProviderScimToken.
 //
-//   - name: Identifier. The resource name of the SCIM Token. Format:
-//     `locations/{location}/workforcePools/{workforce_pool}/providers/
+//   - name: Identifier. Agentspace only. The resource name of the SCIM Token.
+//     Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
 //     {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Patch(name string, workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -8508,8 +8538,8 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Patch(name st
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": The list of fields to
-// update.
+// UpdateMask sets the optional parameter "updateMask": Agentspace only. The
+// list of fields to update.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
@@ -8609,10 +8639,10 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall struct {
 	header_                                       http.Header
 }
 
-// Undelete: Undeletes a WorkforcePoolProviderScimToken, as long as it was
-// deleted fewer than 30 days ago.
+// Undelete: Agentspace only. Undeletes a WorkforcePoolProviderScimToken,that
+// was deleted fewer than 30 days ago.
 //
-//   - name: The name of the scim token to undelete. Format:
+//   - name: Agentspace only. The name of the SCIM token to undelete. Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Undelete(name string, undeleteworkforcepoolproviderscimtokenrequest *UndeleteWorkforcePoolProviderScimTokenRequest) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
@@ -13728,7 +13758,7 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall 
 // Patch: Updates an existing WorkloadIdentityPoolManagedIdentity in a
 // WorkloadIdentityPoolNamespace.
 //
-// - name: Identifier. The resource name of the managed identity.
+// - name: Output only. The resource name of the managed identity.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService) Patch(name string, workloadidentitypoolmanagedidentity *WorkloadIdentityPoolManagedIdentity) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -15079,7 +15109,7 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall struct {
 
 // Patch: Updates an existing WorkloadIdentityPoolProvider.
 //
-// - name: Identifier. The resource name of the provider.
+// - name: Output only. The resource name of the provider.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Patch(name string, workloadidentitypoolprovider *WorkloadIdentityPoolProvider) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name

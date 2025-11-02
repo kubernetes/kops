@@ -20,19 +20,20 @@ package fake
 
 import (
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/certmanager/v1"
+	typedcertmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeIssuers implements IssuerInterface
 type fakeIssuers struct {
-	*gentype.FakeClientWithList[*v1.Issuer, *v1.IssuerList]
+	*gentype.FakeClientWithListAndApply[*v1.Issuer, *v1.IssuerList, *certmanagerv1.IssuerApplyConfiguration]
 	Fake *FakeCertmanagerV1
 }
 
-func newFakeIssuers(fake *FakeCertmanagerV1, namespace string) certmanagerv1.IssuerInterface {
+func newFakeIssuers(fake *FakeCertmanagerV1, namespace string) typedcertmanagerv1.IssuerInterface {
 	return &fakeIssuers{
-		gentype.NewFakeClientWithList[*v1.Issuer, *v1.IssuerList](
+		gentype.NewFakeClientWithListAndApply[*v1.Issuer, *v1.IssuerList, *certmanagerv1.IssuerApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1.SchemeGroupVersion.WithResource("issuers"),

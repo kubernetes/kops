@@ -226,6 +226,7 @@ type Server struct {
 	// If NotifyStartedFunc is set it is called once the server has started listening.
 	NotifyStartedFunc func()
 	// DecorateReader is optional, allows customization of the process that reads raw DNS messages.
+	// The decorated reader must not mutate the data read from the conn.
 	DecorateReader DecorateReader
 	// DecorateWriter is optional, allows customization of the process that writes raw DNS messages.
 	DecorateWriter DecorateWriter
@@ -331,7 +332,7 @@ func (srv *Server) ListenAndServe() error {
 		return srv.serveTCP(l)
 	case "tcp-tls", "tcp4-tls", "tcp6-tls":
 		if srv.TLSConfig == nil || (len(srv.TLSConfig.Certificates) == 0 && srv.TLSConfig.GetCertificate == nil) {
-			return errors.New("dns: neither Certificates nor GetCertificate set in Config")
+			return errors.New("neither Certificates nor GetCertificate set in config")
 		}
 		network := strings.TrimSuffix(srv.Net, "-tls")
 		l, err := listenTCP(network, addr, srv.ReusePort, srv.ReuseAddr)

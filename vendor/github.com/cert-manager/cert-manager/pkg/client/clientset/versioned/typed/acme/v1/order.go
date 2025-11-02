@@ -22,6 +22,7 @@ import (
 	context "context"
 
 	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	applyconfigurationsacmev1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/acme/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -47,18 +48,21 @@ type OrderInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*acmev1.OrderList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *acmev1.Order, err error)
+	Apply(ctx context.Context, order *applyconfigurationsacmev1.OrderApplyConfiguration, opts metav1.ApplyOptions) (result *acmev1.Order, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, order *applyconfigurationsacmev1.OrderApplyConfiguration, opts metav1.ApplyOptions) (result *acmev1.Order, err error)
 	OrderExpansion
 }
 
 // orders implements OrderInterface
 type orders struct {
-	*gentype.ClientWithList[*acmev1.Order, *acmev1.OrderList]
+	*gentype.ClientWithListAndApply[*acmev1.Order, *acmev1.OrderList, *applyconfigurationsacmev1.OrderApplyConfiguration]
 }
 
 // newOrders returns a Orders
 func newOrders(c *AcmeV1Client, namespace string) *orders {
 	return &orders{
-		gentype.NewClientWithList[*acmev1.Order, *acmev1.OrderList](
+		gentype.NewClientWithListAndApply[*acmev1.Order, *acmev1.OrderList, *applyconfigurationsacmev1.OrderApplyConfiguration](
 			"orders",
 			c.RESTClient(),
 			scheme.ParameterCodec,

@@ -56,8 +56,12 @@ You can find a documentation of goverter here: https://goverter.jmattheis.de/
 // goverter:extend stringFromLocation
 // goverter:extend serverTypeFromInt64
 // goverter:extend int64FromServerType
+// goverter:extend zoneFromInt64
+// goverter:extend int64FromZone
 // goverter:extend floatingIPFromInt64
 // goverter:extend int64FromFloatingIP
+// goverter:extend storageBoxFromInt64
+// goverter:extend int64FromStorageBox
 // goverter:extend mapFromFloatingIPDNSPtrSchema
 // goverter:extend floatingIPDNSPtrSchemaFromMap
 // goverter:extend mapFromPrimaryIPDNSPtrSchema
@@ -360,6 +364,70 @@ type converter interface {
 	DeprecationFromSchema(*schema.DeprecationInfo) *DeprecationInfo
 
 	SchemaFromDeprecation(*DeprecationInfo) *schema.DeprecationInfo
+
+	// Zone
+	ZoneFromSchema(schema.Zone) *Zone
+
+	SchemaFromZone(*Zone) schema.Zone
+	SchemaFromZoneCreateOpts(ZoneCreateOpts) schema.ZoneCreateRequest
+	SchemaFromZoneUpdateOpts(ZoneUpdateOpts) schema.ZoneUpdateRequest
+	SchemaFromZoneImportZonefileOpts(ZoneImportZonefileOpts) schema.ZoneImportZonefileRequest
+	SchemaFromZoneChangeProtectionOpts(ZoneChangeProtectionOpts) schema.ZoneChangeProtectionRequest
+	SchemaFromZoneChangeTTLOpts(ZoneChangeTTLOpts) schema.ZoneChangeTTLRequest
+	SchemaFromZoneChangePrimaryNameserversOpts(ZoneChangePrimaryNameserversOpts) schema.ZoneChangePrimaryNameserversRequest
+
+	// ZoneRRSet
+	ZoneRRSetFromSchema(schema.ZoneRRSet) *ZoneRRSet
+	ZoneRRSetRecordFromSchema(schema.ZoneRRSetRecord) *ZoneRRSetRecord
+
+	SchemaFromZoneRRSet(*ZoneRRSet) schema.ZoneRRSet
+	SchemaFromZoneRRSetCreateOpts(ZoneRRSetCreateOpts) schema.ZoneRRSetCreateRequest
+	SchemaFromZoneRRSetUpdateOpts(ZoneRRSetUpdateOpts) schema.ZoneRRSetUpdateRequest
+	SchemaFromZoneRRSetChangeProtectionOpts(ZoneRRSetChangeProtectionOpts) schema.ZoneRRSetChangeProtectionRequest
+	SchemaFromZoneRRSetChangeTTLOpts(ZoneRRSetChangeTTLOpts) schema.ZoneRRSetChangeTTLRequest
+
+	SchemaFromZoneRRSetSetRecordsOpts(ZoneRRSetSetRecordsOpts) schema.ZoneRRSetSetRecordsRequest
+	SchemaFromZoneRRSetAddRecordsOpts(ZoneRRSetAddRecordsOpts) schema.ZoneRRSetAddRecordsRequest
+	SchemaFromZoneRRSetRemoveRecordsOpts(ZoneRRSetRemoveRecordsOpts) schema.ZoneRRSetRemoveRecordsRequest
+
+	// StorageBoxType
+	// goverter:map Pricings Prices
+	SchemaFromStorageBoxType(*StorageBoxType) schema.StorageBoxType
+	// goverter:map Prices Pricings
+	StorageBoxTypeFromSchema(schema.StorageBoxType) *StorageBoxType
+
+	// StorageBox
+	StorageBoxFromSchema(schema.StorageBox) *StorageBox
+	// goverter:map DayOfWeek | mapStorageBoxIntPtrToWeekdayPtr
+	StorageBoxSnapshotPlanFromSchema(schema.StorageBoxSnapshotPlan) StorageBoxSnapshotPlan
+	SchemaFromStorageBox(*StorageBox) schema.StorageBox
+	// goverter:map SSHKeys | mapSSHKeyPtrSliceToPublicKeySlice
+	SchemaFromStorageBoxCreateOpts(StorageBoxCreateOpts) schema.StorageBoxCreateRequest
+	SchemaFromStorageBoxUpdateOpts(StorageBoxUpdateOpts) schema.StorageBoxUpdateRequest
+	SchemaFromStorageBoxChangeProtectionOpts(StorageBoxChangeProtectionOpts) schema.StorageBoxChangeProtectionRequest
+	SchemaFromStorageBoxChangeTypeOpts(StorageBoxChangeTypeOpts) schema.StorageBoxChangeTypeRequest
+	SchemaFromStorageBoxResetPasswordOpts(StorageBoxResetPasswordOpts) schema.StorageBoxResetPasswordRequest
+	SchemaFromStorageBoxUpdateAccessSettingsOpts(StorageBoxUpdateAccessSettingsOpts) schema.StorageBoxUpdateAccessSettingsRequest
+	SchemaFromStorageBoxRollbackSnapshotOpts(StorageBoxRollbackSnapshotOpts) schema.StorageBoxRollbackSnapshotRequest
+	// goverter:map DayOfWeek | mapStorageBoxWeekdayPtrToIntPtr
+	SchemaFromStorageBoxEnableSnapshotPlanOpts(StorageBoxEnableSnapshotPlanOpts) schema.StorageBoxEnableSnapshotPlanRequest
+
+	// StorageBoxSnapshot
+	StorageBoxSnapshotFromSchema(schema.StorageBoxSnapshot) *StorageBoxSnapshot
+	SchemaFromStorageBoxSnapshot(*StorageBoxSnapshot) schema.StorageBoxSnapshot
+	SchemaFromStorageBoxSnapshotCreateOpts(StorageBoxSnapshotCreateOpts) schema.StorageBoxSnapshotCreateRequest
+	SchemaFromStorageBoxSnapshotUpdateOpts(StorageBoxSnapshotUpdateOpts) schema.StorageBoxSnapshotUpdateRequest
+
+	// StorageBoxSubaccount
+	StorageBoxSubaccountFromSchema(schema.StorageBoxSubaccount) *StorageBoxSubaccount
+	SchemaFromStorageBoxSubaccount(*StorageBoxSubaccount) schema.StorageBoxSubaccount
+	SchemaFromStorageBoxSubaccountCreateOpts(StorageBoxSubaccountCreateOpts) schema.StorageBoxSubaccountCreateRequest
+	SchemaFromStorageBoxSubaccountUpdateOpts(StorageBoxSubaccountUpdateOpts) schema.StorageBoxSubaccountUpdateRequest
+	// goverter:ignoreMissing
+	StorageBoxSubaccountFromCreateResponse(schema.StorageBoxSubaccountCreateResponseSubaccount) *StorageBoxSubaccount
+	SchemaFromStorageBoxSubaccountResetPasswordOpts(StorageBoxSubaccountResetPasswordOpts) schema.StorageBoxSubaccountResetPasswordRequest
+	SchemaFromStorageBoxSubaccountUpdateAccessSettingsOpts(StorageBoxSubaccountUpdateAccessSettingsOpts) schema.StorageBoxSubaccountUpdateAccessSettingsRequest
+	SchemaFromStorageBoxSubaccountChangeHomeDirectoryOpts(StorageBoxSubaccountChangeHomeDirectoryOpts) schema.StorageBoxSubaccountChangeHomeDirectoryRequest
 }
 
 func schemaActionErrorFromAction(a Action) *schema.ActionError {
@@ -437,6 +505,17 @@ func int64FromVolume(volume *Volume) int64 {
 		return 0
 	}
 	return volume.ID
+}
+
+func zoneFromInt64(id int64) *Zone {
+	return &Zone{ID: id}
+}
+
+func int64FromZone(o *Zone) int64 {
+	if o == nil {
+		return 0
+	}
+	return o.ID
 }
 
 func serverTypeFromInt64(id int64) *ServerType {
@@ -551,6 +630,17 @@ func int64FromFloatingIP(f *FloatingIP) int64 {
 	return f.ID
 }
 
+func storageBoxFromInt64(id int64) *StorageBox {
+	return &StorageBox{ID: id}
+}
+
+func int64FromStorageBox(sb *StorageBox) int64 {
+	if sb == nil {
+		return 0
+	}
+	return sb.ID
+}
+
 func firewallStatusFromSchemaServerFirewall(fw schema.ServerFirewall) *ServerFirewallStatus {
 	return &ServerFirewallStatus{
 		Firewall: Firewall{ID: fw.ID},
@@ -608,7 +698,7 @@ func stringFromIPNet(ip net.IPNet) string {
 func timeToTimePtr(t time.Time) *time.Time {
 	// Some hcloud structs don't use pointers for nullable times, so the zero value
 	// should be treated as nil.
-	if t == (time.Time{}) {
+	if t.IsZero() {
 		return nil
 	}
 	return &t
@@ -996,4 +1086,40 @@ func locationFromServerTypeLocationSchema(serverTypeLocation schema.ServerTypeLo
 		ID:   serverTypeLocation.ID,
 		Name: serverTypeLocation.Name,
 	}
+}
+
+func mapSSHKeyPtrSliceToPublicKeySlice(s []*SSHKey) []string {
+	publicKeys := make([]string, 0, len(s))
+	for _, key := range s {
+		if key == nil {
+			continue
+		}
+		publicKeys = append(publicKeys, key.PublicKey)
+	}
+
+	return publicKeys
+}
+
+func mapStorageBoxWeekdayPtrToIntPtr(w *time.Weekday) *int {
+	if w == nil {
+		return nil
+	}
+
+	if *w == time.Sunday {
+		return Ptr(7)
+	}
+
+	return Ptr(int(*w))
+}
+
+func mapStorageBoxIntPtrToWeekdayPtr(i *int) *time.Weekday {
+	if i == nil {
+		return nil
+	}
+
+	if *i == 7 {
+		return Ptr(time.Sunday)
+	}
+
+	return Ptr(time.Weekday(*i))
 }

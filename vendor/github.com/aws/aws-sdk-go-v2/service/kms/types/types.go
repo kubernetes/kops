@@ -735,6 +735,11 @@ type XksProxyConfigurationType struct {
 	// VPC endpoint service to communicate with KMS.
 	VpcEndpointServiceName *string
 
+	// The Amazon Web Services account ID that owns the Amazon VPC endpoint service
+	// used to communicate with the external key store proxy (XKS). This field appears
+	// only when the XKS uses an VPC endpoint service to communicate with KMS.
+	VpcEndpointServiceOwner *string
+
 	noSmithyDocumentSerde
 }
 

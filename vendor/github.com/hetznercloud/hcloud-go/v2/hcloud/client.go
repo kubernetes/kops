@@ -20,8 +20,11 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/instrumentation"
 )
 
-// Endpoint is the base URL of the API.
+// Endpoint is the base URL of the Cloud API.
 const Endpoint = "https://api.hetzner.cloud/v1"
+
+// Endpoint is the base URL of the Hetzner API.
+const HetznerEndpoint = "https://api.hetzner.com/v1"
 
 // UserAgent is the value for the library part of the User-Agent header
 // that is sent with each request.
@@ -84,6 +87,7 @@ func ExponentialBackoffWithOpts(opts ExponentialBackoffOpts) BackoffFunc {
 // Client is a client for the Hetzner Cloud API.
 type Client struct {
 	endpoint                string
+	hetznerEndpoint         string
 	token                   string
 	tokenValid              bool
 	retryBackoffFunc        BackoffFunc
@@ -111,11 +115,14 @@ type Client struct {
 	Pricing          PricingClient
 	Server           ServerClient
 	ServerType       ServerTypeClient
+	StorageBox       StorageBoxClient
 	SSHKey           SSHKeyClient
 	Volume           VolumeClient
 	PlacementGroup   PlacementGroupClient
 	RDNS             RDNSClient
 	PrimaryIP        PrimaryIPClient
+	StorageBoxType   StorageBoxTypeClient
+	Zone             ZoneClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -125,6 +132,16 @@ type ClientOption func(*Client)
 func WithEndpoint(endpoint string) ClientOption {
 	return func(client *Client) {
 		client.endpoint = strings.TrimRight(endpoint, "/")
+	}
+}
+
+// WithHetznerEndpoint configures a Client to use the specified Hetzner API endpoint.
+//
+// Experimental: This option is experimental, breaking changes may occur within minor releases.
+// See https://docs.hetzner.cloud/changelog#2025-06-25-new-api-for-storage-boxes for more details.
+func WithHetznerEndpoint(endpoint string) ClientOption {
+	return func(client *Client) {
+		client.hetznerEndpoint = strings.TrimRight(endpoint, "/")
 	}
 }
 
@@ -245,9 +262,10 @@ func WithInstrumentation(registry prometheus.Registerer) ClientOption {
 // NewClient creates a new client.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
-		endpoint:   Endpoint,
-		tokenValid: true,
-		httpClient: &http.Client{},
+		endpoint:        Endpoint,
+		hetznerEndpoint: HetznerEndpoint,
+		tokenValid:      true,
+		httpClient:      &http.Client{},
 
 		retryBackoffFunc: ExponentialBackoffWithOpts(ExponentialBackoffOpts{
 			Base:       time.Second,
@@ -272,6 +290,7 @@ func NewClient(options ...ClientOption) *Client {
 
 	client.handler = assembleHandlerChain(client)
 
+	// Cloud API
 	client.Action = ActionClient{action: &ResourceActionClient{client: client}}
 	client.Datacenter = DatacenterClient{client: client}
 	client.FloatingIP = FloatingIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "floating_ips"}}
@@ -291,6 +310,19 @@ func NewClient(options ...ClientOption) *Client {
 	client.PlacementGroup = PlacementGroupClient{client: client}
 	client.RDNS = RDNSClient{client: client}
 	client.PrimaryIP = PrimaryIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "primary_ips"}}
+	client.Zone = ZoneClient{client: client, Action: &ResourceActionClient{client: client, resource: "zones"}}
+
+	// Hetzner API
+
+	// Shallow copy of the client and overwrite of the API endpoint.
+	// We have two "base clients" because the endpoint is only added to the requests URL 3 layers deep, and we want to avoid passing this info through all the layers. By embedding it in the client, we can easily select which "base client" is used for each "resource client".
+	// We create a shallow copy so the handler chain and prometheus registry are the same values and it is transparent to the user.
+	hetznerClient := new(Client)
+	*hetznerClient = *client
+	hetznerClient.endpoint = hetznerClient.hetznerEndpoint
+
+	client.StorageBox = StorageBoxClient{client: hetznerClient, Action: &ResourceActionClient{client: hetznerClient, resource: "storage_boxes"}}
+	client.StorageBoxType = StorageBoxTypeClient{client: hetznerClient}
 
 	return client
 }
@@ -299,7 +331,7 @@ func NewClient(options ...ClientOption) *Client {
 // is assigned with ctx and has all necessary headers set (auth, user agent, etc.).
 func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
 	url := c.endpoint + path
-	req, err := http.NewRequest(method, url, body)
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +339,7 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 	req.Header.Set("Accept", "application/json")
 
 	if !c.tokenValid {
-		return nil, errors.New("Authorization token contains invalid characters")
+		return nil, errors.New("authorization token contains invalid characters")
 	} else if c.token != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	}
@@ -315,7 +347,6 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req = req.WithContext(ctx)
 	return req, nil
 }
 
@@ -356,7 +387,7 @@ type Response struct {
 func (r *Response) populateBody() error {
 	// Read full response body and save it for later use
 	body, err := io.ReadAll(r.Body)
-	r.Body.Close()
+	_ = r.Body.Close()
 	if err != nil {
 		return err
 	}

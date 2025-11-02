@@ -70,7 +70,7 @@ type CreateHealthCheckInput struct {
 	//   - If you send a CreateHealthCheck request with the same CallerReference and
 	//   settings as a previous request, and if the health check doesn't exist, Amazon
 	//   Route 53 creates the health check. If the health check does exist, Route 53
-	//   returns the settings for the existing health check.
+	//   returns the health check configuration in the response.
 	//
 	//   - If you send a CreateHealthCheck request with the same CallerReference as a
 	//   deleted health check, regardless of the settings, Route 53 returns a

@@ -45,6 +45,15 @@ const (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="Approved",type="string",JSONPath=`.status.conditions[?(@.type == "Approved")].status`
+// +kubebuilder:printcolumn:name="Denied",type="string",JSONPath=`.status.conditions[?(@.type == "Denied")].status`
+// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=`.status.conditions[?(@.type == "Ready")].status`
+// +kubebuilder:printcolumn:name="Issuer",type="string",JSONPath=`.spec.issuerRef.name`
+// +kubebuilder:printcolumn:name="Requester",type="string",JSONPath=`.spec.username`
+// +kubebuilder:printcolumn:name="Status",type="string",JSONPath=`.status.conditions[?(@.type == "Ready")].message`,priority=1
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamp`,description="CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC."
+// +kubebuilder:resource:scope=Namespaced,shortName={cr,crs},categories=cert-manager
+// +kubebuilder:subresource:status
 
 // A CertificateRequest is used to request a signed certificate from one of the
 // configured issuers.
@@ -55,7 +64,6 @@ const (
 //
 // A CertificateRequest is a one-shot resource, meaning it represents a single
 // point in time request for a certificate and cannot be re-used.
-// +k8s:openapi-gen=true
 type CertificateRequest struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard object's metadata.
@@ -110,7 +118,7 @@ type CertificateRequestSpec struct {
 	// from any namespace.
 	//
 	// The `name` field of the reference must always be specified.
-	IssuerRef cmmeta.ObjectReference `json:"issuerRef"`
+	IssuerRef cmmeta.IssuerReference `json:"issuerRef"`
 
 	// The PEM-encoded X.509 certificate signing request to be submitted to the
 	// issuer for signing.
@@ -143,6 +151,7 @@ type CertificateRequestSpec struct {
 	//
 	// If unset, defaults to `digital signature` and `key encipherment`.
 	// +optional
+	// +listType=atomic
 	Usages []KeyUsage `json:"usages,omitempty"`
 
 	// Username contains the name of the user that created the CertificateRequest.
@@ -155,8 +164,8 @@ type CertificateRequestSpec struct {
 	UID string `json:"uid,omitempty"`
 	// Groups contains group membership of the user that created the CertificateRequest.
 	// Populated by the cert-manager webhook on creation and immutable.
-	// +listType=atomic
 	// +optional
+	// +listType=atomic
 	Groups []string `json:"groups,omitempty"`
 	// Extra contains extra attributes of the user that created the CertificateRequest.
 	// Populated by the cert-manager webhook on creation and immutable.
@@ -169,9 +178,9 @@ type CertificateRequestSpec struct {
 type CertificateRequestStatus struct {
 	// List of status conditions to indicate the status of a CertificateRequest.
 	// Known condition types are `Ready`, `InvalidRequest`, `Approved` and `Denied`.
+	// +optional
 	// +listType=map
 	// +listMapKey=type
-	// +optional
 	Conditions []CertificateRequestCondition `json:"conditions,omitempty"`
 
 	// The PEM encoded X.509 certificate resulting from the certificate

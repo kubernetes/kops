@@ -16,6 +16,6 @@ limitations under the License.
 
 // Package v1 contains meta types for cert-manager APIs
 // +k8s:deepcopy-gen=package
+// +k8s:openapi-gen=true
 // +gencrdrefdocs:force
-// +groupName=meta.cert-manager.io
 package v1

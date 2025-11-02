@@ -29,6 +29,7 @@ type FloatingIP struct {
 }
 
 // DNSPtrForIP returns the reverse DNS pointer of the IP address.
+//
 // Deprecated: Use GetDNSPtrForIP instead.
 func (f *FloatingIP) DNSPtrForIP(ip net.IP) string {
 	return f.DNSPtr[ip.String()]

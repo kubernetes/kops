@@ -89,6 +89,9 @@ func awsAwsquery_deserializeOpErrorAddClientIDToOpenIDConnectProvider(response *
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("ConcurrentModification", errorCode):
+		return awsAwsquery_deserializeErrorConcurrentModificationException(response, errorBody)
+
 	case strings.EqualFold("InvalidInput", errorCode):
 		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
 
@@ -13115,6 +13118,9 @@ func awsAwsquery_deserializeOpErrorRemoveClientIDFromOpenIDConnectProvider(respo
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("ConcurrentModification", errorCode):
+		return awsAwsquery_deserializeErrorConcurrentModificationException(response, errorBody)
+
 	case strings.EqualFold("InvalidInput", errorCode):
 		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
 
@@ -15794,6 +15800,9 @@ func awsAwsquery_deserializeOpErrorUpdateOpenIDConnectProviderThumbprint(respons
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("ConcurrentModification", errorCode):
+		return awsAwsquery_deserializeErrorConcurrentModificationException(response, errorBody)
+
 	case strings.EqualFold("InvalidInput", errorCode):
 		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
 
@@ -16148,6 +16157,9 @@ func awsAwsquery_deserializeOpErrorUpdateSAMLProvider(response *smithyhttp.Respo
 	}
 	errorBody.Seek(0, io.SeekStart)
 	switch {
+	case strings.EqualFold("ConcurrentModification", errorCode):
+		return awsAwsquery_deserializeErrorConcurrentModificationException(response, errorBody)
+
 	case strings.EqualFold("InvalidInput", errorCode):
 		return awsAwsquery_deserializeErrorInvalidInputException(response, errorBody)
 

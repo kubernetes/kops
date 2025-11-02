@@ -95,7 +95,6 @@ type NetworkActionAddSubnetRequest struct {
 	Type        string `json:"type"`
 	IPRange     string `json:"ip_range,omitempty"`
 	NetworkZone string `json:"network_zone"`
-	Gateway     string `json:"gateway"`
 	VSwitchID   int64  `json:"vswitch_id,omitempty"`
 }
 

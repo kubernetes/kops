@@ -326,15 +326,31 @@ type ForwardActionConfig struct {
 // Information about a host header condition.
 type HostHeaderConditionConfig struct {
 
-	// The host names. The maximum size of each name is 128 characters. The comparison
-	// is case insensitive. The following wildcard characters are supported: * (matches
-	// 0 or more characters) and ? (matches exactly 1 character). You must include at
-	// least one "." character. You can include only alphabetical characters after the
-	// final "." character.
+	// The regular expressions to compare against the host header. The maximum length
+	// of each string is 128 characters.
+	RegexValues []string
+
+	// The host names. The maximum length of each string is 128 characters. The
+	// comparison is case insensitive. The following wildcard characters are supported:
+	// * (matches 0 or more characters) and ? (matches exactly 1 character). You must
+	// include at least one "." character. You can include only alphabetical characters
+	// after the final "." character.
 	//
 	// If you specify multiple strings, the condition is satisfied if one of the
 	// strings matches the host name.
 	Values []string
+
+	noSmithyDocumentSerde
+}
+
+// Information about a host header rewrite transform. This transform matches a
+// pattern in the host header in an HTTP request and replaces it with the specified
+// string.
+type HostHeaderRewriteConfig struct {
+
+	// The host header rewrite transform. Each transform consists of a regular
+	// expression to match and a replacement string.
+	Rewrites []RewriteConfig
 
 	noSmithyDocumentSerde
 }
@@ -345,7 +361,7 @@ type HostHeaderConditionConfig struct {
 // header fields.
 type HttpHeaderConditionConfig struct {
 
-	// The name of the HTTP header field. The maximum size is 40 characters. The
+	// The name of the HTTP header field. The maximum length is 40 characters. The
 	// header name is case insensitive. The allowed characters are specified by RFC
 	// 7230. Wildcards are not supported.
 	//
@@ -355,7 +371,11 @@ type HttpHeaderConditionConfig struct {
 	// [host condition]: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#host-conditions
 	HttpHeaderName *string
 
-	// The strings to compare against the value of the HTTP header. The maximum size
+	// The regular expression to compare against the HTTP header. The maximum length
+	// of each string is 128 characters.
+	RegexValues []string
+
+	// The strings to compare against the value of the HTTP header. The maximum length
 	// of each string is 128 characters. The comparison strings are case insensitive.
 	// The following wildcard characters are supported: * (matches 0 or more
 	// characters) and ? (matches exactly 1 character).
@@ -379,10 +399,10 @@ type HttpHeaderConditionConfig struct {
 // [HTTP Method Registry]: https://www.iana.org/assignments/http-methods/http-methods.xhtml
 type HttpRequestMethodConditionConfig struct {
 
-	// The name of the request method. The maximum size is 40 characters. The allowed
-	// characters are A-Z, hyphen (-), and underscore (_). The comparison is case
-	// sensitive. Wildcards are not supported; therefore, the method name must be an
-	// exact match.
+	// The name of the request method. The maximum length is 40 characters. The
+	// allowed characters are A-Z, hyphen (-), and underscore (_). The comparison is
+	// case sensitive. Wildcards are not supported; therefore, the method name must be
+	// an exact match.
 	//
 	// If you specify multiple strings, the condition is satisfied if one of the
 	// strings matches the HTTP request method. We recommend that you route GET and
@@ -422,43 +442,7 @@ type Limit struct {
 	// The maximum value of the limit.
 	Max *string
 
-	// The name of the limit. The possible values are:
-	//
-	//   - application-load-balancers
-	//
-	//   - condition-values-per-alb-rule
-	//
-	//   - condition-wildcards-per-alb-rule
-	//
-	//   - gateway-load-balancers
-	//
-	//   - gateway-load-balancers-per-vpc
-	//
-	//   - geneve-target-groups
-	//
-	//   - listeners-per-application-load-balancer
-	//
-	//   - listeners-per-network-load-balancer
-	//
-	//   - network-load-balancers
-	//
-	//   - rules-per-application-load-balancer
-	//
-	//   - target-groups
-	//
-	//   - target-groups-per-action-on-application-load-balancer
-	//
-	//   - target-groups-per-action-on-network-load-balancer
-	//
-	//   - target-groups-per-application-load-balancer
-	//
-	//   - targets-per-application-load-balancer
-	//
-	//   - targets-per-availability-zone-per-gateway-load-balancer
-	//
-	//   - targets-per-availability-zone-per-network-load-balancer
-	//
-	//   - targets-per-network-load-balancer
+	// The name of the limit.
 	Name *string
 
 	noSmithyDocumentSerde
@@ -779,10 +763,12 @@ type LoadBalancerAttribute struct {
 	//   - If the value is remove , the Application Load Balancer removes the
 	//   X-Forwarded-For header in the HTTP request before it sends it to targets.
 	//
-	//   - routing.http2.enabled - Indicates whether HTTP/2 is enabled. The possible
-	//   values are true and false . The default is true . Elastic Load Balancing
-	//   requires that message header names contain only alphanumeric characters and
-	//   hyphens.
+	//   - routing.http2.enabled - Indicates whether clients can connect to the load
+	//   balancer using HTTP/2. If true , clients can connect using HTTP/2 or HTTP/1.1.
+	//   However, all client requests are subject to the stricter HTTP/2 header
+	//   validation rules. For example, message header names must contain only
+	//   alphanumeric characters and hyphens. If false , clients must connect using
+	//   HTTP/1.1. The default is true .
 	//
 	//   - waf.fail_open.enabled - Indicates whether to allow a WAF-enabled load
 	//   balancer to route requests to targets if it is unable to forward the request to
@@ -885,8 +871,12 @@ type MutualAuthenticationAttributes struct {
 // Information about a path pattern condition.
 type PathPatternConditionConfig struct {
 
-	// The path patterns to compare against the request URL. The maximum size of each
-	// string is 128 characters. The comparison is case sensitive. The following
+	// The regular expressions to compare against the request URL. The maximum length
+	// of each string is 128 characters.
+	RegexValues []string
+
+	// The path patterns to compare against the request URL. The maximum length of
+	// each string is 128 characters. The comparison is case sensitive. The following
 	// wildcard characters are supported: * (matches 0 or more characters) and ?
 	// (matches exactly 1 character).
 	//
@@ -908,11 +898,12 @@ type PathPatternConditionConfig struct {
 // characters are specified by RFC 3986. Any character can be percentage encoded.
 type QueryStringConditionConfig struct {
 
-	// The key/value pairs or values to find in the query string. The maximum size of
-	// each string is 128 characters. The comparison is case insensitive. The following
-	// wildcard characters are supported: * (matches 0 or more characters) and ?
-	// (matches exactly 1 character). To search for a literal '*' or '?' character in a
-	// query string, you must escape these characters in Values using a '\' character.
+	// The key/value pairs or values to find in the query string. The maximum length
+	// of each string is 128 characters. The comparison is case insensitive. The
+	// following wildcard characters are supported: * (matches 0 or more characters)
+	// and ? (matches exactly 1 character). To search for a literal '*' or '?'
+	// character in a query string, you must escape these characters in Values using a
+	// '\' character.
 	//
 	// If you specify multiple key/value pairs or values, the condition is satisfied
 	// if one of them is found in the query string.
@@ -1004,6 +995,26 @@ type RevocationContent struct {
 	noSmithyDocumentSerde
 }
 
+// Information about a rewrite transform. This transform matches a pattern and
+// replaces it with the specified string.
+type RewriteConfig struct {
+
+	// The regular expression to match in the input string. The maximum length of the
+	// string is 1,024 characters.
+	//
+	// This member is required.
+	Regex *string
+
+	// The replacement string to use when rewriting the matched input. The maximum
+	// length of the string is 1,024 characters. You can specify capture groups in the
+	// regular expression (for example, $1 and $2).
+	//
+	// This member is required.
+	Replace *string
+
+	noSmithyDocumentSerde
+}
+
 // Information about a rule.
 type Rule struct {
 
@@ -1025,6 +1036,9 @@ type Rule struct {
 
 	// The Amazon Resource Name (ARN) of the rule.
 	RuleArn *string
+
+	// The transforms for the rule.
+	Transforms []RuleTransform
 
 	noSmithyDocumentSerde
 }
@@ -1076,6 +1090,11 @@ type RuleCondition struct {
 	// query-string .
 	QueryStringConfig *QueryStringConditionConfig
 
+	// The regular expressions to match against the condition field. The maximum
+	// length of each string is 128 characters. Specify only when Field is http-header
+	// , host-header , or path-pattern .
+	RegexValues []string
+
 	// Information for a source IP condition. Specify only when Field is source-ip .
 	SourceIpConfig *SourceIpConditionConfig
 
@@ -1123,6 +1142,30 @@ type RulePriorityPair struct {
 
 	// The Amazon Resource Name (ARN) of the rule.
 	RuleArn *string
+
+	noSmithyDocumentSerde
+}
+
+// Information about a transform to apply to requests that match a rule.
+// Transforms are applied to requests before they are sent to targets.
+type RuleTransform struct {
+
+	// The type of transform.
+	//
+	//   - host-header-rewrite - Rewrite the host header.
+	//
+	//   - url-rewrite - Rewrite the request URL.
+	//
+	// This member is required.
+	Type TransformTypeEnum
+
+	// Information about a host header rewrite transform. This transform modifies the
+	// host header in an HTTP request. Specify only when Type is host-header-rewrite .
+	HostHeaderRewriteConfig *HostHeaderRewriteConfig
+
+	// Information about a URL rewrite transform. This transform modifies the request
+	// URL. Specify only when Type is url-rewrite .
+	UrlRewriteConfig *UrlRewriteConfig
 
 	noSmithyDocumentSerde
 }
@@ -1654,6 +1697,17 @@ type TrustStoreRevocation struct {
 
 	// The Amazon Resource Name (ARN) of the trust store.
 	TrustStoreArn *string
+
+	noSmithyDocumentSerde
+}
+
+// Information about a URL rewrite transform. This transform matches a pattern in
+// the request URL and replaces it with the specified string.
+type UrlRewriteConfig struct {
+
+	// The URL rewrite transform to apply to the request. The transform consists of a
+	// regular expression to match and a replacement string.
+	Rewrites []RewriteConfig
 
 	noSmithyDocumentSerde
 }

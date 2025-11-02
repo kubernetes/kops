@@ -11087,9 +11087,57 @@ func awsAwsquery_deserializeDocumentHostHeaderConditionConfig(v **types.HostHead
 		originalDecoder := decoder
 		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
 		switch {
+		case strings.EqualFold("RegexValues", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentListOfString(&sv.RegexValues, nodeDecoder); err != nil {
+				return err
+			}
+
 		case strings.EqualFold("Values", t.Name.Local):
 			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
 			if err := awsAwsquery_deserializeDocumentListOfString(&sv.Values, nodeDecoder); err != nil {
+				return err
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsquery_deserializeDocumentHostHeaderRewriteConfig(v **types.HostHeaderRewriteConfig, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.HostHeaderRewriteConfig
+	if *v == nil {
+		sv = &types.HostHeaderRewriteConfig{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("Rewrites", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentRewriteConfigList(&sv.Rewrites, nodeDecoder); err != nil {
 				return err
 			}
 
@@ -11140,6 +11188,12 @@ func awsAwsquery_deserializeDocumentHttpHeaderConditionConfig(v **types.HttpHead
 			{
 				xtv := string(val)
 				sv.HttpHeaderName = ptr.String(xtv)
+			}
+
+		case strings.EqualFold("RegexValues", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentListOfString(&sv.RegexValues, nodeDecoder); err != nil {
+				return err
 			}
 
 		case strings.EqualFold("Values", t.Name.Local):
@@ -13384,6 +13438,12 @@ func awsAwsquery_deserializeDocumentPathPatternConditionConfig(v **types.PathPat
 		originalDecoder := decoder
 		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
 		switch {
+		case strings.EqualFold("RegexValues", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentListOfString(&sv.RegexValues, nodeDecoder); err != nil {
+				return err
+			}
+
 		case strings.EqualFold("Values", t.Name.Local):
 			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
 			if err := awsAwsquery_deserializeDocumentListOfString(&sv.Values, nodeDecoder); err != nil {
@@ -13984,6 +14044,136 @@ func awsAwsquery_deserializeDocumentRevocationIdNotFoundException(v **types.Revo
 	return nil
 }
 
+func awsAwsquery_deserializeDocumentRewriteConfig(v **types.RewriteConfig, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.RewriteConfig
+	if *v == nil {
+		sv = &types.RewriteConfig{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("Regex", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.Regex = ptr.String(xtv)
+			}
+
+		case strings.EqualFold("Replace", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.Replace = ptr.String(xtv)
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsquery_deserializeDocumentRewriteConfigList(v *[]types.RewriteConfig, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv []types.RewriteConfig
+	if *v == nil {
+		sv = make([]types.RewriteConfig, 0)
+	} else {
+		sv = *v
+	}
+
+	originalDecoder := decoder
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		switch {
+		case strings.EqualFold("member", t.Name.Local):
+			var col types.RewriteConfig
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			destAddr := &col
+			if err := awsAwsquery_deserializeDocumentRewriteConfig(&destAddr, nodeDecoder); err != nil {
+				return err
+			}
+			col = *destAddr
+			sv = append(sv, col)
+
+		default:
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsquery_deserializeDocumentRewriteConfigListUnwrapped(v *[]types.RewriteConfig, decoder smithyxml.NodeDecoder) error {
+	var sv []types.RewriteConfig
+	if *v == nil {
+		sv = make([]types.RewriteConfig, 0)
+	} else {
+		sv = *v
+	}
+
+	switch {
+	default:
+		var mv types.RewriteConfig
+		t := decoder.StartEl
+		_ = t
+		nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+		destAddr := &mv
+		if err := awsAwsquery_deserializeDocumentRewriteConfig(&destAddr, nodeDecoder); err != nil {
+			return err
+		}
+		mv = *destAddr
+		sv = append(sv, mv)
+	}
+	*v = sv
+	return nil
+}
 func awsAwsquery_deserializeDocumentRule(v **types.Rule, decoder smithyxml.NodeDecoder) error {
 	if v == nil {
 		return fmt.Errorf("unexpected nil of type %T", v)
@@ -14058,6 +14248,12 @@ func awsAwsquery_deserializeDocumentRule(v **types.Rule, decoder smithyxml.NodeD
 			{
 				xtv := string(val)
 				sv.RuleArn = ptr.String(xtv)
+			}
+
+		case strings.EqualFold("Transforms", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentRuleTransformList(&sv.Transforms, nodeDecoder); err != nil {
+				return err
 			}
 
 		default:
@@ -14136,6 +14332,12 @@ func awsAwsquery_deserializeDocumentRuleCondition(v **types.RuleCondition, decod
 		case strings.EqualFold("QueryStringConfig", t.Name.Local):
 			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
 			if err := awsAwsquery_deserializeDocumentQueryStringConditionConfig(&sv.QueryStringConfig, nodeDecoder); err != nil {
+				return err
+			}
+
+		case strings.EqualFold("RegexValues", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentListOfString(&sv.RegexValues, nodeDecoder); err != nil {
 				return err
 			}
 
@@ -14342,6 +14544,135 @@ func awsAwsquery_deserializeDocumentRulesUnwrapped(v *[]types.Rule, decoder smit
 		nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
 		destAddr := &mv
 		if err := awsAwsquery_deserializeDocumentRule(&destAddr, nodeDecoder); err != nil {
+			return err
+		}
+		mv = *destAddr
+		sv = append(sv, mv)
+	}
+	*v = sv
+	return nil
+}
+func awsAwsquery_deserializeDocumentRuleTransform(v **types.RuleTransform, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.RuleTransform
+	if *v == nil {
+		sv = &types.RuleTransform{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("HostHeaderRewriteConfig", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentHostHeaderRewriteConfig(&sv.HostHeaderRewriteConfig, nodeDecoder); err != nil {
+				return err
+			}
+
+		case strings.EqualFold("Type", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.Type = types.TransformTypeEnum(xtv)
+			}
+
+		case strings.EqualFold("UrlRewriteConfig", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentUrlRewriteConfig(&sv.UrlRewriteConfig, nodeDecoder); err != nil {
+				return err
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsquery_deserializeDocumentRuleTransformList(v *[]types.RuleTransform, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv []types.RuleTransform
+	if *v == nil {
+		sv = make([]types.RuleTransform, 0)
+	} else {
+		sv = *v
+	}
+
+	originalDecoder := decoder
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		switch {
+		case strings.EqualFold("member", t.Name.Local):
+			var col types.RuleTransform
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			destAddr := &col
+			if err := awsAwsquery_deserializeDocumentRuleTransform(&destAddr, nodeDecoder); err != nil {
+				return err
+			}
+			col = *destAddr
+			sv = append(sv, col)
+
+		default:
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsquery_deserializeDocumentRuleTransformListUnwrapped(v *[]types.RuleTransform, decoder smithyxml.NodeDecoder) error {
+	var sv []types.RuleTransform
+	if *v == nil {
+		sv = make([]types.RuleTransform, 0)
+	} else {
+		sv = *v
+	}
+
+	switch {
+	default:
+		var mv types.RuleTransform
+		t := decoder.StartEl
+		_ = t
+		nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+		destAddr := &mv
+		if err := awsAwsquery_deserializeDocumentRuleTransform(&destAddr, nodeDecoder); err != nil {
 			return err
 		}
 		mv = *destAddr
@@ -17466,6 +17797,48 @@ func awsAwsquery_deserializeDocumentUnsupportedProtocolException(v **types.Unsup
 			{
 				xtv := string(val)
 				sv.Message = ptr.String(xtv)
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsAwsquery_deserializeDocumentUrlRewriteConfig(v **types.UrlRewriteConfig, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.UrlRewriteConfig
+	if *v == nil {
+		sv = &types.UrlRewriteConfig{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("Rewrites", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsAwsquery_deserializeDocumentRewriteConfigList(&sv.Rewrites, nodeDecoder); err != nil {
+				return err
 			}
 
 		default:

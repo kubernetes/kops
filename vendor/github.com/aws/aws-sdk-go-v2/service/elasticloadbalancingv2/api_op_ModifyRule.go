@@ -45,6 +45,15 @@ type ModifyRuleInput struct {
 	// The conditions.
 	Conditions []types.RuleCondition
 
+	// Indicates whether to remove all transforms from the rule. If you specify
+	// ResetTransforms , you can't specify Transforms .
+	ResetTransforms *bool
+
+	// The transforms to apply to requests that match this rule. You can add one host
+	// header rewrite transform and one URL rewrite transform. If you specify
+	// Transforms , you can't specify ResetTransforms .
+	Transforms []types.RuleTransform
+
 	noSmithyDocumentSerde
 }
 

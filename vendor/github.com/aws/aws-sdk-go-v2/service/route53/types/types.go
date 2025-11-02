@@ -275,8 +275,22 @@ type AliasTarget struct {
 	// similar function. Do not create Route 53 health checks for the EC2 instances
 	// that you register with an ELB load balancer.
 	//
+	// API Gateway APIs There are no special requirements for setting
+	// EvaluateTargetHealth to true when the alias target is an API Gateway API.
+	// However, because API Gateway is highly available by design, EvaluateTargetHealth
+	// provides no operational benefit and [Route 53 health checks]are recommended instead for failover
+	// scenarios.
+	//
 	// S3 buckets There are no special requirements for setting EvaluateTargetHealth
-	// to true when the alias target is an S3 bucket.
+	// to true when the alias target is an S3 bucket. However, because S3 buckets are
+	// highly available by design, EvaluateTargetHealth provides no operational
+	// benefit and [Route 53 health checks]are recommended instead for failover scenarios.
+	//
+	// VPC interface endpoints There are no special requirements for setting
+	// EvaluateTargetHealth to true when the alias target is a VPC interface endpoint.
+	// However, because VPC interface endpoints are highly available by design,
+	// EvaluateTargetHealth provides no operational benefit and [Route 53 health checks] are recommended
+	// instead for failover scenarios.
 	//
 	// Other records in the same hosted zone If the Amazon Web Services resource that
 	// you specify in DNSName is a record or a group of records (for example, a group
@@ -284,8 +298,16 @@ type AliasTarget struct {
 	// associate a health check with all of the records in the alias target. For more
 	// information, see [What Happens When You Omit Health Checks?]in the Amazon Route 53 Developer Guide.
 	//
+	// While EvaluateTargetHealth can be set to true for highly available Amazon Web
+	// Services services (such as S3 buckets, VPC interface endpoints, and API
+	// Gateway), these services are designed for high availability and rarely
+	// experience outages that would be detected by this feature. For failover
+	// scenarios with these services, consider using [Route 53 health checks]that monitor your application's
+	// ability to access the service instead.
+	//
 	// For more information and examples, see [Amazon Route 53 Health Checks and DNS Failover] in the Amazon Route 53 Developer Guide.
 	//
+	// [Route 53 health checks]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover.html
 	// [Amazon Route 53 Health Checks and DNS Failover]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover.html
 	// [What Happens When You Omit Health Checks?]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html#dns-failover-complex-configs-hc-omitting
 	//

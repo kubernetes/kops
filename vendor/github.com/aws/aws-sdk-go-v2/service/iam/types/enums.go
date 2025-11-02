@@ -489,6 +489,13 @@ const (
 	SummaryKeyTypePolicyVersionsInUseQuota          SummaryKeyType = "PolicyVersionsInUseQuota"
 	SummaryKeyTypeVersionsPerPolicyQuota            SummaryKeyType = "VersionsPerPolicyQuota"
 	SummaryKeyTypeGlobalEndpointTokenVersion        SummaryKeyType = "GlobalEndpointTokenVersion"
+	SummaryKeyTypeAssumeRolePolicySizeQuota         SummaryKeyType = "AssumeRolePolicySizeQuota"
+	SummaryKeyTypeInstanceProfiles                  SummaryKeyType = "InstanceProfiles"
+	SummaryKeyTypeInstanceProfilesQuota             SummaryKeyType = "InstanceProfilesQuota"
+	SummaryKeyTypeProviders                         SummaryKeyType = "Providers"
+	SummaryKeyTypeRolePolicySizeQuota               SummaryKeyType = "RolePolicySizeQuota"
+	SummaryKeyTypeRoles                             SummaryKeyType = "Roles"
+	SummaryKeyTypeRolesQuota                        SummaryKeyType = "RolesQuota"
 )
 
 // Values returns all known values for SummaryKeyType. Note that this can be
@@ -524,5 +531,12 @@ func (SummaryKeyType) Values() []SummaryKeyType {
 		"PolicyVersionsInUseQuota",
 		"VersionsPerPolicyQuota",
 		"GlobalEndpointTokenVersion",
+		"AssumeRolePolicySizeQuota",
+		"InstanceProfiles",
+		"InstanceProfilesQuota",
+		"Providers",
+		"RolePolicySizeQuota",
+		"Roles",
+		"RolesQuota",
 	}
 }

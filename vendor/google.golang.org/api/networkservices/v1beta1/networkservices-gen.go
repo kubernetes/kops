@@ -481,9 +481,6 @@ type AuthzExtension struct {
 	// backend service for the extension must use HTTP2 or H2C as the protocol. All
 	// `supported_events` for a client request are sent as part of the same gRPC
 	// stream.
-	//   "EXT_AUTHZ_GRPC" - The extension service uses Envoy's `ext_authz` gRPC
-	// API. The backend service for the extension must use HTTP2, or H2C as the
-	// protocol. `EXT_AUTHZ_GRPC` is only supported for `AuthzExtension` resources.
 	WireFormat string `json:"wireFormat,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -663,8 +660,8 @@ type ExtensionChainExtension struct {
 	// AllowDynamicForwarding: Optional. When set to `TRUE`, the response from an
 	// extension service is allowed to set the
 	// `com.google.envoy.dynamic_forwarding` namespace in the dynamic metadata.
-	// This field is not supported for plugin extensions. Setting it results in a
-	// validation error.
+	// This field is not supported for plugin extensions or AuthzExtensions.
+	// Setting it results in a validation error.
 	AllowDynamicForwarding bool `json:"allowDynamicForwarding,omitempty"`
 	// Authority: Optional. The `:authority` header in the gRPC request sent from
 	// Envoy to the extension service. Required for Callout extensions. This field
@@ -688,8 +685,10 @@ type ExtensionChainExtension struct {
 	ForwardHeaders []string `json:"forwardHeaders,omitempty"`
 	// Metadata: Optional. The metadata provided here is included as part of the
 	// `metadata_context` (of type `google.protobuf.Struct`) in the
-	// `ProcessingRequest` message sent to the extension server. The metadata is
-	// available under the namespace `com.google....`. For example:
+	// `ProcessingRequest` message sent to the extension server. For
+	// `AuthzExtension` resources, the metadata is available under the namespace
+	// `com.google.authz_extension.`. For other types of extensions, the metadata
+	// is available under the namespace `com.google....`. For example:
 	// `com.google.lb_traffic_extension.lbtrafficextension1.chain1.ext1`. The
 	// following variables are supported in the metadata: `{forwarding_rule_id}` -
 	// substituted with the forwarding rule's fully qualified resource name. This
@@ -703,11 +702,11 @@ type ExtensionChainExtension struct {
 	// The length of each value must be less than 1024 characters. * All values
 	// must be strings.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
-	// Name: Required. The name for this extension. The name is logged as part of
+	// Name: Optional. The name for this extension. The name is logged as part of
 	// the HTTP request logs. The name must conform with RFC-1034, is restricted to
 	// lower-cased letters, numbers and hyphens, and can have a maximum length of
 	// 63 characters. Additionally, the first character must be a letter and the
-	// last a letter or a number.
+	// last a letter or a number. This field is required except for AuthzExtension.
 	Name string `json:"name,omitempty"`
 	// RequestBodySendMode: Optional. Configures the send mode for request body
 	// processing. The field can only be set if `supported_events` includes
@@ -734,11 +733,14 @@ type ExtensionChainExtension struct {
 	// extension in the chain or the upstream will receive an empty body.
 	RequestBodySendMode string `json:"requestBodySendMode,omitempty"`
 	// ResponseBodySendMode: Optional. Configures the send mode for response
-	// processing. If unspecified, the default value `STREAMED` is used. When this
-	// field is set to `FULL_DUPLEX_STREAMED`, `supported_events` must include both
-	// `RESPONSE_BODY` and `RESPONSE_TRAILERS`. This field can be set only for
-	// `LbTrafficExtension` resources, and only when the `service` field of the
-	// extension points to a `BackendService`.
+	// processing. If unspecified, the default value `STREAMED` is used. The field
+	// can only be set if `supported_events` includes `RESPONSE_BODY`. If
+	// `supported_events` includes `RESPONSE_BODY`, but `response_body_send_mode`
+	// is unset, the default value `STREAMED` is used. When this field is set to
+	// `FULL_DUPLEX_STREAMED`, `supported_events` must include both `RESPONSE_BODY`
+	// and `RESPONSE_TRAILERS`. This field can be set only for `LbTrafficExtension`
+	// resources, and only when the `service` field of the extension points to a
+	// `BackendService`.
 	//
 	// Possible values:
 	//   "BODY_SEND_MODE_UNSPECIFIED" - Default value. Do not use.
@@ -777,7 +779,9 @@ type ExtensionChainExtension struct {
 	// resource, this field is required. For the `LbRouteExtension` resource, this
 	// field is optional. If unspecified, `REQUEST_HEADERS` event is assumed as
 	// supported. For the `LbEdgeExtension` resource, this field is required and
-	// must only contain `REQUEST_HEADERS` event.
+	// must only contain `REQUEST_HEADERS` event. For the `AuthzExtension`
+	// resource, this field is optional. `REQUEST_HEADERS` is the only supported
+	// event. If unspecified, `REQUEST_HEADERS` event is assumed as supported.
 	//
 	// Possible values:
 	//   "EVENT_TYPE_UNSPECIFIED" - Unspecified value. Do not use.
@@ -4538,9 +4542,9 @@ func (r *ProjectsLocationsService) List(name string) *ProjectsLocationsListCall 
 	return c
 }
 
-// ExtraLocationTypes sets the optional parameter "extraLocationTypes": A list
-// of extra location types that should be used as conditions for controlling
-// the visibility of the locations.
+// ExtraLocationTypes sets the optional parameter "extraLocationTypes": Do not
+// use this field. It is unsupported and is ignored unless explicitly
+// documented otherwise. This is primarily for internal usage.
 func (c *ProjectsLocationsListCall) ExtraLocationTypes(extraLocationTypes ...string) *ProjectsLocationsListCall {
 	c.urlParams_.SetMulti("extraLocationTypes", append([]string{}, extraLocationTypes...))
 	return c

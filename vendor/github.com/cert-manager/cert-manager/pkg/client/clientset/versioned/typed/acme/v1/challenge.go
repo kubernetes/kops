@@ -22,6 +22,7 @@ import (
 	context "context"
 
 	acmev1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
+	applyconfigurationsacmev1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/acme/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -47,18 +48,21 @@ type ChallengeInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*acmev1.ChallengeList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *acmev1.Challenge, err error)
+	Apply(ctx context.Context, challenge *applyconfigurationsacmev1.ChallengeApplyConfiguration, opts metav1.ApplyOptions) (result *acmev1.Challenge, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, challenge *applyconfigurationsacmev1.ChallengeApplyConfiguration, opts metav1.ApplyOptions) (result *acmev1.Challenge, err error)
 	ChallengeExpansion
 }
 
 // challenges implements ChallengeInterface
 type challenges struct {
-	*gentype.ClientWithList[*acmev1.Challenge, *acmev1.ChallengeList]
+	*gentype.ClientWithListAndApply[*acmev1.Challenge, *acmev1.ChallengeList, *applyconfigurationsacmev1.ChallengeApplyConfiguration]
 }
 
 // newChallenges returns a Challenges
 func newChallenges(c *AcmeV1Client, namespace string) *challenges {
 	return &challenges{
-		gentype.NewClientWithList[*acmev1.Challenge, *acmev1.ChallengeList](
+		gentype.NewClientWithListAndApply[*acmev1.Challenge, *acmev1.ChallengeList, *applyconfigurationsacmev1.ChallengeApplyConfiguration](
 			"challenges",
 			c.RESTClient(),
 			scheme.ParameterCodec,

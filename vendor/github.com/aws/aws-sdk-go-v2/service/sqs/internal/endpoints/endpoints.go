@@ -704,6 +704,9 @@ var defaultPartitions = endpoints.Partitions{
 			}: {
 				Hostname: "sqs.us-isob-east-1.sc2s.sgov.gov",
 			},
+			endpoints.EndpointKey{
+				Region: "us-isob-west-1",
+			}: endpoints.Endpoint{},
 		},
 	},
 	{
