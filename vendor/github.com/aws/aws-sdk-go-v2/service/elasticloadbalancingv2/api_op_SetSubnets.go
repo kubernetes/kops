@@ -14,10 +14,6 @@ import (
 // Enables the Availability Zones for the specified public subnets for the
 // specified Application Load Balancer, Network Load Balancer or Gateway Load
 // Balancer. The specified subnets replace the previously enabled subnets.
-//
-// When you specify subnets for a Network Load Balancer, or Gateway Load Balancer
-// you must include all subnets that were enabled previously, with their existing
-// configurations, plus any additional subnets.
 func (c *Client) SetSubnets(ctx context.Context, params *SetSubnetsInput, optFns ...func(*Options)) (*SetSubnetsOutput, error) {
 	if params == nil {
 		params = &SetSubnetsInput{}
@@ -88,8 +84,12 @@ type SetSubnetsInput struct {
 	// [Application Load Balancers on Local Zones] You can specify subnets from one or
 	// more Local Zones.
 	//
-	// [Network Load Balancers and Gateway Load Balancers] You can specify subnets
-	// from one or more Availability Zones.
+	// [Network Load Balancers] You can specify subnets from one or more Availability
+	// Zones.
+	//
+	// [Gateway Load Balancers] You can specify subnets from one or more Availability
+	// Zones. You must include all subnets that were enabled previously, with their
+	// existing configurations, plus any additional subnets.
 	Subnets []string
 
 	noSmithyDocumentSerde

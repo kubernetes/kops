@@ -1181,6 +1181,23 @@ func validateFixedResponseActionConfig(v *types.FixedResponseActionConfig) error
 	}
 }
 
+func validateHostHeaderRewriteConfig(v *types.HostHeaderRewriteConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "HostHeaderRewriteConfig"}
+	if v.Rewrites != nil {
+		if err := validateRewriteConfigList(v.Rewrites); err != nil {
+			invalidParams.AddNested("Rewrites", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
 func validateRedirectActionConfig(v *types.RedirectActionConfig) error {
 	if v == nil {
 		return nil
@@ -1188,6 +1205,83 @@ func validateRedirectActionConfig(v *types.RedirectActionConfig) error {
 	invalidParams := smithy.InvalidParamsError{Context: "RedirectActionConfig"}
 	if len(v.StatusCode) == 0 {
 		invalidParams.Add(smithy.NewErrParamRequired("StatusCode"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateRewriteConfig(v *types.RewriteConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "RewriteConfig"}
+	if v.Regex == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Regex"))
+	}
+	if v.Replace == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Replace"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateRewriteConfigList(v []types.RewriteConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "RewriteConfigList"}
+	for i := range v {
+		if err := validateRewriteConfig(&v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateRuleTransform(v *types.RuleTransform) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "RuleTransform"}
+	if len(v.Type) == 0 {
+		invalidParams.Add(smithy.NewErrParamRequired("Type"))
+	}
+	if v.HostHeaderRewriteConfig != nil {
+		if err := validateHostHeaderRewriteConfig(v.HostHeaderRewriteConfig); err != nil {
+			invalidParams.AddNested("HostHeaderRewriteConfig", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.UrlRewriteConfig != nil {
+		if err := validateUrlRewriteConfig(v.UrlRewriteConfig); err != nil {
+			invalidParams.AddNested("UrlRewriteConfig", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateRuleTransformList(v []types.RuleTransform) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "RuleTransformList"}
+	for i := range v {
+		if err := validateRuleTransform(&v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1251,6 +1345,23 @@ func validateTargetDescriptions(v []types.TargetDescription) error {
 	for i := range v {
 		if err := validateTargetDescription(&v[i]); err != nil {
 			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateUrlRewriteConfig(v *types.UrlRewriteConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "UrlRewriteConfig"}
+	if v.Rewrites != nil {
+		if err := validateRewriteConfigList(v.Rewrites); err != nil {
+			invalidParams.AddNested("Rewrites", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {
@@ -1386,6 +1497,11 @@ func validateOpCreateRuleInput(v *CreateRuleInput) error {
 	if v.Tags != nil {
 		if err := validateTagList(v.Tags); err != nil {
 			invalidParams.AddNested("Tags", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.Transforms != nil {
+		if err := validateRuleTransformList(v.Transforms); err != nil {
+			invalidParams.AddNested("Transforms", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {
@@ -1841,6 +1957,11 @@ func validateOpModifyRuleInput(v *ModifyRuleInput) error {
 	if v.Actions != nil {
 		if err := validateActions(v.Actions); err != nil {
 			invalidParams.AddNested("Actions", err.(smithy.InvalidParamsError))
+		}
+	}
+	if v.Transforms != nil {
+		if err := validateRuleTransformList(v.Transforms); err != nil {
+			invalidParams.AddNested("Transforms", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {

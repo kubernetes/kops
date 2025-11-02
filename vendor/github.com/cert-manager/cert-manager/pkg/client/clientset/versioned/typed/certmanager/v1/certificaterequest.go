@@ -22,6 +22,7 @@ import (
 	context "context"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	applyconfigurationscertmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -47,18 +48,21 @@ type CertificateRequestInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.CertificateRequestList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.CertificateRequest, err error)
+	Apply(ctx context.Context, certificateRequest *applyconfigurationscertmanagerv1.CertificateRequestApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.CertificateRequest, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, certificateRequest *applyconfigurationscertmanagerv1.CertificateRequestApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.CertificateRequest, err error)
 	CertificateRequestExpansion
 }
 
 // certificateRequests implements CertificateRequestInterface
 type certificateRequests struct {
-	*gentype.ClientWithList[*certmanagerv1.CertificateRequest, *certmanagerv1.CertificateRequestList]
+	*gentype.ClientWithListAndApply[*certmanagerv1.CertificateRequest, *certmanagerv1.CertificateRequestList, *applyconfigurationscertmanagerv1.CertificateRequestApplyConfiguration]
 }
 
 // newCertificateRequests returns a CertificateRequests
 func newCertificateRequests(c *CertmanagerV1Client, namespace string) *certificateRequests {
 	return &certificateRequests{
-		gentype.NewClientWithList[*certmanagerv1.CertificateRequest, *certmanagerv1.CertificateRequestList](
+		gentype.NewClientWithListAndApply[*certmanagerv1.CertificateRequest, *certmanagerv1.CertificateRequestList, *applyconfigurationscertmanagerv1.CertificateRequestApplyConfiguration](
 			"certificaterequests",
 			c.RESTClient(),
 			scheme.ParameterCodec,

@@ -426,6 +426,9 @@ var defaultPartitions = endpoints.Partitions{
 			}: endpoints.Endpoint{
 				Protocols: []string{"https"},
 			},
+			endpoints.EndpointKey{
+				Region: "us-isob-west-1",
+			}: endpoints.Endpoint{},
 		},
 	},
 	{

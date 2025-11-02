@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"slices"
 	"strconv"
 	"time"
 
@@ -180,6 +181,18 @@ func (s *Server) GetDNSPtrForIP(ip net.IP) (string, error) {
 	}
 
 	return "", DNSNotFoundError{ip}
+}
+
+// PrivateNetFor returns the server's network attachment information in the given
+// Network, and nil if no attachment was found.
+func (s *Server) PrivateNetFor(network *Network) *ServerPrivateNet {
+	index := slices.IndexFunc(s.PrivateNet, func(o ServerPrivateNet) bool {
+		return o.Network != nil && o.Network.ID == network.ID
+	})
+	if index < 0 {
+		return nil
+	}
+	return &s.PrivateNet[index]
 }
 
 // ServerClient is a client for the servers API.

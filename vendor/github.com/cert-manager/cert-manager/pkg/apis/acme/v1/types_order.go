@@ -25,9 +25,14 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="State",type="string",JSONPath=".status.state"
+// +kubebuilder:printcolumn:name="Issuer",type="string",JSONPath=".spec.issuerRef.name",priority=1
+// +kubebuilder:printcolumn:name="Reason",type="string",JSONPath=".status.reason",description="",priority=1
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp",description="CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC."
+// +kubebuilder:resource:scope=Namespaced,categories={cert-manager,cert-manager-acme}
+// +kubebuilder:subresource:status
 
 // Order is a type to represent an Order with an ACME server
-// +k8s:openapi-gen=true
 type Order struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
@@ -58,7 +63,7 @@ type OrderSpec struct {
 	// If the Issuer does not exist, processing will be retried.
 	// If the Issuer is not an 'ACME' Issuer, an error will be returned and the
 	// Order will be marked as failed.
-	IssuerRef cmmeta.ObjectReference `json:"issuerRef"`
+	IssuerRef cmmeta.IssuerReference `json:"issuerRef"`
 
 	// CommonName is the common name as specified on the DER encoded CSR.
 	// If specified, this value must also be present in `dnsNames` or `ipAddresses`.
@@ -69,13 +74,15 @@ type OrderSpec struct {
 	// DNSNames is a list of DNS names that should be included as part of the Order
 	// validation process.
 	// This field must match the corresponding field on the DER encoded CSR.
-	//+optional
+	// +optional
+	// +listType=atomic
 	DNSNames []string `json:"dnsNames,omitempty"`
 
 	// IPAddresses is a list of IP addresses that should be included as part of the Order
 	// validation process.
 	// This field must match the corresponding field on the DER encoded CSR.
 	// +optional
+	// +listType=atomic
 	IPAddresses []string `json:"ipAddresses,omitempty"`
 
 	// Duration is the duration for the not after date for the requested certificate.
@@ -106,6 +113,7 @@ type OrderStatus struct {
 	// authorizations must be completed in order to validate the DNS names
 	// specified on the Order.
 	// +optional
+	// +listType=atomic
 	Authorizations []ACMEAuthorization `json:"authorizations,omitempty"`
 
 	// Certificate is a copy of the PEM encoded certificate for this Order.
@@ -166,6 +174,7 @@ type ACMEAuthorization struct {
 	// name and an appropriate Challenge resource will be created to perform
 	// the ACME challenge process.
 	// +optional
+	// +listType=atomic
 	Challenges []ACMEChallenge `json:"challenges,omitempty"`
 }
 

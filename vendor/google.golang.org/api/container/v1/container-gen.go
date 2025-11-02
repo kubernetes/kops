@@ -453,8 +453,8 @@ type AddonsConfig struct {
 	// to use a managed Knative service.
 	CloudRunConfig *CloudRunConfig `json:"cloudRunConfig,omitempty"`
 	// ConfigConnectorConfig: Configuration for the ConfigConnector add-on, a
-	// Kubernetes extension to manage hosted GCP services through the Kubernetes
-	// API
+	// Kubernetes extension to manage hosted Google Cloud services through the
+	// Kubernetes API.
 	ConfigConnectorConfig *ConfigConnectorConfig `json:"configConnectorConfig,omitempty"`
 	// DnsCacheConfig: Configuration for NodeLocalDNS, a dns cache running on
 	// cluster nodes
@@ -462,7 +462,7 @@ type AddonsConfig struct {
 	// GcePersistentDiskCsiDriverConfig: Configuration for the Compute Engine
 	// Persistent Disk CSI driver.
 	GcePersistentDiskCsiDriverConfig *GcePersistentDiskCsiDriverConfig `json:"gcePersistentDiskCsiDriverConfig,omitempty"`
-	// GcpFilestoreCsiDriverConfig: Configuration for the GCP Filestore CSI driver.
+	// GcpFilestoreCsiDriverConfig: Configuration for the Filestore CSI driver.
 	GcpFilestoreCsiDriverConfig *GcpFilestoreCsiDriverConfig `json:"gcpFilestoreCsiDriverConfig,omitempty"`
 	// GcsFuseCsiDriverConfig: Configuration for the Cloud Storage Fuse CSI driver.
 	GcsFuseCsiDriverConfig *GcsFuseCsiDriverConfig `json:"gcsFuseCsiDriverConfig,omitempty"`
@@ -882,6 +882,31 @@ func (s AutoprovisioningNodePoolDefaults) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// AutoscaledRolloutPolicy: Autoscaled rollout policy utilizes the cluster
+// autoscaler during blue-green upgrade to scale both the blue and green pools.
+type AutoscaledRolloutPolicy struct {
+	// WaitForDrainDuration: Optional. Time to wait after cordoning the blue pool
+	// before draining the nodes. Defaults to 3 days. The value can be set between
+	// 0 and 7 days, inclusive.
+	WaitForDrainDuration string `json:"waitForDrainDuration,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "WaitForDrainDuration") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "WaitForDrainDuration") to include
+	// in API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s AutoscaledRolloutPolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod AutoscaledRolloutPolicy
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // BestEffortProvisioning: Best effort provisioning.
 type BestEffortProvisioning struct {
 	// Enabled: When this is enabled, cluster/node pool creations will ignore
@@ -1015,20 +1040,23 @@ func (s BlueGreenInfo) MarshalJSON() ([]byte, error) {
 
 // BlueGreenSettings: Settings for blue-green upgrade.
 type BlueGreenSettings struct {
+	// AutoscaledRolloutPolicy: Autoscaled policy for cluster autoscaler enabled
+	// blue-green upgrade.
+	AutoscaledRolloutPolicy *AutoscaledRolloutPolicy `json:"autoscaledRolloutPolicy,omitempty"`
 	// NodePoolSoakDuration: Time needed after draining entire blue pool. After
 	// this period, blue pool will be cleaned up.
 	NodePoolSoakDuration string `json:"nodePoolSoakDuration,omitempty"`
 	// StandardRolloutPolicy: Standard policy for the blue-green upgrade.
 	StandardRolloutPolicy *StandardRolloutPolicy `json:"standardRolloutPolicy,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "NodePoolSoakDuration") to
+	// ForceSendFields is a list of field names (e.g. "AutoscaledRolloutPolicy") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "NodePoolSoakDuration") to include
-	// in API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. See
+	// NullFields is a list of field names (e.g. "AutoscaledRolloutPolicy") to
+	// include in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -1323,7 +1351,8 @@ type Cluster struct {
 	// `https://username:password@endpoint/`. See the `masterAuth` property of this
 	// resource for username and password information.
 	Endpoint string `json:"endpoint,omitempty"`
-	// EnterpriseConfig: GKE Enterprise Configuration.
+	// EnterpriseConfig: GKE Enterprise Configuration. Deprecated: GKE Enterprise
+	// features are now available without an Enterprise tier.
 	EnterpriseConfig *EnterpriseConfig `json:"enterpriseConfig,omitempty"`
 	// Etag: This checksum is computed by the server based on the value of cluster
 	// fields, and may be sent on update requests to ensure the client has an
@@ -1542,7 +1571,7 @@ type Cluster struct {
 	// configuration.
 	VerticalPodAutoscaling *VerticalPodAutoscaling `json:"verticalPodAutoscaling,omitempty"`
 	// WorkloadIdentityConfig: Configuration for the use of Kubernetes Service
-	// Accounts in GCP IAM policies.
+	// Accounts in IAM policies.
 	WorkloadIdentityConfig *WorkloadIdentityConfig `json:"workloadIdentityConfig,omitempty"`
 	// Zone: Output only. The name of the Google Compute Engine zone
 	// (https://{$universe.dns_names.final_documentation_domain}/compute/docs/zones#available)
@@ -1722,7 +1751,8 @@ type ClusterUpdate struct {
 	// enable_private_endpoint is false, then enable_public_endpoint will be true.
 	DesiredEnablePrivateEndpoint bool `json:"desiredEnablePrivateEndpoint,omitempty"`
 	// DesiredEnterpriseConfig: The desired enterprise configuration for the
-	// cluster.
+	// cluster. Deprecated: GKE Enterprise features are now available without an
+	// Enterprise tier.
 	DesiredEnterpriseConfig *DesiredEnterpriseConfig `json:"desiredEnterpriseConfig,omitempty"`
 	// DesiredFleet: The desired fleet configuration for the cluster.
 	DesiredFleet *Fleet `json:"desiredFleet,omitempty"`
@@ -2186,6 +2216,9 @@ type ContainerdConfig struct {
 	// PrivateRegistryAccessConfig: PrivateRegistryAccessConfig is used to
 	// configure access configuration for private container registries.
 	PrivateRegistryAccessConfig *PrivateRegistryAccessConfig `json:"privateRegistryAccessConfig,omitempty"`
+	// WritableCgroups: Optional. WritableCgroups defines writable cgroups
+	// configuration for the node pool.
+	WritableCgroups *WritableCgroups `json:"writableCgroups,omitempty"`
 	// ForceSendFields is a list of field names (e.g.
 	// "PrivateRegistryAccessConfig") to unconditionally include in API requests.
 	// By default, fields with empty or default values are omitted from API
@@ -2376,9 +2409,15 @@ func (s DNSConfig) MarshalJSON() ([]byte, error) {
 // DNSEndpointConfig: Describes the configuration of a DNS endpoint.
 type DNSEndpointConfig struct {
 	// AllowExternalTraffic: Controls whether user traffic is allowed over this
-	// endpoint. Note that GCP-managed services may still use the endpoint even if
-	// this is false.
+	// endpoint. Note that Google-managed services may still use the endpoint even
+	// if this is false.
 	AllowExternalTraffic bool `json:"allowExternalTraffic,omitempty"`
+	// EnableK8sCertsViaDns: Controls whether the k8s certs auth is allowed via
+	// DNS.
+	EnableK8sCertsViaDns bool `json:"enableK8sCertsViaDns,omitempty"`
+	// EnableK8sTokensViaDns: Controls whether the k8s token auth is allowed via
+	// DNS.
+	EnableK8sTokensViaDns bool `json:"enableK8sTokensViaDns,omitempty"`
 	// Endpoint: Output only. The cluster's DNS endpoint configuration. A DNS
 	// format address. This is accessible from the public internet. Ex:
 	// uid.us-central1.gke.goog. Always present, but the behavior may change
@@ -2559,7 +2598,8 @@ func (s DesiredAdditionalIPRangesConfig) MarshalJSON() ([]byte, error) {
 }
 
 // DesiredEnterpriseConfig: DesiredEnterpriseConfig is a wrapper used for
-// updating enterprise_config.
+// updating enterprise_config. Deprecated: GKE Enterprise features are now
+// available without an Enterprise tier.
 type DesiredEnterpriseConfig struct {
 	// DesiredTier: desired_tier specifies the desired tier of the cluster.
 	//
@@ -2619,6 +2659,8 @@ type Empty struct {
 }
 
 // EnterpriseConfig: EnterpriseConfig is the cluster enterprise configuration.
+// Deprecated: GKE Enterprise features are now available without an Enterprise
+// tier.
 type EnterpriseConfig struct {
 	// ClusterTier: Output only. cluster_tier indicates the effective tier of the
 	// cluster.
@@ -3115,9 +3157,9 @@ func (s GcfsConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// GcpFilestoreCsiDriverConfig: Configuration for the GCP Filestore CSI driver.
+// GcpFilestoreCsiDriverConfig: Configuration for the Filestore CSI driver.
 type GcpFilestoreCsiDriverConfig struct {
-	// Enabled: Whether the GCP Filestore CSI driver is enabled for this cluster.
+	// Enabled: Whether the Filestore CSI driver is enabled for this cluster.
 	Enabled bool `json:"enabled,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
@@ -3812,6 +3854,11 @@ type LinuxNodeConfig struct {
 	CgroupMode string `json:"cgroupMode,omitempty"`
 	// Hugepages: Optional. Amounts for 2M and 1G hugepages
 	Hugepages *HugepagesConfig `json:"hugepages,omitempty"`
+	// NodeKernelModuleLoading: Optional. Configuration for kernel module loading
+	// on nodes. When enabled, the node pool will be provisioned with a
+	// Container-Optimized OS image that enforces kernel module signature
+	// verification.
+	NodeKernelModuleLoading *NodeKernelModuleLoading `json:"nodeKernelModuleLoading,omitempty"`
 	// Sysctls: The Linux kernel parameters to be applied to the nodes and all pods
 	// running on the nodes. The following parameters are supported.
 	// net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog
@@ -3844,8 +3891,8 @@ type LinuxNodeConfig struct {
 	// and compact memory in an effort to allocate a THP immediately.
 	//   "TRANSPARENT_HUGEPAGE_DEFRAG_DEFER" - It means that an application will
 	// wake kswapd in the background to reclaim pages and wake kcompactd to compact
-	// memory so that THP is available in the near future. It’s the
-	// responsibility of khugepaged to then install the THP pages later.
+	// memory so that THP is available in the near future. It's the responsibility
+	// of khugepaged to then install the THP pages later.
 	//   "TRANSPARENT_HUGEPAGE_DEFRAG_DEFER_WITH_MADVISE" - It means that an
 	// application will enter direct reclaim and compaction like always, but only
 	// for regions that have used madvise(MADV_HUGEPAGE); all other regions will
@@ -4160,6 +4207,15 @@ func (s LustreCsiDriverConfig) MarshalJSON() ([]byte, error) {
 
 // MaintenanceExclusionOptions: Represents the Maintenance exclusion option.
 type MaintenanceExclusionOptions struct {
+	// EndTimeBehavior: EndTimeBehavior specifies the behavior of the exclusion end
+	// time.
+	//
+	// Possible values:
+	//   "END_TIME_BEHAVIOR_UNSPECIFIED" - END_TIME_BEHAVIOR_UNSPECIFIED is the
+	// default behavior, which is fixed end time.
+	//   "UNTIL_END_OF_SUPPORT" - UNTIL_END_OF_SUPPORT means the exclusion will be
+	// in effect until the end of the support of the cluster's current version.
+	EndTimeBehavior string `json:"endTimeBehavior,omitempty"`
 	// Scope: Scope specifies the upgrade scope which upgrades are blocked by the
 	// exclusion.
 	//
@@ -4173,15 +4229,15 @@ type MaintenanceExclusionOptions struct {
 	// upgrades for the cluster, and also exclude all node pool upgrades. Only
 	// control plane patches are allowed.
 	Scope string `json:"scope,omitempty"`
-	// ForceSendFields is a list of field names (e.g. "Scope") to unconditionally
-	// include in API requests. By default, fields with empty or default values are
-	// omitted from API requests. See
+	// ForceSendFields is a list of field names (e.g. "EndTimeBehavior") to
+	// unconditionally include in API requests. By default, fields with empty or
+	// default values are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
 	// details.
 	ForceSendFields []string `json:"-"`
-	// NullFields is a list of field names (e.g. "Scope") to include in API
-	// requests with the JSON null value. By default, fields with empty values are
-	// omitted from API requests. See
+	// NullFields is a list of field names (e.g. "EndTimeBehavior") to include in
+	// API requests with the JSON null value. By default, fields with empty values
+	// are omitted from API requests. See
 	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
 	NullFields []string `json:"-"`
 }
@@ -5072,6 +5128,42 @@ func (s NodeConfigDefaults) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
+// NodeKernelModuleLoading: Configuration for kernel module loading on nodes.
+type NodeKernelModuleLoading struct {
+	// Policy: Set the node module loading policy for nodes in the node pool.
+	//
+	// Possible values:
+	//   "POLICY_UNSPECIFIED" - Default behavior. GKE selects the image based on
+	// node type. For CPU and TPU nodes, the image will not allow loading external
+	// kernel modules. For GPU nodes, the image will allow loading any module,
+	// whether it is signed or not.
+	//   "ENFORCE_SIGNED_MODULES" - Enforced signature verification: Node pools
+	// will use a Container-Optimized OS image configured to allow loading of
+	// *Google-signed* external kernel modules. Loadpin is enabled but configured
+	// to exclude modules, and kernel module signature checking is enforced.
+	//   "DO_NOT_ENFORCE_SIGNED_MODULES" - Mirrors existing DEFAULT behavior: For
+	// CPU and TPU nodes, the image will not allow loading external kernel modules.
+	// For GPU nodes, the image will allow loading any module, whether it is signed
+	// or not.
+	Policy string `json:"policy,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Policy") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Policy") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s NodeKernelModuleLoading) MarshalJSON() ([]byte, error) {
+	type NoMethod NodeKernelModuleLoading
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
 // NodeKubeletConfig: Node kubelet configs.
 type NodeKubeletConfig struct {
 	// AllowedUnsafeSysctls: Optional. Defines a comma-separated allowlist of
@@ -5110,7 +5202,8 @@ type NodeKubeletConfig struct {
 	// CpuCfsQuotaPeriod: Set the CPU CFS quota period value 'cpu.cfs_period_us'.
 	// The string must be a sequence of decimal numbers, each with optional
 	// fraction and a unit suffix, such as "300ms". Valid time units are "ns", "us"
-	// (or "µs"), "ms", "s", "m", "h". The value must be a positive duration.
+	// (or "µs"), "ms", "s", "m", "h". The value must be a positive duration
+	// between 1ms and 1 second, inclusive.
 	CpuCfsQuotaPeriod string `json:"cpuCfsQuotaPeriod,omitempty"`
 	// CpuManagerPolicy: Control the CPU management policy on the node. See
 	// https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/
@@ -6628,7 +6721,7 @@ func (s ReservationAffinity) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// ResourceLabels: Collection of GCP labels
+// ResourceLabels: Collection of Resource Manager labels
 // (https://{$universe.dns_names.final_documentation_domain}/resource-manager/docs/creating-managing-labels).
 type ResourceLabels struct {
 	// Labels: Map of node label keys and node label values.
@@ -8149,6 +8242,13 @@ type UpdateNodePoolRequest struct {
 	// in which the node pool's nodes should be located. Changing the locations for
 	// a node pool will result in nodes being either created or removed from the
 	// node pool, depending on whether locations are being added or removed.
+	// Warning: It is recommended to update node pool locations in a standalone API
+	// call. Do not combine a location update with changes to other fields (such as
+	// `tags`, `labels`, `taints`, etc.) in the same request. Otherwise, the API
+	// performs a structural modification where changes to other fields will only
+	// apply to newly created nodes and will not be applied to existing nodes in
+	// the node pool. To ensure all nodes are updated consistently, use a separate
+	// API call for location changes.
 	Locations []string `json:"locations,omitempty"`
 	// LoggingConfig: Logging configuration.
 	LoggingConfig *NodePoolLoggingConfig `json:"loggingConfig,omitempty"`
@@ -8704,7 +8804,7 @@ func (s WindowsNodeConfig) MarshalJSON() ([]byte, error) {
 }
 
 // WorkloadIdentityConfig: Configuration for the use of Kubernetes Service
-// Accounts in GCP IAM policies.
+// Accounts in IAM policies.
 type WorkloadIdentityConfig struct {
 	// WorkloadPool: The workload pool to attach all Kubernetes service accounts
 	// to.
@@ -8783,6 +8883,28 @@ type WorkloadPolicyConfig struct {
 
 func (s WorkloadPolicyConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod WorkloadPolicyConfig
+	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
+}
+
+// WritableCgroups: Defines writable cgroups configuration.
+type WritableCgroups struct {
+	// Enabled: Optional. Whether writable cgroups is enabled.
+	Enabled bool `json:"enabled,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "Enabled") to unconditionally
+	// include in API requests. By default, fields with empty or default values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-ForceSendFields for more
+	// details.
+	ForceSendFields []string `json:"-"`
+	// NullFields is a list of field names (e.g. "Enabled") to include in API
+	// requests with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. See
+	// https://pkg.go.dev/google.golang.org/api#hdr-NullFields for more details.
+	NullFields []string `json:"-"`
+}
+
+func (s WritableCgroups) MarshalJSON() ([]byte, error) {
+	type NoMethod WritableCgroups
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 

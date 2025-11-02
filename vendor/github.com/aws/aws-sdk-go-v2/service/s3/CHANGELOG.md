@@ -1,3 +1,28 @@
+# v1.89.1 (2025-10-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.89.0 (2025-10-28)
+
+* **Feature**: Amazon Simple Storage Service / Features: Add conditional writes in CopyObject on destination key to prevent unintended object modifications.
+
+# v1.88.7 (2025-10-23)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.88.6 (2025-10-22)
+
+* No change notes available for this release.
+
+# v1.88.5 (2025-10-16)
+
+* **Dependency Update**: Bump minimum Go version to 1.23.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.88.4 (2025-10-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.88.3 (2025-09-26)
 
 * **Dependency Update**: Updated to the latest SDK module versions

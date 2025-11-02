@@ -39,10 +39,7 @@ func (c *ActionClient) WaitForFunc(ctx context.Context, handleUpdate func(update
 	}
 
 	retries := 0
-	for {
-		if len(running) == 0 {
-			break
-		}
+	for len(running) != 0 {
 
 		select {
 		case <-ctx.Done():

@@ -20,19 +20,20 @@ package fake
 
 import (
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
-	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/certmanager/v1"
+	typedcertmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/certmanager/v1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeCertificateRequests implements CertificateRequestInterface
 type fakeCertificateRequests struct {
-	*gentype.FakeClientWithList[*v1.CertificateRequest, *v1.CertificateRequestList]
+	*gentype.FakeClientWithListAndApply[*v1.CertificateRequest, *v1.CertificateRequestList, *certmanagerv1.CertificateRequestApplyConfiguration]
 	Fake *FakeCertmanagerV1
 }
 
-func newFakeCertificateRequests(fake *FakeCertmanagerV1, namespace string) certmanagerv1.CertificateRequestInterface {
+func newFakeCertificateRequests(fake *FakeCertmanagerV1, namespace string) typedcertmanagerv1.CertificateRequestInterface {
 	return &fakeCertificateRequests{
-		gentype.NewFakeClientWithList[*v1.CertificateRequest, *v1.CertificateRequestList](
+		gentype.NewFakeClientWithListAndApply[*v1.CertificateRequest, *v1.CertificateRequestList, *certmanagerv1.CertificateRequestApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1.SchemeGroupVersion.WithResource("certificaterequests"),

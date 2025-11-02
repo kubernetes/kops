@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.167.0] - 2025-10-18
+
+- #921 - @sreeram-venkitesh - MNFS-164: Added NFS resize and snapshot APIs
+
+## [1.166.0] - 2025-10-13
+
+- #912 - @sreeram-venkitesh - MNFS-164: Added NFS APIs
+- #913 - @fyzanshaik - Add ListAssociatedResourcesForDeletion for Droplets
+- #909 - @jvasilevsky - LBAAS-3995: add project ID to nat gateway
+
 ## [1.165.1] - 2025-09-24
 
 - #906 - @do-joe - Fix Database Logsink API Response Parsing and TLS Field Marshaling

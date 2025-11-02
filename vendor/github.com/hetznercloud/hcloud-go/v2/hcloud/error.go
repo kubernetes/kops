@@ -78,13 +78,15 @@ const (
 	// Firewall related error codes.
 
 	ErrorCodeFirewallAlreadyApplied         ErrorCode = "firewall_already_applied"           // Firewall was already applied on resource
-	ErrorCodeFirewallAlreadyRemoved         ErrorCode = "firewall_already_removed"           // Firewall was already removed from the resource
 	ErrorCodeIncompatibleNetworkType        ErrorCode = "incompatible_network_type"          // The Network type is incompatible for the given resource
 	ErrorCodeResourceInUse                  ErrorCode = "resource_in_use"                    // Firewall must not be in use to be deleted
 	ErrorCodeServerAlreadyAdded             ErrorCode = "server_already_added"               // Server added more than one time to resource
 	ErrorCodeFirewallResourceNotFound       ErrorCode = "firewall_resource_not_found"        // Resource a firewall should be attached to / detached from not found
 	ErrorCodeFirewallManagedByLabelSelector ErrorCode = "firewall_managed_by_label_selector" // Firewall is applied via a Label Selector and cannot be removed manually
 	ErrorCodePrivateNetOnlyServer           ErrorCode = "private_net_only_server"            // The Server the Firewall should be applied to has no public interface
+	// Deprecated: This error code is not used by the API anymore.
+	// See https://docs.hetzner.cloud/changelog#2025-08-04-multiple-api-behavior-changes-for-firewalls for more details.
+	ErrorCodeFirewallAlreadyRemoved ErrorCode = "firewall_already_removed" // Firewall was already removed from the resource
 
 	// Certificate related error codes.
 

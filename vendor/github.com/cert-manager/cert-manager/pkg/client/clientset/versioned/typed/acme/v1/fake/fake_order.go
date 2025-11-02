@@ -20,19 +20,20 @@ package fake
 
 import (
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
-	acmev1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/acme/v1"
+	acmev1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/acme/v1"
+	typedacmev1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/acme/v1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeOrders implements OrderInterface
 type fakeOrders struct {
-	*gentype.FakeClientWithList[*v1.Order, *v1.OrderList]
+	*gentype.FakeClientWithListAndApply[*v1.Order, *v1.OrderList, *acmev1.OrderApplyConfiguration]
 	Fake *FakeAcmeV1
 }
 
-func newFakeOrders(fake *FakeAcmeV1, namespace string) acmev1.OrderInterface {
+func newFakeOrders(fake *FakeAcmeV1, namespace string) typedacmev1.OrderInterface {
 	return &fakeOrders{
-		gentype.NewFakeClientWithList[*v1.Order, *v1.OrderList](
+		gentype.NewFakeClientWithListAndApply[*v1.Order, *v1.OrderList, *acmev1.OrderApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1.SchemeGroupVersion.WithResource("orders"),

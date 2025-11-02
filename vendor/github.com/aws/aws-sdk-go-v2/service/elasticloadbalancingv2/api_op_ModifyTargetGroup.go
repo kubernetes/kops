@@ -35,7 +35,9 @@ type ModifyTargetGroupInput struct {
 	// This member is required.
 	TargetGroupArn *string
 
-	// Indicates whether health checks are enabled.
+	// Indicates whether health checks are enabled. If the target type is lambda ,
+	// health checks are disabled by default but can be enabled. If the target type is
+	// instance , ip , or alb , health checks are always enabled and can't be disabled.
 	HealthCheckEnabled *bool
 
 	// The approximate amount of time, in seconds, between health checks of an

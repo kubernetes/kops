@@ -539,6 +539,25 @@ func (TargetTypeEnum) Values() []TargetTypeEnum {
 	}
 }
 
+type TransformTypeEnum string
+
+// Enum values for TransformTypeEnum
+const (
+	TransformTypeEnumHostHeaderRewrite TransformTypeEnum = "host-header-rewrite"
+	TransformTypeEnumUrlRewrite        TransformTypeEnum = "url-rewrite"
+)
+
+// Values returns all known values for TransformTypeEnum. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (TransformTypeEnum) Values() []TransformTypeEnum {
+	return []TransformTypeEnum{
+		"host-header-rewrite",
+		"url-rewrite",
+	}
+}
+
 type TrustStoreAssociationStatusEnum string
 
 // Enum values for TrustStoreAssociationStatusEnum

@@ -22,6 +22,7 @@ import (
 	context "context"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	applyconfigurationscertmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -47,18 +48,21 @@ type IssuerInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.IssuerList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.Issuer, err error)
+	Apply(ctx context.Context, issuer *applyconfigurationscertmanagerv1.IssuerApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.Issuer, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, issuer *applyconfigurationscertmanagerv1.IssuerApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.Issuer, err error)
 	IssuerExpansion
 }
 
 // issuers implements IssuerInterface
 type issuers struct {
-	*gentype.ClientWithList[*certmanagerv1.Issuer, *certmanagerv1.IssuerList]
+	*gentype.ClientWithListAndApply[*certmanagerv1.Issuer, *certmanagerv1.IssuerList, *applyconfigurationscertmanagerv1.IssuerApplyConfiguration]
 }
 
 // newIssuers returns a Issuers
 func newIssuers(c *CertmanagerV1Client, namespace string) *issuers {
 	return &issuers{
-		gentype.NewClientWithList[*certmanagerv1.Issuer, *certmanagerv1.IssuerList](
+		gentype.NewClientWithListAndApply[*certmanagerv1.Issuer, *certmanagerv1.IssuerList, *applyconfigurationscertmanagerv1.IssuerApplyConfiguration](
 			"issuers",
 			c.RESTClient(),
 			scheme.ParameterCodec,

@@ -79,7 +79,7 @@ type CreateListenerInput struct {
 	// do not set IsDefault .
 	Certificates []types.Certificate
 
-	// The mutual authentication configuration information.
+	// [HTTPS listeners] The mutual authentication configuration information.
 	MutualAuthentication *types.MutualAuthenticationAttributes
 
 	// The port on which the load balancer is listening. You can't specify a port for

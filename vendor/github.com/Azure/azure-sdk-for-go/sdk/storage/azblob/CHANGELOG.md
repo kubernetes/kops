@@ -1,5 +1,12 @@
 # Release History
 
+## 1.6.3 (2025-10-16)
+
+### Other Changes
+* Updated service version to `2025-11-05`
+* Updated `azidentity` version to `1.13.0`
+* Updated `azcore` version to `1.19.1`
+
 ## 1.6.2 (2025-07-23)
 
 ### Other Changes

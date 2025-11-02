@@ -22,6 +22,7 @@ import (
 	context "context"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	applyconfigurationscertmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -47,18 +48,21 @@ type CertificateInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.CertificateList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.Certificate, err error)
+	Apply(ctx context.Context, certificate *applyconfigurationscertmanagerv1.CertificateApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.Certificate, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, certificate *applyconfigurationscertmanagerv1.CertificateApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.Certificate, err error)
 	CertificateExpansion
 }
 
 // certificates implements CertificateInterface
 type certificates struct {
-	*gentype.ClientWithList[*certmanagerv1.Certificate, *certmanagerv1.CertificateList]
+	*gentype.ClientWithListAndApply[*certmanagerv1.Certificate, *certmanagerv1.CertificateList, *applyconfigurationscertmanagerv1.CertificateApplyConfiguration]
 }
 
 // newCertificates returns a Certificates
 func newCertificates(c *CertmanagerV1Client, namespace string) *certificates {
 	return &certificates{
-		gentype.NewClientWithList[*certmanagerv1.Certificate, *certmanagerv1.CertificateList](
+		gentype.NewClientWithListAndApply[*certmanagerv1.Certificate, *certmanagerv1.CertificateList, *applyconfigurationscertmanagerv1.CertificateApplyConfiguration](
 			"certificates",
 			c.RESTClient(),
 			scheme.ParameterCodec,

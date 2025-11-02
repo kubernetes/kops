@@ -78,6 +78,7 @@ type ISOListOpts struct {
 	Architecture []Architecture
 	// IncludeWildcardArchitecture must be set to also return custom ISOs that have no architecture set, if you are
 	// also setting the Architecture field.
+	//
 	// Deprecated: Use [ISOListOpts.IncludeArchitectureWildcard] instead.
 	IncludeWildcardArchitecture bool
 	// IncludeWildcardArchitecture must be set to also return custom ISOs that have no architecture set, if you are

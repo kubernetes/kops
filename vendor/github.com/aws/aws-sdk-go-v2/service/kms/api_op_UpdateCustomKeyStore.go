@@ -230,6 +230,14 @@ type UpdateCustomKeyStoreInput struct {
 	// To change this value, the external key store must be disconnected.
 	XksProxyVpcEndpointServiceName *string
 
+	// Changes the Amazon Web Services account ID that KMS uses to identify the Amazon
+	// VPC endpoint service for your external key store proxy (XKS proxy). This
+	// parameter is optional. If not specified, the current Amazon Web Services account
+	// ID for the VPC endpoint service will not be updated.
+	//
+	// To change this value, the external key store must be disconnected.
+	XksProxyVpcEndpointServiceOwner *string
+
 	noSmithyDocumentSerde
 }
 

@@ -22,6 +22,7 @@ import (
 	context "context"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+	applyconfigurationscertmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/certmanager/v1"
 	scheme "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -47,18 +48,21 @@ type ClusterIssuerInterface interface {
 	List(ctx context.Context, opts metav1.ListOptions) (*certmanagerv1.ClusterIssuerList, error)
 	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result *certmanagerv1.ClusterIssuer, err error)
+	Apply(ctx context.Context, clusterIssuer *applyconfigurationscertmanagerv1.ClusterIssuerApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.ClusterIssuer, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, clusterIssuer *applyconfigurationscertmanagerv1.ClusterIssuerApplyConfiguration, opts metav1.ApplyOptions) (result *certmanagerv1.ClusterIssuer, err error)
 	ClusterIssuerExpansion
 }
 
 // clusterIssuers implements ClusterIssuerInterface
 type clusterIssuers struct {
-	*gentype.ClientWithList[*certmanagerv1.ClusterIssuer, *certmanagerv1.ClusterIssuerList]
+	*gentype.ClientWithListAndApply[*certmanagerv1.ClusterIssuer, *certmanagerv1.ClusterIssuerList, *applyconfigurationscertmanagerv1.ClusterIssuerApplyConfiguration]
 }
 
 // newClusterIssuers returns a ClusterIssuers
 func newClusterIssuers(c *CertmanagerV1Client) *clusterIssuers {
 	return &clusterIssuers{
-		gentype.NewClientWithList[*certmanagerv1.ClusterIssuer, *certmanagerv1.ClusterIssuerList](
+		gentype.NewClientWithListAndApply[*certmanagerv1.ClusterIssuer, *certmanagerv1.ClusterIssuerList, *applyconfigurationscertmanagerv1.ClusterIssuerApplyConfiguration](
 			"clusterissuers",
 			c.RESTClient(),
 			scheme.ParameterCodec,

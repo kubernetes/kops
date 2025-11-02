@@ -219,7 +219,7 @@ func (o CertificateCreateOpts) validateUploaded() error {
 // Create returns an error for certificates of any other type. Use
 // CreateCertificate to create such certificates.
 func (c *CertificateClient) Create(ctx context.Context, opts CertificateCreateOpts) (*Certificate, *Response, error) {
-	if !(opts.Type == "" || opts.Type == CertificateTypeUploaded) {
+	if opts.Type != "" && opts.Type != CertificateTypeUploaded {
 		return nil, nil, invalidFieldValue(opts, "Type", opts.Type)
 	}
 	result, resp, err := c.CreateCertificate(ctx, opts)

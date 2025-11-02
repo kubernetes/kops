@@ -1,3 +1,24 @@
+# v1.49.1 (2025-10-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.49.0 (2025-10-27)
+
+* **Feature**: Fixed missing SummaryMap keys in GetAccountSummary response that were being filtered out during deserialization in AWS Java SDK v2
+
+# v1.48.1 (2025-10-23)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.0 (2025-10-22)
+
+* **Feature**: Updated OIDC and SAML apis to reject multiple simultaneous requests to change a unique object.
+
+# v1.47.8 (2025-10-16)
+
+* **Dependency Update**: Bump minimum Go version to 1.23.
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.47.7 (2025-09-26)
 
 * **Dependency Update**: Updated to the latest SDK module versions

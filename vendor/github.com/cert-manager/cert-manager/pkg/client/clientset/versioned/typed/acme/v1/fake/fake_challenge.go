@@ -20,19 +20,20 @@ package fake
 
 import (
 	v1 "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
-	acmev1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/acme/v1"
+	acmev1 "github.com/cert-manager/cert-manager/pkg/client/applyconfigurations/acme/v1"
+	typedacmev1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned/typed/acme/v1"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeChallenges implements ChallengeInterface
 type fakeChallenges struct {
-	*gentype.FakeClientWithList[*v1.Challenge, *v1.ChallengeList]
+	*gentype.FakeClientWithListAndApply[*v1.Challenge, *v1.ChallengeList, *acmev1.ChallengeApplyConfiguration]
 	Fake *FakeAcmeV1
 }
 
-func newFakeChallenges(fake *FakeAcmeV1, namespace string) acmev1.ChallengeInterface {
+func newFakeChallenges(fake *FakeAcmeV1, namespace string) typedacmev1.ChallengeInterface {
 	return &fakeChallenges{
-		gentype.NewFakeClientWithList[*v1.Challenge, *v1.ChallengeList](
+		gentype.NewFakeClientWithListAndApply[*v1.Challenge, *v1.ChallengeList, *acmev1.ChallengeApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1.SchemeGroupVersion.WithResource("challenges"),
