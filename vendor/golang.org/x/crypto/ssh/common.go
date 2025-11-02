@@ -6,6 +6,7 @@ package ssh
 
 import (
 	"crypto"
+	"crypto/fips140"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -83,6 +84,7 @@ var (
 	// supportedKexAlgos specifies key-exchange algorithms implemented by this
 	// package in preference order, excluding those with security issues.
 	supportedKexAlgos = []string{
+		KeyExchangeMLKEM768X25519,
 		KeyExchangeCurve25519,
 		KeyExchangeECDHP256,
 		KeyExchangeECDHP384,
@@ -94,6 +96,7 @@ var (
 	// defaultKexAlgos specifies the default preference for key-exchange
 	// algorithms in preference order.
 	defaultKexAlgos = []string{
+		KeyExchangeMLKEM768X25519,
 		KeyExchangeCurve25519,
 		KeyExchangeECDHP256,
 		KeyExchangeECDHP384,
@@ -254,6 +257,40 @@ type Algorithms struct {
 	PublicKeyAuths []string
 }
 
+func init() {
+	if fips140.Enabled() {
+		defaultHostKeyAlgos = slices.DeleteFunc(defaultHostKeyAlgos, func(algo string) bool {
+			_, err := hashFunc(underlyingAlgo(algo))
+			return err != nil
+		})
+		defaultPubKeyAuthAlgos = slices.DeleteFunc(defaultPubKeyAuthAlgos, func(algo string) bool {
+			_, err := hashFunc(underlyingAlgo(algo))
+			return err != nil
+		})
+	}
+}
+
+func hashFunc(format string) (crypto.Hash, error) {
+	switch format {
+	case KeyAlgoRSASHA256, KeyAlgoECDSA256, KeyAlgoSKED25519, KeyAlgoSKECDSA256:
+		return crypto.SHA256, nil
+	case KeyAlgoECDSA384:
+		return crypto.SHA384, nil
+	case KeyAlgoRSASHA512, KeyAlgoECDSA521:
+		return crypto.SHA512, nil
+	case KeyAlgoED25519:
+		// KeyAlgoED25519 doesn't pre-hash.
+		return 0, nil
+	case KeyAlgoRSA, InsecureKeyAlgoDSA:
+		if fips140.Enabled() {
+			return 0, fmt.Errorf("ssh: hash algorithm for format %q not allowed in FIPS 140 mode", format)
+		}
+		return crypto.SHA1, nil
+	default:
+		return 0, fmt.Errorf("ssh: hash algorithm for format %q not mapped", format)
+	}
+}
+
 // SupportedAlgorithms returns algorithms currently implemented by this package,
 // excluding those with security issues, which are returned by
 // InsecureAlgorithms. The algorithms listed here are in preference order.
@@ -281,21 +318,6 @@ func InsecureAlgorithms() Algorithms {
 
 var supportedCompressions = []string{compressionNone}
 
-// hashFuncs keeps the mapping of supported signature algorithms to their
-// respective hashes needed for signing and verification.
-var hashFuncs = map[string]crypto.Hash{
-	KeyAlgoRSA:         crypto.SHA1,
-	KeyAlgoRSASHA256:   crypto.SHA256,
-	KeyAlgoRSASHA512:   crypto.SHA512,
-	InsecureKeyAlgoDSA: crypto.SHA1,
-	KeyAlgoECDSA256:    crypto.SHA256,
-	KeyAlgoECDSA384:    crypto.SHA384,
-	KeyAlgoECDSA521:    crypto.SHA512,
-	// KeyAlgoED25519 doesn't pre-hash.
-	KeyAlgoSKECDSA256: crypto.SHA256,
-	KeyAlgoSKED25519:  crypto.SHA256,
-}
-
 // algorithmsForKeyFormat returns the supported signature algorithms for a given
 // public key format (PublicKey.Type), in order of preference. See RFC 8332,
 // Section 2. See also the note in sendKexInit on backwards compatibility.
@@ -310,11 +332,40 @@ func algorithmsForKeyFormat(keyFormat string) []string {
 	}
 }
 
+// keyFormatForAlgorithm returns the key format corresponding to the given
+// signature algorithm. It returns an empty string if the signature algorithm is
+// invalid or unsupported.
+func keyFormatForAlgorithm(sigAlgo string) string {
+	switch sigAlgo {
+	case KeyAlgoRSA, KeyAlgoRSASHA256, KeyAlgoRSASHA512:
+		return KeyAlgoRSA
+	case CertAlgoRSAv01, CertAlgoRSASHA256v01, CertAlgoRSASHA512v01:
+		return CertAlgoRSAv01
+	case KeyAlgoED25519,
+		KeyAlgoSKED25519,
+		KeyAlgoSKECDSA256,
+		KeyAlgoECDSA256,
+		KeyAlgoECDSA384,
+		KeyAlgoECDSA521,
+		InsecureKeyAlgoDSA,
+		InsecureCertAlgoDSAv01,
+		CertAlgoECDSA256v01,
+		CertAlgoECDSA384v01,
+		CertAlgoECDSA521v01,
+		CertAlgoSKECDSA256v01,
+		CertAlgoED25519v01,
+		CertAlgoSKED25519v01:
+		return sigAlgo
+	default:
+		return ""
+	}
+}
+
 // isRSA returns whether algo is a supported RSA algorithm, including certificate
 // algorithms.
 func isRSA(algo string) bool {
 	algos := algorithmsForKeyFormat(KeyAlgoRSA)
-	return contains(algos, underlyingAlgo(algo))
+	return slices.Contains(algos, underlyingAlgo(algo))
 }
 
 func isRSACert(algo string) bool {
@@ -336,7 +387,7 @@ func parseError(tag uint8) error {
 	return fmt.Errorf("ssh: parse error in message type %d", tag)
 }
 
-func findCommon(what string, client []string, server []string) (common string, err error) {
+func findCommon(what string, client []string, server []string, isClient bool) (string, error) {
 	for _, c := range client {
 		for _, s := range server {
 			if c == s {
@@ -344,7 +395,32 @@ func findCommon(what string, client []string, server []string) (common string, e
 			}
 		}
 	}
-	return "", fmt.Errorf("ssh: no common algorithm for %s; client offered: %v, server offered: %v", what, client, server)
+	err := &AlgorithmNegotiationError{
+		What: what,
+	}
+	if isClient {
+		err.SupportedAlgorithms = client
+		err.RequestedAlgorithms = server
+	} else {
+		err.SupportedAlgorithms = server
+		err.RequestedAlgorithms = client
+	}
+	return "", err
+}
+
+// AlgorithmNegotiationError defines the error returned if the client and the
+// server cannot agree on an algorithm for key exchange, host key, cipher, MAC.
+type AlgorithmNegotiationError struct {
+	What string
+	// RequestedAlgorithms lists the algorithms supported by the peer.
+	RequestedAlgorithms []string
+	// SupportedAlgorithms lists the algorithms supported on our side.
+	SupportedAlgorithms []string
+}
+
+func (a *AlgorithmNegotiationError) Error() string {
+	return fmt.Sprintf("ssh: no common algorithm for %s; we offered: %v, peer offered: %v",
+		a.What, a.SupportedAlgorithms, a.RequestedAlgorithms)
 }
 
 // DirectionAlgorithms defines the algorithms negotiated in one direction
@@ -379,12 +455,12 @@ var aeadCiphers = map[string]bool{
 func findAgreedAlgorithms(isClient bool, clientKexInit, serverKexInit *kexInitMsg) (algs *NegotiatedAlgorithms, err error) {
 	result := &NegotiatedAlgorithms{}
 
-	result.KeyExchange, err = findCommon("key exchange", clientKexInit.KexAlgos, serverKexInit.KexAlgos)
+	result.KeyExchange, err = findCommon("key exchange", clientKexInit.KexAlgos, serverKexInit.KexAlgos, isClient)
 	if err != nil {
 		return
 	}
 
-	result.HostKey, err = findCommon("host key", clientKexInit.ServerHostKeyAlgos, serverKexInit.ServerHostKeyAlgos)
+	result.HostKey, err = findCommon("host key", clientKexInit.ServerHostKeyAlgos, serverKexInit.ServerHostKeyAlgos, isClient)
 	if err != nil {
 		return
 	}
@@ -394,36 +470,36 @@ func findAgreedAlgorithms(isClient bool, clientKexInit, serverKexInit *kexInitMs
 		ctos, stoc = stoc, ctos
 	}
 
-	ctos.Cipher, err = findCommon("client to server cipher", clientKexInit.CiphersClientServer, serverKexInit.CiphersClientServer)
+	ctos.Cipher, err = findCommon("client to server cipher", clientKexInit.CiphersClientServer, serverKexInit.CiphersClientServer, isClient)
 	if err != nil {
 		return
 	}
 
-	stoc.Cipher, err = findCommon("server to client cipher", clientKexInit.CiphersServerClient, serverKexInit.CiphersServerClient)
+	stoc.Cipher, err = findCommon("server to client cipher", clientKexInit.CiphersServerClient, serverKexInit.CiphersServerClient, isClient)
 	if err != nil {
 		return
 	}
 
 	if !aeadCiphers[ctos.Cipher] {
-		ctos.MAC, err = findCommon("client to server MAC", clientKexInit.MACsClientServer, serverKexInit.MACsClientServer)
+		ctos.MAC, err = findCommon("client to server MAC", clientKexInit.MACsClientServer, serverKexInit.MACsClientServer, isClient)
 		if err != nil {
 			return
 		}
 	}
 
 	if !aeadCiphers[stoc.Cipher] {
-		stoc.MAC, err = findCommon("server to client MAC", clientKexInit.MACsServerClient, serverKexInit.MACsServerClient)
+		stoc.MAC, err = findCommon("server to client MAC", clientKexInit.MACsServerClient, serverKexInit.MACsServerClient, isClient)
 		if err != nil {
 			return
 		}
 	}
 
-	ctos.compression, err = findCommon("client to server compression", clientKexInit.CompressionClientServer, serverKexInit.CompressionClientServer)
+	ctos.compression, err = findCommon("client to server compression", clientKexInit.CompressionClientServer, serverKexInit.CompressionClientServer, isClient)
 	if err != nil {
 		return
 	}
 
-	stoc.compression, err = findCommon("server to client compression", clientKexInit.CompressionServerClient, serverKexInit.CompressionServerClient)
+	stoc.compression, err = findCommon("server to client compression", clientKexInit.CompressionServerClient, serverKexInit.CompressionServerClient, isClient)
 	if err != nil {
 		return
 	}
@@ -488,7 +564,7 @@ func (c *Config) SetDefaults() {
 		if kexAlgoMap[k] != nil {
 			// Ignore the KEX if we have no kexAlgoMap definition.
 			kexs = append(kexs, k)
-			if k == KeyExchangeCurve25519 && !contains(c.KeyExchanges, keyExchangeCurve25519LibSSH) {
+			if k == KeyExchangeCurve25519 && !slices.Contains(c.KeyExchanges, keyExchangeCurve25519LibSSH) {
 				kexs = append(kexs, keyExchangeCurve25519LibSSH)
 			}
 		}
