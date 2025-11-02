@@ -2660,7 +2660,7 @@
       }
     }
   },
-  "revision": "20250812",
+  "revision": "20251014",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2779,7 +2779,7 @@
         },
         "configConnectorConfig": {
           "$ref": "ConfigConnectorConfig",
-          "description": "Configuration for the ConfigConnector add-on, a Kubernetes extension to manage hosted GCP services through the Kubernetes API"
+          "description": "Configuration for the ConfigConnector add-on, a Kubernetes extension to manage hosted Google Cloud services through the Kubernetes API."
         },
         "dnsCacheConfig": {
           "$ref": "DnsCacheConfig",
@@ -2791,7 +2791,7 @@
         },
         "gcpFilestoreCsiDriverConfig": {
           "$ref": "GcpFilestoreCsiDriverConfig",
-          "description": "Configuration for the GCP Filestore CSI driver."
+          "description": "Configuration for the Filestore CSI driver."
         },
         "gcsFuseCsiDriverConfig": {
           "$ref": "GcsFuseCsiDriverConfig",
@@ -3122,6 +3122,18 @@
       },
       "type": "object"
     },
+    "AutoscaledRolloutPolicy": {
+      "description": "Autoscaled rollout policy utilizes the cluster autoscaler during blue-green upgrade to scale both the blue and green pools.",
+      "id": "AutoscaledRolloutPolicy",
+      "properties": {
+        "waitForDrainDuration": {
+          "description": "Optional. Time to wait after cordoning the blue pool before draining the nodes. Defaults to 3 days. The value can be set between 0 and 7 days, inclusive.",
+          "format": "google-duration",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "BestEffortProvisioning": {
       "description": "Best effort provisioning.",
       "id": "BestEffortProvisioning",
@@ -3232,6 +3244,10 @@
       "description": "Settings for blue-green upgrade.",
       "id": "BlueGreenSettings",
       "properties": {
+        "autoscaledRolloutPolicy": {
+          "$ref": "AutoscaledRolloutPolicy",
+          "description": "Autoscaled policy for cluster autoscaler enabled blue-green upgrade."
+        },
         "nodePoolSoakDuration": {
           "description": "Time needed after draining entire blue pool. After this period, blue pool will be cleaned up.",
           "format": "google-duration",
@@ -3500,7 +3516,8 @@
         },
         "enterpriseConfig": {
           "$ref": "EnterpriseConfig",
-          "description": "GKE Enterprise Configuration."
+          "deprecated": true,
+          "description": "GKE Enterprise Configuration. Deprecated: GKE Enterprise features are now available without an Enterprise tier."
         },
         "etag": {
           "description": "This checksum is computed by the server based on the value of cluster fields, and may be sent on update requests to ensure the client has an up-to-date value before proceeding.",
@@ -3762,7 +3779,7 @@
         },
         "workloadIdentityConfig": {
           "$ref": "WorkloadIdentityConfig",
-          "description": "Configuration for the use of Kubernetes Service Accounts in GCP IAM policies."
+          "description": "Configuration for the use of Kubernetes Service Accounts in IAM policies."
         },
         "zone": {
           "deprecated": true,
@@ -3948,7 +3965,8 @@
         },
         "desiredEnterpriseConfig": {
           "$ref": "DesiredEnterpriseConfig",
-          "description": "The desired enterprise configuration for the cluster."
+          "deprecated": true,
+          "description": "The desired enterprise configuration for the cluster. Deprecated: GKE Enterprise features are now available without an Enterprise tier."
         },
         "desiredFleet": {
           "$ref": "Fleet",
@@ -4388,6 +4406,10 @@
         "privateRegistryAccessConfig": {
           "$ref": "PrivateRegistryAccessConfig",
           "description": "PrivateRegistryAccessConfig is used to configure access configuration for private container registries."
+        },
+        "writableCgroups": {
+          "$ref": "WritableCgroups",
+          "description": "Optional. WritableCgroups defines writable cgroups configuration for the node pool."
         }
       },
       "type": "object"
@@ -4523,7 +4545,15 @@
       "id": "DNSEndpointConfig",
       "properties": {
         "allowExternalTraffic": {
-          "description": "Controls whether user traffic is allowed over this endpoint. Note that GCP-managed services may still use the endpoint even if this is false.",
+          "description": "Controls whether user traffic is allowed over this endpoint. Note that Google-managed services may still use the endpoint even if this is false.",
+          "type": "boolean"
+        },
+        "enableK8sCertsViaDns": {
+          "description": "Controls whether the k8s certs auth is allowed via DNS.",
+          "type": "boolean"
+        },
+        "enableK8sTokensViaDns": {
+          "description": "Controls whether the k8s token auth is allowed via DNS.",
           "type": "boolean"
         },
         "endpoint": {
@@ -4651,7 +4681,8 @@
       "type": "object"
     },
     "DesiredEnterpriseConfig": {
-      "description": "DesiredEnterpriseConfig is a wrapper used for updating enterprise_config.",
+      "deprecated": true,
+      "description": "DesiredEnterpriseConfig is a wrapper used for updating enterprise_config. Deprecated: GKE Enterprise features are now available without an Enterprise tier.",
       "id": "DesiredEnterpriseConfig",
       "properties": {
         "desiredTier": {
@@ -4689,7 +4720,8 @@
       "type": "object"
     },
     "EnterpriseConfig": {
-      "description": "EnterpriseConfig is the cluster enterprise configuration.",
+      "deprecated": true,
+      "description": "EnterpriseConfig is the cluster enterprise configuration. Deprecated: GKE Enterprise features are now available without an Enterprise tier.",
       "id": "EnterpriseConfig",
       "properties": {
         "clusterTier": {
@@ -5018,11 +5050,11 @@
       "type": "object"
     },
     "GcpFilestoreCsiDriverConfig": {
-      "description": "Configuration for the GCP Filestore CSI driver.",
+      "description": "Configuration for the Filestore CSI driver.",
       "id": "GcpFilestoreCsiDriverConfig",
       "properties": {
         "enabled": {
-          "description": "Whether the GCP Filestore CSI driver is enabled for this cluster.",
+          "description": "Whether the Filestore CSI driver is enabled for this cluster.",
           "type": "boolean"
         }
       },
@@ -5514,6 +5546,10 @@
           "$ref": "HugepagesConfig",
           "description": "Optional. Amounts for 2M and 1G hugepages"
         },
+        "nodeKernelModuleLoading": {
+          "$ref": "NodeKernelModuleLoading",
+          "description": "Optional. Configuration for kernel module loading on nodes. When enabled, the node pool will be provisioned with a Container-Optimized OS image that enforces kernel module signature verification."
+        },
         "sysctls": {
           "additionalProperties": {
             "type": "string"
@@ -5534,7 +5570,7 @@
           "enumDescriptions": [
             "Default value. GKE will not modify the kernel configuration.",
             "It means that an application requesting THP will stall on allocation failure and directly reclaim pages and compact memory in an effort to allocate a THP immediately.",
-            "It means that an application will wake kswapd in the background to reclaim pages and wake kcompactd to compact memory so that THP is available in the near future. It’s the responsibility of khugepaged to then install the THP pages later.",
+            "It means that an application will wake kswapd in the background to reclaim pages and wake kcompactd to compact memory so that THP is available in the near future. It's the responsibility of khugepaged to then install the THP pages later.",
             "It means that an application will enter direct reclaim and compaction like always, but only for regions that have used madvise(MADV_HUGEPAGE); all other regions will wake kswapd in the background to reclaim pages and wake kcompactd to compact memory so that THP is available in the near future.",
             "It means that an application will enter direct reclaim like always but only for regions that are have used madvise(MADV_HUGEPAGE). This is the default kernel configuration.",
             "It means that an application will never enter direct reclaim or compaction."
@@ -5734,6 +5770,18 @@
       "description": "Represents the Maintenance exclusion option.",
       "id": "MaintenanceExclusionOptions",
       "properties": {
+        "endTimeBehavior": {
+          "description": "EndTimeBehavior specifies the behavior of the exclusion end time.",
+          "enum": [
+            "END_TIME_BEHAVIOR_UNSPECIFIED",
+            "UNTIL_END_OF_SUPPORT"
+          ],
+          "enumDescriptions": [
+            "END_TIME_BEHAVIOR_UNSPECIFIED is the default behavior, which is fixed end time.",
+            "UNTIL_END_OF_SUPPORT means the exclusion will be in effect until the end of the support of the cluster's current version."
+          ],
+          "type": "string"
+        },
         "scope": {
           "description": "Scope specifies the upgrade scope which upgrades are blocked by the exclusion.",
           "enum": [
@@ -6483,6 +6531,27 @@
       },
       "type": "object"
     },
+    "NodeKernelModuleLoading": {
+      "description": "Configuration for kernel module loading on nodes.",
+      "id": "NodeKernelModuleLoading",
+      "properties": {
+        "policy": {
+          "description": "Set the node module loading policy for nodes in the node pool.",
+          "enum": [
+            "POLICY_UNSPECIFIED",
+            "ENFORCE_SIGNED_MODULES",
+            "DO_NOT_ENFORCE_SIGNED_MODULES"
+          ],
+          "enumDescriptions": [
+            "Default behavior. GKE selects the image based on node type. For CPU and TPU nodes, the image will not allow loading external kernel modules. For GPU nodes, the image will allow loading any module, whether it is signed or not.",
+            "Enforced signature verification: Node pools will use a Container-Optimized OS image configured to allow loading of *Google-signed* external kernel modules. Loadpin is enabled but configured to exclude modules, and kernel module signature checking is enforced.",
+            "Mirrors existing DEFAULT behavior: For CPU and TPU nodes, the image will not allow loading external kernel modules. For GPU nodes, the image will allow loading any module, whether it is signed or not."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "NodeKubeletConfig": {
       "description": "Node kubelet configs.",
       "id": "NodeKubeletConfig",
@@ -6508,7 +6577,7 @@
           "type": "boolean"
         },
         "cpuCfsQuotaPeriod": {
-          "description": "Set the CPU CFS quota period value 'cpu.cfs_period_us'. The string must be a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\". The value must be a positive duration.",
+          "description": "Set the CPU CFS quota period value 'cpu.cfs_period_us'. The string must be a sequence of decimal numbers, each with optional fraction and a unit suffix, such as \"300ms\". Valid time units are \"ns\", \"us\" (or \"µs\"), \"ms\", \"s\", \"m\", \"h\". The value must be a positive duration between 1ms and 1 second, inclusive.",
           "type": "string"
         },
         "cpuManagerPolicy": {
@@ -7652,7 +7721,7 @@
       "type": "object"
     },
     "ResourceLabels": {
-      "description": "Collection of [GCP labels](https://{$universe.dns_names.final_documentation_domain}/resource-manager/docs/creating-managing-labels).",
+      "description": "Collection of [Resource Manager labels](https://{$universe.dns_names.final_documentation_domain}/resource-manager/docs/creating-managing-labels).",
       "id": "ResourceLabels",
       "properties": {
         "labels": {
@@ -8784,7 +8853,7 @@
           "description": "Parameters that can be configured on Linux nodes."
         },
         "locations": {
-          "description": "The desired list of Google Compute Engine [zones](https://{$universe.dns_names.final_documentation_domain}/compute/docs/zones#available) in which the node pool's nodes should be located. Changing the locations for a node pool will result in nodes being either created or removed from the node pool, depending on whether locations are being added or removed.",
+          "description": "The desired list of Google Compute Engine [zones](https://{$universe.dns_names.final_documentation_domain}/compute/docs/zones#available) in which the node pool's nodes should be located. Changing the locations for a node pool will result in nodes being either created or removed from the node pool, depending on whether locations are being added or removed. Warning: It is recommended to update node pool locations in a standalone API call. Do not combine a location update with changes to other fields (such as `tags`, `labels`, `taints`, etc.) in the same request. Otherwise, the API performs a structural modification where changes to other fields will only apply to newly created nodes and will not be applied to existing nodes in the node pool. To ensure all nodes are updated consistently, use a separate API call for location changes.",
           "items": {
             "type": "string"
           },
@@ -9288,7 +9357,7 @@
       "type": "object"
     },
     "WorkloadIdentityConfig": {
-      "description": "Configuration for the use of Kubernetes Service Accounts in GCP IAM policies.",
+      "description": "Configuration for the use of Kubernetes Service Accounts in IAM policies.",
       "id": "WorkloadIdentityConfig",
       "properties": {
         "workloadPool": {
@@ -9329,6 +9398,17 @@
         },
         "autopilotCompatibilityAuditingEnabled": {
           "description": "If true, enables the GCW Auditor that audits workloads on standard clusters.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "WritableCgroups": {
+      "description": "Defines writable cgroups configuration.",
+      "id": "WritableCgroups",
+      "properties": {
+        "enabled": {
+          "description": "Optional. Whether writable cgroups is enabled.",
           "type": "boolean"
         }
       },
