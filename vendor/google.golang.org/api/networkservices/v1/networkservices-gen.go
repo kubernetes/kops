@@ -927,7 +927,8 @@ type ExtensionChain struct {
 	// Extensions: Required. A set of extensions to execute for the matching
 	// request. At least one extension is required. Up to 3 extensions can be
 	// defined for each extension chain for `LbTrafficExtension` resource.
-	// `LbRouteExtension` chains are limited to 1 extension per extension chain.
+	// `LbRouteExtension` and `LbEdgeExtension` chains are limited to 1 extension
+	// per extension chain.
 	Extensions []*ExtensionChainExtension `json:"extensions,omitempty"`
 	// MatchCondition: Required. Conditions under which this chain is invoked for a
 	// request.
@@ -981,8 +982,10 @@ type ExtensionChainExtension struct {
 	ForwardHeaders []string `json:"forwardHeaders,omitempty"`
 	// Metadata: Optional. The metadata provided here is included as part of the
 	// `metadata_context` (of type `google.protobuf.Struct`) in the
-	// `ProcessingRequest` message sent to the extension server. The metadata is
-	// available under the namespace `com.google....`. For example:
+	// `ProcessingRequest` message sent to the extension server. For
+	// `AuthzExtension` resources, the metadata is available under the namespace
+	// `com.google.authz_extension.`. For other types of extensions, the metadata
+	// is available under the namespace `com.google....`. For example:
 	// `com.google.lb_traffic_extension.lbtrafficextension1.chain1.ext1`. The
 	// following variables are supported in the metadata: `{forwarding_rule_id}` -
 	// substituted with the forwarding rule's fully qualified resource name. This
@@ -996,12 +999,60 @@ type ExtensionChainExtension struct {
 	// The length of each value must be less than 1024 characters. * All values
 	// must be strings.
 	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
-	// Name: Required. The name for this extension. The name is logged as part of
+	// Name: Optional. The name for this extension. The name is logged as part of
 	// the HTTP request logs. The name must conform with RFC-1034, is restricted to
 	// lower-cased letters, numbers and hyphens, and can have a maximum length of
 	// 63 characters. Additionally, the first character must be a letter and the
-	// last a letter or a number.
+	// last a letter or a number. This field is required except for AuthzExtension.
 	Name string `json:"name,omitempty"`
+	// RequestBodySendMode: Optional. Configures the send mode for request body
+	// processing. The field can only be set if `supported_events` includes
+	// `REQUEST_BODY`. If `supported_events` includes `REQUEST_BODY`, but
+	// `request_body_send_mode` is unset, the default value `STREAMED` is used.
+	// When this field is set to `FULL_DUPLEX_STREAMED`, `supported_events` must
+	// include both `REQUEST_BODY` and `REQUEST_TRAILERS`. This field can be set
+	// only for `LbTrafficExtension` and `LbRouteExtension` resources, and only
+	// when the `service` field of the extension points to a `BackendService`. Only
+	// `FULL_DUPLEX_STREAMED` mode is supported for `LbRouteExtension` resources.
+	//
+	// Possible values:
+	//   "BODY_SEND_MODE_UNSPECIFIED" - Default value. Do not use.
+	//   "BODY_SEND_MODE_STREAMED" - Calls to the extension are executed in the
+	// streamed mode. Subsequent chunks will be sent only after the previous chunks
+	// have been processed. The content of the body chunks is sent one way to the
+	// extension. Extension may send modified chunks back. This is the default
+	// value if the processing mode is not specified.
+	//   "BODY_SEND_MODE_FULL_DUPLEX_STREAMED" - Calls are executed in the full
+	// duplex mode. Subsequent chunks will be sent for processing without waiting
+	// for the response for the previous chunk or for the response for
+	// `REQUEST_HEADERS` event. Extension can freely modify or chunk the body
+	// contents. If the extension doesn't send the body contents back, the next
+	// extension in the chain or the upstream will receive an empty body.
+	RequestBodySendMode string `json:"requestBodySendMode,omitempty"`
+	// ResponseBodySendMode: Optional. Configures the send mode for response
+	// processing. If unspecified, the default value `STREAMED` is used. The field
+	// can only be set if `supported_events` includes `RESPONSE_BODY`. If
+	// `supported_events` includes `RESPONSE_BODY`, but `response_body_send_mode`
+	// is unset, the default value `STREAMED` is used. When this field is set to
+	// `FULL_DUPLEX_STREAMED`, `supported_events` must include both `RESPONSE_BODY`
+	// and `RESPONSE_TRAILERS`. This field can be set only for `LbTrafficExtension`
+	// resources, and only when the `service` field of the extension points to a
+	// `BackendService`.
+	//
+	// Possible values:
+	//   "BODY_SEND_MODE_UNSPECIFIED" - Default value. Do not use.
+	//   "BODY_SEND_MODE_STREAMED" - Calls to the extension are executed in the
+	// streamed mode. Subsequent chunks will be sent only after the previous chunks
+	// have been processed. The content of the body chunks is sent one way to the
+	// extension. Extension may send modified chunks back. This is the default
+	// value if the processing mode is not specified.
+	//   "BODY_SEND_MODE_FULL_DUPLEX_STREAMED" - Calls are executed in the full
+	// duplex mode. Subsequent chunks will be sent for processing without waiting
+	// for the response for the previous chunk or for the response for
+	// `REQUEST_HEADERS` event. Extension can freely modify or chunk the body
+	// contents. If the extension doesn't send the body contents back, the next
+	// extension in the chain or the upstream will receive an empty body.
+	ResponseBodySendMode string `json:"responseBodySendMode,omitempty"`
 	// Service: Required. The reference to the service that runs the extension. To
 	// configure a callout extension, `service` must be a fully-qualified reference
 	// to a backend service
@@ -1017,12 +1068,17 @@ type ExtensionChainExtension struct {
 	// `projects/{project}/locations/{location}/wasmPlugins/{plugin}` or
 	// `//networkservices.googleapis.com/projects/{project}/locations/{location}/was
 	// mPlugins/{wasmPlugin}`. Plugin extensions are currently supported for the
-	// `LbTrafficExtension` and the `LbRouteExtension` resources.
+	// `LbTrafficExtension`, the `LbRouteExtension`, and the `LbEdgeExtension`
+	// resources.
 	Service string `json:"service,omitempty"`
 	// SupportedEvents: Optional. A set of events during request or response
-	// processing for which this extension is called. This field is required for
-	// the `LbTrafficExtension` resource. It is optional for the `LbRouteExtension`
-	// resource. If unspecified `REQUEST_HEADERS` event is assumed as supported.
+	// processing for which this extension is called. For the `LbTrafficExtension`
+	// resource, this field is required. For the `LbRouteExtension` resource, this
+	// field is optional. If unspecified, `REQUEST_HEADERS` event is assumed as
+	// supported. For the `LbEdgeExtension` resource, this field is required and
+	// must only contain `REQUEST_HEADERS` event. For the `AuthzExtension`
+	// resource, this field is optional. `REQUEST_HEADERS` is the only supported
+	// event. If unspecified, `REQUEST_HEADERS` event is assumed as supported.
 	//
 	// Possible values:
 	//   "EVENT_TYPE_UNSPECIFIED" - Unspecified value. Do not use.
@@ -1148,7 +1204,7 @@ type Gateway struct {
 	Network string `json:"network,omitempty"`
 	// Ports: Required. One or more port numbers (1-65535), on which the Gateway
 	// will receive traffic. The proxy binds to the specified ports. Gateways of
-	// type 'SECURE_WEB_GATEWAY' are limited to 1 port. Gateways of type
+	// type 'SECURE_WEB_GATEWAY' are limited to 5 ports. Gateways of type
 	// 'OPEN_MESH' listen on 0.0.0.0 for IPv4 and :: for IPv6 and support multiple
 	// ports.
 	Ports []int64 `json:"ports,omitempty"`
@@ -4326,7 +4382,7 @@ type WasmPluginLogConfig struct {
 	// Enable: Optional. Specifies whether to enable logging for activity by this
 	// plugin. Defaults to `false`.
 	Enable bool `json:"enable,omitempty"`
-	// MinLogLevel: Non-empty default. Specificies the lowest level of the plugin
+	// MinLogLevel: Non-empty default. Specifies the lowest level of the plugin
 	// logs that are exported to Cloud Logging. This setting relates to the logs
 	// generated by using logging statements in your Wasm code. This field is can
 	// be set only if logging is enabled for the plugin. If the field is not
@@ -4413,16 +4469,26 @@ type WasmPluginVersion struct {
 	CreateTime string `json:"createTime,omitempty"`
 	// Description: Optional. A human-readable description of the resource.
 	Description string `json:"description,omitempty"`
-	// ImageDigest: Output only. The resolved digest for the image specified in the
-	// `image` field. The digest is resolved during the creation of
-	// `WasmPluginVersion` resource. This field holds the digest value, regardless
-	// of whether a tag or digest was originally specified in the `image` field.
+	// ImageDigest: Output only. This field holds the digest (usually checksum)
+	// value for the plugin image. The value is calculated based on the `image_uri`
+	// field. If the `image_uri` field refers to a container image, the digest
+	// value is obtained from the container image. If the `image_uri` field refers
+	// to a generic artifact, the digest value is calculated based on the contents
+	// of the file.
 	ImageDigest string `json:"imageDigest,omitempty"`
-	// ImageUri: Optional. URI of the container image containing the plugin, stored
-	// in the Artifact Registry. When a new `WasmPluginVersion` resource is
-	// created, the digest of the container image is saved in the `image_digest`
-	// field. When downloading an image, the digest value is used instead of an
-	// image tag.
+	// ImageUri: Optional. URI of the image containing the Wasm module, stored in
+	// Artifact Registry. The URI can refer to one of the following repository
+	// formats: * Container images: the `image_uri` must point to a container that
+	// contains a single file with the name `plugin.wasm`. When a new
+	// `WasmPluginVersion` resource is created, the digest of the image is saved in
+	// the `image_digest` field. When pulling a container image from Artifact
+	// Registry, the digest value is used instead of an image tag. * Generic
+	// artifacts: the `image_uri` must be in this format:
+	// `projects/{project}/locations/{location}/repositories/{repository}/
+	// genericArtifacts/{package}:{version}`. The specified package and version
+	// must contain a file with the name `plugin.wasm`. When a new
+	// `WasmPluginVersion` resource is created, the checksum of the contents of the
+	// file is saved in the `image_digest` field.
 	ImageUri string `json:"imageUri,omitempty"`
 	// Labels: Optional. Set of labels associated with the `WasmPluginVersion`
 	// resource.
@@ -4438,15 +4504,23 @@ type WasmPluginVersion struct {
 	PluginConfigData string `json:"pluginConfigData,omitempty"`
 	// PluginConfigDigest: Output only. This field holds the digest (usually
 	// checksum) value for the plugin configuration. The value is calculated based
-	// on the contents of `plugin_config_data` or the container image defined by
-	// the `plugin_config_uri` field.
+	// on the contents of `plugin_config_data` field or the image defined by the
+	// `plugin_config_uri` field.
 	PluginConfigDigest string `json:"pluginConfigDigest,omitempty"`
 	// PluginConfigUri: URI of the plugin configuration stored in the Artifact
 	// Registry. The configuration is provided to the plugin at runtime through the
-	// `ON_CONFIGURE` callback. The container image must contain only a single file
-	// with the name `plugin.config`. When a new `WasmPluginVersion` resource is
-	// created, the digest of the container image is saved in the
-	// `plugin_config_digest` field.
+	// `ON_CONFIGURE` callback. The URI can refer to one of the following
+	// repository formats: * Container images: the `plugin_config_uri` must point
+	// to a container that contains a single file with the name `plugin.config`.
+	// When a new `WasmPluginVersion` resource is created, the digest of the image
+	// is saved in the `plugin_config_digest` field. When pulling a container image
+	// from Artifact Registry, the digest value is used instead of an image tag. *
+	// Generic artifacts: the `plugin_config_uri` must be in this format:
+	// `projects/{project}/locations/{location}/repositories/{repository}/
+	// genericArtifacts/{package}:{version}`. The specified package and version
+	// must contain a file with the name `plugin.config`. When a new
+	// `WasmPluginVersion` resource is created, the checksum of the contents of the
+	// file is saved in the `plugin_config_digest` field.
 	PluginConfigUri string `json:"pluginConfigUri,omitempty"`
 	// UpdateTime: Output only. The timestamp when the resource was updated.
 	UpdateTime string `json:"updateTime,omitempty"`
@@ -4478,16 +4552,26 @@ type WasmPluginVersionDetails struct {
 	CreateTime string `json:"createTime,omitempty"`
 	// Description: Optional. A human-readable description of the resource.
 	Description string `json:"description,omitempty"`
-	// ImageDigest: Output only. The resolved digest for the image specified in
-	// `image`. The digest is resolved during the creation of a `WasmPluginVersion`
-	// resource. This field holds the digest value regardless of whether a tag or
-	// digest was originally specified in the `image` field.
+	// ImageDigest: Output only. This field holds the digest (usually checksum)
+	// value for the plugin image. The value is calculated based on the `image_uri`
+	// field. If the `image_uri` field refers to a container image, the digest
+	// value is obtained from the container image. If the `image_uri` field refers
+	// to a generic artifact, the digest value is calculated based on the contents
+	// of the file.
 	ImageDigest string `json:"imageDigest,omitempty"`
-	// ImageUri: Optional. URI of the container image containing the Wasm module,
-	// stored in the Artifact Registry. The container image must contain only a
-	// single file with the name `plugin.wasm`. When a new `WasmPluginVersion`
-	// resource is created, the URI gets resolved to an image digest and saved in
-	// the `image_digest` field.
+	// ImageUri: Optional. URI of the image containing the Wasm module, stored in
+	// Artifact Registry. The URI can refer to one of the following repository
+	// formats: * Container images: the `image_uri` must point to a container that
+	// contains a single file with the name `plugin.wasm`. When a new
+	// `WasmPluginVersion` resource is created, the digest of the image is saved in
+	// the `image_digest` field. When pulling a container image from Artifact
+	// Registry, the digest value is used instead of an image tag. * Generic
+	// artifacts: the `image_uri` must be in this format:
+	// `projects/{project}/locations/{location}/repositories/{repository}/
+	// genericArtifacts/{package}:{version}`. The specified package and version
+	// must contain a file with the name `plugin.wasm`. When a new
+	// `WasmPluginVersion` resource is created, the checksum of the contents of the
+	// file is saved in the `image_digest` field.
 	ImageUri string `json:"imageUri,omitempty"`
 	// Labels: Optional. Set of labels associated with the `WasmPluginVersion`
 	// resource.
@@ -4499,15 +4583,23 @@ type WasmPluginVersionDetails struct {
 	PluginConfigData string `json:"pluginConfigData,omitempty"`
 	// PluginConfigDigest: Output only. This field holds the digest (usually
 	// checksum) value for the plugin configuration. The value is calculated based
-	// on the contents of the `plugin_config_data` field or the container image
-	// defined by the `plugin_config_uri` field.
+	// on the contents of `plugin_config_data` field or the image defined by the
+	// `plugin_config_uri` field.
 	PluginConfigDigest string `json:"pluginConfigDigest,omitempty"`
 	// PluginConfigUri: URI of the plugin configuration stored in the Artifact
 	// Registry. The configuration is provided to the plugin at runtime through the
-	// `ON_CONFIGURE` callback. The container image must contain only a single file
-	// with the name `plugin.config`. When a new `WasmPluginVersion` resource is
-	// created, the digest of the container image is saved in the
-	// `plugin_config_digest` field.
+	// `ON_CONFIGURE` callback. The URI can refer to one of the following
+	// repository formats: * Container images: the `plugin_config_uri` must point
+	// to a container that contains a single file with the name `plugin.config`.
+	// When a new `WasmPluginVersion` resource is created, the digest of the image
+	// is saved in the `plugin_config_digest` field. When pulling a container image
+	// from Artifact Registry, the digest value is used instead of an image tag. *
+	// Generic artifacts: the `plugin_config_uri` must be in this format:
+	// `projects/{project}/locations/{location}/repositories/{repository}/
+	// genericArtifacts/{package}:{version}`. The specified package and version
+	// must contain a file with the name `plugin.config`. When a new
+	// `WasmPluginVersion` resource is created, the checksum of the contents of the
+	// file is saved in the `plugin_config_digest` field.
 	PluginConfigUri string `json:"pluginConfigUri,omitempty"`
 	// UpdateTime: Output only. The timestamp when the resource was updated.
 	UpdateTime string `json:"updateTime,omitempty"`
@@ -4656,9 +4748,9 @@ func (r *ProjectsLocationsService) List(name string) *ProjectsLocationsListCall 
 	return c
 }
 
-// ExtraLocationTypes sets the optional parameter "extraLocationTypes": A list
-// of extra location types that should be used as conditions for controlling
-// the visibility of the locations.
+// ExtraLocationTypes sets the optional parameter "extraLocationTypes": Do not
+// use this field. It is unsupported and is ignored unless explicitly
+// documented otherwise. This is primarily for internal usage.
 func (c *ProjectsLocationsListCall) ExtraLocationTypes(extraLocationTypes ...string) *ProjectsLocationsListCall {
 	c.urlParams_.SetMulti("extraLocationTypes", append([]string{}, extraLocationTypes...))
 	return c
