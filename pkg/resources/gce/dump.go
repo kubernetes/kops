@@ -19,6 +19,7 @@ package gce
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	compute "google.golang.org/api/compute/v1"
@@ -75,6 +76,21 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 				}
 			}
 		}
+	}
+
+	isControlPlane := false
+	for key, value := range instanceDetails.Labels {
+		if !strings.HasPrefix(key, gce.GceLabelNameRolePrefix) {
+			continue
+		}
+		if value == "control-plane" {
+			isControlPlane = true
+		} else {
+			i.Roles = append(i.Roles, value)
+		}
+	}
+	if isControlPlane {
+		i.Roles = append(i.Roles, "control-plane")
 	}
 
 	op.Dump.Instances = append(op.Dump.Instances, i)
