@@ -146,6 +146,7 @@ rules:
   - csinodes
   - csidrivers
   - csistoragecapacities
+  - volumeattachments
   verbs:
   - watch
   - list
@@ -336,7 +337,7 @@ spec:
         - --logtostderr=true
         - --stderrthreshold=info
         - --v=4
-        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.3
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
