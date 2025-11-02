@@ -864,7 +864,7 @@
                 "scimTenants": {
                   "methods": {
                     "create": {
-                      "description": "Creates a new WorkforcePoolProviderScimTenant in a WorkforcePoolProvider. You cannot reuse the name of a deleted scim tenant until 30 days after deletion.",
+                      "description": "Agentspace only. Creates a new WorkforcePoolProviderScimTenant in a WorkforcePoolProvider. You cannot reuse the name of a deleted SCIM tenant until 30 days after deletion.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants",
                       "httpMethod": "POST",
                       "id": "iam.locations.workforcePools.providers.scimTenants.create",
@@ -873,14 +873,14 @@
                       ],
                       "parameters": {
                         "parent": {
-                          "description": "Required. The parent to create scim tenant. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
+                          "description": "Required. Agentspace only. The parent to create SCIM tenant. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
                           "required": true,
                           "type": "string"
                         },
                         "workforcePoolProviderScimTenantId": {
-                          "description": "Required. The ID to use for the scim tenant, which becomes the final component of the resource name. This value should be 4-32 characters, and may contain the characters [a-z0-9-].",
+                          "description": "Required. Agentspace only. The ID to use for the SCIM tenant, which becomes the final component of the resource name. This value should be 4-32 characters, containing the characters [a-z0-9-].",
                           "location": "query",
                           "type": "string"
                         }
@@ -897,7 +897,7 @@
                       ]
                     },
                     "delete": {
-                      "description": "Deletes a WorkforcePoolProviderScimTenant. You can undelete a scim tenant for 30 days. After 30 days, deletion is permanent. You cannot update deleted scim tenants. However, you can view and list them.",
+                      "description": "Agentspace only. Deletes a WorkforcePoolProviderScimTenant. You can undelete a SCIM tenant for 30 days. After 30 days, deletion is permanent. You cannot update deleted SCIM tenants. However, you can view and list them.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
                       "httpMethod": "DELETE",
                       "id": "iam.locations.workforcePools.providers.scimTenants.delete",
@@ -905,8 +905,13 @@
                         "name"
                       ],
                       "parameters": {
+                        "hardDelete": {
+                          "description": "Optional. Deletes the SCIM tenant immediately. This operation cannot be undone.",
+                          "location": "query",
+                          "type": "boolean"
+                        },
                         "name": {
-                          "description": "Required. The name of the scim tenant to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "description": "Required. Agentspace only. The name of the scim tenant to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
@@ -922,7 +927,7 @@
                       ]
                     },
                     "get": {
-                      "description": "Gets an individual WorkforcePoolProviderScimTenant.",
+                      "description": "Agentspace only. Gets an individual WorkforcePoolProviderScimTenant.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
                       "httpMethod": "GET",
                       "id": "iam.locations.workforcePools.providers.scimTenants.get",
@@ -931,7 +936,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Required. The name of the scim tenant to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "description": "Required. Agentspace only. The name of the SCIM tenant to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
@@ -947,7 +952,7 @@
                       ]
                     },
                     "list": {
-                      "description": "Lists all non-deleted WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted scim tenants are also listed.",
+                      "description": "Agentspace only. Lists all non-deleted WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted SCIM tenants are also listed.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants",
                       "httpMethod": "GET",
                       "id": "iam.locations.workforcePools.providers.scimTenants.list",
@@ -956,25 +961,25 @@
                       ],
                       "parameters": {
                         "pageSize": {
-                          "description": "Optional. The maximum number of scim tenants to return. If unspecified, at most 1 scim tenant will be returned.",
+                          "description": "Optional. Agentspace only. The maximum number of SCIM tenants to return. If unspecified, at most 1 scim tenant will be returned.",
                           "format": "int32",
                           "location": "query",
                           "type": "integer"
                         },
                         "pageToken": {
-                          "description": "Optional. A page token, received from a previous `ListScimTenants` call. Provide this to retrieve the subsequent page.",
+                          "description": "Optional. Agentspace only. A page token, received from a previous `ListScimTenants` call. Provide this to retrieve the subsequent page.",
                           "location": "query",
                           "type": "string"
                         },
                         "parent": {
-                          "description": "Required. The parent to list scim tenants. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
+                          "description": "Required. Agentspace only. The parent to list SCIM tenants. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
                           "required": true,
                           "type": "string"
                         },
                         "showDeleted": {
-                          "description": "Optional. Whether to return soft-deleted scim tenants.",
+                          "description": "Optional. Agentspace only. Whether to return soft-deleted SCIM tenants.",
                           "location": "query",
                           "type": "boolean"
                         }
@@ -988,7 +993,7 @@
                       ]
                     },
                     "patch": {
-                      "description": "Updates an existing WorkforcePoolProviderScimTenant.",
+                      "description": "Agentspace only. Updates an existing WorkforcePoolProviderScimTenant.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
                       "httpMethod": "PATCH",
                       "id": "iam.locations.workforcePools.providers.scimTenants.patch",
@@ -997,14 +1002,14 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Identifier. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
+                          "description": "Identifier. Agentspace only. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
                           "type": "string"
                         },
                         "updateMask": {
-                          "description": "Optional. The list of fields to update.",
+                          "description": "Optional. Agentspace only. The list of fields to update.",
                           "format": "google-fieldmask",
                           "location": "query",
                           "type": "string"
@@ -1022,7 +1027,7 @@
                       ]
                     },
                     "undelete": {
-                      "description": "Undeletes a WorkforcePoolProviderScimTenant, as long as it was deleted fewer than 30 days ago.",
+                      "description": "Agentspace only. Undeletes a WorkforcePoolProviderScimTenant, that was deleted fewer than 30 days ago.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}:undelete",
                       "httpMethod": "POST",
                       "id": "iam.locations.workforcePools.providers.scimTenants.undelete",
@@ -1031,7 +1036,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Required. The name of the scim tenant to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "description": "Required. Agentspace only. The name of the SCIM tenant to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
@@ -1054,7 +1059,7 @@
                     "tokens": {
                       "methods": {
                         "create": {
-                          "description": "Creates a new WorkforcePoolProviderScimToken in a WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM token until 30 days after deletion.",
+                          "description": "Agentspace only. Creates a new WorkforcePoolProviderScimToken in a WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM token until 30 days after deletion.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens",
                           "httpMethod": "POST",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.create",
@@ -1063,14 +1068,14 @@
                           ],
                           "parameters": {
                             "parent": {
-                              "description": "Required. The parent tenant to create scim token. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
+                              "description": "Required. Agentspace only. The parent tenant to create SCIM token. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                               "required": true,
                               "type": "string"
                             },
                             "workforcePoolProviderScimTokenId": {
-                              "description": "Required. The ID to use for the scim token, which becomes the final component of the resource name. This value should be 4-32 characters and follow this pattern: \"([a-z]([a-z0-9\\\\-]{2,30}[a-z0-9]))\"",
+                              "description": "Required. Agentspace only. The ID to use for the SCIM token, which becomes the final component of the resource name. This value should be 4-32 characters and follow the pattern: \"([a-z]([a-z0-9\\\\-]{2,30}[a-z0-9]))\"",
                               "location": "query",
                               "type": "string"
                             }
@@ -1087,7 +1092,7 @@
                           ]
                         },
                         "delete": {
-                          "description": "Deletes a WorkforcePoolProviderScimToken. You can undelete a scim token for 30 days. After 30 days, deletion is permanent. You cannot update deleted scim tokens. However, you can view and list them.",
+                          "description": "Agentspace only. Deletes a WorkforcePoolProviderScimToken. You can undelete a SCIM token for 30 days. After 30 days, the SCIM token is permanently deleted. You cannot update deleted SCIM tokens, however, you can view and list them.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
                           "httpMethod": "DELETE",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.delete",
@@ -1096,7 +1101,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Required. The name of the scim token to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Required. Agentspace only. The name of the SCIM token to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
@@ -1112,7 +1117,7 @@
                           ]
                         },
                         "get": {
-                          "description": "Gets an individual WorkforcePoolProviderScimToken.",
+                          "description": "Agentspace only. Gets an individual WorkforcePoolProviderScimToken.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
                           "httpMethod": "GET",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.get",
@@ -1121,7 +1126,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Required. The name of the scim token to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Required. Agentspace only. The name of the SCIM token to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
@@ -1137,7 +1142,7 @@
                           ]
                         },
                         "list": {
-                          "description": "Lists all non-deleted WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.",
+                          "description": "Agentspace only. Lists all non-deleted WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens",
                           "httpMethod": "GET",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.list",
@@ -1146,25 +1151,25 @@
                           ],
                           "parameters": {
                             "pageSize": {
-                              "description": "Optional. The maximum number of scim tokens to return. If unspecified, at most 2 scim tokens will be returned.",
+                              "description": "Optional. Agentspace only. The maximum number of scim tokens to return. If unspecified, at most 2 SCIM tokens will be returned.",
                               "format": "int32",
                               "location": "query",
                               "type": "integer"
                             },
                             "pageToken": {
-                              "description": "Optional. A page token, received from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to retrieve the subsequent page.",
+                              "description": "Optional. Agentspace only. A page token, received from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to retrieve the subsequent page.",
                               "location": "query",
                               "type": "string"
                             },
                             "parent": {
-                              "description": "Required. The parent to list scim tokens. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
+                              "description": "Required. Agentspace only. The parent to list SCIM tokens. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                               "required": true,
                               "type": "string"
                             },
                             "showDeleted": {
-                              "description": "Optional. Whether to return soft-deleted scim tokens.",
+                              "description": "Optional. Agentspace only. Whether to return soft-deleted scim tokens.",
                               "location": "query",
                               "type": "boolean"
                             }
@@ -1178,7 +1183,7 @@
                           ]
                         },
                         "patch": {
-                          "description": "Updates an existing WorkforcePoolProviderScimToken.",
+                          "description": "Agentspace only. Updates an existing WorkforcePoolProviderScimToken.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
                           "httpMethod": "PATCH",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.patch",
@@ -1187,14 +1192,14 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Identifier. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Identifier. Agentspace only. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
                               "type": "string"
                             },
                             "updateMask": {
-                              "description": "Optional. The list of fields to update.",
+                              "description": "Optional. Agentspace only. The list of fields to update.",
                               "format": "google-fieldmask",
                               "location": "query",
                               "type": "string"
@@ -1212,7 +1217,7 @@
                           ]
                         },
                         "undelete": {
-                          "description": "Undeletes a WorkforcePoolProviderScimToken, as long as it was deleted fewer than 30 days ago.",
+                          "description": "Agentspace only. Undeletes a WorkforcePoolProviderScimToken,that was deleted fewer than 30 days ago.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}:undelete",
                           "httpMethod": "POST",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.undelete",
@@ -1221,7 +1226,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Required. The name of the scim token to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Required. Agentspace only. The name of the SCIM token to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
@@ -2578,7 +2583,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Identifier. The resource name of the managed identity.",
+                              "description": "Output only. The resource name of the managed identity.",
                               "location": "path",
                               "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
                               "required": true,
@@ -2948,7 +2953,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Identifier. The resource name of the provider.",
+                          "description": "Output only. The resource name of the provider.",
                           "location": "path",
                           "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
                           "required": true,
@@ -4155,7 +4160,7 @@
       }
     }
   },
-  "revision": "20250919",
+  "revision": "20251010",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -5013,15 +5018,15 @@
       "type": "object"
     },
     "ListWorkforcePoolProviderScimTenantsResponse": {
-      "description": "Response message for ListWorkforcePoolProviderScimTenants.",
+      "description": "Agentspace only. Response message for ListWorkforcePoolProviderScimTenants.",
       "id": "ListWorkforcePoolProviderScimTenantsResponse",
       "properties": {
         "nextPageToken": {
-          "description": "Optional. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "description": "Optional. Agentspace only. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
           "type": "string"
         },
         "workforcePoolProviderScimTenants": {
-          "description": "Output only. A list of scim tenants.",
+          "description": "Output only. Agentspace only. A list of SCIM tenants.",
           "items": {
             "$ref": "WorkforcePoolProviderScimTenant"
           },
@@ -5032,15 +5037,15 @@
       "type": "object"
     },
     "ListWorkforcePoolProviderScimTokensResponse": {
-      "description": "Response message for ListWorkforcePoolProviderScimTokens.",
+      "description": "Agentspace only. Response message for ListWorkforcePoolProviderScimTokens.",
       "id": "ListWorkforcePoolProviderScimTokensResponse",
       "properties": {
         "nextPageToken": {
-          "description": "Optional. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "description": "Optional. Agentspace only. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
           "type": "string"
         },
         "workforcePoolProviderScimTokens": {
-          "description": "Output only. A list of scim tokens.",
+          "description": "Output only. Agentspace only. A list of SCIM tokens.",
           "items": {
             "$ref": "WorkforcePoolProviderScimToken"
           },
@@ -6168,13 +6173,13 @@
       "type": "object"
     },
     "UndeleteWorkforcePoolProviderScimTenantRequest": {
-      "description": "Request message for UndeleteWorkforcePoolProviderScimTenant.",
+      "description": "Agentspace only. Request message for UndeleteWorkforcePoolProviderScimTenant.",
       "id": "UndeleteWorkforcePoolProviderScimTenantRequest",
       "properties": {},
       "type": "object"
     },
     "UndeleteWorkforcePoolProviderScimTokenRequest": {
-      "description": "Request message for UndeleteWorkforcePoolProviderScimToken.",
+      "description": "Agentspace only. Request message for UndeleteWorkforcePoolProviderScimToken.",
       "id": "UndeleteWorkforcePoolProviderScimTokenRequest",
       "properties": {},
       "type": "object"
@@ -6302,7 +6307,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Required. Maps attributes from the authentication credentials issued by an external identity provider to Google Cloud attributes, such as `subject` and `segment`. Each key must be a string specifying the Google Cloud IAM attribute to map to. The following keys are supported: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. This is a required field and the mapped subject cannot exceed 127 bytes. * `google.groups`: Groups the authenticating user belongs to. You can grant groups access to resources using an IAM `principalSet` binding; access applies to all members of the group. * `google.display_name`: The name of the authenticated user. This is an optional field and the mapped display name cannot exceed 100 bytes. If not set, `google.subject` will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.profile_photo`: The URL that specifies the authenticated user's thumbnail photo. This is an optional field. When set, the image will be visible as the user's profile picture. If not set, a generic user icon will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.posix_username`: The Linux username used by OS Login. This is an optional field and the mapped POSIX username cannot exceed 32 characters, The key must match the regex \"^a-zA-Z0-9._{0,31}$\". This attribute cannot be referenced in IAM bindings. You can also provide custom attributes by specifying `attribute.{custom_attribute}`, where {custom_attribute} is the name of the custom attribute to be mapped. You can define a maximum of 50 custom attributes. The maximum length of a mapped attribute key is 100 characters, and the key may only contain the characters [a-z0-9_]. You can reference these attributes in IAM policies to define fine-grained access for a workforce pool to Google Cloud resources. For example: * `google.subject`: `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subject/{value}` * `google.groups`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/group/{value}` * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/attribute.{custom_attribute}/{value}` Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) function that maps an identity provider credential to the normalized attribute specified by the corresponding map key. You can use the `assertion` keyword in the expression to access a JSON representation of the authentication credential issued by the provider. The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the total size of all mapped attributes must not exceed 4KB. For OIDC providers, you must supply a custom mapping that includes the `google.subject` attribute. For example, the following maps the `sub` claim of the incoming credential to the `subject` attribute on a Google token: ``` {\"google.subject\": \"assertion.sub\"} ```",
+          "description": "Required. Maps attributes from the authentication credentials issued by an external identity provider to Google Cloud attributes, such as `subject` and `segment`. Each key must be a string specifying the Google Cloud IAM attribute to map to. The following keys are supported: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. This is a required field and the mapped subject cannot exceed 127 bytes. * `google.groups`: Groups the authenticating user belongs to. You can grant groups access to resources using an IAM `principalSet` binding; access applies to all members of the group. * `google.display_name`: The name of the authenticated user. This is an optional field and the mapped display name cannot exceed 100 bytes. If not set, `google.subject` will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.profile_photo`: The URL that specifies the authenticated user's thumbnail photo. This is an optional field. When set, the image will be visible as the user's profile picture. If not set, a generic user icon will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.posix_username`: The Linux username used by OS Login. This is an optional field and the mapped POSIX username cannot exceed 32 characters, The key must match the regex \"^a-zA-Z0-9._{0,31}$\". This attribute cannot be referenced in IAM bindings. You can also provide custom attributes by specifying `attribute.{custom_attribute}`, where {custom_attribute} is the name of the custom attribute to be mapped. You can define a maximum of 50 custom attributes. The maximum length of a mapped attribute key is 100 characters, and the key may only contain the characters [a-z0-9_]. You can reference these attributes in IAM policies to define fine-grained access for a workforce pool to Google Cloud resources. For example: * `google.subject`: `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subject/{value}` * `google.groups`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/group/{value}` * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/attribute.{custom_attribute}/{value}` Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) function that maps an identity provider credential to the normalized attribute specified by the corresponding map key. You can use the `assertion` keyword in the expression to access a JSON representation of the authentication credential issued by the provider. The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the total size of all mapped attributes must not exceed 16 KB. For OIDC providers, you must supply a custom mapping that includes the `google.subject` attribute. For example, the following maps the `sub` claim of the incoming credential to the `subject` attribute on a Google token: ``` {\"google.subject\": \"assertion.sub\"} ```",
           "type": "object"
         },
         "description": {
@@ -6346,6 +6351,18 @@
         "saml": {
           "$ref": "GoogleIamAdminV1WorkforcePoolProviderSaml",
           "description": "A SAML identity provider configuration."
+        },
+        "scimUsage": {
+          "description": "Optional. Agentspace only. Specifies whether the workforce identity pool provider uses SCIM-managed groups instead of the `google.groups` attribute mapping for authorization checks. The `scim_usage` and `extended_attributes_oauth2_client` fields are mutually exclusive. A request that enables both fields on the same workforce identity pool provider will produce an error.",
+          "enum": [
+            "SCIM_USAGE_UNSPECIFIED",
+            "ENABLED_FOR_GROUPS"
+          ],
+          "enumDescriptions": [
+            "Agentspace only. Do not use SCIM data.",
+            "Agentspace only. SCIM sync is enabled and SCIM-managed groups are used for authorization checks."
+          ],
+          "type": "string"
         },
         "state": {
           "description": "Output only. The state of the provider.",
@@ -6405,7 +6422,7 @@
             "ENCRYPTION"
           ],
           "enumDescriptions": [
-            "KeyUse unspecified.",
+            "KeyUse unspecified. Do not use. The purpose of the key must be specified.",
             "The key is used for encryption."
           ],
           "type": "string"
@@ -6414,11 +6431,11 @@
       "type": "object"
     },
     "WorkforcePoolProviderScimTenant": {
-      "description": "Represents a scim tenant. Used for provisioning and managing identity data (such as Users and Groups) in cross-domain environments.",
+      "description": "Agentspace only. Represents a SCIM tenant. Used for provisioning and managing identity data (such as Users and Groups) in cross-domain environments.",
       "id": "WorkforcePoolProviderScimTenant",
       "properties": {
         "baseUri": {
-          "description": "Output only. Represents the base URI as defined in [RFC 7644, Section 1.3](https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must use this as the root address for managing resources under the tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/",
+          "description": "Output only. Agentspace only. Represents the base URI as defined in [RFC 7644, Section 1.3](https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must use this as the root address for managing resources under the tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/",
           "readOnly": true,
           "type": "string"
         },
@@ -6426,38 +6443,43 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Optional. Maps BYOID claims to SCIM claims.",
+          "description": "Optional. Agentspace only. Maps BYOID claims to SCIM claims.",
           "type": "object"
         },
         "description": {
-          "description": "Optional. The description of the scim tenant. Cannot exceed 256 characters.",
+          "description": "Optional. Agentspace only. The description of the SCIM tenant. Cannot exceed 256 characters.",
           "type": "string"
         },
         "displayName": {
-          "description": "Optional. The display name of the scim tenant. Cannot exceed 32 characters.",
+          "description": "Optional. Agentspace only. The display name of the SCIM tenant. Cannot exceed 32 characters.",
           "type": "string"
         },
         "name": {
-          "description": "Identifier. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
+          "description": "Identifier. Agentspace only. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
           "type": "string"
         },
         "purgeTime": {
-          "description": "Output only. The timestamp when the scim tenant is going to be purged.",
+          "description": "Output only. Agentspace only. The timestamp that represents the time when the SCIM tenant is purged.",
           "format": "google-datetime",
           "readOnly": true,
           "type": "string"
         },
+        "serviceAgent": {
+          "description": "Output only. Service Agent created by SCIM Tenant API. SCIM tokens created under this tenant will be attached to this service agent.",
+          "readOnly": true,
+          "type": "string"
+        },
         "state": {
-          "description": "Output only. The state of the tenant.",
+          "description": "Output only. Agentspace only. The state of the tenant.",
           "enum": [
             "STATE_UNSPECIFIED",
             "ACTIVE",
             "DELETED"
           ],
           "enumDescriptions": [
-            "State unspecified.",
-            "The tenant is active and may be used to provision users and groups.",
-            "The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
+            "Agentspace only. State unspecified.",
+            "Agentspace only. The tenant is active and may be used to provision users and groups.",
+            "Agentspace only. The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
           ],
           "readOnly": true,
           "type": "string"
@@ -6466,33 +6488,33 @@
       "type": "object"
     },
     "WorkforcePoolProviderScimToken": {
-      "description": "Represents a token for the WorkforcePoolProviderScimTenant. Used for authenticating SCIM Provisioning requests.",
+      "description": "Agentspace only. Represents a token for the WorkforcePoolProviderScimTenant. Used for authenticating SCIM provisioning requests.",
       "id": "WorkforcePoolProviderScimToken",
       "properties": {
         "displayName": {
-          "description": "Optional. The display name of the scim token. Cannot exceed 32 characters.",
+          "description": "Optional. Agentspace only. The display name of the SCIM token. Cannot exceed 32 characters.",
           "type": "string"
         },
         "name": {
-          "description": "Identifier. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+          "description": "Identifier. Agentspace only. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
           "type": "string"
         },
         "securityToken": {
-          "description": "Output only. The token string. Provide this to the IdP for authentication. Will be set only during creation.",
+          "description": "Output only. Agentspace only. The token string. Provide this to the IdP for authentication. Will be set only during creation.",
           "readOnly": true,
           "type": "string"
         },
         "state": {
-          "description": "Output only. The state of the token.",
+          "description": "Output only. Agentspace only. The state of the token.",
           "enum": [
             "STATE_UNSPECIFIED",
             "ACTIVE",
             "DELETED"
           ],
           "enumDescriptions": [
-            "State unspecified.",
-            "The tenant is active and may be used to provision users and groups.",
-            "The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
+            "Agentspace only. State unspecified.",
+            "Agentspace only. The token is active and may be used to provision users and groups.",
+            "Agentspace only. The token is soft-deleted. Soft-deleted tokens are permanently deleted after approximately 30 days."
           ],
           "readOnly": true,
           "type": "string"
@@ -6586,7 +6608,8 @@
           "type": "string"
         },
         "name": {
-          "description": "Identifier. The resource name of the managed identity.",
+          "description": "Output only. The resource name of the managed identity.",
+          "readOnly": true,
           "type": "string"
         },
         "state": {
@@ -6697,7 +6720,8 @@
           "type": "string"
         },
         "name": {
-          "description": "Identifier. The resource name of the provider.",
+          "description": "Output only. The resource name of the provider.",
+          "readOnly": true,
           "type": "string"
         },
         "oidc": {
