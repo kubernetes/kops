@@ -18,7 +18,9 @@ package azuretasks
 
 import (
 	"context"
+	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	"k8s.io/klog/v2"
@@ -95,13 +97,11 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 		if len(rule.Properties.SourceApplicationSecurityGroups) > 0 {
 			var sasgs []*string
 			for _, sasg := range rule.Properties.SourceApplicationSecurityGroups {
-				asg, err := azure.ParseApplicationSecurityGroupID(*sasg.ID)
+				asg, err := arm.ParseResourceID(*sasg.ID)
 				if err != nil {
-					if err != nil {
-						return nil, err
-					}
+					return nil, err
 				}
-				sasgs = append(sasgs, &asg.ApplicationSecurityGroupName)
+				sasgs = append(sasgs, to.Ptr(strings.ToLower(asg.Name)))
 			}
 			nsr.SourceApplicationSecurityGroupNames = sasgs
 		}
@@ -111,13 +111,11 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 		if len(rule.Properties.DestinationApplicationSecurityGroups) > 0 {
 			var dasgs []*string
 			for _, dasg := range rule.Properties.DestinationApplicationSecurityGroups {
-				asg, err := azure.ParseApplicationSecurityGroupID(*dasg.ID)
+				asg, err := arm.ParseResourceID(*dasg.ID)
 				if err != nil {
-					if err != nil {
-						return nil, err
-					}
+					return nil, err
 				}
-				dasgs = append(dasgs, &asg.ApplicationSecurityGroupName)
+				dasgs = append(dasgs, to.Ptr(strings.ToLower(asg.Name)))
 			}
 			nsr.DestinationApplicationSecurityGroupNames = dasgs
 		}
