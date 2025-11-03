@@ -499,7 +499,7 @@ func (tf *TemplateFunctions) APIServerNodeRole() string {
 // HasHighlyAvailableControlPlane returns true of the cluster has more than one control plane node. False otherwise.
 func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 	cp := 0
-	for _, ig := range tf.InstanceGroups {
+	for _, ig := range tf.AllInstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 			cp++
 			if cp > 1 {
