@@ -132,10 +132,16 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 
 			if startupScript != nil {
-				if !fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.UseStartupScript) {
-					// Use "user-data" instead of "startup-script", for compatibility with cloud-init
+				// GCE doesn't bundle cloud-init on every OS unless cloud-init is present in the upstream distribution
+				// So far, thats only true for COS and Ubuntu
+				switch {
+				case fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.UseStartupScript):
+					t.Metadata["startup-script"] = startupScript
+				case strings.HasPrefix(ig.Spec.Image, "cos-cloud/"):
 					t.Metadata["user-data"] = startupScript
-				} else {
+				case strings.HasPrefix(ig.Spec.Image, "ubuntu-os-cloud/"):
+					t.Metadata["user-data"] = startupScript
+				default:
 					t.Metadata["startup-script"] = startupScript
 				}
 			}

@@ -470,7 +470,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-example-c
     provisioned_iops       = 0
     provisioned_throughput = 0
     source                 = ""
-    source_image           = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
+    source_image           = "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-12-bookworm-v20251014"
     type                   = "PERSISTENT"
   }
   labels = {
@@ -487,7 +487,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-example-c
     "cluster-name"                    = "minimal.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "user-data"                       = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-example-com_metadata_user-data")
+    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-example-com_metadata_startup-script")
   }
   name_prefix = "master-us-test1-a-minimal-e8ua4m-"
   network_interface {
@@ -524,7 +524,7 @@ resource "google_compute_instance_template" "nodes-minimal-example-com" {
     provisioned_iops       = 0
     provisioned_throughput = 0
     source                 = ""
-    source_image           = "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20221018"
+    source_image           = "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-12-bookworm-v20251014"
     type                   = "PERSISTENT"
   }
   labels = {
@@ -541,7 +541,7 @@ resource "google_compute_instance_template" "nodes-minimal-example-com" {
     "kops-k8s-io-instance-group-name" = "nodes"
     "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
     "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
-    "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-minimal-example-com_metadata_user-data")
+    "startup-script"                  = file("${path.module}/data/google_compute_instance_template_nodes-minimal-example-com_metadata_startup-script")
   }
   name_prefix = "nodes-minimal-example-com-"
   network_interface {
