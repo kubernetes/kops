@@ -115,19 +115,6 @@ func (s *ApplicationSecurityGroupID) String() string {
 		s.ApplicationSecurityGroupName)
 }
 
-// ParseApplicationSecurityGroupID parses a given ApplicationSecurityGroup ID string and returns a ApplicationSecurityGroup ID.
-func ParseApplicationSecurityGroupID(s string) (*ApplicationSecurityGroupID, error) {
-	l := strings.Split(s, "/")
-	if len(l) != 9 {
-		return nil, fmt.Errorf("malformed format of ApplicationSecurityGroup ID: %s, %d", s, len(l))
-	}
-	return &ApplicationSecurityGroupID{
-		SubscriptionID:               l[2],
-		ResourceGroupName:            l[4],
-		ApplicationSecurityGroupName: l[8],
-	}, nil
-}
-
 // LoadBalancerID contains the resource ID/names required to construct a load balancer ID.
 type LoadBalancerID struct {
 	SubscriptionID    string
