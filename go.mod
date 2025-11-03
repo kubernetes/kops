@@ -284,4 +284,3 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.18.1 // indirect
 )
 
-replace github.com/Elemento-Modular-Cloud/ecloud-go => ../ecloud-go

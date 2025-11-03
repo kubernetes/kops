@@ -1,0 +1,51 @@
+name: Build and Release Elemento
+
+on:
+  push:
+    tags:
+      - '*'           
+    branches:
+      - master       
+
+jobs:
+  build-and-release:
+    name: Build and upload release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.1'   
+
+      - name: Build cross-platform binaries
+        run: make crossbuild
+
+      - name: Rename build artifacts
+        run: |
+          mkdir -p release
+          cp dist/darwin/amd64/kops release/kops-darwin-amd64
+          cp dist/darwin/arm64/kops release/kops-darwin-arm64
+          cp dist/linux/amd64/kops release/kops-linux-amd64
+          cp dist/linux/arm64/kops release/kops-linux-arm64
+          cp dist/windows/amd64/kops.exe release/kops-windows-amd64.exe
+          ls -lh release
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            🚀 Release ${{ github.ref_name }}
+            Automatically built and uploaded by GitHub Actions.
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
