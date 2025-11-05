@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"k8s.io/kops/pkg/bootstrap"
 )
@@ -38,55 +37,42 @@ func NewAzureAuthenticator() (bootstrap.Authenticator, error) {
 }
 
 func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
-	m, err := queryInstanceMetadata()
+	metadata, err := queryComputeInstanceMetadata()
 	if err != nil {
 		return "", fmt.Errorf("querying instance metadata: %w", err)
 	}
-
-	vmId := m.Compute.VMID
-	if vmId == "" {
+	if metadata == nil || metadata.VMID == "" {
 		return "", fmt.Errorf("missing virtual machine ID")
 	}
 
-	// The fully qualified VMSS VM resource ID format is:
-	// /subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP_NAME/providers/Microsoft.Compute/virtualMachineScaleSets/VMSS_NAME/virtualMachines/VMSS_INDEX
-	r := strings.Split(m.Compute.ResourceID, "/")
-	if len(r) != 11 || r[7] != "virtualMachineScaleSets" || r[9] != "virtualMachines" {
-		return "", fmt.Errorf("unexpected resource ID format: %q", m.Compute.ResourceID)
-	}
-	vmssName := r[8]
-	vmssIndex := r[10]
+	token := metadata.ResourceID + " " + metadata.VMID
 
-	return AzureAuthenticationTokenPrefix + vmId + " " + vmssName + " " + vmssIndex, nil
-}
-
-type instanceComputeMetadata struct {
-	ResourceGroupName string `json:"resourceGroupName"`
-	ResourceID        string `json:"resourceId"`
-	SubscriptionID    string `json:"subscriptionId"`
-	VMID              string `json:"vmId"`
+	return AzureAuthenticationTokenPrefix + token, nil
 }
 
 type instanceMetadata struct {
-	Compute *instanceComputeMetadata `json:"compute"`
+	SubscriptionID    string `json:"subscriptionId"`
+	ResourceGroupName string `json:"resourceGroupName"`
+	ResourceID        string `json:"resourceId"`
+	VMID              string `json:"vmId"`
 }
 
-// queryInstanceMetadata queries Azure Instance Metadata Service (IMDS)
-// https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service?tabs=linux
-func queryInstanceMetadata() (*instanceMetadata, error) {
+// queryComputeInstanceMetadata queries Azure Instance Metadata Service (IMDS)
+// https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
+func queryComputeInstanceMetadata() (*instanceMetadata, error) {
 	transport := &http.Transport{Proxy: nil}
 
 	client := http.Client{Transport: transport}
 
-	req, err := http.NewRequest("GET", "http://169.254.169.254/metadata/instance", nil)
+	req, err := http.NewRequest("GET", "http://169.254.169.254/metadata/instance/compute", nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating a new request: %w", err)
 	}
 	req.Header.Add("Metadata", "True")
 
 	q := req.URL.Query()
+	q.Add("api-version", "2025-04-07")
 	q.Add("format", "json")
-	q.Add("api-version", "2021-02-01")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
