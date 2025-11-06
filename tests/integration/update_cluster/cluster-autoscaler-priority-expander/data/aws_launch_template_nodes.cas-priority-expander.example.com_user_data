@@ -149,7 +149,7 @@ ConfigServer:
   - https://kops-controller.internal.cas-priority-expander.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: nj9X+AiOcjnCADhHAdv+vzyjJd+tkCtCNLBfIgLEMfE=
+NodeupConfigHash: OSeNYbU80XWVHUZUX8/pR+/w3hQu62OJBu8ZZsXuL8g=
 
 __EOF_KUBE_ENV
 

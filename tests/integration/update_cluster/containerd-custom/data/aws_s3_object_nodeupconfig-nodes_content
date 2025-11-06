@@ -57,9 +57,9 @@ containerdConfig:
     docker.io:
     - https://registry-1.docker.io
   runc:
-    version: 1.3.0
+    version: 1.3.3
   skipInstall: true
   useECRCredentialsForMirrors: true
-  version: 2.1.4
+  version: 2.1.5
 usesLegacyGossip: false
 usesNoneDNS: false
