@@ -44,7 +44,14 @@ func (t *Tester) setSkipRegexFlag() error {
 
 	skipRegex := skipRegexBase
 
-	//.Skip.broken.test,.see.https://github.com/kubernetes/kubernetes/pull/133262
+	if k8sVersion.Minor < 35 {
+		// cpu.weight value changed in runc 1.3.2
+		// https://github.com/kubernetes/kubernetes/issues/135214
+		// https://github.com/opencontainers/runc/issues/4896
+		skipRegex += "|[Burstable|Guaranteed].QoS.pod"
+	}
+
+	// Skip broken test, see https://github.com/kubernetes/kubernetes/pull/133262
 	skipRegex += "|blackbox.*should.not.be.able.to.pull.image.from.invalid.registry"
 	skipRegex += "|blackbox.*should.be.able.to.pull.from.private.registry.with.secret"
 
