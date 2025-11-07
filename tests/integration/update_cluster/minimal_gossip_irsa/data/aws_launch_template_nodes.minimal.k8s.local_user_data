@@ -126,7 +126,7 @@ ClusterName: minimal.k8s.local
 ConfigBase: memfs://clusters.example.com/minimal.k8s.local
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: wEa4CwaU4Ngs9clh9yZPDs/k/Q9SfPvZ4rcGkCNzTqM=
+NodeupConfigHash: KFBfBGeWVdCYxtZsoUU5PqeN83AS7MFILhhOZjqhzcU=
 
 __EOF_KUBE_ENV
 

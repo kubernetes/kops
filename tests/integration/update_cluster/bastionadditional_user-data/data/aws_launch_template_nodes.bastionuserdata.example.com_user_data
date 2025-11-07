@@ -158,7 +158,7 @@ ConfigServer:
   - https://kops-controller.internal.bastionuserdata.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: gwbpim7Zvi0pIMsZJLJo5CNQThMbC5XYYf5lqaUXwow=
+NodeupConfigHash: onlEg/HC+3oc31PgYaklRxfs8ri8oPhP/aD1F4hxzlI=
 
 __EOF_KUBE_ENV
 
