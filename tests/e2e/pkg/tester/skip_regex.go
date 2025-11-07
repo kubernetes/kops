@@ -49,6 +49,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/kubernetes/issues/135214
 		// https://github.com/opencontainers/runc/issues/4896
 		skipRegex += "|[Burstable|Guaranteed].QoS.pod"
+		skipRegex += "|Pod.InPlace.Resize.Container"
 	}
 
 	// Skip broken test, see https://github.com/kubernetes/kubernetes/pull/133262
