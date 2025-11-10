@@ -261,6 +261,7 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 			},
 			UserData: userData,
 			Labels:   e.Labels,
+			SSHKeys: []*ecloud.SSHKey{},
 		}
 
 		// Add root volume configuration if specified
@@ -268,9 +269,13 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 			opts.ServerType.Disk = int(fi.ValueOf(e.RootVolumeSize))
 		}
 
-		// Add the SSH keys
+		// Add the SSH keys.
 		for _, sshkey := range e.SSHKeys {
-			opts.SSHKeys = append(opts.SSHKeys, &ecloud.SSHKey{ID: fi.ValueOf(sshkey.ID)})
+			k := &ecloud.SSHKey{
+				ID:        fi.ValueOf(sshkey.ID),
+				PublicKey: sshkey.PublicKey,
+			}
+			opts.SSHKeys = append(opts.SSHKeys, k)
 		}
 
 		// Add the user-data hash label
