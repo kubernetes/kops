@@ -41,16 +41,19 @@ type taskState[T SubContext] struct {
 	deadline     time.Time
 	lastError    error
 	dependencies []*taskState[T]
+	attemptCount int // Track number of attempts (first attempt = 1)
 }
 
 type RunTasksOptions struct {
 	MaxTaskDuration         time.Duration
 	WaitAfterAllTasksFailed time.Duration
+	MaxRetryAttempts        int // Maximum number of retry attempts (0 means unlimited, default behavior)
 }
 
 func (o *RunTasksOptions) InitDefaults() {
 	o.MaxTaskDuration = 10 * time.Minute
 	o.WaitAfterAllTasksFailed = 10 * time.Second
+	o.MaxRetryAttempts = 4 // 0 means unlimited retries
 }
 
 // RunTasks executes all the tasks, considering their dependencies
@@ -125,6 +128,8 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 		var errs []error
 		for i, err := range taskErrors {
 			ts := tasks[i]
+			ts.attemptCount++ // Increment attempt count on each execution
+
 			if err != nil {
 				//  print warning message and continue like the task succeeded
 				if _, ok := err.(*ExistsAndWarnIfChangesError); ok {
@@ -135,11 +140,20 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 					continue
 				}
 
+				// Check if we've exceeded maximum retry attempts (if configured)
+				if e.options.MaxRetryAttempts > 0 && ts.attemptCount > e.options.MaxRetryAttempts {
+					return fmt.Errorf("task %q failed after %d attempts (max retry attempts exceeded). Last error: %v", ts.key, ts.attemptCount, err)
+				}
+
 				remaining := time.Second * time.Duration(int(time.Until(ts.deadline).Seconds()))
 				if _, ok := err.(*TryAgainLaterError); ok {
-					klog.V(2).Infof("Task %q not ready: %v", ts.key, err)
+					klog.V(2).Infof("Task %q not ready (attempt %d/%d): %v", ts.key, ts.attemptCount, e.options.MaxRetryAttempts, err)
 				} else {
-					klog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
+					if e.options.MaxRetryAttempts > 0 {
+						klog.Warningf("error running task %q (attempt %d/%d, %v remaining to succeed): %v", ts.key, ts.attemptCount, e.options.MaxRetryAttempts, remaining, err)
+					} else {
+						klog.Warningf("error running task %q (attempt %d, %v remaining to succeed): %v", ts.key, ts.attemptCount, remaining, err)
+					}
 				}
 				errs = append(errs, err)
 				ts.lastError = err
@@ -147,6 +161,7 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 				ts.done = true
 				ts.lastError = nil
 				progress = true
+				klog.V(2).Infof("Task %q completed successfully on attempt %d", ts.key, ts.attemptCount)
 			}
 		}
 
@@ -185,7 +200,7 @@ func (e *executor[T]) RunTasks(ctx context.Context, taskMap map[string]Task[T]) 
 		}
 	}
 	if len(notDone) != 0 {
-		return fmt.Errorf("Unable to execute tasks (circular dependency): %s", strings.Join(notDone, ", "))
+		return fmt.Errorf("unable to execute tasks (circular dependency): %s", strings.Join(notDone, ", "))
 	}
 
 	// Execute final ecloud task after all other tasks are completed
