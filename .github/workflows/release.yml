@@ -3,9 +3,7 @@ name: Build and Release Elemento
 on:
   push:
     tags:
-      - '*'           
-    branches:
-      - master       
+      - '*'
 
 jobs:
   build-and-release:
