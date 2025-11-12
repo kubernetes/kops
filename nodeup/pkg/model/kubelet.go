@@ -255,6 +255,9 @@ func buildKubeletComponentConfig(kubeletConfig *kops.KubeletConfigSpec, provider
 	if kubeletConfig.ImageMinimumGCAge != nil {
 		componentConfig.ImageMinimumGCAge = *kubeletConfig.ImageMinimumGCAge
 	}
+	if kubeletConfig.MaxParallelImagePulls != nil {
+		componentConfig.MaxParallelImagePulls = kubeletConfig.MaxParallelImagePulls
+	}
 	componentConfig.MemorySwap.SwapBehavior = kubeletConfig.MemorySwapBehavior
 
 	s := runtime.NewScheme()

@@ -4367,6 +4367,14 @@ spec:
                     description: LogLevel is the logging level of the kubelet
                     format: int32
                     type: integer
+                  maxParallelImagePulls:
+                    description: |-
+                      MaxParallelImagePulls sets the maximum number of image pulls in parallel.
+                      This field cannot be set if SerializeImagePulls is true.
+                      Setting it to nil means no limit.
+                      Default: nil
+                    format: int32
+                    type: integer
                   maxPods:
                     description: MaxPods is the number of pods that can run on this
                       Kubelet.
@@ -4820,6 +4828,14 @@ spec:
                     type: string
                   logLevel:
                     description: LogLevel is the logging level of the kubelet
+                    format: int32
+                    type: integer
+                  maxParallelImagePulls:
+                    description: |-
+                      MaxParallelImagePulls sets the maximum number of image pulls in parallel.
+                      This field cannot be set if SerializeImagePulls is true.
+                      Setting it to nil means no limit.
+                      Default: nil
                     format: int32
                     type: integer
                   maxPods:
