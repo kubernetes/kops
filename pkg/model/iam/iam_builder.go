@@ -410,7 +410,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	if !b.UseServiceAccountExternalPermisssions {
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.ValueOf(b.Cluster.Spec.SnapshotController.Enabled)
-		AddAWSEBSCSIDriverPermissions(p, esc)
+		AddAWSEBSCSIDriverPermissions(b, p, esc)
 
 		AddCCMPermissions(p, b.Cluster.Spec.Networking.Kubenet != nil)
 
@@ -1063,11 +1063,11 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 }
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
-func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
+func AddAWSEBSCSIDriverPermissions(b *PolicyBuilder, p *Policy, appendSnapshotPermissions bool) {
 	addKMSIAMPolicies(p)
 
 	if appendSnapshotPermissions {
-		addSnapshotPersmissions(p)
+		addSnapshotPersmissions(b, p)
 	}
 
 	p.unconditionalAction.Insert(
@@ -1097,7 +1097,7 @@ func AddAWSEBSCSIDriverPermissions(p *Policy, appendSnapshotPermissions bool) {
 	)
 }
 
-func addSnapshotPersmissions(p *Policy) {
+func addSnapshotPersmissions(b *PolicyBuilder, p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:CreateSnapshot",
 		"ec2:DescribeAvailabilityZones",
@@ -1105,6 +1105,20 @@ func addSnapshotPersmissions(p *Policy) {
 	)
 	p.clusterTaggedAction.Insert(
 		"ec2:DeleteSnapshot",
+	)
+	p.Statement = append(p.Statement,
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorset.Of(
+				"ec2:CreateVolume",
+			),
+			Resource: stringorset.Set([]string{fmt.Sprintf("arn:%v:ec2:*:*:snapshot/*", b.Partition)}),
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/KubernetesCluster": p.clusterName,
+				},
+			},
+		},
 	)
 }
 
