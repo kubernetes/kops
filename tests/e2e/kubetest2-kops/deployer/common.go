@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
-	"sigs.k8s.io/kubetest2/pkg/boskos"
 )
 
 func (d *deployer) init() error {
@@ -53,6 +52,11 @@ func (d *deployer) initialize() error {
 
 	switch d.CloudProvider {
 	case "aws":
+		if d.UseBoskosAWS {
+			if err := d.acquireBoskosAWSAccount(); err != nil {
+				return err
+			}
+		}
 		client, err := aws.NewClient(context.Background())
 		if err != nil {
 			return fmt.Errorf("init failed to build AWS client: %w", err)
@@ -91,26 +95,9 @@ func (d *deployer) initialize() error {
 		d.SSHUser = "root"
 	case "gce":
 		if d.GCPProject == "" {
-			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
-
-			boskosClient, err := boskos.NewClient(d.BoskosLocation)
-			if err != nil {
-				return fmt.Errorf("failed to make boskos client: %s", err)
+			if err := d.acquireBoskosGCPProject(); err != nil {
+				return err
 			}
-			d.boskos = boskosClient
-
-			resource, err := boskos.Acquire(
-				d.boskos,
-				d.BoskosResourceType,
-				d.BoskosAcquireTimeout,
-				d.BoskosHeartbeatInterval,
-				d.boskosHeartbeatClose,
-			)
-			if err != nil {
-				return fmt.Errorf("init failed to get project from boskos: %s", err)
-			}
-			d.GCPProject = resource.Name
-			klog.V(1).Infof("Got project %s from boskos", d.GCPProject)
 
 			if d.SSHPrivateKeyPath == "" {
 				d.SSHPrivateKeyPath = os.Getenv("GCE_SSH_PRIVATE_KEY_FILE")
