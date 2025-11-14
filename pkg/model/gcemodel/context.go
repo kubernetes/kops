@@ -17,6 +17,8 @@ limitations under the License.
 package gcemodel
 
 import (
+	"maps"
+
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -175,4 +177,28 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 	email := accountID + "@" + projectID + ".iam.gserviceaccount.com"
 
 	return &gcetasks.ServiceAccount{Name: s(name), Email: s(email)}
+}
+
+// CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup.
+// Keep the same func name as other models for consistency even though GCE instance templates use labels.
+func (c *GCEModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) map[string]string {
+	labels := make(map[string]string)
+
+	// Apply any user-specified global labels first so they can be overridden by IG-specific labels
+	maps.Copy(labels, c.Cluster.Spec.CloudLabels)
+
+	// Apply any user-specified labels
+	maps.Copy(labels, ig.Spec.CloudLabels)
+
+	clusterLabel := gce.LabelForCluster(c.ClusterName())
+	roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
+
+	labels[clusterLabel.Key] = clusterLabel.Value
+	labels[roleLabel] = ig.Spec.Role.ToLowerString()
+	labels[gce.GceLabelNameInstanceGroup] = ig.ObjectMeta.Name
+	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		labels[gce.GceLabelNameRolePrefix+"master"] = "master"
+	}
+
+	return labels
 }
