@@ -397,11 +397,13 @@ func RunGoldenTest(t *testing.T, basedir string, key string, builder func(*Nodeu
 }
 
 func Test_BuildComponentConfigFile(t *testing.T) {
+	maxPulls := int32(5)
 	componentConfig := kops.KubeletConfigSpec{
 		ShutdownGracePeriod:             &metav1.Duration{Duration: 30 * time.Second},
 		ShutdownGracePeriodCriticalPods: &metav1.Duration{Duration: 10 * time.Second},
 		ImageMaximumGCAge:               &metav1.Duration{Duration: 30 * time.Hour},
 		ImageMinimumGCAge:               &metav1.Duration{Duration: 30 * time.Minute},
+		MaxParallelImagePulls:           &maxPulls,
 	}
 
 	_, err := buildKubeletComponentConfig(&componentConfig, "")
