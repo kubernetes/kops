@@ -56,7 +56,7 @@ var (
 type ReplaceOptions struct {
 	// Filenames is a list of files containing resources to replace.
 	Filenames []string
-	// Force causes any missing rescources to be created.
+	// Force causes any missing resources to be created.
 	Force bool
 }
 
