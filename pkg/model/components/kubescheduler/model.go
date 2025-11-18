@@ -181,7 +181,7 @@ func MapToUnstructured(options interface{}, target *unstructured.Unstructured) e
 					return err
 				}
 				// Clear the field, so we don't set the flag
-				val.Set(reflect.ValueOf(nil))
+				val.Set(reflect.Zero(val.Type()))
 			default:
 				if err := setValue(targetPath, val.Interface()); err != nil {
 					return err
