@@ -16,25 +16,25 @@ spec:
   cloudProvider: gce
   configBase: memfs://tests/minimal-gce.example.com
   etcdClusters:
-  - cpuRequest: 200m
-    etcdMembers:
-    - instanceGroup: master-us-test1-a
-      name: a
-    memoryRequest: 100Mi
-    name: main
-  - cpuRequest: 100m
-    etcdMembers:
-    - instanceGroup: master-us-test1-a
-      name: a
-    memoryRequest: 100Mi
-    name: events
+    - cpuRequest: 200m
+      etcdMembers:
+        - instanceGroup: master-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: main
+    - cpuRequest: 100m
+      etcdMembers:
+        - instanceGroup: master-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: events
   iam:
     legacy: false
   kubelet:
     anonymousAuth: false
   kubernetesApiAccess:
-  - 0.0.0.0/0
-  - ::/0
+    - 0.0.0.0/0
+    - ::/0
   kubernetesVersion: v1.32.0
   masterPublicName: api.minimal-gce.example.com
   networking:
@@ -42,18 +42,17 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:
-  - 0.0.0.0/0
-  - ::/0
+    - 0.0.0.0/0
+    - ::/0
   subnets:
-  - name: us-test1
-    region: us-test1
-    type: Private
+    - name: us-test1
+      region: us-test1
+      type: Private
   topology:
     dns:
       type: None
 
 ---
-
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -62,18 +61,17 @@ metadata:
     kops.k8s.io/cluster: minimal-gce.example.com
   name: master-us-test1-a
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
+  image: cos-cloud/cos-121-18867-294-2
   machineType: e2-medium
   maxSize: 1
   minSize: 1
   role: Master
   subnets:
-  - us-test1
+    - us-test1
   zones:
-  - us-test1-a
+    - us-test1-a
 
 ---
-
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -82,12 +80,12 @@ metadata:
     kops.k8s.io/cluster: minimal-gce.example.com
   name: nodes
 spec:
-  image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
+  image: cos-cloud/cos-121-18867-294-2
   machineType: e2-medium
   maxSize: 2
   minSize: 2
   role: Node
   subnets:
-  - us-test1
+    - us-test1
   zones:
-  - us-test1-a
+    - us-test1-a

@@ -855,6 +855,7 @@ func TestManyAddonsCCMIRSA(t *testing.T) {
 
 func TestManyAddonsGCE(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-gce").
+		withStartupScript().
 		withAddons(
 			certManagerAddon,
 			clusterAutoscalerAddon,
