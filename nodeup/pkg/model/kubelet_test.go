@@ -402,6 +402,7 @@ func Test_BuildComponentConfigFile(t *testing.T) {
 		ShutdownGracePeriodCriticalPods: &metav1.Duration{Duration: 10 * time.Second},
 		ImageMaximumGCAge:               &metav1.Duration{Duration: 30 * time.Hour},
 		ImageMinimumGCAge:               &metav1.Duration{Duration: 30 * time.Minute},
+		MaxParallelImagePulls:           fi.PtrTo(int32(5)),
 	}
 
 	_, err := buildKubeletComponentConfig(&componentConfig, "")
