@@ -21,6 +21,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
@@ -63,6 +66,51 @@ func Test_RunKubeSchedulerBuilder(t *testing.T) {
 			testutils.ValidateStaticFiles(t, basedir, builder.AssetBuilder)
 			testutils.ValidateCompletedCluster(t, filepath.Join(basedir, "completed-cluster.yaml"), builder.Cluster)
 		})
+	}
+}
+
+func Test_MapToUnstructured_WithQpsAndBurst(t *testing.T) {
+	qps := resource.MustParse("500")
+
+	kubeScheduler := &kops.KubeSchedulerConfig{
+		Qps:   &qps,
+		Burst: 500,
+	}
+
+	target := &unstructured.Unstructured{}
+	target.SetKind("KubeSchedulerConfiguration")
+	target.SetAPIVersion("kubescheduler.config.k8s.io/v1")
+
+	err := MapToUnstructured(kubeScheduler, target)
+	if err != nil {
+		t.Fatalf("MapToUnstructured failed: %v", err)
+	}
+
+	qpsVal, found, err := unstructured.NestedFloat64(target.Object, "clientConnection", "qps")
+	if err != nil {
+		t.Fatalf("error getting qps: %v", err)
+	}
+	if !found {
+		t.Error("qps not found in target")
+	}
+	if qpsVal != 500.0 {
+		t.Errorf("expected qps=500.0, got %v", qpsVal)
+	}
+
+	burst, found, err := unstructured.NestedFieldNoCopy(target.Object, "clientConnection", "burst")
+	if err != nil {
+		t.Fatalf("error getting burst: %v", err)
+	}
+	if !found {
+		t.Error("burst not found in target")
+	}
+
+	burstVal, ok := burst.(int32)
+	if !ok {
+		t.Errorf("expected burst to be int32, got %T: %v", burst, burst)
+	}
+	if burstVal != 500 {
+		t.Errorf("expected burst=500, got %v", burstVal)
 	}
 }
 
