@@ -12,27 +12,29 @@ spec:
   cloudProvider: gce
   configBase: memfs://tests/minimal-gce.example.com
   etcdClusters:
-  - cpuRequest: 200m
-    etcdMembers:
-    - instanceGroup: master-us-test1-a
-      name: a
-    memoryRequest: 100Mi
-    name: main
-  - cpuRequest: 100m
-    etcdMembers:
-    - instanceGroup: master-us-test1-a
-      name: a
-    memoryRequest: 100Mi
-    name: events
+    - cpuRequest: 200m
+      etcdMembers:
+        - instanceGroup: master-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: main
+    - cpuRequest: 100m
+      etcdMembers:
+        - instanceGroup: master-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: events
   cloudConfig:
     gceServiceAccount: default
+    gcpPDCSIDriver:
+      enabled: false
   iam:
     legacy: false
   kubelet:
     anonymousAuth: false
   kubernetesApiAccess:
-  - 0.0.0.0/0
-  - ::/0
+    - 0.0.0.0/0
+    - ::/0
   kubernetesVersion: v1.32.0
   masterPublicName: api.minimal-gce.example.com
   networking:
@@ -40,18 +42,17 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:
-  - 0.0.0.0/0
-  - ::/0
+    - 0.0.0.0/0
+    - ::/0
   subnets:
-  - name: us-test1
-    region: us-test1
-    type: Public
+    - name: us-test1
+      region: us-test1
+      type: Public
   topology:
     dns:
       type: Public
 
 ---
-
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -66,12 +67,11 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - us-test1
+    - us-test1
   zones:
-  - us-test1-a
+    - us-test1-a
 
 ---
-
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -86,6 +86,6 @@ spec:
   minSize: 2
   role: Node
   subnets:
-  - us-test1
+    - us-test1
   zones:
-  - us-test1-a
+    - us-test1-a

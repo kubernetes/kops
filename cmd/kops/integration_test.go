@@ -371,7 +371,6 @@ func TestMinimalGCE(t *testing.T) {
 		withAddons(
 			dnsControllerAddon,
 			gcpCCMAddon,
-			gcpPDCSIAddon,
 		).
 		runTestTerraformGCE(t)
 }

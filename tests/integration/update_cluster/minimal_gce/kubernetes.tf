@@ -114,14 +114,6 @@ resource "aws_s3_object" "minimal-gce-example-com-addons-gcp-cloud-controller-ad
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-gce-example-com-addons-gcp-pd-csi-driver-addons-k8s-io-k8s-1-23" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-gcp-pd-csi-driver.addons.k8s.io-k8s-1.23_content")
-  key                    = "tests/minimal-gce.example.com/addons/gcp-pd-csi-driver.addons.k8s.io/k8s-1.23.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")

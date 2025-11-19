@@ -112,6 +112,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 		return defaultValue
 	}
+	dest["GetString"] = func(v *string) string {
+		if v != nil {
+			return *v
+		}
+		return ""
+	}
 
 	dest["GetCloudProvider"] = cluster.GetCloudProvider
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
