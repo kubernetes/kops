@@ -45,16 +45,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		klog.Warningf("SSHAccess is empty")
 	}
 
-	// SSH is open to AdminCIDR set
+	network, err := b.LinkToNetwork()
+	if err != nil {
+		return err
+	}
+
 	if b.UsesSSHBastion() {
-		// If we are using a bastion, we only access through the bastion
-		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
-		// But I think we can always add more permissions in this case later, but we can't easily take them away
-		klog.V(2).Infof("bastion is in use; won't configure SSH access to control-plane / worker node instances")
-		network, err := b.LinkToNetwork()
-		if err != nil {
-			return err
-		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-bastion", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
@@ -76,11 +72,10 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
 			Network:    network,
 		})
-	} else {
-		network, err := b.LinkToNetwork()
-		if err != nil {
-			return err
-		}
+	}
+
+	// If you specify SSHAccess, we open up SSH to master & nodes regardless of whether a bastion is used or not
+	if len(b.Cluster.Spec.SSHAccess) > 0 {
 		b.AddFirewallRulesTasks(c, "ssh-external-to-master", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane), b.GCETagForRole("Master")},
