@@ -19,12 +19,10 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -36,7 +34,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/dump"
 	"k8s.io/kops/pkg/resources"
@@ -195,11 +192,6 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			}
 		}
 
-		err = truncateNodeList(&nodes, options.MaxNodes)
-		if err != nil {
-			klog.Warningf("not limiting number of nodes dumped: %v", err)
-		}
-
 		sshConfig := &ssh.ClientConfig{
 			Config: ssh.Config{},
 			User:   options.SSHUser,
@@ -239,24 +231,19 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 					}
 				}
 			}
-		}
-		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir)
-
-		var additionalIPs []string
-		var additionalPrivateIPs []string
-		if cloudResources != nil {
-			for _, instance := range cloudResources.Instances {
-				if len(instance.PublicAddresses) != 0 {
-					additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
-				} else if len(instance.PrivateAddresses) != 0 {
-					additionalPrivateIPs = append(additionalPrivateIPs, instance.PrivateAddresses[0])
-				} else {
-					klog.Warningf("no IP for instance %q", instance.Name)
+			// If we don't have a bastion, use a control plane instance that has public IPs
+			if bastionAddress == "" {
+				for _, instance := range cloudResources.Instances {
+					if strings.Contains(instance.Name, "control-plane") && len(instance.PublicAddresses) > 0 {
+						bastionAddress = instance.PublicAddresses[0]
+					}
 				}
 			}
 		}
 
-		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, additionalIPs, additionalPrivateIPs); err != nil {
+		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir)
+
+		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, cloudResources); err != nil {
 			klog.Warningf("error dumping nodes: %v", err)
 		}
 
@@ -306,23 +293,6 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		default:
 			return fmt.Errorf("unsupported output format: %q", options.Output)
 		}
-	}
-	return nil
-}
-
-func truncateNodeList(nodes *corev1.NodeList, max int) error {
-	if max < 0 {
-		return errors.New("--max-nodes must be greater than zero")
-	}
-	// Move control plane nodes to the start of the list and truncate the remainder
-	slices.SortFunc[[]corev1.Node](nodes.Items, func(a corev1.Node, e corev1.Node) int {
-		if role := util.GetNodeRole(&a); role == "control-plane" || role == "apiserver" {
-			return -1
-		}
-		return 1
-	})
-	if len(nodes.Items) > max {
-		nodes.Items = nodes.Items[:max]
 	}
 	return nil
 }
