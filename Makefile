@@ -609,7 +609,7 @@ build-docs:
 .PHONY: build-docs-netlify
 build-docs-netlify:
 	pip install -r ${KOPS_ROOT}/images/mkdocs/requirements.txt
-	mkdocs build
+	python -m mkdocs build
 
 #-----------------------------------------------------------
 # development targets
