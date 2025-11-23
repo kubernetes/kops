@@ -123,7 +123,6 @@ nav:
     - CNI:
       - AWS VPC: "networking/aws-vpc.md"
       - Calico: "networking/calico.md"
-      - Canal: "networking/canal.md"
       - Cilium: "networking/cilium.md"
       - Flannel: "networking/flannel.md"
       - Kube-Router: "networking/kube-router.md"

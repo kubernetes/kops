@@ -160,7 +160,7 @@ for SERVER in "${TF_SERVERS[@]}"; do
   # We remove the stale instance from the state
   terraform state rm scaleway_instance_server.$SERVER
   # We fetch its new ID
-  NEW_SERVER_ID=$(scw instance server list zone=$ZONE name=$SERVER -o template="{{ .ID }}")
+  NEW_SERVER_ID=$(scw instance server list zone=$ZONE name=$SERVER -o template="{% raw %}{{ .ID }}{% endraw %}")
   if [ "$NEW_SERVER_ID" == "" ]; then
     echo "could not find new ID of the server $SERVER"
   fi
