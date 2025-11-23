@@ -3,6 +3,8 @@ site_name: kOps - Kubernetes Operations
 repo_name: 'kubernetes/kops'
 repo_url: 'https://github.com/kubernetes/kops'
 site_url: 'https://kops.sigs.k8s.io'
+exclude_docs: |
+  README.md
 markdown_extensions:
   - admonition
   - codehilite
@@ -123,7 +125,6 @@ nav:
     - CNI:
       - AWS VPC: "networking/aws-vpc.md"
       - Calico: "networking/calico.md"
-      - Canal: "networking/canal.md"
       - Cilium: "networking/cilium.md"
       - Flannel: "networking/flannel.md"
       - Kube-Router: "networking/kube-router.md"
