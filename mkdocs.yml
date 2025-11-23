@@ -3,8 +3,7 @@ site_name: kOps - Kubernetes Operations
 repo_name: 'kubernetes/kops'
 repo_url: 'https://github.com/kubernetes/kops'
 site_url: 'https://kops.sigs.k8s.io'
-exclude_docs: |
-  README.md
+exclude_docs: README.md
 markdown_extensions:
   - admonition
   - codehilite
