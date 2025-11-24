@@ -15,7 +15,9 @@ spec:
   channel: stable
   cloudConfig:
     gcpPDCSIDriver:
+      defaultStorageClassName: balanced-csi
       enabled: true
+      version: v1.22.1
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-example-com-k8s-io-role-node
