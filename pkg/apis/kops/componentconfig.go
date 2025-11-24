@@ -988,6 +988,11 @@ type EBSCSIDriverSpec struct {
 type PDCSIDriver struct {
 	// Enabled enables the GCP PD CSI driver
 	Enabled *bool `json:"enabled,omitempty"`
+	// Version is the container image tag used.
+	// Default: The latest stable release which is compatible with your Kubernetes version
+	Version *string `json:"version,omitempty"`
+	// Default StorageClassName is the name of the default StorageClass created for GCP PD CSI driver.
+	DefaultStorageClassName *string `json:"defaultStorageClassName,omitempty"`
 }
 
 // SnapshotControllerConfig is the config for the CSI Snapshot Controller

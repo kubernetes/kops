@@ -30,6 +30,8 @@ spec:
     name: events
   cloudConfig:
     gceServiceAccount: default
+    gcpPDCSIDriver:
+      defaultStorageClassName: balanced-storage
   iam:
     legacy: false
   kubelet:
