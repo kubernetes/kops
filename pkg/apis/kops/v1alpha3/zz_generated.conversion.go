@@ -7407,6 +7407,8 @@ func Convert_kops_OpenstackSpec_To_v1alpha3_OpenstackSpec(in *kops.OpenstackSpec
 
 func autoConvert_v1alpha3_PDCSIDriver_To_kops_PDCSIDriver(in *PDCSIDriver, out *kops.PDCSIDriver, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Version = in.Version
+	out.DefaultStorageClassName = in.DefaultStorageClassName
 	return nil
 }
 
@@ -7417,6 +7419,8 @@ func Convert_v1alpha3_PDCSIDriver_To_kops_PDCSIDriver(in *PDCSIDriver, out *kops
 
 func autoConvert_kops_PDCSIDriver_To_v1alpha3_PDCSIDriver(in *kops.PDCSIDriver, out *PDCSIDriver, s conversion.Scope) error {
 	out.Enabled = in.Enabled
+	out.Version = in.Version
+	out.DefaultStorageClassName = in.DefaultStorageClassName
 	return nil
 }
 

@@ -16,7 +16,9 @@ spec:
   cloudConfig:
     gceServiceAccount: default
     gcpPDCSIDriver:
+      defaultStorageClassName: balanced-csi
       enabled: true
+      version: v1.22.1
     manageStorageClasses: true
     multizone: true
     nodeTags: minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-node

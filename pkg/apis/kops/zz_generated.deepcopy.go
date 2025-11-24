@@ -5694,6 +5694,16 @@ func (in *PDCSIDriver) DeepCopyInto(out *PDCSIDriver) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Version != nil {
+		in, out := &in.Version, &out.Version
+		*out = new(string)
+		**out = **in
+	}
+	if in.DefaultStorageClassName != nil {
+		in, out := &in.DefaultStorageClassName, &out.DefaultStorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
