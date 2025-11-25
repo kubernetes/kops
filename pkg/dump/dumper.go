@@ -399,6 +399,10 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 		errors = append(errors, err)
 	}
 
+	if err := n.shellToFile(ctx, "cat /var/lib/kubelet/kubelet.conf", filepath.Join(n.dir, "kubelet.conf")); err != nil {
+		errors = append(errors, err)
+	}
+
 	return errors
 }
 
