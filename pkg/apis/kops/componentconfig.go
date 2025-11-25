@@ -137,6 +137,11 @@ type KubeletConfigSpec struct {
 	// The default of this field is "0s", which disables this field--meaning images won't be garbage
 	// collected based on being unused for too long. Default: "0s" (disabled)
 	ImageMaximumGCAge *metav1.Duration `json:"imageMaximumGCAge,omitempty"`
+	// MaxParallelImagePulls sets the maximum number of image pulls in parallel.
+	// This field cannot be set if SerializeImagePulls is true.
+	// Setting it to nil means no limit.
+	// Default: nil
+	MaxParallelImagePulls *int32 `json:"maxParallelImagePulls,omitempty"`
 	// ImageGCHighThresholdPercent is the percent of disk usage after which
 	// image garbage collection is always run.
 	ImageGCHighThresholdPercent *int32 `json:"imageGCHighThresholdPercent,omitempty" flag:"image-gc-high-threshold"`
