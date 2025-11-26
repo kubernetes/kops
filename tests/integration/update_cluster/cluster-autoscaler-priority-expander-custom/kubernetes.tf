@@ -578,6 +578,21 @@ resource "aws_launch_template" "master-us-test-1a-masters-cas-priority-expander-
       "kubernetes.io/cluster/cas-priority-expander-custom.example.com"                                        = "owned"
     }
   }
+  tag_specifications {
+    resource_type = "network-interface"
+    tags = {
+      "KubernetesCluster"                                                                                     = "cas-priority-expander-custom.example.com"
+      "Name"                                                                                                  = "master-us-test-1a.masters.cas-priority-expander-custom.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
+      "k8s.io/role/master"                                                                                    = "1"
+      "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
+      "kubernetes.io/cluster/cas-priority-expander-custom.example.com"                                        = "owned"
+    }
+  }
   tags = {
     "KubernetesCluster"                                                                                     = "cas-priority-expander-custom.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.cas-priority-expander-custom.example.com"
@@ -644,6 +659,18 @@ resource "aws_launch_template" "nodes-cas-priority-expander-custom-example-com" 
   }
   tag_specifications {
     resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                                          = "cas-priority-expander-custom.example.com"
+      "Name"                                                                       = "nodes.cas-priority-expander-custom.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/cas-priority-expander-custom.example.com"             = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "network-interface"
     tags = {
       "KubernetesCluster"                                                          = "cas-priority-expander-custom.example.com"
       "Name"                                                                       = "nodes.cas-priority-expander-custom.example.com"
@@ -727,6 +754,18 @@ resource "aws_launch_template" "nodes-high-priority-cas-priority-expander-custom
       "kubernetes.io/cluster/cas-priority-expander-custom.example.com"             = "owned"
     }
   }
+  tag_specifications {
+    resource_type = "network-interface"
+    tags = {
+      "KubernetesCluster"                                                          = "cas-priority-expander-custom.example.com"
+      "Name"                                                                       = "nodes-high-priority.cas-priority-expander-custom.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes-high-priority"
+      "kubernetes.io/cluster/cas-priority-expander-custom.example.com"             = "owned"
+    }
+  }
   tags = {
     "KubernetesCluster"                                                          = "cas-priority-expander-custom.example.com"
     "Name"                                                                       = "nodes-high-priority.cas-priority-expander-custom.example.com"
@@ -790,6 +829,18 @@ resource "aws_launch_template" "nodes-low-priority-cas-priority-expander-custom-
   }
   tag_specifications {
     resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                                          = "cas-priority-expander-custom.example.com"
+      "Name"                                                                       = "nodes-low-priority.cas-priority-expander-custom.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes-low-priority"
+      "kubernetes.io/cluster/cas-priority-expander-custom.example.com"             = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "network-interface"
     tags = {
       "KubernetesCluster"                                                          = "cas-priority-expander-custom.example.com"
       "Name"                                                                       = "nodes-low-priority.cas-priority-expander-custom.example.com"
