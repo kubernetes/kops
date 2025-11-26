@@ -538,6 +538,21 @@ resource "aws_launch_template" "master-us-test-1a-masters-123-example-com" {
       "kubernetes.io/cluster/123.example.com"                                                                 = "owned"
     }
   }
+  tag_specifications {
+    resource_type = "network-interface"
+    tags = {
+      "KubernetesCluster"                                                                                     = "123.example.com"
+      "Name"                                                                                                  = "master-us-test-1a.masters.123.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
+      "k8s.io/role/master"                                                                                    = "1"
+      "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
+      "kubernetes.io/cluster/123.example.com"                                                                 = "owned"
+    }
+  }
   tags = {
     "KubernetesCluster"                                                                                     = "123.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.123.example.com"
@@ -604,6 +619,18 @@ resource "aws_launch_template" "nodes-123-example-com" {
   }
   tag_specifications {
     resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                                          = "123.example.com"
+      "Name"                                                                       = "nodes.123.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/123.example.com"                                      = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "network-interface"
     tags = {
       "KubernetesCluster"                                                          = "123.example.com"
       "Name"                                                                       = "nodes.123.example.com"
