@@ -466,6 +466,21 @@ resource "aws_launch_template" "master-us-test-1a-masters-externallb-example-com
       "kubernetes.io/cluster/externallb.example.com"                                                          = "owned"
     }
   }
+  tag_specifications {
+    resource_type = "network-interface"
+    tags = {
+      "KubernetesCluster"                                                                                     = "externallb.example.com"
+      "Name"                                                                                                  = "master-us-test-1a.masters.externallb.example.com"
+      "aws-node-termination-handler/managed"                                                                  = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
+      "k8s.io/role/control-plane"                                                                             = "1"
+      "k8s.io/role/master"                                                                                    = "1"
+      "kops.k8s.io/instancegroup"                                                                             = "master-us-test-1a"
+      "kubernetes.io/cluster/externallb.example.com"                                                          = "owned"
+    }
+  }
   tags = {
     "KubernetesCluster"                                                                                     = "externallb.example.com"
     "Name"                                                                                                  = "master-us-test-1a.masters.externallb.example.com"
@@ -532,6 +547,18 @@ resource "aws_launch_template" "nodes-externallb-example-com" {
   }
   tag_specifications {
     resource_type = "volume"
+    tags = {
+      "KubernetesCluster"                                                          = "externallb.example.com"
+      "Name"                                                                       = "nodes.externallb.example.com"
+      "aws-node-termination-handler/managed"                                       = ""
+      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/node" = ""
+      "k8s.io/role/node"                                                           = "1"
+      "kops.k8s.io/instancegroup"                                                  = "nodes"
+      "kubernetes.io/cluster/externallb.example.com"                               = "owned"
+    }
+  }
+  tag_specifications {
+    resource_type = "network-interface"
     tags = {
       "KubernetesCluster"                                                          = "externallb.example.com"
       "Name"                                                                       = "nodes.externallb.example.com"

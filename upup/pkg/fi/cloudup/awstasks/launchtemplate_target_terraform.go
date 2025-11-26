@@ -308,6 +308,10 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 			ResourceType: fi.PtrTo("volume"),
 			Tags:         e.Tags,
 		})
+		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
+			ResourceType: fi.PtrTo("network-interface"),
+			Tags:         e.Tags,
+		})
 		tf.Tags = e.Tags
 	}
 

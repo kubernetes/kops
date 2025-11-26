@@ -121,6 +121,10 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			ResourceType: ec2types.ResourceTypeVolume,
 			Tags:         tags,
 		})
+		data.TagSpecifications = append(data.TagSpecifications, ec2types.LaunchTemplateTagSpecificationRequest{
+			ResourceType: ec2types.ResourceTypeNetworkInterface,
+			Tags:         tags,
+		})
 	}
 	// @step: add the userdata
 	if t.UserData != nil {
