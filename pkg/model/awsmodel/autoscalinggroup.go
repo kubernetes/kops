@@ -103,6 +103,16 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				if warmPool.MaxSize != nil {
 					warmPoolTask.MaxSize = fi.PtrTo(int32(aws.ToInt64(warmPool.MaxSize)))
 				}
+				asg.Metrics = append(asg.Metrics,
+					"WarmPoolMinSize",
+					"WarmPoolDesiredCapacity",
+					"WarmPoolPendingCapacity",
+					"WarmPoolTerminatingCapacity",
+					"WarmPoolWarmedCapacity",
+					"WarmPoolTotalCapacity",
+					"GroupAndWarmPoolDesiredCapacity",
+					"GroupAndWarmPoolTotalCapacity",
+				)
 				asg.WarmPool = warmPoolTask
 			} else {
 				asg.WarmPool = nil
