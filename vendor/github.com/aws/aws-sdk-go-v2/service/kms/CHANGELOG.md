@@ -1,3 +1,34 @@
+# v1.49.1 (2025-11-25)
+
+* **Bug Fix**: Add error check for endpoint param binding during auth scheme resolution to fix panic reported in #3234
+
+# v1.49.0 (2025-11-21)
+
+* **Feature**: Support for on-demand rotation of AWS KMS Multi-Region keys with imported key material
+
+# v1.48.3 (2025-11-19.2)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.48.2 (2025-11-12)
+
+* **Bug Fix**: Further reduce allocation overhead when the metrics system isn't in-use.
+* **Bug Fix**: Reduce allocation overhead when the client doesn't have any HTTP interceptors configured.
+* **Bug Fix**: Remove blank trace spans towards the beginning of the request that added no additional information. This conveys a slight reduction in overall allocations.
+
+# v1.48.1 (2025-11-11)
+
+* **Bug Fix**: Return validation error if input region is not a valid host label.
+
+# v1.48.0 (2025-11-07)
+
+* **Feature**: Added support for new ECC_NIST_EDWARDS25519 AWS KMS key spec
+
+# v1.47.1 (2025-11-04)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+* **Dependency Update**: Upgrade to smithy-go v1.23.2 which should convey some passive reduction of overall allocations, especially when not using the metrics system.
+
 # v1.47.0 (2025-10-30)
 
 * **Feature**: Add cross account VPC endpoint service connectivity support to CustomKeyStore.

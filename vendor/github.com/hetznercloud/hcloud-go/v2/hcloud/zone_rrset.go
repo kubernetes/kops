@@ -81,9 +81,6 @@ func (o *ZoneRRSet) nameAndType() (string, ZoneRRSetType, error) {
 // GetRRSetByNameAndType returns a single [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-get-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) GetRRSetByNameAndType(ctx context.Context, zone *Zone, rrsetName string, rrsetType ZoneRRSetType) (*ZoneRRSet, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -109,9 +106,6 @@ func (c *ZoneClient) GetRRSetByNameAndType(ctx context.Context, zone *Zone, rrse
 // GetRRSetByID returns a single [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-get-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) GetRRSetByID(ctx context.Context, zone *Zone, rrsetID string) (*ZoneRRSet, *Response, error) {
 	rrsetName, rrsetType, ok := strings.Cut(rrsetID, "/")
 	if !ok {
@@ -146,9 +140,6 @@ func (l ZoneRRSetListOpts) values() url.Values {
 // ListRRSets returns a list of [ZoneRRSet] for a specific page.
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-list-rrsets
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) ListRRSets(ctx context.Context, zone *Zone, opts ZoneRRSetListOpts) ([]*ZoneRRSet, *Response, error) {
 	const opPath = "/zones/%s/rrsets?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -171,9 +162,6 @@ func (c *ZoneClient) ListRRSets(ctx context.Context, zone *Zone, opts ZoneRRSetL
 // AllRRSetsWithOpts returns a list of all [ZoneRRSet] with the given options.
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-list-rrsets
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) AllRRSetsWithOpts(ctx context.Context, zone *Zone, opts ZoneRRSetListOpts) ([]*ZoneRRSet, error) {
 	return iterPages(func(page int) ([]*ZoneRRSet, *Response, error) {
 		opts.Page = page
@@ -184,9 +172,6 @@ func (c *ZoneClient) AllRRSetsWithOpts(ctx context.Context, zone *Zone, opts Zon
 // AllRRSets returns a list of all [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-list-rrsets
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) AllRRSets(ctx context.Context, zone *Zone) ([]*ZoneRRSet, error) {
 	return c.AllRRSetsWithOpts(ctx, zone, ZoneRRSetListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
@@ -209,9 +194,6 @@ type ZoneRRSetCreateResult struct {
 // CreateRRSet creates a new [ZoneRRSet] from the given options.
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-create-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) CreateRRSet(ctx context.Context, zone *Zone, opts ZoneRRSetCreateOpts) (ZoneRRSetCreateResult, *Response, error) {
 	const opPath = "/zones/%s/rrsets"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -246,9 +228,6 @@ type ZoneRRSetUpdateOpts struct {
 // UpdateRRSet updates a [ZoneRRSet] with the given options.
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-update-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) UpdateRRSet(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetUpdateOpts) (*ZoneRRSet, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -287,9 +266,6 @@ type ZoneRRSetDeleteResult struct {
 // DeleteRRSet deletes a [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-delete-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) DeleteRRSet(ctx context.Context, rrset *ZoneRRSet) (ZoneRRSetDeleteResult, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -330,9 +306,6 @@ type ZoneRRSetChangeProtectionOpts struct {
 // ChangeRRSetProtection changes the protection of a [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-change-an-rrsets-protection
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) ChangeRRSetProtection(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetChangeProtectionOpts) (*Action, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s/actions/change_protection"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -371,9 +344,6 @@ type ZoneRRSetChangeTTLOpts struct {
 // ChangeRRSetTTL changes the TTL of a [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-change-an-rrsets-ttl
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) ChangeRRSetTTL(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetChangeTTLOpts) (*Action, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s/actions/change_ttl"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -412,9 +382,6 @@ type ZoneRRSetSetRecordsOpts struct {
 // SetRRSetRecords overwrites the records of a [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-set-records-of-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) SetRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetSetRecordsOpts) (*Action, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s/actions/set_records"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -454,9 +421,6 @@ type ZoneRRSetAddRecordsOpts struct {
 // AddRRSetRecords adds records to a [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-add-records-to-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) AddRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetAddRecordsOpts) (*Action, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s/actions/add_records"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -495,9 +459,6 @@ type ZoneRRSetRemoveRecordsOpts struct {
 // RemoveRRSetRecords removes records from a [ZoneRRSet].
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-remove-records-from-an-rrset
-//
-// Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-// See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta
 func (c *ZoneClient) RemoveRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetRemoveRecordsOpts) (*Action, *Response, error) {
 	const opPath = "/zones/%s/rrsets/%s/%s/actions/remove_records"
 	ctx = ctxutil.SetOpPath(ctx, opPath)

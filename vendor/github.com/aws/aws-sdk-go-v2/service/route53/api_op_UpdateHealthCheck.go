@@ -104,8 +104,8 @@ type UpdateHealthCheckInput struct {
 	// healthy or vice versa. For more information, see [How Amazon Route 53 Determines Whether an Endpoint Is Healthy]in the Amazon Route 53
 	// Developer Guide.
 	//
-	// If you don't specify a value for FailureThreshold , the default value is three
-	// health checks.
+	// Otherwise, if you don't specify a value for FailureThreshold , the default value
+	// is three health checks.
 	//
 	// [How Amazon Route 53 Determines Whether an Endpoint Is Healthy]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-determining-health-of-endpoints.html
 	FailureThreshold *int32
@@ -431,40 +431,7 @@ func (c *Client) addOperationUpdateHealthCheckMiddlewares(stack *middleware.Stac
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

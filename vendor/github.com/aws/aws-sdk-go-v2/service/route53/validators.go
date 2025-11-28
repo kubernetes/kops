@@ -1090,6 +1090,26 @@ func (m *validateOpUpdateHostedZoneComment) HandleInitialize(ctx context.Context
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpUpdateHostedZoneFeatures struct {
+}
+
+func (*validateOpUpdateHostedZoneFeatures) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpUpdateHostedZoneFeatures) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*UpdateHostedZoneFeaturesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpUpdateHostedZoneFeaturesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpUpdateTrafficPolicyComment struct {
 }
 
@@ -1344,6 +1364,10 @@ func addOpUpdateHealthCheckValidationMiddleware(stack *middleware.Stack) error {
 
 func addOpUpdateHostedZoneCommentValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpUpdateHostedZoneComment{}, middleware.After)
+}
+
+func addOpUpdateHostedZoneFeaturesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpUpdateHostedZoneFeatures{}, middleware.After)
 }
 
 func addOpUpdateTrafficPolicyCommentValidationMiddleware(stack *middleware.Stack) error {
@@ -2550,6 +2574,21 @@ func validateOpUpdateHostedZoneCommentInput(v *UpdateHostedZoneCommentInput) err
 	invalidParams := smithy.InvalidParamsError{Context: "UpdateHostedZoneCommentInput"}
 	if v.Id == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("Id"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpUpdateHostedZoneFeaturesInput(v *UpdateHostedZoneFeaturesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "UpdateHostedZoneFeaturesInput"}
+	if v.HostedZoneId == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("HostedZoneId"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

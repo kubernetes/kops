@@ -2329,6 +2329,32 @@ func (e *MaxDocumentSizeExceeded) ErrorCode() string {
 }
 func (e *MaxDocumentSizeExceeded) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+// The requested operation is no longer supported by Systems Manager.
+type NoLongerSupportedException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *NoLongerSupportedException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *NoLongerSupportedException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *NoLongerSupportedException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "NoLongerSupportedException"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *NoLongerSupportedException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // You don't have permission to view OpsItems in the specified account. Verify
 // that your account is configured either as a Systems Manager delegated
 // administrator or that you are logged into the Organizations management account.

@@ -9,8 +9,12 @@ import (
 
 // Information about an action.
 //
-// Each rule must include exactly one of the following types of actions: forward ,
+// Each rule must include exactly one of the following routing actions: forward ,
 // fixed-response , or redirect , and it must be the last action to be performed.
+//
+// Optionally, a rule for an HTTPS listener can also include one of the following
+// user authentication actions: authenticate-oidc , authenticate-cognito , or
+// jwt-validation .
 type Action struct {
 
 	// The type of action.
@@ -30,12 +34,17 @@ type Action struct {
 	// custom HTTP response. Specify only when Type is fixed-response .
 	FixedResponseConfig *FixedResponseActionConfig
 
-	// Information for creating an action that distributes requests among one or more
-	// target groups. For Network Load Balancers, you can specify a single target
-	// group. Specify only when Type is forward . If you specify both ForwardConfig
-	// and TargetGroupArn , you can specify only one target group using ForwardConfig
-	// and it must be the same target group specified in TargetGroupArn .
+	// Information for creating an action that distributes requests among multiple
+	// target groups. Specify only when Type is forward .
+	//
+	// If you specify both ForwardConfig and TargetGroupArn , you can specify only one
+	// target group using ForwardConfig and it must be the same target group specified
+	// in TargetGroupArn .
 	ForwardConfig *ForwardActionConfig
+
+	// [HTTPS listeners] Information for validating JWT access tokens in client
+	// requests. Specify only when Type is jwt-validation .
+	JwtValidationConfig *JwtValidationActionConfig
 
 	// The order for the action. This value is required for rules with multiple
 	// actions. The action with the lowest value for order is performed first.
@@ -46,8 +55,8 @@ type Action struct {
 	RedirectConfig *RedirectActionConfig
 
 	// The Amazon Resource Name (ARN) of the target group. Specify only when Type is
-	// forward and you want to route to a single target group. To route to one or more
-	// target groups, use ForwardConfig instead.
+	// forward and you want to route to a single target group. To route to multiple
+	// target groups, you must use ForwardConfig instead.
 	TargetGroupArn *string
 
 	noSmithyDocumentSerde
@@ -316,8 +325,7 @@ type ForwardActionConfig struct {
 	// The target group stickiness for the rule.
 	TargetGroupStickinessConfig *TargetGroupStickinessConfig
 
-	// The target groups. For Network Load Balancers, you can specify a single target
-	// group.
+	// The target groups.
 	TargetGroups []TargetGroupTuple
 
 	noSmithyDocumentSerde
@@ -419,6 +427,54 @@ type IpamPools struct {
 
 	// The ID of the IPv4 IPAM pool.
 	Ipv4IpamPoolId *string
+
+	noSmithyDocumentSerde
+}
+
+// Information about an additional claim to validate.
+type JwtValidationActionAdditionalClaim struct {
+
+	// The format of the claim value.
+	//
+	// This member is required.
+	Format JwtValidationActionAdditionalClaimFormatEnum
+
+	// The name of the claim. You can't specify exp , iss , nbf , or iat because we
+	// validate them by default.
+	//
+	// This member is required.
+	Name *string
+
+	// The claim value. The maximum size of the list is 10. Each value can be up to
+	// 256 characters in length. If the format is space-separated-values , the values
+	// can't include spaces.
+	//
+	// This member is required.
+	Values []string
+
+	noSmithyDocumentSerde
+}
+
+// Information about a JSON Web Token (JWT) validation action.
+type JwtValidationActionConfig struct {
+
+	// The issuer of the JWT. The maximum length is 256 characters.
+	//
+	// This member is required.
+	Issuer *string
+
+	// The JSON Web Key Set (JWKS) endpoint. This endpoint contains JSON Web Keys
+	// (JWK) that are used to validate signatures from the provider.
+	//
+	// This must be a full URL, including the HTTPS protocol, the domain, and the
+	// path. The maximum length is 256 characters.
+	//
+	// This member is required.
+	JwksEndpoint *string
+
+	// Additional claims to validate. The maximum size of the list is 10. We validate
+	// the exp , iss , nbf , and iat claims by default.
+	AdditionalClaims []JwtValidationActionAdditionalClaim
 
 	noSmithyDocumentSerde
 }
@@ -719,6 +775,17 @@ type LoadBalancerAttribute struct {
 	//
 	//   - connection_logs.s3.prefix - The prefix for the location in the S3 bucket for
 	//   the connection logs.
+	//
+	//   - health_check_logs.s3.enabled - Indicates whether health check logs are
+	//   enabled. The value is true or false . The default is false .
+	//
+	//   - health_check_logs.s3.bucket - The name of the S3 bucket for the health check
+	//   logs. This attribute is required if health check logs are enabled. The bucket
+	//   must exist in the same region as the load balancer and have a bucket policy that
+	//   grants Elastic Load Balancing permissions to write to the bucket.
+	//
+	//   - health_check_logs.s3.prefix - The prefix for the location in the S3 bucket
+	//   for the health check logs.
 	//
 	//   - routing.http.desync_mitigation_mode - Determines how the load balancer
 	//   handles requests that might pose a security risk to your application. The
@@ -1304,6 +1371,15 @@ type TargetDescription struct {
 	// function.
 	Port *int32
 
+	// The server ID for the targets. This value is required if the protocol is QUIC
+	// or TCP_QUIC and can't be used with other protocols.
+	//
+	// The ID consists of the 0x prefix followed by 16 hexadecimal characters. Any
+	// letters must be lowercase. The value must be unique at the listener level. You
+	// can't modify the server ID for a registered target. You must deregister the
+	// target and then provide a new server ID when you register the target again.
+	QuicServerId *string
+
 	noSmithyDocumentSerde
 }
 
@@ -1356,6 +1432,10 @@ type TargetGroup struct {
 	// [HTTP/HTTPS protocol] The protocol version. The possible values are GRPC , HTTP1
 	// , and HTTP2 .
 	ProtocolVersion *string
+
+	// The port on which the target control agent and application load balancer
+	// exchange management traffic for the target optimizer feature.
+	TargetControlPort *int32
 
 	// The Amazon Resource Name (ARN) of the target group.
 	TargetGroupArn *string
@@ -1535,9 +1615,10 @@ type TargetGroupAttribute struct {
 // Information about the target group stickiness for a rule.
 type TargetGroupStickinessConfig struct {
 
-	// The time period, in seconds, during which requests from a client should be
-	// routed to the same target group. The range is 1-604800 seconds (7 days). You
-	// must specify this value when enabling target group stickiness.
+	// [Application Load Balancers] The time period, in seconds, during which requests
+	// from a client should be routed to the same target group. The range is 1-604800
+	// seconds (7 days). You must specify this value when enabling target group
+	// stickiness.
 	DurationSeconds *int32
 
 	// Indicates whether target group stickiness is enabled.
@@ -1583,17 +1664,14 @@ type TargetHealth struct {
 	// values:
 	//
 	//   - Target.ResponseCodeMismatch - The health checks did not return an expected
-	//   HTTP code. Applies only to Application Load Balancers and Gateway Load
-	//   Balancers.
+	//   HTTP code.
 	//
-	//   - Target.Timeout - The health check requests timed out. Applies only to
-	//   Application Load Balancers and Gateway Load Balancers.
+	//   - Target.Timeout - The health check requests timed out.
 	//
 	//   - Target.FailedHealthChecks - The load balancer received an error while
 	//   establishing a connection to the target or the target response was malformed.
 	//
 	//   - Elb.InternalError - The health checks failed due to an internal error.
-	//   Applies only to Application Load Balancers.
 	//
 	// If the target state is unused , the reason code can be one of the following
 	// values:
@@ -1615,11 +1693,9 @@ type TargetHealth struct {
 	//
 	// If the target state is unavailable , the reason code can be the following value:
 	//
-	//   - Target.HealthCheckDisabled - Health checks are disabled for the target
-	//   group. Applies only to Application Load Balancers.
+	//   - Target.HealthCheckDisabled - Health checks are disabled for the target group.
 	//
 	//   - Elb.InternalError - Target health is unavailable due to an internal error.
-	//   Applies only to Network Load Balancers.
 	Reason TargetHealthReasonEnum
 
 	// The state of the target.

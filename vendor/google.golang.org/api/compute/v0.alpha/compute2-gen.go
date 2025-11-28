@@ -76845,9 +76845,13 @@ type OrganizationSecurityPoliciesAddAssociationCall struct {
 // Cloud
 // Armor Enterprise if not already enrolled.
 //
-// Use of this API to modify firewall policies is deprecated.
-// Use
-// firewallPolicies.addAssociation instead if possible.
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use
+// firewallPolicies.addAssociation
+// instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) AddAssociation(securityPolicy string, securitypolicyassociation *SecurityPolicyAssociation) *OrganizationSecurityPoliciesAddAssociationCall {
@@ -76985,6 +76989,12 @@ type OrganizationSecurityPoliciesAddRuleCall struct {
 
 // AddRule: Inserts a rule into a security policy.
 //
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use firewallPolicies.addRule instead.
+//
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) AddRule(securityPolicy string, securitypolicyrule *SecurityPolicyRule) *OrganizationSecurityPoliciesAddRuleCall {
 	c := &OrganizationSecurityPoliciesAddRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -77109,9 +77119,13 @@ type OrganizationSecurityPoliciesCopyRulesCall struct {
 
 // CopyRules: Copies rules to the specified security policy.
 //
-// Use of this API to modify firewall policies is deprecated.
-// Use
-// firewallPolicies.copyRules instead.
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use
+// firewallPolicies.cloneRules
+// instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) CopyRules(securityPolicy string) *OrganizationSecurityPoliciesCopyRulesCall {
@@ -77239,9 +77253,11 @@ type OrganizationSecurityPoliciesDeleteCall struct {
 
 // Delete: Deletes the specified policy.
 //
-// Use of this API to remove firewall policies is deprecated.
-// Use
-// firewallPolicies.delete instead.
+// Use this API to remove Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to remove firewall policies. This usage
+// is
+// now disabled for most organizations. Use firewallPolicies.delete instead.
 //
 // - securityPolicy: Name of the security policy to delete.
 func (r *OrganizationSecurityPoliciesService) Delete(securityPolicy string) *OrganizationSecurityPoliciesDeleteCall {
@@ -77364,9 +77380,11 @@ type OrganizationSecurityPoliciesGetCall struct {
 // Get: List all of the ordered rules present in a single specified
 // policy.
 //
-// Use of this API to read firewall policies is deprecated.
-// Use
-// firewallPolicies.get instead.
+// Use this API to read Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to read firewall policies. This usage is
+// now
+// disabled for most organizations. Use firewallPolicies.get instead.
 //
 // - securityPolicy: Name of the security policy to get.
 func (r *OrganizationSecurityPoliciesService) Get(securityPolicy string) *OrganizationSecurityPoliciesGetCall {
@@ -77477,9 +77495,12 @@ type OrganizationSecurityPoliciesGetAssociationCall struct {
 
 // GetAssociation: Gets an association with the specified name.
 //
-// Use of this API to read firewall policies is deprecated.
-// Use
-// firewallPolicies.getAssociation instead if possible.
+// Use this API to read Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to read firewall policies. This usage is
+// now disabled for most organizations. Use
+// firewallPolicies.getAssociation
+// instead.
 //
 //   - securityPolicy: Name of the security policy to which the queried rule
 //     belongs.
@@ -77599,9 +77620,11 @@ type OrganizationSecurityPoliciesGetRuleCall struct {
 
 // GetRule: Gets a rule at the specified priority.
 //
-// Use of this API to read firewall policies is deprecated.
-// Use
-// firewallPolicies.getRule instead.
+// Use this API to read Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to read firewall policies. This usage is
+// now
+// disabled for most organizations. Use firewallPolicies.getRule instead.
 //
 //   - securityPolicy: Name of the security policy to which the queried rule
 //     belongs.
@@ -77722,9 +77745,11 @@ type OrganizationSecurityPoliciesInsertCall struct {
 // included
 // in the request.
 //
-// Use of this API to insert firewall policies is deprecated.
-// Use
-// firewallPolicies.insert instead.
+// Use this API to add Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to add firewall policies. This usage is
+// now
+// disabled for most organizations. Use firewallPolicies.insert instead.
 func (r *OrganizationSecurityPoliciesService) Insert(securitypolicy *SecurityPolicy) *OrganizationSecurityPoliciesInsertCall {
 	c := &OrganizationSecurityPoliciesInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.securitypolicy = securitypolicy
@@ -77855,9 +77880,11 @@ type OrganizationSecurityPoliciesListCall struct {
 // specified
 // organization.
 //
-// Use of this API to read firewall policies is deprecated.
-// Use
-// firewallPolicies.list instead.
+// Use this API to read Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to read firewall policies. This usage is
+// now
+// disabled for most organizations. Use firewallPolicies.list instead.
 func (r *OrganizationSecurityPoliciesService) List() *OrganizationSecurityPoliciesListCall {
 	c := &OrganizationSecurityPoliciesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
@@ -78118,9 +78145,12 @@ type OrganizationSecurityPoliciesListAssociationsCall struct {
 // ListAssociations: Lists associations of a specified target, i.e.,
 // organization or folder.
 //
-// Use of this API to read firewall policies is deprecated.
-// Use
-// firewallPolicies.listAssociations instead if possible.
+// Use this API to read Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to read firewall policies. This usage is
+// now disabled for most organizations. Use
+// firewallPolicies.listAssociations
+// instead.
 func (r *OrganizationSecurityPoliciesService) ListAssociations() *OrganizationSecurityPoliciesListAssociationsCall {
 	c := &OrganizationSecurityPoliciesListAssociationsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
@@ -78472,9 +78502,11 @@ type OrganizationSecurityPoliciesMoveCall struct {
 
 // Move: Moves the specified security policy.
 //
-// Use of this API to modify firewall policies is deprecated.
-// Use
-// firewallPolicies.move instead.
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use firewallPolicies.move instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) Move(securityPolicy string) *OrganizationSecurityPoliciesMoveCall {
@@ -78604,9 +78636,11 @@ type OrganizationSecurityPoliciesPatchCall struct {
 // Patch: Patches the specified policy with the data included in the
 // request.
 //
-// Use of this API to modify firewall policies is deprecated.
-// Use
-// firewallPolicies.patch instead.
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use firewallPolicies.patch instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) Patch(securityPolicy string, securitypolicy *SecurityPolicy) *OrganizationSecurityPoliciesPatchCall {
@@ -78740,9 +78774,12 @@ type OrganizationSecurityPoliciesPatchRuleCall struct {
 
 // PatchRule: Patches a rule at the specified priority.
 //
-// Use of this API to modify firewall policies is deprecated.
-// Use
-// firewallPolicies.patchRule instead.
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use firewallPolicies.patchRule
+// instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) PatchRule(securityPolicy string, securitypolicyrule *SecurityPolicyRule) *OrganizationSecurityPoliciesPatchRuleCall {
@@ -78883,9 +78920,13 @@ type OrganizationSecurityPoliciesRemoveAssociationCall struct {
 // RemoveAssociation: Removes an association for the specified security
 // policy.
 //
-// Use of this API to modify firewall policies is deprecated.
-// Use
-// firewallPolicies.removeAssociation instead if possible.
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use
+// firewallPolicies.removeAssociation
+// instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) RemoveAssociation(securityPolicy string) *OrganizationSecurityPoliciesRemoveAssociationCall {
@@ -79012,6 +79053,14 @@ type OrganizationSecurityPoliciesRemoveRuleCall struct {
 }
 
 // RemoveRule: Deletes a rule at the specified priority.
+//
+// Use this API to modify Cloud Armor policies. Previously, alpha and
+// beta
+// versions of this API were used to modify firewall policies. This usage
+// is
+// now disabled for most organizations. Use
+// firewallPolicies.removeRule
+// instead.
 //
 // - securityPolicy: Name of the security policy to update.
 func (r *OrganizationSecurityPoliciesService) RemoveRule(securityPolicy string) *OrganizationSecurityPoliciesRemoveRuleCall {
@@ -93554,5 +93603,254 @@ func (c *RegionCompositeHealthChecksTestIamPermissionsCall) Do(opts ...googleapi
 		return nil, err
 	}
 	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "compute.regionCompositeHealthChecks.testIamPermissions", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type RegionDiskSettingsGetCall struct {
+	s            *Service
+	project      string
+	region       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Get Regional Disk Settings.
+//
+// - project: Project ID for this request.
+// - region: Name of the region for this request.
+func (r *RegionDiskSettingsService) Get(project string, region string) *RegionDiskSettingsGetCall {
+	c := &RegionDiskSettingsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.region = region
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *RegionDiskSettingsGetCall) Fields(s ...googleapi.Field) *RegionDiskSettingsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *RegionDiskSettingsGetCall) IfNoneMatch(entityTag string) *RegionDiskSettingsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *RegionDiskSettingsGetCall) Context(ctx context.Context) *RegionDiskSettingsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *RegionDiskSettingsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *RegionDiskSettingsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/regions/{region}/diskSettings")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"region":  c.region,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "compute.regionDiskSettings.get", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.regionDiskSettings.get" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *DiskSettings.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *RegionDiskSettingsGetCall) Do(opts ...googleapi.CallOption) (*DiskSettings, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &DiskSettings{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "compute.regionDiskSettings.get", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type RegionDiskSettingsPatchCall struct {
+	s            *Service
+	project      string
+	region       string
+	disksettings *DiskSettings
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Patch: Patch Regional Disk Settings
+//
+// - project: Project ID for this request.
+// - region: Name of the region for this request.
+func (r *RegionDiskSettingsService) Patch(project string, region string, disksettings *DiskSettings) *RegionDiskSettingsPatchCall {
+	c := &RegionDiskSettingsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.region = region
+	c.disksettings = disksettings
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional request ID to
+// identify requests. Specify a unique request ID so
+// that if you must retry your request, the server will know to ignore
+// the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request and
+// the request times out. If you make the request again with the same
+// request ID, the server can check if original operation with the same
+// request ID was received, and if so, will ignore the second request.
+// This
+// prevents clients from accidentally creating duplicate commitments.
+//
+// The request ID must be
+// a valid UUID with the exception that zero UUID is not
+// supported
+// (00000000-0000-0000-0000-000000000000).
+func (c *RegionDiskSettingsPatchCall) RequestId(requestId string) *RegionDiskSettingsPatchCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// UpdateMask sets the optional parameter "updateMask": update_mask indicates
+// fields to be updated as part of this request.
+func (c *RegionDiskSettingsPatchCall) UpdateMask(updateMask string) *RegionDiskSettingsPatchCall {
+	c.urlParams_.Set("updateMask", updateMask)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *RegionDiskSettingsPatchCall) Fields(s ...googleapi.Field) *RegionDiskSettingsPatchCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *RegionDiskSettingsPatchCall) Context(ctx context.Context) *RegionDiskSettingsPatchCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *RegionDiskSettingsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *RegionDiskSettingsPatchCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.disksettings)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "projects/{project}/regions/{region}/diskSettings")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"region":  c.region,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "compute.regionDiskSettings.patch", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.regionDiskSettings.patch" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *RegionDiskSettingsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "compute.regionDiskSettings.patch", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }

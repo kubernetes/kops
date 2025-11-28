@@ -10808,6 +10808,87 @@ func awsRestxml_deserializeOpDocumentUpdateHostedZoneCommentOutput(v **UpdateHos
 	return nil
 }
 
+type awsRestxml_deserializeOpUpdateHostedZoneFeatures struct {
+}
+
+func (*awsRestxml_deserializeOpUpdateHostedZoneFeatures) ID() string {
+	return "OperationDeserializer"
+}
+
+func (m *awsRestxml_deserializeOpUpdateHostedZoneFeatures) HandleDeserialize(ctx context.Context, in middleware.DeserializeInput, next middleware.DeserializeHandler) (
+	out middleware.DeserializeOutput, metadata middleware.Metadata, err error,
+) {
+	out, metadata, err = next.HandleDeserialize(ctx, in)
+	if err != nil {
+		return out, metadata, err
+	}
+
+	_, span := tracing.StartSpan(ctx, "OperationDeserializer")
+	endTimer := startMetricTimer(ctx, "client.call.deserialization_duration")
+	defer endTimer()
+	defer span.End()
+	response, ok := out.RawResponse.(*smithyhttp.Response)
+	if !ok {
+		return out, metadata, &smithy.DeserializationError{Err: fmt.Errorf("unknown transport type %T", out.RawResponse)}
+	}
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return out, metadata, awsRestxml_deserializeOpErrorUpdateHostedZoneFeatures(response, &metadata)
+	}
+	output := &UpdateHostedZoneFeaturesOutput{}
+	out.Result = output
+
+	span.End()
+	return out, metadata, err
+}
+
+func awsRestxml_deserializeOpErrorUpdateHostedZoneFeatures(response *smithyhttp.Response, metadata *middleware.Metadata) error {
+	var errorBuffer bytes.Buffer
+	if _, err := io.Copy(&errorBuffer, response.Body); err != nil {
+		return &smithy.DeserializationError{Err: fmt.Errorf("failed to copy error response body, %w", err)}
+	}
+	errorBody := bytes.NewReader(errorBuffer.Bytes())
+
+	errorCode := "UnknownError"
+	errorMessage := errorCode
+
+	errorComponents, err := awsxml.GetErrorResponseComponents(errorBody, false)
+	if err != nil {
+		return err
+	}
+	if reqID := errorComponents.RequestID; len(reqID) != 0 {
+		awsmiddleware.SetRequestIDMetadata(metadata, reqID)
+	}
+	if len(errorComponents.Code) != 0 {
+		errorCode = errorComponents.Code
+	}
+	if len(errorComponents.Message) != 0 {
+		errorMessage = errorComponents.Message
+	}
+	errorBody.Seek(0, io.SeekStart)
+	switch {
+	case strings.EqualFold("InvalidInput", errorCode):
+		return awsRestxml_deserializeErrorInvalidInput(response, errorBody)
+
+	case strings.EqualFold("LimitsExceeded", errorCode):
+		return awsRestxml_deserializeErrorLimitsExceeded(response, errorBody)
+
+	case strings.EqualFold("NoSuchHostedZone", errorCode):
+		return awsRestxml_deserializeErrorNoSuchHostedZone(response, errorBody)
+
+	case strings.EqualFold("PriorRequestNotComplete", errorCode):
+		return awsRestxml_deserializeErrorPriorRequestNotComplete(response, errorBody)
+
+	default:
+		genericError := &smithy.GenericAPIError{
+			Code:    errorCode,
+			Message: errorMessage,
+		}
+		return genericError
+
+	}
+}
+
 type awsRestxml_deserializeOpUpdateTrafficPolicyComment struct {
 }
 
@@ -17568,6 +17649,12 @@ func awsRestxml_deserializeDocumentHostedZone(v **types.HostedZone, decoder smit
 				return err
 			}
 
+		case strings.EqualFold("Features", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsRestxml_deserializeDocumentHostedZoneFeatures(&sv.Features, nodeDecoder); err != nil {
+				return err
+			}
+
 		case strings.EqualFold("Id", t.Name.Local):
 			val, err := decoder.Value()
 			if err != nil {
@@ -17729,6 +17816,110 @@ func awsRestxml_deserializeDocumentHostedZoneConfig(v **types.HostedZoneConfig, 
 					return fmt.Errorf("expected IsPrivateZone to be of type *bool, got %T instead", val)
 				}
 				sv.PrivateZone = xtv
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsRestxml_deserializeDocumentHostedZoneFailureReasons(v **types.HostedZoneFailureReasons, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.HostedZoneFailureReasons
+	if *v == nil {
+		sv = &types.HostedZoneFailureReasons{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("AcceleratedRecovery", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.AcceleratedRecovery = ptr.String(xtv)
+			}
+
+		default:
+			// Do nothing and ignore the unexpected tag element
+			err = decoder.Decoder.Skip()
+			if err != nil {
+				return err
+			}
+
+		}
+		decoder = originalDecoder
+	}
+	*v = sv
+	return nil
+}
+
+func awsRestxml_deserializeDocumentHostedZoneFeatures(v **types.HostedZoneFeatures, decoder smithyxml.NodeDecoder) error {
+	if v == nil {
+		return fmt.Errorf("unexpected nil of type %T", v)
+	}
+	var sv *types.HostedZoneFeatures
+	if *v == nil {
+		sv = &types.HostedZoneFeatures{}
+	} else {
+		sv = *v
+	}
+
+	for {
+		t, done, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		if done {
+			break
+		}
+		originalDecoder := decoder
+		decoder = smithyxml.WrapNodeDecoder(originalDecoder.Decoder, t)
+		switch {
+		case strings.EqualFold("AcceleratedRecoveryStatus", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				sv.AcceleratedRecoveryStatus = types.AcceleratedRecoveryStatus(xtv)
+			}
+
+		case strings.EqualFold("FailureReasons", t.Name.Local):
+			nodeDecoder := smithyxml.WrapNodeDecoder(decoder.Decoder, t)
+			if err := awsRestxml_deserializeDocumentHostedZoneFailureReasons(&sv.FailureReasons, nodeDecoder); err != nil {
+				return err
 			}
 
 		default:

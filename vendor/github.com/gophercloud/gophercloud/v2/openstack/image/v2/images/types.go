@@ -13,9 +13,13 @@ const (
 	// been reserved for an image in the image registry.
 	ImageStatusQueued ImageStatus = "queued"
 
-	// ImageStatusSaving denotes that an image’s raw data is currently being
+	// ImageStatusSaving denotes that an image's raw data is currently being
 	// uploaded to Glance
 	ImageStatusSaving ImageStatus = "saving"
+
+	// ImageStatusUploading denotes that an image's raw data is currently being
+	// uploaded to Glance through the upload process
+	ImageStatusUploading ImageStatus = "uploading"
 
 	// ImageStatusActive denotes an image that is fully available in Glance.
 	ImageStatusActive ImageStatus = "active"

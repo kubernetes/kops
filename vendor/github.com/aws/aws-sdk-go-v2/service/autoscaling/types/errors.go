@@ -62,6 +62,35 @@ func (e *AlreadyExistsFault) ErrorCode() string {
 }
 func (e *AlreadyExistsFault) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
 
+//	Indicates that the parameters in the current request do not match the
+//
+// parameters from a previous request with the same client token within the
+// idempotency window.
+type IdempotentParameterMismatchError struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *IdempotentParameterMismatchError) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *IdempotentParameterMismatchError) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *IdempotentParameterMismatchError) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "IdempotentParameterMismatch"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *IdempotentParameterMismatchError) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // The request failed because an active instance refresh already exists for the
 // specified Auto Scaling group.
 type InstanceRefreshInProgressFault struct {

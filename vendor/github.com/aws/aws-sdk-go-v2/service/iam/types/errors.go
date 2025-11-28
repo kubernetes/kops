@@ -321,6 +321,62 @@ func (e *EntityTemporarilyUnmodifiableException) ErrorFault() smithy.ErrorFault 
 	return smithy.FaultClient
 }
 
+// The request failed because outbound identity federation is already disabled for
+// your Amazon Web Services account. You cannot disable the feature multiple times
+type FeatureDisabledException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *FeatureDisabledException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *FeatureDisabledException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *FeatureDisabledException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "FeatureDisabled"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *FeatureDisabledException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
+// The request failed because outbound identity federation is already enabled for
+// your Amazon Web Services account. You cannot enable the feature multiple times.
+// To fetch the current configuration (including the unique issuer URL), use the
+// GetOutboundWebIdentityFederationInfo operation.
+type FeatureEnabledException struct {
+	Message *string
+
+	ErrorCodeOverride *string
+
+	noSmithyDocumentSerde
+}
+
+func (e *FeatureEnabledException) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode(), e.ErrorMessage())
+}
+func (e *FeatureEnabledException) ErrorMessage() string {
+	if e.Message == nil {
+		return ""
+	}
+	return *e.Message
+}
+func (e *FeatureEnabledException) ErrorCode() string {
+	if e == nil || e.ErrorCodeOverride == nil {
+		return "FeatureEnabled"
+	}
+	return *e.ErrorCodeOverride
+}
+func (e *FeatureEnabledException) ErrorFault() smithy.ErrorFault { return smithy.FaultClient }
+
 // The request was rejected because the authentication code was not recognized.
 // The error message describes the specific error.
 type InvalidAuthenticationCodeException struct {

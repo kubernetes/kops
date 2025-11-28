@@ -655,7 +655,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The parent resource of the EndpointPolicy. Must be in the format `projects/*/locations/global`.",
+                      "description": "Required. The parent resource of the EndpointPolicy. Must be in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -683,7 +683,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the EndpointPolicy to delete. Must be in the format `projects/*/locations/global/endpointPolicies/*`.",
+                      "description": "Required. A name of the EndpointPolicy to delete. Must be in the format `projects/*/locations/*/endpointPolicies/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/endpointPolicies/[^/]+$",
                       "required": true,
@@ -708,7 +708,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the EndpointPolicy to get. Must be in the format `projects/*/locations/global/endpointPolicies/*`.",
+                      "description": "Required. A name of the EndpointPolicy to get. Must be in the format `projects/*/locations/*/endpointPolicies/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/endpointPolicies/[^/]+$",
                       "required": true,
@@ -744,7 +744,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The project and location from which the EndpointPolicies should be listed, specified in the format `projects/*/locations/global`.",
+                      "description": "Required. The project and location from which the EndpointPolicies should be listed, specified in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -774,7 +774,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
+                      "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/*/endpointPolicies/{endpoint_policy}`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/endpointPolicies/[^/]+$",
                       "required": true,
@@ -1041,7 +1041,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The parent resource of the GrpcRoute. Must be in the format `projects/*/locations/global`.",
+                      "description": "Required. The parent resource of the GrpcRoute. Must be in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -1069,7 +1069,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the GrpcRoute to delete. Must be in the format `projects/*/locations/global/grpcRoutes/*`.",
+                      "description": "Required. A name of the GrpcRoute to delete. Must be in the format `projects/*/locations/*/grpcRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/grpcRoutes/[^/]+$",
                       "required": true,
@@ -1094,7 +1094,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the GrpcRoute to get. Must be in the format `projects/*/locations/global/grpcRoutes/*`.",
+                      "description": "Required. A name of the GrpcRoute to get. Must be in the format `projects/*/locations/*/grpcRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/grpcRoutes/[^/]+$",
                       "required": true,
@@ -1130,7 +1130,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The project and location from which the GrpcRoutes should be listed, specified in the format `projects/*/locations/global`.",
+                      "description": "Required. The project and location from which the GrpcRoutes should be listed, specified in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -1160,7 +1160,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
+                      "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/*/grpcRoutes/`",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/grpcRoutes/[^/]+$",
                       "required": true,
@@ -1203,7 +1203,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The parent resource of the HttpRoute. Must be in the format `projects/*/locations/global`.",
+                      "description": "Required. The parent resource of the HttpRoute. Must be in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -1231,7 +1231,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the HttpRoute to delete. Must be in the format `projects/*/locations/global/httpRoutes/*`.",
+                      "description": "Required. A name of the HttpRoute to delete. Must be in the format `projects/*/locations/*/httpRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/httpRoutes/[^/]+$",
                       "required": true,
@@ -1256,7 +1256,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the HttpRoute to get. Must be in the format `projects/*/locations/global/httpRoutes/*`.",
+                      "description": "Required. A name of the HttpRoute to get. Must be in the format `projects/*/locations/*/httpRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/httpRoutes/[^/]+$",
                       "required": true,
@@ -1292,7 +1292,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The project and location from which the HttpRoutes should be listed, specified in the format `projects/*/locations/global`.",
+                      "description": "Required. The project and location from which the HttpRoutes should be listed, specified in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -1322,7 +1322,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
+                      "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/*/httpRoutes/http_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/httpRoutes/[^/]+$",
                       "required": true,
@@ -1338,6 +1338,188 @@
                   "path": "v1/{+name}",
                   "request": {
                     "$ref": "HttpRoute"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                }
+              }
+            },
+            "lbEdgeExtensions": {
+              "methods": {
+                "create": {
+                  "description": "Creates a new `LbEdgeExtension` resource in a given project and location.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/lbEdgeExtensions",
+                  "httpMethod": "POST",
+                  "id": "networkservices.projects.locations.lbEdgeExtensions.create",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "lbEdgeExtensionId": {
+                      "description": "Required. User-provided ID of the `LbEdgeExtension` resource to be created.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The parent resource of the `LbEdgeExtension` resource. Must be in the format `projects/{project}/locations/{location}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server ignores the second request This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+parent}/lbEdgeExtensions",
+                  "request": {
+                    "$ref": "LbEdgeExtension"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "delete": {
+                  "description": "Deletes the specified `LbEdgeExtension` resource.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/lbEdgeExtensions/{lbEdgeExtensionsId}",
+                  "httpMethod": "DELETE",
+                  "id": "networkservices.projects.locations.lbEdgeExtensions.delete",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. The name of the `LbEdgeExtension` resource to delete. Must be in the format `projects/{project}/locations/{location}/lbEdgeExtensions/{lb_edge_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/lbEdgeExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for 60 minutes after the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server ignores the second request This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "get": {
+                  "description": "Gets details of the specified `LbEdgeExtension` resource.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/lbEdgeExtensions/{lbEdgeExtensionsId}",
+                  "httpMethod": "GET",
+                  "id": "networkservices.projects.locations.lbEdgeExtensions.get",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. A name of the `LbEdgeExtension` resource to get. Must be in the format `projects/{project}/locations/{location}/lbEdgeExtensions/{lb_edge_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/lbEdgeExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "response": {
+                    "$ref": "LbEdgeExtension"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "list": {
+                  "description": "Lists `LbEdgeExtension` resources in a given project and location.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/lbEdgeExtensions",
+                  "httpMethod": "GET",
+                  "id": "networkservices.projects.locations.lbEdgeExtensions.list",
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "parameters": {
+                    "filter": {
+                      "description": "Optional. Filtering results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "orderBy": {
+                      "description": "Optional. Hint about how to order the results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Optional. Requested page size. The server might return fewer items than requested. If unspecified, the server picks an appropriate default.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "Optional. A token identifying a page of results that the server returns.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "parent": {
+                      "description": "Required. The project and location from which the `LbEdgeExtension` resources are listed. These values are specified in the following format: `projects/{project}/locations/{location}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+parent}/lbEdgeExtensions",
+                  "response": {
+                    "$ref": "ListLbEdgeExtensionsResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "patch": {
+                  "description": "Updates the parameters of the specified `LbEdgeExtension` resource.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/lbEdgeExtensions/{lbEdgeExtensionsId}",
+                  "httpMethod": "PATCH",
+                  "id": "networkservices.projects.locations.lbEdgeExtensions.patch",
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "parameters": {
+                    "name": {
+                      "description": "Required. Identifier. Name of the `LbEdgeExtension` resource in the following format: `projects/{project}/locations/{location}/lbEdgeExtensions/{lb_edge_extension}`.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/lbEdgeExtensions/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "requestId": {
+                      "description": "Optional. An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server can ignore the request if it has already been completed. The server guarantees that for 60 minutes since the first request. For example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server ignores the second request This prevents clients from accidentally creating duplicate commitments. The request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Optional. Used to specify the fields to be overwritten in the `LbEdgeExtension` resource by the update. The fields specified in the `update_mask` are relative to the resource, not the full request. A field is overwritten if it is in the mask. If the user does not specify a mask, then all fields are overwritten.",
+                      "format": "google-fieldmask",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+name}",
+                  "request": {
+                    "$ref": "LbEdgeExtension"
                   },
                   "response": {
                     "$ref": "Operation"
@@ -1729,7 +1911,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The parent resource of the Mesh. Must be in the format `projects/*/locations/global`.",
+                      "description": "Required. The parent resource of the Mesh. Must be in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -1757,7 +1939,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the Mesh to delete. Must be in the format `projects/*/locations/global/meshes/*`.",
+                      "description": "Required. A name of the Mesh to delete. Must be in the format `projects/*/locations/*/meshes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/meshes/[^/]+$",
                       "required": true,
@@ -1782,7 +1964,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the Mesh to get. Must be in the format `projects/*/locations/global/meshes/*`.",
+                      "description": "Required. A name of the Mesh to get. Must be in the format `projects/*/locations/*/meshes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/meshes/[^/]+$",
                       "required": true,
@@ -1818,7 +2000,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The project and location from which the Meshes should be listed, specified in the format `projects/*/locations/global`.",
+                      "description": "Required. The project and location from which the Meshes should be listed, specified in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -1848,7 +2030,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
+                      "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/*/meshes/`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/meshes/[^/]+$",
                       "required": true,
@@ -2052,6 +2234,11 @@
                       "description": "The standard list page token.",
                       "location": "query",
                       "type": "string"
+                    },
+                    "returnPartialSuccess": {
+                      "description": "When set to `true`, operations that are reachable are returned as normal, and those that are unreachable are returned in the [ListOperationsResponse.unreachable] field. This can only be `true` when reading across collections e.g. when `parent` is set to `\"projects/example/locations/-\"`. This field is not by default supported and will result in an `UNIMPLEMENTED` error if set unless explicitly documented otherwise in service or product specific documentation.",
+                      "location": "query",
+                      "type": "boolean"
                     }
                   },
                   "path": "v1/{+name}/operations",
@@ -2390,7 +2577,7 @@
                   ],
                   "parameters": {
                     "parent": {
-                      "description": "Required. The parent resource of the TcpRoute. Must be in the format `projects/*/locations/global`.",
+                      "description": "Required. The parent resource of the TcpRoute. Must be in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -2423,7 +2610,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the TcpRoute to delete. Must be in the format `projects/*/locations/global/tcpRoutes/*`.",
+                      "description": "Required. A name of the TcpRoute to delete. Must be in the format `projects/*/locations/*/tcpRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tcpRoutes/[^/]+$",
                       "required": true,
@@ -2448,7 +2635,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the TcpRoute to get. Must be in the format `projects/*/locations/global/tcpRoutes/*`.",
+                      "description": "Required. A name of the TcpRoute to get. Must be in the format `projects/*/locations/*/tcpRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tcpRoutes/[^/]+$",
                       "required": true,
@@ -2484,7 +2671,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The project and location from which the TcpRoutes should be listed, specified in the format `projects/*/locations/global`.",
+                      "description": "Required. The project and location from which the TcpRoutes should be listed, specified in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -2514,7 +2701,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
+                      "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/*/tcpRoutes/tcp_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tcpRoutes/[^/]+$",
                       "required": true,
@@ -2552,7 +2739,7 @@
                   ],
                   "parameters": {
                     "parent": {
-                      "description": "Required. The parent resource of the TlsRoute. Must be in the format `projects/*/locations/global`.",
+                      "description": "Required. The parent resource of the TlsRoute. Must be in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -2585,7 +2772,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the TlsRoute to delete. Must be in the format `projects/*/locations/global/tlsRoutes/*`.",
+                      "description": "Required. A name of the TlsRoute to delete. Must be in the format `projects/*/locations/*/tlsRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tlsRoutes/[^/]+$",
                       "required": true,
@@ -2610,7 +2797,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Required. A name of the TlsRoute to get. Must be in the format `projects/*/locations/global/tlsRoutes/*`.",
+                      "description": "Required. A name of the TlsRoute to get. Must be in the format `projects/*/locations/*/tlsRoutes/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tlsRoutes/[^/]+$",
                       "required": true,
@@ -2646,7 +2833,7 @@
                       "type": "string"
                     },
                     "parent": {
-                      "description": "Required. The project and location from which the TlsRoutes should be listed, specified in the format `projects/*/locations/global`.",
+                      "description": "Required. The project and location from which the TlsRoutes should be listed, specified in the format `projects/*/locations/*`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+$",
                       "required": true,
@@ -2676,7 +2863,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Identifier. Name of the TlsRoute resource. It matches pattern `projects/*/locations/global/tlsRoutes/tls_route_name\u003e`.",
+                      "description": "Identifier. Name of the TlsRoute resource. It matches pattern `projects/*/locations/*/tlsRoutes/tls_route_name\u003e`.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/tlsRoutes/[^/]+$",
                       "required": true,
@@ -3004,7 +3191,7 @@
       }
     }
   },
-  "revision": "20251015",
+  "revision": "20251029",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -3269,7 +3456,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.",
+          "description": "Identifier. Name of the EndpointPolicy resource. It matches pattern `projects/{project}/locations/*/endpointPolicies/{endpoint_policy}`.",
           "type": "string"
         },
         "serverTlsPolicy": {
@@ -3378,6 +3565,10 @@
         "name": {
           "description": "Optional. The name for this extension. The name is logged as part of the HTTP request logs. The name must conform with RFC-1034, is restricted to lower-cased letters, numbers and hyphens, and can have a maximum length of 63 characters. Additionally, the first character must be a letter and the last a letter or a number. This field is required except for AuthzExtension.",
           "type": "string"
+        },
+        "observabilityMode": {
+          "description": "Optional. When set to `TRUE`, enables `observability_mode` on the `ext_proc` filter. This makes `ext_proc` calls asynchronous. Envoy doesn't check for the response from `ext_proc` calls. For more information about the filter, see: https://www.envoyproxy.io/docs/envoy/v1.32.3/api-v3/extensions/filters/http/ext_proc/v3/ext_proc.proto#extensions-filters-http-ext-proc-v3-externalprocessor This field is helpful when you want to try out the extension in async log-only mode. Supported by regional `LbTrafficExtension` and `LbRouteExtension` resources. Only `STREAMED` (default) body processing mode is supported.",
+          "type": "boolean"
         },
         "requestBodySendMode": {
           "description": "Optional. Configures the send mode for request body processing. The field can only be set if `supported_events` includes `REQUEST_BODY`. If `supported_events` includes `REQUEST_BODY`, but `request_body_send_mode` is unset, the default value `STREAMED` is used. When this field is set to `FULL_DUPLEX_STREAMED`, `supported_events` must include both `REQUEST_BODY` and `REQUEST_TRAILERS`. This field can be set only for `LbTrafficExtension` and `LbRouteExtension` resources, and only when the `service` field of the extension points to a `BackendService`. Only `FULL_DUPLEX_STREAMED` mode is supported for `LbRouteExtension` resources.",
@@ -3638,7 +3829,7 @@
           "type": "string"
         },
         "gateways": {
-          "description": "Optional. Gateways defines a list of gateways this GrpcRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/global/gateways/`",
+          "description": "Optional. Gateways defines a list of gateways this GrpcRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/*/gateways/`",
           "items": {
             "type": "string"
           },
@@ -3659,14 +3850,14 @@
           "type": "object"
         },
         "meshes": {
-          "description": "Optional. Meshes defines a list of meshes this GrpcRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/global/meshes/`",
+          "description": "Optional. Meshes defines a list of meshes this GrpcRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/*/meshes/`",
           "items": {
             "type": "string"
           },
           "type": "array"
         },
         "name": {
-          "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/global/grpcRoutes/`",
+          "description": "Identifier. Name of the GrpcRoute resource. It matches pattern `projects/*/locations/*/grpcRoutes/`",
           "type": "string"
         },
         "rules": {
@@ -3935,7 +4126,7 @@
           "type": "string"
         },
         "gateways": {
-          "description": "Optional. Gateways defines a list of gateways this HttpRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/global/gateways/`",
+          "description": "Optional. Gateways defines a list of gateways this HttpRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/*/gateways/`",
           "items": {
             "type": "string"
           },
@@ -3956,14 +4147,14 @@
           "type": "object"
         },
         "meshes": {
-          "description": "Optional. Meshes defines a list of meshes this HttpRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/global/meshes/` The attached Mesh should be of a type SIDECAR",
+          "description": "Optional. Meshes defines a list of meshes this HttpRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/*/meshes/` The attached Mesh should be of a type SIDECAR",
           "items": {
             "type": "string"
           },
           "type": "array"
         },
         "name": {
-          "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/global/httpRoutes/http_route_name\u003e`.",
+          "description": "Identifier. Name of the HttpRoute resource. It matches pattern `projects/*/locations/*/httpRoutes/http_route_name\u003e`.",
           "type": "string"
         },
         "rules": {
@@ -4480,6 +4671,68 @@
       },
       "type": "object"
     },
+    "LbEdgeExtension": {
+      "description": "`LbEdgeExtension` is a resource that lets the extension service influence the selection of backend services and Cloud CDN cache keys by modifying request headers.",
+      "id": "LbEdgeExtension",
+      "properties": {
+        "createTime": {
+          "description": "Output only. The timestamp when the resource was created.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional. A human-readable description of the resource.",
+          "type": "string"
+        },
+        "extensionChains": {
+          "description": "Required. A set of ordered extension chains that contain the match conditions and extensions to execute. Match conditions for each extension chain are evaluated in sequence for a given request. The first extension chain that has a condition that matches the request is executed. Any subsequent extension chains do not execute. Limited to 5 extension chains per resource.",
+          "items": {
+            "$ref": "ExtensionChain"
+          },
+          "type": "array"
+        },
+        "forwardingRules": {
+          "description": "Required. A list of references to the forwarding rules to which this service extension is attached. At least one forwarding rule is required. Only one `LbEdgeExtension` resource can be associated with a forwarding rule.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional. Set of labels associated with the `LbEdgeExtension` resource. The format must comply with [the requirements for labels](https://cloud.google.com/compute/docs/labeling-resources#requirements) for Google Cloud resources.",
+          "type": "object"
+        },
+        "loadBalancingScheme": {
+          "description": "Required. All forwarding rules referenced by this extension must share the same load balancing scheme. Supported values: `EXTERNAL_MANAGED`.",
+          "enum": [
+            "LOAD_BALANCING_SCHEME_UNSPECIFIED",
+            "INTERNAL_MANAGED",
+            "EXTERNAL_MANAGED"
+          ],
+          "enumDescriptions": [
+            "Default value. Do not use.",
+            "Signifies that this is used for Internal HTTP(S) Load Balancing.",
+            "Signifies that this is used for External Managed HTTP(S) Load Balancing."
+          ],
+          "type": "string"
+        },
+        "name": {
+          "description": "Required. Identifier. Name of the `LbEdgeExtension` resource in the following format: `projects/{project}/locations/{location}/lbEdgeExtensions/{lb_edge_extension}`.",
+          "type": "string"
+        },
+        "updateTime": {
+          "description": "Output only. The timestamp when the resource was updated.",
+          "format": "google-datetime",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "LbRouteExtension": {
       "description": "`LbRouteExtension` is a resource that lets you control where traffic is routed to for a given request.",
       "id": "LbRouteExtension",
@@ -4770,6 +5023,31 @@
       },
       "type": "object"
     },
+    "ListLbEdgeExtensionsResponse": {
+      "description": "Message for response to listing `LbEdgeExtension` resources.",
+      "id": "ListLbEdgeExtensionsResponse",
+      "properties": {
+        "lbEdgeExtensions": {
+          "description": "The list of `LbEdgeExtension` resources.",
+          "items": {
+            "$ref": "LbEdgeExtension"
+          },
+          "type": "array"
+        },
+        "nextPageToken": {
+          "description": "A token identifying a page of results that the server returns.",
+          "type": "string"
+        },
+        "unreachable": {
+          "description": "Locations that could not be reached.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "ListLbRouteExtensionsResponse": {
       "description": "Message for response to listing `LbRouteExtension` resources.",
       "id": "ListLbRouteExtensionsResponse",
@@ -4900,6 +5178,13 @@
           "description": "A list of operations that matches the specified filter in the request.",
           "items": {
             "$ref": "Operation"
+          },
+          "type": "array"
+        },
+        "unreachable": {
+          "description": "Unordered list. Unreachable resources. Populated when the request sets `ListOperationsRequest.return_partial_success` and reads across collections e.g. when attempting to list all resources across all supported locations.",
+          "items": {
+            "type": "string"
           },
           "type": "array"
         }
@@ -5166,7 +5451,7 @@
           "type": "object"
         },
         "name": {
-          "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/global/meshes/`.",
+          "description": "Identifier. Name of the Mesh resource. It matches pattern `projects/*/locations/*/meshes/`.",
           "type": "string"
         },
         "selfLink": {
@@ -5559,7 +5844,7 @@
           "type": "string"
         },
         "gateways": {
-          "description": "Optional. Gateways defines a list of gateways this TcpRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/global/gateways/`",
+          "description": "Optional. Gateways defines a list of gateways this TcpRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/*/gateways/`",
           "items": {
             "type": "string"
           },
@@ -5573,14 +5858,14 @@
           "type": "object"
         },
         "meshes": {
-          "description": "Optional. Meshes defines a list of meshes this TcpRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/global/meshes/` The attached Mesh should be of a type SIDECAR",
+          "description": "Optional. Meshes defines a list of meshes this TcpRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/*/meshes/` The attached Mesh should be of a type SIDECAR",
           "items": {
             "type": "string"
           },
           "type": "array"
         },
         "name": {
-          "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/global/tcpRoutes/tcp_route_name\u003e`.",
+          "description": "Identifier. Name of the TcpRoute resource. It matches pattern `projects/*/locations/*/tcpRoutes/tcp_route_name\u003e`.",
           "type": "string"
         },
         "rules": {
@@ -5719,7 +6004,7 @@
           "type": "string"
         },
         "gateways": {
-          "description": "Optional. Gateways defines a list of gateways this TlsRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/global/gateways/`",
+          "description": "Optional. Gateways defines a list of gateways this TlsRoute is attached to, as one of the routing rules to route the requests served by the gateway. Each gateway reference should match the pattern: `projects/*/locations/*/gateways/`",
           "items": {
             "type": "string"
           },
@@ -5733,14 +6018,14 @@
           "type": "object"
         },
         "meshes": {
-          "description": "Optional. Meshes defines a list of meshes this TlsRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/global/meshes/` The attached Mesh should be of a type SIDECAR",
+          "description": "Optional. Meshes defines a list of meshes this TlsRoute is attached to, as one of the routing rules to route the requests served by the mesh. Each mesh reference should match the pattern: `projects/*/locations/*/meshes/` The attached Mesh should be of a type SIDECAR",
           "items": {
             "type": "string"
           },
           "type": "array"
         },
         "name": {
-          "description": "Identifier. Name of the TlsRoute resource. It matches pattern `projects/*/locations/global/tlsRoutes/tls_route_name\u003e`.",
+          "description": "Identifier. Name of the TlsRoute resource. It matches pattern `projects/*/locations/*/tlsRoutes/tls_route_name\u003e`.",
           "type": "string"
         },
         "rules": {

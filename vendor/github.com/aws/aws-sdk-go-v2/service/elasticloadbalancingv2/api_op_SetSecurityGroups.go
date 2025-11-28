@@ -47,8 +47,8 @@ type SetSecurityGroupsInput struct {
 	SecurityGroups []string
 
 	// Indicates whether to evaluate inbound security group rules for traffic sent to
-	// a Network Load Balancer through Amazon Web Services PrivateLink. The default is
-	// on .
+	// a Network Load Balancer through Amazon Web Services PrivateLink. Applies only if
+	// the load balancer has an associated security group. The default is on .
 	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic types.EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum
 
 	noSmithyDocumentSerde
@@ -163,40 +163,7 @@ func (c *Client) addOperationSetSecurityGroupsMiddlewares(stack *middleware.Stac
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

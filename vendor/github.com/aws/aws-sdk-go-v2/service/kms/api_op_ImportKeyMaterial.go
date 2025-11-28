@@ -20,10 +20,25 @@ import (
 // also generate and import your own key material. For more information about
 // importing key material, see [Importing key material].
 //
-// For asymmetric, HMAC and multi-Region keys, you cannot change the key material
-// after the initial import. You can import multiple key materials into
-// single-Region, symmetric encryption keys and rotate the key material on demand
-// using RotateKeyOnDemand .
+// For asymmetric and HMAC keys, you cannot change the key material after the
+// initial import. You can import multiple key materials into symmetric encryption
+// keys and rotate the key material on demand using RotateKeyOnDemand .
+//
+// You can import new key materials into multi-Region symmetric encryption keys.
+// To do so, you must import the new key material into the primary Region key. Then
+// you can import the same key materials into the replica Region keys. You cannot
+// directly import new key material into the replica Region keys.
+//
+// To import new key material for a multi-Region symmetric key, you’ll need to
+// complete the following:
+//
+//   - Call ImportKeyMaterial on the primary Region key with the ImportType set to
+//     NEW_KEY_MATERIAL .
+//
+//   - Call ImportKeyMaterial on the replica Region key with the ImportType set to
+//     EXISTING_KEY_MATERIAL using the same key material imported to the primary
+//     Region key. You must do this for every replica Region key before you can perform
+//     the RotateKeyOnDemandoperation on the primary Region key.
 //
 // After you import key material, you can [reimport the same key material] into that KMS key or, if the key
 // supports on-demand rotation, import new key material. You can use the ImportType
@@ -60,10 +75,10 @@ import (
 // values:
 //
 //   - The key ID or key ARN of the KMS key to associate with the imported key
-//     material. Its Origin must be EXTERNAL and its KeyState must be PendingImport .
-//     You cannot perform this operation on a KMS key in a [custom key store], or on a KMS key in a
-//     different Amazon Web Services account. To get the Origin and KeyState of a KMS
-//     key, call DescribeKey.
+//     material. Its Origin must be EXTERNAL and its KeyState must be PendingImport
+//     or Enabled . You cannot perform this operation on a KMS key in a [custom key store], or on a
+//     KMS key in a different Amazon Web Services account. To get the Origin and
+//     KeyState of a KMS key, call DescribeKey.
 //
 //   - The encrypted key material.
 //
@@ -82,12 +97,12 @@ import (
 //	before the key material expires. Each time you reimport, you can eliminate or
 //	reset the expiration time.
 //
-// When this operation is successful, the key state of the KMS key changes from
-// PendingImport to Enabled , and you can use the KMS key in cryptographic
-// operations. For single-Region, symmetric encryption keys, you will need to
-// import all of the key materials associated with the KMS key to change its state
-// to Enabled . Use the ListKeyRotations operation to list the ID and import state
-// of each key material associated with a KMS key.
+// When this operation is successful, the state of the KMS key changes to Enabled ,
+// and you can use the KMS key in cryptographic operations. For symmetric
+// encryption keys, you will need to import all of the key materials associated
+// with the KMS key to change its state to Enabled . Use the ListKeyRotations
+// operation to list the ID and import state of each key material associated with a
+// KMS key.
 //
 // If this operation fails, use the exception to help determine the problem. If
 // the error is related to the key material, the import token, or wrapping key, use
@@ -203,6 +218,12 @@ type ImportKeyMaterialInput struct {
 	// this parameter is omitted, the parameter defaults to NEW_KEY_MATERIAL . After
 	// the first key material is imported, if this parameter is omitted then the
 	// parameter defaults to EXISTING_KEY_MATERIAL .
+	//
+	// For multi-Region keys, you must first import new key material into the primary
+	// Region key. You should use the NEW_KEY_MATERIAL import type when importing key
+	// material into the primary Region key. Then, you can import the same key material
+	// into the replica Region key. The import type for the replica Region key should
+	// be EXISTING_KEY_MATERIAL .
 	ImportType types.ImportType
 
 	// Description for the key material being imported. This parameter is optional and
@@ -356,40 +377,7 @@ func (c *Client) addOperationImportKeyMaterialMiddlewares(stack *middleware.Stac
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

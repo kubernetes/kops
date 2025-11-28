@@ -117,15 +117,22 @@ type CreateOpsItemInput struct {
 	//
 	// This type of OpsItem is used for default OpsItems created by OpsCenter.
 	//
+	//   - /aws/insight
+	//
+	// This type of OpsItem is used by OpsCenter for aggregating and reporting on
+	//   duplicate OpsItems.
+	//
 	//   - /aws/changerequest
 	//
 	// This type of OpsItem is used by Change Manager for reviewing and approving or
 	//   rejecting change requests.
 	//
-	//   - /aws/insight
+	// Amazon Web Services Systems Manager Change Manager will no longer be open to
+	//   new customers starting November 7, 2025. If you would like to use Change
+	//   Manager, sign up prior to that date. Existing customers can continue to use the
+	//   service as normal. For more information, see [Amazon Web Services Systems Manager Change Manager availability change].
 	//
-	// This type of OpsItem is used by OpsCenter for aggregating and reporting on
-	//   duplicate OpsItems.
+	// [Amazon Web Services Systems Manager Change Manager availability change]: https://docs.aws.amazon.com/systems-manager/latest/userguide/change-manager-availability-change.html
 	OpsItemType *string
 
 	// The time specified in a change request for a runbook workflow to end. Currently
@@ -269,40 +276,7 @@ func (c *Client) addOperationCreateOpsItemMiddlewares(stack *middleware.Stack, o
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

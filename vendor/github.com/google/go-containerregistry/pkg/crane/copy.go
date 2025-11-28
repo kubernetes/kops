@@ -26,6 +26,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// ErrRefusingToClobberExistingTag is returned when NoClobber is true and the
+// tag already exists in the target registry/repo.
+var ErrRefusingToClobberExistingTag = errors.New("refusing to clobber existing tag")
+
 // Copy copies a remote image or index from src to dst.
 func Copy(src, dst string, opt ...Option) error {
 	o := makeOptions(opt...)
@@ -58,7 +62,7 @@ func Copy(src, dst string, opt ...Option) error {
 			}
 
 			if head != nil {
-				return fmt.Errorf("refusing to clobber existing tag %s@%s", tag, head.Digest)
+				return fmt.Errorf("%w %s@%s", ErrRefusingToClobberExistingTag, tag, head.Digest)
 			}
 		}
 	}

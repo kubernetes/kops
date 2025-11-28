@@ -58,6 +58,7 @@
         "api_op_ExecutePolicy.go",
         "api_op_ExitStandby.go",
         "api_op_GetPredictiveScalingForecast.go",
+        "api_op_LaunchInstances.go",
         "api_op_PutLifecycleHook.go",
         "api_op_PutNotificationConfiguration.go",
         "api_op_PutScalingPolicy.go",

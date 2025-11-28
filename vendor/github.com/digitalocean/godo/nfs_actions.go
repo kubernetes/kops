@@ -12,6 +12,8 @@ import (
 type NfsActionsService interface {
 	Resize(ctx context.Context, nfsShareId string, size uint64, region string) (*NfsAction, *Response, error)
 	Snapshot(ctx context.Context, nfsShareId string, nfsSnapshotName string, region string) (*NfsAction, *Response, error)
+	Attach(ctx context.Context, nfsShareId string, vpcID string, region string) (*NfsAction, *Response, error)
+	Detach(ctx context.Context, nfsShareId string, vpcID string, region string) (*NfsAction, *Response, error)
 }
 
 // NfsActionsServiceOp handles communication with the NFS action related
@@ -57,6 +59,16 @@ type NfsSnapshotParams struct {
 	Name string `json:"name"`
 }
 
+// NfsAttachParams represents parameters for attaching an NFS share to a VPC
+type NfsAttachParams struct {
+	VpcID string `json:"vpc_id"`
+}
+
+// NfsDetachParams represents parameters for detaching an NFS share from a VPC
+type NfsDetachParams struct {
+	VpcID string `json:"vpc_id"`
+}
+
 // Resize an NFS share
 func (s *NfsActionsServiceOp) Resize(ctx context.Context, nfsShareId string, size uint64, region string) (*NfsAction, *Response, error) {
 	request := &NfsActionRequest{
@@ -77,6 +89,32 @@ func (s *NfsActionsServiceOp) Snapshot(ctx context.Context, nfsShareId, nfsSnaps
 		Region: region,
 		Params: &NfsSnapshotParams{
 			Name: nfsSnapshotName,
+		},
+	}
+
+	return s.doAction(ctx, nfsShareId, request)
+}
+
+// Attach an NFS share
+func (s *NfsActionsServiceOp) Attach(ctx context.Context, nfsShareId, vpcID, region string) (*NfsAction, *Response, error) {
+	request := &NfsActionRequest{
+		Type:   "attach",
+		Region: region,
+		Params: &NfsAttachParams{
+			VpcID: vpcID,
+		},
+	}
+
+	return s.doAction(ctx, nfsShareId, request)
+}
+
+// Detach an NFS share
+func (s *NfsActionsServiceOp) Detach(ctx context.Context, nfsShareId, vpcID, region string) (*NfsAction, *Response, error) {
+	request := &NfsActionRequest{
+		Type:   "detach",
+		Region: region,
+		Params: &NfsAttachParams{
+			VpcID: vpcID,
 		},
 	}
 

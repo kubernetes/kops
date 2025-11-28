@@ -559,7 +559,8 @@ type RefreshStrategy string
 
 // Enum values for RefreshStrategy
 const (
-	RefreshStrategyRolling RefreshStrategy = "Rolling"
+	RefreshStrategyRolling           RefreshStrategy = "Rolling"
+	RefreshStrategyReplaceRootVolume RefreshStrategy = "ReplaceRootVolume"
 )
 
 // Values returns all known values for RefreshStrategy. Note that this can be
@@ -569,6 +570,45 @@ const (
 func (RefreshStrategy) Values() []RefreshStrategy {
 	return []RefreshStrategy{
 		"Rolling",
+		"ReplaceRootVolume",
+	}
+}
+
+type RetentionAction string
+
+// Enum values for RetentionAction
+const (
+	RetentionActionRetain    RetentionAction = "retain"
+	RetentionActionTerminate RetentionAction = "terminate"
+)
+
+// Values returns all known values for RetentionAction. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RetentionAction) Values() []RetentionAction {
+	return []RetentionAction{
+		"retain",
+		"terminate",
+	}
+}
+
+type RetryStrategy string
+
+// Enum values for RetryStrategy
+const (
+	RetryStrategyRetryWithGroupConfiguration RetryStrategy = "retry-with-group-configuration"
+	RetryStrategyNone                        RetryStrategy = "none"
+)
+
+// Values returns all known values for RetryStrategy. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (RetryStrategy) Values() []RetryStrategy {
+	return []RetryStrategy{
+		"retry-with-group-configuration",
+		"none",
 	}
 }
 
@@ -597,19 +637,22 @@ type ScalingActivityStatusCode string
 
 // Enum values for ScalingActivityStatusCode
 const (
-	ScalingActivityStatusCodePendingSpotBidPlacement         ScalingActivityStatusCode = "PendingSpotBidPlacement"
-	ScalingActivityStatusCodeWaitingForSpotInstanceRequestId ScalingActivityStatusCode = "WaitingForSpotInstanceRequestId"
-	ScalingActivityStatusCodeWaitingForSpotInstanceId        ScalingActivityStatusCode = "WaitingForSpotInstanceId"
-	ScalingActivityStatusCodeWaitingForInstanceId            ScalingActivityStatusCode = "WaitingForInstanceId"
-	ScalingActivityStatusCodePreInService                    ScalingActivityStatusCode = "PreInService"
-	ScalingActivityStatusCodeInProgress                      ScalingActivityStatusCode = "InProgress"
-	ScalingActivityStatusCodeWaitingForELBConnectionDraining ScalingActivityStatusCode = "WaitingForELBConnectionDraining"
-	ScalingActivityStatusCodeMidLifecycleAction              ScalingActivityStatusCode = "MidLifecycleAction"
-	ScalingActivityStatusCodeWaitingForInstanceWarmup        ScalingActivityStatusCode = "WaitingForInstanceWarmup"
-	ScalingActivityStatusCodeSuccessful                      ScalingActivityStatusCode = "Successful"
-	ScalingActivityStatusCodeFailed                          ScalingActivityStatusCode = "Failed"
-	ScalingActivityStatusCodeCancelled                       ScalingActivityStatusCode = "Cancelled"
-	ScalingActivityStatusCodeWaitingForConnectionDraining    ScalingActivityStatusCode = "WaitingForConnectionDraining"
+	ScalingActivityStatusCodePendingSpotBidPlacement           ScalingActivityStatusCode = "PendingSpotBidPlacement"
+	ScalingActivityStatusCodeWaitingForSpotInstanceRequestId   ScalingActivityStatusCode = "WaitingForSpotInstanceRequestId"
+	ScalingActivityStatusCodeWaitingForSpotInstanceId          ScalingActivityStatusCode = "WaitingForSpotInstanceId"
+	ScalingActivityStatusCodeWaitingForInstanceId              ScalingActivityStatusCode = "WaitingForInstanceId"
+	ScalingActivityStatusCodePreInService                      ScalingActivityStatusCode = "PreInService"
+	ScalingActivityStatusCodeInProgress                        ScalingActivityStatusCode = "InProgress"
+	ScalingActivityStatusCodeWaitingForELBConnectionDraining   ScalingActivityStatusCode = "WaitingForELBConnectionDraining"
+	ScalingActivityStatusCodeMidLifecycleAction                ScalingActivityStatusCode = "MidLifecycleAction"
+	ScalingActivityStatusCodeWaitingForInstanceWarmup          ScalingActivityStatusCode = "WaitingForInstanceWarmup"
+	ScalingActivityStatusCodeSuccessful                        ScalingActivityStatusCode = "Successful"
+	ScalingActivityStatusCodeFailed                            ScalingActivityStatusCode = "Failed"
+	ScalingActivityStatusCodeCancelled                         ScalingActivityStatusCode = "Cancelled"
+	ScalingActivityStatusCodeWaitingForConnectionDraining      ScalingActivityStatusCode = "WaitingForConnectionDraining"
+	ScalingActivityStatusCodeWaitingForInPlaceUpdateToStart    ScalingActivityStatusCode = "WaitingForInPlaceUpdateToStart"
+	ScalingActivityStatusCodeWaitingForInPlaceUpdateToFinalize ScalingActivityStatusCode = "WaitingForInPlaceUpdateToFinalize"
+	ScalingActivityStatusCodeInPlaceUpdateInProgress           ScalingActivityStatusCode = "InPlaceUpdateInProgress"
 )
 
 // Values returns all known values for ScalingActivityStatusCode. Note that this
@@ -631,6 +674,9 @@ func (ScalingActivityStatusCode) Values() []ScalingActivityStatusCode {
 		"Failed",
 		"Cancelled",
 		"WaitingForConnectionDraining",
+		"WaitingForInPlaceUpdateToStart",
+		"WaitingForInPlaceUpdateToFinalize",
+		"InPlaceUpdateInProgress",
 	}
 }
 
