@@ -3,14 +3,16 @@ package configfile
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/docker/cli/cli/config/credentials"
+	"github.com/docker/cli/cli/config/memorystore"
 	"github.com/docker/cli/cli/config/types"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,10 +43,32 @@ type ConfigFile struct {
 	Plugins              map[string]map[string]string `json:"plugins,omitempty"`
 	Aliases              map[string]string            `json:"aliases,omitempty"`
 	Features             map[string]string            `json:"features,omitempty"`
-
-	// Deprecated: experimental CLI features are always enabled and this field is no longer used. Use [Features] instead for optional features. This field will be removed in a future release.
-	Experimental string `json:"experimental,omitempty"`
 }
+
+type configEnvAuth struct {
+	Auth string `json:"auth"`
+}
+
+type configEnv struct {
+	AuthConfigs map[string]configEnvAuth `json:"auths"`
+}
+
+// DockerEnvConfigKey is an environment variable that contains a JSON encoded
+// credential config. It only supports storing the credentials as a base64
+// encoded string in the format base64("username:pat").
+//
+// Adding additional fields will produce a parsing error.
+//
+// Example:
+//
+//	{
+//		"auths": {
+//			"example.test": {
+//				"auth": base64-encoded-username-pat
+//			}
+//		}
+//	}
+const DockerEnvConfigKey = "DOCKER_AUTH_CONFIG"
 
 // ProxyConfig contains proxy configuration settings
 type ProxyConfig struct {
@@ -140,7 +164,7 @@ func (configFile *ConfigFile) SaveToWriter(writer io.Writer) error {
 // Save encodes and writes out all the authorization information
 func (configFile *ConfigFile) Save() (retErr error) {
 	if configFile.Filename == "" {
-		return errors.Errorf("Can't save config with empty filename")
+		return errors.New("can't save config with empty filename")
 	}
 
 	dir := filepath.Dir(configFile.Filename)
@@ -167,7 +191,7 @@ func (configFile *ConfigFile) Save() (retErr error) {
 	}
 
 	if err := temp.Close(); err != nil {
-		return errors.Wrap(err, "error closing temp file")
+		return fmt.Errorf("error closing temp file: %w", err)
 	}
 
 	// Handle situation where the configfile is a symlink, and allow for dangling symlinks
@@ -251,11 +275,11 @@ func decodeAuth(authStr string) (string, string, error) {
 		return "", "", err
 	}
 	if n > decLen {
-		return "", "", errors.Errorf("Something went wrong decoding auth config")
+		return "", "", errors.New("something went wrong decoding auth config")
 	}
 	userName, password, ok := strings.Cut(string(decoded), ":")
 	if !ok || userName == "" {
-		return "", "", errors.Errorf("Invalid auth configuration file")
+		return "", "", errors.New("invalid auth configuration file")
 	}
 	return userName, strings.Trim(password, "\x00"), nil
 }
@@ -263,10 +287,64 @@ func decodeAuth(authStr string) (string, string, error) {
 // GetCredentialsStore returns a new credentials store from the settings in the
 // configuration file
 func (configFile *ConfigFile) GetCredentialsStore(registryHostname string) credentials.Store {
+	store := credentials.NewFileStore(configFile)
+
 	if helper := getConfiguredCredentialStore(configFile, registryHostname); helper != "" {
-		return newNativeStore(configFile, helper)
+		store = newNativeStore(configFile, helper)
 	}
-	return credentials.NewFileStore(configFile)
+
+	envConfig := os.Getenv(DockerEnvConfigKey)
+	if envConfig == "" {
+		return store
+	}
+
+	authConfig, err := parseEnvConfig(envConfig)
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to create credential store from DOCKER_AUTH_CONFIG: ", err)
+		return store
+	}
+
+	// use DOCKER_AUTH_CONFIG if set
+	// it uses the native or file store as a fallback to fetch and store credentials
+	envStore, err := memorystore.New(
+		memorystore.WithAuthConfig(authConfig),
+		memorystore.WithFallbackStore(store),
+	)
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to create credential store from DOCKER_AUTH_CONFIG: ", err)
+		return store
+	}
+
+	return envStore
+}
+
+func parseEnvConfig(v string) (map[string]types.AuthConfig, error) {
+	envConfig := &configEnv{}
+	decoder := json.NewDecoder(strings.NewReader(v))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(envConfig); err != nil && !errors.Is(err, io.EOF) {
+		return nil, err
+	}
+	if decoder.More() {
+		return nil, errors.New("DOCKER_AUTH_CONFIG does not support more than one JSON object")
+	}
+
+	authConfigs := make(map[string]types.AuthConfig)
+	for addr, envAuth := range envConfig.AuthConfigs {
+		if envAuth.Auth == "" {
+			return nil, fmt.Errorf("DOCKER_AUTH_CONFIG environment variable is missing key `auth` for %s", addr)
+		}
+		username, password, err := decodeAuth(envAuth.Auth)
+		if err != nil {
+			return nil, err
+		}
+		authConfigs[addr] = types.AuthConfig{
+			Username:      username,
+			Password:      password,
+			ServerAddress: addr,
+		}
+	}
+	return authConfigs, nil
 }
 
 // var for unit testing.

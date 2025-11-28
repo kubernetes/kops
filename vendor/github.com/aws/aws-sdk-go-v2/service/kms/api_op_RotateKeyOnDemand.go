@@ -31,13 +31,14 @@ import (
 // CloudWatch.
 //
 // On-demand key rotation is supported only on symmetric encryption KMS keys. You
-// cannot perform on-demand rotation of [asymmetric KMS keys], [HMAC KMS keys], multi-Region KMS keys with [imported key material], or KMS
-// keys in a [custom key store]. When you initiate on-demand key rotation on a symmetric encryption
-// KMS key with imported key material, you must have already imported [new key material]and that key
-// material's state should be PENDING_ROTATION . Use the ListKeyRotations
-// operation to check the state of all key materials associated with a KMS key. To
-// perform on-demand rotation of a set of related [multi-Region keys], invoke the on-demand rotation
-// on the primary key.
+// cannot perform on-demand rotation of [asymmetric KMS keys], [HMAC KMS keys], or KMS keys in a [custom key store]. When you initiate
+// on-demand key rotation on a symmetric encryption KMS key with imported key
+// material, you must have already imported [new key material]and that key material's state should
+// be PENDING_ROTATION . Use the ListKeyRotations operation to check the state of
+// all key materials associated with a KMS key. To perform on-demand rotation of a
+// set of related [multi-Region keys], import new key material in the primary Region key, import the
+// same key material in each replica Region key, and invoke the on-demand rotation
+// on the primary Region key.
 //
 // You cannot initiate on-demand rotation of [Amazon Web Services managed KMS keys]. KMS always rotates the key material
 // of Amazon Web Services managed keys every year. Rotation of [Amazon Web Services owned KMS keys]is managed by the
@@ -66,18 +67,17 @@ import (
 // Eventual consistency: The KMS API follows an eventual consistency model. For
 // more information, see [KMS eventual consistency].
 //
+// [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
 // [new key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys-import-key-material.html
+// [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
+// [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-key
 // [on-demand rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-on-demand.html
+// [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [Amazon Web Services owned KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-owned-key
 // [automatic key rotation]: https://docs.aws.amazon.com/kms/latest/developerguide/rotating-keys-enable-disable.html
 // [kms:RotateKeyOnDemand]: https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html
 // [multi-Region keys]: https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html#multi-region-rotate
 // [KMS eventual consistency]: https://docs.aws.amazon.com/kms/latest/developerguide/accessing-kms.html#programming-eventual-consistency
-// [imported key material]: https://docs.aws.amazon.com/kms/latest/developerguide/importing-keys.html
-// [Key states of KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html
-// [HMAC KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/hmac.html
-// [Amazon Web Services managed KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#aws-managed-key
-// [asymmetric KMS keys]: https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html
 // [custom key store]: https://docs.aws.amazon.com/kms/latest/developerguide/key-store-overview.html
 func (c *Client) RotateKeyOnDemand(ctx context.Context, params *RotateKeyOnDemandInput, optFns ...func(*Options)) (*RotateKeyOnDemandOutput, error) {
 	if params == nil {
@@ -230,40 +230,7 @@ func (c *Client) addOperationRotateKeyOnDemandMiddlewares(stack *middleware.Stac
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

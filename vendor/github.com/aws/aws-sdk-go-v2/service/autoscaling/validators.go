@@ -710,6 +710,26 @@ func (m *validateOpGetPredictiveScalingForecast) HandleInitialize(ctx context.Co
 	return next.HandleInitialize(ctx, in)
 }
 
+type validateOpLaunchInstances struct {
+}
+
+func (*validateOpLaunchInstances) ID() string {
+	return "OperationInputValidation"
+}
+
+func (m *validateOpLaunchInstances) HandleInitialize(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (
+	out middleware.InitializeOutput, metadata middleware.Metadata, err error,
+) {
+	input, ok := in.Parameters.(*LaunchInstancesInput)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown input parameters type %T", in.Parameters)
+	}
+	if err := validateOpLaunchInstancesInput(input); err != nil {
+		return out, metadata, err
+	}
+	return next.HandleInitialize(ctx, in)
+}
+
 type validateOpPutLifecycleHook struct {
 }
 
@@ -1148,6 +1168,10 @@ func addOpExitStandbyValidationMiddleware(stack *middleware.Stack) error {
 
 func addOpGetPredictiveScalingForecastValidationMiddleware(stack *middleware.Stack) error {
 	return stack.Initialize.Add(&validateOpGetPredictiveScalingForecast{}, middleware.After)
+}
+
+func addOpLaunchInstancesValidationMiddleware(stack *middleware.Stack) error {
+	return stack.Initialize.Add(&validateOpLaunchInstances{}, middleware.After)
 }
 
 func addOpPutLifecycleHookValidationMiddleware(stack *middleware.Stack) error {
@@ -2592,6 +2616,27 @@ func validateOpGetPredictiveScalingForecastInput(v *GetPredictiveScalingForecast
 	}
 	if v.EndTime == nil {
 		invalidParams.Add(smithy.NewErrParamRequired("EndTime"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateOpLaunchInstancesInput(v *LaunchInstancesInput) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "LaunchInstancesInput"}
+	if v.AutoScalingGroupName == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("AutoScalingGroupName"))
+	}
+	if v.RequestedCapacity == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("RequestedCapacity"))
+	}
+	if v.ClientToken == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("ClientToken"))
 	}
 	if invalidParams.Len() > 0 {
 		return invalidParams

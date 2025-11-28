@@ -1094,6 +1094,11 @@ func validateAction(v *types.Action) error {
 			invalidParams.AddNested("FixedResponseConfig", err.(smithy.InvalidParamsError))
 		}
 	}
+	if v.JwtValidationConfig != nil {
+		if err := validateJwtValidationActionConfig(v.JwtValidationConfig); err != nil {
+			invalidParams.AddNested("JwtValidationConfig", err.(smithy.InvalidParamsError))
+		}
+	}
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	} else {
@@ -1189,6 +1194,67 @@ func validateHostHeaderRewriteConfig(v *types.HostHeaderRewriteConfig) error {
 	if v.Rewrites != nil {
 		if err := validateRewriteConfigList(v.Rewrites); err != nil {
 			invalidParams.AddNested("Rewrites", err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateJwtValidationActionAdditionalClaim(v *types.JwtValidationActionAdditionalClaim) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "JwtValidationActionAdditionalClaim"}
+	if len(v.Format) == 0 {
+		invalidParams.Add(smithy.NewErrParamRequired("Format"))
+	}
+	if v.Name == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Name"))
+	}
+	if v.Values == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Values"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateJwtValidationActionAdditionalClaims(v []types.JwtValidationActionAdditionalClaim) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "JwtValidationActionAdditionalClaims"}
+	for i := range v {
+		if err := validateJwtValidationActionAdditionalClaim(&v[i]); err != nil {
+			invalidParams.AddNested(fmt.Sprintf("[%d]", i), err.(smithy.InvalidParamsError))
+		}
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	} else {
+		return nil
+	}
+}
+
+func validateJwtValidationActionConfig(v *types.JwtValidationActionConfig) error {
+	if v == nil {
+		return nil
+	}
+	invalidParams := smithy.InvalidParamsError{Context: "JwtValidationActionConfig"}
+	if v.JwksEndpoint == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("JwksEndpoint"))
+	}
+	if v.Issuer == nil {
+		invalidParams.Add(smithy.NewErrParamRequired("Issuer"))
+	}
+	if v.AdditionalClaims != nil {
+		if err := validateJwtValidationActionAdditionalClaims(v.AdditionalClaims); err != nil {
+			invalidParams.AddNested("AdditionalClaims", err.(smithy.InvalidParamsError))
 		}
 	}
 	if invalidParams.Len() > 0 {

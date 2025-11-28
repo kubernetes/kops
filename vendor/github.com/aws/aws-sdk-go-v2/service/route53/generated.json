@@ -76,6 +76,7 @@
         "api_op_TestDNSAnswer.go",
         "api_op_UpdateHealthCheck.go",
         "api_op_UpdateHostedZoneComment.go",
+        "api_op_UpdateHostedZoneFeatures.go",
         "api_op_UpdateTrafficPolicyComment.go",
         "api_op_UpdateTrafficPolicyInstance.go",
         "auth.go",

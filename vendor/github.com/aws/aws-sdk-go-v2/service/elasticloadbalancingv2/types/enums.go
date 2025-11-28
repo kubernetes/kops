@@ -11,6 +11,7 @@ const (
 	ActionTypeEnumAuthenticateCognito ActionTypeEnum = "authenticate-cognito"
 	ActionTypeEnumRedirect            ActionTypeEnum = "redirect"
 	ActionTypeEnumFixedResponse       ActionTypeEnum = "fixed-response"
+	ActionTypeEnumJwtValidation       ActionTypeEnum = "jwt-validation"
 )
 
 // Values returns all known values for ActionTypeEnum. Note that this can be
@@ -24,6 +25,7 @@ func (ActionTypeEnum) Values() []ActionTypeEnum {
 		"authenticate-cognito",
 		"redirect",
 		"fixed-response",
+		"jwt-validation",
 	}
 }
 
@@ -215,6 +217,28 @@ func (IpAddressType) Values() []IpAddressType {
 	}
 }
 
+type JwtValidationActionAdditionalClaimFormatEnum string
+
+// Enum values for JwtValidationActionAdditionalClaimFormatEnum
+const (
+	JwtValidationActionAdditionalClaimFormatEnumSingleString         JwtValidationActionAdditionalClaimFormatEnum = "single-string"
+	JwtValidationActionAdditionalClaimFormatEnumStringArray          JwtValidationActionAdditionalClaimFormatEnum = "string-array"
+	JwtValidationActionAdditionalClaimFormatEnumSpaceSeparatedValues JwtValidationActionAdditionalClaimFormatEnum = "space-separated-values"
+)
+
+// Values returns all known values for
+// JwtValidationActionAdditionalClaimFormatEnum. Note that this can be expanded in
+// the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (JwtValidationActionAdditionalClaimFormatEnum) Values() []JwtValidationActionAdditionalClaimFormatEnum {
+	return []JwtValidationActionAdditionalClaimFormatEnum{
+		"single-string",
+		"string-array",
+		"space-separated-values",
+	}
+}
+
 type LoadBalancerSchemeEnum string
 
 // Enum values for LoadBalancerSchemeEnum
@@ -301,13 +325,15 @@ type ProtocolEnum string
 
 // Enum values for ProtocolEnum
 const (
-	ProtocolEnumHttp   ProtocolEnum = "HTTP"
-	ProtocolEnumHttps  ProtocolEnum = "HTTPS"
-	ProtocolEnumTcp    ProtocolEnum = "TCP"
-	ProtocolEnumTls    ProtocolEnum = "TLS"
-	ProtocolEnumUdp    ProtocolEnum = "UDP"
-	ProtocolEnumTcpUdp ProtocolEnum = "TCP_UDP"
-	ProtocolEnumGeneve ProtocolEnum = "GENEVE"
+	ProtocolEnumHttp    ProtocolEnum = "HTTP"
+	ProtocolEnumHttps   ProtocolEnum = "HTTPS"
+	ProtocolEnumTcp     ProtocolEnum = "TCP"
+	ProtocolEnumTls     ProtocolEnum = "TLS"
+	ProtocolEnumUdp     ProtocolEnum = "UDP"
+	ProtocolEnumTcpUdp  ProtocolEnum = "TCP_UDP"
+	ProtocolEnumGeneve  ProtocolEnum = "GENEVE"
+	ProtocolEnumQuic    ProtocolEnum = "QUIC"
+	ProtocolEnumTcpQuic ProtocolEnum = "TCP_QUIC"
 )
 
 // Values returns all known values for ProtocolEnum. Note that this can be
@@ -323,6 +349,8 @@ func (ProtocolEnum) Values() []ProtocolEnum {
 		"UDP",
 		"TCP_UDP",
 		"GENEVE",
+		"QUIC",
+		"TCP_QUIC",
 	}
 }
 

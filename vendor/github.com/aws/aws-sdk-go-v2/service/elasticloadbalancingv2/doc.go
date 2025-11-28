@@ -23,7 +23,7 @@
 //     supports HTTP and HTTPS.
 //
 //   - Network Load Balancer - Operates at the transport layer (layer 4) and
-//     supports TCP, TLS, and UDP.
+//     supports TCP, TLS, UDP, and QUIC.
 //
 //   - Gateway Load Balancer - Operates at the network layer (layer 3).
 //

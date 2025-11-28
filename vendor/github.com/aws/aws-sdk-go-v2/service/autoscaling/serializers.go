@@ -3490,6 +3490,76 @@ func (m *awsAwsquery_serializeOpGetPredictiveScalingForecast) HandleSerialize(ct
 	return next.HandleSerialize(ctx, in)
 }
 
+type awsAwsquery_serializeOpLaunchInstances struct {
+}
+
+func (*awsAwsquery_serializeOpLaunchInstances) ID() string {
+	return "OperationSerializer"
+}
+
+func (m *awsAwsquery_serializeOpLaunchInstances) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	_, span := tracing.StartSpan(ctx, "OperationSerializer")
+	endTimer := startMetricTimer(ctx, "client.call.serialization_duration")
+	defer endTimer()
+	defer span.End()
+	request, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown transport type %T", in.Request)}
+	}
+
+	input, ok := in.Parameters.(*LaunchInstancesInput)
+	_ = input
+	if !ok {
+		return out, metadata, &smithy.SerializationError{Err: fmt.Errorf("unknown input parameters type %T", in.Parameters)}
+	}
+
+	operationPath := "/"
+	if len(request.Request.URL.Path) == 0 {
+		request.Request.URL.Path = operationPath
+	} else {
+		request.Request.URL.Path = path.Join(request.Request.URL.Path, operationPath)
+		if request.Request.URL.Path != "/" && operationPath[len(operationPath)-1] == '/' {
+			request.Request.URL.Path += "/"
+		}
+	}
+	request.Request.Method = "POST"
+	httpBindingEncoder, err := httpbinding.NewEncoder(request.URL.Path, request.URL.RawQuery, request.Header)
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	httpBindingEncoder.SetHeader("Content-Type").String("application/x-www-form-urlencoded")
+
+	bodyWriter := bytes.NewBuffer(nil)
+	bodyEncoder := query.NewEncoder(bodyWriter)
+	body := bodyEncoder.Object()
+	body.Key("Action").String("LaunchInstances")
+	body.Key("Version").String("2011-01-01")
+
+	if err := awsAwsquery_serializeOpDocumentLaunchInstancesInput(input, bodyEncoder.Value); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	err = bodyEncoder.Encode()
+	if err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request, err = request.SetStream(bytes.NewReader(bodyWriter.Bytes())); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+
+	if request.Request, err = httpBindingEncoder.Encode(request.Request); err != nil {
+		return out, metadata, &smithy.SerializationError{Err: err}
+	}
+	in.Request = request
+
+	endTimer()
+	span.End()
+	return next.HandleSerialize(ctx, in)
+}
+
 type awsAwsquery_serializeOpPutLifecycleHook struct {
 }
 
@@ -4679,6 +4749,16 @@ func awsAwsquery_serializeDocumentAvailabilityZoneDistribution(v *types.Availabi
 	return nil
 }
 
+func awsAwsquery_serializeDocumentAvailabilityZoneIdsLimit1(v []string, value query.Value) error {
+	array := value.Array("member")
+
+	for i := range v {
+		av := array.Value()
+		av.String(v[i])
+	}
+	return nil
+}
+
 func awsAwsquery_serializeDocumentAvailabilityZoneImpairmentPolicy(v *types.AvailabilityZoneImpairmentPolicy, value query.Value) error {
 	object := value.Object()
 	_ = object
@@ -4697,6 +4777,16 @@ func awsAwsquery_serializeDocumentAvailabilityZoneImpairmentPolicy(v *types.Avai
 }
 
 func awsAwsquery_serializeDocumentAvailabilityZones(v []string, value query.Value) error {
+	array := value.Array("member")
+
+	for i := range v {
+		av := array.Value()
+		av.String(v[i])
+	}
+	return nil
+}
+
+func awsAwsquery_serializeDocumentAvailabilityZonesLimit1(v []string, value query.Value) error {
 	array := value.Array("member")
 
 	for i := range v {
@@ -5052,6 +5142,20 @@ func awsAwsquery_serializeDocumentInstanceIds(v []string, value query.Value) err
 	return nil
 }
 
+func awsAwsquery_serializeDocumentInstanceLifecyclePolicy(v *types.InstanceLifecyclePolicy, value query.Value) error {
+	object := value.Object()
+	_ = object
+
+	if v.RetentionTriggers != nil {
+		objectKey := object.Key("RetentionTriggers")
+		if err := awsAwsquery_serializeDocumentRetentionTriggers(v.RetentionTriggers, objectKey); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func awsAwsquery_serializeDocumentInstanceMaintenancePolicy(v *types.InstanceMaintenancePolicy, value query.Value) error {
 	object := value.Object()
 	_ = object
@@ -5364,6 +5468,11 @@ func awsAwsquery_serializeDocumentLaunchTemplate(v *types.LaunchTemplate, value 
 func awsAwsquery_serializeDocumentLaunchTemplateOverrides(v *types.LaunchTemplateOverrides, value query.Value) error {
 	object := value.Object()
 	_ = object
+
+	if v.ImageId != nil {
+		objectKey := object.Key("ImageId")
+		objectKey.String(*v.ImageId)
+	}
 
 	if v.InstanceRequirements != nil {
 		objectKey := object.Key("InstanceRequirements")
@@ -6127,6 +6236,18 @@ func awsAwsquery_serializeDocumentRefreshPreferences(v *types.RefreshPreferences
 	return nil
 }
 
+func awsAwsquery_serializeDocumentRetentionTriggers(v *types.RetentionTriggers, value query.Value) error {
+	object := value.Object()
+	_ = object
+
+	if len(v.TerminateHookAbandon) > 0 {
+		objectKey := object.Key("TerminateHookAbandon")
+		objectKey.String(string(v.TerminateHookAbandon))
+	}
+
+	return nil
+}
+
 func awsAwsquery_serializeDocumentScheduledActionNames(v []string, value query.Value) error {
 	array := value.Array("member")
 
@@ -6262,6 +6383,16 @@ func awsAwsquery_serializeDocumentStepAdjustments(v []types.StepAdjustment, valu
 		if err := awsAwsquery_serializeDocumentStepAdjustment(&v[i], av); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func awsAwsquery_serializeDocumentSubnetIdsLimit1(v []string, value query.Value) error {
+	array := value.Array("member")
+
+	for i := range v {
+		av := array.Value()
+		av.String(v[i])
 	}
 	return nil
 }
@@ -6801,6 +6932,13 @@ func awsAwsquery_serializeOpDocumentCreateAutoScalingGroupInput(v *CreateAutoSca
 	if v.InstanceId != nil {
 		objectKey := object.Key("InstanceId")
 		objectKey.String(*v.InstanceId)
+	}
+
+	if v.InstanceLifecyclePolicy != nil {
+		objectKey := object.Key("InstanceLifecyclePolicy")
+		if err := awsAwsquery_serializeDocumentInstanceLifecyclePolicy(v.InstanceLifecyclePolicy, objectKey); err != nil {
+			return err
+		}
 	}
 
 	if v.InstanceMaintenancePolicy != nil {
@@ -7802,6 +7940,54 @@ func awsAwsquery_serializeOpDocumentGetPredictiveScalingForecastInput(v *GetPred
 	return nil
 }
 
+func awsAwsquery_serializeOpDocumentLaunchInstancesInput(v *LaunchInstancesInput, value query.Value) error {
+	object := value.Object()
+	_ = object
+
+	if v.AutoScalingGroupName != nil {
+		objectKey := object.Key("AutoScalingGroupName")
+		objectKey.String(*v.AutoScalingGroupName)
+	}
+
+	if v.AvailabilityZoneIds != nil {
+		objectKey := object.Key("AvailabilityZoneIds")
+		if err := awsAwsquery_serializeDocumentAvailabilityZoneIdsLimit1(v.AvailabilityZoneIds, objectKey); err != nil {
+			return err
+		}
+	}
+
+	if v.AvailabilityZones != nil {
+		objectKey := object.Key("AvailabilityZones")
+		if err := awsAwsquery_serializeDocumentAvailabilityZonesLimit1(v.AvailabilityZones, objectKey); err != nil {
+			return err
+		}
+	}
+
+	if v.ClientToken != nil {
+		objectKey := object.Key("ClientToken")
+		objectKey.String(*v.ClientToken)
+	}
+
+	if v.RequestedCapacity != nil {
+		objectKey := object.Key("RequestedCapacity")
+		objectKey.Integer(*v.RequestedCapacity)
+	}
+
+	if len(v.RetryStrategy) > 0 {
+		objectKey := object.Key("RetryStrategy")
+		objectKey.String(string(v.RetryStrategy))
+	}
+
+	if v.SubnetIds != nil {
+		objectKey := object.Key("SubnetIds")
+		if err := awsAwsquery_serializeDocumentSubnetIdsLimit1(v.SubnetIds, objectKey); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func awsAwsquery_serializeOpDocumentPutLifecycleHookInput(v *PutLifecycleHookInput, value query.Value) error {
 	object := value.Object()
 	_ = object
@@ -8315,6 +8501,13 @@ func awsAwsquery_serializeOpDocumentUpdateAutoScalingGroupInput(v *UpdateAutoSca
 	if v.HealthCheckType != nil {
 		objectKey := object.Key("HealthCheckType")
 		objectKey.String(*v.HealthCheckType)
+	}
+
+	if v.InstanceLifecyclePolicy != nil {
+		objectKey := object.Key("InstanceLifecyclePolicy")
+		if err := awsAwsquery_serializeDocumentInstanceLifecyclePolicy(v.InstanceLifecyclePolicy, objectKey); err != nil {
+			return err
+		}
 	}
 
 	if v.InstanceMaintenancePolicy != nil {

@@ -79,9 +79,9 @@ type ModifyListenerInput struct {
 
 	// The protocol for connections from clients to the load balancer. Application
 	// Load Balancers support the HTTP and HTTPS protocols. Network Load Balancers
-	// support the TCP, TLS, UDP, and TCP_UDP protocols. You can’t change the protocol
-	// to UDP or TCP_UDP if dual-stack mode is enabled. You can't specify a protocol
-	// for a Gateway Load Balancer.
+	// support the TCP, TLS, UDP, TCP_UDP, QUIC, and TCP_QUIC protocols. You can’t
+	// change the protocol to UDP, TCP_UDP, QUIC, or TCP_QUIC if dual-stack mode is
+	// enabled. You can't specify a protocol for a Gateway Load Balancer.
 	Protocol types.ProtocolEnum
 
 	// [HTTPS and TLS listeners] The security policy that defines which protocols and
@@ -201,40 +201,7 @@ func (c *Client) addOperationModifyListenerMiddlewares(stack *middleware.Stack, 
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

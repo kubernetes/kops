@@ -169,14 +169,15 @@ type DataKeyPairSpec string
 
 // Enum values for DataKeyPairSpec
 const (
-	DataKeyPairSpecRsa2048       DataKeyPairSpec = "RSA_2048"
-	DataKeyPairSpecRsa3072       DataKeyPairSpec = "RSA_3072"
-	DataKeyPairSpecRsa4096       DataKeyPairSpec = "RSA_4096"
-	DataKeyPairSpecEccNistP256   DataKeyPairSpec = "ECC_NIST_P256"
-	DataKeyPairSpecEccNistP384   DataKeyPairSpec = "ECC_NIST_P384"
-	DataKeyPairSpecEccNistP521   DataKeyPairSpec = "ECC_NIST_P521"
-	DataKeyPairSpecEccSecgP256k1 DataKeyPairSpec = "ECC_SECG_P256K1"
-	DataKeyPairSpecSm2           DataKeyPairSpec = "SM2"
+	DataKeyPairSpecRsa2048             DataKeyPairSpec = "RSA_2048"
+	DataKeyPairSpecRsa3072             DataKeyPairSpec = "RSA_3072"
+	DataKeyPairSpecRsa4096             DataKeyPairSpec = "RSA_4096"
+	DataKeyPairSpecEccNistP256         DataKeyPairSpec = "ECC_NIST_P256"
+	DataKeyPairSpecEccNistP384         DataKeyPairSpec = "ECC_NIST_P384"
+	DataKeyPairSpecEccNistP521         DataKeyPairSpec = "ECC_NIST_P521"
+	DataKeyPairSpecEccSecgP256k1       DataKeyPairSpec = "ECC_SECG_P256K1"
+	DataKeyPairSpecSm2                 DataKeyPairSpec = "SM2"
+	DataKeyPairSpecEccNistEdwards25519 DataKeyPairSpec = "ECC_NIST_EDWARDS25519"
 )
 
 // Values returns all known values for DataKeyPairSpec. Note that this can be
@@ -193,6 +194,7 @@ func (DataKeyPairSpec) Values() []DataKeyPairSpec {
 		"ECC_NIST_P521",
 		"ECC_SECG_P256K1",
 		"SM2",
+		"ECC_NIST_EDWARDS25519",
 	}
 }
 
@@ -420,9 +422,10 @@ type KeyMaterialState string
 
 // Enum values for KeyMaterialState
 const (
-	KeyMaterialStateNonCurrent      KeyMaterialState = "NON_CURRENT"
-	KeyMaterialStateCurrent         KeyMaterialState = "CURRENT"
-	KeyMaterialStatePendingRotation KeyMaterialState = "PENDING_ROTATION"
+	KeyMaterialStateNonCurrent                          KeyMaterialState = "NON_CURRENT"
+	KeyMaterialStateCurrent                             KeyMaterialState = "CURRENT"
+	KeyMaterialStatePendingRotation                     KeyMaterialState = "PENDING_ROTATION"
+	KeyMaterialStatePendingMultiRegionImportAndRotation KeyMaterialState = "PENDING_MULTI_REGION_IMPORT_AND_ROTATION"
 )
 
 // Values returns all known values for KeyMaterialState. Note that this can be
@@ -434,6 +437,7 @@ func (KeyMaterialState) Values() []KeyMaterialState {
 		"NON_CURRENT",
 		"CURRENT",
 		"PENDING_ROTATION",
+		"PENDING_MULTI_REGION_IMPORT_AND_ROTATION",
 	}
 }
 
@@ -441,22 +445,23 @@ type KeySpec string
 
 // Enum values for KeySpec
 const (
-	KeySpecRsa2048          KeySpec = "RSA_2048"
-	KeySpecRsa3072          KeySpec = "RSA_3072"
-	KeySpecRsa4096          KeySpec = "RSA_4096"
-	KeySpecEccNistP256      KeySpec = "ECC_NIST_P256"
-	KeySpecEccNistP384      KeySpec = "ECC_NIST_P384"
-	KeySpecEccNistP521      KeySpec = "ECC_NIST_P521"
-	KeySpecEccSecgP256k1    KeySpec = "ECC_SECG_P256K1"
-	KeySpecSymmetricDefault KeySpec = "SYMMETRIC_DEFAULT"
-	KeySpecHmac224          KeySpec = "HMAC_224"
-	KeySpecHmac256          KeySpec = "HMAC_256"
-	KeySpecHmac384          KeySpec = "HMAC_384"
-	KeySpecHmac512          KeySpec = "HMAC_512"
-	KeySpecSm2              KeySpec = "SM2"
-	KeySpecMlDsa44          KeySpec = "ML_DSA_44"
-	KeySpecMlDsa65          KeySpec = "ML_DSA_65"
-	KeySpecMlDsa87          KeySpec = "ML_DSA_87"
+	KeySpecRsa2048             KeySpec = "RSA_2048"
+	KeySpecRsa3072             KeySpec = "RSA_3072"
+	KeySpecRsa4096             KeySpec = "RSA_4096"
+	KeySpecEccNistP256         KeySpec = "ECC_NIST_P256"
+	KeySpecEccNistP384         KeySpec = "ECC_NIST_P384"
+	KeySpecEccNistP521         KeySpec = "ECC_NIST_P521"
+	KeySpecEccSecgP256k1       KeySpec = "ECC_SECG_P256K1"
+	KeySpecSymmetricDefault    KeySpec = "SYMMETRIC_DEFAULT"
+	KeySpecHmac224             KeySpec = "HMAC_224"
+	KeySpecHmac256             KeySpec = "HMAC_256"
+	KeySpecHmac384             KeySpec = "HMAC_384"
+	KeySpecHmac512             KeySpec = "HMAC_512"
+	KeySpecSm2                 KeySpec = "SM2"
+	KeySpecMlDsa44             KeySpec = "ML_DSA_44"
+	KeySpecMlDsa65             KeySpec = "ML_DSA_65"
+	KeySpecMlDsa87             KeySpec = "ML_DSA_87"
+	KeySpecEccNistEdwards25519 KeySpec = "ECC_NIST_EDWARDS25519"
 )
 
 // Values returns all known values for KeySpec. Note that this can be expanded in
@@ -481,6 +486,7 @@ func (KeySpec) Values() []KeySpec {
 		"ML_DSA_44",
 		"ML_DSA_65",
 		"ML_DSA_87",
+		"ECC_NIST_EDWARDS25519",
 	}
 }
 
@@ -658,6 +664,8 @@ const (
 	SigningAlgorithmSpecEcdsaSha512          SigningAlgorithmSpec = "ECDSA_SHA_512"
 	SigningAlgorithmSpecSm2dsa               SigningAlgorithmSpec = "SM2DSA"
 	SigningAlgorithmSpecMlDsaShake256        SigningAlgorithmSpec = "ML_DSA_SHAKE_256"
+	SigningAlgorithmSpecEd25519Sha512        SigningAlgorithmSpec = "ED25519_SHA_512"
+	SigningAlgorithmSpecEd25519PhSha512      SigningAlgorithmSpec = "ED25519_PH_SHA_512"
 )
 
 // Values returns all known values for SigningAlgorithmSpec. Note that this can be
@@ -677,6 +685,8 @@ func (SigningAlgorithmSpec) Values() []SigningAlgorithmSpec {
 		"ECDSA_SHA_512",
 		"SM2DSA",
 		"ML_DSA_SHAKE_256",
+		"ED25519_SHA_512",
+		"ED25519_PH_SHA_512",
 	}
 }
 

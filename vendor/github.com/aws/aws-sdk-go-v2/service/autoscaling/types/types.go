@@ -198,6 +198,12 @@ type AutoScalingGroup struct {
 	// The duration of the health check grace period, in seconds.
 	HealthCheckGracePeriod *int32
 
+	//  The instance lifecycle policy applied to this Auto Scaling group. This policy
+	// determines instance behavior when an instance transitions through its lifecycle
+	// states. It provides additional control over graceful instance management
+	// processes.
+	InstanceLifecyclePolicy *InstanceLifecyclePolicy
+
 	// An instance maintenance policy.
 	InstanceMaintenancePolicy *InstanceMaintenancePolicy
 
@@ -316,6 +322,24 @@ type AutoScalingInstanceDetails struct {
 	//
 	// This member is required.
 	ProtectedFromScaleIn *bool
+
+	//  The ID of the Amazon Machine Image (AMI) associated with the instance. This
+	// field shows the current AMI ID of the instance's root volume. It may differ from
+	// the original AMI used when the instance was first launched.
+	//
+	// This field appears for:
+	//
+	//   - Instances with root volume replacements through Instance Refresh
+	//
+	//   - Instances launched with AMI overrides
+	//
+	// This field won't appear for:
+	//
+	//   - Existing instances launched from Launch Templates without overrides
+	//
+	//   - Existing instances that didn’t have their root volume replaced through
+	//   Instance Refresh
+	ImageId *string
 
 	// The instance type of the EC2 instance.
 	InstanceType *string
@@ -865,6 +889,24 @@ type Instance struct {
 	// This member is required.
 	ProtectedFromScaleIn *bool
 
+	//  The ID of the Amazon Machine Image (AMI) used for the instance's current root
+	// volume. This value reflects the most recent AMI applied to the instance,
+	// including updates made through root volume replacement operations.
+	//
+	// This field appears for:
+	//
+	//   - Instances with root volume replacements through Instance Refresh
+	//
+	//   - Instances launched with AMI overrides
+	//
+	// This field won't appear for:
+	//
+	//   - Existing instances launched from Launch Templates without overrides
+	//
+	//   - Existing instances that didn’t have their root volume replaced through
+	//   Instance Refresh
+	ImageId *string
+
 	// The instance type of the EC2 instance.
 	InstanceType *string
 
@@ -879,6 +921,48 @@ type Instance struct {
 	//
 	// Valid Range: Minimum value of 1. Maximum value of 999.
 	WeightedCapacity *string
+
+	noSmithyDocumentSerde
+}
+
+//	Contains details about a collection of instances launched in the Auto Scaling
+//
+// group.
+type InstanceCollection struct {
+
+	//  The Availability Zone where the instances were launched.
+	AvailabilityZone *string
+
+	//  The Availability Zone ID where the instances in this collection were launched.
+	AvailabilityZoneId *string
+
+	//  A list of instance IDs for the successfully launched instances.
+	InstanceIds []string
+
+	//  The instance type of the launched instances.
+	InstanceType *string
+
+	//  The market type for the instances (On-Demand or Spot).
+	MarketType *string
+
+	//  The ID of the subnet where the instances were launched.
+	SubnetId *string
+
+	noSmithyDocumentSerde
+}
+
+//	Defines the lifecycle policy for instances in an Auto Scaling group. This
+//
+// policy controls instance behavior when lifecycles transition and operations
+// fail. Use lifecycle policies to ensure graceful shutdown for stateful workloads
+// or applications requiring extended draining periods.
+type InstanceLifecyclePolicy struct {
+
+	//  Specifies the conditions that trigger instance retention behavior. These
+	// triggers determine when instances should move to a Retained state instead of
+	// being terminated. This allows you to maintain control over instance management
+	// when lifecycle operations fail.
+	RetentionTriggers *RetentionTriggers
 
 	noSmithyDocumentSerde
 }
@@ -1030,6 +1114,15 @@ type InstanceRefresh struct {
 
 	// The explanation for the specific status assigned to this operation.
 	StatusReason *string
+
+	//  The strategy to use for the instance refresh. This determines how instances in
+	// the Auto Scaling group are updated. Default is Rolling.
+	//
+	//   - Rolling – Terminates instances and launches replacements in batches
+	//
+	//   - ReplaceRootVolume – Updates instances by replacing only the root volume
+	//   without terminating the instance
+	Strategy RefreshStrategy
 
 	noSmithyDocumentSerde
 }
@@ -1637,6 +1730,35 @@ type LaunchConfiguration struct {
 	noSmithyDocumentSerde
 }
 
+// Contains details about errors encountered during instance launch attempts.
+type LaunchInstancesError struct {
+
+	//  The Availability Zone where the instance launch was attempted.
+	AvailabilityZone *string
+
+	//  The Availability Zone ID where the launch error occurred.
+	AvailabilityZoneId *string
+
+	//  The error code representing the type of error encountered (e.g.,
+	// InsufficientInstanceCapacity).
+	ErrorCode *string
+
+	//  A descriptive message providing details about the error encountered during the
+	// launch attempt.
+	ErrorMessage *string
+
+	//  The instance type that failed to launch.
+	InstanceType *string
+
+	//  The market type (On-Demand or Spot) that encountered the launch error.
+	MarketType *string
+
+	//  The subnet ID where the instance launch was attempted.
+	SubnetId *string
+
+	noSmithyDocumentSerde
+}
+
 // Use this structure to specify the launch templates and instance types
 // (overrides) for a mixed instances policy.
 type LaunchTemplate struct {
@@ -1670,6 +1792,19 @@ type LaunchTemplate struct {
 // Scaling uses the instance requirements of the Auto Scaling group to determine
 // whether a new EC2 instance type can be used.
 type LaunchTemplateOverrides struct {
+
+	//  The ID of the Amazon Machine Image (AMI) to use for instances launched with
+	// this override. When using Instance Refresh with ReplaceRootVolume strategy,
+	// this specifies the AMI for root volume replacement operations.
+	//
+	// For ReplaceRootVolume operations:
+	//
+	//   - All overrides in the MixedInstancesPolicy must specify an ImageId
+	//
+	//   - The AMI must contain only a single root volume
+	//
+	//   - Root volume replacement doesn't support multi-volume AMIs
+	ImageId *string
 
 	// The instance requirements. Amazon EC2 Auto Scaling uses your specified
 	// requirements to identify instance types. Then, it uses your On-Demand and Spot
@@ -2816,6 +2951,26 @@ type RefreshPreferences struct {
 	// Wait (default) Amazon EC2 Auto Scaling waits one hour for you to return the
 	// instances to service. Otherwise, the instance refresh will fail.
 	StandbyInstances StandbyInstances
+
+	noSmithyDocumentSerde
+}
+
+//	Defines the specific triggers that cause instances to be retained in a
+//
+// Retained state rather than terminated. Each trigger corresponds to a different
+// failure scenario during the instance lifecycle. This allows fine-grained control
+// over when to preserve instances for manual intervention.
+type RetentionTriggers struct {
+
+	//  Specifies the action when a termination lifecycle hook is abandoned due to
+	// failure, timeout, or explicit abandonment (calling CompleteLifecycleAction).
+	//
+	// Set to Retain to move instances to a Retained state. Set to Terminate for
+	// default termination behavior.
+	//
+	// Retained instances don't count toward desired capacity and remain until you
+	// call TerminateInstanceInAutoScalingGroup .
+	TerminateHookAbandon RetentionAction
 
 	noSmithyDocumentSerde
 }

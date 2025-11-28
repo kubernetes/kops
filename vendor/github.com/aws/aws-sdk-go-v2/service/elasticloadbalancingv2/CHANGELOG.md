@@ -1,3 +1,39 @@
+# v1.54.2 (2025-11-25)
+
+* **Bug Fix**: Add error check for endpoint param binding during auth scheme resolution to fix panic reported in #3234
+
+# v1.54.1 (2025-11-21)
+
+* **Documentation**: This release adds the health check log feature in ALB, allowing customers to send detailed target health check log data directly to their designated Amazon S3 bucket.
+
+# v1.54.0 (2025-11-20)
+
+* **Feature**: This release adds the target optimizer feature in ALB, enabling strict concurrency enforcement on targets.
+
+# v1.53.1 (2025-11-19.2)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.53.0 (2025-11-13)
+
+* **Feature**: QUIC and TCP_QUIC protocol support for Network Load Balancer (NLB). This capability enables customers to forward QUIC traffic to their targets with ultra-low latency while maintaining session stickiness using QUIC Connection IDs.
+
+# v1.52.0 (2025-11-12)
+
+* **Feature**: This release expands ALB Authentication to support JWT verification and adds support for a new JWT validation action in listener rule.
+* **Bug Fix**: Further reduce allocation overhead when the metrics system isn't in-use.
+* **Bug Fix**: Reduce allocation overhead when the client doesn't have any HTTP interceptors configured.
+* **Bug Fix**: Remove blank trace spans towards the beginning of the request that added no additional information. This conveys a slight reduction in overall allocations.
+
+# v1.51.6 (2025-11-11)
+
+* **Bug Fix**: Return validation error if input region is not a valid host label.
+
+# v1.51.5 (2025-11-04)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+* **Dependency Update**: Upgrade to smithy-go v1.23.2 which should convey some passive reduction of overall allocations, especially when not using the metrics system.
+
 # v1.51.4 (2025-10-30)
 
 * **Dependency Update**: Updated to the latest SDK module versions

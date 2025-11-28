@@ -104,7 +104,9 @@ func (d *LinuxDevice) Ioctl(command uintptr, req any) (uintptr, error) {
 	case *labi.SnpUserGuestRequest:
 		abi := sreq.ABI()
 		result, _, errno := unix.Syscall(unix.SYS_IOCTL, uintptr(d.fd), command, uintptr(abi.Pointer()))
-		abi.Finish(sreq)
+		if err := abi.Finish(sreq); err != nil {
+			return 0, fmt.Errorf("failed to finalize SEV guest request: %w", err)
+		}
 		d.burst = (d.burst + 1) % *burstMax
 		if d.burst == 0 {
 			d.lastCmd = time.Now()

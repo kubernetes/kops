@@ -2,6 +2,37 @@
 
 package types
 
+type AcceleratedRecoveryStatus string
+
+// Enum values for AcceleratedRecoveryStatus
+const (
+	AcceleratedRecoveryStatusEnabling                  AcceleratedRecoveryStatus = "ENABLING"
+	AcceleratedRecoveryStatusEnableFailed              AcceleratedRecoveryStatus = "ENABLE_FAILED"
+	AcceleratedRecoveryStatusEnablingHostedZoneLocked  AcceleratedRecoveryStatus = "ENABLING_HOSTED_ZONE_LOCKED"
+	AcceleratedRecoveryStatusEnabled                   AcceleratedRecoveryStatus = "ENABLED"
+	AcceleratedRecoveryStatusDisabling                 AcceleratedRecoveryStatus = "DISABLING"
+	AcceleratedRecoveryStatusDisableFailed             AcceleratedRecoveryStatus = "DISABLE_FAILED"
+	AcceleratedRecoveryStatusDisabled                  AcceleratedRecoveryStatus = "DISABLED"
+	AcceleratedRecoveryStatusDisablingHostedZoneLocked AcceleratedRecoveryStatus = "DISABLING_HOSTED_ZONE_LOCKED"
+)
+
+// Values returns all known values for AcceleratedRecoveryStatus. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (AcceleratedRecoveryStatus) Values() []AcceleratedRecoveryStatus {
+	return []AcceleratedRecoveryStatus{
+		"ENABLING",
+		"ENABLE_FAILED",
+		"ENABLING_HOSTED_ZONE_LOCKED",
+		"ENABLED",
+		"DISABLING",
+		"DISABLE_FAILED",
+		"DISABLED",
+		"DISABLING_HOSTED_ZONE_LOCKED",
+	}
+}
+
 type AccountLimitType string
 
 // Enum values for AccountLimitType

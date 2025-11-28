@@ -133,20 +133,3 @@ func validatePCRDigest(quoteInfo *tpm2.QuoteInfo, pcrs *pb.PCRs, hash crypto.Has
 	}
 	return nil
 }
-
-// HashNonce takes an arbitrary-sized nonce and ensures it can fit in the TPM's
-// extraData field by applying the given key's signing hash algorithm to the
-// nonce.
-func HashNonce(pubArea tpm2.Public, nonce []byte) ([]byte, error) {
-	sigHash, err := GetSigningHashAlg(pubArea)
-	if err != nil {
-		return nil, err
-	}
-	chash, err := sigHash.Hash()
-	if err != nil {
-		return nil, err
-	}
-	hasher := chash.New()
-	hasher.Write(nonce)
-	return hasher.Sum(nil), nil
-}

@@ -13,7 +13,7 @@ import (
 
 // Derives a shared secret using a key agreement algorithm.
 //
-// You must use an asymmetric NIST-recommended elliptic curve (ECC) or SM2 (China
+// You must use an asymmetric NIST-standard elliptic curve (ECC) or SM2 (China
 // Regions only) KMS key pair with a KeyUsage value of KEY_AGREEMENT to call
 // DeriveSharedSecret.
 //
@@ -30,7 +30,7 @@ import (
 //   - Alice calls CreateKeyto create an asymmetric KMS key pair with a KeyUsage value of
 //     KEY_AGREEMENT .
 //
-// The asymmetric KMS key must use a NIST-recommended elliptic curve (ECC) or SM2
+// The asymmetric KMS key must use a NIST-standard elliptic curve (ECC) or SM2
 //
 //	(China Regions only) key spec.
 //
@@ -38,7 +38,7 @@ import (
 //
 // Bob can call CreateKeyto create an asymmetric KMS key pair or generate a key pair
 //
-//	outside of KMS. Bob's key pair must use the same NIST-recommended elliptic curve
+//	outside of KMS. Bob's key pair must use the same NIST-standard elliptic curve
 //	(ECC) or SM2 (China Regions ony) curve as Alice.
 //
 //	- Alice and Bob exchange their public keys through an insecure communication
@@ -62,9 +62,9 @@ import (
 //	to calculate the same raw secret using his private key and Alice's public key.
 //
 // To derive a shared secret you must provide a key agreement algorithm, the
-// private key of the caller's asymmetric NIST-recommended elliptic curve or SM2
+// private key of the caller's asymmetric NIST-standard elliptic curve or SM2
 // (China Regions only) KMS key pair, and the public key from your peer's
-// NIST-recommended elliptic curve or SM2 (China Regions only) key pair. The public
+// NIST-standard elliptic curve or SM2 (China Regions only) key pair. The public
 // key can be from another asymmetric KMS key pair or from a key pair generated
 // outside of KMS, but both key pairs must be on the same elliptic curve.
 //
@@ -116,10 +116,10 @@ type DeriveSharedSecretInput struct {
 	// This member is required.
 	KeyAgreementAlgorithm types.KeyAgreementAlgorithmSpec
 
-	// Identifies an asymmetric NIST-recommended ECC or SM2 (China Regions only) KMS
-	// key. KMS uses the private key in the specified key pair to derive the shared
-	// secret. The key usage of the KMS key must be KEY_AGREEMENT . To find the
-	// KeyUsage of a KMS key, use the DescribeKey operation.
+	// Identifies an asymmetric NIST-standard ECC or SM2 (China Regions only) KMS key.
+	// KMS uses the private key in the specified key pair to derive the shared secret.
+	// The key usage of the KMS key must be KEY_AGREEMENT . To find the KeyUsage of a
+	// KMS key, use the DescribeKeyoperation.
 	//
 	// To specify a KMS key, use its key ID, key ARN, alias name, or alias ARN. When
 	// using an alias name, prefix it with "alias/" . To specify a KMS key in a
@@ -142,8 +142,8 @@ type DeriveSharedSecretInput struct {
 	// This member is required.
 	KeyId *string
 
-	// Specifies the public key in your peer's NIST-recommended elliptic curve (ECC)
-	// or SM2 (China Regions only) key pair.
+	// Specifies the public key in your peer's NIST-standard elliptic curve (ECC) or
+	// SM2 (China Regions only) key pair.
 	//
 	// The public key must be a DER-encoded X.509 public key, also known as
 	// SubjectPublicKeyInfo (SPKI), as defined in [RFC 5280].
@@ -354,40 +354,7 @@ func (c *Client) addOperationDeriveSharedSecretMiddlewares(stack *middleware.Sta
 	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addInterceptExecution(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSerialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterSigning(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptTransmit(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptBeforeDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addInterceptAfterDeserialization(stack, options); err != nil {
-		return err
-	}
-	if err = addSpanInitializeStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanInitializeEnd(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

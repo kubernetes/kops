@@ -35,7 +35,7 @@ const (
 	NetworkSubnetTypeServer NetworkSubnetType = "server"
 	// Used to connect cloud servers and load balancers with dedicated servers.
 	//
-	// See https://docs.hetzner.com/cloud/networks/connect-dedi-vswitch/
+	// See https://docs.hetzner.com/networking/networks/connect-dedi-vswitch/
 	NetworkSubnetTypeVSwitch NetworkSubnetType = "vswitch"
 )
 

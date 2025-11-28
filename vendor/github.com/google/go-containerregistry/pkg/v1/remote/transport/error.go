@@ -25,7 +25,7 @@ import (
 )
 
 // Error implements error to support the following error specification:
-// https://github.com/docker/distribution/blob/master/docs/spec/api.md#errors
+// https://github.com/distribution/distribution/blob/aac2f6c8b7c5a6c60190848bab5cbeed2b5ba0a9/docs/spec/api.md#errors
 type Error struct {
 	Errors []Diagnostic `json:"errors,omitempty"`
 	// The http status code returned.
@@ -111,7 +111,7 @@ func (d Diagnostic) String() string {
 type ErrorCode string
 
 // The set of error conditions a registry may return:
-// https://github.com/docker/distribution/blob/master/docs/spec/api.md#errors-2
+// https://github.com/distribution/distribution/blob/aac2f6c8b7c5a6c60190848bab5cbeed2b5ba0a9/docs/spec/api.md#errors-2
 const (
 	BlobUnknownErrorCode         ErrorCode = "BLOB_UNKNOWN"
 	BlobUploadInvalidErrorCode   ErrorCode = "BLOB_UPLOAD_INVALID"
@@ -170,7 +170,7 @@ func CheckError(resp *http.Response, codes ...int) error {
 }
 
 func makeError(resp *http.Response, body []byte) *Error {
-	// https://github.com/docker/distribution/blob/master/docs/spec/api.md#errors
+	// https://github.com/distribution/distribution/blob/aac2f6c8b7c5a6c60190848bab5cbeed2b5ba0a9/docs/spec/api.md#errors
 	structuredError := &Error{}
 
 	// This can fail if e.g. the response body is not valid JSON. That's fine,

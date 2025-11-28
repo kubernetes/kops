@@ -572,7 +572,7 @@ type EndpointPolicy struct {
 	// resource.
 	Labels map[string]string `json:"labels,omitempty"`
 	// Name: Identifier. Name of the EndpointPolicy resource. It matches pattern
-	// `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.
+	// `projects/{project}/locations/*/endpointPolicies/{endpoint_policy}`.
 	Name string `json:"name,omitempty"`
 	// SecurityPolicy: Optional. A URL referring to a SecurityPolicy resource.
 	// SecurityPolicy is used to enforce rate limiting policy on the inbound
@@ -708,6 +708,16 @@ type ExtensionChainExtension struct {
 	// 63 characters. Additionally, the first character must be a letter and the
 	// last a letter or a number. This field is required except for AuthzExtension.
 	Name string `json:"name,omitempty"`
+	// ObservabilityMode: Optional. When set to `TRUE`, enables
+	// `observability_mode` on the `ext_proc` filter. This makes `ext_proc` calls
+	// asynchronous. Envoy doesn't check for the response from `ext_proc` calls.
+	// For more information about the filter, see:
+	// https://www.envoyproxy.io/docs/envoy/v1.32.3/api-v3/extensions/filters/http/ext_proc/v3/ext_proc.proto#extensions-filters-http-ext-proc-v3-externalprocessor
+	// This field is helpful when you want to try out the extension in async
+	// log-only mode. Supported by regional `LbTrafficExtension` and
+	// `LbRouteExtension` resources. Only `STREAMED` (default) body processing mode
+	// is supported.
+	ObservabilityMode bool `json:"observabilityMode,omitempty"`
 	// RequestBodySendMode: Optional. Configures the send mode for request body
 	// processing. The field can only be set if `supported_events` includes
 	// `REQUEST_BODY`. If `supported_events` includes `REQUEST_BODY`, but
@@ -1024,7 +1034,7 @@ type GrpcRoute struct {
 	// Gateways: Optional. Gateways defines a list of gateways this GrpcRoute is
 	// attached to, as one of the routing rules to route the requests served by the
 	// gateway. Each gateway reference should match the pattern:
-	// `projects/*/locations/global/gateways/`
+	// `projects/*/locations/*/gateways/`
 	Gateways []string `json:"gateways,omitempty"`
 	// Hostnames: Required. Service hostnames with an optional port for which this
 	// route describes traffic. Format: [:] Hostname is the fully qualified domain
@@ -1051,10 +1061,10 @@ type GrpcRoute struct {
 	// Meshes: Optional. Meshes defines a list of meshes this GrpcRoute is attached
 	// to, as one of the routing rules to route the requests served by the mesh.
 	// Each mesh reference should match the pattern:
-	// `projects/*/locations/global/meshes/`
+	// `projects/*/locations/*/meshes/`
 	Meshes []string `json:"meshes,omitempty"`
 	// Name: Identifier. Name of the GrpcRoute resource. It matches pattern
-	// `projects/*/locations/global/grpcRoutes/`
+	// `projects/*/locations/*/grpcRoutes/`
 	Name string `json:"name,omitempty"`
 	// Rules: Required. A list of detailed rules defining how to route traffic.
 	// Within a single GrpcRoute, the GrpcRoute.RouteAction associated with the
@@ -1455,7 +1465,7 @@ type HttpRoute struct {
 	// Gateways: Optional. Gateways defines a list of gateways this HttpRoute is
 	// attached to, as one of the routing rules to route the requests served by the
 	// gateway. Each gateway reference should match the pattern:
-	// `projects/*/locations/global/gateways/`
+	// `projects/*/locations/*/gateways/`
 	Gateways []string `json:"gateways,omitempty"`
 	// Hostnames: Required. Hostnames define a set of hosts that should match
 	// against the HTTP host header to select a HttpRoute to process the request.
@@ -1480,11 +1490,11 @@ type HttpRoute struct {
 	// Meshes: Optional. Meshes defines a list of meshes this HttpRoute is attached
 	// to, as one of the routing rules to route the requests served by the mesh.
 	// Each mesh reference should match the pattern:
-	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
+	// `projects/*/locations/*/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
 	// Name: Identifier. Name of the HttpRoute resource. It matches pattern
-	// `projects/*/locations/global/httpRoutes/http_route_name>`.
+	// `projects/*/locations/*/httpRoutes/http_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. Rules
 	// will be matched sequentially based on the RouteMatch specified for the rule.
@@ -2909,6 +2919,11 @@ type ListOperationsResponse struct {
 	// Operations: A list of operations that matches the specified filter in the
 	// request.
 	Operations []*Operation `json:"operations,omitempty"`
+	// Unreachable: Unordered list. Unreachable resources. Populated when the
+	// request sets `ListOperationsRequest.return_partial_success` and reads across
+	// collections e.g. when attempting to list all resources across all supported
+	// locations.
+	Unreachable []string `json:"unreachable,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
 	googleapi.ServerResponse `json:"-"`
@@ -3247,7 +3262,7 @@ type Mesh struct {
 	// Labels: Optional. Set of label tags associated with the Mesh resource.
 	Labels map[string]string `json:"labels,omitempty"`
 	// Name: Identifier. Name of the Mesh resource. It matches pattern
-	// `projects/*/locations/global/meshes/`.
+	// `projects/*/locations/*/meshes/`.
 	Name string `json:"name,omitempty"`
 	// SelfLink: Output only. Server-defined URL of this resource
 	SelfLink string `json:"selfLink,omitempty"`
@@ -3743,18 +3758,18 @@ type TcpRoute struct {
 	// Gateways: Optional. Gateways defines a list of gateways this TcpRoute is
 	// attached to, as one of the routing rules to route the requests served by the
 	// gateway. Each gateway reference should match the pattern:
-	// `projects/*/locations/global/gateways/`
+	// `projects/*/locations/*/gateways/`
 	Gateways []string `json:"gateways,omitempty"`
 	// Labels: Optional. Set of label tags associated with the TcpRoute resource.
 	Labels map[string]string `json:"labels,omitempty"`
 	// Meshes: Optional. Meshes defines a list of meshes this TcpRoute is attached
 	// to, as one of the routing rules to route the requests served by the mesh.
 	// Each mesh reference should match the pattern:
-	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
+	// `projects/*/locations/*/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
 	// Name: Identifier. Name of the TcpRoute resource. It matches pattern
-	// `projects/*/locations/global/tcpRoutes/tcp_route_name>`.
+	// `projects/*/locations/*/tcpRoutes/tcp_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. At
 	// least one RouteRule must be supplied. If there are multiple rules then the
@@ -3924,18 +3939,18 @@ type TlsRoute struct {
 	// Gateways: Optional. Gateways defines a list of gateways this TlsRoute is
 	// attached to, as one of the routing rules to route the requests served by the
 	// gateway. Each gateway reference should match the pattern:
-	// `projects/*/locations/global/gateways/`
+	// `projects/*/locations/*/gateways/`
 	Gateways []string `json:"gateways,omitempty"`
 	// Labels: Optional. Set of label tags associated with the TlsRoute resource.
 	Labels map[string]string `json:"labels,omitempty"`
 	// Meshes: Optional. Meshes defines a list of meshes this TlsRoute is attached
 	// to, as one of the routing rules to route the requests served by the mesh.
 	// Each mesh reference should match the pattern:
-	// `projects/*/locations/global/meshes/` The attached Mesh should be of a type
+	// `projects/*/locations/*/meshes/` The attached Mesh should be of a type
 	// SIDECAR
 	Meshes []string `json:"meshes,omitempty"`
 	// Name: Identifier. Name of the TlsRoute resource. It matches pattern
-	// `projects/*/locations/global/tlsRoutes/tls_route_name>`.
+	// `projects/*/locations/*/tlsRoutes/tls_route_name>`.
 	Name string `json:"name,omitempty"`
 	// Rules: Required. Rules that define how traffic is routed and handled. At
 	// least one RouteRule must be supplied. If there are multiple rules then the
@@ -5345,7 +5360,7 @@ type ProjectsLocationsEndpointPoliciesCreateCall struct {
 // Create: Creates a new EndpointPolicy in a given project and location.
 //
 //   - parent: The parent resource of the EndpointPolicy. Must be in the format
-//     `projects/*/locations/global`.
+//     `projects/*/locations/*`.
 func (r *ProjectsLocationsEndpointPoliciesService) Create(parent string, endpointpolicy *EndpointPolicy) *ProjectsLocationsEndpointPoliciesCreateCall {
 	c := &ProjectsLocationsEndpointPoliciesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -5455,7 +5470,7 @@ type ProjectsLocationsEndpointPoliciesDeleteCall struct {
 // Delete: Deletes a single EndpointPolicy.
 //
 //   - name: A name of the EndpointPolicy to delete. Must be in the format
-//     `projects/*/locations/global/endpointPolicies/*`.
+//     `projects/*/locations/*/endpointPolicies/*`.
 func (r *ProjectsLocationsEndpointPoliciesService) Delete(name string) *ProjectsLocationsEndpointPoliciesDeleteCall {
 	c := &ProjectsLocationsEndpointPoliciesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5554,7 +5569,7 @@ type ProjectsLocationsEndpointPoliciesGetCall struct {
 // Get: Gets details of a single EndpointPolicy.
 //
 //   - name: A name of the EndpointPolicy to get. Must be in the format
-//     `projects/*/locations/global/endpointPolicies/*`.
+//     `projects/*/locations/*/endpointPolicies/*`.
 func (r *ProjectsLocationsEndpointPoliciesService) Get(name string) *ProjectsLocationsEndpointPoliciesGetCall {
 	c := &ProjectsLocationsEndpointPoliciesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5664,7 +5679,7 @@ type ProjectsLocationsEndpointPoliciesListCall struct {
 // List: Lists EndpointPolicies in a given project and location.
 //
 //   - parent: The project and location from which the EndpointPolicies should be
-//     listed, specified in the format `projects/*/locations/global`.
+//     listed, specified in the format `projects/*/locations/*`.
 func (r *ProjectsLocationsEndpointPoliciesService) List(parent string) *ProjectsLocationsEndpointPoliciesListCall {
 	c := &ProjectsLocationsEndpointPoliciesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -5821,7 +5836,7 @@ type ProjectsLocationsEndpointPoliciesPatchCall struct {
 // Patch: Updates the parameters of a single EndpointPolicy.
 //
 //   - name: Identifier. Name of the EndpointPolicy resource. It matches pattern
-//     `projects/{project}/locations/global/endpointPolicies/{endpoint_policy}`.
+//     `projects/{project}/locations/*/endpointPolicies/{endpoint_policy}`.
 func (r *ProjectsLocationsEndpointPoliciesService) Patch(name string, endpointpolicy *EndpointPolicy) *ProjectsLocationsEndpointPoliciesPatchCall {
 	c := &ProjectsLocationsEndpointPoliciesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6777,7 +6792,7 @@ type ProjectsLocationsGrpcRoutesCreateCall struct {
 // Create: Creates a new GrpcRoute in a given project and location.
 //
 //   - parent: The parent resource of the GrpcRoute. Must be in the format
-//     `projects/*/locations/global`.
+//     `projects/*/locations/*`.
 func (r *ProjectsLocationsGrpcRoutesService) Create(parent string, grpcroute *GrpcRoute) *ProjectsLocationsGrpcRoutesCreateCall {
 	c := &ProjectsLocationsGrpcRoutesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -6887,7 +6902,7 @@ type ProjectsLocationsGrpcRoutesDeleteCall struct {
 // Delete: Deletes a single GrpcRoute.
 //
 //   - name: A name of the GrpcRoute to delete. Must be in the format
-//     `projects/*/locations/global/grpcRoutes/*`.
+//     `projects/*/locations/*/grpcRoutes/*`.
 func (r *ProjectsLocationsGrpcRoutesService) Delete(name string) *ProjectsLocationsGrpcRoutesDeleteCall {
 	c := &ProjectsLocationsGrpcRoutesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6986,7 +7001,7 @@ type ProjectsLocationsGrpcRoutesGetCall struct {
 // Get: Gets details of a single GrpcRoute.
 //
 //   - name: A name of the GrpcRoute to get. Must be in the format
-//     `projects/*/locations/global/grpcRoutes/*`.
+//     `projects/*/locations/*/grpcRoutes/*`.
 func (r *ProjectsLocationsGrpcRoutesService) Get(name string) *ProjectsLocationsGrpcRoutesGetCall {
 	c := &ProjectsLocationsGrpcRoutesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7096,7 +7111,7 @@ type ProjectsLocationsGrpcRoutesListCall struct {
 // List: Lists GrpcRoutes in a given project and location.
 //
 //   - parent: The project and location from which the GrpcRoutes should be
-//     listed, specified in the format `projects/*/locations/global`.
+//     listed, specified in the format `projects/*/locations/*`.
 func (r *ProjectsLocationsGrpcRoutesService) List(parent string) *ProjectsLocationsGrpcRoutesListCall {
 	c := &ProjectsLocationsGrpcRoutesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -7253,7 +7268,7 @@ type ProjectsLocationsGrpcRoutesPatchCall struct {
 // Patch: Updates the parameters of a single GrpcRoute.
 //
 //   - name: Identifier. Name of the GrpcRoute resource. It matches pattern
-//     `projects/*/locations/global/grpcRoutes/`.
+//     `projects/*/locations/*/grpcRoutes/`.
 func (r *ProjectsLocationsGrpcRoutesService) Patch(name string, grpcroute *GrpcRoute) *ProjectsLocationsGrpcRoutesPatchCall {
 	c := &ProjectsLocationsGrpcRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7368,7 +7383,7 @@ type ProjectsLocationsHttpRoutesCreateCall struct {
 // Create: Creates a new HttpRoute in a given project and location.
 //
 //   - parent: The parent resource of the HttpRoute. Must be in the format
-//     `projects/*/locations/global`.
+//     `projects/*/locations/*`.
 func (r *ProjectsLocationsHttpRoutesService) Create(parent string, httproute *HttpRoute) *ProjectsLocationsHttpRoutesCreateCall {
 	c := &ProjectsLocationsHttpRoutesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -7478,7 +7493,7 @@ type ProjectsLocationsHttpRoutesDeleteCall struct {
 // Delete: Deletes a single HttpRoute.
 //
 //   - name: A name of the HttpRoute to delete. Must be in the format
-//     `projects/*/locations/global/httpRoutes/*`.
+//     `projects/*/locations/*/httpRoutes/*`.
 func (r *ProjectsLocationsHttpRoutesService) Delete(name string) *ProjectsLocationsHttpRoutesDeleteCall {
 	c := &ProjectsLocationsHttpRoutesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7577,7 +7592,7 @@ type ProjectsLocationsHttpRoutesGetCall struct {
 // Get: Gets details of a single HttpRoute.
 //
 //   - name: A name of the HttpRoute to get. Must be in the format
-//     `projects/*/locations/global/httpRoutes/*`.
+//     `projects/*/locations/*/httpRoutes/*`.
 func (r *ProjectsLocationsHttpRoutesService) Get(name string) *ProjectsLocationsHttpRoutesGetCall {
 	c := &ProjectsLocationsHttpRoutesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7687,7 +7702,7 @@ type ProjectsLocationsHttpRoutesListCall struct {
 // List: Lists HttpRoute in a given project and location.
 //
 //   - parent: The project and location from which the HttpRoutes should be
-//     listed, specified in the format `projects/*/locations/global`.
+//     listed, specified in the format `projects/*/locations/*`.
 func (r *ProjectsLocationsHttpRoutesService) List(parent string) *ProjectsLocationsHttpRoutesListCall {
 	c := &ProjectsLocationsHttpRoutesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -7844,7 +7859,7 @@ type ProjectsLocationsHttpRoutesPatchCall struct {
 // Patch: Updates the parameters of a single HttpRoute.
 //
 //   - name: Identifier. Name of the HttpRoute resource. It matches pattern
-//     `projects/*/locations/global/httpRoutes/http_route_name>`.
+//     `projects/*/locations/*/httpRoutes/http_route_name>`.
 func (r *ProjectsLocationsHttpRoutesService) Patch(name string, httproute *HttpRoute) *ProjectsLocationsHttpRoutesPatchCall {
 	c := &ProjectsLocationsHttpRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10550,7 +10565,7 @@ type ProjectsLocationsMeshesCreateCall struct {
 // Create: Creates a new Mesh in a given project and location.
 //
 //   - parent: The parent resource of the Mesh. Must be in the format
-//     `projects/*/locations/global`.
+//     `projects/*/locations/*`.
 func (r *ProjectsLocationsMeshesService) Create(parent string, mesh *Mesh) *ProjectsLocationsMeshesCreateCall {
 	c := &ProjectsLocationsMeshesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -10660,7 +10675,7 @@ type ProjectsLocationsMeshesDeleteCall struct {
 // Delete: Deletes a single Mesh.
 //
 //   - name: A name of the Mesh to delete. Must be in the format
-//     `projects/*/locations/global/meshes/*`.
+//     `projects/*/locations/*/meshes/*`.
 func (r *ProjectsLocationsMeshesService) Delete(name string) *ProjectsLocationsMeshesDeleteCall {
 	c := &ProjectsLocationsMeshesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10759,7 +10774,7 @@ type ProjectsLocationsMeshesGetCall struct {
 // Get: Gets details of a single Mesh.
 //
 //   - name: A name of the Mesh to get. Must be in the format
-//     `projects/*/locations/global/meshes/*`.
+//     `projects/*/locations/*/meshes/*`.
 func (r *ProjectsLocationsMeshesService) Get(name string) *ProjectsLocationsMeshesGetCall {
 	c := &ProjectsLocationsMeshesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -10869,7 +10884,7 @@ type ProjectsLocationsMeshesListCall struct {
 // List: Lists Meshes in a given project and location.
 //
 //   - parent: The project and location from which the Meshes should be listed,
-//     specified in the format `projects/*/locations/global`.
+//     specified in the format `projects/*/locations/*`.
 func (r *ProjectsLocationsMeshesService) List(parent string) *ProjectsLocationsMeshesListCall {
 	c := &ProjectsLocationsMeshesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -11025,7 +11040,7 @@ type ProjectsLocationsMeshesPatchCall struct {
 // Patch: Updates the parameters of a single Mesh.
 //
 //   - name: Identifier. Name of the Mesh resource. It matches pattern
-//     `projects/*/locations/global/meshes/`.
+//     `projects/*/locations/*/meshes/`.
 func (r *ProjectsLocationsMeshesService) Patch(name string, mesh *Mesh) *ProjectsLocationsMeshesPatchCall {
 	c := &ProjectsLocationsMeshesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11744,6 +11759,19 @@ func (c *ProjectsLocationsOperationsListCall) PageSize(pageSize int64) *Projects
 // token.
 func (c *ProjectsLocationsOperationsListCall) PageToken(pageToken string) *ProjectsLocationsOperationsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ReturnPartialSuccess sets the optional parameter "returnPartialSuccess":
+// When set to `true`, operations that are reachable are returned as normal,
+// and those that are unreachable are returned in the
+// [ListOperationsResponse.unreachable] field. This can only be `true` when
+// reading across collections e.g. when `parent` is set to
+// "projects/example/locations/-". This field is not by default supported and
+// will result in an `UNIMPLEMENTED` error if set unless explicitly documented
+// otherwise in service or product specific documentation.
+func (c *ProjectsLocationsOperationsListCall) ReturnPartialSuccess(returnPartialSuccess bool) *ProjectsLocationsOperationsListCall {
+	c.urlParams_.Set("returnPartialSuccess", fmt.Sprint(returnPartialSuccess))
 	return c
 }
 
@@ -13042,7 +13070,7 @@ type ProjectsLocationsTcpRoutesCreateCall struct {
 // Create: Creates a new TcpRoute in a given project and location.
 //
 //   - parent: The parent resource of the TcpRoute. Must be in the format
-//     `projects/*/locations/global`.
+//     `projects/*/locations/*`.
 func (r *ProjectsLocationsTcpRoutesService) Create(parent string, tcproute *TcpRoute) *ProjectsLocationsTcpRoutesCreateCall {
 	c := &ProjectsLocationsTcpRoutesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -13152,7 +13180,7 @@ type ProjectsLocationsTcpRoutesDeleteCall struct {
 // Delete: Deletes a single TcpRoute.
 //
 //   - name: A name of the TcpRoute to delete. Must be in the format
-//     `projects/*/locations/global/tcpRoutes/*`.
+//     `projects/*/locations/*/tcpRoutes/*`.
 func (r *ProjectsLocationsTcpRoutesService) Delete(name string) *ProjectsLocationsTcpRoutesDeleteCall {
 	c := &ProjectsLocationsTcpRoutesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13251,7 +13279,7 @@ type ProjectsLocationsTcpRoutesGetCall struct {
 // Get: Gets details of a single TcpRoute.
 //
 //   - name: A name of the TcpRoute to get. Must be in the format
-//     `projects/*/locations/global/tcpRoutes/*`.
+//     `projects/*/locations/*/tcpRoutes/*`.
 func (r *ProjectsLocationsTcpRoutesService) Get(name string) *ProjectsLocationsTcpRoutesGetCall {
 	c := &ProjectsLocationsTcpRoutesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13361,7 +13389,7 @@ type ProjectsLocationsTcpRoutesListCall struct {
 // List: Lists TcpRoute in a given project and location.
 //
 //   - parent: The project and location from which the TcpRoutes should be
-//     listed, specified in the format `projects/*/locations/global`.
+//     listed, specified in the format `projects/*/locations/*`.
 func (r *ProjectsLocationsTcpRoutesService) List(parent string) *ProjectsLocationsTcpRoutesListCall {
 	c := &ProjectsLocationsTcpRoutesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -13518,7 +13546,7 @@ type ProjectsLocationsTcpRoutesPatchCall struct {
 // Patch: Updates the parameters of a single TcpRoute.
 //
 //   - name: Identifier. Name of the TcpRoute resource. It matches pattern
-//     `projects/*/locations/global/tcpRoutes/tcp_route_name>`.
+//     `projects/*/locations/*/tcpRoutes/tcp_route_name>`.
 func (r *ProjectsLocationsTcpRoutesService) Patch(name string, tcproute *TcpRoute) *ProjectsLocationsTcpRoutesPatchCall {
 	c := &ProjectsLocationsTcpRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13632,7 +13660,7 @@ type ProjectsLocationsTlsRoutesCreateCall struct {
 // Create: Creates a new TlsRoute in a given project and location.
 //
 //   - parent: The parent resource of the TlsRoute. Must be in the format
-//     `projects/*/locations/global`.
+//     `projects/*/locations/*`.
 func (r *ProjectsLocationsTlsRoutesService) Create(parent string, tlsroute *TlsRoute) *ProjectsLocationsTlsRoutesCreateCall {
 	c := &ProjectsLocationsTlsRoutesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -13742,7 +13770,7 @@ type ProjectsLocationsTlsRoutesDeleteCall struct {
 // Delete: Deletes a single TlsRoute.
 //
 //   - name: A name of the TlsRoute to delete. Must be in the format
-//     `projects/*/locations/global/tlsRoutes/*`.
+//     `projects/*/locations/*/tlsRoutes/*`.
 func (r *ProjectsLocationsTlsRoutesService) Delete(name string) *ProjectsLocationsTlsRoutesDeleteCall {
 	c := &ProjectsLocationsTlsRoutesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13841,7 +13869,7 @@ type ProjectsLocationsTlsRoutesGetCall struct {
 // Get: Gets details of a single TlsRoute.
 //
 //   - name: A name of the TlsRoute to get. Must be in the format
-//     `projects/*/locations/global/tlsRoutes/*`.
+//     `projects/*/locations/*/tlsRoutes/*`.
 func (r *ProjectsLocationsTlsRoutesService) Get(name string) *ProjectsLocationsTlsRoutesGetCall {
 	c := &ProjectsLocationsTlsRoutesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13951,7 +13979,7 @@ type ProjectsLocationsTlsRoutesListCall struct {
 // List: Lists TlsRoute in a given project and location.
 //
 //   - parent: The project and location from which the TlsRoutes should be
-//     listed, specified in the format `projects/*/locations/global`.
+//     listed, specified in the format `projects/*/locations/*`.
 func (r *ProjectsLocationsTlsRoutesService) List(parent string) *ProjectsLocationsTlsRoutesListCall {
 	c := &ProjectsLocationsTlsRoutesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -14108,7 +14136,7 @@ type ProjectsLocationsTlsRoutesPatchCall struct {
 // Patch: Updates the parameters of a single TlsRoute.
 //
 //   - name: Identifier. Name of the TlsRoute resource. It matches pattern
-//     `projects/*/locations/global/tlsRoutes/tls_route_name>`.
+//     `projects/*/locations/*/tlsRoutes/tls_route_name>`.
 func (r *ProjectsLocationsTlsRoutesService) Patch(name string, tlsroute *TlsRoute) *ProjectsLocationsTlsRoutesPatchCall {
 	c := &ProjectsLocationsTlsRoutesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name

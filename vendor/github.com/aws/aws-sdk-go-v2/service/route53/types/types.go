@@ -995,8 +995,11 @@ type HealthCheckConfig struct {
 	// healthy or vice versa. For more information, see [How Amazon Route 53 Determines Whether an Endpoint Is Healthy]in the Amazon Route 53
 	// Developer Guide.
 	//
-	// If you don't specify a value for FailureThreshold , the default value is three
-	// health checks.
+	// FailureThreshold is not supported when you specify a value for Type of
+	// RECOVERY_CONTROL .
+	//
+	// Otherwise, if you don't specify a value for FailureThreshold , the default value
+	// is three health checks.
 	//
 	// [How Amazon Route 53 Determines Whether an Endpoint Is Healthy]: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-determining-health-of-endpoints.html
 	FailureThreshold *int32
@@ -1143,6 +1146,9 @@ type HealthCheckConfig struct {
 	// display CloudWatch latency graphs on the Health Checks page in the Route 53
 	// console.
 	//
+	// MeasureLatency is not supported when you specify a value for Type of
+	// RECOVERY_CONTROL .
+	//
 	// You can't change the value of MeasureLatency after you create a health check.
 	MeasureLatency *bool
 
@@ -1168,6 +1174,9 @@ type HealthCheckConfig struct {
 	// The number of seconds between the time that Amazon Route 53 gets a response
 	// from your endpoint and the time that it sends the next health check request.
 	// Each Route 53 health checker makes requests at this interval.
+	//
+	// RequestInterval is not supported when you specify a value for Type of
+	// RECOVERY_CONTROL .
 	//
 	// You can't change the value of RequestInterval after you create a health check.
 	//
@@ -1250,6 +1259,10 @@ type HostedZone struct {
 	// and Comment elements don't appear in the response.
 	Config *HostedZoneConfig
 
+	// The features configuration for the hosted zone, including accelerated recovery
+	// settings and status information.
+	Features *HostedZoneFeatures
+
 	// If the hosted zone was created by another service, the service that created the
 	// hosted zone. When a hosted zone is created by another service, you can't edit or
 	// delete it using Route 53.
@@ -1271,6 +1284,31 @@ type HostedZoneConfig struct {
 
 	// A value that indicates whether this is a private hosted zone.
 	PrivateZone bool
+
+	noSmithyDocumentSerde
+}
+
+// Contains information about why certain features failed to be enabled or
+// configured for the hosted zone.
+type HostedZoneFailureReasons struct {
+
+	// The reason why accelerated recovery failed to be enabled or disabled for the
+	// hosted zone, if applicable.
+	AcceleratedRecovery *string
+
+	noSmithyDocumentSerde
+}
+
+// Represents the features configuration for a hosted zone, including the status
+// of various features and any associated failure reasons.
+type HostedZoneFeatures struct {
+
+	// The current status of accelerated recovery for the hosted zone.
+	AcceleratedRecoveryStatus AcceleratedRecoveryStatus
+
+	// Information about any failures that occurred when attempting to enable or
+	// configure features for the hosted zone.
+	FailureReasons *HostedZoneFailureReasons
 
 	noSmithyDocumentSerde
 }

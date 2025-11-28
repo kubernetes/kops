@@ -227,6 +227,48 @@ func (JobStatusType) Values() []JobStatusType {
 	}
 }
 
+type PermissionCheckResultType string
+
+// Enum values for PermissionCheckResultType
+const (
+	PermissionCheckResultTypeAllowed PermissionCheckResultType = "ALLOWED"
+	PermissionCheckResultTypeDenied  PermissionCheckResultType = "DENIED"
+	PermissionCheckResultTypeUnsure  PermissionCheckResultType = "UNSURE"
+)
+
+// Values returns all known values for PermissionCheckResultType. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (PermissionCheckResultType) Values() []PermissionCheckResultType {
+	return []PermissionCheckResultType{
+		"ALLOWED",
+		"DENIED",
+		"UNSURE",
+	}
+}
+
+type PermissionCheckStatusType string
+
+// Enum values for PermissionCheckStatusType
+const (
+	PermissionCheckStatusTypeComplete   PermissionCheckStatusType = "COMPLETE"
+	PermissionCheckStatusTypeInProgress PermissionCheckStatusType = "IN_PROGRESS"
+	PermissionCheckStatusTypeFailed     PermissionCheckStatusType = "FAILED"
+)
+
+// Values returns all known values for PermissionCheckStatusType. Note that this
+// can be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (PermissionCheckStatusType) Values() []PermissionCheckStatusType {
+	return []PermissionCheckStatusType{
+		"COMPLETE",
+		"IN_PROGRESS",
+		"FAILED",
+	}
+}
+
 type PermissionsBoundaryAttachmentType string
 
 // Enum values for PermissionsBoundaryAttachmentType
@@ -285,6 +327,25 @@ func (PolicyOwnerEntityType) Values() []PolicyOwnerEntityType {
 		"USER",
 		"ROLE",
 		"GROUP",
+	}
+}
+
+type PolicyParameterTypeEnum string
+
+// Enum values for PolicyParameterTypeEnum
+const (
+	PolicyParameterTypeEnumString     PolicyParameterTypeEnum = "string"
+	PolicyParameterTypeEnumStringList PolicyParameterTypeEnum = "stringList"
+)
+
+// Values returns all known values for PolicyParameterTypeEnum. Note that this can
+// be expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (PolicyParameterTypeEnum) Values() []PolicyParameterTypeEnum {
+	return []PolicyParameterTypeEnum{
+		"string",
+		"stringList",
 	}
 }
 
@@ -437,6 +498,35 @@ func (SortKeyType) Values() []SortKeyType {
 	}
 }
 
+type StateType string
+
+// Enum values for StateType
+const (
+	StateTypeUnassigned      StateType = "UNASSIGNED"
+	StateTypeAssigned        StateType = "ASSIGNED"
+	StateTypePendingApproval StateType = "PENDING_APPROVAL"
+	StateTypeFinalized       StateType = "FINALIZED"
+	StateTypeAccepted        StateType = "ACCEPTED"
+	StateTypeRejected        StateType = "REJECTED"
+	StateTypeExpired         StateType = "EXPIRED"
+)
+
+// Values returns all known values for StateType. Note that this can be expanded
+// in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (StateType) Values() []StateType {
+	return []StateType{
+		"UNASSIGNED",
+		"ASSIGNED",
+		"PENDING_APPROVAL",
+		"FINALIZED",
+		"ACCEPTED",
+		"REJECTED",
+		"EXPIRED",
+	}
+}
+
 type StatusType string
 
 // Enum values for StatusType
@@ -538,5 +628,28 @@ func (SummaryKeyType) Values() []SummaryKeyType {
 		"RolePolicySizeQuota",
 		"Roles",
 		"RolesQuota",
+	}
+}
+
+type SummaryStateType string
+
+// Enum values for SummaryStateType
+const (
+	SummaryStateTypeAvailable    SummaryStateType = "AVAILABLE"
+	SummaryStateTypeNotAvailable SummaryStateType = "NOT_AVAILABLE"
+	SummaryStateTypeNotSupported SummaryStateType = "NOT_SUPPORTED"
+	SummaryStateTypeFailed       SummaryStateType = "FAILED"
+)
+
+// Values returns all known values for SummaryStateType. Note that this can be
+// expanded in the future, and so it is only as up to date as the client.
+//
+// The ordering of this slice is not guaranteed to be stable across updates.
+func (SummaryStateType) Values() []SummaryStateType {
+	return []SummaryStateType{
+		"AVAILABLE",
+		"NOT_AVAILABLE",
+		"NOT_SUPPORTED",
+		"FAILED",
 	}
 }
