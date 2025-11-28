@@ -161,7 +161,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-warmpool-exa
 }
 
 resource "aws_autoscaling_group" "nodes-minimal-warmpool-example-com" {
-  enabled_metrics = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  enabled_metrics = ["GroupAndWarmPoolDesiredCapacity", "GroupAndWarmPoolTotalCapacity", "GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances", "WarmPoolDesiredCapacity", "WarmPoolMinSize", "WarmPoolPendingCapacity", "WarmPoolTerminatingCapacity", "WarmPoolTotalCapacity", "WarmPoolWarmedCapacity"]
   launch_template {
     id      = aws_launch_template.nodes-minimal-warmpool-example-com.id
     version = aws_launch_template.nodes-minimal-warmpool-example-com.latest_version
