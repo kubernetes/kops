@@ -62,6 +62,12 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		return DistributionDebian13, nil
 	case "fedora-41":
 		return DistributionFedora41, nil
+	case "fedora-42":
+		return DistributionFedora42, nil
+	case "fedora-43":
+		return DistributionFedora43, nil
+	case "fedora-44":
+		return DistributionFedora44, nil
 	case "ubuntu-20.04":
 		return DistributionUbuntu2004, nil
 	case "ubuntu-22.04":
@@ -79,11 +85,20 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	if strings.HasPrefix(distro, "flatcar-") {
 		return DistributionFlatcar, nil
 	}
+	if strings.HasPrefix(distro, "centos-9.") {
+		return DistributionCentOS9, nil
+	}
+	if strings.HasPrefix(distro, "centos-10.") {
+		return DistributionCentOS10, nil
+	}
 	if strings.HasPrefix(distro, "rhel-8.") {
 		return DistributionRhel8, nil
 	}
 	if strings.HasPrefix(distro, "rhel-9.") {
 		return DistributionRhel9, nil
+	}
+	if strings.HasPrefix(distro, "rhel-10.") {
+		return DistributionRhel10, nil
 	}
 	if strings.HasPrefix(distro, "rocky-8.") {
 		return DistributionRocky8, nil
@@ -91,7 +106,9 @@ func FindDistribution(rootfs string) (Distribution, error) {
 	if strings.HasPrefix(distro, "rocky-9.") {
 		return DistributionRocky9, nil
 	}
-
+	if strings.HasPrefix(distro, "rocky-10.") {
+		return DistributionRocky10, nil
+	}
 	// Some distros are not supported
 	klog.V(2).Infof("Contents of /etc/os-release:\n%s", osReleaseBytes)
 	return Distribution{}, fmt.Errorf("unsupported distro %q", distro)

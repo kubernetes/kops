@@ -53,9 +53,16 @@ var (
 	// Redhat-family distros
 	DistributionRhel8           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel8", version: 8}
 	DistributionRhel9           = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel9", version: 9}
+	DistributionRhel10          = Distribution{packageFormat: "rpm", project: "rhel", id: "rhel10", version: 10}
+	DistributionCentOS9         = Distribution{packageFormat: "rpm", project: "centos", id: "centos", version: 9}
+	DistributionCentOS10        = Distribution{packageFormat: "rpm", project: "centos", id: "centos", version: 10}
 	DistributionRocky8          = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky8", version: 8}
 	DistributionRocky9          = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky9", version: 9}
+	DistributionRocky10         = Distribution{packageFormat: "rpm", project: "rocky", id: "rocky10", version: 10}
 	DistributionFedora41        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora41", version: 41}
+	DistributionFedora42        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora42", version: 42}
+	DistributionFedora43        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora43", version: 43}
+	DistributionFedora44        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora44", version: 44}
 	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
 	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
 
@@ -94,6 +101,8 @@ func (d *Distribution) HasDNF() bool {
 	case "rhel":
 		return d.version >= 8
 	case "rocky":
+		return d.version >= 8
+	case "centos":
 		return d.version >= 8
 	case "fedora":
 		return d.version >= 22
