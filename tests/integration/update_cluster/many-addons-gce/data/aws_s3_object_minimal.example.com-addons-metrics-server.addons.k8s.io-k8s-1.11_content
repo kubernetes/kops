@@ -130,7 +130,8 @@ metadata:
   namespace: kube-system
 spec:
   ports:
-  - name: https
+  - appProtocol: https
+    name: https
     port: 443
     protocol: TCP
     targetPort: https
@@ -167,7 +168,7 @@ spec:
         - --kubelet-preferred-address-types=InternalIP
         - --cert-dir=/tmp
         - --kubelet-insecure-tls
-        image: registry.k8s.io/metrics-server/metrics-server:v0.7.2
+        image: registry.k8s.io/metrics-server/metrics-server:v0.8.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
