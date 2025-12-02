@@ -1,4 +1,4 @@
-# sourced from https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.7.1/components.yaml
+# sourced from https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.8.0/components.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -106,7 +106,8 @@ metadata:
   namespace: kube-system
 spec:
   ports:
-  - name: https
+  - appProtocol: https
+    name: https
     port: 443
     protocol: TCP
     targetPort: https
@@ -145,7 +146,7 @@ spec:
 {{ if WithDefaultBool .MetricsServer.Insecure true }}
         - --kubelet-insecure-tls
 {{ end }}
-        image: {{ or .MetricsServer.Image "registry.k8s.io/metrics-server/metrics-server:v0.7.2" }}
+        image: {{ or .MetricsServer.Image "registry.k8s.io/metrics-server/metrics-server:v0.8.0" }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
