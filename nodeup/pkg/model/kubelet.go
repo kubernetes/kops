@@ -421,6 +421,7 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 
 	if b.ConfigurationMode == "Warming" {
 		service.Running = fi.PtrTo(false)
+		service.Enabled = fi.PtrTo(false)
 	}
 
 	return service
