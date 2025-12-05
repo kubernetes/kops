@@ -176,10 +176,9 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 
 	specInternal := pod.Annotations[AnnotationNameDNSInternal]
 	if specInternal != "" {
-		var aliases []string
 		if pod.Spec.HostNetwork {
 			if pod.Spec.NodeName != "" {
-				aliases = append(aliases, "node/"+pod.Spec.NodeName+"/internal")
+				klog.V(4).Infof("Pod %q had %s=%s, and was HostNetwork", pod.Name, AnnotationNameDNSInternal, specInternal)
 			}
 		} else {
 			klog.V(4).Infof("Pod %q had %s=%s, but was not HostNetwork", pod.Name, AnnotationNameDNSInternal, specInternal)
@@ -190,13 +189,11 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 			token = strings.TrimSpace(token)
 
 			fqdn := dns.EnsureDotSuffix(token)
-			for _, alias := range aliases {
-				records = append(records, dns.Record{
-					RecordType: dns.RecordTypeAlias,
-					FQDN:       fqdn,
-					Value:      alias,
-				})
-			}
+			records = append(records, dns.Record{
+				RecordType: dns.RecordTypeA,
+				FQDN:       fqdn,
+				Value:      pod.Status.PodIP,
+			})
 		}
 	} else {
 		klog.V(4).Infof("Pod %q did not have %s label", pod.Name, AnnotationNameDNSInternal)
