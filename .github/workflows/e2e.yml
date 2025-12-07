@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
           fetch-depth: 3
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
           fetch-depth: 3
