@@ -306,7 +306,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.20.2
+    app.kubernetes.io/version: v1.20.5
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -330,7 +330,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.20.2
+    app.kubernetes.io/version: v1.20.5
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: amazon-vpc-cni
@@ -346,7 +346,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.20.2
+    app.kubernetes.io/version: v1.20.5
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -426,7 +426,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.20.2
+    app.kubernetes.io/version: v1.20.5
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
@@ -449,7 +449,7 @@ metadata:
     app.kubernetes.io/instance: aws-vpc-cni
     app.kubernetes.io/managed-by: kops
     app.kubernetes.io/name: aws-node
-    app.kubernetes.io/version: v1.20.2
+    app.kubernetes.io/version: v1.20.5
     k8s-app: aws-node
     role.kubernetes.io/networking: "1"
   name: aws-node
