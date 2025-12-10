@@ -110,6 +110,7 @@ const (
 	WellKnownAccountFlatcar      = "075585003325"
 	WellKnownAccountRedhat       = "309956199498"
 	WellKnownAccountUbuntu       = "099720109477"
+	WellKnownAccountRockyLinux   = "792107900819"
 )
 
 const instanceInServiceState = "InService"
@@ -1912,12 +1913,16 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 				owner = WellKnownAccountDebian
 			case "debian11":
 				owner = WellKnownAccountDebian
+			case "debian":
+				owner = WellKnownAccountDebian
 			case "flatcar":
 				owner = WellKnownAccountFlatcar
 			case "redhat", "redhat.com":
 				owner = WellKnownAccountRedhat
 			case "ubuntu":
 				owner = WellKnownAccountUbuntu
+			case "rocky", "rockylinux":
+				owner = WellKnownAccountRockyLinux
 			}
 
 			request.Owners = []string{owner}
