@@ -53,7 +53,7 @@ if ! qemu-img --version; then
 fi
 if ! qemu-system-x86_64 --version; then
   echo "Installing qemu-system-x86_64 (via qemu-system-x86)"
-  sudo apt-get install --yes qemu-system-x86
+  sudo apt-get install --yes --no-install-recommends qemu-system-x86
 fi
 
 # Enable KVM on github actions
@@ -95,7 +95,7 @@ if (! ip link show ${bridge_name}); then
   sudo iptables -t nat -A POSTROUTING -s 10.123.45.0/24 ! -o ${bridge_name} -j MASQUERADE
   sudo iptables -A FORWARD -o ${bridge_name} -m state --state RELATED,ESTABLISHED -j ACCEPT
   sudo iptables -A FORWARD -i ${bridge_name} ! -o ${bridge_name} -j ACCEPT
-  
+
   # Bring up the bridge
   sudo ip link set dev ${bridge_name} up
 fi
@@ -158,7 +158,7 @@ function run_vm() {
   cat <<EOF > user-data
 #cloud-config
 users:
-  - name: my_user 
+  - name: my_user
     groups: adm, cdrom, sudo, dip, plugdev, lxd
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
@@ -189,7 +189,7 @@ EOF
   sudo ip tuntap add dev tap-${vm_name} mode tap
   sudo ip link set dev tap-${vm_name} master ${bridge_name}
   sudo ip link set dev tap-${vm_name} up
-  
+
   # Create a per-user systemd unit file to run this VM
   # Great guide to qemu options here: https://wiki.gentoo.org/wiki/QEMU/Options
   mkdir -p ~/.config/systemd/user
