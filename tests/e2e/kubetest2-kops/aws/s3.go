@@ -129,6 +129,13 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 	klog.Infof("Bucket %s created successfully", bucketName)
 
 	if publicRead {
+		err = c.setPublicAccessBlock(ctx, bucketName)
+		if err != nil {
+			klog.Errorf("Failed to disable public access block policies on bucket %s, err: %v", bucketName, err)
+
+			return fmt.Errorf("disabling public access block policies for bucket %s: %w", bucketName, err)
+		}
+
 		err = c.setPublicReadPolicy(ctx, bucketName)
 		if err != nil {
 			klog.Errorf("Failed to set public read policy on bucket %s, err: %v", bucketName, err)
@@ -200,4 +207,17 @@ func (c Client) setPublicReadPolicy(ctx context.Context, bucketName string) erro
 	}
 
 	return nil
+}
+
+func (c Client) setPublicAccessBlock(ctx context.Context, bucketName string) error {
+	_, err := c.s3Client.PutPublicAccessBlock(ctx, &s3.PutPublicAccessBlockInput{
+		Bucket: aws.String(bucketName),
+		PublicAccessBlockConfiguration: &types.PublicAccessBlockConfiguration{
+			BlockPublicAcls:       aws.Bool(true),
+			IgnorePublicAcls:      aws.Bool(true),
+			BlockPublicPolicy:     aws.Bool(false),
+			RestrictPublicBuckets: aws.Bool(false),
+		},
+	})
+	return err
 }
