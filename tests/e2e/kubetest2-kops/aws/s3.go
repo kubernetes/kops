@@ -37,6 +37,8 @@ import (
 // running on AWS.
 const defaultRegion = "us-east-2"
 
+var bucketNameRegex = regexp.MustCompile("[^a-z0-9-]")
+
 // Client contains S3 and STS clients that are used to perform bucket and object actions.
 type Client struct {
 	s3Client  *s3.Client
@@ -83,7 +85,7 @@ func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, 
 
 	bucket = strings.ToLower(bucket)
 	// Only allow lowercase letters, numbers, and hyphens
-	bucket = regexp.MustCompile("[^a-z0-9-]").ReplaceAllString(bucket, "")
+	bucket = bucketNameRegex.ReplaceAllString(bucket, "")
 
 	if len(bucket) > 63 {
 		bucket = bucket[:63] // Max length is 63
@@ -127,8 +129,6 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 	klog.Infof("Bucket %s created successfully", bucketName)
 
 	if publicRead {
-		fmt.Println("WAITING 5 MINUTES !!! ")
-		time.Sleep(5 * time.Minute)
 		err = c.setPublicReadPolicy(ctx, bucketName)
 		if err != nil {
 			klog.Errorf("Failed to set public read policy on bucket %s, err: %v", bucketName, err)
