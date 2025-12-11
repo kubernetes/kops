@@ -30,12 +30,32 @@ import (
 
 func TestPodController(t *testing.T) {
 	ctx := context.Background()
+
+	nspec := &corev1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "my-node",
+		},
+		Status: corev1.NodeStatus{
+			Addresses: []corev1.NodeAddress{
+				// Internal IPs allocated to the Pod
+				{Type: corev1.NodeInternalIP, Address: "10.0.0.1"},
+				{Type: corev1.NodeInternalIP, Address: "10.0.0.2"},
+				// The following 2 addresses should be ignored, as they are not associated allocated to the Pod
+				{Type: corev1.NodeInternalIP, Address: "10.0.0.3"},
+				{Type: corev1.NodeInternalIP, Address: "10.0.0.4"},
+				// External IPs
+				{Type: corev1.NodeExternalIP, Address: "2001:db8:0:0:0:ff00:42:8329"},
+				{Type: corev1.NodeExternalIP, Address: "54.100.0.1"},
+			},
+		},
+	}
+
 	pspec := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "somepod",
 			Namespace: "kube-system",
 			Annotations: map[string]string{
-				"dns.alpha.kubernetes.io/internal": "internal.a.foo.com",
+				"dns.alpha.kubernetes.io/internal": "internal.a.foo.com,internal.b.foo.com",
 				"dns.alpha.kubernetes.io/external": "a.foo.com",
 			},
 		},
@@ -47,15 +67,23 @@ func TestPodController(t *testing.T) {
 			PodIP: "10.0.0.1",
 			PodIPs: []corev1.PodIP{
 				{IP: "10.0.0.1"},
+				{IP: "10.0.0.2"},
 				{IP: "2001:db8:0:0:0:ff00:42:8329"},
+				{IP: "54.100.0.1"},
 			},
 		},
 	}
 
 	client := fake.NewClientset()
-	pods := client.CoreV1().Pods("kube-system")
 
-	_, err := pods.Create(ctx, pspec, metav1.CreateOptions{})
+	nodes := client.CoreV1().Nodes()
+	_, err := nodes.Create(ctx, nspec, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error creating node: %v", err)
+	}
+
+	pods := client.CoreV1().Pods("kube-system")
+	_, err = pods.Create(ctx, pspec, metav1.CreateOptions{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -88,7 +116,10 @@ func TestPodController(t *testing.T) {
 	want := map[string][]dns.Record{
 		"kube-system/somepod": {
 			{RecordType: "_alias", FQDN: "a.foo.com.", Value: "node/my-node/external"},
-			{RecordType: "_alias", FQDN: "internal.a.foo.com.", Value: "node/my-node/internal"},
+			{RecordType: "A", FQDN: "internal.a.foo.com.", Value: "10.0.0.1"},
+			{RecordType: "A", FQDN: "internal.a.foo.com.", Value: "10.0.0.2"},
+			{RecordType: "A", FQDN: "internal.b.foo.com.", Value: "10.0.0.1"},
+			{RecordType: "A", FQDN: "internal.b.foo.com.", Value: "10.0.0.2"},
 		},
 	}
 	if diff := cmp.Diff(scope.records, want); diff != "" {
