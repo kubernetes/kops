@@ -231,13 +231,20 @@ func (c Client) setPublicReadPolicy(ctx context.Context, bucketName string) erro
     ]
   }`, bucketName)
 
-	_, err := c.s3Client.PutBucketPolicy(ctx, &s3.PutBucketPolicyInput{
-		Bucket: aws.String(bucketName),
-		Policy: aws.String(policy),
-	})
-	if err != nil {
-		return fmt.Errorf("putting bucket policy for %s: %w", bucketName, err)
+	var err error
+	backoff := time.Second
+	for i := 0; i < 5; i++ {
+		_, err = c.s3Client.PutBucketPolicy(ctx, &s3.PutBucketPolicyInput{
+			Bucket: aws.String(bucketName),
+			Policy: aws.String(policy),
+		})
+		if err == nil {
+			return nil
+		}
+		klog.Infof("Failed to set public read policy on bucket %s, retrying in %v. Error: %v", bucketName, backoff, err)
+		time.Sleep(backoff)
+		backoff *= 2
 	}
 
-	return nil
+	return fmt.Errorf("putting bucket policy for %s after retries: %w", bucketName, err)
 }
