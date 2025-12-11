@@ -55,14 +55,12 @@ spec:
     version: 9.99.0
   - id: k8s-1.16
     manifest: certmanager.io/k8s-1.16.yaml
-    manifestHash: 61c1f8717e2ba41d9f2060f2be420d41c23586e4e633a4196e87d5706e8195b7
+    manifestHash: 89c8798d6650ec7ff12281d6c6d98b4dbaca8901ec1ec714ef3fce416222cdad
     name: certmanager.io
     prune:
       kinds:
       - kind: ConfigMap
         labelSelector: addon.kops.k8s.io/name=certmanager.io,app.kubernetes.io/managed-by=kops
-        namespaces:
-        - kube-system
       - kind: Service
         labelSelector: addon.kops.k8s.io/name=certmanager.io,app.kubernetes.io/managed-by=kops
         namespaces:
