@@ -145,13 +145,53 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 // DeleteS3Bucket deletes a S3 bucket with the given name.
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
+
+	// Empty the bucket first
+	paginator := s3.NewListObjectsV2Paginator(c.s3Client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucketName),
+	})
+
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			var noBucket *types.NoSuchBucket
+			if errors.As(err, &noBucket) {
+				klog.Infof("Bucket %s does not exist.", bucketName)
+				return nil
+			}
+			return fmt.Errorf("listing objects in bucket %s: %w", bucketName, err)
+		}
+
+		if len(page.Contents) == 0 {
+			continue
+		}
+
+		var objects []types.ObjectIdentifier
+		for _, obj := range page.Contents {
+			objects = append(objects, types.ObjectIdentifier{
+				Key: obj.Key,
+			})
+		}
+
+		_, err = c.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(bucketName),
+			Delete: &types.Delete{
+				Objects: objects,
+				Quiet:   aws.Bool(true),
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("deleting objects in bucket %s: %w", bucketName, err)
+		}
+	}
+
 	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
 		var noBucket *types.NoSuchBucket
 		if errors.As(err, &noBucket) {
-			klog.Infof("Bucket %s does not exits.", bucketName)
+			klog.Infof("Bucket %s does not exist.", bucketName)
 
 			return nil
 		} else {
