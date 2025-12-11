@@ -80,6 +80,9 @@ func (d *deployer) Down() error {
 			if err := d.aws.DeleteS3Bucket(ctx, d.stateStore()); err != nil {
 				return err
 			}
+			if err := d.aws.DeleteS3Bucket(ctx, d.discoveryStore()); err != nil {
+				return err
+			}
 		case "gce":
 			gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
 			gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
