@@ -37,11 +37,20 @@ import (
 // running on AWS.
 const defaultRegion = "us-east-2"
 
+var bucketNameRegex = regexp.MustCompile("[^a-z0-9-]")
+
 // Client contains S3 and STS clients that are used to perform bucket and object actions.
 type Client struct {
 	s3Client  *s3.Client
 	stsClient *sts.Client
 }
+
+type BucketType string
+
+const (
+	BucketTypeStateStore     BucketType = "state"
+	BucketTypeDiscoveryStore BucketType = "discovery"
+)
 
 // NewAWSClient returns a new instance of awsClient configured to work in the default region (us-east-2).
 func NewClient(ctx context.Context) (*Client, error) {
@@ -58,7 +67,7 @@ func NewClient(ctx context.Context) (*Client, error) {
 }
 
 // BucketName constructs an unique bucket name using the AWS account ID in the default region (us-east-2).
-func (c Client) BucketName(ctx context.Context) (string, error) {
+func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, error) {
 	// Construct the bucket name based on the ProwJob ID (if running in Prow) or AWS account ID (if running outside
 	// Prow) and the current timestamp
 	var identifier string
@@ -72,11 +81,11 @@ func (c Client) BucketName(ctx context.Context) (string, error) {
 		identifier = *callerIdentity.Account
 	}
 	timestamp := time.Now().Format("20060102150405")
-	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s", identifier, timestamp)
+	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s-%s", bucketType, identifier, timestamp)
 
 	bucket = strings.ToLower(bucket)
 	// Only allow lowercase letters, numbers, and hyphens
-	bucket = regexp.MustCompile("[^a-z0-9-]").ReplaceAllString(bucket, "")
+	bucket = bucketNameRegex.ReplaceAllString(bucket, "")
 
 	if len(bucket) > 63 {
 		bucket = bucket[:63] // Max length is 63
@@ -120,6 +129,13 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 	klog.Infof("Bucket %s created successfully", bucketName)
 
 	if publicRead {
+		err = c.setPublicAccessBlock(ctx, bucketName)
+		if err != nil {
+			klog.Errorf("Failed to disable public access block policies on bucket %s, err: %v", bucketName, err)
+
+			return fmt.Errorf("disabling public access block policies for bucket %s: %w", bucketName, err)
+		}
+
 		err = c.setPublicReadPolicy(ctx, bucketName)
 		if err != nil {
 			klog.Errorf("Failed to set public read policy on bucket %s, err: %v", bucketName, err)
@@ -136,13 +152,53 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 // DeleteS3Bucket deletes a S3 bucket with the given name.
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
+
+	// Empty the bucket first
+	paginator := s3.NewListObjectsV2Paginator(c.s3Client, &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucketName),
+	})
+
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			var noBucket *types.NoSuchBucket
+			if errors.As(err, &noBucket) {
+				klog.Infof("Bucket %s does not exist.", bucketName)
+				return nil
+			}
+			return fmt.Errorf("listing objects in bucket %s: %w", bucketName, err)
+		}
+
+		if len(page.Contents) == 0 {
+			continue
+		}
+
+		var objects []types.ObjectIdentifier
+		for _, obj := range page.Contents {
+			objects = append(objects, types.ObjectIdentifier{
+				Key: obj.Key,
+			})
+		}
+
+		_, err = c.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(bucketName),
+			Delete: &types.Delete{
+				Objects: objects,
+				Quiet:   aws.Bool(true),
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("deleting objects in bucket %s: %w", bucketName, err)
+		}
+	}
+
 	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
 		var noBucket *types.NoSuchBucket
 		if errors.As(err, &noBucket) {
-			klog.Infof("Bucket %s does not exits.", bucketName)
+			klog.Infof("Bucket %s does not exist.", bucketName)
 
 			return nil
 		} else {
@@ -182,13 +238,33 @@ func (c Client) setPublicReadPolicy(ctx context.Context, bucketName string) erro
     ]
   }`, bucketName)
 
-	_, err := c.s3Client.PutBucketPolicy(ctx, &s3.PutBucketPolicyInput{
-		Bucket: aws.String(bucketName),
-		Policy: aws.String(policy),
-	})
-	if err != nil {
-		return fmt.Errorf("putting bucket policy for %s: %w", bucketName, err)
+	var err error
+	backoff := time.Second
+	for i := 0; i < 5; i++ {
+		_, err = c.s3Client.PutBucketPolicy(ctx, &s3.PutBucketPolicyInput{
+			Bucket: aws.String(bucketName),
+			Policy: aws.String(policy),
+		})
+		if err == nil {
+			return nil
+		}
+		klog.Infof("Failed to set public read policy on bucket %s, retrying in %v. Error: %v", bucketName, backoff, err)
+		time.Sleep(backoff)
+		backoff *= 2
 	}
 
-	return nil
+	return fmt.Errorf("putting bucket policy for %s after retries: %w", bucketName, err)
+}
+
+func (c Client) setPublicAccessBlock(ctx context.Context, bucketName string) error {
+	_, err := c.s3Client.PutPublicAccessBlock(ctx, &s3.PutPublicAccessBlockInput{
+		Bucket: aws.String(bucketName),
+		PublicAccessBlockConfiguration: &types.PublicAccessBlockConfiguration{
+			BlockPublicAcls:       aws.Bool(true),
+			IgnorePublicAcls:      aws.Bool(true),
+			BlockPublicPolicy:     aws.Bool(false),
+			RestrictPublicBuckets: aws.Bool(false),
+		},
+	})
+	return err
 }
