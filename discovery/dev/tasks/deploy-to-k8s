@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# Copyright 2025 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "${REPO_ROOT}/discovery"
+
+if [[ -z "${IMAGE_PREFIX:-}" ]]; then
+  IMAGE_PREFIX="${USER}/"
+fi
+
+IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+
+# Build the discovery-server image
+VERSION=${IMAGE_TAG} GITSHA=$(git describe --always) KO_DOCKER_REPO="${IMAGE_PREFIX}discovery-server" go run github.com/google/ko@v0.18.0 \
+  build --tags "${IMAGE_TAG}" --platform=linux/amd64,linux/arm64 --bare ./cmd/discovery-server/
+
+echo "Can install cert-manager with the following command:"
+echo "kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml"
+
+kubectl create namespace discovery-k8s-io --dry-run=client -o yaml | kubectl apply -f -
+
+
+cat k8s/manifest.yaml | \
+sed "s|discovery-server:latest|${IMAGE_PREFIX}discovery-server:${IMAGE_TAG}|g" | \
+KUBECTL_APPLYSET=true kubectl apply -n discovery-k8s-io --prune --applyset=discovery-server -f -
