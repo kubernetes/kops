@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: discovery-k8s-io
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: discovery-server
+  namespace: discovery-k8s-io
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-server
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      containers:
+      - name: discovery-server
+        image: discovery-server:latest
+        env:
+        - name: TLS_CERT
+          value: /secrets/discovery-server-tls/tls.crt
+        - name: TLS_KEY
+          value: /secrets/discovery-server-tls/tls.key
+        volumeMounts:
+        - name: discovery-server-tls
+          mountPath: /secrets/discovery-server-tls
+      volumes:
+      - name: discovery-server-tls
+        secret:
+          secretName: discovery-server-tls
+---
+
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: discovery-server-issuer
+  namespace: discovery-k8s-io
+spec:
+  selfSigned: {}
+
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: discovery-server
+  namespace: discovery-k8s-io
+spec:
+  dnsNames:
+    - discovery.k8s.io
+  secretName: discovery-server-tls
+  issuerRef:
+    name: discovery-server-issuer
