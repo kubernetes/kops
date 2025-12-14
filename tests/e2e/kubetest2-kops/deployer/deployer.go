@@ -145,6 +145,8 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		Tags: []string{
 			"group=sig-cluster-lifecycle",
 			"subproject=kops",
+			// Ensure https://github.com/Azure/rg-cleanup deletes removes resources
+			"creationTimestamp=" + time.Now().Format(time.RFC3339),
 		},
 	}
 	dir, err := defaultArtifactsDir()
