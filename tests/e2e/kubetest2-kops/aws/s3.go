@@ -129,6 +129,8 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 	klog.Infof("Bucket %s created successfully", bucketName)
 
 	if publicRead {
+		// We assume it will take 5-10 seconds for the bucket to be created and wait for it.
+		time.Sleep(10 * time.Second)
 		err = c.setPublicAccessBlock(ctx, bucketName)
 		if err != nil {
 			klog.Errorf("Failed to disable public access block policies on bucket %s, err: %v", bucketName, err)
