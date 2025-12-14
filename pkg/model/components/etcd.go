@@ -29,8 +29,8 @@ type EtcdOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &EtcdOptionsBuilder{}
 
 const (
-	DefaultEtcd3Version_1_22 = "3.5.24"
-	DefaultEtcd3Version_1_34 = "3.6.5"
+	DefaultEtcd3Version_1_22 = "3.5.25"
+	DefaultEtcd3Version_1_34 = "3.6.6"
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
