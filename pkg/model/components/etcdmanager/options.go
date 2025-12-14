@@ -106,7 +106,8 @@ var etcdSupportedImages = []etcdVersion{
 	{Version: "3.5.23", SymlinkToVersion: "3.5.25"},
 	{Version: "3.5.24", SymlinkToVersion: "3.5.25"},
 	{Version: "3.5.25", Image: "registry.k8s.io/etcd:v3.5.25"},
-	{Version: "3.6.5", Image: "registry.k8s.io/etcd:v3.6.5"},
+	{Version: "3.6.5", SymlinkToVersion: "3.6.6"},
+	{Version: "3.6.6", Image: "registry.k8s.io/etcd:v3.6.6"},
 }
 
 func etcdSupportedVersions() []etcdVersion {
