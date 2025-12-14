@@ -391,8 +391,8 @@ func (d *deployer) discoveryStore() string {
 	if d.discoveryStoreName != "" {
 		return d.discoveryStoreName
 	}
-	discovery := os.Getenv("KOPS_DISCOVERY_STORE")
-	if discovery == "" {
+	discovery, found := os.LookupEnv("KOPS_DISCOVERY_STORE")
+	if !found {
 		switch d.CloudProvider {
 		case "aws":
 			ctx := context.Background()
