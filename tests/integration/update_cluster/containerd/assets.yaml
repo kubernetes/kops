@@ -76,9 +76,9 @@ images:
   download: registry.k8s.io/kops/kops-utils-cp:1.35.0-alpha.1
 - canonical: registry.k8s.io/etcd:v3.4.13
   download: registry.k8s.io/etcd:v3.4.13
-- canonical: registry.k8s.io/etcd:v3.5.24
-  download: registry.k8s.io/etcd:v3.5.24
-- canonical: registry.k8s.io/etcd:v3.6.5
-  download: registry.k8s.io/etcd:v3.6.5
+- canonical: registry.k8s.io/etcd:v3.5.25
+  download: registry.k8s.io/etcd:v3.5.25
+- canonical: registry.k8s.io/etcd:v3.6.6
+  download: registry.k8s.io/etcd:v3.6.6
 - canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250917
   download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20250917
