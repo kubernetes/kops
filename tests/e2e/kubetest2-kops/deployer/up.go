@@ -174,6 +174,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--set", `spec.containerd.configAdditions=plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`,
 	}
 
+	if d.discoveryStore() != "" {
+		args = append(args, "--discovery-store", d.discoveryStore())
+	}
+
 	if yes {
 		args = append(args, "--yes")
 	}
