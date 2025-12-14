@@ -103,6 +103,7 @@ var etcdSupportedImages = []etcdVersion{
 	{Version: "3.5.13", SymlinkToVersion: "3.5.24"},
 	{Version: "3.5.17", SymlinkToVersion: "3.5.24"},
 	{Version: "3.5.21", SymlinkToVersion: "3.5.24"},
+	{Version: "3.5.23", SymlinkToVersion: "3.5.24"},
 	{Version: "3.5.24", Image: "registry.k8s.io/etcd:v3.5.24"},
 	{Version: "3.6.5", Image: "registry.k8s.io/etcd:v3.6.5"},
 }
