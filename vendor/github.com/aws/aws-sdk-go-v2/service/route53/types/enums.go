@@ -166,6 +166,7 @@ const (
 	CloudWatchRegionEuIsoeWest1  CloudWatchRegion = "eu-isoe-west-1"
 	CloudWatchRegionApSoutheast6 CloudWatchRegion = "ap-southeast-6"
 	CloudWatchRegionUsIsobWest1  CloudWatchRegion = "us-isob-west-1"
+	CloudWatchRegionEuscDeEast1  CloudWatchRegion = "eusc-de-east-1"
 )
 
 // Values returns all known values for CloudWatchRegion. Note that this can be
@@ -219,6 +220,7 @@ func (CloudWatchRegion) Values() []CloudWatchRegion {
 		"eu-isoe-west-1",
 		"ap-southeast-6",
 		"us-isob-west-1",
+		"eusc-de-east-1",
 	}
 }
 
@@ -449,6 +451,7 @@ const (
 	ResourceRecordSetRegionUsGovWest1   ResourceRecordSetRegion = "us-gov-west-1"
 	ResourceRecordSetRegionApEast2      ResourceRecordSetRegion = "ap-east-2"
 	ResourceRecordSetRegionApSoutheast6 ResourceRecordSetRegion = "ap-southeast-6"
+	ResourceRecordSetRegionEuscDeEast1  ResourceRecordSetRegion = "eusc-de-east-1"
 )
 
 // Values returns all known values for ResourceRecordSetRegion. Note that this can
@@ -495,6 +498,7 @@ func (ResourceRecordSetRegion) Values() []ResourceRecordSetRegion {
 		"us-gov-west-1",
 		"ap-east-2",
 		"ap-southeast-6",
+		"eusc-de-east-1",
 	}
 }
 
@@ -658,6 +662,7 @@ const (
 	VPCRegionEuIsoeWest1  VPCRegion = "eu-isoe-west-1"
 	VPCRegionApSoutheast6 VPCRegion = "ap-southeast-6"
 	VPCRegionUsIsobWest1  VPCRegion = "us-isob-west-1"
+	VPCRegionEuscDeEast1  VPCRegion = "eusc-de-east-1"
 )
 
 // Values returns all known values for VPCRegion. Note that this can be expanded
@@ -711,5 +716,6 @@ func (VPCRegion) Values() []VPCRegion {
 		"eu-isoe-west-1",
 		"ap-southeast-6",
 		"us-isob-west-1",
+		"eusc-de-east-1",
 	}
 }

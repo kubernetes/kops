@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	go.opentelemetry.io/proto/otlp v1.9.0
 	google.golang.org/grpc v1.77.0
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.11
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kops v1.34.1
 )

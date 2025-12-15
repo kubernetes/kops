@@ -1951,6 +1951,9 @@ type ClusterUpdate struct {
 	//   "PRIVATE_IPV6_GOOGLE_ACCESS_BIDIRECTIONAL" - Enables private IPv6 access
 	// to and from Google Services
 	DesiredPrivateIpv6GoogleAccess string `json:"desiredPrivateIpv6GoogleAccess,omitempty"`
+	// DesiredPrivilegedAdmissionConfig: The desired privileged admission config
+	// for the cluster.
+	DesiredPrivilegedAdmissionConfig *PrivilegedAdmissionConfig `json:"desiredPrivilegedAdmissionConfig,omitempty"`
 	// DesiredRbacBindingConfig: RBACBindingConfig allows user to restrict
 	// ClusterRoleBindings an RoleBindings that can be created.
 	DesiredRbacBindingConfig *RBACBindingConfig `json:"desiredRbacBindingConfig,omitempty"`
@@ -3971,18 +3974,23 @@ type LinuxNodeConfig struct {
 	// net.core.busy_poll net.core.busy_read net.core.netdev_max_backlog
 	// net.core.rmem_max net.core.rmem_default net.core.wmem_default
 	// net.core.wmem_max net.core.optmem_max net.core.somaxconn net.ipv4.tcp_rmem
-	// net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.ipv4.tcp_max_orphans
+	// net.ipv4.tcp_wmem net.ipv4.tcp_tw_reuse net.ipv4.tcp_mtu_probing
+	// net.ipv4.tcp_max_orphans net.ipv4.tcp_max_tw_buckets
+	// net.ipv4.tcp_syn_retries net.ipv4.tcp_ecn net.ipv4.tcp_congestion_control
 	// net.netfilter.nf_conntrack_max net.netfilter.nf_conntrack_buckets
 	// net.netfilter.nf_conntrack_tcp_timeout_close_wait
 	// net.netfilter.nf_conntrack_tcp_timeout_time_wait
 	// net.netfilter.nf_conntrack_tcp_timeout_established
 	// net.netfilter.nf_conntrack_acct kernel.shmmni kernel.shmmax kernel.shmall
-	// fs.aio-max-nr fs.file-max fs.inotify.max_user_instances
-	// fs.inotify.max_user_watches fs.nr_open vm.dirty_background_ratio
-	// vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_writeback_centisecs
-	// vm.max_map_count vm.overcommit_memory vm.overcommit_ratio
-	// vm.vfs_cache_pressure vm.swappiness vm.watermark_scale_factor
-	// vm.min_free_kbytes
+	// kernel.perf_event_paranoid kernel.sched_rt_runtime_us
+	// kernel.softlockup_panic kernel.yama.ptrace_scope kernel.kptr_restrict
+	// kernel.dmesg_restrict kernel.sysrq fs.aio-max-nr fs.file-max
+	// fs.inotify.max_user_instances fs.inotify.max_user_watches fs.nr_open
+	// vm.dirty_background_ratio vm.dirty_background_bytes
+	// vm.dirty_expire_centisecs vm.dirty_ratio vm.dirty_bytes
+	// vm.dirty_writeback_centisecs vm.max_map_count vm.overcommit_memory
+	// vm.overcommit_ratio vm.vfs_cache_pressure vm.swappiness
+	// vm.watermark_scale_factor vm.min_free_kbytes
 	Sysctls map[string]string `json:"sysctls,omitempty"`
 	// TransparentHugepageDefrag: Optional. Defines the transparent hugepage defrag
 	// configuration on the node. VM hugepage allocation can be managed by either
@@ -8826,6 +8834,10 @@ type UserManagedKeysConfig struct {
 	// ControlPlaneDiskEncryptionKey: The Cloud KMS cryptoKey to use for
 	// Confidential Hyperdisk on the control plane nodes.
 	ControlPlaneDiskEncryptionKey string `json:"controlPlaneDiskEncryptionKey,omitempty"`
+	// ControlPlaneDiskEncryptionKeyVersions: Output only. All of the versions of
+	// the Cloud KMS cryptoKey that are used by Confidential Hyperdisks on the
+	// control plane nodes.
+	ControlPlaneDiskEncryptionKeyVersions []string `json:"controlPlaneDiskEncryptionKeyVersions,omitempty"`
 	// EtcdApiCa: Resource path of the Certificate Authority Service caPool to use
 	// for the etcd API CA in this cluster.
 	EtcdApiCa string `json:"etcdApiCa,omitempty"`

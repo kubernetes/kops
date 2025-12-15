@@ -21372,6 +21372,23 @@ func awsAwsquery_deserializeDocumentDelegationRequest(v **types.DelegationReques
 				sv.Description = ptr.String(xtv)
 			}
 
+		case strings.EqualFold("ExpirationTime", t.Name.Local):
+			val, err := decoder.Value()
+			if err != nil {
+				return err
+			}
+			if val == nil {
+				break
+			}
+			{
+				xtv := string(val)
+				t, err := smithytime.ParseDateTime(xtv)
+				if err != nil {
+					return err
+				}
+				sv.ExpirationTime = ptr.Time(t)
+			}
+
 		case strings.EqualFold("Notes", t.Name.Local):
 			val, err := decoder.Value()
 			if err != nil {
