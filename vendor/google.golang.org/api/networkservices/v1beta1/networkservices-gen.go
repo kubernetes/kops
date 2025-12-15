@@ -481,6 +481,10 @@ type AuthzExtension struct {
 	// backend service for the extension must use HTTP2 or H2C as the protocol. All
 	// `supported_events` for a client request are sent as part of the same gRPC
 	// stream.
+	//   "EXT_AUTHZ_GRPC" - The extension service uses Envoy's `ext_authz` gRPC
+	// API. The backend service for the extension must use HTTP2, or H2C as the
+	// protocol. `EXT_AUTHZ_GRPC` is only supported for regional `AuthzExtension`
+	// resources.
 	WireFormat string `json:"wireFormat,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.

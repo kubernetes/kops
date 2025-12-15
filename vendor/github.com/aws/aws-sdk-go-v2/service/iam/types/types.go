@@ -308,6 +308,11 @@ type DelegationRequest struct {
 	// the Amazon Web Services partner that filed the delegation request.
 	Description *string
 
+	// The expiry time of this delegation request
+	//
+	// See the Understanding the Request Lifecycle for details on the life time of a delegation request at each state.
+	ExpirationTime *time.Time
+
 	// Notes added to this delegation request, if this request was updated via the [UpdateDelegationRequest]
 	// API.
 	//

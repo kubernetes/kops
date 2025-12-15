@@ -3191,7 +3191,7 @@
       }
     }
   },
-  "revision": "20251029",
+  "revision": "20251105",
   "rootUrl": "https://networkservices.googleapis.com/",
   "schemas": {
     "AuditConfig": {
@@ -3323,11 +3323,13 @@
           "description": "Optional. The format of communication supported by the callout extension. If not specified, the default value `EXT_PROC_GRPC` is used.",
           "enum": [
             "WIRE_FORMAT_UNSPECIFIED",
-            "EXT_PROC_GRPC"
+            "EXT_PROC_GRPC",
+            "EXT_AUTHZ_GRPC"
           ],
           "enumDescriptions": [
             "Not specified.",
-            "The extension service uses ext_proc gRPC API over a gRPC stream. This is the default value if the wire format is not specified. The backend service for the extension must use HTTP2 or H2C as the protocol. All `supported_events` for a client request are sent as part of the same gRPC stream."
+            "The extension service uses ext_proc gRPC API over a gRPC stream. This is the default value if the wire format is not specified. The backend service for the extension must use HTTP2 or H2C as the protocol. All `supported_events` for a client request are sent as part of the same gRPC stream.",
+            "The extension service uses Envoy's `ext_authz` gRPC API. The backend service for the extension must use HTTP2, or H2C as the protocol. `EXT_AUTHZ_GRPC` is only supported for regional `AuthzExtension` resources."
           ],
           "type": "string"
         }
