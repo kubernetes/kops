@@ -29,12 +29,18 @@ import (
 // DownloadKops will download the kops binary from the version marker URL
 // Returning the URL to use for KOPS_BASE_URL
 // Example markerURL: https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt
-func DownloadKops(markerURL, downloadPath string) (string, error) {
+func DownloadKops(markerURL, downloadPath, kopsVersion string) (string, error) {
 	var b bytes.Buffer
-	if err := util.HTTPGETWithHeaders(markerURL, nil, &b); err != nil {
-		return "", err
+	var kopsBaseURL string
+	if markerURL == "" && kopsVersion != "" {
+		kopsBaseURL = fmt.Sprintf("https://artifacts.k8s.io/binaries/kops/%s", kopsVersion)
 	}
-	kopsBaseURL := strings.TrimSpace(b.String())
+	if markerURL != "" && kopsVersion == "" {
+		if err := util.HTTPGETWithHeaders(markerURL, nil, &b); err != nil {
+			return "", err
+		}
+		kopsBaseURL = strings.TrimSpace(b.String())
+	}
 
 	kopsFile, err := os.Create(downloadPath)
 	if err != nil {
