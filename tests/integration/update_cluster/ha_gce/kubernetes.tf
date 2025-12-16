@@ -780,9 +780,10 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     type                   = "PERSISTENT"
   }
   labels = {
-    "k8s-io-cluster-name"   = "ha-gce-example-com"
-    "k8s-io-instance-group" = "nodes"
-    "k8s-io-role-node"      = "node"
+    "k8s-io-cluster-name"                             = "ha-gce-example-com"
+    "k8s-io-instance-group"                           = "nodes"
+    "k8s-io-role-node"                                = "node"
+    "k8s.io/cluster-autoscaler/node-template/taint/a" = "b:c"
   }
   lifecycle {
     create_before_destroy = true

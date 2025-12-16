@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 
@@ -145,6 +146,8 @@ func (b *KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
 }
 
 // CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
+//
+// TODO: The cloud provider specific logic should be moved to relevant model packages.
 func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (map[string]string, error) {
 	labels := b.CloudTags(b.AutoscalingGroupName(ig), false)
 
@@ -178,6 +181,8 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		switch b.Cluster.GetCloudProvider() {
 		case kops.CloudProviderHetzner:
 			labels[hetzner.TagKubernetesNodeLabelPrefix+k] = v
+		case kops.CloudProviderGCE:
+			// TODO: Do nothing for now while we figure out how to address GCE label length limit of 63
 		default:
 			labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 		}
@@ -196,6 +201,15 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[hetzner.TagKubernetesInstanceRole] = string(ig.Spec.Role)
 		labels[hetzner.TagKubernetesClusterName] = b.ClusterName()
 		labels[hetzner.TagKubernetesInstanceGroup] = ig.Name
+	case kops.CloudProviderGCE:
+		clusterLabel := gce.LabelForCluster(b.ClusterName())
+		roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
+		labels[clusterLabel.Key] = clusterLabel.Value
+		labels[roleLabel] = ig.Spec.Role.ToLowerString()
+		labels[gce.GceLabelNameInstanceGroup] = ig.ObjectMeta.Name
+		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+			labels[gce.GceLabelNameRolePrefix+"master"] = "master"
+		}
 	default:
 		// The system tags take priority because the cluster likely breaks without them...
 

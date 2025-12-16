@@ -446,6 +446,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-examp
     "k8s-io-instance-group"     = "master-us-test1-a"
     "k8s-io-role-control-plane" = "control-plane"
     "k8s-io-role-master"        = "master"
+    "testCloudLabel"            = "foobar"
   }
   lifecycle {
     create_before_destroy = true

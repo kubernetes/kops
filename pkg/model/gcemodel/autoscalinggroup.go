@@ -220,16 +220,6 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		case kops.InstanceGroupRoleBastion:
 			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
 		}
-		clusterLabel := gce.LabelForCluster(b.ClusterName())
-		roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
-		t.Labels = map[string]string{
-			clusterLabel.Key:              clusterLabel.Value,
-			roleLabel:                     ig.Spec.Role.ToLowerString(),
-			gce.GceLabelNameInstanceGroup: ig.ObjectMeta.Name,
-		}
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-			t.Labels[gce.GceLabelNameRolePrefix+"master"] = "master"
-		}
 
 		if gce.UsesIPAliases(b.Cluster) {
 			t.CanIPForward = fi.PtrTo(false)
@@ -248,11 +238,11 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 		t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
 
-		// labels, err := b.CloudTagsForInstanceGroup(ig)
-		// if err != nil {
-		//	return fmt.Errorf("error building cloud tags: %v", err)
-		// }
-		// t.Labels = labels
+		labels, err := b.CloudTagsForInstanceGroup(ig)
+		if err != nil {
+			return nil, fmt.Errorf("error building cloud tags: %v", err)
+		}
+		t.Labels = labels
 
 		t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
 		for _, accelerator := range ig.Spec.GuestAccelerators {

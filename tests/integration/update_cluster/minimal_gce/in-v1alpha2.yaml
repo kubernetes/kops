@@ -62,6 +62,8 @@ metadata:
   name: master-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2004-focal-v20221018
+  cloudLabels:
+    testCloudLabel: foobar
   machineType: e2-medium
   maxSize: 1
   minSize: 1
