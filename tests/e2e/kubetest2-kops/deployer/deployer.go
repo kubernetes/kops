@@ -57,6 +57,7 @@ type deployer struct {
 	Env                    []string `flag:"env" desc:"Additional env vars to set for kops commands in NAME=VALUE format"`
 	CreateArgs             string   `flag:"create-args" desc:"Extra space-separated arguments passed to 'kops create cluster'"`
 	KopsBinaryPath         string   `flag:"kops-binary-path" desc:"The path to kops executable used for testing"`
+	KopsVersion            string   `flag:"kops-version" desc:"The kops version to use in the cluster, must be a released version of kops"`
 	KubernetesFeatureGates string   `flag:"kubernetes-feature-gates" desc:"Feature Gates to enable on Kubernetes components"`
 
 	// ControlPlaneCount specifies the number of VMs in the control-plane.

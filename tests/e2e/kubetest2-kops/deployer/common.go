@@ -178,8 +178,14 @@ func (d *deployer) verifyKopsFlags() error {
 		klog.Infof("Using cluster name: %v", d.ClusterName)
 	}
 
-	if d.KopsBinaryPath == "" && d.KopsVersionMarker == "" {
-		return errors.New("missing required --kops-binary-path when --kops-version-marker is not used")
+	if d.KopsBinaryPath == "" && d.KopsVersionMarker == "" && d.KopsVersion == "" {
+		return errors.New("atleast one of  --kops-binary-path, --kops-version-marker, --kops-version must be set")
+	}
+	if d.KopsVersionMarker != "" && d.KopsVersion != "" {
+		return errors.New("you can't set kops-version-marker and kops-version at the same time")
+	}
+	if d.KopsBinaryPath != "" && (d.KopsVersion != "" || d.KopsVersionMarker != "") {
+		return errors.New("you can't set kops-binary-path with kops-version-marker or kops-version at the same time")
 	}
 
 	if d.ControlPlaneCount == 0 {
@@ -220,7 +226,8 @@ func (d *deployer) env() []string {
 		}
 	}
 
-	if d.CloudProvider == "aws" {
+	switch d.CloudProvider {
+	case "aws":
 		// Pass through some env vars if set
 		for _, k := range []string{"AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE", "AWS_CONTAINER_CREDENTIALS_FULL_URI", "AWS_PROFILE", "AWS_SHARED_CREDENTIALS_FILE"} {
 			v := os.Getenv(k)
@@ -231,7 +238,7 @@ func (d *deployer) env() []string {
 		// Recognized by the e2e framework
 		// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L59-L62
 		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
-	} else if d.CloudProvider == "azure" {
+	case "azure":
 		// Pass through some env vars if set
 		for _, k := range []string{"AZURE_TENANT_ID", "AZURE_SUBSCRIPTION_ID", "AZURE_CLIENT_ID", "AZURE_FEDERATED_TOKEN_FILE", "AZURE_STORAGE_ACCOUNT"} {
 			v := os.Getenv(k)
@@ -241,7 +248,7 @@ func (d *deployer) env() []string {
 				klog.Warningf("Azure env var %q not found or empty", k)
 			}
 		}
-	} else if d.CloudProvider == "digitalocean" {
+	case "digitalocean":
 		// Pass through some env vars if set
 		for _, k := range []string{"DIGITALOCEAN_ACCESS_TOKEN", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"} {
 			v := os.Getenv(k)
@@ -251,7 +258,7 @@ func (d *deployer) env() []string {
 				klog.Warningf("DO env var %q not found or empty", k)
 			}
 		}
-	} else if d.CloudProvider == "gce" {
+	case "gce":
 		if d.GCPProject != "" {
 			vars = append(vars, fmt.Sprintf("GCP_PROJECT=%v", d.GCPProject))
 		}
