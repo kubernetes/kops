@@ -51,222 +51,218 @@ var _ fi.CloudupModelBuilder = &AutoscalingGroupModelBuilder{}
 // Build the GCE instance template object for an InstanceGroup
 // We are then able to extract out the fields when running with the clusterapi.
 func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelBuilderContext, ig *kops.InstanceGroup, subnet *kops.ClusterSubnetSpec) (*gcetasks.InstanceTemplate, error) {
-	// Indented to keep diff manageable
-	// TODO: Remove spurious indent
-	{
-		var err error
-		name := b.SafeObjectName(ig.ObjectMeta.Name)
+	var err error
+	name := b.SafeObjectName(ig.ObjectMeta.Name)
 
-		startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+	startupScript, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
+	if err != nil {
+		return nil, err
+	}
+
+	{
+		var volumeSize int32
+		var volumeType string
+		var volumeIops int32
+		var volumeThroughput int32
+		if ig.Spec.RootVolume != nil {
+			volumeSize = fi.ValueOf(ig.Spec.RootVolume.Size)
+			volumeType = fi.ValueOf(ig.Spec.RootVolume.Type)
+			volumeIops = fi.ValueOf(ig.Spec.RootVolume.IOPS)
+			volumeThroughput = fi.ValueOf(ig.Spec.RootVolume.Throughput)
+		}
+		if volumeSize == 0 {
+			volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if volumeType == "" {
+			volumeType = DefaultVolumeType
+		}
+
+		namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
+		network, err := b.LinkToNetwork()
 		if err != nil {
 			return nil, err
 		}
 
-		{
-			var volumeSize int32
-			var volumeType string
-			var volumeIops int32
-			var volumeThroughput int32
-			if ig.Spec.RootVolume != nil {
-				volumeSize = fi.ValueOf(ig.Spec.RootVolume.Size)
-				volumeType = fi.ValueOf(ig.Spec.RootVolume.Type)
-				volumeIops = fi.ValueOf(ig.Spec.RootVolume.IOPS)
-				volumeThroughput = fi.ValueOf(ig.Spec.RootVolume.Throughput)
-			}
-			if volumeSize == 0 {
-				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
-				if err != nil {
-					return nil, err
-				}
-			}
-			if volumeType == "" {
-				volumeType = DefaultVolumeType
-			}
-
-			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
-			network, err := b.LinkToNetwork()
-			if err != nil {
-				return nil, err
-			}
-
-			HasExternalIP := fi.PtrTo(false)
-			if subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion() {
-				HasExternalIP = fi.PtrTo(true)
-			}
-			if ig.Spec.AssociatePublicIP != nil {
-				HasExternalIP = ig.Spec.AssociatePublicIP
-			}
-
-			t := &gcetasks.InstanceTemplate{
-				Name:           s(name),
-				NamePrefix:     s(namePrefix),
-				Lifecycle:      b.Lifecycle,
-				Network:        network,
-				MachineType:    s(ig.Spec.MachineType),
-				BootDiskType:   s(volumeType),
-				BootDiskSizeGB: i64(int64(volumeSize)),
-				BootDiskImage:  s(ig.Spec.Image),
-
-				Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
-				GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
-
-				HasExternalIP: HasExternalIP,
-
-				Scopes: []string{
-					"compute-rw",
-					"monitoring",
-					"logging-write",
-					"cloud-platform",
-				},
-				Metadata: map[string]fi.Resource{
-					gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),
-					nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
-				},
-			}
-
-			if volumeIops > 0 {
-				t.BootDiskIOPS = i64(int64(volumeIops))
-			}
-			if volumeThroughput > 0 {
-				t.BootDiskThroughput = i64(int64(volumeThroughput))
-			}
-
-			if startupScript != nil {
-				if !fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.UseStartupScript) {
-					// Use "user-data" instead of "startup-script", for compatibility with cloud-init
-					t.Metadata["user-data"] = startupScript
-				} else {
-					t.Metadata["startup-script"] = startupScript
-				}
-			}
-
-			if ig.Spec.Role == kops.InstanceGroupRoleNode {
-				autoscalerEnvVars := "os_distribution=ubuntu;arch=amd64;os=linux"
-				if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
-					autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
-				}
-
-				if len(ig.Spec.NodeLabels) > 0 {
-					var nodeLabels string
-					sortedLabelKeys := make([]string, len(ig.Spec.NodeLabels))
-					i := 0
-					for k := range ig.Spec.NodeLabels {
-						sortedLabelKeys[i] = k
-						i++
-					}
-					slices.SortStableFunc(sortedLabelKeys, strings.Compare)
-					for _, k := range sortedLabelKeys {
-						nodeLabels += k + "=" + ig.Spec.NodeLabels[k] + ","
-					}
-					nodeLabels, _ = strings.CutSuffix(nodeLabels, ",")
-
-					autoscalerEnvVars += ";node_labels=" + nodeLabels
-				}
-
-				if len(ig.Spec.Taints) > 0 {
-					autoscalerEnvVars += ";node_taints=" + strings.Join(ig.Spec.Taints, ",")
-				}
-
-				t.Metadata["kube-env"] = fi.NewStringResource("AUTOSCALER_ENV_VARS: " + autoscalerEnvVars)
-			}
-
-			stackType := "IPV4_ONLY"
-			if b.IsIPv6Only() {
-				// The subnets are dual-mode; IPV6_ONLY is not yet supported.
-				// This means that VMs will get an IPv4 and a /96 IPv6.
-				// However, pods will still be IPv6 only.
-				stackType = "IPV4_IPV6"
-
-				// // Ipv6AccessType must be set when enabling IPv6.
-				// // EXTERNAL is currently the only supported value
-				// ipv6AccessType := "EXTERNAL"
-				// t.Ipv6AccessType = &ipv6AccessType
-			}
-			t.StackType = &stackType
-
-			nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role, false)
-			if err != nil {
-				return nil, err
-			}
-
-			storagePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
-			if err != nil {
-				return nil, err
-			}
-			if len(storagePaths) == 0 {
-				t.Scopes = append(t.Scopes, "storage-ro")
-			} else {
-				klog.Warningf("enabling storage-rw for etcd backups")
-				t.Scopes = append(t.Scopes, "storage-rw")
-			}
-
-			if len(b.SSHPublicKeys) > 0 {
-				var gFmtKeys []string
-				for _, key := range b.SSHPublicKeys {
-					gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
-				}
-
-				t.Metadata["ssh-keys"] = fi.NewStringResource(strings.Join(gFmtKeys, "\n"))
-			}
-
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleControlPlane:
-				// Grant DNS permissions
-				// TODO: migrate to IAM permissions instead of oldschool scopes?
-				t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleControlPlane))
-				t.Tags = append(t.Tags, b.GCETagForRole("master"))
-
-			case kops.InstanceGroupRoleNode:
-				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
-
-			case kops.InstanceGroupRoleBastion:
-				t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
-			}
-			clusterLabel := gce.LabelForCluster(b.ClusterName())
-			roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
-			t.Labels = map[string]string{
-				clusterLabel.Key:              clusterLabel.Value,
-				roleLabel:                     ig.Spec.Role.ToLowerString(),
-				gce.GceLabelNameInstanceGroup: ig.ObjectMeta.Name,
-			}
-			if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
-				t.Labels[gce.GceLabelNameRolePrefix+"master"] = "master"
-			}
-
-			if gce.UsesIPAliases(b.Cluster) {
-				t.CanIPForward = fi.PtrTo(false)
-
-				nodeCIDRMaskSize := int32(24)
-				if b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize != nil {
-					nodeCIDRMaskSize = *b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize
-				}
-				t.AliasIPRanges = map[string]string{
-					b.NameForIPAliasRange("pods"): fmt.Sprintf("/%d", nodeCIDRMaskSize),
-				}
-			} else {
-				t.CanIPForward = fi.PtrTo(true)
-			}
-			t.Subnet = b.LinkToSubnet(subnet)
-
-			t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
-
-			// labels, err := b.CloudTagsForInstanceGroup(ig)
-			// if err != nil {
-			//	return fmt.Errorf("error building cloud tags: %v", err)
-			// }
-			// t.Labels = labels
-
-			t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
-			for _, accelerator := range ig.Spec.GuestAccelerators {
-				t.GuestAccelerators = append(t.GuestAccelerators, gcetasks.AcceleratorConfig{
-					AcceleratorCount: accelerator.AcceleratorCount,
-					AcceleratorType:  accelerator.AcceleratorType,
-				})
-			}
-
-			return t, nil
+		HasExternalIP := fi.PtrTo(false)
+		if subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion() {
+			HasExternalIP = fi.PtrTo(true)
 		}
+		if ig.Spec.AssociatePublicIP != nil {
+			HasExternalIP = ig.Spec.AssociatePublicIP
+		}
+
+		t := &gcetasks.InstanceTemplate{
+			Name:           s(name),
+			NamePrefix:     s(namePrefix),
+			Lifecycle:      b.Lifecycle,
+			Network:        network,
+			MachineType:    s(ig.Spec.MachineType),
+			BootDiskType:   s(volumeType),
+			BootDiskSizeGB: i64(int64(volumeSize)),
+			BootDiskImage:  s(ig.Spec.Image),
+
+			Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
+			GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
+
+			HasExternalIP: HasExternalIP,
+
+			Scopes: []string{
+				"compute-rw",
+				"monitoring",
+				"logging-write",
+				"cloud-platform",
+			},
+			Metadata: map[string]fi.Resource{
+				gcemetadata.MetadataKeyClusterName:           fi.NewStringResource(b.ClusterName()),
+				nodeidentitygce.MetadataKeyInstanceGroupName: fi.NewStringResource(ig.Name),
+			},
+		}
+
+		if volumeIops > 0 {
+			t.BootDiskIOPS = i64(int64(volumeIops))
+		}
+		if volumeThroughput > 0 {
+			t.BootDiskThroughput = i64(int64(volumeThroughput))
+		}
+
+		if startupScript != nil {
+			if !fi.ValueOf(b.Cluster.Spec.CloudProvider.GCE.UseStartupScript) {
+				// Use "user-data" instead of "startup-script", for compatibility with cloud-init
+				t.Metadata["user-data"] = startupScript
+			} else {
+				t.Metadata["startup-script"] = startupScript
+			}
+		}
+
+		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+			autoscalerEnvVars := "os_distribution=ubuntu;arch=amd64;os=linux"
+			if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
+				autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
+			}
+
+			if len(ig.Spec.NodeLabels) > 0 {
+				var nodeLabels string
+				sortedLabelKeys := make([]string, len(ig.Spec.NodeLabels))
+				i := 0
+				for k := range ig.Spec.NodeLabels {
+					sortedLabelKeys[i] = k
+					i++
+				}
+				slices.SortStableFunc(sortedLabelKeys, strings.Compare)
+				for _, k := range sortedLabelKeys {
+					nodeLabels += k + "=" + ig.Spec.NodeLabels[k] + ","
+				}
+				nodeLabels, _ = strings.CutSuffix(nodeLabels, ",")
+
+				autoscalerEnvVars += ";node_labels=" + nodeLabels
+			}
+
+			if len(ig.Spec.Taints) > 0 {
+				autoscalerEnvVars += ";node_taints=" + strings.Join(ig.Spec.Taints, ",")
+			}
+
+			t.Metadata["kube-env"] = fi.NewStringResource("AUTOSCALER_ENV_VARS: " + autoscalerEnvVars)
+		}
+
+		stackType := "IPV4_ONLY"
+		if b.IsIPv6Only() {
+			// The subnets are dual-mode; IPV6_ONLY is not yet supported.
+			// This means that VMs will get an IPv4 and a /96 IPv6.
+			// However, pods will still be IPv6 only.
+			stackType = "IPV4_IPV6"
+
+			// // Ipv6AccessType must be set when enabling IPv6.
+			// // EXTERNAL is currently the only supported value
+			// ipv6AccessType := "EXTERNAL"
+			// t.Ipv6AccessType = &ipv6AccessType
+		}
+		t.StackType = &stackType
+
+		nodeRole, err := iam.BuildNodeRoleSubject(ig.Spec.Role, false)
+		if err != nil {
+			return nil, err
+		}
+
+		storagePaths, err := iam.WriteableVFSPaths(b.Cluster, nodeRole)
+		if err != nil {
+			return nil, err
+		}
+		if len(storagePaths) == 0 {
+			t.Scopes = append(t.Scopes, "storage-ro")
+		} else {
+			klog.Warningf("enabling storage-rw for etcd backups")
+			t.Scopes = append(t.Scopes, "storage-rw")
+		}
+
+		if len(b.SSHPublicKeys) > 0 {
+			var gFmtKeys []string
+			for _, key := range b.SSHPublicKeys {
+				gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+			}
+
+			t.Metadata["ssh-keys"] = fi.NewStringResource(strings.Join(gFmtKeys, "\n"))
+		}
+
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleControlPlane:
+			// Grant DNS permissions
+			// TODO: migrate to IAM permissions instead of oldschool scopes?
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleControlPlane))
+			t.Tags = append(t.Tags, b.GCETagForRole("master"))
+
+		case kops.InstanceGroupRoleNode:
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+
+		case kops.InstanceGroupRoleBastion:
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
+		}
+		clusterLabel := gce.LabelForCluster(b.ClusterName())
+		roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
+		t.Labels = map[string]string{
+			clusterLabel.Key:              clusterLabel.Value,
+			roleLabel:                     ig.Spec.Role.ToLowerString(),
+			gce.GceLabelNameInstanceGroup: ig.ObjectMeta.Name,
+		}
+		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+			t.Labels[gce.GceLabelNameRolePrefix+"master"] = "master"
+		}
+
+		if gce.UsesIPAliases(b.Cluster) {
+			t.CanIPForward = fi.PtrTo(false)
+
+			nodeCIDRMaskSize := int32(24)
+			if b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize != nil {
+				nodeCIDRMaskSize = *b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize
+			}
+			t.AliasIPRanges = map[string]string{
+				b.NameForIPAliasRange("pods"): fmt.Sprintf("/%d", nodeCIDRMaskSize),
+			}
+		} else {
+			t.CanIPForward = fi.PtrTo(true)
+		}
+		t.Subnet = b.LinkToSubnet(subnet)
+
+		t.ServiceAccounts = append(t.ServiceAccounts, b.LinkToServiceAccount(ig))
+
+		// labels, err := b.CloudTagsForInstanceGroup(ig)
+		// if err != nil {
+		//	return fmt.Errorf("error building cloud tags: %v", err)
+		// }
+		// t.Labels = labels
+
+		t.GuestAccelerators = []gcetasks.AcceleratorConfig{}
+		for _, accelerator := range ig.Spec.GuestAccelerators {
+			t.GuestAccelerators = append(t.GuestAccelerators, gcetasks.AcceleratorConfig{
+				AcceleratorCount: accelerator.AcceleratorCount,
+				AcceleratorType:  accelerator.AcceleratorType,
+			})
+		}
+
+		return t, nil
 	}
 }
 
