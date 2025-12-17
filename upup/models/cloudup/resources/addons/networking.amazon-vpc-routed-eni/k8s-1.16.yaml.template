@@ -1,4 +1,4 @@
-# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/v1.20.2/config/master/aws-k8s-cni.yaml
+# Vendored from https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/v1.21.0/config/master/aws-k8s-cni.yaml
 ---
 # Source: aws-vpc-cni/crds/customresourcedefinition.yaml
 apiVersion: apiextensions.k8s.io/v1
@@ -79,14 +79,19 @@ spec:
         description: PolicyEndpoint is the Schema for the policyendpoints API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -103,6 +108,12 @@ spec:
                     cidr:
                       description: CIDR is the network address(s) of the endpoint
                       type: string
+                    domainName:
+                      description: |-
+                        DomainName is the FQDN for the endpoint (mutually exclusive with CIDR, egress-only)
+                        Note: This field should only be used in egress rules, not ingress
+                      pattern: ^(\*\.)?([a-zA-z0-9]([-a-zA-Z0-9_]*[a-zA-Z0-9])?\.)+[a-zA-z0-9]([-a-zA-Z0-9_]*[a-zA-Z0-9])?\.?$
+                      type: string
                     except:
                       description: Except is the exceptions to the CIDR ranges mentioned
                         above.
@@ -116,9 +127,9 @@ spec:
                           port/protocol
                         properties:
                           endPort:
-                            description: Endport specifies the port range port to
-                              endPort port must be defined and an integer, endPort
-                              > port
+                            description: |-
+                              Endport specifies the port range port to endPort
+                              port must be defined and an integer, endPort > port
                             format: int32
                             type: integer
                           port:
@@ -133,8 +144,6 @@ spec:
                             type: string
                         type: object
                       type: array
-                  required:
-                  - cidr
                   type: object
                 type: array
               ingress:
@@ -147,6 +156,12 @@ spec:
                     cidr:
                       description: CIDR is the network address(s) of the endpoint
                       type: string
+                    domainName:
+                      description: |-
+                        DomainName is the FQDN for the endpoint (mutually exclusive with CIDR, egress-only)
+                        Note: This field should only be used in egress rules, not ingress
+                      pattern: ^(\*\.)?([a-zA-z0-9]([-a-zA-Z0-9_]*[a-zA-Z0-9])?\.)+[a-zA-z0-9]([-a-zA-Z0-9_]*[a-zA-Z0-9])?\.?$
+                      type: string
                     except:
                       description: Except is the exceptions to the CIDR ranges mentioned
                         above.
@@ -160,9 +175,9 @@ spec:
                           port/protocol
                         properties:
                           endPort:
-                            description: Endport specifies the port range port to
-                              endPort port must be defined and an integer, endPort
-                              > port
+                            description: |-
+                              Endport specifies the port range port to endPort
+                              port must be defined and an integer, endPort > port
                             format: int32
                             type: integer
                           port:
@@ -177,18 +192,17 @@ spec:
                             type: string
                         type: object
                       type: array
-                  required:
-                  - cidr
                   type: object
                 type: array
               podIsolation:
-                description: PodIsolation specifies whether the pod needs to be isolated
-                  for a particular traffic direction Ingress or Egress, or both. If
-                  default isolation is not specified, and there are no ingress/egress
-                  rules, then the pod is not isolated from the point of view of this
-                  policy. This follows the NetworkPolicy spec.PolicyTypes.
+                description: |-
+                  PodIsolation specifies whether the pod needs to be isolated for a
+                  particular traffic direction Ingress or Egress, or both. If default isolation is not
+                  specified, and there are no ingress/egress rules, then the pod is not isolated
+                  from the point of view of this policy. This follows the NetworkPolicy spec.PolicyTypes.
                 items:
-                  description: PolicyType string describes the NetworkPolicy type
+                  description: |-
+                    PolicyType string describes the NetworkPolicy type
                     This type is beta-level in 1.8
                   type: string
                 type: array
@@ -199,46 +213,48 @@ spec:
                     description: matchExpressions is a list of label selector requirements.
                       The requirements are ANDed.
                     items:
-                      description: A label selector requirement is a selector that
-                        contains values, a key, and an operator that relates the key
-                        and values.
+                      description: |-
+                        A label selector requirement is a selector that contains values, a key, and an operator that
+                        relates the key and values.
                       properties:
                         key:
                           description: key is the label key that the selector applies
                             to.
                           type: string
                         operator:
-                          description: operator represents a key's relationship to
-                            a set of values. Valid operators are In, NotIn, Exists
-                            and DoesNotExist.
+                          description: |-
+                            operator represents a key's relationship to a set of values.
+                            Valid operators are In, NotIn, Exists and DoesNotExist.
                           type: string
                         values:
-                          description: values is an array of string values. If the
-                            operator is In or NotIn, the values array must be non-empty.
-                            If the operator is Exists or DoesNotExist, the values
-                            array must be empty. This array is replaced during a strategic
+                          description: |-
+                            values is an array of string values. If the operator is In or NotIn,
+                            the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                            the values array must be empty. This array is replaced during a strategic
                             merge patch.
                           items:
                             type: string
                           type: array
+                          x-kubernetes-list-type: atomic
                       required:
                       - key
                       - operator
                       type: object
                     type: array
+                    x-kubernetes-list-type: atomic
                   matchLabels:
                     additionalProperties:
                       type: string
-                    description: matchLabels is a map of {key,value} pairs. A single
-                      {key,value} in the matchLabels map is equivalent to an element
-                      of matchExpressions, whose key field is "key", the operator
-                      is "In", and the values array contains only "value". The requirements
-                      are ANDed.
+                    description: |-
+                      matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                      map is equivalent to an element of matchExpressions, whose key field is "key", the
+                      operator is "In", and the values array contains only "value". The requirements are ANDed.
                     type: object
                 type: object
                 x-kubernetes-map-type: atomic
               podSelectorEndpoints:
-                description: PodSelectorEndpoints contains information about the pods
+                description: |-
+                  PodSelectorEndpoints contains information about the pods
                   matching the podSelector
                 items:
                   description: PodEndpoint defines the summary information for the
@@ -301,7 +317,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.20.5"
+    app.kubernetes.io/version: "v1.21.0"
 ---
 # Source: aws-vpc-cni/templates/configmap.yaml
 apiVersion: v1
@@ -313,7 +329,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.20.5"
+    app.kubernetes.io/version: "v1.21.0"
 data:
   enable-windows-ipam: "false"
   enable-network-policy-controller: "false"
@@ -332,7 +348,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.20.5"
+    app.kubernetes.io/version: "v1.21.0"
 rules:
   - apiGroups:
       - crd.k8s.amazonaws.com
@@ -375,6 +391,8 @@ rules:
     resources:
       - cninodes
     verbs: ["get", "list", "watch", "patch"]
+  - nonResourceURLs: ["/apis/networking.k8s.aws", "/apis/networking.k8s.aws/*"]
+    verbs: ["get"]
 ---
 # Source: aws-vpc-cni/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -385,7 +403,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.20.5"
+    app.kubernetes.io/version: "v1.21.0"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -405,7 +423,7 @@ metadata:
     app.kubernetes.io/name: aws-node
     app.kubernetes.io/instance: aws-vpc-cni
     k8s-app: aws-node
-    app.kubernetes.io/version: "v1.20.5"
+    app.kubernetes.io/version: "v1.21.0"
 spec:
   updateStrategy:
     rollingUpdate:
@@ -426,7 +444,7 @@ spec:
       hostNetwork: true
       initContainers:
       - name: aws-vpc-cni-init
-        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.20.5" }}"
+        image: "{{- or .Networking.AmazonVPC.InitImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.21.0" }}"
         imagePullPolicy: IfNotPresent
         env:
           - name: DISABLE_TCP_EARLY_DEMUX
@@ -452,7 +470,7 @@ spec:
 {{ end }}
       containers:
         - name: aws-node
-          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.20.5" }}"
+          image: "{{- or .Networking.AmazonVPC.Image "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.21.0" }}"
           ports:
             - containerPort: 61678
               name: metrics
@@ -526,7 +544,7 @@ spec:
             # - name: NETWORK_POLICY_ENFORCING_MODE
             #   value: "standard"
             - name: VPC_CNI_VERSION
-              value: "v1.20.2"
+              value: "v1.21.0"
             # - name: WARM_ENI_TARGET
             #   value: "1"
             # - name: WARM_PREFIX_TARGET
@@ -563,7 +581,7 @@ spec:
           - mountPath: /run/xtables.lock
             name: xtables-lock
         - name: aws-eks-nodeagent
-          image: "{{- or .Networking.AmazonVPC.NetworkPolicyAgentImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.2.7" }}"
+          image: "{{- or .Networking.AmazonVPC.NetworkPolicyAgentImage "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.3.0" }}"
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8162
