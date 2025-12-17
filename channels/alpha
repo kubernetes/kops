@@ -66,19 +66,19 @@ spec:
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.20.0 <1.27.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251122
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20251212
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251122
+    - name: 099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20251212
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.27.0 <1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251126
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212
       providerID: aws
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
-    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251126
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-arm64-server-20251212
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.32.0"
@@ -120,13 +120,13 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.34.0"
-    recommendedVersion: 1.34.2
+    recommendedVersion: 1.34.3
     requiredVersion: 1.34.0
   - range: ">=1.33.0"
-    recommendedVersion: 1.33.6
+    recommendedVersion: 1.33.7
     requiredVersion: 1.33.0
   - range: ">=1.32.0"
-    recommendedVersion: 1.32.10
+    recommendedVersion: 1.32.11
     requiredVersion: 1.32.0
   - range: ">=1.31.0"
     recommendedVersion: 1.31.14
@@ -198,15 +198,15 @@ spec:
   - range: ">=1.34.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.34.0
-    kubernetesVersion: 1.34.2
+    kubernetesVersion: 1.34.3
   - range: ">=1.33.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.33.0
-    kubernetesVersion: 1.33.6
+    kubernetesVersion: 1.33.7
   - range: ">=1.32.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.32.0
-    kubernetesVersion: 1.32.10
+    kubernetesVersion: 1.32.11
   - range: ">=1.31.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.31.0
