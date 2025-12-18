@@ -175,6 +175,16 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = append(args, "--yes")
 	}
 
+	tags := []string{
+		"group=sig-cluster-lifecycle",
+		"subproject=kops",
+	}
+	if d.CloudProvider == "azure" {
+		// Ensure https://github.com/Azure/rg-cleanup deletes removes resources
+		tags = append(tags, "creationTimestamp="+time.Now().Format(time.RFC3339))
+	}
+	args = appendIfUnset(args, "--cloud-labels", strings.Join(tags, ","))
+
 	isArm := false
 	if d.CreateArgs != "" {
 		if strings.Contains(d.CreateArgs, "arm64") {
@@ -186,7 +196,6 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		}
 		args = append(args, createArgs...)
 	}
-	args = appendIfUnset(args, "--cloud-labels", strings.Join(d.Tags, ","))
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 
 	// Dont set --master-count if either --control-plane-count or --master-count
