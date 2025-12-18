@@ -129,7 +129,7 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-echo "H4sIAAAAAAAA/2zOTUsDMRDG8ft+itxlu1sRxIAHjS+tSrt4EY/TZFYXM5k0M6n124vsqeD9/+N5XOQahsKHKWCxBr6lcbGKYtkAoTWeKRcUWeARKEdceKbGcRqnj1sQtIaQRrFd52d1Enb/6nUSheTxsXDN8wrBn22rtIqi7RJOo1eOaI3jpIXjECFhs+GANc9HViCf1vD5+qhfh3453ry9nG3pfXrYP1/pz9Nue7EaLoNS9v3+/i7v+uvmFwAA//8BAAD//9I1GG/3AAAA" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/2zOwUoDMRDG8fs+RV5gG72IBrw0xd1FXIoehN7GZHZbyGRCJjHi04vsqdD7/8f32cDVHzN/Xzxmo6BJZ0OVgnkGQqMcU8oossMfoBRw55g6y3G5rHsQNIqQFjFau01dhfqmnqIUiA6HzDVtKwT/tq/SF5TS38N19M4BjbIcS+ZwDBCxm9ljTduREeRs1OH0sT4t4+Gt2Vb0bF8/6Ute9oM7j219nO5+y8NJfLY8TM/dHwAAAP//AQAA//+dX4yT9wAAAA==" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="

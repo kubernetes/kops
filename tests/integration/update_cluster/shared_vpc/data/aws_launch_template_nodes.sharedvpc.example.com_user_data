@@ -149,7 +149,7 @@ ConfigServer:
   - https://kops-controller.internal.sharedvpc.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: F7bQesUXDmmPXUL6g++te5ZWN5lsQFZspDeFWhAficc=
+NodeupConfigHash: jIcRuR81erRk92wKCLLR6SubckBYeEnfVf9ruayTC3Y=
 
 __EOF_KUBE_ENV
 
