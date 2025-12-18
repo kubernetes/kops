@@ -73,6 +73,9 @@ func (d *deployer) Up() error {
 			if err := d.aws.EnsureS3Bucket(ctx, d.stateStore(), false); err != nil {
 				return err
 			}
+			if err := d.aws.EnsureS3Bucket(ctx, d.discoveryStore(), true); err != nil {
+				return err
+			}
 		case "gce":
 			if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject, false); err != nil {
 				return err
@@ -169,6 +172,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--set", "cluster.spec.nodePortAccess=0.0.0.0/0",
 		"--set", `spec.containerd.configAdditions=plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`,
+	}
+
+	if d.discoveryStore() != "" {
+		args = append(args, "--discovery-store", d.discoveryStore())
 	}
 
 	if yes {
