@@ -88,33 +88,11 @@ func (t *Tester) setSkipRegexFlag() error {
 			// < 36 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
 			// https://github.com/kubernetes/kubernetes/issues/129221
-			// < 36 so we look at this again
-			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
-			// < 36 so we look at this again
-			skipRegex += "|Networking.Granular.Checks:.Services.should.function.for.service.endpoints.using.hostNetwork"
-		}
-
-	} else if networking.Calico != nil {
-		if cluster.Spec.LegacyCloudProvider == "gce" && k8sVersion.Minor < 35 {
-			// < 35 so we look at this again
-			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
-		}
-	} else if networking.Flannel != nil {
-		if k8sVersion.Minor < 36 {
-			// < 36 so we look at this again
-			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
-		if k8sVersion.Minor < 36 {
-			// < 36 so we look at this again
-			skipRegex += "|Networking.Granular.Checks:.Services.should.function.for.service.endpoints.using.hostNetwork"
-			// < 36 so we look at this again
-			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
-		}
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
-		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
@@ -135,9 +113,10 @@ func (t *Tester) setSkipRegexFlag() error {
 	// ref: https://github.com/kubernetes/kubernetes/issues/123255
 	// ref: https://github.com/kubernetes/kubernetes/issues/121018
 	// ref: https://github.com/kubernetes/kubernetes/pull/126896
-	// < 35 so we look at this again
-	if k8sVersion.Minor < 35 {
+	// < 36 so we look at this again
+	if k8sVersion.Minor < 36 {
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
+		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
 
 	for _, subnet := range cluster.Spec.Subnets {
