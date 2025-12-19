@@ -314,11 +314,11 @@ containerdConfig:
     docker.io:
     - https://registry-1.docker.io
   runc:
-    version: 1.3.3
+    version: 1.3.4
   sandboxImage: registry.k8s.io/pause:3.10.1
   skipInstall: true
   useECRCredentialsForMirrors: true
-  version: 2.1.5
+  version: 2.1.6
 etcdManifests:
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/events-master-us-test-1a.yaml

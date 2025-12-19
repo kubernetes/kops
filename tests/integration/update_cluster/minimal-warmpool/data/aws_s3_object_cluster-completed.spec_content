@@ -29,9 +29,9 @@ spec:
   containerd:
     logLevel: info
     runc:
-      version: 1.3.3
+      version: 1.3.4
     sandboxImage: kops.k8s.io/remapped-image/pause:3.10.1
-    version: 2.1.5
+    version: 2.1.6
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:
