@@ -131,7 +131,7 @@ create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+create_args+=("--master-size=c7i.24xlarge")
 
 
 # AWS ONLY feature flags
