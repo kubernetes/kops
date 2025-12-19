@@ -1569,6 +1569,11 @@ func validateNetworkingCalico(c *kops.ClusterSpec, v *kops.CalicoNetworkingSpec,
 			// backend in order to allow use of BGP to distribute routes for pod traffic.
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encapsulationMode"), "encapsulationMode \"none\" is only supported for IPv6 clusters"))
 		}
+
+		if v.EncapsulationMode != "vxlan" && c.CloudProvider.Azure != nil {
+			// IPIP packets are blocked by the Azure network fabric. This requires the use of VXLAN encapsulation for pod traffic.
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("encapsulationMode"), "Azure requires an encapsulationMode of \"vxlan\""))
+		}
 	}
 
 	if v.IPIPMode != "" {
