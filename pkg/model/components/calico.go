@@ -40,5 +40,10 @@ func (b *CalicoOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		c.EncapsulationMode = "none"
 	}
 
+	if o.GetCloudProvider() == kops.CloudProviderAzure {
+		c.EncapsulationMode = "vxlan"
+		c.VXLANMode = "Always"
+	}
+
 	return nil
 }
