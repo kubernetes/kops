@@ -482,9 +482,18 @@ spec:
                   gcpPDCSIDriver:
                     description: GCPPDCSIDriver is the config for the GCP PD CSI driver
                     properties:
+                      defaultStorageClassName:
+                        description: Default StorageClassName is the name of the default
+                          StorageClass created for GCP PD CSI driver.
+                        type: string
                       enabled:
                         description: Enabled enables the GCP PD CSI driver
                         type: boolean
+                      version:
+                        description: |-
+                          Version is the container image tag used.
+                          Default: The latest stable release which is compatible with your Kubernetes version
+                        type: string
                     type: object
                   manageStorageClasses:
                     description: |-
