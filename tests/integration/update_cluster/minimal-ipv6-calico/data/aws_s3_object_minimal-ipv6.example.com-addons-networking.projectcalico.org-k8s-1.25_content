@@ -7183,7 +7183,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/node:v3.31.2
+        image: docker.io/calico/node:v3.31.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -7263,7 +7263,7 @@ spec:
         - configMapRef:
             name: kubernetes-services-endpoint
             optional: true
-        image: docker.io/calico/cni:v3.31.2
+        image: docker.io/calico/cni:v3.31.3
         imagePullPolicy: IfNotPresent
         name: install-cni
         securityContext:
@@ -7277,7 +7277,7 @@ spec:
         - calico-node
         - -init
         - -best-effort
-        image: docker.io/calico/node:v3.31.2
+        image: docker.io/calico/node:v3.31.3
         imagePullPolicy: IfNotPresent
         name: ebpf-bootstrap
         securityContext:
@@ -7404,7 +7404,7 @@ spec:
           value: node,loadbalancer
         - name: DATASTORE_TYPE
           value: kubernetes
-        image: docker.io/calico/kube-controllers:v3.31.2
+        image: docker.io/calico/kube-controllers:v3.31.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
