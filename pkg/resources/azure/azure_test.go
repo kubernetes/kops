@@ -153,6 +153,8 @@ func TestListResourcesAzure(t *testing.T) {
 
 	vms := cloud.VMScaleSetVMsClient.VMs
 	vms[vmName] = &compute.VirtualMachineScaleSetVM{
+		ID:   to.Ptr(vmID),
+		Name: to.Ptr(vmName),
 		Properties: &compute.VirtualMachineScaleSetVMProperties{
 			StorageProfile: &compute.StorageProfile{
 				DataDisks: []*compute.DataDisk{
@@ -268,6 +270,9 @@ func TestListResourcesAzure(t *testing.T) {
 				toKey(typeVirtualNetwork, vnetID),
 				toKey(typeSubnet, subnetID),
 			},
+			blocked: []string{
+				toKey(typeVMScaleSetVM, vmID),
+			},
 		},
 		toKey(typeDisk, diskID): {
 			rtype:   typeDisk,
@@ -287,6 +292,11 @@ func TestListResourcesAzure(t *testing.T) {
 			rtype:  typeLoadBalancer,
 			name:   lbName,
 			blocks: []string{toKey(typeResourceGroup, rgID)},
+		},
+		toKey(typeVMScaleSetVM, vmID): {
+			rtype:  typeVMScaleSetVM,
+			name:   vmName,
+			blocks: []string{toKey(typeResourceGroup, rgID), toKey(typeVMScaleSet, vmssID)},
 		},
 	}
 	if !reflect.DeepEqual(a, e) {

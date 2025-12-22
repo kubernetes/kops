@@ -39,6 +39,7 @@ const (
 	typeSubnet                   = "Subnet"
 	typeRouteTable               = "RouteTable"
 	typeVMScaleSet               = "VMScaleSet"
+	typeVMScaleSetVM             = "VMScaleSetVM"
 	typeDisk                     = "Disk"
 	typeRoleAssignment           = "RoleAssignment"
 	typeLoadBalancer             = "LoadBalancer"
@@ -394,6 +395,14 @@ func (g *resourceGetter) listVMScaleSetsAndRoleAssignments(ctx context.Context) 
 			return nil, err
 		}
 
+		for _, vm := range vms {
+			vmr, err := g.toVMScaleSetVMResource(vmss, vm)
+			if err != nil {
+				return nil, err
+			}
+			rs = append(rs, vmr)
+		}
+
 		r, err := g.toVMScaleSetResource(vmss, vms)
 		if err != nil {
 			return nil, err
@@ -422,6 +431,15 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 	// Add resources whose deletion is blocked by this VMSS.
 	var blocks []string
 	blocks = append(blocks, toKey(typeResourceGroup, g.resourceGroupID()))
+
+	// The VM Scale Set deletion is blocked by its instances.
+	var blocked []string
+	for _, vm := range vms {
+		if vm == nil || vm.ID == nil {
+			continue
+		}
+		blocked = append(blocked, toKey(typeVMScaleSetVM, *vm.ID))
+	}
 
 	vnets := set.New[string]()
 	subnets := set.New[string]()
@@ -471,6 +489,47 @@ func (g *resourceGetter) toVMScaleSetResource(vmss *compute.VirtualMachineScaleS
 		Name:    *vmss.Name,
 		Deleter: g.deleteVMScaleSet,
 		Blocks:  blocks,
+		Blocked: blocked,
+		Dumper:  DumpVMScaleSet,
+	}, nil
+}
+
+func (g *resourceGetter) toVMScaleSetVMResource(vmss *compute.VirtualMachineScaleSet, vm *compute.VirtualMachineScaleSetVM) (*resources.Resource, error) {
+	if vm == nil || vm.ID == nil {
+		return nil, fmt.Errorf("VMScaleSetVM is missing ID")
+	}
+	if vmss == nil || vmss.Name == nil || vmss.ID == nil {
+		return nil, fmt.Errorf("VMScaleSet is missing ID or Name")
+	}
+
+	rid, err := arm.ParseResourceID(*vm.ID)
+	if err != nil {
+		return nil, err
+	}
+	instanceID := rid.Name
+
+	name := ""
+	if vm.Properties != nil && vm.Properties.OSProfile != nil && vm.Properties.OSProfile.ComputerName != nil {
+		name = *vm.Properties.OSProfile.ComputerName
+	} else if vm.Name != nil {
+		name = *vm.Name
+	} else {
+		name = instanceID
+	}
+
+	return &resources.Resource{
+		Obj:    vm,
+		Type:   typeVMScaleSetVM,
+		ID:     *vm.ID,
+		Name:   name,
+		Dumper: DumpVMScaleSetVM,
+		Deleter: func(_ fi.Cloud, r *resources.Resource) error {
+			return g.cloud.VMScaleSetVM().Delete(context.TODO(), g.resourceGroupName(), *vmss.Name, instanceID)
+		},
+		Blocks: []string{
+			toKey(typeResourceGroup, g.resourceGroupID()),
+			toKey(typeVMScaleSet, *vmss.ID),
+		},
 	}, nil
 }
 
@@ -605,6 +664,7 @@ func (g *resourceGetter) toLoadBalancerResource(loadBalancer *network.LoadBalanc
 		Name:    *loadBalancer.Name,
 		Deleter: g.deleteLoadBalancer,
 		Blocks:  blocks,
+		Dumper:  DumpLoadBalancer,
 	}, nil
 }
 
