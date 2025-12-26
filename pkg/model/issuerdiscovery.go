@@ -56,8 +56,8 @@ type oidcDiscovery struct {
 func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	ctx := context.TODO()
 
-	said := b.Cluster.Spec.ServiceAccountIssuerDiscovery
-	if said == nil || said.DiscoveryStore == "" {
+	serviceAccountIssuerDiscovery := b.Cluster.Spec.ServiceAccountIssuerDiscovery
+	if serviceAccountIssuerDiscovery == nil || serviceAccountIssuerDiscovery.DiscoveryStore == "" {
 		return nil
 	}
 

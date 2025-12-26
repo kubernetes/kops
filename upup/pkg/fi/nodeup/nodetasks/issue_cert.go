@@ -219,7 +219,7 @@ func newStaticKeystore(ctx context.Context, signer string, keypairID string, key
 	}
 
 	if keypairID == "" {
-		return nil, fmt.Errorf("missing keypairID for %s", signer)
+		return nil, fmt.Errorf("missing keypairID for signer %s", signer)
 	}
 
 	keyset, err := keystore.FindKeyset(ctx, signer)

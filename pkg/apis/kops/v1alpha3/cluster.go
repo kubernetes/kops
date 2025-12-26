@@ -271,10 +271,18 @@ type KarpenterConfig struct {
 type ServiceAccountIssuerDiscoveryConfig struct {
 	// DiscoveryStore is the VFS path to where OIDC Issuer Discovery metadata is stored.
 	DiscoveryStore string `json:"discoveryStore,omitempty"`
+	// DiscoveryService configures discovery using a hosted discovery service.
+	DiscoveryService *DiscoveryServiceOptions `json:"discoveryService,omitempty"`
 	// EnableAWSOIDCProvider will provision an AWS OIDC provider that trusts the ServiceAccount Issuer
 	EnableAWSOIDCProvider bool `json:"enableAWSOIDCProvider,omitempty"`
 	// AdditionalAudiences adds user defined audiences to the provisioned AWS OIDC provider
 	AdditionalAudiences []string `json:"additionalAudiences,omitempty"`
+}
+
+// DiscoveryServiceOptions configures a hosted discovery service.
+type DiscoveryServiceOptions struct {
+	// URL is the base URL of the discovery service, including universe ID if applicable.
+	URL string `json:"url,omitempty"`
 }
 
 // ServiceAccountExternalPermissions grants a ServiceAccount permissions to external resources.

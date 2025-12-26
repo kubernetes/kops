@@ -276,6 +276,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 				}
 			}
 			config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
+
+			// Add key for registering with the discovery service (if configured)
+			if cluster.Spec.ServiceAccountIssuerDiscovery != nil &&
+				cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService != nil &&
+				cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService.URL != "" {
+				config.KeypairIDs[fi.DiscoveryCAID] = keysets[fi.DiscoveryCAID].Primary.Id
+			}
 		} else {
 			if keysets["etcd-client-cilium"] != nil {
 				config.KeypairIDs["etcd-client-cilium"] = keysets["etcd-client-cilium"].Primary.Id

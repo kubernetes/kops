@@ -75,6 +75,13 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			default:
 				return fmt.Errorf("locationStore=%q is of unexpected type %T", store, base)
 			}
+		} else if said != nil && said.DiscoveryService != nil {
+			discoveryService := said.DiscoveryService
+
+			serviceAccountIssuer = discoveryService.URL
+			if serviceAccountIssuer == "" {
+				return fmt.Errorf("discoveryService URL must be specified")
+			}
 		} else {
 			if supportsPublicJWKS(clusterSpec) && clusterSpec.API.PublicName != "" {
 				serviceAccountIssuer = "https://" + clusterSpec.API.PublicName

@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/util/pkg/architectures"
@@ -142,6 +143,15 @@ type Config struct {
 	// Discovery methods
 	UsesLegacyGossip bool `json:"usesLegacyGossip"`
 	UsesNoneDNS      bool `json:"usesNoneDNS"`
+
+	// DiscoveryService implements discovery using a hosted discovery service.
+	DiscoveryService *DiscoveryServiceOptions `json:"discoveryServiceWithUniverse,omitempty"`
+}
+
+// DiscoveryServiceOptions is the configuration for a discovery service.
+type DiscoveryServiceOptions struct {
+	// URL is the base URL of the discovery service, including universe ID if applicable.
+	URL string `json:"url,omitempty"`
 }
 
 // BootConfig is the configuration for the nodeup binary that might be too big to fit in userdata.
@@ -238,6 +248,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		Hooks:                [][]kops.HookSpec{igHooks, clusterHooks},
 		UsesLegacyGossip:     cluster.UsesLegacyGossip(),
 		UsesNoneDNS:          cluster.UsesNoneDNS(),
+	}
+
+	if cluster.Spec.ServiceAccountIssuerDiscovery != nil && cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService != nil {
+		discoveryService := cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService
+		config.DiscoveryService = &DiscoveryServiceOptions{
+			URL: discoveryService.URL,
+		}
 	}
 
 	bootConfig := BootConfig{

@@ -42,6 +42,19 @@ func (b *PKIModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 	c.AddTask(defaultCA)
 
+	if b.Cluster.Spec.ServiceAccountIssuerDiscovery != nil &&
+		b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService != nil &&
+		b.Cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService.URL != "" {
+		// TODO: Only create the discovery CA via this task (but it's tricky because we need the ID so early)
+		discoveryCA := &fitasks.Keypair{
+			Name:      fi.PtrTo(string(fi.DiscoveryCAID)),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=" + fi.DiscoveryCAID,
+			Type:      "ca",
+		}
+		c.AddTask(discoveryCA)
+	}
+
 	{
 		aggregatorCA := &fitasks.Keypair{
 			Name:      fi.PtrTo("apiserver-aggregator-ca"),

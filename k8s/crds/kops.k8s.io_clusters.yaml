@@ -6380,6 +6380,15 @@ spec:
                     items:
                       type: string
                     type: array
+                  discoveryService:
+                    description: DiscoveryService configures discovery using a hosted
+                      discovery service.
+                    properties:
+                      url:
+                        description: URL is the base URL of the discovery service,
+                          including universe ID if applicable.
+                        type: string
+                    type: object
                   discoveryStore:
                     description: DiscoveryStore is the VFS path to where OIDC Issuer
                       Discovery metadata is stored.

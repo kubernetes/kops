@@ -223,6 +223,14 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 
+	if featureflag.DiscoveryService.Enabled() {
+		cmd.Flags().StringVar(&options.PublicDiscoveryServiceURL, "discovery-service", options.PublicDiscoveryServiceURL, "A URL to a server implementing public OIDC discovery. Enables IRSA in AWS.")
+		cmd.RegisterFlagCompletionFunc("discovery-service", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			// TODO complete vfs paths
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		})
+	}
+
 	var validClouds []string
 	{
 		allClouds := clouds.SupportedClouds()

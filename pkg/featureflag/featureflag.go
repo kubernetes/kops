@@ -100,6 +100,8 @@ var (
 	AWSSingleNodesInstanceGroup = new("AWSSingleNodesInstanceGroup", Bool(false))
 	// ClusterAPI enables support for Cluster API (CAPI) resources.
 	ClusterAPI = new("ClusterAPI", Bool(false))
+	// DiscoveryService enables support for OIDC discovery via a hosted service.
+	DiscoveryService = new("DiscoveryService", Bool(false))
 )
 
 // FeatureFlag defines a feature flag
