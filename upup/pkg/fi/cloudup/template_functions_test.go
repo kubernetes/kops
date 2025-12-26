@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -309,6 +310,133 @@ func TestKopsFeatureEnabled(t *testing.T) {
 			}
 			if value != tc.expectedValue {
 				t.Errorf("expected value %t, got %t", tc.expectedValue, value)
+			}
+		})
+	}
+}
+
+func TestHasHighlyAvailableControlPlane(t *testing.T) {
+	tests := []struct {
+		name              string
+		allInstanceGroups []*kops.InstanceGroup
+		instanceGroups    []*kops.InstanceGroup
+		expectedHA        bool
+	}{
+		{
+			name: "Single control plane node",
+			allInstanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+				},
+			},
+			expectedHA: false,
+		},
+		{
+			name: "Multiple control plane nodes",
+			allInstanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+				},
+			},
+			expectedHA: true,
+		},
+		{
+			name: "Multiple control plane nodes with filtered instance groups (regression test)",
+			allInstanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1c"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+				},
+			},
+			expectedHA: true,
+		},
+		{
+			name: "Three control plane nodes",
+			allInstanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1c"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+			},
+			instanceGroups: []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1c"},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+				},
+			},
+			expectedHA: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			tf := &TemplateFunctions{}
+			tf.AllInstanceGroups = tc.allInstanceGroups
+			tf.InstanceGroups = tc.instanceGroups
+
+			actual := tf.HasHighlyAvailableControlPlane()
+			if actual != tc.expectedHA {
+				t.Errorf("expected HA to be %t, got %t", tc.expectedHA, actual)
 			}
 		})
 	}
