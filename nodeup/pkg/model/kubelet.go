@@ -541,7 +541,7 @@ func (b *KubeletBuilder) addECRCredentialProvider(c *fi.NodeupModelBuilderContex
 // addGCPCredentialProvider installs the GCP Kubelet Credential Provider
 func (b *KubeletBuilder) addGCPCredentialProvider(c *fi.NodeupModelBuilderContext) error {
 	{
-		assetName := "v20231005-providersv0.27.1-65-g8fbe8d27"
+		assetName := "auth-provider-gcp"
 		assetPath := ""
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {

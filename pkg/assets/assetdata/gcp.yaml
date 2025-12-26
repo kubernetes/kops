@@ -1,0 +1,10 @@
+filestores:
+  - base: https://artifacts.k8s.io/binaries/cloud-provider-gcp/
+
+# https://github.com/kubernetes/k8s.io/tree/main/artifacts/manifests/k8s-staging-provider-gcp
+
+files:
+  - name: v35.0.0/auth-provider-gcp/linux/amd64/auth-provider-gcp
+    sha256: b5852509ab5c950485794afd49a3fd1c3d6166db988c15b683d2373b7055300f
+  - name: v35.0.0/auth-provider-gcp/linux/arm64/auth-provider-gcp
+    sha256: 510aee27ef32a27b76e461e9084719365210d56166057b37db290a72dfecbffa

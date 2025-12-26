@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/hashing"
 )
 
 // KubernetesFileAssets are the assets for downloading Kubernetes binaries
@@ -76,50 +75,38 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 		}
 
 		cloudProvider := ig.GetCloudProvider()
-		if ok := model.UseExternalKubeletCredentialProvider(kubernetesVersion, cloudProvider); ok {
-			switch cloudProvider {
-			case kops.CloudProviderGCE:
-				binaryLocation := ig.RawClusterSpec().CloudProvider.GCE.BinariesLocation
-				if binaryLocation == nil {
-					binaryLocation = fi.PtrTo("https://storage.googleapis.com/k8s-staging-cloud-provider-gcp/auth-provider-gcp")
-				}
-				// VALID FOR 60 DAYS WE REALLY NEED TO MERGE https://github.com/kubernetes/cloud-provider-gcp/pull/601 and CUT A RELEASE
-				k, err := url.Parse(fmt.Sprintf("%s/linux-%s/v20231005-providersv0.27.1-65-g8fbe8d27", *binaryLocation, arch))
-				if err != nil {
-					return nil, err
-				}
-
-				// TODO: Move these hashes to assetdata
-				hashes := map[architectures.Architecture]string{
-					"amd64": "827d558953d861b81a35c3b599191a73f53c1f63bce42c61e7a3fee21a717a89",
-					"arm64": "f1617c0ef77f3718e12a3efc6f650375d5b5e96eebdbcbad3e465e89e781bdfa",
-				}
-				hash, err := hashing.FromString(hashes[arch])
-				if err != nil {
-					return nil, fmt.Errorf("unable to parse auth-provider-gcp binary asset hash %q: %v", hashes[arch], err)
-				}
-				asset, err := assetBuilder.RemapFile(k, hash)
-				if err != nil {
-					return nil, err
-				}
-
-				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
-			case kops.CloudProviderAWS:
-				binaryLocation := ig.RawClusterSpec().CloudProvider.AWS.BinariesLocation
-				if binaryLocation == nil {
-					binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7")
-				}
-
-				u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
-				if err != nil {
-					return nil, err
-				}
-				asset, err := assetBuilder.RemapFile(u, nil)
-				if err != nil {
-					return nil, err
-				}
-				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
+		switch cloudProvider {
+		case kops.CloudProviderGCE:
+			binaryLocation := ig.RawClusterSpec().CloudProvider.GCE.BinariesLocation
+			if binaryLocation == nil {
+				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-gcp/v35.0.0")
 			}
+
+			u, err := url.Parse(fmt.Sprintf("%s/auth-provider-gcp/linux/%s/auth-provider-gcp", *binaryLocation, arch))
+			if err != nil {
+				return nil, err
+			}
+			asset, err := assetBuilder.RemapFile(u, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
+		case kops.CloudProviderAWS:
+			binaryLocation := ig.RawClusterSpec().CloudProvider.AWS.BinariesLocation
+			if binaryLocation == nil {
+				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7")
+			}
+
+			u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))
+			if err != nil {
+				return nil, err
+			}
+			asset, err := assetBuilder.RemapFile(u, nil)
+			if err != nil {
+				return nil, err
+			}
+			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
 		}
 
 		if ig.InstallCNIAssets() {
