@@ -72,6 +72,9 @@ type NodeupModelContext struct {
 	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
 	usesNoneDNS bool
 
+	// discoveryService implements discovery using a hosted discovery service.
+	discoveryService *nodeup.DiscoveryServiceOptions
+
 	// Deprecated: This should be renamed to controlPlaneVersion / nodeVersion;
 	// controlPlaneVersion should probably/ideally only be populated on control plane nodes.
 	kubernetesVersion *kopsmodel.KubernetesVersion
@@ -107,6 +110,7 @@ func (c *NodeupModelContext) Init() error {
 
 	c.usesNoneDNS = c.NodeupConfig.UsesNoneDNS
 	c.usesLegacyGossip = c.NodeupConfig.UsesLegacyGossip
+	c.discoveryService = c.NodeupConfig.DiscoveryService
 
 	return nil
 }
@@ -521,6 +525,12 @@ func (c *NodeupModelContext) NodeName() (string, error) {
 	return strings.ToLower(strings.TrimSpace(nodeName)), nil
 }
 
+// ClusterName returns the name of the cluster, as it is registered in kOps
+// (Note this name may include dots, which are not valid in many k8s objects)
+func (c *NodeupModelContext) ClusterName() string {
+	return c.BootConfig.ClusterName
+}
+
 func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext) error {
 	f := b.Assets.FindMatches(regexp.MustCompile(".*"))
 
@@ -650,6 +660,11 @@ func (c *NodeupModelContext) UsesLegacyGossip() bool {
 
 func (c *NodeupModelContext) UsesNoneDNS() bool {
 	return c.usesNoneDNS
+}
+
+// DiscoveryServiceOptions returns the configuration for discovery service to register with, or nil if not using a discovery service.
+func (c *NodeupModelContext) DiscoveryServiceOptions() *nodeup.DiscoveryServiceOptions {
+	return c.discoveryService
 }
 
 func (c *NodeupModelContext) PublishesDNSRecords() bool {

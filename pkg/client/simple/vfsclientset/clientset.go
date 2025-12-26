@@ -212,6 +212,11 @@ func (c *VFSClientset) DeleteCluster(ctx context.Context, cluster *kops.Cluster)
 				return err
 			}
 		}
+
+		if discoveryService := cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService; discoveryService != nil {
+			// TODO: implement deletion of discovery service resources
+			klog.Warningf("automatic cleanup of discovery service resources not yet implemented")
+		}
 	}
 
 	secretStore := cluster.Spec.ConfigStore.Secrets

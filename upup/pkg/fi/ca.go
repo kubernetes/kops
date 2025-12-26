@@ -32,7 +32,11 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 )
 
+// CertificateIDCA is the ID for the primary cluster CA certificate/key
 const CertificateIDCA = "kubernetes-ca"
+
+// DiscoveryCAID is the ID for the discovery service client certificate CA
+const DiscoveryCAID = "discovery-ca"
 
 const (
 	// SecretNameSSHPrimary is the Name for the primary SSH key
