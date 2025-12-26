@@ -332,7 +332,14 @@ func (c *NodeupModelContext) UseChallengeCallback(cloudProvider kops.CloudProvid
 }
 
 func (c *NodeupModelContext) UseExternalKubeletCredentialProvider() bool {
-	return kopsmodel.UseExternalKubeletCredentialProvider(c.kubernetesVersion, c.CloudProvider())
+	switch c.CloudProvider() {
+	case kops.CloudProviderGCE:
+		return true
+	case kops.CloudProviderAWS:
+		return true
+	default:
+		return false
+	}
 }
 
 // UsesSecondaryIP checks if the CNI in use attaches secondary interfaces to the host.
