@@ -41,6 +41,11 @@ if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
   CLOUD_PROVIDER="aws"
 fi
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
+if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  if [[ -z "${KOPS_DISCOVERY_STORE:-}" ]]; then
+    export KOPS_DISCOVERY_STORE=
+  fi
+fi
 if [[ "${CLOUD_PROVIDER}" != "gce" ]]; then
   # KOPS_STATE_STORE holds metadata about the clusters we create
   if [[ -z "${KOPS_STATE_STORE:-}" ]]; then
