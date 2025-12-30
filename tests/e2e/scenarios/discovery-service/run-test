@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Copyright 2025 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd ${REPO_ROOT}
+
+CLUSTER_NAME="discovery-test1.k8s.local"
+
+
+CLOUD_PROVIDER=gce
+ZONES=us-east4-a
+
+OVERRIDES="${OVERRIDES-} --node-count=2" # We need at least 2 nodes for CoreDNS to validate
+OVERRIDES="${OVERRIDES} --gce-service-account=default" # Use default service account because boskos permissions are limited
+OVERRIDES="${OVERRIDES} --discovery-service=https://discovery.kubedisco.com"
+
+
+# Enable feature flag for Discovery Service support
+export KOPS_FEATURE_FLAGS=DiscoveryService
+
+# Build kOps binary
+WORKDIR=${REPO_ROOT}/.build/
+
+BINDIR=${WORKDIR}/bin
+mkdir -p "${BINDIR}"
+go build -o ${BINDIR}/kops ./cmd/kops
+export KOPS=${BINDIR}/kops
+
+. hack/dev-build-gce.sh
+
+# Delete cluster when done
+function cleanup() {
+  if [[ -z "${SKIP_CLEANUP:-}" ]]; then
+    echo "running cleanup"
+    ${KOPS} delete cluster ${CLUSTER_NAME} --yes || true
+  fi
+}
+trap cleanup EXIT
+
+# Create kOps cluster
+${KOPS} create cluster ${CLUSTER_NAME} --cloud=${CLOUD_PROVIDER} --zones=${ZONES} ${OVERRIDES:-}
+${KOPS} update cluster ${CLUSTER_NAME} --yes --admin
+${KOPS} validate cluster ${CLUSTER_NAME} --wait=10m
+
+# Verify that the Discovery Service is working as expected
+DISCOVERY_SERVICE_URL=$(${KOPS} get cluster discovery-test1.k8s.local -ojson | jq -r .spec.serviceAccountIssuerDiscovery.discoveryService.url)
+echo "Discovery Service URL: ${DISCOVERY_SERVICE_URL}"
+
+echo "Fetching OpenID configuration from Discovery Service:"
+curl ${DISCOVERY_SERVICE_URL}.well-known/openid-configuration | jq .
+
+JWKS_URI=$(curl -s ${DISCOVERY_SERVICE_URL}.well-known/openid-configuration | jq -r .jwks_uri)
+echo "JWKS_URI: ${JWKS_URI}"
+
+echo "Fetching JWKS from ${JWKS_URI}:"
+curl ${JWKS_URI} | jq .
