@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/pkg/urls"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -61,7 +60,7 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		}
 		if etcdCluster.Backups.BackupStore == "" {
 			base := clusterSpec.ConfigStore.Base
-			etcdCluster.Backups.BackupStore = urls.Join(base, "backups", "etcd", etcdCluster.Name)
+			etcdCluster.Backups.BackupStore = join(base, "backups", "etcd", etcdCluster.Name)
 		}
 
 		if !etcdVersionIsSupported(etcdCluster.Version) {
@@ -125,4 +124,19 @@ func etcdVersionIsSupported(version string) bool {
 		}
 	}
 	return false
+}
+
+func join(base string, others ...string) string {
+	u := base
+	for _, o := range others {
+		if !strings.HasSuffix(u, "/") {
+			u += "/"
+		}
+		if strings.HasPrefix(o, "/") {
+			u += o[1:]
+		} else {
+			u += o
+		}
+	}
+	return u
 }

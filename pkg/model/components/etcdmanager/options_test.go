@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package urls
+package etcdmanager
 
 import (
 	"testing"
@@ -41,7 +41,7 @@ func TestJoin(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		result := Join(test.base, test.other1, test.other2)
+		result := join(test.base, test.other1, test.other2)
 		if test.expectedStr != result {
 			t.Errorf("Expected %s, got %s", test.expectedStr, result)
 		}
