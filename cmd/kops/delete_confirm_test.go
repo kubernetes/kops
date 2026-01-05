@@ -21,7 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/kops/util/pkg/ui"
+	"k8s.io/kops/cmd/kops/ui"
 )
 
 // TestConfirmation attempts to test the majority of the ui.GetConfirm function used in the 'kops delete' commands
