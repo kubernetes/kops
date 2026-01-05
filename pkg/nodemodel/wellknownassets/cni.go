@@ -34,12 +34,6 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	defaultCNIAssetAmd64K8s_22 = "https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz"
-	defaultCNIAssetArm64K8s_22 = "https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-arm64-v0.9.1.tgz"
-
-	defaultCNIAssetAmd64K8s_27 = "https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz"
-	defaultCNIAssetArm64K8s_27 = "https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-arm64-v1.2.0.tgz"
-
 	defaultCNIAssetAmd64K8s_29 = "https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz"
 	defaultCNIAssetArm64K8s_29 = "https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-arm64-v1.3.0.tgz"
 

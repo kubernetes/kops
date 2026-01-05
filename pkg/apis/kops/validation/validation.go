@@ -1213,36 +1213,6 @@ func validateNetworkingFlannel(c *kops.Cluster, v *kops.FlannelNetworkingSpec, f
 	return allErrs
 }
 
-func validateNetworkingCanal(c *kops.Cluster, v *kops.CanalNetworkingSpec, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-
-	if c.Spec.IsIPv6Only() {
-		allErrs = append(allErrs, field.Forbidden(fldPath, "Canal does not support IPv6"))
-	}
-
-	if v.DefaultEndpointToHostAction != "" {
-		valid := []string{"ACCEPT", "DROP", "RETURN"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("defaultEndpointToHostAction"), &v.DefaultEndpointToHostAction, valid)...)
-	}
-
-	if v.ChainInsertMode != "" {
-		valid := []string{"insert", "append"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("chainInsertMode"), &v.ChainInsertMode, valid)...)
-	}
-
-	if v.LogSeveritySys != "" {
-		valid := []string{"INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL", "NONE"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("logSeveritySys"), &v.LogSeveritySys, valid)...)
-	}
-
-	if v.IptablesBackend != "" {
-		valid := []string{"Auto", "Legacy", "NFT"}
-		allErrs = append(allErrs, IsValidValue(fldPath.Child("iptablesBackend"), &v.IptablesBackend, valid)...)
-	}
-
-	return allErrs
-}
-
 func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpec, fldPath *field.Path) field.ErrorList {
 	c := &cluster.Spec
 	allErrs := field.ErrorList{}
