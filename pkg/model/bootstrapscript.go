@@ -179,6 +179,15 @@ func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup)
 		}
 	}
 
+	// Add keypair for discovery service CA if enabled
+	if ig.IsControlPlane() {
+		if cluster.Spec.ServiceAccountIssuerDiscovery != nil &&
+			cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService != nil &&
+			cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService.URL != "" {
+			keypairs = append(keypairs, fi.DiscoveryCAID)
+		}
+	}
+
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
 	}
@@ -213,13 +222,13 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 		}
 	}
 
-	caTasks := map[string]*fitasks.Keypair{}
+	keypairTasks := map[string]*fitasks.Keypair{}
 	for _, keypair := range keypairNames {
 		caTaskObject, found := c.Tasks["Keypair/"+keypair]
 		if !found {
 			return nil, fmt.Errorf("keypair/%s task not found", keypair)
 		}
-		caTasks[keypair] = caTaskObject.(*fitasks.Keypair)
+		keypairTasks[keypair] = caTaskObject.(*fitasks.Keypair)
 	}
 
 	task := &BootstrapScript{
@@ -228,7 +237,7 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 		cluster:   b.Cluster,
 		ig:        ig,
 		builder:   b,
-		caTasks:   caTasks,
+		caTasks:   keypairTasks,
 	}
 	task.resource.Task = task
 	task.nodeupConfig.Task = task

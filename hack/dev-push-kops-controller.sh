@@ -27,7 +27,7 @@ fi
 IMAGE_TAG=$(date +%Y%m%d%H%M%S)
 
 # Build the controller image
-KO_DOCKER_REPO="${IMAGE_PREFIX}kops-controller" go run github.com/google/ko@v0.14.1 \
+KO_DOCKER_REPO="${IMAGE_PREFIX}kops-controller" go run github.com/google/ko@v0.18.0 \
   build --tags "${IMAGE_TAG}" --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
 
 # Update the image and bounce the pods

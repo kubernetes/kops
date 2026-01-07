@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: discovery-k8s-io
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: discovery-server
+  namespace: discovery-k8s-io
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-server
+  template:
+    metadata:
+      labels:
+        app: discovery-server
+    spec:
+      containers:
+      - name: discovery-server
+        image: discovery-server:latest
+        env:
+        - name: TLS_CERT
+          value: /secrets/tls/tls.crt
+        - name: TLS_KEY
+          value: /secrets/tls/tls.key
+        volumeMounts:
+        - name: tls
+          mountPath: /secrets/tls
+      volumes:
+      - name: tls
+        secret:
+          secretName: discovery-kubedisco-com-tls
+---
+
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-staging
+  namespace: discovery-k8s-io
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-staging-issuer-account-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: discovery-server-gateway
+                namespace: discovery-k8s-io
+                kind: Gateway
+
+---
+
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt
+  namespace: discovery-k8s-io
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod-issuer-account-key
+    solvers:
+      - http01:
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: discovery-server-gateway
+                namespace: discovery-k8s-io
+                kind: Gateway
+
+---
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: discovery-server-gateway
+  namespace: discovery-k8s-io
+spec:
+  gatewayClassName: gari
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+        namespaces:
+          from: All
+  - name: https
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+        namespaces:
+          from: All
+
+
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: discovery-kubedisco-com
+  namespace: discovery-k8s-io
+spec:
+  dnsNames:
+    - discovery.kubedisco.com
+  secretName: discovery-kubedisco-com-tls
+  issuerRef:
+    name: letsencrypt
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: discovery-server
+  namespace: discovery-k8s-io
+spec:
+  selector:
+    app: discovery-server
+  ports:
+  - name: https
+    port: 443
+    targetPort: 8443
+  type: ClusterIP
+
+---
+
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: TLSRoute
+metadata:
+  name: discovery.kubedisco.com
+  namespace: discovery-k8s-io
+spec:
+  hostnames:
+    - discovery.kubedisco.com
+  rules:
+  - backendRefs:
+    - name: discovery-server
+      port: 443

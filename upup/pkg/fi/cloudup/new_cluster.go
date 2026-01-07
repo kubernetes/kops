@@ -18,6 +18,7 @@ package cloudup
 
 import (
 	"context"
+	"crypto/x509/pkix"
 	"fmt"
 	"os"
 	"strconv"
@@ -37,12 +38,16 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/clouds"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/architectures"
+
+	discoveryapi "k8s.io/kops/discovery/apis/discovery.kops.k8s.io/v1alpha1"
 )
 
 const (
@@ -62,6 +67,11 @@ type NewClusterOptions struct {
 	ConfigBase string
 	// DiscoveryStore is the location where we will store public OIDC-compatible discovery documents, under a cluster-specific directory. It defaults to not publishing discovery documents.
 	DiscoveryStore string
+
+	// PublicDiscoveryServiceURL indicates that we should use a public discovery service URL for OIDC discovery.
+	// We create a discovery ID CA, and append the universe ID to the URL.
+	PublicDiscoveryServiceURL string
+
 	// KubernetesVersion is the version of Kubernetes to deploy. It defaults to the version recommended by the channel.
 	KubernetesVersion string
 	// KubernetesFeatureGates is the list of Kubernetes feature gates to enable/disable.
@@ -197,6 +207,8 @@ type NewClusterResult struct {
 // It is the responsibility of the caller to call cloudup.PerformAssignments() on
 // the returned cluster spec.
 func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewClusterResult, error) {
+	ctx := context.TODO()
+
 	if opt.ClusterName == "" {
 		return nil, fmt.Errorf("name is required")
 	}
@@ -413,6 +425,35 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	controlPlanes, err := setupControlPlane(opt, cluster, zoneToSubnetsMap)
 	if err != nil {
 		return nil, err
+	}
+
+	if opt.PublicDiscoveryServiceURL != "" {
+		discoveryServiceURL := opt.PublicDiscoveryServiceURL
+
+		keystore, err := clientset.KeyStore(cluster)
+		if err != nil {
+			return nil, err
+		}
+
+		universeID, err := discoveryUniverseID(ctx, keystore)
+		if err != nil {
+			return nil, err
+		}
+
+		if !strings.HasSuffix(discoveryServiceURL, "/") {
+			discoveryServiceURL += "/"
+		}
+		discoveryServiceURL += universeID + "/"
+
+		cluster.Spec.ServiceAccountIssuerDiscovery = &api.ServiceAccountIssuerDiscoveryConfig{
+			DiscoveryService: &api.DiscoveryServiceOptions{
+				URL: discoveryServiceURL,
+			},
+		}
+		if cluster.GetCloudProvider() == api.CloudProviderAWS {
+			cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider = true
+			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.PtrTo(true)
+		}
 	}
 
 	var nodes []*api.InstanceGroup
@@ -1679,4 +1720,32 @@ func MachineArchitecture(cloud fi.Cloud, machineType string) (architectures.Arch
 		// No other clouds are known to support any other architectures at this time
 		return architectures.ArchitectureAmd64, nil
 	}
+}
+
+// discoveryUniverseID returns the universe ID for the cluster's discovery service,
+// creating a new discovery CA if necessary.
+func discoveryUniverseID(ctx context.Context, keystore fi.Keystore) (string, error) {
+	keyset, err := keystore.FindKeyset(ctx, fi.DiscoveryCAID)
+	if err != nil {
+		return "", fmt.Errorf("error finding discovery CA: %w", err)
+	}
+
+	if keyset == nil || keyset.Primary == nil || keyset.Primary.Certificate == nil {
+		subject := pkix.Name{
+			CommonName: fi.DiscoveryCAID,
+		}
+		keyset, err = fitasks.CreateKeyset(ctx, keystore, fi.DiscoveryCAID, pki.IssueCertRequest{
+			Subject: subject,
+			Type:    "ca",
+		})
+		if err != nil {
+			return "", fmt.Errorf("error creating discovery CA: %w", err)
+		}
+	}
+
+	if keyset == nil || keyset.Primary == nil || keyset.Primary.Certificate == nil || keyset.Primary.Certificate.Certificate == nil {
+		return "", fmt.Errorf("discovery CA creation failed")
+	}
+
+	return discoveryapi.ComputeUniverseIDFromCertificate(keyset.Primary.Certificate.Certificate), nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package fitasks
 
 import (
+	"context"
 	"crypto/x509/pkix"
 	"fmt"
 	"sort"
@@ -197,36 +198,6 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 	if createCertificate {
 		klog.V(2).Infof("Creating PKI keypair %q", name)
 
-		keyset, err := c.T.Keystore.FindKeyset(ctx, name)
-		if err != nil {
-			return err
-		}
-		if keyset == nil {
-			keyset = &fi.Keyset{
-				Items: map[string]*fi.KeysetItem{},
-			}
-		}
-
-		// We always reuse the private key if it exists,
-		// if we change keys we often have to regenerate e.g. the service accounts
-		// TODO: Eventually rotate keys / don't always reuse?
-		var privateKey *pki.PrivateKey
-		if keyset.Primary != nil {
-			privateKey = keyset.Primary.PrivateKey
-		}
-		if privateKey == nil {
-			klog.V(2).Infof("Creating privateKey %q", name)
-		}
-
-		signer := fi.CertificateIDCA
-		if e.Signer != nil {
-			signer = fi.ValueOf(e.Signer.Name)
-		}
-
-		klog.Infof("Issuing new certificate: %q", *e.Name)
-
-		serial := pki.BuildPKISerial(time.Now().UnixNano())
-
 		subjectPkix, err := parsePkixName(e.Subject)
 		if err != nil {
 			return fmt.Errorf("error parsing Subject: %v", err)
@@ -236,32 +207,21 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 			return fmt.Errorf("subject name was empty for SSL keypair %q", *e.Name)
 		}
 
+		signer := fi.CertificateIDCA
+		if e.Signer != nil {
+			signer = fi.ValueOf(e.Signer.Name)
+		}
+
 		req := pki.IssueCertRequest{
 			Signer:         signer,
 			Type:           e.Type,
 			Subject:        *subjectPkix,
 			AlternateNames: e.AlternateNames,
-			PrivateKey:     privateKey,
-			Serial:         serial,
-		}
-		cert, privateKey, _, err := pki.IssueCert(ctx, &req, fi.NewPKIKeystoreAdapter(c.T.Keystore))
-		if err != nil {
-			return err
 		}
 
-		serialString := cert.Certificate.SerialNumber.String()
-		ki := &fi.KeysetItem{
-			Id:          serialString,
-			Certificate: cert,
-			PrivateKey:  privateKey,
-		}
-
-		keyset.LegacyFormat = false
-		keyset.Items[ki.Id] = ki
-		keyset.Primary = ki
-		err = c.T.Keystore.StoreKeyset(ctx, name, keyset)
+		keyset, err := CreateKeyset(ctx, c.T.Keystore, name, req)
 		if err != nil {
-			return err
+			return fmt.Errorf("error creating certificate: %v", err)
 		}
 
 		if err := e.setResources(keyset); err != nil {
@@ -275,7 +235,7 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 			return fmt.Errorf("unable to find created certificate %q: %w", name, err)
 		}
 
-		klog.V(8).Infof("created certificate with cn=%s", cert.Subject.CommonName)
+		klog.V(8).Infof("created certificate with subject %v", subjectPkix)
 	}
 
 	// TODO: Check correct subject / flags
@@ -301,6 +261,62 @@ func (_ *Keypair) Render(c *fi.CloudupContext, a, e, changes *Keypair) error {
 	}
 
 	return nil
+
+}
+
+func CreateKeyset(ctx context.Context, keystore fi.Keystore, name string, req pki.IssueCertRequest) (*fi.Keyset, error) {
+	keyset, err := keystore.FindKeyset(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	if keyset == nil {
+		keyset = &fi.Keyset{
+			Items: map[string]*fi.KeysetItem{},
+		}
+	}
+
+	if req.Serial == nil {
+		serial := pki.BuildPKISerial(time.Now().UnixNano())
+		req.Serial = serial
+	}
+
+	// We always reuse the private key if it exists,
+	// if we change keys we often have to regenerate e.g. the service accounts
+	// TODO: Eventually rotate keys / don't always reuse?
+	var privateKey *pki.PrivateKey
+	if keyset.Primary != nil {
+		privateKey = keyset.Primary.PrivateKey
+	}
+	if privateKey == nil {
+		klog.V(2).Infof("Creating privateKey %q", name)
+	}
+
+	req.PrivateKey = privateKey
+
+	klog.Infof("Issuing new certificate: %q", name)
+
+	cert, privateKey, _, err := pki.IssueCert(ctx, &req, fi.NewPKIKeystoreAdapter(keystore))
+	if err != nil {
+		return nil, err
+	}
+
+	serialString := cert.Certificate.SerialNumber.String()
+	ki := &fi.KeysetItem{
+		Id:          serialString,
+		Certificate: cert,
+		PrivateKey:  privateKey,
+	}
+
+	keyset.LegacyFormat = false
+	keyset.Items[ki.Id] = ki
+	keyset.Primary = ki
+
+	err = keystore.StoreKeyset(ctx, name, keyset)
+	if err != nil {
+		return nil, err
+	}
+
+	return keyset, nil
 }
 
 func parsePkixName(s string) (*pkix.Name, error) {
