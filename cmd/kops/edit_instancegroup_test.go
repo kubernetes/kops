@@ -36,7 +36,7 @@ func TestEditInstanceGroup(t *testing.T) {
 
 	clusterName := "test.k8s.io"
 
-	cluster := testutils.BuildMinimalCluster(clusterName)
+	cluster := testutils.BuildMinimalClusterAWS(clusterName)
 	nodes := testutils.BuildMinimalNodeInstanceGroup("nodes", "subnet-us-test-1a")
 	nodes.Spec.Taints = []string{"e2etest:NoSchedule"}
 
