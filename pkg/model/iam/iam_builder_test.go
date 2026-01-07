@@ -249,7 +249,7 @@ func TestEmptyPolicy(t *testing.T) {
 		Policy: nil,
 	}
 
-	cluster := testutils.BuildMinimalCluster("irsa.example.com")
+	cluster := testutils.BuildMinimalClusterAWS("irsa.example.com")
 	b := &PolicyBuilder{
 		Cluster: cluster,
 		Role:    role,

@@ -45,7 +45,7 @@ func getTestSetupOS(t *testing.T, ctx context.Context) (*RollingUpdateCluster, *
 
 	mockcloud := testutils.SetupMockOpenstack()
 
-	inCluster := testutils.BuildMinimalCluster("test.k8s.local")
+	inCluster := testutils.BuildMinimalClusterAWS("test.k8s.local")
 
 	inCluster.Spec.CloudProvider.Openstack = &kopsapi.OpenstackSpec{}
 	inCluster.Name = "test.k8s.local"
