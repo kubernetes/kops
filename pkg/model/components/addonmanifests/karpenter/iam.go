@@ -87,5 +87,6 @@ func addKarpenterPermissions(p *iam.Policy) {
 	// AllowInstanceProfileReadActions
 	p.AddUnconditionalActions(
 		"iam:GetInstanceProfile",
+		"iam:ListInstanceProfiles",
 	)
 }
