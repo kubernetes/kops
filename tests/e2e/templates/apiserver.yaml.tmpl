@@ -6,9 +6,16 @@ metadata:
 spec:
   kubernetesApiAccess:
   - {{.publicIP}}
+  api:
+    loadBalancer:
+      type: Public
+      class: Network
   channel: stable
   cloudProvider: {{.cloudProvider}}
   configBase: "{{.stateStore}}/{{.clusterName}}"
+  containerd:
+    configAdditions:
+      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type: io.containerd.runc.v2
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-{{$zone}}
@@ -22,7 +29,6 @@ spec:
   kubelet:
     anonymousAuth: false
   kubernetesVersion: {{.kubernetesVersion}}
-  masterPublicName: api.{{.clusterName}}
   networkCIDR: 172.20.0.0/16
   networking:
     calico: {}
@@ -32,16 +38,12 @@ spec:
   sshAccess:
     - {{.publicIP}}
   topology:
-    bastion:
-      bastionPublicName: bastion.{{.clusterName}}
+    dns:
+      type: None
   subnets:
   - cidr: 172.20.32.0/19
     name: {{$zone}}
-    type: Private
-    zone: {{$zone}}
-  - cidr: 172.20.0.0/22
-    name: utility-{{$zone}}
-    type: Utility
+    type: Public
     zone: {{$zone}}
 
 ---
@@ -64,6 +66,7 @@ metadata:
   labels:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
+  associatePublicIp: true
   image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
   instanceMetadata:
     httpPutResponseHopLimit: 1
@@ -84,6 +87,7 @@ metadata:
   labels:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
+  associatePublicIp: true
   image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
   instanceMetadata:
     httpPutResponseHopLimit: 1
@@ -104,6 +108,7 @@ metadata:
   labels:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
+  associatePublicIp: true
   image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
   instanceMetadata:
     httpPutResponseHopLimit: 1
@@ -112,25 +117,5 @@ spec:
   maxSize: 1
   minSize: 1
   role: APIServer
-  subnets:
-  - {{$zone}}
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  name: bastions
-  labels:
-    kops.k8s.io/cluster: {{.clusterName}}
-spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
-  instanceMetadata:
-    httpPutResponseHopLimit: 1
-    httpTokens: required
-  machineType: t3.micro
-  maxSize: 1
-  minSize: 1
-  role: Bastion
   subnets:
   - {{$zone}}
