@@ -19,6 +19,7 @@
         "iam:AddRoleToInstanceProfile",
         "iam:DeleteInstanceProfile",
         "iam:GetInstanceProfile",
+        "iam:ListInstanceProfiles",
         "iam:PassRole",
         "iam:RemoveRoleFromInstanceProfile",
         "iam:TagInstanceProfile",
