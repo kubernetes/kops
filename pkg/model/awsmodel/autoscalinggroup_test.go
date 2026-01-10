@@ -35,7 +35,7 @@ const (
 )
 
 func buildMinimalCluster() *kops.Cluster {
-	return testutils.BuildMinimalCluster("testcluster.test.com")
+	return testutils.BuildMinimalClusterAWS("testcluster.test.com")
 }
 
 func buildNodeInstanceGroup(subnets ...string) *kops.InstanceGroup {

@@ -421,7 +421,7 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-with-a-ver
   }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-nodes-minimal-gce-with-a-very-very-very-very-very-long-qk78uj"
-  target_size                    = 2
+  target_size                    = 1
   update_policy {
     minimal_action = "REPLACE"
     type           = "OPPORTUNISTIC"
@@ -430,6 +430,24 @@ resource "google_compute_instance_group_manager" "a-nodes-minimal-gce-with-a-ver
     instance_template = google_compute_instance_template.nodes-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.self_link
   }
   zone = "us-test1-a"
+}
+
+resource "google_compute_instance_group_manager" "b-nodes-minimal-gce-with-a-very-very-very-very-very-long-h6o2lg" {
+  base_instance_name = "nodes"
+  lifecycle {
+    ignore_changes = [target_size]
+  }
+  list_managed_instances_results = "PAGINATED"
+  name                           = "b-nodes-minimal-gce-with-a-very-very-very-very-very-long-h6o2lg"
+  target_size                    = 1
+  update_policy {
+    minimal_action = "REPLACE"
+    type           = "OPPORTUNISTIC"
+  }
+  version {
+    instance_template = google_compute_instance_template.nodes-minimal-gce-with-a-very-very-very-very-very-long-name-example-com.self_link
+  }
+  zone = "us-test1-b"
 }
 
 resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-with-a-very-very-very-very-very-long-name-example-com" {

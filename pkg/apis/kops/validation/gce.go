@@ -44,5 +44,9 @@ func gceValidateInstanceGroup(ig *kops.InstanceGroup, cloud gce.GCECloud) field.
 		fieldSpec := field.NewPath("spec")
 		allErrs = append(allErrs, IsValidValue(fieldSpec.Child("gcpProvisioningModel"), ig.Spec.GCPProvisioningModel, []string{"STANDARD", "SPOT"})...)
 	}
+
+	if len(ig.Spec.Zones) == 0 {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec", "zones"), "zones should be specified"))
+	}
 	return allErrs
 }

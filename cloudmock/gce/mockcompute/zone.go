@@ -38,6 +38,10 @@ func newZoneClient(project string) *zoneClient {
 					Name:   "us-test1-a",
 					Region: "https://www.googleapis.com/compute/v1/projects/testproject/regions/us-test1",
 				},
+				"us-test1-b": {
+					Name:   "us-test1-b",
+					Region: "https://www.googleapis.com/compute/v1/projects/testproject/regions/us-test1",
+				},
 			},
 		},
 	}
