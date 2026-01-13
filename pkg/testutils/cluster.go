@@ -34,10 +34,10 @@ func BuildMinimalClusterAWS(clusterName string) *kops.Cluster {
 }
 
 // BuildMinimalClusterGCE a generic minimal GCE cluster
-func BuildMinimalClusterGCE(clusterName string) *kops.Cluster {
+func BuildMinimalClusterGCE(clusterName string, project string) *kops.Cluster {
 	c := buildMinimalCluster(clusterName)
 	c.Spec.CloudProvider.GCE = &kops.GCESpec{}
-	c.Spec.CloudProvider.GCE.Project = "testproject"
+	c.Spec.CloudProvider.GCE.Project = project
 	c.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
 		{Name: "us-test1-a", Region: "us-test1", CIDR: "172.20.1.0/24", Type: kops.SubnetTypePublic},
 	}

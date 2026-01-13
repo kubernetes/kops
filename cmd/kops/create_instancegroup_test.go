@@ -25,20 +25,20 @@ import (
 	"k8s.io/kops/pkg/testutils"
 )
 
-func TestRunCreateInstanceGroup(t *testing.T) {
+func TestRunCreateInstanceGroupGCE(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	clusterName := "test.k8s.io"
 
-	h.SetupMockGCE()
+	cloud := h.SetupMockGCE()
 
 	ctx := context.Background()
 	f := util.NewFactory(&util.FactoryOptions{
 		RegistryPath: "memfs://tests",
 	})
 
-	cluster := testutils.BuildMinimalClusterGCE(clusterName)
+	cluster := testutils.BuildMinimalClusterGCE(clusterName, cloud.Project())
 
 	clientset, err := f.KopsClient()
 	if err != nil {
