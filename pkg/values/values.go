@@ -45,44 +45,6 @@ func Bool(v bool) *bool {
 	return &v
 }
 
-func BoolValue(v *bool) bool {
-	if v == nil {
-		return false
-	}
-	return *v
-}
-
-func Int32(v int32) *int32 {
-	return &v
-}
-
-func Int32Value(v *int32) int32 {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
-// Int64 is a helper that builds a *int64 from an int64 value
-// This is similar to aws.Int64, except that we use it for non-AWS values
-func Int64(v int64) *int64 {
-	return &v
-}
-
-func Int64Value(v *int64) int64 {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
-func Uint64Value(v *uint64) uint64 {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
 func DebugAsJSONString(v interface{}) string {
 	data, err := json.Marshal(v)
 	if err != nil {
