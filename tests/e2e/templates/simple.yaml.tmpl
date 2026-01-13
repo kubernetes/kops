@@ -4,6 +4,8 @@ kind: Cluster
 metadata:
   name: {{.clusterName}}
 spec:
+  authorization:
+    rbac: {}
   kubernetesApiAccess:
   - {{.publicIP}}
   channel: stable
