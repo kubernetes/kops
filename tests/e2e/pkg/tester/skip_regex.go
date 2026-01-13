@@ -83,7 +83,7 @@ func (t *Tester) setSkipRegexFlag() error {
 		// https://github.com/kubernetes/kubernetes/blob/418ae605ec1b788d43bff7ac44af66d8b669b833/test/e2e/network/networking.go#L135
 		skipRegex += "|should.check.kube-proxy.urls"
 
-		if k8sVersion.Minor < 36 {
+		if k8sVersion.Minor < 37 {
 			// This seems to be specific to the kube-proxy replacement
 			// < 36 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
@@ -113,8 +113,8 @@ func (t *Tester) setSkipRegexFlag() error {
 	// ref: https://github.com/kubernetes/kubernetes/issues/123255
 	// ref: https://github.com/kubernetes/kubernetes/issues/121018
 	// ref: https://github.com/kubernetes/kubernetes/pull/126896
-	// < 36 so we look at this again
-	if k8sVersion.Minor < 36 {
+	// < 37 so we look at this again
+	if k8sVersion.Minor < 37 {
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
 		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
