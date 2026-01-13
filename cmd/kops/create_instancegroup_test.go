@@ -32,7 +32,6 @@ func TestRunCreateInstanceGroup(t *testing.T) {
 	clusterName := "test.k8s.io"
 
 	h.SetupMockGCE()
-	h.SetupMockAWS()
 
 	ctx := context.Background()
 	f := util.NewFactory(&util.FactoryOptions{
