@@ -10,6 +10,8 @@ spec:
     loadBalancer:
       type: Public
       class: Network
+  authorization:
+    rbac: {}
   channel: stable
   cloudProvider: {{.cloudProvider}}
   configBase: "{{.stateStore}}/{{.clusterName}}"
