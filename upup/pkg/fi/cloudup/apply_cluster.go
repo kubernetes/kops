@@ -237,7 +237,11 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	}
 
 	assetBuilder := assets.NewAssetBuilder(c.Clientset.VFSContext(), c.Cluster.Spec.Assets, c.GetAssets)
-	if len(c.ControlPlaneRunningVersion) > 0 && c.ControlPlaneRunningVersion != c.Cluster.Spec.KubernetesVersion {
+	// Use HasSuffix for CI builds where the cluster spec contains a GCS url like
+	// https://storage.googleapis.com/k8s-release-dev/ci/v1.36.0-alpha.0.615+cc55e3447816e4
+	// and ControlPlaneRunningVersion is a build like v1.36.0-alpha.0.615+cc55e3447816e4
+	// Release versions will be an exact match
+	if len(c.ControlPlaneRunningVersion) > 0 && !strings.HasSuffix(c.Cluster.Spec.KubernetesVersion, c.ControlPlaneRunningVersion) {
 		assetBuilder.KubeletSupportedVersion = c.ControlPlaneRunningVersion
 	}
 	err = c.upgradeSpecs(ctx, assetBuilder)
