@@ -76,6 +76,8 @@ DNS_CONTROLLER_TAG=$(IMAGE_TAG)
 KOPS_CONTROLLER_TAG=$(IMAGE_TAG)
 #   pkg/model/components/kubeapiserver/model.go
 KUBE_APISERVER_HEALTHCHECK_TAG=$(IMAGE_TAG)
+#   discovery/cmd/discovery-server/
+DISCOVERY_SERVER_TAG=$(IMAGE_TAG)
 
 CGO_ENABLED=0
 export CGO_ENABLED
@@ -114,7 +116,7 @@ nodeup-install: nodeup
 all-install: all kops-install channels-install nodeup-install
 
 .PHONY: all
-all: kops protokube nodeup channels ko-kops-controller-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export
+all: kops protokube nodeup channels ko-kops-controller-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
 
 include tests/e2e/e2e.mk
 
@@ -561,6 +563,17 @@ ko-kops-utils-cp-export-linux-amd64 ko-kops-utils-cp-export-linux-arm64: ko-kops
 ko-kops-utils-cp-export: ko-kops-utils-cp-export-linux-amd64 ko-kops-utils-cp-export-linux-arm64
 	echo "Done exporting kops-utils-cp images"
 
+.PHONY: ko-discovery-server-export-linux-amd64 ko-discovery-server-export-linux-arm64
+ko-discovery-server-export-linux-amd64 ko-discovery-server-export-linux-arm64: ko-discovery-server-export-linux-%:
+	mkdir -p ${IMAGES}
+	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${DISCOVERY_SERVER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/discovery-server-$*.tar ./discovery/cmd/discovery-server/
+	gzip -f ${IMAGES}/discovery-server-$*.tar
+	tools/sha256 ${IMAGES}/discovery-server-$*.tar.gz ${IMAGES}/discovery-server-$*.tar.gz.sha256
+
+.PHONY: ko-discovery-server-export
+ko-discovery-server-export: ko-discovery-server-export-linux-amd64 ko-discovery-server-export-linux-arm64
+	echo "Done exporting discovery-server images"
+
 .PHONY: version-dist
 version-dist: dev-version-dist-amd64 dev-version-dist-arm64 crossbuild
 	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
@@ -733,11 +746,28 @@ dev-upload-kops-utils-cp: version-dist-kops-utils-cp
 dev-upload-kops-utils-cp-amd64 dev-upload-kops-utils-cp-arm64: dev-upload-kops-utils-cp-%: version-dist-kops-utils-cp-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
+# dev-upload-discovery-server uploads discovery-server
+.PHONY: version-dist-discovery-server version-dist-discovery-server-amd64 version-dist-discovery-server-arm64
+version-dist-discovery-server: version-dist-discovery-server-amd64 version-dist-discovery-server-arm64
+
+version-dist-discovery-server-amd64 version-dist-discovery-server-arm64: version-dist-discovery-server-%: ko-discovery-server-export-linux-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	cp -fp ${IMAGES}/discovery-server-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/discovery-server-$*.tar.gz
+	cp -fp ${IMAGES}/discovery-server-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/discovery-server-$*.tar.gz.sha256
+
+.PHONY: dev-upload-discovery-server
+dev-upload-discovery-server: version-dist-discovery-server
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-discovery-server-amd64 dev-upload-discovery-server-arm64
+dev-upload-discovery-server-amd64 dev-upload-discovery-server-arm64: dev-upload-discovery-server-%: version-dist-discovery-server-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
 # dev-upload-linux-amd64 does a faster build and uploads to GCS / S3
 .PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
 dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
 
-dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-%
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%
@@ -772,6 +802,16 @@ kube-apiserver-healthcheck-push: ko-kube-apiserver-healthcheck-push
 .PHONY: ko-kube-apiserver-healthcheck-push
 ko-kube-apiserver-healthcheck-push:
 	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
+
+#------------------------------------------------------
+# discovery-server
+
+.PHONY: discovery-server-push
+discovery-server-push: ko-discovery-server-push
+
+.PHONY: ko-discovery-server-push
+ko-discovery-server-push:
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}discovery-server" ${KO} build --tags ${DISCOVERY_SERVER_TAG} --platform=linux/amd64,linux/arm64 --bare ./discovery/cmd/discovery-server/
 
 #------------------------------------------------------
 # CloudBuild artifacts
