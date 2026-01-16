@@ -18,6 +18,7 @@ package tester
 
 import (
 	"regexp"
+	"strings"
 
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -122,6 +123,22 @@ func (t *Tester) setSkipRegexFlag() error {
 	for _, subnet := range cluster.Spec.Subnets {
 		if subnet.Type == v1alpha2.SubnetTypePrivate || subnet.Type == v1alpha2.SubnetTypeDualStack {
 			skipRegex += "|SSH.should.SSH.to.all.nodes.and.run.commands"
+			break
+		}
+	}
+
+	igs, err := t.getKopsInstanceGroups()
+	if err != nil {
+		return err
+	}
+	for _, ig := range igs {
+		if ig.Spec.Role == "Node" && strings.Contains(ig.Spec.Image, "debian-11") {
+			// SupplementalGroupsPolicy requires containerd v2 but we're pinning these distros to container v1.7:
+			// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#implementations-supplementalgroupspolicy
+			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/helpers.py#L107-L109
+			// amazonlinux2 isn't included here because we pin it to K8s 1.34 which doesn't include these tests:
+			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/build_jobs.py#L1355-L1357
+			skipRegex += "|SupplementalGroupsPolicy"
 			break
 		}
 	}
