@@ -75,7 +75,6 @@ func (c *MockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 	return gce.GetCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
-// Zones is not implemented yet
 func (c *MockGCECloud) Zones() ([]string, error) {
 	return gce.GetZones(c)
 }
