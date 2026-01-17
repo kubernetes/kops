@@ -13,6 +13,8 @@ contents: |
       - --also-stdout
       - /usr/local/bin/kube-scheduler
       - --authentication-kubeconfig=/var/lib/kube-scheduler/kubeconfig
+      - --authentication-skip-lookup=false
+      - --authentication-tolerate-lookup-failure=false
       - --authorization-kubeconfig=/var/lib/kube-scheduler/kubeconfig
       - --config=/var/lib/kube-scheduler/config.yaml
       - --leader-elect=true
