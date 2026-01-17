@@ -191,6 +191,9 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 
 	flags = append(flags, "--config="+"/var/lib/kube-scheduler/config.yaml")
 
+	// Make sure the scheduler always looks up its authentication configuration from the API server.
+	flags = append(flags, "--authentication-tolerate-lookup-failure=false")
+	flags = append(flags, "--authentication-skip-lookup=false")
 	// Add kubeconfig flags
 	for _, flag := range []string{"authentication-", "authorization-"} {
 		flags = append(flags, "--"+flag+"kubeconfig="+kubescheduler.KubeConfigPath)
