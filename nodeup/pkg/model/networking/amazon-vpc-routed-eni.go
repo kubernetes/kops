@@ -68,12 +68,11 @@ ManageForeignRoutingPolicyRules=no
 		})
 	}
 
-	// Running Amazon VPC CNI on Ubuntu 22.04+ or any version of al2023 requires
+	// Running Amazon VPC CNI on Ubuntu 22.04+ requires
 	// setting MACAddressPolicy to `none` (ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2103
 	// & https://github.com/aws/amazon-vpc-cni-k8s/issues/2839
 	// & https://github.com/kubernetes/kops/issues/16255)
-	if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04) ||
-		b.Distribution == distributions.DistributionAmazonLinux2023 {
+	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04 {
 		contents := `
 [Match]
 OriginalName=*
@@ -92,5 +91,26 @@ MACAddressPolicy=none
 		})
 
 	}
+
+	// Running Amazon VPC CNI on al2023 requires setting Unmanaged to `yes`
+	// ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/3524
+	if b.Distribution == distributions.DistributionAmazonLinux2023 {
+		contents := `
+[Match]
+Name=ens[6-9]* ens[1-9][0-9]*
+
+[Link]
+Unmanaged=yes
+`
+
+		c.AddTask(&nodetasks.File{
+			Path:            "/etc/systemd/network/10-vpc-cni-secondary.network",
+			Contents:        fi.NewStringResource(contents),
+			Type:            nodetasks.FileType_File,
+			OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
+		})
+
+	}
+
 	return nil
 }
