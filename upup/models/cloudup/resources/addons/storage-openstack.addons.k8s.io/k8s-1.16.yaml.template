@@ -282,7 +282,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
         {{ if HasSnapshotController }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.3.0
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.4.0
           args:
             - "--csi-address=$(ADDRESS)"
             - "--timeout=3m"
