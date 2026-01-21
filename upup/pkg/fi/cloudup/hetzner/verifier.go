@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	version "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 )
@@ -48,6 +49,7 @@ func NewHetznerVerifier(opt *HetznerVerifierOptions) (bootstrap.Verifier, error)
 
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(hcloudToken),
+		hcloud.WithApplication("kops", version.Version),
 	}
 	hcloudClient := hcloud.NewClient(opts...)
 

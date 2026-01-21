@@ -28,6 +28,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	version "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodelabels"
@@ -53,6 +54,7 @@ func New(cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
 	}
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(hcloudToken),
+		hcloud.WithApplication("kops", version.Version),
 	}
 	hcloudClient := hcloud.NewClient(opts...)
 
