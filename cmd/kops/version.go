@@ -107,7 +107,7 @@ func RunVersion(f *util.Factory, out io.Writer, options *VersionOptions) error {
 
 func serverVersion(f *util.Factory, options *VersionOptions) string {
 	if options.ClusterName == "" {
-		return "No cluster selected"
+		options.ClusterName = rootCommand.ClusterName(true)
 	}
 
 	ctx := context.Background()
