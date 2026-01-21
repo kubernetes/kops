@@ -27,6 +27,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+	version "k8s.io/kops"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -83,6 +84,7 @@ func NewHetznerCloud(region string) (HetznerCloud, error) {
 
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(accessToken),
+		hcloud.WithApplication("kops", version.Version),
 	}
 	client := hcloud.NewClient(opts...)
 
