@@ -22,11 +22,6 @@ import (
 
 // See http://ghodss.com/2014/the-right-way-to-handle-yaml-in-golang/
 
-// YAMLToJSON converts yaml to json
-func YAMLToJSON(yamlBytes []byte) ([]byte, error) {
-	return yaml.YAMLToJSON(yamlBytes)
-}
-
 // YamlUnmarshal unmarshals the yaml content to an interface
 // Note: if you are loading a kops.k8s.io API object,
 // normally you want something like kopscodecs.Decode,
