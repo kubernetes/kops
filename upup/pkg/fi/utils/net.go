@@ -27,25 +27,6 @@ import (
 	"github.com/apparentlymart/go-cidr/cidr"
 )
 
-// IsIPv4IP checks if a string is a valid IPv4 IP.
-func IsIPv4IP(s string) bool {
-	ip := net.ParseIP(s)
-	if ip == nil {
-		return false
-	}
-
-	// Must convert to IPv4
-	if ip.To4() == nil {
-		return false
-	}
-	// Must NOT contain ":"
-	if strings.Contains(s, ":") {
-		return false
-	}
-
-	return true
-}
-
 // IsIPv6IP checks if a string is a valid IPv6 IP.
 func IsIPv6IP(s string) bool {
 	ip := net.ParseIP(s)
