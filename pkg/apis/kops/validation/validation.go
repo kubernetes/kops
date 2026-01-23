@@ -1424,6 +1424,17 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 		allErrs = append(allErrs, validateEtcdMemberSpec(m, fieldPath.Child("etcdMembers").Index(i))...)
 	}
 
+	// Validate ClientTLSEnabled
+	// CRITICAL: Do not allow disabling TLS on main etcd cluster
+	if spec.Name == "main" && spec.ClientTLSEnabled != nil && !*spec.ClientTLSEnabled {
+		allErrs = append(allErrs, field.Forbidden(
+			fieldPath.Child("clientTLSEnabled"),
+			"disabling TLS for the main etcd cluster is forbidden - it contains sensitive cluster state and must use HTTPS",
+		))
+	}
+	// Note: Disabling TLS for non-main etcd clusters (e.g., events) is allowed.
+	// A warning is logged in the model builder when this occurs.
+
 	return allErrs
 }
 

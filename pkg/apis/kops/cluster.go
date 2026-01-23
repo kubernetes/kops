@@ -691,6 +691,11 @@ type EtcdClusterSpec struct {
 	MemoryRequest *resource.Quantity `json:"memoryRequest,omitempty"`
 	// CPURequest specifies the cpu requests of each etcd container in the cluster.
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
+	// ClientTLSEnabled controls whether to use HTTPS (TLS) for client connections to etcd.
+	// When set to false, uses HTTP instead of HTTPS, eliminating TLS overhead.
+	// Defaults to true for security. Setting to false is only recommended for the events etcd cluster.
+	// The main etcd cluster MUST use TLS and will fail validation if this is set to false.
+	ClientTLSEnabled *bool `json:"clientTLSEnabled,omitempty"`
 }
 
 // EtcdBackupSpec describes how we want to do backups of etcd

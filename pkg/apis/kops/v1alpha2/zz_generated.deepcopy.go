@@ -2034,6 +2034,11 @@ func (in *EtcdClusterSpec) DeepCopyInto(out *EtcdClusterSpec) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.ClientTLSEnabled != nil {
+		in, out := &in.ClientTLSEnabled, &out.ClientTLSEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

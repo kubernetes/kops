@@ -143,11 +143,16 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 	c.EtcdServersOverrides = nil
 
 	for _, etcdCluster := range clusterSpec.EtcdClusters {
+		// Use GetClientScheme to determine HTTP or HTTPS
+		scheme := etcdCluster.GetClientScheme()
+
 		switch etcdCluster.Name {
 		case "main":
-			c.EtcdServers = append(c.EtcdServers, "https://127.0.0.1:4001")
+			etcdURL := fmt.Sprintf("%s://127.0.0.1:4001", scheme)
+			c.EtcdServers = append(c.EtcdServers, etcdURL)
 		case "events":
-			c.EtcdServersOverrides = append(c.EtcdServersOverrides, "/events#https://127.0.0.1:4002")
+			etcdURL := fmt.Sprintf("/events#%s://127.0.0.1:4002", scheme)
+			c.EtcdServersOverrides = append(c.EtcdServersOverrides, etcdURL)
 		}
 	}
 

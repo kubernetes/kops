@@ -453,7 +453,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	{
-		scheme := "https"
+		// Determine scheme based on ClientTLSEnabled setting
+		scheme := etcdCluster.GetClientScheme()
+
+		// Log a warning if TLS is disabled
+		if scheme == "http" {
+			klog.Warningf("etcd cluster %q is configured with client TLS disabled (HTTP). This is NOT recommended for production clusters.", etcdCluster.Name)
+		}
 
 		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, ports.PeerPort)
 		config.ClientUrls = fmt.Sprintf("%s://%s:%d", scheme, clientHost, ports.ClientPort)
