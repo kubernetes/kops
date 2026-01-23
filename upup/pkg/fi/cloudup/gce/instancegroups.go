@@ -117,11 +117,11 @@ func recreateCloudInstance(c GCECloud, i *cloudinstances.CloudInstance) error {
 }
 
 // GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
-func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return GetCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return GetCloudGroups(c, cluster, instancegroups, options, nodes)
 }
 
-func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
 	project := c.Project()
@@ -177,7 +177,7 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				return nil, fmt.Errorf("error getting instance group for MIG %q", name)
 			}
 			if ig == nil {
-				if warnUnmatched {
+				if options.WarnUnmatched {
 					klog.Warningf("Found MIG with no corresponding instance group %q", name)
 				}
 				continue
@@ -205,8 +205,13 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				name := LastComponent(id)
 				instance, err := c.Compute().Instances().Get(project, zoneName, name)
 				if err != nil {
+					if IsNotFound(err) && options.WarnMissingInstance {
+						klog.Warningf("Instance %q was not found", name)
+						continue
+					}
 					return nil, fmt.Errorf("error getting Instance: %v", err)
 				}
+
 				cm := &cloudinstances.CloudInstance{
 					ID:                 instance.SelfLink,
 					CloudInstanceGroup: g,

@@ -74,7 +74,7 @@ func (c *Cloud) DetachInstance(instance *cloudinstances.CloudInstance) error {
 
 // GetCloudGroups returns a map of cloud instances that back a kops cluster.
 // Detached instances must be returned in the NeedUpdate slice.
-func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for _, ig := range instancegroups {
 		cloudInstanceGroup := &cloudinstances.CloudInstanceGroup{

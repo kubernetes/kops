@@ -54,6 +54,7 @@ type DeleteInstanceGroupOptions struct {
 	Yes         bool
 	ClusterName string
 	GroupName   string
+	Force       bool
 }
 
 func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
@@ -114,6 +115,7 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately delete the instance group")
+	cmd.Flags().BoolVarP(&options.Force, "force", "f", options.Force, "Specify --force to force the deletion of the instance group even if not all instances can be found.")
 
 	return cmd
 }
@@ -181,7 +183,7 @@ func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	d.Cloud = cloud
 	d.Clientset = clientset
 
-	err = d.DeleteInstanceGroup(group)
+	err = d.DeleteInstanceGroup(group, options.Force)
 	if err != nil {
 		return err
 	}

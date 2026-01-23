@@ -71,8 +71,8 @@ func (c *MockGCECloud) AllResources() map[string]interface{} {
 }
 
 // GetCloudGroups is not implemented yet
-func (c *MockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return gce.GetCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *MockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return gce.GetCloudGroups(c, cluster, instancegroups, options, nodes)
 }
 
 func (c *MockGCECloud) Zones() ([]string, error) {

@@ -129,8 +129,8 @@ func NewDOCloud(region string) (DOCloud, error) {
 	}, nil
 }
 
-func (c *doCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *doCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, options.WarnUnmatched, nodes)
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
