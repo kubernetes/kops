@@ -112,5 +112,23 @@ Unmanaged=yes
 
 	}
 
+	// On Ubuntu 24.04+, cloud-init network hotplug is enabled by default
+	// (https://github.com/canonical/cloud-init/pull/4799). This causes cloud-init to reconfigure netplan
+	// when Amazon VPC CNI attaches ENIs, breaking network functionality.
+	// See: https://github.com/kubernetes/kops/issues/17881
+	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 24.04 {
+		contents := `# Disable cloud-init network hotplug to prevent interference with Amazon VPC CNI ENI management.
+# See: https://github.com/kubernetes/kops/issues/17881
+updates:
+  network:
+    when: [boot-new-instance]
+`
+		c.AddTask(&nodetasks.File{
+			Path:     "/etc/cloud/cloud.cfg.d/99-disable-network-hotplug.cfg",
+			Contents: fi.NewStringResource(contents),
+			Type:     nodetasks.FileType_File,
+		})
+	}
+
 	return nil
 }
