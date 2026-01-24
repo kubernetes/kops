@@ -76,6 +76,20 @@ ManageForeignRoutingPolicyRules=no
 		})
 	}
 
+	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 24.04 {
+		contents := `# Disable cloud-init network hotplug to prevent interference with Cilium ENI management.
+# See: https://github.com/kubernetes/kops/issues/17881
+updates:
+  network:
+    when: [boot-new-instance]
+`
+		c.AddTask(&nodetasks.File{
+			Path:     "/etc/cloud/cloud.cfg.d/99-disable-network-hotplug.cfg",
+			Contents: fi.NewStringResource(contents),
+			Type:     nodetasks.FileType_File,
+		})
+	}
+
 	return nil
 }
 
