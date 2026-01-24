@@ -5,7 +5,8 @@ options:
   machineType: "E2_HIGHCPU_32"
 steps:
   # Push the images
-  - name: "mirror.gcr.io/library/golang:1.25.4-trixie"
+  - name: "mirror.gcr.io/library/golang:1.25.6-trixie"
+
     id: images
     entrypoint: make
     env:
@@ -21,7 +22,8 @@ steps:
       - dns-controller-push
       - kube-apiserver-healthcheck-push
   # Push the artifacts
-  - name: "mirror.gcr.io/library/golang:1.25.4-trixie"
+  - name: "mirror.gcr.io/library/golang:1.25.6-trixie"
+
     id: artifacts
     entrypoint: make
     env:
@@ -36,7 +38,8 @@ steps:
     args:
       - gcs-upload-and-tag
   # Build cloudbuild artifacts (for attestation)
-  - name: "mirror.gcr.io/library/golang:1.25.4-trixie"
+  - name: "mirror.gcr.io/library/golang:1.25.6-trixie"
+
     id: cloudbuild-artifacts
     entrypoint: make
     env:
