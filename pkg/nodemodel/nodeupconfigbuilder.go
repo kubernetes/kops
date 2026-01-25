@@ -374,7 +374,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
-	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderAzure:
+	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderAzure, kops.CloudProviderMetal:
 		// Use any IP address that is found (including public ones)
 		controlPlaneIPs = append(controlPlaneIPs, wellKnownAddresses[wellknownservices.KubeAPIServer]...)
 	}
@@ -386,7 +386,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		// This covers the clouds in UseKopsControllerForNodeConfig which use kops-controller for node config,
 		// but don't have a specialized discovery mechanism for finding kops-controller etc.
 		switch cluster.GetCloudProvider() {
-		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO:
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO, kops.CloudProviderMetal:
 			bootConfig.APIServerIPs = controlPlaneIPs
 		}
 	}
