@@ -17,7 +17,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - run: /usr/bin/git config --global user.email actions@github.com
       - run: /usr/bin/git config --global user.name 'GitHub Actions Release Tagger'
       - run: hack/tag-release.sh

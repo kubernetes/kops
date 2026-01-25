@@ -14,6 +14,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - name: 'Review Dependencies'
         uses: actions/dependency-review-action@3c4e3dcb1aa7874d2c16be7d79418e9b7efd6261
