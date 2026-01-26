@@ -41,19 +41,11 @@ if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
   CLOUD_PROVIDER="aws"
 fi
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
-if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
-  if [[ -z "${KOPS_DISCOVERY_STORE:-}" ]]; then
-    export KOPS_DISCOVERY_STORE=
-  fi
-fi
 if [[ "${CLOUD_PROVIDER}" != "gce" ]]; then
-  # KOPS_STATE_STORE holds metadata about the clusters we create
-  if [[ -z "${KOPS_STATE_STORE:-}" ]]; then
-    echo "Must specify KOPS_STATE_STORE"
-    exit 1
-  fi
-  echo "KOPS_STATE_STORE=${KOPS_STATE_STORE}"
-  export KOPS_STATE_STORE
+  export KOPS_STATE_STORE=
+  export CLUSTER_NAME=
+  # We can create ephemeral kops state buckets for AWS now, drop this after we remove it 
+  # from prow jobs
 fi
 
 if [[ -z "${ADMIN_ACCESS:-}" ]]; then
@@ -77,8 +69,9 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16,10.5.0.0/16,10.6.0.0/16,10.7.0.0/16,10.8.0.0/16,10.9.0.0/16,10.10.0.0/16,10.11.0.0/16,10.12.0.0/16")
   create_args+=("--node-size=t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large")
   create_args+=("--node-volume-size=20")
+  create_args+=("--master-volume-size=500")
   create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
-  create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}")
+  create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}")
   # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
   create_args+=("--dns=none")
 fi
@@ -138,15 +131,13 @@ create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 
-
 # AWS ONLY feature flags
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   # Enable creating a single nodes instance group
   KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=6000")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io1")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io2")
 
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
@@ -176,6 +167,8 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.iops=10000")
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.throughput=1000")
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.associatePublicIP=true")
+elif [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=io2")
 fi
 
 # More time for bigger clusters
