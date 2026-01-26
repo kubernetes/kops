@@ -32,7 +32,7 @@ spec:
       - args:
         - --allocate-node-cidrs=true
         - --cluster-cidr=100.96.0.0/11
-        - --cluster-name=this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+        - --cluster-name=this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
         - --configure-cloud-routes=false
         - --leader-elect=true
         - --v=2

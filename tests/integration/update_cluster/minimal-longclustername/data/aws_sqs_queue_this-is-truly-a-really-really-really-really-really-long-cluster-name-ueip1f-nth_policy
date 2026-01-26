@@ -9,7 +9,7 @@
           "sqs.amazonaws.com"
         ]
       },
-      "Resource": "arn:aws-test:sqs:us-test-1:123456789012:this-is-truly-a-really-really-long-cluster-name-minimal-example-com-nth"
+      "Resource": "arn:aws-test:sqs:us-test-1:123456789012:this-is-truly-a-really-really-really-really-really-long-cluster-name-ueip1f-nth"
     }
   ],
   "Version": "2012-10-17"

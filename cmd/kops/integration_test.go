@@ -584,7 +584,7 @@ func TestMinimalGp3(t *testing.T) {
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalLongClusterName(t *testing.T) {
-	newIntegrationTest("this.is.truly.a.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").
+	newIntegrationTest("this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").
 		withAddons(
 			awsEBSCSIAddon,
 			dnsControllerAddon,
@@ -1566,13 +1566,14 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 		}
 	}
 	if i.nth {
+		queueName := truncate.TruncateString(strings.ReplaceAll(i.clusterName, ".", "-"), truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
 		expectedFilenames = append(expectedFilenames, []string{
 			"aws_s3_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
 			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceScheduledChange_event_pattern",
-			"aws_sqs_queue_" + strings.ReplaceAll(i.clusterName, ".", "-") + "-nth_policy",
+			"aws_sqs_queue_" + queueName + "-nth_policy",
 		}...)
 	}
 	if i.nthRebalance {

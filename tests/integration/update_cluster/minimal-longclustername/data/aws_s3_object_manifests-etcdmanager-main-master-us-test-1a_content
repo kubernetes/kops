@@ -11,12 +11,12 @@ spec:
     - /bin/sh
     - -c
     - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
-      --backup-store=memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/backups/etcd/main
+      --backup-store=memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/backups/etcd/main
       --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-      --dns-suffix=.internal.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+      --dns-suffix=.internal.this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
       --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
       --v=6 --volume-name-tag=k8s.io/etcd/main --volume-provider=aws --volume-tag=k8s.io/etcd/main
-      --volume-tag=k8s.io/role/control-plane=1 --volume-tag=kubernetes.io/cluster/this.is.truly.a.really.really.long.cluster-name.minimal.example.com=owned
+      --volume-tag=k8s.io/role/control-plane=1 --volume-tag=kubernetes.io/cluster/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com=owned
       > /tmp/pipe 2>&1
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION

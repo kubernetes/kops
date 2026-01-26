@@ -197,7 +197,7 @@ spec:
         - name: ENABLE_SQS_TERMINATION_DRAINING
           value: "true"
         - name: QUEUE_URL
-          value: https://sqs.us-test-1.amazonaws.com/123456789012/this-is-truly-a-really-really-long-cluster-name-minimal-example-com-nth
+          value: https://sqs.us-test-1.amazonaws.com/123456789012/this-is-truly-a-really-really-really-really-really-long-cluster-name-ueip1f-nth
         - name: DELETE_SQS_MSG_IF_NODE_NOT_FOUND
           value: "false"
         - name: WORKERS
