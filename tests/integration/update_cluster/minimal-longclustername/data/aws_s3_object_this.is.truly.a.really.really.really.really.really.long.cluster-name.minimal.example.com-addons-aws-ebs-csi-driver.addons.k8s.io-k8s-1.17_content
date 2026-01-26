@@ -863,8 +863,8 @@ spec:
       - args:
         - controller
         - --endpoint=$(CSI_ENDPOINT)
-        - --k8s-tag-cluster-id=this.is.truly.a.really.really.long.cluster-name.minimal.example.com
-        - --extra-tags=KubernetesCluster=this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+        - --k8s-tag-cluster-id=this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
+        - --extra-tags=KubernetesCluster=this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
         - --http-endpoint=0.0.0.0:3301
         - --batching=true
         - --logging-format=text

@@ -2,24 +2,24 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
-  name: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+  name: this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
 spec:
   kubernetesApiAccess:
-  - 0.0.0.0/0
+    - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
-  configBase: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+  configBase: memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
   etcdClusters:
-  - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: us-test-1a
-    name: main
-  - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: us-test-1a
-    name: events
+    - etcdMembers:
+        - instanceGroup: master-us-test-1a
+          name: us-test-1a
+      name: main
+    - etcdMembers:
+        - instanceGroup: master-us-test-1a
+          name: us-test-1a
+      name: events
   kubernetesVersion: v1.32.0
-  masterPublicName: api.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+  masterPublicName: api.this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     cni: {}
@@ -27,20 +27,19 @@ spec:
   sshAccess:
     - 0.0.0.0/0
   subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test-1a
-    type: Public
-    zone: us-test-1a
+    - cidr: 172.20.32.0/19
+      name: us-test-1a
+      type: Public
+      zone: us-test-1a
 
 ---
-
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: nodes
   labels:
-    kops.k8s.io/cluster: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+    kops.k8s.io/cluster: this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
@@ -49,17 +48,16 @@ spec:
   minSize: 2
   role: Node
   subnets:
-  - us-test-1a
+    - us-test-1a
 
 ---
-
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-10T22:42:28Z"
   name: master-us-test-1a
   labels:
-    kops.k8s.io/cluster: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+    kops.k8s.io/cluster: this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
 spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404
@@ -68,4 +66,4 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - us-test-1a
+    - us-test-1a

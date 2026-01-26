@@ -1,7 +1,7 @@
 APIServerConfig:
   API:
     dns: {}
-    publicName: api.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+    publicName: api.this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
   ClusterDNSDomain: cluster.local
   KubeAPIServer:
     allowPrivileged: true
@@ -43,8 +43,8 @@ APIServerConfig:
     requestheaderUsernameHeaders:
     - X-Remote-User
     securePort: 443
-    serviceAccountIssuer: https://api.internal.this.is.truly.a.really.really.long.cluster-name.minimal.example.com
-    serviceAccountJWKSURI: https://api.internal.this.is.truly.a.really.really.long.cluster-name.minimal.example.com/openid/v1/jwks
+    serviceAccountIssuer: https://api.internal.this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
+    serviceAccountJWKSURI: https://api.internal.this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/openid/v1/jwks
     serviceClusterIPRange: 100.64.0.0/13
     storageBackend: etcd3
   ServiceAccountPublicKeys: |
@@ -227,14 +227,14 @@ CAs:
     MA0GCSqGSIb3DQEBCwUAA0EAVQVx5MUtuAIeePuP9o51xtpT2S6Fvfi8J4ICxnlA
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
-ClusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+ClusterName: this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
 ControlPlaneConfig:
   KubeControllerManager:
     allocateNodeCIDRs: true
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: external
     clusterCIDR: 100.96.0.0/11
-    clusterName: this.is.truly.a.really.really.long.cluster-name.minimal.example.com
+    clusterName: this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com
     configureCloudRoutes: false
     image: registry.k8s.io/kube-controller-manager:v1.32.0
     leaderElection:
@@ -302,10 +302,10 @@ Networking:
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
 channels:
-- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/addons/bootstrap-channel.yaml
+- memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/addons/bootstrap-channel.yaml
 configStore:
-  keypairs: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/pki
-  secrets: memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/secrets
+  keypairs: memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/pki
+  secrets: memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/secrets
 containerdConfig:
   logLevel: info
   runc:
@@ -313,8 +313,8 @@ containerdConfig:
   sandboxImage: registry.k8s.io/pause:3.10.1
   version: 2.1.6
 etcdManifests:
-- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/manifests/etcd/main-master-us-test-1a.yaml
-- memfs://clusters.example.com/this.is.truly.a.really.really.long.cluster-name.minimal.example.com/manifests/etcd/events-master-us-test-1a.yaml
+- memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/manifests/etcd/main-master-us-test-1a.yaml
+- memfs://clusters.example.com/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com/manifests/etcd/events-master-us-test-1a.yaml
 staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
