@@ -236,6 +236,7 @@ func (b *KopsModelContext) InstanceName(ig *kops.InstanceGroup, suffix string) s
 }
 
 func QueueNamePrefix(clusterName string) string {
-	// periods aren't allowed in queue name
-	return strings.ReplaceAll(clusterName, ".", "-")
+	// periods aren't allowed in queue name and queue name can't exceed 80 characters
+	safeClusterName := strings.ReplaceAll(clusterName, ".", "-")
+	return truncate.TruncateString(safeClusterName, truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
 }
