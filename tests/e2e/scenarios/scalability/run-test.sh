@@ -136,17 +136,17 @@ create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+create_args+=("--master-size=c7i.24xlarge")
 
 
 # AWS ONLY feature flags
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   # Enable creating a single nodes instance group
   KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=6000")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=1000")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=120")
-  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io1")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=20000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeThroughput=4000")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeSize=200")
+  create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeType=io2")
 
 fi
 echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
