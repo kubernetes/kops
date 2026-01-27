@@ -36,7 +36,7 @@ import (
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/proxy"
+	"k8s.io/kops/util/pkg/env"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -752,7 +752,7 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 	container := &v1.Container{
 		Name:           "kube-apiserver",
 		Image:          image,
-		Env:            append(kubeAPIServer.Env, proxy.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy)...),
+		Env:            append(kubeAPIServer.Env, env.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy)...),
 		LivenessProbe:  livenessProbe,
 		ReadinessProbe: readinessProbe,
 		StartupProbe:   startupProbe,

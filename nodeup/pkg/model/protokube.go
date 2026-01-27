@@ -32,7 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
-	"k8s.io/kops/util/pkg/proxy"
+	"k8s.io/kops/util/pkg/env"
 )
 
 // ProtokubeBuilder configures protokube
@@ -301,7 +301,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		}
 	}
 
-	for _, envVar := range proxy.GetProxyEnvVars(t.NodeupConfig.Networking.EgressProxy) {
+	for _, envVar := range env.GetProxyEnvVars(t.NodeupConfig.Networking.EgressProxy) {
 		envVars[envVar.Name] = envVar.Value
 	}
 
