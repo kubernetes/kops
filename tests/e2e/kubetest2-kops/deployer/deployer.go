@@ -104,10 +104,14 @@ type deployer struct {
 	// boskos struct field will be non-nil when the deployer is
 	// using boskos to acquire a GCP project
 	boskos                  *client.Client
+	boskosAWSAccount        string
 	BoskosLocation          string        `flag:"boskos-location" desc:"If set, manually specifies the location of the Boskos server."`
 	BoskosAcquireTimeout    time.Duration `flag:"boskos-acquire-timeout" desc:"How long should boskos wait to acquire a resource before timing out"`
 	BoskosHeartbeatInterval time.Duration `flag:"boskos-heartbeat-interval" desc:"How often should boskos send a heartbeat to Boskos to hold the acquired resource. 0 means no heartbeat."`
-	BoskosResourceType      string        `flag:"boskos-resource-type" desc:"If set, manually specifies the resource type of GCP projects to acquire from Boskos."`
+	BoskosGCPResourceType   string        `flag:"boskos-gcp-resource-type" desc:"If set, manually specifies the resource type of GCP projects to acquire from Boskos."`
+	BoskosAWSResourceType   string        `flag:"boskos-aws-resource-type" desc:"If set, manually specifies the resource type of AWS accounts to acquire from Boskos."`
+	UseBoskosAWS            bool          `flag:"use-boskos-aws" desc:"If set, use boskos to acquire AWS accounts."`
+
 	// this channel serves as a signal channel for the hearbeat goroutine
 	// so that it can be explicitly closed
 	boskosHeartbeatClose chan struct{}
@@ -138,7 +142,8 @@ func New(opts types.Options) (types.Deployer, *pflag.FlagSet) {
 		ValidationCount:         10,
 		ValidationInterval:      10 * time.Second,
 		BoskosLocation:          "http://boskos.test-pods.svc.cluster.local.",
-		BoskosResourceType:      "gce-project",
+		BoskosGCPResourceType:   "gce-project",
+		BoskosAWSResourceType:   "aws-account",
 		BoskosAcquireTimeout:    5 * time.Minute,
 		BoskosHeartbeatInterval: 5 * time.Minute,
 	}
