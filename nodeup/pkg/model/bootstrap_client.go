@@ -111,12 +111,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Path:   "/",
 	}
 
-	bootstrapClient := &kopscontrollerclient.Client{
-		Authenticator: authenticator,
-		CAs:           []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]),
-		BaseURL:       baseURL,
-	}
-
+	bootstrapClient := kopscontrollerclient.New(authenticator, []byte(b.NodeupConfig.CAs[fi.CertificateIDCA]), baseURL)
 	bootstrapClientTask := &nodetasks.BootstrapClientTask{
 		Client:     bootstrapClient,
 		Certs:      b.bootstrapCerts,

@@ -49,26 +49,30 @@ type Client struct {
 	httpClient *http.Client
 }
 
-func (b *Client) Query(ctx context.Context, req any, resp any) error {
-	if b.httpClient == nil {
-		certPool := x509.NewCertPool()
-		certPool.AppendCertsFromPEM(b.CAs)
-
-		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:    certPool,
-				MinVersion: tls.VersionTLS12,
-			},
-		}
-
-		httpClient := &http.Client{
-			Timeout:   time.Duration(15) * time.Second,
-			Transport: transport,
-		}
-
-		b.httpClient = httpClient
+func New(authenticator bootstrap.Authenticator, cas []byte, baseURL url.URL) *Client {
+	client := &Client{
+		Authenticator: authenticator,
+		CAs:           cas,
+		BaseURL:       baseURL,
 	}
 
+	certPool := x509.NewCertPool()
+	certPool.AppendCertsFromPEM(cas)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs:    certPool,
+			MinVersion: tls.VersionTLS12,
+		},
+	}
+	client.httpClient = &http.Client{
+		Timeout:   time.Duration(15) * time.Second,
+		Transport: transport,
+	}
+
+	return client
+}
+
+func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	// Sanity-check DNS to provide clearer diagnostic messages.
 	if ips, err := net.LookupIP(b.BaseURL.Hostname()); err != nil {
 		if dnsErr, ok := err.(*net.DNSError); ok && dnsErr.IsNotFound {
