@@ -158,6 +158,7 @@ func ParseFlags(f string) {
 	defer flagsMutex.Unlock()
 
 	f = strings.TrimSpace(f)
+	var parsed, unknown int
 	for _, s := range strings.Split(f, ",") {
 		s = strings.TrimSpace(s)
 		if s == "" {
@@ -176,9 +177,14 @@ func ParseFlags(f string) {
 		if ff != nil {
 			klog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
 			ff.enabled = &enabled
+			parsed++
 		} else {
 			klog.Infof("Unknown FeatureFlag %q", s)
+			unknown++
 		}
+	}
+	if f != "" {
+		klog.Infof("ParseFlags: parsed %d flags from %q (unknown=%d, registered=%d)", parsed, f, unknown, len(flags))
 	}
 }
 
