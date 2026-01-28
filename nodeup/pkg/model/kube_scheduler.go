@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/proxy"
+	"k8s.io/kops/util/pkg/env"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -249,7 +249,7 @@ func (b *KubeSchedulerBuilder) buildPod(kubeScheduler *kops.KubeSchedulerConfig)
 	container := &v1.Container{
 		Name:  "kube-scheduler",
 		Image: image,
-		Env:   proxy.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy),
+		Env:   env.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			ProbeHandler:        v1.ProbeHandler{HTTPGet: healthAction},
 			InitialDelaySeconds: 15,

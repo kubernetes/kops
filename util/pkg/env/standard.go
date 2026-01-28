@@ -24,7 +24,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
-	"k8s.io/kops/util/pkg/proxy"
 )
 
 type EnvVars map[string]string
@@ -39,7 +38,7 @@ func (m EnvVars) addEnvVariableIfExist(name string) {
 func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	vars := make(EnvVars)
 
-	for _, v := range proxy.GetProxyEnvVars(spec.Networking.EgressProxy) {
+	for _, v := range GetProxyEnvVars(spec.Networking.EgressProxy) {
 		vars[v.Name] = v.Value
 	}
 
