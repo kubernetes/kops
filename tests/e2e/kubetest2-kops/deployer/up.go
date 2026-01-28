@@ -70,14 +70,14 @@ func (d *deployer) Up() error {
 		switch d.CloudProvider {
 		case "aws":
 			ctx := context.Background()
-			if err := d.aws.EnsureS3Bucket(ctx, d.stateStore(), false); err != nil {
+			if err := d.aws.EnsureS3Bucket(ctx, d.region, d.stateStore(), false); err != nil {
 				return err
 			}
-			if err := d.aws.EnsureS3Bucket(ctx, d.discoveryStore(), true); err != nil {
+			if err := d.aws.EnsureS3Bucket(ctx, d.region, d.discoveryStore(), true); err != nil {
 				return err
 			}
 		case "gce":
-			if err := gce.EnsureGCSBucket(d.stateStore(), d.GCPProject, false); err != nil {
+			if err := gce.EnsureGCSBucket(d.stateStore(), d.region, d.GCPProject, false); err != nil {
 				return err
 			}
 		}
@@ -93,18 +93,13 @@ func (d *deployer) Up() error {
 		adminAccess = publicIP
 	}
 
-	zones, err := d.zones()
-	if err != nil {
-		return err
-	}
-
 	// Write out the env file for kops
 	if err := d.writeEnvFile(ctx); err != nil {
 		return fmt.Errorf("error writing env file %q: %v", d.EnvFile, err)
 	}
 
 	if d.TemplatePath != "" {
-		values, err := d.templateValues(zones, adminAccess)
+		values, err := d.templateValues(d.zones, adminAccess)
 		if err != nil {
 			return err
 		}
@@ -116,13 +111,13 @@ func (d *deployer) Up() error {
 		}
 	} else {
 		if d.terraform != nil {
-			if err := d.createCluster(zones, adminAccess, true); err != nil {
+			if err := d.createCluster(d.zones, adminAccess, true); err != nil {
 				return err
 			}
 		} else {
 			// For the non-terraform case, we want to see the preview output.
 			// So run a create (which logs the output), then do an update
-			if err := d.createCluster(zones, adminAccess, false); err != nil {
+			if err := d.createCluster(d.zones, adminAccess, false); err != nil {
 				return err
 			}
 			if err := d.updateCluster(true); err != nil {
@@ -383,7 +378,35 @@ func (d *deployer) verifyUpFlags() error {
 	return nil
 }
 
-func (d *deployer) zones() ([]string, error) {
+func extractZones(args string) []string {
+	// Zones are specified by --zones=zone1,zone2
+	prefix := "--zones="
+	startIdx := strings.Index(args, prefix)
+
+	if startIdx == -1 {
+		return []string{}
+	}
+
+	startIdx += len(prefix)
+
+	endIdx := strings.Index(args[startIdx:], " ")
+	var zonesValue string
+
+	if endIdx == -1 {
+		zonesValue = args[startIdx:]
+	} else {
+		zonesValue = args[startIdx : startIdx+endIdx]
+	}
+	return strings.Split(zonesValue, ",")
+}
+
+func (d *deployer) getZones() ([]string, error) {
+	if d.CreateArgs != "" {
+		zones := extractZones(d.CreateArgs)
+		if len(zones) > 0 {
+			return zones, nil
+		}
+	}
 	switch d.CloudProvider {
 	case "aws":
 		return aws.RandomZones(d.ControlPlaneCount)

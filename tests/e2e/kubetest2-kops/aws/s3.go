@@ -53,9 +53,9 @@ const (
 )
 
 // NewAWSClient returns a new instance of awsClient configured to work in the default region (us-east-2).
-func NewClient(ctx context.Context) (*Client, error) {
+func NewClient(ctx context.Context, region string) (*Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(ctx,
-		awsconfig.WithRegion(defaultRegion))
+		awsconfig.WithRegion(region))
 	if err != nil {
 		return nil, fmt.Errorf("loading AWS config: %w", err)
 	}
@@ -71,8 +71,8 @@ func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, 
 	// Construct the bucket name based on the ProwJob ID (if running in Prow) or AWS account ID (if running outside
 	// Prow) and the current timestamp
 	var identifier string
-	if jobID := os.Getenv("PROW_JOB_ID"); len(jobID) >= 4 {
-		identifier = jobID[:4]
+	if jobID := os.Getenv("BUILD_ID"); len(jobID) >= 4 {
+		identifier = jobID[len(jobID)-4:]
 	} else {
 		callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 		if err != nil {
@@ -95,15 +95,18 @@ func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, 
 }
 
 // EnsureS3Bucket creates a new S3 bucket with the given name and public read permissions.
-func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRead bool) error {
+func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, publicRead bool) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
-	klog.Infof("Creating bucket %s in region %s", bucketName, defaultRegion)
+	klog.Infof("Creating bucket %s in region %s", bucketName, region)
+	bucketConfig := &types.CreateBucketConfiguration{}
+	if region != "us-east-1" {
+		bucketConfig.LocationConstraint = types.BucketLocationConstraint(region)
+	}
 	_, err := c.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
-		Bucket: aws.String(bucketName),
-		CreateBucketConfiguration: &types.CreateBucketConfiguration{
-			LocationConstraint: defaultRegion,
-		},
-	})
+		Bucket:                    aws.String(bucketName),
+		CreateBucketConfiguration: bucketConfig,
+	},
+	)
 	if err != nil {
 		var exists *types.BucketAlreadyExists
 		if errors.As(err, &exists) {
@@ -130,14 +133,15 @@ func (c Client) EnsureS3Bucket(ctx context.Context, bucketName string, publicRea
 	klog.Infof("Bucket %s created successfully", bucketName)
 
 	if publicRead {
-		// We assume it will take 5-10 seconds for the bucket to be created and wait for it.
-		time.Sleep(10 * time.Second)
 		err = c.setPublicAccessBlock(ctx, bucketName)
 		if err != nil {
 			klog.Errorf("Failed to disable public access block policies on bucket %s, err: %v", bucketName, err)
 
 			return fmt.Errorf("disabling public access block policies for bucket %s: %w", bucketName, err)
 		}
+
+		// Wait for public access block settings to propagate before setting the policy
+		time.Sleep(10 * time.Second)
 
 		err = c.setPublicReadPolicy(ctx, bucketName)
 		if err != nil {

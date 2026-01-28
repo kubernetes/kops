@@ -18,8 +18,10 @@ package gce
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"sort"
+	"strings"
 )
 
 var allZones = []string{
@@ -76,4 +78,14 @@ func RandomZones(count int) ([]string, error) {
 	}
 	sort.Strings(chosenZones)
 	return chosenZones, nil
+}
+
+// ZoneToRegion maps a GCE zone name to a GCE region name, returning an error if it cannot be mapped
+func ZoneToRegion(zone string) (string, error) {
+	tokens := strings.Split(zone, "-")
+	if len(tokens) <= 2 {
+		return "", fmt.Errorf("invalid GCE Zone: %v", zone)
+	}
+	region := tokens[0] + "-" + tokens[1]
+	return region, nil
 }
