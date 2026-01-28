@@ -115,7 +115,7 @@ func (d *deployer) verifyBuildFlags() error {
 	} else if d.boskos != nil {
 		d.StageLocation = d.stagingStore()
 		klog.Infof("creating staging bucket %s to hold kops/kubernetes build artifacts", d.StageLocation)
-		if err := gce.EnsureGCSBucket(d.StageLocation, d.GCPProject, true); err != nil {
+		if err := gce.EnsureGCSBucket(d.StageLocation, d.region, d.GCPProject, true); err != nil {
 			return err
 		}
 	} else {

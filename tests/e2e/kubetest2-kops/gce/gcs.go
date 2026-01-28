@@ -40,7 +40,7 @@ func GCSBucketName(projectID, prefix string) string {
 	return bucket
 }
 
-func EnsureGCSBucket(bucketPath, projectID string, public bool) error {
+func EnsureGCSBucket(bucketPath, region, projectID string, public bool) error {
 	lsArgs := []string{
 		"gsutil", "ls", "-b",
 	}
@@ -65,6 +65,9 @@ func EnsureGCSBucket(bucketPath, projectID string, public bool) error {
 	}
 	if projectID != "" {
 		mbArgs = append(mbArgs, "-p", projectID)
+	}
+	if region != "" {
+		mbArgs = append(mbArgs, "-l", region)
 	}
 	mbArgs = append(mbArgs, bucketPath)
 

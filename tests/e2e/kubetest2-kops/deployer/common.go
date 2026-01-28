@@ -51,9 +51,15 @@ func (d *deployer) initialize() error {
 		}
 	}
 
+	var err error
+	d.zones, err = d.getZones()
+	if err != nil {
+		return err
+	}
 	switch d.CloudProvider {
 	case "aws":
-		client, err := aws.NewClient(context.Background())
+		d.region = d.zones[0][:len(d.zones[0])-1]
+		client, err := aws.NewClient(context.Background(), d.region)
 		if err != nil {
 			return fmt.Errorf("init failed to build AWS client: %w", err)
 		}
@@ -90,6 +96,10 @@ func (d *deployer) initialize() error {
 		}
 		d.SSHUser = "root"
 	case "gce":
+		d.region, err = gce.ZoneToRegion(d.zones[0])
+		if err != nil {
+			return err
+		}
 		if d.GCPProject == "" {
 			klog.V(1).Info("No GCP project provided, acquiring from Boskos")
 
@@ -170,7 +180,7 @@ func (d *deployer) initialize() error {
 // verifyKopsFlags ensures common fields are set for kops commands
 func (d *deployer) verifyKopsFlags() error {
 	if d.ClusterName == "" {
-		name, err := defaultClusterName(d.CloudProvider)
+		name, err := d.defaultClusterName()
 		if err != nil {
 			return err
 		}
@@ -311,7 +321,7 @@ func (d *deployer) featureFlags() string {
 }
 
 // defaultClusterName returns a kops cluster name to use when ClusterName is not set
-func defaultClusterName(cloudProvider string) (string, error) {
+func (d *deployer) defaultClusterName() (string, error) {
 	dnsDomain := os.Getenv("KOPS_DNS_DOMAIN")
 	jobName := os.Getenv("JOB_NAME")
 	jobType := os.Getenv("JOB_TYPE")
@@ -328,9 +338,13 @@ func defaultClusterName(cloudProvider string) (string, error) {
 	}
 
 	var suffix string
-	switch cloudProvider {
+	switch d.CloudProvider {
 	case "aws":
-		suffix = dnsDomain
+		if strings.Contains(d.CreateArgs, "--dns=none") {
+			suffix = "k8s.local"
+		} else {
+			suffix = dnsDomain
+		}
 	case "azure":
 		// Azure uses --dns=none and the domain is not needed
 		suffix = ""
@@ -349,7 +363,7 @@ func defaultClusterName(cloudProvider string) (string, error) {
 
 	// GCP has char limit of 64
 	gcpLimit := 63 - (len(suffix) + 1) // 1 for the dot
-	if len(jobName) > gcpLimit && cloudProvider == "gce" {
+	if len(jobName) > gcpLimit && d.CloudProvider == "gce" {
 		jobName = jobName[:gcpLimit]
 	}
 

@@ -15,22 +15,30 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/podidentitywebhook"
 
 # shellcheck disable=SC2034
 KOPS_TEMPLATE="${TEST_ROOT}/cluster.yaml.tmpl"
 
-kops-acquire-latest
+make test-e2e-install
+export KOPS_STATE_STORE=
+export CLUSTER_NAME=
 
-kops-up
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-kubectl apply -f "${TEST_ROOT}"/pod.yaml
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
+fi
 
-kubectl -n default wait --for=condition=Ready pod/pod-identity-webhook-test
-
-# This command will exit code 253 if there are no credentials
-kubectl exec -it -n default pod-identity-webhook-test -- aws sts get-caller-identity
-
-
-
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="--zones=us-east-1a" \
+    --template-path="${KOPS_TEMPLATE}" \
+    --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+    --test=exec -- "${TEST_ROOT}/test.sh"

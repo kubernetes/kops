@@ -100,6 +100,8 @@ type deployer struct {
 	stateStoreName     string
 	discoveryStoreName string
 	stagingStoreName   string
+	region             string
+	zones              []string
 
 	// boskos struct field will be non-nil when the deployer is
 	// using boskos to acquire a GCP project
