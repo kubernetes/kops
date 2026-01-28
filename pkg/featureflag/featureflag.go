@@ -71,6 +71,11 @@ var (
 	VPCSkipEnableDNSSupport = new("VPCSkipEnableDNSSupport", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = new("SkipEtcdVersionCheck", Bool(false))
+	// EtcdEventsHTTP enables HTTP (non-TLS) for the events etcd cluster.
+	// This matches the pattern used by GCE scale tests and can help with
+	// TLS handshake overhead for the ephemeral events data.
+	// The main etcd cluster always uses HTTPS for security.
+	EtcdEventsHTTP = new("EtcdEventsHTTP", Bool(false))
 	// ClusterAddons activates experimental cluster-addons support
 	ClusterAddons = new("ClusterAddons", Bool(false))
 	// Azure toggles the Azure support.

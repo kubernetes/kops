@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 
@@ -147,7 +148,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		case "main":
 			c.EtcdServers = append(c.EtcdServers, "https://127.0.0.1:4001")
 		case "events":
-			c.EtcdServersOverrides = append(c.EtcdServersOverrides, "/events#https://127.0.0.1:4002")
+			// Use HTTP for events etcd when EtcdEventsHTTP feature flag is enabled
+			scheme := "https"
+			if featureflag.EtcdEventsHTTP.Enabled() {
+				scheme = "http"
+			}
+			c.EtcdServersOverrides = append(c.EtcdServersOverrides, fmt.Sprintf("/events#%s://127.0.0.1:4002", scheme))
 		}
 	}
 

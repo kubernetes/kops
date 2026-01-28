@@ -453,7 +453,14 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	{
+		// Determine scheme: HTTPS by default, but allow HTTP for events cluster
+		// when EtcdEventsHTTP feature flag is enabled
 		scheme := "https"
+		if etcdCluster.Name == "events" && featureflag.EtcdEventsHTTP.Enabled() {
+			scheme = "http"
+			config.EtcdInsecure = fi.PtrTo(true)
+			klog.Warningf("etcd cluster %q is configured with TLS disabled (HTTP) via KOPS_FEATURE_FLAGS=EtcdEventsHTTP. This is for experiments only.", etcdCluster.Name)
+		}
 
 		config.PeerUrls = fmt.Sprintf("%s://__name__:%d", scheme, ports.PeerPort)
 		config.ClientUrls = fmt.Sprintf("%s://%s:%d", scheme, clientHost, ports.ClientPort)
@@ -676,6 +683,9 @@ type config struct {
 
 	// PKIDir is set to the directory for PKI keys, used to secure commucations between etcd-manager peers
 	PKIDir string `flag:"pki-dir"`
+
+	// EtcdInsecure allows running etcd without TLS (for experiments only)
+	EtcdInsecure *bool `flag:"etcd-insecure"`
 
 	Address               string   `flag:"address"`
 	PeerUrls              string   `flag:"peer-urls"`
