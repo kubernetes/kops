@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -191,6 +192,10 @@ func TestDeleteInstanceGroup(t *testing.T) {
 		Clientset: clientset,
 	}
 
+	// Simulate missing Instance
+	_, err = cloud.Compute().Instances().Delete(cloud.Project(), igm.Zone, igm.Name)
+	assert.NoError(t, err, "error deleting Instance")
+
 	assert.ErrorContains(t, deleteIG.DeleteInstanceGroup(&ig, false /*force*/), "error getting Instance")
 	// Verify that the instance group was not deleted
 	_, err = clientset.InstanceGroupsFor(cluster).Get(ctx, ig.Name, metav1.GetOptions{})
@@ -201,4 +206,9 @@ func TestDeleteInstanceGroup(t *testing.T) {
 	_, err = clientset.InstanceGroupsFor(cluster).Get(ctx, ig.Name, metav1.GetOptions{})
 	assert.Error(t, err)
 	assert.True(t, errors.IsNotFound(err), "unexpected error when getting deleted instance group: %v", err)
+
+	// Verify that the cloud resources for the InstanceGroup are also deleted
+	groups, err := cloud.GetCloudGroups(cluster, []*api.InstanceGroup{&ig}, &fi.GetCloudGroupsOptions{}, nil)
+	assert.NoError(t, err)
+	assert.Len(t, groups, 0)
 }

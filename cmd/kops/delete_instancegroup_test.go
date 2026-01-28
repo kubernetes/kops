@@ -69,9 +69,8 @@ func TestRunDeleteInstanceGroup(t *testing.T) {
 
 	ig := testutils.BuildMinimalNodeInstanceGroup("test-ig")
 
-	instanceName := "a-test-ig-test-k8s-io"
 	igm := &compute.InstanceGroupManager{
-		Name:             instanceName,
+		Name:             "a-test-ig-test-k8s-io",
 		Zone:             "us-test1-a",
 		InstanceTemplate: template.SelfLink,
 	}
@@ -89,6 +88,10 @@ func TestRunDeleteInstanceGroup(t *testing.T) {
 		Yes:         true,
 		Force:       false,
 	}
+
+	// Simulate missing Instance
+	_, err = cloud.Compute().Instances().Delete(cloud.Project(), igm.Zone, igm.Name)
+	assert.NoError(t, err, "error deleting Instance")
 
 	assert.ErrorContains(t, RunDeleteInstanceGroup(ctx, f, &stdout, options), "error getting Instance")
 
