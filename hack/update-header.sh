@@ -19,30 +19,28 @@
 BAD_HEADERS=$( ("${KOPS_ROOT}/hack/verify-boilerplate.sh" || true) | awk '{ print $7}')
 FORMATS="sh go Makefile Dockerfile py"
 
-YEAR=$(date -u +%Y)
-
 for i in ${FORMATS}
 do
-	:
-	for j in ${BAD_HEADERS}
-	do
-		:
-	        HEADER=$(sed "s/YEAR/${YEAR}/" "${KOPS_ROOT}/hack/boilerplate/boilerplate.${i}.txt")
-			value=$(<"${j}")
-			if [[ "$j" != *$i ]]
+    :
+    for j in ${BAD_HEADERS}
+    do
+        :
+            HEADER=$(cat "${KOPS_ROOT}/hack/boilerplate/boilerplate.${i}.txt")
+            value=$(<"${j}")
+            if [[ "$j" != *$i ]]
             then
                 continue
             fi
 
-			if [[ ${value} == *"# Copyright"* ]]
-			then
-				echo "Bad header in ${j} ${i}"
-			else
-				text="$HEADER
+            if [[ ${value} == *"# Copyright"* ]]
+            then
+                echo "Bad header in ${j} ${i}"
+            else
+                text="$HEADER
 
 $value"
-				echo "${j}"
-				echo "$text" > "${j}"
-			fi
-	done
+                echo "${j}"
+                echo "$text" > "${j}"
+            fi
+    done
 done
