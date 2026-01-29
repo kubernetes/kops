@@ -8,6 +8,24 @@ To run all tests:
 ```
 go test -v ./...
 ```
+### Development
+
+kOps has a lot of tests. This is great, but when writing code that causes test
+failures, it sometimes becomes hard to identify the failing tests due to how `go
+test` outputs results.
+
+If you are encountering this issue, you can install the following wrapper:
+
+```
+go install github.com/rramkumar1/gotestfail
+```
+
+This tool wraps standard `go test` arguments but only outputs failures and makes
+it easier to consume logs for the failed tests. You can run it like so:
+
+```
+gotestfail ./...
+```
 
 ### Adding an integration test
 
