@@ -307,11 +307,26 @@ func (d *deployer) env() []string {
 
 // featureFlags returns the kops feature flags to set
 func (d *deployer) featureFlags() string {
+	// The sflags library splits comma-separated values into separate slice
+	// elements, so --env=KOPS_FEATURE_FLAGS=A,B,C becomes ["KOPS_FEATURE_FLAGS=A", "B", "C"].
+	// We need to reassemble the original value by collecting all entries from the
+	// KOPS_FEATURE_FLAGS entry until we hit another NAME=VALUE pattern.
+	var parts []string
+	collecting := false
 	for _, env := range d.Env {
-		e := strings.Split(env, "=")
-		if e[0] == "KOPS_FEATURE_FLAGS" && len(e) > 1 {
-			return e[1]
+		if value, ok := strings.CutPrefix(env, "KOPS_FEATURE_FLAGS="); ok {
+			parts = append(parts, value)
+			collecting = true
+		} else if collecting {
+			if strings.Contains(env, "=") {
+				// Hit another env var, stop collecting
+				break
+			}
+			parts = append(parts, env)
 		}
+	}
+	if len(parts) > 0 {
+		return strings.Join(parts, ",")
 	}
 	// if not set by the env flag, but set in the environment, use that.
 	if e := os.Getenv("KOPS_FEATURE_FLAGS"); e != "" {
