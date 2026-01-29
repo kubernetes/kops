@@ -14,10 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
-
 import argparse
-import datetime
 import difflib
 import glob
 import os
@@ -90,8 +87,6 @@ def file_passes(filename, refs, regexs):
     if generated:
         if extension == "go":
             extension = "generatego"
-        elif extension == "bzl":
-            extension = "generatebzl"
 
     if extension != "":
         ref = refs[extension]
@@ -120,22 +115,11 @@ def file_passes(filename, refs, regexs):
     # trim our file to the same number of lines as the reference file
     data = data[:len(ref)]
 
-    p = regexs["year"]
-    for d in data:
-        if p.search(d):
-            if generated:
-                print('File %s has the YEAR field, but it should not be in generated file' %
-                      filename, file=verbose_out)
-            else:
-                print('File %s has the YEAR field, but missing the year of date' %
-                      filename, file=verbose_out)
-            return False
-
     if not generated:
         # Replace all occurrences of the regex "2014|2015|2016|2017|2018" with "YEAR"
         p = regexs["date"]
         for i, d in enumerate(data):
-            (data[i], found) = p.subn('YEAR', d)
+            (data[i], found) = p.subn('', d)
             if found != 0:
                 break
 
@@ -206,14 +190,11 @@ def get_files(extensions):
 
 
 def get_dates():
-    years = datetime.datetime.now().year
-    return '(%s)' % '|'.join((str(year) for year in range(2014, years+1)))
+    return '(%s)' % '\s|'.join((str(year) for year in range(2014, 2099)))
 
 
 def get_regexs():
     regexs = {}
-    # Search for "YEAR" which exists in the boilerplate, but shouldn't in the real thing
-    regexs["year"] = re.compile("YEAR")
     # get_dates return 2014, 2015, 2016, 2017, or 2018 until the current year
     # as a regex like: "(2014|2015|2016|2017|2018)";
     # company holder names can be anything
