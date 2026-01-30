@@ -30,11 +30,6 @@ func TestFindDistribution(t *testing.T) {
 		expected Distribution
 	}{
 		{
-			rootfs:   "amazonlinux2",
-			err:      nil,
-			expected: DistributionAmazonLinux2,
-		},
-		{
 			rootfs:   "amazonlinux2023",
 			err:      nil,
 			expected: DistributionAmazonLinux2023,

@@ -134,19 +134,6 @@ func (b *SysctlBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			"")
 	}
 
-	// Running Flannel on Amazon Linux 2 needs custom settings
-	if b.NodeupConfig.Networking.Flannel != nil && b.Distribution == distributions.DistributionAmazonLinux2 && b.NodeupConfig.KubeProxy != nil {
-		proxyMode := b.NodeupConfig.KubeProxy.ProxyMode
-		if proxyMode == "" || proxyMode == "iptables" {
-			sysctls = append(sysctls,
-				"# Flannel settings on Amazon Linux 2",
-				"# Issue https://github.com/coreos/flannel/issues/902",
-				"net.bridge.bridge-nf-call-ip6tables=1",
-				"net.bridge.bridge-nf-call-iptables=1",
-				"")
-		}
-	}
-
 	if b.IsIPv6Only() {
 		if b.Distribution == distributions.DistributionDebian11 {
 			// Accepting Router Advertisements must be enabled for each existing network interface to take effect.

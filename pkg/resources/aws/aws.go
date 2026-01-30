@@ -472,7 +472,7 @@ func (s *dumpState) getImageInfo(imageID string) (*imageInfo, error) {
 func guessSSHUser(image *ec2types.Image) string {
 	owner := aws.ToString(image.OwnerId)
 	switch owner {
-	case awsup.WellKnownAccountAmazonLinux2, awsup.WellKnownAccountRedhat:
+	case awsup.WellKnownAccountAmazonLinux2023, awsup.WellKnownAccountRedhat:
 		return "ec2-user"
 	case awsup.WellKnownAccountDebian:
 		return "admin"

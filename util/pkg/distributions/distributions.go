@@ -63,7 +63,6 @@ var (
 	DistributionFedora42        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora42", version: 42}
 	DistributionFedora43        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora43", version: 43}
 	DistributionFedora44        = Distribution{packageFormat: "rpm", project: "fedora", id: "fedora44", version: 44}
-	DistributionAmazonLinux2    = Distribution{packageFormat: "rpm", project: "amazonlinux2", id: "amazonlinux2", version: 0}
 	DistributionAmazonLinux2023 = Distribution{packageFormat: "rpm", project: "amazonlinux2023", id: "amzn", version: 2023}
 
 	// Immutable distros
@@ -106,8 +105,6 @@ func (d *Distribution) HasDNF() bool {
 		return d.version >= 8
 	case "fedora":
 		return d.version >= 22
-	case "amazonlinux2":
-		return false
 	default:
 		klog.Warningf("unknown project for HasDNF (%q), assuming does support dnf", d.project)
 		return true
@@ -128,7 +125,7 @@ func (d *Distribution) DefaultUsers() ([]string, error) {
 		return []string{"ubuntu", "root"}, nil
 	case "centos":
 		return []string{"centos"}, nil
-	case "rhel", "amazonlinux2", "amazonlinux2023":
+	case "rhel", "amazonlinux2023":
 		return []string{"ec2-user"}, nil
 	case "rocky":
 		return []string{"rocky"}, nil
@@ -169,7 +166,7 @@ func (d *Distribution) ForceNftables() bool {
 
 	// These distros have working iptables or iptables-nft
 	switch *d {
-	case DistributionAmazonLinux2, DistributionAmazonLinux2023:
+	case DistributionAmazonLinux2023:
 		return false
 	case DistributionRhel8, DistributionRhel9:
 		return false

@@ -136,8 +136,6 @@ func (t *Tester) setSkipRegexFlag() error {
 			// SupplementalGroupsPolicy requires containerd v2 but we're pinning these distros to container v1.7:
 			// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#implementations-supplementalgroupspolicy
 			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/helpers.py#L107-L109
-			// amazonlinux2 isn't included here because we pin it to K8s 1.34 which doesn't include these tests:
-			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/build_jobs.py#L1355-L1357
 			skipMap["SupplementalGroupsPolicy"] = nil
 		}
 		if matchesAnySubstrings(ig.Spec.Image, []string{
