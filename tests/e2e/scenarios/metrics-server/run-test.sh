@@ -15,33 +15,23 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
-kops-acquire-latest
+make test-e2e-install
 
-OVERRIDES="${OVERRIDES-} --set=cluster.spec.metricsServer.enabled=true"
-OVERRIDES="$OVERRIDES --set=cluster.spec.certManager.enabled=true"
-OVERRIDES="${OVERRIDES} --master-size=t4g.medium --node-size=t4g.medium"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-kops-up
-
-# shellcheck disable=SC2164
-cd "$(mktemp -dt kops.XXXXXXXXX)"
-
-MS_VERSION=$(kubectl get deployment -n kube-system metrics-server -o jsonpath='{.spec.template.spec.containers[?(@.name=="metrics-server")].image}' | cut -d':' -f2-)
-CLONE_ARGS=
-if [ -n "$MS_VERSION" ]; then
-    CLONE_ARGS="-b ${MS_VERSION}"
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
-# shellcheck disable=SC2086
-git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/metrics-server.git .
 
-# some of the metrics only show when requested
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/pods"
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/pods"
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
-
-
-# shellcheck disable=SC2164
-go test -v ./test/e2e_test.go -count=1
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="--set=cluster.spec.metricsServer.enabled=true --set=cluster.spec.certManager.enabled=true --master-size=m6g.large --node-size=m6g.large" \
+    --kubernetes-version=https://dl.k8s.io/release/stable.txt \
+    --test=exec -- "${REPO_ROOT}/tests/e2e/scenarios/metrics-server/test.sh"
