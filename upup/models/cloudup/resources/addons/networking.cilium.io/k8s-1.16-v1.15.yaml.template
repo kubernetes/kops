@@ -455,6 +455,7 @@ data:
   proxy-idle-timeout-seconds: "60"
   proxy-max-concurrent-retries: "128"
   http-retry-count: "3"
+  http-stream-idle-timeout: "300"
 
   external-envoy-proxy: "false"
   envoy-base-id: "0"
