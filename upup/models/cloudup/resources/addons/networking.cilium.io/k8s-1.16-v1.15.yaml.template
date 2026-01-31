@@ -149,9 +149,12 @@ data:
   enable-metrics: "true"
   {{ end }}
 
-  {{ if WithDefaultBool .Ingress.Enabled false }}
+  {{ if or (WithDefaultBool .GatewayAPI.Enabled false) (WithDefaultBool .Ingress.Enabled false) }}
   enable-envoy-config: "true"
   envoy-config-retry-interval: "15s"
+  envoy-secrets-namespace: "kube-system"
+  {{ end }}
+  {{ if WithDefaultBool .Ingress.Enabled false }}
   enable-ingress-controller: "true"
   {{ if .Ingress.EnforceHttps }}
   enforce-ingress-https: "{{ .Ingress.EnforceHttps }}"
@@ -189,9 +192,6 @@ data:
   gateway-api-hostnetwork-enabled: "false"
   gateway-api-hostnetwork-nodelabelselector: ""
   {{ end }}
-
-  policy-secrets-only-from-secrets-namespace: "true"
-  policy-secrets-namespace: "kube-system"
 
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
@@ -455,6 +455,7 @@ data:
   proxy-idle-timeout-seconds: "60"
   proxy-max-concurrent-retries: "128"
   http-retry-count: "3"
+  http-stream-idle-timeout: "300"
 
   external-envoy-proxy: "false"
   envoy-base-id: "0"
@@ -532,6 +533,7 @@ rules:
   - pods
   - endpoints
   - nodes
+  - secrets
   verbs:
   - get
   - list
@@ -1021,13 +1023,13 @@ rules:
 ---
 {{ end }}
 ---
-{{ if CiliumSecret }}
+{{ if or (WithDefaultBool .GatewayAPI.Enabled false) (WithDefaultBool .Ingress.Enabled false) }}
 ---
 # Source: cilium/templates/cilium-agent/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: cilium-tlsinterception-secrets
+  name: cilium-envoy-config-secrets
   namespace: "kube-system"
   labels:
     app.kubernetes.io/part-of: cilium
@@ -1144,20 +1146,20 @@ subjects:
 ---
 {{ end }}
 ---
-{{ if CiliumSecret }}
+{{ if or (WithDefaultBool .GatewayAPI.Enabled false) (WithDefaultBool .Ingress.Enabled false) }}
 ---
 # Source: cilium/templates/cilium-agent/rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cilium-tlsinterception-secrets
+  name: cilium-envoy-config-secrets
   namespace: "kube-system"
   labels:
     app.kubernetes.io/part-of: cilium
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cilium-tlsinterception-secrets
+  name: cilium-envoy-config-secrets
 subjects:
 - kind: ServiceAccount
   name: "cilium"
