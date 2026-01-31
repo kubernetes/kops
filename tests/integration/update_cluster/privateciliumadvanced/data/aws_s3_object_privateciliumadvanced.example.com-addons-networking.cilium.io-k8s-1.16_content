@@ -130,6 +130,7 @@ data:
   external-envoy-proxy: "false"
   health-check-icmp-failure-threshold: "3"
   http-retry-count: "3"
+  http-stream-idle-timeout: "300"
   identity-allocation-mode: crd
   identity-change-grace-period: 5s
   identity-gc-interval: 15m0s
@@ -161,8 +162,6 @@ data:
   operator-api-serve-addr: 127.0.0.1:9234
   policy-cidr-match-mode: ""
   policy-default-local-cluster: "false"
-  policy-secrets-namespace: kube-system
-  policy-secrets-only-from-secrets-namespace: "true"
   preallocate-bpf-maps: "false"
   procfs: /host/proc
   proxy-connect-timeout: "2"
@@ -236,6 +235,7 @@ rules:
   - pods
   - endpoints
   - nodes
+  - secrets
   verbs:
   - get
   - list
@@ -697,7 +697,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -850,7 +850,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         name: config
         terminationMessagePolicy: FallbackToLogsOnError
@@ -869,7 +869,7 @@ spec:
           value: /run/cilium/cgroupv2
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         name: mount-cgroup
         securityContext:
@@ -899,7 +899,7 @@ spec:
         env:
         - name: BIN_PATH
           value: /opt/cni/bin
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         name: apply-sysctl-overwrites
         securityContext:
@@ -925,7 +925,7 @@ spec:
         - /bin/bash
         - -c
         - --
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         name: mount-bpf-fs
         securityContext:
@@ -960,7 +960,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -986,7 +986,7 @@ spec:
           name: cilium-run
       - command:
         - /install-plugin.sh
-        image: quay.io/cilium/cilium:v1.18.2
+        image: quay.io/cilium/cilium:v1.18.6
         imagePullPolicy: IfNotPresent
         name: install-cni-binaries
         resources:
@@ -1173,7 +1173,7 @@ spec:
           value: api.internal.privateciliumadvanced.example.com
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
-        image: quay.io/cilium/operator:v1.18.2
+        image: quay.io/cilium/operator:v1.18.6
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
