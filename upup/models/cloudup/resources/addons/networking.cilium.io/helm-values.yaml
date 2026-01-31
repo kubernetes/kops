@@ -48,6 +48,7 @@ tls:
   secretsNamespace:
     create: false
     name: kube-system
+  readSecretsOnlyFromSecretsNamespace: false
   secretSync:
     enabled: false
 operator:
