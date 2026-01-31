@@ -4,8 +4,13 @@ filestores:
 - base: https://storage.googleapis.com/k8s-artifacts-cni/release/
 
 files:
-# cni 1.6.1
-- name: v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz
-  sha256: 2503ce29ac445715ebe146073f45468153f9e28f45fa173cb060cfd9e735f563
-- name: v1.6.1/cni-plugins-linux-arm64-v1.6.1.tgz
-  sha256: f0f440b968ab50ad13d9d42d993ba98ec30b2ec666846f4ef1bddc7646a701cc
+# cni 1.6.0
+- name: v1.6.0/cni-plugins-linux-amd64-v1.6.0.tgz
+  sha256: 682b49ff8933a997a52107161f1745f8312364b4c7f605ccdf7a77499130d89d
+- name: v1.6.0/cni-plugins-linux-arm64-v1.6.0.tgz
+  sha256: db09ab057ecf60b05ba05cbec38d55b95cc139c7f1078e2e4857cc13af158cee
+# cni 1.6.2
+- name: v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
+  sha256: b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090
+- name: v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz
+  sha256: 01e0e22acc7f7004e4588c1fe1871cc86d7ab562cd858e1761c4641d89ebfaa4
