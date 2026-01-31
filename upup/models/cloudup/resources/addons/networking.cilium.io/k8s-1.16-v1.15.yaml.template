@@ -190,9 +190,6 @@ data:
   gateway-api-hostnetwork-nodelabelselector: ""
   {{ end }}
 
-  policy-secrets-only-from-secrets-namespace: "true"
-  policy-secrets-namespace: "kube-system"
-
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
   enable-ipv4: "{{ not IsIPv6Only }}"
@@ -533,6 +530,7 @@ rules:
   - pods
   - endpoints
   - nodes
+  - secrets
   verbs:
   - get
   - list
@@ -1022,28 +1020,6 @@ rules:
 ---
 {{ end }}
 ---
-{{ if CiliumSecret }}
----
-# Source: cilium/templates/cilium-agent/role.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: cilium-tlsinterception-secrets
-  namespace: "kube-system"
-  labels:
-    app.kubernetes.io/part-of: cilium
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
----
-{{ end }}
----
 {{ if WithDefaultBool .Ingress.Enabled false }}
 # Source: cilium/templates/cilium-operator/role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -1138,27 +1114,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: cilium-gateway-secrets
-subjects:
-- kind: ServiceAccount
-  name: "cilium"
-  namespace: kube-system
----
-{{ end }}
----
-{{ if CiliumSecret }}
----
-# Source: cilium/templates/cilium-agent/rolebinding.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: cilium-tlsinterception-secrets
-  namespace: "kube-system"
-  labels:
-    app.kubernetes.io/part-of: cilium
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: cilium-tlsinterception-secrets
 subjects:
 - kind: ServiceAccount
   name: "cilium"
