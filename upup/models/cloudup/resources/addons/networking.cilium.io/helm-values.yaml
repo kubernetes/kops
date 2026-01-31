@@ -22,6 +22,7 @@ serviceAccounts:
 envoy:
   enabled: false
 envoyConfig:
+  enabled: true
   secretsNamespace:
     create: false
     name: kube-system
