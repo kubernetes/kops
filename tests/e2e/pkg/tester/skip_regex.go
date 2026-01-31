@@ -126,16 +126,31 @@ func (t *Tester) setSkipRegexFlag() error {
 	if err != nil {
 		return err
 	}
+
+	skipMap := make(map[string]any)
 	for _, ig := range igs {
-		if ig.Spec.Role == "Node" && strings.Contains(ig.Spec.Image, "debian-11") {
+		if ig.Spec.Role != "Node" {
+			continue
+		}
+		if strings.Contains(ig.Spec.Image, "debian-11") {
 			// SupplementalGroupsPolicy requires containerd v2 but we're pinning these distros to container v1.7:
 			// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#implementations-supplementalgroupspolicy
 			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/helpers.py#L107-L109
 			// amazonlinux2 isn't included here because we pin it to K8s 1.34 which doesn't include these tests:
 			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/build_jobs.py#L1355-L1357
-			skipRegex += "|SupplementalGroupsPolicy"
-			break
+			skipMap["SupplementalGroupsPolicy"] = nil
 		}
+		if matchesAnySubstrings(ig.Spec.Image, []string{
+			"rocky-9", "rocky-10", "rhel-9", "rhel-10", // aws
+			"rocky-linux-10", // gce
+		}) {
+			// This metric requires the nfacct sub-system, not present in these distros
+			// https://github.com/cri-o/cri-o/issues/8270
+			skipMap["KubeProxy.should.update.metric.for.tracking.accepted.packets.destined.for.localhost.nodeports"] = nil
+		}
+	}
+	for k := range skipMap {
+		skipRegex += "|" + k
 	}
 
 	// Ensure it is valid regex
@@ -144,4 +159,14 @@ func (t *Tester) setSkipRegexFlag() error {
 	}
 	t.SkipRegex = skipRegex
 	return nil
+}
+
+func matchesAnySubstrings(s string, substrings []string) bool {
+	s = strings.ToLower(s)
+	for _, substr := range substrings {
+		if strings.Contains(s, substr) {
+			return true
+		}
+	}
+	return false
 }
