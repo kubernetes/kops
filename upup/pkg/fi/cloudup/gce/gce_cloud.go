@@ -130,6 +130,8 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 		return i.(gceCloudInternal).WithLabels(labels), nil
 	}
 
+	klog.V(2).Infof("Building new GCE cloud instance for region %q and project %q", region, project)
+
 	c := &gceCloudImplementation{region: region, project: project}
 
 	ctx := context.Background()

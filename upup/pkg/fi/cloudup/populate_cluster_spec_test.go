@@ -37,7 +37,7 @@ import (
 func buildMinimalCluster() (*awsup.MockAWSCloud, *kopsapi.Cluster) {
 	cloud := awsup.InstallMockAWSCloud(testAWSRegion, "abcd")
 
-	c := testutils.BuildMinimalCluster("testcluster.test.com")
+	c := testutils.BuildMinimalClusterAWS("testcluster.test.com")
 
 	return cloud, c
 }

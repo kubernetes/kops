@@ -91,3 +91,4 @@ spec:
   - us-test1
   zones:
   - us-test1-a
+  - us-test1-b

@@ -79,6 +79,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	klog.V(2).Infof("Populating instance group spec for %q", input.GetName())
 
 	var err error
+	// TODO: Pass in `cloud` to shift validation to ValidateInstanceGroup
 	err = validation.ValidateInstanceGroup(input, nil, false).ToAggregate()
 	if err != nil {
 		return nil, fmt.Errorf("failed validating input specs: %w", err)

@@ -266,6 +266,10 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 			return nil, err
 		}
 
+		if len(zones) == 0 {
+			return nil, fmt.Errorf("no zones found for instance group %q", ig.ObjectMeta.Name)
+		}
+
 		// TODO: Duplicated from aws - move to defaults?
 		minSize := 1
 		if ig.Spec.MinSize != nil {
@@ -292,7 +296,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 			totalSize++
 
 			i++
-			if i > len(targetSizes) {
+			if i >= len(targetSizes) {
 				i = 0
 			}
 		}

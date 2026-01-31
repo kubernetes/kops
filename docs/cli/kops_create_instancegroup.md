@@ -38,6 +38,7 @@ kops create instancegroup INSTANCE_GROUP [flags]
   -o, --output string    Output format. One of json or yaml
       --role string      Type of instance group to create (control-plane,node,bastion) (default "node")
       --subnet strings   Subnet in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
+      --zone strings     Zones in which to create instance group. One of Availability Zone like eu-west-1a or a comma-separated list of multiple Availability Zones.
 ```
 
 ### Options inherited from parent commands
