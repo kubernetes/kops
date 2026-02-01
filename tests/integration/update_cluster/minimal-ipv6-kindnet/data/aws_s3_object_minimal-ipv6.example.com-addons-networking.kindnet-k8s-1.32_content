@@ -123,7 +123,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: ghcr.io/aojea/kindnetd:v1.8.2
+        image: registry.k8s.io/networking/kindnet:v1.0.0
         name: kindnet-cni
         resources:
           requests:
@@ -142,7 +142,7 @@ spec:
         - sh
         - -c
         - cat /opt/cni/bin/cni-kindnet > /cni/cni-kindnet ; chmod +x /cni/cni-kindnet
-        image: ghcr.io/aojea/kindnetd:v1.8.2
+        image: registry.k8s.io/networking/kindnet:v1.0.0
         name: install-cni-bin
         volumeMounts:
         - mountPath: /cni
