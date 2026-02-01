@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
+	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 type Installation struct {
@@ -108,6 +109,7 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 			"OS_REGION_NAME",
 			"OS_APPLICATION_CREDENTIAL_ID",
 			"OS_APPLICATION_CREDENTIAL_SECRET",
+			openstackconfig.EnvKeyOpenstackTLSInsecureSkipVerify,
 		} {
 			envVars[envVar] = os.Getenv(envVar)
 		}

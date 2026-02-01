@@ -63,7 +63,7 @@ func newDesignate(_ io.Reader) (*Interface, error) {
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
 	tlsconfig := &tls.Config{}
-	tlsconfig.InsecureSkipVerify = true
+	tlsconfig.InsecureSkipVerify = oc.GetInsecureSkipVerify()
 	transport := &http.Transport{TLSClientConfig: tlsconfig}
 	provider.HTTPClient = http.Client{
 		Transport: transport,

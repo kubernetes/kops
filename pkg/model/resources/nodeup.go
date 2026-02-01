@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 var nodeUpTemplate = `#!/bin/bash
@@ -383,6 +384,11 @@ func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (m
 				"OS_USERNAME",
 				"OS_PASSWORD",
 			)
+		}
+
+		// Map our Insecure Skip Verify setting
+		if cluster.Spec.CloudProvider.Openstack != nil && fi.ValueOf(cluster.Spec.CloudProvider.Openstack.InsecureSkipVerify) {
+			os.Setenv(openstackconfig.EnvKeyOpenstackTLSInsecureSkipVerify, "true")
 		}
 
 		// credentials needed always in control-plane and when using gossip also in nodes

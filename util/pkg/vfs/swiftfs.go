@@ -41,6 +41,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 func NewSwiftClient(ctx context.Context) (*gophercloud.ServiceClient, error) {
@@ -62,7 +63,7 @@ func NewSwiftClient(ctx context.Context) (*gophercloud.ServiceClient, error) {
 	klog.V(4).Infof("Using user-agent %s", ua.Join())
 
 	tlsconfig := &tls.Config{}
-	tlsconfig.InsecureSkipVerify = true
+	tlsconfig.InsecureSkipVerify = config.GetInsecureSkipVerify()
 	transport := &http.Transport{TLSClientConfig: tlsconfig}
 	pc.HTTPClient = http.Client{
 		Transport: transport,
@@ -148,6 +149,14 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	}
 	env.AllowReauth = true
 	return env, nil
+}
+
+func (oc OpenstackConfig) GetInsecureSkipVerify() bool {
+	s := os.Getenv(openstackconfig.EnvKeyOpenstackTLSInsecureSkipVerify)
+	if s == "true" || s == "1" {
+		return true
+	}
+	return false
 }
 
 func (oc OpenstackConfig) GetRegion() (string, error) {
