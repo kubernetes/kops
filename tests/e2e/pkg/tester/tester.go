@@ -60,7 +60,7 @@ func parseKubeconfig(jsonPath string) (string, error) {
 
 	s := strings.TrimSpace(stdout.String())
 	if s == "" {
-		return "", fmt.Errorf("kubeconfig did not contain " + jsonPath)
+		return "", fmt.Errorf("kubeconfig did not contain %q", jsonPath)
 	}
 	return s, nil
 }
