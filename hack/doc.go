@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// This package manages our go mod tools dependencies.
 package hack
-
-import (
-	_ "github.com/client9/misspell/cmd/misspell"
-
-	_ "golang.org/x/tools/cmd/goimports"
-
-	_ "honnef.co/go/tools/cmd/staticcheck"
-
-	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
-
-	_ "github.com/golangci/golangci-lint/v2/cmd/golangci-lint"
-)
