@@ -91,7 +91,7 @@ func run(ctx context.Context) error {
 	}
 
 	klog.Infof("listing files under %v", srcPath)
-	srcFiles, err := srcPath.ReadTree()
+	srcFiles, err := srcPath.ReadTree(ctx)
 	if err != nil {
 		return fmt.Errorf("reading tree %q: %w", srcFiles, err)
 	}
