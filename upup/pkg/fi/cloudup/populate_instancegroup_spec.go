@@ -40,17 +40,17 @@ const (
 	defaultNodeMachineTypeGCE      = "e2-medium"
 	defaultNodeMachineTypeDO       = "s-2vcpu-4gb"
 	defaultNodeMachineTypeAzure    = "Standard_B2s"
-	defaultNodeMachineTypeHetzner  = "cx22"
+	defaultNodeMachineTypeHetzner  = "cx23"
 	defaultNodeMachineTypeScaleway = "DEV1-M"
 
 	defaultBastionMachineTypeGCE     = "e2-micro"
 	defaultBastionMachineTypeAzure   = "Standard_B2s"
-	defaultBastionMachineTypeHetzner = "cx11"
+	defaultBastionMachineTypeHetzner = "cx23"
 
 	defaultMasterMachineTypeGCE      = "e2-medium"
 	defaultMasterMachineTypeDO       = "s-2vcpu-4gb"
 	defaultMasterMachineTypeAzure    = "Standard_B2s"
-	defaultMasterMachineTypeHetzner  = "cx22"
+	defaultMasterMachineTypeHetzner  = "cx23"
 	defaultMasterMachineTypeScaleway = "DEV1-M"
 
 	defaultDOImageFocal       = "ubuntu-20-04-x64"
