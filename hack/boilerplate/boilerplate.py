@@ -190,7 +190,7 @@ def get_files(extensions):
 
 
 def get_dates():
-    return '(%s)' % '\s|'.join((str(year) for year in range(2014, 2099)))
+    return '(%s)' % ' |'.join((str(year) for year in range(2000, 2099)))
 
 
 def get_regexs():
@@ -210,6 +210,7 @@ def get_regexs():
     # Search for generated files
     regexs["generated"] = re.compile(r"^[/*#]+ +.* DO NOT EDIT\.$", re.MULTILINE)
     return regexs
+
 
 def main():
     regexs = get_regexs()
