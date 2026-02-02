@@ -677,7 +677,6 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 	}
 
 	var challengeListener *bootstrap.ChallengeListener
-
 	if kopsmodel.UseChallengeCallback(bootConfig.CloudProvider) {
 		challengeServer, err := bootstrap.NewChallengeServer(bootConfig.ClusterName, []byte(bootConfig.ConfigServer.CACertificates))
 		if err != nil {
@@ -693,10 +692,8 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		defer challengeListener.Stop()
 	}
 
-	client := &kopscontrollerclient.Client{
-		Authenticator: authenticator,
-		CAs:           []byte(bootConfig.ConfigServer.CACertificates),
-	}
+	// Note: The url is overridden in every iteration of the loop below.
+	client := kopscontrollerclient.New(authenticator, []byte(bootConfig.ConfigServer.CACertificates), url.URL{})
 	defer client.Close()
 
 	var merr error
