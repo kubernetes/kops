@@ -107,6 +107,20 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		return nil, fmt.Errorf("KubeProxy not configured")
 	}
 
+	// On distributions where iptables is not functional (e.g., RHEL10+),
+	// we must use nftables proxy mode instead.
+	// In particular when we forced nftables on rhel10, we should also pass the --proxy-mode=nftables flag.
+	if b.Distribution.ForceNftables() {
+		if c.ProxyMode == "" || c.ProxyMode == "iptables" {
+			if b.IsKubernetesLT("1.29") {
+				klog.Warningf("Distribution %v requires nftables proxy mode, but Kubernetes %s does not support it (requires 1.29+)", b.Distribution, b.NodeupConfig.KubernetesVersion)
+			} else {
+				klog.Infof("Distribution %v requires nftables; overriding kube-proxy mode from %q to nftables", b.Distribution, c.ProxyMode)
+				c.ProxyMode = "nftables"
+			}
+		}
+	}
+
 	if c.Master == "" {
 		if b.IsMaster {
 			// As a special case, if this is the master, we point kube-proxy to the local IP

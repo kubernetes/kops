@@ -40,6 +40,7 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		c.AddTask(&nodetasks.Package{Name: "libapparmor1"})
 		c.AddTask(&nodetasks.Package{Name: "libseccomp2"})
 		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
+			// Note: keep the iptables/nftables logic in sync with ForceNftables
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
@@ -49,6 +50,7 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 	} else if b.Distribution.IsRHELFamily() {
 		// RHEL 10+ doesn't support iptables anymore
+		// Note: keep the iptables/nftables logic in sync with ForceNftables
 		switch b.Distribution {
 		case distributions.DistributionAmazonLinux2023:
 			// install iptables-nft in al2023 (NOT the iptables-legacy!)

@@ -157,3 +157,30 @@ func (d *Distribution) HasLoopbackEtcResolvConf() bool {
 func (d *Distribution) Version() float32 {
 	return d.version
 }
+
+// ForceNftables returns true if this distribution requires nftables proxy mode
+// for kube-proxy. On these distributions, iptables mode is not functional because the
+// necessary kernel modules (nf_conntrack) are not available.
+// Keep this logic aligned with PackagesBuilder in nodeup/pkg/model/packages.go.
+func (d *Distribution) ForceNftables() bool {
+	if !d.IsRHELFamily() {
+		return false
+	}
+
+	// These distros have working iptables or iptables-nft
+	switch *d {
+	case DistributionAmazonLinux2, DistributionAmazonLinux2023:
+		return false
+	case DistributionRhel8, DistributionRhel9:
+		return false
+	case DistributionRocky8, DistributionRocky9:
+		return false
+	case DistributionCentOS9:
+		return false
+	}
+
+	// All other RHEL family distros (RHEL10+, Rocky10+, CentOS10+, Fedora, etc.)
+	// require nftables because iptables is deprecated and the necessary
+	// kernel modules (nf_conntrack) may not be available.
+	return true
+}
