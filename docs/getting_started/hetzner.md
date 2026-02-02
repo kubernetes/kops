@@ -1,62 +1,54 @@
 # Getting Started with kOps on Hetzner Cloud
 
-**WARNING**: Hetzner Cloud support on kOps is currently in **beta**, which means it is in good shape and could be used for production.
-However, it is not as rigorously tested as the stable cloud providers and there are some features that might be missing.
+**WARNING**: Hetzner Cloud support on kOps is currently in **BETA**, which means it is in good shape and could be used for production.
+However, it is not as rigorously tested as the stable cloud providers, and there are some features that might be missing.
 
 ## Requirements
 * kOps version >= 1.24
 * kubectl version >= 1.23
 * Hetzner Cloud [account](https://accounts.hetzner.com/login)
-* Hetzner Cloud [token](https://docs.hetzner.cloud/#authentication)
+* Hetzner Cloud [API token](https://docs.hetzner.cloud/reference/cloud#description/authentication)
+* Hetzner Cloud [S3 credentials](https://docs.hetzner.com/storage/object-storage/faq/s3-credentials/)
 * SSH public and private keys
-* S3 compatible object storage (like [MinIO](https://docs.min.io/minio/baremetal/security/minio-identity-management/user-management.html))
 
 ## Environment Variables
 
 It is important to set the following environment variables:
 ```bash
 export HCLOUD_TOKEN=<token>
-export S3_ENDPOINT=<endpoint>
 export S3_ACCESS_KEY_ID=<acces-key>
 export S3_SECRET_ACCESS_KEY=<secret-key>
-export KOPS_STATE_STORE=s3://<bucket-name>
+export S3_ENDPOINT=https://fsn1.your-objectstorage.com
+export KOPS_STATE_STORE=hos://<bucket-name>
 ```
 
-Some S3 compatible stores may also require to set the region:
+Some S3 compatible stores may also require setting the region:
 ```bash
 export S3_REGION=<region>
 ```
 
 ## Creating a Single Master Cluster
 
-In the following examples, `example.k8s.local` is a [gossip-based DNS ](../gossip.md) cluster name.
-
 ```bash
-# create a ubuntu 20.04 + calico cluster in fsn1
-kops create cluster --name=my-cluster.example.k8s.local \
-  --ssh-public-key=~/.ssh/id_rsa.pub --cloud=hetzner --zones=fsn1 \
-  --image=ubuntu-20.04 --networking=calico --network-cidr=10.10.0.0/16 
-kops update cluster my-cluster.example.k8s.local --yes
-
-# create a ubuntu 20.04 + calico cluster in fsn1 with CPU optimized servers
-kops create cluster --name=my-cluster.example.k8s.local \
-  --ssh-public-key=~/.ssh/id_rsa.pub --cloud=hetzner --zones=fsn1 \
-  --image=ubuntu-20.04 --networking=calico --network-cidr=10.10.0.0/16 \
-  --node-size cpx31
-kops update cluster --name=my-cluster.example.k8s.local --yes
+# create a ubuntu 24.04 + Cilium cluster in fsn1
+kops create cluster --name=my.k8s \
+  --ssh-public-key=~/.ssh/id_ed25519.pub --cloud=hetzner --zones=fsn1 \
+  --image=ubuntu-24.04 --networking=calico --network-cidr=10.10.0.0/16 \
+  --control-plane-size cx23 --node-size cx23
+kops update cluster my.k8s --yes
 
 # update a cluster
-kops update cluster --name=my-cluster.example.k8s.local
-kops update cluster --name=my-cluster.example.k8s.local --yes
-kops rolling-update cluster --name=my-cluster.example.k8s.local
-kops rolling-update cluster --name=my-cluster.example.k8s.local --yes
+kops update cluster --name=my.k8s
+kops update cluster --name=my.k8s --yes
+kops rolling-update cluster --name=my.k8s
+kops rolling-update cluster --name=my.k8s --yes
 
 # validate a cluster
-kops validate cluster --name=my-cluster.example.k8s.local
+kops validate cluster --name=my.k8s
 
 # delete a cluster
-kops delete cluster --name=my-cluster.example.k8s.local
-kops delete cluster --name=my-cluster.example.k8s.local --yes
+kops delete cluster --name=my.k8s
+kops delete cluster --name=my.k8s --yes
 
 # export kubecfg
 # See https://kops.sigs.k8s.io/cli/kops_export_kubeconfig/#examples. 
