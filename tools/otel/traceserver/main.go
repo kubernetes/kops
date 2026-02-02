@@ -76,7 +76,7 @@ func run(ctx context.Context) error {
 				}
 				err := runJaeger(ctx, opt)
 				if err != nil {
-					klog.Warningf("error starting jaeger: %w", err)
+					klog.Warningf("error starting jaeger: %v", err)
 				}
 			}()
 		default:
@@ -166,7 +166,7 @@ func (s *Server) GetTrace(req *storagev1.GetTraceRequest, stream storagev1.SpanR
 		}
 		klog.V(4).Infof("<-GetTrace %v", prototext.Format(chunk))
 		if err := stream.Send(chunk); err != nil {
-			klog.Warningf("error sending chunk: %w", err)
+			klog.Warningf("error sending chunk: %v", err)
 			return err
 		}
 
