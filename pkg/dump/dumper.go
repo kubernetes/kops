@@ -403,6 +403,10 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 		errors = append(errors, err)
 	}
 
+	if err := n.shellToFile(ctx, "cat /proc/modules", filepath.Join(n.dir, "modules")); err != nil {
+		errors = append(errors, err)
+	}
+
 	return errors
 }
 
