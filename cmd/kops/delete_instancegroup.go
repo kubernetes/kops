@@ -183,7 +183,7 @@ func RunDeleteInstanceGroup(ctx context.Context, f *util.Factory, out io.Writer,
 	d.Cloud = cloud
 	d.Clientset = clientset
 
-	err = d.DeleteInstanceGroup(group, options.Force)
+	err = d.DeleteInstanceGroup(ctx, group, options.Force)
 	if err != nil {
 		return err
 	}

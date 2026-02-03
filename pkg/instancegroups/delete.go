@@ -24,7 +24,6 @@ import (
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -36,12 +35,8 @@ type DeleteInstanceGroup struct {
 }
 
 // DeleteInstanceGroup deletes a cloud instance group
-func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup, force bool) error {
-	ctx := context.TODO()
-	var groups map[string]*cloudinstances.CloudInstanceGroup
-	var err error
-
-	groups, err = d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, &fi.GetCloudGroupsOptions{WarnMissingInstance: force}, nil)
+func (d *DeleteInstanceGroup) DeleteInstanceGroup(ctx context.Context, group *api.InstanceGroup, force bool) error {
+	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, &fi.GetCloudGroupsOptions{WarnMissingInstance: force}, nil)
 
 	if err != nil {
 		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)

@@ -196,12 +196,12 @@ func TestDeleteInstanceGroup(t *testing.T) {
 	_, err = cloud.Compute().Instances().Delete(cloud.Project(), igm.Zone, igm.Name)
 	assert.NoError(t, err, "error deleting Instance")
 
-	assert.ErrorContains(t, deleteIG.DeleteInstanceGroup(&ig, false /*force*/), "error getting Instance")
+	assert.ErrorContains(t, deleteIG.DeleteInstanceGroup(ctx, &ig, false /*force*/), "error getting Instance")
 	// Verify that the instance group was not deleted
 	_, err = clientset.InstanceGroupsFor(cluster).Get(ctx, ig.Name, metav1.GetOptions{})
 	assert.NoError(t, err)
 
-	assert.NoError(t, deleteIG.DeleteInstanceGroup(&ig, true /*force*/))
+	assert.NoError(t, deleteIG.DeleteInstanceGroup(ctx, &ig, true /*force*/))
 	// Verify that the instance group was deleted from the clientset
 	_, err = clientset.InstanceGroupsFor(cluster).Get(ctx, ig.Name, metav1.GetOptions{})
 	assert.Error(t, err)
