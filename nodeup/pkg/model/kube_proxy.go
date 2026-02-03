@@ -107,6 +107,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		return nil, fmt.Errorf("KubeProxy not configured")
 	}
 
+	klog.Infof("kube-proxy has ProxyMode=%q", c.ProxyMode)
+
 	if c.Master == "" {
 		if b.IsMaster {
 			// As a special case, if this is the master, we point kube-proxy to the local IP
