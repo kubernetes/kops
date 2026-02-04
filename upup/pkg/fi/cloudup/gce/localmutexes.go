@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mutexes
+package gce
 
 import (
 	"sync"
 )
 
-var InProcess LocalMutexes
+var InProcessMutex LocalMutexes
 
 // LocalMutexes is a store of named mutexes, used to avoid concurrent local operations.
 // For example, GCE project IAM mutation uses a read / conditional-write approach,
