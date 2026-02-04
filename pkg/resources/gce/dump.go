@@ -134,3 +134,27 @@ func (s *dumpState) getInstances(ctx context.Context, zone string) (map[string]*
 	s.instances[zone] = instances
 	return instances, nil
 }
+
+// DumpNetwork is responsible for dumping a resource for a Network
+func DumpNetwork(op *resources.DumpOperation, r *resources.Resource) error {
+	network := r.Obj.(*compute.Network)
+
+	vpc := &resources.VPC{
+		ID: gce.LastComponent(network.SelfLink),
+	}
+	op.Dump.VPC = vpc
+
+	return nil
+}
+
+// DumpSubnetwork is responsible for dumping a resource for a Subnetwork
+func DumpSubnetwork(op *resources.DumpOperation, r *resources.Resource) error {
+	obj := r.Obj.(*compute.Subnetwork)
+
+	subnet := &resources.Subnet{
+		ID: gce.LastComponent(obj.SelfLink),
+	}
+	op.Dump.Subnets = append(op.Dump.Subnets, subnet)
+
+	return nil
+}

@@ -66,10 +66,8 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) 
 	clusterUsesNoneDNS := clusterInfo.UsesNoneDNS
 
 	ctx := context.TODO()
-
 	region := gceCloud.Region()
-
-	resources := make(map[string]*resources.Resource)
+	allResources := make(map[string]*resources.Resource)
 
 	d := &clusterDiscoveryGCE{
 		cloud:       gceCloud,
@@ -106,7 +104,6 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) 
 		d.listForwardingRules,
 		d.listFirewallRules,
 		d.listGCEDisks,
-		// TODO: Find routes via instances (via instance groups)
 		d.listAddresses,
 		d.listSubnets,
 		d.listRouters,
@@ -114,6 +111,10 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) 
 		d.listServiceAccounts,
 		d.listBackendServices,
 		d.listHealthchecks,
+		// Note: Order matters here..this is last because it depends on other resources to be listed.
+		func() ([]*resources.Resource, error) {
+			return d.listRoutes(ctx, allResources)
+		},
 	}
 	if !dns.IsGossipClusterName(clusterName) && !clusterUsesNoneDNS {
 		listFunctions = append(listFunctions, d.listGCEDNSZone)
@@ -125,27 +126,16 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) 
 			return nil, err
 		}
 		for _, t := range resourceTrackers {
-			resources[t.Type+":"+t.ID] = t
+			allResources[t.Type+":"+t.ID] = t
 		}
 	}
 
-	// We try to clean up orphaned routes.
-	{
-		resourceTrackers, err := d.listRoutes(ctx, resources)
-		if err != nil {
-			return nil, err
-		}
-		for _, t := range resourceTrackers {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	for k, t := range resources {
+	for k, t := range allResources {
 		if t.Done {
-			delete(resources, k)
+			delete(allResources, k)
 		}
 	}
-	return resources, nil
+	return allResources, nil
 }
 
 type clusterDiscoveryGCE struct {
