@@ -19,13 +19,6 @@ set -x
 
 make test-e2e-install
 
-# Default cluster name
-SCRIPT_NAME=$(basename "$(dirname "$0")")
-if [[ -z "${CLUSTER_NAME:-}" ]]; then
-  CLUSTER_NAME="${SCRIPT_NAME}.k8s.local"
-fi
-echo "CLUSTER_NAME=${CLUSTER_NAME}"
-
 if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
 fi
@@ -41,13 +34,6 @@ if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
   CLOUD_PROVIDER="aws"
 fi
 echo "CLOUD_PROVIDER=${CLOUD_PROVIDER}"
-if [[ "${CLOUD_PROVIDER}" != "gce" ]]; then
-  export KOPS_STATE_STORE=
-  export CLUSTER_NAME=
-  # We can create ephemeral kops state buckets for AWS now, drop this after we remove it 
-  # from prow jobs
-fi
-
 if [[ -z "${ADMIN_ACCESS:-}" ]]; then
   ADMIN_ACCESS="0.0.0.0/0" # Or use your IPv4 with /32
 fi
@@ -67,7 +53,7 @@ echo "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT=${KOPS_APISERVER_MAX_REQUESTS_INFLIGH
 create_args=()
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16,10.5.0.0/16,10.6.0.0/16,10.7.0.0/16,10.8.0.0/16,10.9.0.0/16,10.10.0.0/16,10.11.0.0/16,10.12.0.0/16")
-  create_args+=("--node-size=t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large")
+  create_args+=("--node-size=${NODE_SIZE:-t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large}")
   create_args+=("--node-volume-size=20")
   create_args+=("--master-volume-size=500")
   create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
@@ -77,7 +63,7 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
 fi
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
-  create_args+=("--node-size=e2-standard-2")
+  create_args+=("--node-size=${NODE_SIZE:-e2-medium}")
   create_args+=("--node-volume-size=30")
   create_args+=("--master-volume-size=1000")
   create_args+=("--gce-service-account=default")
@@ -156,6 +142,11 @@ KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
 if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
   KUBETEST2_ARGS+=("--build")
   KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+elif [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kubernetes" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--build-kubernetes=true")
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
+  cd "${GOPATH}/src/k8s.io/kubernetes"
 else
   KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
@@ -195,7 +186,6 @@ export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
 export CL2_PROMETHEUS_TOLERATE_MASTER="true"
 if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
-  export KUBE_SSH_KEY_PATH="/tmp/kops/${CLUSTER_NAME}/id_ed25519"
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
   # we are not testing PVS at this point
   CL2_ENABLE_PVS: false
