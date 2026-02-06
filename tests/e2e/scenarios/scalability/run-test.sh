@@ -44,6 +44,7 @@ KOPS_SCHEDULER_BURST="${KOPS_SCHEDULER_BURST:-500}"
 KOPS_CONTROLLER_MANAGER_QPS="${KOPS_CONTROLLER_MANAGER_QPS:-500}"
 KOPS_CONTROLLER_MANAGER_BURST="${KOPS_CONTROLLER_MANAGER_BURST:-500}"
 KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-800}"
+ETCD_QUOTA_BACKEND_BYTES="${ETCD_QUOTA_BACKEND_BYTES:-8589934592}"
 echo "KOPS_SCHEDULER_QPS=${KOPS_SCHEDULER_QPS} KOPS_SCHEDULER_BURST=${KOPS_SCHEDULER_BURST}"
 echo "KOPS_CONTROLLER_MANAGER_QPS=${KOPS_CONTROLLER_MANAGER_QPS} KOPS_CONTROLLER_MANAGER_BURST=${KOPS_CONTROLLER_MANAGER_BURST}"
 echo "KOPS_APISERVER_MAX_REQUESTS_INFLIGHT=${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT}"
@@ -83,7 +84,7 @@ if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
   create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
 fi
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
-create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=8589934592")
+create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
 create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=10")
 create_args+=("--set spec.kubelet.maxPods=96")
@@ -184,6 +185,7 @@ fi
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
 export CL2_PROMETHEUS_TOLERATE_MASTER="true"
+export ETCD_PORT="4001" # we want cl2 to use this port for etcd instead of 2379 
 if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
