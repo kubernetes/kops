@@ -134,6 +134,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 			},
 			"--client-ca-file=client-ca.crt --secure-port=0",
 		},
+		{
+			kops.KubeAPIServerConfig{
+				DeleteCollectionWorkers: 1,
+			},
+			"--delete-collection-workers=1 --secure-port=0",
+		},
 	}
 
 	for _, g := range grid {
