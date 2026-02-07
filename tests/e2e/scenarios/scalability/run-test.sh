@@ -108,6 +108,9 @@ create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=0")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 create_args+=("--set spec.kubeAPIServer.logLevel=2")
+# increase the --delete-collection-workers to 100 to speed up delete operations
+create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=100")
+
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
 # this is required for kindnet to use nftables
@@ -180,12 +183,12 @@ if [[ "${DELETE_CLUSTER:-}" == "true" ]]; then
   KUBETEST2_ARGS+=("--down")
 fi
 
-# this is used as a label to select kube-proxy pods on kops for kube-proxy service 
+# this is used as a label to select kube-proxy pods on kops for kube-proxy service
 # used by CL2 Prometheus here https://github.com/kubernetes/perf-tests/blob/master/clusterloader2/pkg/prometheus/manifests/default/kube-proxy-service.yaml#L2
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
 export CL2_PROMETHEUS_TOLERATE_MASTER="true"
-export ETCD_PORT="4001" # we want cl2 to use this port for etcd instead of 2379 
+export ETCD_PORT="4001" # we want cl2 to use this port for etcd instead of 2379
 if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
