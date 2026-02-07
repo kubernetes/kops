@@ -561,6 +561,9 @@ type KubeAPIServerConfig struct {
 	// DefaultUnreachableTolerationSeconds indicates the tolerationSeconds of the toleration for unreachable:NoExecute that is added by default to every pod that does not already have such a toleration.
 	DefaultUnreachableTolerationSeconds *int64 `json:"defaultUnreachableTolerationSeconds,omitempty" flag:"default-unreachable-toleration-seconds"`
 
+	// DeleteCollectionWorkers indicates the number of workers spawned for DeleteCollection call. These are used to speed up namespace cleanup.
+	DeleteCollectionWorkers int `json:"deleteCollectionWorkers,omitempty" flag:"delete-collection-workers" flag-empty:"0"`
+
 	// Env allows users to pass in env variables to the apiserver container.
 	// This can be useful to control some environment runtime settings, such as GOMEMLIMIT and GOCG to tweak the memory settings of the apiserver
 	// This also allows the flexibility for adding any other variables for future use cases

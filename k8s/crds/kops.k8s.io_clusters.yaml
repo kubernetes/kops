@@ -1912,6 +1912,11 @@ spec:
                     description: DefaultUnreachableTolerationSeconds
                     format: int64
                     type: integer
+                  deleteCollectionWorkers:
+                    description: DeleteCollectionWorkers indicates the number of workers
+                      spawned for DeleteCollection call. These are used to speed up
+                      namespace cleanup.
+                    type: integer
                   disableAdmissionPlugins:
                     description: DisableAdmissionPlugins is a list of disabled admission
                       plugins
