@@ -83,11 +83,6 @@ if [[ ${KOPS_IRSA-} = true ]]; then
   create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
 fi
 
-# TODO: remove once we stop testing upgrades from kops <1.29
-if [[ "${CLUSTER_NAME}" == *"tests-kops-aws.k8s.io" && "${KOPS_VERSION_A}" =~ v1.2[678].* ]]; then
-  create_args="${create_args} --dns=none"
-fi
-
 # TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT
 if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
   echo "Recognized (deprecated) KOPS_CONTROL_PLANE_SIZE=${KOPS_CONTROL_PLANE_SIZE}, please set KOPS_CONTROL_PLANE_COUNT instead"
@@ -115,43 +110,16 @@ KOPS_BASE_URL="${KOPS_BASE_URL_B}"
 
 KOPS="${KOPS_B}"
 
-if [[ "${KOPS_VERSION_B}" =~ 1.2[01] ]]; then
-  "${KOPS_B}" set cluster "${CLUSTER_NAME}" "cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
-else
-  "${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
-fi
+"${KOPS_B}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.kubernetesVersion=${K8S_VERSION_B}"
 
-if [[ "${KOPS_VERSION_B}" =~ 1.(20|21|22|23|24|25|26|27|28|29|30) ]]; then
-  # kOps introduced the reconcile command in 1.31
-  # TODO: remove this block once we stop testing upgrades to kops <1.31
-  "${KOPS_B}" update cluster
-  "${KOPS_B}" update cluster --admin --yes
-  # Verify no additional changes
-  "${KOPS_B}" update cluster
+# Preview changes
+"${KOPS_B}" reconcile cluster
 
-  # Verify kubeconfig-a still works
-  kubectl get nodes -owide --kubeconfig "${KUBECONFIG_A}"
+# Apply changes
+"${KOPS_B}" reconcile cluster --yes
 
-  # Sleep to ensure channels has done its thing
-  sleep 120s
-
-  # Make sure configuration B has been applied (e.g. new load balancer is ready)
-  "${KOPS_B}" validate cluster --wait=10m
-
-  ${CHANNELS} apply channel "$KOPS_STATE_STORE"/"${CLUSTER_NAME}"/addons/bootstrap-channel.yaml --yes -v4
-
-  "${KOPS_B}" rolling-update cluster
-  "${KOPS_B}" rolling-update cluster --yes --validation-timeout 30m
-else
-  # Preview changes
-  "${KOPS_B}" reconcile cluster
-
-  # Apply changes
-  "${KOPS_B}" reconcile cluster --yes
-
-  # Verify no additional changes
-  "${KOPS_B}" update cluster
-fi
+# Verify no additional changes
+"${KOPS_B}" update cluster
 
 "${KOPS_B}" validate cluster
 
