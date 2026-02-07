@@ -15,58 +15,31 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/aws-lb-controller"
 
-kops-acquire-latest
+make test-e2e-install
 
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-# shellcheck disable=SC2034
-NETWORKING="amazonvpc"
-
-OVERRIDES="${OVERRIDES-} --set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true"
-OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
-OVERRIDES="${OVERRIDES} --master-size=t3.medium --node-size=t3.medium" # Use amd64 because LBC's E2E suite uses single-arch amd64 test images
-OVERRIDES="${OVERRIDES} --image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}"
-
-# shellcheck disable=SC2034
-ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
-
-kops-up
-
-KUBECONFIG=$(mktemp -t kops.XXXXXXXXX)
-export KUBECONFIG
-"${KOPS}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "${KUBECONFIG}"
-
-VPC=$(${KOPS} toolbox dump -o json | jq -r .vpc.id)
-
-ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
-
-REGION=${ZONE%?}
-
-REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller"
-
-# shellcheck disable=SC2164
-cd "$(mktemp -dt kops.XXXXXXXXX)"
-go install github.com/onsi/ginkgo/ginkgo@latest
-
-LBC_VERSION=$(kubectl get deployment -n kube-system aws-load-balancer-controller -o jsonpath='{.spec.template.spec.containers[?(@.name=="controller")].image}' | cut -d':' -f2-)
-CLONE_ARGS=
-if [ -n "$LBC_VERSION" ]; then
-    CLONE_ARGS="-b ${LBC_VERSION}"
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
-# shellcheck disable=SC2086
-git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-load-balancer-controller .
 
-mkdir -p "${REPORT_DIR}"
+CREATE_ARGS="--networking amazonvpc"
+CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true"
+CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.certManager.enabled=true"
+CREATE_ARGS="${CREATE_ARGS} --master-size=t3.medium --node-size=t3.medium"
+CREATE_ARGS="${CREATE_ARGS} --image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}"
+CREATE_ARGS="${CREATE_ARGS} --zones=eu-west-1a,eu-west-1b,eu-west-1c"
 
-ginkgo -v -r test/e2e/ingress -- \
-    -cluster-name="${CLUSTER_NAME}" \
-    -aws-region="${REGION}" \
-    -aws-vpc-id="$VPC" \
-    -ginkgo.junit-report="${REPORT_DIR}/junit-ingress.xml"
-
-ginkgo -v -r test/e2e/service -- \
-    -cluster-name="${CLUSTER_NAME}" \
-    -aws-region="${REGION}" \
-    -aws-vpc-id="$VPC" \
-    -ginkgo.junit-report="${REPORT_DIR}/junit-service.xml"
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="${CREATE_ARGS}" \
+    --kubernetes-version="https://dl.k8s.io/release/stable.txt" \
+    --test=exec -- "${TEST_ROOT}/test.sh"

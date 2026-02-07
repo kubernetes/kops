@@ -15,87 +15,32 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/karpenter"
 
-kops-acquire-latest
+make test-e2e-install
 
-NETWORKING=cilium
-OVERRIDES="${OVERRIDES-} --instance-manager=karpenter"
-OVERRIDES="${OVERRIDES} --control-plane-size=c6g.large"
-OVERRIDES="${OVERRIDES} --set=cluster.spec.karpenter.featureGates=StaticCapacity=true"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-kops-up
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
+fi
 
-# Get the node instance group user data script from the kOps state store
-USER_DATA=$(aws s3 cp "${KOPS_STATE_STORE-}/${CLUSTER_NAME}/igconfig/node/nodes/nodeupscript.sh" -)
-# Indent the user data script for embedding in the EC2NodeClass
-USER_DATA=${USER_DATA//$'\n'/$'\n    '}
+CREATE_ARGS="--networking cilium"
+CREATE_ARGS="${CREATE_ARGS} --instance-manager=karpenter"
+CREATE_ARGS="${CREATE_ARGS} --control-plane-size=c6g.large"
+CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.karpenter.featureGates=StaticCapacity=true"
 
-# Create a EC2NodeClass for Karpenter
-kubectl apply -f - <<YAML
-apiVersion: karpenter.k8s.aws/v1
-kind: EC2NodeClass
-metadata:
-  name: default
-spec:
-  amiFamily: Custom
-  amiSelectorTerms:
-    - ssmParameter: /aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id
-  associatePublicIPAddress: true
-  tags:
-    KubernetesCluster: ${CLUSTER_NAME}
-    kops.k8s.io/instancegroup: nodes
-    k8s.io/role/node: "1"
-  subnetSelectorTerms:
-    - tags:
-        KubernetesCluster: ${CLUSTER_NAME}
-  securityGroupSelectorTerms:
-    - tags:
-        KubernetesCluster: ${CLUSTER_NAME}
-        Name: nodes.${CLUSTER_NAME}
-  instanceProfile: nodes.${CLUSTER_NAME}
-  userData: |
-    ${USER_DATA}
-YAML
+K8S_VERSION="${K8S_VERSION:-$(curl -s -L https://dl.k8s.io/release/stable.txt)}"
 
-# Create a NodePool for Karpenter
-# Effectively disable consolidation for 30 minutes to avoid flakes in the tests
-kubectl apply -f - <<YAML
-apiVersion: karpenter.sh/v1
-kind: NodePool
-metadata:
-  name: default
-spec:
-  template:
-    spec:
-      requirements:
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values: ["m6g.large"]
-        - key: karpenter.sh/capacity-type
-          operator: In
-          values: ["on-demand"]
-      nodeClassRef:
-        group: karpenter.k8s.aws
-        kind: EC2NodeClass
-        name: default
-  replicas: 4
-  disruption:
-    consolidationPolicy: WhenEmpty
-    consolidateAfter: 30m
-YAML
-
-# Wait for the nodes to start being provisioned
-sleep 30
-# Wait for the nodes to be ready
-"${KOPS}" validate cluster --wait=10m
-
-# Run the tests
-cp "${KOPS}" "${WORKSPACE}/kops"
-${KUBETEST2} \
-  --test=kops \
-  --kops-binary-path="${KOPS}" \
-  -- \
-  --test-package-version="${K8S_VERSION}" \
-  --focus-regex="\[Conformance\]" \
-  --parallel 20
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="${CREATE_ARGS}" \
+    --kubernetes-version="${K8S_VERSION}" \
+    --env=K8S_VERSION="${K8S_VERSION}" \
+    --test=exec -- "${TEST_ROOT}/test.sh"
