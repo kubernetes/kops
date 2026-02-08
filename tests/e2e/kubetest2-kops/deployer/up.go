@@ -200,7 +200,7 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 
-	// Dont set --master-count if either --control-plane-count or --master-count
+	// Dont set --control-plane-count if either --control-plane-count or --master-count
 	// has been provided in --create-args
 	foundCPCount := false
 	for _, existingArg := range args {
@@ -211,16 +211,16 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		}
 	}
 	if !foundCPCount {
-		args = appendIfUnset(args, "--master-count", fmt.Sprintf("%d", d.ControlPlaneCount))
+		args = appendIfUnset(args, "--control-plane-count", fmt.Sprintf("%d", d.ControlPlaneCount))
 	}
 
 	switch d.CloudProvider {
 	case "aws":
 		if isArm {
-			args = appendIfUnset(args, "--master-size", "c6g.large")
+			args = appendIfUnset(args, "--control-plane-size", "c6g.large")
 			args = appendIfUnset(args, "--node-size", "c6g.large")
 		} else {
-			args = appendIfUnset(args, "--master-size", "c5.large")
+			args = appendIfUnset(args, "--control-plane-size", "c5.large")
 		}
 	case "azure":
 		// Use SKUs for which there is enough quota
@@ -228,10 +228,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		args = appendIfUnset(args, "--node-size", "Standard_D2s_v3")
 	case "gce":
 		if isArm {
-			args = appendIfUnset(args, "--master-size", "t2a-standard-2")
+			args = appendIfUnset(args, "--control-plane-size", "t2a-standard-2")
 			args = appendIfUnset(args, "--node-size", "t2a-standard-2")
 		} else {
-			args = appendIfUnset(args, "--master-size", "e2-standard-2")
+			args = appendIfUnset(args, "--control-plane-size", "e2-standard-2")
 			args = appendIfUnset(args, "--node-size", "e2-standard-2")
 		}
 		if d.GCPProject != "" {
@@ -244,11 +244,11 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		// We used to set the --vpc flag to split clusters into different networks, this is now the default.
 		// args = appendIfUnset(args, "--vpc", strings.Split(d.ClusterName, ".")[0])
 	case "digitalocean":
-		args = appendIfUnset(args, "--master-size", "c2-16vcpu-32gb")
+		args = appendIfUnset(args, "--control-plane-size", "c2-16vcpu-32gb")
 		args = appendIfUnset(args, "--node-size", "c2-16vcpu-32gb")
 	}
 
-	args = appendIfUnset(args, "--master-volume-size", "48")
+	args = appendIfUnset(args, "--control-plane-volume-size", "48")
 	args = appendIfUnset(args, "--node-count", "4")
 	args = appendIfUnset(args, "--node-volume-size", "48")
 	args = appendIfUnset(args, "--zones", strings.Join(zones, ","))

@@ -56,7 +56,7 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--network-cidr=10.0.0.0/16,10.1.0.0/16,10.2.0.0/16,10.3.0.0/16,10.4.0.0/16,10.5.0.0/16,10.6.0.0/16,10.7.0.0/16,10.8.0.0/16,10.9.0.0/16,10.10.0.0/16,10.11.0.0/16,10.12.0.0/16")
   create_args+=("--node-size=${NODE_SIZE:-t3a.medium,t3.medium,t3a.large,c5a.large,t3.large,c5.large,m5a.large,m6a.large,m5.large,c7a.large,r5a.large,r6a.large,m7a.large}")
   create_args+=("--node-volume-size=20")
-  create_args+=("--master-volume-size=500")
+  create_args+=("--control-plane-volume-size=500")
   create_args+=("--zones=us-east-2a,us-east-2b,us-east-2c")
   create_args+=("--image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}")
   # TODO: track failures of tests (HostPort & OIDC) when using `--dns=none`
@@ -66,7 +66,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
   create_args+=("--node-size=${NODE_SIZE:-e2-medium}")
   create_args+=("--node-volume-size=30")
-  create_args+=("--master-volume-size=1000")
+  create_args+=("--control-plane-volume-size=1000")
   create_args+=("--gce-service-account=default")
   create_args+=("--topology=private")
   create_args+=("--image=${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}")
@@ -119,7 +119,7 @@ create_args+=("--set spec.kubeProxy.proxyMode=${KUBE_PROXY_MODE:-iptables}")
 create_args+=("--set spec.kubeProxy.metricsBindAddress=0.0.0.0:10249")
 create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--master-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
 
 # Enable HTTP for events etcd to reduce TLS overhead in scale tests
 KOPS_FEATURE_FLAGS="EtcdEventsHTTP,${KOPS_FEATURE_FLAGS:-}"
