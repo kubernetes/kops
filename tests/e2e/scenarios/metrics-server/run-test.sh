@@ -32,6 +32,6 @@ kubetest2 kops \
     --up --down \
     "${KUBETEST2_ARGS[@]}" \
     --cloud-provider=aws \
-    --create-args="--set=cluster.spec.metricsServer.enabled=true --set=cluster.spec.certManager.enabled=true --master-size=m6g.large --node-size=m6g.large" \
+    --create-args="--set=cluster.spec.metricsServer.enabled=true --set=cluster.spec.certManager.enabled=true --control-plane-size=m6g.large --node-size=m6g.large" \
     --kubernetes-version=https://dl.k8s.io/release/stable.txt \
     --test=exec -- "${REPO_ROOT}/tests/e2e/scenarios/metrics-server/test.sh"
