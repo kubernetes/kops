@@ -67,9 +67,10 @@ func maskEC2NetUtilsUdevRules(c *fi.NodeupModelBuilderContext, dist distribution
 
 // disableManageForeignRoutes configures systemd-networkd to not remove foreign routes/rules
 // added by CNI. Without this, systemd-networkd may unexpectedly delete IP rules and routes.
-// AL2023 and Ubuntu 22.04+.
+// AL2023, Ubuntu 22.04+, and Debian 12+.
 func disableManageForeignRoutes(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
 	if !((dist.IsUbuntu() && dist.Version() >= 22.04) ||
+		(dist.IsDebian() && dist.Version() >= 12) ||
 		dist == distributions.DistributionAmazonLinux2023) {
 		return
 	}
@@ -90,12 +91,13 @@ ManageForeignRoutingPolicyRules=no
 
 // setMACAddressPolicyNone prevents systemd-networkd from assigning predictable MAC-based
 // names to ENIs, which can interfere with CNI interface management.
-// AL2023 and Ubuntu 22.04+.
+// AL2023, Ubuntu 22.04+, and Debian 12+.
 // ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2103
 // ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2839
 // ref: https://github.com/kubernetes/kops/issues/16255
 func setMACAddressPolicyNone(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
 	if !((dist.IsUbuntu() && dist.Version() >= 22.04) ||
+		(dist.IsDebian() && dist.Version() >= 12) ||
 		dist == distributions.DistributionAmazonLinux2023) {
 		return
 	}
@@ -119,10 +121,11 @@ MACAddressPolicy=none
 // markSecondaryENIsUnmanaged tells systemd-networkd to ignore secondary ENIs (ens6+).
 // Without this, systemd-networkd fully manages secondary ENIs via DHCP, creating
 // competing routes that interfere with CNI networking.
-// AL2023 only.
+// AL2023 and Debian 12+.
 // ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/3524
 func markSecondaryENIsUnmanaged(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
-	if dist != distributions.DistributionAmazonLinux2023 {
+	if !(dist == distributions.DistributionAmazonLinux2023 ||
+		(dist.IsDebian() && dist.Version() >= 12)) {
 		return
 	}
 
@@ -143,10 +146,11 @@ Unmanaged=yes
 
 // disableCloudInitNetworkHotplug prevents cloud-init from reconfiguring the network
 // when ENIs are attached, which breaks CNI networking.
-// Ubuntu 24.04+.
+// Ubuntu 24.04+ and Debian 12+.
 // ref: https://github.com/kubernetes/kops/issues/17881
 func disableCloudInitNetworkHotplug(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
-	if !(dist.IsUbuntu() && dist.Version() >= 24.04) {
+	if !((dist.IsUbuntu() && dist.Version() >= 24.04) ||
+		(dist.IsDebian() && dist.Version() >= 12)) {
 		return
 	}
 
