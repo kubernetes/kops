@@ -68,12 +68,11 @@ ManageForeignRoutingPolicyRules=no
 		})
 	}
 
-	// Running Amazon VPC CNI on Ubuntu 22.04+ or any version of al2023 requires
+	// Running Amazon VPC CNI on Ubuntu 22.04+ and AL2023 requires
 	// setting MACAddressPolicy to `none` (ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/2103
 	// & https://github.com/aws/amazon-vpc-cni-k8s/issues/2839
 	// & https://github.com/kubernetes/kops/issues/16255)
-	if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04) ||
-		b.Distribution == distributions.DistributionAmazonLinux2023 {
+	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04 || b.Distribution == distributions.DistributionAmazonLinux2023 {
 		contents := `
 [Match]
 OriginalName=*
@@ -92,5 +91,44 @@ MACAddressPolicy=none
 		})
 
 	}
+
+	// Running Amazon VPC CNI on al2023 requires setting Unmanaged to `yes`
+	// ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/3524
+	if b.Distribution == distributions.DistributionAmazonLinux2023 {
+		contents := `
+[Match]
+Name=ens[6-9]* ens[1-9][0-9]*
+
+[Link]
+Unmanaged=yes
+`
+
+		c.AddTask(&nodetasks.File{
+			Path:            "/etc/systemd/network/10-vpc-cni-secondary.network",
+			Contents:        fi.NewStringResource(contents),
+			Type:            nodetasks.FileType_File,
+			OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
+		})
+
+	}
+
+	// On Ubuntu 24.04+, cloud-init network hotplug is enabled by default
+	// (https://github.com/canonical/cloud-init/pull/4799). This causes cloud-init to reconfigure netplan
+	// when Amazon VPC CNI attaches ENIs, breaking network functionality.
+	// See: https://github.com/kubernetes/kops/issues/17881
+	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 24.04 {
+		contents := `# Disable cloud-init network hotplug to prevent interference with Amazon VPC CNI ENI management.
+# See: https://github.com/kubernetes/kops/issues/17881
+updates:
+  network:
+    when: [boot-new-instance]
+`
+		c.AddTask(&nodetasks.File{
+			Path:     "/etc/cloud/cloud.cfg.d/99-disable-network-hotplug.cfg",
+			Contents: fi.NewStringResource(contents),
+			Type:     nodetasks.FileType_File,
+		})
+	}
+
 	return nil
 }
