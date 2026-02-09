@@ -48,8 +48,6 @@ func FindDistribution(rootfs string) (Distribution, error) {
 
 	// Most distros have a fixed VERSION_ID
 	switch distro {
-	case "amzn-2":
-		return DistributionAmazonLinux2, nil
 	case "amzn-2023":
 		return DistributionAmazonLinux2023, nil
 	case "debian-10":

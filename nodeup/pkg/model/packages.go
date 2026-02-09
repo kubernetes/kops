@@ -56,7 +56,7 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			// install iptables-nft in al2023 (NOT the iptables-legacy!)
 			c.AddTask(&nodetasks.Package{Name: "iptables-nft"})
 		case distributions.DistributionRhel8, distributions.DistributionRhel9,
-			distributions.DistributionRocky8, distributions.DistributionAmazonLinux2:
+			distributions.DistributionRocky8:
 			c.AddTask(&nodetasks.Package{Name: "iptables"})
 		default:
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
@@ -66,11 +66,7 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
 		}
 		c.AddTask(&nodetasks.Package{Name: "util-linux"})
-		// Handle some packages differently for each distro
-		// Amazon Linux 2 doesn't have SELinux enabled by default
-		if b.Distribution != distributions.DistributionAmazonLinux2 {
-			c.AddTask(&nodetasks.Package{Name: "container-selinux"})
-		}
+		c.AddTask(&nodetasks.Package{Name: "container-selinux"})
 		// Additional packages
 		for _, additionalPackage := range b.NodeupConfig.Packages {
 			c.EnsureTask(&nodetasks.Package{Name: additionalPackage})

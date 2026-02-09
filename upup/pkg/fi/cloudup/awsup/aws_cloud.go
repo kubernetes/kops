@@ -105,12 +105,12 @@ const TagNameClusterOwnershipPrefix = "kubernetes.io/cluster/"
 const tagNameDetachedInstance = "kops.k8s.io/detached-from-asg"
 
 const (
-	WellKnownAccountAmazonLinux2 = "137112412989"
-	WellKnownAccountDebian       = "136693071363"
-	WellKnownAccountFlatcar      = "075585003325"
-	WellKnownAccountRedhat       = "309956199498"
-	WellKnownAccountUbuntu       = "099720109477"
-	WellKnownAccountRockyLinux   = "792107900819"
+	WellKnownAccountAmazonLinux2023 = "137112412989"
+	WellKnownAccountDebian          = "136693071363"
+	WellKnownAccountFlatcar         = "075585003325"
+	WellKnownAccountRedhat          = "309956199498"
+	WellKnownAccountUbuntu          = "099720109477"
+	WellKnownAccountRockyLinux      = "792107900819"
 )
 
 const instanceInServiceState = "InService"
@@ -1908,7 +1908,7 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 			// Check for well known owner aliases
 			switch owner {
 			case "amazon", "amazon.com":
-				owner = WellKnownAccountAmazonLinux2
+				owner = WellKnownAccountAmazonLinux2023
 			case "debian10":
 				owner = WellKnownAccountDebian
 			case "debian11":
