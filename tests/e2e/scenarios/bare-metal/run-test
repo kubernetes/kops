@@ -110,9 +110,8 @@ ${KOPS} edit cluster metal.k8s.local  --set spec.api.publicName=${VM0_IP}
 # Use latest etcd-manager image (while we're adding features)
 #${KOPS} edit cluster metal.k8s.local --set 'spec.etcdClusters[*].manager.image=us-central1-docker.pkg.dev/k8s-staging-images/etcd-manager/etcd-manager-slim:v3.0.20250628-7-ga7be11fb'
 
-# Use 1.31 kubernetes so we get kube-apiserver fixes
+# Remove restrictions on K8s version
 export KOPS_RUN_TOO_NEW_VERSION=1
-"${KOPS}" edit cluster metal.k8s.local "--set=cluster.spec.kubernetesVersion=1.31.0"
 
 # List clusters
 ${KOPS} get cluster
