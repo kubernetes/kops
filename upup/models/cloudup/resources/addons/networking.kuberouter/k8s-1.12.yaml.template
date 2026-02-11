@@ -110,7 +110,7 @@ spec:
           mountPath: /run/xtables.lock
           readOnly: false
         - name: rt-tables
-          mountPath: /etc/iproute2/rt_tables
+          mountPath: /usr/share/iproute2/rt_tables
           readOnly: false
         - name: containerd-sock
           mountPath: /run/containerd/containerd.sock
@@ -158,7 +158,7 @@ spec:
           type: FileOrCreate
       - name: rt-tables
         hostPath:
-          path: /etc/iproute2/rt_tables
+          path: /usr/share/iproute2/rt_tables
           type: FileOrCreate
       - name: containerd-sock
         hostPath:
