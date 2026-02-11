@@ -120,16 +120,16 @@ spec:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.35.0"
-    recommendedVersion: 1.35.0
+    recommendedVersion: 1.35.1
     requiredVersion: 1.35.0
   - range: ">=1.34.0"
-    recommendedVersion: 1.34.3
+    recommendedVersion: 1.34.4
     requiredVersion: 1.34.0
   - range: ">=1.33.0"
-    recommendedVersion: 1.33.7
+    recommendedVersion: 1.33.8
     requiredVersion: 1.33.0
   - range: ">=1.32.0"
-    recommendedVersion: 1.32.11
+    recommendedVersion: 1.32.12
     requiredVersion: 1.32.0
   - range: ">=1.31.0"
     recommendedVersion: 1.31.14
@@ -201,19 +201,19 @@ spec:
   - range: ">=1.35.0-alpha.1"
     recommendedVersion: "1.34.3"
     #requiredVersion: 1.34.0
-    kubernetesVersion: 1.35.0
+    kubernetesVersion: 1.35.1
   - range: ">=1.34.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.34.0
-    kubernetesVersion: 1.34.3
+    kubernetesVersion: 1.34.4
   - range: ">=1.33.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.33.0
-    kubernetesVersion: 1.33.7
+    kubernetesVersion: 1.33.8
   - range: ">=1.32.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.32.0
-    kubernetesVersion: 1.32.11
+    kubernetesVersion: 1.32.12
   - range: ">=1.31.0-alpha.1"
     recommendedVersion: "1.33.1"
     #requiredVersion: 1.31.0
