@@ -21,6 +21,7 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/distributions"
 )
 
 // KuberouterBuilder installs kube-router
@@ -55,6 +56,24 @@ func (b *KuberouterBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Mode:           fi.PtrTo("0400"),
 		BeforeServices: []string{"kubelet.service"},
 	})
+
+	// On older Debian/Ubuntu versions, iproute2 config lives in /etc/iproute2/ rather than /usr/share/iproute2/.
+	// Create a symlink so the kube-router DaemonSet can mount /usr/share/iproute2/rt_tables.
+	// Ref: https://github.com/kubernetes/kops/issues/17914
+	switch b.Distribution {
+	case distributions.DistributionDebian11,
+		distributions.DistributionDebian12,
+		distributions.DistributionUbuntu2204,
+		distributions.DistributionUbuntu2404:
+		c.AddTask(&nodetasks.File{
+			Path:    "/usr/share/iproute2",
+			Type:    nodetasks.FileType_Symlink,
+			Symlink: fi.PtrTo("/etc/iproute2"),
+			Owner:   fi.PtrTo("root"),
+			Group:   fi.PtrTo("root"),
+			Mode:    fi.PtrTo("0755"),
+		})
+	}
 
 	return nil
 }
