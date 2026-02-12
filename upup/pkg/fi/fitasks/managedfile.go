@@ -25,10 +25,10 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/acls"
 )
 
 // +kops:fitask

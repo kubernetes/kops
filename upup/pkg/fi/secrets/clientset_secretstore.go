@@ -27,12 +27,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/acls"
 )
 
 // NamePrefix is a prefix we use to avoid collisions with other keysets

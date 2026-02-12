@@ -24,12 +24,12 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/acls"
 )
 
 type vfsAddonsClient struct {
