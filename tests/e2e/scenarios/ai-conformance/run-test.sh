@@ -34,14 +34,17 @@ export K8S_VERSION
 export CLOUD_PROVIDER=aws
 # Ensure region with L4 (g6) availability
 export AWS_REGION="${AWS_REGION:-us-east-2}"
+SCENARIO_ROOT="${REPO_ROOT}/tests/e2e/scenarios/ai-conformance"
 
 # Check for g6.xlarge availability in the region
 echo "Checking availability of g6.xlarge in ${AWS_REGION}..."
-AVAILABILITY=$(aws ec2 describe-instance-type-offerings --location-type availability-zone --filters Name=instance-type,Values=g6.xlarge --region "${AWS_REGION}" --query 'InstanceTypeOfferings' --output text)
-if [[ -z "${AVAILABILITY}" ]]; then
+(cd "${SCENARIO_ROOT}/tools/check-aws-availability" && go build -o check-aws-availability main.go)
+AVAILABILITY=$("${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability" -region "${AWS_REGION}" -instance-type g6.xlarge)
+if [[ "${AVAILABILITY}" == "false" ]]; then
   echo "Error: g6.xlarge instances are not available in ${AWS_REGION}. Please choose a region with L4 GPU support."
   exit 1
 fi
+rm -f "${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability"
 
 kops-acquire-latest
 
