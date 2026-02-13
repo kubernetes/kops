@@ -41,7 +41,7 @@ type EventBridgeTarget struct {
 	SQSQueue *SQS
 }
 
-var _ fi.CompareWithID = &EventBridgeTarget{}
+var _ fi.CompareWithID = (*EventBridgeTarget)(nil)
 
 func (eb *EventBridgeTarget) CompareWithID() *string {
 	return eb.Name

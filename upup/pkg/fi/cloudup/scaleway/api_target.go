@@ -22,7 +22,7 @@ type ScwAPITarget struct {
 	Cloud ScwCloud
 }
 
-var _ fi.CloudupTarget = &ScwAPITarget{}
+var _ fi.CloudupTarget = (*ScwAPITarget)(nil)
 
 func NewScwAPITarget(cloud ScwCloud) *ScwAPITarget {
 	return &ScwAPITarget{

@@ -39,7 +39,7 @@ type hetznerVerifier struct {
 	client *hcloud.Client
 }
 
-var _ bootstrap.Verifier = &hetznerVerifier{}
+var _ bootstrap.Verifier = (*hetznerVerifier)(nil)
 
 func NewHetznerVerifier(opt *HetznerVerifierOptions) (bootstrap.Verifier, error) {
 	hcloudToken := os.Getenv("HCLOUD_TOKEN")

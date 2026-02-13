@@ -27,7 +27,7 @@ import (
 
 // DHCPOptions
 
-var _ fi.HasLifecycle = &DHCPOptions{}
+var _ fi.HasLifecycle = (*DHCPOptions)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *DHCPOptions) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *DHCPOptions) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &DHCPOptions{}
+var _ fi.HasName = (*DHCPOptions)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *DHCPOptions) GetName() *string {

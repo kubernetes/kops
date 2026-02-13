@@ -27,7 +27,7 @@ import (
 
 // IAMOIDCProvider
 
-var _ fi.HasLifecycle = &IAMOIDCProvider{}
+var _ fi.HasLifecycle = (*IAMOIDCProvider)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *IAMOIDCProvider) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *IAMOIDCProvider) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &IAMOIDCProvider{}
+var _ fi.HasName = (*IAMOIDCProvider)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *IAMOIDCProvider) GetName() *string {

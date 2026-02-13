@@ -42,7 +42,7 @@ type InstanceGroupManager struct {
 	TargetPools []*TargetPool
 }
 
-var _ fi.CompareWithID = &InstanceGroupManager{}
+var _ fi.CompareWithID = (*InstanceGroupManager)(nil)
 
 func (e *InstanceGroupManager) CompareWithID() *string {
 	return e.Name

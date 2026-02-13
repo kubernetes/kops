@@ -47,7 +47,7 @@ type openstackVerifier struct {
 	kubeClient *kubernetes.Clientset
 }
 
-var _ bootstrap.Verifier = &openstackVerifier{}
+var _ bootstrap.Verifier = (*openstackVerifier)(nil)
 
 func NewOpenstackVerifier(opt *OpenStackVerifierOptions) (bootstrap.Verifier, error) {
 	env, err := gos.AuthOptionsFromEnv()

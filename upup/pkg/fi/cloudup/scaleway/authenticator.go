@@ -27,7 +27,7 @@ const ScalewayAuthenticationTokenPrefix = "x-scaleway-instance-server-id "
 
 type scalewayAuthenticator struct{}
 
-var _ bootstrap.Authenticator = &scalewayAuthenticator{}
+var _ bootstrap.Authenticator = (*scalewayAuthenticator)(nil)
 
 func NewScalewayAuthenticator() (bootstrap.Authenticator, error) {
 	return &scalewayAuthenticator{}, nil

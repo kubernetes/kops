@@ -51,14 +51,14 @@ type Instance struct {
 	LoadBalancer *LoadBalancer
 }
 
-var _ fi.CloudupTask = &Instance{}
-var _ fi.CompareWithID = &Instance{}
+var _ fi.CloudupTask = (*Instance)(nil)
+var _ fi.CompareWithID = (*Instance)(nil)
 
 func (s *Instance) CompareWithID() *string {
 	return s.Name
 }
 
-var _ fi.CloudupHasDependencies = &Instance{}
+var _ fi.CloudupHasDependencies = (*Instance)(nil)
 
 func (s *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask

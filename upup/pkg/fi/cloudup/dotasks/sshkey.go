@@ -41,8 +41,8 @@ type SSHKey struct {
 	KeyFingerprint *string
 }
 
-var _ fi.CompareWithID = &SSHKey{}
-var _ fi.CloudupTaskNormalize = &SSHKey{}
+var _ fi.CompareWithID = (*SSHKey)(nil)
+var _ fi.CloudupTaskNormalize = (*SSHKey)(nil)
 
 func (e *SSHKey) CompareWithID() *string {
 	return e.Name

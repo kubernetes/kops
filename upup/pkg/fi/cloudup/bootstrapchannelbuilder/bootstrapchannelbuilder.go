@@ -59,7 +59,7 @@ type BootstrapChannelBuilder struct {
 	assetBuilder  *assets.AssetBuilder
 }
 
-var _ fi.CloudupModelBuilder = &BootstrapChannelBuilder{}
+var _ fi.CloudupModelBuilder = (*BootstrapChannelBuilder)(nil)
 
 // networkingSelector is the labels set on networking addons
 //

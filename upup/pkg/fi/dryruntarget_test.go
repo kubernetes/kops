@@ -60,7 +60,7 @@ type testTask struct {
 	Tags      map[string]string
 }
 
-var _ CloudupTask = &testTask{}
+var _ CloudupTask = (*testTask)(nil)
 
 func (*testTask) Run(_ *CloudupContext) error {
 	panic("not implemented")

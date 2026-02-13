@@ -38,7 +38,7 @@ type object struct {
 	field map[string]element
 }
 
-var _ element = &object{}
+var _ element = (*object)(nil)
 
 func (o *object) IsSingleValue() bool {
 	return false

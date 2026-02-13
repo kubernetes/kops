@@ -34,13 +34,13 @@ type GroupTask struct {
 	System bool
 }
 
-var _ fi.NodeupTask = &GroupTask{}
+var _ fi.NodeupTask = (*GroupTask)(nil)
 
 func (e *GroupTask) String() string {
 	return fmt.Sprintf("Group: %s", e.Name)
 }
 
-var _ fi.HasName = &File{}
+var _ fi.HasName = (*File)(nil)
 
 func (f *GroupTask) GetName() *string {
 	return &f.Name

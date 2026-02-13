@@ -29,7 +29,7 @@ const DOAuthenticationTokenPrefix = "x-digitalocean-droplet-id "
 type doAuthenticator struct {
 }
 
-var _ bootstrap.Authenticator = &doAuthenticator{}
+var _ bootstrap.Authenticator = (*doAuthenticator)(nil)
 
 func NewAuthenticator() (bootstrap.Authenticator, error) {
 	return &doAuthenticator{}, nil

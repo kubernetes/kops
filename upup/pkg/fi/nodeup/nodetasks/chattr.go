@@ -33,19 +33,19 @@ type Chattr struct {
 	Deps []fi.NodeupTask `json:"-"`
 }
 
-var _ fi.NodeupTask = &Chattr{}
+var _ fi.NodeupTask = (*Chattr)(nil)
 
 func (s *Chattr) String() string {
 	return fmt.Sprintf("Chattr: chattr %s %s", s.Mode, s.File)
 }
 
-var _ fi.HasName = &Archive{}
+var _ fi.HasName = (*Archive)(nil)
 
 func (e *Chattr) GetName() *string {
 	return fi.PtrTo("Chattr-" + e.File)
 }
 
-var _ fi.NodeupHasDependencies = &Chattr{}
+var _ fi.NodeupHasDependencies = (*Chattr)(nil)
 
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *Chattr) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {

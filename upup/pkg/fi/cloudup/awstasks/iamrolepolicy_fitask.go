@@ -27,7 +27,7 @@ import (
 
 // IAMRolePolicy
 
-var _ fi.HasLifecycle = &IAMRolePolicy{}
+var _ fi.HasLifecycle = (*IAMRolePolicy)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *IAMRolePolicy) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *IAMRolePolicy) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &IAMRolePolicy{}
+var _ fi.HasName = (*IAMRolePolicy)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *IAMRolePolicy) GetName() *string {

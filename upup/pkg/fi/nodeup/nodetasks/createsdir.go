@@ -27,7 +27,7 @@ type CreatesDir interface {
 	Dir() string
 }
 
-var _ CreatesDir = &File{}
+var _ CreatesDir = (*File)(nil)
 
 // findCreatesDirParents finds the tasks which create parent directories for the given task
 func findCreatesDirParents(p string, tasks map[string]fi.NodeupTask) []fi.NodeupTask {

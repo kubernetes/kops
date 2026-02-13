@@ -90,7 +90,7 @@ type ScwCloud interface {
 }
 
 // static compile time check to validate ScwCloud's fi.Cloud Interface.
-var _ fi.Cloud = &scwCloudImplementation{}
+var _ fi.Cloud = (*scwCloudImplementation)(nil)
 
 // scwCloudImplementation holds the scw.Client object to interact with Scaleway resources.
 type scwCloudImplementation struct {

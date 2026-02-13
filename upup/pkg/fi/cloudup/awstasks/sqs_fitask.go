@@ -27,7 +27,7 @@ import (
 
 // SQS
 
-var _ fi.HasLifecycle = &SQS{}
+var _ fi.HasLifecycle = (*SQS)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *SQS) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *SQS) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &SQS{}
+var _ fi.HasName = (*SQS)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *SQS) GetName() *string {

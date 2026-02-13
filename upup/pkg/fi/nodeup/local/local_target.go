@@ -27,7 +27,7 @@ type LocalTarget struct {
 	Cloud    fi.Cloud
 }
 
-var _ fi.NodeupTarget = &LocalTarget{}
+var _ fi.NodeupTarget = (*LocalTarget)(nil)
 
 func (t *LocalTarget) Finish(taskMap map[string]fi.NodeupTask) error {
 	return nil

@@ -58,7 +58,7 @@ type Subnet struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &Subnet{}
+var _ fi.CompareWithID = (*Subnet)(nil)
 
 func (e *Subnet) CompareWithID() *string {
 	return e.ID
@@ -521,7 +521,7 @@ type deleteSubnetIPv6CIDRBlock struct {
 	associationID *string
 }
 
-var _ fi.CloudupDeletion = &deleteSubnetIPv6CIDRBlock{}
+var _ fi.CloudupDeletion = (*deleteSubnetIPv6CIDRBlock)(nil)
 
 func (d *deleteSubnetIPv6CIDRBlock) Delete(t fi.CloudupTarget) error {
 	ctx := context.TODO()

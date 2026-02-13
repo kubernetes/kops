@@ -49,7 +49,7 @@ func (e *RouterInterface) GetDependencies(tasks map[string]fi.CloudupTask) []fi.
 	return deps
 }
 
-var _ fi.CompareWithID = &RouterInterface{}
+var _ fi.CompareWithID = (*RouterInterface)(nil)
 
 func (i *RouterInterface) CompareWithID() *string {
 	return i.ID

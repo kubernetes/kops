@@ -39,7 +39,7 @@ type scalewayVerifier struct {
 	scwClient *scw.Client
 }
 
-var _ bootstrap.Verifier = &scalewayVerifier{}
+var _ bootstrap.Verifier = (*scalewayVerifier)(nil)
 
 func NewScalewayVerifier(ctx context.Context, opt *ScalewayVerifierOptions) (bootstrap.Verifier, error) {
 	profile, err := CreateValidScalewayProfile()

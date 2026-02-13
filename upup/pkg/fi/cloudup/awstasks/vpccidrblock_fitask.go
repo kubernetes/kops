@@ -27,7 +27,7 @@ import (
 
 // VPCCIDRBlock
 
-var _ fi.HasLifecycle = &VPCCIDRBlock{}
+var _ fi.HasLifecycle = (*VPCCIDRBlock)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *VPCCIDRBlock) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *VPCCIDRBlock) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &VPCCIDRBlock{}
+var _ fi.HasName = (*VPCCIDRBlock)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *VPCCIDRBlock) GetName() *string {

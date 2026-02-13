@@ -37,7 +37,7 @@ type VFSKeystoreReader struct {
 	cachedCA *Keyset
 }
 
-var _ KeystoreReader = &VFSKeystoreReader{}
+var _ KeystoreReader = (*VFSKeystoreReader)(nil)
 
 func NewVFSKeystoreReader(basedir vfs.Path) *VFSKeystoreReader {
 	k := &VFSKeystoreReader{

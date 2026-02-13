@@ -30,7 +30,7 @@ type VFSSecretStoreReader struct {
 	basedir vfs.Path
 }
 
-var _ fi.SecretStoreReader = &VFSSecretStoreReader{}
+var _ fi.SecretStoreReader = (*VFSSecretStoreReader)(nil)
 
 func NewVFSSecretStoreReader(basedir vfs.Path) fi.SecretStoreReader {
 	c := &VFSSecretStoreReader{

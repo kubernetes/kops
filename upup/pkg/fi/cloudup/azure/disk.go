@@ -35,7 +35,7 @@ type disksClientImpl struct {
 	c *compute.DisksClient
 }
 
-var _ DisksClient = &disksClientImpl{}
+var _ DisksClient = (*disksClientImpl)(nil)
 
 func (c *disksClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, diskName string, parameters compute.Disk) (*compute.Disk, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, diskName, parameters, nil)

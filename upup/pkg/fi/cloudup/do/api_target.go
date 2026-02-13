@@ -24,7 +24,7 @@ type DOAPITarget struct {
 	Cloud DOCloud
 }
 
-var _ fi.CloudupTarget = &DOAPITarget{}
+var _ fi.CloudupTarget = (*DOAPITarget)(nil)
 
 func NewDOAPITarget(cloud DOCloud) *DOAPITarget {
 	return &DOAPITarget{

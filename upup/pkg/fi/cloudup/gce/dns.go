@@ -33,7 +33,7 @@ type dnsClientImpl struct {
 	srv *dns.Service
 }
 
-var _ DNSClient = &dnsClientImpl{}
+var _ DNSClient = (*dnsClientImpl)(nil)
 
 func newDNSClientImpl(ctx context.Context) (*dnsClientImpl, error) {
 	srv, err := dns.NewService(ctx)
@@ -71,7 +71,7 @@ type managedZoneClientImpl struct {
 	srv *dns.ManagedZonesService
 }
 
-var _ ManagedZoneClient = &managedZoneClientImpl{}
+var _ ManagedZoneClient = (*managedZoneClientImpl)(nil)
 
 func (c *managedZoneClientImpl) List(project string) ([]*dns.ManagedZone, error) {
 	r, err := c.srv.List(project).Do()
@@ -89,7 +89,7 @@ type resourceRecordSetClientImpl struct {
 	srv *dns.ResourceRecordSetsService
 }
 
-var _ ResourceRecordSetClient = &resourceRecordSetClientImpl{}
+var _ ResourceRecordSetClient = (*resourceRecordSetClientImpl)(nil)
 
 func (c *resourceRecordSetClientImpl) List(project, zone string) ([]*dns.ResourceRecordSet, error) {
 	r, err := c.srv.List(project, zone).Do()
@@ -107,7 +107,7 @@ type changeClientImpl struct {
 	srv *dns.ChangesService
 }
 
-var _ ChangeClient = &changeClientImpl{}
+var _ ChangeClient = (*changeClientImpl)(nil)
 
 func (c *changeClientImpl) Create(project, zone string, ch *dns.Change) (*dns.Change, error) {
 	return c.srv.Create(project, zone, ch).Do()

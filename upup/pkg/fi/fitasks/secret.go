@@ -28,7 +28,7 @@ type Secret struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.CloudupHasCheckExisting = &Secret{}
+var _ fi.CloudupHasCheckExisting = (*Secret)(nil)
 
 // It's important always to check for the existing Secret, so we don't regenerate tokens e.g. on terraform
 func (e *Secret) CheckExisting(c *fi.CloudupContext) bool {

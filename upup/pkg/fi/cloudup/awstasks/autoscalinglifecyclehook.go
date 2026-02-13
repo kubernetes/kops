@@ -48,7 +48,7 @@ type AutoscalingLifecycleHook struct {
 	Enabled *bool
 }
 
-var _ fi.CompareWithID = &AutoscalingLifecycleHook{}
+var _ fi.CompareWithID = (*AutoscalingLifecycleHook)(nil)
 
 func (h *AutoscalingLifecycleHook) CompareWithID() *string {
 	return h.Name

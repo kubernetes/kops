@@ -220,7 +220,7 @@ func (c *MockCommand) String() string {
 	return strings.Join(c.Args, " ")
 }
 
-var _ Executor = &MockExecutor{}
+var _ Executor = (*MockExecutor)(nil)
 
 func (m *MockExecutor) Expect(args []string) *MockCommand {
 	c := &MockCommand{

@@ -27,7 +27,7 @@ import (
 
 // InternetGateway
 
-var _ fi.HasLifecycle = &InternetGateway{}
+var _ fi.HasLifecycle = (*InternetGateway)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *InternetGateway) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *InternetGateway) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &InternetGateway{}
+var _ fi.HasName = (*InternetGateway)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *InternetGateway) GetName() *string {

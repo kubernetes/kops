@@ -35,7 +35,7 @@ type subnetsClientImpl struct {
 	c *network.SubnetsClient
 }
 
-var _ SubnetsClient = &subnetsClientImpl{}
+var _ SubnetsClient = (*subnetsClientImpl)(nil)
 
 func (c *subnetsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) (*network.Subnet, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, virtualNetworkName, subnetName, parameters, nil)

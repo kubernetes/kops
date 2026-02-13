@@ -44,10 +44,10 @@ type LBBackend struct {
 	LoadBalancer *LoadBalancer
 }
 
-var _ fi.CloudupTask = &LBBackend{}
-var _ fi.CompareWithID = &LBBackend{}
+var _ fi.CloudupTask = (*LBBackend)(nil)
+var _ fi.CompareWithID = (*LBBackend)(nil)
 
-var _ fi.CloudupHasDependencies = &LBBackend{}
+var _ fi.CloudupHasDependencies = (*LBBackend)(nil)
 
 func (l *LBBackend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask

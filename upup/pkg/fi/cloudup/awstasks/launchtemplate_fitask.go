@@ -27,7 +27,7 @@ import (
 
 // LaunchTemplate
 
-var _ fi.HasLifecycle = &LaunchTemplate{}
+var _ fi.HasLifecycle = (*LaunchTemplate)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *LaunchTemplate) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *LaunchTemplate) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &LaunchTemplate{}
+var _ fi.HasName = (*LaunchTemplate)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *LaunchTemplate) GetName() *string {

@@ -39,7 +39,7 @@ type Discovery struct {
 	allZonesInRegion []string
 }
 
-var _ gossip.SeedProvider = &Discovery{}
+var _ gossip.SeedProvider = (*Discovery)(nil)
 
 func (r *Discovery) GetSeeds() ([]string, error) {
 	var seeds []string

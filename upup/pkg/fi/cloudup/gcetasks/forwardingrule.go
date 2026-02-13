@@ -65,7 +65,7 @@ type forwardingRulePruneSpec struct {
 	Name string
 }
 
-var _ fi.CompareWithID = &ForwardingRule{}
+var _ fi.CompareWithID = (*ForwardingRule)(nil)
 
 func (e *ForwardingRule) CompareWithID() *string {
 	return e.Name
@@ -338,7 +338,7 @@ func (e *ForwardingRule) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralSelfLink("google_compute_forwarding_rule", name)
 }
 
-var _ fi.CloudupProducesDeletions = &ForwardingRule{}
+var _ fi.CloudupProducesDeletions = (*ForwardingRule)(nil)
 
 // FindDeletions implements fi.HasDeletions
 func (e *ForwardingRule) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
@@ -377,7 +377,7 @@ type deleteForwardingRule struct {
 	forwardingRule *compute.ForwardingRule
 }
 
-var _ fi.CloudupDeletion = &deleteForwardingRule{}
+var _ fi.CloudupDeletion = (*deleteForwardingRule)(nil)
 
 // TaskName returns the task name
 func (d *deleteForwardingRule) TaskName() string {

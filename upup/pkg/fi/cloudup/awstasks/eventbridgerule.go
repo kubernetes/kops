@@ -43,7 +43,7 @@ type EventBridgeRule struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &EventBridgeRule{}
+var _ fi.CompareWithID = (*EventBridgeRule)(nil)
 
 func (eb *EventBridgeRule) CompareWithID() *string {
 	return eb.Name

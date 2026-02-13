@@ -37,7 +37,7 @@ type routeTablesClientImpl struct {
 	c *network.RouteTablesClient
 }
 
-var _ RouteTablesClient = &routeTablesClientImpl{}
+var _ RouteTablesClient = (*routeTablesClientImpl)(nil)
 
 func (c *routeTablesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) (*network.RouteTable, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, routeTableName, parameters, nil)

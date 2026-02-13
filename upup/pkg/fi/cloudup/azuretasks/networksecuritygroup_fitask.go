@@ -27,7 +27,7 @@ import (
 
 // NetworkSecurityGroup
 
-var _ fi.HasLifecycle = &NetworkSecurityGroup{}
+var _ fi.HasLifecycle = (*NetworkSecurityGroup)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *NetworkSecurityGroup) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *NetworkSecurityGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &NetworkSecurityGroup{}
+var _ fi.HasName = (*NetworkSecurityGroup)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *NetworkSecurityGroup) GetName() *string {

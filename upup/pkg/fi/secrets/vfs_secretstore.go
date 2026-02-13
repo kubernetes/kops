@@ -35,7 +35,7 @@ type VFSSecretStore struct {
 	cluster *kops.Cluster
 }
 
-var _ fi.SecretStore = &VFSSecretStore{}
+var _ fi.SecretStore = (*VFSSecretStore)(nil)
 
 func NewVFSSecretStore(cluster *kops.Cluster, basedir vfs.Path) fi.SecretStore {
 	c := &VFSSecretStore{

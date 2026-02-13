@@ -53,13 +53,13 @@ type LoadBalancer struct {
 	WellKnownServices []wellknownservices.WellKnownService
 }
 
-var _ fi.CompareWithID = &LoadBalancer{}
+var _ fi.CompareWithID = (*LoadBalancer)(nil)
 
 func (v *LoadBalancer) CompareWithID() *string {
 	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
 }
 
-var _ fi.HasAddress = &LoadBalancer{}
+var _ fi.HasAddress = (*LoadBalancer)(nil)
 
 // GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
 // It indicates which services we support with this load balancer.
@@ -363,7 +363,7 @@ type LoadBalancerService struct {
 	DestinationPort *int
 }
 
-var _ fi.CloudupHasDependencies = &LoadBalancerService{}
+var _ fi.CloudupHasDependencies = (*LoadBalancerService)(nil)
 
 func (e *LoadBalancerService) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil

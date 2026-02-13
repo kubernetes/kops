@@ -87,7 +87,7 @@ var readBackoff = wait.Backoff{
 }
 
 // static compile time check to validate DOCloud's fi.Cloud Interface.
-var _ fi.Cloud = &doCloudImplementation{}
+var _ fi.Cloud = (*doCloudImplementation)(nil)
 
 // doCloudImplementation holds the godo client object to interact with DO resources.
 type doCloudImplementation struct {

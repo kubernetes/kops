@@ -27,7 +27,7 @@ import (
 
 // DNSName
 
-var _ fi.HasLifecycle = &DNSName{}
+var _ fi.HasLifecycle = (*DNSName)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *DNSName) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *DNSName) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &DNSName{}
+var _ fi.HasName = (*DNSName)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *DNSName) GetName() *string {
