@@ -66,17 +66,21 @@ func (d *deployer) Up() error {
 		_ = d.Down()
 	}
 
-	if d.createBucket {
-		switch d.CloudProvider {
-		case "aws":
-			ctx := context.Background()
+	switch d.CloudProvider {
+	case "aws":
+		ctx := context.Background()
+		if d.createStateStore {
 			if err := d.aws.EnsureS3Bucket(ctx, d.region, d.stateStore(), false); err != nil {
 				return err
 			}
+		}
+		if d.createDiscoveryStore {
 			if err := d.aws.EnsureS3Bucket(ctx, d.region, d.discoveryStore(), true); err != nil {
 				return err
 			}
-		case "gce":
+		}
+	case "gce":
+		if d.createStateStore {
 			if err := gce.EnsureGCSBucket(d.stateStore(), d.region, d.GCPProject, false); err != nil {
 				return err
 			}
