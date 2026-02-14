@@ -1937,6 +1937,8 @@ func validateWarmPool(warmPool *kops.WarmPoolSpec, fldPath *field.Path) (allErrs
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be negative"))
 		} else if warmPool.MinSize > *warmPool.MaxSize {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxSize"), *warmPool.MaxSize, "warm pool maxSize cannot be set to lower than minSize"))
+		} else if len(warmPool.AdditionalImages) > 0 {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("additionalImages"), "warm pool additional images can only be set in the instance group spec"))
 		}
 	}
 	if warmPool.MinSize < 0 {

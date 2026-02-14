@@ -516,6 +516,14 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 		}
 	}
 
+	// Add ig-level extra images
+	if ig.Spec.WarmPool != nil && len(ig.Spec.WarmPool.AdditionalImages) > 0 {
+		for _, image := range ig.Spec.WarmPool.AdditionalImages {
+			remapped := assets.NormalizeImage(assetBuilder, image)
+			images[remapped] = true
+		}
+	}
+
 	var unique []string
 	for image := range images {
 		unique = append(unique, image)
