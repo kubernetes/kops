@@ -8149,6 +8149,8 @@ func autoConvert_v1alpha3_WarmPoolSpec_To_kops_WarmPoolSpec(in *WarmPoolSpec, ou
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
 	out.EnableLifecycleHook = in.EnableLifecycleHook
+	out.LifecycleHookTimeout = in.LifecycleHookTimeout
+	out.AdditionalImages = in.AdditionalImages
 	return nil
 }
 
@@ -8161,6 +8163,8 @@ func autoConvert_kops_WarmPoolSpec_To_v1alpha3_WarmPoolSpec(in *kops.WarmPoolSpe
 	out.MinSize = in.MinSize
 	out.MaxSize = in.MaxSize
 	out.EnableLifecycleHook = in.EnableLifecycleHook
+	out.LifecycleHookTimeout = in.LifecycleHookTimeout
+	out.AdditionalImages = in.AdditionalImages
 	return nil
 }
 
