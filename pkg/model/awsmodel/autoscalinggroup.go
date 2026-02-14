@@ -129,6 +129,13 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			hookName := "kops-warmpool"
 			name := fmt.Sprintf("%s-%s", hookName, ig.GetName())
 			enableHook := warmPool.IsEnabled() && warmPool.EnableLifecycleHook
+			heartbeatTimeout := aws.Int32(600)
+			// Check for heartbeatTimeout overrides at IG-level and cluster-level. IG-level takes precedence.
+			if ig.Spec.WarmPool != nil && ig.Spec.WarmPool.LifecycleHookTimeout != nil {
+				heartbeatTimeout = ig.Spec.WarmPool.LifecycleHookTimeout
+			} else if b.Cluster.Spec.CloudProvider.AWS.WarmPool != nil && b.Cluster.Spec.CloudProvider.AWS.WarmPool.LifecycleHookTimeout != nil {
+				heartbeatTimeout = b.Cluster.Spec.CloudProvider.AWS.WarmPool.LifecycleHookTimeout
+			}
 
 			lifecyleTask := &awstasks.AutoscalingLifecycleHook{
 				ID:               aws.String(name),
@@ -139,7 +146,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				DefaultResult:    aws.String("ABANDON"),
 				// We let nodeup have 10 min to complete. Normally this should happen much faster,
 				// but CP nodes need 5 min or so to start on new clusters, and we need to wait for that.
-				HeartbeatTimeout:    aws.Int32(600),
+				HeartbeatTimeout:    heartbeatTimeout,
 				LifecycleTransition: aws.String("autoscaling:EC2_INSTANCE_LAUNCHING"),
 				Enabled:             &enableHook,
 			}
