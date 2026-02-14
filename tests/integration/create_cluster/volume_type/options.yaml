@@ -1,0 +1,10 @@
+ClusterName: volume-types.example.com
+Zones:
+- us-test1-a
+CloudProvider: gce
+Networking: cni
+Project: testproject
+KubernetesVersion: v1.32.0
+ControlPlaneVolumeSize: 32
+ControlPlaneVolumeType: pd-balanced
+NodeVolumeSize: 64

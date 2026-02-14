@@ -81,6 +81,11 @@ func TestCreateClusterCilium(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/cilium-eni", "v1alpha2")
 }
 
+// TestCreateClusterVolumeType tests the control plane volume type flag
+func TestCreateClusterVolumeType(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/volume_type", "v1alpha2")
+}
+
 // TestCreateClusterOverride tests the override flag
 func TestCreateClusterOverride(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/overrides", "v1alpha2")
