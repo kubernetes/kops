@@ -70,7 +70,7 @@ metadata:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
   associatePublicIp: true
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
+  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   machineType: t3.medium
   maxSize: 4
   minSize: 4
@@ -88,7 +88,7 @@ metadata:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
   associatePublicIp: true
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
+  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   machineType: c5.large
   maxSize: 1
   minSize: 1
