@@ -15,53 +15,27 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/keypair-rotation"
 
-kops-acquire-latest
+make test-e2e-install
 
-OVERRIDES="${OVERRIDES-} --control-plane-size=t4g.medium --node-size=t4g.medium"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-kops-up
-
-REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/keypair-rotation"
-mkdir -p "${REPORT_DIR}"
-
-${KOPS} create keypair all
-${KOPS} update cluster --yes
-${KOPS} rolling-update cluster --yes --validate-count=10
-
-KUBECFG_CREATE=$(mktemp -t kubeconfig.XXXXXXXXX)
-${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_CREATE}"
-kubectl --kubeconfig="${KUBECFG_CREATE}" config view > "${REPORT_DIR}/create.kubeconfig"
-
-# Confirm the first kubeconfig still works
-${KOPS} validate cluster --wait=10m --count=3
-
-export KUBECONFIG="${KUBECFG_CREATE}"
-${KOPS} promote keypair all
-${KOPS} update cluster --yes
-${KOPS} rolling-update cluster --yes --validate-count=10
-
-KUBECFG_PROMOTE=$(mktemp -t kubeconfig.XXXXXXXXX)
-${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_PROMOTE}"
-kubectl --kubeconfig="${KUBECFG_PROMOTE}" config view > "${REPORT_DIR}/promote.kubeconfig"
-
-export KUBECONFIG="${KUBECFG_PROMOTE}"
-${KOPS} validate cluster --wait=10m --count=3
-
-${KOPS} distrust keypair all
-${KOPS} update cluster --yes
-${KOPS} rolling-update cluster --yes --validate-count=10
-
-KUBECFG_DISTRUST=$(mktemp -t kubeconfig.XXXXXXXXX)
-${KOPS} export kubecfg --admin --kubeconfig="${KUBECFG_DISTRUST}"
-kubectl --kubeconfig="${KUBECFG_DISTRUST}" config view > "${REPORT_DIR}/distrust.kubeconfig"
-
-CA=$(kubectl --kubeconfig="${KUBECFG_DISTRUST}" config view --raw -o jsonpath="{.clusters[0].cluster.certificate-authority-data}" | base64 --decode)
-if [ "$(echo "${CA}" | grep -c "BEGIN CERTIFICATE")" != "1" ]; then
-    >&2 echo unexpected number of CA certificates in kubeconfig
-    exit 1
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
 
-export KUBECONFIG="${KUBECFG_DISTRUST}"
-${KOPS} validate cluster --wait=10m --count=3
+CREATE_ARGS="--networking calico"
+CREATE_ARGS="${CREATE_ARGS} --control-plane-size=t4g.medium --node-size=t4g.medium"
+
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="${CREATE_ARGS}" \
+    --kubernetes-version="https://dl.k8s.io/release/stable.txt" \
+    --test=exec -- "${TEST_ROOT}/test.sh"

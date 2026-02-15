@@ -15,32 +15,36 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/cilium-connectivity-test"
 
-export KOPS_BASE_URL
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt)"
-KOPS=$(kops-download-from-base)
+make test-e2e-install
 
-ARGS="--set=cluster.spec.networking.cilium.hubble.enabled=true --set=cluster.spec.certManager.enabled=true"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-if [[ $1 == "kube-proxy" ]]; then
-    ARGS="${ARGS} --set=cluster.spec.networking.cilium.enableNodePort=false --set=cluster.spec.kubeProxy.enabled=true"
-# This test requires private topology, which kubetest2 does not support.
-#elif [[ $1 == "eni"]]
-#    ARGS="${ARGS} --set=cluster.spec.cilium.ipam=eni --set=cluster.spec.cilium.disable-masquerade"
-#    ARGS="${ARGS} --topology private"
-elif [[ $1 == "node-local-dns" ]]; then
-    ARGS="${ARGS} --set=cluster.spec.kubeDNS.provider=CoreDNS --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true"
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
 
-${KUBETEST2} \
-    --up \
-    --kubernetes-version="1.27.0" \
-    --kops-binary-path="${KOPS}" \
-    --create-args="--networking cilium $ARGS"
+CREATE_ARGS="--networking cilium --set=cluster.spec.networking.cilium.hubble.enabled=true --set=cluster.spec.certManager.enabled=true"
 
-kubectl port-forward -n kube-system deployment/hubble-relay 4245:4245 &
+if [[ "${1:-}" == "kube-proxy" ]]; then
+    CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.networking.cilium.enableNodePort=false --set=cluster.spec.kubeProxy.enabled=true"
+# This test requires private topology, which kubetest2 does not support.
+#elif [[ "${1:-}" == "eni"]]
+#    CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.cilium.ipam=eni --set=cluster.spec.cilium.disable-masquerade"
+#    CREATE_ARGS="${CREATE_ARGS} --topology private"
+elif [[ "${1:-}" == "node-local-dns" ]]; then
+    CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.kubeDNS.provider=CoreDNS --set=cluster.spec.kubeDNS.nodeLocalDNS.enabled=true"
+fi
 
-wget -qO- https://github.com/cilium/cilium-cli/releases/download/v0.14.8/cilium-linux-amd64.tar.gz | tar xz -C "${WORKSPACE}"
-
-cilium connectivity test --all-flows
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="${CREATE_ARGS}" \
+    --kubernetes-version="https://dl.k8s.io/release/stable.txt" \
+    --test=exec -- "${TEST_ROOT}/test.sh"

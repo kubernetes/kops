@@ -15,35 +15,30 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/smoketest"
+
+make test-e2e-install
 
 if [ -z "${KOPS_VERSION:-}" ] || [ -z "${K8S_VERSION:-}" ]; then
   >&2 echo "must set KOPS_VERSION and K8S_VERSION env vars"
   exit 1
 fi
 
-KOPS=$(kops-download-release "${KOPS_VERSION}")
+# Download the specified kOps release
+KOPS_BIN=$(mktemp -t kops.XXXXXXXXX)
+wget -qO "${KOPS_BIN}" "https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-$(go env GOOS)-$(go env GOARCH)"
+chmod +x "${KOPS_BIN}"
 
-${KUBETEST2} \
-	--up \
-	--kubernetes-version="${K8S_VERSION}" \
-	--kops-binary-path="${KOPS}" \
-	--create-args="--networking calico"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
+KUBETEST2_ARGS+=("--kops-binary-path=${KOPS_BIN}")
 
-
-"${KOPS}" validate cluster
-
-#"${KOPS}" export kubecfg --name "${CLUSTER_NAME}" --admin
-
-if [[ -n ${KOPS_SKIP_E2E:-} ]]; then
-  exit
-fi
-
-# shellcheck disable=SC2086
-${KUBETEST2} \
-    --cloud-provider="${CLOUD_PROVIDER}" \
-    --kops-binary-path="${KOPS}" \
-    --test=kops \
-    -- \
-    --parallel 25 \
-	--skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|RuntimeClass|RuntimeHandler"
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="--networking calico" \
+    --kubernetes-version="${K8S_VERSION}" \
+    --env=K8S_VERSION="${K8S_VERSION}" \
+    --env=KOPS_SKIP_E2E="${KOPS_SKIP_E2E:-}" \
+    --test=exec -- "${TEST_ROOT}/test.sh"
