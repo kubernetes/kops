@@ -15,33 +15,30 @@
 # limitations under the License.
 
 REPO_ROOT=$(git rev-parse --show-toplevel);
-source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
+TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/aws-ebs-csi"
 
-kops-acquire-latest
+make test-e2e-install
 
-OVERRIDES="${OVERRIDES-} --set=cluster.spec.cloudProvider.aws.ebsCSIDriver.enabled=true"
-OVERRIDES="$OVERRIDES --set=cluster.spec.snapshotController.enabled=true"
-OVERRIDES="$OVERRIDES --set=cluster.spec.certManager.enabled=true"
-OVERRIDES="$OVERRIDES --control-plane-size=t3.medium --node-size=c5.large"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
 
-kops-up
-
-ZONE=$(${KOPS} get ig -o json | jq -r '[.[] | select(.spec.role=="Node") | .spec.subnets[0]][0]')
-REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-ebs-csi-driver/"
-
-# shellcheck disable=SC2164
-cd "$(mktemp -dt kops.XXXXXXXXX)"
-go get github.com/onsi/ginkgo/ginkgo
-
-CSI_VERSION=$(kubectl get deployment -n kube-system ebs-csi-controller -o jsonpath='{.spec.template.spec.containers[?(@.name=="ebs-plugin")].image}' | cut -d':' -f2-)
-CLONE_ARGS=
-if [ -n "$CSI_VERSION" ]; then
-    CLONE_ARGS="-b ${CSI_VERSION}"
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
-# shellcheck disable=SC2086
-git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git .
 
-# shellcheck disable=SC2164
-cd tests/e2e-kubernetes/
+CREATE_ARGS="--networking calico"
+CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.cloudProvider.aws.ebsCSIDriver.enabled=true"
+CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.snapshotController.enabled=true"
+CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.certManager.enabled=true"
+CREATE_ARGS="${CREATE_ARGS} --control-plane-size=t3.medium --node-size=c5.large"
 
-ginkgo --nodes=25 ./... -- -cluster-tag="${CLUSTER_NAME}" -ginkgo.skip="\[Disruptive\]" -report-dir="${REPORT_DIR}" -gce-zone="${ZONE}"
+kubetest2 kops \
+    --up --down \
+    "${KUBETEST2_ARGS[@]}" \
+    --cloud-provider=aws \
+    --create-args="${CREATE_ARGS}" \
+    --kubernetes-version="https://dl.k8s.io/release/stable.txt" \
+    --test=exec -- "${TEST_ROOT}/test.sh"
