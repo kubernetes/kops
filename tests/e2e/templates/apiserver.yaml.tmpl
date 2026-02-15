@@ -69,7 +69,7 @@ metadata:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
   associatePublicIp: true
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
+  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -90,7 +90,7 @@ metadata:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
   associatePublicIp: true
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
+  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
@@ -111,7 +111,7 @@ metadata:
     kops.k8s.io/cluster: {{.clusterName}}
 spec:
   associatePublicIp: true
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20250610
+  image: ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
   instanceMetadata:
     httpPutResponseHopLimit: 1
     httpTokens: required
