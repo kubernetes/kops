@@ -96,12 +96,13 @@ type deployer struct {
 
 	aws *aws.Client
 
-	createBucket       bool
-	stateStoreName     string
-	discoveryStoreName string
-	stagingStoreName   string
-	region             string
-	zones              []string
+	createStateStore     bool
+	createDiscoveryStore bool
+	stateStoreName       string
+	discoveryStoreName   string
+	stagingStoreName     string
+	region               string
+	zones                []string
 
 	// boskos struct field will be non-nil when the deployer is
 	// using boskos to acquire a GCP project

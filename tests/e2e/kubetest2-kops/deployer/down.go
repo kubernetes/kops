@@ -73,17 +73,21 @@ func (d *deployer) Down() error {
 		return err
 	}
 
-	if d.createBucket {
-		switch d.CloudProvider {
-		case "aws":
-			ctx := context.Background()
+	switch d.CloudProvider {
+	case "aws":
+		ctx := context.Background()
+		if d.createStateStore {
 			if err := d.aws.DeleteS3Bucket(ctx, d.stateStore()); err != nil {
 				return err
 			}
+		}
+		if d.createDiscoveryStore {
 			if err := d.aws.DeleteS3Bucket(ctx, d.discoveryStore()); err != nil {
 				return err
 			}
-		case "gce":
+		}
+	case "gce":
+		if d.createStateStore {
 			gce.DeleteGCSBucket(d.stateStore(), d.GCPProject)
 			gce.DeleteGCSBucket(d.stagingStore(), d.GCPProject)
 		}

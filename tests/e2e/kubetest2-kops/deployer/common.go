@@ -137,13 +137,30 @@ func (d *deployer) initialize() error {
 				d.SSHPublicKeyPath = publicKey
 			}
 
-			d.createBucket = true
 		} else if d.SSHPrivateKeyPath == "" && os.Getenv("KUBE_SSH_KEY_PATH") != "" {
 			d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
 		}
 	}
 
 	klog.V(1).Infof("Using SSH keypair: [%s,%s]", d.SSHPrivateKeyPath, d.SSHPublicKeyPath)
+
+	// Determine whether ephemeral buckets need to be created. Each store
+	// method generates a dynamic bucket name when its corresponding env var
+	// is unset; those buckets must be created before cluster provisioning
+	// and deleted during teardown.
+	switch d.CloudProvider {
+	case "aws":
+		if os.Getenv("KOPS_STATE_STORE") == "" {
+			d.createStateStore = true
+		}
+		if _, found := os.LookupEnv("KOPS_DISCOVERY_STORE"); !found {
+			d.createDiscoveryStore = true
+		}
+	case "gce":
+		if d.boskos != nil || os.Getenv("KOPS_STATE_STORE") == "" || os.Getenv("KOPS_STAGING_BUCKET") == "" {
+			d.createStateStore = true
+		}
+	}
 
 	if d.commonOptions.ShouldBuild() {
 		if err := d.verifyBuildFlags(); err != nil {
@@ -405,13 +422,11 @@ func (d *deployer) stateStore() string {
 				klog.Fatalf("Failed to generate bucket name: %v", err)
 				return ""
 			}
-			d.createBucket = true
 			ss = "s3://" + bucketName
 		case "azure":
 			// TODO: Use dynamic container name
 			ss = "azureblob://cluster-state"
 		case "gce":
-			d.createBucket = true
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
 		case "digitalocean":
 			ss = "do://e2e-kops-space"
@@ -437,7 +452,6 @@ func (d *deployer) discoveryStore() string {
 				klog.Fatalf("Failed to generate bucket name: %v", err)
 				return ""
 			}
-			d.createBucket = true
 			discovery = "s3://" + bucketName
 		}
 	}
@@ -453,7 +467,6 @@ func (d *deployer) stagingStore() string {
 	if sb == "" {
 		switch d.CloudProvider {
 		case "gce":
-			d.createBucket = true
 			sb = "gs://" + gce.GCSBucketName(d.GCPProject, "staging")
 		}
 	}
