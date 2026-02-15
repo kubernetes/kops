@@ -6541,11 +6541,22 @@ spec:
                 description: WarmPool defines the default warm pool settings for instance
                   groups (AWS only).
                 properties:
+                  additionalImages:
+                    description: AdditionalImages is a list of additional container
+                      images to pull into the warm pool instances.
+                    items:
+                      type: string
+                    type: array
                   enableLifecycleHook:
                     description: |-
                       EnableLifecycleHook determines if an ASG lifecycle hook will be added ensuring that nodeup runs to completion.
                       Note that the metadata API must be protected from arbitrary Pods when this is enabled.
                     type: boolean
+                  lifecycleHookTimeout:
+                    description: LifecycleHookTimeout is the timeout for the ASG lifecycle
+                      hook in seconds.
+                    format: int32
+                    type: integer
                   maxSize:
                     description: |-
                       MaxSize is the maximum size of the warm pool. The desired size of the instance group
