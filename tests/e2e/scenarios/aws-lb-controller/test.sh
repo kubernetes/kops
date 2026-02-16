@@ -36,6 +36,10 @@ LBC_VERSION=$(kubectl get deployment -n kube-system aws-load-balancer-controller
 TEMPDIR=$(mktemp -dt kops.XXXXXXXXX)
 cd "${TEMPDIR}"
 
+KUBECONFIG=$(mktemp -t kops.XXXXXXXXX)
+export KUBECONFIG
+"${KOPS}" export kubecfg --name "${CLUSTER_NAME}" --admin --kubeconfig "${KUBECONFIG}"
+
 go install github.com/onsi/ginkgo/v2/ginkgo@latest
 
 CLONE_ARGS=
