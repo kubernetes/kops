@@ -19,6 +19,7 @@ set -x
 
 make test-e2e-install
 
+REPO_ROOT=$(git rev-parse --show-toplevel)
 if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
 fi
@@ -83,7 +84,7 @@ create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
   create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
 fi
-create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0.0:2382")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
 create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=10")
@@ -143,6 +144,7 @@ KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
+KUBETEST2_ARGS+=("--pre-test-cmd=${REPO_ROOT}/tests/e2e/scenarios/scalability/pre-test.sh")
 if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
   KUBETEST2_ARGS+=("--build")
   KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")

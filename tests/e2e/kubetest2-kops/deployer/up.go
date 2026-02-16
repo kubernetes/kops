@@ -59,6 +59,11 @@ func (d *deployer) Up() error {
 		d.KopsBaseURL = baseURL
 	}
 
+	// In PreTestCmd, we need KOPS_BASE_URL to be set for kops calls
+	if os.Getenv("KOPS_BASE_URL") == "" {
+		os.Setenv("KOPS_BASE_URL", d.KopsBaseURL)
+	}
+
 	if d.terraform == nil {
 		klog.Info("Cleaning up any leaked resources from previous cluster")
 		// Intentionally ignore errors:
