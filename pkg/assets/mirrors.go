@@ -48,10 +48,6 @@ var wellKnownMirrors = []mirrorConfig{
 	},
 	{
 		Base: "https://dl.k8s.io/release/",
-		Mirrors: []string{
-			// We include this mirror in case dl.k8s.io is not directly reachable.
-			"https://cdn.dl.k8s.io/release/",
-		},
 	},
 }
 
