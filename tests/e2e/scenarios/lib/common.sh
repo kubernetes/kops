@@ -41,10 +41,6 @@ export CHANNELS
 
 export KOPS_RUN_TOO_NEW_VERSION=1
 
-if [[ -z "${DISCOVERY_STORE-}" ]]; then
-    DISCOVERY_STORE="${KOPS_STATE_STORE-}"
-fi
-
 if [[ -z "${AWS_SSH_PRIVATE_KEY_FILE-}" ]]; then
     export AWS_SSH_PRIVATE_KEY_FILE="${HOME}/.ssh/id_rsa"
 fi
@@ -130,10 +126,6 @@ function kops-up() {
     fi
     if [[ -z "${K8S_VERSION-}" ]]; then
         K8S_VERSION="$(curl -fs -L https://dl.k8s.io/release/stable.txt)"
-    fi
-
-    if [[ ${KOPS_IRSA-} = true ]]; then
-        create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
     fi
 
     # TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT

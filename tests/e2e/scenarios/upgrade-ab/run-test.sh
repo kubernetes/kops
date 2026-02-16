@@ -78,11 +78,6 @@ else
   KOPS="${KOPS_A}"
 fi
 
-create_args=""
-if [[ ${KOPS_IRSA-} = true ]]; then
-  create_args="${create_args} --discovery-store=${DISCOVERY_STORE}/${CLUSTER_NAME}/discovery"
-fi
-
 # TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT
 if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
   echo "Recognized (deprecated) KOPS_CONTROL_PLANE_SIZE=${KOPS_CONTROL_PLANE_SIZE}, please set KOPS_CONTROL_PLANE_COUNT instead"
