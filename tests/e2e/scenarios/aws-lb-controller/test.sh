@@ -21,12 +21,12 @@ set -o pipefail
 # Get the cluster name from the KUBECONFIG context
 CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
 
-# Get VPC ID by looking at the cluster's subnet
-VPC=$(kubectl get nodes -o jsonpath='{.items[0].spec.providerID}' | cut -d'/' -f5 | xargs -I{} aws ec2 describe-instances --instance-ids {} --query 'Reservations[0].Instances[0].VpcId' --output text)
-
 # Get the zone from a node
 ZONE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.labels.topology\.kubernetes\.io/zone}')
 REGION=${ZONE%?}
+
+# Get VPC ID by looking at the cluster's subnet
+VPC=$(kubectl get nodes -o jsonpath='{.items[0].spec.providerID}' | cut -d'/' -f5 | xargs -I{} aws --region "${REGION}" ec2 describe-instances --instance-ids {} --query 'Reservations[0].Instances[0].VpcId' --output text)
 
 REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/aws-lb-controller"
 mkdir -p "${REPORT_DIR}"
