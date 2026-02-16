@@ -290,7 +290,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	if err := loadKernelModules(modelContext); err != nil {
+	if err := loadKernelModules(modelContext, distribution); err != nil {
 		return err
 	}
 
@@ -551,7 +551,7 @@ func modprobe(module string) error {
 // loadKernelModules is a hack to force br_netfilter to be loaded
 // and used by some components to load its recommended modules.
 // TODO: Move to tasks architecture
-func loadKernelModules(context *model.NodeupModelContext) error {
+func loadKernelModules(context *model.NodeupModelContext, distribution distributions.Distribution) error {
 	if context.NodeupConfig.Networking.Kindnet != nil {
 		err := modprobe("nfnetlink_queue")
 		if err != nil {
@@ -562,6 +562,16 @@ func loadKernelModules(context *model.NodeupModelContext) error {
 		if err != nil {
 			// TODO: Return error in 1.11 (too risky for 1.10)
 			klog.Warningf("error loading br_netfilter module: %v", err)
+		}
+	}
+	switch distribution {
+	case distributions.DistributionRocky9:
+		// Rocky 9 doesn't load nf_conntrack by default, and it's required for kube-proxy:
+		// "Error running ProxyServer" err="open /proc/sys/net/netfilter/nf_conntrack_max: no such file or directory"
+		// "command failed" err="open /proc/sys/net/netfilter/nf_conntrack_max: no such file or directory"
+		err := modprobe("nf_conntrack")
+		if err != nil {
+			klog.Warningf("error loading nf_conntrack module: %v", err)
 		}
 	}
 	// TODO: Add to /etc/modules-load.d/ ?
