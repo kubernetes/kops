@@ -60,8 +60,8 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 }
 
 func Test_FindCNIAssetFromDefaults134(t *testing.T) {
-	desiredCNIVersionURL := "https://storage.googleapis.com/k8s-artifacts-cni/release/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz"
-	desiredCNIVersionHash := "sha256:2503ce29ac445715ebe146073f45468153f9e28f45fa173cb060cfd9e735f563"
+	desiredCNIVersionURL := "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz"
+	desiredCNIVersionHash := "sha256:b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090"
 
 	cluster := &api.Cluster{}
 	cluster.Spec.KubernetesVersion = "v1.34.0"
