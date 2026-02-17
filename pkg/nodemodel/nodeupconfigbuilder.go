@@ -509,10 +509,19 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 	if assetBuilder != nil {
 		for _, image := range assetBuilder.ImageAssets {
 			for _, prefix := range desiredImagePrefixes {
-				if strings.HasPrefix(image.DownloadLocation, prefix) {
+				remappedPrefix := assets.NormalizeImage(assetBuilder, prefix)
+				if strings.HasPrefix(image.DownloadLocation, remappedPrefix) {
 					images[image.DownloadLocation] = true
 				}
 			}
+		}
+	}
+
+	// Add ig-level extra images
+	if ig.Spec.WarmPool != nil && len(ig.Spec.WarmPool.AdditionalImages) > 0 {
+		for _, image := range ig.Spec.WarmPool.AdditionalImages {
+			remapped := assets.NormalizeImage(assetBuilder, image)
+			images[remapped] = true
 		}
 	}
 

@@ -314,11 +314,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		// Remap image via AssetBuilder
 		for i := range pod.Spec.InitContainers {
 			initContainer := &pod.Spec.InitContainers[i]
-			remapped, err := b.AssetBuilder.RemapImage(initContainer.Image)
-			if err != nil {
-				return nil, fmt.Errorf("unable to remap init container image %q: %w", container.Image, err)
-			}
-			initContainer.Image = remapped
+			initContainer.Image = b.AssetBuilder.RemapImage(initContainer.Image)
 		}
 	}
 
@@ -334,11 +330,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		}
 
 		// Remap image via AssetBuilder
-		remapped, err := b.AssetBuilder.RemapImage(container.Image)
-		if err != nil {
-			return nil, fmt.Errorf("unable to remap container image %q: %w", container.Image, err)
-		}
-		container.Image = remapped
+		container.Image = b.AssetBuilder.RemapImage(container.Image)
 	}
 
 	var clientHost string

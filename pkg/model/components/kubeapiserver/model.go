@@ -138,13 +138,7 @@ func (b *KubeApiserverBuilder) buildHealthcheckSidecar() (*corev1.Pod, error) {
 	}
 
 	// Remap image via AssetBuilder
-	{
-		remapped, err := b.AssetBuilder.RemapImage(container.Image)
-		if err != nil {
-			return nil, fmt.Errorf("unable to remap container image %q: %v", container.Image, err)
-		}
-		container.Image = remapped
-	}
+	container.Image = b.AssetBuilder.RemapImage(container.Image)
 
 	return pod, nil
 }

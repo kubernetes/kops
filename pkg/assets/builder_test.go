@@ -42,11 +42,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToDockerHub(t *testing.T) {
 
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
-	remapped, err := builder.RemapImage(image)
-	if err != nil {
-		t.Error("Error remapping image", err)
-	}
-
+	remapped := builder.RemapImage(image)
 	if remapped != expected {
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
@@ -61,11 +57,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToSimplifiedDockerHub(t *test
 
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
-	remapped, err := builder.RemapImage(image)
-	if err != nil {
-		t.Error("Error remapping image", err)
-	}
-
+	remapped := builder.RemapImage(image)
 	if remapped != expected {
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
@@ -80,11 +72,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToSimplifiedKubernetesURL(t *
 
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
-	remapped, err := builder.RemapImage(image)
-	if err != nil {
-		t.Error("Error remapping image", err)
-	}
-
+	remapped := builder.RemapImage(image)
 	if remapped != expected {
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
@@ -99,11 +87,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToLegacyKubernetesURL(t *test
 
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
-	remapped, err := builder.RemapImage(image)
-	if err != nil {
-		t.Error("Error remapping image", err)
-	}
-
+	remapped := builder.RemapImage(image)
 	if remapped != expected {
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
@@ -118,11 +102,7 @@ func TestValidate_RemapImage_ContainerProxy_AppliesToImagesWithTags(t *testing.T
 
 	builder.AssetsLocation.ContainerProxy = &proxyURL
 
-	remapped, err := builder.RemapImage(image)
-	if err != nil {
-		t.Error("Error remapping image", err)
-	}
-
+	remapped := builder.RemapImage(image)
 	if remapped != expected {
 		t.Errorf("Error remapping image (Expecting: %s, got %s)", expected, remapped)
 	}
@@ -140,11 +120,7 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 	remapped := image
 	iterations := make([]map[int]int, 2)
 	for i := range iterations {
-		remapped, err := builder.RemapImage(remapped)
-		if err != nil {
-			t.Errorf("Error remapping image (iteration %d): %s", i, err)
-		}
-
+		remapped := builder.RemapImage(remapped)
 		if remapped != expected {
 			t.Errorf("Error remapping image (Expecting: %s, got %s, iteration: %d)", expected, remapped, i)
 		}
