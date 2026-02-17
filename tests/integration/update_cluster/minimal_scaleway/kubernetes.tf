@@ -240,7 +240,7 @@ resource "scaleway_lb_backend" "lb-backend-https" {
   lb_id            = scaleway_lb.api-scw-minimal-k8s-local.id
   name             = "lb-backend-https"
   proxy_protocol   = "none"
-  server_ips       = [scaleway_instance_server.control-plane-fr-par-1-0.private_ip]
+  server_ips       = [scaleway_instance_server.control-plane-fr-par-1-0.private_ips[0].address]
 }
 
 resource "scaleway_lb_backend" "lb-backend-kops-controller" {
@@ -249,7 +249,7 @@ resource "scaleway_lb_backend" "lb-backend-kops-controller" {
   lb_id            = scaleway_lb.api-scw-minimal-k8s-local.id
   name             = "lb-backend-kops-controller"
   proxy_protocol   = "none"
-  server_ips       = [scaleway_instance_server.control-plane-fr-par-1-0.private_ip]
+  server_ips       = [scaleway_instance_server.control-plane-fr-par-1-0.private_ips[0].address]
 }
 
 resource "scaleway_lb_frontend" "lb-frontend-https" {
