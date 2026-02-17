@@ -14,12 +14,10 @@
 
 # kops source root directory (without trailing /)
 KOPS_ROOT?=$(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
-DOCKER_REGISTRY?=gcr.io/must-override
+DOCKER_IMAGE_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
 UPLOAD_DEST?=$(S3_BUCKET)
-GCS_LOCATION?=gs://must-override
-GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
-LATEST_FILE?=latest-ci.txt
+GCS_BUCKET?=gs://must-override
 GOPATH_1ST:=$(shell go env GOPATH)
 UNIQUE:=$(shell date +%s)
 BUILD=$(KOPS_ROOT)/.build
@@ -37,6 +35,16 @@ OSARCH=$(shell go env GOOS)/$(shell go env GOARCH)
 GOBIN=$(shell go env GOBIN)
 ifeq ($(GOBIN),)
 GOBIN := $(shell go env GOPATH)/bin
+endif
+
+# We need to create latest.txt for master and latest-X.Y for release branches
+BRANCH ?= $(shell git -C $(KOPS_ROOT) rev-parse --abbrev-ref HEAD)
+ifeq ($(BRANCH),master)
+LATEST_FILE ?= latest.txt
+else ifneq (,$(filter release-1.%,$(BRANCH)))
+LATEST_FILE ?= $(patsubst release-%,latest-%.txt,$(BRANCH))
+else
+LATEST_FILE ?= latest.txt
 endif
 
 # CODEGEN_VERSION is the version of k8s.io/code-generator to use
@@ -193,18 +201,18 @@ kops: crossbuild-kops-$(shell go env GOOS)-$(shell go env GOARCH)
 .PHONY: crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64
 crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64: crossbuild-kops-linux-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64
 crossbuild-kops-darwin-amd64 crossbuild-kops-darwin-arm64: crossbuild-kops-darwin-%:
 	mkdir -p ${DIST}/darwin/$*
-	GOOS=darwin GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/darwin/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=darwin GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/darwin/$*/kops ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
 
 
 .PHONY: crossbuild-kops-windows-amd64
 crossbuild-kops-windows-amd64:
 	mkdir -p ${DIST}/windows/amd64
-	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/amd64/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+	GOOS=windows GOARCH=amd64 go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/windows/amd64/kops.exe ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild
 crossbuild: crossbuild-kops
@@ -215,7 +223,7 @@ crossbuild: crossbuild-kops-linux-amd64 crossbuild-kops-linux-arm64 crossbuild-k
 .PHONY: nodeup-amd64 nodeup-arm64
 nodeup-amd64 nodeup-arm64: nodeup-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/nodeup ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/nodeup
 
 .PHONY: nodeup
 nodeup: nodeup-amd64
@@ -226,7 +234,7 @@ crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 .PHONY: protokube-amd64 protokube-arm64
 protokube-amd64 protokube-arm64: protokube-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build -tags=peer_name_alternative,peer_name_hash ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
+	GOOS=linux GOARCH=$* go build -tags=peer_name_alternative,peer_name_hash ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
 protokube: protokube-amd64
@@ -237,7 +245,7 @@ crossbuild-protokube: protokube-amd64 protokube-arm64
 .PHONY: channels-amd64 channels-arm64
 channels-amd64 channels-arm64: channels-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/channels/cmd/channels
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/channels/cmd/channels
 
 .PHONY: channels
 channels: channels-amd64
@@ -253,22 +261,22 @@ upload: version-dist # Upload kops to S3
 .PHONY: gcs-upload
 gcs-upload: gsutil version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
+	gcloud storage cp -r ${UPLOAD}/kops/* ${GCS_BUCKET}
 
 # gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
 .PHONY: gcs-upload-and-tag
 gcs-upload-and-tag: gsutil gcs-upload
-	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+	echo "${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+	gcloud storage cp ${UPLOAD}/${LATEST_FILE} ${GCS_BUCKET}/${LATEST_FILE}
 
 # gcs-publish-ci is the entry point for CI testing
 .PHONY: gcs-publish-ci
 gcs-publish-ci: gsutil version-dist-ci
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
+	gcloud storage cp -r ${UPLOAD}/kops/* ${GCS_BUCKET}
 	echo "VERSION: ${VERSION}"
-	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+	echo "${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+	gcloud storage cp ${UPLOAD}/${LATEST_FILE} ${GCS_BUCKET}/${LATEST_FILE}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
@@ -300,21 +308,21 @@ push-aws-run-amd64 push-aws-run-arm64: push-aws-run-%: push-%
 
 .PHONY: ${NODEUP}
 ${NODEUP}:
-	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
+	go build ${GCFLAGS} ${EXTRA_BUILDFLAGS} ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" -o $@ k8s.io/kops/cmd/nodeup
 
 .PHONY: dns-controller-push
 dns-controller-push: ko-dns-controller-push
 
 .PHONY: ko-dns-controller-push
 ko-dns-controller-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
+	KO_DOCKER_REPO="${DOCKER_IMAGE_REGISTRY}/dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
 
 .PHONY: kops-utils-cp-push
 kops-utils-cp-push: ko-kops-utils-cp-push
 
 .PHONY: ko-kops-utils-cp-push
 ko-kops-utils-cp-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-utils-cp" ${KO} build --tags ${KOPS_UTILS_CP_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-utils-cp/
+	KO_DOCKER_REPO="${DOCKER_IMAGE_REGISTRY}/kops-utils-cp" ${KO} build --tags ${KOPS_UTILS_CP_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-utils-cp/
 
 # --------------------------------------------------
 # development targets
@@ -791,7 +799,7 @@ kops-controller-push: ko-kops-controller-push
 
 .PHONY: ko-kops-controller-push
 ko-kops-controller-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
+	KO_DOCKER_REPO="${DOCKER_IMAGE_REGISTRY}/kops-controller" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
 
 #------------------------------------------------------
 # kube-apiserver-healthcheck
@@ -801,7 +809,7 @@ kube-apiserver-healthcheck-push: ko-kube-apiserver-healthcheck-push
 
 .PHONY: ko-kube-apiserver-healthcheck-push
 ko-kube-apiserver-healthcheck-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kube-apiserver-healthcheck" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
+	KO_DOCKER_REPO="${DOCKER_IMAGE_REGISTRY}/kube-apiserver-healthcheck" ${KO} build --tags ${KUBE_APISERVER_HEALTHCHECK_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kube-apiserver-healthcheck/
 
 #------------------------------------------------------
 # discovery-server
@@ -811,7 +819,7 @@ discovery-server-push: ko-discovery-server-push
 
 .PHONY: ko-discovery-server-push
 ko-discovery-server-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}discovery-server" ${KO} build --tags ${DISCOVERY_SERVER_TAG} --platform=linux/amd64,linux/arm64 --bare ./discovery/cmd/discovery-server/
+	KO_DOCKER_REPO="${DOCKER_IMAGE_REGISTRY}/discovery-server" ${KO} build --tags ${DISCOVERY_SERVER_TAG} --platform=linux/amd64,linux/arm64 --bare ./discovery/cmd/discovery-server/
 
 #------------------------------------------------------
 # CloudBuild artifacts

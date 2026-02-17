@@ -19,16 +19,7 @@
 GITSHA=$(git describe --always 2>/dev/null)
 
 # When we cut a new release we need to increment these accordingly
-KOPS_RELEASE_VERSION=$(grep 'KOPS_RELEASE_VERSION\s*=' kops-version.go  | awk '{print $3}' | sed -e 's_"__g')
-KOPS_CI_VERSION=$(grep 'KOPS_CI_VERSION\s*=' kops-version.go  |  awk '{print $3}' | sed -e 's_"__g')
-
-if [[ -z "${VERSION}" ]]; then
-  if [[ -z "${CI}" ]]; then
-    VERSION=${KOPS_RELEASE_VERSION}
-  else
-    VERSION="${KOPS_CI_VERSION}+${GITSHA}"
-  fi
-fi
+KOPS_RELEASE_VERSION=$(git describe --tags --always --dirty)
 
 # If we are CI-building something that is exactly a tag, then we use that as the version.
 # This let us do release (candidate) builds from our CI pipeline.
@@ -43,8 +34,8 @@ if [[ -n "${CI}" ]]; then
     fi
 fi
 
-echo "VERSION ${VERSION}"
+echo "VERSION ${KOPS_RELEASE_VERSION}"
 
 # IMAGE_TAG is like VERSION, but with + replaced by - (so it can be used in docker tags)
-IMAGE_TAG="${VERSION/+/-}"
+IMAGE_TAG="${KOPS_RELEASE_VERSION/+/-}"
 echo "IMAGE_TAG ${IMAGE_TAG}"
