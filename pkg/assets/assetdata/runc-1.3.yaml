@@ -9,3 +9,31 @@ files:
   sha256: 028986516ab5646370edce981df2d8e8a8d12188deaf837142a02097000ae2f2
 - name: v1.3.0/runc.arm64
   sha256: 85c5e4e4f72e442c8c17bac07527cd4f961ee48e4f2b71797f7533c94f4a52b9
+# runc 1.3.1
+- name: v1.3.1/SHA512
+  sha256: 'Hash:'
+- name: v1.3.1/runc.amd64
+  sha256: 53bfce31ca047e537e0767b21c9d529d4b5b3e1cb9c590ca81654f9a5615d80d
+- name: v1.3.1/runc.arm64
+  sha256: e531c276312ec701be7edf2b998ac4220c858d02d274bef5546945964792d074
+# runc 1.3.2
+- name: v1.3.2/SHA512
+  sha256: 'Hash:'
+- name: v1.3.2/runc.amd64
+  sha256: e7a8e30bd6d248f494aae9163521ff4eb112a30602ac56ada0871e3531269c2d
+- name: v1.3.2/runc.arm64
+  sha256: 06fbccb4528ecd490f3f333d6dcf22c876bd72a024813a0c0a46312121f4c5fd
+# runc 1.3.3
+- name: v1.3.3/SHA512
+  sha256: 'Hash:'
+- name: v1.3.3/runc.amd64
+  sha256: 8781ab9f71c12f314d21c8e85f13ca1a82d90cf475aa5131a7b543fcc5487543
+- name: v1.3.3/runc.arm64
+  sha256: 3c9a8e9e6dafd00db61f4611692447ebab4a56388bae4f82192aed67b66df712
+# runc 1.3.4
+- name: v1.3.4/SHA512
+  sha256: 'Hash:'
+- name: v1.3.4/runc.amd64
+  sha256: 5966ca40b6187b30e33bfc299c5f1fe72e8c1aa01cf3fefdadf391668f47f103
+- name: v1.3.4/runc.arm64
+  sha256: d6dcab36d1b6af1b72c7f0662e5fcf446a291271ba6006532b95c4144e19d428
