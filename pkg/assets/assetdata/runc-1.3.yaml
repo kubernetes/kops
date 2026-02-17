@@ -30,3 +30,10 @@ files:
   sha256: 8781ab9f71c12f314d21c8e85f13ca1a82d90cf475aa5131a7b543fcc5487543
 - name: v1.3.3/runc.arm64
   sha256: 3c9a8e9e6dafd00db61f4611692447ebab4a56388bae4f82192aed67b66df712
+# runc 1.3.4
+- name: v1.3.4/SHA512
+  sha256: 'Hash:'
+- name: v1.3.4/runc.amd64
+  sha256: 5966ca40b6187b30e33bfc299c5f1fe72e8c1aa01cf3fefdadf391668f47f103
+- name: v1.3.4/runc.arm64
+  sha256: d6dcab36d1b6af1b72c7f0662e5fcf446a291271ba6006532b95c4144e19d428
