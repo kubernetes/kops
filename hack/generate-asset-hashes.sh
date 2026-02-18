@@ -196,15 +196,15 @@ generate_k8s_hashes 1.28 15
 generate_k8s_hashes 1.29 15
 generate_k8s_hashes 1.30 14
 generate_k8s_hashes 1.31 14
-generate_k8s_hashes 1.32 11
-generate_k8s_hashes 1.33 7
-generate_k8s_hashes 1.34 3
-generate_k8s_hashes 1.35 0
+generate_k8s_hashes 1.32 12
+generate_k8s_hashes 1.33 8
+generate_k8s_hashes 1.34 4
+generate_k8s_hashes 1.35 1
 
 # Generate runc hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
 generate_runc_hashes 1.1 15
-generate_runc_hashes 1.2 6
+generate_runc_hashes 1.2 8
 generate_runc_hashes 1.3 4
 generate_runc_hashes 1.4 0
 
@@ -212,7 +212,7 @@ generate_runc_hashes 1.4 0
 generate_containerd_hashes 1.7 30
 generate_containerd_hashes 2.0 7
 generate_containerd_hashes 2.1 6
-generate_containerd_hashes 2.2 0
+generate_containerd_hashes 2.2 1
 
 # Generate CNI network plugins hashes.
 # Generate legacy CNI hashes, from storage.googleapis.com/k8s-artifacts-cni/release/
