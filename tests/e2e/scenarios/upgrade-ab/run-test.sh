@@ -92,7 +92,7 @@ ${KUBETEST2} \
     --kubernetes-version="${K8S_VERSION_A}" \
     --control-plane-size="${KOPS_CONTROL_PLANE_COUNT:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
-    --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-} ${create_args}"
+    --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-}"
 
 # Export kubeconfig-a
 KUBECONFIG_A=$(mktemp -t kops.XXXXXXXXX)
