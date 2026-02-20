@@ -163,6 +163,9 @@ kubectl rollout status deployment -n kueue-system kueue-controller-manager --tim
 echo "Verifying KubeRay..."
 kubectl rollout status deployment -n ray-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
 
+# echo "Verfying node-feature-discovery..."
+# kubectl rollout status deployment -n node-feature-discovery nfd-master --timeout=5m || echo "Warning: node-feature-discovery not ready yet"
+
 echo "Verifying Gateway API..."
 kubectl get gatewayclass || echo "Warning: GatewayClass not found"
 
