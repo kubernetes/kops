@@ -133,7 +133,7 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-echo "H4sIAAAAAAAA/2zOTUsDMRDG8ft+itzLdq0gaMBDDVhfcK3e6m2aTLUmk4kzidVvL7KnQu//H8/jErewFv7eBxRr4KCdS00rygiE1nimIqg6xx+gknDumTrHebd/vwFFawhpp3YY/KSOwuGkvs9aIXtcCbcyrRD8275pX1Frv4Dj6JUTWuM4V+G0TpCxGzlgK9ORO9APaxYPty1cvZHODsvN4+8ynz3FuIrPny+bmQxbupAxXn6l822I190fAAAA//8BAAD//9GcVD73AAAA" | base64 -d | gzip -d > conf/kube_env.yaml
+echo "H4sIAAAAAAAA/2zOwUoDMRDG8XueInfZxh50MeClEbcWXdai4nXMTu1CkgkzSas+vcieFrz/f3yfC1THgek0jchWw1mUC1UKcg8RrfYUM6PICr8g5oArT1E5SofpcwOCVkeMB7HG+FktQvOvfkhSIHnsmGqeVyL82aZKU1BKs4ZltKeAVjtKhSkMARKqnkaseT6yBTla7d/OdcPvr7tTe7z+mT7uh+0uX7jHvpWXfWdu7p66qzZd8vf6+Vb9AgAA//8BAAD//303Hf33AAAA" | base64 -d | gzip -d > conf/kube_env.yaml
 
 download-release
 echo "== nodeup node config done =="
