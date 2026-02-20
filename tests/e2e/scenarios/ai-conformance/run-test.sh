@@ -167,7 +167,7 @@ kubectl rollout status deployment -n ray-system kuberay-operator --timeout=5m ||
 # kubectl rollout status deployment -n node-feature-discovery nfd-master --timeout=5m || echo "Warning: node-feature-discovery not ready yet"
 
 echo "Verifying Gateway API..."
-kubectl get gatewayclass || echo "Warning: GatewayClass not found"
+kubectl get crd gatewayclasses.gateway.networking.k8s.io || echo "Warning: GatewayClass CRD not found"
 
 echo "Verifying Allocatable GPUs..."
 # Wait a bit for nodes to report resources
