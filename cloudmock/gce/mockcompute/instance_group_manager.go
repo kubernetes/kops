@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -28,14 +29,20 @@ import (
 type instanceGroupManagerClient struct {
 	// instanceGroupManagers are instanceGroupManagers keyed by project, zone, and name.
 	instanceGroupManagers map[string]map[string]map[string]*compute.InstanceGroupManager
+	// managedInstances are managedInstances keyed by project, zone, and name.
+	managedInstances map[string]map[string]map[string]*compute.ManagedInstance
+	// instanceClient is the client for instances.
+	instanceClient gce.InstanceClient
 	sync.Mutex
 }
 
 var _ gce.InstanceGroupManagerClient = &instanceGroupManagerClient{}
 
-func newInstanceGroupManagerClient() *instanceGroupManagerClient {
+func newInstanceGroupManagerClient(instanceClient gce.InstanceClient) *instanceGroupManagerClient {
 	return &instanceGroupManagerClient{
 		instanceGroupManagers: map[string]map[string]map[string]*compute.InstanceGroupManager{},
+		managedInstances:      map[string]map[string]map[string]*compute.ManagedInstance{},
+		instanceClient:        instanceClient,
 	}
 }
 
@@ -56,18 +63,40 @@ func (c *instanceGroupManagerClient) All() map[string]interface{} {
 func (c *instanceGroupManagerClient) Insert(project, zone string, igm *compute.InstanceGroupManager) (*compute.Operation, error) {
 	c.Lock()
 	defer c.Unlock()
-	zones, ok := c.instanceGroupManagers[project]
+	igmZones, ok := c.instanceGroupManagers[project]
 	if !ok {
-		zones = map[string]map[string]*compute.InstanceGroupManager{}
-		c.instanceGroupManagers[project] = zones
+		igmZones = map[string]map[string]*compute.InstanceGroupManager{}
+		c.instanceGroupManagers[project] = igmZones
 	}
-	igms, ok := zones[zone]
+	igms, ok := igmZones[zone]
 	if !ok {
 		igms = map[string]*compute.InstanceGroupManager{}
-		zones[zone] = igms
+		igmZones[zone] = igms
 	}
 	igm.SelfLink = fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instanceGroupManagers/%s", project, zone, igm.Name)
 	igms[igm.Name] = igm
+
+	newInstance := &compute.Instance{
+		Name: igm.Name,
+	}
+
+	c.instanceClient.Insert(project, zone, newInstance)
+
+	instanceZones, ok := c.managedInstances[project]
+	if !ok {
+		instanceZones = map[string]map[string]*compute.ManagedInstance{}
+		c.managedInstances[project] = instanceZones
+	}
+	_, ok = instanceZones[zone]
+	if !ok {
+		instanceZones[zone] = map[string]*compute.ManagedInstance{}
+	}
+
+	c.managedInstances[project][zone][igm.Name] = &compute.ManagedInstance{
+		Name:     igm.Name,
+		Instance: fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instances/%s", project, zone, igm.Name),
+	}
+
 	return doneOperation(), nil
 }
 
@@ -126,8 +155,23 @@ func (c *instanceGroupManagerClient) List(ctx context.Context, project, zone str
 }
 
 func (c *instanceGroupManagerClient) ListManagedInstances(ctx context.Context, project, zone, name string) ([]*compute.ManagedInstance, error) {
-	var instances []*compute.ManagedInstance
-	return instances, nil
+	c.Lock()
+	defer c.Unlock()
+
+	zones, ok := c.managedInstances[project]
+	if !ok {
+		return nil, nil
+	}
+	instances, ok := zones[zone]
+	if !ok {
+		return nil, nil
+	}
+
+	var l []*compute.ManagedInstance
+	for _, instance := range instances {
+		l = append(l, instance)
+	}
+	return l, nil
 }
 
 func (c *instanceGroupManagerClient) RecreateInstances(project, zone, name, id string) (*compute.Operation, error) {
@@ -143,5 +187,28 @@ func (c *instanceGroupManagerClient) SetInstanceTemplate(project, zone, name, in
 }
 
 func (c *instanceGroupManagerClient) Resize(project, zone, name string, newSize int64) (*compute.Operation, error) {
+	go func() {
+		if newSize == 0 {
+			// Simulates a Long Operation when resizing
+			time.Sleep(20 * time.Millisecond)
+
+			c.Lock()
+			defer c.Unlock()
+
+			// Delete all Instances from GCE
+			for _, zones := range c.managedInstances[project] {
+				for _, instance := range zones {
+					c.instanceClient.Delete(project, zone, instance.Name)
+				}
+			}
+
+			zones, ok := c.managedInstances[project]
+			if !ok {
+				return
+			}
+
+			zones[zone] = nil
+		}
+	}()
 	return doneOperation(), nil
 }

@@ -44,6 +44,26 @@ func DeleteInstanceGroupManager(c GCECloud, t *compute.InstanceGroupManager) err
 	return c.WaitForOp(op)
 }
 
+// DeleteMIGInstances deletes the instances in the MIG in GCE
+func DeleteMIGInstances(c GCECloud, t *compute.InstanceGroupManager) error {
+	klog.V(2).Infof("Deleting Instances in InstanceGroupManager %s", t.SelfLink)
+	u, err := ParseGoogleCloudURL(t.SelfLink)
+	if err != nil {
+		return err
+	}
+
+	op, err := c.Compute().InstanceGroupManagers().Resize(u.Project, u.Zone, u.Name, 0)
+	if err != nil {
+		if IsNotFound(err) {
+			klog.Infof("InstanceGroupManager not found, assuming deleted: %q", t.SelfLink)
+			return nil
+		}
+		return fmt.Errorf("error resizing InstanceGroupManager %s to 0: %w", t.SelfLink, err)
+	}
+
+	return c.WaitForOp(op)
+}
+
 // DeleteInstanceTemplate deletes the specified InstanceTemplate (by URL) in GCE
 func DeleteInstanceTemplate(c GCECloud, selfLink string) error {
 	klog.V(2).Infof("Deleting GCE InstanceTemplate %s", selfLink)
