@@ -23,6 +23,8 @@ import (
 	"hash/fnv"
 	"strings"
 
+	"time"
+
 	compute "google.golang.org/api/compute/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -31,15 +33,43 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// PollingInterval is the polling interval to use when waiting for all MIG Instances to be deleted
+var PollingInterval = 5 * time.Second
+
 // DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
 func (c *gceCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	return deleteCloudInstanceGroup(c, g)
+	return DeleteCloudInstanceGroup(c, g)
 }
 
-// deleteCloudInstanceGroup deletes the InstanceGroupManager and current InstanceTemplate
-func deleteCloudInstanceGroup(c GCECloud, g *cloudinstances.CloudInstanceGroup) error {
+// DeleteCloudInstanceGroup deletes the InstanceGroupManager and current InstanceTemplate
+func DeleteCloudInstanceGroup(c GCECloud, g *cloudinstances.CloudInstanceGroup) error {
 	mig := g.Raw.(*compute.InstanceGroupManager)
-	err := DeleteInstanceGroupManager(c, mig)
+	err := DeleteMIGInstances(c, mig)
+	if err != nil {
+		return err
+	}
+
+	timeout := time.Now().Add(10 * time.Minute)
+
+	klog.Infof("Waiting for instances in MIG %q to terminate...", mig.Name)
+	for {
+		if time.Now().After(timeout) {
+			return fmt.Errorf("timed out waiting for instances in MIG %q to terminate", mig.Name)
+		}
+
+		instances, err := ListManagedInstances(c, mig)
+		if err != nil {
+			return fmt.Errorf("error listing managed instances for %q: %v", mig.Name, err)
+		}
+		if len(instances) == 0 {
+			klog.Infof("All instances in MIG %q terminated", mig.Name)
+			break
+		}
+		klog.Infof("%d instance(s) remaining in MIG %q, waiting...", len(instances), mig.Name)
+		time.Sleep(PollingInterval)
+	}
+
+	err = DeleteInstanceGroupManager(c, mig)
 	if err != nil {
 		return err
 	}
@@ -88,10 +118,10 @@ func recreateCloudInstance(c GCECloud, i *cloudinstances.CloudInstance) error {
 
 // GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
 func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+	return GetCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
-func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
 	project := c.Project()
