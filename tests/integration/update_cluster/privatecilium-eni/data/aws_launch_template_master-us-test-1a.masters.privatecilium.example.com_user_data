@@ -126,7 +126,7 @@ ClusterName: privatecilium.example.com
 ConfigBase: memfs://clusters.example.com/privatecilium.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: cE2/63q/6IgnXs4Gj/VBFIm6IcwB8eyGVBhBRzQdQ68=
+NodeupConfigHash: 8ri898eSELD96zBXq6X5EUp0cB9NFGhcsKlkCcL1qvY=
 
 __EOF_KUBE_ENV
 
