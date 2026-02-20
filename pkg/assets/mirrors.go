@@ -34,15 +34,6 @@ var wellKnownMirrors = []mirrorConfig{
 			"https://github.com/kubernetes/kops/releases/download/v{kopsVersion}/",
 		},
 	},
-	{
-		Base: "https://storage.googleapis.com/k8s-artifacts-cni/release/",
-		Mirrors: []string{
-			"https://github.com/containernetworking/plugins/releases/download/",
-		},
-	},
-	{
-		Base: "https://dl.k8s.io/release/",
-	},
 }
 
 func (m *mirrorConfig) findMirrors(u string) ([]string, bool) {
