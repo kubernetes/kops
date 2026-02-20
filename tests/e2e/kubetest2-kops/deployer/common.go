@@ -58,7 +58,14 @@ func (d *deployer) initialize() error {
 	}
 	switch d.CloudProvider {
 	case "aws":
-		d.region = d.zones[0][:len(d.zones[0])-1]
+		if d.region == "" {
+			// Default to us-east-2, but use the region implied by the first zone if possible
+			if len(d.zones) == 0 {
+				d.region = "us-east-2"
+			} else {
+				d.region = d.zones[0][:len(d.zones[0])-1]
+			}
+		}
 		client, err := aws.NewClient(context.Background(), d.region)
 		if err != nil {
 			return fmt.Errorf("init failed to build AWS client: %w", err)
