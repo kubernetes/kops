@@ -36,14 +36,16 @@ export CLOUD_PROVIDER=aws
 export AWS_REGION="${AWS_REGION:-us-east-2}"
 SCENARIO_ROOT="${REPO_ROOT}/tests/e2e/scenarios/ai-conformance"
 
+
 # Check for g6.xlarge availability in the region
 echo "Checking availability of g6.xlarge in ${AWS_REGION}..."
 (cd "${SCENARIO_ROOT}/tools/check-aws-availability" && go build -o check-aws-availability main.go)
-AVAILABILITY=$("${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability" -region "${AWS_REGION}" -instance-type g6.xlarge)
-if [[ "${AVAILABILITY}" == "false" ]]; then
-  echo "Error: g6.xlarge instances are not available in ${AWS_REGION}. Please choose a region with L4 GPU support."
-  exit 1
-fi
+# Run and source the output to get the ZONES variable
+source <("${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability" -region "${AWS_REGION}" -instance-type g6.xlarge)
+
+echo "ZONES=${ZONES}"
+export ZONES
+
 rm -f "${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability"
 
 
