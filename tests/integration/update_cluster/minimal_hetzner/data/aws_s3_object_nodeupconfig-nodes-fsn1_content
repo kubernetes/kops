@@ -1,13 +1,13 @@
 Assets:
   amd64:
-  - 5ad4965598773d56a37a8e8429c3dc3d86b4c5c26d8417ab333ae345c053dae2@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet
-  - 646d58f6d98ee670a71d9cdffbf6625aeea2849d567f214bc43a35f8ccb7bf70@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl
+  - 5ad4965598773d56a37a8e8429c3dc3d86b4c5c26d8417ab333ae345c053dae2@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubelet
+  - 646d58f6d98ee670a71d9cdffbf6625aeea2849d567f214bc43a35f8ccb7bf70@https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl
   - b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090@https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
   - 403af72d9f956ed8a5ad5b0ac0f1e8e371a1488f2b9edf9b4ba13db0653936ea@https://github.com/containerd/containerd/releases/download/v2.1.5/containerd-2.1.5-linux-amd64.tar.gz
   - 8781ab9f71c12f314d21c8e85f13ca1a82d90cf475aa5131a7b543fcc5487543@https://github.com/opencontainers/runc/releases/download/v1.3.3/runc.amd64
   arm64:
-  - bda9b2324c96693b38c41ecea051bab4c7c434be5683050b5e19025b50dbc0bf@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
-  - ba4004f98f3d3a7b7d2954ff0a424caa2c2b06b78c17b1dccf2acc76a311a896@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl,https://cdn.dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl
+  - bda9b2324c96693b38c41ecea051bab4c7c434be5683050b5e19025b50dbc0bf@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
+  - ba4004f98f3d3a7b7d2954ff0a424caa2c2b06b78c17b1dccf2acc76a311a896@https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubectl
   - 01e0e22acc7f7004e4588c1fe1871cc86d7ab562cd858e1761c4641d89ebfaa4@https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz
   - fe81122c0cc8222470fa3be51f42fa918ac29ffd956ccd2fc408c1997babd2ca@https://github.com/containerd/containerd/releases/download/v2.1.5/containerd-2.1.5-linux-arm64.tar.gz
   - 3c9a8e9e6dafd00db61f4611692447ebab4a56388bae4f82192aed67b66df712@https://github.com/opencontainers/runc/releases/download/v1.3.3/runc.arm64

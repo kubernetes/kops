@@ -126,7 +126,7 @@ ClusterName: cas-priority-expander.example.com
 ConfigBase: memfs://clusters.example.com/cas-priority-expander.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Dv8pfFS/dLSWpa7YKHAt5ksowb+j6KrSd/7WAenzKHo=
+NodeupConfigHash: /mELCJ7y9pdHhF6fDST3+MLwfiqCSif0B2f/v/x+QBA=
 
 __EOF_KUBE_ENV
 
