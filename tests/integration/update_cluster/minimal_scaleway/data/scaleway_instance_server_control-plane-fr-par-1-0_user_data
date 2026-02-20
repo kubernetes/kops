@@ -132,7 +132,7 @@ ClusterName: scw-minimal.k8s.local
 ConfigBase: memfs://tests/scw-minimal.k8s.local
 InstanceGroupName: control-plane-fr-par-1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Cvh4OMb1R+HjXuXQpPKC4VXUkGgPGrc2VcMYrqpqyE4=
+NodeupConfigHash: K+avUt3HFHuApy5zrERc0t6Ft+OcOLaro2ypUNvR9v4=
 
 __EOF_KUBE_ENV
 
