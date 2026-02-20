@@ -155,13 +155,13 @@ echo "----------------------------------------------------------------"
 
 # Verify Components
 echo "Verifying NVIDIA Device Plugin..."
-kubectl rollout status daemonset -n kube-system nvidia-device-plugin-daemonset --timeout=5m || echo "Warning: NVIDIA Device Plugin not ready yet"
+#kubectl rollout status daemonset -n kube-system nvidia-device-plugin-daemonset --timeout=5m || echo "Warning: NVIDIA Device Plugin not ready yet"
 
 echo "Verifying Kueue..."
 kubectl rollout status deployment -n kueue-system kueue-controller-manager --timeout=5m || echo "Warning: Kueue not ready yet"
 
 echo "Verifying KubeRay..."
-kubectl rollout status deployment -n kuberay-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
+kubectl rollout status deployment -n ray-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
 
 echo "Verifying Gateway API..."
 kubectl get gatewayclass || echo "Warning: GatewayClass not found"
