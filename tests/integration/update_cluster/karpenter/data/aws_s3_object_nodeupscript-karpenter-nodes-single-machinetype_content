@@ -149,7 +149,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal.example.com:3988/
 InstanceGroupName: karpenter-nodes-single-machinetype
 InstanceGroupRole: Node
-NodeupConfigHash: u0jY8nYldYyIpH6V/500jPxHRcEEMGSbxHgk2GkLmw8=
+NodeupConfigHash: FGGGKhdo5tFpAuTRfbwwAelUxczxXXUK6om2yoPp4VU=
 
 __EOF_KUBE_ENV
 
