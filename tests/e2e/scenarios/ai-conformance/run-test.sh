@@ -142,6 +142,15 @@ kubeletPlugin:
     effect: NoSchedule
 EOF
 
+cat > values.yaml <<EOF
+# The driver daemonset needs a toleration for the nvidia.com/gpu taint
+kubeletPlugin:
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+EOF
+
 helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --version="25.12.0" \
     --create-namespace \
