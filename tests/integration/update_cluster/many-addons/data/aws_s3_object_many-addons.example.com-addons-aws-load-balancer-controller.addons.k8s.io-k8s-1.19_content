@@ -1440,6 +1440,9 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+    - key: app.kubernetes.io/instance
+      operator: NotIn
+      values:
       - cert-manager
   rules:
   - apiGroups:
@@ -1472,6 +1475,9 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+    - key: app.kubernetes.io/instance
+      operator: NotIn
+      values:
       - cert-manager
   rules:
   - apiGroups:
@@ -1533,6 +1539,10 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+    - key: app.kubernetes.io/instance
+      operator: NotIn
+      values:
+      - cert-manager
   rules:
   - apiGroups:
     - elbv2.k8s.aws
