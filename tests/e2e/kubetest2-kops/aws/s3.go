@@ -69,19 +69,23 @@ func NewClient(ctx context.Context, region string) (*Client, error) {
 // BucketName constructs an unique bucket name using the AWS account ID in the default region (us-east-2).
 func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, error) {
 	// Construct the bucket name based on the ProwJob ID (if running in Prow) or AWS account ID (if running outside
-	// Prow) and the current timestamp
-	var identifier string
-	if jobID := os.Getenv("BUILD_ID"); len(jobID) >= 4 {
-		identifier = jobID[len(jobID)-4:]
+	// Prow) and a timestamp. When BUILD_ID is set we use it in place of time.Now() so that multiple kubetest2-kops
+	// invocations within the same CI job (e.g. upgrade tests) resolve to the same bucket name.
+	var suffix string
+	if jobID := os.Getenv("BUILD_ID"); jobID != "" {
+		if len(jobID) > 14 {
+			suffix = jobID[:14]
+		} else {
+			suffix = jobID
+		}
 	} else {
 		callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 		if err != nil {
 			return "", fmt.Errorf("building AWS STS presigned request: %w", err)
 		}
-		identifier = *callerIdentity.Account
+		suffix = *callerIdentity.Account + "-" + time.Now().Format("20060102150405")
 	}
-	timestamp := time.Now().Format("20060102150405")
-	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s-%s", bucketType, identifier, timestamp)
+	bucket := fmt.Sprintf("k8s-infra-kops-%s-%s", bucketType, suffix)
 
 	bucket = strings.ToLower(bucket)
 	// Only allow lowercase letters, numbers, and hyphens
