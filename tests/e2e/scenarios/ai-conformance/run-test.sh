@@ -21,6 +21,21 @@ set -o pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
+# Install binaries onto path: helm
+BIN_DIR=${REPO_ROOT}/.build/bin
+mkdir -p "${BIN_DIR}"
+PATH="${BIN_DIR}:$PATH"
+export PATH
+
+echo "Installing Helm..."
+curl -fsSL -o ${BIN_DIR}/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 ${BIN_DIR}/get_helm.sh
+USE_SUDO=false HELM_INSTALL_DIR="${BIN_DIR}" ${BIN_DIR}/get_helm.sh
+
+# Setup helm repos
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
+
 # AI Conformance requirements:
 # - Kubernetes 1.35
 # - NVIDIA L4 Instances (g6.xlarge on AWS)
@@ -110,9 +125,6 @@ helm upgrade -i nvidia-gpu-operator --wait \
     nvidia/gpu-operator \
     --version=v25.10.1 \
     --wait
-
-PATH="$(pwd):$PATH"
-export PATH
 
 # NVIDIA DRA Driver
 # Uses the driver installed by GPU Operator at /run/nvidia/driver (the default).
