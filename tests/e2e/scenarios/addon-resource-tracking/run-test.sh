@@ -17,30 +17,27 @@
 REPO_ROOT=$(git rev-parse --show-toplevel);
 TEST_ROOT="${REPO_ROOT}/tests/e2e/scenarios/addon-resource-tracking"
 
-export KOPS_FEATURE_FLAGS="SpecOverrideFlag"
-
 make test-e2e-install
 
-# Download kOps 1.29.2 to create the initial cluster
-export KOPS_BASE_URL="https://artifacts.k8s.io/binaries/kops/1.29.2"
-KOPS_BIN=$(mktemp -t kops.XXXXXXXXX)
-wget -qO "${KOPS_BIN}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
-chmod +x "${KOPS_BIN}"
+KUBETEST2_ARGS=()
+KUBETEST2_ARGS+=("-v=2")
+
+if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
+  KUBETEST2_ARGS+=("--build")
+  KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
+else
+  KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
+fi
 
 # Create cluster with nodeTerminationHandler enabled (DaemonSet mode)
 CREATE_ARGS="--networking calico"
 CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enabled=true"
 CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enableSQSTerminationDraining=false"
 
-KUBETEST2_ARGS=()
-KUBETEST2_ARGS+=("-v=2")
-KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
-KUBETEST2_ARGS+=("--kops-binary-path=${KOPS_BIN}")
-
 kubetest2 kops \
     --up --down \
     "${KUBETEST2_ARGS[@]}" \
     --cloud-provider=aws \
     --create-args="${CREATE_ARGS}" \
-    --kubernetes-version="1.29.8" \
+    --kubernetes-version="https://dl.k8s.io/release/stable.txt" \
     --test=exec -- "${TEST_ROOT}/test.sh"
