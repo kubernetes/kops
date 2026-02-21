@@ -42,9 +42,8 @@ CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
 # Switch to queue mode. This should remove the DS and install a Deployment instead
 "${KOPS}" edit cluster "${CLUSTER_NAME}" "--set=cluster.spec.cloudProvider.aws.nodeTerminationHandler.enableSQSTerminationDraining=true"
 
-# allow downgrade is a bug where the version written to VFS is not the same as the running version.
-"${KOPS}" update cluster --allow-kops-downgrade
-"${KOPS}" update cluster --yes --allow-kops-downgrade
+"${KOPS}" update cluster
+"${KOPS}" update cluster --yes
 
 # Rolling-upgrade is needed so we get the new channels binary that supports prune
 "${KOPS}" rolling-update cluster --instance-group-roles=master --yes
