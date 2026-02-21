@@ -1014,7 +1014,6 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, 
 		"elasticloadbalancing:ModifyListenerAttributes",
 		"elasticloadbalancing:ModifyLoadBalancerAttributes",
 		"elasticloadbalancing:ModifyRule",
-		"elasticloadbalancing:SetRulePriorities",
 		"elasticloadbalancing:ModifyTargetGroup",
 		"elasticloadbalancing:ModifyTargetGroupAttributes",
 		"elasticloadbalancing:RegisterTargets",
@@ -1029,6 +1028,9 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, 
 		"elasticloadbalancing:CreateLoadBalancer",
 		"elasticloadbalancing:CreateRule",
 		"elasticloadbalancing:CreateTargetGroup",
+	)
+	p.unconditionalAction.Insert(
+		"elasticloadbalancing:SetRulePriorities",
 	)
 	p.AddEC2CreateAction(
 		[]string{
