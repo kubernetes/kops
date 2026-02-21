@@ -101,6 +101,9 @@ EOF
 
 ${KOPS} update cluster --name "${CLUSTER_NAME}" --yes --admin
 
+# TODO: Can we delay this until later?
+${KOPS} validate cluster --wait=10m
+
 echo "----------------------------------------------------------------"
 echo "Deploying AI Conformance Components"
 echo "----------------------------------------------------------------"
