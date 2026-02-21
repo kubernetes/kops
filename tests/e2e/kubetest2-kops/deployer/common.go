@@ -249,6 +249,10 @@ func (d *deployer) env() []string {
 		"KOPS_RUN_TOO_NEW_VERSION=1",
 	}...)
 
+	if d.ClusterName != "" {
+		vars = append(vars, fmt.Sprintf("CLUSTER_NAME=%v", d.ClusterName))
+	}
+
 	if d.BuildOptions.TargetBuildArch != "" {
 		vars = append(vars, fmt.Sprintf("KOPS_ARCH=%s", strings.Trim(d.BuildOptions.TargetBuildArch, "linux/")))
 	}
