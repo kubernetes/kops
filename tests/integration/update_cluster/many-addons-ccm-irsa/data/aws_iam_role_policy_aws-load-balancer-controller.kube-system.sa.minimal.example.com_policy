@@ -59,7 +59,8 @@
         "elasticloadbalancing:DescribeTargetGroupAttributes",
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
-        "elasticloadbalancing:DescribeTrustStores"
+        "elasticloadbalancing:DescribeTrustStores",
+        "elasticloadbalancing:SetRulePriorities"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -87,7 +88,6 @@
         "elasticloadbalancing:RemoveListenerCertificates",
         "elasticloadbalancing:RemoveTags",
         "elasticloadbalancing:SetIpAddressType",
-        "elasticloadbalancing:SetRulePriorities",
         "elasticloadbalancing:SetSecurityGroups",
         "elasticloadbalancing:SetSubnets"
       ],
