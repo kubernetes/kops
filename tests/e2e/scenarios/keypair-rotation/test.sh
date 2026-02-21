@@ -18,12 +18,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# Download latest kops binary
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt)"
-KOPS=$(mktemp -t kops.XXXXXXXXX)
-wget -qO "${KOPS}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
-chmod +x "${KOPS}"
-
 REPORT_DIR="${ARTIFACTS:-$(pwd)/_artifacts}/keypair-rotation"
 mkdir -p "${REPORT_DIR}"
 

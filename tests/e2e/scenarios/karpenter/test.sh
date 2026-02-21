@@ -90,12 +90,6 @@ YAML
 # Wait for the nodes to start being provisioned
 sleep 30
 
-# Download kops to validate cluster
-KOPS_BASE_URL="$(curl -s https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt)"
-KOPS=$(mktemp -t kops.XXXXXXXXX)
-wget -qO "${KOPS}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/kops"
-chmod +x "${KOPS}"
-
 # Wait for the nodes to be ready
 "${KOPS}" validate cluster --wait=10m
 
