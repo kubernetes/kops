@@ -36,7 +36,6 @@ export CLOUD_PROVIDER=aws
 export AWS_REGION="${AWS_REGION:-us-east-2}"
 SCENARIO_ROOT="${REPO_ROOT}/tests/e2e/scenarios/ai-conformance"
 
-
 # Check for g6.xlarge availability in the region
 echo "Checking availability of g6.xlarge in ${AWS_REGION}..."
 (cd "${SCENARIO_ROOT}/tools/check-aws-availability" && go build -o check-aws-availability main.go)
