@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	osexec "os/exec"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -51,7 +50,7 @@ func (d *deployer) Up() error {
 	// kops is fetched when --up is called instead of init to support a scenario where k/k is being built
 	// and a kops build is not ready yet
 	if d.KopsVersionMarker != "" || d.KopsVersion != "" {
-		d.KopsBinaryPath = path.Join(d.commonOptions.RunDir(), "kops")
+		d.KopsBinaryPath = d.resolvedKopsBinaryPath()
 		baseURL, err := kops.DownloadKops(d.KopsVersionMarker, d.KopsBinaryPath, d.KopsVersion)
 		if err != nil {
 			return fmt.Errorf("init failed to download kops from url: %v", err)

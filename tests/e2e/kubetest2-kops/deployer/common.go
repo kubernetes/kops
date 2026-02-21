@@ -304,6 +304,10 @@ func (d *deployer) env() []string {
 		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", os.Getenv("KOPS_BASE_URL")))
 	}
 
+	if kopsBin := d.resolvedKopsBinaryPath(); kopsBin != "" {
+		vars = append(vars, fmt.Sprintf("KOPS=%v", kopsBin))
+	}
+
 	// Pass through OpenTelemetry flags
 	{
 		foundOTEL := false
@@ -479,6 +483,21 @@ func (d *deployer) stagingStore() string {
 	}
 	d.stagingStoreName = sb
 	return sb
+}
+
+// resolvedKopsBinaryPath returns the path where the kops binary either is or will be placed.
+// When --kops-binary-path is provided it returns that value directly.
+// When --kops-version-marker or --kops-version is used, Up() downloads the binary to a
+// deterministic location under RunDir; this method returns that same path so callers
+// (including env()) can reference it before Up() has run.
+func (d *deployer) resolvedKopsBinaryPath() string {
+	if d.KopsBinaryPath != "" {
+		return d.KopsBinaryPath
+	}
+	if d.KopsVersionMarker != "" || d.KopsVersion != "" {
+		return filepath.Join(d.commonOptions.RunDir(), "kops")
+	}
+	return ""
 }
 
 // the default is $ARTIFACTS if set, otherwise ./_artifacts
