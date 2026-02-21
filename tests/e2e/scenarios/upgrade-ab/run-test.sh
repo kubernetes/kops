@@ -122,6 +122,7 @@ KOPS="${KOPS_B}"
 kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
 
 cp "${KOPS_B}" "${WORKSPACE}/kops"
+export PATH="${WORKSPACE}:${PATH}"
 
 "${KOPS_B}" export kubecfg --name "${CLUSTER_NAME}" --admin
 
