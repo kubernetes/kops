@@ -32,7 +32,7 @@ fi
 CREATE_ARGS="--networking amazonvpc"
 CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.cloudProvider.aws.loadBalancerController.enabled=true"
 CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.certManager.enabled=true"
-CREATE_ARGS="${CREATE_ARGS} --control-plane-size=t3.medium --node-size=t3.medium"
+CREATE_ARGS="${CREATE_ARGS} --control-plane-size=m6a.large --node-size=t3.medium"
 CREATE_ARGS="${CREATE_ARGS} --image=${INSTANCE_IMAGE:-ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id}"
 CREATE_ARGS="${CREATE_ARGS} --zones=eu-west-1a,eu-west-1b,eu-west-1c"
 
