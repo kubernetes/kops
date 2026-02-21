@@ -18,7 +18,9 @@ package aws
 
 import (
 	"errors"
-	"math/rand"
+	"hash/fnv"
+	"math/rand/v2"
+	"os"
 	"sort"
 )
 
@@ -90,8 +92,21 @@ var allZones = []string{
 // ErrNoEligibleRegion indicates the requested number of zones is not available in any region
 var ErrNoEligibleRegion = errors.New("No eligible AWS region found with enough zones")
 
+// newRand returns a seeded Rand. If the BUILD_ID environment variable is set it
+// is used as the seed so that zone selection is deterministic for a given build.
+// Otherwise a randomly seeded Rand is returned.
+func newRand() *rand.Rand {
+	if buildID := os.Getenv("BUILD_ID"); buildID != "" {
+		h := fnv.New64a()
+		h.Write([]byte(buildID))
+		return rand.New(rand.NewPCG(h.Sum64(), 0))
+	}
+	return rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
+}
+
 // RandomZones returns a random set of availability zones within a region
 func RandomZones(count int) ([]string, error) {
+	rng := newRand()
 	regions := make(map[string][]string)
 	for _, zone := range allZones {
 		region := zone[:len(zone)-1]
@@ -106,10 +121,14 @@ func RandomZones(count int) ([]string, error) {
 	if len(eligibleRegions) == 0 {
 		return nil, ErrNoEligibleRegion
 	}
-	chosenRegion := eligibleRegions[rand.Int()%len(eligibleRegions)]
+	// Sort so that seeded selection is deterministic regardless of map iteration order.
+	sort.Slice(eligibleRegions, func(i, j int) bool {
+		return eligibleRegions[i][0] < eligibleRegions[j][0]
+	})
+	chosenRegion := eligibleRegions[rng.IntN(len(eligibleRegions))]
 
-	chosenZones := make([]string, 0)
-	randIndexes := rand.Perm(len(chosenRegion))
+	chosenZones := make([]string, 0, count)
+	randIndexes := rng.Perm(len(chosenRegion))
 	for i := 0; i < count; i++ {
 		chosenZones = append(chosenZones, chosenRegion[randIndexes[i]])
 	}
