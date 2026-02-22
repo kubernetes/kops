@@ -154,6 +154,12 @@ func (d *deployer) writeEnvFile(ctx context.Context) error {
 
 	log.V(2).Info("writing env file", "path", d.EnvFile)
 	env := d.env()
+
+	// Also export cluster name, in case we generated it
+	if d.ClusterName != "" {
+		env = append(env, fmt.Sprintf("CLUSTER_NAME=%v", d.ClusterName))
+	}
+
 	data := strings.Join(env, "\n") + "\n"
 	if err := os.WriteFile(d.EnvFile, []byte(data), 0o644); err != nil {
 		return fmt.Errorf("error writing env file %q: %v", d.EnvFile, err)
