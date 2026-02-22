@@ -56,7 +56,7 @@ OVERRIDES="${OVERRIDES-} --networking=cilium"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
 OVERRIDES="${OVERRIDES} --node-size=g6.xlarge"
 OVERRIDES="${OVERRIDES} --node-count=2"
-OVERRIDES="${OVERRIDES} --set=cluster.spec.containerd.nvidia.enabled=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.containerd.nvidiaGPU.enabled=true"
 
 kops-up
 
