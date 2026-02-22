@@ -51,14 +51,39 @@ kops-acquire-latest
 
 # Cluster Configuration
 # - Networking: Cilium with Gateway API enabled
-# - Nodes: g6.xlarge (L4 GPU)
+# - Nodes: c5.large (we need some non-GPU nodes for non-GPU workloads)
 # - NVIDIA driver and runtime are managed by GPU Operator (not kOps)
 OVERRIDES="${OVERRIDES-} --networking=cilium"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
-OVERRIDES="${OVERRIDES} --node-size=g6.xlarge"
+OVERRIDES="${OVERRIDES} --node-size=c5.large"
 OVERRIDES="${OVERRIDES} --node-count=2"
+OVERRIDES="${OVERRIDES} --zones=us-east-2a,us-east-2b,us-east-2c"
 
 kops-up
+
+# Now add an instance group for GPU nodes with the appropriate labels for NVIDIA DRA
+# TODO: find zones, match images, etc. rather than hard-coding
+${KOPS} create --name "${CLUSTER_NAME}" -f - <<EOF
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  name: gpu-nodes
+  labels:
+    kops.k8s.io/cluster: ${CLUSTER_NAME}
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212
+  machineType: g6.xlarge
+  maxSize: 3
+  minSize: 1
+  role: Node
+  rootVolumeSize: 48
+  subnets:
+  - us-east-2a
+  - us-east-2b
+  - us-east-2c
+EOF
+
+${KOPS} update cluster --name "${CLUSTER_NAME}" --yes --admin
 
 echo "----------------------------------------------------------------"
 echo "Deploying AI Conformance Components"
