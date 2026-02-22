@@ -142,15 +142,6 @@ kubeletPlugin:
     effect: NoSchedule
 EOF
 
-cat > values.yaml <<EOF
-# The driver daemonset needs a toleration for the nvidia.com/gpu taint
-kubeletPlugin:
-  tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-    effect: NoSchedule
-EOF
-
 helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --version="25.12.0" \
     --create-namespace \
@@ -178,9 +169,8 @@ echo "----------------------------------------------------------------"
 # Wait for kOps validation
 "${KOPS}" validate cluster --wait=15m
 
-# Verify Components
-echo "Verifying NVIDIA Device Plugin..."
-#kubectl rollout status daemonset -n kube-system nvidia-device-plugin-daemonset --timeout=5m || echo "Warning: NVIDIA Device Plugin not ready yet"
+echo "Verifying GPU Operator device plugin..."
+kubectl rollout status daemonset -n gpu-operator nvidia-device-plugin-daemonset --timeout=5m || echo "Warning: GPU Operator device plugin not ready yet"
 
 echo "Verifying Kueue..."
 kubectl rollout status deployment -n kueue-system kueue-controller-manager --timeout=5m || echo "Warning: Kueue not ready yet"
