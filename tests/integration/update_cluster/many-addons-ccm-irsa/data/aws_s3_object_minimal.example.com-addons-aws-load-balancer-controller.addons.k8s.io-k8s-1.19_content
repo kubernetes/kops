@@ -1902,6 +1902,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
@@ -1937,6 +1938,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
@@ -1972,6 +1974,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
@@ -2007,6 +2010,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
@@ -2044,6 +2048,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
