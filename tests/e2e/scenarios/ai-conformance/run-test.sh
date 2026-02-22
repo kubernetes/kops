@@ -53,7 +53,7 @@ kops-acquire-latest
 # - Nodes: g6.xlarge (L4 GPU)
 # - Runtime: NVIDIA enabled
 OVERRIDES="${OVERRIDES-} --networking=cilium"
-OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.enableGatewayAPI=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
 OVERRIDES="${OVERRIDES} --node-size=g6.xlarge"
 OVERRIDES="${OVERRIDES} --node-count=2"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.containerd.nvidia.enabled=true"
