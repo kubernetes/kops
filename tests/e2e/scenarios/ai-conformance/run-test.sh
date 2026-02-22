@@ -46,17 +46,17 @@ if [[ "${AVAILABILITY}" == "false" ]]; then
 fi
 rm -f "${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability"
 
+
 kops-acquire-latest
 
 # Cluster Configuration
 # - Networking: Cilium with Gateway API enabled
 # - Nodes: g6.xlarge (L4 GPU)
-# - Runtime: NVIDIA enabled
+# - NVIDIA driver and runtime are managed by GPU Operator (not kOps)
 OVERRIDES="${OVERRIDES-} --networking=cilium"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
 OVERRIDES="${OVERRIDES} --node-size=g6.xlarge"
 OVERRIDES="${OVERRIDES} --node-count=2"
-OVERRIDES="${OVERRIDES} --set=cluster.spec.containerd.nvidiaGPU.enabled=true"
 
 kops-up
 
@@ -68,30 +68,47 @@ echo "----------------------------------------------------------------"
 echo "Installing Gateway API CRDs v1.2.0..."
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
-# 1. NVIDIA Device Plugin
-echo "Installing NVIDIA Device Plugin..."
-kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/nvidia-device-plugin.yml
+# Setup helm repo for NVIDIA GPU Operator and DRA Driver
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
 
-# 1.5 NVIDIA DRA Driver
-echo "Installing Helm..."
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-USE_SUDO=false HELM_INSTALL_DIR=. ./get_helm.sh
+# NVIDIA GPU Operator
+# Manages the full NVIDIA stack: kernel driver, container toolkit, device plugin.
+# The driver is installed into /run/nvidia/driver on each node.
+helm upgrade -i nvidia-gpu-operator --wait \
+    -n gpu-operator --create-namespace \
+    nvidia/gpu-operator \
+    --version=v25.10.1 \
+    --wait
 
 PATH="$(pwd):$PATH"
 export PATH
 
+# NVIDIA DRA Driver
+# Uses the driver installed by GPU Operator at /run/nvidia/driver (the default).
 echo "Installing NVIDIA DRA Driver..."
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
-helm repo update
-helm install nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
-  --create-namespace \
-  --namespace nvidia-dra-driver-gpu \
-  --version 25.8.1 \
-  --set resources.gpus.enabled=true \
-  --wait
 
-# 2. Gang Scheduling (Kueue)
+cat > values.yaml <<EOF
+# The driver daemonset needs a toleration for the nvidia.com/gpu taint
+kubeletPlugin:
+  tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+EOF
+
+helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
+    --version="25.12.0" \
+    --create-namespace \
+    --namespace nvidia-dra-driver-gpu \
+    --set resources.gpus.enabled=true \
+    --set nvidiaDriverRoot=/run/nvidia/driver \
+    --set gpuResourcesEnabledOverride=true \
+    -f values.yaml \
+    --wait
+
+
+# Kueue
 echo "Installing Kueue..."
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
 
