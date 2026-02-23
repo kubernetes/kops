@@ -216,7 +216,8 @@ echo "Waiting for Sample Workload to Complete..."
 kubectl wait --for=condition=complete job/test-gpu-pod --timeout=5m || true
 kubectl logs job/test-gpu-pod || echo "Failed to get logs"
 
-# Note: The actual AI conformance test suite (e.g., k8s-ai-conformance binary)
-# would be executed here. For this scenario, we establish the compliant environment.
-
 echo "AI Conformance Environment Setup Complete."
+
+# Now run the actual AI conformance tests
+cd "${REPO_ROOT}/tests/e2e/scenarios/ai-conformance/validators"
+go test -v ./... -timeout=60m
