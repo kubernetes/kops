@@ -1,0 +1,39 @@
+# Create a ResourceClaim and Job to test DRA
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaim
+metadata:
+  name: cuda-smoketest
+spec:
+  devices:
+    requests:
+    - name: single-gpu
+      exactly:
+        deviceClassName: gpu.nvidia.com
+        allocationMode: ExactCount
+        count: 1
+
+---
+# TODO: Use Deployment+HPA
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cuda-smoketest
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: test
+        image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0-ubuntu22.04
+        command: ["/bin/sh", "-c"]
+        args: ["/cuda-samples/vectorAdd"]
+        resources:
+          claims:
+          - name: gpu
+      resourceClaims:
+      - name: gpu
+        resourceClaimName: cuda-smoketest
