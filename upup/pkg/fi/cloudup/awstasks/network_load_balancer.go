@@ -441,17 +441,26 @@ func (*NetworkLoadBalancer) CheckChanges(a, e, changes *NetworkLoadBalancer) err
 		if len(changes.SubnetMappings) > 0 {
 			expectedSubnets := make(map[string]*string)
 			for _, s := range e.SubnetMappings {
+				subnetID := fi.ValueOf(s.Subnet.ID)
+				if subnetID == "" {
+					return fmt.Errorf("Subnet ID is required for subnet name=%v", fi.ValueOf(s.Subnet.Name))
+				}
 				if s.AllocationID != nil {
-					expectedSubnets[*s.Subnet.ID] = s.AllocationID
+					expectedSubnets[subnetID] = s.AllocationID
 				} else if s.PrivateIPv4Address != nil {
-					expectedSubnets[*s.Subnet.ID] = s.PrivateIPv4Address
+					expectedSubnets[subnetID] = s.PrivateIPv4Address
 				} else {
-					expectedSubnets[*s.Subnet.ID] = nil
+					expectedSubnets[subnetID] = nil
 				}
 			}
 
 			for _, s := range a.SubnetMappings {
-				eIP, ok := expectedSubnets[*s.Subnet.ID]
+				subnetID := fi.ValueOf(s.Subnet.ID)
+				if subnetID == "" {
+					return fmt.Errorf("Subnet ID is required for subnet name=%v", fi.ValueOf(s.Subnet.Name))
+				}
+
+				eIP, ok := expectedSubnets[subnetID]
 				if !ok {
 					return fmt.Errorf("network load balancers do not support detaching subnets")
 				}
