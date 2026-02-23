@@ -93,6 +93,10 @@ echo "----------------------------------------------------------------"
 echo "Installing Gateway API CRDs v1.2.0..."
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
+# cert-manager: required for KubeRay webhooks
+echo "Installing cert-manager..."
+kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
+
 # Setup helm repo for NVIDIA GPU Operator and DRA Driver
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
@@ -133,14 +137,14 @@ helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --wait
 
 
+# KubeRay
+echo "Installing KubeRay Operator..."
+kubectl apply --server-side -k "github.com/ray-project/kuberay/ray-operator/config/default-with-webhooks?ref=v1.5.0"
+
 # Kueue
 echo "Installing Kueue..."
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
 
-# 3. Robust Controller (KubeRay)
-echo "Installing KubeRay Operator..."
-# KubeRay 1.3.0
-kubectl apply -k "github.com/ray-project/kuberay/ray-operator/config/default?ref=v1.5.0"
 
 echo "----------------------------------------------------------------"
 echo "Verifying Cluster and Components"
