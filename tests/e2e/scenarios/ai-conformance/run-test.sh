@@ -179,31 +179,42 @@ kind: ResourceClaim
 metadata:
   name: test-gpu-claim
 spec:
-  resourceClassName: nvidia-gpu
+  devices:
+    requests:
+    - name: single-gpu
+      exactly:
+        deviceClassName: gpu.nvidia.com
+        allocationMode: ExactCount
+        count: 1
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: test-gpu-pod
 spec:
-  restartPolicy: Never
-  containers:
-  - name: test
-    image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0-ubuntu22.04
-    command: ["/bin/sh", "-c"]
-    args: ["/cuda-samples/vectorAdd"]
-    resources:
-      claims:
+  template:
+    spec:
+      restartPolicy: Never
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: test
+        image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0-ubuntu22.04
+        command: ["/bin/sh", "-c"]
+        args: ["/cuda-samples/vectorAdd"]
+        resources:
+          claims:
+          - name: gpu
+      resourceClaims:
       - name: gpu
-  resourceClaims:
-  - name: gpu
-    resourceClaimName: test-gpu-claim
+        resourceClaimName: test-gpu-claim
 EOF
 
 echo "Waiting for Sample Workload to Complete..."
-# Wait for the pod to succeed
-kubectl wait --for=condition=Ready pod/test-gpu-pod --timeout=5m || true
-kubectl logs test-gpu-pod || echo "Failed to get logs"
+kubectl wait --for=condition=complete job/test-gpu-pod --timeout=5m || true
+kubectl logs job/test-gpu-pod || echo "Failed to get logs"
 
 # Note: The actual AI conformance test suite (e.g., k8s-ai-conformance binary)
 # would be executed here. For this scenario, we establish the compliant environment.
