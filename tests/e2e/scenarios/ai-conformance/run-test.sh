@@ -93,6 +93,10 @@ echo "----------------------------------------------------------------"
 echo "Installing Gateway API CRDs v1.2.0..."
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
+# cert-manager: required for KubeRay webhooks
+echo "Installing cert-manager..."
+kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
+
 # Setup helm repo for NVIDIA GPU Operator and DRA Driver
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo update
@@ -133,14 +137,14 @@ helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
     --wait
 
 
+# KubeRay
+echo "Installing KubeRay Operator..."
+kubectl apply --server-side -k "github.com/ray-project/kuberay/ray-operator/config/default-with-webhooks?ref=v1.5.0"
+
 # Kueue
 echo "Installing Kueue..."
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
 
-# 3. Robust Controller (KubeRay)
-echo "Installing KubeRay Operator..."
-# KubeRay 1.3.0
-kubectl apply -k "github.com/ray-project/kuberay/ray-operator/config/default?ref=v1.5.0"
 
 echo "----------------------------------------------------------------"
 echo "Verifying Cluster and Components"
@@ -175,31 +179,42 @@ kind: ResourceClaim
 metadata:
   name: test-gpu-claim
 spec:
-  resourceClassName: nvidia-gpu
+  devices:
+    requests:
+    - name: single-gpu
+      exactly:
+        deviceClassName: gpu.nvidia.com
+        allocationMode: ExactCount
+        count: 1
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: test-gpu-pod
 spec:
-  restartPolicy: Never
-  containers:
-  - name: test
-    image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0-ubuntu22.04
-    command: ["/bin/sh", "-c"]
-    args: ["/cuda-samples/vectorAdd"]
-    resources:
-      claims:
+  template:
+    spec:
+      restartPolicy: Never
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: test
+        image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0-ubuntu22.04
+        command: ["/bin/sh", "-c"]
+        args: ["/cuda-samples/vectorAdd"]
+        resources:
+          claims:
+          - name: gpu
+      resourceClaims:
       - name: gpu
-  resourceClaims:
-  - name: gpu
-    resourceClaimName: test-gpu-claim
+        resourceClaimName: test-gpu-claim
 EOF
 
 echo "Waiting for Sample Workload to Complete..."
-# Wait for the pod to succeed
-kubectl wait --for=condition=Ready pod/test-gpu-pod --timeout=5m || true
-kubectl logs test-gpu-pod || echo "Failed to get logs"
+kubectl wait --for=condition=complete job/test-gpu-pod --timeout=5m || true
+kubectl logs job/test-gpu-pod || echo "Failed to get logs"
 
 # Note: The actual AI conformance test suite (e.g., k8s-ai-conformance binary)
 # would be executed here. For this scenario, we establish the compliant environment.
