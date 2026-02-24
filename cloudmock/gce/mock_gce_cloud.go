@@ -23,7 +23,6 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/klog/v2"
 	"k8s.io/kops/cloudmock/gce/mockcloudresourcemanager"
 	mockcompute "k8s.io/kops/cloudmock/gce/mockcompute"
 	"k8s.io/kops/cloudmock/gce/mockdns"
@@ -73,13 +72,12 @@ func (c *MockGCECloud) AllResources() map[string]interface{} {
 
 // GetCloudGroups is not implemented yet
 func (c *MockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	klog.V(8).Infof("MockGCECloud cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("MockGCECloud cloud provider does not support getting cloud groups at this time")
+	return gce.GetCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
 // Zones is not implemented yet
 func (c *MockGCECloud) Zones() ([]string, error) {
-	return nil, fmt.Errorf("not yet implemented")
+	return gce.GetZones(c)
 }
 
 // WithLabels returns a copy of the MockGCECloud bound to the specified labels
@@ -170,8 +168,7 @@ func (c *MockGCECloud) Labels() map[string]string {
 
 // DeleteGroup implements fi.Cloud::DeleteGroup
 func (c *MockGCECloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	return nil
-	//	return deleteCloudInstanceGroup(c, g)
+	return gce.DeleteCloudInstanceGroup(c, g)
 }
 
 // DeleteInstance deletes a GCE instance
