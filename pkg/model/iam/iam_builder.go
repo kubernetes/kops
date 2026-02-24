@@ -1023,12 +1023,24 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, 
 		"elasticloadbalancing:SetSecurityGroups",
 		"elasticloadbalancing:SetSubnets",
 	)
-	p.clusterTaggedCreateAction.Insert(
-		"elasticloadbalancing:CreateListener",
-		"elasticloadbalancing:CreateLoadBalancer",
-		"elasticloadbalancing:CreateRule",
-		"elasticloadbalancing:CreateTargetGroup",
-	)
+	// LBC only includes the elbv2.k8s.aws/cluster tag in the create request.
+	// KubernetesCluster and other tags are applied separately via AddTags,
+	// So aws:RequestTag must reference the elbv2.k8s.aws/cluster tag.
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorset.Of(
+			"elasticloadbalancing:CreateListener",
+			"elasticloadbalancing:CreateLoadBalancer",
+			"elasticloadbalancing:CreateRule",
+			"elasticloadbalancing:CreateTargetGroup",
+		),
+		Resource: stringorset.String("*"),
+		Condition: Condition{
+			"StringEquals": map[string]string{
+				"aws:RequestTag/elbv2.k8s.aws/cluster": p.clusterName,
+			},
+		},
+	})
 	p.unconditionalAction.Insert(
 		"elasticloadbalancing:SetRulePriorities",
 	)
