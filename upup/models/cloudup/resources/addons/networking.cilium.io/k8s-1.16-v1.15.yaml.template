@@ -342,7 +342,8 @@ data:
   enable-local-redirect-policy: "{{ .EnableLocalRedirectPolicy }}"
 
   kube-proxy-replacement: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
-  bpf-lb-sock: "false"
+  bpf-lb-sock: "{{ .BPFLBSock }}"
+  bpf-lb-sock-hostns-only: "{{ .BPFLBSockHostNSOnly }}"
   enable-node-port: "{{ .EnableNodePort }}"
   nodeport-addresses: ""
   enable-health-check-nodeport: "true"
