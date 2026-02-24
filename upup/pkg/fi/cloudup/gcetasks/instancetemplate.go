@@ -257,31 +257,74 @@ func (*InstanceTemplate) CheckChanges(a, e, changes *InstanceTemplate) error {
 	return nil
 }
 
-func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.InstanceTemplate, error) {
-	// TODO: This is similar to Instance...
+type MachineTypeInfo struct {
+	SupportsMigration bool
+}
+
+func buildScheduling(machineTypeInfo *MachineTypeInfo, preemptible *bool, gcpProvisioningModel *string, guestAccelerators []AcceleratorConfig) *compute.Scheduling {
 	var scheduling *compute.Scheduling
 
-	if fi.ValueOf(e.Preemptible) {
+	if fi.ValueOf(preemptible) {
 		scheduling = &compute.Scheduling{
 			AutomaticRestart:  fi.PtrTo(false),
 			OnHostMaintenance: "TERMINATE",
-			ProvisioningModel: fi.ValueOf(e.GCPProvisioningModel),
+			ProvisioningModel: fi.ValueOf(gcpProvisioningModel),
 			Preemptible:       true,
 		}
 	} else {
+		// We default to allowing migration, as it gives higher uptime.
+		// However, if we figure out that the instance does not support migration, we will set this to TERMINATE (so we can create the instance at all).
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: fi.PtrTo(true),
-			// TODO: Migrate or terminate?
+			AutomaticRestart:  fi.PtrTo(true),
 			OnHostMaintenance: "MIGRATE",
 			ProvisioningModel: "STANDARD",
 			Preemptible:       false,
 		}
 	}
 
-	if len(e.GuestAccelerators) > 0 {
+	if len(guestAccelerators) > 0 {
 		// Instances with accelerators cannot be migrated.
 		scheduling.OnHostMaintenance = "TERMINATE"
 	}
+
+	if machineTypeInfo != nil {
+		if !machineTypeInfo.SupportsMigration {
+			scheduling.OnHostMaintenance = "TERMINATE"
+		}
+	}
+	return scheduling
+}
+
+// guessMachineTypeInfo returns information about the machine type, such as whether it supports live migration.
+// We use this to determine the correct scheduling options for non-preemptible VMs.
+// If the machine type is not found, we return placeholder information, as we want to be tolerant of missing machine types, and just default to the safest scheduling options.
+func guessMachineTypeInfo(machineType string) (*MachineTypeInfo, error) {
+	machineTypeInfo := &MachineTypeInfo{
+		SupportsMigration: true,
+	}
+	if machineType == "" {
+		return machineTypeInfo, nil
+	}
+
+	family := strings.Split(machineType, "-")[0]
+
+	switch family {
+	case "a4x", "a4", "a3", "a2", "g2", "g4":
+		// VMs with GPUs attached do not support live migration.
+		// https://docs.cloud.google.com/compute/docs/instances/live-migration-process#limitations
+		machineTypeInfo.SupportsMigration = false
+	}
+
+	return machineTypeInfo, nil
+}
+
+func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.InstanceTemplate, error) {
+	machineTypeInfo, err := guessMachineTypeInfo(fi.ValueOf(e.MachineType))
+	if err != nil {
+		return nil, fmt.Errorf("getting machine type info: %w", err)
+	}
+
+	scheduling := buildScheduling(machineTypeInfo, e.Preemptible, e.GCPProvisioningModel, e.GuestAccelerators)
 
 	var disks []*compute.AttachedDisk
 	disks = append(disks, &compute.AttachedDisk{

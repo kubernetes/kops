@@ -190,20 +190,12 @@ func scopeToShortForm(s string) string {
 func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*string, error)) (*compute.Instance, error) {
 	zone := *e.Zone
 
-	var scheduling *compute.Scheduling
-	if fi.ValueOf(e.Preemptible) {
-		scheduling = &compute.Scheduling{
-			OnHostMaintenance: "TERMINATE",
-			Preemptible:       true,
-		}
-	} else {
-		scheduling = &compute.Scheduling{
-			AutomaticRestart: fi.PtrTo(true),
-			// TODO: Migrate or terminate?
-			OnHostMaintenance: "MIGRATE",
-			Preemptible:       false,
-		}
+	machineTypeInfo, err := guessMachineTypeInfo(fi.ValueOf(e.MachineType))
+	if err != nil {
+		return nil, fmt.Errorf("getting machine type info: %w", err)
 	}
+
+	scheduling := buildScheduling(machineTypeInfo, e.Preemptible, nil /* e.GCPProvisioningModel */, nil /* e.GuestAccelerators*/)
 
 	var disks []*compute.AttachedDisk
 	disks = append(disks, &compute.AttachedDisk{
