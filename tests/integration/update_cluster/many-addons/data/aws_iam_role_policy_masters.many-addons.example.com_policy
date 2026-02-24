@@ -191,6 +191,30 @@
       "Resource": "*"
     },
     {
+      "Action": "elasticloadbalancing:AddTags",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/elbv2.k8s.aws/cluster": "many-addons.example.com",
+          "elasticloadbalancing:CreateAction": [
+            "CreateListener",
+            "CreateLoadBalancer",
+            "CreateRule",
+            "CreateTargetGroup"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:elasticloadbalancing:*:*:listener-rule/app/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:listener/app/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:listener/net/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:loadbalancer/app/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:targetgroup/*/*"
+      ]
+    },
+    {
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
