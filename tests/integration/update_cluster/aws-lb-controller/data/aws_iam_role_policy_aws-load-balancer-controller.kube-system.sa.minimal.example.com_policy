@@ -1,6 +1,21 @@
 {
   "Statement": [
     {
+      "Action": [
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:CreateTargetGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/elbv2.k8s.aws/cluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
@@ -100,13 +115,7 @@
       "Resource": "*"
     },
     {
-      "Action": [
-        "ec2:CreateSecurityGroup",
-        "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateRule",
-        "elasticloadbalancing:CreateTargetGroup"
-      ],
+      "Action": "ec2:CreateSecurityGroup",
       "Condition": {
         "StringEquals": {
           "aws:RequestTag/KubernetesCluster": "minimal.example.com"

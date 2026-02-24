@@ -176,6 +176,21 @@
       ]
     },
     {
+      "Action": [
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:CreateTargetGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/elbv2.k8s.aws/cluster": "many-addons.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
@@ -347,7 +362,6 @@
         "ec2:CreateVolume",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateRule",
         "elasticloadbalancing:CreateTargetGroup"
       ],
       "Condition": {
