@@ -19,7 +19,6 @@ package instancegroups
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,22 +32,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
-func TestDeleteInstanceGroup_GCEWaitOnInstanceDeletion(t *testing.T) {
+func TestDeleteInstanceGroupGCE_WaitOnInstanceDeletion(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	gce.PollingInterval = 5 * time.Millisecond
-	defer func() {
-		gce.PollingInterval = 5 * time.Second
-	}()
-
 	clusterName := "test.k8s.io"
-	cloud := h.SetupMockGCE()
-
-	zones, err := cloud.Zones()
-	require.NoError(t, err)
-	require.NotEmpty(t, zones)
-	zone := zones[0]
+	cloud, zone := getGCETestSetup(t, h)
 
 	ctx := context.Background()
 	f := util.NewFactory(&util.FactoryOptions{
@@ -59,6 +48,7 @@ func TestDeleteInstanceGroup_GCEWaitOnInstanceDeletion(t *testing.T) {
 
 	clientset, err := f.KopsClient()
 	require.NoError(t, err)
+
 	_, err = clientset.CreateCluster(ctx, cluster)
 	require.NoError(t, err)
 
@@ -67,32 +57,18 @@ func TestDeleteInstanceGroup_GCEWaitOnInstanceDeletion(t *testing.T) {
 	_, err = clientset.InstanceGroupsFor(cluster).Create(context.TODO(), &ig, metav1.CreateOptions{})
 	require.NoError(t, err)
 
-	templateName := "test-template"
-	templateURL := "https://www.googleapis.com/compute/v1/projects/testproject/global/instanceTemplates/" + templateName
+	migName := gce.NameForInstanceGroupManager(clusterName, ig.Name, zone)
 
-	migName := gce.NameForInstanceGroupManager(clusterName, "nodes-1", zone)
+	instanceTemplate := instanceTemplate("test-template", clusterName)
+	_, err = cloud.Compute().InstanceTemplates().Insert(cloud.Project(),
+		instanceTemplate)
+	require.NoError(t, err)
 
 	_, err = cloud.Compute().InstanceGroupManagers().Insert(cloud.Project(), zone, &compute.InstanceGroupManager{
 		Name:             migName,
-		InstanceTemplate: templateURL,
+		InstanceTemplate: instanceTemplate.SelfLink,
 		Zone:             zone,
 	})
-	require.NoError(t, err)
-
-	_, err = cloud.Compute().InstanceTemplates().Insert(cloud.Project(),
-		&compute.InstanceTemplate{
-			Name: templateName,
-			Properties: &compute.InstanceProperties{
-				Metadata: &compute.Metadata{
-					Items: []*compute.MetadataItems{
-						{
-							Key:   "cluster-name",
-							Value: fi.PtrTo(clusterName),
-						},
-					},
-				},
-			},
-		})
 	require.NoError(t, err)
 
 	d := &DeleteInstanceGroup{
@@ -121,22 +97,12 @@ func TestDeleteInstanceGroup_GCEWaitOnInstanceDeletion(t *testing.T) {
 	assert.Len(t, instanceTemplates, 0)
 }
 
-func TestDeleteInstanceGroup(t *testing.T) {
+func TestDeleteInstanceGroupGCE(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
-	gce.PollingInterval = 5 * time.Millisecond
-	defer func() {
-		gce.PollingInterval = 5 * time.Second
-	}()
-
 	clusterName := "test.k8s.io"
-	cloud := h.SetupMockGCE()
-
-	zones, err := cloud.Zones()
-	require.NoError(t, err)
-	require.NotEmpty(t, zones)
-	zone := zones[0]
+	cloud, zone := getGCETestSetup(t, h)
 
 	ctx := context.Background()
 	f := util.NewFactory(&util.FactoryOptions{
@@ -152,31 +118,13 @@ func TestDeleteInstanceGroup(t *testing.T) {
 
 	ig := testutils.BuildMinimalNodeInstanceGroup("nodes-1")
 
-	templateName := "test-template"
-	templateURL := "https://www.googleapis.com/compute/v1/projects/testproject/global/instanceTemplates/" + templateName
-
-	migName := gce.NameForInstanceGroupManager(clusterName, "nodes-1", zone)
-
-	template := &compute.InstanceTemplate{
-		Name: templateName,
-		Properties: &compute.InstanceProperties{
-			Metadata: &compute.Metadata{
-				Items: []*compute.MetadataItems{
-					{
-						Key:   "cluster-name",
-						Value: &clusterName,
-					},
-				},
-			},
-		},
-	}
-
+	template := instanceTemplate("test-template", clusterName)
 	_, err = cloud.Compute().InstanceTemplates().Insert(cloud.Project(), template)
 	assert.NoError(t, err, "error creating InstanceTemplate")
 
 	igm := &compute.InstanceGroupManager{
-		Name:             migName,
-		InstanceTemplate: templateURL,
+		Name:             gce.NameForInstanceGroupManager(clusterName, ig.Name, zone),
+		InstanceTemplate: template.SelfLink,
 		Zone:             zone,
 	}
 
@@ -200,15 +148,14 @@ func TestDeleteInstanceGroup(t *testing.T) {
 	assert.True(t, errors.IsNotFound(err), "unexpected error when getting deleted instance group: %v", err)
 }
 
-func TestDeleteInstanceGroup_MissingInstance(t *testing.T) {
+func TestDeleteInstanceGroupGCE_MissingInstance(t *testing.T) {
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	clusterName := "test.k8s.io"
-
-	cloud := h.SetupMockGCE()
-
+	cloud, _ := getGCETestSetup(t, h)
 	ctx := context.Background()
+
 	f := util.NewFactory(&util.FactoryOptions{
 		RegistryPath: "memfs://tests",
 	})
@@ -220,20 +167,7 @@ func TestDeleteInstanceGroup_MissingInstance(t *testing.T) {
 	_, err = clientset.CreateCluster(ctx, cluster)
 	assert.NoError(t, err, "error creating cluster")
 
-	template := &compute.InstanceTemplate{
-		Name: "test-template",
-		Properties: &compute.InstanceProperties{
-			Metadata: &compute.Metadata{
-				Items: []*compute.MetadataItems{
-					{
-						Key:   "cluster-name",
-						Value: &clusterName,
-					},
-				},
-			},
-		},
-	}
-
+	template := instanceTemplate("test-template", clusterName)
 	_, err = cloud.Compute().InstanceTemplates().Insert(cloud.Project(), template)
 	assert.NoError(t, err, "error creating InstanceTemplate")
 
@@ -276,4 +210,34 @@ func TestDeleteInstanceGroup_MissingInstance(t *testing.T) {
 	groups, err := cloud.GetCloudGroups(cluster, []*api.InstanceGroup{&ig}, &fi.GetCloudGroupsOptions{}, nil)
 	assert.NoError(t, err)
 	assert.Len(t, groups, 0)
+}
+
+func instanceTemplate(name, clusterName string) *compute.InstanceTemplate {
+	templateURL := "https://www.googleapis.com/compute/v1/projects/testproject/global/instanceTemplates/" + name
+
+	return &compute.InstanceTemplate{
+		Name:     name,
+		SelfLink: templateURL,
+		Properties: &compute.InstanceProperties{
+			Metadata: &compute.Metadata{
+				Items: []*compute.MetadataItems{
+					{
+						Key:   "cluster-name",
+						Value: &clusterName,
+					},
+				},
+			},
+		},
+	}
+}
+
+func getGCETestSetup(t *testing.T, h *testutils.IntegrationTestHarness) (gce.GCECloud, string) {
+	cloud := h.SetupMockGCE()
+
+	zones, err := cloud.Zones()
+	require.NoError(t, err)
+	require.NotEmpty(t, zones)
+	zone := zones[0]
+
+	return cloud, zone
 }
