@@ -1041,6 +1041,32 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, 
 			},
 		},
 	})
+	// AddTags is called by ELBv2 internally during ELBv2 create operations.
+	// Scope to those create actions and the cluster tag.
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorset.String("elasticloadbalancing:AddTags"),
+		Resource: stringorset.Of(
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:targetgroup/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:loadbalancer/net/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:loadbalancer/app/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener/app/*/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener/net/*/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener-rule/app/*/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener-rule/net/*/*/*", p.partition),
+		),
+		Condition: Condition{
+			"StringEquals": map[string]interface{}{
+				"aws:RequestTag/elbv2.k8s.aws/cluster": p.clusterName,
+				"elasticloadbalancing:CreateAction": []string{
+					"CreateListener",
+					"CreateLoadBalancer",
+					"CreateRule",
+					"CreateTargetGroup",
+				},
+			},
+		},
+	})
 	p.unconditionalAction.Insert(
 		"elasticloadbalancing:SetRulePriorities",
 	)
