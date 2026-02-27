@@ -768,6 +768,18 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				Id:       id,
 			})
 		}
+		{
+			key := "azuredisk-csi-driver.addons.k8s.io"
+			id := "k8s-1.31"
+			location := key + "/" + id + ".yaml"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.PtrTo(location),
+				Id:       id,
+			})
+		}
 	}
 
 	if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
