@@ -41,6 +41,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
@@ -142,7 +143,7 @@ func RunGetInstances(ctx context.Context, f *util.Factory, out io.Writer, option
 
 	var cloudInstances []*cloudinstances.CloudInstance
 
-	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodeList.Items)
+	cloudGroups, err := cloud.GetCloudGroups(cluster, instanceGroups, &fi.GetCloudGroupsOptions{}, nodeList.Items)
 	if err != nil {
 		return err
 	}

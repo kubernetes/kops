@@ -78,7 +78,7 @@ func (c *doCloudMockImplementation) DetachInstance(i *cloudinstances.CloudInstan
 	return fmt.Errorf("digital ocean cloud provider does not support surging")
 }
 
-func (c *doCloudMockImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *doCloudMockImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return nil, errors.New("not tested")
 }
 
