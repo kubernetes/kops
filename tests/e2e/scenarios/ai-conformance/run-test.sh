@@ -21,6 +21,21 @@ set -o pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
+# Install binaries onto path: helm
+BIN_DIR=${REPO_ROOT}/.build/bin
+mkdir -p "${BIN_DIR}"
+PATH="${BIN_DIR}:$PATH"
+export PATH
+
+echo "Installing Helm..."
+curl -fsSL -o ${BIN_DIR}/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 ${BIN_DIR}/get_helm.sh
+USE_SUDO=false HELM_INSTALL_DIR="${BIN_DIR}" ${BIN_DIR}/get_helm.sh
+
+# Setup helm repos
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo update
+
 # AI Conformance requirements:
 # - Kubernetes 1.35
 # - NVIDIA L4 Instances (g6.xlarge on AWS)
@@ -39,11 +54,12 @@ SCENARIO_ROOT="${REPO_ROOT}/tests/e2e/scenarios/ai-conformance"
 # Check for g6.xlarge availability in the region
 echo "Checking availability of g6.xlarge in ${AWS_REGION}..."
 (cd "${SCENARIO_ROOT}/tools/check-aws-availability" && go build -o check-aws-availability main.go)
-AVAILABILITY=$("${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability" -region "${AWS_REGION}" -instance-type g6.xlarge)
-if [[ "${AVAILABILITY}" == "false" ]]; then
-  echo "Error: g6.xlarge instances are not available in ${AWS_REGION}. Please choose a region with L4 GPU support."
-  exit 1
-fi
+# Run and source the output to get the ZONES variable
+source <("${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability" -region "${AWS_REGION}" -instance-type g6.xlarge)
+
+echo "ZONES=${ZONES}"
+export ZONES
+
 rm -f "${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability"
 
 
@@ -85,6 +101,9 @@ EOF
 
 ${KOPS} update cluster --name "${CLUSTER_NAME}" --yes --admin
 
+# TODO: Can we delay this until later?
+${KOPS} validate cluster --wait=10m
+
 echo "----------------------------------------------------------------"
 echo "Deploying AI Conformance Components"
 echo "----------------------------------------------------------------"
@@ -109,9 +128,6 @@ helm upgrade -i nvidia-gpu-operator --wait \
     nvidia/gpu-operator \
     --version=v25.10.1 \
     --wait
-
-PATH="$(pwd):$PATH"
-export PATH
 
 # NVIDIA DRA Driver
 # Uses the driver installed by GPU Operator at /run/nvidia/driver (the default).
@@ -153,18 +169,20 @@ echo "----------------------------------------------------------------"
 # Wait for kOps validation
 "${KOPS}" validate cluster --wait=15m
 
-# Verify Components
-echo "Verifying NVIDIA Device Plugin..."
-kubectl rollout status daemonset -n kube-system nvidia-device-plugin-daemonset --timeout=5m || echo "Warning: NVIDIA Device Plugin not ready yet"
+echo "Verifying GPU Operator device plugin..."
+kubectl rollout status daemonset -n gpu-operator nvidia-device-plugin-daemonset --timeout=5m || echo "Warning: GPU Operator device plugin not ready yet"
 
 echo "Verifying Kueue..."
 kubectl rollout status deployment -n kueue-system kueue-controller-manager --timeout=5m || echo "Warning: Kueue not ready yet"
 
 echo "Verifying KubeRay..."
-kubectl rollout status deployment -n kuberay-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
+kubectl rollout status deployment -n ray-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
+
+# echo "Verfying node-feature-discovery..."
+# kubectl rollout status deployment -n node-feature-discovery nfd-master --timeout=5m || echo "Warning: node-feature-discovery not ready yet"
 
 echo "Verifying Gateway API..."
-kubectl get gatewayclass || echo "Warning: GatewayClass not found"
+kubectl get crd gatewayclasses.gateway.networking.k8s.io || echo "Warning: GatewayClass CRD not found"
 
 echo "Verifying Allocatable GPUs..."
 # Wait a bit for nodes to report resources
