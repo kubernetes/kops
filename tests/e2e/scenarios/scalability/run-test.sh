@@ -210,16 +210,12 @@ if [[ -n "${KOPS_CL2_TEST_CONFIG}" ]]; then
 else
   CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml")
   CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/access-tokens/config.yaml")
+  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml")
   CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml")
   CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/enable_restart_count_check.yaml")
   CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml")
   CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml")
   CLUSTERLOADER2_ARGS+=("--extra-args=--experimental-prometheus-snapshot-to-report-dir=true")
-fi
-
-# ToDo: remove this once we can run the huge-service test on AWS
-if [[ -z "${KOPS_CL2_TEST_CONFIG}" && "${CLOUD_PROVIDER}" == "gce" ]]; then
-  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml")
 fi
 
 if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
