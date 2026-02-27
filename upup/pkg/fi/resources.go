@@ -125,7 +125,7 @@ func (r *StringResource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&r.s)
 }
 
-var _ Resource = &StringResource{}
+var _ Resource = (*StringResource)(nil)
 
 func NewStringResource(s string) *StringResource {
 	return &StringResource{s: s}
@@ -146,7 +146,7 @@ func (b *BytesResource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(string(b.data))
 }
 
-var _ Resource = &BytesResource{}
+var _ Resource = (*BytesResource)(nil)
 
 func NewBytesResource(data []byte) *BytesResource {
 	return &BytesResource{data: data}
@@ -161,7 +161,7 @@ type FileResource struct {
 	Path string
 }
 
-var _ Resource = &FileResource{}
+var _ Resource = (*FileResource)(nil)
 
 func NewFileResource(path string) *FileResource {
 	return &FileResource{Path: path}
@@ -182,7 +182,7 @@ type VFSResource struct {
 	Path vfs.Path
 }
 
-var _ Resource = &VFSResource{}
+var _ Resource = (*VFSResource)(nil)
 
 func NewVFSResource(path vfs.Path) *VFSResource {
 	return &VFSResource{Path: path}

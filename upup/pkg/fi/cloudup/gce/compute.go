@@ -48,7 +48,7 @@ type computeClientImpl struct {
 	srv *compute.Service
 }
 
-var _ ComputeClient = &computeClientImpl{}
+var _ ComputeClient = (*computeClientImpl)(nil)
 
 func newComputeClientImpl(ctx context.Context) (*computeClientImpl, error) {
 	srv, err := compute.NewService(ctx)
@@ -176,7 +176,7 @@ type projectClientImpl struct {
 	srv *compute.ProjectsService
 }
 
-var _ ProjectClient = &projectClientImpl{}
+var _ ProjectClient = (*projectClientImpl)(nil)
 
 func (c *projectClientImpl) Get(project string) (*compute.Project, error) {
 	return c.srv.Get(project).Do()
@@ -190,7 +190,7 @@ type regionClientImpl struct {
 	srv *compute.RegionsService
 }
 
-var _ RegionClient = &regionClientImpl{}
+var _ RegionClient = (*regionClientImpl)(nil)
 
 func (c *regionClientImpl) List(ctx context.Context, project string) ([]*compute.Region, error) {
 	var regions []*compute.Region
@@ -212,7 +212,7 @@ type zoneClientImpl struct {
 	srv *compute.ZonesService
 }
 
-var _ ZoneClient = &zoneClientImpl{}
+var _ ZoneClient = (*zoneClientImpl)(nil)
 
 func (c *zoneClientImpl) List(ctx context.Context, project string) ([]*compute.Zone, error) {
 	var zones []*compute.Zone
@@ -237,7 +237,7 @@ type networkClientImpl struct {
 	srv *compute.NetworksService
 }
 
-var _ NetworkClient = &networkClientImpl{}
+var _ NetworkClient = (*networkClientImpl)(nil)
 
 func (c *networkClientImpl) Insert(project string, nw *compute.Network) (*compute.Operation, error) {
 	return c.srv.Insert(project, nw).Do()
@@ -267,7 +267,7 @@ type subnetworkClientImpl struct {
 	srv *compute.SubnetworksService
 }
 
-var _ SubnetworkClient = &subnetworkClientImpl{}
+var _ SubnetworkClient = (*subnetworkClientImpl)(nil)
 
 func (c *subnetworkClientImpl) Insert(project, region string, subnet *compute.Subnetwork) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, subnet).Do()
@@ -308,7 +308,7 @@ type regionBackendServiceClientImpl struct {
 	srv *compute.RegionBackendServicesService
 }
 
-var _ RegionBackendServiceClient = &regionBackendServiceClientImpl{}
+var _ RegionBackendServiceClient = (*regionBackendServiceClientImpl)(nil)
 
 func (c *regionBackendServiceClientImpl) Insert(project, region string, fr *compute.BackendService) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, fr).Do()
@@ -344,7 +344,7 @@ type routeClientImpl struct {
 	srv *compute.RoutesService
 }
 
-var _ RouteClient = &routeClientImpl{}
+var _ RouteClient = (*routeClientImpl)(nil)
 
 func (c *routeClientImpl) Delete(project, name string) (*compute.Operation, error) {
 	return c.srv.Delete(project, name).Do()
@@ -373,7 +373,7 @@ type forwardingRuleClientImpl struct {
 	srv *compute.ForwardingRulesService
 }
 
-var _ ForwardingRuleClient = &forwardingRuleClientImpl{}
+var _ ForwardingRuleClient = (*forwardingRuleClientImpl)(nil)
 
 func (c *forwardingRuleClientImpl) Insert(ctx context.Context, project, region string, fr *compute.ForwardingRule) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, fr).Context(ctx).Do()
@@ -413,7 +413,7 @@ type healthCheckClientImpl struct {
 	srv *compute.RegionHealthChecksService
 }
 
-var _ RegionHealthChecksClient = &healthCheckClientImpl{}
+var _ RegionHealthChecksClient = (*healthCheckClientImpl)(nil)
 
 func (c *healthCheckClientImpl) Insert(project, region string, fr *compute.HealthCheck) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, fr).Do()
@@ -449,7 +449,7 @@ type httpHealthCheckClientImpl struct {
 	srv *compute.HttpHealthChecksService
 }
 
-var _ HttpHealthChecksClient = &httpHealthCheckClientImpl{}
+var _ HttpHealthChecksClient = (*httpHealthCheckClientImpl)(nil)
 
 func (c *httpHealthCheckClientImpl) Insert(project string, fr *compute.HttpHealthCheck) (*compute.Operation, error) {
 	return c.srv.Insert(project, fr).Do()
@@ -486,7 +486,7 @@ type addressClientImpl struct {
 	srv *compute.AddressesService
 }
 
-var _ AddressClient = &addressClientImpl{}
+var _ AddressClient = (*addressClientImpl)(nil)
 
 func (c *addressClientImpl) Insert(project, region string, addr *compute.Address) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, addr).Do()
@@ -531,7 +531,7 @@ type firewallClientImpl struct {
 	srv *compute.FirewallsService
 }
 
-var _ FirewallClient = &firewallClientImpl{}
+var _ FirewallClient = (*firewallClientImpl)(nil)
 
 func (c *firewallClientImpl) Insert(project string, fw *compute.Firewall) (*compute.Operation, error) {
 	return c.srv.Insert(project, fw).Do()
@@ -571,7 +571,7 @@ type routerClientImpl struct {
 	srv *compute.RoutersService
 }
 
-var _ RouterClient = &routerClientImpl{}
+var _ RouterClient = (*routerClientImpl)(nil)
 
 func (c *routerClientImpl) Insert(project, region string, r *compute.Router) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, r).Do()
@@ -608,7 +608,7 @@ type instanceClientImpl struct {
 	srv *compute.InstancesService
 }
 
-var _ InstanceClient = &instanceClientImpl{}
+var _ InstanceClient = (*instanceClientImpl)(nil)
 
 func (c *instanceClientImpl) Insert(project, zone string, i *compute.Instance) (*compute.Operation, error) {
 	return c.srv.Insert(project, zone, i).Do()
@@ -647,7 +647,7 @@ type instanceTemplateClientImpl struct {
 	srv *compute.InstanceTemplatesService
 }
 
-var _ InstanceTemplateClient = &instanceTemplateClientImpl{}
+var _ InstanceTemplateClient = (*instanceTemplateClientImpl)(nil)
 
 func (c *instanceTemplateClientImpl) Insert(project string, template *compute.InstanceTemplate) (*compute.Operation, error) {
 	return c.srv.Insert(project, template).Do()
@@ -684,7 +684,7 @@ type instanceGroupManagerClientImpl struct {
 	srv *compute.InstanceGroupManagersService
 }
 
-var _ InstanceGroupManagerClient = &instanceGroupManagerClientImpl{}
+var _ InstanceGroupManagerClient = (*instanceGroupManagerClientImpl)(nil)
 
 func (c *instanceGroupManagerClientImpl) Insert(project, zone string, i *compute.InstanceGroupManager) (*compute.Operation, error) {
 	return c.srv.Insert(project, zone, i).Do()
@@ -759,7 +759,7 @@ type targetPoolClientImpl struct {
 	srv *compute.TargetPoolsService
 }
 
-var _ TargetPoolClient = &targetPoolClientImpl{}
+var _ TargetPoolClient = (*targetPoolClientImpl)(nil)
 
 func (c *targetPoolClientImpl) Insert(project, region string, tp *compute.TargetPool) (*compute.Operation, error) {
 	return c.srv.Insert(project, region, tp).Do()
@@ -801,7 +801,7 @@ type diskClientImpl struct {
 	srv *compute.DisksService
 }
 
-var _ DiskClient = &diskClientImpl{}
+var _ DiskClient = (*diskClientImpl)(nil)
 
 func (c *diskClientImpl) Insert(project, zone string, disk *compute.Disk) (*compute.Operation, error) {
 	return c.srv.Insert(project, zone, disk).Do()

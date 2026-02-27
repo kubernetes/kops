@@ -33,7 +33,7 @@ type Router struct {
 	AvailabilityZoneHints []*string
 }
 
-var _ fi.CompareWithID = &Router{}
+var _ fi.CompareWithID = (*Router)(nil)
 
 func (n *Router) CompareWithID() *string {
 	return n.ID

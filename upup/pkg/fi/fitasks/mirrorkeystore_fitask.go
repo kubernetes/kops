@@ -27,7 +27,7 @@ import (
 
 // MirrorKeystore
 
-var _ fi.HasLifecycle = &MirrorKeystore{}
+var _ fi.HasLifecycle = (*MirrorKeystore)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *MirrorKeystore) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *MirrorKeystore) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &MirrorKeystore{}
+var _ fi.HasName = (*MirrorKeystore)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *MirrorKeystore) GetName() *string {

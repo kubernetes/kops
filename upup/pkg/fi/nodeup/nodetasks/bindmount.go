@@ -35,26 +35,26 @@ type BindMount struct {
 	Recursive  bool     `json:"recursive"`
 }
 
-var _ fi.NodeupTask = &BindMount{}
+var _ fi.NodeupTask = (*BindMount)(nil)
 
 func (s *BindMount) String() string {
 	return fmt.Sprintf("BindMount: %s->%s", s.Source, s.Mountpoint)
 }
 
-var _ CreatesDir = &BindMount{}
+var _ CreatesDir = (*BindMount)(nil)
 
 // Dir implements CreatesDir::Dir
 func (e *BindMount) Dir() string {
 	return e.Mountpoint
 }
 
-var _ fi.HasName = &Archive{}
+var _ fi.HasName = (*Archive)(nil)
 
 func (e *BindMount) GetName() *string {
 	return fi.PtrTo("BindMount-" + e.Mountpoint)
 }
 
-var _ fi.NodeupHasDependencies = &BindMount{}
+var _ fi.NodeupHasDependencies = (*BindMount)(nil)
 
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *BindMount) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {

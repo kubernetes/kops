@@ -52,8 +52,8 @@ type LoadBalancer struct {
 	WellKnownServices []wellknownservices.WellKnownService
 }
 
-var _ fi.CompareWithID = &LoadBalancer{}
-var _ fi.HasAddress = &LoadBalancer{}
+var _ fi.CompareWithID = (*LoadBalancer)(nil)
+var _ fi.HasAddress = (*LoadBalancer)(nil)
 
 func (l *LoadBalancer) CompareWithID() *string {
 	return l.LBID

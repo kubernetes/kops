@@ -60,7 +60,7 @@ type awsVerifier struct {
 	stsRequestValidator *stsRequestValidator
 }
 
-var _ bootstrap.Verifier = &awsVerifier{}
+var _ bootstrap.Verifier = (*awsVerifier)(nil)
 
 func NewAWSVerifier(ctx context.Context, opt *AWSVerifierOptions) (bootstrap.Verifier, error) {
 	config, err := awsconfig.LoadDefaultConfig(

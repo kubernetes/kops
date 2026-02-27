@@ -40,7 +40,7 @@ type tpmAuthenticator struct {
 	instance  string
 }
 
-var _ bootstrap.Authenticator = &tpmAuthenticator{}
+var _ bootstrap.Authenticator = (*tpmAuthenticator)(nil)
 
 func NewTPMAuthenticator() (bootstrap.Authenticator, error) {
 	projectID, err := metadata.ProjectID()

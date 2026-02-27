@@ -27,7 +27,7 @@ import (
 
 // ResourceGroup
 
-var _ fi.HasLifecycle = &ResourceGroup{}
+var _ fi.HasLifecycle = (*ResourceGroup)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ResourceGroup) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ResourceGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ResourceGroup{}
+var _ fi.HasName = (*ResourceGroup)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ResourceGroup) GetName() *string {

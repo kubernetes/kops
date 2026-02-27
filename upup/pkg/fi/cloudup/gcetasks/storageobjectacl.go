@@ -39,7 +39,7 @@ type StorageObjectAcl struct {
 	Role *string
 }
 
-var _ fi.CompareWithID = &StorageObjectAcl{}
+var _ fi.CompareWithID = (*StorageObjectAcl)(nil)
 
 func (e *StorageObjectAcl) CompareWithID() *string {
 	return e.Name

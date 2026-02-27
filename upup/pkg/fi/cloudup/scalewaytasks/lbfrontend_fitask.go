@@ -27,7 +27,7 @@ import (
 
 // LBFrontend
 
-var _ fi.HasLifecycle = &LBFrontend{}
+var _ fi.HasLifecycle = (*LBFrontend)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *LBFrontend) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *LBFrontend) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &LBFrontend{}
+var _ fi.HasName = (*LBFrontend)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *LBFrontend) GetName() *string {

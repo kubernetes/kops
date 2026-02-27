@@ -39,7 +39,7 @@ type Firewall struct {
 	Labels map[string]string
 }
 
-var _ fi.CompareWithID = &Firewall{}
+var _ fi.CompareWithID = (*Firewall)(nil)
 
 func (v *Firewall) CompareWithID() *string {
 	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
@@ -201,7 +201,7 @@ type FirewallRule struct {
 	Port      *string
 }
 
-var _ fi.CloudupHasDependencies = &FirewallRule{}
+var _ fi.CloudupHasDependencies = (*FirewallRule)(nil)
 
 func (e *FirewallRule) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil

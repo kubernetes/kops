@@ -60,7 +60,7 @@ type MockAzureCloud struct {
 	StorageAccountsClient           *MockStorageAccountsClient
 }
 
-var _ azure.AzureCloud = &MockAzureCloud{}
+var _ azure.AzureCloud = (*MockAzureCloud)(nil)
 
 // NewMockAzureCloud returns a new MockAzureCloud.
 func NewMockAzureCloud(location string) *MockAzureCloud {
@@ -268,7 +268,7 @@ type MockResourceGroupsClient struct {
 	RGs map[string]*resources.ResourceGroup
 }
 
-var _ azure.ResourceGroupsClient = &MockResourceGroupsClient{}
+var _ azure.ResourceGroupsClient = (*MockResourceGroupsClient)(nil)
 
 // CreateOrUpdate creates or updates a resource group.
 func (c *MockResourceGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, parameters resources.ResourceGroup) error {
@@ -301,7 +301,7 @@ type MockVirtualNetworksClient struct {
 	VNets map[string]*network.VirtualNetwork
 }
 
-var _ azure.VirtualNetworksClient = &MockVirtualNetworksClient{}
+var _ azure.VirtualNetworksClient = (*MockVirtualNetworksClient)(nil)
 
 // CreateOrUpdate creates or updates a virtual network.
 func (c *MockVirtualNetworksClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, virtualNetworkName string, parameters network.VirtualNetwork) (*network.VirtualNetwork, error) {
@@ -338,7 +338,7 @@ type MockSubnetsClient struct {
 	Subnets map[string]*network.Subnet
 }
 
-var _ azure.SubnetsClient = &MockSubnetsClient{}
+var _ azure.SubnetsClient = (*MockSubnetsClient)(nil)
 
 // CreateOrUpdate creates or updates a subnet.
 func (c *MockSubnetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName, subnetName string, parameters network.Subnet) (*network.Subnet, error) {
@@ -376,7 +376,7 @@ type MockRouteTablesClient struct {
 	RTs map[string]*network.RouteTable
 }
 
-var _ azure.RouteTablesClient = &MockRouteTablesClient{}
+var _ azure.RouteTablesClient = (*MockRouteTablesClient)(nil)
 
 // CreateOrUpdate creates or updates a route table.
 func (c *MockRouteTablesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, routeTableName string, parameters network.RouteTable) (*network.RouteTable, error) {
@@ -414,7 +414,7 @@ type MockVMScaleSetsClient struct {
 	VMSSes map[string]*compute.VirtualMachineScaleSet
 }
 
-var _ azure.VMScaleSetsClient = &MockVMScaleSetsClient{}
+var _ azure.VMScaleSetsClient = (*MockVMScaleSetsClient)(nil)
 
 // CreateOrUpdate creates or updates a VM Scale Set.
 func (c *MockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error) {
@@ -462,7 +462,7 @@ type MockVMScaleSetVMsClient struct {
 	VMs map[string]*compute.VirtualMachineScaleSetVM
 }
 
-var _ azure.VMScaleSetVMsClient = &MockVMScaleSetVMsClient{}
+var _ azure.VMScaleSetVMsClient = (*MockVMScaleSetVMsClient)(nil)
 
 // List returns a slice of VM Scale Set VMs.
 func (c *MockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, vmssName string) ([]*compute.VirtualMachineScaleSetVM, error) {
@@ -486,7 +486,7 @@ type MockDisksClient struct {
 	Disks map[string]*compute.Disk
 }
 
-var _ azure.DisksClient = &MockDisksClient{}
+var _ azure.DisksClient = (*MockDisksClient)(nil)
 
 // CreateOrUpdate creates or updates a disk.
 func (c *MockDisksClient) CreateOrUpdate(ctx context.Context, resourceGroupName, diskName string, parameters compute.Disk) (*compute.Disk, error) {
@@ -524,7 +524,7 @@ type MockRoleAssignmentsClient struct {
 	RAs map[string]*authz.RoleAssignment
 }
 
-var _ azure.RoleAssignmentsClient = &MockRoleAssignmentsClient{}
+var _ azure.RoleAssignmentsClient = (*MockRoleAssignmentsClient)(nil)
 
 // Create creates a new role assignment.
 func (c *MockRoleAssignmentsClient) Create(
@@ -573,7 +573,7 @@ type MockNetworkInterfacesClient struct {
 	NIs map[string]*network.Interface
 }
 
-var _ azure.NetworkInterfacesClient = &MockNetworkInterfacesClient{}
+var _ azure.NetworkInterfacesClient = (*MockNetworkInterfacesClient)(nil)
 
 // List returns a slice of VM Scale Set Network Interfaces.
 func (c *MockNetworkInterfacesClient) ListScaleSetsNetworkInterfaces(ctx context.Context, resourceGroupName, vmssName string) ([]*network.Interface, error) {
@@ -590,7 +590,7 @@ type MockLoadBalancersClient struct {
 	LBs map[string]*network.LoadBalancer
 }
 
-var _ azure.LoadBalancersClient = &MockLoadBalancersClient{}
+var _ azure.LoadBalancersClient = (*MockLoadBalancersClient)(nil)
 
 // CreateOrUpdate creates a new loadbalancer.
 func (c *MockLoadBalancersClient) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) (*network.LoadBalancer, error) {
@@ -637,7 +637,7 @@ type MockPublicIPAddressesClient struct {
 	PubIPs map[string]*network.PublicIPAddress
 }
 
-var _ azure.PublicIPAddressesClient = &MockPublicIPAddressesClient{}
+var _ azure.PublicIPAddressesClient = (*MockPublicIPAddressesClient)(nil)
 
 // CreateOrUpdate creates a new public ip address.
 func (c *MockPublicIPAddressesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error) {
@@ -674,7 +674,7 @@ type MockNetworkSecurityGroupsClient struct {
 	NSGs map[string]*network.SecurityGroup
 }
 
-var _ azure.NetworkSecurityGroupsClient = &MockNetworkSecurityGroupsClient{}
+var _ azure.NetworkSecurityGroupsClient = (*MockNetworkSecurityGroupsClient)(nil)
 
 // CreateOrUpdate creates or updates a Network Security Group.
 func (c *MockNetworkSecurityGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, nsgName string, parameters network.SecurityGroup) (*network.SecurityGroup, error) {
@@ -721,7 +721,7 @@ type MockApplicationSecurityGroupsClient struct {
 	ASGs map[string]*network.ApplicationSecurityGroup
 }
 
-var _ azure.ApplicationSecurityGroupsClient = &MockApplicationSecurityGroupsClient{}
+var _ azure.ApplicationSecurityGroupsClient = (*MockApplicationSecurityGroupsClient)(nil)
 
 // CreateOrUpdate creates or updates a Application Security Group.
 func (c *MockApplicationSecurityGroupsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, asgName string, parameters network.ApplicationSecurityGroup) (*network.ApplicationSecurityGroup, error) {
@@ -768,7 +768,7 @@ type MockNatGatewaysClient struct {
 	NGWs map[string]*network.NatGateway
 }
 
-var _ azure.NatGatewaysClient = &MockNatGatewaysClient{}
+var _ azure.NatGatewaysClient = (*MockNatGatewaysClient)(nil)
 
 // CreateOrUpdate creates or updates a Nat Gateway.
 func (c *MockNatGatewaysClient) CreateOrUpdate(ctx context.Context, resourceGroupName, ngwName string, parameters network.NatGateway) (*network.NatGateway, error) {
@@ -815,7 +815,7 @@ type MockStorageAccountsClient struct {
 	SAs map[string]*armstorage.Account
 }
 
-var _ azure.StorageAccountsClient = &MockStorageAccountsClient{}
+var _ azure.StorageAccountsClient = (*MockStorageAccountsClient)(nil)
 
 // List returns a slice of Storage Accounts.
 func (c *MockStorageAccountsClient) List(ctx context.Context) ([]*armstorage.Account, error) {

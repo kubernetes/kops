@@ -44,7 +44,7 @@ func (e *LBPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTa
 	return deps
 }
 
-var _ fi.CompareWithID = &LBPool{}
+var _ fi.CompareWithID = (*LBPool)(nil)
 
 func (s *LBPool) CompareWithID() *string {
 	return s.ID

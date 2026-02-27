@@ -39,7 +39,7 @@ type digitalOceanVerifier struct {
 	doClient *godo.Client
 }
 
-var _ bootstrap.Verifier = &digitalOceanVerifier{}
+var _ bootstrap.Verifier = (*digitalOceanVerifier)(nil)
 
 func NewVerifier(ctx context.Context, opt *DigitalOceanVerifierOptions) (bootstrap.Verifier, error) {
 	accessToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")

@@ -37,7 +37,7 @@ type ApplicationSecurityGroupsClientImpl struct {
 	c *network.ApplicationSecurityGroupsClient
 }
 
-var _ ApplicationSecurityGroupsClient = &ApplicationSecurityGroupsClientImpl{}
+var _ ApplicationSecurityGroupsClient = (*ApplicationSecurityGroupsClientImpl)(nil)
 
 func (c *ApplicationSecurityGroupsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, applicationSecurityGroupName string, parameters network.ApplicationSecurityGroup) (*network.ApplicationSecurityGroup, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, applicationSecurityGroupName, parameters, nil)

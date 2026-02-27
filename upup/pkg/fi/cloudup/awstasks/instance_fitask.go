@@ -27,7 +27,7 @@ import (
 
 // Instance
 
-var _ fi.HasLifecycle = &Instance{}
+var _ fi.HasLifecycle = (*Instance)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *Instance) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *Instance) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Instance{}
+var _ fi.HasName = (*Instance)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Instance) GetName() *string {

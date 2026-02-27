@@ -48,7 +48,7 @@ type Subnet struct {
 	Shared *bool
 }
 
-var _ fi.CompareWithID = &Subnet{}
+var _ fi.CompareWithID = (*Subnet)(nil)
 
 func (e *Subnet) CompareWithID() *string {
 	return e.Name

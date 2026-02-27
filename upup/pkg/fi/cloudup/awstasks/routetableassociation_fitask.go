@@ -27,7 +27,7 @@ import (
 
 // RouteTableAssociation
 
-var _ fi.HasLifecycle = &RouteTableAssociation{}
+var _ fi.HasLifecycle = (*RouteTableAssociation)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *RouteTableAssociation) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *RouteTableAssociation) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &RouteTableAssociation{}
+var _ fi.HasName = (*RouteTableAssociation)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *RouteTableAssociation) GetName() *string {

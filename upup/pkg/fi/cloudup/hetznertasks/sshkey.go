@@ -41,7 +41,7 @@ type SSHKey struct {
 	Labels map[string]string
 }
 
-var _ fi.CompareWithID = &SSHKey{}
+var _ fi.CompareWithID = (*SSHKey)(nil)
 
 func (v *SSHKey) CompareWithID() *string {
 	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))

@@ -51,7 +51,7 @@ func NewTerraformTarget(cloud fi.Cloud, project string, outDir string, clusterSp
 	return &target
 }
 
-var _ fi.CloudupTarget = &TerraformTarget{}
+var _ fi.CloudupTarget = (*TerraformTarget)(nil)
 
 func (t *TerraformTarget) AddFileResource(resourceType string, resourceName string, key string, r fi.Resource, base64 bool) (*terraformWriter.Literal, error) {
 	d, err := fi.ResourceAsBytes(r)

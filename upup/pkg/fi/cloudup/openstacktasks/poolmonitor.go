@@ -44,7 +44,7 @@ func (p *PoolMonitor) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Clou
 	return deps
 }
 
-var _ fi.CompareWithID = &PoolMonitor{}
+var _ fi.CompareWithID = (*PoolMonitor)(nil)
 
 func (p *PoolMonitor) CompareWithID() *string {
 	return p.ID

@@ -27,7 +27,7 @@ import (
 
 // HealthCheck
 
-var _ fi.HasLifecycle = &HealthCheck{}
+var _ fi.HasLifecycle = (*HealthCheck)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *HealthCheck) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *HealthCheck) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &HealthCheck{}
+var _ fi.HasName = (*HealthCheck)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *HealthCheck) GetName() *string {

@@ -36,13 +36,13 @@ type UserTask struct {
 	Home  string `json:"home"`
 }
 
-var _ fi.NodeupTask = &UserTask{}
+var _ fi.NodeupTask = (*UserTask)(nil)
 
 func (e *UserTask) String() string {
 	return fmt.Sprintf("User: %s", e.Name)
 }
 
-var _ fi.HasName = &File{}
+var _ fi.HasName = (*File)(nil)
 
 func (f *UserTask) GetName() *string {
 	return &f.Name

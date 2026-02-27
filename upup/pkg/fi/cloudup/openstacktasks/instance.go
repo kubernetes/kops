@@ -99,7 +99,7 @@ func (e *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudup
 	return deps
 }
 
-var _ fi.CompareWithID = &Instance{}
+var _ fi.CompareWithID = (*Instance)(nil)
 
 func (e *Instance) CompareWithID() *string {
 	return e.ID

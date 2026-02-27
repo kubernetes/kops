@@ -39,7 +39,7 @@ type StorageBucketIAM struct {
 	Role                 *string
 }
 
-var _ fi.CompareWithID = &StorageBucketIAM{}
+var _ fi.CompareWithID = (*StorageBucketIAM)(nil)
 
 func (e *StorageBucketIAM) CompareWithID() *string {
 	return e.Name

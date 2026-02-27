@@ -24,7 +24,7 @@ type GCEAPITarget struct {
 	Cloud GCECloud
 }
 
-var _ fi.CloudupTarget = &GCEAPITarget{}
+var _ fi.CloudupTarget = (*GCEAPITarget)(nil)
 
 func NewGCEAPITarget(cloud GCECloud) *GCEAPITarget {
 	return &GCEAPITarget{

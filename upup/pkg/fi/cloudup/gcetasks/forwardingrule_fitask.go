@@ -27,7 +27,7 @@ import (
 
 // ForwardingRule
 
-var _ fi.HasLifecycle = &ForwardingRule{}
+var _ fi.HasLifecycle = (*ForwardingRule)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ForwardingRule) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ForwardingRule) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ForwardingRule{}
+var _ fi.HasName = (*ForwardingRule)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ForwardingRule) GetName() *string {

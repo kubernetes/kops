@@ -416,7 +416,7 @@ type deleteLaunchTemplate struct {
 	lc *ec2types.LaunchTemplate
 }
 
-var _ fi.CloudupDeletion = &deleteLaunchTemplate{}
+var _ fi.CloudupDeletion = (*deleteLaunchTemplate)(nil)
 
 // TaskName returns the task name
 func (d *deleteLaunchTemplate) TaskName() string {

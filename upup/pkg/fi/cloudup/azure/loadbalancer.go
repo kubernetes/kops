@@ -39,7 +39,7 @@ type loadBalancersClientImpl struct {
 	c *network.LoadBalancersClient
 }
 
-var _ LoadBalancersClient = &loadBalancersClientImpl{}
+var _ LoadBalancersClient = (*loadBalancersClientImpl)(nil)
 
 func (c *loadBalancersClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, loadBalancerName string, parameters network.LoadBalancer) (*network.LoadBalancer, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, loadBalancerName, parameters, nil)

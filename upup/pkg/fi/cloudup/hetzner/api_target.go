@@ -24,7 +24,7 @@ type HetznerAPITarget struct {
 	Cloud HetznerCloud
 }
 
-var _ fi.CloudupTarget = &HetznerAPITarget{}
+var _ fi.CloudupTarget = (*HetznerAPITarget)(nil)
 
 func NewHetznerAPITarget(cloud HetznerCloud) *HetznerAPITarget {
 	return &HetznerAPITarget{

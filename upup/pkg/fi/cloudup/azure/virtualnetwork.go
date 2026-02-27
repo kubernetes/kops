@@ -37,7 +37,7 @@ type virtualNetworksClientImpl struct {
 	c *network.VirtualNetworksClient
 }
 
-var _ VirtualNetworksClient = &virtualNetworksClientImpl{}
+var _ VirtualNetworksClient = (*virtualNetworksClientImpl)(nil)
 
 func (c *virtualNetworksClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, virtualNetworkName string, parameters network.VirtualNetwork) (*network.VirtualNetwork, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, virtualNetworkName, parameters, nil)

@@ -38,7 +38,7 @@ type Volume struct {
 	Labels map[string]string
 }
 
-var _ fi.CompareWithID = &Volume{}
+var _ fi.CompareWithID = (*Volume)(nil)
 
 func (v *Volume) CompareWithID() *string {
 	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))

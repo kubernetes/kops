@@ -27,7 +27,7 @@ import (
 
 // AutoscalingLifecycleHook
 
-var _ fi.HasLifecycle = &AutoscalingLifecycleHook{}
+var _ fi.HasLifecycle = (*AutoscalingLifecycleHook)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *AutoscalingLifecycleHook) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *AutoscalingLifecycleHook) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &AutoscalingLifecycleHook{}
+var _ fi.HasName = (*AutoscalingLifecycleHook)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *AutoscalingLifecycleHook) GetName() *string {

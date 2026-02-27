@@ -27,7 +27,7 @@ const OpenstackAuthenticationTokenPrefix = "x-openstack-id "
 type openstackAuthenticator struct {
 }
 
-var _ bootstrap.Authenticator = &openstackAuthenticator{}
+var _ bootstrap.Authenticator = (*openstackAuthenticator)(nil)
 
 func NewOpenstackAuthenticator() (bootstrap.Authenticator, error) {
 	return &openstackAuthenticator{}, nil

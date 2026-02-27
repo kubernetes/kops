@@ -320,7 +320,7 @@ type openstackCloud struct {
 	useVIPACL       *bool
 }
 
-var _ fi.Cloud = &openstackCloud{}
+var _ fi.Cloud = (*openstackCloud)(nil)
 
 var openstackCloudInstances = make(map[string]OpenstackCloud)
 

@@ -36,7 +36,7 @@ type TargetPool struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.CompareWithID = &TargetPool{}
+var _ fi.CompareWithID = (*TargetPool)(nil)
 
 func (e *TargetPool) CompareWithID() *string {
 	return e.Name

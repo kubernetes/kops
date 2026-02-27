@@ -53,8 +53,8 @@ type FirewallRule struct {
 	Disabled bool
 }
 
-var _ fi.CompareWithID = &FirewallRule{}
-var _ fi.CloudupTaskNormalize = &FirewallRule{}
+var _ fi.CompareWithID = (*FirewallRule)(nil)
+var _ fi.CloudupTaskNormalize = (*FirewallRule)(nil)
 
 func (e *FirewallRule) CompareWithID() *string {
 	return e.Name

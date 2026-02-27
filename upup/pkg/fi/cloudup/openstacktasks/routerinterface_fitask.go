@@ -27,7 +27,7 @@ import (
 
 // RouterInterface
 
-var _ fi.HasLifecycle = &RouterInterface{}
+var _ fi.HasLifecycle = (*RouterInterface)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *RouterInterface) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *RouterInterface) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &RouterInterface{}
+var _ fi.HasName = (*RouterInterface)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *RouterInterface) GetName() *string {

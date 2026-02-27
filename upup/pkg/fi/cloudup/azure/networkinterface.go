@@ -33,7 +33,7 @@ type networkInterfacesClientImpl struct {
 	c *network.InterfacesClient
 }
 
-var _ NetworkInterfacesClient = &networkInterfacesClientImpl{}
+var _ NetworkInterfacesClient = (*networkInterfacesClientImpl)(nil)
 
 func (c *networkInterfacesClientImpl) ListScaleSetsNetworkInterfaces(ctx context.Context, resourceGroupName, vmssName string) ([]*network.Interface, error) {
 	var l []*network.Interface

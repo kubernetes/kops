@@ -79,7 +79,7 @@ func (a DeletionByTaskName[T]) Less(i, j int) bool {
 	return a[i].TaskName() < a[j].TaskName()
 }
 
-var _ Target[CloudupSubContext] = &DryRunTarget[CloudupSubContext]{}
+var _ Target[CloudupSubContext] = (*DryRunTarget[CloudupSubContext])(nil)
 
 func newDryRunTarget[T SubContext](assetBuilder *assets.AssetBuilder, defaultCheckExisting bool, out io.Writer) *DryRunTarget[T] {
 	t := &DryRunTarget[T]{}

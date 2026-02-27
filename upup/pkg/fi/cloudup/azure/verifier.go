@@ -46,7 +46,7 @@ type azureVerifier struct {
 	clusterName string
 }
 
-var _ bootstrap.Verifier = &azureVerifier{}
+var _ bootstrap.Verifier = (*azureVerifier)(nil)
 
 func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap.Verifier, error) {
 	azureClient, err := newClient()

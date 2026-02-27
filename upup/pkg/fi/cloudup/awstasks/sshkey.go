@@ -46,8 +46,8 @@ type SSHKey struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &SSHKey{}
-var _ fi.CloudupTaskNormalize = &SSHKey{}
+var _ fi.CompareWithID = (*SSHKey)(nil)
+var _ fi.CloudupTaskNormalize = (*SSHKey)(nil)
 
 func (e *SSHKey) CompareWithID() *string {
 	return e.Name

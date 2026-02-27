@@ -61,7 +61,7 @@ func (t *LoadImageTask) GetDependencies(tasks map[string]fi.NodeupTask) []fi.Nod
 	return deps
 }
 
-var _ fi.HasName = &LoadImageTask{}
+var _ fi.HasName = (*LoadImageTask)(nil)
 
 func (t *LoadImageTask) GetName() *string {
 	if t.Name == "" {

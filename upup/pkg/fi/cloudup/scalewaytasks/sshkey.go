@@ -39,7 +39,7 @@ type SSHKey struct {
 	KeyPairFingerPrint *string
 }
 
-var _ fi.CompareWithID = &SSHKey{}
+var _ fi.CompareWithID = (*SSHKey)(nil)
 
 func (s *SSHKey) CompareWithID() *string {
 	return s.Name

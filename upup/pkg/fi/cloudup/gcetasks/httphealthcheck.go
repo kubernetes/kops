@@ -38,7 +38,7 @@ type HTTPHealthcheck struct {
 	RequestPath *string
 }
 
-var _ fi.CompareWithID = &HTTPHealthcheck{}
+var _ fi.CompareWithID = (*HTTPHealthcheck)(nil)
 
 func (e *HTTPHealthcheck) CompareWithID() *string {
 	return e.Name

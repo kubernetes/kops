@@ -66,20 +66,20 @@ type JSONWebKey struct {
 	discoveryapi.JSONWebKey
 }
 
-var _ fi.NodeupHasDependencies = &JSONWebKey{}
+var _ fi.NodeupHasDependencies = (*JSONWebKey)(nil)
 
 // GetDependencies returns the dependencies for the JSONWebKey; there are none.
 func (j *JSONWebKey) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
 	return nil
 }
 
-var _ fi.NodeupTask = &UpdateEtcHostsTask{}
+var _ fi.NodeupTask = (*UpdateEtcHostsTask)(nil)
 
 func (e *DiscoveryServiceRegisterTask) String() string {
 	return fmt.Sprintf("DiscoveryServiceRegisterTask: %s", e.Name)
 }
 
-var _ fi.HasName = &DiscoveryServiceRegisterTask{}
+var _ fi.HasName = (*DiscoveryServiceRegisterTask)(nil)
 
 func (f *DiscoveryServiceRegisterTask) GetName() *string {
 	return &f.Name

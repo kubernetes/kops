@@ -27,7 +27,7 @@ import (
 
 // LaunchSpec
 
-var _ fi.HasLifecycle = &LaunchSpec{}
+var _ fi.HasLifecycle = (*LaunchSpec)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *LaunchSpec) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *LaunchSpec) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &LaunchSpec{}
+var _ fi.HasName = (*LaunchSpec)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *LaunchSpec) GetName() *string {

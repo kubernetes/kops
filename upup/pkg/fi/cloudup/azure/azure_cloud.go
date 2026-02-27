@@ -86,7 +86,7 @@ type azureCloudImplementation struct {
 	storageAccountsClient           StorageAccountsClient
 }
 
-var _ fi.Cloud = &azureCloudImplementation{}
+var _ fi.Cloud = (*azureCloudImplementation)(nil)
 
 // NewAzureCloud creates a new AzureCloud.
 func NewAzureCloud(subscriptionID, resourceGroupName, location string, tags map[string]string) (AzureCloud, error) {

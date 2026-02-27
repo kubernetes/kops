@@ -34,7 +34,7 @@ type vmScaleSetVMsClientImpl struct {
 	c *compute.VirtualMachineScaleSetVMsClient
 }
 
-var _ VMScaleSetVMsClient = &vmScaleSetVMsClientImpl{}
+var _ VMScaleSetVMsClient = (*vmScaleSetVMsClientImpl)(nil)
 
 func (c *vmScaleSetVMsClientImpl) List(ctx context.Context, resourceGroupName, vmssName string) ([]*compute.VirtualMachineScaleSetVM, error) {
 	var l []*compute.VirtualMachineScaleSetVM

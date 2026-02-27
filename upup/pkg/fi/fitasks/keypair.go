@@ -63,7 +63,7 @@ func (e *Keypair) CheckExisting(c *fi.CloudupContext) bool {
 	return true
 }
 
-var _ fi.CompareWithID = &Keypair{}
+var _ fi.CompareWithID = (*Keypair)(nil)
 
 func (e *Keypair) CompareWithID() *string {
 	return &e.Subject

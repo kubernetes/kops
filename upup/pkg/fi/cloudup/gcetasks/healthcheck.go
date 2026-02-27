@@ -38,7 +38,7 @@ type HealthCheck struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.CompareWithID = &HealthCheck{}
+var _ fi.CompareWithID = (*HealthCheck)(nil)
 
 func (e *HealthCheck) CompareWithID() *string {
 	return e.Name
