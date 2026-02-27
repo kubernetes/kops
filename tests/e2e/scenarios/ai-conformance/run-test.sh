@@ -46,7 +46,6 @@ if [[ "${AVAILABILITY}" == "false" ]]; then
 fi
 rm -f "${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability"
 
-
 kops-acquire-latest
 
 # Cluster Configuration
@@ -85,6 +84,9 @@ EOF
 
 ${KOPS} update cluster --name "${CLUSTER_NAME}" --yes --admin
 
+echo "Listing node with their labels..."
+kubectl get nodes --show-labels
+
 echo "----------------------------------------------------------------"
 echo "Deploying AI Conformance Components"
 echo "----------------------------------------------------------------"
@@ -97,18 +99,34 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 echo "Installing cert-manager..."
 kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
 
-# Setup helm repo for NVIDIA GPU Operator and DRA Driver
+# Setup helm repos for monitoring and NVIDIA components
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
 helm repo update
+
+# Prometheus Stack (kube-prometheus-stack)
+# Provides Prometheus, Grafana, Alertmanager, and ServiceMonitor CRDs
+# Must be installed before dcgm-exporter so ServiceMonitor CRDs are available
+echo "Installing kube-prometheus-stack..."
+helm upgrade -i kube-prometheus-stack \
+  oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
+  --set grafana.enabled=false \
+  --wait
 
 # NVIDIA GPU Operator
 # Manages the full NVIDIA stack: kernel driver, container toolkit, device plugin.
 # The driver is installed into /run/nvidia/driver on each node.
 helm upgrade -i nvidia-gpu-operator --wait \
-    -n gpu-operator --create-namespace \
-    nvidia/gpu-operator \
-    --version=v25.10.1 \
-    --wait
+  -n gpu-operator --create-namespace \
+  nvidia/gpu-operator \
+  --version=v25.10.1 \
+  --set dcgmExporter.enabled=false \
+  --wait
 
 PATH="$(pwd):$PATH"
 export PATH
@@ -117,7 +135,7 @@ export PATH
 # Uses the driver installed by GPU Operator at /run/nvidia/driver (the default).
 echo "Installing NVIDIA DRA Driver..."
 
-cat > values.yaml <<EOF
+cat >values.yaml <<EOF
 # The driver daemonset needs a toleration for the nvidia.com/gpu taint
 kubeletPlugin:
   tolerations:
@@ -127,15 +145,38 @@ kubeletPlugin:
 EOF
 
 helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
-    --version="25.12.0" \
-    --create-namespace \
-    --namespace nvidia-dra-driver-gpu \
-    --set resources.gpus.enabled=true \
-    --set nvidiaDriverRoot=/run/nvidia/driver \
-    --set gpuResourcesEnabledOverride=true \
-    -f values.yaml \
-    --wait
+  --version="25.12.0" \
+  --create-namespace \
+  --namespace nvidia-dra-driver-gpu \
+  --set resources.gpus.enabled=true \
+  --set nvidiaDriverRoot=/run/nvidia/driver \
+  --set gpuResourcesEnabledOverride=true \
+  -f values.yaml \
+  --wait
 
+# NVIDIA DCGM Exporter
+# Exports GPU metrics to Prometheus for monitoring GPU utilization, memory, temperature, etc.
+echo "Installing NVIDIA DCGM Exporter..."
+
+cat >dcgm-exporter-values.yaml <<EOF
+# Tolerations to run on GPU nodes with nvidia.com/gpu taint
+tolerations:
+- key: nvidia.com/gpu
+  operator: Exists
+  effect: NoSchedule
+
+# ServiceMonitor for Prometheus integration
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  additionalLabels:
+    release: kube-prometheus-stack
+EOF
+
+helm upgrade -i dcgm-exporter gpu-helm-charts/dcgm-exporter \
+  --namespace monitoring \
+  -f dcgm-exporter-values.yaml \
+  --wait
 
 # KubeRay
 echo "Installing KubeRay Operator..."
@@ -144,7 +185,6 @@ kubectl apply --server-side -k "github.com/ray-project/kuberay/ray-operator/conf
 # Kueue
 echo "Installing Kueue..."
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
-
 
 echo "----------------------------------------------------------------"
 echo "Verifying Cluster and Components"
@@ -165,6 +205,16 @@ kubectl rollout status deployment -n kuberay-system kuberay-operator --timeout=5
 
 echo "Verifying Gateway API..."
 kubectl get gatewayclass || echo "Warning: GatewayClass not found"
+
+echo "Verifying Prometheus Stack..."
+kubectl rollout status deployment -n monitoring kube-prometheus-stack-operator --timeout=5m || echo "Warning: Prometheus Operator not ready yet"
+kubectl rollout status statefulset -n monitoring prometheus-kube-prometheus-stack-prometheus --timeout=5m || echo "Warning: Prometheus not ready yet"
+
+echo "Verifying DCGM Exporter..."
+kubectl rollout status daemonset -n monitoring dcgm-exporter --timeout=5m || echo "Warning: DCGM Exporter not ready yet"
+
+echo "Verifying ServiceMonitor for DCGM..."
+kubectl get servicemonitor -n monitoring dcgm-exporter || echo "Warning: DCGM ServiceMonitor not found"
 
 echo "Verifying Allocatable GPUs..."
 # Wait a bit for nodes to report resources
@@ -215,6 +265,28 @@ EOF
 echo "Waiting for Sample Workload to Complete..."
 kubectl wait --for=condition=complete job/test-gpu-pod --timeout=5m || true
 kubectl logs job/test-gpu-pod || echo "Failed to get logs"
+
+echo "Verifying GPU Metrics in Prometheus..."
+# Wait for DCGM exporter to start collecting metrics
+# Query Prometheus for DCGM GPU metrics with retries
+PROM_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')
+if [ -n "${PROM_POD}" ]; then
+  echo "Querying Prometheus for DCGM_FI_DEV_GPU_UTIL metric (retrying up to 5 times)..."
+  for i in {1..5}; do
+    echo "Attempt $i..."
+    METRICS=$(kubectl exec -n monitoring "${PROM_POD}" -c prometheus -- \
+      wget -qO- 'http://localhost:9090/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL' 2>/dev/null)
+    if echo "${METRICS}" | grep -q "result"; then
+      echo "Successfully retrieved GPU metrics:"
+      echo "${METRICS}" | head -c 500
+      break
+    fi
+    echo "Metrics not yet available, waiting 20s..."
+    sleep 20
+  done
+else
+  echo "Warning: Prometheus pod not found"
+fi
 
 echo "AI Conformance Environment Setup Complete."
 
