@@ -2,7 +2,611 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
+  labels:
+    addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-load-balancer-controller
+    k8s-addon: aws-load-balancer-controller.addons.k8s.io
+  name: albtargetcontrolconfigs.elbv2.k8s.aws
+spec:
+  group: elbv2.k8s.aws
+  names:
+    kind: ALBTargetControlConfig
+    listKind: ALBTargetControlConfigList
+    plural: albtargetcontrolconfigs
+    singular: albtargetcontrolconfig
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: The ALB target control agent sidecar image
+      jsonPath: .spec.image
+      name: IMAGE
+      type: string
+    - description: Application destination address
+      jsonPath: .spec.destinationAddress
+      name: DESTINATION
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: ALBTargetControlConfig is the Schema for the albtargetcontrolconfigs
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ALBTargetControlConfigSpec defines the desired state of ALBTargetControlConfig
+            properties:
+              controlAddress:
+                description: |-
+                  ControlAddress specifies the socket (IP:port) where the load balancer exchanges management traffic with agents.
+                  The port in the socket is the target control port you configure for the target group.
+                pattern: ^.+:[0-9]+$
+                type: string
+              dataAddress:
+                description: |-
+                  DataAddress specifies the socket (IP:port) where the agent receives application traffic from the load balancer.
+                  The port in this socket is the application traffic port you configure for your target group.
+                pattern: ^.+:[0-9]+$
+                type: string
+              destinationAddress:
+                description: |-
+                  DestinationAddress specifies the socket (IP:port) where the agent proxies application traffic.
+                  Your application should be listening on this port.
+                pattern: ^.+:[0-9]+$
+                type: string
+              image:
+                description: |-
+                  Image specifies the container image for the ALB target control agent sidecar.
+                  The agent is available as a Docker image at: public.ecr.aws/aws-elb/target-optimizer/target-control-agent:latest
+                type: string
+              maxConcurrency:
+                default: 1
+                description: MaxConcurrency specifies the maximum number of concurrent
+                  requests that the target receives from the load balancer.
+                format: int32
+                maximum: 1000
+                minimum: 0
+                type: integer
+              protocolVersion:
+                description: |-
+                  ProtocolVersion specifies the protocol through which the load balancer communicates with the agent.
+                  Possible values are HTTP1, HTTP2, GRPC.
+                enum:
+                - HTTP1
+                - HTTP2
+                - GRPC
+                type: string
+              resources:
+                description: Resources specifies the resource requirements for the
+                  ALB target control agent sidecar
+                properties:
+                  claims:
+                    description: |-
+                      Claims lists the names of resources, defined in spec.resourceClaims,
+                      that are used by this container.
+
+                      This is an alpha field and requires enabling the
+                      DynamicResourceAllocation feature gate.
+
+                      This field is immutable. It can only be set for containers.
+                    items:
+                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                      properties:
+                        name:
+                          description: |-
+                            Name must match the name of one entry in pod.spec.resourceClaims of
+                            the Pod where this field is used. It makes that resource available
+                            inside a container.
+                          type: string
+                        request:
+                          description: |-
+                            Request is the name chosen for a request in the referenced claim.
+                            If empty, everything from the claim is made available, otherwise
+                            only the result of this request.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                    x-kubernetes-list-map-keys:
+                    - name
+                    x-kubernetes-list-type: map
+                  limits:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: |-
+                      Limits describes the maximum amount of compute resources allowed.
+                      More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                    type: object
+                  requests:
+                    additionalProperties:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
+                    description: |-
+                      Requests describes the minimum amount of compute resources required.
+                      If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+                      otherwise to an implementation-defined value. Requests cannot exceed Limits.
+                      More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                    type: object
+                type: object
+              rustLog:
+                description: |-
+                  RustLog specifies the log level of the agent process. The agent software is written in Rust.
+                  Possible values are debug, info, and error.
+                enum:
+                - debug
+                - info
+                - error
+                type: string
+              tlsCertPath:
+                description: |-
+                  TLSCertPath specifies the location of the TLS certificate that the agent provides to the load balancer during TLS handshake.
+                  By default, the agent generates a self-signed certificate in-memory.
+                type: string
+              tlsKeyPath:
+                description: |-
+                  TLSKeyPath specifies the location of the private key corresponding to the TLS certificate that the agent provides to the load balancer during TLS handshake.
+                  By default, the agent generates a private key in memory.
+                type: string
+              tlsSecurityPolicy:
+                description: TLSSecurityPolicy specifies the ELB security policy that
+                  you configure for the target group.
+                type: string
+            required:
+            - controlAddress
+            - dataAddress
+            - destinationAddress
+            - image
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  labels:
+    addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: aws-load-balancer-controller
+    k8s-addon: aws-load-balancer-controller.addons.k8s.io
+  name: globalaccelerators.aga.k8s.aws
+spec:
+  group: aga.k8s.aws
+  names:
+    kind: GlobalAccelerator
+    listKind: GlobalAcceleratorList
+    plural: globalaccelerators
+    singular: globalaccelerator
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: The Global Accelerator name
+      jsonPath: .spec.name
+      name: ACCELERATOR-NAME
+      type: string
+    - description: The Global Accelerator DNS name
+      jsonPath: .status.dnsName
+      name: DNS-NAME
+      type: string
+    - description: The Global Accelerator type
+      jsonPath: .spec.type
+      name: TYPE
+      type: string
+    - description: The Global Accelerator status
+      jsonPath: .status.status
+      name: STATUS
+      type: string
+    - description: The Global Accelerator ARN
+      jsonPath: .status.acceleratorARN
+      name: ARN
+      priority: 1
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: GlobalAccelerator is the Schema for the GlobalAccelerator API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: GlobalAcceleratorSpec defines the desired state of GlobalAccelerator
+            properties:
+              ipAddressType:
+                default: IPV4
+                description: IPAddressType is the value for the address type.
+                enum:
+                - IPV4
+                - DUAL_STACK
+                type: string
+              ipAddresses:
+                description: |-
+                  IpAddresses optionally specifies the IP addresses from your own IP address pool (BYOIP) to use for the accelerator's static IP addresses.
+                  You can specify one or two addresses. Do not include the /32 suffix.
+                  If you bring your own IP address pool to Global Accelerator (BYOIP), you can choose an IPv4 address from your own pool to use for the accelerator's static IPv4 address.
+                  After you bring an address range to AWS, it appears in your account as an address pool. When you create an accelerator, you can assign one IPv4 address from your range to it.
+                  Global Accelerator assigns you a second static IPv4 address from an Amazon IP address range. If you bring two IPv4 address ranges to AWS, you can assign one IPv4 address from each range to your accelerator.
+                  Note that you can't update IP addresses for an existing accelerator. To change them, you must create a new accelerator with the new addresses.
+                  For more information, see Bring your own IP addresses (BYOIP) in the AWS Global Accelerator Developer Guide.
+                  https://docs.aws.amazon.com/global-accelerator/latest/dg/using-byoip.html
+                items:
+                  type: string
+                maxItems: 2
+                minItems: 1
+                type: array
+              listeners:
+                description: Listeners defines the listeners for the Global Accelerator.
+                items:
+                  description: GlobalAcceleratorListener defines a listener for the
+                    Global Accelerator.
+                  properties:
+                    clientAffinity:
+                      default: NONE
+                      description: |-
+                        ClientAffinity lets you direct all requests from a user to the same endpoint, if you have stateful applications, regardless of the port and protocol of the client request.
+                        Client affinity gives you control over whether to always route each client to the same specific endpoint.
+                        AWS Global Accelerator uses a consistent-flow hashing algorithm to choose the optimal endpoint for a connection.
+                        If client affinity is NONE, Global Accelerator uses the "five-tuple" (5-tuple) properties—source IP address, source port, destination IP address, destination port, and protocol—to select the hash value, and then chooses the best endpoint.
+                        However, with this setting, if someone uses different ports to connect to Global Accelerator, their connections might not be always routed to the same endpoint because the hash value changes.
+                        If you want a given client to always be routed to the same endpoint, set client affinity to SOURCE_IP instead.
+                        When you use the SOURCE_IP setting, Global Accelerator uses the "two-tuple" (2-tuple) properties— source (client) IP address and destination IP address—to select the hash value.
+                        The default value is NONE.
+                      enum:
+                      - SOURCE_IP
+                      - NONE
+                      type: string
+                    endpointGroups:
+                      description: EndpointGroups defines a list of endpoint groups
+                        for a Global Accelerator listener.
+                      items:
+                        description: GlobalAcceleratorEndpointGroup defines an endpoint
+                          group for a Global Accelerator listener.
+                        properties:
+                          endpoints:
+                            description: Endpoints is the list of endpoint configurations
+                              for this endpoint group.
+                            items:
+                              description: GlobalAcceleratorEndpoint defines an endpoint
+                                for a Global Accelerator endpoint group.
+                              properties:
+                                clientIPPreservationEnabled:
+                                  default: true
+                                  description: |-
+                                    ClientIPPreservationEnabled indicates whether client IP address preservation is enabled for an Application Load Balancer endpoint.
+                                    The value is true or false. The default value is true for new accelerators.
+                                    If the value is set to true, the client's IP address is preserved in the X-Forwarded-For request header as traffic travels to applications on the Application Load Balancer endpoint fronted by the accelerator.
+                                    For more information, see Preserve Client IP Addresses in the AWS Global Accelerator Developer Guide:
+                                    https://docs.aws.amazon.com/global-accelerator/latest/dg/preserve-client-ip-address.html
+                                  type: boolean
+                                endpointID:
+                                  description: |-
+                                    EndpointID is the ID of the endpoint when type is EndpointID.
+                                    If the endpoint is a Network Load Balancer or Application Load Balancer, this is the Amazon Resource Name (ARN) of the resource.
+                                    A resource must be valid and active when you add it as an endpoint.
+                                    Mandatory for remote regions.
+                                  maxLength: 255
+                                  type: string
+                                name:
+                                  description: Name is the name of the Kubernetes
+                                    resource when type is Service, Ingress, or Gateway.
+                                  type: string
+                                namespace:
+                                  description: |-
+                                    Namespace is the namespace of the Kubernetes resource when type is Service, Ingress, or Gateway.
+                                    If not specified, defaults to the same namespace as the GlobalAccelerator resource.
+                                  type: string
+                                type:
+                                  description: Type specifies the type of endpoint
+                                    reference.
+                                  enum:
+                                  - EndpointID
+                                  - Service
+                                  - Ingress
+                                  - Gateway
+                                  type: string
+                                weight:
+                                  default: 128
+                                  description: |-
+                                    Weight is the weight associated with the endpoint. When you add weights to endpoints, you configure Global Accelerator to route traffic based on proportions that you specify.
+                                    For example, you might specify endpoint weights of 4, 5, 5, and 6 (sum=20). The result is that 4/20 of your traffic, on average, is routed to the first endpoint,
+                                    5/20 is routed both to the second and third endpoints, and 6/20 is routed to the last endpoint.
+                                    For more information, see Endpoint Weights in the AWS Global Accelerator Developer Guide:
+                                    https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoints-endpoint-weights.html
+                                  format: int32
+                                  maximum: 255
+                                  minimum: 0
+                                  type: integer
+                              required:
+                              - type
+                              type: object
+                              x-kubernetes-validations:
+                              - message: endpointID is required and name must not
+                                  be set when type is EndpointID
+                                rule: self.type != 'EndpointID' || (has(self.endpointID)
+                                  && !has(self.name))
+                              - message: name is required and endpointID must not
+                                  be set when type is Service/Ingress/Gateway
+                                rule: self.type == 'EndpointID' || (has(self.name)
+                                  && !has(self.endpointID))
+                            type: array
+                          portOverrides:
+                            description: PortOverrides is a list of endpoint port
+                              overrides. Allows you to override the destination ports
+                              used to route traffic to an endpoint. Using a port override
+                              lets you map a list of external destination ports (that
+                              your users send traffic to) to a list of internal destination
+                              ports that you want an application endpoint to receive
+                              traffic on.
+                            items:
+                              description: |-
+                                PortOverride defines a port override for an endpoint group.
+                                Override specific listener ports used to route traffic to endpoints that are part of an endpoint group.
+                                For example, you can create a port override in which the listener receives user traffic on ports 80 and 443,
+                                but your accelerator routes that traffic to ports 1080 and 1443, respectively, on the endpoints.
+
+                                For more information, see Port overrides in the AWS Global Accelerator Developer Guide:
+                                https://docs.aws.amazon.com/global-accelerator/latest/dg/about-endpoint-groups-port-override.html
+                              properties:
+                                endpointPort:
+                                  description: |-
+                                    EndpointPort is the endpoint port that you want traffic to be routed to.
+                                    This is the port on the endpoint, such as the Application Load Balancer or Amazon EC2 instance.
+                                  format: int32
+                                  maximum: 65535
+                                  minimum: 1
+                                  type: integer
+                                listenerPort:
+                                  description: |-
+                                    ListenerPort is the listener port that you want to map to a specific endpoint port.
+                                    This is the port that user traffic arrives to the Global Accelerator on.
+                                  format: int32
+                                  maximum: 65535
+                                  minimum: 1
+                                  type: integer
+                              required:
+                              - endpointPort
+                              - listenerPort
+                              type: object
+                            type: array
+                          region:
+                            description: |-
+                              Region is the AWS Region where the endpoint group is located.
+                              If unspecified, defaults to the current cluster region.
+                            maxLength: 255
+                            type: string
+                          trafficDialPercentage:
+                            default: 100
+                            description: |-
+                              TrafficDialPercentage is the percentage of traffic to send to an AWS Regions. Additional traffic is distributed to other endpoint groups for this listener
+                              Use this action to increase (dial up) or decrease (dial down) traffic to a specific Region. The percentage is applied to the traffic that would otherwise have been routed to the Region based on optimal routing.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                        type: object
+                      type: array
+                    portRanges:
+                      description: |-
+                        PortRanges is the list of port ranges for the connections from clients to the accelerator.
+                        When not specified, the controller will automatically determine the port ranges by inspecting
+                        the referenced Kubernetes resources (Service, Ingress, or Gateway) in the endpoint groups.
+                      items:
+                        description: PortRange defines the port range for Global Accelerator
+                          listeners.
+                        properties:
+                          fromPort:
+                            description: FromPort is the first port in the range of
+                              ports, inclusive.
+                            format: int32
+                            maximum: 65535
+                            minimum: 1
+                            type: integer
+                          toPort:
+                            description: ToPort is the last port in the range of ports,
+                              inclusive.
+                            format: int32
+                            maximum: 65535
+                            minimum: 1
+                            type: integer
+                        required:
+                        - fromPort
+                        - toPort
+                        type: object
+                        x-kubernetes-validations:
+                        - message: FromPort must be less than or equal to ToPort
+                          rule: self.fromPort <= self.toPort
+                      maxItems: 10
+                      minItems: 1
+                      type: array
+                    protocol:
+                      description: |-
+                        Protocol is the protocol for the connections from clients to the accelerator.
+                        When not specified, the controller will automatically determine the protocol by inspecting
+                        the referenced Kubernetes resources (Service, Ingress, or Gateway) in the endpoint groups.
+                      enum:
+                      - TCP
+                      - UDP
+                      type: string
+                  type: object
+                type: array
+              name:
+                description: |-
+                  Name is the name of the Global Accelerator.
+                  The name must contain only alphanumeric characters or hyphens (-), and must not begin or end with a hyphen.
+                maxLength: 64
+                minLength: 1
+                pattern: ^[a-zA-Z0-9_-]{1,64}$
+                type: string
+              tags:
+                additionalProperties:
+                  type: string
+                description: Tags defines list of Tags on the Global Accelerator.
+                type: object
+            type: object
+          status:
+            description: GlobalAcceleratorStatus defines the observed state of GlobalAccelerator
+            properties:
+              acceleratorARN:
+                description: AcceleratorARN is the Amazon Resource Name (ARN) of the
+                  accelerator.
+                type: string
+              conditions:
+                description: Conditions represent the current conditions of the GlobalAccelerator.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+              dnsName:
+                description: DNSName The Domain Name System (DNS) name that Global
+                  Accelerator creates that points to an accelerator's static IPv4
+                  addresses.
+                type: string
+              dualStackDnsName:
+                description: 'DualStackDnsName is the Domain Name System (DNS) name
+                  that Global Accelerator creates that points to a dual-stack accelerator''s
+                  four static IP addresses: two IPv4 addresses and two IPv6 addresses.'
+                type: string
+              ipSets:
+                description: IPSets is the static IP addresses that Global Accelerator
+                  associates with the accelerator.
+                items:
+                  description: IPSet is the static IP addresses that Global Accelerator
+                    associates with the accelerator.
+                  properties:
+                    ipAddressFamily:
+                      description: IpAddressFamily is the types of IP addresses included
+                        in this IP set.
+                      type: string
+                    ipAddresses:
+                      description: IpAddresses is the array of IP addresses in the
+                        IP address set.
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
+              observedGeneration:
+                description: The generation observed by the GlobalAccelerator controller.
+                format: int64
+                type: integer
+              status:
+                description: Status is the current status of the accelerator.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -15,7 +619,7 @@ spec:
     kind: IngressClassParams
     listKind: IngressClassParamsList
     plural: ingressclassparams
-    singular: ingressclassparams
+    singular: ingressclassparam
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -60,8 +664,9 @@ spec:
             description: IngressClassParamsSpec defines the desired state of IngressClassParams
             properties:
               PrefixListsIDs:
-                description: PrefixListsIDs defines the security group prefix lists
-                  for all Ingresses that belong to IngressClass with this IngressClassParams.
+                description: |-
+                  PrefixListsIDsLegacy defines the security group prefix lists for all Ingresses that belong to IngressClass with this IngressClassParams.
+                  Not Recommended, Use PrefixListsIDs (prefixListsIDs in JSON) instead
                 items:
                   type: string
                 type: array
@@ -152,6 +757,10 @@ spec:
                   - value
                   type: object
                 type: array
+              loadBalancerName:
+                description: LoadBalancerName defines the name of the load balancer
+                  that will be created with this IngressClassParams.
+                type: string
               minimumLoadBalancerCapacity:
                 description: MinimumLoadBalancerCapacity define the capacity reservation
                   for LoadBalancers for all Ingress that belong to IngressClass with
@@ -212,6 +821,12 @@ spec:
                     type: object
                 type: object
                 x-kubernetes-map-type: atomic
+              prefixListsIDs:
+                description: PrefixListsIDs defines the security group prefix lists
+                  for all Ingresses that belong to IngressClass with this IngressClassParams.
+                items:
+                  type: string
+                type: array
               scheme:
                 description: Scheme defines the scheme for all Ingresses that belong
                   to IngressClass with this IngressClassParams.
@@ -222,6 +837,10 @@ spec:
               sslPolicy:
                 description: SSLPolicy specifies the SSL Policy for all Ingresses
                   that belong to IngressClass with this IngressClassParams.
+                type: string
+              sslRedirectPort:
+                description: SSLRedirectPort specifies the SSL Redirect Port for all
+                  Ingresses that belong to IngressClass with this IngressClassParams.
                 type: string
               subnets:
                 description: Subnets defines the subnets for all Ingresses that belong
@@ -272,7 +891,16 @@ spec:
                 - instance
                 - ip
                 type: string
+              wafv2AclArn:
+                description: WAFv2ACLArn specifies ARN for the Amazon WAFv2 web ACL.
+                type: string
+              wafv2AclName:
+                description: WAFv2ACLName specifies name of the Amazon WAFv2 web ACL.
+                type: string
             type: object
+            x-kubernetes-validations:
+            - message: cannot specify both 'prefixListsIDs' and 'PrefixListsIDs' fields
+              rule: '!(has(self.prefixListsIDs) && has(self.PrefixListsIDs))'
         type: object
     served: true
     storage: true
@@ -284,7 +912,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     addon.kops.k8s.io/name: aws-load-balancer-controller.addons.k8s.io
     app.kubernetes.io/managed-by: kops
@@ -707,6 +1335,19 @@ spec:
               targetGroupName:
                 description: targetGroupName is the Name of the TargetGroup.
                 type: string
+              targetGroupProtocol:
+                description: targetGroupProtocol is the Protocol of the TargetGroup.
+                  If unspecified, it will be automatically inferred.
+                enum:
+                - HTTP
+                - HTTPS
+                - TCP
+                - TLS
+                - UDP
+                - TCP_UDP
+                - QUIC
+                - TCP_QUIC
+                type: string
               targetType:
                 description: targetType is the TargetType of TargetGroup. If unspecified,
                   it will be automatically inferred.
@@ -820,6 +1461,9 @@ rules:
   - ""
   resources:
   - endpoints
+  - namespaces
+  - nodes
+  - pods
   verbs:
   - get
   - list
@@ -834,31 +1478,8 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - namespaces
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - pods/status
+  - services/status
   verbs:
   - patch
   - update
@@ -873,9 +1494,19 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
+  - aga.k8s.aws
   resources:
-  - services/status
+  - globalaccelerators
+  verbs:
+  - get
+  - list
+  - patch
+  - watch
+- apiGroups:
+  - aga.k8s.aws
+  resources:
+  - globalaccelerators/finalizers
+  - globalaccelerators/status
   verbs:
   - patch
   - update
@@ -887,6 +1518,12 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - elbv2.k8s.aws
+  resources:
+  - albtargetcontrolconfigs
+  verbs:
+  - get
 - apiGroups:
   - elbv2.k8s.aws
   resources:
@@ -916,6 +1553,7 @@ rules:
   - update
 - apiGroups:
   - extensions
+  - networking.k8s.io
   resources:
   - ingresses
   verbs:
@@ -926,6 +1564,7 @@ rules:
   - watch
 - apiGroups:
   - extensions
+  - networking.k8s.io
   resources:
   - ingresses/status
   verbs:
@@ -935,53 +1574,7 @@ rules:
   - gateway.k8s.aws
   resources:
   - listenerruleconfigurations
-  verbs:
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups:
-  - gateway.k8s.aws
-  resources:
-  - listenerruleconfigurations/finalizers
-  verbs:
-  - patch
-  - update
-- apiGroups:
-  - gateway.k8s.aws
-  resources:
-  - listenerruleconfigurations/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.k8s.aws
-  resources:
   - loadbalancerconfigurations
-  verbs:
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups:
-  - gateway.k8s.aws
-  resources:
-  - loadbalancerconfigurations/finalizers
-  verbs:
-  - patch
-  - update
-- apiGroups:
-  - gateway.k8s.aws
-  resources:
-  - loadbalancerconfigurations/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.k8s.aws
-  resources:
   - targetgroupconfigurations
   verbs:
   - get
@@ -991,6 +1584,8 @@ rules:
 - apiGroups:
   - gateway.k8s.aws
   resources:
+  - listenerruleconfigurations/finalizers
+  - loadbalancerconfigurations/finalizers
   - targetgroupconfigurations/finalizers
   verbs:
   - patch
@@ -998,6 +1593,8 @@ rules:
 - apiGroups:
   - gateway.k8s.aws
   resources:
+  - listenerruleconfigurations/status
+  - loadbalancerconfigurations/status
   - targetgroupconfigurations/status
   verbs:
   - get
@@ -1007,97 +1604,7 @@ rules:
   - gateway.networking.k8s.io
   resources:
   - gatewayclasses
-  verbs:
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - gatewayclasses/finalizers
-  verbs:
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - gatewayclasses/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
   - gateways
-  verbs:
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - gateways/finalizers
-  verbs:
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - gateways/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - grpcroutes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - grpcroutes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - grpcroutes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - httproutes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - httproutes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - httproutes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
   - referencegrants
   verbs:
   - get
@@ -1107,43 +1614,21 @@ rules:
 - apiGroups:
   - gateway.networking.k8s.io
   resources:
-  - tcproutes
+  - gatewayclasses/finalizers
+  - gateways/finalizers
   verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - tcproutes/finalizers
-  verbs:
+  - patch
   - update
 - apiGroups:
   - gateway.networking.k8s.io
   resources:
+  - gatewayclasses/status
+  - gateways/status
+  - grpcroutes/status
+  - httproutes/status
   - tcproutes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - tlsroutes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - tlsroutes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
   - tlsroutes/status
+  - udproutes/status
   verbs:
   - get
   - patch
@@ -1151,6 +1636,10 @@ rules:
 - apiGroups:
   - gateway.networking.k8s.io
   resources:
+  - grpcroutes
+  - httproutes
+  - tcproutes
+  - tlsroutes
   - udproutes
   verbs:
   - get
@@ -1159,16 +1648,12 @@ rules:
 - apiGroups:
   - gateway.networking.k8s.io
   resources:
+  - grpcroutes/finalizers
+  - httproutes/finalizers
+  - tcproutes/finalizers
+  - tlsroutes/finalizers
   - udproutes/finalizers
   verbs:
-  - update
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
-  - udproutes/status
-  verbs:
-  - get
-  - patch
   - update
 - apiGroups:
   - networking.k8s.io
@@ -1178,23 +1663,6 @@ rules:
   - get
   - list
   - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses
-  verbs:
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingresses/status
-  verbs:
-  - patch
-  - update
 
 ---
 
@@ -1313,7 +1781,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: public.ecr.aws/eks/aws-load-balancer-controller:v2.13.4
+        image: public.ecr.aws/eks/aws-load-balancer-controller:v2.17.1
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -1440,6 +1908,7 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
@@ -1461,7 +1930,7 @@ webhooks:
       name: aws-load-balancer-webhook-service
       namespace: kube-system
       path: /mutate-v1-pod
-  failurePolicy: Fail
+  failurePolicy: Ignore
   name: mpod.elbv2.k8s.aws
   namespaceSelector:
     matchExpressions:
@@ -1475,10 +1944,125 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
+      - coredns
     - key: app.kubernetes.io/instance
       operator: NotIn
       values:
       - cert-manager
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: aws-load-balancer-webhook-service
+      namespace: kube-system
+      path: /mutate-v1-pod-server-id
+  failurePolicy: Fail
+  name: quicid.elbv2.k8s.aws
+  namespaceSelector:
+    matchExpressions:
+    - key: elbv2.k8s.aws/quic-server-id-inject
+      operator: In
+      values:
+      - enabled
+  objectSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values:
+      - aws-load-balancer-controller
+      - coredns
+    - key: app.kubernetes.io/instance
+      operator: NotIn
+      values:
+      - cert-manager
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: aws-load-balancer-webhook-service
+      namespace: kube-system
+      path: /mutate-alb-target-control-namespace-v1-pod
+  failurePolicy: Fail
+  name: alb-target-control.namespace.elbv2.k8s.aws
+  namespaceSelector:
+    matchExpressions:
+    - key: elbv2.k8s.aws/alb-target-control-agent-injection
+      operator: In
+      values:
+      - enabled
+  objectSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values:
+      - aws-load-balancer-controller
+      - coredns
+    - key: app.kubernetes.io/instance
+      operator: NotIn
+      values:
+      - cert-manager
+    - key: elbv2.k8s.aws/alb-target-control-agent-inject
+      operator: NotIn
+      values:
+      - "false"
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - pods
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: aws-load-balancer-webhook-service
+      namespace: kube-system
+      path: /mutate-alb-target-control-object-v1-pod
+  failurePolicy: Fail
+  name: alb-target-control.object.elbv2.k8s.aws
+  namespaceSelector:
+    matchExpressions:
+    - key: elbv2.k8s.aws/alb-target-control-agent-injection
+      operator: DoesNotExist
+  objectSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values:
+      - aws-load-balancer-controller
+      - coredns
+    - key: app.kubernetes.io/instance
+      operator: NotIn
+      values:
+      - cert-manager
+    - key: elbv2.k8s.aws/alb-target-control-agent-inject
+      operator: In
+      values:
+      - "true"
   rules:
   - apiGroups:
     - ""
@@ -1530,6 +2114,28 @@ webhooks:
     service:
       name: aws-load-balancer-webhook-service
       namespace: kube-system
+      path: /validate-aga-k8s-aws-v1beta1-globalaccelerator
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: vglobalaccelerator.aga.k8s.aws
+  rules:
+  - apiGroups:
+    - aga.k8s.aws
+    apiVersions:
+    - v1beta1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - globalaccelerators
+    scope: Namespaced
+  sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: aws-load-balancer-webhook-service
+      namespace: kube-system
       path: /validate-elbv2-k8s-aws-v1beta1-ingressclassparams
   failurePolicy: Fail
   name: vingressclassparams.elbv2.k8s.aws
@@ -1539,10 +2145,6 @@ webhooks:
       operator: NotIn
       values:
       - aws-load-balancer-controller
-    - key: app.kubernetes.io/instance
-      operator: NotIn
-      values:
-      - cert-manager
   rules:
   - apiGroups:
     - elbv2.k8s.aws

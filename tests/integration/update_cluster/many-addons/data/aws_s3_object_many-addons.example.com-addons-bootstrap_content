@@ -13,7 +13,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: c6ebdb7a6f37311e443a0dc608f1e85d46e1aa7932c423b7a8782ed4e1da6df2
+    manifestHash: fe4332a60e5d1da14450877a9d050a2884dabde8af3ee220ddef3637c36b6b34
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -209,7 +209,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: 31590854ee9be19cb9e7f42acfc438c0d552d7bef013169ad9036b9ec9988b31
+    manifestHash: edb599575f56856897aaf472f91a9658fdbf54f94e3bbd9793c5d7f13d7e1627
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:
