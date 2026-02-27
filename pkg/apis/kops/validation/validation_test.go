@@ -1243,6 +1243,19 @@ func Test_Validate_Cilium(t *testing.T) {
 				},
 			},
 		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				BPFLBSock:           false,
+				BPFLBSockHostNSOnly: true,
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.bpfLBSockHostNSOnly"},
+		},
+		{
+			Cilium: kops.CiliumNetworkingSpec{
+				BPFLBSock:           true,
+				BPFLBSockHostNSOnly: true,
+			},
+		},
 	}
 	for _, g := range grid {
 		g.Spec.Networking.Cilium = &g.Cilium
