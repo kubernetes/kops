@@ -244,22 +244,22 @@ resource "google_compute_firewall" "kubernetes-master-https-minimal-example-com"
 
 resource "google_compute_firewall" "master-to-master-minimal-example-com" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "master-to-master-minimal-example-com"
@@ -270,22 +270,22 @@ resource "google_compute_firewall" "master-to-master-minimal-example-com" {
 
 resource "google_compute_firewall" "master-to-node-minimal-example-com" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "master-to-node-minimal-example-com"
@@ -296,15 +296,15 @@ resource "google_compute_firewall" "master-to-node-minimal-example-com" {
 
 resource "google_compute_firewall" "node-to-master-minimal-example-com" {
   allow {
-    ports    = ["443"]
-    protocol = "tcp"
-  }
-  allow {
     ports    = ["10250"]
     protocol = "tcp"
   }
   allow {
     ports    = ["3988"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["443"]
     protocol = "tcp"
   }
   disabled    = false
@@ -316,22 +316,22 @@ resource "google_compute_firewall" "node-to-master-minimal-example-com" {
 
 resource "google_compute_firewall" "node-to-node-minimal-example-com" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "node-to-node-minimal-example-com"
