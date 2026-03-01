@@ -159,6 +159,10 @@ helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 echo "Installing NVIDIA DCGM Exporter..."
 
 cat >dcgm-exporter-values.yaml <<EOF
+# Only schedule on GPU nodes (g6.xlarge instances)
+nodeSelector:
+  node.kubernetes.io/instance-type: g6.xlarge
+
 # Tolerations to run on GPU nodes with nvidia.com/gpu taint
 tolerations:
 - key: nvidia.com/gpu
