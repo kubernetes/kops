@@ -182,6 +182,12 @@ helm upgrade -i dcgm-exporter gpu-helm-charts/dcgm-exporter \
   -f dcgm-exporter-values.yaml \
   --wait
 
+echo "DCGM exporter daemonset status..."
+kubectl describe daemonset dcgm-exporter -n monitoring --timeout=5m || echo "Warning: DCGM exporter daemonset not found"
+
+echo "DCGM exporter pod status..."
+kubectl get pods -n monitoring -l app.kubernetes.io/name=dcgm-exporter -o wide --timeout=5m || echo "No DCGM exporter pods found"
+
 # KubeRay
 echo "Installing KubeRay Operator..."
 kubectl apply --server-side -k "github.com/ray-project/kuberay/ray-operator/config/default-with-webhooks?ref=v1.5.0"
