@@ -128,6 +128,9 @@ helm upgrade -i nvidia-gpu-operator --wait \
   --set dcgmExporter.enabled=false \
   --wait
 
+echo "GPU Operator status..."
+kubectl get pods -n gpu-operator -o wide --timeout 5m || echo "No GPU Operator pods found"
+
 PATH="$(pwd):$PATH"
 export PATH
 
