@@ -94,6 +94,11 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 
 	nodeZones := make(map[string]bool)
 	for _, subnet := range cluster.Spec.Networking.Subnets {
+		if subnet.Zone == "" && subnet.ID != "" {
+			// Subnet ID is provided, so we can skip zone check here.
+			// The zone will be resolved from AWS later.
+			continue
+		}
 		if len(subnet.Zone) <= 2 {
 			return "", fmt.Errorf("invalid AWS zone: %q in subnet %q", subnet.Zone, subnet.Name)
 		}
