@@ -19,6 +19,7 @@ set -x
 
 make test-e2e-install
 
+REPO_ROOT=$(git rev-parse --show-toplevel)
 if [[ -z "${K8S_VERSION:-}" ]]; then
   K8S_VERSION=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt
 fi
@@ -143,6 +144,7 @@ KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
 KUBETEST2_ARGS+=("--env=KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}")
+KUBETEST2_ARGS+=("--pre-test-cmd=${REPO_ROOT}/tests/e2e/scenarios/scalability/pre-test.sh")
 if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kops" ]]; then
   KUBETEST2_ARGS+=("--build")
   KUBETEST2_ARGS+=("--kops-binary-path=${GOPATH}/src/k8s.io/kops/.build/dist/linux/$(go env GOARCH)/kops")
