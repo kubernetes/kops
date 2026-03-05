@@ -8,10 +8,11 @@ See also pkg/wellknownports/wellknownports.go
 | Port | Description                              |
 | ---- | ---------------------------------------- |
 | 22   | SSH                                      |
-| 443  | Kubernetes API                           |
 | 179  | Calico                                   |
+| 443  | Kubernetes API                           |
 | 2380 | etcd main peering                        |
 | 2381 | etcd events peering                      |
+| 2382 | etcd cilium peering                      |
 | 3988 | kops controller serving port             |
 | 3989 | node local dns health check              |
 | 3990 | Kube API health check                    |
@@ -27,6 +28,7 @@ See also pkg/wellknownports/wellknownports.go
 | 4000 | protokube gossip member list             |
 | 4001 | etcd main client                         |
 | 4002 | etcd events client                       |
+| 4003 | etcd cilium client                       |
 | 4789 | VXLAN                                    |
 | 6942 | Cilium operator prometheus port          |
 | 9090 | Cilium prometheus port                   |

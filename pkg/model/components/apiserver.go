@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 
@@ -146,14 +147,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 	for _, etcdCluster := range clusterSpec.EtcdClusters {
 		switch etcdCluster.Name {
 		case "main":
-			c.EtcdServers = append(c.EtcdServers, "https://127.0.0.1:4001")
+			c.EtcdServers = append(c.EtcdServers, fmt.Sprintf("https://127.0.0.1:%d", wellknownports.EtcdMainClientPort))
 		case "events":
 			// Use HTTP for events etcd when EtcdEventsHTTP feature flag is enabled
 			scheme := "https"
 			if featureflag.EtcdEventsHTTP.Enabled() {
 				scheme = "http"
 			}
-			c.EtcdServersOverrides = append(c.EtcdServersOverrides, fmt.Sprintf("/events#%s://127.0.0.1:4002", scheme))
+			c.EtcdServersOverrides = append(c.EtcdServersOverrides, fmt.Sprintf("/events#%s://127.0.0.1:%d", scheme, wellknownports.EtcdEventsClientPort))
 		}
 	}
 
