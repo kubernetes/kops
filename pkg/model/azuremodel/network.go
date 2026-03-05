@@ -185,7 +185,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
 		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
-		DestinationPortRange:                     fi.PtrTo("2380-2381"),
+		DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.EtcdMainPeerPort) + "-" + strconv.Itoa(wellknownports.EtcdEventsPeerPort)),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 		Name:                                     fi.PtrTo("DenyNodesToEtcd"),
@@ -196,7 +196,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
 		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
-		DestinationPortRange:                     fi.PtrTo("4000-4001"),
+		DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.ProtokubeGossipMemberlist) + "-" + strconv.Itoa(wellknownports.EtcdMainClientPort)),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 		Name:                                     fi.PtrTo("AllowNodesToControlPlane"),

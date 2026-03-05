@@ -739,23 +739,23 @@ func PortsForCluster(etcdCluster kops.EtcdClusterSpec) (Ports, error) {
 			GRPCPort: wellknownports.EtcdMainGRPC,
 			// TODO: Use a socket file for the quarantine port
 			QuarantinedGRPCPort: wellknownports.EtcdMainQuarantinedClientPort,
-			ClientPort:          4001,
-			PeerPort:            2380,
+			ClientPort:          wellknownports.EtcdMainClientPort,
+			PeerPort:            wellknownports.EtcdMainPeerPort,
 		}, nil
 
 	case "events":
 		return Ports{
 			GRPCPort:            wellknownports.EtcdEventsGRPC,
 			QuarantinedGRPCPort: wellknownports.EtcdEventsQuarantinedClientPort,
-			ClientPort:          4002,
-			PeerPort:            2381,
+			ClientPort:          wellknownports.EtcdEventsClientPort,
+			PeerPort:            wellknownports.EtcdEventsPeerPort,
 		}, nil
 	case "cilium":
 		return Ports{
 			GRPCPort:            wellknownports.EtcdCiliumGRPC,
 			QuarantinedGRPCPort: wellknownports.EtcdCiliumQuarantinedClientPort,
-			ClientPort:          4003,
-			PeerPort:            2382,
+			ClientPort:          wellknownports.EtcdCiliumClientPort,
+			PeerPort:            wellknownports.EtcdCiliumPeerPort,
 		}, nil
 
 	default:

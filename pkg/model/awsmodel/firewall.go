@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 type Protocol int
@@ -125,19 +126,19 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 	tcpBlocked := make(map[int]bool)
 
 	// Don't allow nodes to access etcd client port
-	tcpBlocked[4001] = true
-	tcpBlocked[4002] = true
+	tcpBlocked[wellknownports.EtcdMainClientPort] = true
+	tcpBlocked[wellknownports.EtcdEventsClientPort] = true
 
 	// Don't allow nodes to access etcd peer port
-	tcpBlocked[2380] = true
-	tcpBlocked[2381] = true
+	tcpBlocked[wellknownports.EtcdMainPeerPort] = true
+	tcpBlocked[wellknownports.EtcdEventsPeerPort] = true
 
 	udpRanges := []portRange{{From: 1, To: 65535}}
 	protocols := []Protocol{}
 
 	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
 		// Block the etcd peer port
-		tcpBlocked[2382] = true
+		tcpBlocked[wellknownports.EtcdCiliumPeerPort] = true
 	}
 
 	if b.Cluster.Spec.Networking.Calico != nil {
@@ -311,13 +312,13 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			VPC:         b.LinkToVPC(),
 			Description: fi.PtrTo("Security group for masters"),
 			RemoveExtraRules: []string{
-				"port=22",   // SSH
-				"port=443",  // k8s api
-				"port=2380", // etcd main peer
-				"port=2381", // etcd events peer
+				"port=22",  // SSH
+				"port=443", // k8s api
+				"port=" + strconv.Itoa(wellknownports.EtcdMainPeerPort),   // etcd main peer
+				"port=" + strconv.Itoa(wellknownports.EtcdEventsPeerPort), // etcd events peer
 				"port=3988", // kops-controller
-				"port=4001", // etcd main
-				"port=4002", // etcd events
+				"port=" + strconv.Itoa(wellknownports.EtcdMainClientPort),   // etcd main
+				"port=" + strconv.Itoa(wellknownports.EtcdEventsClientPort), // etcd events
 				"port=4789", // VXLAN
 				"port=179",  // Calico
 				"port=8443", // k8s api secondary listener

@@ -158,16 +158,16 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 		Direction:    s(string(rules.DirIngress)),
 		Protocol:     s(string(rules.ProtocolTCP)),
 		EtherType:    s(IPV4),
-		PortRangeMin: i(4001),
-		PortRangeMax: i(4002),
+		PortRangeMin: i(wellknownports.EtcdMainClientPort),
+		PortRangeMax: i(wellknownports.EtcdEventsClientPort),
 	}
 	etcdPeerRule := &openstacktasks.SecurityGroupRule{
 		Lifecycle:    b.Lifecycle,
 		Direction:    s(string(rules.DirIngress)),
 		Protocol:     s(string(rules.ProtocolTCP)),
 		EtherType:    s(IPV4),
-		PortRangeMin: i(2380),
-		PortRangeMax: i(2381),
+		PortRangeMin: i(wellknownports.EtcdMainPeerPort),
+		PortRangeMax: i(wellknownports.EtcdEventsPeerPort),
 	}
 	b.addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
 	b.addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)
@@ -178,8 +178,8 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 			Direction:    s(string(rules.DirIngress)),
 			Protocol:     s(string(rules.ProtocolTCP)),
 			EtherType:    s(IPV4),
-			PortRangeMin: i(2382),
-			PortRangeMax: i(2382),
+			PortRangeMin: i(wellknownports.EtcdCiliumPeerPort),
+			PortRangeMax: i(wellknownports.EtcdCiliumPeerPort),
 		}
 		etcdCiliumGRPCRule := &openstacktasks.SecurityGroupRule{
 			Lifecycle:    b.Lifecycle,
