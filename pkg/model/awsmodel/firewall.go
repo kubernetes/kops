@@ -24,8 +24,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 
-	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/wellknownports"
 )
 
 type Protocol int
@@ -312,10 +312,10 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			VPC:         b.LinkToVPC(),
 			Description: fi.PtrTo("Security group for masters"),
 			RemoveExtraRules: []string{
-				"port=22",   // SSH
-				"port=443",  // k8s api
-				"port=" + strconv.Itoa(wellknownports.EtcdMainPeerPort),    // etcd main peer
-				"port=" + strconv.Itoa(wellknownports.EtcdEventsPeerPort),  // etcd events peer
+				"port=22",  // SSH
+				"port=443", // k8s api
+				"port=" + strconv.Itoa(wellknownports.EtcdMainPeerPort),   // etcd main peer
+				"port=" + strconv.Itoa(wellknownports.EtcdEventsPeerPort), // etcd events peer
 				"port=3988", // kops-controller
 				"port=" + strconv.Itoa(wellknownports.EtcdMainClientPort),   // etcd main
 				"port=" + strconv.Itoa(wellknownports.EtcdEventsClientPort), // etcd events
