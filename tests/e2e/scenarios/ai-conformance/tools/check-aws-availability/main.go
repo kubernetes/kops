@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -29,6 +30,14 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+	if err := run(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func run(ctx context.Context) error {
 	var region string
 	var instanceType string
 
@@ -37,15 +46,12 @@ func main() {
 	flag.Parse()
 
 	if region == "" || instanceType == "" {
-		fmt.Println("Usage: check-aws-availability -region <region> -instance-type <type>")
-		os.Exit(1)
+		return fmt.Errorf("Usage: check-aws-availability -region <region> -instance-type <type>")
 	}
 
-	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
-		fmt.Printf("Error loading configuration: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error loading configuration: %w", err)
 	}
 
 	client := ec2.NewFromConfig(cfg)
@@ -62,13 +68,21 @@ func main() {
 
 	result, err := client.DescribeInstanceTypeOfferings(ctx, input)
 	if err != nil {
-		fmt.Printf("Error describing instance type offerings: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error describing instance type offerings: %w", err)
 	}
 
-	if len(result.InstanceTypeOfferings) > 0 {
-		fmt.Println("true")
-	} else {
-		fmt.Println("false")
+	var zones []string
+
+	// Gather the availability zones where the instance type is offered
+	for _, offering := range result.InstanceTypeOfferings {
+		zone := aws.ToString(offering.Location)
+		zones = append(zones, zone)
 	}
+
+	if len(zones) == 0 {
+		return fmt.Errorf("Instance type %s is not available in any availability zones in region %s", instanceType, region)
+	}
+
+	fmt.Fprintf(os.Stdout, "ZONES=%s\n", strings.Join(zones, ","))
+	return nil
 }
