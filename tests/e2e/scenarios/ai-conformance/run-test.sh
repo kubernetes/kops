@@ -102,7 +102,6 @@ kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/rele
 # Setup helm repos for monitoring and NVIDIA components
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add gpu-helm-charts https://nvidia.github.io/dcgm-exporter/helm-charts
 helm repo update
 
 # Prometheus Stack (kube-prometheus-stack)
