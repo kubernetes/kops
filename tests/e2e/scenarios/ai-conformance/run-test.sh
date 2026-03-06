@@ -139,9 +139,6 @@ kubectl get pods -n gpu-operator -l app=nvidia-dcgm-exporter -o wide || echo "Wa
 echo "GPU Operator deployment details for debugging:"
 kubectl get all -n gpu-operator || true
 
-echo "GPU Operator status..."
-kubectl get pods -n gpu-operator -o wide --timeout 5m || echo "No GPU Operator pods found"
-
 PATH="$(pwd):$PATH"
 export PATH
 
@@ -167,40 +164,6 @@ helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
   --set gpuResourcesEnabledOverride=true \
   -f values.yaml \
   --wait
-
-# NVIDIA DCGM Exporter
-# Exports GPU metrics to Prometheus for monitoring GPU utilization, memory, temperature, etc.
-echo "Installing NVIDIA DCGM Exporter..."
-
-cat >dcgm-exporter-values.yaml <<EOF
-# Only schedule on GPU nodes (g6.xlarge instances)
-nodeSelector:
-  node.kubernetes.io/instance-type: g6.xlarge
-
-# Tolerations to run on GPU nodes with nvidia.com/gpu taint
-tolerations:
-- key: nvidia.com/gpu
-  operator: Exists
-  effect: NoSchedule
-
-# ServiceMonitor for Prometheus integration
-serviceMonitor:
-  enabled: true
-  interval: 15s
-  additionalLabels:
-    release: kube-prometheus-stack
-EOF
-
-helm upgrade -i dcgm-exporter gpu-helm-charts/dcgm-exporter \
-  --namespace monitoring \
-  -f dcgm-exporter-values.yaml \
-  --wait
-
-echo "DCGM exporter daemonset status..."
-kubectl describe daemonset dcgm-exporter -n monitoring --timeout=5m || echo "Warning: DCGM exporter daemonset not found"
-
-echo "DCGM exporter pod status..."
-kubectl get pods -n monitoring -l app.kubernetes.io/name=dcgm-exporter -o wide --timeout=5m || echo "No DCGM exporter pods found"
 
 # KubeRay
 echo "Installing KubeRay Operator..."
