@@ -197,11 +197,15 @@ echo "Verifying Prometheus Stack..."
 kubectl rollout status deployment -n monitoring kube-prometheus-stack-operator --timeout=5m || echo "Warning: Prometheus Operator not ready yet"
 kubectl rollout status statefulset -n monitoring prometheus-kube-prometheus-stack-prometheus --timeout=5m || echo "Warning: Prometheus not ready yet"
 
-echo "Verifying DCGM Exporter..."
-kubectl rollout status daemonset -n monitoring dcgm-exporter --timeout=5m || echo "Warning: DCGM Exporter not ready yet"
+echo "Verifying DCGM Exporter in gpu-operator namespace..."
+kubectl rollout status daemonset -n gpu-operator nvidia-dcgm-exporter --timeout=5m || echo "Warning: DCGM Exporter not ready yet"
 
-echo "Verifying ServiceMonitor for DCGM..."
-kubectl get servicemonitor -n monitoring dcgm-exporter || echo "Warning: DCGM ServiceMonitor not found"
+echo "DCGM Exporter pod details for debugging:"
+kubectl get pods -n gpu-operator -l app=nvidia-dcgm-exporter -o wide || echo "Warning: No DCGM exporter pods found"
+kubectl describe pods -n gpu-operator -l app=nvidia-dcgm-exporter || true
+
+echo "Verifying ServiceMonitor for DCGM in gpu-operator namespace..."
+kubectl get servicemonitor -n gpu-operator nvidia-dcgm-exporter -o yaml || echo "Warning: DCGM ServiceMonitor not found"
 
 echo "Verifying Allocatable GPUs..."
 # Wait a bit for nodes to report resources
