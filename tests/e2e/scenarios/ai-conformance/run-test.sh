@@ -279,6 +279,33 @@ else
   echo "Warning: Prometheus pod not found"
 fi
 
+echo "----------------------------------------------------------------"
+echo "GPU Operator Component Status for Debugging"
+echo "----------------------------------------------------------------"
+
+echo "All GPU Operator pods:"
+kubectl get pods -n gpu-operator -o wide || true
+
+echo ""
+echo "GPU Operator DaemonSets:"
+kubectl get daemonsets -n gpu-operator -o wide || true
+
+echo ""
+echo "DCGM Exporter DaemonSet details:"
+kubectl describe daemonset -n gpu-operator nvidia-dcgm-exporter || true
+
+echo ""
+echo "DCGM Exporter Service:"
+kubectl get service -n gpu-operator nvidia-dcgm-exporter -o yaml || echo "No DCGM service found"
+
+echo ""
+echo "DCGM Exporter ServiceMonitor:"
+kubectl get servicemonitor -n gpu-operator nvidia-dcgm-exporter -o yaml || echo "No ServiceMonitor found"
+
+echo ""
+echo "Recent GPU Operator events:"
+kubectl get events -n gpu-operator --sort-by='.lastTimestamp' | tail -20 || true
+
 echo "AI Conformance Environment Setup Complete."
 
 # Now run the actual AI conformance tests
