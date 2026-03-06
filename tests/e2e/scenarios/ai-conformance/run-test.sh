@@ -118,14 +118,27 @@ helm upgrade -i kube-prometheus-stack \
   --wait
 
 # NVIDIA GPU Operator
-# Manages the full NVIDIA stack: kernel driver, container toolkit, device plugin.
+# Manages the full NVIDIA stack: kernel driver, container toolkit, device plugin, DCGM exporter.
 # The driver is installed into /run/nvidia/driver on each node.
+# DCGM exporter is enabled with ServiceMonitor for Prometheus integration.
+echo "Installing NVIDIA GPU Operator with DCGM exporter..."
 helm upgrade -i nvidia-gpu-operator --wait \
   -n gpu-operator --create-namespace \
   nvidia/gpu-operator \
   --version=v25.10.1 \
-  --set dcgmExporter.enabled=false \
+  --set dcgmExporter.enabled=true \
+  --set dcgmExporter.serviceMonitor.enabled=true \
+  --set dcgmExporter.serviceMonitor.additionalLabels.release=kube-prometheus-stack \
   --wait
+
+echo "GPU Operator installation complete. Checking component status..."
+kubectl get pods -n gpu-operator -o wide --timeout 5m || echo "Warning: GPU Operator pods not ready yet"
+
+echo "DCGM Exporter pod status in gpu-operator namespace..."
+kubectl get pods -n gpu-operator -l app=nvidia-dcgm-exporter -o wide || echo "Warning: DCGM exporter pods not found"
+
+echo "GPU Operator deployment details for debugging:"
+kubectl describe deployment -n gpu-operator nvidia-gpu-operator || true
 
 echo "GPU Operator status..."
 kubectl get pods -n gpu-operator -o wide --timeout 5m || echo "No GPU Operator pods found"
