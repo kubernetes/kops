@@ -128,17 +128,16 @@ helm upgrade -i nvidia-gpu-operator --wait \
   --version=v25.10.1 \
   --set dcgmExporter.enabled=true \
   --set dcgmExporter.serviceMonitor.enabled=true \
-  --set dcgmExporter.serviceMonitor.additionalLabels.release=kube-prometheus-stack \
-  --wait
+  --set dcgmExporter.serviceMonitor.additionalLabels.release=kube-prometheus-stack
 
 echo "GPU Operator installation complete. Checking component status..."
-kubectl get pods -n gpu-operator -o wide --timeout 5m || echo "Warning: GPU Operator pods not ready yet"
+kubectl get pods -n gpu-operator -o wide || echo "Warning: GPU Operator pods not ready yet"
 
 echo "DCGM Exporter pod status in gpu-operator namespace..."
 kubectl get pods -n gpu-operator -l app=nvidia-dcgm-exporter -o wide || echo "Warning: DCGM exporter pods not found"
 
 echo "GPU Operator deployment details for debugging:"
-kubectl describe deployment -n gpu-operator nvidia-gpu-operator || true
+kubectl get all -n gpu-operator || true
 
 echo "GPU Operator status..."
 kubectl get pods -n gpu-operator -o wide --timeout 5m || echo "No GPU Operator pods found"
