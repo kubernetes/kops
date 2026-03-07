@@ -52,11 +52,16 @@ kops-acquire-latest
 # - Networking: Cilium with Gateway API enabled
 # - Nodes: c5.large (we need some non-GPU nodes for non-GPU workloads)
 # - NVIDIA driver and runtime are managed by GPU Operator (not kOps)
+# - cluster-autoscaler: For cluster autoscaling with GPU nodes
+# - metrics-server: For HPA support
 OVERRIDES="${OVERRIDES-} --networking=cilium"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
 OVERRIDES="${OVERRIDES} --node-size=c5.large"
 OVERRIDES="${OVERRIDES} --node-count=2"
 OVERRIDES="${OVERRIDES} --zones=us-east-2a,us-east-2b,us-east-2c"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.clusterAutoscaler.enabled=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.metricsServer.enabled=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.certManager.enabled=true"
 
 kops-up
 
@@ -97,11 +102,20 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 
 # cert-manager: required for KubeRay webhooks
 echo "Installing cert-manager..."
-kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
+
+echo "Waiting for cert-manager to be ready..."
+kubectl rollout status deployment -n cert-manager cert-manager --timeout=5m
+kubectl rollout status deployment -n cert-manager cert-manager-webhook --timeout=5m
+kubectl rollout status deployment -n cert-manager cert-manager-cainjector --timeout=5m
+
+# Verify cert-manager webhook is functional
+echo "Verifying cert-manager webhook..."
+kubectl wait --for=condition=Available --timeout=2m -n cert-manager deployment/cert-manager-webhook
 
 # Setup helm repos for monitoring and NVIDIA components
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia || true
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
 helm repo update
 
 # Prometheus Stack (kube-prometheus-stack)
@@ -167,11 +181,11 @@ helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
 
 # KubeRay
 echo "Installing KubeRay Operator..."
-kubectl apply --server-side -k "github.com/ray-project/kuberay/ray-operator/config/default-with-webhooks?ref=v1.5.0"
+kubectl apply --server-side --force-conflicts -k "github.com/ray-project/kuberay/ray-operator/config/default-with-webhooks?ref=v1.5.0"
 
 # Kueue
 echo "Installing Kueue..."
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
 
 echo "----------------------------------------------------------------"
 echo "Verifying Cluster and Components"
