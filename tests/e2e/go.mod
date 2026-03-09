@@ -21,7 +21,7 @@ require (
 	k8s.io/kops v1.34.1
 	k8s.io/release v0.20.0
 	sigs.k8s.io/boskos v0.0.0-20250922191614-14f95fc7cd0b
-	sigs.k8s.io/kubetest2 v0.0.0-20250219121027-1cc02edeb0b6
+	sigs.k8s.io/kubetest2 v0.0.0-20260209083522-21e91ebc6d51
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -170,7 +170,7 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.25.4 // indirect
 	github.com/go-openapi/validate v0.25.1 // indirect
 	github.com/go-piv/piv-go/v2 v2.4.0 // indirect
-	github.com/go-resty/resty/v2 v2.16.2 // indirect
+	github.com/go-resty/resty/v2 v2.16.5 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
