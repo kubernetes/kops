@@ -205,11 +205,11 @@ func (s *ChallengeServer) Challenge(ctx context.Context, req *pb.ChallengeReques
 	return response, nil
 }
 
-func buildChallengeResponse(nodeNonce []byte, kopsControllerNonde []byte) []byte {
+func buildChallengeResponse(nodeNonce []byte, kopsControllerNonce []byte) []byte {
 	// Arguably this is overkill because the TLS handshake is stronger and everything is encrypted.
 	hasher := sha256.New()
-	hasher.Sum(nodeNonce)
-	hasher.Sum(kopsControllerNonde)
+	hasher.Write(nodeNonce)
+	hasher.Write(kopsControllerNonce)
 
 	hash := hasher.Sum(nil)
 
