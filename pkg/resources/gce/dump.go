@@ -58,8 +58,10 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 	i := &resources.Instance{
 		Name: u.Name,
 	}
+	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	instanceDetails := instanceMap[u.Name]
+	op.Dump.Resources = append(op.Dump.Resources, instanceDetails)
 	if instanceDetails == nil {
 		klog.Warningf("instance %q not found", instance.Instance)
 		return nil
@@ -78,7 +80,6 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 			}
 		}
 	}
-
 	isControlPlane := false
 	for key, value := range instanceDetails.Labels {
 		if !strings.HasPrefix(key, gce.GceLabelNameRolePrefix) {
@@ -93,10 +94,6 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 	if isControlPlane {
 		i.Roles = append(i.Roles, "control-plane")
 	}
-
-	op.Dump.Instances = append(op.Dump.Instances, i)
-
-	op.Dump.Resources = append(op.Dump.Resources, instanceDetails)
 
 	return nil
 }
