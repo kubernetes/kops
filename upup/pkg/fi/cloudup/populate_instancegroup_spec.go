@@ -53,7 +53,7 @@ const (
 	defaultMasterMachineTypeAzure    = "Standard_B2s"
 	defaultMasterMachineTypeHetzner  = "cx22"
 	defaultMasterMachineTypeScaleway = "DEV1-M"
-	defaultMasterMachineTypeElemento = "argon"
+	defaultMasterMachineTypeElemento = "argon2"
 
 	defaultDOImageFocal       = "ubuntu-20-04-x64"
 	defaultHetznerImageFocal  = "ubuntu-20.04"
