@@ -27,10 +27,9 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
 elif [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   kops create instancegroup addons --edit=false --role node --zone us-east1-b
   kops edit instancegroup addons --set=spec.machineType="${ADDONS_NODE_SIZE:-c3-standard-22}" \
-    --set=spec.maxSize=1 --set=spec.minSize=1 \
+    --set=spec.maxSize=1 --set=spec.minSize=1 --set=spec.rootVolume.type=hyperdisk-balanced \
     --set=spec.image="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}"
 fi
 
 kops update cluster --yes
-sleep 120 # it shouldn't take long to have the node up and ready
-# TODO: replace with kops validate instancegroup instead of the wait
+kops validate cluster --wait 10m
