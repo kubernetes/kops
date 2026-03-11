@@ -32,6 +32,9 @@ type OutputSink interface {
 	// Success indicates a successful check, allowing the output sink to format it accordingly.
 	Success(text string)
 
+	// Skip indicates that a test was skipped, allowing the output sink to format it accordingly.
+	Skip(message string)
+
 	// Close closes the output sink and releases any resources.
 	io.Closer
 }
@@ -63,4 +66,10 @@ func (h *ValidatorHarness) Success(format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
 	h.output.Success(s)
 	h.t.Logf("SUCCESS: "+format, args...)
+}
+
+// RecordConformance records that a specific conformance test was passed.
+func (h *ValidatorHarness) RecordConformance(testName string) {
+	// We should gather these in a structured way, but for now we'll just log them.
+	h.Logf("Conformance %q passed", testName)
 }

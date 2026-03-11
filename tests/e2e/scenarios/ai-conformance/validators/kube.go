@@ -17,6 +17,10 @@ limitations under the License.
 package validators
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -102,4 +106,89 @@ func (h *ValidatorHarness) ListResourceSlices() []*ResourceSlice {
 		out = append(out, &ResourceSlice{u: &objectList.Items[i]})
 	}
 	return out
+}
+
+// CRD is a wrapper around the CustomResourceDefinition type.
+type CRD struct {
+	u *unstructured.Unstructured
+}
+
+// Name returns the name of the CRD.
+func (d *CRD) Name() string {
+	return d.u.GetName()
+}
+
+var crdGVR = schema.GroupVersionResource{
+	Group:    "apiextensions.k8s.io",
+	Version:  "v1",
+	Resource: "customresourcedefinitions",
+}
+
+// ListCRDs lists all CRDs in the cluster.
+func (h *ValidatorHarness) ListCRDs() []*CRD {
+	objectList, err := h.DynamicClient().Resource(crdGVR).List(h.Context(), metav1.ListOptions{})
+	if err != nil {
+		h.Fatalf("failed to list CRDs: %v", err)
+	}
+	var out []*CRD
+	for i := range objectList.Items {
+		out = append(out, &CRD{u: &objectList.Items[i]})
+	}
+	return out
+}
+
+// HasCRD returns true if a CRD with the given name exists.
+func (h *ValidatorHarness) HasCRD(name string) bool {
+	for _, crd := range h.ListCRDs() {
+		if crd.Name() == name {
+			return true
+		}
+	}
+	return false
+}
+
+var namespaceGVR = schema.GroupVersionResource{
+	Group:    "",
+	Version:  "v1",
+	Resource: "namespaces",
+}
+
+var namespaceGVK = schema.GroupVersionKind{
+	Group:   "",
+	Version: "v1",
+	Kind:    "Namespace",
+}
+
+func (h *ValidatorHarness) TestNamespace() string {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	if h.testNamespace == "" {
+		prefix := strings.ToLower(h.t.Name())
+		prefix = strings.ReplaceAll(prefix, "/", "-")
+		prefix = strings.ReplaceAll(prefix, "_", "-")
+		ns := fmt.Sprintf("%s-%d", prefix, time.Now().Unix())
+
+		nsObj := &unstructured.Unstructured{}
+		nsObj.SetGroupVersionKind(namespaceGVK)
+		nsObj.SetName(ns)
+
+		h.Logf("Creating test namespace %q", ns)
+
+		if _, err := h.DynamicClient().Resource(namespaceGVR).Create(h.Context(), nsObj, metav1.CreateOptions{}); err != nil {
+			h.Fatalf("failed to create test namespace: %v", err)
+		}
+
+		h.testNamespace = ns
+
+		h.t.Cleanup(func() {
+			h.Logf("Deleting test namespace %q", ns)
+			err := h.DynamicClient().Resource(namespaceGVR).Delete(h.Context(), ns, metav1.DeleteOptions{})
+			if err != nil {
+				h.Logf("failed to delete test namespace: %v", err)
+			}
+		})
+	}
+
+	return h.testNamespace
 }

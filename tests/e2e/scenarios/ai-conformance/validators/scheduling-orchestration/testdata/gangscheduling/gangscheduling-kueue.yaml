@@ -1,0 +1,58 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: ClusterQueue
+metadata:
+  name: cluster-queue
+spec:
+  namespaceSelector: {} # Available to all namespaces
+  queueingStrategy: BestEffortFIFO # Default queueing strategy
+  resourceGroups:
+  - coveredResources: ["cpu", "memory", "ephemeral-storage"]
+    flavors:
+    - name: "default-flavor"
+      resources:
+      - name: "cpu"
+        nominalQuota: 10
+      - name: "memory"
+        nominalQuota: 10Gi
+      - name: "ephemeral-storage"
+        nominalQuota: 10Gi
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  name: team1
+spec:
+  clusterQueue: cluster-queue
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gangscheduling-kueue
+  annotations:
+    kueue.x-k8s.io/queue-name: team1 # Point to the LocalQueue
+spec:
+  ttlSecondsAfterFinished: 60 # Job will be deleted after 60 seconds
+  parallelism: 3 # This Job will have 3 replicas running at the same time
+  completions: 3 # This Job requires 3 completions
+  suspend: true # Set to true to allow Kueue to control the Job when it starts
+  template:
+    spec:
+      containers:
+      - name: dummy-job
+        image: debian:latest
+        command: ["sleep", "10s"] # Sleep for 10 seconds
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+            ephemeral-storage: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+            ephemeral-storage: "512Mi"
+      restartPolicy: Never

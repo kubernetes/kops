@@ -20,6 +20,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"k8s.io/client-go/dynamic"
@@ -35,6 +36,12 @@ type ValidatorHarness struct {
 
 	dynamicClient dynamic.Interface
 	restConfig    *rest.Config
+
+	// mutex guards our mutable state
+	mutex sync.Mutex
+
+	// testNamespace is a per-test namespace to use for creating resources. It is lazily initialized when TestNamespace() is called.
+	testNamespace string
 }
 
 // NewValidatorHarness creates a new ValidatorHarness.
@@ -69,4 +76,10 @@ func NewValidatorHarness(t *testing.T) *ValidatorHarness {
 // Context returns the context associated with the test, which can be used for command execution and API calls.
 func (h *ValidatorHarness) Context() context.Context {
 	return h.t.Context()
+}
+
+// Skip allows the test to be skipped with a message, and ensures that the skip is recorded in the output.
+func (h *ValidatorHarness) Skip(message string) {
+	h.output.Skip(message)
+	h.t.Skip(message)
 }
