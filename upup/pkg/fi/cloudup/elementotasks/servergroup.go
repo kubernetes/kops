@@ -82,9 +82,21 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 	}
 
 	fmt.Printf("EKOPS: Found %d existing servers for group %q\n", len(servers), fi.ValueOf(v.Name))
+
+	// Filter servers by name prefix to ensure we only process servers for this instance group
+	// Server names are formatted as: {ig-name}-{random-id}
+	igName := fi.ValueOf(v.Name)
+	var filteredServers []*ecloud.Server
 	for i, server := range servers {
 		fmt.Printf("EKOPS: Server %d: %s (Labels: %v)\n", i, server.Name, server.Labels)
+		// Only keep servers that belong to this instance group
+		if strings.HasPrefix(server.Name, igName+"-") {
+			filteredServers = append(filteredServers, server)
+		} else {
+			fmt.Printf("EKOPS: Skipping server %q (doesn't match instance group prefix %q)\n", server.Name, igName+"-")
+		}
 	}
+	servers = filteredServers
 
 	if len(servers) == 0 {
 		fmt.Printf("EKOPS: No existing servers found for group %q\n", fi.ValueOf(v.Name))
@@ -181,30 +193,13 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 
 	if a != nil {
 		fmt.Printf("EKOPS: Found %d servers needing update\n", len(a.NeedUpdate))
-		// Add "kops.k8s.io/needs-update" label to servers needing update
+		// NOTE: Server update operations are not yet supported by Elemento API.
+		// Servers that need updates will need to be manually replaced or deleted.
+		// For now, we just log them and continue.
 		for _, serverName := range a.NeedUpdate {
-			fmt.Printf("EKOPS: Marking server %q as needing update\n", serverName)
-			server, _, err := client.GetByName(context.TODO(), serverName)
-			if err != nil {
-				fmt.Printf("EKOPS: ERROR getting server %q: %v\n", serverName, err)
-				return err
-			}
-			if server == nil {
-				fmt.Printf("EKOPS: Server %q not found, skipping update\n", serverName)
-				continue
-			}
-
-			server.Labels[elemento.TagKubernetesInstanceNeedsUpdate] = ""
-			_, _, err = client.Update(context.TODO(), server, ecloud.ServerUpdateOpts{
-				Name:   server.Name,
-				Labels: server.Labels,
-			})
-			if err != nil {
-				fmt.Printf("EKOPS: ERROR updating server %q labels: %v\n", serverName, err)
-				return err
-			}
-			fmt.Printf("EKOPS: Successfully marked server %q as needing update\n", serverName)
+			fmt.Printf("EKOPS: Server %q needs update/replacement (manual intervention required)\n", serverName)
 		}
+		// TODO: Implement automatic replacement once Elemento API supports server updates or deletion
 	}
 
 	actualCount := 0
@@ -245,6 +240,12 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 		// Append a random/unique ID to the node name
 		name := fmt.Sprintf("%s-%x", fi.ValueOf(e.Name), rand.Int63())
 
+		// Initialize labels if nil
+		labels := e.Labels
+		if labels == nil {
+			labels = make(map[string]string)
+		}
+
 		opts := ecloud.ServerCreateOpts{
 			Name:             name,
 			StartAfterCreate: fi.PtrTo(true),
@@ -260,8 +261,8 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 				Name: e.Size,
 			},
 			UserData: userData,
-			Labels:   e.Labels,
-			SSHKeys: []*ecloud.SSHKey{},
+			Labels:   labels,
+			SSHKeys:  []*ecloud.SSHKey{},
 		}
 
 		// Add root volume configuration if specified
