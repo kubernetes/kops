@@ -20,6 +20,9 @@ const (
 	// KubeAPIServer is the port where kube-apiserver listens.
 	KubeAPIServer = 443
 
+	// EtcdMetricsPort is used to serve etcd metrics
+	EtcdMetricsPort = 2382
+
 	// NodeupChallenge is the port where nodeup listens for challenges.
 	NodeupChallenge = 3987
 
@@ -90,6 +93,15 @@ const (
 
 	// KubeletAPI is the port where kubelet listens
 	KubeletAPI = 10250
+
+	// KubeProxyMetricsPort is used by kube-proxy to expose metrics
+	KubeProxyMetricsPort = 10249
+
+	// KubeSchedulerMetricsPort is used by kube-scheduler to expose metrics
+	KubeSchedulerMetricsPort = 10259
+
+	// KubeControllerManagerMetricsPort is used by kube-controller-manager to expose metrics
+	KubeControllerManagerMetricsPort = 10257
 )
 
 type PortRange struct {

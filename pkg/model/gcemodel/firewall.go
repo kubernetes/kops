@@ -154,6 +154,12 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.EtcdCiliumClientPort))
 			}
 		}
+		if b.NetworkingIsIPAlias() {
+			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.KubeControllerManagerMetricsPort))
+			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.KubeSchedulerMetricsPort))
+			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.KubeProxyMetricsPort))
+			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.EtcdMetricsPort))
+		}
 		c.AddTask(t)
 	}
 
