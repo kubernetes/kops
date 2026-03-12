@@ -17,8 +17,12 @@ limitations under the License.
 package validators
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -186,6 +190,8 @@ func (h *ValidatorHarness) TestNamespace() string {
 		h.testNamespace = ns
 
 		h.t.Cleanup(func() {
+			h.dumpNamespaceResources(ns)
+
 			h.Logf("Deleting test namespace %q", ns)
 			ctx := context.WithoutCancel(h.Context())
 			err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{})
@@ -203,4 +209,59 @@ func (h *ValidatorHarness) TestNamespace() string {
 func (h *ValidatorHarness) ApplyManifest(namespace string, manifestPath string) {
 	h.Logf("Applying manifest %q to namespace %q", manifestPath, namespace)
 	h.ShellExec(fmt.Sprintf("kubectl apply -n %s -f %s", namespace, manifestPath))
+}
+
+// dumpNamespaceResources dumps key resources from the namespace to the artifacts directory for debugging.
+func (h *ValidatorHarness) dumpNamespaceResources(ns string) {
+	artifactsDir := os.Getenv("ARTIFACTS")
+	if artifactsDir == "" {
+		artifactsDir = "_artifacts"
+	}
+
+	testName := strings.ReplaceAll(h.t.Name(), "/", "_")
+	clusterInfoDir := filepath.Join(artifactsDir, "per-test", testName, "cluster-info", ns)
+	if err := os.MkdirAll(clusterInfoDir, 0o755); err != nil {
+		h.Logf("failed to create cluster-info directory: %v", err)
+		return
+	}
+
+	resourceTypes := []string{
+		"pods",
+		"jobs",
+		"deployments",
+		"statefulsets",
+		"services",
+		"events",
+	}
+
+	for _, resourceType := range resourceTypes {
+		if err := h.dumpResource(ns, resourceType, filepath.Join(clusterInfoDir, resourceType+".yaml")); err != nil {
+			h.Logf("failed to dump resource %s: %v", resourceType, err)
+		}
+	}
+}
+
+// dumpResource runs kubectl get for a resource type and writes the output to a file.
+// Errors are logged but do not fail the test.
+func (h *ValidatorHarness) dumpResource(ns string, resourceType string, outputPath string) error {
+	args := []string{"get", resourceType}
+	if ns != "" {
+		args = append(args, "-n", ns)
+	}
+	args = append(args, "-o", "yaml")
+	cmd := exec.CommandContext(context.WithoutCancel(h.Context()), "kubectl", args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to dump %s in namespace %s: %v (stderr: %s)", resourceType, ns, err, stderr.String())
+	}
+
+	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
+		return fmt.Errorf("failed to write %s dump to %s: %w", resourceType, outputPath, err)
+	}
+
+	return nil
 }
