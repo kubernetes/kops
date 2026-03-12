@@ -73,7 +73,7 @@ spec:
   image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20251212
   machineType: g6.xlarge
   maxSize: 3
-  minSize: 1
+  minSize: 2
   role: Node
   rootVolumeSize: 48
   subnets:

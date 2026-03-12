@@ -1,0 +1,81 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: single-gpu
+spec:
+  spec:
+    devices:
+      requests:
+      - name: single-gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          allocationMode: ExactCount
+          count: 1
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accelerator-isolation-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accelerator-isolation-1
+  template:
+    metadata:
+      labels:
+        app: accelerator-isolation-1
+    spec:
+      containers:
+      - name: default
+        image: ubuntu:22.04
+        command: ["bash", "-c"]
+        args: ["while [ 1 ]; do date; nvidia-smi -q --xml-format; sleep 60; done"]
+        resources:
+          claims:
+          - name: single-gpu
+      # We do request a GPU, so we should be able to access it.
+      resourceClaims:
+      - name: single-gpu
+        resourceClaimTemplateName: single-gpu
+      # We need to tolerate the GPU taint to be scheduled onto a GPU node, even if we are requesting the GPU via a ResourceClaim.
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accelerator-isolation-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accelerator-isolation-2
+  template:
+    metadata:
+      labels:
+        app: accelerator-isolation-2
+    spec:
+      containers:
+      - name: default
+        image: ubuntu:22.04
+        command: ["bash", "-c"]
+        args: ["while [ 1 ]; do date; nvidia-smi -q --xml-format; sleep 60; done"]
+        resources:
+          claims:
+          - name: single-gpu
+      # We do request a GPU, so we should be able to access it.
+      resourceClaims:
+      - name: single-gpu
+        resourceClaimTemplateName: single-gpu
+      # We need to tolerate the GPU taint to be scheduled onto a GPU node, even if we are requesting the GPU via a ResourceClaim.
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"

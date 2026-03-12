@@ -17,6 +17,7 @@ limitations under the License.
 package validators
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -164,9 +165,12 @@ func (h *ValidatorHarness) TestNamespace() string {
 	defer h.mutex.Unlock()
 
 	if h.testNamespace == "" {
-		prefix := strings.ToLower(h.t.Name())
+		prefix := h.t.Name()
+		prefix = prefix[strings.LastIndex(prefix, "/")+1:]
+		prefix = strings.ToLower(prefix)
 		prefix = strings.ReplaceAll(prefix, "/", "-")
 		prefix = strings.ReplaceAll(prefix, "_", "-")
+
 		ns := fmt.Sprintf("%s-%d", prefix, time.Now().Unix())
 
 		nsObj := &unstructured.Unstructured{}
@@ -183,7 +187,8 @@ func (h *ValidatorHarness) TestNamespace() string {
 
 		h.t.Cleanup(func() {
 			h.Logf("Deleting test namespace %q", ns)
-			err := h.DynamicClient().Resource(namespaceGVR).Delete(h.Context(), ns, metav1.DeleteOptions{})
+			ctx := context.WithoutCancel(h.Context())
+			err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{})
 			if err != nil {
 				h.Logf("failed to delete test namespace: %v", err)
 			}
@@ -191,4 +196,11 @@ func (h *ValidatorHarness) TestNamespace() string {
 	}
 
 	return h.testNamespace
+}
+
+// ApplyManifest applies a Kubernetes manifest from the given file path to the specified namespace.
+// We use kubectl so that the output is clear and in theory someone could run the same commands themselves to debug.
+func (h *ValidatorHarness) ApplyManifest(namespace string, manifestPath string) {
+	h.Logf("Applying manifest %q to namespace %q", manifestPath, namespace)
+	h.ShellExec(fmt.Sprintf("kubectl apply -n %s -f %s", namespace, manifestPath))
 }

@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: accelerator-not-requested
+spec:
+  template:
+    metadata:
+      labels:
+        app: dra-gpu-example
+    spec:
+      restartPolicy: Never
+      # We want to be scheduled onto a node with GPUs
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.present
+                operator: In
+                values:
+                - "true"
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: default
+        image: ubuntu:22.04
+        command: ["bash", "-c"]
+        args: ['nvidia-smi -q --xml-format || echo "nvidia-smi failed (as expected)"']
+        # We do _not_ request a GPU, so we should not be able to access it.
