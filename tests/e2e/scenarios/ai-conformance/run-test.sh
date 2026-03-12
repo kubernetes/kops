@@ -99,6 +99,11 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 echo "Installing cert-manager..."
 kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
 
+echo "Waiting for cert-manager to be ready..."
+kubectl rollout status deployment -n cert-manager cert-manager --timeout=5m
+kubectl rollout status deployment -n cert-manager cert-manager-webhook --timeout=5m
+kubectl rollout status deployment -n cert-manager cert-manager-cainjector --timeout=5m
+
 # Setup helm repos for monitoring and NVIDIA components
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
