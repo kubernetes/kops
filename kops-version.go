@@ -19,7 +19,7 @@ package kops
 import "strings"
 
 // Version can be replaced by build tooling
-var Version = KOPS_RELEASE_VERSION
+var Version = "unknown"
 
 // KopsVersionImageTag is like Version, but with + replaced by - (so it can be used in docker tags)
 func KopsVersionImageTag() string {
@@ -27,12 +27,6 @@ func KopsVersionImageTag() string {
 	// We replace + with - so that we can use the tag in docker image tags
 	return strings.ReplaceAll(tag, "+", "-")
 }
-
-// These constants are parsed by build tooling - be careful about changing the formats
-const (
-	KOPS_RELEASE_VERSION = "1.35.0-beta.1"
-	KOPS_CI_VERSION      = "1.35.0-beta.2"
-)
 
 // GitVersion should be replaced by the makefile
 var GitVersion = ""
