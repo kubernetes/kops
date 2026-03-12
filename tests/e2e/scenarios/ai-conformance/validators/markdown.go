@@ -40,6 +40,11 @@ func (o *MarkdownOutput) Success(text string) {
 	o.printf("&check; %s\n", text)
 }
 
+// Skip writes a skip message to the markdown file, prefixed with a warning symbol.
+func (o *MarkdownOutput) Skip(message string) {
+	o.printf("&warning; SKIPPED: %s\n", message)
+}
+
 // Close closes the underlying file. It should be called when all output is done.
 func (o *MarkdownOutput) Close() error {
 	return o.f.Close()
