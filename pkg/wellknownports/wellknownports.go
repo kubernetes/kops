@@ -47,11 +47,17 @@ const (
 	// EtcdEventsQuarantinedClientPort is the port used by etcd when quarantined, for the events etcd
 	EtcdEventsQuarantinedClientPort = 3995
 
+	// EtcdLeasesQuarantinedClientPort is the port used by etcd when quarantined, for the leases etcd
+	EtcdLeasesQuarantinedClientPort = 4005
+
 	// EtcdMainGRPC is the GRPC port used by etcd-manager, for the main etcd
 	EtcdMainGRPC = 3996
 
 	// EtcdEventsGRPC is the GRPC port used by etcd-manager, for the events etcd
 	EtcdEventsGRPC = 3997
+
+	// EtcdLeasesGRPC is the GRPC port used by etcd-manager, for the leases etcd
+	EtcdLeasesGRPC = 4006
 
 	// DNSControllerGossipWeaveMesh is the port where dns-controller listens for the weave-mesh backend gossip
 	DNSControllerGossipWeaveMesh = 3998
@@ -68,6 +74,8 @@ const (
 	EtcdEventsClientPort = 4002
 	// EtcdCiliumClientPort is the port were the Cilium etcd cluster listens
 	EtcdCiliumClientPort = 4003
+	// EtcdLeasesClientPort is the client port for the leases etcd cluster
+	EtcdLeasesClientPort = 4004
 
 	// EtcdMainPeerPort is the peer port for the main etcd cluster
 	EtcdMainPeerPort = 2380
@@ -75,6 +83,8 @@ const (
 	EtcdEventsPeerPort = 2381
 	// EtcdCiliumPeerPort is the peer port for the cilium etcd cluster
 	EtcdCiliumPeerPort = 2382
+	// EtcdLeasesPeerPort is the peer port for the leases etcd cluster
+	EtcdLeasesPeerPort = 2383
 
 	// CiliumOperatorPrometheusPort is the port the Cilium Operator exposes metrics
 	CiliumPrometheusOperatorPort = 6942
@@ -120,5 +130,6 @@ func DNSGossipPortRanges() []PortRange {
 func ETCDPortRanges() []PortRange {
 	return []PortRange{
 		{Min: 3994, Max: 3997},
+		{Min: 4005, Max: 4006},
 	}
 }

@@ -55,6 +55,7 @@ func (b *LogrotateBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd", "/var/log/etcd.log", logRotateOptions{})
 	b.addLogRotate(c, "etcd-events", "/var/log/etcd-events.log", logRotateOptions{})
+	b.addLogRotate(c, "etcd-leases", "/var/log/etcd-leases.log", logRotateOptions{})
 	if b.NodeupConfig.UseCiliumEtcd {
 		b.addLogRotate(c, "etcd-cilium", "/var/log/etcd-cilium.log", logRotateOptions{})
 	}

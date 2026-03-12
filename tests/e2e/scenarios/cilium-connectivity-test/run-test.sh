@@ -29,7 +29,7 @@ else
   KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
 fi
 
-CREATE_ARGS="--networking cilium --set=cluster.spec.networking.cilium.hubble.enabled=true --set=cluster.spec.certManager.enabled=true"
+CREATE_ARGS="--networking cilium --set=cluster.spec.networking.cilium.hubble.enabled=true --set=cluster.spec.certManager.enabled=true --etcd-clusters main,events,cilium,leases"
 
 if [[ "${1:-}" == "kube-proxy" ]]; then
     CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.networking.cilium.enableNodePort=false --set=cluster.spec.kubeProxy.enabled=true"

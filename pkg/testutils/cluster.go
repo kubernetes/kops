@@ -52,7 +52,7 @@ func addEtcdClusters(c *kops.Cluster) {
 	}
 	etcdZones := subnetNames.List()
 
-	for _, etcdCluster := range []string{"main", "events"} {
+	for _, etcdCluster := range []string{"main", "events", "leases"} {
 		etcd := kops.EtcdClusterSpec{}
 		etcd.Name = etcdCluster
 		for _, zone := range etcdZones {

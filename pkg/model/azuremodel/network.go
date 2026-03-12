@@ -176,6 +176,13 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
+	etcdPeerMax := wellknownports.EtcdEventsPeerPort
+	for _, c := range b.Cluster.Spec.EtcdClusters {
+		if c.Name == "leases" {
+			etcdPeerMax = wellknownports.EtcdLeasesPeerPort
+			break
+		}
+	}
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 		Name:                                     fi.PtrTo("DenyNodesToEtcdManager"),
 		Priority:                                 fi.PtrTo[int32](1003),
@@ -185,7 +192,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		SourceApplicationSecurityGroupNames:      []*string{fi.PtrTo(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          fi.PtrTo("*"),
 		DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
-		DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.EtcdMainPeerPort) + "-" + strconv.Itoa(wellknownports.EtcdEventsPeerPort)),
+		DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.EtcdMainPeerPort) + "-" + strconv.Itoa(etcdPeerMax)),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 		Name:                                     fi.PtrTo("DenyNodesToEtcd"),
