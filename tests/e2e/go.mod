@@ -1,6 +1,6 @@
 module k8s.io/kops/tests/e2e
 
-go 1.25.7
+go 1.25.8
 
 replace k8s.io/kops => ../../.
 
@@ -14,9 +14,9 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/urfave/sflags v0.4.1
 	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9
-	k8s.io/api v0.35.1
-	k8s.io/apimachinery v0.35.1
-	k8s.io/client-go v0.35.1
+	k8s.io/api v0.35.2
+	k8s.io/apimachinery v0.35.2
+	k8s.io/client-go v0.35.2
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kops v1.34.1
 	k8s.io/release v0.20.0
@@ -343,9 +343,9 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/cloud-provider v0.34.0 // indirect
+	k8s.io/cloud-provider v0.35.2 // indirect
 	k8s.io/cloud-provider-gcp/providers v0.28.2 // indirect
-	k8s.io/component-base v0.34.3 // indirect
+	k8s.io/component-base v0.35.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/utils v0.0.0-20260108192941-914a6e750570 // indirect
 	modernc.org/libc v1.66.10 // indirect
