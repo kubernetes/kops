@@ -95,9 +95,14 @@ echo "----------------------------------------------------------------"
 echo "Installing Gateway API CRDs v1.2.0..."
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
-# cert-manager: required for KubeRay webhooks
+# cert-manager
 echo "Installing cert-manager..."
 kubectl apply --server-side -f https://github.com/cert-manager/cert-manager/releases/download/v1.19.2/cert-manager.yaml
+
+echo "Waiting for cert-manager to be ready..."
+kubectl rollout status deployment -n cert-manager cert-manager --timeout=5m
+kubectl rollout status deployment -n cert-manager cert-manager-webhook --timeout=5m
+kubectl rollout status deployment -n cert-manager cert-manager-cainjector --timeout=5m
 
 # Setup helm repos for monitoring and NVIDIA components
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia
@@ -166,8 +171,17 @@ helm upgrade -i nvidia-dra-driver-gpu nvidia/nvidia-dra-driver-gpu \
   --wait
 
 # KubeRay
+# Use the Helm chart; the kustomize "default-with-webhooks" overlay has incomplete RBAC
+# (missing cluster-scope secrets permission), causing the operator to crash-loop.
+# The Helm chart does not support webhooks, so we install without them.
 echo "Installing KubeRay Operator..."
-kubectl apply --server-side -k "github.com/ray-project/kuberay/ray-operator/config/default-with-webhooks?ref=v1.5.0"
+helm repo add kuberay https://ray-project.github.io/kuberay-helm/
+helm repo update kuberay
+helm upgrade -i kuberay-operator kuberay/kuberay-operator \
+  --version 1.5.0 \
+  --namespace ray-system \
+  --create-namespace \
+  --wait
 
 # Kueue
 echo "Installing Kueue..."
@@ -188,7 +202,7 @@ echo "Verifying Kueue..."
 kubectl rollout status deployment -n kueue-system kueue-controller-manager --timeout=5m || echo "Warning: Kueue not ready yet"
 
 echo "Verifying KubeRay..."
-kubectl rollout status deployment -n kuberay-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
+kubectl rollout status deployment -n ray-system kuberay-operator --timeout=5m || echo "Warning: KubeRay not ready yet"
 
 echo "Verifying Gateway API..."
 kubectl get gatewayclass || echo "Warning: GatewayClass not found"

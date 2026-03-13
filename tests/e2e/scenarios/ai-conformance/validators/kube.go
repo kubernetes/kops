@@ -19,6 +19,7 @@ package validators
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -190,10 +191,10 @@ func (h *ValidatorHarness) TestNamespace() string {
 		h.testNamespace = ns
 
 		h.t.Cleanup(func() {
-			h.dumpNamespaceResources(ns)
+			ctx := context.WithoutCancel(h.Context())
+			h.dumpNamespaceResources(ctx, ns)
 
 			h.Logf("Deleting test namespace %q", ns)
-			ctx := context.WithoutCancel(h.Context())
 			err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{})
 			if err != nil {
 				h.Logf("failed to delete test namespace: %v", err)
@@ -212,7 +213,7 @@ func (h *ValidatorHarness) ApplyManifest(namespace string, manifestPath string) 
 }
 
 // dumpNamespaceResources dumps key resources from the namespace to the artifacts directory for debugging.
-func (h *ValidatorHarness) dumpNamespaceResources(ns string) {
+func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string) {
 	artifactsDir := os.Getenv("ARTIFACTS")
 	if artifactsDir == "" {
 		artifactsDir = "_artifacts"
@@ -235,21 +236,25 @@ func (h *ValidatorHarness) dumpNamespaceResources(ns string) {
 	}
 
 	for _, resourceType := range resourceTypes {
-		if err := h.dumpResource(ns, resourceType, filepath.Join(clusterInfoDir, resourceType+".yaml")); err != nil {
+		if err := h.dumpResource(ctx, ns, resourceType, filepath.Join(clusterInfoDir, resourceType+".yaml")); err != nil {
 			h.Logf("failed to dump resource %s: %v", resourceType, err)
 		}
+	}
+
+	if err := h.dumpPodLogs(ctx, ns, clusterInfoDir); err != nil {
+		h.Logf("failed to dump pod logs: %v", err)
 	}
 }
 
 // dumpResource runs kubectl get for a resource type and writes the output to a file.
 // Errors are logged but do not fail the test.
-func (h *ValidatorHarness) dumpResource(ns string, resourceType string, outputPath string) error {
+func (h *ValidatorHarness) dumpResource(ctx context.Context, ns string, resourceType string, outputPath string) error {
 	args := []string{"get", resourceType}
 	if ns != "" {
 		args = append(args, "-n", ns)
 	}
 	args = append(args, "-o", "yaml")
-	cmd := exec.CommandContext(context.WithoutCancel(h.Context()), "kubectl", args...)
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -264,4 +269,44 @@ func (h *ValidatorHarness) dumpResource(ns string, resourceType string, outputPa
 	}
 
 	return nil
+}
+
+// dumpPodLogs collects logs from all pods in the namespace and writes them to individual files.
+func (h *ValidatorHarness) dumpPodLogs(ctx context.Context, ns string, clusterInfoDir string) error {
+	podLogsDir := filepath.Join(clusterInfoDir, "pod-logs")
+
+	// List pods in the namespace
+	cmd := exec.CommandContext(ctx, "kubectl", "get", "pods", "-n", ns, "-o", "jsonpath={.items[*].metadata.name}")
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to list pods for log collection in namespace %s (stderr: %s): %w", ns, stderr.String(), err)
+	}
+
+	podNames := strings.Fields(stdout.String())
+
+	if err := os.MkdirAll(podLogsDir, 0o755); err != nil {
+		return fmt.Errorf("failed to create pod-logs directory: %v", err)
+	}
+
+	var errs []error
+	for _, podName := range podNames {
+		logCmd := exec.CommandContext(ctx, "kubectl", "logs", "-n", ns, podName, "--all-containers", "--ignore-errors")
+		var logOut bytes.Buffer
+		logCmd.Stdout = &logOut
+		var logErr bytes.Buffer
+		logCmd.Stderr = &logErr
+		if err := logCmd.Run(); err != nil {
+			errs = append(errs, fmt.Errorf("failed to get logs for pod %s (stderr: %s): %w", podName, logErr.String(), err))
+			continue
+		}
+		logPath := filepath.Join(podLogsDir, podName+".log")
+		if err := os.WriteFile(logPath, logOut.Bytes(), 0o644); err != nil {
+			errs = append(errs, fmt.Errorf("failed to write logs for pod %s to %s: %w", podName, logPath, err))
+		}
+	}
+
+	return errors.Join(errs...)
 }
