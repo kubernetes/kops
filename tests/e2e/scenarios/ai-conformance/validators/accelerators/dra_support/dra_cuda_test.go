@@ -47,8 +47,8 @@ func TestDRAWorks(t *testing.T) {
 	}
 
 	h.Logf("## Run cuda-smoketest")
-	ns := "default"
-	h.ShellExec(fmt.Sprintf("kubectl apply --namespace %s -f testdata/cuda-smoketest.yaml", ns))
+	ns := h.TestNamespace()
+	h.ApplyManifest(ns, "testdata/cuda-smoketest.yaml")
 	h.ShellExec(fmt.Sprintf("kubectl wait --for=condition=complete --namespace %s job/cuda-smoketest --timeout=5m", ns))
 	h.ShellExec(fmt.Sprintf("kubectl logs --namespace %s job/cuda-smoketest", ns))
 }

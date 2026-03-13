@@ -1,0 +1,41 @@
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: single-gpu
+spec:
+  spec:
+    devices:
+      requests:
+      - name: single-gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          allocationMode: ExactCount
+          count: 1
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: accelerator-requested
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: default
+        image: ubuntu:22.04
+        command: ["bash", "-c"]
+        args: ["nvidia-smi -q --xml-format"]
+        resources:
+          claims:
+          - name: single-gpu
+      # We do request a GPU, so we should be able to access it.
+      resourceClaims:
+      - name: single-gpu
+        resourceClaimTemplateName: single-gpu
+      # We need to tolerate the GPU taint to be scheduled onto a GPU node, even if we are requesting the GPU via a ResourceClaim.
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"

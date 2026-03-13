@@ -19,6 +19,7 @@ package validators
 import (
 	"fmt"
 	"io"
+	"testing"
 )
 
 // OutputSink is an interface for writing output from the validators.
@@ -59,6 +60,29 @@ func (h *ValidatorHarness) Fatalf(format string, args ...interface{}) {
 
 	h.output.WriteText("FATAL: " + s)
 	h.t.Fatalf(format, args...)
+}
+
+// Errorf is like t.Errorf, but also writes to the sinks.
+func (h *ValidatorHarness) Errorf(format string, args ...interface{}) {
+	s := fmt.Sprintf(format, args...)
+
+	h.output.WriteText("ERROR: " + s)
+	h.t.Errorf(format, args...)
+}
+
+// Run is like t.Run, but creates a sub-harness that shares the output.
+func (h *ValidatorHarness) Run(name string, testFunc func(h *ValidatorHarness)) {
+	h.t.Run(name, func(t *testing.T) {
+		subHarness := &ValidatorHarness{
+			t: t,
+
+			// Share most of the state with the parent harness, but use the sub-test's *testing.T and a new context.
+			output:        h.output,
+			dynamicClient: h.dynamicClient,
+			restConfig:    h.restConfig,
+		}
+		testFunc(subHarness)
+	})
 }
 
 // Success is like Logf, but indicates a successful check.
