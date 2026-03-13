@@ -35,23 +35,22 @@ func TestGangScheduling_ViaKueue(t *testing.T) {
 		h.Skip("Kueue CRDs not found, skipping gang scheduling test via Kueue")
 	}
 
-	h.Logf("# Applying manifest")
+	h.Logf("# Gang Scheduling (via Kueue)")
 
-	jobName := "gangscheduling-kueue"
-	{
+	h.Run("gangscheduling-kueue", func(h *validators.ValidatorHarness) {
+		jobName := "gangscheduling-kueue"
+
+		h.Logf("## Simple gang scheduling test using Kueue")
+
+		h.Logf("Creating a Kueue Job that requires gang scheduling")
 		ns := h.TestNamespace()
-		h.ShellExec(fmt.Sprintf("kubectl apply --namespace %s -f %s", ns, "testdata/gangscheduling/gangscheduling-kueue.yaml"))
-	}
+		h.ApplyManifest(ns, "testdata/gangscheduling/gangscheduling-kueue.yaml")
 
-	// Wait for Job completion
-	{
-		ns := h.TestNamespace()
-		h.Logf("# Waiting for Job to complete")
-		h.ShellExec(fmt.Sprintf("kubectl wait --namespace %s --for=condition=complete job/%s", ns, jobName))
+		h.Logf("Waiting for Job to complete")
+		h.ShellExec(fmt.Sprintf("kubectl wait --namespace %s --for=condition=complete job/%s --timeout=300s", ns, jobName))
 
-	}
-
-	h.Success("Gang scheduling via Kueue test completed successfully.")
+		h.Success("Gang scheduling via Kueue test completed successfully.")
+	})
 
 	h.RecordConformance("schedulingOrchestration/gang_scheduling")
 }
