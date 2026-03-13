@@ -127,6 +127,8 @@ KOPS_FEATURE_FLAGS="EtcdEventsHTTP,${KOPS_FEATURE_FLAGS:-}"
 
 # AWS ONLY feature flags
 if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
+  # AWS doesn't run dedicated addons node
+  export CL2_PROMETHEUS_TOLERATE_MASTER="true"
   # Enable creating a single nodes instance group
   KOPS_FEATURE_FLAGS="AWSSingleNodesInstanceGroup,${KOPS_FEATURE_FLAGS:-}"
   create_args+=("--set spec.etcdClusters[*].etcdMembers[*].volumeIOPS=10000")
@@ -188,8 +190,6 @@ fi
 # this is used as a label to select kube-proxy pods on kops for kube-proxy service
 # used by CL2 Prometheus here https://github.com/kubernetes/perf-tests/blob/master/clusterloader2/pkg/prometheus/manifests/default/kube-proxy-service.yaml#L2
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
-export PROMETHEUS_SCRAPE_APISERVER_ONLY="true"
-export CL2_PROMETHEUS_TOLERATE_MASTER="true"
 export ETCD_PORT="4001" # we want cl2 to use this port for etcd instead of 2379
 if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
