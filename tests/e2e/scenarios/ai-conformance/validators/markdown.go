@@ -32,6 +32,7 @@ type MarkdownOutput struct {
 
 // WriteText writes the given plain text to the markdown file.
 func (o *MarkdownOutput) WriteText(text string) {
+	o.printf("\n")
 	o.printf("%s", text)
 }
 

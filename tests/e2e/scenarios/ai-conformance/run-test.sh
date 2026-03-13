@@ -19,6 +19,11 @@ set -o nounset
 set -o pipefail
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
+
+BIN_DIR="${REPO_ROOT}/.build/bin"
+mkdir -p "${BIN_DIR}"
+export PATH="${BIN_DIR}:$PATH"
+
 source "${REPO_ROOT}"/tests/e2e/scenarios/lib/common.sh
 
 # AI Conformance requirements:
@@ -186,6 +191,19 @@ helm upgrade -i kuberay-operator kuberay/kuberay-operator \
 # Kueue
 echo "Installing Kueue..."
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
+
+# Gateway API
+kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.5.0" | kubectl apply -f -
+
+# Gateway API Implenmentation - Istio
+helm repo add istio https://istio-release.storage.googleapis.com/charts
+helm repo update
+
+wget https://github.com/istio/istio/releases/download/1.29.1/istioctl-1.29.1-linux-amd64.tar.gz -O "${BIN_DIR}/istioctl.tar.gz"
+tar -xzf "${BIN_DIR}/istioctl.tar.gz" -C "${BIN_DIR}"
+rm "${BIN_DIR}/istioctl.tar.gz"
+
+istioctl install --set profile=minimal -y
 
 echo "----------------------------------------------------------------"
 echo "Verifying Cluster and Components"

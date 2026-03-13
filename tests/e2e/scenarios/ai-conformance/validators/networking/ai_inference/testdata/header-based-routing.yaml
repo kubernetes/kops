@@ -1,0 +1,110 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway
+spec:
+  gatewayClassName: istio
+  listeners:
+  - name: default
+    hostname: "*.example.com"
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1
+spec:
+  selector:
+    app: app1
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+      - name: default
+        image: registry.k8s.io/e2e-test-images/agnhost:2.39
+        command: ["/agnhost", "netexec", "--http-port", "8080"]
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: app2
+spec:
+  selector:
+    app: app2
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app2
+  template:
+    metadata:
+      labels:
+        app: app2
+    spec:
+      containers:
+      - name: default
+        image: registry.k8s.io/e2e-test-images/agnhost:2.39
+        command: ["/agnhost", "netexec", "--http-port", "8080"]
+
+---
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: header-based-routing
+spec:
+  parentRefs:
+  - name: gateway
+  hostnames: ["header-based-routing.example.com"]
+  rules:
+  - matches:
+    - headers:
+      - name: X-Model-Version
+        value: v1
+    backendRefs:
+    - name: app1
+      port: 80
+  - matches:
+    - headers:
+      - name: X-Model-Version
+        value: v2
+    backendRefs:
+    - name: app2
+      port: 80
