@@ -190,7 +190,10 @@ helm upgrade -i kuberay-operator kuberay/kuberay-operator \
 
 # Kueue
 echo "Installing Kueue..."
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/kueue/releases/download/v0.14.8/manifests.yaml
+helm install kueue https://github.com/kubernetes-sigs/kueue/releases/download/v0.16.2/kueue-0.16.2.tgz \
+  --namespace kueue-system \
+  --create-namespace \
+  --wait --timeout 300s
 
 # Gateway API
 kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.5.0" | kubectl apply -f -
