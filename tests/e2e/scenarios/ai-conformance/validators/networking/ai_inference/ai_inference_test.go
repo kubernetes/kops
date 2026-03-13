@@ -17,8 +17,6 @@ limitations under the License.
 package ai_inference
 
 import (
-	"fmt"
-	"strings"
 	"testing"
 
 	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/validators"
@@ -41,14 +39,13 @@ func TestNetworking_AIInference(t *testing.T) {
 		h.Logf("## Verify Weighted Traffic Splitting")
 		ns := h.TestNamespace()
 
-		h.ApplyManifest(ns, "testdata/weighted-traffic-splitting.yaml")
-		// h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for='jsonpath={.status.jobDeploymentStatus}=Complete' rayjob/rayjob-sample --timeout=300s", ns))
+		objects := h.ApplyManifest(ns, "testdata/weighted-traffic-splitting.yaml")
 
-		status := h.ShellExec(fmt.Sprintf("kubectl get httproute weighted-traffic-splitting -n %s -oyaml", ns))
-		if !strings.Contains(status.Stdout(), "Accepted") {
-			h.Fatalf("Did not find Accepted message in status: %s", status.Stdout())
-		} else {
-			h.Success("Found Accepted message in status, indicating the HTTPRoute was accepted successfully.")
+		for _, obj := range objects {
+			if obj.GVK().Kind == "HTTPRoute" {
+				h.Logf("Waiting for HTTPRoute %s to be accepted", obj.Name())
+				obj.KubectlWait()
+			}
 		}
 	})
 
@@ -56,14 +53,13 @@ func TestNetworking_AIInference(t *testing.T) {
 		h.Logf("## Verify Header Based Routing")
 		ns := h.TestNamespace()
 
-		h.ApplyManifest(ns, "testdata/header-based-routing.yaml")
-		// h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for='jsonpath={.status.jobDeploymentStatus}=Complete' rayjob/rayjob-sample --timeout=300s", ns))
+		objects := h.ApplyManifest(ns, "testdata/header-based-routing.yaml")
 
-		status := h.ShellExec(fmt.Sprintf("kubectl get httproute header-based-routing -n %s -oyaml", ns))
-		if !strings.Contains(status.Stdout(), "Accepted") {
-			h.Fatalf("Did not find Accepted message in status: %s", status.Stdout())
-		} else {
-			h.Success("Found Accepted message in status, indicating the HTTPRoute was accepted successfully.")
+		for _, obj := range objects {
+			if obj.GVK().Kind == "HTTPRoute" {
+				h.Logf("Waiting for HTTPRoute %s to be accepted", obj.Name())
+				obj.KubectlWait()
+			}
 		}
 	})
 

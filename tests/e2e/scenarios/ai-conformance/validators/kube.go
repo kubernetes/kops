@@ -206,10 +206,19 @@ func (h *ValidatorHarness) TestNamespace() string {
 }
 
 // ApplyManifest applies a Kubernetes manifest from the given file path to the specified namespace.
+// It returns the list of objects found in the manifest.
 // We use kubectl so that the output is clear and in theory someone could run the same commands themselves to debug.
-func (h *ValidatorHarness) ApplyManifest(namespace string, manifestPath string) {
-	h.Logf("Applying manifest %q to namespace %q", manifestPath, namespace)
-	h.ShellExec(fmt.Sprintf("kubectl apply -n %s -f %s", namespace, manifestPath))
+func (h *ValidatorHarness) ApplyManifest(defaultNamespace string, manifestPath string) []*KubeObjectID {
+	h.Logf("Applying manifest %q to namespace %q", manifestPath, defaultNamespace)
+
+	objects, err := h.parseManifestObjects(manifestPath, defaultNamespace)
+	if err != nil {
+		h.Fatalf("failed to parse manifest %s: %v", manifestPath, err)
+	}
+
+	h.ShellExec(fmt.Sprintf("kubectl apply -n %s -f %s", defaultNamespace, manifestPath))
+
+	return objects
 }
 
 // dumpNamespaceResources dumps key resources from the namespace to the artifacts directory for debugging.
