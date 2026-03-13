@@ -216,6 +216,8 @@ func (h *ValidatorHarness) ApplyManifest(defaultNamespace string, manifestPath s
 		h.Fatalf("failed to parse manifest %s: %v", manifestPath, err)
 	}
 
+	h.objectIDs = append(h.objectIDs, objects...)
+
 	h.ShellExec(fmt.Sprintf("kubectl apply -n %s -f %s", defaultNamespace, manifestPath))
 
 	return objects
@@ -235,17 +237,20 @@ func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string
 		return
 	}
 
-	resourceTypes := []string{
-		"pods",
-		"jobs",
-		"deployments",
-		"statefulsets",
-		"services",
-		"events",
+	resourceTypes := make(map[string]bool)
+	for _, objectID := range h.objectIDs {
+		gvk := objectID.GVK()
+		id := fmt.Sprintf("%s.%s", gvk.Kind, gvk.Group)
+		resourceTypes[id] = true
 	}
 
-	for _, resourceType := range resourceTypes {
-		if err := h.dumpResource(ctx, ns, resourceType, filepath.Join(clusterInfoDir, resourceType+".yaml")); err != nil {
+	// Always include Events, Pods: they are usually not in the manifest, but are often critical for understanding failures.
+	resourceTypes["Events"] = true
+	resourceTypes["Pods"] = true
+
+	for resourceType := range resourceTypes {
+		filename := strings.ToLower(resourceType) + ".yaml"
+		if err := h.dumpResource(ctx, ns, resourceType, filepath.Join(clusterInfoDir, filename)); err != nil {
 			h.Logf("failed to dump resource %s: %v", resourceType, err)
 		}
 	}

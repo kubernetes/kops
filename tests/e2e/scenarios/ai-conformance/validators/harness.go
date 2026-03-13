@@ -42,6 +42,9 @@ type ValidatorHarness struct {
 
 	// testNamespace is a per-test namespace to use for creating resources. It is lazily initialized when TestNamespace() is called.
 	testNamespace string
+
+	// objectIDs tracks the Kubernetes objects that have been created or observed during the test. This can be used for cleanup or reporting.
+	objectIDs []*KubeObjectID
 }
 
 // NewValidatorHarness creates a new ValidatorHarness.
