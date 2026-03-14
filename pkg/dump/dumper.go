@@ -104,13 +104,20 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 // if the IPs are not found from kubectl get nodes, then these will be dumped also.
 // This allows for dumping log on nodes even if they don't register as a kubernetes
 // node, or if a node fails to register, or if the whole cluster fails to start.
-func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, maxNodesToDump int, cloudResources *resources.Dump) error {
+func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, maxNodesToDump int, cloudDump *resources.Dump) error {
 	var special, regular []*corev1.Node
 	var missingK8sNodes []*resources.Instance
 	var dumped []string
 
 	foundInstanceNames := make(map[string]struct{})
-	for _, cloudNode := range cloudResources.Instances {
+
+	var cloudInstances []*resources.Instance
+
+	if cloudDump != nil {
+		cloudInstances = cloudDump.Instances
+	}
+
+	for _, cloudNode := range cloudInstances {
 		for _, k8sNode := range nodes.Items {
 			if k8sNode.Name == cloudNode.Name {
 				foundInstanceNames[cloudNode.Name] = struct{}{}
@@ -131,14 +138,14 @@ func (d *logDumper) DumpAllNodes(ctx context.Context, nodes corev1.NodeList, max
 		}
 	}
 
-	for _, cloudNode := range cloudResources.Instances {
+	for _, cloudNode := range cloudInstances {
 		if _, found := foundInstanceNames[cloudNode.Name]; !found {
 			missingK8sNodes = append(missingK8sNodes, cloudNode)
 		}
 	}
 
 	if len(missingK8sNodes) > 0 {
-		klog.V(2).Infof("number of nodes from kubernetes (%d) differs from number of instances from cloud resources (%d)", len(nodes.Items), len(cloudResources.Instances))
+		klog.V(2).Infof("number of nodes from kubernetes (%d) differs from number of instances from cloud resources (%d)", len(nodes.Items), len(cloudInstances))
 	}
 
 	// Dumping priority
