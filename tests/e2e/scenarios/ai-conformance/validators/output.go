@@ -85,6 +85,11 @@ func (h *ValidatorHarness) Run(name string, testFunc func(h *ValidatorHarness)) 
 	})
 }
 
+// AllPassed returns true if all sub-tests have passed so far. This can be used to conditionally record conformance only if all checks passed.
+func (h *ValidatorHarness) AllPassed() bool {
+	return !h.t.Failed() && !h.t.Skipped()
+}
+
 // Success is like Logf, but indicates a successful check.
 func (h *ValidatorHarness) Success(format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
