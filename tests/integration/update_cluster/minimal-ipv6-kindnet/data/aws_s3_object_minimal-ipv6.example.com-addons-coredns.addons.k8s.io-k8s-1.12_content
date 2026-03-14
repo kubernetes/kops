@@ -5,7 +5,6 @@ metadata:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
     k8s-addon: coredns.addons.k8s.io
-    kubernetes.io/cluster-service: "true"
   name: coredns
   namespace: kube-system
 
@@ -91,7 +90,6 @@ kind: ConfigMap
 metadata:
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
-    addonmanager.kubernetes.io/mode: EnsureExists
     app.kubernetes.io/managed-by: kops
     k8s-addon: coredns.addons.k8s.io
   name: coredns
@@ -105,15 +103,16 @@ metadata:
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: coredns
     k8s-addon: coredns.addons.k8s.io
     k8s-app: kube-dns
-    kubernetes.io/cluster-service: "true"
     kubernetes.io/name: CoreDNS
   name: coredns
   namespace: kube-system
 spec:
   selector:
     matchLabels:
+      app.kubernetes.io/name: coredns
       k8s-app: kube-dns
   strategy:
     rollingUpdate:
@@ -123,6 +122,7 @@ spec:
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: coredns
         k8s-app: kube-dns
         kops.k8s.io/managed-by: kops
     spec:
@@ -215,6 +215,7 @@ metadata:
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: coredns
     k8s-addon: coredns.addons.k8s.io
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
@@ -235,6 +236,7 @@ spec:
     port: 9153
     protocol: TCP
   selector:
+    app.kubernetes.io/name: coredns
     k8s-app: kube-dns
 
 ---
@@ -335,18 +337,20 @@ metadata:
   labels:
     addon.kops.k8s.io/name: coredns.addons.k8s.io
     app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: coredns-autoscaler
     k8s-addon: coredns.addons.k8s.io
     k8s-app: coredns-autoscaler
-    kubernetes.io/cluster-service: "true"
   name: coredns-autoscaler
   namespace: kube-system
 spec:
   selector:
     matchLabels:
+      app.kubernetes.io/name: coredns-autoscaler
       k8s-app: coredns-autoscaler
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: coredns-autoscaler
         k8s-app: coredns-autoscaler
         kops.k8s.io/managed-by: kops
     spec:
