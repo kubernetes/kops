@@ -24,10 +24,10 @@ import (
 	"os"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/util/pkg/vfs/acls"
 )
 
 type VFSSecretStore struct {
