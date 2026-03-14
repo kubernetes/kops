@@ -22,11 +22,13 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/validators"
 )
 
-// TestObservability_AcceleratorMetrics corresponds to the observability/accelerator_metrics conformance requirement.
-func TestObservability_AcceleratorMetrics(t *testing.T) {
+// TestObservability_AcceleratorMetrics_ViaDCGM corresponds to the observability/accelerator_metrics conformance requirement.
+// It verifies the metrics in the case that the cluster is using DCGM as the accelerator metrics solution.
+func TestObservability_AcceleratorMetrics_ViaDCGM(t *testing.T) {
 	// Description:
 	// For supported accelerator types, the platform must allow for the installation and successful operation of at least one accelerator metrics solution
 	// that exposes fine-grained performance metrics via a standardized, machine-readable metrics endpoint.
@@ -37,6 +39,11 @@ func TestObservability_AcceleratorMetrics(t *testing.T) {
 	// The platform may provide a managed solution, but this is not required for conformance."
 
 	h := validators.NewValidatorHarness(t)
+
+	if !h.HasService(types.NamespacedName{Namespace: "gpu-operator", Name: "nvidia-dcgm-exporter"}) {
+		h.Skip("nvidia-dcgm-exporter service not found in gpu-operator namespace; skipping accelerator metrics test")
+		return
+	}
 
 	h.Logf("# Observability: Accelerator Metrics")
 
@@ -66,7 +73,6 @@ func TestObservability_AcceleratorMetrics(t *testing.T) {
 				"kubectl run %s -n %s --image=registry.k8s.io/e2e-test-images/agnhost:2.39 --restart=Never --command -- curl -sS http://nvidia-dcgm-exporter.gpu-operator.svc.cluster.local:9400/metrics",
 				podName, ns,
 			))
-			//h.ShellExec(fmt.Sprintf("kubectl wait -n %s pod/%s --for=condition=Ready --timeout=60s", ns, jobName))
 			h.ShellExec(fmt.Sprintf("kubectl wait -n %s pod/%s --for=jsonpath='{.status.phase}'=Succeeded --timeout=120s", ns, podName))
 
 			logs := h.ShellExec(fmt.Sprintf("kubectl logs -n %s %s", ns, podName))
