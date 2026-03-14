@@ -26,10 +26,13 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/validators/kubeobjects"
 )
 
 // ValidatorHarness provides a common context and utilities for AI conformance validation.
 type ValidatorHarness struct {
+	*kubeobjects.Client
+
 	t *testing.T
 
 	output OutputSink
@@ -72,6 +75,8 @@ func NewValidatorHarness(t *testing.T) *ValidatorHarness {
 		h.Fatalf("failed to build get kubeconfig: %v", err)
 	}
 	h.restConfig = restConfig
+
+	h.Client = kubeobjects.NewClient(h, h.DynamicClient())
 
 	return h
 }
