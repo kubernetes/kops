@@ -81,7 +81,7 @@ func (e *TargetGroup) CreateNewRevisionsWith(nlb *NetworkLoadBalancer) {
 	e.networkLoadBalancer = nlb
 }
 
-var _ fi.CloudupHasDependencies = &TargetGroup{}
+var _ fi.CloudupHasDependencies = (*TargetGroup)(nil)
 
 // GetDependencies returns the dependencies of the TargetGroup task
 // We need to do this because we hide the networkLoadBalancer field
@@ -92,7 +92,7 @@ func (e *TargetGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Clou
 	return deps
 }
 
-var _ fi.CompareWithID = &TargetGroup{}
+var _ fi.CompareWithID = (*TargetGroup)(nil)
 
 func (e *TargetGroup) CompareWithID() *string {
 	if e.ARN != nil {
@@ -484,7 +484,7 @@ func (e *TargetGroup) TerraformLink() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("aws_lb_target_group", *e.Name, "id")
 }
 
-var _ fi.CloudupProducesDeletions = &TargetGroup{}
+var _ fi.CloudupProducesDeletions = (*TargetGroup)(nil)
 
 // FindDeletions is responsible for finding launch templates which can be deleted
 func (e *TargetGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
@@ -505,7 +505,7 @@ func buildDeleteTargetGroup(obj *awsup.TargetGroupInfo) *deleteTargetGroup {
 	return d
 }
 
-var _ fi.CloudupDeletion = &deleteTargetGroup{}
+var _ fi.CloudupDeletion = (*deleteTargetGroup)(nil)
 
 func (d *deleteTargetGroup) Delete(t fi.CloudupTarget) error {
 	ctx := context.TODO()

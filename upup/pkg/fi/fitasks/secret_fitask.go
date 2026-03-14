@@ -27,7 +27,7 @@ import (
 
 // Secret
 
-var _ fi.HasLifecycle = &Secret{}
+var _ fi.HasLifecycle = (*Secret)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *Secret) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *Secret) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Secret{}
+var _ fi.HasName = (*Secret)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Secret) GetName() *string {

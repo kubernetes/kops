@@ -27,7 +27,7 @@ import (
 
 // ApplicationSecurityGroup
 
-var _ fi.HasLifecycle = &ApplicationSecurityGroup{}
+var _ fi.HasLifecycle = (*ApplicationSecurityGroup)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ApplicationSecurityGroup) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ApplicationSecurityGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ApplicationSecurityGroup{}
+var _ fi.HasName = (*ApplicationSecurityGroup)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ApplicationSecurityGroup) GetName() *string {

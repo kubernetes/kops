@@ -43,7 +43,7 @@ type Disk struct {
 	Labels           map[string]string
 }
 
-var _ fi.CompareWithID = &Disk{}
+var _ fi.CompareWithID = (*Disk)(nil)
 
 func (e *Disk) CompareWithID() *string {
 	return e.Name

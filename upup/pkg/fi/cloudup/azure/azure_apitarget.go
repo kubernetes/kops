@@ -25,7 +25,7 @@ type AzureAPITarget struct {
 	Cloud AzureCloud
 }
 
-var _ fi.CloudupTarget = &AzureAPITarget{}
+var _ fi.CloudupTarget = (*AzureAPITarget)(nil)
 
 // NewAzureAPITarget returns a new AzureAPITarget.
 func NewAzureAPITarget(cloud AzureCloud) *AzureAPITarget {

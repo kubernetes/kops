@@ -27,7 +27,7 @@ import (
 
 // ManagedFile
 
-var _ fi.HasLifecycle = &ManagedFile{}
+var _ fi.HasLifecycle = (*ManagedFile)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ManagedFile) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ManagedFile) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ManagedFile{}
+var _ fi.HasName = (*ManagedFile)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ManagedFile) GetName() *string {

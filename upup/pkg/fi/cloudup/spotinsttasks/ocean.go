@@ -133,7 +133,7 @@ func (o *Ocean) find(svc spotinst.InstanceGroupService) (*aws.Cluster, error) {
 	return out, nil
 }
 
-var _ fi.CloudupHasCheckExisting = &Ocean{}
+var _ fi.CloudupHasCheckExisting = (*Ocean)(nil)
 
 func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 	cloud := awsup.GetCloud(c)

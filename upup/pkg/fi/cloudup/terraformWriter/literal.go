@@ -32,7 +32,7 @@ type Literal struct {
 	String string `cty:"string"`
 }
 
-var _ json.Marshaler = &Literal{}
+var _ json.Marshaler = (*Literal)(nil)
 
 func (l *Literal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&l.String)

@@ -47,8 +47,8 @@ type NetworkLoadBalancerListener struct {
 	listenerArn string
 }
 
-var _ fi.CompareWithID = &NetworkLoadBalancerListener{}
-var _ fi.CloudupTaskNormalize = &NetworkLoadBalancerListener{}
+var _ fi.CompareWithID = (*NetworkLoadBalancerListener)(nil)
+var _ fi.CloudupTaskNormalize = (*NetworkLoadBalancerListener)(nil)
 
 func (e *NetworkLoadBalancerListener) CompareWithID() *string {
 	return e.Name

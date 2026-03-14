@@ -24,7 +24,7 @@ type UpdatePolicy struct {
 	Type          string
 }
 
-var _ fi.CloudupHasDependencies = &UpdatePolicy{}
+var _ fi.CloudupHasDependencies = (*UpdatePolicy)(nil)
 
 func (_ *UpdatePolicy) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil

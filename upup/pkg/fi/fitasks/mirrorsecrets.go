@@ -31,7 +31,7 @@ type MirrorSecrets struct {
 	MirrorPath vfs.Path
 }
 
-var _ fi.CloudupHasDependencies = &MirrorSecrets{}
+var _ fi.CloudupHasDependencies = (*MirrorSecrets)(nil)
 
 // GetDependencies returns the dependencies for a MirrorSecrets task - it must run after all secrets have been run
 func (e *MirrorSecrets) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {

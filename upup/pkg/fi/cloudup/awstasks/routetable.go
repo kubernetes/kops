@@ -44,7 +44,7 @@ type RouteTable struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &RouteTable{}
+var _ fi.CompareWithID = (*RouteTable)(nil)
 
 func (e *RouteTable) CompareWithID() *string {
 	return e.ID

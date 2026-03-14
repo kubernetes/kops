@@ -27,7 +27,7 @@ import (
 
 // Firewall
 
-var _ fi.HasLifecycle = &Firewall{}
+var _ fi.HasLifecycle = (*Firewall)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *Firewall) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *Firewall) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Firewall{}
+var _ fi.HasName = (*Firewall)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Firewall) GetName() *string {

@@ -27,7 +27,7 @@ import (
 
 // EventBridgeTarget
 
-var _ fi.HasLifecycle = &EventBridgeTarget{}
+var _ fi.HasLifecycle = (*EventBridgeTarget)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *EventBridgeTarget) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *EventBridgeTarget) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &EventBridgeTarget{}
+var _ fi.HasName = (*EventBridgeTarget)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *EventBridgeTarget) GetName() *string {

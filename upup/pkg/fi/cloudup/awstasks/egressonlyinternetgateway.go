@@ -43,7 +43,7 @@ type EgressOnlyInternetGateway struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &EgressOnlyInternetGateway{}
+var _ fi.CompareWithID = (*EgressOnlyInternetGateway)(nil)
 
 func (e *EgressOnlyInternetGateway) CompareWithID() *string {
 	return e.ID

@@ -25,7 +25,7 @@ import (
 type InstallTarget struct {
 }
 
-var _ fi.InstallTarget = &InstallTarget{}
+var _ fi.InstallTarget = (*InstallTarget)(nil)
 
 func (t *InstallTarget) Finish(taskMap map[string]fi.InstallTask) error {
 	return nil

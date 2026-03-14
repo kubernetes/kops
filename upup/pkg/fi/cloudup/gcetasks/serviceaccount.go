@@ -41,7 +41,7 @@ type ServiceAccount struct {
 	Shared *bool
 }
 
-var _ fi.CompareWithID = &ServiceAccount{}
+var _ fi.CompareWithID = (*ServiceAccount)(nil)
 
 func (e *ServiceAccount) CompareWithID() *string {
 	return e.Email

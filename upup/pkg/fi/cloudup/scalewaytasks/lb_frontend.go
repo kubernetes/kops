@@ -40,10 +40,10 @@ type LBFrontend struct {
 	LBBackend    *LBBackend
 }
 
-var _ fi.CloudupTask = &LBFrontend{}
-var _ fi.CompareWithID = &LBFrontend{}
+var _ fi.CloudupTask = (*LBFrontend)(nil)
+var _ fi.CompareWithID = (*LBFrontend)(nil)
 
-var _ fi.CloudupHasDependencies = &LBFrontend{}
+var _ fi.CloudupHasDependencies = (*LBFrontend)(nil)
 
 func (l *LBFrontend) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	var deps []fi.CloudupTask

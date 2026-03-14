@@ -39,7 +39,7 @@ import (
 )
 
 // NetworkLoadBalancer manages an NLB.  We find the existing NLB using the Name tag.
-var _ DNSTarget = &NetworkLoadBalancer{}
+var _ DNSTarget = (*NetworkLoadBalancer)(nil)
 
 // +kops:fitask
 type NetworkLoadBalancer struct {
@@ -97,9 +97,9 @@ func (e *NetworkLoadBalancer) SetWaitForLoadBalancerReady(v bool) {
 	e.waitForLoadBalancerReady = v
 }
 
-var _ fi.CompareWithID = &NetworkLoadBalancer{}
-var _ fi.CloudupTaskNormalize = &NetworkLoadBalancer{}
-var _ fi.CloudupProducesDeletions = &NetworkLoadBalancer{}
+var _ fi.CompareWithID = (*NetworkLoadBalancer)(nil)
+var _ fi.CloudupTaskNormalize = (*NetworkLoadBalancer)(nil)
+var _ fi.CloudupProducesDeletions = (*NetworkLoadBalancer)(nil)
 
 func (e *NetworkLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -341,7 +341,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 	return actual, nil
 }
 
-var _ fi.HasAddress = &NetworkLoadBalancer{}
+var _ fi.HasAddress = (*NetworkLoadBalancer)(nil)
 
 // GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
 // It indicates which services we support with this load balancer.
@@ -774,7 +774,7 @@ type deleteNLB struct {
 	obj *awsup.LoadBalancerInfo
 }
 
-var _ fi.CloudupDeletion = &deleteNLB{}
+var _ fi.CloudupDeletion = (*deleteNLB)(nil)
 
 func (d *deleteNLB) Delete(t fi.CloudupTarget) error {
 	ctx := context.TODO()

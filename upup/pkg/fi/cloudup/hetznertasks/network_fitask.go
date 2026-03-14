@@ -27,7 +27,7 @@ import (
 
 // Network
 
-var _ fi.HasLifecycle = &Network{}
+var _ fi.HasLifecycle = (*Network)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *Network) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *Network) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Network{}
+var _ fi.HasName = (*Network)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Network) GetName() *string {

@@ -27,7 +27,7 @@ import (
 
 // AutoscalingGroup
 
-var _ fi.HasLifecycle = &AutoscalingGroup{}
+var _ fi.HasLifecycle = (*AutoscalingGroup)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *AutoscalingGroup) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *AutoscalingGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &AutoscalingGroup{}
+var _ fi.HasName = (*AutoscalingGroup)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *AutoscalingGroup) GetName() *string {

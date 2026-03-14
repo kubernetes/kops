@@ -35,7 +35,7 @@ type resourceGroupsClientImpl struct {
 	c *resources.ResourceGroupsClient
 }
 
-var _ ResourceGroupsClient = &resourceGroupsClientImpl{}
+var _ ResourceGroupsClient = (*resourceGroupsClientImpl)(nil)
 
 func (c *resourceGroupsClientImpl) CreateOrUpdate(ctx context.Context, name string, parameters resources.ResourceGroup) error {
 	_, err := c.c.CreateOrUpdate(ctx, name, parameters, nil)

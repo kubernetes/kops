@@ -29,7 +29,7 @@ type AWSAPITarget struct {
 	Cloud AWSCloud
 }
 
-var _ fi.CloudupTarget = &AWSAPITarget{}
+var _ fi.CloudupTarget = (*AWSAPITarget)(nil)
 
 func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	return &AWSAPITarget{

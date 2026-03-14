@@ -31,7 +31,7 @@ type ClassicLoadBalancerHealthCheck struct {
 	Timeout  *int32
 }
 
-var _ fi.CloudupHasDependencies = &ClassicLoadBalancerListener{}
+var _ fi.CloudupHasDependencies = (*ClassicLoadBalancerListener)(nil)
 
 func (e *ClassicLoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil

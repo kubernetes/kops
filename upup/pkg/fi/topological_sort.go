@@ -38,8 +38,8 @@ type NotADependency[T SubContext] struct{}
 type NodeupNotADependency = NotADependency[NodeupSubContext]
 type CloudupNotADependency = NotADependency[CloudupSubContext]
 
-var _ CloudupHasDependencies = &CloudupNotADependency{}
-var _ NodeupHasDependencies = &NodeupNotADependency{}
+var _ CloudupHasDependencies = (*CloudupNotADependency)(nil)
+var _ NodeupHasDependencies = (*NodeupNotADependency)(nil)
 
 func (NotADependency[T]) GetDependencies(map[string]Task[T]) []Task[T] {
 	return nil

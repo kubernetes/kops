@@ -31,7 +31,7 @@ type iamClientImpl struct {
 	srv *iam.Service
 }
 
-var _ IamClient = &iamClientImpl{}
+var _ IamClient = (*iamClientImpl)(nil)
 
 func newIamClientImpl(ctx context.Context) (*iamClientImpl, error) {
 	srv, err := iam.NewService(ctx)
@@ -61,7 +61,7 @@ type serviceAccountClientImpl struct {
 	srv *iam.ProjectsServiceAccountsService
 }
 
-var _ ServiceAccountClient = &serviceAccountClientImpl{}
+var _ ServiceAccountClient = (*serviceAccountClientImpl)(nil)
 
 func (s *serviceAccountClientImpl) Create(ctx context.Context, project string, req *iam.CreateServiceAccountRequest) (*iam.ServiceAccount, error) {
 	return s.srv.Create(project, req).Context(ctx).Do()

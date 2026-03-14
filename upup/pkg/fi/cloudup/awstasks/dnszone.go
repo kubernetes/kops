@@ -47,7 +47,7 @@ type DNSZone struct {
 	PrivateVPC *VPC
 }
 
-var _ fi.CompareWithID = &DNSZone{}
+var _ fi.CompareWithID = (*DNSZone)(nil)
 
 func (e *DNSZone) CompareWithID() *string {
 	return e.Name

@@ -53,7 +53,7 @@ type NatGateway struct {
 	AssociatedRouteTable *RouteTable
 }
 
-var _ fi.CompareWithID = &NatGateway{}
+var _ fi.CompareWithID = (*NatGateway)(nil)
 
 func (e *NatGateway) CompareWithID() *string {
 	// Match by ID (NAT Gateways don't have tags, so they don't have a name in EC2)

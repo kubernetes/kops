@@ -27,7 +27,7 @@ import (
 
 // SecurityGroupRule
 
-var _ fi.HasLifecycle = &SecurityGroupRule{}
+var _ fi.HasLifecycle = (*SecurityGroupRule)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *SecurityGroupRule) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *SecurityGroupRule) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &SecurityGroupRule{}
+var _ fi.HasName = (*SecurityGroupRule)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *SecurityGroupRule) GetName() *string {

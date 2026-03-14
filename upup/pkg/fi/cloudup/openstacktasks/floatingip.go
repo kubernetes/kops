@@ -46,7 +46,7 @@ type FloatingIP struct {
 	WellKnownServices []wellknownservices.WellKnownService
 }
 
-var _ fi.HasAddress = &FloatingIP{}
+var _ fi.HasAddress = (*FloatingIP)(nil)
 
 var readBackoff = wait.Backoff{
 	Duration: time.Second,
@@ -129,7 +129,7 @@ func (e *FloatingIP) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloud
 	return deps
 }
 
-var _ fi.CompareWithID = &FloatingIP{}
+var _ fi.CompareWithID = (*FloatingIP)(nil)
 
 func (e *FloatingIP) CompareWithID() *string {
 	return e.ID

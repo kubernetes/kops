@@ -27,7 +27,7 @@ import (
 
 // StorageBucketIAM
 
-var _ fi.HasLifecycle = &StorageBucketIAM{}
+var _ fi.HasLifecycle = (*StorageBucketIAM)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *StorageBucketIAM) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *StorageBucketIAM) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &StorageBucketIAM{}
+var _ fi.HasName = (*StorageBucketIAM)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *StorageBucketIAM) GetName() *string {

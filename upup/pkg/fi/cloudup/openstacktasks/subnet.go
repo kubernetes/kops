@@ -49,7 +49,7 @@ func (e *Subnet) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTa
 	return deps
 }
 
-var _ fi.CompareWithID = &Subnet{}
+var _ fi.CompareWithID = (*Subnet)(nil)
 
 func (s *Subnet) CompareWithID() *string {
 	return s.ID

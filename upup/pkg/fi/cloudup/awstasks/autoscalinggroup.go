@@ -108,9 +108,9 @@ type AutoscalingGroup struct {
 	deletions []fi.CloudupDeletion
 }
 
-var _ fi.CloudupProducesDeletions = &AutoscalingGroup{}
-var _ fi.CompareWithID = &AutoscalingGroup{}
-var _ fi.CloudupTaskNormalize = &AutoscalingGroup{}
+var _ fi.CloudupProducesDeletions = (*AutoscalingGroup)(nil)
+var _ fi.CompareWithID = (*AutoscalingGroup)(nil)
+var _ fi.CloudupTaskNormalize = (*AutoscalingGroup)(nil)
 
 // CompareWithID returns the ID of the ASG
 func (e *AutoscalingGroup) CompareWithID() *string {
@@ -1108,7 +1108,7 @@ type deleteAutoscalingTargetGroupAttachment struct {
 	targetGroupARN       string
 }
 
-var _ fi.CloudupDeletion = &deleteAutoscalingTargetGroupAttachment{}
+var _ fi.CloudupDeletion = (*deleteAutoscalingTargetGroupAttachment)(nil)
 
 func buildDeleteAutoscalingTargetGroupAttachment(autoScalingGroupName string, targetGroupARN string) *deleteAutoscalingTargetGroupAttachment {
 	d := &deleteAutoscalingTargetGroupAttachment{}

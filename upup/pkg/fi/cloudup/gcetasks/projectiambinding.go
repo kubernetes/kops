@@ -39,7 +39,7 @@ type ProjectIAMBinding struct {
 	Role                 *string
 }
 
-var _ fi.CompareWithID = &ProjectIAMBinding{}
+var _ fi.CompareWithID = (*ProjectIAMBinding)(nil)
 
 func (e *ProjectIAMBinding) CompareWithID() *string {
 	return e.Name

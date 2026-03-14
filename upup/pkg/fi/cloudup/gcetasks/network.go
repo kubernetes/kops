@@ -40,7 +40,7 @@ type Network struct {
 	Shared *bool
 }
 
-var _ fi.CompareWithID = &Network{}
+var _ fi.CompareWithID = (*Network)(nil)
 
 func (e *Network) CompareWithID() *string {
 	return e.Name

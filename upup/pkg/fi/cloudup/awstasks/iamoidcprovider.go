@@ -45,7 +45,7 @@ type IAMOIDCProvider struct {
 	arn *string
 }
 
-var _ fi.CompareWithID = &IAMOIDCProvider{}
+var _ fi.CompareWithID = (*IAMOIDCProvider)(nil)
 
 func (e *IAMOIDCProvider) CompareWithID() *string {
 	return e.Name

@@ -45,7 +45,7 @@ type WarmPool struct {
 	AutoscalingGroup *AutoscalingGroup
 }
 
-var _ fi.CloudupHasDependencies = &WarmPool{}
+var _ fi.CloudupHasDependencies = (*WarmPool)(nil)
 
 // Warmpool depends on any Lifecycle hooks being in place first.
 func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
@@ -67,7 +67,7 @@ func (e *WarmPool) GetDependencies(tasks map[string]fi.CloudupTask) []fi.Cloudup
 	return deps
 }
 
-var _ fi.CompareWithID = &WarmPool{}
+var _ fi.CompareWithID = (*WarmPool)(nil)
 
 // CompareWithID returns the ID of the WarmPool task
 func (e *WarmPool) CompareWithID() *string {

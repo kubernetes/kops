@@ -47,7 +47,7 @@ func (a SecurityGroupsByID) Less(i, j int) bool {
 	return fi.ValueOf(a[i].ID) < fi.ValueOf(a[j].ID)
 }
 
-var _ fi.CompareWithID = &SecurityGroup{}
+var _ fi.CompareWithID = (*SecurityGroup)(nil)
 
 func (s *SecurityGroup) CompareWithID() *string {
 	return s.ID
@@ -234,7 +234,7 @@ type deleteSecurityGroup struct {
 	securityGroup *SecurityGroup
 }
 
-var _ fi.CloudupDeletion = &deleteSecurityGroup{}
+var _ fi.CloudupDeletion = (*deleteSecurityGroup)(nil)
 
 func (d *deleteSecurityGroup) Delete(t fi.CloudupTarget) error {
 	klog.V(2).Infof("deleting security group: %v", fi.DebugAsJsonString(d.securityGroup.Name))
@@ -268,7 +268,7 @@ type deleteSecurityGroupRule struct {
 	securityGroup *SecurityGroup
 }
 
-var _ fi.CloudupDeletion = &deleteSecurityGroupRule{}
+var _ fi.CloudupDeletion = (*deleteSecurityGroupRule)(nil)
 
 func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
 	klog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.rule))
@@ -340,7 +340,7 @@ type PortRemovalRule struct {
 	Port int
 }
 
-var _ RemovalRule = &PortRemovalRule{}
+var _ RemovalRule = (*PortRemovalRule)(nil)
 
 func (r *PortRemovalRule) String() string {
 	return fi.DebugAsJsonString(r)

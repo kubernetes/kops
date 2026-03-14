@@ -28,7 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-var _ fi.Cloud = &Cloud{}
+var _ fi.Cloud = (*Cloud)(nil)
 
 // Cloud holds the fi.Cloud implementation for metal resources.
 type Cloud struct {

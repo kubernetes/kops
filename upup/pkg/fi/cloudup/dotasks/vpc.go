@@ -34,7 +34,7 @@ type VPC struct {
 	Region    *string
 }
 
-var _ fi.CompareWithID = &VPC{}
+var _ fi.CompareWithID = (*VPC)(nil)
 
 func (v *VPC) CompareWithID() *string {
 	return v.ID

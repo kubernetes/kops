@@ -27,7 +27,7 @@ import (
 
 // HTTPHealthcheck
 
-var _ fi.HasLifecycle = &HTTPHealthcheck{}
+var _ fi.HasLifecycle = (*HTTPHealthcheck)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *HTTPHealthcheck) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *HTTPHealthcheck) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &HTTPHealthcheck{}
+var _ fi.HasName = (*HTTPHealthcheck)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *HTTPHealthcheck) GetName() *string {

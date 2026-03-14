@@ -374,7 +374,7 @@ type deleteVPCCIDRBlock struct {
 	associationID *string
 }
 
-var _ fi.CloudupDeletion = &deleteVPCCIDRBlock{}
+var _ fi.CloudupDeletion = (*deleteVPCCIDRBlock)(nil)
 
 func (d *deleteVPCCIDRBlock) Delete(t fi.CloudupTarget) error {
 	ctx := context.TODO()

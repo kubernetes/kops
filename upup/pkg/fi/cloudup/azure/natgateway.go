@@ -37,7 +37,7 @@ type NatGatewaysClientImpl struct {
 	c *network.NatGatewaysClient
 }
 
-var _ NatGatewaysClient = &NatGatewaysClientImpl{}
+var _ NatGatewaysClient = (*NatGatewaysClientImpl)(nil)
 
 func (c *NatGatewaysClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, natGatewayName string, parameters network.NatGateway) (*network.NatGateway, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, natGatewayName, parameters, nil)

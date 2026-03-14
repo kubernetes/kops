@@ -57,7 +57,7 @@ const (
 	localArchiveStateDir = "/var/cache/nodeup/archives/state/"
 )
 
-var _ fi.NodeupHasDependencies = &Archive{}
+var _ fi.NodeupHasDependencies = (*Archive)(nil)
 
 // GetDependencies implements HasDependencies::GetDependencies
 func (e *Archive) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
@@ -69,7 +69,7 @@ func (e *Archive) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTas
 	return deps
 }
 
-var _ fi.HasName = &Archive{}
+var _ fi.HasName = (*Archive)(nil)
 
 func (e *Archive) GetName() *string {
 	return &e.Name
@@ -80,7 +80,7 @@ func (e *Archive) String() string {
 	return fmt.Sprintf("Archive: %s %s->%s", e.Name, e.Source, e.TargetDir)
 }
 
-var _ CreatesDir = &Archive{}
+var _ CreatesDir = (*Archive)(nil)
 
 // Dir implements CreatesDir::Dir
 func (e *Archive) Dir() string {

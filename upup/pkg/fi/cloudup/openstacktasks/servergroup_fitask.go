@@ -27,7 +27,7 @@ import (
 
 // ServerGroup
 
-var _ fi.HasLifecycle = &ServerGroup{}
+var _ fi.HasLifecycle = (*ServerGroup)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ServerGroup) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ServerGroup) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ServerGroup{}
+var _ fi.HasName = (*ServerGroup)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ServerGroup) GetName() *string {

@@ -45,13 +45,13 @@ type HostRecord struct {
 	Addresses []string
 }
 
-var _ fi.NodeupTask = &UpdateEtcHostsTask{}
+var _ fi.NodeupTask = (*UpdateEtcHostsTask)(nil)
 
 func (e *UpdateEtcHostsTask) String() string {
 	return fmt.Sprintf("UpdateEtcHostsTask: %s", e.Name)
 }
 
-var _ fi.HasName = &UpdateEtcHostsTask{}
+var _ fi.HasName = (*UpdateEtcHostsTask)(nil)
 
 func (f *UpdateEtcHostsTask) GetName() *string {
 	return &f.Name
