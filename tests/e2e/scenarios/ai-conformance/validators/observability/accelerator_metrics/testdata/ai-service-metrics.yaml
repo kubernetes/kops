@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-fake-workload
+data:
+  metrics: |
+    # HELP aiconformancetest_requests_total A fake counter metric for AI conformance validation.
+    # TYPE aiconformancetest_requests_total counter
+    aiconformancetest_requests_total{method="GET",endpoint="/predict"} 1027
+    aiconformancetest_requests_total{method="POST",endpoint="/predict"} 2563
+    # HELP aiconformancetest_request_duration_seconds A fake histogram metric for AI conformance validation.
+    # TYPE aiconformancetest_request_duration_seconds histogram
+    aiconformancetest_request_duration_seconds_bucket{le="0.01"} 500
+    aiconformancetest_request_duration_seconds_bucket{le="0.1"} 1500
+    aiconformancetest_request_duration_seconds_bucket{le="1"} 3000
+    aiconformancetest_request_duration_seconds_bucket{le="+Inf"} 3590
+    aiconformancetest_request_duration_seconds_sum 245.7
+    aiconformancetest_request_duration_seconds_count 3590
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics-fake-workload-nginx-conf
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        root /usr/share/nginx/html;
+        default_type text/plain;
+      }
+    }
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-fake-workload
+  labels:
+    app: metrics-fake-workload
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-fake-workload
+  template:
+    metadata:
+      labels:
+        app: metrics-fake-workload
+    spec:
+      containers:
+      - name: webserver
+        image: registry.k8s.io/e2e-test-images/nginx:1.27-0
+        ports:
+        - containerPort: 8080
+          name: metrics
+        volumeMounts:
+        - name: metrics-fake-workload
+          mountPath: /usr/share/nginx/html/metrics
+          subPath: metrics
+        - name: nginx-conf
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+      volumes:
+      - name: metrics-fake-workload
+        configMap:
+          name: metrics-fake-workload
+      - name: nginx-conf
+        configMap:
+          name: metrics-fake-workload-nginx-conf
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-fake-workload
+  labels:
+    app: metrics-fake-workload
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: metrics-fake-workload
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: metrics
+
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: metrics-fake-workload
+  labels:
+    app: metrics-fake-workload
+spec:
+  selector:
+    matchLabels:
+      app: metrics-fake-workload
+  podMetricsEndpoints:
+  - port: metrics
