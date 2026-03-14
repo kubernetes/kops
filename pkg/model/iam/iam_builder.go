@@ -1001,34 +1001,85 @@ func AddAWSLoadbalancerControllerPermissions(p *Policy, enableWAF, enableWAFv2, 
 		"ec2:AuthorizeSecurityGroupIngress", // aws.go
 		"ec2:DeleteSecurityGroup",           // aws.go
 		"ec2:RevokeSecurityGroupIngress",    // aws.go
-
-		"elasticloadbalancing:AddListenerCertificates",
-		"elasticloadbalancing:AddTags",
-		"elasticloadbalancing:DeleteListener",
-		"elasticloadbalancing:DeleteLoadBalancer",
-		"elasticloadbalancing:DeleteRule",
-		"elasticloadbalancing:DeleteTargetGroup",
-		"elasticloadbalancing:DeregisterTargets",
-		"elasticloadbalancing:ModifyCapacityReservation",
-		"elasticloadbalancing:ModifyListener",
-		"elasticloadbalancing:ModifyListenerAttributes",
-		"elasticloadbalancing:ModifyLoadBalancerAttributes",
-		"elasticloadbalancing:ModifyRule",
-		"elasticloadbalancing:ModifyTargetGroup",
-		"elasticloadbalancing:ModifyTargetGroupAttributes",
-		"elasticloadbalancing:RegisterTargets",
-		"elasticloadbalancing:RemoveListenerCertificates",
-		"elasticloadbalancing:RemoveTags",
-		"elasticloadbalancing:SetIpAddressType",
-		"elasticloadbalancing:SetSecurityGroups",
-		"elasticloadbalancing:SetSubnets",
 	)
-	p.clusterTaggedCreateAction.Insert(
-		"elasticloadbalancing:CreateListener",
-		"elasticloadbalancing:CreateLoadBalancer",
-		"elasticloadbalancing:CreateRule",
-		"elasticloadbalancing:CreateTargetGroup",
-	)
+	// ELBv2 management actions: resources are tagged with elbv2.k8s.aws/cluster
+	// by the LBC tracking provider, not KubernetesCluster, so clusterTaggedAction
+	// (which uses aws:ResourceTag/KubernetesCluster) cannot be used here.
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorset.Of(
+			"elasticloadbalancing:AddListenerCertificates",
+			"elasticloadbalancing:AddTags",
+			"elasticloadbalancing:DeleteListener",
+			"elasticloadbalancing:DeleteLoadBalancer",
+			"elasticloadbalancing:DeleteRule",
+			"elasticloadbalancing:DeleteTargetGroup",
+			"elasticloadbalancing:DeregisterTargets",
+			"elasticloadbalancing:ModifyCapacityReservation",
+			"elasticloadbalancing:ModifyListener",
+			"elasticloadbalancing:ModifyListenerAttributes",
+			"elasticloadbalancing:ModifyLoadBalancerAttributes",
+			"elasticloadbalancing:ModifyRule",
+			"elasticloadbalancing:ModifyTargetGroup",
+			"elasticloadbalancing:ModifyTargetGroupAttributes",
+			"elasticloadbalancing:RegisterTargets",
+			"elasticloadbalancing:RemoveListenerCertificates",
+			"elasticloadbalancing:RemoveTags",
+			"elasticloadbalancing:SetIpAddressType",
+			"elasticloadbalancing:SetSecurityGroups",
+			"elasticloadbalancing:SetSubnets",
+		),
+		Resource: stringorset.String("*"),
+		Condition: Condition{
+			"StringEquals": map[string]string{
+				"aws:ResourceTag/elbv2.k8s.aws/cluster": p.clusterName,
+			},
+		},
+	})
+	// LBC only includes the elbv2.k8s.aws/cluster tag in the create request.
+	// KubernetesCluster and other tags are applied separately via AddTags,
+	// So aws:RequestTag must reference the elbv2.k8s.aws/cluster tag.
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorset.Of(
+			"elasticloadbalancing:CreateListener",
+			"elasticloadbalancing:CreateLoadBalancer",
+			"elasticloadbalancing:CreateRule",
+			"elasticloadbalancing:CreateTargetGroup",
+		),
+		Resource: stringorset.String("*"),
+		Condition: Condition{
+			"StringEquals": map[string]string{
+				"aws:RequestTag/elbv2.k8s.aws/cluster": p.clusterName,
+			},
+		},
+	})
+	// AddTags is called by ELBv2 internally during ELBv2 create operations.
+	// Scope to those create actions and the cluster tag.
+	p.Statement = append(p.Statement, &Statement{
+		Effect: StatementEffectAllow,
+		Action: stringorset.String("elasticloadbalancing:AddTags"),
+		Resource: stringorset.Of(
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:targetgroup/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:loadbalancer/net/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:loadbalancer/app/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener/app/*/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener/net/*/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener-rule/app/*/*/*", p.partition),
+			fmt.Sprintf("arn:%s:elasticloadbalancing:*:*:listener-rule/net/*/*/*", p.partition),
+		),
+		Condition: Condition{
+			"StringEquals": map[string]interface{}{
+				"aws:RequestTag/elbv2.k8s.aws/cluster": p.clusterName,
+				"elasticloadbalancing:CreateAction": []string{
+					"CreateListener",
+					"CreateLoadBalancer",
+					"CreateRule",
+					"CreateTargetGroup",
+				},
+			},
+		},
+	})
 	p.unconditionalAction.Insert(
 		"elasticloadbalancing:SetRulePriorities",
 	)
