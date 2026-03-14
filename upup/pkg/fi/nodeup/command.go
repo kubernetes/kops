@@ -179,6 +179,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
+	klog.Infof("Detected distribution: %v", distribution)
 
 	configAssets := nodeupConfig.Assets[architecture]
 	assetStore := fi.NewAssetStore(c.CacheDir)
