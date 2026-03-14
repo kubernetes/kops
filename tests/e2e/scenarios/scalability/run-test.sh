@@ -108,7 +108,7 @@ create_args+=("--set spec.kubeAPIServer.maxRequestsInflight=${KOPS_APISERVER_MAX
 create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=0")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
-create_args+=("--set spec.kubeAPIServer.logLevel=2")
+create_args+=("--set spec.kubeAPIServer.logLevel=3")
 # increase the --delete-collection-workers to 100 to speed up delete operations
 create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=100")
 
