@@ -152,6 +152,16 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 	nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
 	nodeSG := sgMap[nodeName]
 
+	etcdClientMax := wellknownports.EtcdEventsClientPort
+	etcdPeerMax := wellknownports.EtcdEventsPeerPort
+	for _, c := range b.Cluster.Spec.EtcdClusters {
+		if c.Name == "leases" {
+			etcdClientMax = wellknownports.EtcdLeasesClientPort
+			etcdPeerMax = wellknownports.EtcdLeasesPeerPort
+			break
+		}
+	}
+
 	// ETCD Peer Discovery
 	etcdRule := &openstacktasks.SecurityGroupRule{
 		Lifecycle:    b.Lifecycle,
@@ -159,7 +169,7 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 		Protocol:     s(string(rules.ProtocolTCP)),
 		EtherType:    s(IPV4),
 		PortRangeMin: i(wellknownports.EtcdMainClientPort),
-		PortRangeMax: i(wellknownports.EtcdEventsClientPort),
+		PortRangeMax: i(etcdClientMax),
 	}
 	etcdPeerRule := &openstacktasks.SecurityGroupRule{
 		Lifecycle:    b.Lifecycle,
@@ -167,7 +177,7 @@ func (b *FirewallModelBuilder) addETCDRules(c *fi.CloudupModelBuilderContext, sg
 		Protocol:     s(string(rules.ProtocolTCP)),
 		EtherType:    s(IPV4),
 		PortRangeMin: i(wellknownports.EtcdMainPeerPort),
-		PortRangeMax: i(wellknownports.EtcdEventsPeerPort),
+		PortRangeMax: i(etcdPeerMax),
 	}
 	b.addDirectionalGroupRule(c, masterSG, masterSG, etcdRule)
 	b.addDirectionalGroupRule(c, masterSG, masterSG, etcdPeerRule)

@@ -414,6 +414,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		if !featureflag.APIServerNodes.Enabled() {
 			clientHost = b.Cluster.APIInternalName()
 		}
+
+	case "leases":
+		// ok
+
 	default:
 		return nil, fmt.Errorf("unknown etcd cluster key %q", etcdCluster.Name)
 	}
@@ -756,6 +760,14 @@ func PortsForCluster(etcdCluster kops.EtcdClusterSpec) (Ports, error) {
 			QuarantinedGRPCPort: wellknownports.EtcdCiliumQuarantinedClientPort,
 			ClientPort:          wellknownports.EtcdCiliumClientPort,
 			PeerPort:            wellknownports.EtcdCiliumPeerPort,
+		}, nil
+
+	case "leases":
+		return Ports{
+			GRPCPort:            wellknownports.EtcdLeasesGRPC,
+			QuarantinedGRPCPort: wellknownports.EtcdLeasesQuarantinedClientPort,
+			ClientPort:          wellknownports.EtcdLeasesClientPort,
+			PeerPort:            wellknownports.EtcdLeasesPeerPort,
 		}, nil
 
 	default:

@@ -165,16 +165,16 @@ func (b *BootstrapScript) kubeEnv(cluster *kops.Cluster, ig *kops.InstanceGroup,
 func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup) []string {
 	keypairs := []string{"kubernetes-ca"}
 
-	// Add keypairs for default etcd clusters (main and events, not cilium)
+	// Add keypairs for default etcd clusters (main, events, and leases, not cilium)
 	if ig.IsControlPlane() {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
 			k := etcdCluster.Name
-			if k != "events" && k != "main" {
+			if k != "events" && k != "main" && k != "leases" {
 				// Likely cilium
 				continue
 			}
 			keypairs = append(keypairs, "etcd-manager-ca-"+k, "etcd-peers-ca-"+k)
-			// The client ca certificate is shared between events and main etcd clusters
+			// The client ca certificate is shared between events, main, and leases etcd clusters
 			keypairs = append(keypairs, "etcd-clients-ca")
 		}
 	}
@@ -195,7 +195,7 @@ func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup)
 	// Add keypairs for cilium etcd clusters (not the default etcd clusters)
 	for _, etcdCluster := range cluster.Spec.EtcdClusters {
 		k := etcdCluster.Name
-		if k == "events" || k == "main" {
+		if k == "events" || k == "main" || k == "leases" {
 			// Not cilium
 			continue
 		}

@@ -594,12 +594,16 @@ func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops
 		clusterName := b.NodeupConfig.ClusterName
 		mainEtcdDNSName := "main.etcd.internal." + clusterName
 		eventsEtcdDNSName := "events.etcd.internal." + clusterName
+		leasesEtcdDNSName := "leases.etcd.internal." + clusterName
 		for i := range kubeAPIServer.EtcdServers {
 			kubeAPIServer.EtcdServers[i] = strings.ReplaceAll(kubeAPIServer.EtcdServers[i], "127.0.0.1", mainEtcdDNSName)
 		}
 		for i := range kubeAPIServer.EtcdServersOverrides {
 			if strings.HasPrefix(kubeAPIServer.EtcdServersOverrides[i], "/events") {
 				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], "127.0.0.1", eventsEtcdDNSName)
+			}
+			if strings.HasPrefix(kubeAPIServer.EtcdServersOverrides[i], "coordination.k8s.io/leases") {
+				kubeAPIServer.EtcdServersOverrides[i] = strings.ReplaceAll(kubeAPIServer.EtcdServersOverrides[i], "127.0.0.1", leasesEtcdDNSName)
 			}
 		}
 	}

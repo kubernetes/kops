@@ -133,6 +133,14 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 	tcpBlocked[wellknownports.EtcdMainPeerPort] = true
 	tcpBlocked[wellknownports.EtcdEventsPeerPort] = true
 
+	for _, c := range b.Cluster.Spec.EtcdClusters {
+		if c.Name == "leases" {
+			tcpBlocked[wellknownports.EtcdLeasesClientPort] = true
+			tcpBlocked[wellknownports.EtcdLeasesPeerPort] = true
+			break
+		}
+	}
+
 	udpRanges := []portRange{{From: 1, To: 65535}}
 	protocols := []Protocol{}
 
@@ -307,27 +315,39 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 	name := b.SecurityGroupName(role)
 	switch role {
 	case kops.InstanceGroupRoleControlPlane:
-		baseGroup = &awstasks.SecurityGroup{
-			Name:        fi.PtrTo(name),
-			VPC:         b.LinkToVPC(),
-			Description: fi.PtrTo("Security group for masters"),
-			RemoveExtraRules: []string{
-				"port=22",  // SSH
-				"port=443", // k8s api
-				"port=" + strconv.Itoa(wellknownports.EtcdMainPeerPort),   // etcd main peer
-				"port=" + strconv.Itoa(wellknownports.EtcdEventsPeerPort), // etcd events peer
-				"port=3988", // kops-controller
-				"port=" + strconv.Itoa(wellknownports.EtcdMainClientPort),   // etcd main
-				"port=" + strconv.Itoa(wellknownports.EtcdEventsClientPort), // etcd events
-				"port=4789", // VXLAN
-				"port=179",  // Calico
-				"port=8443", // k8s api secondary listener
-				"port=3:4",  // ICMP
-				"port=-1",   // ICMPv6
+		removeExtraRules := []string{
+			"port=22",  // SSH
+			"port=443", // k8s api
+			"port=" + strconv.Itoa(wellknownports.EtcdMainPeerPort),   // etcd main peer
+			"port=" + strconv.Itoa(wellknownports.EtcdEventsPeerPort), // etcd events peer
+			"port=3988", // kops-controller
+			"port=" + strconv.Itoa(wellknownports.EtcdMainClientPort),   // etcd main
+			"port=" + strconv.Itoa(wellknownports.EtcdEventsClientPort), // etcd events
+			"port=4789", // VXLAN
+			"port=179",  // Calico
+			"port=8443", // k8s api secondary listener
+			"port=3:4",  // ICMP
+			"port=-1",   // ICMPv6
 
-				// TODO: UDP vs TCP vs ICMP vs ICMPv6
-				// TODO: Protocol 4 for calico
-			},
+			// TODO: UDP vs TCP vs ICMP vs ICMPv6
+			// TODO: Protocol 4 for calico
+		}
+
+		for _, c := range b.Cluster.Spec.EtcdClusters {
+			if c.Name == "leases" {
+				removeExtraRules = append(removeExtraRules,
+					"port="+strconv.Itoa(wellknownports.EtcdLeasesPeerPort),   // etcd leases peer
+					"port="+strconv.Itoa(wellknownports.EtcdLeasesClientPort), // etcd leases
+				)
+				break
+			}
+		}
+
+		baseGroup = &awstasks.SecurityGroup{
+			Name:             fi.PtrTo(name),
+			VPC:              b.LinkToVPC(),
+			Description:      fi.PtrTo("Security group for masters"),
+			RemoveExtraRules: removeExtraRules,
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
 	case kops.InstanceGroupRoleNode:

@@ -210,8 +210,10 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		"apiserver-aggregator-ca",
 		"etcd-clients-ca",
 		"etcd-manager-ca-events",
+		"etcd-manager-ca-leases",
 		"etcd-manager-ca-main",
 		"etcd-peers-ca-events",
+		"etcd-peers-ca-leases",
 		"etcd-peers-ca-main",
 		"service-account",
 	} {

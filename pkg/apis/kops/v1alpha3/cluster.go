@@ -623,7 +623,7 @@ type ExternalDNSConfig struct {
 
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
-	// Name is the name of the etcd cluster (main, events etc)
+	// Name is the name of the etcd cluster (main, events, leases etc)
 	Name     string `json:"name,omitempty"`
 	Provider string `json:"-"`
 	// Members stores the configurations for each member of the cluster (including the data volume)

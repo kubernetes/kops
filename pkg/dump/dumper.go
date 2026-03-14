@@ -78,6 +78,7 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 		"etcd",
 		"etcd-events",
 		"etcd-cilium",
+		"etcd-leases",
 		"glbc",
 		"cluster-autoscaler",
 		"kube-addon-manager",
