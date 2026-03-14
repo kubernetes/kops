@@ -33,7 +33,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: gangscheduling-kueue
-  annotations:
+  labels:
     kueue.x-k8s.io/queue-name: team1 # Point to the LocalQueue
 spec:
   ttlSecondsAfterFinished: 60 # Job will be deleted after 60 seconds
