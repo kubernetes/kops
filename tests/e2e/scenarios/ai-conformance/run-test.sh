@@ -61,6 +61,7 @@ OVERRIDES="${OVERRIDES} --node-count=2"
 OVERRIDES="${OVERRIDES} --zones=us-east-2a,us-east-2b,us-east-2c"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.clusterAutoscaler.enabled=true"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.metricsServer.enabled=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.metricsServer.insecure=true"
 
 kops-up
 
