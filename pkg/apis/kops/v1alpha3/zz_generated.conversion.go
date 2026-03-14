@@ -2273,6 +2273,7 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.BPFNeighGlobalMax = in.BPFNeighGlobalMax
 	out.BPFPolicyMapMax = in.BPFPolicyMapMax
 	out.BPFLBMapMax = in.BPFLBMapMax
+	out.BPFLBSock = in.BPFLBSock
 	out.BPFLBSockHostNSOnly = in.BPFLBSockHostNSOnly
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage
@@ -2360,6 +2361,7 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.BPFNeighGlobalMax = in.BPFNeighGlobalMax
 	out.BPFPolicyMapMax = in.BPFPolicyMapMax
 	out.BPFLBMapMax = in.BPFLBMapMax
+	out.BPFLBSock = in.BPFLBSock
 	out.BPFLBSockHostNSOnly = in.BPFLBSockHostNSOnly
 	out.PreallocateBPFMaps = in.PreallocateBPFMaps
 	out.SidecarIstioProxyImage = in.SidecarIstioProxyImage

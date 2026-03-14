@@ -5440,6 +5440,11 @@ spec:
                           BPFLBMapMax is the maximum number of entries in bpf lb service, backend and affinity maps.
                           Default: 65536
                         type: integer
+                      bpfLBSock:
+                        description: |-
+                          BPFLBSock enables socket-based LB for E/W traffic.
+                          Default: false
+                        type: boolean
                       bpfLBSockHostNSOnly:
                         description: |-
                           BPFLBSockHostNSOnly enables skipping socket LB for services when inside a pod namespace,

@@ -228,19 +228,55 @@ data:
   # so cilium eBPF host routing shoud not work, and let it fall back to the legacy routing mode
   enable-host-legacy-routing: "true"
   {{ end }}
-  # bpf-policy-map-max specifies the maximum number of entries in endpoint
-  # policy map (per endpoint)
-  bpf-policy-map-max: "16384"
-  # bpf-policy-stats-map-max specifies the maximum number of entries in global
-  # policy stats map
-  bpf-policy-stats-map-max: "65536"
-  # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
-  # backend and affinity maps.
-  bpf-lb-map-max: "65536"
+
   bpf-lb-external-clusterip: "false"
   bpf-lb-source-range-all-types: "false"
   bpf-lb-algorithm-annotation: "false"
   bpf-lb-mode-annotation: "false"
+
+  # ct-global-max-entries-* specifies the maximum number of connections
+  # supported across all endpoints, split by protocol: tcp or other. One pair
+  # of maps uses these values for IPv4 connections, and another pair of maps
+  # use these values for IPv6 connections.
+  #
+  # If these values are modified, then during the next Cilium startup the
+  # tracking of ongoing connections may be disrupted. This may lead to brief
+  # policy drops or a change in loadbalancing decisions for a connection.
+  #
+  # For users upgrading from Cilium 1.2 or earlier, to minimize disruption
+  # during the upgrade process, comment out these options.
+  bpf-ct-global-tcp-max: "{{ .BPFCTGlobalTCPMax }}"
+  bpf-ct-global-any-max: "{{ .BPFCTGlobalAnyMax }}"
+
+  # BPF load balancing algorithm ("random", "maglev") (default "random")
+  bpf-lb-algorithm: "{{ .BPFLBAlgorithm }}"
+
+  # Maglev per service backend table size (parameter M) (default 16381)
+  bpf-lb-maglev-table-size: "{{ .BPFLBMaglevTableSize }}"
+
+  # bpf-nat-global-max specified the maximum number of entries in the
+  # BPF NAT table. (default 524288)
+  bpf-nat-global-max: "{{ .BPFNATGlobalMax }}"
+
+  # bpf-neigh-global-max specified the maximum number of entries in the
+  # BPF neighbor table. (default 524288)
+  bpf-neigh-global-max: "{{ .BPFNeighGlobalMax }}"
+
+  # bpf-policy-map-max specifies the maximum number of entries in endpoint
+  # policy map (per endpoint) (default 16384)
+  bpf-policy-map-max: "{{ .BPFPolicyMapMax }}"
+
+  # bpf-lb-map-max specifies the maximum number of entries in bpf lb service,
+  # backend and affinity maps. (default 65536)
+  bpf-lb-map-max: "{{ .BPFLBMapMax }}"
+
+  # Enable socket-based LB for E/W traffic
+  bpf-lb-sock: "{{ .BPFLBSock }}"
+
+  # bpf-lb-sock-hostns-only enables skipping socket LB for services when inside a pod namespace,
+  # in favor of service LB at the pod interface. Socket LB is still used when in the host namespace.
+  # Required by service mesh (e.g., Istio, Linkerd). (default false)
+  bpf-lb-sock-hostns-only: "{{ .BPFLBSockHostNSOnly }}"
 
   bpf-distributed-lru: "false"
   bpf-events-drop-enabled: "true"
@@ -342,7 +378,6 @@ data:
   enable-local-redirect-policy: "{{ .EnableLocalRedirectPolicy }}"
 
   kube-proxy-replacement: "{{- if .EnableNodePort -}}true{{- else -}}false{{- end -}}"
-  bpf-lb-sock: "false"
   enable-node-port: "{{ .EnableNodePort }}"
   nodeport-addresses: ""
   enable-health-check-nodeport: "true"
@@ -1467,7 +1502,7 @@ spec:
                     set -o errexit
                     set -o pipefail
                     set -o nounset
-                    
+
                     # When running in AWS ENI mode, it's likely that 'aws-node' has
                     # had a chance to install SNAT iptables rules. These can result
                     # in dropped traffic, so we should attempt to remove them.

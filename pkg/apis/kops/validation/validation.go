@@ -1270,6 +1270,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("bpfLBAlgorithm"), &v.BPFLBAlgorithm, []string{"random", "maglev"})...)
 	}
 
+	if !v.BPFLBSock && v.BPFLBSockHostNSOnly {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("bpfLBSockHostNSOnly"), "bpfLBSockHostNSOnly requires bpfLBSock to be enabled"))
+	}
+
 	if v.EnableEncryption && c.IsIPv6Only() {
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableEncryption"), "encryption is not supported on IPv6 clusters"))
 	}
