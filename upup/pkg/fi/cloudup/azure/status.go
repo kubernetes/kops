@@ -117,7 +117,7 @@ func (c *azureCloudImplementation) isDiskForCluster(disk *compute.Disk) bool {
 func (c *azureCloudImplementation) GetCloudGroups(
 	cluster *kops.Cluster,
 	instancegroups []*kops.InstanceGroup,
-	warnUnmatched bool,
+	options *fi.GetCloudGroupsOptions,
 	nodes []v1.Node,
 ) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	igsByName, err := keyedByName(instancegroups, cluster.Name)
@@ -141,7 +141,7 @@ func (c *azureCloudImplementation) GetCloudGroups(
 
 		ig, ok := igsByName[*vmss.Name]
 		if !ok {
-			if warnUnmatched {
+			if options.WarnUnmatched {
 				klog.Warningf("Found VM Scale Set with no corresponding instance group %q", *vmss.Name)
 			}
 			continue

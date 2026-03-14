@@ -167,7 +167,7 @@ func (c *MockAzureCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 func (c *MockAzureCloud) GetCloudGroups(
 	cluster *kops.Cluster,
 	instancegroups []*kops.InstanceGroup,
-	warnUnmatched bool,
+	options *fi.GetCloudGroupsOptions,
 	nodes []v1.Node,
 ) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return nil, errors.New("GetCloudGroups not implemented on azureCloud")
