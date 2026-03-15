@@ -43,6 +43,11 @@ func (o *KubeObjectID) GVK() schema.GroupVersionKind {
 	return o.gvk
 }
 
+// Kind returns the Kind of the object.
+func (o *KubeObjectID) Kind() string {
+	return o.gvk.Kind
+}
+
 // Name returns the name of the object.
 func (o *KubeObjectID) Name() string {
 	return o.name
