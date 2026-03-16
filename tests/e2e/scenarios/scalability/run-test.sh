@@ -40,11 +40,11 @@ if [[ -z "${ADMIN_ACCESS:-}" ]]; then
 fi
 echo "ADMIN_ACCESS=${ADMIN_ACCESS}"
 
-KOPS_SCHEDULER_QPS="${KOPS_SCHEDULER_QPS:-500}"
-KOPS_SCHEDULER_BURST="${KOPS_SCHEDULER_BURST:-500}"
-KOPS_CONTROLLER_MANAGER_QPS="${KOPS_CONTROLLER_MANAGER_QPS:-500}"
-KOPS_CONTROLLER_MANAGER_BURST="${KOPS_CONTROLLER_MANAGER_BURST:-500}"
-KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-800}"
+KOPS_SCHEDULER_QPS="${KOPS_SCHEDULER_QPS:-100}"
+KOPS_SCHEDULER_BURST="${KOPS_SCHEDULER_BURST:-100}"
+KOPS_CONTROLLER_MANAGER_QPS="${KOPS_CONTROLLER_MANAGER_QPS:-100}"
+KOPS_CONTROLLER_MANAGER_BURST="${KOPS_CONTROLLER_MANAGER_BURST:-100}"
+KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-640}"
 ETCD_QUOTA_BACKEND_BYTES="${ETCD_QUOTA_BACKEND_BYTES:-8589934592}"
 echo "KOPS_SCHEDULER_QPS=${KOPS_SCHEDULER_QPS} KOPS_SCHEDULER_BURST=${KOPS_SCHEDULER_BURST}"
 echo "KOPS_CONTROLLER_MANAGER_QPS=${KOPS_CONTROLLER_MANAGER_QPS} KOPS_CONTROLLER_MANAGER_BURST=${KOPS_CONTROLLER_MANAGER_BURST}"
@@ -87,8 +87,9 @@ fi
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
-create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=10")
-create_args+=("--set spec.kubelet.maxPods=96")
+create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=5")
+create_args+=("--set spec.kubelet.maxPods=110")
+create_args+=("--set spec.kubelet.kubeApiQPS=50")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/livez")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/readyz")
@@ -109,8 +110,9 @@ create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=0")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 create_args+=("--set spec.kubeAPIServer.logLevel=3")
-# increase the --delete-collection-workers to 100 to speed up delete operations
-create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=100")
+# increase the --delete-collection-workers to 16 to speed up delete operations
+create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=16")
+create_args+=("--set spec.kubeAPIServer.compactionInterval=150")
 
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")

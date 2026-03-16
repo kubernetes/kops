@@ -3579,6 +3579,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(int64)
 		**out = **in
 	}
+	if in.CompactionInterval != nil {
+		in, out := &in.CompactionInterval, &out.CompactionInterval
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.Env != nil {
 		in, out := &in.Env, &out.Env
 		*out = make([]corev1.EnvVar, len(*in))
@@ -4427,6 +4432,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 	if in.CrashLoopBackOffMaxContainerRestartPeriod != nil {
 		in, out := &in.CrashLoopBackOffMaxContainerRestartPeriod, &out.CrashLoopBackOffMaxContainerRestartPeriod
 		*out = new(v1.Duration)
+		**out = **in
+	}
+	if in.KubeAPIQPS != nil {
+		in, out := &in.KubeAPIQPS, &out.KubeAPIQPS
+		*out = new(int32)
 		**out = **in
 	}
 	return

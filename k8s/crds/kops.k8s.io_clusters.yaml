@@ -681,7 +681,7 @@ spec:
                     type: string
                   concurrentNodeSyncs:
                     description: 'ConcurrentNodeSyncs is the number of workers concurrently
-                      synchronizing nodes. (default: 1)'
+                      synchronizing nodes. (default: 5)'
                     format: int32
                     type: integer
                   configureCloudRoutes:
@@ -1880,6 +1880,11 @@ spec:
                   cloudProvider:
                     description: CloudProvider is the name of the cloudProvider we
                       are using, aws, gce etcd
+                    type: string
+                  compactionInterval:
+                    description: |-
+                      CompactionInterval is an interval of requesting compaction from apiserver.
+                      If the value is 0, no compaction will be issued.
                     type: string
                   corsAllowedOrigins:
                     description: |-
@@ -4359,6 +4364,11 @@ spec:
                     description: Integrate with the kernel memcg notification to determine
                       if memory eviction thresholds are crossed rather than polling.
                     type: boolean
+                  kubeAPIQPS:
+                    description: KubeAPIQPS Burst to use while talking with kubernetes
+                      apiserver. (default 50)
+                    format: int32
+                    type: integer
                   kubeReserved:
                     additionalProperties:
                       type: string
@@ -4828,6 +4838,11 @@ spec:
                     description: Integrate with the kernel memcg notification to determine
                       if memory eviction thresholds are crossed rather than polling.
                     type: boolean
+                  kubeAPIQPS:
+                    description: KubeAPIQPS Burst to use while talking with kubernetes
+                      apiserver. (default 50)
+                    format: int32
+                    type: integer
                   kubeReserved:
                     additionalProperties:
                       type: string

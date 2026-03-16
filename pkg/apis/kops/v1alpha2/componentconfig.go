@@ -252,6 +252,9 @@ type KubeletConfigSpec struct {
 	MemorySwapBehavior string `json:"memorySwapBehavior,omitempty"`
 	// CrashLoopBackOffMaxContainerRestartPeriod is the maximum duration the backoff delay can accrue to for container restarts, minimum 1 second, maximum 300 seconds. If not set, defaults to the internal crashloopbackoff maximum (300s).
 	CrashLoopBackOffMaxContainerRestartPeriod *metav1.Duration `json:"crashLoopBackOffMaxContainerRestartPeriod,omitempty"`
+
+	// KubeAPIQPS Burst to use while talking with kubernetes apiserver. (default 50)
+	KubeAPIQPS *int32 `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy
@@ -571,6 +574,10 @@ type KubeAPIServerConfig struct {
 	// DeleteCollectionWorkers indicates the number of workers spawned for DeleteCollection call. These are used to speed up namespace cleanup.
 	DeleteCollectionWorkers int `json:"deleteCollectionWorkers,omitempty" flag:"delete-collection-workers" flag-empty:"0"`
 
+	// CompactionInterval is an interval of requesting compaction from apiserver.
+	// If the value is 0, no compaction will be issued.
+	CompactionInterval *metav1.Duration `json:"compactionInterval,omitempty" flag:"etcd-compaction-interval"`
+
 	// Env allows users to pass in env variables to the apiserver container.
 	// This can be useful to control some environment runtime settings, such as GOMEMLIMIT and GOCG to tweak the memory settings of the apiserver
 	// This also allows the flexibility for adding any other variables for future use cases
@@ -772,7 +779,7 @@ type CloudControllerManagerConfig struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// NodeStatusUpdateFrequency is the duration between node status updates. (default: 5m)
 	NodeStatusUpdateFrequency *metav1.Duration `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
-	// ConcurrentNodeSyncs is the number of workers concurrently synchronizing nodes. (default: 1)
+	// ConcurrentNodeSyncs is the number of workers concurrently synchronizing nodes. (default: 5)
 	ConcurrentNodeSyncs *int32 `json:"concurrentNodeSyncs,omitempty" flag:"concurrent-node-syncs"`
 }
 
