@@ -132,6 +132,6 @@ func TestObservability_AcceleratorMetrics_ViaDCGM(t *testing.T) {
 	})
 
 	if h.AllPassed() {
-		h.RecordConformance("observability/accelerator_metrics")
+		h.RecordConformance("observability", "accelerator_metrics")
 	}
 }

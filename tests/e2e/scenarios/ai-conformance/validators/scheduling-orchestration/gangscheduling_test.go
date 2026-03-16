@@ -52,5 +52,7 @@ func TestGangScheduling_ViaKueue(t *testing.T) {
 		h.Success("Gang scheduling via Kueue test completed successfully.")
 	})
 
-	h.RecordConformance("schedulingOrchestration/gang_scheduling")
+	if h.AllPassed() {
+		h.RecordConformance("schedulingOrchestration", "gang_scheduling")
+	}
 }

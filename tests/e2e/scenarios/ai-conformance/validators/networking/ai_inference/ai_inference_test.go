@@ -64,6 +64,6 @@ func TestNetworking_AIInference(t *testing.T) {
 	})
 
 	if h.AllPassed() {
-		h.RecordConformance("networking/ai_inference")
+		h.RecordConformance("networking", "ai_inference")
 	}
 }

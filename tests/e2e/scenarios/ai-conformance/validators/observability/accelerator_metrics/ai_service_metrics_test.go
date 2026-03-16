@@ -146,7 +146,7 @@ func TestObservability_AIServiceMetrics_ViaPrometheus(t *testing.T) {
 	})
 
 	if h.AllPassed() {
-		h.RecordConformance("observability/ai_service_metrics")
+		h.RecordConformance("observability", "ai_service_metrics")
 	}
 }
 

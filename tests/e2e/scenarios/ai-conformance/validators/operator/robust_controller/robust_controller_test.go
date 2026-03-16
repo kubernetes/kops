@@ -62,5 +62,7 @@ func TestOperator_RobustController_ViaKuberay(t *testing.T) {
 		}
 	}
 
-	h.RecordConformance("operator/robust_controller")
+	if h.AllPassed() {
+		h.RecordConformance("operator", "robust_controller")
+	}
 }

@@ -6,6 +6,7 @@ require (
 	github.com/yuin/goldmark v1.7.16
 	k8s.io/apimachinery v0.35.2
 	k8s.io/client-go v0.35.2
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -32,5 +33,4 @@ require (
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
-	sigs.k8s.io/yaml v1.6.0 // indirect
 )

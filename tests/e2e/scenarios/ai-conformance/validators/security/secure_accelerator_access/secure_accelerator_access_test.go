@@ -32,8 +32,6 @@ func TestSecurity_SecureAcceleratorAccess(t *testing.T) {
 
 	h.Logf("# Secure Accelerator Access")
 
-	score := 0
-
 	h.Logf("## Checking that GPUs are available if requested")
 
 	h.Run("accelerator-requested", func(h *validators.ValidatorHarness) {
@@ -47,7 +45,6 @@ func TestSecurity_SecureAcceleratorAccess(t *testing.T) {
 			h.Errorf("Expected to find nvidia GPUs available when requested, but did not find them in the logs: %s", logs.Stdout())
 		} else {
 			h.Success("GPUs were requested, and nvidia-smi reported available GPUs.")
-			score++
 		}
 	})
 
@@ -88,12 +85,11 @@ func TestSecurity_SecureAcceleratorAccess(t *testing.T) {
 			h.Errorf("Expected that pods with GPU requests would be isolated from each other, but both pods saw the same GPU UUID: %s", uuid1)
 		} else {
 			h.Success("Pods with GPU requests were isolated from each other as expected.")
-			score++
 		}
 	})
 
-	if score == 3 {
-		h.RecordConformance("security/secure_accelerator_access")
+	if h.AllPassed() {
+		h.RecordConformance("security", "secure_accelerator_access")
 	}
 }
 
