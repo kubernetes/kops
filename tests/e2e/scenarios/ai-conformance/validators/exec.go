@@ -30,7 +30,7 @@ func (h *ValidatorHarness) ShellExec(shellCommand string) *CommandResult {
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
-	h.Logf("ShellExec(%q)", shellCommand)
+	h.output.BeforeShellExec(shellCommand)
 	err := cmd.Run()
 
 	result := &CommandResult{
@@ -39,7 +39,7 @@ func (h *ValidatorHarness) ShellExec(shellCommand string) *CommandResult {
 		err:    err,
 	}
 
-	h.output.OnShellExec(shellCommand, result)
+	h.output.AfterShellExec(shellCommand, result)
 
 	if err != nil {
 		h.Logf("Command failed: %q", shellCommand)

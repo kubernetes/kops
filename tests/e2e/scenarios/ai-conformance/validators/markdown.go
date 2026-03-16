@@ -101,17 +101,22 @@ func (o *MarkdownOutput) renderHTML() error {
 	return nil
 }
 
-// OnShellExec writes the executed shell command and its output to the markdown file in a formatted code block.
-func (o *MarkdownOutput) OnShellExec(command string, results *CommandResult) {
+// BeforeShellExec writes the executed shell command to the markdown file in a formatted code block.
+func (o *MarkdownOutput) BeforeShellExec(command string) {
 	o.printf("```bash\n> %s\n", command)
+	o.printf("```\n")
+}
+
+// AfterShellExec writes the result of the executed shell command to the markdown file in a formatted code block.
+func (o *MarkdownOutput) AfterShellExec(command string, results *CommandResult) {
+	o.printf("```bash")
 	o.printf("%s", results.Stdout())
 	o.printf("%s", results.Stderr())
+	o.printf("```\n")
 
 	if results.Err() != nil {
 		o.printf("Error:\n```\n%v\n```\n", results.Err())
 	}
-
-	o.printf("```\n")
 }
 
 // printf is a helper method to write formatted text to the markdown file.
