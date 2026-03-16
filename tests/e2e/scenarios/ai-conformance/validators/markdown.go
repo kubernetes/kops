@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -73,34 +73,15 @@ func (o *MarkdownOutput) printf(format string, args ...interface{}) {
 	}
 }
 
-// createMarkdownOutput creates a MarkdownOutput that writes to a file based on the test's name and location.
+// createMarkdownOutput creates a MarkdownOutput that writes to a file based on the test's name.
 func createMarkdownOutput(t *testing.T) OutputSink {
-	// Get file path and other info from the current caller frame (depth 0)
-	_, testFilename, _, ok := runtime.Caller(2)
-	if !ok {
-		t.Fatal("Could not get test caller")
-	}
-	_, baseFilename, _, ok := runtime.Caller(1)
-	if !ok {
-		t.Fatal("Could not get test caller")
-	}
-
-	baseDir := filepath.Dir(baseFilename)
-
-	testRelativePath, err := filepath.Rel(baseDir, testFilename)
-	if err != nil {
-		t.Fatalf("failed to get relative path: %v", err)
-	}
-
-	testRelativeDir := filepath.Dir(testRelativePath)
-
 	artifactsDir := os.Getenv("ARTIFACTS")
 	if artifactsDir == "" {
 		artifactsDir = "_artifacts"
 	}
-	outputBase := filepath.Join(artifactsDir, "ai-conformance")
 
-	outputPath := filepath.Join(outputBase, testRelativeDir, t.Name()+".md")
+	testName := strings.ReplaceAll(t.Name(), "/", "_")
+	outputPath := filepath.Join(artifactsDir, "tests", testName, "output.md")
 
 	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
 		t.Fatalf("failed to create output directory %v: %v", filepath.Dir(outputPath), err)

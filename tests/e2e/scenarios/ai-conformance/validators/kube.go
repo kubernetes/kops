@@ -231,7 +231,7 @@ func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string
 	}
 
 	testName := strings.ReplaceAll(h.t.Name(), "/", "_")
-	clusterInfoDir := filepath.Join(artifactsDir, "per-test", testName, "cluster-info", ns)
+	clusterInfoDir := filepath.Join(artifactsDir, "tests", testName, "cluster-info", ns)
 	if err := os.MkdirAll(clusterInfoDir, 0o755); err != nil {
 		h.Logf("failed to create cluster-info directory: %v", err)
 		return
