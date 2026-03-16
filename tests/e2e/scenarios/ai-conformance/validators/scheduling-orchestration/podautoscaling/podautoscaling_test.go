@@ -29,7 +29,9 @@ import (
 // Test_SchedulingOrchestration_PodAutoscaling verifies that the HPA can scale
 // pods utilizing accelerators based on custom metrics relevant to AI/ML workloads.
 // It deploys vLLM with a GPU, sends load to build up a request queue,
-// and verifies that HPA scales the deployment based on the vllm:num_requests_waiting metric.
+// and verifies that HPA scales the deployment based on the vllm_num_requests_waiting metric
+// (renamed from vllm:num_requests_waiting by prometheus-adapter, since colons are not
+// compatible with the Kubernetes custom metrics API URL paths).
 func Test_SchedulingOrchestration_PodAutoscaling(t *testing.T) {
 	// Description:
 	// If the platform supports the HorizontalPodAutoscaler,
@@ -119,7 +121,7 @@ func Test_SchedulingOrchestration_PodAutoscaling(t *testing.T) {
 			h.ShellExec(fmt.Sprintf("kubectl describe hpa -n %s vllm-qwen25-500m", ns))
 			h.Errorf("HPA did not scale the deployment above 1 replica within the expected time")
 		} else {
-			h.Success("HPA successfully scaled vLLM deployment based on custom metric vllm:num_requests_waiting")
+			h.Success("HPA successfully scaled vLLM deployment based on custom metric vllm_num_requests_waiting")
 		}
 	})
 

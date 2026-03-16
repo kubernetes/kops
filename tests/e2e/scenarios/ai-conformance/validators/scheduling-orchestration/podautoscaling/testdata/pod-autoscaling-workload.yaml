@@ -131,7 +131,7 @@ spec:
   - type: Pods
     pods:
       metric:
-        name: vllm:num_requests_waiting
+        name: vllm_num_requests_waiting
       target:
         type: AverageValue
         averageValue: "2"

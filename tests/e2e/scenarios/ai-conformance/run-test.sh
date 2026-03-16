@@ -134,6 +134,36 @@ helm upgrade -i kube-prometheus-stack \
   --set grafana.enabled=false \
   --wait
 
+# Prometheus Adapter
+# Bridges Prometheus metrics to the Kubernetes custom metrics API (custom.metrics.k8s.io),
+# required for HPA to scale on custom metrics like vllm:num_requests_waiting.
+# Note: colons in metric names are incompatible with the Kubernetes custom metrics
+# API (they appear in URL paths), so the adapter renames the metric with underscores.
+echo "Installing prometheus-adapter..."
+cat >prometheus-adapter-values.yaml <<'ADAPTER_EOF'
+prometheus:
+  url: http://kube-prometheus-stack-prometheus.monitoring.svc
+  port: 9090
+rules:
+  custom:
+  - seriesQuery: '{__name__=~"^vllm:num_requests_waiting$"}'
+    resources:
+      overrides:
+        namespace:
+          resource: "namespace"
+        pod:
+          resource: "pod"
+    name:
+      matches: ""
+      as: "vllm_num_requests_waiting"
+    metricsQuery: sum by(namespace, pod) (<<.Series>>)
+ADAPTER_EOF
+helm upgrade -i prometheus-adapter prometheus-community/prometheus-adapter \
+  --namespace monitoring \
+  -f prometheus-adapter-values.yaml \
+  --wait
+rm -f prometheus-adapter-values.yaml
+
 # NVIDIA GPU Operator
 # Manages the full NVIDIA stack: kernel driver, container toolkit, device plugin, DCGM exporter.
 # The driver is installed into /run/nvidia/driver on each node.
@@ -238,6 +268,11 @@ kubectl get gatewayclass || echo "Warning: GatewayClass not found"
 echo "Verifying Prometheus Stack..."
 kubectl rollout status deployment -n monitoring kube-prometheus-stack-operator --timeout=5m || echo "Warning: Prometheus Operator not ready yet"
 kubectl rollout status statefulset -n monitoring prometheus-kube-prometheus-stack-prometheus --timeout=5m || echo "Warning: Prometheus not ready yet"
+
+echo "Verifying Prometheus Adapter..."
+kubectl rollout status deployment -n monitoring prometheus-adapter --timeout=5m || echo "Warning: Prometheus Adapter not ready yet"
+echo "Checking custom metrics API registration..."
+kubectl get apiservice v1beta1.custom.metrics.k8s.io || echo "Warning: custom metrics API not registered"
 
 echo "Verifying DCGM Exporter in gpu-operator namespace..."
 kubectl rollout status daemonset -n gpu-operator nvidia-dcgm-exporter --timeout=5m || echo "Warning: DCGM Exporter not ready yet"
