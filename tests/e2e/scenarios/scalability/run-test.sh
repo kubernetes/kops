@@ -44,7 +44,7 @@ KOPS_SCHEDULER_QPS="${KOPS_SCHEDULER_QPS:-500}"
 KOPS_SCHEDULER_BURST="${KOPS_SCHEDULER_BURST:-500}"
 KOPS_CONTROLLER_MANAGER_QPS="${KOPS_CONTROLLER_MANAGER_QPS:-500}"
 KOPS_CONTROLLER_MANAGER_BURST="${KOPS_CONTROLLER_MANAGER_BURST:-500}"
-KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-800}"
+KOPS_APISERVER_MAX_REQUESTS_INFLIGHT="${KOPS_APISERVER_MAX_REQUESTS_INFLIGHT:-640}"
 ETCD_QUOTA_BACKEND_BYTES="${ETCD_QUOTA_BACKEND_BYTES:-8589934592}"
 echo "KOPS_SCHEDULER_QPS=${KOPS_SCHEDULER_QPS} KOPS_SCHEDULER_BURST=${KOPS_SCHEDULER_BURST}"
 echo "KOPS_CONTROLLER_MANAGER_QPS=${KOPS_CONTROLLER_MANAGER_QPS} KOPS_CONTROLLER_MANAGER_BURST=${KOPS_CONTROLLER_MANAGER_BURST}"
@@ -109,8 +109,7 @@ create_args+=("--set spec.kubeAPIServer.maxMutatingRequestsInflight=0")
 create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 create_args+=("--set spec.kubeAPIServer.logLevel=3")
-# increase the --delete-collection-workers to 100 to speed up delete operations
-create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=100")
+create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=16")
 
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")
