@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: driver-check
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: nvidia-smi
+        image: nvcr.io/nvidia/cuda:12.6.0-base-ubuntu22.04
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "=== NVIDIA Driver Check ==="
+          nvidia-smi --version
+          echo ""
+          echo "=== GPU Detection ==="
+          nvidia-smi -L
+          echo ""
+          echo "=== Driver Information ==="
+          nvidia-smi --query-gpu=driver_version,name,uuid --format=csv
+          echo ""
+          echo "SUCCESS: NVIDIA driver and runtime verified"
+        resources:
+          limits:
+            nvidia.com/gpu: 1
