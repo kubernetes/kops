@@ -4587,6 +4587,11 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.KubeAPIQPS != nil {
+		in, out := &in.KubeAPIQPS, &out.KubeAPIQPS
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 

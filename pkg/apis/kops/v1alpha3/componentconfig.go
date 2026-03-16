@@ -250,6 +250,8 @@ type KubeletConfigSpec struct {
 	MemorySwapBehavior string `json:"memorySwapBehavior,omitempty"`
 	// CrashLoopBackOffMaxContainerRestartPeriod is the maximum duration the backoff delay can accrue to for container restarts, minimum 1 second, maximum 300 seconds. If not set, defaults to the internal crashloopbackoff maximum (300s).
 	CrashLoopBackOffMaxContainerRestartPeriod *metav1.Duration `json:"crashLoopBackOffMaxContainerRestartPeriod,omitempty"`
+	// KubeAPIQPS Burst to use while talking with kubernetes apiserver. (default 50)
+	KubeAPIQPS *int32 `json:"kubeAPIQPS,omitempty" flag:"kube-api-qps"`
 }
 
 // KubeProxyConfig defines the configuration for a proxy

@@ -89,6 +89,7 @@ create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=$
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
 create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=10")
 create_args+=("--set spec.kubelet.maxPods=96")
+create_args+=("--set spec.kubelet.kubeAPIQPS=100")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/healthz")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/livez")
 create_args+=("--set spec.kubeScheduler.authorizationAlwaysAllowPaths=/readyz")
