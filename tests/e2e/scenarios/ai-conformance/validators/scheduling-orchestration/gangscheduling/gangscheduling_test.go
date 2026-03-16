@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package dra_support
+package gangscheduling
 
 import (
 	"fmt"
@@ -23,9 +23,9 @@ import (
 	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/validators"
 )
 
-// TestGangScheduling_ViaKueue corresponds to the schedulingOrchestration/gang_scheduling scenario,
+// TestSchedulingOrchestration_GangScheduling_ViaKueue corresponds to the schedulingOrchestration/gang_scheduling scenario,
 // for the case that the vendor chooses to demonstrate gang scheduling support via Kueue.
-func TestGangScheduling_ViaKueue(t *testing.T) {
+func TestSchedulingOrchestration_GangScheduling_ViaKueue(t *testing.T) {
 	// Description:
 	//   The platform must allow for the installation and successful operation of at least one gang scheduling solution that ensures all-or-nothing scheduling for distributed AI workloads (e.g. Kueue, Volcano, etc.) To be conformant, the vendor must demonstrate that their platform can successfully run at least one such solution.
 
@@ -44,7 +44,7 @@ func TestGangScheduling_ViaKueue(t *testing.T) {
 
 		h.Logf("Creating a Kueue Job that requires gang scheduling")
 		ns := h.TestNamespace()
-		h.ApplyManifest(ns, "testdata/gangscheduling/gangscheduling-kueue.yaml")
+		h.ApplyManifest(ns, "testdata/gangscheduling-kueue.yaml")
 
 		h.Logf("Waiting for Job to complete")
 		h.ShellExec(fmt.Sprintf("kubectl wait --namespace %s --for=condition=complete job/%s --timeout=300s", ns, jobName))
