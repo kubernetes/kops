@@ -110,6 +110,7 @@ create_args+=("--set spec.kubeAPIServer.enableProfiling=true")
 create_args+=("--set spec.kubeAPIServer.enableContentionProfiling=true")
 create_args+=("--set spec.kubeAPIServer.logLevel=3")
 create_args+=("--set spec.kubeAPIServer.deleteCollectionWorkers=16")
+create_args+=("--set spec.kubeAPIServer.compactionInterval=150s")
 
 # this is required for Prometheus server to scrape metrics endpoint on APIServer
 create_args+=("--set spec.kubeAPIServer.anonymousAuth=true")

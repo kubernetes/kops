@@ -3179,6 +3179,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.CompactionInterval != nil {
+		in, out := &in.CompactionInterval, &out.CompactionInterval
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.InsecurePort != nil {
 		in, out := &in.InsecurePort, &out.InsecurePort
 		*out = new(int32)
