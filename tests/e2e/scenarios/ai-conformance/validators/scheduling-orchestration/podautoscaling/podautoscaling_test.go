@@ -81,9 +81,44 @@ func Test_SchedulingOrchestration_PodAutoscaling(t *testing.T) {
 		}
 		h.Logf("Confirmed vLLM exposes vllm:num_requests_waiting metric")
 
+		// Verify the custom metrics pipeline is working before generating load.
+		h.Logf("### Verify custom metrics pipeline")
+
+		// Check that the custom metrics API is registered.
+		h.Logf("Checking custom metrics API registration...")
+		h.ShellExec("kubectl get apiservice v1beta1.custom.metrics.k8s.io -o wide || true")
+
+		// Check prometheus-adapter is running.
+		h.Logf("Checking prometheus-adapter deployment status...")
+		h.ShellExec("kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus-adapter -o wide || true")
+
+		// Query Prometheus directly to see if vllm:num_requests_waiting is being scraped.
+		h.Logf("Querying Prometheus for vllm:num_requests_waiting metric...")
+		h.ShellExec(
+			"kubectl exec -n monitoring statefulset/prometheus-kube-prometheus-stack-prometheus -c prometheus -- wget -qO- 'http://localhost:9090/api/v1/query?query=vllm%3Anum_requests_waiting' 2>/dev/null || echo 'Failed to query Prometheus'",
+		)
+
+		// Query Prometheus for scrape targets to see if vLLM pod is being scraped.
+		h.Logf("Checking Prometheus scrape targets for vLLM...")
+		h.ShellExec(
+			"kubectl exec -n monitoring statefulset/prometheus-kube-prometheus-stack-prometheus -c prometheus -- wget -qO- 'http://localhost:9090/api/v1/targets?state=active' 2>/dev/null | grep -o '\"scrapePool\":\"[^\"]*vllm[^\"]*\"' || echo 'No vLLM scrape targets found'",
+		)
+
+		// Query the custom metrics API directly to see if prometheus-adapter is serving the metric.
+		h.Logf("Querying custom metrics API for vllm_num_requests_waiting...")
+		h.ShellExec(fmt.Sprintf(
+			"kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/%s/pods/*/vllm_num_requests_waiting 2>&1 || echo 'Custom metric not available via API'",
+			ns,
+		))
+
+		// Also list all available custom metrics to see what the adapter is exposing.
+		h.Logf("Listing all available custom metrics...")
+		h.ShellExec("kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 2>&1 || echo 'Custom metrics API not available'")
+
 		// Check HPA status before load.
 		h.Logf("### Check initial HPA status")
 		h.ShellExec(fmt.Sprintf("kubectl get hpa -n %s vllm-qwen25-500m -o wide", ns))
+		h.ShellExec(fmt.Sprintf("kubectl describe hpa -n %s vllm-qwen25-500m", ns))
 
 		// Deploy load generator.
 		h.Logf("## Deploy load generator")
@@ -107,8 +142,41 @@ func Test_SchedulingOrchestration_PodAutoscaling(t *testing.T) {
 			}
 
 			// Also log current metrics for debugging.
-			hpaStatus := h.ShellExec(fmt.Sprintf("kubectl get hpa -n %s vllm-qwen25-500m -o wide", ns))
-			h.Logf("Attempt %d: HPA status: %s", attempt, hpaStatus.Stdout())
+			h.Logf("Checking hpa status...")
+			h.ShellExec(fmt.Sprintf("kubectl get hpa -n %s vllm-qwen25-500m -o wide", ns))
+
+			// Every 5 attempts, do deeper diagnostics on the metrics pipeline.
+			if attempt%5 == 1 {
+				h.Logf("### Diagnostics at attempt %d", attempt)
+
+				// Check custom metrics API for the metric value.
+				h.ShellExec(fmt.Sprintf(
+					"kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/%s/pods/*/vllm_num_requests_waiting 2>&1 || echo 'Custom metric not available'",
+					ns,
+				))
+
+				// Query Prometheus for the raw metric.
+				h.ShellExec(
+					"kubectl exec -n monitoring statefulset/prometheus-kube-prometheus-stack-prometheus -c prometheus -- wget -qO- 'http://localhost:9090/api/v1/query?query=vllm%3Anum_requests_waiting' 2>/dev/null || echo 'Failed to query Prometheus'",
+				)
+
+				// Check HPA conditions for error messages.
+				h.ShellExec(fmt.Sprintf(
+					"kubectl get hpa -n %s vllm-qwen25-500m -o jsonpath='{.status.conditions}' || true",
+					ns,
+				))
+
+				// Check prometheus-adapter logs for errors.
+				h.ShellExec(
+					"kubectl logs -n monitoring -l app.kubernetes.io/name=prometheus-adapter --tail=20 || true",
+				)
+
+				// Check if load generator is actually running.
+				h.ShellExec(fmt.Sprintf(
+					"kubectl get pods -n %s -l app=vllm-load-generator -o wide || true",
+					ns,
+				))
+			}
 
 			if attempt < maxAttempts {
 				h.Logf("Attempt %d: HPA has not scaled yet, waiting 30s...", attempt)
@@ -117,8 +185,34 @@ func Test_SchedulingOrchestration_PodAutoscaling(t *testing.T) {
 		}
 
 		if !scaled {
-			// Log HPA events and conditions for debugging.
+			// Comprehensive debugging on failure.
+			h.Logf("### Failure diagnostics")
+
 			h.ShellExec(fmt.Sprintf("kubectl describe hpa -n %s vllm-qwen25-500m", ns))
+
+			// Final check of custom metrics API.
+			h.ShellExec(fmt.Sprintf(
+				"kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/%s/pods/*/vllm_num_requests_waiting 2>&1 || echo 'Custom metric not available'",
+				ns,
+			))
+
+			// List all custom metrics the adapter knows about.
+			h.ShellExec("kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 2>&1 || echo 'Custom metrics API not available'")
+
+			// Prometheus query for the raw metric.
+			h.ShellExec(
+				"kubectl exec -n monitoring statefulset/prometheus-kube-prometheus-stack-prometheus -c prometheus -- wget -qO- 'http://localhost:9090/api/v1/query?query=vllm%3Anum_requests_waiting' 2>/dev/null || echo 'Failed to query Prometheus'",
+			)
+
+			// prometheus-adapter logs.
+			h.ShellExec("kubectl logs -n monitoring -l app.kubernetes.io/name=prometheus-adapter --tail=50 || true")
+
+			// prometheus-adapter config (to verify the rule).
+			h.ShellExec("kubectl get configmap -n monitoring prometheus-adapter -o yaml 2>&1 || echo 'ConfigMap not found'")
+
+			// Check PodMonitor was created and Prometheus discovered it.
+			h.ShellExec(fmt.Sprintf("kubectl get podmonitor -n %s -o yaml || true", ns))
+
 			h.Errorf("HPA did not scale the deployment above 1 replica within the expected time")
 		} else {
 			h.Success("HPA successfully scaled vLLM deployment based on custom metric vllm_num_requests_waiting")

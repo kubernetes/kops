@@ -110,10 +110,19 @@ func (o *MarkdownOutput) BeforeShellExec(command string) {
 
 // AfterShellExec writes the result of the executed shell command to the markdown file in a formatted code block.
 func (o *MarkdownOutput) AfterShellExec(command string, results *CommandResult) {
-	o.printf("```bash")
-	o.printf("%s", results.Stdout())
-	o.printf("%s", results.Stderr())
 	o.printf("```\n")
+	stdout := strings.TrimSpace(results.Stdout())
+	stderr := strings.TrimSpace(results.Stderr())
+	if stdout != "" {
+		o.printf("%s", stdout)
+	}
+	if stderr != "" {
+		if stdout != "" {
+			o.printf("\n")
+		}
+		o.printf("%s", stderr)
+	}
+	o.printf("\n```\n")
 
 	if results.Err() != nil {
 		o.printf("Error:\n```\n%v\n```\n", results.Err())
