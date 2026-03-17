@@ -27,8 +27,10 @@ type OutputSink interface {
 	// WriteText writes a text string to the output sink.
 	WriteText(text string)
 
-	// OnShellExec is called when a shell command is executed, with the command, its stdout, stderr, and any error that occurred.
-	OnShellExec(command string, results *CommandResult)
+	// BeforeShellExec is called when a shell command is about to be executed, with the command string.
+	BeforeShellExec(command string)
+	// AfterShellExec is called when a shell command has been executed, with the command, its stdout, stderr, and any error that occurred.
+	AfterShellExec(command string, results *CommandResult)
 
 	// Success indicates a successful check, allowing the output sink to format it accordingly.
 	Success(text string)
