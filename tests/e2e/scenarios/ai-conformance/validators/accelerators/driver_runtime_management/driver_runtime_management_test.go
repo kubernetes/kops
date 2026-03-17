@@ -132,7 +132,7 @@ func TestAcceleratorsDriverRuntimeManagement(t *testing.T) {
 
 	// Record conformance
 	if h.AllPassed() {
-		h.RecordConformance("accelerators/driver_runtime_management")
+		h.RecordConformance("accelerators", "driver_runtime_management")
 		h.Success("Driver Runtime Management conformance test PASSED")
 	}
 }

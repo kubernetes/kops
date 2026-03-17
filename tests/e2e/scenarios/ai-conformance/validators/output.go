@@ -98,9 +98,3 @@ func (h *ValidatorHarness) Success(format string, args ...interface{}) {
 	h.output.Success(s)
 	h.t.Logf("SUCCESS: "+format, args...)
 }
-
-// RecordConformance records that a specific conformance test was passed.
-func (h *ValidatorHarness) RecordConformance(testName string) {
-	// We should gather these in a structured way, but for now we'll just log them.
-	h.Logf("Conformance %q passed", testName)
-}

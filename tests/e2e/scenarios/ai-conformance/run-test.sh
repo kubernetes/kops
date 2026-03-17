@@ -51,7 +51,9 @@ if [[ "${AVAILABILITY}" == "false" ]]; then
 fi
 rm -f "${SCENARIO_ROOT}/tools/check-aws-availability/check-aws-availability"
 
+# Put kOps onto PATH
 kops-acquire-latest
+cp "${KOPS}" "${BIN_DIR}/kops"
 
 # Cluster Configuration
 # - Networking: Cilium with Gateway API enabled
@@ -72,7 +74,7 @@ kops-up
 
 # Now add an instance group for GPU nodes with the appropriate labels for NVIDIA DRA
 # TODO: find zones, match images, etc. rather than hard-coding
-${KOPS} create --name "${CLUSTER_NAME}" -f - <<EOF
+kops create --name "${CLUSTER_NAME}" -f - <<EOF
 apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -92,7 +94,7 @@ spec:
   - us-east-2c
 EOF
 
-${KOPS} update cluster --name "${CLUSTER_NAME}" --yes --admin
+kops update cluster --name "${CLUSTER_NAME}" --yes --admin
 
 echo "Listing node with their labels..."
 kubectl get nodes --show-labels
@@ -218,7 +220,7 @@ echo "Verifying Cluster and Components"
 echo "----------------------------------------------------------------"
 
 # Wait for kOps validation
-"${KOPS}" validate cluster --wait=15m
+kops validate cluster --wait=15m
 
 # Verify Components
 echo "Verifying NVIDIA Device Plugin..."
@@ -351,3 +353,7 @@ echo "AI Conformance Environment Setup Complete."
 # Now run the actual AI conformance tests
 cd "${REPO_ROOT}/tests/e2e/scenarios/ai-conformance/validators"
 go test -v ./... -timeout=60m
+
+# Compile and write the conformance report
+cd "${REPO_ROOT}/tests/e2e/scenarios/ai-conformance"
+go run ./tools/write-conformance-report

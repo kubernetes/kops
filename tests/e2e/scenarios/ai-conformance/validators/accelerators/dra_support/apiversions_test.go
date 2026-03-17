@@ -54,4 +54,8 @@ func TestAcceleratorsDRASupport(t *testing.T) {
 		}
 		h.Success("DRA API resource %s is available.", resource)
 	}
+
+	if h.AllPassed() {
+		h.RecordConformance("accelerators", "dra_support")
+	}
 }
