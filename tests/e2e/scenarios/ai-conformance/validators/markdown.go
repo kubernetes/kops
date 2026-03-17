@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/yuin/goldmark"
+	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/testartifacts"
 )
 
 // MarkdownOutput is an implementation of OutputSink that writes output in Markdown format to a file.
@@ -130,17 +131,7 @@ func (o *MarkdownOutput) printf(format string, args ...interface{}) {
 
 // createMarkdownOutput creates a MarkdownOutput that writes to a file based on the test's name.
 func createMarkdownOutput(t *testing.T) OutputSink {
-	artifactsDir := os.Getenv("ARTIFACTS")
-	if artifactsDir == "" {
-		artifactsDir = "_artifacts"
-	}
-
-	testName := strings.ReplaceAll(t.Name(), "/", "_")
-	outputPath := filepath.Join(artifactsDir, "tests", testName, "output.md")
-
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
-		t.Fatalf("failed to create output directory %v: %v", filepath.Dir(outputPath), err)
-	}
+	outputPath := testartifacts.PathForTestArtifact(t, "output.md", testartifacts.WithMkdirAll())
 
 	outputFile, err := os.Create(outputPath)
 	if err != nil {
