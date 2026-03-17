@@ -27,8 +27,10 @@ import (
 	"strings"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/testartifacts"
 
@@ -195,11 +197,27 @@ func (h *ValidatorHarness) TestNamespace() string {
 			ctx := context.WithoutCancel(h.Context())
 			h.dumpNamespaceResources(ctx, ns)
 
+			startTime := time.Now()
+
 			h.Logf("Deleting test namespace %q", ns)
-			err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{})
-			if err != nil {
-				h.Logf("failed to delete test namespace: %v", err)
+			if err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{}); err != nil {
+				h.Errorf("failed to delete test namespace: %v", err)
 			}
+
+			// Wait for namespace deletion to complete so that we don't have leftover namespaces consuming resources.
+			if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, 5*time.Minute, false, func(ctx context.Context) (done bool, err error) {
+				if _, err := h.DynamicClient().Resource(namespaceGVR).Get(ctx, ns, metav1.GetOptions{}); err != nil {
+					if apierrors.IsNotFound(err) {
+						return true, nil
+					}
+					return false, fmt.Errorf("error checking for namespace deletion: %w", err)
+				}
+				return false, nil
+			}); err != nil {
+				h.Errorf("error waiting for namespace deletion: %v", err)
+			}
+
+			h.Logf("Namespace deletion took %s", time.Since(startTime).Round(time.Second))
 		})
 	}
 
