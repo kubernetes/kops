@@ -309,6 +309,9 @@ type KubeAPIServerConfig struct {
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 	// CloudProvider is the name of the cloudProvider we are using, aws, gce etcd
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
+	// CompactionInterval is an interval of requesting compaction from apiserver.
+	// If the value is 0, no compaction will be issued.
+	CompactionInterval *metav1.Duration `json:"compactionInterval,omitempty" flag:"etcd-compaction-interval"`
 	// SecurePort is the port the kube runs on
 	SecurePort int32 `json:"securePort,omitempty" flag:"secure-port"`
 	// InsecurePort is the port the insecure api runs

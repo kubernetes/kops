@@ -1881,6 +1881,11 @@ spec:
                     description: CloudProvider is the name of the cloudProvider we
                       are using, aws, gce etcd
                     type: string
+                  compactionInterval:
+                    description: |-
+                      CompactionInterval is an interval of requesting compaction from apiserver.
+                      If the value is 0, no compaction will be issued.
+                    type: string
                   corsAllowedOrigins:
                     description: |-
                       CorsAllowedOrigins is a list of origins for CORS. An allowed origin can be a regular

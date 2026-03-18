@@ -5182,6 +5182,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
+	out.CompactionInterval = in.CompactionInterval
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
@@ -5296,6 +5297,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.LogFormat = in.LogFormat
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
+	out.CompactionInterval = in.CompactionInterval
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
