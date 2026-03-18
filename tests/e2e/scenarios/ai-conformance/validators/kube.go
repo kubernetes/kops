@@ -262,11 +262,20 @@ func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string
 	// Always include Events, Pods: they are usually not in the manifest, but are often critical for understanding failures.
 	resourceTypes["Events"] = true
 	resourceTypes["Pods"] = true
+	resourceTypes["Nodes"] = true
 
 	for resourceType := range resourceTypes {
 		filename := strings.ToLower(resourceType) + ".yaml"
 		if err := h.dumpResource(ctx, ns, resourceType, filepath.Join(clusterInfoDir, filename)); err != nil {
 			h.Logf("failed to dump resource %s: %v", resourceType, err)
+		}
+	}
+
+	describeResourcesTypes := []string{"nodes", "pods"}
+	for _, describeResourcesType := range describeResourcesTypes {
+		filename := strings.ToLower(describeResourcesType) + ".txt"
+		if err := h.kubectlDescribeResource(ctx, ns, describeResourcesType, filepath.Join(clusterInfoDir, filename)); err != nil {
+			h.Logf("failed to kubectl describe resource %s: %v", describeResourcesType, err)
 		}
 	}
 
@@ -276,7 +285,6 @@ func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string
 }
 
 // dumpResource runs kubectl get for a resource type and writes the output to a file.
-// Errors are logged but do not fail the test.
 func (h *ValidatorHarness) dumpResource(ctx context.Context, ns string, resourceType string, outputPath string) error {
 	args := []string{"get", resourceType}
 	if ns != "" {
@@ -295,6 +303,29 @@ func (h *ValidatorHarness) dumpResource(ctx context.Context, ns string, resource
 
 	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed to write %s dump to %s: %w", resourceType, outputPath, err)
+	}
+
+	return nil
+}
+
+// dumpResource runs kubectl describe for a resource type and writes the output to a file.
+func (h *ValidatorHarness) kubectlDescribeResource(ctx context.Context, ns string, resourceType string, outputPath string) error {
+	args := []string{"describe", resourceType}
+	if ns != "" {
+		args = append(args, "-n", ns)
+	}
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to kubectl describe %s in namespace %s: %v (stderr: %s)", resourceType, ns, err, stderr.String())
+	}
+
+	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
+		return fmt.Errorf("failed to write %s describe output to %s: %w", resourceType, outputPath, err)
 	}
 
 	return nil
