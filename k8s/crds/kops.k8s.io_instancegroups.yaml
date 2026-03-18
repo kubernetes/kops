@@ -660,6 +660,11 @@ spec:
                     description: Integrate with the kernel memcg notification to determine
                       if memory eviction thresholds are crossed rather than polling.
                     type: boolean
+                  kubeAPIQPS:
+                    description: KubeAPIQPS Burst to use while talking with kubernetes
+                      apiserver. (default 50)
+                    format: int32
+                    type: integer
                   kubeReserved:
                     additionalProperties:
                       type: string
