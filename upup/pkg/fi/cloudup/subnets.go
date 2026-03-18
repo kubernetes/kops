@@ -233,9 +233,15 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 func allSubnetsHaveCIDRs(c *kops.Cluster) bool {
 	for i := range c.Spec.Networking.Subnets {
 		subnet := &c.Spec.Networking.Subnets[i]
-		if subnet.CIDR == "" {
-			return false
+		if subnet.CIDR != "" {
+			continue
 		}
+
+		if subnet.IPv6CIDR != "" && subnet.Type == kops.SubnetTypePrivate {
+			continue
+		}
+
+		return false
 	}
 
 	return true
