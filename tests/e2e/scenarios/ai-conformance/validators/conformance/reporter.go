@@ -17,10 +17,7 @@ limitations under the License.
 package conformance
 
 import (
-	"os"
-	"path"
-	"path/filepath"
-
+	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/testartifacts"
 	"sigs.k8s.io/yaml"
 )
 
@@ -39,6 +36,9 @@ type Testing interface {
 
 	// Errorf reports a formatted error message to the test output and marks the test as failed, but continues execution.
 	Errorf(format string, args ...interface{})
+
+	// Fatalf reports a formatted error message to the test output and marks the test as failed, then stops execution.
+	Fatalf(format string, args ...interface{})
 }
 
 // NewReporter creates a new Reporter.
@@ -68,7 +68,7 @@ func (h *Reporter) RecordConformance(section string, test string, opt ...RecordC
 		o(&info)
 	}
 
-	evidencePath := path.Join("tests", h.t.Name(), "output.html")
+	evidencePath := testartifacts.PathForTestArtifact(h.t, "output.html", testartifacts.RelativeToArtifactsDir())
 	info.Evidence = append(info.Evidence, evidencePath)
 
 	h.t.Logf("Conformance %v/%q passed: %+v", section, info.ID, info)
@@ -78,33 +78,13 @@ func (h *Reporter) RecordConformance(section string, test string, opt ...RecordC
 		Info:    info,
 	}
 
-	outputFile := attestationFile(h.t)
-	outputDir := filepath.Dir(outputFile)
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		h.t.Errorf("failed to create attestation directory %q: %v", outputDir, err)
-		return
-	}
-
 	b, err := yaml.Marshal(attestation)
 	if err != nil {
 		h.t.Errorf("failed to marshal attestation: %v", err)
 		return
 	}
 
-	if err := os.WriteFile(outputFile, b, 0644); err != nil {
-		h.t.Errorf("failed to write attestation file %q: %v", outputFile, err)
-		return
-	}
-}
-
-// attestationFile returns the path to write the ai conformance attestaion file.
-func attestationFile(t Testing) string {
-	artifactsDir := os.Getenv("ARTIFACTS")
-	if artifactsDir == "" {
-		artifactsDir = "_artifacts"
-	}
-	testName := t.Name()
-	return filepath.Join(artifactsDir, "tests", testName, "ai-conformance.yaml")
+	testartifacts.WriteTestArtifact(h.t, "ai-conformance.yaml", b)
 }
 
 // Info represents the details of a conformance test result, including its ID, status, evidence, and any additional notes.

@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/testartifacts"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -225,13 +226,9 @@ func (h *ValidatorHarness) ApplyManifest(defaultNamespace string, manifestPath s
 
 // dumpNamespaceResources dumps key resources from the namespace to the artifacts directory for debugging.
 func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string) {
-	artifactsDir := os.Getenv("ARTIFACTS")
-	if artifactsDir == "" {
-		artifactsDir = "_artifacts"
-	}
+	clusterInfoDir := testartifacts.PathForTestArtifact(h.t, "cluster-info")
+	clusterInfoDir = filepath.Join(clusterInfoDir, ns)
 
-	testName := strings.ReplaceAll(h.t.Name(), "/", "_")
-	clusterInfoDir := filepath.Join(artifactsDir, "tests", testName, "cluster-info", ns)
 	if err := os.MkdirAll(clusterInfoDir, 0o755); err != nil {
 		h.Logf("failed to create cluster-info directory: %v", err)
 		return
