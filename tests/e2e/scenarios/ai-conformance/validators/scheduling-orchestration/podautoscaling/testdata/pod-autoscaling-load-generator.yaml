@@ -12,6 +12,7 @@ spec:
       labels:
         app: vllm-load-generator
     spec:
+      terminationGracePeriodSeconds: 5
       containers:
       - name: load-generator
         image: registry.k8s.io/e2e-test-images/agnhost:2.39

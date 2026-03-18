@@ -33,6 +33,7 @@ spec:
       labels:
         app: vllm-qwen25-500m
     spec:
+      terminationGracePeriodSeconds: 5
       tolerations:
       - key: "nvidia.com/gpu"
         operator: "Exists"
