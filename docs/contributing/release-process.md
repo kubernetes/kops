@@ -165,14 +165,10 @@ to artifacts.k8s.io via postsubmit. The process is described in detail
 
 ### Promote to GitHub (all releases)
 
-The `shipbot` tool is from [kopeio/shipbot](https://github.com/kopeio/shipbot).
-
-Binaries to github (all releases):
+This downloads the promoted binaries from artifacts.k8s.io and uploads them to the GitHub release:
 
 ```
-cd ${GOPATH}/src/k8s.io/kops/
-git checkout v$VERSION
-shipbot -tag v${VERSION} -config .shipbot.yaml -src ${GOPATH}/src/k8s.io/k8s.io/k8s-staging-kops/kops/releases/${VERSION}/
+hack/promote-to-github.sh ${VERSION}
 ```
 
 ### Smoke test the release
