@@ -68,7 +68,7 @@ func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions, capiManager *clusterapi.Mana
 	}, nil
 }
 
-var _ bootstrap.Verifier = &tpmVerifier{}
+var _ bootstrap.Verifier = (*tpmVerifier)(nil)
 
 func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, authToken string, body []byte) (*bootstrap.VerifyResult, error) {
 	// Reminder: we shouldn't trust any data we get from the client until we've checked the signature (and even then...)

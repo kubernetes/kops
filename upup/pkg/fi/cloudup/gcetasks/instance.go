@@ -57,7 +57,7 @@ type Instance struct {
 	metadataFingerprint string
 }
 
-var _ fi.CompareWithID = &Instance{}
+var _ fi.CompareWithID = (*Instance)(nil)
 
 func (e *Instance) CompareWithID() *string {
 	return e.Name

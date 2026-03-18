@@ -113,8 +113,8 @@ func (f *File) String() string {
 	return fmt.Sprintf("File: %q", f.Path)
 }
 
-var _ CreatesDir = &InstallFile{}
-var _ CreatesDir = &File{}
+var _ CreatesDir = (*InstallFile)(nil)
+var _ CreatesDir = (*File)(nil)
 
 // Dir implements CreatesDir::Dir
 func (f *File) Dir() string {

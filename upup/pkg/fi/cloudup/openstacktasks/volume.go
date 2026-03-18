@@ -36,8 +36,8 @@ type Volume struct {
 	Lifecycle        fi.Lifecycle
 }
 
-var _ fi.CompareWithID = &Volume{}
-var _ fi.CloudupTaskNormalize = &Volume{}
+var _ fi.CompareWithID = (*Volume)(nil)
+var _ fi.CloudupTaskNormalize = (*Volume)(nil)
 
 func (c *Volume) CompareWithID() *string {
 	return c.ID

@@ -27,7 +27,7 @@ import (
 
 // PublicIPAddress
 
-var _ fi.HasLifecycle = &PublicIPAddress{}
+var _ fi.HasLifecycle = (*PublicIPAddress)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *PublicIPAddress) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *PublicIPAddress) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &PublicIPAddress{}
+var _ fi.HasName = (*PublicIPAddress)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *PublicIPAddress) GetName() *string {

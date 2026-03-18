@@ -193,7 +193,7 @@ func (e *Elastigroup) find(svc spotinst.InstanceGroupService) (*aws.Group, error
 	return out, nil
 }
 
-var _ fi.CloudupHasCheckExisting = &Elastigroup{}
+var _ fi.CloudupHasCheckExisting = (*Elastigroup)(nil)
 
 func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
 	cloud := awsup.GetCloud(c)

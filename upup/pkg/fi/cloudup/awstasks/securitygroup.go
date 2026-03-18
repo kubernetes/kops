@@ -238,7 +238,7 @@ func buildDeleteSecurityGroupRule(rule ec2types.SecurityGroupRule) *deleteSecuri
 	return d
 }
 
-var _ fi.CloudupDeletion = &deleteSecurityGroupRule{}
+var _ fi.CloudupDeletion = (*deleteSecurityGroupRule)(nil)
 
 func (d *deleteSecurityGroupRule) Delete(t fi.CloudupTarget) error {
 	ctx := context.TODO()
@@ -435,7 +435,7 @@ type PortRemovalRule struct {
 	ToPort   int
 }
 
-var _ RemovalRule = &PortRemovalRule{}
+var _ RemovalRule = (*PortRemovalRule)(nil)
 
 func (r *PortRemovalRule) String() string {
 	return fi.DebugAsJsonString(r)

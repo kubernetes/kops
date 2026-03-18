@@ -47,8 +47,8 @@ type EBSVolume struct {
 	VolumeType       ec2types.VolumeType
 }
 
-var _ fi.CompareWithID = &EBSVolume{}
-var _ fi.CloudupTaskNormalize = &EBSVolume{}
+var _ fi.CompareWithID = (*EBSVolume)(nil)
+var _ fi.CloudupTaskNormalize = (*EBSVolume)(nil)
 
 func (e *EBSVolume) CompareWithID() *string {
 	return e.ID

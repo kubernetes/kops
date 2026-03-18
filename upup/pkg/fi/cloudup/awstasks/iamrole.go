@@ -55,7 +55,7 @@ type IAMRole struct {
 	ExportWithID *string
 }
 
-var _ fi.CompareWithID = &IAMRole{}
+var _ fi.CompareWithID = (*IAMRole)(nil)
 
 func (e *IAMRole) CompareWithID() *string {
 	return e.ID

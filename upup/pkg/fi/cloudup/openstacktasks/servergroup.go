@@ -37,7 +37,7 @@ type ServerGroup struct {
 	Lifecycle   fi.Lifecycle
 }
 
-var _ fi.CompareWithID = &ServerGroup{}
+var _ fi.CompareWithID = (*ServerGroup)(nil)
 
 func (s *ServerGroup) CompareWithID() *string {
 	return s.ID

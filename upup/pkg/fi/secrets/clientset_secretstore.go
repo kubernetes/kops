@@ -45,7 +45,7 @@ type ClientsetSecretStore struct {
 	clientset kopsinternalversion.KopsInterface
 }
 
-var _ fi.SecretStore = &ClientsetSecretStore{}
+var _ fi.SecretStore = (*ClientsetSecretStore)(nil)
 
 // NewClientsetSecretStore is the constructor for ClientsetSecretStore
 func NewClientsetSecretStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) fi.SecretStore {

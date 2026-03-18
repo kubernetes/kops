@@ -33,7 +33,7 @@ type mockVMScaleSetsClient struct {
 	vmsses []*compute.VirtualMachineScaleSet
 }
 
-var _ VMScaleSetsClient = &mockVMScaleSetsClient{}
+var _ VMScaleSetsClient = (*mockVMScaleSetsClient)(nil)
 
 // CreateOrUpdate creates or updates a VM Scale Set.
 func (c *mockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error) {
@@ -61,7 +61,7 @@ type mockVMScaleSetVMsClient struct {
 	vms []*compute.VirtualMachineScaleSetVM
 }
 
-var _ VMScaleSetVMsClient = &mockVMScaleSetVMsClient{}
+var _ VMScaleSetVMsClient = (*mockVMScaleSetVMsClient)(nil)
 
 func (c *mockVMScaleSetVMsClient) List(ctx context.Context, resourceGroupName, vmssName string) ([]*compute.VirtualMachineScaleSetVM, error) {
 	return c.vms, nil

@@ -41,7 +41,7 @@ type BackendService struct {
 	ForAPIServer bool
 }
 
-var _ fi.CompareWithID = &BackendService{}
+var _ fi.CompareWithID = (*BackendService)(nil)
 
 func (e *BackendService) CompareWithID() *string {
 	return e.Name

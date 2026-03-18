@@ -43,7 +43,7 @@ type InternetGateway struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &InternetGateway{}
+var _ fi.CompareWithID = (*InternetGateway)(nil)
 
 func (e *InternetGateway) CompareWithID() *string {
 	return e.ID

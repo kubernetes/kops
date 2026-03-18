@@ -64,7 +64,7 @@ type HetznerCloud interface {
 }
 
 // static compile time check to validate HetznerCloud's fi.Cloud Interface.
-var _ fi.Cloud = &hetznerCloudImplementation{}
+var _ fi.Cloud = (*hetznerCloudImplementation)(nil)
 
 // hetznerCloudImplementation holds the godo client object to interact with Hetzner resources.
 type hetznerCloudImplementation struct {

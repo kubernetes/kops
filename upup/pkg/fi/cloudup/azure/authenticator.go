@@ -30,7 +30,7 @@ const AzureAuthenticationTokenPrefix = "x-azure-id "
 type azureAuthenticator struct {
 }
 
-var _ bootstrap.Authenticator = &azureAuthenticator{}
+var _ bootstrap.Authenticator = (*azureAuthenticator)(nil)
 
 func NewAzureAuthenticator() (bootstrap.Authenticator, error) {
 	return &azureAuthenticator{}, nil

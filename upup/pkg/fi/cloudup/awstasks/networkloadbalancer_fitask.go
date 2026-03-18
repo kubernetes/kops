@@ -27,7 +27,7 @@ import (
 
 // NetworkLoadBalancer
 
-var _ fi.HasLifecycle = &NetworkLoadBalancer{}
+var _ fi.HasLifecycle = (*NetworkLoadBalancer)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *NetworkLoadBalancer) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *NetworkLoadBalancer) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &NetworkLoadBalancer{}
+var _ fi.HasName = (*NetworkLoadBalancer)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *NetworkLoadBalancer) GetName() *string {

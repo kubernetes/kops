@@ -27,7 +27,7 @@ import (
 
 // TargetPool
 
-var _ fi.HasLifecycle = &TargetPool{}
+var _ fi.HasLifecycle = (*TargetPool)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *TargetPool) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *TargetPool) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &TargetPool{}
+var _ fi.HasName = (*TargetPool)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *TargetPool) GetName() *string {

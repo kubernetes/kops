@@ -81,7 +81,7 @@ type gceCloudImplementation struct {
 	labels map[string]string
 }
 
-var _ fi.Cloud = &gceCloudImplementation{}
+var _ fi.Cloud = (*gceCloudImplementation)(nil)
 
 func (c *gceCloudImplementation) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderGCE

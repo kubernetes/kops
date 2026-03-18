@@ -61,7 +61,7 @@ type VMScaleSet struct {
 	PrincipalID *string
 }
 
-var _ fi.CloudupTaskNormalize = &VMScaleSet{}
+var _ fi.CloudupTaskNormalize = (*VMScaleSet)(nil)
 
 // VMScaleSetStorageProfile wraps *compute.VirtualMachineScaleSetStorageProfile
 // and implements fi.HasDependencies.
@@ -74,7 +74,7 @@ type VMScaleSetStorageProfile struct {
 	*compute.VirtualMachineScaleSetStorageProfile
 }
 
-var _ fi.CloudupHasDependencies = &VMScaleSetStorageProfile{}
+var _ fi.CloudupHasDependencies = (*VMScaleSetStorageProfile)(nil)
 
 // GetDependencies returns a slice of tasks on which the tasks depends on.
 func (p *VMScaleSetStorageProfile) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {

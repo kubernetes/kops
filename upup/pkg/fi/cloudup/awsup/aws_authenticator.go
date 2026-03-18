@@ -51,7 +51,7 @@ type awsAuthenticator struct {
 	credentialsProvider aws.CredentialsProvider
 }
 
-var _ bootstrap.Authenticator = &awsAuthenticator{}
+var _ bootstrap.Authenticator = (*awsAuthenticator)(nil)
 
 // RegionFromMetadata returns the current region from the aws metdata
 func RegionFromMetadata(ctx context.Context) (string, error) {

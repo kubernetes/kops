@@ -27,7 +27,7 @@ import (
 
 // Disk
 
-var _ fi.HasLifecycle = &Disk{}
+var _ fi.HasLifecycle = (*Disk)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *Disk) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *Disk) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Disk{}
+var _ fi.HasName = (*Disk)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Disk) GetName() *string {

@@ -47,7 +47,7 @@ type DHCPOptions struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &DHCPOptions{}
+var _ fi.CompareWithID = (*DHCPOptions)(nil)
 
 func (e *DHCPOptions) CompareWithID() *string {
 	return e.ID

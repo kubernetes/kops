@@ -59,7 +59,7 @@ const (
 	dockerPackageName           = "docker-ce"
 )
 
-var _ fi.NodeupHasDependencies = &Package{}
+var _ fi.NodeupHasDependencies = (*Package)(nil)
 
 // GetDependencies computes dependencies for the package task
 func (e *Package) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTask {
@@ -111,7 +111,7 @@ func (e *Package) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTas
 	return deps
 }
 
-var _ fi.HasName = &Package{}
+var _ fi.HasName = (*Package)(nil)
 
 func (f *Package) GetName() *string {
 	return &f.Name

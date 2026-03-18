@@ -39,7 +39,7 @@ type Volume struct {
 	Type *string
 }
 
-var _ fi.CompareWithID = &Volume{}
+var _ fi.CompareWithID = (*Volume)(nil)
 
 func (v *Volume) CompareWithID() *string {
 	return v.ID

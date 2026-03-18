@@ -34,7 +34,7 @@ type Network struct {
 	AvailabilityZoneHints []*string
 }
 
-var _ fi.CompareWithID = &Network{}
+var _ fi.CompareWithID = (*Network)(nil)
 
 func (n *Network) CompareWithID() *string {
 	return n.ID

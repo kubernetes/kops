@@ -27,7 +27,7 @@ import (
 
 // VPCDHCPOptionsAssociation
 
-var _ fi.HasLifecycle = &VPCDHCPOptionsAssociation{}
+var _ fi.HasLifecycle = (*VPCDHCPOptionsAssociation)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *VPCDHCPOptionsAssociation) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *VPCDHCPOptionsAssociation) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &VPCDHCPOptionsAssociation{}
+var _ fi.HasName = (*VPCDHCPOptionsAssociation)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *VPCDHCPOptionsAssociation) GetName() *string {

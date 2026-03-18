@@ -27,7 +27,7 @@ import (
 
 // VPCAmazonIPv6CIDRBlock
 
-var _ fi.HasLifecycle = &VPCAmazonIPv6CIDRBlock{}
+var _ fi.HasLifecycle = (*VPCAmazonIPv6CIDRBlock)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *VPCAmazonIPv6CIDRBlock) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *VPCAmazonIPv6CIDRBlock) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &VPCAmazonIPv6CIDRBlock{}
+var _ fi.HasName = (*VPCAmazonIPv6CIDRBlock)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *VPCAmazonIPv6CIDRBlock) GetName() *string {

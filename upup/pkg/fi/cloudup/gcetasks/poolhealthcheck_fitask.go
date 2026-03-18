@@ -27,7 +27,7 @@ import (
 
 // PoolHealthCheck
 
-var _ fi.HasLifecycle = &PoolHealthCheck{}
+var _ fi.HasLifecycle = (*PoolHealthCheck)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *PoolHealthCheck) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *PoolHealthCheck) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &PoolHealthCheck{}
+var _ fi.HasName = (*PoolHealthCheck)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *PoolHealthCheck) GetName() *string {

@@ -43,7 +43,7 @@ type Network struct {
 	Labels map[string]string
 }
 
-var _ fi.CompareWithID = &Network{}
+var _ fi.CompareWithID = (*Network)(nil)
 
 func (v *Network) CompareWithID() *string {
 	return v.ID

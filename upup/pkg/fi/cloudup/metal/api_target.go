@@ -27,7 +27,7 @@ type APITarget struct {
 	OtherClouds []fi.Cloud
 }
 
-var _ fi.CloudupTarget = &APITarget{}
+var _ fi.CloudupTarget = (*APITarget)(nil)
 
 func NewAPITarget(cloud *Cloud, otherClouds []fi.Cloud) *APITarget {
 	return &APITarget{

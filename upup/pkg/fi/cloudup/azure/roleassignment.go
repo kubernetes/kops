@@ -35,7 +35,7 @@ type roleAssignmentsClientImpl struct {
 	c *authz.RoleAssignmentsClient
 }
 
-var _ RoleAssignmentsClient = &roleAssignmentsClientImpl{}
+var _ RoleAssignmentsClient = (*roleAssignmentsClientImpl)(nil)
 
 func (c *roleAssignmentsClientImpl) Create(
 	ctx context.Context,

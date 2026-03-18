@@ -29,7 +29,7 @@ const HetznerAuthenticationTokenPrefix = "x-hetzner-id "
 type hetznerAuthenticator struct {
 }
 
-var _ bootstrap.Authenticator = &hetznerAuthenticator{}
+var _ bootstrap.Authenticator = (*hetznerAuthenticator)(nil)
 
 func NewHetznerAuthenticator() (bootstrap.Authenticator, error) {
 	return &hetznerAuthenticator{}, nil

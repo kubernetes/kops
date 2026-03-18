@@ -49,7 +49,7 @@ type SQS struct {
 	Tags map[string]string
 }
 
-var _ fi.CompareWithID = &SQS{}
+var _ fi.CompareWithID = (*SQS)(nil)
 
 func (q *SQS) CompareWithID() *string {
 	return q.ARN

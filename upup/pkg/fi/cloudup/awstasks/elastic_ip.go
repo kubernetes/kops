@@ -54,7 +54,7 @@ type ElasticIP struct {
 	AssociatedNatGatewayRouteTable *RouteTable
 }
 
-var _ fi.CompareWithID = &ElasticIP{}
+var _ fi.CompareWithID = (*ElasticIP)(nil)
 
 func (e *ElasticIP) CompareWithID() *string {
 	return e.ID

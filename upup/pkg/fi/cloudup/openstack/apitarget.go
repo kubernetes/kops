@@ -24,7 +24,7 @@ type OpenstackAPITarget struct {
 	Cloud OpenstackCloud
 }
 
-var _ fi.CloudupTarget = &OpenstackAPITarget{}
+var _ fi.CloudupTarget = (*OpenstackAPITarget)(nil)
 
 func NewOpenstackAPITarget(cloud OpenstackCloud) *OpenstackAPITarget {
 	return &OpenstackAPITarget{

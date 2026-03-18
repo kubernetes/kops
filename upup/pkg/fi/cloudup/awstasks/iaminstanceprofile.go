@@ -42,7 +42,7 @@ type IAMInstanceProfile struct {
 	Shared *bool
 }
 
-var _ fi.CompareWithID = &IAMInstanceProfile{}
+var _ fi.CompareWithID = (*IAMInstanceProfile)(nil)
 
 func (e *IAMInstanceProfile) CompareWithID() *string {
 	return e.Name

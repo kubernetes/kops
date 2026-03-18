@@ -40,7 +40,7 @@ type Prefix struct {
 	Name string
 }
 
-var _ fi.HasName = &Prefix{}
+var _ fi.HasName = (*Prefix)(nil)
 
 func (f *Prefix) GetName() *string {
 	return &f.Name

@@ -33,7 +33,7 @@ type storageAccountsClientImpl struct {
 	c *armstorage.AccountsClient
 }
 
-var _ StorageAccountsClient = &storageAccountsClientImpl{}
+var _ StorageAccountsClient = (*storageAccountsClientImpl)(nil)
 
 func (c *storageAccountsClientImpl) List(ctx context.Context) ([]*armstorage.Account, error) {
 	var l []*armstorage.Account

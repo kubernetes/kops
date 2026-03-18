@@ -38,7 +38,7 @@ import (
 
 // LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
 
-var _ DNSTarget = &ClassicLoadBalancer{}
+var _ DNSTarget = (*ClassicLoadBalancer)(nil)
 
 // +kops:fitask
 type ClassicLoadBalancer struct {
@@ -79,8 +79,8 @@ type ClassicLoadBalancer struct {
 	WellKnownServices []wellknownservices.WellKnownService
 }
 
-var _ fi.CompareWithID = &ClassicLoadBalancer{}
-var _ fi.CloudupTaskNormalize = &ClassicLoadBalancer{}
+var _ fi.CompareWithID = (*ClassicLoadBalancer)(nil)
+var _ fi.CloudupTaskNormalize = (*ClassicLoadBalancer)(nil)
 
 func (e *ClassicLoadBalancer) CompareWithID() *string {
 	return e.Name
@@ -109,7 +109,7 @@ func (e *ClassicLoadBalancerListener) mapToAWS(loadBalancerPort int32) elbtypes.
 	return l
 }
 
-var _ fi.CloudupHasDependencies = &ClassicLoadBalancerListener{}
+var _ fi.CloudupHasDependencies = (*ClassicLoadBalancerListener)(nil)
 
 func (e *ClassicLoadBalancerListener) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil
@@ -342,7 +342,7 @@ func (e *ClassicLoadBalancer) Find(c *fi.CloudupContext) (*ClassicLoadBalancer, 
 	return actual, nil
 }
 
-var _ fi.HasAddress = &ClassicLoadBalancer{}
+var _ fi.HasAddress = (*ClassicLoadBalancer)(nil)
 
 // GetWellKnownServices implements fi.HasAddress::GetWellKnownServices.
 // It indicates which services we support with this address (likely attached to a load balancer).

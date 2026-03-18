@@ -37,7 +37,7 @@ type publicIPAddressesClientImpl struct {
 	c *network.PublicIPAddressesClient
 }
 
-var _ PublicIPAddressesClient = &publicIPAddressesClientImpl{}
+var _ PublicIPAddressesClient = (*publicIPAddressesClientImpl)(nil)
 
 func (c *publicIPAddressesClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, publicIPAddressName string, parameters network.PublicIPAddress) (*network.PublicIPAddress, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, publicIPAddressName, parameters, nil)

@@ -58,7 +58,7 @@ type Instance struct {
 	IAMInstanceProfile *IAMInstanceProfile
 }
 
-var _ fi.CompareWithID = &Instance{}
+var _ fi.CompareWithID = (*Instance)(nil)
 
 func (s *Instance) CompareWithID() *string {
 	return s.ID

@@ -27,7 +27,7 @@ import (
 
 // IAMInstanceProfileRole
 
-var _ fi.HasLifecycle = &IAMInstanceProfileRole{}
+var _ fi.HasLifecycle = (*IAMInstanceProfileRole)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *IAMInstanceProfileRole) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *IAMInstanceProfileRole) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &IAMInstanceProfileRole{}
+var _ fi.HasName = (*IAMInstanceProfileRole)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *IAMInstanceProfileRole) GetName() *string {

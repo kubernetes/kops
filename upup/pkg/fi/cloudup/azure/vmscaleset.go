@@ -39,7 +39,7 @@ type vmScaleSetsClientImpl struct {
 	c *compute.VirtualMachineScaleSetsClient
 }
 
-var _ VMScaleSetsClient = &vmScaleSetsClientImpl{}
+var _ VMScaleSetsClient = (*vmScaleSetsClientImpl)(nil)
 
 func (c *vmScaleSetsClientImpl) CreateOrUpdate(ctx context.Context, resourceGroupName, vmScaleSetName string, parameters compute.VirtualMachineScaleSet) (*compute.VirtualMachineScaleSet, error) {
 	future, err := c.c.BeginCreateOrUpdate(ctx, resourceGroupName, vmScaleSetName, parameters, nil)

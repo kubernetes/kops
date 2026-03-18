@@ -246,7 +246,7 @@ type NetworkSecurityRule struct {
 	DestinationPortRange                     *string
 }
 
-var _ fi.CloudupHasDependencies = &NetworkSecurityRule{}
+var _ fi.CloudupHasDependencies = (*NetworkSecurityRule)(nil)
 
 func (e *NetworkSecurityRule) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
 	return nil

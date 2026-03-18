@@ -57,7 +57,7 @@ type Router struct {
 	Subnetworks []*Subnet
 }
 
-var _ fi.CompareWithID = &Router{}
+var _ fi.CompareWithID = (*Router)(nil)
 
 // CompareWithID returns the name of the Router.
 func (r *Router) CompareWithID() *string {

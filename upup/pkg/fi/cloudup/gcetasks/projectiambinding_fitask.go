@@ -27,7 +27,7 @@ import (
 
 // ProjectIAMBinding
 
-var _ fi.HasLifecycle = &ProjectIAMBinding{}
+var _ fi.HasLifecycle = (*ProjectIAMBinding)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ProjectIAMBinding) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ProjectIAMBinding) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ProjectIAMBinding{}
+var _ fi.HasName = (*ProjectIAMBinding)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ProjectIAMBinding) GetName() *string {

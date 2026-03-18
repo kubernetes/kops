@@ -27,7 +27,7 @@ import (
 
 // Subnet
 
-var _ fi.HasLifecycle = &Subnet{}
+var _ fi.HasLifecycle = (*Subnet)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *Subnet) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *Subnet) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &Subnet{}
+var _ fi.HasName = (*Subnet)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *Subnet) GetName() *string {

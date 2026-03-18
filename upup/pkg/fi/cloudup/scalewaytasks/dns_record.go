@@ -38,8 +38,8 @@ type DNSRecord struct {
 	Lifecycle fi.Lifecycle
 }
 
-var _ fi.CloudupTask = &DNSRecord{}
-var _ fi.CompareWithID = &DNSRecord{}
+var _ fi.CloudupTask = (*DNSRecord)(nil)
+var _ fi.CompareWithID = (*DNSRecord)(nil)
 
 func (d *DNSRecord) CompareWithID() *string {
 	return d.ID

@@ -36,7 +36,7 @@ type PoolHealthCheck struct {
 	Pool        *TargetPool
 }
 
-var _ fi.CompareWithID = &PoolHealthCheck{}
+var _ fi.CompareWithID = (*PoolHealthCheck)(nil)
 
 // GetDependencies returns the dependencies of the PoolHealthCheck task
 func (_ *PoolHealthCheck) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {

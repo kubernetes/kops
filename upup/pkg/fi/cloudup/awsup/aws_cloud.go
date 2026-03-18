@@ -227,7 +227,7 @@ type instanceTypes struct {
 	typeMap map[string]*ec2types.InstanceTypeInfo
 }
 
-var _ fi.Cloud = &awsCloudImplementation{}
+var _ fi.Cloud = (*awsCloudImplementation)(nil)
 
 func (c *awsCloudImplementation) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderAWS

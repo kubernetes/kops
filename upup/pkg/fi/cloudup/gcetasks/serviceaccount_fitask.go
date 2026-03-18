@@ -27,7 +27,7 @@ import (
 
 // ServiceAccount
 
-var _ fi.HasLifecycle = &ServiceAccount{}
+var _ fi.HasLifecycle = (*ServiceAccount)(nil)
 
 // GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
 func (o *ServiceAccount) GetLifecycle() fi.Lifecycle {
@@ -39,7 +39,7 @@ func (o *ServiceAccount) SetLifecycle(lifecycle fi.Lifecycle) {
 	o.Lifecycle = lifecycle
 }
 
-var _ fi.HasName = &ServiceAccount{}
+var _ fi.HasName = (*ServiceAccount)(nil)
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *ServiceAccount) GetName() *string {
