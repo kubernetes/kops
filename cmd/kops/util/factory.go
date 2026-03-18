@@ -31,7 +31,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
-	gceacls "k8s.io/kops/pkg/acls/gce"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
 	"k8s.io/kops/pkg/client/simple"
@@ -40,6 +39,7 @@ import (
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
+	gceacls "k8s.io/kops/util/pkg/vfs/acls/gce"
 )
 
 type FactoryOptions struct {
