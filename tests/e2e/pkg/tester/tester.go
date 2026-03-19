@@ -421,21 +421,32 @@ func (t *Tester) addCSIDriverFlags() error {
 		return err
 	}
 
-	if cluster.Spec.CloudConfig != nil &&
-		cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil &&
-		cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled != nil &&
-		*cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled {
+	var driverFlags string
+	if cluster.Spec.CloudConfig != nil {
 		cwd, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		klog.Infof("Setting --storage.testdriver=%s/tests/e2e/csi-manifests/ebs.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
-		t.TestArgs += fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/aws-ebs/driver.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
+
+		switch {
+		case cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil &&
+			cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled != nil &&
+			*cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled:
+			driverFlags = fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/aws-ebs/driver.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
+		case cluster.Spec.CloudConfig.GCPPDCSIDriver != nil &&
+			cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled != nil &&
+			*cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled:
+			driverFlags = fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/gcp-pd/driver.yaml --storage.migratedPlugins=kubernetes.io/gce-pd", cwd)
+		}
+	}
+
+	if driverFlags != "" {
+		klog.Infof("Setting %v", driverFlags)
+		t.TestArgs += driverFlags
 	} else {
-		klog.Info("EBS CSI driver not enabled. Skipping tests")
+		klog.Info("CSI driver not enabled. Skipping tests")
 	}
 	return nil
-
 }
 
 func (t *Tester) execute() error {
