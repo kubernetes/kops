@@ -2,6 +2,21 @@
 # The test creates this with N+1 replicas (where N is the current GPU node count),
 # forcing the cluster autoscaler to provision an additional GPU node.
 
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: cluster-autoscaling-workload
+spec:
+  spec:
+    devices:
+      requests:
+      - name: single-gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          allocationMode: ExactCount
+          count: 1
+
+---
 
 apiVersion: apps/v1
 kind: Deployment
@@ -25,6 +40,9 @@ spec:
       - key: "nvidia.com/gpu"
         operator: "Exists"
         effect: "NoSchedule"
+      resourceClaims:
+      - name: gpu
+        resourceClaimTemplateName: cluster-autoscaling-workload
       containers:
       - name: cluster-autoscaling-workload
         image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0
@@ -38,7 +56,11 @@ spec:
             sleep 60
           done
         resources:
-          requests:
-            nvidia.com/gpu: 1
+          claims:
+          - name: gpu
           limits:
-            nvidia.com/gpu: 1
+            cpu: "500m"
+            memory: 512Mi
+          requests:
+            cpu: "100m"
+            memory: 128Mi
