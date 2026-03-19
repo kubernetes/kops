@@ -387,7 +387,7 @@ echo "AI Conformance Environment Setup Complete."
 
 # Now run the actual AI conformance tests
 cd "${REPO_ROOT}/tests/e2e/scenarios/ai-conformance/validators"
-go test -v ./... -timeout=60m
+go test -v -p 1 ./... -timeout=60m
 
 # Compile and write the conformance report
 cd "${REPO_ROOT}/tests/e2e/scenarios/ai-conformance"
