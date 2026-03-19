@@ -1,0 +1,44 @@
+# Deployment that requests a GPU via DRA and runs nvidia-smi periodically.
+# The test creates this with N+1 replicas (where N is the current GPU node count),
+# forcing the cluster autoscaler to provision an additional GPU node.
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-autoscaling-workload
+  labels:
+    app: cluster-autoscaling-workload
+spec:
+  # replicas is set dynamically by the test via kubectl scale
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaling-workload
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaling-workload
+    spec:
+      terminationGracePeriodSeconds: 5
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: cluster-autoscaling-workload
+        image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda12.5.0
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          while true; do
+            echo "$(date -Iseconds) GPU probe alive on $(hostname)"
+            nvidia-smi --query-gpu=name,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader
+            sleep 60
+          done
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+          limits:
+            nvidia.com/gpu: 1
