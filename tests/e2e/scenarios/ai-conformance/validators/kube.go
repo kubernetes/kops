@@ -195,7 +195,7 @@ func (h *ValidatorHarness) TestNamespace() string {
 
 		h.t.Cleanup(func() {
 			ctx := context.WithoutCancel(h.Context())
-			h.dumpNamespaceResources(ctx, ns)
+			h.dumpNamespaceResources(ctx, ns, "cluster-info")
 
 			startTime := time.Now()
 
@@ -215,9 +215,10 @@ func (h *ValidatorHarness) TestNamespace() string {
 				return false, nil
 			}); err != nil {
 				h.Errorf("error waiting for namespace deletion: %v", err)
+				h.dumpNamespaceResources(ctx, ns, "namespace-deletion-failure-info")
+			} else {
+				h.Logf("Namespace deletion took %s", time.Since(startTime).Round(time.Second))
 			}
-
-			h.Logf("Namespace deletion took %s", time.Since(startTime).Round(time.Second))
 		})
 	}
 
@@ -243,8 +244,8 @@ func (h *ValidatorHarness) ApplyManifest(defaultNamespace string, manifestPath s
 }
 
 // dumpNamespaceResources dumps key resources from the namespace to the artifacts directory for debugging.
-func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string) {
-	clusterInfoDir := testartifacts.PathForTestArtifact(h.t, "cluster-info")
+func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string, outputDir string) {
+	clusterInfoDir := testartifacts.PathForTestArtifact(h.t, outputDir)
 	clusterInfoDir = filepath.Join(clusterInfoDir, ns)
 
 	if err := os.MkdirAll(clusterInfoDir, 0o755); err != nil {
