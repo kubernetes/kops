@@ -38,7 +38,7 @@ func TestSecurity_SecureAcceleratorAccess(t *testing.T) {
 		ns := h.TestNamespace()
 
 		h.ApplyManifest(ns, "testdata/accelerator-requested.yaml")
-		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=complete job/accelerator-requested --timeout=60s", ns))
+		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=complete job/accelerator-requested --timeout=300s", ns))
 
 		logs := h.ShellExec(fmt.Sprintf("kubectl logs -n %s job/accelerator-requested", ns))
 		if !strings.Contains(logs.Stdout(), "<product_brand>NVIDIA</product_brand>") {
@@ -53,7 +53,7 @@ func TestSecurity_SecureAcceleratorAccess(t *testing.T) {
 		ns := h.TestNamespace()
 
 		h.ApplyManifest(ns, "testdata/accelerator-not-requested.yaml")
-		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=complete job/accelerator-not-requested --timeout=60s", ns))
+		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=complete job/accelerator-not-requested --timeout=300s", ns))
 
 		logs := h.ShellExec(fmt.Sprintf("kubectl logs -n %s job/accelerator-not-requested", ns))
 		if !strings.Contains(logs.Stdout(), "nvidia-smi failed (as expected)") {
@@ -68,8 +68,8 @@ func TestSecurity_SecureAcceleratorAccess(t *testing.T) {
 		ns := h.TestNamespace()
 
 		h.ApplyManifest(ns, "testdata/accelerator-isolation.yaml")
-		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=available deployment/accelerator-isolation-1 --timeout=60s", ns))
-		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=available deployment/accelerator-isolation-2 --timeout=60s", ns))
+		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=available deployment/accelerator-isolation-1 --timeout=300s", ns))
+		h.ShellExec(fmt.Sprintf("kubectl wait -n %s --for=condition=available deployment/accelerator-isolation-2 --timeout=300s", ns))
 
 		logs1 := h.ShellExec(fmt.Sprintf("kubectl logs -n %s deployment/accelerator-isolation-1", ns))
 		logs2 := h.ShellExec(fmt.Sprintf("kubectl logs -n %s deployment/accelerator-isolation-2", ns))

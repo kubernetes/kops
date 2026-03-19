@@ -47,6 +47,7 @@ spec:
       #pod template
       template:
         spec:
+          terminationGracePeriodSeconds: 5
           containers:
           - name: ray-head
             image: rayproject/ray:2.46.0

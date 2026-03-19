@@ -1,0 +1,59 @@
+# Job that sends concurrent requests to vLLM to generate load,
+# causing vllm:num_requests_waiting to rise and trigger HPA scaling.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vllm-load-generator
+spec:
+  parallelism: 5
+  completions: 5
+  template:
+    metadata:
+      labels:
+        app: vllm-load-generator
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: load-generator
+        image: registry.k8s.io/e2e-test-images/agnhost:2.39
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          # Send concurrent long-running requests to vLLM to build up
+          # a queue of waiting requests and trigger HPA scaling.
+          VLLM_URL="http://vllm-qwen25-500m/v1/completions"
+          DURATION=900
+          BATCH_SIZE=5
+          BATCH=0
+          END=$(($(date +%s) + DURATION))
+
+          echo "[$(date -Iseconds)] Load generator starting (duration=${DURATION}s, batch_size=${BATCH_SIZE})"
+
+          while [ $(date +%s) -lt $END ]; do
+            BATCH=$((BATCH + 1))
+            echo "[$(date -Iseconds)] Sending batch ${BATCH} of ${BATCH_SIZE} requests..."
+            for i in $(seq 1 $BATCH_SIZE); do
+              # Include a random suffix in the prompt to avoid KV cache hits.
+              RAND=$(head -c 16 /dev/urandom | od -A n -t x1 | tr -d ' \n')
+              curl -sS --max-time 120 "$VLLM_URL" \
+                -H "Content-Type: application/json" \
+                -d "{\"model\":\"Qwen/Qwen2.5-0.5B-Instruct\",\"prompt\":\"Write a very detailed and comprehensive essay about the complete history of artificial intelligence from its earliest origins to the present day. Cover all major milestones, breakthroughs, and key figures. Random seed: ${RAND}\",\"max_tokens\":4096}" \
+                -o /dev/stderr 2>&1 &
+              echo "[$(date -Iseconds)]   Started request ${i} in batch ${BATCH} (pid $!)"
+            done
+            echo "[$(date -Iseconds)] Waiting for batch ${BATCH} to complete..."
+            wait
+            echo "[$(date -Iseconds)] Batch ${BATCH} complete, sleeping 2s before next batch"
+            sleep 2
+          done
+
+          echo "[$(date -Iseconds)] Load generation complete after ${BATCH} batches"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: 64Mi
+          limits:
+            cpu: "500m"
+            memory: 128Mi
+      restartPolicy: Never
+  backoffLimit: 0

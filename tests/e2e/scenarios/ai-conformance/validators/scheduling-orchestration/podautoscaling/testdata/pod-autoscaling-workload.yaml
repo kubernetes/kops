@@ -1,0 +1,138 @@
+# Deploy vLLM with GPU via DRA, expose as a Service with monitoring,
+# and configure HPA to autoscale based on a custom vLLM metric.
+
+apiVersion: resource.k8s.io/v1
+kind: ResourceClaimTemplate
+metadata:
+  name: vllm-qwen25-500m-gpu
+spec:
+  spec:
+    devices:
+      requests:
+      - name: single-gpu
+        exactly:
+          deviceClassName: gpu.nvidia.com
+          allocationMode: ExactCount
+          count: 1
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-qwen25-500m
+  labels:
+    app: vllm-qwen25-500m
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-qwen25-500m
+  template:
+    metadata:
+      labels:
+        app: vllm-qwen25-500m
+    spec:
+      terminationGracePeriodSeconds: 5
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      resourceClaims:
+      - name: gpu
+        resourceClaimTemplateName: vllm-qwen25-500m-gpu
+      containers:
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        command:
+        - "vllm"
+        - "serve"
+        - "Qwen/Qwen2.5-0.5B-Instruct"
+        - "--host"
+        - "0.0.0.0"
+        - "--max-model-len"
+        - "8192"
+        - "--max-num-seqs"
+        - "4"
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          claims:
+          - name: gpu
+          limits:
+            cpu: "2"
+            memory: 4Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 120
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 5
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-qwen25-500m
+  labels:
+    app: vllm-qwen25-500m
+spec:
+  selector:
+    app: vllm-qwen25-500m
+  ports:
+  - port: 80
+    targetPort: 8000
+    name: http
+
+---
+
+# PodMonitor so Prometheus scrapes vLLM metrics (e.g. vllm:num_requests_waiting).
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: vllm-qwen25-500m
+  labels:
+    app: vllm-qwen25-500m
+spec:
+  selector:
+    matchLabels:
+      app: vllm-qwen25-500m
+  podMetricsEndpoints:
+  - port: http
+    path: /metrics
+
+---
+
+# HPA targeting a custom vLLM metric exposed via the custom metrics API.
+# The metric vllm:num_requests_waiting tracks queued requests;
+# when this rises above the threshold, HPA scales the deployment.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vllm-qwen25-500m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vllm-qwen25-500m
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+  - type: Pods
+    pods:
+      metric:
+        name: vllm_num_requests_waiting
+      target:
+        type: AverageValue
+        averageValue: "2"

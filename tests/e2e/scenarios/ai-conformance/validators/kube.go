@@ -27,8 +27,10 @@ import (
 	"strings"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/kops/tests/e2e/scenarios/ai-conformance/testartifacts"
 
@@ -193,12 +195,29 @@ func (h *ValidatorHarness) TestNamespace() string {
 
 		h.t.Cleanup(func() {
 			ctx := context.WithoutCancel(h.Context())
-			h.dumpNamespaceResources(ctx, ns)
+			h.dumpNamespaceResources(ctx, ns, "cluster-info")
+
+			startTime := time.Now()
 
 			h.Logf("Deleting test namespace %q", ns)
-			err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{})
-			if err != nil {
-				h.Logf("failed to delete test namespace: %v", err)
+			if err := h.DynamicClient().Resource(namespaceGVR).Delete(ctx, ns, metav1.DeleteOptions{}); err != nil {
+				h.Errorf("failed to delete test namespace: %v", err)
+			}
+
+			// Wait for namespace deletion to complete so that we don't have leftover namespaces consuming resources.
+			if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, 5*time.Minute, false, func(ctx context.Context) (done bool, err error) {
+				if _, err := h.DynamicClient().Resource(namespaceGVR).Get(ctx, ns, metav1.GetOptions{}); err != nil {
+					if apierrors.IsNotFound(err) {
+						return true, nil
+					}
+					return false, fmt.Errorf("error checking for namespace deletion: %w", err)
+				}
+				return false, nil
+			}); err != nil {
+				h.Errorf("error waiting for namespace deletion: %v", err)
+				h.dumpNamespaceResources(ctx, ns, "namespace-deletion-failure-info")
+			} else {
+				h.Logf("Namespace deletion took %s", time.Since(startTime).Round(time.Second))
 			}
 		})
 	}
@@ -225,8 +244,8 @@ func (h *ValidatorHarness) ApplyManifest(defaultNamespace string, manifestPath s
 }
 
 // dumpNamespaceResources dumps key resources from the namespace to the artifacts directory for debugging.
-func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string) {
-	clusterInfoDir := testartifacts.PathForTestArtifact(h.t, "cluster-info")
+func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string, outputDir string) {
+	clusterInfoDir := testartifacts.PathForTestArtifact(h.t, outputDir)
 	clusterInfoDir = filepath.Join(clusterInfoDir, ns)
 
 	if err := os.MkdirAll(clusterInfoDir, 0o755); err != nil {
@@ -244,11 +263,20 @@ func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string
 	// Always include Events, Pods: they are usually not in the manifest, but are often critical for understanding failures.
 	resourceTypes["Events"] = true
 	resourceTypes["Pods"] = true
+	resourceTypes["Nodes"] = true
 
 	for resourceType := range resourceTypes {
 		filename := strings.ToLower(resourceType) + ".yaml"
 		if err := h.dumpResource(ctx, ns, resourceType, filepath.Join(clusterInfoDir, filename)); err != nil {
 			h.Logf("failed to dump resource %s: %v", resourceType, err)
+		}
+	}
+
+	describeResourcesTypes := []string{"nodes", "pods"}
+	for _, describeResourcesType := range describeResourcesTypes {
+		filename := strings.ToLower(describeResourcesType) + ".txt"
+		if err := h.kubectlDescribeResource(ctx, ns, describeResourcesType, filepath.Join(clusterInfoDir, filename)); err != nil {
+			h.Logf("failed to kubectl describe resource %s: %v", describeResourcesType, err)
 		}
 	}
 
@@ -258,7 +286,6 @@ func (h *ValidatorHarness) dumpNamespaceResources(ctx context.Context, ns string
 }
 
 // dumpResource runs kubectl get for a resource type and writes the output to a file.
-// Errors are logged but do not fail the test.
 func (h *ValidatorHarness) dumpResource(ctx context.Context, ns string, resourceType string, outputPath string) error {
 	args := []string{"get", resourceType}
 	if ns != "" {
@@ -277,6 +304,29 @@ func (h *ValidatorHarness) dumpResource(ctx context.Context, ns string, resource
 
 	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed to write %s dump to %s: %w", resourceType, outputPath, err)
+	}
+
+	return nil
+}
+
+// dumpResource runs kubectl describe for a resource type and writes the output to a file.
+func (h *ValidatorHarness) kubectlDescribeResource(ctx context.Context, ns string, resourceType string, outputPath string) error {
+	args := []string{"describe", resourceType}
+	if ns != "" {
+		args = append(args, "-n", ns)
+	}
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to kubectl describe %s in namespace %s: %v (stderr: %s)", resourceType, ns, err, stderr.String())
+	}
+
+	if err := os.WriteFile(outputPath, stdout.Bytes(), 0o644); err != nil {
+		return fmt.Errorf("failed to write %s describe output to %s: %w", resourceType, outputPath, err)
 	}
 
 	return nil
