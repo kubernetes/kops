@@ -51,6 +51,8 @@ type S3Path struct {
 	scheme string
 	// sse specifies if server side encryption should be enabled
 	sse bool
+	// checksumWhenRequired forces checksum behavior needed by some S3-compatible backends.
+	checksumWhenRequired bool
 }
 
 var (
@@ -262,11 +264,12 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	args = append(args, relativePath...)
 	joined := path.Join(args...)
 	return &S3Path{
-		s3Context: p.s3Context,
-		bucket:    p.bucket,
-		key:       joined,
-		scheme:    p.scheme,
-		sse:       p.sse,
+		s3Context:            p.s3Context,
+		bucket:               p.bucket,
+		key:                  joined,
+		scheme:               p.scheme,
+		sse:                  p.sse,
+		checksumWhenRequired: p.checksumWhenRequired,
 	}
 }
 
@@ -459,12 +462,13 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 				continue
 			}
 			child := &S3Path{
-				s3Context: p.s3Context,
-				bucket:    p.bucket,
-				key:       key,
-				etag:      o.ETag,
-				scheme:    p.scheme,
-				sse:       p.sse,
+				s3Context:            p.s3Context,
+				bucket:               p.bucket,
+				key:                  key,
+				etag:                 o.ETag,
+				scheme:               p.scheme,
+				sse:                  p.sse,
+				checksumWhenRequired: p.checksumWhenRequired,
 			}
 			paths = append(paths, child)
 		}
@@ -501,12 +505,13 @@ func (p *S3Path) ReadTree(ctx context.Context) ([]Path, error) {
 		for _, o := range page.Contents {
 			key := aws.ToString(o.Key)
 			child := &S3Path{
-				s3Context: p.s3Context,
-				bucket:    p.bucket,
-				key:       key,
-				etag:      o.ETag,
-				scheme:    p.scheme,
-				sse:       p.sse,
+				s3Context:            p.s3Context,
+				bucket:               p.bucket,
+				key:                  key,
+				etag:                 o.ETag,
+				scheme:               p.scheme,
+				sse:                  p.sse,
+				checksumWhenRequired: p.checksumWhenRequired,
 			}
 			paths = append(paths, child)
 		}
@@ -529,7 +534,7 @@ func (p *S3Path) client(ctx context.Context) (*s3.Client, error) {
 		return nil, err
 	}
 
-	client, err := p.s3Context.getClient(ctx, bucketDetails.region)
+	client, err := p.s3Context.getClient(ctx, bucketDetails.region, p.checksumWhenRequired)
 	if err != nil {
 		return nil, err
 	}

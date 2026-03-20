@@ -84,11 +84,19 @@ func (*ResolverV2) ResolveEndpoint(ctx context.Context, params s3.EndpointParame
 	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
 }
 
-func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, error) {
+func s3ClientCacheKey(region string, checksumWhenRequired bool) string {
+	if !checksumWhenRequired {
+		return region
+	}
+	return region + "|checksum-when-required"
+}
+
+func (s *S3Context) getClient(ctx context.Context, region string, checksumWhenRequired bool) (*s3.Client, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	s3Client := s.clients[region]
+	cacheKey := s3ClientCacheKey(region, checksumWhenRequired)
+	s3Client := s.clients[cacheKey]
 	if s3Client == nil {
 		_, span := tracer.Start(ctx, "S3Context::getClient")
 		defer span.End()
@@ -104,7 +112,7 @@ func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, e
 		} else {
 			// Use customized S3 storage
 			klog.V(2).Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
-			config, err = getCustomS3Config(ctx, region)
+			config, err = getCustomS3Config(ctx, region, checksumWhenRequired)
 			if err != nil {
 				return nil, err
 			}
@@ -118,13 +126,13 @@ func (s *S3Context) getClient(ctx context.Context, region string) (*s3.Client, e
 				o.EndpointResolverV2 = &ResolverV2{}
 			}
 		})
-		s.clients[region] = s3Client
+		s.clients[cacheKey] = s3Client
 	}
 
 	return s3Client, nil
 }
 
-func getCustomS3Config(ctx context.Context, region string) (aws.Config, error) {
+func getCustomS3Config(ctx context.Context, region string, checksumWhenRequired bool) (aws.Config, error) {
 	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
 	if accessKeyID == "" {
 		return aws.Config{}, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
@@ -134,10 +142,20 @@ func getCustomS3Config(ctx context.Context, region string) (aws.Config, error) {
 		return aws.Config{}, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
 	}
 
-	s3Config, err := awsconfig.LoadDefaultConfig(ctx,
+	options := []func(*awsconfig.LoadOptions) error{
 		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
 		awsconfig.WithRegion(region),
-	)
+	}
+
+	if checksumWhenRequired {
+		// Linode (Akamai) Object Storage requires checksum behavior that differs from AWS defaults.
+		options = append(options,
+			awsconfig.WithRequestChecksumCalculation(aws.RequestChecksumCalculationWhenRequired),
+			awsconfig.WithResponseChecksumValidation(aws.ResponseChecksumValidationWhenRequired),
+		)
+	}
+
+	s3Config, err := awsconfig.LoadDefaultConfig(ctx, options...)
 	if err != nil {
 		return aws.Config{}, fmt.Errorf("error loading AWS config: %v", err)
 	}
@@ -197,7 +215,7 @@ func (s *S3Context) getDetailsForBucket(ctx context.Context, bucket string) (*S3
 	}
 	var response *s3.GetBucketLocationOutput
 
-	s3Client, err := s.getClient(ctx, awsRegion)
+	s3Client, err := s.getClient(ctx, awsRegion, false)
 	if err != nil {
 		return bucketDetails, fmt.Errorf("error connecting to S3: %s", err)
 	}
@@ -250,7 +268,7 @@ func (b *S3BucketDetails) hasServerSideEncryptionByDefault(ctx context.Context) 
 	// We only make one attempt to find the SSE policy (even if there's an error)
 	b.applyServerSideEncryptionByDefault = &applyServerSideEncryptionByDefault
 
-	client, err := b.context.getClient(ctx, b.region)
+	client, err := b.context.getClient(ctx, b.region, false)
 	if err != nil {
 		klog.Warningf("Unable to read bucket encryption policy for %q in region %q: will encrypt using AES256", b.name, b.region)
 		return false
