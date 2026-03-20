@@ -296,6 +296,7 @@ apiVersion: resource.k8s.io/v1
 kind: ResourceClaim
 metadata:
   name: test-gpu-claim
+  namespace: default
 spec:
   devices:
     requests:
@@ -309,6 +310,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: test-gpu-pod
+  namespace: default
 spec:
   template:
     spec:
