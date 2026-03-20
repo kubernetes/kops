@@ -205,7 +205,7 @@ func (h *ValidatorHarness) TestNamespace() string {
 			}
 
 			// Wait for namespace deletion to complete so that we don't have leftover namespaces consuming resources.
-			if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, 5*time.Minute, false, func(ctx context.Context) (done bool, err error) {
+			if err := wait.PollUntilContextTimeout(ctx, 2*time.Second, 10*time.Minute, false, func(ctx context.Context) (done bool, err error) {
 				if _, err := h.DynamicClient().Resource(namespaceGVR).Get(ctx, ns, metav1.GetOptions{}); err != nil {
 					if apierrors.IsNotFound(err) {
 						return true, nil

@@ -60,16 +60,16 @@ func (h *ValidatorHarness) Log(s string) {
 func (h *ValidatorHarness) Fatalf(format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
 
-	h.output.WriteText("FATAL: " + s)
-	h.t.Fatalf(format, args...)
+	h.output.WriteText("FAIL: " + s)
+	h.t.Fatalf("FAIL: "+format, args...)
 }
 
 // Errorf is like t.Errorf, but also writes to the sinks.
 func (h *ValidatorHarness) Errorf(format string, args ...interface{}) {
 	s := fmt.Sprintf(format, args...)
 
-	h.output.WriteText("ERROR: " + s)
-	h.t.Errorf(format, args...)
+	h.output.WriteText("FAIL: " + s)
+	h.t.Errorf("FAIL: "+format, args...)
 }
 
 // Run is like t.Run, but creates a sub-harness that shares the output.
