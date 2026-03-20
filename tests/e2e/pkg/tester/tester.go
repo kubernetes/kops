@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -29,6 +30,7 @@ import (
 	"k8s.io/klog/v2"
 	unversioned "k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops/v1alpha2"
+	csimanifests "k8s.io/kops/tests/e2e/csi-manifests"
 	"k8s.io/kops/tests/e2e/pkg/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"sigs.k8s.io/kubetest2/pkg/artifacts"
@@ -421,31 +423,60 @@ func (t *Tester) addCSIDriverFlags() error {
 		return err
 	}
 
-	var driverFlags string
+	var provider, migratedPlugin string
 	if cluster.Spec.CloudConfig != nil {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
 		switch {
 		case cluster.Spec.CloudConfig.AWSEBSCSIDriver != nil &&
 			cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled != nil &&
 			*cluster.Spec.CloudConfig.AWSEBSCSIDriver.Enabled:
-			driverFlags = fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/aws-ebs/driver.yaml --storage.migratedPlugins=kubernetes.io/aws-ebs", cwd)
+			provider = "aws-ebs"
+			migratedPlugin = "kubernetes.io/aws-ebs"
 		case cluster.Spec.CloudConfig.GCPPDCSIDriver != nil &&
 			cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled != nil &&
 			*cluster.Spec.CloudConfig.GCPPDCSIDriver.Enabled:
-			driverFlags = fmt.Sprintf(" --storage.testdriver=%s/tests/e2e/csi-manifests/gcp-pd/driver.yaml --storage.migratedPlugins=kubernetes.io/gce-pd", cwd)
+			provider = "gcp-pd"
+			migratedPlugin = "kubernetes.io/gce-pd"
 		}
 	}
 
-	if driverFlags != "" {
-		klog.Infof("Setting %v", driverFlags)
-		t.TestArgs += driverFlags
-	} else {
+	if provider == "" {
 		klog.Info("CSI driver not enabled. Skipping tests")
+		return nil
 	}
+
+	tmpDir, err := os.MkdirTemp("", "csi-manifests-*")
+	if err != nil {
+		return fmt.Errorf("creating temp dir for CSI manifests: %w", err)
+	}
+
+	scData, err := csimanifests.FS.ReadFile(provider + "/sc.yaml")
+	if err != nil {
+		return fmt.Errorf("reading embedded %s/sc.yaml: %w", provider, err)
+	}
+	scPath := filepath.Join(tmpDir, "sc.yaml")
+	if err := os.WriteFile(scPath, scData, 0644); err != nil {
+		return fmt.Errorf("writing sc.yaml: %w", err)
+	}
+
+	driverData, err := csimanifests.FS.ReadFile(provider + "/driver.yaml")
+	if err != nil {
+		return fmt.Errorf("reading embedded %s/driver.yaml: %w", provider, err)
+	}
+	// Rewrite the FromFile path to point to the temp dir copy of sc.yaml
+	driverContent := strings.Replace(
+		string(driverData),
+		"tests/e2e/csi-manifests/"+provider+"/sc.yaml",
+		scPath,
+		1,
+	)
+	driverPath := filepath.Join(tmpDir, "driver.yaml")
+	if err := os.WriteFile(driverPath, []byte(driverContent), 0644); err != nil {
+		return fmt.Errorf("writing driver.yaml: %w", err)
+	}
+
+	driverFlags := fmt.Sprintf(" --storage.testdriver=%s --storage.migratedPlugins=%s", driverPath, migratedPlugin)
+	klog.Infof("Setting %v", driverFlags)
+	t.TestArgs += driverFlags
 	return nil
 }
 
