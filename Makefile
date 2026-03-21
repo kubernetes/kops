@@ -417,7 +417,7 @@ release-tag:
 
 .PHONY: release-github
 release-github:
-	shipbot -tag v${KOPS_RELEASE_VERSION} -config .shipbot.yaml -src .build/dist/
+	hack/promote-to-github.sh ${KOPS_RELEASE_VERSION}
 
 # --------------------------------------------------
 # API / embedding examples
