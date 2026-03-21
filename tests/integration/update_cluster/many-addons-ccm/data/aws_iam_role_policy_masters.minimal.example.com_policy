@@ -176,6 +176,76 @@
       ]
     },
     {
+      "Action": [
+        "elasticloadbalancing:AddListenerCertificates",
+        "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:DeleteListener",
+        "elasticloadbalancing:DeleteLoadBalancer",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "elasticloadbalancing:DeregisterTargets",
+        "elasticloadbalancing:ModifyCapacityReservation",
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:ModifyListenerAttributes",
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:RegisterTargets",
+        "elasticloadbalancing:RemoveListenerCertificates",
+        "elasticloadbalancing:RemoveTags",
+        "elasticloadbalancing:SetIpAddressType",
+        "elasticloadbalancing:SetSecurityGroups",
+        "elasticloadbalancing:SetSubnets"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/elbv2.k8s.aws/cluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateLoadBalancer",
+        "elasticloadbalancing:CreateRule",
+        "elasticloadbalancing:CreateTargetGroup"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/elbv2.k8s.aws/cluster": "minimal.example.com"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": "elasticloadbalancing:AddTags",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/elbv2.k8s.aws/cluster": "minimal.example.com",
+          "elasticloadbalancing:CreateAction": [
+            "CreateListener",
+            "CreateLoadBalancer",
+            "CreateRule",
+            "CreateTargetGroup"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:elasticloadbalancing:*:*:listener-rule/app/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:listener/app/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:listener/net/*/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:loadbalancer/app/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+        "arn:aws-test:elasticloadbalancing:*:*:targetgroup/*/*"
+      ]
+    },
+    {
       "Action": "ec2:CreateTags",
       "Condition": {
         "StringEquals": {
@@ -300,7 +370,6 @@
         "ec2:ModifyInstanceAttribute",
         "ec2:ModifyVolume",
         "ec2:RevokeSecurityGroupIngress",
-        "elasticloadbalancing:AddListenerCertificates",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
@@ -310,27 +379,18 @@
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DeleteLoadBalancer",
         "elasticloadbalancing:DeleteLoadBalancerListeners",
-        "elasticloadbalancing:DeleteRule",
         "elasticloadbalancing:DeleteTargetGroup",
         "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
         "elasticloadbalancing:DeregisterTargets",
         "elasticloadbalancing:DetachLoadBalancerFromSubnets",
-        "elasticloadbalancing:ModifyCapacityReservation",
         "elasticloadbalancing:ModifyListener",
-        "elasticloadbalancing:ModifyListenerAttributes",
         "elasticloadbalancing:ModifyLoadBalancerAttributes",
-        "elasticloadbalancing:ModifyRule",
         "elasticloadbalancing:ModifyTargetGroup",
         "elasticloadbalancing:ModifyTargetGroupAttributes",
         "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
         "elasticloadbalancing:RegisterTargets",
-        "elasticloadbalancing:RemoveListenerCertificates",
-        "elasticloadbalancing:RemoveTags",
-        "elasticloadbalancing:SetIpAddressType",
         "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer",
-        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener",
-        "elasticloadbalancing:SetSecurityGroups",
-        "elasticloadbalancing:SetSubnets"
+        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
       "Condition": {
         "StringEquals": {
@@ -347,7 +407,6 @@
         "ec2:CreateVolume",
         "elasticloadbalancing:CreateListener",
         "elasticloadbalancing:CreateLoadBalancer",
-        "elasticloadbalancing:CreateRule",
         "elasticloadbalancing:CreateTargetGroup"
       ],
       "Condition": {
