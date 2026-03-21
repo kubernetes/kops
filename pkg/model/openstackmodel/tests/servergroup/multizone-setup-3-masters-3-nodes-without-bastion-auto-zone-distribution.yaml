@@ -593,6 +593,15 @@ subject: cn=etcd-manager-ca-events
 type: ca
 ---
 Lifecycle: ""
+Name: etcd-manager-ca-leases
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-manager-ca-leases
+type: ca
+---
+Lifecycle: ""
 Name: etcd-manager-ca-main
 Signer: null
 alternateNames: null
@@ -608,6 +617,15 @@ alternateNames: null
 issuer: ""
 oldFormat: false
 subject: cn=etcd-peers-ca-events
+type: ca
+---
+Lifecycle: ""
+Name: etcd-peers-ca-leases
+Signer: null
+alternateNames: null
+issuer: ""
+oldFormat: false
+subject: cn=etcd-peers-ca-leases
 type: ca
 ---
 Lifecycle: ""

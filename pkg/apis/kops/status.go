@@ -23,7 +23,7 @@ type ClusterStatus struct {
 
 // EtcdClusterStatus represents the status of etcd: because etcd only allows limited reconfiguration, we have to block changes once etcd has been initialized.
 type EtcdClusterStatus struct {
-	// Name is the name of the etcd cluster (main, events etc)
+	// Name is the name of the etcd cluster (main, events, leases etc)
 	Name string `json:"name,omitempty"`
 	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberStatus `json:"etcdMembers,omitempty"`
