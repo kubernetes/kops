@@ -68,6 +68,24 @@ func TestFindRegion(t *testing.T) {
 	}
 }
 
+func TestFindRegion_SubnetIDWithoutZone(t *testing.T) {
+	c := &kops.Cluster{}
+	c.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
+		{Name: "subnet-1", Zone: "us-east-1a"},
+		{Name: "subnet-2", ID: "subnet-12345678"}, // No zone, but has ID
+	}
+
+	region, err := FindRegion(c)
+	if err != nil {
+		t.Fatalf("unexpected error finding region: %v", err)
+	}
+
+	expected := "us-east-1"
+	if region != expected {
+		t.Fatalf("expected region %q, got %q", expected, region)
+	}
+}
+
 func TestEC2TagSpecification(t *testing.T) {
 	cases := []struct {
 		Name          string
