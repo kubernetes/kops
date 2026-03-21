@@ -5,16 +5,12 @@ kind: ServiceAccount
 metadata:
   name: coredns
   namespace: kube-system
-  labels:
-      kubernetes.io/cluster-service: "true"
-      k8s-addon: coredns.addons.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     kubernetes.io/bootstrapping: rbac-defaults
-    k8s-addon: coredns.addons.k8s.io
   name: system:coredns
 rules:
   - apiGroups:
@@ -42,7 +38,6 @@ metadata:
     rbac.authorization.kubernetes.io/autoupdate: "true"
   labels:
     kubernetes.io/bootstrapping: rbac-defaults
-    k8s-addon: coredns.addons.k8s.io
   name: system:coredns
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -58,8 +53,6 @@ kind: ConfigMap
 metadata:
   name: coredns
   namespace: kube-system
-  labels:
-      addonmanager.kubernetes.io/mode: EnsureExists
 data:
   Corefile: |
   {{- if KubeDNS.ExternalCoreFile }}
@@ -104,8 +97,7 @@ metadata:
   labels:
     k8s-app: kube-dns
     kubernetes.io/name: "CoreDNS"
-    k8s-addon: coredns.addons.k8s.io
-    kubernetes.io/cluster-service: "true"
+    app.kubernetes.io/name: coredns
 spec:
   # replicas: not specified here:
   # 1. Default is 1.
@@ -118,10 +110,12 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-dns
+      app.kubernetes.io/name: coredns
   template:
     metadata:
       labels:
         k8s-app: kube-dns
+        app.kubernetes.io/name: coredns
       {{- if KubeDNS.PodAnnotations }}
       annotations:
         {{- range $key, $value := KubeDNS.PodAnnotations }}
@@ -247,16 +241,17 @@ metadata:
     prometheus.io/port: "9153"
     prometheus.io/scrape: "true"
   labels:
-    k8s-addon: coredns.addons.k8s.io
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
     kubernetes.io/name: "CoreDNS"
+    app.kubernetes.io/name: coredns
   # Without this resourceVersion value, an update of the Service between versions will yield:
   #   Service "kube-dns" is invalid: metadata.resourceVersion: Invalid value: "": must be specified for an update
   resourceVersion: "0"
 spec:
   selector:
     k8s-app: kube-dns
+    app.kubernetes.io/name: coredns
   clusterIP: {{ KubeDNS.ServerIP }}
   ports:
   - name: dns
@@ -289,14 +284,10 @@ kind: ServiceAccount
 metadata:
   name: coredns-autoscaler
   namespace: kube-system
-  labels:
-    k8s-addon: coredns.addons.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  labels:
-    k8s-addon: coredns.addons.k8s.io
   name: coredns-autoscaler
 rules:
   - apiGroups: [""]
@@ -317,8 +308,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  labels:
-    k8s-addon: coredns.addons.k8s.io
   name: coredns-autoscaler
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -335,17 +324,18 @@ metadata:
   name: coredns-autoscaler
   namespace: kube-system
   labels:
-    k8s-addon: coredns.addons.k8s.io
     k8s-app: coredns-autoscaler
-    kubernetes.io/cluster-service: "true"
+    app.kubernetes.io/name: coredns-autoscaler
 spec:
   selector:
     matchLabels:
       k8s-app: coredns-autoscaler
+      app.kubernetes.io/name: coredns-autoscaler
   template:
     metadata:
       labels:
         k8s-app: coredns-autoscaler
+        app.kubernetes.io/name: coredns-autoscaler
     spec:
       containers:
       - name: autoscaler
