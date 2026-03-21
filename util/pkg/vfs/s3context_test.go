@@ -16,7 +16,12 @@ limitations under the License.
 
 package vfs
 
-import "testing"
+import (
+	"context"
+	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+)
 
 func Test_VFSPath(t *testing.T) {
 	grid := []struct {
@@ -189,5 +194,40 @@ func Test_VFSPath(t *testing.T) {
 				t.Fatalf("unexpected error parsing %q", g.Input)
 			}
 		}
+	}
+}
+
+func Test_getCustomS3Config_ChecksumBehavior(t *testing.T) {
+	t.Setenv("S3_ACCESS_KEY_ID", "test-access-key")
+	t.Setenv("S3_SECRET_ACCESS_KEY", "test-secret-key")
+
+	// Set env-based defaults to when_supported so we can verify Linode (Akamai) overrides only.
+	t.Setenv("AWS_REQUEST_CHECKSUM_CALCULATION", "when_supported")
+	t.Setenv("AWS_RESPONSE_CHECKSUM_VALIDATION", "when_supported")
+
+	linodeCfg, err := getCustomS3Config(context.Background(), "us-east-1", true)
+	if err != nil {
+		t.Fatalf("getCustomS3Config returned error: %v", err)
+	}
+
+	if linodeCfg.RequestChecksumCalculation != aws.RequestChecksumCalculationWhenRequired {
+		t.Fatalf("unexpected linode request checksum behavior: %v", linodeCfg.RequestChecksumCalculation)
+	}
+
+	if linodeCfg.ResponseChecksumValidation != aws.ResponseChecksumValidationWhenRequired {
+		t.Fatalf("unexpected linode response checksum behavior: %v", linodeCfg.ResponseChecksumValidation)
+	}
+
+	defaultCfg, err := getCustomS3Config(context.Background(), "us-east-1", false)
+	if err != nil {
+		t.Fatalf("getCustomS3Config returned error: %v", err)
+	}
+
+	if defaultCfg.RequestChecksumCalculation != aws.RequestChecksumCalculationWhenSupported {
+		t.Fatalf("unexpected default request checksum behavior: %v", defaultCfg.RequestChecksumCalculation)
+	}
+
+	if defaultCfg.ResponseChecksumValidation != aws.ResponseChecksumValidationWhenSupported {
+		t.Fatalf("unexpected default response checksum behavior: %v", defaultCfg.ResponseChecksumValidation)
 	}
 }
