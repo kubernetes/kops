@@ -453,6 +453,9 @@ type CiliumNetworkingSpec struct {
 	// BPFLBMapMax is the maximum number of entries in bpf lb service, backend and affinity maps.
 	// Default: 65536
 	BPFLBMapMax int `json:"bpfLBMapMax,omitempty"`
+	// BPFLBSock enables socket-based LB for E/W traffic.
+	// Default: false
+	BPFLBSock bool `json:"bpfLBSock,omitempty"`
 	// BPFLBSockHostNSOnly enables skipping socket LB for services when inside a pod namespace,
 	// in favor of service LB at the pod interface. Socket LB is still used when in the host namespace.
 	// Required by service mesh (e.g., Istio, Linkerd).
