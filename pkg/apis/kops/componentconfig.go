@@ -771,7 +771,7 @@ type CloudControllerManagerConfig struct {
 	CPURequest *resource.Quantity `json:"cpuRequest,omitempty"`
 	// NodeStatusUpdateFrequency is the duration between node status updates. (default: 5m)
 	NodeStatusUpdateFrequency *metav1.Duration `json:"nodeStatusUpdateFrequency,omitempty" flag:"node-status-update-frequency"`
-	// ConcurrentNodeSyncs is the number of workers concurrently synchronizing nodes. (default: 1)
+	// ConcurrentNodeSyncs is the number of workers concurrently synchronizing nodes. (default: 5)
 	ConcurrentNodeSyncs *int32 `json:"concurrentNodeSyncs,omitempty" flag:"concurrent-node-syncs"`
 }
 
