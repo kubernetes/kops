@@ -183,7 +183,7 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 	}
 
 	warnUnmatched := false
-	cloudGroups, err := v.cloud.GetCloudGroups(v.cluster, v.allInstanceGroups, warnUnmatched, nodeList.Items)
+	cloudGroups, err := v.cloud.GetCloudGroups(v.cluster, v.allInstanceGroups, &fi.GetCloudGroupsOptions{WarnUnmatched: warnUnmatched}, nodeList.Items)
 	if err != nil {
 		return nil, err
 	}

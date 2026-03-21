@@ -304,7 +304,7 @@ func (c *hetznerCloudImplementation) Region() string {
 	return c.region
 }
 
-func (c *hetznerCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *hetznerCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceGroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 
 	serverGroups, err := findServerGroups(c, cluster.Name)
@@ -323,7 +323,7 @@ func (c *hetznerCloudImplementation) GetCloudGroups(cluster *kops.Cluster, insta
 			}
 		}
 		if instanceGroup == nil {
-			if warnUnmatched {
+			if options.WarnUnmatched {
 				klog.Warningf("Server group %q has no corresponding instance group", name)
 			}
 			continue
