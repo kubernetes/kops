@@ -163,20 +163,34 @@ func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, p
 // DeleteS3Bucket deletes a S3 bucket with the given name.
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
-	_, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+
+	// Resolve the bucket's actual region to avoid 301 PermanentRedirect errors.
+	// During teardown the deployer may derive the S3 client region from random
+	// zones, which can differ from the region where the bucket was created.
+	bucketRegion, err := c.getBucketRegion(ctx, bucketName)
+	if err != nil {
+		klog.Infof("Could not determine region for bucket %s: %v", bucketName, err)
+	}
+
+	regionOpt := func(o *s3.Options) {
+		if bucketRegion != "" {
+			o.Region = bucketRegion
+		}
+	}
+
+	_, err = c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
-	})
+	}, regionOpt)
 	if err != nil {
 		var noBucket *types.NoSuchBucket
 		if errors.As(err, &noBucket) {
-			klog.Infof("Bucket %s does not exits.", bucketName)
+			klog.Infof("Bucket %s does not exist.", bucketName)
 
 			return nil
-		} else {
-			klog.Infof("Couldn't delete bucket %s, err: %v", bucketName, err)
-
-			return fmt.Errorf("deleting bucket %s: %w", bucketName, err)
 		}
+		klog.Infof("Couldn't delete bucket %s, err: %v", bucketName, err)
+
+		return fmt.Errorf("deleting bucket %s: %w", bucketName, err)
 	}
 
 	err = s3.NewBucketNotExistsWaiter(c.s3Client).Wait(
@@ -193,6 +207,26 @@ func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	klog.Infof("Bucket %s deleted", bucketName)
 
 	return nil
+}
+
+// getBucketRegion resolves the AWS region where the bucket resides.
+// GetBucketLocation is region-agnostic and can locate buckets in any region
+// from any endpoint. We pin to defaultRegion for consistency.
+func (c Client) getBucketRegion(ctx context.Context, bucketName string) (string, error) {
+	resp, err := c.s3Client.GetBucketLocation(ctx, &s3.GetBucketLocationInput{
+		Bucket: aws.String(bucketName),
+	}, func(o *s3.Options) {
+		o.Region = defaultRegion
+	})
+	if err != nil {
+		return "", fmt.Errorf("getting bucket location for %s: %w", bucketName, err)
+	}
+	region := string(resp.LocationConstraint)
+	if region == "" {
+		// GetBucketLocation returns empty for us-east-1
+		region = "us-east-1"
+	}
+	return region, nil
 }
 
 func (c Client) setPublicReadPolicy(ctx context.Context, bucketName string) error {
