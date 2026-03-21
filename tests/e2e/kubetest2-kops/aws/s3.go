@@ -222,11 +222,16 @@ func (c Client) getBucketRegion(ctx context.Context, bucketName string) (string,
 		return "", fmt.Errorf("getting bucket location for %s: %w", bucketName, err)
 	}
 	region := string(resp.LocationConstraint)
-	if region == "" {
-		// GetBucketLocation returns empty for us-east-1
-		region = "us-east-1"
+	switch resp.LocationConstraint {
+	case "":
+		// GetBucketLocation returns empty for us-east-1.
+		return "us-east-1", nil
+	case "EU":
+		// GetBucketLocation may return the legacy EU alias for eu-west-1.
+		return "eu-west-1", nil
+	default:
+		return region, nil
 	}
-	return region, nil
 }
 
 func (c Client) setPublicReadPolicy(ctx context.Context, bucketName string) error {
