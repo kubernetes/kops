@@ -850,13 +850,9 @@ Note that Kubelet will fail to install the shutdown inhibtor on systems where lo
 
 [SeccompDefault](https://kubernetes.io/blog/2021/08/25/seccomp-default/) enables the use of `RuntimeDefault` as the default seccomp profile for all workloads. (Default: false)
 
-Note that a feature gate is required to enable the feature, and the feature is turned on using kubelet config.
-
 ```yaml
 spec:
   kubelet:
-    featureGates:
-      SeccompDefault: "true"
     seccompDefault: true
 ```
 
