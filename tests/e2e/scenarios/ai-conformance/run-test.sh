@@ -296,8 +296,8 @@ spec:
 EOF
 
 echo "Waiting for Sample Workload to Complete..."
-kubectl wait --for=condition=complete job/test-gpu-pod --timeout=5m || true
-kubectl logs job/test-gpu-pod || echo "Failed to get logs"
+kubectl -n default wait --for=condition=complete job/test-gpu-pod --timeout=5m || true
+kubectl -n default logs job/test-gpu-pod || echo "Failed to get logs"
 
 echo "Verifying GPU Metrics in Prometheus..."
 # Wait for DCGM exporter to start collecting metrics
