@@ -1,4 +1,8 @@
-{{ with .Networking.Cilium }}
+{{ $cilium := .Networking.Cilium }}
+{{ if and .Networking.GCP .Networking.GCP.Cilium }}
+{{ $cilium = .Networking.GCP.Cilium }}
+{{ end }}
+{{ with $cilium }}
 ---
 {{ if CiliumSecret }}
 ---

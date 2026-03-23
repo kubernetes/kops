@@ -390,6 +390,20 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		}
 	}
 
+	gcpSpec := c.Cluster.Spec.Networking.GCP
+	if gcpSpec != nil && gcpSpec.Cilium != nil && gcpSpec.Cilium.EnableEncryption && gcpSpec.Cilium.EncryptionType == kops.CiliumEncryptionTypeIPSec {
+		secret, err := secretStore.FindSecret("ciliumpassword")
+		if err != nil {
+			return nil, fmt.Errorf("could not load the ciliumpassword secret: %w", err)
+		}
+		if secret == nil {
+			fmt.Println("")
+			fmt.Println("You have cilium encryption enabled, but no ciliumpassword secret has been set.")
+			fmt.Println("See `kops create secret ciliumpassword -h`")
+			return nil, fmt.Errorf("could not find ciliumpassword secret")
+		}
+	}
+
 	project := ""
 	scwZone := ""
 

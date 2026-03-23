@@ -703,7 +703,8 @@ type LyftVPCNetworkingSpec struct {
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
 type GCPNetworkingSpec struct {
 	// Cilium enables Cilium on GCP.
-	Cilium *bool `json:"cilium,omitempty"`
+	// Cilium *bool `json:"cilium,omitempty"`
+	Cilium *CiliumNetworkingSpec `json:"cilium,omitempty"`
 }
 
 // KindnetNetworkingSpec configures Kindnet settings.

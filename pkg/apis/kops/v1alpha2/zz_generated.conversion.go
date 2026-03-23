@@ -4039,7 +4039,15 @@ func Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha2_GCPNetworkingSpec_To_kops_GCPNetworkingSpec(in *GCPNetworkingSpec, out *kops.GCPNetworkingSpec, s conversion.Scope) error {
-	out.Cilium = in.Cilium
+	if in.Cilium != nil {
+		in, out := &in.Cilium, &out.Cilium
+		*out = new(kops.CiliumNetworkingSpec)
+		if err := Convert_v1alpha2_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Cilium = nil
+	}
 	return nil
 }
 
@@ -4049,7 +4057,15 @@ func Convert_v1alpha2_GCPNetworkingSpec_To_kops_GCPNetworkingSpec(in *GCPNetwork
 }
 
 func autoConvert_kops_GCPNetworkingSpec_To_v1alpha2_GCPNetworkingSpec(in *kops.GCPNetworkingSpec, out *GCPNetworkingSpec, s conversion.Scope) error {
-	out.Cilium = in.Cilium
+	if in.Cilium != nil {
+		in, out := &in.Cilium, &out.Cilium
+		*out = new(CiliumNetworkingSpec)
+		if err := Convert_kops_CiliumNetworkingSpec_To_v1alpha2_CiliumNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Cilium = nil
+	}
 	return nil
 }
 

@@ -114,6 +114,11 @@ func (n *NetworkingSpec) UsesKubenet() bool {
 	return false
 }
 
+// NetworkingIsGCPCilium returns true if our networking is derived from GCP with Cilium
+func (n *NetworkingSpec) NetworkingIsGCPCilium() bool {
+	return n.GCP != nil && n.GCP.Cilium != nil
+}
+
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
 // Support been removed since Kubernetes 1.4.
 type ClassicNetworkingSpec struct{}
@@ -583,7 +588,8 @@ type LyftVPCNetworkingSpec struct {
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
 type GCPNetworkingSpec struct {
 	// Cilium enables Cilium on GCP.
-	Cilium *bool `json:"cilium,omitempty"`
+	// Cilium *bool `json:"cilium,omitempty"`
+	Cilium *CiliumNetworkingSpec `json:"cilium,omitempty"`
 }
 
 // KindnetNetworkingSpec configures Kindnet settings.
@@ -610,11 +616,6 @@ type KindnetNetworkingSpec struct {
 type KindnetMasqueradeSpec struct {
 	Enabled            *bool    `json:"enabled,omitempty"`
 	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs,omitempty"`
-}
-
-
-func (n *NetworkingSpec) NetworkingIsGCPCilium() bool {
-	return n.GCP != nil && ValueOf(n.GCP.Cilium)
 }
 
 // ValueOf returns the value of a pointer or its zero value

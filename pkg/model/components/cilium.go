@@ -35,6 +35,9 @@ var _ loader.ClusterOptionsBuilder = &CiliumOptionsBuilder{}
 func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	clusterSpec := &o.Spec
 	c := clusterSpec.Networking.Cilium
+	if c == nil && clusterSpec.Networking.GCP != nil {
+		c = clusterSpec.Networking.GCP.Cilium
+	}
 	if c == nil {
 		return nil
 	}

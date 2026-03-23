@@ -2208,8 +2208,8 @@ func (in *GCPNetworkingSpec) DeepCopyInto(out *GCPNetworkingSpec) {
 	*out = *in
 	if in.Cilium != nil {
 		in, out := &in.Cilium, &out.Cilium
-		*out = new(bool)
-		**out = **in
+		*out = new(CiliumNetworkingSpec)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }

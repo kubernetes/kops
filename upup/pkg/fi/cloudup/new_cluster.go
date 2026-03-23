@@ -1276,9 +1276,18 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 	case "gcp", "gce":
 		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
 	case "gcp-with-cilium":
+		//TODO: Move into own func
 		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
-		ciliumBool := true
-		cluster.Spec.Networking.GCP.Cilium = &ciliumBool
+		cluster.Spec.Networking.GCP.Cilium = &api.CiliumNetworkingSpec{}
+		cluster.Spec.Networking.GCP.Cilium.EnableNodePort = true
+		cluster.Spec.Networking.GCP.Cilium.Hubble = &api.HubbleSpec{}
+		cluster.Spec.Networking.GCP.Cilium.Ingress = &api.CiliumIngressSpec{}
+		cluster.Spec.Networking.GCP.Cilium.GatewayAPI = &api.CiliumGatewayAPISpec{}
+		if cluster.Spec.KubeProxy == nil {
+			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
+		}
+		enabled := false
+		cluster.Spec.KubeProxy.Enabled = &enabled
 	case "kindnet":
 		cluster.Spec.Networking.Kindnet = &api.KindnetNetworkingSpec{}
 	default:

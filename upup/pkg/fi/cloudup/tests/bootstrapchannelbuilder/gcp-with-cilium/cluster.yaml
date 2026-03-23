@@ -41,7 +41,10 @@ spec:
   kubernetesVersion: 1.35.2
   networking:
     gce:
-      cilium: true
+      cilium:
+        hubble: {}
+        ingress: {}
+        gatewayAPI: {}
   nonMasqueradeCIDR: 10.0.0.0/8
   podCIDR: 10.4.0.0/14
   project: test-project
