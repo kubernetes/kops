@@ -16,7 +16,7 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: control-plane-us-central1-a
+    - instanceGroup: control-plane-us-test1-a
       name: a
     manager:
       backupRetentionDays: 90
@@ -24,7 +24,7 @@ spec:
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: control-plane-us-central1-a
+    - instanceGroup: control-plane-us-test1-a
       name: a
     manager:
       backupRetentionDays: 90
@@ -47,15 +47,15 @@ spec:
         gatewayAPI: {}
   nonMasqueradeCIDR: 10.0.0.0/8
   podCIDR: 10.4.0.0/14
-  project: test-project
+  project: testproject
   serviceClusterIPRange: 10.1.0.0/16
   sshAccess:
   - 0.0.0.0/0
   - ::/0
   subnets:
   - cidr: 10.0.32.0/19
-    name: us-central1
-    region: us-central1
+    name: us-test1
+    region: us-test1
     type: Public
   topology:
     dns:

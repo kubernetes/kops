@@ -81,7 +81,7 @@ func TestCreateClusterCilium(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/cilium-eni", "v1alpha2")
 }
 
-// TestCreateClusterCiliumGCE runs kops with the cilium networking flags
+// TestCreateClusterCiliumGCE runs kops with the gcp-with-cilium networking flag
 func TestCreateClusterCiliumGCE(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/cilium-gce", "v1alpha2")
 }

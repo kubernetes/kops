@@ -19,13 +19,15 @@ package bootstrapchannelbuilder
 import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/api"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 	cilium := b.Cluster.Spec.Networking.Cilium
-	if cilium == nil && !b.Cluster.Spec.Networking.NetworkingIsGCPCilium() {
+	if cilium == nil && b.Cluster.Spec.Networking.GCP != nil {
+		cilium = b.Cluster.Spec.Networking.GCP.Cilium
+	}
+	if cilium == nil {
 		return nil
 	}
 
@@ -45,10 +47,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 			Id:                 id,
 			NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 		}
-		if cilium != nil && cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
-			addon.NeedsPKI = true
-		}
-		if b.Cluster.Spec.Networking.NetworkingIsGCPCilium() && b.Cluster.Spec.Networking.GCP.Cilium.EnableEncryption && b.Cluster.Spec.Networking.GCP.Cilium.EncryptionType == kops.CiliumEncryptionTypeIPSec {
+		if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
 			addon.NeedsPKI = true
 		}
 		addons.Add(addon)

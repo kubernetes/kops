@@ -5950,9 +5950,7 @@ spec:
                       networking mode, using IP aliases.
                     properties:
                       cilium:
-                        description: |-
-                          Cilium enables Cilium on GCP.
-                          Cilium *bool `json:"cilium,omitempty"`
+                        description: Cilium enables Cilium on GCP.
                         properties:
                           IPTablesRulesNoinstall:
                             description: |-

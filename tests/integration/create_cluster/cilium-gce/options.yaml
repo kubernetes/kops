@@ -1,7 +1,7 @@
 ClusterName: minimal.example.com
-Project: testproject
-Zones:
-- us-test-1a
 CloudProvider: gce
-Networking: cilium
+Networking: gcp-with-cilium
+Project: testproject
 KubernetesVersion: v1.32.0
+Zones:
+- us-test1-a

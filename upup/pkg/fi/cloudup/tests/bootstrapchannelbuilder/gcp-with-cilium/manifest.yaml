@@ -5,7 +5,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 0515e8744660d27d4f1529e2e2386583bceb4868fac9bad9407afebc3d571d09
+    manifestHash: afa3a60e52b49207ba48b2e8bea21885bdef104049591ba90da794a09caba8ad
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -102,6 +102,7 @@ spec:
     manifest: networking.cilium.io/k8s-1.16-v1.15.yaml
     manifestHash: effb9c60ad6e4cb6da8587967778b01d06c29fa59f05ecd801f30cd9c8dcff38
     name: networking.cilium.io
+    needsPKI: true
     needsRollingUpdate: all
     selector:
       role.kubernetes.io/networking: "1"

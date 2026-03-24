@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"clusterName":"minimal.example.com","cloud":"gce","configBase":"gs://clusters.example.com/minimal.example.com","secretStore":"gs://clusters.example.com/minimal.example.com/secrets","server":{"Listen":":3988","provider":{"gce":{"projectID":"test-project","region":"us-east-1","clusterName":"minimal.example.com","MaxTimeSkew":300}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
+    {"clusterName":"minimal.example.com","cloud":"gce","configBase":"gs://clusters.example.com/minimal.example.com","secretStore":"gs://clusters.example.com/minimal.example.com/secrets","server":{"Listen":":3988","provider":{"gce":{"projectID":"testproject","region":"us-east-1","clusterName":"minimal.example.com","MaxTimeSkew":300}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server","kube-proxy"]}}
 kind: ConfigMap
 metadata:
   labels:

@@ -103,7 +103,10 @@ func (n *NetworkingSpec) UsesKubenet() bool {
 	}
 	if n.Kubenet != nil {
 		return true
-	} else if n.External != nil { //TODO: Change behaviour with GCP
+	} else if n.GCP != nil && n.GCP.Cilium == nil {
+		// GCP IP Alias networking is based on kubenet
+		return true
+	} else if n.External != nil {
 		// external is based on kubenet
 		return true
 	} else if n.Kopeio != nil {
@@ -588,7 +591,6 @@ type LyftVPCNetworkingSpec struct {
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
 type GCPNetworkingSpec struct {
 	// Cilium enables Cilium on GCP.
-	// Cilium *bool `json:"cilium,omitempty"`
 	Cilium *CiliumNetworkingSpec `json:"cilium,omitempty"`
 }
 
@@ -616,12 +618,4 @@ type KindnetNetworkingSpec struct {
 type KindnetMasqueradeSpec struct {
 	Enabled            *bool    `json:"enabled,omitempty"`
 	NonMasqueradeCIDRs []string `json:"nonMasqueradeCIDRs,omitempty"`
-}
-
-// ValueOf returns the value of a pointer or its zero value
-func ValueOf[T any](v *T) T {
-	if v == nil {
-		return *new(T)
-	}
-	return *v
 }

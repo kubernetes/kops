@@ -521,11 +521,3 @@ func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool 
 
 	return false
 }
-
-// ValueOf returns the value of a pointer or its zero value
-func ValueOf[T any](v *T) T {
-	if v == nil {
-		return *new(T)
-	}
-	return *v
-}

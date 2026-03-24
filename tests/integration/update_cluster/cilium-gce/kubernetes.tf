@@ -654,12 +654,12 @@ resource "google_compute_subnetwork" "us-test1-cilium-gce-example-com" {
   network       = google_compute_network.cilium-gce-example-com.name
   region        = "us-test1"
   secondary_ip_range {
-    ip_cidr_range = "10.4.0.0/14"
-    range_name    = "pods-cilium-gce-example-com"
-  }
-  secondary_ip_range {
     ip_cidr_range = "10.1.0.0/16"
     range_name    = "services-cilium-gce-example-com"
+  }
+  secondary_ip_range {
+    ip_cidr_range = "10.4.0.0/14"
+    range_name    = "pods-cilium-gce-example-com"
   }
   stack_type = "IPV4_ONLY"
 }
