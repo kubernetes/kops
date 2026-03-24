@@ -39,7 +39,7 @@ spec:
   masterPublicName: api.cilium-gce.example.com
   networking:
     gce:
-      cilium: true
+      cilium: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   project: testproject
   sshAccess:

@@ -188,7 +188,42 @@ spec:
   masterPublicName: api.cilium-gce.example.com
   networking:
     gce:
-      cilium: true
+      cilium:
+        agentPrometheusPort: 9090
+        bpfCTGlobalAnyMax: 262144
+        bpfCTGlobalTCPMax: 524288
+        bpfLBAlgorithm: random
+        bpfLBMaglevTableSize: "16381"
+        bpfLBMapMax: 65536
+        bpfNATGlobalMax: 524288
+        bpfNeighGlobalMax: 524288
+        bpfPolicyMapMax: 16384
+        clusterName: default
+        cniExclusive: true
+        cpuRequest: 25m
+        disableCNPStatusUpdates: true
+        disableMasquerade: false
+        enableBPFMasquerade: false
+        enableEndpointHealthChecking: true
+        enableL7Proxy: true
+        enableLocalRedirectPolicy: false
+        enableRemoteNodeIdentity: true
+        enableUnreachableRoutes: false
+        gatewayAPI:
+          enabled: false
+        hubble:
+          enabled: false
+        identityAllocationMode: crd
+        identityChangeGracePeriod: 5s
+        ingress:
+          enabled: false
+        ipam: kubernetes
+        memoryRequest: 128Mi
+        monitorAggregation: medium
+        sidecarIstioProxyImage: cilium/istio_proxy
+        toFqdnsDnsRejectResponseCode: refused
+        tunnel: vxlan
+        version: v1.18.6
   nonMasqueradeCIDR: 10.0.0.0/8
   podCIDR: 10.4.0.0/14
   project: testproject

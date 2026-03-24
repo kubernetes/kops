@@ -125,7 +125,7 @@ ClusterName: cilium-gce.example.com
 ConfigBase: memfs://tests/cilium-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: iUL1BWMBOmpPLYkKXYLeJAL4QAQHV3uOaT9xUgTC+zw=
+NodeupConfigHash: j4WQdUAKqZwYKjRTfHaXfTUyayCpq8+L4xu4TBxQlHI=
 
 __EOF_KUBE_ENV
 
