@@ -19,6 +19,7 @@ package gcetasks
 import (
 	"fmt"
 	"reflect"
+	"sort"
 
 	compute "google.golang.org/api/compute/v1"
 	"k8s.io/klog/v2"
@@ -300,6 +301,12 @@ type terraformSubnetRange struct {
 	CIDR string `cty:"ip_cidr_range"`
 }
 
+type ByName []terraformSubnetRange
+
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
+
 func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
 	shared := fi.ValueOf(e.Shared)
 	if shared {
@@ -316,12 +323,17 @@ func (_ *Subnet) RenderSubnet(t *terraform.TerraformTarget, a, e, changes *Subne
 		Ipv6AccessType: e.Ipv6AccessType,
 	}
 
+	sortedRanges := make([]terraformSubnetRange, 0, len(e.SecondaryIpRanges))
+
 	for k, v := range e.SecondaryIpRanges {
-		tf.SecondaryIPRange = append(tf.SecondaryIPRange, terraformSubnetRange{
+		sortedRanges = append(sortedRanges, terraformSubnetRange{
 			Name: k,
 			CIDR: v,
 		})
 	}
+
+	sort.Sort(ByName(sortedRanges))
+	tf.SecondaryIPRange = sortedRanges
 
 	return t.RenderResource("google_compute_subnetwork", *e.Name, tf)
 }
