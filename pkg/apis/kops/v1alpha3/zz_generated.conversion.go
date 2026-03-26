@@ -4358,6 +4358,7 @@ func Convert_kops_GCESpec_To_v1alpha3_GCESpec(in *kops.GCESpec, out *GCESpec, s 
 }
 
 func autoConvert_v1alpha3_GCPNetworkingSpec_To_kops_GCPNetworkingSpec(in *GCPNetworkingSpec, out *kops.GCPNetworkingSpec, s conversion.Scope) error {
+	out.Cilium = in.Cilium
 	return nil
 }
 
@@ -4367,6 +4368,7 @@ func Convert_v1alpha3_GCPNetworkingSpec_To_kops_GCPNetworkingSpec(in *GCPNetwork
 }
 
 func autoConvert_kops_GCPNetworkingSpec_To_v1alpha3_GCPNetworkingSpec(in *kops.GCPNetworkingSpec, out *GCPNetworkingSpec, s conversion.Scope) error {
+	out.Cilium = in.Cilium
 	return nil
 }
 

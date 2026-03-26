@@ -1275,6 +1275,10 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.Networking.Cilium.IPAM = "eni"
 	case "gcp", "gce":
 		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
+	case "gcp-with-cilium":
+		cluster.Spec.Networking.GCP = &api.GCPNetworkingSpec{}
+		ciliumBool := true
+		cluster.Spec.Networking.GCP.Cilium = &ciliumBool
 	case "kindnet":
 		cluster.Spec.Networking.Kindnet = &api.KindnetNetworkingSpec{}
 	default:

@@ -418,3 +418,7 @@ func (b *KopsModelContext) NetworkingIsCalico() bool {
 func (b *KopsModelContext) NetworkingIsCilium() bool {
 	return b.Cluster.Spec.Networking.Cilium != nil
 }
+
+func (b *KopsModelContext) NetworkingIsGCPWithCilium() bool {
+	return b.Cluster.Spec.Networking.GCP != nil && fi.ValueOf(b.Cluster.Spec.Networking.GCP.Cilium)
+}

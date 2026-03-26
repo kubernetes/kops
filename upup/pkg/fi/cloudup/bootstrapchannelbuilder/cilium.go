@@ -24,7 +24,7 @@ import (
 
 func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 	cilium := b.Cluster.Spec.Networking.Cilium
-	if cilium == nil {
+	if cilium == nil && !b.Cluster.Spec.Networking.NetworkingIsGCPCilium() {
 		return nil
 	}
 
@@ -44,7 +44,7 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 			Id:                 id,
 			NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 		}
-		if cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
+		if cilium != nil && cilium.Hubble != nil && fi.ValueOf(cilium.Hubble.Enabled) {
 			addon.NeedsPKI = true
 		}
 		addons.Add(addon)

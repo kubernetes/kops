@@ -955,7 +955,8 @@ func (c *Cluster) UsesNoneDNS() bool {
 func (c *Cluster) InstallCNIAssets() bool {
 	return c.Spec.Networking.AmazonVPC == nil &&
 		c.Spec.Networking.Calico == nil &&
-		c.Spec.Networking.Cilium == nil
+		c.Spec.Networking.Cilium == nil &&
+		!c.Spec.Networking.NetworkingIsGCPCilium()
 }
 
 func (c *Cluster) HasImageVolumesSupport() bool {

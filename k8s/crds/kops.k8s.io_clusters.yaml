@@ -5948,6 +5948,10 @@ spec:
                   gce:
                     description: GCPNetworkingSpec is the specification of GCP's native
                       networking mode, using IP aliases.
+                    properties:
+                      cilium:
+                        description: Cilium enables Cilium on GCP.
+                        type: boolean
                     type: object
                   kindnet:
                     description: KindnetNetworkingSpec configures Kindnet settings.

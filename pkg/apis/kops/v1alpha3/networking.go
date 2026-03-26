@@ -526,7 +526,10 @@ type HubbleSpec struct {
 }
 
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
-type GCPNetworkingSpec struct{}
+type GCPNetworkingSpec struct {
+	// Cilium enables Cilium on GCP.
+	Cilium *bool `json:"cilium,omitempty"`
+}
 
 // KindnetNetworkingSpec configures Kindnet settings.
 type KindnetNetworkingSpec struct {

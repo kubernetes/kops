@@ -54,7 +54,7 @@ func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.
 func UseCiliumEtcd(cluster *kops.Cluster) bool {
-	if cluster.Spec.Networking.Cilium == nil {
+	if cluster.Spec.Networking.Cilium == nil && !cluster.Spec.Networking.NetworkingIsGCPCilium() {
 		return false
 	}
 

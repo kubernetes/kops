@@ -345,6 +345,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
+	if cluster.Spec.Networking.GCP != nil {
+		config.Networking.GCP = &kops.GCPNetworkingSpec{}
+		if ValueOf(cluster.Spec.Networking.GCP.Cilium) {
+			config.Networking.GCP.Cilium = cluster.Spec.Networking.GCP.Cilium
+		}
+	}
+
 	if cluster.Spec.Networking.CNI != nil && cluster.Spec.Networking.CNI.UsesSecondaryIP {
 		config.Networking.CNI = &kops.CNINetworkingSpec{UsesSecondaryIP: true}
 	}
@@ -507,4 +514,12 @@ func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool 
 	}
 
 	return false
+}
+
+// ValueOf returns the value of a pointer or its zero value
+func ValueOf[T any](v *T) T {
+	if v == nil {
+		return *new(T)
+	}
+	return *v
 }

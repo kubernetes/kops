@@ -1,0 +1,59 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2026-03-23T22:11:00Z"
+  name: minimal.example.com
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig: {}
+  cloudProvider: gce
+  configBase: gs://clusters.example.com/minimal.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: control-plane-us-central1-a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: control-plane-us-central1-a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.35.2
+  networking:
+    gce:
+      cilium: true
+  nonMasqueradeCIDR: 10.0.0.0/8
+  podCIDR: 10.4.0.0/14
+  project: test-project
+  serviceClusterIPRange: 10.1.0.0/16
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 10.0.32.0/19
+    name: us-central1
+    region: us-central1
+    type: Public
+  topology:
+    dns:
+      type: None
