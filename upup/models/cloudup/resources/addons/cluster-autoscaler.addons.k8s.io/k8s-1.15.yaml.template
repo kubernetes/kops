@@ -281,6 +281,24 @@ data:
   priorities: |- {{ ClusterAutoscalerPriorities | nindent 4 }}
 {{ end }}
 ---
+{{ if (eq GetCloudProvider "hetzner") }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hcloud-autoscaler-config
+  namespace: kube-system
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+stringData:
+  # Base64-encoded JSON blob consumed by the Hetzner cluster-autoscaler cloud provider.
+  # Contains per-node-group labels so autoscaler-created servers carry the same
+  # kops tags as manually provisioned ones.
+  # NOTE: cloudInit within each nodeConfig is currently empty; nodes created by
+  # the autoscaler will not bootstrap correctly until cloud-init generation is
+  # implemented (see tracking issue).
+  clusterConfig: "{{ HetznerClusterAutoscalerConfig }}"
+---
+{{ end }}
 # Source: cluster-autoscaler/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -386,6 +404,11 @@ spec:
                 secretKeyRef:
                   name: hcloud
                   key: network
+            - name: HCLOUD_CLUSTER_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: hcloud-autoscaler-config
+                  key: clusterConfig
           {{ end }}
           livenessProbe:
             failureThreshold: 3

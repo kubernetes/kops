@@ -1007,6 +1007,78 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 	return groups
 }
 
+// HetznerClusterAutoscalerConfig returns a base64-encoded JSON blob for the
+// HCLOUD_CLUSTER_CONFIG environment variable expected by the Hetzner
+// cluster-autoscaler cloud provider.
+//
+// The JSON encodes a ClusterConfig value (see hetzner_manager.go in the
+// cluster-autoscaler source). Each node instance group gets a NodeConfig entry
+// whose Labels map contains the same Hetzner server labels that kops applies
+// to servers it creates directly, ensuring autoscaler-created nodes are
+// recognised by kops' cloud instance group reconciliation.
+//
+// The NodeConfig.CloudInit field is intentionally left empty in this
+// implementation. Generating the nodeup bootstrap script requires keypairs
+// and node-up binary asset URLs that are not yet accessible at addon-template
+// render time. Completing this requires either threading the keystore and
+// NodeUpAssets through TemplateFunctions, or implementing a dedicated task
+// that builds and stores the config after the bootstrap-script tasks execute.
+// Until then, the cluster-autoscaler should be deployed with
+// HCLOUD_CLOUD_INIT / HCLOUD_IMAGE as a fallback (legacy mode).
+func (tf *TemplateFunctions) HetznerClusterAutoscalerConfig() (string, error) {
+        type imageList struct {
+                Amd64 string `json:"amd64,omitempty"`
+                Arm64 string `json:"arm64,omitempty"`
+        }
+        type nodeConfig struct {
+                CloudInit string            `json:"cloudInit"`
+                Labels    map[string]string `json:"labels,omitempty"`
+        }
+        type clusterConfig struct {
+                ImagesForArch imageList             `json:"imagesForArch"`
+                NodeConfigs   map[string]*nodeConfig `json:"nodeConfigs"`
+        }
+
+        cfg := clusterConfig{
+                NodeConfigs: make(map[string]*nodeConfig),
+        }
+
+        for _, ig := range tf.KopsModelContext.InstanceGroups {
+                if ig.Spec.Role != kops.InstanceGroupRoleNode {
+                        continue
+                }
+                if ig.Spec.Autoscale != nil && !fi.ValueOf(ig.Spec.Autoscale) {
+                        continue
+                }
+
+                labels, err := tf.CloudTagsForInstanceGroup(ig)
+                if err != nil {
+                        return "", fmt.Errorf("error getting labels for instance group %q: %w", ig.Name, err)
+                }
+
+                // The node group name in the Hetzner autoscaler is the 5th field of the
+                // --nodes flag (min:max:instanceType:region:name), which equals ig.Name.
+                cfg.NodeConfigs[ig.Name] = &nodeConfig{
+                        Labels: labels,
+                        // CloudInit intentionally empty; see function comment.
+                }
+
+                // Use the image from the first eligible IG (same image per cluster is typical for Hetzner).
+                if cfg.ImagesForArch.Amd64 == "" && ig.Spec.Image != "" {
+                        cfg.ImagesForArch.Amd64 = ig.Spec.Image
+                        cfg.ImagesForArch.Arm64 = ig.Spec.Image
+                }
+        }
+
+        data, err := json.Marshal(cfg)
+        if err != nil {
+                return "", fmt.Errorf("error marshaling Hetzner cluster autoscaler config: %w", err)
+        }
+
+        // The autoscaler reads HCLOUD_CLUSTER_CONFIG as a base64-encoded JSON string.
+        return base64.StdEncoding.EncodeToString(data), nil
+}
+
 func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {
 	image, _ := tf.cloud.(awsup.AWSCloud).ResolveImage(amiID)
 	switch image.Architecture {
