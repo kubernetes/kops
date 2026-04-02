@@ -138,8 +138,8 @@ func (c *MockCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return detachInstance(c, i)
 }
 
-func (c *MockCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *MockCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, options.WarnUnmatched, nodes)
 }
 
 func (c *MockCloud) ProviderID() kops.CloudProviderID {

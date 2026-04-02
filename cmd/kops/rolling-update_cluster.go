@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/pkg/validation"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubectl/pkg/util/i18n"
@@ -348,7 +349,8 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		return err
 	}
 
-	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodes)
+	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, &fi.GetCloudGroupsOptions{WarnUnmatched: warnUnmatched},
+		nodes)
 	if err != nil {
 		return err
 	}

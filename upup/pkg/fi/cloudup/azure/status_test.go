@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type mockVMScaleSetsClient struct {
@@ -281,7 +282,7 @@ func TestGetCloudGroups(t *testing.T) {
 		},
 	}
 
-	groups, err := c.GetCloudGroups(cluster, instancegroups, false /* warnUnmatched */, nodes)
+	groups, err := c.GetCloudGroups(cluster, instancegroups, &fi.GetCloudGroupsOptions{}, nodes)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

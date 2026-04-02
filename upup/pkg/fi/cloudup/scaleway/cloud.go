@@ -73,7 +73,7 @@ type ScwCloud interface {
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 	FindVPCInfo(id string) (*fi.VPCInfo, error)
 	GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error)
-	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
 	GetClusterDNSRecords(clusterName string) ([]*domain.Record, error)
 	GetClusterLoadBalancers(clusterName string) ([]*lb.LB, error)
@@ -340,7 +340,7 @@ func (s *scwCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]f
 	return ingresses, nil
 }
 
-func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
@@ -353,7 +353,7 @@ func (s *scwCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 	for _, ig := range instancegroups {
 		serverGroup, ok := serverGroups[ig.Name]
 		if !ok {
-			if warnUnmatched {
+			if options.WarnUnmatched {
 				klog.Warningf("Server group %q has no corresponding instance group", ig.Name)
 			}
 			continue

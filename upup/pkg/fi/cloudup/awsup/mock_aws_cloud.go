@@ -101,9 +101,9 @@ func (c *MockAWSCloud) DetachInstance(i *cloudinstances.CloudInstance) error {
 	return detachInstance(ctx, c, i)
 }
 
-func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	ctx := context.TODO()
-	return getCloudGroups(ctx, c, cluster, instancegroups, warnUnmatched, nodes)
+	return getCloudGroups(ctx, c, cluster, instancegroups, options.WarnUnmatched, nodes)
 }
 
 func (c *MockCloud) ProviderID() kops.CloudProviderID {

@@ -35,10 +35,9 @@ type DeleteInstanceGroup struct {
 }
 
 // DeleteInstanceGroup deletes a cloud instance group
-func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	ctx := context.TODO()
+func (d *DeleteInstanceGroup) DeleteInstanceGroup(ctx context.Context, group *api.InstanceGroup, force bool) error {
+	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, &fi.GetCloudGroupsOptions{WarnMissingInstance: force}, nil)
 
-	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, false, nil)
 	if err != nil {
 		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
 	}

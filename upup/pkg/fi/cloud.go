@@ -44,7 +44,7 @@ type Cloud interface {
 
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster.
 	// Detached instances must be returned in the NeedUpdate slice.
-	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 
 	// Region returns the cloud region bound to the cloud instance.
 	// If the region concept does not apply, returns "".
@@ -53,6 +53,12 @@ type Cloud interface {
 	// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 	GetApiIngressStatus(cluster *kops.Cluster) ([]ApiIngressStatus, error)
+}
+
+// GetCloudGroupsOptions are options for GetCloudGroups
+type GetCloudGroupsOptions struct {
+	WarnUnmatched       bool
+	WarnMissingInstance bool
 }
 
 type VPCInfo struct {

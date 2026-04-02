@@ -25,8 +25,9 @@ kops delete instancegroup INSTANCE_GROUP [flags]
 ### Options
 
 ```
-  -h, --help   help for instancegroup
-  -y, --yes    Specify --yes to immediately delete the instance group
+  -f, --force   Specify --force to force the deletion of the instance group even if not all instances can be found.
+  -h, --help    help for instancegroup
+  -y, --yes     Specify --yes to immediately delete the instance group
 ```
 
 ### Options inherited from parent commands

@@ -693,8 +693,8 @@ func deleteGroup(c OpenstackCloud, g *cloudinstances.CloudInstanceGroup) error {
 	return nil
 }
 
-func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, options.WarnUnmatched, nodes)
 }
 
 func getCloudGroups(c OpenstackCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {

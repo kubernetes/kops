@@ -703,17 +703,17 @@ func detachInstance(ctx context.Context, c AWSCloud, i *cloudinstances.CloudInst
 }
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
-func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, options *fi.GetCloudGroupsOptions, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	ctx := context.TODO()
 
 	if c.spotinst != nil {
-		sgroups, err := spotinst.GetCloudGroups(c.spotinst, cluster, instancegroups, warnUnmatched, nodes)
+		sgroups, err := spotinst.GetCloudGroups(c.spotinst, cluster, instancegroups, options.WarnUnmatched, nodes)
 		if err != nil {
 			return nil, err
 		}
 
 		if featureflag.SpotinstHybrid.Enabled() {
-			agroups, err := getCloudGroups(ctx, c, cluster, instancegroups, warnUnmatched, nodes)
+			agroups, err := getCloudGroups(ctx, c, cluster, instancegroups, options.WarnUnmatched, nodes)
 			if err != nil {
 				return nil, err
 			}
@@ -726,7 +726,7 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 		return sgroups, nil
 	}
 
-	cloudGroups, err := getCloudGroups(ctx, c, cluster, instancegroups, warnUnmatched, nodes)
+	cloudGroups, err := getCloudGroups(ctx, c, cluster, instancegroups, options.WarnUnmatched, nodes)
 	if err != nil {
 		return nil, err
 	}

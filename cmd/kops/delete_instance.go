@@ -38,6 +38,7 @@ import (
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/validation"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
@@ -211,7 +212,7 @@ func RunDeleteInstance(ctx context.Context, f *util.Factory, out io.Writer, opti
 		return err
 	}
 
-	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodes)
+	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, &fi.GetCloudGroupsOptions{}, nodes)
 	if err != nil {
 		return err
 	}
@@ -361,7 +362,7 @@ func completeInstanceOrNode(f commandutils.Factory, options *DeleteInstanceOptio
 			return commandutils.CompletionError("initializing cloud", err)
 		}
 
-		groups, err := cloud.GetCloudGroups(cluster, instanceGroups, false, nodes)
+		groups, err := cloud.GetCloudGroups(cluster, instanceGroups, &fi.GetCloudGroupsOptions{}, nodes)
 		if err != nil {
 			return commandutils.CompletionError("listing instances", err)
 		}
