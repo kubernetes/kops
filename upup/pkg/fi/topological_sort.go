@@ -125,6 +125,18 @@ func getDependencies[T SubContext](tasks map[string]Task[T], v reflect.Value) []
 				return nil
 			}
 
+			// Ignore empty struct (struct{}) and other non-addressable types
+			if !v.CanAddr() {
+				typeName := v.Type().PkgPath() + "/" + v.Type().Name()
+				switch typeName {
+				case "k8s.io/apimachinery/pkg/util/sets/Empty":
+					// known
+				default:
+					klog.Warningf("skipping non-addressable type %v name=%q", v.Type(), typeName)
+				}
+				return nil
+			}
+
 			// TODO: Can we / should we use a type-switch statement
 			intf := v.Addr().Interface()
 			if hd, ok := intf.(HasDependencies[T]); ok {

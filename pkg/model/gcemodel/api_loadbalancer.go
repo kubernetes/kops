@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"golang.org/x/exp/slices"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/wellknownports"
@@ -102,9 +103,9 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 		b.AddFirewallRulesTasks(c, "https-api", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
-			SourceRanges: b.Cluster.Spec.API.Access,
+			SourceRanges: sets.New(b.Cluster.Spec.API.Access...),
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
-			Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+			Allowed:      sets.New("tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)),
 		})
 
 		if b.NetworkingIsIPAlias() {
@@ -113,9 +114,9 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
 				Family:       gcetasks.AddressFamilyIPv4, // ip alias is always ipv4
-				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
+				SourceRanges: sets.New(b.Cluster.Spec.Networking.PodCIDR),
 				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
-				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
+				Allowed:      sets.New("tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)),
 			})
 		}
 
@@ -123,9 +124,9 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 			b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
-				SourceRanges: b.Cluster.Spec.API.Access,
+				SourceRanges: sets.New(b.Cluster.Spec.API.Access...),
 				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
-				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KopsControllerPort)},
+				Allowed:      sets.New("tcp:" + strconv.Itoa(wellknownports.KopsControllerPort)),
 			})
 		}
 

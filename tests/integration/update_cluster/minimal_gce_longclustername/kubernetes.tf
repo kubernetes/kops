@@ -220,22 +220,22 @@ resource "google_compute_firewall" "kubernetes-master-https-minimal-gce-with-a-v
 
 resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi"
@@ -246,22 +246,22 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-ver
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "master-to-node-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
@@ -272,15 +272,15 @@ resource "google_compute_firewall" "master-to-node-minimal-gce-with-a-very-very-
 
 resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
   allow {
-    ports    = ["443"]
-    protocol = "tcp"
-  }
-  allow {
     ports    = ["10250"]
     protocol = "tcp"
   }
   allow {
     ports    = ["3988"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["443"]
     protocol = "tcp"
   }
   disabled    = false
@@ -292,22 +292,22 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-
 
 resource "google_compute_firewall" "node-to-node-minimal-gce-with-a-very-very-very-very-very-96dqvi" {
   allow {
-    protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
-  }
-  allow {
-    protocol = "icmp"
+    protocol = "ah"
   }
   allow {
     protocol = "esp"
   }
   allow {
-    protocol = "ah"
+    protocol = "icmp"
   }
   allow {
     protocol = "sctp"
+  }
+  allow {
+    protocol = "tcp"
+  }
+  allow {
+    protocol = "udp"
   }
   disabled    = false
   name        = "node-to-node-minimal-gce-with-a-very-very-very-very-very-96dqvi"
