@@ -134,3 +134,95 @@ func TestDeleteInstanceGroup_GCEWaitOnInstanceDeletion(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, instanceTemplates, 0)
 }
+
+func TestDeleteInstanceGroup_GCEMissingInstance(t *testing.T) {
+	h := testutils.NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	gce.PollingInterval = 5 * time.Millisecond
+	defer func() {
+		gce.PollingInterval = 5 * time.Second
+	}()
+
+	clusterName := "test.k8s.io"
+	cloud := h.SetupMockGCE()
+
+	zones, err := cloud.Zones()
+	require.NoError(t, err)
+	require.NotEmpty(t, zones)
+	zone := zones[0]
+
+	ctx := context.Background()
+	f := util.NewFactory(&util.FactoryOptions{
+		RegistryPath: "memfs://tests",
+	})
+
+	cluster := testutils.BuildMinimalClusterGCE(clusterName, cloud.Project())
+
+	clientset, err := f.KopsClient()
+	require.NoError(t, err)
+	_, err = clientset.CreateCluster(ctx, cluster)
+	require.NoError(t, err)
+
+	ig := testutils.BuildMinimalNodeInstanceGroup("nodes-1", zone)
+
+	_, err = clientset.InstanceGroupsFor(cluster).Create(context.TODO(), &ig, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	templateName := "test-template"
+	templateURL := "https://www.googleapis.com/compute/v1/projects/testproject/global/instanceTemplates/" + templateName
+
+	migName := gce.NameForInstanceGroupManager(clusterName, "nodes-1", zone)
+
+	_, err = cloud.Compute().InstanceGroupManagers().Insert(cloud.Project(), zone, &compute.InstanceGroupManager{
+		Name:             migName,
+		InstanceTemplate: templateURL,
+		Zone:             zone,
+	})
+	require.NoError(t, err)
+
+	_, err = cloud.Compute().InstanceTemplates().Insert(cloud.Project(),
+		&compute.InstanceTemplate{
+			Name: templateName,
+			Properties: &compute.InstanceProperties{
+				Metadata: &compute.Metadata{
+					Items: []*compute.MetadataItems{
+						{
+							Key:   "cluster-name",
+							Value: fi.PtrTo(clusterName),
+						},
+					},
+				},
+			},
+		})
+	require.NoError(t, err)
+
+	// Delete the instance to simulate a ManagedInstance whose Instance was never created.
+	_, err = cloud.Compute().Instances().Delete(cloud.Project(), zone, migName)
+	require.NoError(t, err)
+
+	d := &DeleteInstanceGroup{
+		Cluster:   cluster,
+		Cloud:     cloud,
+		Clientset: clientset,
+	}
+
+	err = d.DeleteInstanceGroup(&ig)
+	assert.NoError(t, err)
+
+	// Check that all resources related to the CloudInstanceGroup were successfully deleted
+	instances, err := cloud.Compute().Instances().List(ctx, cloud.Project(), zone)
+	assert.NoError(t, err)
+	assert.Len(t, instances, 0)
+
+	_, err = cloud.Compute().InstanceGroupManagers().Get(cloud.Project(), zone, migName)
+	assert.True(t, gce.IsNotFound(err))
+
+	migs, err := cloud.Compute().InstanceGroupManagers().List(ctx, cloud.Project(), zone)
+	assert.NoError(t, err)
+	assert.Len(t, migs, 0)
+
+	instanceTemplates, err := cloud.Compute().InstanceTemplates().List(ctx, cloud.Project())
+	assert.NoError(t, err)
+	assert.Len(t, instanceTemplates, 0)
+}

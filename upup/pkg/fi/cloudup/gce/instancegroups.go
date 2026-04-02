@@ -205,7 +205,11 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				name := LastComponent(id)
 				instance, err := c.Compute().Instances().Get(project, zoneName, name)
 				if err != nil {
-					return nil, fmt.Errorf("error getting Instance: %v", err)
+					if !IsNotFound(err) {
+						return nil, fmt.Errorf("error getting Instance: %v", err)
+					}
+					klog.Warningf("Instance %s not found, it may not have been created", name)
+					continue
 				}
 				cm := &cloudinstances.CloudInstance{
 					ID:                 instance.SelfLink,
