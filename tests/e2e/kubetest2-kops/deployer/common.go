@@ -410,6 +410,19 @@ func (d *deployer) defaultClusterName() (string, error) {
 		jobName = jobName[:gcpLimit]
 	}
 
+	// AWS launch template names have a 128-char limit. The longest
+	// resource name prefix is "{ig}.apiservers." (~37 chars), so
+	// the cluster name must be at most 91 chars.
+	if d.CloudProvider == "aws" {
+		awsLimit := 91
+		if suffix != "" {
+			awsLimit -= len(suffix) + 1
+		}
+		if len(jobName) > awsLimit {
+			jobName = jobName[:awsLimit]
+		}
+	}
+
 	if suffix != "" {
 		jobName = jobName + "." + suffix
 	}
