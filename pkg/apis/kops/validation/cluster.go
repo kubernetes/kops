@@ -29,6 +29,10 @@ import (
 func ValidateClusterUpdate(obj *kops.Cluster, status *kops.ClusterStatus, old *kops.Cluster, vfsContext *vfs.VFSContext) field.ErrorList {
 	allErrs := ValidateCluster(obj, false, vfsContext)
 
+	if old == nil {
+		return allErrs
+	}
+
 	// Validate etcd cluster changes
 	{
 		newClusters := make(map[string]kops.EtcdClusterSpec)

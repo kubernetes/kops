@@ -24,6 +24,20 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
+func TestValidateClusterUpdate_NilOldCluster(t *testing.T) {
+	newCluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			EtcdClusters: []kops.EtcdClusterSpec{},
+		},
+	}
+
+	errs := ValidateClusterUpdate(newCluster, nil, nil, nil)
+
+	if errs == nil {
+		t.Fatalf("expected non-nil error list")
+	}
+}
+
 func TestValidEtcdChanges(t *testing.T) {
 	grid := []struct {
 		OldSpec kops.EtcdClusterSpec
