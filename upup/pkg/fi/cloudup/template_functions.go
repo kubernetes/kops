@@ -29,6 +29,7 @@ package cloudup
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -57,6 +58,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownports"
@@ -67,6 +69,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/util/pkg/env"
@@ -248,6 +251,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 		return cluster.Name
 	}
+	dest["HCLOUD_CLUSTER_CONFIG"] = tf.HCloudClusterConfig
+	dest["HCLOUD_CLUSTER_CONFIG_CHECKSUM"] = tf.HCloudClusterConfigChecksum
+	dest["HCLOUD_SSH_KEY"] = tf.HCloudSSHKey
 
 	dest["OPENSTACK_CONF"] = func() string {
 		lines := openstack.MakeCloudConfig(cluster.Spec.CloudProvider.Openstack)
@@ -1153,6 +1159,131 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 		}
 	}
 	return groups
+}
+
+// HCloudClusterConfig returns HCLOUD_CLUSTER_CONFIG as JSON.
+func (tf *TemplateFunctions) HCloudClusterConfig() (string, error) {
+	type hcloudNodeConfig struct {
+		CloudInit     string            `json:"cloudInit,omitempty"`
+		Labels        map[string]string `json:"labels,omitempty"`
+		ServerLabels  map[string]string `json:"serverLabels,omitempty"`
+		Taints        []corev1.Taint    `json:"taints,omitempty"`
+		ImagesForArch map[string]string `json:"imagesForArch,omitempty"`
+	}
+	type hcloudClusterConfig struct {
+		NodeConfigs map[string]hcloudNodeConfig `json:"nodeConfigs,omitempty"`
+	}
+
+	config := &hcloudClusterConfig{
+		NodeConfigs: map[string]hcloudNodeConfig{},
+	}
+
+	for _, ig := range tf.KopsModelContext.InstanceGroups {
+		if ig.Spec.Role != kops.InstanceGroupRoleNode {
+			continue
+		}
+		if ig.Spec.Autoscale != nil && !fi.ValueOf(ig.Spec.Autoscale) {
+			continue
+		}
+
+		task, err := tf.Task("ServerGroup", ig.Name)
+		if err != nil {
+			return "", fmt.Errorf("finding server group task for instance group %q: %w", ig.Name, err)
+		}
+
+		serverGroup, ok := task.(*hetznertasks.ServerGroup)
+		if !ok {
+			return "", fmt.Errorf("server group task for instance group %q has unexpected type %T", ig.Name, task)
+		}
+
+		nodeLabels, err := nodelabels.BuildNodeLabels(tf.Cluster, ig)
+		if err != nil {
+			return "", fmt.Errorf("building node labels for instance group %q: %w", ig.Name, err)
+		}
+
+		userDataBytes, err := fi.ResourceAsBytes(serverGroup.UserData)
+		if err != nil {
+			return "", fmt.Errorf("reading user-data for instance group %q: %w", ig.Name, err)
+		}
+
+		var taints []corev1.Taint
+		for _, taintSpec := range ig.Spec.Taints {
+			parsed, err := util.ParseTaint(taintSpec)
+			if err != nil {
+				return "", fmt.Errorf("parsing taints for instance group %q: %w", ig.Name, err)
+			}
+			taints = append(taints, corev1.Taint{
+				Key:    parsed["key"],
+				Value:  parsed["value"],
+				Effect: corev1.TaintEffect(parsed["effect"]),
+			})
+		}
+
+		// Copy the server labels and add the user-data hash.
+		serverLabels := make(map[string]string, len(serverGroup.Labels)+1)
+		for key, value := range serverGroup.Labels {
+			serverLabels[key] = value
+		}
+		serverLabels[hetzner.TagKubernetesInstanceUserData] = hetznertasks.SafeBytesHash(userDataBytes)
+
+		config.NodeConfigs[ig.Name] = hcloudNodeConfig{
+			CloudInit:    string(userDataBytes),
+			Labels:       nodeLabels,
+			ServerLabels: serverLabels,
+			Taints:       taints,
+			// Map the node group's image to both arches, since the autoscaler resolves the arch.
+			ImagesForArch: map[string]string{
+				"amd64": ig.Spec.Image,
+				"arm64": ig.Spec.Image,
+			},
+		}
+	}
+
+	// Use an encoder with HTML escaping disabled so the embedded cloud-init script stays readable.
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(config); err != nil {
+		return "", fmt.Errorf("marshaling cluster config: %w", err)
+	}
+
+	// Strip the trailing newline that json.Encoder.Encode appends.
+	return strings.TrimRight(buf.String(), "\n"), nil
+}
+
+// HCloudSSHKey returns HCLOUD_SSH_KEY as the first SSH key ID.
+func (tf *TemplateFunctions) HCloudSSHKey() (string, error) {
+	tasks, err := tf.TasksByType("SSHKey")
+	if err != nil {
+		return "", fmt.Errorf("listing SSH key tasks: %w", err)
+	}
+	if len(tasks) == 0 {
+		return "", nil
+	}
+
+	// Use the first SSH key, since the autoscaler accepts a single HCLOUD_SSH_KEY.
+	sshKey, ok := tasks[0].(*hetznertasks.SSHKey)
+	if !ok {
+		return "", fmt.Errorf("SSH key task has unexpected type %T", tasks[0])
+	}
+
+	if sshKey.ID != nil {
+		return strconv.FormatInt(fi.ValueOf(sshKey.ID), 10), nil
+	}
+
+	return "", nil
+}
+
+// HCloudClusterConfigChecksum returns a sha256 checksum of the rendered JSON config.
+func (tf *TemplateFunctions) HCloudClusterConfigChecksum() (string, error) {
+	jsonConfig, err := tf.HCloudClusterConfig()
+	if err != nil {
+		return "", err
+	}
+
+	sum256 := sha256.Sum256([]byte(jsonConfig))
+	return fmt.Sprintf("%x", sum256), nil
 }
 
 func (tf *TemplateFunctions) architectureOfAMI(amiID string) string {

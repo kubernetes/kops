@@ -380,6 +380,7 @@ func TestMinimal_NoneDNS(t *testing.T) {
 func TestHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
 	newIntegrationTest("minimal.example.com", "minimal_hetzner").
+		withAddons(clusterAutoscalerAddon).
 		runTestTerraformHetzner(t)
 }
 
