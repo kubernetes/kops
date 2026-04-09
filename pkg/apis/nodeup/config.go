@@ -345,6 +345,19 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
+	if cluster.Spec.Networking.GCP != nil {
+		config.Networking.GCP = &kops.GCPNetworkingSpec{}
+		if cluster.Spec.Networking.GCP.Cilium != nil {
+			config.Networking.GCP.Cilium = cluster.Spec.Networking.GCP.Cilium
+			if cluster.Spec.Networking.GCP.Cilium.IPAM == kops.CiliumIpamEni {
+				config.Networking.GCP.Cilium.IPAM = kops.CiliumIpamEni
+			}
+			if model.UseCiliumEtcd(cluster) {
+				config.UseCiliumEtcd = true
+			}
+		}
+	}
+
 	if cluster.Spec.Networking.CNI != nil && cluster.Spec.Networking.CNI.UsesSecondaryIP {
 		config.Networking.CNI = &kops.CNINetworkingSpec{UsesSecondaryIP: true}
 	}

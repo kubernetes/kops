@@ -5977,6 +5977,526 @@ spec:
                   gce:
                     description: GCPNetworkingSpec is the specification of GCP's native
                       networking mode, using IP aliases.
+                    properties:
+                      cilium:
+                        description: Cilium enables Cilium on GCP.
+                        properties:
+                          IPTablesRulesNoinstall:
+                            description: |-
+                              IPTablesRulesNoinstall disables installing the base IPTables rules used for masquerading and kube-proxy.
+                              Default: false
+                            type: boolean
+                          accessLog:
+                            description: AccessLog is unused.
+                            type: string
+                          agentLabels:
+                            description: AgentLabels is unused.
+                            items:
+                              type: string
+                            type: array
+                          agentPodAnnotations:
+                            additionalProperties:
+                              type: string
+                            description: |-
+                              AgentPodAnnotations makes possible to add additional annotations to the cilium agent.
+                              Default: none
+                            type: object
+                          agentPrometheusPort:
+                            description: |-
+                              AgentPrometheusPort is the port to listen to for Prometheus metrics.
+                              Defaults to 9090.
+                            type: integer
+                          allowLocalhost:
+                            description: AllowLocalhost is unused.
+                            type: string
+                          autoDirectNodeRoutes:
+                            description: |-
+                              AutoDirectNodeRoutes adds automatic L2 routing between nodes.
+                              Default: false
+                            type: boolean
+                          autoIpv6NodeRoutes:
+                            description: AutoIpv6NodeRoutes is unused.
+                            type: boolean
+                          bpfCTGlobalAnyMax:
+                            description: |-
+                              BPFCTGlobalAnyMax is the maximum number of entries in the non-TCP CT table.
+                              Default: 262144
+                            type: integer
+                          bpfCTGlobalTCPMax:
+                            description: |-
+                              BPFCTGlobalTCPMax is the maximum number of entries in the TCP CT table.
+                              Default: 524288
+                            type: integer
+                          bpfLBAlgorithm:
+                            description: |-
+                              BPFLBAlgorithm is the load balancing algorithm ("random", "maglev").
+                              Default: random
+                            type: string
+                          bpfLBMaglevTableSize:
+                            description: |-
+                              BPFLBMaglevTableSize is the per service backend table size when going with Maglev (parameter M).
+                              Default: 16381
+                            type: string
+                          bpfLBMapMax:
+                            description: |-
+                              BPFLBMapMax is the maximum number of entries in bpf lb service, backend and affinity maps.
+                              Default: 65536
+                            type: integer
+                          bpfLBSockHostNSOnly:
+                            description: |-
+                              BPFLBSockHostNSOnly enables skipping socket LB for services when inside a pod namespace,
+                              in favor of service LB at the pod interface. Socket LB is still used when in the host namespace.
+                              Required by service mesh (e.g., Istio, Linkerd).
+                              Default: false
+                            type: boolean
+                          bpfNATGlobalMax:
+                            description: |-
+                              BPFNATGlobalMax is the the maximum number of entries in the BPF NAT table.
+                              Default: 524288
+                            type: integer
+                          bpfNeighGlobalMax:
+                            description: |-
+                              BPFNeighGlobalMax is the the maximum number of entries in the BPF Neighbor table.
+                              Default: 524288
+                            type: integer
+                          bpfPolicyMapMax:
+                            description: |-
+                              BPFPolicyMapMax is the maximum number of entries in endpoint policy map.
+                              Default: 16384
+                            type: integer
+                          bpfRoot:
+                            description: BPFRoot is unused.
+                            type: string
+                          chainingMode:
+                            description: |-
+                              ChainingMode allows using Cilium in combination with other CNI plugins.
+                              With Cilium CNI chaining, the base network connectivity and IP address management is managed
+                              by the non-Cilium CNI plugin, but Cilium attaches eBPF programs to the network devices created
+                              by the non-Cilium plugin to provide L3/L4 network visibility, policy enforcement and other advanced features.
+                              Default: none
+                            type: string
+                          clusterID:
+                            description: |-
+                              ClusterID is the ID of the cluster. It is only relevant when building a mesh of clusters.
+                              Must be a number between 1 and 255.
+                            type: integer
+                          clusterName:
+                            description: ClusterName is the name of the cluster. It
+                              is only relevant when building a mesh of clusters.
+                            type: string
+                          cniBinPath:
+                            description: CniBinPath is unused.
+                            type: string
+                          cniExclusive:
+                            description: |-
+                              CniExclusive configures whether to remove other CNI configuration files.
+                              Default: true
+                            type: boolean
+                          containerRuntime:
+                            description: ContainerRuntime is unused.
+                            items:
+                              type: string
+                            type: array
+                          containerRuntimeEndpoint:
+                            additionalProperties:
+                              type: string
+                            description: ContainerRuntimeEndpoint is unused.
+                            type: object
+                          containerRuntimeLabels:
+                            description: ContainerRuntimeLabels is unused.
+                            type: string
+                          cpuRequest:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: 'CPURequest CPU request of Cilium agent +
+                              operator container. (default: 25m)'
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          debug:
+                            description: Debug runs Cilium in debug mode.
+                            type: boolean
+                          debugVerbose:
+                            description: DebugVerbose is unused.
+                            items:
+                              type: string
+                            type: array
+                          device:
+                            description: Device is unused.
+                            type: string
+                          disableCNPStatusUpdates:
+                            description: DisableCNPStatusUpdates determines if CNP
+                              NodeStatus updates will be sent to the Kubernetes api-server.
+                            type: boolean
+                          disableConntrack:
+                            description: DisableConntrack is unused.
+                            type: boolean
+                          disableEndpointCRD:
+                            description: |-
+                              DisableEndpointCRD disables usage of CiliumEndpoint CRD.
+                              Default: false
+                            type: boolean
+                          disableIpv4:
+                            description: DisableIpv4 is unused.
+                            type: boolean
+                          disableK8sServices:
+                            description: DisableK8sServices is unused.
+                            type: boolean
+                          disableMasquerade:
+                            description: DisableMasquerade disables masquerading traffic
+                              to external destinations behind the node IP.
+                            type: boolean
+                          enableBPFMasquerade:
+                            description: |-
+                              EnableBPFMasquerade enables masquerading packets from endpoints leaving the host with BPF instead of iptables.
+                              Default: false
+                            type: boolean
+                          enableEncryption:
+                            description: |-
+                              EnableEncryption enables Cilium Encryption.
+                              Default: false
+                            type: boolean
+                          enableEndpointHealthChecking:
+                            description: |-
+                              EnableEndpointHealthChecking enables connectivity health checking between virtual endpoints.
+                              Default: true
+                            type: boolean
+                          enableHostReachableServices:
+                            description: |-
+                              EnableHostReachableServices configures Cilium to enable services to be
+                              reached from the host namespace in addition to pod namespaces.
+                              https://docs.cilium.io/en/v1.9/gettingstarted/host-services/
+                              Default: false
+                            type: boolean
+                          enableL7Proxy:
+                            description: |-
+                              EnableL7Proxy enables L7 proxy for L7 policy enforcement.
+                              Default: true
+                            type: boolean
+                          enableLocalRedirectPolicy:
+                            description: |-
+                              EnableLocalRedirectPolicy that enables pod traffic destined to an IP address and port/protocol
+                              tuple or Kubernetes service to be redirected locally to backend pod(s) within a node, using eBPF.
+                              https://docs.cilium.io/en/stable/network/kubernetes/local-redirect-policy/
+                              Default: false
+                            type: boolean
+                          enableNodePort:
+                            description: |-
+                              EnableNodePort replaces kube-proxy with Cilium's BPF implementation.
+                              Requires spec.kubeProxy.enabled be set to false.
+                              Default: false
+                            type: boolean
+                          enablePolicy:
+                            description: |-
+                              EnablePolicy specifies the policy enforcement mode.
+                              "default": Follows Kubernetes policy enforcement.
+                              "always": Cilium restricts all traffic if no policy is in place.
+                              "never": Cilium allows all traffic regardless of policies in place.
+                              If unspecified, "default" policy mode will be used.
+                            type: string
+                          enablePrometheusMetrics:
+                            description: EnablePrometheusMetrics enables the Cilium
+                              "/metrics" endpoint for both the agent and the operator.
+                            type: boolean
+                          enableRemoteNodeIdentity:
+                            description: |-
+                              EnableRemoteNodeIdentity enables the remote-node-identity.
+                              Default: true
+                            type: boolean
+                          enableServiceTopology:
+                            description: EnableServiceTopology determine if cilium
+                              should use topology aware hints.
+                            type: boolean
+                          enableTracing:
+                            description: EnableTracing is unused.
+                            type: boolean
+                          enableUnreachableRoutes:
+                            description: |-
+                              EnableUnreachableRoutes enables unreachable routes on pod deletion.
+                              Default: false
+                            type: boolean
+                          enableipv4:
+                            description: EnableIpv4 is unused.
+                            type: boolean
+                          enableipv6:
+                            description: EnableIpv6 is unused.
+                            type: boolean
+                          encryptionType:
+                            description: |-
+                              EncryptionType specifies Cilium Encryption method ("ipsec", "wireguard").
+                              Default: ipsec
+                            type: string
+                          envoyLog:
+                            description: EnvoyLog is unused.
+                            type: string
+                          etcdManaged:
+                            description: |-
+                              EtcdManagd installs an additional etcd cluster that is used for Cilium state change.
+                              The cluster is operated by cilium-etcd-operator.
+                              Default: false
+                            type: boolean
+                          gatewayAPI:
+                            description: GatewayAPI specifies the configuration for
+                              Cilium Gateway API settings.
+                            properties:
+                              enableSecretsSync:
+                                description: |-
+                                  EnableSecretsSync specifies whether synchronization of secrets is enabled.
+                                  Default: true
+                                type: boolean
+                              enabled:
+                                description: Enabled specifies whether Cilium Gateway
+                                  API is enabled.
+                                type: boolean
+                            type: object
+                          hubble:
+                            description: Hubble configures the Hubble service on the
+                              Cilium agent.
+                            properties:
+                              enabled:
+                                description: Enabled decides if Hubble is enabled
+                                  on the agent or not
+                                type: boolean
+                              metrics:
+                                description: |-
+                                  Metrics is a list of metrics to collect. If empty or null, metrics are disabled.
+                                  See https://docs.cilium.io/en/stable/observability/metrics/#hubble-exported-metrics
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          identityAllocationMode:
+                            description: |-
+                              IdentityAllocationMode specifies in which backend identities are stored ("crd", "kvstore").
+                              Default: crd
+                            type: string
+                          identityChangeGracePeriod:
+                            description: |-
+                              IdentityChangeGracePeriod specifies the duration to wait before using a changed identity.
+                              Default: 5s
+                            type: string
+                          ingress:
+                            description: Ingress specifies the configuration for Cilium
+                              Ingress settings.
+                            properties:
+                              defaultLoadBalancerMode:
+                                description: |-
+                                  DefaultLoadBalancerMode specifies the default load balancer mode.
+                                  Possible values: 'shared' or 'dedicated'
+                                  Default: dedicated
+                                type: string
+                              enableSecretsSync:
+                                description: |-
+                                  EnableSecretsSync specifies whether synchronization of secrets is enabled.
+                                  Default: true
+                                type: boolean
+                              enabled:
+                                description: Enabled specifies whether Cilium Ingress
+                                  is enabled.
+                                type: boolean
+                              enforceHttps:
+                                description: |-
+                                  EnforceHttps specifies whether HTTPS enforcement is enabled for Ingress traffic.
+                                  Default: true
+                                type: boolean
+                              loadBalancerAnnotationPrefixes:
+                                description: |-
+                                  LoadBalancerAnnotationPrefixes specifies annotation prefixes for Load Balancer configuration.
+                                  Default: "service.beta.kubernetes.io service.kubernetes.io cloud.google.com"
+                                type: string
+                              sharedLoadBalancerServiceName:
+                                description: |-
+                                  SharedLoadBalancerServiceName specifies the name of the shared load balancer service.
+                                  Default: cilium-ingress
+                                type: string
+                            type: object
+                          ipam:
+                            description: |-
+                              IPAM specifies the IP address allocation mode to use.
+                              Possible values are "crd" and "eni".
+                              "eni" will use AWS native networking for pods. Eni requires masquerade to be set to false.
+                              "crd" will use CRDs for controlling IP address management.
+                              "hostscope" will use hostscope IPAM mode.
+                              "kubernetes" will use addersing based on node pod CIDR.
+                              Default: "kubernetes".
+                            type: string
+                          ipv4ClusterCidrMaskSize:
+                            description: Ipv4ClusterCIDRMaskSize is unused.
+                            type: integer
+                          ipv4Node:
+                            description: Ipv4Node is unused.
+                            type: string
+                          ipv4Range:
+                            description: Ipv4Range is unused.
+                            type: string
+                          ipv4ServiceRange:
+                            description: Ipv4ServiceRange is unused.
+                            type: string
+                          ipv6ClusterAllocCidr:
+                            description: Ipv6ClusterAllocCidr is unused.
+                            type: string
+                          ipv6Node:
+                            description: Ipv6Node is unused.
+                            type: string
+                          ipv6Range:
+                            description: Ipv6Range is unused.
+                            type: string
+                          ipv6ServiceRange:
+                            description: Ipv6ServiceRange is unused.
+                            type: string
+                          k8sApiServer:
+                            description: K8sAPIServer is unused.
+                            type: string
+                          k8sKubeconfigPath:
+                            description: K8sKubeconfigPath is unused.
+                            type: string
+                          keepBpfTemplates:
+                            description: KeepBPFTemplates is unused.
+                            type: boolean
+                          keepConfig:
+                            description: KeepConfig is unused.
+                            type: boolean
+                          labelPrefixFile:
+                            description: LabelPrefixFile is unused.
+                            type: string
+                          labels:
+                            description: Labels is unused.
+                            items:
+                              type: string
+                            type: array
+                          lb:
+                            description: LB is unused.
+                            type: string
+                          libDir:
+                            description: LibDir is unused.
+                            type: string
+                          logDriver:
+                            description: LogDrivers is unused.
+                            items:
+                              type: string
+                            type: array
+                          logOpt:
+                            additionalProperties:
+                              type: string
+                            description: LogOpt is unused.
+                            type: object
+                          logstash:
+                            description: Logstash is unused.
+                            type: boolean
+                          logstashAgent:
+                            description: LogstashAgent is unused.
+                            type: string
+                          logstashProbeTimer:
+                            description: LogstashProbeTimer is unused.
+                            format: int32
+                            type: integer
+                          memoryRequest:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            description: 'MemoryRequest memory request of Cilium agent
+                              + operator container. (default: 128Mi)'
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          metrics:
+                            description: Metrics is a list of metrics to add or remove
+                              from the default list of metrics the agent exposes.
+                            items:
+                              type: string
+                            type: array
+                          monitorAggregation:
+                            description: |-
+                              MonitorAggregation sets the level of packet monitoring. Possible values are "low", "medium", or "maximum".
+                              Default: medium
+                            type: string
+                          nat46Range:
+                            description: Nat46Range is unused.
+                            type: string
+                          nodeEncryption:
+                            description: |-
+                              NodeEncryption enables encryption for pure node to node traffic.
+                              Default: false
+                            type: boolean
+                          nodeInitBootstrapFile:
+                            description: NodeInitBootstrapFile is unused.
+                            type: string
+                          operatorPodAnnotations:
+                            additionalProperties:
+                              type: string
+                            description: |-
+                              OperatorPodAnnotations makes possible to add additional annotations to cilium operator.
+                              Default: none
+                            type: object
+                          pprof:
+                            description: Pprof is unused.
+                            type: boolean
+                          preallocateBPFMaps:
+                            description: |-
+                              PreallocateBPFMaps reduces the per-packet latency at the expense of up-front memory allocation.
+                              Default: true
+                            type: boolean
+                          prefilterDevice:
+                            description: PrefilterDevice is unused.
+                            type: string
+                          prometheusServeAddr:
+                            description: PrometheusServeAddr is unused.
+                            type: string
+                          reconfigureKubelet:
+                            description: ReconfigureKubelet is unused.
+                            type: boolean
+                          registry:
+                            description: Registry overrides the default Cilium container
+                              registry (quay.io)
+                            type: string
+                          removeCbrBridge:
+                            description: RemoveCbrBridge is unused.
+                            type: boolean
+                          restartPods:
+                            description: RestartPods is unused.
+                            type: boolean
+                          restore:
+                            description: Restore is unused.
+                            type: boolean
+                          sidecarIstioProxyImage:
+                            description: |-
+                              SidecarIstioProxyImage is the regular expression matching compatible Istio sidecar istio-proxy
+                              container image names.
+                              Default: cilium/istio_proxy
+                            type: string
+                          singleClusterRoute:
+                            description: SingleClusterRoute is unused.
+                            type: boolean
+                          socketPath:
+                            description: SocketPath is unused.
+                            type: string
+                          stateDir:
+                            description: StateDir is unused.
+                            type: string
+                          toFqdnsDnsRejectResponseCode:
+                            description: |-
+                              ToFQDNsDNSRejectResponseCode sets the DNS response code for rejecting DNS requests.
+                              Possible values are "nameError" or "refused".
+                              Default: refused
+                            type: string
+                          toFqdnsEnablePoller:
+                            description: |-
+                              ToFQDNsEnablePoller replaces the DNS proxy-based implementation of FQDN policies
+                              with the less powerful legacy implementation.
+                              Default: false
+                            type: boolean
+                          tracePayloadlen:
+                            description: TracePayloadLen is unused.
+                            type: integer
+                          tunnel:
+                            description: |-
+                              Tunnel specifies the Cilium tunnelling mode. Possible values are "vxlan", "geneve", or "disabled".
+                              Default: vxlan
+                            type: string
+                          version:
+                            description: Version is the version of the Cilium agent
+                              and the Cilium Operator.
+                            type: string
+                        type: object
                     type: object
                   kindnet:
                     description: KindnetNetworkingSpec configures Kindnet settings.

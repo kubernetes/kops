@@ -315,7 +315,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 	}
 
-	if cluster.Spec.Networking.Cilium != nil {
+	if cluster.Spec.Networking.Cilium != nil || cluster.Spec.Networking.NetworkingIsGCPCilium() {
 		ciliumsecretString := ""
 		ciliumsecret, _ := secretStore.Secret("ciliumpassword")
 		if ciliumsecret != nil {

@@ -1,0 +1,242 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: cilium-gce.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig:
+    gceServiceAccount: default
+    gcpPDCSIDriver:
+      defaultStorageClassName: balanced-csi
+      enabled: false
+      version: v1.22.1
+    manageStorageClasses: true
+    multizone: true
+    nodeTags: cilium-gce-example-com-k8s-io-role-node
+  cloudControllerManager:
+    allocateNodeCIDRs: true
+    cidrAllocatorType: CloudAllocator
+    clusterCIDR: 10.4.0.0/14
+    clusterName: cilium-gce-example-com
+    configureCloudRoutes: false
+    controllers:
+    - '*'
+    image: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager:v35.0.0
+    leaderElection:
+      leaderElect: true
+  cloudProvider: gce
+  clusterDNSDomain: cluster.local
+  configBase: memfs://tests/cilium-gce.example.com
+  containerd:
+    logLevel: info
+    runc:
+      version: 1.3.4
+    sandboxImage: registry.k8s.io/pause:3.10.1
+    version: 2.1.6
+  dnsZone: "1"
+  etcdClusters:
+  - backups:
+      backupStore: memfs://tests/cilium-gce.example.com/backups/etcd/main
+    cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: main
+    version: 3.5.25
+  - backups:
+      backupStore: memfs://tests/cilium-gce.example.com/backups/etcd/events
+    cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-us-test1-a
+      name: a
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: events
+    version: 3.5.25
+  externalDns:
+    provider: dns-controller
+  iam:
+    legacy: false
+  keyStore: memfs://tests/cilium-gce.example.com/pki
+  kubeAPIServer:
+    allowPrivileged: true
+    anonymousAuth: false
+    apiAudiences:
+    - kubernetes.svc.default
+    apiServerCount: 1
+    authorizationMode: Node,RBAC
+    bindAddress: 0.0.0.0
+    cloudProvider: external
+    enableAdmissionPlugins:
+    - DefaultStorageClass
+    - DefaultTolerationSeconds
+    - LimitRanger
+    - MutatingAdmissionWebhook
+    - NamespaceLifecycle
+    - NodeRestriction
+    - ResourceQuota
+    - RuntimeClass
+    - ServiceAccount
+    - ValidatingAdmissionPolicy
+    - ValidatingAdmissionWebhook
+    etcdServers:
+    - https://127.0.0.1:4001
+    etcdServersOverrides:
+    - /events#https://127.0.0.1:4002
+    image: registry.k8s.io/kube-apiserver:v1.32.0
+    kubeletPreferredAddressTypes:
+    - InternalIP
+    - Hostname
+    - ExternalIP
+    logLevel: 2
+    requestheaderAllowedNames:
+    - aggregator
+    requestheaderExtraHeaderPrefixes:
+    - X-Remote-Extra-
+    requestheaderGroupHeaders:
+    - X-Remote-Group
+    requestheaderUsernameHeaders:
+    - X-Remote-User
+    securePort: 443
+    serviceAccountIssuer: https://api.internal.cilium-gce.example.com
+    serviceAccountJWKSURI: https://api.internal.cilium-gce.example.com/openid/v1/jwks
+    serviceClusterIPRange: 10.1.0.0/16
+    storageBackend: etcd3
+  kubeControllerManager:
+    allocateNodeCIDRs: false
+    attachDetachReconcileSyncPeriod: 1m0s
+    cloudProvider: external
+    clusterCIDR: 10.4.0.0/14
+    clusterName: cilium-gce.example.com
+    configureCloudRoutes: false
+    image: registry.k8s.io/kube-controller-manager:v1.32.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+    useServiceAccountCredentials: true
+  kubeDNS:
+    cacheMaxConcurrent: 150
+    cacheMaxSize: 1000
+    cpuRequest: 100m
+    domain: cluster.local
+    memoryLimit: 170Mi
+    memoryRequest: 70Mi
+    nodeLocalDNS:
+      cpuRequest: 25m
+      enabled: false
+      image: registry.k8s.io/dns/k8s-dns-node-cache:1.26.0
+      memoryRequest: 5Mi
+    provider: CoreDNS
+    serverIP: 10.1.0.10
+  kubeProxy:
+    clusterCIDR: 10.4.0.0/14
+    cpuRequest: 100m
+    image: registry.k8s.io/kube-proxy:v1.32.0
+    logLevel: 2
+  kubeScheduler:
+    image: registry.k8s.io/kube-scheduler:v1.32.0
+    leaderElection:
+      leaderElect: true
+    logLevel: 2
+  kubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: 10.1.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hairpinMode: promiscuous-bridge
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    registerSchedulable: true
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.32.0
+  masterKubelet:
+    anonymousAuth: false
+    cgroupDriver: systemd
+    cgroupRoot: /
+    cloudProvider: external
+    clusterDNS: 10.1.0.10
+    clusterDomain: cluster.local
+    enableDebuggingHandlers: true
+    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+    hairpinMode: promiscuous-bridge
+    kubeconfigPath: /var/lib/kubelet/kubeconfig
+    logLevel: 2
+    podManifestPath: /etc/kubernetes/manifests
+    protectKernelDefaults: true
+    registerSchedulable: true
+    shutdownGracePeriod: 30s
+    shutdownGracePeriodCriticalPods: 10s
+  masterPublicName: api.cilium-gce.example.com
+  networking:
+    gce:
+      cilium:
+        agentPrometheusPort: 9090
+        bpfCTGlobalAnyMax: 262144
+        bpfCTGlobalTCPMax: 524288
+        bpfLBAlgorithm: random
+        bpfLBMaglevTableSize: "16381"
+        bpfLBMapMax: 65536
+        bpfNATGlobalMax: 524288
+        bpfNeighGlobalMax: 524288
+        bpfPolicyMapMax: 16384
+        clusterName: default
+        cniExclusive: true
+        cpuRequest: 25m
+        disableCNPStatusUpdates: true
+        disableMasquerade: false
+        enableBPFMasquerade: false
+        enableEndpointHealthChecking: true
+        enableL7Proxy: true
+        enableLocalRedirectPolicy: false
+        enableRemoteNodeIdentity: true
+        enableUnreachableRoutes: false
+        gatewayAPI:
+          enabled: false
+        hubble:
+          enabled: false
+        identityAllocationMode: crd
+        identityChangeGracePeriod: 5s
+        ingress:
+          enabled: false
+        ipam: kubernetes
+        memoryRequest: 128Mi
+        monitorAggregation: medium
+        sidecarIstioProxyImage: cilium/istio_proxy
+        toFqdnsDnsRejectResponseCode: refused
+        tunnel: vxlan
+        version: v1.18.6
+  nonMasqueradeCIDR: 10.0.0.0/8
+  podCIDR: 10.4.0.0/14
+  project: testproject
+  secretStore: memfs://tests/cilium-gce.example.com/secrets
+  serviceClusterIPRange: 10.1.0.0/16
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 10.0.32.0/19
+    name: us-test1
+    region: us-test1
+    type: Public
+  topology:
+    dns:
+      type: Public

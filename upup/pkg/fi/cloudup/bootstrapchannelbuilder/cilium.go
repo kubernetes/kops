@@ -24,6 +24,9 @@ import (
 
 func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 	cilium := b.Cluster.Spec.Networking.Cilium
+	if cilium == nil && b.Cluster.Spec.Networking.GCP != nil {
+		cilium = b.Cluster.Spec.Networking.GCP.Cilium
+	}
 	if cilium == nil {
 		return nil
 	}

@@ -589,6 +589,15 @@ func TestMinimalIPv6Cilium(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+func TestCiliumGCE(t *testing.T) {
+	newIntegrationTest("cilium-gce.example.com", "cilium-gce").
+		withAddons(
+			ciliumAddon,
+			dnsControllerAddon,
+			gcpCCMAddon).
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalIPv6NoSubnetPrefix runs the test with "/64#N" subnet notation
 func TestMinimalIPv6NoSubnetPrefix(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-no-subnet-prefix").

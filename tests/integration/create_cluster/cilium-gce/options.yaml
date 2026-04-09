@@ -1,0 +1,7 @@
+ClusterName: minimal.example.com
+CloudProvider: gce
+Networking: gcp-with-cilium
+Project: testproject
+KubernetesVersion: v1.32.0
+Zones:
+- us-test1-a

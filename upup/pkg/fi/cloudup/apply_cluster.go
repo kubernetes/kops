@@ -382,6 +382,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	}
 
 	ciliumSpec := c.Cluster.Spec.Networking.Cilium
+	if ciliumSpec == nil && c.Cluster.Spec.Networking.GCP != nil {
+		ciliumSpec = c.Cluster.Spec.Networking.GCP.Cilium
+	}
 	if ciliumSpec != nil && ciliumSpec.EnableEncryption && ciliumSpec.EncryptionType == kops.CiliumEncryptionTypeIPSec {
 		secret, err := secretStore.FindSecret("ciliumpassword")
 		if err != nil {

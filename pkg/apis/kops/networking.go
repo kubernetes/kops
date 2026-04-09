@@ -103,7 +103,7 @@ func (n *NetworkingSpec) UsesKubenet() bool {
 	}
 	if n.Kubenet != nil {
 		return true
-	} else if n.GCP != nil {
+	} else if n.GCP != nil && n.GCP.Cilium == nil {
 		// GCP IP Alias networking is based on kubenet
 		return true
 	} else if n.External != nil {
@@ -115,6 +115,11 @@ func (n *NetworkingSpec) UsesKubenet() bool {
 	}
 
 	return false
+}
+
+// NetworkingIsGCPCilium returns true if our networking is derived from GCP with Cilium
+func (n *NetworkingSpec) NetworkingIsGCPCilium() bool {
+	return n.GCP != nil && n.GCP.Cilium != nil
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes.
@@ -587,7 +592,10 @@ type LyftVPCNetworkingSpec struct {
 }
 
 // GCPNetworkingSpec is the specification of GCP's native networking mode, using IP aliases.
-type GCPNetworkingSpec struct{}
+type GCPNetworkingSpec struct {
+	// Cilium enables Cilium on GCP.
+	Cilium *CiliumNetworkingSpec `json:"cilium,omitempty"`
+}
 
 // KindnetNetworkingSpec configures Kindnet settings.
 type KindnetNetworkingSpec struct {
