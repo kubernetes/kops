@@ -59,7 +59,7 @@ spec:
       type: Private
   topology:
     dns:
-      type: Public
+      type: None
 
 ---
 apiVersion: kops.k8s.io/v1alpha2

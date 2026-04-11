@@ -448,7 +448,6 @@ func TestMinimalGCEPublicLoadBalancerAPIServer(t *testing.T) {
 
 	newIntegrationTest("minimal-gce-plb-apiserver.example.com", "minimal_gce_plb_apiserver").
 		withAddons(
-			dnsControllerAddon,
 			gcpCCMAddon,
 			gcpPDCSIAddon,
 		).
