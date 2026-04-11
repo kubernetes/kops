@@ -41,7 +41,6 @@ spec:
       version: 1.3.4
     sandboxImage: registry.k8s.io/pause:3.10.1
     version: 2.1.6
-  dnsZone: "1"
   etcdClusters:
   - backups:
       backupStore: memfs://tests/minimal-gce-plb-apiserver.example.com/backups/etcd/main
@@ -65,8 +64,6 @@ spec:
     memoryRequest: 100Mi
     name: events
     version: 3.5.25
-  externalDns:
-    provider: dns-controller
   iam:
     legacy: false
   keyStore: memfs://tests/minimal-gce-plb-apiserver.example.com/pki
@@ -206,4 +203,4 @@ spec:
     type: Private
   topology:
     dns:
-      type: Public
+      type: None

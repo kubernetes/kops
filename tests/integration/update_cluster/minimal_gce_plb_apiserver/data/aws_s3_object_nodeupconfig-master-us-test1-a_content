@@ -249,7 +249,6 @@ ControlPlaneConfig:
     leaderElection:
       leaderElect: true
     logLevel: 2
-DNSZone: "1"
 EtcdClusterNames:
 - main
 - events
@@ -327,4 +326,4 @@ staticManifests:
 - key: kube-apiserver-healthcheck
   path: manifests/static/kube-apiserver-healthcheck.yaml
 usesLegacyGossip: false
-usesNoneDNS: false
+usesNoneDNS: true

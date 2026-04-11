@@ -61,4 +61,4 @@ containerdConfig:
 multizone: true
 nodeTags: minimal-gce-plb-apiserver-example-com-k8s-io-role-node
 usesLegacyGossip: false
-usesNoneDNS: false
+usesNoneDNS: true

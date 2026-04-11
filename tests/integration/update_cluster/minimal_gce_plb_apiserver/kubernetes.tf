@@ -98,14 +98,6 @@ resource "aws_s3_object" "minimal-gce-plb-apiserver-example-com-addons-coredns-a
   server_side_encryption = "AES256"
 }
 
-resource "aws_s3_object" "minimal-gce-plb-apiserver-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
-  bucket                 = "testingBucket"
-  content                = file("${path.module}/data/aws_s3_object_minimal-gce-plb-apiserver.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
-  key                    = "tests/minimal-gce-plb-apiserver.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
-  provider               = aws.files
-  server_side_encryption = "AES256"
-}
-
 resource "aws_s3_object" "minimal-gce-plb-apiserver-example-com-addons-gcp-cloud-controller-addons-k8s-io-k8s-1-23" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal-gce-plb-apiserver.example.com-addons-gcp-cloud-controller.addons.k8s.io-k8s-1.23_content")
@@ -189,6 +181,12 @@ resource "google_compute_address" "api-us-test1-minimal-gce-plb-apiserver-exampl
   subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
 }
 
+resource "google_compute_address" "kops-controller-us-test1-minimal-gce-plb-apiserver-example-com" {
+  address_type = "INTERNAL"
+  name         = "kops-controller-us-test1-minimal-gce-plb-apiserver-example-com"
+  subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
+}
+
 resource "google_compute_disk" "a-etcd-events-minimal-gce-plb-apiserver-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-plb-apiserver-example-com"
@@ -235,6 +233,30 @@ resource "google_compute_firewall" "https-api-minimal-gce-plb-apiserver-example-
   network       = google_compute_network.minimal-gce-plb-apiserver-example-com.name
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["minimal-gce-plb-apiserver-example-com-k8s-io-role-control-plane", "minimal-gce-plb-apiserver-example-com-k8s-io-role-apiserver"]
+}
+
+resource "google_compute_firewall" "kops-controller-ipv6-minimal-gce-plb-apiserver-example-com" {
+  allow {
+    ports    = ["3988"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "kops-controller-ipv6-minimal-gce-plb-apiserver-example-com"
+  network       = google_compute_network.minimal-gce-plb-apiserver-example-com.name
+  source_ranges = ["::/0"]
+  target_tags   = ["minimal-gce-plb-apiserver-example-com-k8s-io-role-control-plane"]
+}
+
+resource "google_compute_firewall" "kops-controller-minimal-gce-plb-apiserver-example-com" {
+  allow {
+    ports    = ["3988"]
+    protocol = "tcp"
+  }
+  disabled      = false
+  name          = "kops-controller-minimal-gce-plb-apiserver-example-com"
+  network       = google_compute_network.minimal-gce-plb-apiserver-example-com.name
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["minimal-gce-plb-apiserver-example-com-k8s-io-role-control-plane"]
 }
 
 resource "google_compute_firewall" "lb-health-checks-minimal-gce-plb-apiserver-example-com" {
@@ -451,6 +473,21 @@ resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-plb-apiserve
   name                  = "api-us-test1-minimal-gce-plb-apiserver-example-com"
   network               = google_compute_network.minimal-gce-plb-apiserver-example-com.name
   ports                 = ["443"]
+  subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
+}
+
+resource "google_compute_forwarding_rule" "kops-controller-us-test1-minimal-gce-plb-apiserver-example-com" {
+  backend_service = google_compute_region_backend_service.kops-controller-minimal-gce-plb-apiserver-example-com.id
+  ip_address      = google_compute_address.kops-controller-us-test1-minimal-gce-plb-apiserver-example-com.address
+  ip_protocol     = "TCP"
+  labels = {
+    "k8s-io-cluster-name" = "minimal-gce-plb-apiserver-example-com"
+    "name"                = "kops-controller-us-test1"
+  }
+  load_balancing_scheme = "INTERNAL"
+  name                  = "kops-controller-us-test1-minimal-gce-plb-apiserver-example-com"
+  network               = google_compute_network.minimal-gce-plb-apiserver-example-com.name
+  ports                 = ["3988"]
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
 }
 
