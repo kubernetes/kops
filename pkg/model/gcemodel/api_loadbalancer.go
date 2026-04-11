@@ -257,14 +257,34 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 			},
 		})
 		if b.Cluster.UsesNoneDNS() {
-			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
+			// When there are dedicated APIServer instance groups, the kops-controller forwarding
+			// rule needs its own IP address. APIServer instances are backends of the API LB
+			// (sharing the API VIP), and GCE internal passthrough load balancers route traffic
+			// from a backend VM destined for the LB VIP back to the same VM.
+			// That breaks bootstrap from APIServer nodes when kops-controller
+			// shares the API VIP. A separate IP avoids the hairpin since APIServer instances
+			// are not backends of the kops-controller backend service.
+			// https://docs.cloud.google.com/load-balancing/docs/internal/setting-up-internal#test-from-backend-vms
+			kopsControllerIPAddress := ipAddress
+			if b.HasAPIServerOnlyInstanceGroups() {
+				kopsControllerIPAddress = &gcetasks.Address{
+					Name:              s(b.NameForIPAddress("kops-controller-" + sn.Name)),
+					IPAddressType:     s("INTERNAL"),
+					Subnetwork:        subnet,
+					WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KopsController},
+					Lifecycle:         b.Lifecycle,
+				}
+				c.AddTask(kopsControllerIPAddress)
+			} else {
+				ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
+			}
 
 			fr := &gcetasks.ForwardingRule{
 				Name:                s(b.NameForForwardingRule("kops-controller-" + sn.Name)),
 				Lifecycle:           b.Lifecycle,
 				BackendService:      controlPlaneBS,
 				Ports:               []string{strconv.Itoa(wellknownports.KopsControllerPort)},
-				IPAddress:           ipAddress,
+				IPAddress:           kopsControllerIPAddress,
 				IPProtocol:          "TCP",
 				LoadBalancingScheme: s("INTERNAL"),
 				Network:             network,

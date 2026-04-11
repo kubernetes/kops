@@ -51,9 +51,15 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Hostname:  b.APIInternalName(),
 			Addresses: b.BootConfig.APIServerIPs,
 		})
+		// Prefer KopsControllerIPs for the kops-controller alias when set; this lets the
+		// model route kops-controller traffic via a different load balancer than the API.
+		kopsControllerIPs := b.BootConfig.KopsControllerIPs
+		if len(kopsControllerIPs) == 0 {
+			kopsControllerIPs = b.BootConfig.APIServerIPs
+		}
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  "kops-controller.internal." + b.NodeupConfig.ClusterName,
-			Addresses: b.BootConfig.APIServerIPs,
+			Addresses: kopsControllerIPs,
 		})
 	}
 

@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -388,6 +389,20 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO, kops.CloudProviderMetal:
 			bootConfig.APIServerIPs = controlPlaneIPs
+		}
+	}
+
+	// If the model registers a separate set of IPs for kops-controller (e.g. a dedicated
+	// internal LB on GCE that doesn't share its VIP with the API LB), surface them so
+	// /etc/hosts can route kops-controller traffic via that path. Skip IPs that already
+	// match the API server IPs - in that case the kops-controller path goes through the
+	// same VIP and we don't need a separate entry.
+	if cluster.UsesNoneDNS() {
+		for _, kopsControllerIP := range wellKnownAddresses[wellknownservices.KopsController] {
+			if slices.Contains(controlPlaneIPs, kopsControllerIP) {
+				continue
+			}
+			bootConfig.KopsControllerIPs = append(bootConfig.KopsControllerIPs, kopsControllerIP)
 		}
 	}
 

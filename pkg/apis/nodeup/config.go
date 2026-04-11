@@ -165,6 +165,9 @@ type BootConfig struct {
 	// APIServerIPs is the API server IP addresses.
 	// This field is used for adding an alias for api.internal. in /etc/hosts, when Topology.DNS.Type == DNSTypeNone.
 	APIServerIPs []string `json:",omitempty"`
+	// KopsControllerIPs is the kops-controller IP addresses.
+	// When set, this is used for the kops-controller.internal. /etc/hosts entry instead of APIServerIPs.
+	KopsControllerIPs []string `json:",omitempty"`
 	// ClusterName is the name of the cluster.
 	ClusterName string `json:",omitempty"`
 	// InstanceGroupName is the name of the instance group.
