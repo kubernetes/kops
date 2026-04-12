@@ -638,7 +638,7 @@ resource "aws_lb_target_group" "kops-controller-minimal-e-uvauf3" {
   health_check {
     healthy_threshold   = 2
     interval            = 10
-    protocol            = "TLS"
+    protocol            = "HTTPS"
     unhealthy_threshold = 2
   }
   name     = "kops-controller-minimal-e-uvauf3"
