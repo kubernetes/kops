@@ -406,7 +406,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:           b.Lifecycle,
 					VPC:                 b.LinkToVPC(),
 					Tags:                tlsGroupTags,
-					Protocol:            elbv2types.ProtocolEnumTls,
+					Protocol:            elbv2types.ProtocolEnumHttps,
 					Port:                fi.PtrTo(int32(443)),
 					Attributes:          groupAttrs,
 					Interval:            fi.PtrTo(int32(10)),
