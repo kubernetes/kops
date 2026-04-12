@@ -360,7 +360,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 						Interval:            fi.PtrTo(int32(10)),
 						HealthyThreshold:    fi.PtrTo(int32(2)),
 						UnhealthyThreshold:  fi.PtrTo(int32(2)),
-						HealthCheckProtocol: elbv2types.ProtocolEnumTls,
+						HealthCheckProtocol: elbv2types.ProtocolEnumHttps,
 						Shared:              fi.PtrTo(false),
 					}
 					tg.CreateNewRevisionsWith(nlb)
@@ -406,7 +406,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					Lifecycle:           b.Lifecycle,
 					VPC:                 b.LinkToVPC(),
 					Tags:                tlsGroupTags,
-					Protocol:            elbv2types.ProtocolEnumHttps,
+					Protocol:            elbv2types.ProtocolEnumTls,
 					Port:                fi.PtrTo(int32(443)),
 					Attributes:          groupAttrs,
 					Interval:            fi.PtrTo(int32(10)),
