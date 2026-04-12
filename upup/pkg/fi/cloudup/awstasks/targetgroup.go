@@ -64,9 +64,10 @@ type TargetGroup struct {
 
 	Attributes map[string]string
 
-	Interval           *int32
-	HealthyThreshold   *int32
-	UnhealthyThreshold *int32
+	Interval            *int32
+	HealthyThreshold    *int32
+	UnhealthyThreshold  *int32
+	HealthCheckProtocol elbv2types.ProtocolEnum
 
 	info     *awsup.TargetGroupInfo
 	revision string
@@ -237,14 +238,15 @@ func (e *TargetGroup) Find(c *fi.CloudupContext) (*TargetGroup, error) {
 	tg := targetGroupInfo.TargetGroup
 
 	actual := &TargetGroup{
-		Name:               tg.TargetGroupName,
-		Port:               tg.Port,
-		Protocol:           tg.Protocol,
-		ARN:                tg.TargetGroupArn,
-		Interval:           tg.HealthCheckIntervalSeconds,
-		HealthyThreshold:   tg.HealthyThresholdCount,
-		UnhealthyThreshold: tg.UnhealthyThresholdCount,
-		VPC:                &VPC{ID: tg.VpcId},
+		Name:                tg.TargetGroupName,
+		Port:                tg.Port,
+		Protocol:            tg.Protocol,
+		ARN:                 tg.TargetGroupArn,
+		Interval:            tg.HealthCheckIntervalSeconds,
+		HealthyThreshold:    tg.HealthyThresholdCount,
+		UnhealthyThreshold:  tg.UnhealthyThresholdCount,
+		HealthCheckProtocol: tg.HealthCheckProtocol,
+		VPC:                 &VPC{ID: tg.VpcId},
 	}
 	actual.info = targetGroupInfo
 	e.info = targetGroupInfo
@@ -361,6 +363,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 			HealthCheckIntervalSeconds: e.Interval,
 			HealthyThresholdCount:      e.HealthyThreshold,
 			UnhealthyThresholdCount:    e.UnhealthyThreshold,
+			HealthCheckProtocol:        e.HealthCheckProtocol,
 			Tags:                       awsup.ELBv2Tags(tags),
 		}
 
@@ -456,7 +459,7 @@ func (_ *TargetGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 			Interval:           *e.Interval,
 			HealthyThreshold:   *e.HealthyThreshold,
 			UnhealthyThreshold: *e.UnhealthyThreshold,
-			Protocol:           elbv2types.ProtocolEnumTcp,
+			Protocol:           e.HealthCheckProtocol,
 		},
 	}
 

@@ -90,6 +90,7 @@ func (m *MockELBV2) CreateTargetGroup(ctx context.Context, request *elbv2.Create
 		VpcId:                   request.VpcId,
 		HealthyThresholdCount:   request.HealthyThresholdCount,
 		UnhealthyThresholdCount: request.UnhealthyThresholdCount,
+		HealthCheckProtocol:     request.HealthCheckProtocol,
 	}
 
 	m.tgCount++
