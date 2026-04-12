@@ -377,17 +377,18 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		tg := &awstasks.TargetGroup{
-			Name:               fi.PtrTo(sshGroupName),
-			Lifecycle:          b.Lifecycle,
-			VPC:                b.LinkToVPC(),
-			Tags:               sshGroupTags,
-			Protocol:           elbv2types.ProtocolEnumTcp,
-			Port:               fi.PtrTo(int32(22)),
-			Attributes:         groupAttrs,
-			Interval:           fi.PtrTo(int32(10)),
-			HealthyThreshold:   fi.PtrTo(int32(2)),
-			UnhealthyThreshold: fi.PtrTo(int32(2)),
-			Shared:             fi.PtrTo(false),
+			Name:                fi.PtrTo(sshGroupName),
+			Lifecycle:           b.Lifecycle,
+			VPC:                 b.LinkToVPC(),
+			Tags:                sshGroupTags,
+			Protocol:            elbv2types.ProtocolEnumTcp,
+			Port:                fi.PtrTo(int32(22)),
+			Attributes:          groupAttrs,
+			Interval:            fi.PtrTo(int32(10)),
+			HealthyThreshold:    fi.PtrTo(int32(2)),
+			UnhealthyThreshold:  fi.PtrTo(int32(2)),
+			HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+			Shared:              fi.PtrTo(false),
 		}
 		tg.CreateNewRevisionsWith(nlb)
 

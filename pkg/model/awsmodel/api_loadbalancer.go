@@ -324,17 +324,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				groupTags["Name"] = groupName
 
 				tg := &awstasks.TargetGroup{
-					Name:               fi.PtrTo(groupName),
-					Lifecycle:          b.Lifecycle,
-					VPC:                b.LinkToVPC(),
-					Tags:               groupTags,
-					Protocol:           elbv2types.ProtocolEnumTcp,
-					Port:               fi.PtrTo(int32(443)),
-					Attributes:         groupAttrs,
-					Interval:           fi.PtrTo(int32(10)),
-					HealthyThreshold:   fi.PtrTo(int32(2)),
-					UnhealthyThreshold: fi.PtrTo(int32(2)),
-					Shared:             fi.PtrTo(false),
+					Name:                fi.PtrTo(groupName),
+					Lifecycle:           b.Lifecycle,
+					VPC:                 b.LinkToVPC(),
+					Tags:                groupTags,
+					Protocol:            elbv2types.ProtocolEnumTcp,
+					Port:                fi.PtrTo(int32(443)),
+					Attributes:          groupAttrs,
+					Interval:            fi.PtrTo(int32(10)),
+					HealthyThreshold:    fi.PtrTo(int32(2)),
+					UnhealthyThreshold:  fi.PtrTo(int32(2)),
+					HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+					Shared:              fi.PtrTo(false),
 				}
 				tg.CreateNewRevisionsWith(nlb)
 				c.AddTask(tg)
@@ -349,17 +350,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					groupTags["Name"] = groupName
 
 					tg := &awstasks.TargetGroup{
-						Name:               fi.PtrTo(groupName),
-						Lifecycle:          b.Lifecycle,
-						VPC:                b.LinkToVPC(),
-						Tags:               groupTags,
-						Protocol:           elbv2types.ProtocolEnumTcp,
-						Port:               fi.PtrTo(int32(wellknownports.KopsControllerPort)),
-						Attributes:         groupAttrs,
-						Interval:           fi.PtrTo(int32(10)),
-						HealthyThreshold:   fi.PtrTo(int32(2)),
-						UnhealthyThreshold: fi.PtrTo(int32(2)),
-						Shared:             fi.PtrTo(false),
+						Name:                fi.PtrTo(groupName),
+						Lifecycle:           b.Lifecycle,
+						VPC:                 b.LinkToVPC(),
+						Tags:                groupTags,
+						Protocol:            elbv2types.ProtocolEnumTcp,
+						Port:                fi.PtrTo(int32(wellknownports.KopsControllerPort)),
+						Attributes:          groupAttrs,
+						Interval:            fi.PtrTo(int32(10)),
+						HealthyThreshold:    fi.PtrTo(int32(2)),
+						UnhealthyThreshold:  fi.PtrTo(int32(2)),
+						HealthCheckProtocol: elbv2types.ProtocolEnumTls,
+						Shared:              fi.PtrTo(false),
 					}
 					tg.CreateNewRevisionsWith(nlb)
 
@@ -374,17 +376,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					groupTags["Name"] = groupName
 
 					tg := &awstasks.TargetGroup{
-						Name:               fi.PtrTo(groupName),
-						Lifecycle:          b.Lifecycle,
-						VPC:                b.LinkToVPC(),
-						Tags:               groupTags,
-						Protocol:           elbv2types.ProtocolEnumTcp,
-						Port:               fi.PtrTo(int32(wellknownports.EtcdCiliumClientPort)),
-						Attributes:         groupAttrs,
-						Interval:           fi.PtrTo(int32(10)),
-						HealthyThreshold:   fi.PtrTo(int32(2)),
-						UnhealthyThreshold: fi.PtrTo(int32(2)),
-						Shared:             fi.PtrTo(false),
+						Name:                fi.PtrTo(groupName),
+						Lifecycle:           b.Lifecycle,
+						VPC:                 b.LinkToVPC(),
+						Tags:                groupTags,
+						Protocol:            elbv2types.ProtocolEnumTcp,
+						Port:                fi.PtrTo(int32(wellknownports.EtcdCiliumClientPort)),
+						Attributes:          groupAttrs,
+						Interval:            fi.PtrTo(int32(10)),
+						HealthyThreshold:    fi.PtrTo(int32(2)),
+						UnhealthyThreshold:  fi.PtrTo(int32(2)),
+						HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+						Shared:              fi.PtrTo(false),
 					}
 					tg.CreateNewRevisionsWith(nlb)
 
@@ -399,17 +402,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				// Override the returned name to be the expected NLB TG name
 				tlsGroupTags["Name"] = tlsGroupName
 				secondaryTG := &awstasks.TargetGroup{
-					Name:               fi.PtrTo(tlsGroupName),
-					Lifecycle:          b.Lifecycle,
-					VPC:                b.LinkToVPC(),
-					Tags:               tlsGroupTags,
-					Protocol:           elbv2types.ProtocolEnumTls,
-					Port:               fi.PtrTo(int32(443)),
-					Attributes:         groupAttrs,
-					Interval:           fi.PtrTo(int32(10)),
-					HealthyThreshold:   fi.PtrTo(int32(2)),
-					UnhealthyThreshold: fi.PtrTo(int32(2)),
-					Shared:             fi.PtrTo(false),
+					Name:                fi.PtrTo(tlsGroupName),
+					Lifecycle:           b.Lifecycle,
+					VPC:                 b.LinkToVPC(),
+					Tags:                tlsGroupTags,
+					Protocol:            elbv2types.ProtocolEnumTls,
+					Port:                fi.PtrTo(int32(443)),
+					Attributes:          groupAttrs,
+					Interval:            fi.PtrTo(int32(10)),
+					HealthyThreshold:    fi.PtrTo(int32(2)),
+					UnhealthyThreshold:  fi.PtrTo(int32(2)),
+					HealthCheckProtocol: elbv2types.ProtocolEnumTcp,
+					Shared:              fi.PtrTo(false),
 				}
 				secondaryTG.CreateNewRevisionsWith(nlb)
 				c.AddTask(secondaryTG)
