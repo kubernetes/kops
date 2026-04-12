@@ -564,14 +564,24 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 			klog.Warningf("error loading br_netfilter module: %v", err)
 		}
 	}
-	switch distribution {
-	case distributions.DistributionRocky9:
-		// Rocky 9 doesn't load nf_conntrack by default, and it's required for kube-proxy:
-		// "Error running ProxyServer" err="open /proc/sys/net/netfilter/nf_conntrack_max: no such file or directory"
-		// "command failed" err="open /proc/sys/net/netfilter/nf_conntrack_max: no such file or directory"
-		err := modprobe("nf_conntrack")
-		if err != nil {
-			klog.Warningf("error loading nf_conntrack module: %v", err)
+	if distribution.ForceNftables() {
+		// Distributions like RHEL10+ use nftables exclusively
+		// Load nf_tables and nf_conntrack to fix CNI plugins that use iptables-nft
+		for _, mod := range []string{"nf_tables", "nf_conntrack"} {
+			if err := modprobe(mod); err != nil {
+				klog.Warningf("error loading %s module: %v", mod, err)
+			}
+		}
+	} else {
+		switch distribution {
+		case distributions.DistributionRocky9:
+			// Rocky 9 doesn't load nf_conntrack by default, and it's required for kube-proxy:
+			// "Error running ProxyServer" err="open /proc/sys/net/netfilter/nf_conntrack_max: no such file or directory"
+			// "command failed" err="open /proc/sys/net/netfilter/nf_conntrack_max: no such file or directory"
+			err := modprobe("nf_conntrack")
+			if err != nil {
+				klog.Warningf("error loading nf_conntrack module: %v", err)
+			}
 		}
 	}
 	// TODO: Add to /etc/modules-load.d/ ?
