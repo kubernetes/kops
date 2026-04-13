@@ -53,7 +53,9 @@ type ElementoCloud interface {
 	VolumeClient() ecloud.VolumeClient
 	NodeupClient(ctx context.Context) ecloud.NodeupClient
 
-	// TODO: Detect and add additional fields here
+	// TODO(elemento-dns): Add DNS-zone / DNS-record client accessors here once
+	// the Elemento SDK exposes them. The provider-native DNS tasks in
+	// elementotasks/dns_record.go are the intended callers.
 }
 
 var _ fi.Cloud = &elementoCloudImplementation{}
@@ -152,6 +154,8 @@ func findServerGroups(c *elementoCloudImplementation, clusterName string) (map[s
 }
 
 func (c *elementoCloudImplementation) DNS() (dnsprovider.Interface, error) {
+	// Elemento DNS is expected to be managed through provider-native cloudup tasks,
+	// not through the generic dnsprovider.Interface used by providers such as Route53.
 	return nil, nil
 }
 
