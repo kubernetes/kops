@@ -439,8 +439,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 	}
 
 	if !b.Cluster.UsesNoneDNS() {
+		usesManagedDNSController := b.Cluster.GetCloudProvider() != kops.CloudProviderElemento
 		if b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController {
-			{
+			if usesManagedDNSController {
 				key := "dns-controller.addons.k8s.io"
 				location := key + "/k8s-1.12.yaml"
 				id := "k8s-1.12"
@@ -455,7 +456,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 			// Generate dns-controller ServiceAccount IAM permissions.
 			// Gossip and dns=none clusters do not require any cloud permissions.
-			if b.UseServiceAccountExternalPermissions() && b.Cluster.PublishesDNSRecords() {
+			if usesManagedDNSController && b.UseServiceAccountExternalPermissions() && b.Cluster.PublishesDNSRecords() {
 				serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})
 			}
 		} else if b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {

@@ -102,7 +102,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0
 )
 
-// replace github.com/Elemento-Modular-Cloud/ecloud-go v1.0.1 => ../ecloud-go
+replace github.com/Elemento-Modular-Cloud/ecloud-go => ../ecloud-go
 
 require (
 	cloud.google.com/go/auth v0.9.5 // indirect
