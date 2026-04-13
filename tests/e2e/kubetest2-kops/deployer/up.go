@@ -56,6 +56,10 @@ func (d *deployer) Up() error {
 			return fmt.Errorf("init failed to download kops from url: %v", err)
 		}
 		d.KopsBaseURL = baseURL
+		// we need to overwrite KOPS_BASE_URL when we downloaded kops for PreTestCmd
+		if err = os.Setenv("KOPS_BASE_URL", d.KopsBaseURL); err != nil {
+			return err
+		}
 	}
 
 	// In PreTestCmd, we need KOPS_BASE_URL to be set for kops calls
