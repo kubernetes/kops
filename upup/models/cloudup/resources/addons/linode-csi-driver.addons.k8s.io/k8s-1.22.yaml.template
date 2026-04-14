@@ -1,0 +1,558 @@
+# Vendored from the upstream linode-blockstorage-csi-driver chart https://github.com/linode/linode-blockstorage-csi-driver/tree/main/helm-chart/csi-driver
+# Command to render the template:
+# helm template linode-csi linode-blockstorage-csi-driver -n kube-system \
+#  --set apiToken='{{ LINODE_TOKEN }}' \
+#  --set defaultStorageClass=linode-block-storage-retain \
+#  --no-hooks | grep -v 'Source: '
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-controller-sa
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: csi-node-sa
+  namespace: kube-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: linode
+  namespace: kube-system
+stringData:
+  token: {{ LINODE_TOKEN }}
+type: Opaque
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: linode-block-storage-retain
+  namespace: kube-system
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+allowVolumeExpansion: true
+provisioner: linodebs.csi.linode.com
+reclaimPolicy: Retain
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: linode-block-storage
+  namespace: kube-system
+allowVolumeExpansion: true
+provisioner: linodebs.csi.linode.com
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-attacher-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csinodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - volumeattachments
+  - volumeattachments/status
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-provisioner-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - list
+  - watch
+  - create
+  - update
+  - patch
+- apiGroups:
+  - snapshot.storage.k8s.io
+  resources:
+  - volumesnapshots
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - snapshot.storage.k8s.io
+  resources:
+  - volumesnapshotcontents
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - csinodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-resizer-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - list
+  - watch
+  - create
+  - update
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: linode-csi-role
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: csi-controller-attacher-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-attacher-role
+subjects:
+- kind: ServiceAccount
+  name: csi-controller-sa
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: csi-controller-provisioner-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-provisioner-role
+subjects:
+- kind: ServiceAccount
+  name: csi-controller-sa
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: csi-controller-resizer-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-resizer-role
+subjects:
+- kind: ServiceAccount
+  name: csi-controller-sa
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: linode-csi-binding
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: linode-csi-role
+subjects:
+- kind: ServiceAccount
+  name: csi-node-sa
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: csi-linode-node
+  namespace: kube-system
+  labels:
+    app: csi-linode-node
+spec:
+  selector:
+    matchLabels:
+      app: csi-linode-node
+  template:
+    metadata:
+      labels:
+        app: csi-linode-node
+        role: csi-linode
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - args:
+        - --v=2
+        - --csi-address=$(ADDRESS)
+        - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+        env:
+        - name: ADDRESS
+          value: /csi/csi.sock
+        - name: DRIVER_REG_SOCK_PATH
+          value: /var/lib/kubelet/plugins/linodebs.csi.linode.com/csi.sock
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.14.0
+        name: csi-node-driver-registrar
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /csi
+          name: plugin-dir
+        - mountPath: /registration
+          name: registration-dir
+      - args:
+        - --v=2
+        env:
+        - name: CSI_ENDPOINT
+          value: unix:///csi/csi.sock
+        - name: DRIVER_ROLE
+          value: nodeserver
+        - name: ENABLE_METRICS
+          value: "false"
+        - name: METRICS_PORT
+          value: "8081"
+        image: linode/linode-blockstorage-csi-driver:v1.1.1
+        imagePullPolicy: IfNotPresent
+        name: csi-linode-plugin
+        securityContext:
+          # This container must run as privileged due to the requirement for bidirectional mount propagation
+          # See https://github.com/kubernetes/kubernetes/issues/94400
+          privileged: true
+          allowPrivilegeEscalation: true
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - SYS_ADMIN
+        volumeMounts:
+        - mountPath: /csi
+          name: plugin-dir
+        - mountPath: /var/lib/kubelet
+          mountPropagation: Bidirectional
+          name: pods-mount-dir
+        - mountPath: /dev
+          name: device-dir
+        - mountPath: /tmp
+          name: tmp
+      hostNetwork: true
+      priorityClassName: system-node-critical
+      serviceAccount: csi-node-sa
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/lib/kubelet/plugins_registry/
+          type: DirectoryOrCreate
+        name: registration-dir
+      - hostPath:
+          path: /var/lib/kubelet
+          type: Directory
+        name: kubelet-dir
+      - hostPath:
+          path: /var/lib/kubelet/plugins/linodebs.csi.linode.com
+          type: DirectoryOrCreate
+        name: plugin-dir
+      - hostPath:
+          path: /var/lib/kubelet
+          type: Directory
+        name: pods-mount-dir
+      - hostPath:
+          path: /dev
+        name: device-dir
+      - hostPath:
+          path: /etc/udev
+          type: Directory
+        name: udev-rules-etc
+      - hostPath:
+          path: /lib/udev
+          type: Directory
+        name: udev-rules-lib
+      - hostPath:
+          path: /run/udev
+          type: Directory
+        name: udev-socket
+      - hostPath:
+          path: /sys
+          type: Directory
+        name: sys
+      - hostPath:
+          path: /tmp
+          type: Directory
+        name: tmp
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: csi-linode-controller
+  namespace: kube-system
+  labels:
+    app: csi-linode-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-linode-controller
+  serviceName: csi-linode
+  template:
+    metadata:
+      labels:
+        app: csi-linode-controller
+        role: csi-linode
+    spec:
+      hostNetwork: false
+      dnsPolicy: Default
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - args:
+            - --default-fstype=ext4
+            - --volume-name-prefix=pvc
+            - --volume-name-uuid-length=16
+            - --csi-address=$(ADDRESS)
+            - --feature-gates=Topology=true
+            - --v=2
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.3.0
+          imagePullPolicy: IfNotPresent
+          name: csi-provisioner
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+        - args:
+            - --v=2
+            - --csi-address=$(ADDRESS)
+            - --timeout=30s
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.9.0
+          imagePullPolicy: IfNotPresent
+          name: csi-attacher
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+        - args:
+            - --v=2
+            - --csi-address=$(ADDRESS)
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.14.0
+          imagePullPolicy: IfNotPresent
+          name: csi-resizer
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+        - args:
+            - --v=2
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+            - name: LINODE_URL
+              value: https://api.linode.com
+            - name: DRIVER_ROLE
+              value: controller
+            - name: LINODE_VOLUME_LABEL_PREFIX
+              value: ""
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: LINODE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: "linode"
+                  key: "token"
+            - name: ENABLE_METRICS
+              value: "false"
+            - name: METRICS_PORT
+              value: "8081"
+            - name: OTEL_TRACING
+              value: "false"
+            - name: OTEL_TRACING_PORT
+              value: "4318"
+          image: linode/linode-blockstorage-csi-driver:v1.1.1
+          imagePullPolicy: IfNotPresent
+          name: csi-linode-plugin
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+          volumeMounts:
+            - mountPath: /var/lib/csi/sockets/pluginproxy/
+              name: socket-dir
+      serviceAccount: csi-controller-sa
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      volumes:
+        - emptyDir: {}
+          name: socket-dir
+        - configMap:
+            defaultMode: 493
+            name: get-linode-id
+          name: get-linode-id
+        - hostPath:
+            path: /dev
+            type: Directory
+          name: dev
+---
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: linodebs.csi.linode.com
+spec:
+  attachRequired: true
+  podInfoOnMount: true
