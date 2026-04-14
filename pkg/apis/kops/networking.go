@@ -173,6 +173,8 @@ type FlannelNetworkingSpec struct {
 	Backend string `json:"backend,omitempty"`
 	// IptablesResyncSeconds sets resync period for iptables rules, in seconds
 	IptablesResyncSeconds *int32 `json:"iptablesResyncSeconds,omitempty"`
+	// EnableNFTables makes flannel use nftables instead of iptables.
+	EnableNFTables bool `json:"enableNFTables,omitempty"`
 }
 
 // CalicoNetworkingSpec declares that we want Calico networking

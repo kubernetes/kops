@@ -92,7 +92,7 @@ data:
   net-conf.json: |
     {
       "Network": "{{ .Networking.NonMasqueradeCIDR }}",
-      "EnableNFTables": false,
+      "EnableNFTables": {{ .Networking.Flannel.EnableNFTables }},
       "Backend": {
         "Type": "{{ FlannelBackendType }}"
       }

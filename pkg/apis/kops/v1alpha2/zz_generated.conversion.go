@@ -4023,6 +4023,7 @@ func autoConvert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in
 	out.Backend = in.Backend
 	// INFO: in.DisableTxChecksumOffloading opted out of conversion generation
 	out.IptablesResyncSeconds = in.IptablesResyncSeconds
+	out.EnableNFTables = in.EnableNFTables
 	return nil
 }
 
@@ -4034,6 +4035,7 @@ func Convert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *Fl
 func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
 	out.Backend = in.Backend
 	out.IptablesResyncSeconds = in.IptablesResyncSeconds
+	out.EnableNFTables = in.EnableNFTables
 	return nil
 }
 
