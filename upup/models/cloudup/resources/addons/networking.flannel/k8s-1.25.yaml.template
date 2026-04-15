@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.27.4/Documentation/kube-flannel.yml
+# Pulled and modified from: https://raw.githubusercontent.com/coreos/flannel/v0.28.2/Documentation/kube-flannel.yml
 ---
 kind: Namespace
 apiVersion: v1
@@ -135,7 +135,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.8.0-flannel1
+        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.9.0-flannel1
         command:
         - cp
         args:
@@ -146,7 +146,7 @@ spec:
         - name: cni-plugin
           mountPath: /opt/cni/bin
       - name: install-cni
-        image: ghcr.io/flannel-io/flannel:v0.27.4
+        image: ghcr.io/flannel-io/flannel:v0.28.2
         command:
         - cp
         args:
@@ -160,7 +160,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: ghcr.io/flannel-io/flannel:v0.27.4
+        image: ghcr.io/flannel-io/flannel:v0.28.2
         command:
         - /opt/bin/flanneld
         args:
