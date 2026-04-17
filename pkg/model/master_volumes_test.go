@@ -18,6 +18,12 @@ package model
 
 import (
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linodetasks"
 )
 
 func TestValidateAWSVolumeAllow50ratio(t *testing.T) {
@@ -30,5 +36,44 @@ func TestValidateAWSVolumeAllow50ratio(t *testing.T) {
 	err := validateAWSVolume(volumeName, volumeType, int32(volumeSize), int32(volumeIops), int32(volumeThroughput))
 	if err != nil {
 		t.Errorf("Failed to validate valid etcd member spec: %v", err)
+	}
+}
+
+func TestMasterVolumeBuilderBuildLinode(t *testing.T) {
+	cluster := testutils.BuildMinimalClusterAWS("linode.k8s.local")
+	cluster.Spec.CloudProvider = kops.CloudProviderSpec{Linode: &kops.LinodeSpec{}}
+
+	var instanceGroups []*kops.InstanceGroup
+	for _, subnet := range cluster.Spec.Networking.Subnets {
+		ig := testutils.BuildMinimalMasterInstanceGroup(subnet.Name)
+		instanceGroups = append(instanceGroups, &ig)
+	}
+
+	b := &MasterVolumeBuilder{
+		KopsModelContext: &KopsModelContext{
+			IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+			AllInstanceGroups: instanceGroups,
+			InstanceGroups:    instanceGroups,
+		},
+	}
+
+	c := &fi.CloudupModelBuilderContext{Tasks: map[string]fi.CloudupTask{}}
+	if err := b.Build(c); err != nil {
+		t.Fatalf("unexpected error from Build(): %v", err)
+	}
+
+	expectedTasks := 0
+	for _, etcd := range cluster.Spec.EtcdClusters {
+		expectedTasks += len(etcd.Members)
+	}
+
+	if got := len(c.Tasks); got != expectedTasks {
+		t.Fatalf("expected %d master volume tasks for linode, got %d", expectedTasks, got)
+	}
+
+	for key, task := range c.Tasks {
+		if _, ok := task.(*linodetasks.Volume); !ok {
+			t.Fatalf("expected task %q to be *linodetasks.Volume, got %T", key, task)
+		}
 	}
 }

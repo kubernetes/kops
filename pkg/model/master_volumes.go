@@ -37,6 +37,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
+	cloudlinode "k8s.io/kops/upup/pkg/fi/cloudup/linode"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linodetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -127,6 +129,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 			case kops.CloudProviderMetal:
 				// Nothing special to do for Metal (yet)
+			case kops.CloudProviderLinode:
+				b.addLinodeVolume(c, name, volumeSize, zone, etcd, igName)
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.GetCloudProvider())
@@ -251,6 +255,23 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.CloudupModelBuilderContext, name
 		SizeGB:    fi.PtrTo(int64(volumeSize)),
 		Region:    fi.PtrTo(zone),
 		Tags:      tags,
+	}
+
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addLinodeVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, region string, etcd kops.EtcdClusterSpec, instanceGroupName string) {
+	t := &linodetasks.Volume{
+		Name:      fi.PtrTo(name),
+		Lifecycle: b.Lifecycle,
+		Region:    fi.PtrTo(region),
+		SizeGB:    fi.PtrTo(int64(volumeSize)),
+		Tags: []string{
+			cloudlinode.BuildLinodeTag(kops.LabelClusterName, b.Cluster.Name),
+			cloudlinode.BuildLinodeTag(cloudlinode.TagEtcdClusterName, etcd.Name),
+			cloudlinode.BuildLinodeTag(cloudlinode.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),
+			cloudlinode.BuildLinodeTag(cloudlinode.TagKubernetesInstanceGroup, instanceGroupName),
+		},
 	}
 
 	c.AddTask(t)

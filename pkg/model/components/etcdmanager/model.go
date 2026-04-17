@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	cloudlinode "k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -559,6 +560,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			}
 			config.VolumeNameTag = fmt.Sprintf("%s=%s", scaleway.TagInstanceGroup, instanceGroupName)
 
+		case kops.CloudProviderLinode:
+			config.VolumeProvider = "linode"
+
+			config.VolumeTag = []string{
+				cloudlinode.BuildLinodeTag(kops.LabelClusterName, b.Cluster.Name),
+				cloudlinode.BuildLinodeTag(cloudlinode.TagEtcdClusterName, etcdCluster.Name),
+				cloudlinode.BuildLinodeTag(cloudlinode.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),
+			}
+			config.VolumeNameTag = cloudlinode.BuildLinodeTag(cloudlinode.TagKubernetesInstanceGroup, instanceGroupName)
+
 		case kops.CloudProviderMetal:
 			config.VolumeProvider = "external"
 			config.BackupStore = "file:///mnt/disks/backups"
@@ -622,6 +633,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	envMap := env.BuildSystemComponentEnvVars(&b.Cluster.Spec)
 
 	container.Env = envMap.ToEnvVars()
+	if b.Cluster.GetCloudProvider() == kops.CloudProviderLinode {
+		// Linode (Akamai) Object Storage requires checksum behavior compatible with AWS SDK "when_required" mode.
+		container.Env = append(container.Env,
+			v1.EnvVar{Name: "AWS_REQUEST_CHECKSUM_CALCULATION", Value: "when_required"},
+			v1.EnvVar{Name: "AWS_RESPONSE_CHECKSUM_VALIDATION", Value: "when_required"},
+		)
+	}
 
 	if etcdCluster.Manager != nil {
 		if etcdCluster.Manager.BackupRetentionDays != nil {
