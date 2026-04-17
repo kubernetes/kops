@@ -183,6 +183,13 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 			labels[hetzner.TagKubernetesNodeLabelPrefix+k] = v
 		case kops.CloudProviderGCE:
 			// TODO: Do nothing for now while we figure out how to address GCE label length limit of 63
+		case kops.CloudProviderLinode:
+			// Linode (Akamai) tags have a 50 character limit
+			// Only store the critical kops.k8s.io/instancegroup label
+			// Role labels will be derived from the instance role tag by the identifier
+			if k == "kops.k8s.io/instancegroup" {
+				labels[k] = v
+			}
 		default:
 			labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 		}
