@@ -19,6 +19,8 @@ package resources
 type ClusterInfo struct {
 	Name        string
 	UsesNoneDNS bool
+	// Linode (Akamai) specific
+	LinodeSSHKeyName string
 	// Azure specific
 	AzureStorageAccountID    string
 	AzureSubscriptionID      string
