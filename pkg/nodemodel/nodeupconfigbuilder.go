@@ -390,7 +390,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		// This covers the clouds in UseKopsControllerForNodeConfig which use kops-controller for node config,
 		// but don't have a specialized discovery mechanism for finding kops-controller etc.
 		switch cluster.GetCloudProvider() {
-		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO, kops.CloudProviderMetal:
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO, kops.CloudProviderMetal, kops.CloudProviderLinode:
 			bootConfig.APIServerIPs = controlPlaneIPs
 		}
 	}

@@ -30,6 +30,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	linodedns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/linode"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/truncate"
@@ -118,9 +119,13 @@ func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderLinode
 }
 
-// DNS returns nil as DNS support has not yet been wired for Linode (Akamai).
+// DNS returns the Linode (Akamai) DNS provider.
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
-	return nil, nil
+	provider, err := dnsprovider.GetDnsProvider(linodedns.ProviderName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error building DNS provider: %w", err)
+	}
+	return provider, nil
 }
 
 // FindVPCInfo returns VPC information for the given ID. This is currently not implemented for Linode (Akamai).
