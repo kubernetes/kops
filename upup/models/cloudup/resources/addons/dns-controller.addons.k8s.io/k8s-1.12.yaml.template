@@ -78,6 +78,14 @@ spec:
           - secretRef:
               name: scaleway-secret
 {{- end }}
+{{- if eq GetCloudProvider "linode" }}
+        - name: LINODE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: linode
+              key: apiToken
+{{- end }}
+
         resources:
           requests:
             cpu: 50m
