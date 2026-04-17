@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/pkg/resources/hetzner"
+	"k8s.io/kops/pkg/resources/linode"
 	"k8s.io/kops/pkg/resources/openstack"
 	"k8s.io/kops/pkg/resources/scaleway"
 	"k8s.io/kops/upup/pkg/fi"
@@ -34,6 +35,7 @@ import (
 	clouddo "k8s.io/kops/upup/pkg/fi/cloudup/do"
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	cloudhetzner "k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	cloudlinode "k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	cloudscaleway "k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
@@ -54,6 +56,13 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster) (map[string]*resources
 		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterInfo)
 	case kops.CloudProviderHetzner:
 		return hetzner.ListResources(cloud.(cloudhetzner.HetznerCloud), clusterInfo)
+	case kops.CloudProviderLinode:
+		// Pass custom SSH key name (if specified) for deletion matching.
+		// Linode (Akamai) SSH keys don't support tagging, so we match by name pattern.
+		if cluster.Spec.SSHKeyName != nil {
+			clusterInfo.LinodeSSHKeyName = *cluster.Spec.SSHKeyName
+		}
+		return linode.ListResources(cloud.(cloudlinode.LinodeCloud), clusterInfo)
 	case kops.CloudProviderOpenstack:
 		return openstack.ListResources(cloud.(cloudopenstack.OpenstackCloud), clusterInfo)
 	case kops.CloudProviderAzure:
