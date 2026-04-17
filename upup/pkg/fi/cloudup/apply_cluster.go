@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/hetznermodel"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/model/linodemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/scalewaymodel"
 	"k8s.io/kops/pkg/nodemodel"
@@ -61,6 +62,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/metal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -496,6 +498,19 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			scwZone = scwCloud.Zone()
 		}
 
+	case kops.CloudProviderLinode:
+		{
+			if !featureflag.Linode.Enabled() {
+				return nil, fmt.Errorf("Linode (Akamai) support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Linode")
+			}
+			if len(sshPublicKeys) == 0 {
+				return nil, fmt.Errorf("SSH public key must be specified when running with Linode (Akamai) (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
+			}
+			if len(sshPublicKeys) != 1 {
+				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with Linode (Akamai); please delete a key using `kops delete secret`")
+			}
+		}
+
 	case kops.CloudProviderMetal:
 		// Metal is a special case, we don't need to do anything here (yet)
 
@@ -710,6 +725,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		case kops.CloudProviderMetal:
 			// No special builders for bare metal (yet)
 
+		case kops.CloudProviderLinode:
+			linodeModelContext := &linodemodel.LinodeModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&linodemodel.APILoadBalancerModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: clusterLifecycle},
+				&linodemodel.DNSModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: clusterLifecycle},
+				&linodemodel.SSHKeyModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: securityLifecycle},
+				&linodemodel.InstanceModelBuilder{LinodeModelContext: linodeModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+			)
+
 		default:
 			return nil, fmt.Errorf("unknown cloudprovider %q", cluster.GetCloudProvider())
 		}
@@ -740,6 +766,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
 		case kops.CloudProviderScaleway:
 			target = scaleway.NewScwAPITarget(cloud.(scaleway.ScwCloud))
+		case kops.CloudProviderLinode:
+			target = linode.NewAPITarget(cloud.(linode.LinodeCloud))
 		case kops.CloudProviderMetal:
 			target = metal.NewAPITarget(cloud.(*metal.Cloud), nil)
 		default:
