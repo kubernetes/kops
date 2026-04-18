@@ -29,14 +29,14 @@ import (
 )
 
 func TestInstanceFindMatch(t *testing.T) {
-	client := &fakeLinodeClient{
-		listInstancesResponse: []linodego.Instance{
+	client := &linode.MockLinodeClient{
+		ListInstancesResponse: []linodego.Instance{
 			{ID: 1001, Label: "nodes-example-1", Region: "us-east", Type: "g6-standard-2", Image: "linode/ubuntu24.04", Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:nodes-us-east"}},
 			{ID: 1002, Label: "nodes-example-2", Region: "us-east", Type: "g6-standard-2", Image: "linode/ubuntu24.04", Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:nodes-us-east"}},
 			{ID: 2001, Label: "other-ig", Region: "us-east", Type: "g6-standard-2", Image: "linode/ubuntu24.04", Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:control-plane-us-east"}},
 		},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &Instance{
@@ -64,8 +64,8 @@ func TestInstanceFindMatch(t *testing.T) {
 }
 
 func TestInstanceFindListError(t *testing.T) {
-	client := &fakeLinodeClient{listInstancesError: errors.New("api unavailable")}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{ListInstancesError: errors.New("api unavailable")}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &Instance{Tags: []string{"kops.k8s.io/cluster:example.k8s.local"}}
@@ -79,8 +79,8 @@ func TestInstanceFindListError(t *testing.T) {
 }
 
 func TestInstanceRenderLinodeCreate(t *testing.T) {
-	client := &fakeLinodeClient{}
-	target := linode.NewAPITarget(&fakeLinodeCloud{client: client})
+	client := &linode.MockLinodeClient{}
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
 	userData := fi.Resource(fi.NewStringResource("#cloud-config\nruncmd:\n  - echo hello\n"))
 	publicKey := fi.Resource(fi.NewStringResource(testOpenSSHPublicKey))
@@ -99,34 +99,34 @@ func TestInstanceRenderLinodeCreate(t *testing.T) {
 		t.Fatalf("RenderLinode returned error: %v", err)
 	}
 
-	if got, want := client.createInstanceCalls, 2; got != want {
+	if got, want := client.CreateInstanceCalls, 2; got != want {
 		t.Fatalf("unexpected create calls: got %d, want %d", got, want)
 	}
-	if got, want := client.lastCreateInstanceOpts.Region, "us-east"; got != want {
+	if got, want := client.LastCreateInstanceOpts.Region, "us-east"; got != want {
 		t.Fatalf("unexpected region: got %q, want %q", got, want)
 	}
-	if got, want := client.lastCreateInstanceOpts.Type, "g6-standard-2"; got != want {
+	if got, want := client.LastCreateInstanceOpts.Type, "g6-standard-2"; got != want {
 		t.Fatalf("unexpected type: got %q, want %q", got, want)
 	}
-	if got, want := client.lastCreateInstanceOpts.Image, "linode/ubuntu24.04"; got != want {
+	if got, want := client.LastCreateInstanceOpts.Image, "linode/ubuntu24.04"; got != want {
 		t.Fatalf("unexpected image: got %q, want %q", got, want)
 	}
-	if got := client.lastCreateInstanceOpts.RootPass; got == "" {
+	if got := client.LastCreateInstanceOpts.RootPass; got == "" {
 		t.Fatalf("expected root password to be populated")
 	}
-	if got, want := client.lastCreateInstanceOpts.PrivateIP, true; got != want {
+	if got, want := client.LastCreateInstanceOpts.PrivateIP, true; got != want {
 		t.Fatalf("unexpected private IP setting: got %t, want %t", got, want)
 	}
-	if got, want := len(client.lastCreateInstanceOpts.AuthorizedKeys), 1; got != want {
+	if got, want := len(client.LastCreateInstanceOpts.AuthorizedKeys), 1; got != want {
 		t.Fatalf("unexpected authorized key count: got %d, want %d", got, want)
 	}
-	if got, want := client.lastCreateInstanceOpts.AuthorizedKeys[0], testOpenSSHPublicKey; got != want {
+	if got, want := client.LastCreateInstanceOpts.AuthorizedKeys[0], testOpenSSHPublicKey; got != want {
 		t.Fatalf("unexpected authorized key: got %q, want %q", got, want)
 	}
-	if client.lastCreateInstanceOpts.Metadata == nil {
+	if client.LastCreateInstanceOpts.Metadata == nil {
 		t.Fatalf("expected metadata to be configured")
 	}
-	decodedUserData, err := base64.StdEncoding.DecodeString(client.lastCreateInstanceOpts.Metadata.UserData)
+	decodedUserData, err := base64.StdEncoding.DecodeString(client.LastCreateInstanceOpts.Metadata.UserData)
 	if err != nil {
 		t.Fatalf("failed to decode metadata user data: %v", err)
 	}
@@ -136,8 +136,8 @@ func TestInstanceRenderLinodeCreate(t *testing.T) {
 }
 
 func TestInstanceRenderLinodeScaleDownNotSupported(t *testing.T) {
-	client := &fakeLinodeClient{}
-	target := linode.NewAPITarget(&fakeLinodeCloud{client: client})
+	client := &linode.MockLinodeClient{}
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
 	actual := &Instance{Count: 2}
 	expected := &Instance{

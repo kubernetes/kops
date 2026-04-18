@@ -35,14 +35,14 @@ func newTestPublicKeyResource() *fi.Resource {
 
 func TestSSHKeyFindMatch(t *testing.T) {
 	publicKey := newTestPublicKeyResource()
-	client := &fakeLinodeClient{
-		listResponse: []linodego.SSHKey{{
+	client := &linode.MockLinodeClient{
+		ListSSHKeysResponse: []linodego.SSHKey{{
 			ID:     123,
 			Label:  "kubernetes.example.k8s.local-1234",
 			SSHKey: testOpenSSHPublicKey,
 		}},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &SSHKey{
@@ -64,13 +64,13 @@ func TestSSHKeyFindMatch(t *testing.T) {
 }
 
 func TestSSHKeyFindDuplicate(t *testing.T) {
-	client := &fakeLinodeClient{
-		listResponse: []linodego.SSHKey{
+	client := &linode.MockLinodeClient{
+		ListSSHKeysResponse: []linodego.SSHKey{
 			{ID: 1, Label: "kubernetes.example.k8s.local-1234", SSHKey: "ssh-rsa AAAA test"},
 			{ID: 2, Label: "kubernetes.example.k8s.local-1234", SSHKey: "ssh-rsa AAAA test"},
 		},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &SSHKey{Name: fi.PtrTo("kubernetes.example.k8s.local-1234")}
@@ -85,14 +85,14 @@ func TestSSHKeyFindDuplicate(t *testing.T) {
 
 func TestSSHKeyFindPublicKeyMismatch(t *testing.T) {
 	publicKey := newTestPublicKeyResource()
-	client := &fakeLinodeClient{
-		listResponse: []linodego.SSHKey{{
+	client := &linode.MockLinodeClient{
+		ListSSHKeysResponse: []linodego.SSHKey{{
 			ID:     123,
 			Label:  "kubernetes.example.k8s.local-1234",
 			SSHKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDbadkey",
 		}},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &SSHKey{Name: fi.PtrTo("kubernetes.example.k8s.local-1234"), PublicKey: publicKey}
@@ -106,8 +106,8 @@ func TestSSHKeyFindPublicKeyMismatch(t *testing.T) {
 }
 
 func TestSSHKeyFindListError(t *testing.T) {
-	client := &fakeLinodeClient{listError: errors.New("api unavailable")}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{ListSSHKeysError: errors.New("api unavailable")}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &SSHKey{Name: fi.PtrTo("kubernetes.example.k8s.local-1234")}
@@ -122,8 +122,8 @@ func TestSSHKeyFindListError(t *testing.T) {
 
 func TestSSHKeyRenderLinodeCreate(t *testing.T) {
 	publicKey := newTestPublicKeyResource()
-	client := &fakeLinodeClient{createResponse: &linodego.SSHKey{ID: 42, Label: "kubernetes.example.k8s.local-1234"}}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{CreateSSHKeyResponse: &linodego.SSHKey{ID: 42, Label: "kubernetes.example.k8s.local-1234"}}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	target := linode.NewAPITarget(cloud)
 
 	expected := &SSHKey{Name: fi.PtrTo("kubernetes.example.k8s.local-1234"), PublicKey: publicKey}
@@ -131,10 +131,10 @@ func TestSSHKeyRenderLinodeCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RenderLinode returned error: %v", err)
 	}
-	if got, want := client.createCalls, 1; got != want {
+	if got, want := client.CreateSSHKeyCalls, 1; got != want {
 		t.Fatalf("unexpected create calls: got %d, want %d", got, want)
 	}
-	if got, want := client.lastCreateOpts.Label, "kubernetes.example.k8s.local-1234"; got != want {
+	if got, want := client.LastCreateSSHKeyOpts.Label, "kubernetes.example.k8s.local-1234"; got != want {
 		t.Fatalf("unexpected create label: got %q, want %q", got, want)
 	}
 	if fi.ValueOf(expected.ID) != 42 {
@@ -144,8 +144,8 @@ func TestSSHKeyRenderLinodeCreate(t *testing.T) {
 
 func TestSSHKeyRenderLinodeNoopWhenActualExists(t *testing.T) {
 	publicKey := newTestPublicKeyResource()
-	client := &fakeLinodeClient{}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	target := linode.NewAPITarget(cloud)
 
 	actual := &SSHKey{Name: fi.PtrTo("kubernetes.example.k8s.local-1234"), ID: fi.PtrTo(11)}
@@ -154,14 +154,14 @@ func TestSSHKeyRenderLinodeNoopWhenActualExists(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RenderLinode returned error: %v", err)
 	}
-	if got := client.createCalls; got != 0 {
+	if got := client.CreateSSHKeyCalls; got != 0 {
 		t.Fatalf("unexpected create calls: got %d, want 0", got)
 	}
 }
 
 func TestSSHKeyRenderLinodeRequiresPublicKey(t *testing.T) {
-	client := &fakeLinodeClient{}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	target := linode.NewAPITarget(cloud)
 
 	expected := &SSHKey{Name: fi.PtrTo("kubernetes.example.k8s.local-1234")}

@@ -17,7 +17,6 @@ limitations under the License.
 package linode
 
 import (
-	"context"
 	"errors"
 	"net"
 	"reflect"
@@ -32,131 +31,6 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 )
-
-type fakeLinodeCloudClient struct {
-	listInstancesResponse []linodego.Instance
-	listInstancesError    error
-
-	listNodeBalancersResponse []linodego.NodeBalancer
-
-	deleteInstanceErr     error
-	deleteInstanceErrByID map[int]error
-	deletedInstanceIDs    []int
-
-	updateInstanceErr     error
-	updateInstanceErrByID map[int]error
-	updatedInstanceIDs    []int
-	updatedTagsByID       map[int][]string
-}
-
-func (f *fakeLinodeCloudClient) ListSSHKeys(ctx context.Context, opts *linodego.ListOptions) ([]linodego.SSHKey, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) CreateSSHKey(ctx context.Context, opts linodego.SSHKeyCreateOptions) (*linodego.SSHKey, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) DeleteSSHKey(ctx context.Context, keyID int) error {
-	return nil
-}
-
-func (f *fakeLinodeCloudClient) ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error) {
-	if f.listInstancesError != nil {
-		return nil, f.listInstancesError
-	}
-	return f.listInstancesResponse, nil
-}
-
-func (f *fakeLinodeCloudClient) CreateInstance(ctx context.Context, opts linodego.InstanceCreateOptions) (*linodego.Instance, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) DeleteInstance(ctx context.Context, linodeID int) error {
-	f.deletedInstanceIDs = append(f.deletedInstanceIDs, linodeID)
-	if f.deleteInstanceErrByID != nil {
-		if err := f.deleteInstanceErrByID[linodeID]; err != nil {
-			return err
-		}
-	}
-	return f.deleteInstanceErr
-}
-
-func (f *fakeLinodeCloudClient) UpdateInstance(ctx context.Context, linodeID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error) {
-	f.updatedInstanceIDs = append(f.updatedInstanceIDs, linodeID)
-	if opts.Tags != nil {
-		if f.updatedTagsByID == nil {
-			f.updatedTagsByID = make(map[int][]string)
-		}
-		f.updatedTagsByID[linodeID] = append([]string(nil), (*opts.Tags)...)
-	}
-	if f.updateInstanceErrByID != nil {
-		if err := f.updateInstanceErrByID[linodeID]; err != nil {
-			return nil, err
-		}
-	}
-	if f.updateInstanceErr != nil {
-		return nil, f.updateInstanceErr
-	}
-
-	updated := &linodego.Instance{ID: linodeID}
-	if opts.Tags != nil {
-		updated.Tags = append([]string(nil), (*opts.Tags)...)
-	}
-	return updated, nil
-}
-
-func (f *fakeLinodeCloudClient) ListVolumes(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Volume, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) CreateVolume(ctx context.Context, opts linodego.VolumeCreateOptions) (*linodego.Volume, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) DeleteVolume(ctx context.Context, volumeID int) error {
-	return nil
-}
-
-func (f *fakeLinodeCloudClient) ListNodeBalancers(ctx context.Context, opts *linodego.ListOptions) ([]linodego.NodeBalancer, error) {
-	return f.listNodeBalancersResponse, nil
-}
-
-func (f *fakeLinodeCloudClient) GetNodeBalancer(ctx context.Context, nodebalancerID int) (*linodego.NodeBalancer, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) CreateNodeBalancer(ctx context.Context, opts linodego.NodeBalancerCreateOptions) (*linodego.NodeBalancer, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) DeleteNodeBalancer(ctx context.Context, nodebalancerID int) error {
-	return nil
-}
-
-func (f *fakeLinodeCloudClient) ListNodeBalancerConfigs(ctx context.Context, nodebalancerID int, opts *linodego.ListOptions) ([]linodego.NodeBalancerConfig, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) CreateNodeBalancerConfig(ctx context.Context, nodebalancerID int, opts linodego.NodeBalancerConfigCreateOptions) (*linodego.NodeBalancerConfig, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) RebuildNodeBalancerConfig(ctx context.Context, nodebalancerID int, configID int, opts linodego.NodeBalancerConfigRebuildOptions) (*linodego.NodeBalancerConfig, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) ListNodeBalancerNodes(ctx context.Context, nodebalancerID int, configID int, opts *linodego.ListOptions) ([]linodego.NodeBalancerNode, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) CreateNodeBalancerNode(ctx context.Context, nodebalancerID int, configID int, opts linodego.NodeBalancerNodeCreateOptions) (*linodego.NodeBalancerNode, error) {
-	return nil, nil
-}
-
-func (f *fakeLinodeCloudClient) UpdateNodeBalancerNode(ctx context.Context, nodebalancerID int, configID int, nodeID int, opts linodego.NodeBalancerNodeUpdateOptions) (*linodego.NodeBalancerNode, error) {
-	return nil, nil
-}
 
 func ptrIP(s string) *net.IP {
 	ip := net.ParseIP(s)
@@ -226,7 +100,7 @@ func TestNewCloud(t *testing.T) {
 
 func TestDeleteInstance(t *testing.T) {
 	t.Run("deletes instance", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{}
+		client := &MockLinodeClient{}
 		cloud := &Cloud{region: "us-east", client: client}
 
 		err := cloud.DeleteInstance(&cloudinstances.CloudInstance{ID: "42"})
@@ -234,13 +108,13 @@ func TestDeleteInstance(t *testing.T) {
 			t.Fatalf("DeleteInstance returned error: %v", err)
 		}
 
-		if got, want := client.deletedInstanceIDs, []int{42}; !reflect.DeepEqual(got, want) {
+		if got, want := client.DeletedInstanceIDs, []int{42}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("unexpected deleted IDs: got %v, want %v", got, want)
 		}
 	})
 
 	t.Run("rejects invalid id", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{}
+		client := &MockLinodeClient{}
 		cloud := &Cloud{region: "us-east", client: client}
 
 		err := cloud.DeleteInstance(&cloudinstances.CloudInstance{ID: "not-a-number"})
@@ -251,13 +125,13 @@ func TestDeleteInstance(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		if len(client.deletedInstanceIDs) != 0 {
-			t.Fatalf("expected no delete calls, got %v", client.deletedInstanceIDs)
+		if len(client.DeletedInstanceIDs) != 0 {
+			t.Fatalf("expected no delete calls, got %v", client.DeletedInstanceIDs)
 		}
 	})
 
 	t.Run("ignores not found", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{deleteInstanceErrByID: map[int]error{
+		client := &MockLinodeClient{DeleteInstanceErrByID: map[int]error{
 			42: &linodego.Error{Code: 404, Message: "not found"},
 		}}
 		cloud := &Cloud{region: "us-east", client: client}
@@ -267,13 +141,13 @@ func TestDeleteInstance(t *testing.T) {
 			t.Fatalf("DeleteInstance returned error: %v", err)
 		}
 
-		if got, want := client.deletedInstanceIDs, []int{42}; !reflect.DeepEqual(got, want) {
+		if got, want := client.DeletedInstanceIDs, []int{42}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("unexpected deleted IDs: got %v, want %v", got, want)
 		}
 	})
 
 	t.Run("returns API errors", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{deleteInstanceErrByID: map[int]error{
+		client := &MockLinodeClient{DeleteInstanceErrByID: map[int]error{
 			42: errors.New("api unavailable"),
 		}}
 		cloud := &Cloud{region: "us-east", client: client}
@@ -290,8 +164,8 @@ func TestDeleteInstance(t *testing.T) {
 
 func TestDeleteGroup(t *testing.T) {
 	t.Run("deletes instances for group and cluster", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{
-			listInstancesResponse: []linodego.Instance{
+		client := &MockLinodeClient{
+			ListInstancesResponse: []linodego.Instance{
 				{ID: 101, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east", "kops.k8s.io/cluster:example.k8s.local"}},
 				{ID: 102, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east", "kops.k8s.io/cluster:example.k8s.local"}},
 				{ID: 103, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east", "kops.k8s.io/cluster:other.k8s.local"}},
@@ -316,15 +190,15 @@ func TestDeleteGroup(t *testing.T) {
 			t.Fatalf("DeleteGroup returned error: %v", err)
 		}
 
-		sort.Ints(client.deletedInstanceIDs)
-		if got, want := client.deletedInstanceIDs, []int{101, 102}; !reflect.DeepEqual(got, want) {
+		sort.Ints(client.DeletedInstanceIDs)
+		if got, want := client.DeletedInstanceIDs, []int{101, 102}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("unexpected deleted IDs: got %v, want %v", got, want)
 		}
 	})
 
 	t.Run("deletes by instance-group tag when cluster label is missing", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{
-			listInstancesResponse: []linodego.Instance{
+		client := &MockLinodeClient{
+			ListInstancesResponse: []linodego.Instance{
 				{ID: 101, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east", "kops.k8s.io/cluster:example.k8s.local"}},
 				{ID: 102, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east", "kops.k8s.io/cluster:other.k8s.local"}},
 				{ID: 103, Tags: []string{"kops.k8s.io/instance-group:control-plane-us-east", "kops.k8s.io/cluster:example.k8s.local"}},
@@ -341,14 +215,14 @@ func TestDeleteGroup(t *testing.T) {
 			t.Fatalf("DeleteGroup returned error: %v", err)
 		}
 
-		sort.Ints(client.deletedInstanceIDs)
-		if got, want := client.deletedInstanceIDs, []int{101, 102}; !reflect.DeepEqual(got, want) {
+		sort.Ints(client.DeletedInstanceIDs)
+		if got, want := client.DeletedInstanceIDs, []int{101, 102}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("unexpected deleted IDs: got %v, want %v", got, want)
 		}
 	})
 
 	t.Run("returns list errors", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{listInstancesError: errors.New("api unavailable")}
+		client := &MockLinodeClient{ListInstancesError: errors.New("api unavailable")}
 		cloud := &Cloud{region: "us-east", client: client}
 
 		group := &cloudinstances.CloudInstanceGroup{InstanceGroup: &kops.InstanceGroup{ObjectMeta: metav1.ObjectMeta{Name: "nodes-us-east"}}}
@@ -362,9 +236,9 @@ func TestDeleteGroup(t *testing.T) {
 	})
 
 	t.Run("returns delete errors", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{
-			listInstancesResponse: []linodego.Instance{{ID: 101, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east"}}},
-			deleteInstanceErrByID: map[int]error{101: errors.New("api unavailable")},
+		client := &MockLinodeClient{
+			ListInstancesResponse: []linodego.Instance{{ID: 101, Tags: []string{"kops.k8s.io/instance-group:nodes-us-east"}}},
+			DeleteInstanceErrByID: map[int]error{101: errors.New("api unavailable")},
 		}
 		cloud := &Cloud{region: "us-east", client: client}
 
@@ -381,8 +255,8 @@ func TestDeleteGroup(t *testing.T) {
 
 func TestDetachInstance(t *testing.T) {
 	t.Run("removes instance-role tag", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{
-			listInstancesResponse: []linodego.Instance{{
+		client := &MockLinodeClient{
+			ListInstancesResponse: []linodego.Instance{{
 				ID:   42,
 				Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:nodes-us-east", "kops.k8s.io/instance-role:Node", "env:test"},
 			}},
@@ -394,31 +268,31 @@ func TestDetachInstance(t *testing.T) {
 			t.Fatalf("DetachInstance returned error: %v", err)
 		}
 
-		if got, want := client.updatedInstanceIDs, []int{42}; !reflect.DeepEqual(got, want) {
+		if got, want := client.UpdatedInstanceIDs, []int{42}; !reflect.DeepEqual(got, want) {
 			t.Fatalf("unexpected updated IDs: got %v, want %v", got, want)
 		}
 
 		wantTags := []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:nodes-us-east", "env:test"}
-		if got := client.updatedTagsByID[42]; !reflect.DeepEqual(got, wantTags) {
+		if got := client.UpdatedTagsByID[42]; !reflect.DeepEqual(got, wantTags) {
 			t.Fatalf("unexpected updated tags: got %v, want %v", got, wantTags)
 		}
 	})
 
 	t.Run("returns nil when instance already missing", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{listInstancesResponse: []linodego.Instance{{ID: 101, Tags: []string{"kops.k8s.io/instance-role:Node"}}}}
+		client := &MockLinodeClient{ListInstancesResponse: []linodego.Instance{{ID: 101, Tags: []string{"kops.k8s.io/instance-role:Node"}}}}
 		cloud := &Cloud{region: "us-east", client: client}
 
 		err := cloud.DetachInstance(&cloudinstances.CloudInstance{ID: "42"})
 		if err != nil {
 			t.Fatalf("DetachInstance returned error: %v", err)
 		}
-		if len(client.updatedInstanceIDs) != 0 {
-			t.Fatalf("expected no update calls, got %v", client.updatedInstanceIDs)
+		if len(client.UpdatedInstanceIDs) != 0 {
+			t.Fatalf("expected no update calls, got %v", client.UpdatedInstanceIDs)
 		}
 	})
 
 	t.Run("returns nil when no instance-role tag", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{listInstancesResponse: []linodego.Instance{{
+		client := &MockLinodeClient{ListInstancesResponse: []linodego.Instance{{
 			ID:   42,
 			Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:nodes-us-east"},
 		}}}
@@ -428,13 +302,13 @@ func TestDetachInstance(t *testing.T) {
 		if err != nil {
 			t.Fatalf("DetachInstance returned error: %v", err)
 		}
-		if len(client.updatedInstanceIDs) != 0 {
-			t.Fatalf("expected no update calls, got %v", client.updatedInstanceIDs)
+		if len(client.UpdatedInstanceIDs) != 0 {
+			t.Fatalf("expected no update calls, got %v", client.UpdatedInstanceIDs)
 		}
 	})
 
 	t.Run("rejects invalid id", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{}
+		client := &MockLinodeClient{}
 		cloud := &Cloud{region: "us-east", client: client}
 
 		err := cloud.DetachInstance(&cloudinstances.CloudInstance{ID: "not-a-number"})
@@ -447,7 +321,7 @@ func TestDetachInstance(t *testing.T) {
 	})
 
 	t.Run("returns list errors", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{listInstancesError: errors.New("api unavailable")}
+		client := &MockLinodeClient{ListInstancesError: errors.New("api unavailable")}
 		cloud := &Cloud{region: "us-east", client: client}
 
 		err := cloud.DetachInstance(&cloudinstances.CloudInstance{ID: "42"})
@@ -460,9 +334,9 @@ func TestDetachInstance(t *testing.T) {
 	})
 
 	t.Run("ignores not found update errors", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{
-			listInstancesResponse: []linodego.Instance{{ID: 42, Tags: []string{"kops.k8s.io/instance-role:Node"}}},
-			updateInstanceErrByID: map[int]error{42: &linodego.Error{Code: 404, Message: "not found"}},
+		client := &MockLinodeClient{
+			ListInstancesResponse: []linodego.Instance{{ID: 42, Tags: []string{"kops.k8s.io/instance-role:Node"}}},
+			UpdateInstanceErrByID: map[int]error{42: &linodego.Error{Code: 404, Message: "not found"}},
 		}
 		cloud := &Cloud{region: "us-east", client: client}
 
@@ -473,9 +347,9 @@ func TestDetachInstance(t *testing.T) {
 	})
 
 	t.Run("returns update errors", func(t *testing.T) {
-		client := &fakeLinodeCloudClient{
-			listInstancesResponse: []linodego.Instance{{ID: 42, Tags: []string{"kops.k8s.io/instance-role:Node"}}},
-			updateInstanceErrByID: map[int]error{42: errors.New("api unavailable")},
+		client := &MockLinodeClient{
+			ListInstancesResponse: []linodego.Instance{{ID: 42, Tags: []string{"kops.k8s.io/instance-role:Node"}}},
+			UpdateInstanceErrByID: map[int]error{42: errors.New("api unavailable")},
 		}
 		cloud := &Cloud{region: "us-east", client: client}
 
@@ -512,8 +386,8 @@ func TestGetApiIngressStatus(t *testing.T) {
 		{
 			name:         "load balancer ingress",
 			loadBalancer: true,
-			client: &fakeLinodeCloudClient{
-				listNodeBalancersResponse: []linodego.NodeBalancer{
+			client: &MockLinodeClient{
+				ListNodeBalancersResponse: []linodego.NodeBalancer{
 					{
 						Label: fi.PtrTo("api-example-k8s-local"),
 						IPv4:  fi.PtrTo("203.0.113.20"),
@@ -525,7 +399,7 @@ func TestGetApiIngressStatus(t *testing.T) {
 		{
 			name:         "empty ingress when load balancer not created yet",
 			loadBalancer: true,
-			client: &fakeLinodeCloudClient{listInstancesResponse: []linodego.Instance{
+			client: &MockLinodeClient{ListInstancesResponse: []linodego.Instance{
 				{
 					Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-role:ControlPlane"},
 					IPv4: []*net.IP{ptrIP("10.0.0.10"), ptrIP("198.51.100.10")},
@@ -539,7 +413,7 @@ func TestGetApiIngressStatus(t *testing.T) {
 		},
 		{
 			name: "control-plane ingress from instances when no load balancer",
-			client: &fakeLinodeCloudClient{listInstancesResponse: []linodego.Instance{
+			client: &MockLinodeClient{ListInstancesResponse: []linodego.Instance{
 				{
 					Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-role:ControlPlane"},
 					IPv4: []*net.IP{ptrIP("10.0.0.10"), ptrIP("198.51.100.10")},
@@ -558,7 +432,7 @@ func TestGetApiIngressStatus(t *testing.T) {
 		{
 			name:         "empty ingress when no api endpoint data",
 			loadBalancer: true,
-			client:       &fakeLinodeCloudClient{},
+			client:       &MockLinodeClient{},
 		},
 	}
 

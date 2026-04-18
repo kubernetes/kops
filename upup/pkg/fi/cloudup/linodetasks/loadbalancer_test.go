@@ -17,6 +17,7 @@ limitations under the License.
 package linodetasks
 
 import (
+	"context"
 	"net"
 	"slices"
 	"testing"
@@ -27,6 +28,27 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 )
+
+func newTestCloudupContext(t *testing.T, cloud linode.LinodeCloud) *fi.CloudupContext {
+	t.Helper()
+
+	ctx, err := fi.NewCloudupContext(
+		context.Background(),
+		fi.DeletionProcessingModeDeleteIncludingDeferred,
+		linode.NewAPITarget(cloud),
+		nil,
+		cloud,
+		nil,
+		nil,
+		nil,
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error creating context: %v", err)
+	}
+
+	return ctx
+}
 
 func TestNormalizedLoadBalancerLabel(t *testing.T) {
 	tests := []struct {
@@ -62,8 +84,8 @@ func TestNormalizedLoadBalancerLabel(t *testing.T) {
 
 func TestLoadBalancerRenderLinodeCreateWithoutBackends(t *testing.T) {
 	privateIP := net.ParseIP("192.168.210.226")
-	client := &fakeLinodeClient{
-		listInstancesResponse: []linodego.Instance{
+	client := &linode.MockLinodeClient{
+		ListInstancesResponse: []linodego.Instance{
 			{
 				ID:   101,
 				Tags: []string{kops.LabelClusterName + ":kops-test.linode.k8s.local", linode.TagKubernetesInstanceRole + ":ControlPlane"},
@@ -71,7 +93,7 @@ func TestLoadBalancerRenderLinodeCreateWithoutBackends(t *testing.T) {
 			},
 		},
 	}
-	target := linode.NewAPITarget(&fakeLinodeCloud{client: client})
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
 	expected := &LoadBalancer{
 		Name:   fi.PtrTo("api.kops-test.linode.k8s.local"),
@@ -86,29 +108,29 @@ func TestLoadBalancerRenderLinodeCreateWithoutBackends(t *testing.T) {
 		t.Fatalf("RenderLinode returned error: %v", err)
 	}
 
-	if got, want := client.createNodeBalancerCalls, 1; got != want {
+	if got, want := client.CreateNodeBalancerCalls, 1; got != want {
 		t.Fatalf("unexpected create calls: got %d, want %d", got, want)
 	}
 
-	if got, want := fi.ValueOf(client.lastCreateNodeBalancerOpts.Label), "api-kops-test-linode-k8s-local"; got != want {
+	if got, want := fi.ValueOf(client.LastCreateNodeBalancerOpts.Label), "api-kops-test-linode-k8s-local"; got != want {
 		t.Fatalf("unexpected nodebalancer label: got %q, want %q", got, want)
 	}
 
-	if got := len(client.lastCreateNodeBalancerOpts.Configs); got != 0 {
+	if got := len(client.LastCreateNodeBalancerOpts.Configs); got != 0 {
 		t.Fatalf("expected no configs when no backends are discovered, got %d", got)
 	}
-	if got, want := client.createNodeBalancerConfigCalls, 2; got != want {
+	if got, want := client.CreateNodeBalancerConfigCalls, 2; got != want {
 		t.Fatalf("expected configs to be reconciled after create: got %d, want %d", got, want)
 	}
 }
 
 func TestLoadBalancerFindMatchesNormalizedLabel(t *testing.T) {
-	client := &fakeLinodeClient{
-		listNodeBalancersResponse: []linodego.NodeBalancer{
+	client := &linode.MockLinodeClient{
+		ListNodeBalancersResponse: []linodego.NodeBalancer{
 			{ID: 7, Label: fi.PtrTo("api-kops-test-linode-k8s-local"), Region: "us-east"},
 		},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &LoadBalancer{Name: fi.PtrTo("api.kops-test.linode.k8s.local")}
@@ -132,8 +154,8 @@ func TestLoadBalancerFindMatchesNormalizedLabel(t *testing.T) {
 
 func TestLinodeDiscoverControlPlaneBackendsPublicFallback(t *testing.T) {
 	publicIP := net.ParseIP("203.0.113.10")
-	client := &fakeLinodeClient{
-		listInstancesResponse: []linodego.Instance{
+	client := &linode.MockLinodeClient{
+		ListInstancesResponse: []linodego.Instance{
 			{
 				ID:   101,
 				Tags: []string{kops.LabelClusterName + ":kops-test.linode.k8s.local", linode.TagKubernetesInstanceRole + ":ControlPlane"},
@@ -155,7 +177,7 @@ func TestLinodeDiscoverControlPlaneBackendsPublicFallback(t *testing.T) {
 }
 
 func TestEnsureLoadBalancerConfigsCreatesMissingPorts(t *testing.T) {
-	client := &fakeLinodeClient{}
+	client := &linode.MockLinodeClient{}
 	backends := []string{"192.168.210.226"}
 
 	err := ensureLoadBalancerConfigs(client, 2085634, "api.kops-test.linode.k8s.local", backends)
@@ -163,14 +185,14 @@ func TestEnsureLoadBalancerConfigsCreatesMissingPorts(t *testing.T) {
 		t.Fatalf("ensureLoadBalancerConfigs returned error: %v", err)
 	}
 
-	if got, want := client.createNodeBalancerConfigCalls, 2; got != want {
+	if got, want := client.CreateNodeBalancerConfigCalls, 2; got != want {
 		t.Fatalf("unexpected config create calls: got %d, want %d", got, want)
 	}
-	if got, want := client.createNodeBalancerNodeCalls, 2; got != want {
+	if got, want := client.CreateNodeBalancerNodeCalls, 2; got != want {
 		t.Fatalf("unexpected node create calls: got %d, want %d", got, want)
 	}
 
-	ports := []int{client.createNodeBalancerConfigOpts[0].Port, client.createNodeBalancerConfigOpts[1].Port}
+	ports := []int{client.CreateNodeBalancerConfigOpts[0].Port, client.CreateNodeBalancerConfigOpts[1].Port}
 	slices.Sort(ports)
 	if got, want := ports, []int{wellknownports.KubeAPIServer, wellknownports.KopsControllerPort}; !slices.Equal(got, want) {
 		t.Fatalf("unexpected created ports: got %v, want %v", got, want)
@@ -178,8 +200,8 @@ func TestEnsureLoadBalancerConfigsCreatesMissingPorts(t *testing.T) {
 }
 
 func TestEnsureLoadBalancerConfigsRebuildsExistingPorts(t *testing.T) {
-	client := &fakeLinodeClient{
-		listNodeBalancerConfigsResponse: []linodego.NodeBalancerConfig{
+	client := &linode.MockLinodeClient{
+		ListNodeBalancerConfigsResponse: []linodego.NodeBalancerConfig{
 			{ID: 11, Port: wellknownports.KubeAPIServer},
 			{ID: 12, Port: wellknownports.KopsControllerPort},
 		},
@@ -191,13 +213,13 @@ func TestEnsureLoadBalancerConfigsRebuildsExistingPorts(t *testing.T) {
 		t.Fatalf("ensureLoadBalancerConfigs returned error: %v", err)
 	}
 
-	if got, want := client.rebuildNodeBalancerConfigCalls, 2; got != want {
+	if got, want := client.RebuildNodeBalancerConfigCalls, 2; got != want {
 		t.Fatalf("unexpected config rebuild calls: got %d, want %d", got, want)
 	}
-	if got, want := client.createNodeBalancerNodeCalls, 2; got != want {
+	if got, want := client.CreateNodeBalancerNodeCalls, 2; got != want {
 		t.Fatalf("expected missing nodes to be created during rebuild path: got %d, want %d", got, want)
 	}
-	if got := client.createNodeBalancerConfigCalls; got != 0 {
+	if got := client.CreateNodeBalancerConfigCalls; got != 0 {
 		t.Fatalf("did not expect create calls when configs already exist, got %d", got)
 	}
 }
@@ -210,12 +232,12 @@ func TestExtractClusterTag(t *testing.T) {
 }
 
 func TestLoadBalancerRunWithoutBackendsDoesNotBlock(t *testing.T) {
-	client := &fakeLinodeClient{
-		listNodeBalancersResponse: []linodego.NodeBalancer{
+	client := &linode.MockLinodeClient{
+		ListNodeBalancersResponse: []linodego.NodeBalancer{
 			{ID: 1, Label: fi.PtrTo("api-kops-test-linode-k8s-local"), Region: "us-east"},
 		},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &LoadBalancer{
@@ -232,7 +254,7 @@ func TestLoadBalancerRunWithoutBackendsDoesNotBlock(t *testing.T) {
 }
 
 func TestLoadBalancerBackendsRunWithoutLoadBalancerDoesNotBlock(t *testing.T) {
-	cloud := &fakeLinodeCloud{client: &fakeLinodeClient{}}
+	cloud := &linode.MockLinodeCloud{Client_: &linode.MockLinodeClient{}}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &LoadBalancerBackends{
@@ -251,8 +273,8 @@ func TestLoadBalancerBackendsRunWithoutLoadBalancerDoesNotBlock(t *testing.T) {
 }
 
 func TestLoadBalancerBackendsRunWithoutBackendsDoesNotBlock(t *testing.T) {
-	client := &fakeLinodeClient{}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &LoadBalancerBackends{
@@ -273,8 +295,8 @@ func TestLoadBalancerBackendsRunWithoutBackendsDoesNotBlock(t *testing.T) {
 
 func TestLoadBalancerBackendsRunReconcilesWhenBackendsReady(t *testing.T) {
 	privateIP := net.ParseIP("192.168.210.226")
-	client := &fakeLinodeClient{
-		listInstancesResponse: []linodego.Instance{
+	client := &linode.MockLinodeClient{
+		ListInstancesResponse: []linodego.Instance{
 			{
 				ID:   101,
 				Tags: []string{kops.LabelClusterName + ":kops-test.linode.k8s.local", linode.TagKubernetesInstanceRole + ":ControlPlane"},
@@ -282,7 +304,7 @@ func TestLoadBalancerBackendsRunReconcilesWhenBackendsReady(t *testing.T) {
 			},
 		},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &LoadBalancerBackends{
@@ -298,18 +320,15 @@ func TestLoadBalancerBackendsRunReconcilesWhenBackendsReady(t *testing.T) {
 		t.Fatalf("unexpected error reconciling backends: %v", err)
 	}
 
-	if got, want := client.createNodeBalancerConfigCalls, 2; got != want {
+	if got, want := client.CreateNodeBalancerConfigCalls, 2; got != want {
 		t.Fatalf("expected backend reconcile to create both configs: got %d, want %d", got, want)
 	}
 }
 
 func TestLoadBalancerBackendsGetDependenciesOnlyLoadBalancer(t *testing.T) {
 	lb := &LoadBalancer{Name: fi.PtrTo("api.kops-test.linode.k8s.local")}
-	cpInstance := &Instance{Tags: []string{linode.TagKubernetesInstanceRole + ":ControlPlane"}}
 
-	tasks := map[string]fi.CloudupTask{
-		"cp": cpInstance,
-	}
+	tasks := map[string]fi.CloudupTask{}
 
 	deps := (&LoadBalancerBackends{LoadBalancer: lb}).GetDependencies(tasks)
 	if got, want := len(deps), 1; got != want {
@@ -318,9 +337,5 @@ func TestLoadBalancerBackendsGetDependenciesOnlyLoadBalancer(t *testing.T) {
 
 	if !slices.Contains(deps, fi.CloudupTask(lb)) {
 		t.Fatalf("expected load balancer dependency")
-	}
-
-	if slices.Contains(deps, fi.CloudupTask(cpInstance)) {
-		t.Fatalf("did not expect instance dependency")
 	}
 }

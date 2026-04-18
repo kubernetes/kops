@@ -27,13 +27,13 @@ import (
 )
 
 func TestVolumeFindMatch(t *testing.T) {
-	client := &fakeLinodeClient{
-		listVolumesResponse: []linodego.Volume{
+	client := &linode.MockLinodeClient{
+		ListVolumesResponse: []linodego.Volume{
 			{ID: 101, Label: "cp-0-etcd-main-example-k8s-local", Region: "us-ord", Size: 20, Tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/etcd:main", "kops.k8s.io/instance-group:control-plane-us-ord"}},
 			{ID: 102, Label: "other", Region: "us-ord", Size: 20, Tags: []string{"kops.k8s.io/cluster:other.k8s.local"}},
 		},
 	}
-	cloud := &fakeLinodeCloud{client: client}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &Volume{
@@ -72,8 +72,8 @@ func TestVolumeFindMatch(t *testing.T) {
 }
 
 func TestVolumeFindListError(t *testing.T) {
-	client := &fakeLinodeClient{listVolumesError: errors.New("api unavailable")}
-	cloud := &fakeLinodeCloud{client: client}
+	client := &linode.MockLinodeClient{ListVolumesError: errors.New("api unavailable")}
+	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
 	task := &Volume{Name: fi.PtrTo("cp-0.etcd-main.example.k8s.local")}
@@ -87,8 +87,8 @@ func TestVolumeFindListError(t *testing.T) {
 }
 
 func TestVolumeRenderLinodeCreate(t *testing.T) {
-	client := &fakeLinodeClient{}
-	target := linode.NewAPITarget(&fakeLinodeCloud{client: client})
+	client := &linode.MockLinodeClient{}
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
 	expected := &Volume{
 		Name:   fi.PtrTo("cp-0.etcd-main.example.k8s.local"),
@@ -105,16 +105,16 @@ func TestVolumeRenderLinodeCreate(t *testing.T) {
 		t.Fatalf("RenderLinode returned error: %v", err)
 	}
 
-	if got, want := client.createVolumeCalls, 1; got != want {
+	if got, want := client.CreateVolumeCalls, 1; got != want {
 		t.Fatalf("unexpected create calls: got %d, want %d", got, want)
 	}
-	if got, want := client.lastCreateVolumeOpts.Region, "us-ord"; got != want {
+	if got, want := client.LastCreateVolumeOpts.Region, "us-ord"; got != want {
 		t.Fatalf("unexpected region: got %q, want %q", got, want)
 	}
-	if got, want := client.lastCreateVolumeOpts.Size, 20; got != want {
+	if got, want := client.LastCreateVolumeOpts.Size, 20; got != want {
 		t.Fatalf("unexpected size: got %d, want %d", got, want)
 	}
-	if got, want := client.lastCreateVolumeOpts.Label, "cp-0-etcd-main-example-k8s-local"; got != want {
+	if got, want := client.LastCreateVolumeOpts.Label, "cp-0-etcd-main-example-k8s-local"; got != want {
 		t.Fatalf("unexpected label: got %q, want %q", got, want)
 	}
 }
