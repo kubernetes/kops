@@ -49,13 +49,13 @@ fi
 # shellcheck disable=SC2086
 git clone ${CLONE_ARGS} https://github.com/kubernetes-sigs/aws-load-balancer-controller .
 
-ginkgo -v -r test/e2e/ingress -- \
+ginkgo -v -p -r test/e2e/ingress -- \
     -cluster-name="${CLUSTER_NAME}" \
     -aws-region="${REGION}" \
     -aws-vpc-id="$VPC" \
     -ginkgo.junit-report="${REPORT_DIR}/junit-ingress.xml"
 
-ginkgo -v -r test/e2e/service -- \
+ginkgo -v -p -r test/e2e/service -- \
     -cluster-name="${CLUSTER_NAME}" \
     -aws-region="${REGION}" \
     -aws-vpc-id="$VPC" \
