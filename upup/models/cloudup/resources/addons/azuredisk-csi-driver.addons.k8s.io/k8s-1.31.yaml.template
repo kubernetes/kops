@@ -746,6 +746,11 @@ spec:
               name: socket-dir
             - mountPath: /etc/kubernetes/
               name: azure-cred
+{{ if UseServiceAccountExternalPermissions }}
+            - mountPath: /var/run/secrets/azure/tokens
+              name: azure-identity-token
+              readOnly: true
+{{ end }}
           resources:
             limits:
               memory: 500Mi
@@ -763,6 +768,16 @@ spec:
           hostPath:
             path: /etc/kubernetes/
             type: DirectoryOrCreate
+{{ if UseServiceAccountExternalPermissions }}
+        - name: azure-identity-token
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                audience: api://AzureADTokenExchange
+                expirationSeconds: 3600
+                path: azure-identity-token
+{{ end }}
 ---
 # Source: azuredisk-csi-driver/templates/csi-azuredisk-driver.yaml
 apiVersion: storage.k8s.io/v1

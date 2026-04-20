@@ -18,6 +18,7 @@ package kops
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/blang/semver/v4"
 	corev1 "k8s.io/api/core/v1"
@@ -922,13 +923,29 @@ func (c *Cluster) AzureRouteTableName() string {
 	return c.Name
 }
 
-// AzureNetworkSecurityGroupName returns the name of the network security group for the cluster.
-// The NSG shares its name with the virtual network.
-func (c *Cluster) AzureNetworkSecurityGroupName() string {
+// AzureNetworkName returns the name of the Azure Virtual Network for the cluster.
+// If Networking.NetworkID is set (shared network), that is used; otherwise the
+// cluster name is used.
+func (c *Cluster) AzureNetworkName() string {
 	if c.Spec.Networking.NetworkID != "" {
 		return c.Spec.Networking.NetworkID
 	}
 	return c.Name
+}
+
+// AzureNetworkSecurityGroupName returns the name of the network security group for the cluster.
+// The NSG shares its name with the virtual network; callers relying on this invariant
+// should prefer this helper over re-deriving the name inline.
+func (c *Cluster) AzureNetworkSecurityGroupName() string {
+	return c.AzureNetworkName()
+}
+
+// AzureWorkloadIdentityName returns the name of the User-Assigned Managed Identity
+// used for Azure Workload Identity. Both the pre-flight in apply_cluster.go and the
+// task-graph entry in the azuremodel must compute the identical string — callers
+// should delegate here rather than re-deriving it inline.
+func (c *Cluster) AzureWorkloadIdentityName() string {
+	return "wi-" + strings.ReplaceAll(c.Name, ".", "-")
 }
 
 func (c *Cluster) PublishesDNSRecords() bool {

@@ -66,6 +66,11 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 				if err != nil {
 					return err
 				}
+			case *vfs.AzureBlobPath:
+				serviceAccountIssuer, err = base.GetHTTPsUrl()
+				if err != nil {
+					return err
+				}
 			case *vfs.MemFSPath:
 				if !base.IsClusterReadable() {
 					// If this _is_ a test, we should call MarkClusterReadable

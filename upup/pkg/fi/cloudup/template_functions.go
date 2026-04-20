@@ -352,6 +352,45 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["IsIPv6Only"] = tf.IsIPv6Only
 	dest["UseServiceAccountExternalPermissions"] = tf.UseServiceAccountExternalPermissions
+	dest["AzureWorkloadIdentityClientID"] = func() string {
+		if cluster.Spec.CloudProvider.Azure != nil {
+			return cluster.Spec.CloudProvider.Azure.WorkloadIdentityClientID
+		}
+		return ""
+	}
+	dest["AzureTenantID"] = func() string {
+		if cluster.Spec.CloudProvider.Azure != nil {
+			return cluster.Spec.CloudProvider.Azure.TenantID
+		}
+		return ""
+	}
+	dest["AzureSubscriptionID"] = func() string {
+		if cluster.Spec.CloudProvider.Azure != nil {
+			return cluster.Spec.CloudProvider.Azure.SubscriptionID
+		}
+		return ""
+	}
+	dest["AzureResourceGroupName"] = func() string {
+		return cluster.AzureResourceGroupName()
+	}
+	dest["AzureVnetName"] = func() string {
+		return cluster.AzureNetworkName()
+	}
+	dest["AzureSubnetName"] = func() string {
+		if len(cluster.Spec.Networking.Subnets) > 0 {
+			return cluster.Spec.Networking.Subnets[0].Name
+		}
+		return ""
+	}
+	dest["AzureLocation"] = func() string {
+		if len(cluster.Spec.Networking.Subnets) > 0 {
+			return cluster.Spec.Networking.Subnets[0].Region
+		}
+		return ""
+	}
+	dest["AzureSecurityGroupName"] = func() string {
+		return cluster.AzureNetworkSecurityGroupName()
+	}
 
 	if cluster.Spec.ClusterAutoscaler != nil {
 		dest["ClusterAutoscalerPriorities"] = func() string {

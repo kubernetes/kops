@@ -330,6 +330,17 @@ func TestMinimalAzure(t *testing.T) {
 		runTestTerraformAzure(t)
 }
 
+// TestMinimalAzureWi runs the test on a minimum Azure configuration with
+// Workload Identity (useServiceAccountExternalPermissions) enabled. This pins
+// the rendered CCM and azuredisk-csi addon manifests on the workload-identity
+// branch so future refactors can't silently break the aadClientID secret or
+// the projected ServiceAccountToken volume.
+func TestMinimalAzureWi(t *testing.T) {
+	newIntegrationTest("minimal-azure.example.com", "minimal_azure_wi").
+		withVersion("v1alpha3").
+		runTestTerraformAzure(t)
+}
+
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
 func TestMinimal_NoneDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").

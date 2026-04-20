@@ -1,0 +1,136 @@
+kind: Addons
+metadata:
+  name: bootstrap
+spec:
+  addons:
+  - id: k8s-1.16
+    manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
+    manifestHash: a2057dc197671928da52652a46ee4b94a0a7fec30e3bab523d3d5fefbde6eb2d
+    name: kops-controller.addons.k8s.io
+    needsRollingUpdate: control-plane
+    selector:
+      k8s-addon: kops-controller.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.12
+    manifest: coredns.addons.k8s.io/k8s-1.12.yaml
+    manifestHash: 789ad3c2dd2f9efc6d834138323e4b788db7e73677e07715f498f53418c16447
+    name: coredns.addons.k8s.io
+    selector:
+      k8s-addon: coredns.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.9
+    manifest: kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml
+    manifestHash: da91eb5cf9a29f1b03510007d6d54603aef2fc23a305abc9ba496c510dfd3bc7
+    name: kubelet-api.rbac.addons.k8s.io
+    selector:
+      k8s-addon: kubelet-api.rbac.addons.k8s.io
+    version: 9.99.0
+  - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
+    manifestHash: 686cc69e559a1c6f5e8b94e38de54a575a25c432ed5ceec565244b965fb5f07f
+    name: limit-range.addons.k8s.io
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.31
+    manifest: storage-azure.addons.k8s.io/k8s-1.31.yaml
+    manifestHash: 4d21016eb0e4e957280c1ece90eacdc127c40a11c9e8686d7075df47949e4ada
+    name: storage-azure.addons.k8s.io
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=storage-azure.addons.k8s.io,app.kubernetes.io/managed-by=kops
+    selector:
+      k8s-addon: storage-azure.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.31
+    manifest: azure-cloud-controller.addons.k8s.io/k8s-1.31.yaml
+    manifestHash: f937ba013cd383694b317c3f14198cb202791c1dbce7ec81f6577e45515b7635
+    name: azure-cloud-controller.addons.k8s.io
+    selector:
+      k8s-addon: azure-cloud-controller.addons.k8s.io
+    version: 9.99.0
+  - id: k8s-1.31
+    manifest: azuredisk-csi-driver.addons.k8s.io/k8s-1.31.yaml
+    manifestHash: e48a7bda27c1b2ba5f26f9f1d67e945824645300a40892ae0386afb84ec309b3
+    name: azuredisk-csi-driver.addons.k8s.io
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: admissionregistration.k8s.io
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=azuredisk-csi-driver.addons.k8s.io,app.kubernetes.io/managed-by=kops
+    selector:
+      k8s-addon: azuredisk-csi-driver.addons.k8s.io
+    version: 9.99.0

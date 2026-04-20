@@ -67,6 +67,9 @@ github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthoriza
 # github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute v1.0.0
 ## explicit; go 1.18
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute
+# github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi v1.3.0
+## explicit; go 1.23.0
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi
 # github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork v1.1.0
 ## explicit; go 1.18
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork

@@ -63,6 +63,8 @@ type AzureCloud interface {
 	LoadBalancer() LoadBalancersClient
 	PublicIPAddress() PublicIPAddressesClient
 	NatGateway() NatGatewaysClient
+	ManagedIdentity() ManagedIdentityClient
+	FederatedIdentityCredential() FederatedIdentityCredentialClient
 }
 
 type azureCloudImplementation struct {
@@ -85,6 +87,9 @@ type azureCloudImplementation struct {
 	publicIPAddressesClient         PublicIPAddressesClient
 	natGatewaysClient               NatGatewaysClient
 	storageAccountsClient           StorageAccountsClient
+	// Azure Workload Identity
+	managedIdentityClient             ManagedIdentityClient
+	federatedIdentityCredentialClient FederatedIdentityCredentialClient
 }
 
 var _ fi.Cloud = (*azureCloudImplementation)(nil)
@@ -166,6 +171,12 @@ func newAzureCloud(subscriptionID, resourceGroupName, location string, tags map[
 		return nil, err
 	}
 	if azureCloudImpl.storageAccountsClient, err = newStorageAccountsClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.managedIdentityClient, err = newManagedIdentityClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.federatedIdentityCredentialClient, err = newFederatedIdentityCredentialClientImpl(subscriptionID, cred); err != nil {
 		return nil, err
 	}
 
@@ -420,4 +431,12 @@ func (c *azureCloudImplementation) PublicIPAddress() PublicIPAddressesClient {
 
 func (c *azureCloudImplementation) NatGateway() NatGatewaysClient {
 	return c.natGatewaysClient
+}
+
+func (c *azureCloudImplementation) ManagedIdentity() ManagedIdentityClient {
+	return c.managedIdentityClient
+}
+
+func (c *azureCloudImplementation) FederatedIdentityCredential() FederatedIdentityCredentialClient {
+	return c.federatedIdentityCredentialClient
 }

@@ -1,0 +1,104 @@
+apiVersion: kops.k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal-azure.example.com
+spec:
+  api:
+    access:
+    - 0.0.0.0/0
+    - ::/0
+    dns: {}
+    loadBalancer:
+      type: Public
+    publicName: api.minimal-azure.example.com
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider:
+    azure:
+      adminUser: admin-user
+      storageAccountID: /subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage
+      subscriptionID: sub-123
+      tenantID: tenant-123
+  configStore:
+    base: memfs://tests/minimal-azure.example.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-eastus-1
+      name: a
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: control-plane-eastus-1
+      name: a
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    legacy: false
+    useServiceAccountExternalPermissions: true
+  kubelet:
+    anonymousAuth: false
+  kubernetesVersion: v1.35.0
+  networking:
+    cni: {}
+    networkCIDR: 10.0.0.0/16
+    nonMasqueradeCIDR: 100.64.0.0/10
+    subnets:
+    - cidr: 10.0.0.0/24
+      name: eastus
+      region: eastus
+      type: Public
+    topology:
+      dns: None
+  serviceAccountIssuerDiscovery:
+    discoveryStore: memfs://discovery.example.com/minimal-azure.example.com
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+
+---
+
+apiVersion: kops.k8s.io/v1alpha3
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-azure.example.com
+  name: control-plane-eastus-1
+spec:
+  associatePublicIP: true
+  image: Canonical:UbuntuServer:18.04-LTS:latest
+  machineType: Standard_B2s
+  maxSize: 1
+  minSize: 1
+  role: ControlPlane
+  subnets:
+  - eastus
+  zones:
+  - eastus-1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha3
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-azure.example.com
+  name: nodes
+spec:
+  associatePublicIP: true
+  image: Canonical:UbuntuServer:18.04-LTS:latest
+  machineType: Standard_B2s
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - eastus
+  zones:
+  - eastus-1

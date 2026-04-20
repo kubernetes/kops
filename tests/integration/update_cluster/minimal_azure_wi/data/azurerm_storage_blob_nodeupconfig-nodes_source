@@ -1,0 +1,64 @@
+Assets:
+  amd64:
+  - 2f4ed7778681649b81244426c29c5d98df60ccabf83d561d69e61c1cbb943ddf@https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubelet
+  - a2e984a18a0c063279d692533031c1eff93a262afcc0afdc517375432d060989@https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl
+  - b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090@https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
+  - 4793dc5c1f34ebf8402990d0050f3c294aa3c794cd5a4baa403c1cf10602326d@https://github.com/containerd/containerd/releases/download/v2.1.6/containerd-2.1.6-linux-amd64.tar.gz
+  - 5966ca40b6187b30e33bfc299c5f1fe72e8c1aa01cf3fefdadf391668f47f103@https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.amd64
+  arm64:
+  - aa658d077348b43d238f50966a583f4244b2a7d45590c77b3b165b7d44983ab8@https://dl.k8s.io/release/v1.35.0/bin/linux/arm64/kubelet
+  - 58f82f9fe796c375c5c4b8439850b0f3f4d401a52434052f2df46035a8789e25@https://dl.k8s.io/release/v1.35.0/bin/linux/arm64/kubectl
+  - 01e0e22acc7f7004e4588c1fe1871cc86d7ab562cd858e1761c4641d89ebfaa4@https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz
+  - 88d6e32348c36628c8500a630c6dd4b3cb8c680b1d18dc8d1d19041f67757c6e@https://github.com/containerd/containerd/releases/download/v2.1.6/containerd-2.1.6-linux-arm64.tar.gz
+  - d6dcab36d1b6af1b72c7f0662e5fcf446a291271ba6006532b95c4144e19d428@https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.arm64
+AzureAdminUser: admin-user
+AzureLocation: eastus
+AzureResourceGroup: minimal-azure.example.com
+AzureRouteTableName: minimal-azure.example.com
+AzureSecurityGroupName: minimal-azure.example.com
+AzureSubnetName: eastus
+AzureSubscriptionID: sub-123
+AzureTenantID: tenant-123
+CAs: {}
+ClusterName: minimal-azure.example.com
+Hooks:
+- null
+- null
+InstallCNIAssets: true
+KeypairIDs:
+  kubernetes-ca: "6982820025135291416230495506"
+KubeProxy:
+  clusterCIDR: 100.96.0.0/11
+  cpuRequest: 100m
+  image: registry.k8s.io/kube-proxy:v1.35.0
+  logLevel: 2
+KubeletConfig:
+  anonymousAuth: false
+  cgroupDriver: systemd
+  cgroupRoot: /
+  cloudProvider: external
+  clusterDNS: 100.64.0.10
+  clusterDomain: cluster.local
+  enableDebuggingHandlers: true
+  evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  kubeconfigPath: /var/lib/kubelet/kubeconfig
+  logLevel: 2
+  nodeLabels:
+    node-role.kubernetes.io/node: ""
+  podManifestPath: /etc/kubernetes/manifests
+  protectKernelDefaults: true
+  shutdownGracePeriod: 30s
+  shutdownGracePeriodCriticalPods: 10s
+KubernetesVersion: 1.35.0
+Networking:
+  nonMasqueradeCIDR: 100.64.0.0/10
+  serviceClusterIPRange: 100.64.0.0/13
+UpdatePolicy: automatic
+containerdConfig:
+  logLevel: info
+  runc:
+    version: 1.3.4
+  sandboxImage: registry.k8s.io/pause:3.10.1
+  version: 2.1.6
+usesLegacyGossip: false
+usesNoneDNS: true

@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	armmsilib "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi"
 	"github.com/blang/semver/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
@@ -467,6 +468,17 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			if len(sshPublicKeys) != 1 {
 				return nil, fmt.Errorf("exactly one 'admin' SSH public key can be specified when running with AzureCloud; please delete a key using `kops delete secret`")
 			}
+
+			// Pre-create the UAMI for workload identity so that the client ID
+			// is available to template functions during addon manifest generation.
+			if modelContext.UseServiceAccountExternalPermissions() {
+				azureCloud := cloud.(azure.AzureCloud)
+				clientID, err := ensureAzureWorkloadIdentity(ctx, azureCloud, cluster)
+				if err != nil {
+					return nil, fmt.Errorf("ensuring Azure workload identity: %w", err)
+				}
+				cluster.Spec.CloudProvider.Azure.WorkloadIdentityClientID = clientID
+			}
 		}
 	case kops.CloudProviderOpenstack:
 		{
@@ -681,8 +693,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				&azuremodel.APILoadBalancerModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
 				&azuremodel.NetworkModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
 				&azuremodel.ResourceGroupModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
-
 				&azuremodel.VMScaleSetModelBuilder{AzureModelContext: azureModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
+				&azuremodel.WorkloadIdentityModelBuilder{AzureModelContext: azureModelContext, Lifecycle: securityLifecycle},
 			)
 		case kops.CloudProviderOpenstack:
 			openstackModelContext := &openstackmodel.OpenstackModelContext{
@@ -1084,4 +1096,58 @@ func ChannelForCluster(vfsContext *vfs.VFSContext, c *kops.Cluster) (*kops.Chann
 		channelLocation = kops.DefaultChannel
 	}
 	return kops.LoadChannel(vfsContext, channelLocation)
+}
+
+// ensureAzureWorkloadIdentity tries to find or create a User-Assigned Managed Identity for workload identity
+// and returns its client ID. If the resource group doesn't exist yet (first run), returns empty string —
+// the task graph will create the RG and UAMI, and the client ID will be available on the next run.
+func ensureAzureWorkloadIdentity(ctx context.Context, cloud azure.AzureCloud, cluster *kops.Cluster) (string, error) {
+	// If the client ID is already known (e.g. from a previous run), return it.
+	if cluster.Spec.CloudProvider.Azure.WorkloadIdentityClientID != "" {
+		return cluster.Spec.CloudProvider.Azure.WorkloadIdentityClientID, nil
+	}
+
+	rgName := cluster.AzureResourceGroupName()
+	identityName := cluster.AzureWorkloadIdentityName()
+
+	// Try to find an existing identity.
+	found, err := cloud.ManagedIdentity().Get(ctx, rgName, identityName)
+	if err == nil && found.Properties != nil && found.Properties.ClientID != nil {
+		klog.Infof("Found existing Azure workload identity %q with client ID %s", identityName, *found.Properties.ClientID)
+		return *found.Properties.ClientID, nil
+	}
+
+	// Check if the resource group exists. If not, we can't create the identity yet.
+	rgs, err := cloud.ResourceGroup().List(ctx)
+	if err != nil {
+		return "", fmt.Errorf("listing resource groups: %w", err)
+	}
+	rgExists := false
+	for _, rg := range rgs {
+		if rg.Name != nil && *rg.Name == rgName {
+			rgExists = true
+			break
+		}
+	}
+	if !rgExists {
+		klog.Infof("Resource group %q does not exist yet; workload identity will be configured on next cluster update", rgName)
+		return "", nil
+	}
+
+	klog.Infof("Creating Azure workload identity %q in resource group %q", identityName, rgName)
+	identity := armmsilib.Identity{
+		Location: fi.PtrTo(cloud.Region()),
+		Tags:     map[string]*string{},
+	}
+	cloud.AddClusterTags(identity.Tags)
+	result, err := cloud.ManagedIdentity().CreateOrUpdate(ctx, rgName, identityName, identity)
+	if err != nil {
+		return "", fmt.Errorf("creating managed identity %q: %w", identityName, err)
+	}
+	if result.Properties == nil || result.Properties.ClientID == nil {
+		return "", fmt.Errorf("managed identity %q created but client ID not returned", identityName)
+	}
+
+	klog.Infof("Created Azure workload identity %q with client ID %s", identityName, *result.Properties.ClientID)
+	return *result.Properties.ClientID, nil
 }

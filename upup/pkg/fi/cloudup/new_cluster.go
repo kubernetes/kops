@@ -402,6 +402,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			cluster.Spec.ServiceAccountIssuerDiscovery.EnableAWSOIDCProvider = true
 			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.PtrTo(true)
 		}
+		if cluster.GetCloudProvider() == api.CloudProviderAzure {
+			cluster.Spec.IAM.UseServiceAccountExternalPermissions = fi.PtrTo(true)
+		}
 	}
 
 	err = setupVPC(opt, cluster, cloud)

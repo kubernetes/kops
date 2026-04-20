@@ -1,3 +1,28 @@
+{{ if UseServiceAccountExternalPermissions }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-cloud-provider
+  namespace: kube-system
+type: Opaque
+stringData:
+  cloud-config: |
+    {
+      "tenantId": "{{ AzureTenantID }}",
+      "subscriptionId": "{{ AzureSubscriptionID }}",
+      "resourceGroup": "{{ AzureResourceGroupName }}",
+      "location": "{{ AzureLocation }}",
+      "vnetName": "{{ AzureVnetName }}",
+      "subnetName": "{{ AzureSubnetName }}",
+      "securityGroupName": "{{ AzureSecurityGroupName }}",
+      "useFederatedWorkloadIdentityExtension": true,
+      "aadFederatedTokenFile": "/var/run/secrets/azure/tokens/azure-identity-token",
+      "aadClientID": "{{ AzureWorkloadIdentityClientID }}",
+      "useInstanceMetadata": true,
+      "disableAvailabilitySetNodes": true
+    }
+---
+{{ end }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -244,14 +269,22 @@ spec:
             cpu: '{{ or .ExternalCloudControllerManager.CPURequest "100m" }}'
             memory: 128Mi
         volumeMounts:
+{{ if UseServiceAccountExternalPermissions }}
+        - mountPath: /etc/kubernetes
+          name: azure-cloud-config
+          readOnly: true
+{{ else }}
         - mountPath: /etc/kubernetes
           name: etc-kubernetes
+{{ end }}
         - mountPath: /etc/ssl
           name: ssl-mount
           readOnly: true
+{{ if not (UseServiceAccountExternalPermissions) }}
         - mountPath: /var/lib/waagent/ManagedIdentity-Settings
           name: msi
           readOnly: true
+{{ end }}
         - mountPath: /var/run/secrets/azure/tokens
           name: azure-identity-token
           readOnly: true
@@ -276,15 +309,26 @@ spec:
         topologyKey: kubernetes.io/hostname
         whenUnsatisfiable: DoNotSchedule
       volumes:
+{{ if UseServiceAccountExternalPermissions }}
+      - name: azure-cloud-config
+        secret:
+          secretName: azure-cloud-provider
+          items:
+          - key: cloud-config
+            path: azure.json
+{{ else }}
       - hostPath:
           path: /etc/kubernetes
         name: etc-kubernetes
+{{ end }}
       - hostPath:
           path: /etc/ssl
         name: ssl-mount
+{{ if not (UseServiceAccountExternalPermissions) }}
       - hostPath:
           path: /var/lib/waagent/ManagedIdentity-Settings
         name: msi
+{{ end }}
       - name: azure-identity-token
         projected:
           defaultMode: 420

@@ -45,8 +45,11 @@ type RoleAssignment struct {
 
 	Scope      *string
 	VMScaleSet *VMScaleSet
-	ID         *string
-	RoleDefID  *string
+	// ManagedIdentity is an alternative principal source to VMScaleSet.
+	// Exactly one of VMScaleSet or ManagedIdentity should be set.
+	ManagedIdentity *ManagedIdentity
+	ID              *string
+	RoleDefID       *string
 }
 
 var (
@@ -60,12 +63,22 @@ func (r *RoleAssignment) CompareWithID() *string {
 	return r.Name
 }
 
+// principalID returns the principal ID from either VMScaleSet or ManagedIdentity.
+func (r *RoleAssignment) principalID() *string {
+	if r.ManagedIdentity != nil && r.ManagedIdentity.PrincipalID != nil {
+		return r.ManagedIdentity.PrincipalID
+	}
+	if r.VMScaleSet != nil && r.VMScaleSet.PrincipalID != nil {
+		return r.VMScaleSet.PrincipalID
+	}
+	return nil
+}
+
 // Find discovers the RoleAssignment in the cloud provider.
 func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
-	if r.VMScaleSet.PrincipalID == nil {
-		// PrincipalID of the VM Scale Set hasn't yet been
-		// populated. No corresponding Role Assignment
-		// shouldn't exist in Cloud.
+	pid := r.principalID()
+	if pid == nil {
+		// PrincipalID hasn't yet been populated.
 		return nil, nil
 	}
 
@@ -75,15 +88,13 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		return nil, err
 	}
 
-	principalID := *r.VMScaleSet.PrincipalID
+	principalID := *pid
 	var found *authz.RoleAssignment
 	for i := range rs {
 		ra := rs[i]
 		if ra.Properties == nil {
 			continue
 		}
-		// Use a name constructed by VMSS and Role definition ID to find a Role Assignment. We cannot use ra.Name
-		// as it is set to a randomly generated GUID.
 		l := strings.Split(*ra.Properties.RoleDefinitionID, "/")
 		roleDefID := l[len(l)-1]
 		if *ra.Properties.PrincipalID == principalID && roleDefID == *r.RoleDefID {
@@ -95,36 +106,45 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		return nil, nil
 	}
 
-	// Query VM Scale Sets and find one that has matching Principal ID.
-	vs, err := cloud.VMScaleSet().List(context.TODO(), *r.VMScaleSet.ResourceGroup.Name)
-	if err != nil {
-		return nil, err
-	}
-	var foundVMSS *compute.VirtualMachineScaleSet
-	for _, v := range vs {
-		if v.Identity == nil {
-			continue
-		}
-		if *v.Identity.PrincipalID == principalID {
-			foundVMSS = v
-			break
-		}
-	}
-	if foundVMSS == nil {
-		return nil, fmt.Errorf("corresponding VM Scale Set not found for Role Assignment: %s", *found.ID)
-	}
-
-	r.ID = found.ID
-	return &RoleAssignment{
+	result := &RoleAssignment{
 		Name:      r.Name,
 		Lifecycle: r.Lifecycle,
 		Scope:     found.Properties.Scope,
-		VMScaleSet: &VMScaleSet{
-			Name: foundVMSS.Name,
-		},
 		ID:        found.ID,
 		RoleDefID: to.Ptr(filepath.Base(*found.Properties.RoleDefinitionID)),
-	}, nil
+	}
+
+	// Populate the original principal source reference.
+	if r.ManagedIdentity != nil {
+		result.ManagedIdentity = &ManagedIdentity{
+			Name: r.ManagedIdentity.Name,
+		}
+	} else if r.VMScaleSet != nil {
+		// Query VM Scale Sets and find one that has matching Principal ID.
+		vs, err := cloud.VMScaleSet().List(context.TODO(), *r.VMScaleSet.ResourceGroup.Name)
+		if err != nil {
+			return nil, err
+		}
+		var foundVMSS *compute.VirtualMachineScaleSet
+		for _, v := range vs {
+			if v.Identity == nil {
+				continue
+			}
+			if *v.Identity.PrincipalID == principalID {
+				foundVMSS = v
+				break
+			}
+		}
+		if foundVMSS == nil {
+			return nil, fmt.Errorf("corresponding VM Scale Set not found for Role Assignment: %s", *found.ID)
+		}
+		result.VMScaleSet = &VMScaleSet{
+			Name: foundVMSS.Name,
+		}
+	}
+
+	r.ID = found.ID
+	return result, nil
 }
 
 // Run implements fi.Task.Run.
@@ -169,7 +189,7 @@ func createNewRoleAssignment(t *azure.AzureAPITarget, e *RoleAssignment) error {
 	roleAssignment := authz.RoleAssignmentCreateParameters{
 		Properties: &authz.RoleAssignmentProperties{
 			RoleDefinitionID: to.Ptr(roleDefID),
-			PrincipalID:      e.VMScaleSet.PrincipalID,
+			PrincipalID:      e.principalID(),
 		},
 	}
 	ra, err := t.Cloud.RoleAssignment().Create(context.TODO(), scope, roleAssignmentName, roleAssignment)

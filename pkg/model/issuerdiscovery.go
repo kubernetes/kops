@@ -123,6 +123,20 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 			klog.Infof("using user managed serviceAccountIssuers")
 		}
 
+	case *vfs.AzureBlobPath:
+		// Azure Blob Storage uses container-level public access (Private / Blob /
+		// Container), not per-object ACLs like S3 or GCS, so kops cannot flip a
+		// PublicACL on the individual discovery files. The user must pre-configure
+		// the container with anonymous "Blob" access before running kops; otherwise
+		// the OIDC discovery endpoint is unreachable and AAD token exchange fails.
+		isPublic, err := discoveryStore.IsBucketPublic(ctx)
+		if err != nil {
+			return fmt.Errorf("checking if Azure Blob container was public: %w", err)
+		}
+		if !isPublic {
+			return fmt.Errorf("serviceAccountIssuers Azure Blob storage %q is not public", discoveryStore.Path())
+		}
+
 	case *vfs.MemFSPath:
 		// ok
 

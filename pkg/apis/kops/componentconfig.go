@@ -958,6 +958,10 @@ type AzureSpec struct {
 	RouteTableName string `json:"routeTableName,omitempty"`
 	// AdminUser specifies the admin user of VMs.
 	AdminUser string `json:"adminUser,omitempty"`
+	// WorkloadIdentityClientID is the client ID of the User-Assigned Managed Identity
+	// used for Azure Workload Identity. This is populated automatically by kops
+	// when UseServiceAccountExternalPermissions is enabled.
+	WorkloadIdentityClientID string `json:"workloadIdentityClientID,omitempty"`
 }
 
 // CloudConfiguration defines the cloud provider configuration

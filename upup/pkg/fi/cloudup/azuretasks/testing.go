@@ -21,9 +21,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -59,6 +61,9 @@ type MockAzureCloud struct {
 	PublicIPAddressesClient         *MockPublicIPAddressesClient
 	NatGatewaysClient               *MockNatGatewaysClient
 	StorageAccountsClient           *MockStorageAccountsClient
+	// Azure Workload Identity
+	ManagedIdentitiesClient            *MockManagedIdentityClient
+	FederatedIdentityCredentialsClient *MockFederatedIdentityCredentialClient
 }
 
 var _ azure.AzureCloud = (*MockAzureCloud)(nil)
@@ -119,6 +124,12 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		StorageAccountsClient: &MockStorageAccountsClient{
 			SAs: map[string]*armstorage.Account{},
+		},
+		ManagedIdentitiesClient: &MockManagedIdentityClient{
+			Identities: map[string]*armmsi.Identity{},
+		},
+		FederatedIdentityCredentialsClient: &MockFederatedIdentityCredentialClient{
+			Credentials: map[string]*armmsi.FederatedIdentityCredential{},
 		},
 	}
 }
@@ -270,6 +281,16 @@ func (c *MockAzureCloud) PublicIPAddress() azure.PublicIPAddressesClient {
 // NatGateway returns the nat gateway client.
 func (c *MockAzureCloud) NatGateway() azure.NatGatewaysClient {
 	return c.NatGatewaysClient
+}
+
+// ManagedIdentity returns the managed identity client.
+func (c *MockAzureCloud) ManagedIdentity() azure.ManagedIdentityClient {
+	return c.ManagedIdentitiesClient
+}
+
+// FederatedIdentityCredential returns the federated identity credential client.
+func (c *MockAzureCloud) FederatedIdentityCredential() azure.FederatedIdentityCredentialClient {
+	return c.FederatedIdentityCredentialsClient
 }
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
@@ -831,6 +852,73 @@ func (c *MockStorageAccountsClient) List(ctx context.Context) ([]*armstorage.Acc
 	var l []*armstorage.Account
 	for _, sa := range c.SAs {
 		l = append(l, sa)
+	}
+	return l, nil
+}
+
+// MockManagedIdentityClient is a mock implementation of managed identity client.
+type MockManagedIdentityClient struct {
+	Identities map[string]*armmsi.Identity
+}
+
+var _ azure.ManagedIdentityClient = (*MockManagedIdentityClient)(nil)
+
+func (c *MockManagedIdentityClient) Get(ctx context.Context, resourceGroupName, identityName string) (*armmsi.Identity, error) {
+	id, ok := c.Identities[identityName]
+	if !ok {
+		return nil, &azcore.ResponseError{StatusCode: 404, ErrorCode: "ResourceNotFound"}
+	}
+	return id, nil
+}
+
+func (c *MockManagedIdentityClient) CreateOrUpdate(ctx context.Context, resourceGroupName, identityName string, parameters armmsi.Identity) (*armmsi.Identity, error) {
+	parameters.Name = &identityName
+	clientID := uuid.New().String()
+	principalID := uuid.New().String()
+	if parameters.Properties == nil {
+		parameters.Properties = &armmsi.UserAssignedIdentityProperties{}
+	}
+	parameters.Properties.ClientID = &clientID
+	parameters.Properties.PrincipalID = &principalID
+	c.Identities[identityName] = &parameters
+	return &parameters, nil
+}
+
+func (c *MockManagedIdentityClient) Delete(ctx context.Context, resourceGroupName, identityName string) error {
+	delete(c.Identities, identityName)
+	return nil
+}
+
+// MockFederatedIdentityCredentialClient is a mock implementation of federated identity credential client.
+type MockFederatedIdentityCredentialClient struct {
+	Credentials map[string]*armmsi.FederatedIdentityCredential
+}
+
+var _ azure.FederatedIdentityCredentialClient = (*MockFederatedIdentityCredentialClient)(nil)
+
+func (c *MockFederatedIdentityCredentialClient) Get(ctx context.Context, resourceGroupName, identityName, credentialName string) (*armmsi.FederatedIdentityCredential, error) {
+	cred, ok := c.Credentials[credentialName]
+	if !ok {
+		return nil, &azcore.ResponseError{StatusCode: 404, ErrorCode: "ResourceNotFound"}
+	}
+	return cred, nil
+}
+
+func (c *MockFederatedIdentityCredentialClient) CreateOrUpdate(ctx context.Context, resourceGroupName, identityName, credentialName string, parameters armmsi.FederatedIdentityCredential) (*armmsi.FederatedIdentityCredential, error) {
+	parameters.Name = &credentialName
+	c.Credentials[credentialName] = &parameters
+	return &parameters, nil
+}
+
+func (c *MockFederatedIdentityCredentialClient) Delete(ctx context.Context, resourceGroupName, identityName, credentialName string) error {
+	delete(c.Credentials, credentialName)
+	return nil
+}
+
+func (c *MockFederatedIdentityCredentialClient) List(ctx context.Context, resourceGroupName, identityName string) ([]*armmsi.FederatedIdentityCredential, error) {
+	var l []*armmsi.FederatedIdentityCredential
+	for _, cred := range c.Credentials {
+		l = append(l, cred)
 	}
 	return l, nil
 }

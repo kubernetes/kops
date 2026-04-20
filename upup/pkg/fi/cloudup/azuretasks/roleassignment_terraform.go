@@ -32,12 +32,33 @@ type terraformAzureRoleAssignment struct {
 }
 
 func (*RoleAssignment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RoleAssignment) error {
+	principalID, err := e.terraformPrincipalID()
+	if err != nil {
+		return err
+	}
 	roleDefinitionID := fmt.Sprintf("%s/providers/Microsoft.Authorization/roleDefinitions/%s", fi.ValueOf(e.Scope), fi.ValueOf(e.RoleDefID))
 	tf := &terraformAzureRoleAssignment{
 		Scope:                        e.Scope,
 		RoleDefinitionID:             &roleDefinitionID,
-		PrincipalID:                  e.VMScaleSet.terraformPrincipalID(),
+		PrincipalID:                  principalID,
 		SkipServicePrincipalAADCheck: fi.PtrTo(true),
 	}
 	return t.RenderResource("azurerm_role_assignment", fi.ValueOf(e.Name), tf)
+}
+
+// terraformPrincipalID resolves the principal ID Literal from whichever
+// principal source (VMScaleSet or ManagedIdentity) is set. The fi-task-level
+// invariant is that exactly one is set; if that's violated we return an error
+// rather than silently picking one.
+func (r *RoleAssignment) terraformPrincipalID() (*terraformWriter.Literal, error) {
+	switch {
+	case r.ManagedIdentity != nil && r.VMScaleSet != nil:
+		return nil, fmt.Errorf("RoleAssignment %q has both ManagedIdentity and VMScaleSet set; only one is allowed", fi.ValueOf(r.Name))
+	case r.ManagedIdentity != nil:
+		return r.ManagedIdentity.terraformPrincipalID(), nil
+	case r.VMScaleSet != nil:
+		return r.VMScaleSet.terraformPrincipalID(), nil
+	default:
+		return nil, fmt.Errorf("RoleAssignment %q has no principal source set", fi.ValueOf(r.Name))
+	}
 }

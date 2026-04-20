@@ -238,6 +238,8 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 				}
 			case *vfs.GSPath:
 				// No known restrictions currently. Added here to avoid falling into the default catch all below.
+			case *vfs.AzureBlobPath:
+				// Azure Blob Storage is supported as a discovery store.
 			case *vfs.MemFSPath:
 				// memfs is ok for tests; not OK otherwise
 				if !base.IsClusterReadable() {
@@ -245,7 +247,7 @@ func validateServiceAccountIssuerDiscovery(c *kops.Cluster, said *kops.ServiceAc
 					allErrs = append(allErrs, field.Invalid(saidStoreField, discoveryStore, "S3 is the only supported VFS for discoveryStore"))
 				}
 			default:
-				allErrs = append(allErrs, field.Invalid(saidStoreField, discoveryStore, "S3 is the only supported VFS for discoveryStore"))
+				allErrs = append(allErrs, field.Invalid(saidStoreField, discoveryStore, "S3, GCS, and Azure Blob are the only supported VFS types for discoveryStore"))
 			}
 		}
 	}

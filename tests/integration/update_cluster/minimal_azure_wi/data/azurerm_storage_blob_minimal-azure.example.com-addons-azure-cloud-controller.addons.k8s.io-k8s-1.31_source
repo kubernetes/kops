@@ -1,0 +1,426 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+  name: azure-cloud-provider
+  namespace: kube-system
+stringData:
+  cloud-config: |-
+    {
+      "tenantId": "tenant-123",
+      "subscriptionId": "sub-123",
+      "resourceGroup": "minimal-azure.example.com",
+      "location": "eastus",
+      "vnetName": "minimal-azure.example.com",
+      "subnetName": "eastus",
+      "securityGroupName": "minimal-azure.example.com",
+      "useFederatedWorkloadIdentityExtension": true,
+      "aadFederatedTokenFile": "/var/run/secrets/azure/tokens/azure-identity-token",
+      "aadClientID": "",
+      "useInstanceMetadata": true,
+      "disableAvailabilitySetNodes": true
+    }
+type: Opaque
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager
+  namespace: kube-system
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+    k8s-app: cloud-node-manager
+    kubernetes.io/cluster-service: "true"
+  name: cloud-node-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+    k8s-app: cloud-node-manager
+    kubernetes.io/cluster-service: "true"
+  name: cloud-node-manager
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - watch
+  - list
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+    k8s-app: cloud-controller-manager
+  name: system:cloud-controller-manager
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services/status
+  verbs:
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - create
+  - update
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager:extension-apiserver-authentication-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+- apiGroup: ""
+  kind: User
+  name: cloud-controller-manager
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+    k8s-app: cloud-node-manager
+    kubernetes.io/cluster-service: "true"
+  name: cloud-node-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cloud-node-manager
+subjects:
+- kind: ServiceAccount
+  name: cloud-node-manager
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+- kind: User
+  name: cloud-controller-manager
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    component: cloud-controller-manager
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+  name: cloud-controller-manager
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: cloud-controller-manager
+      tier: control-plane
+  template:
+    metadata:
+      labels:
+        component: cloud-controller-manager
+        kops.k8s.io/managed-by: kops
+        tier: control-plane
+    spec:
+      containers:
+      - args:
+        - --allocate-node-cidrs=false
+        - --cloud-config=/etc/kubernetes/azure.json
+        - --cloud-provider=azure
+        - --cluster-cidr=100.96.0.0/11
+        - --cluster-name=minimal-azure.example.com
+        - --configure-cloud-routes=false
+        - --controllers=*,-cloud-node
+        - --leader-elect=true
+        - --route-reconciliation-period=10s
+        - --secure-port=10268
+        - --v=2
+        command:
+        - cloud-controller-manager
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: 127.0.0.1
+        image: mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.34.3
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10268
+            scheme: HTTPS
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+        name: cloud-controller-manager
+        resources:
+          limits:
+            cpu: 4
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        volumeMounts:
+        - mountPath: /etc/kubernetes
+          name: azure-cloud-config
+          readOnly: true
+        - mountPath: /etc/ssl
+          name: ssl-mount
+          readOnly: true
+        - mountPath: /var/run/secrets/azure/tokens
+          name: azure-identity-token
+          readOnly: true
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      priorityClassName: system-node-critical
+      serviceAccountName: cloud-controller-manager
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      - effect: NoExecute
+        key: node-role.kubernetes.io/etcd
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            component: cloud-controller-manager
+            tier: control-plane
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+      volumes:
+      - name: azure-cloud-config
+        secret:
+          items:
+          - key: cloud-config
+            path: azure.json
+          secretName: azure-cloud-provider
+      - hostPath:
+          path: /etc/ssl
+        name: ssl-mount
+      - name: azure-identity-token
+        projected:
+          defaultMode: 420
+          sources:
+          - serviceAccountToken:
+              audience: api://AzureADTokenExchange
+              expirationSeconds: 3600
+              path: azure-identity-token
+
+---
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    addon.kops.k8s.io/name: azure-cloud-controller.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    component: cloud-node-manager
+    k8s-addon: azure-cloud-controller.addons.k8s.io
+    kubernetes.io/cluster-service: "true"
+  name: cloud-node-manager
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: cloud-node-manager
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/daemonset-pod: "true"
+      labels:
+        k8s-app: cloud-node-manager
+        kops.k8s.io/managed-by: kops
+    spec:
+      containers:
+      - args:
+        - --node-name=$(NODE_NAME)
+        - --v=2
+        command:
+        - cloud-node-manager
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.34.3
+        imagePullPolicy: IfNotPresent
+        name: cloud-node-manager
+        resources:
+          limits:
+            cpu: 2
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
+      priorityClassName: system-node-critical
+      serviceAccountName: cloud-node-manager
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists

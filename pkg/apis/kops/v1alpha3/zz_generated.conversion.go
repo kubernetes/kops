@@ -1944,6 +1944,7 @@ func autoConvert_v1alpha3_AzureSpec_To_kops_AzureSpec(in *AzureSpec, out *kops.A
 	out.ResourceGroupName = in.ResourceGroupName
 	out.RouteTableName = in.RouteTableName
 	out.AdminUser = in.AdminUser
+	out.WorkloadIdentityClientID = in.WorkloadIdentityClientID
 	return nil
 }
 
@@ -1959,6 +1960,7 @@ func autoConvert_kops_AzureSpec_To_v1alpha3_AzureSpec(in *kops.AzureSpec, out *A
 	out.ResourceGroupName = in.ResourceGroupName
 	out.RouteTableName = in.RouteTableName
 	out.AdminUser = in.AdminUser
+	out.WorkloadIdentityClientID = in.WorkloadIdentityClientID
 	return nil
 }
 

@@ -89,6 +89,35 @@ func (p *AzureBlobPath) Path() string {
 	return fmt.Sprintf("azureblob://%s/%s", p.container, p.key)
 }
 
+// GetHTTPsUrl returns the public HTTPS URL for the Azure Blob path.
+// The storage account name is read from the AZURE_STORAGE_ACCOUNT environment variable.
+func (p *AzureBlobPath) GetHTTPsUrl() (string, error) {
+	storageAccountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
+	if storageAccountName == "" {
+		return "", fmt.Errorf("AZURE_STORAGE_ACCOUNT is not set")
+	}
+	url := fmt.Sprintf("https://%s.blob.core.windows.net/%s/%s", storageAccountName, p.container, p.key)
+	return strings.TrimSuffix(url, "/"), nil
+}
+
+// IsBucketPublic reports whether the Azure Blob container allows anonymous
+// read access (either "blob" or "container" public access level). OIDC
+// discovery endpoints require this; kops does not manage container ACLs
+// itself, so callers that need public access must pre-configure the container.
+func (p *AzureBlobPath) IsBucketPublic(ctx context.Context) (bool, error) {
+	client, err := p.getClient(ctx)
+	if err != nil {
+		return false, err
+	}
+	resp, err := client.ServiceClient().NewContainerClient(p.container).GetProperties(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("getting properties for Azure Blob container %q: %w", p.container, err)
+	}
+	// BlobPublicAccess is nil for "private"; any non-nil value ("blob" or
+	// "container") permits anonymous reads of individual blobs.
+	return resp.BlobPublicAccess != nil, nil
+}
+
 // Join returns a new path that joins the current path and given relative paths.
 func (p *AzureBlobPath) Join(relativePath ...string) Path {
 	args := []string{p.key}
