@@ -212,6 +212,18 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		}
 		args = append(args, createArgs...)
 	}
+
+	// TODO: Remove after validating xt_comment/xt_conntrack fix for RHEL10 + amazonvpc
+	if d.CloudProvider == "aws" {
+		args = removeArgs(args, "--node-size", "--control-plane-size", "--zones", "--image")
+		args = append(args,
+			"--image=309956199498/RHEL-10.1.0_HVM-20260331-arm64-0-Hourly2-GP3",
+			"--node-size=m6g.large",
+			"--control-plane-size=m6g.large",
+			"--zones=eu-west-1a",
+		)
+		isArm = true
+	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 
 	// Dont set --control-plane-count if either --control-plane-count or --master-count
@@ -432,6 +444,19 @@ func (d *deployer) getZones() ([]string, error) {
 		return do.RandomZones(1)
 	}
 	return nil, fmt.Errorf("unsupported CloudProvider: %v", d.CloudProvider)
+}
+
+// removeArgs filters out any args whose key (before '=') matches one of the given names.
+func removeArgs(args []string, names ...string) []string {
+	var filtered []string
+	for _, arg := range args {
+		key := strings.SplitN(arg, "=", 2)[0]
+		if slices.Contains(names, key) {
+			continue
+		}
+		filtered = append(filtered, arg)
+	}
+	return filtered
 }
 
 // appendIfUnset will append an argument and its value to args if the arg is not already present
