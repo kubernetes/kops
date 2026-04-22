@@ -584,9 +584,11 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 		}
 	}
 	if distribution.ForceNftables() {
-		// Distributions like RHEL10+ use nftables exclusively
-		// Load nf_tables and nf_conntrack to fix CNI plugins that use iptables-nft
-		for _, mod := range []string{"nf_tables", "nf_conntrack"} {
+		// Distributions like RHEL10+ use nftables exclusively.
+		// Load nf_tables and nf_conntrack to fix CNI plugins that use iptables-nft.
+		// Load xt_comment and xt_conntrack for iptables-nft compatibility extensions
+		// needed by CNI plugins (e.g. AWS VPC CNI) that use iptables with -m comment/conntrack.
+		for _, mod := range []string{"nf_tables", "nf_conntrack", "xt_comment", "xt_conntrack"} {
 			if err := modprobe(mod); err != nil {
 				klog.Warningf("error loading %s module: %v", mod, err)
 			}
