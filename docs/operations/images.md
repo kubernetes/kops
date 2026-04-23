@@ -60,6 +60,7 @@ The following table provides the support status for various distros with regards
 | [Ubuntu 20.04](#ubuntu-2004-focal)      |       1.16.2 |   1.18 |          - |       - |
 | [Ubuntu 22.04](#ubuntu-2204-jammy)      |         1.23 |   1.24 |          - |       - |
 | [Ubuntu 24.04](#ubuntu-2404-noble)      |         1.29 |   1.31 |          - |       - |
+| [Ubuntu 26.04](#ubuntu-2604-resolute)   |         1.36 |      - |          - |       - |
 
 ## Supported Distros
 
@@ -347,7 +348,7 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-*-*"
 
 # Google Cloud Platform (GCP)
-gcloud compute images list --filter ubuntu-2204-jammy-v \
+gcloud compute images list --filter ubuntu-2204-jammy \
   --project ubuntu-os-cloud
 
 # Microsoft Azure
@@ -369,12 +370,34 @@ aws ec2 describe-images --region us-east-1 --output table \
   --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-*-*"
 
 # Google Cloud Platform (GCP)
-gcloud compute images list --filter ubuntu-2204-jammy-v \
+gcloud compute images list --filter ubuntu-2404-noble \
   --project ubuntu-os-cloud
 
 # Microsoft Azure
 az vm image list --all --output table \
   --publisher Canonical --offer 0001-com-ubuntu-server-jammy --sku 22_04-lts-gen2
+```
+
+### Ubuntu 26.04 (Resolute)
+
+Support for Ubuntu 26.04 is based on Kernel version **7.0**.
+
+Available images can be listed using:
+
+```bash
+# Amazon Web Services (AWS)
+aws ec2 describe-images --region us-east-1 --output table \
+  --owners 099720109477 \
+  --query "sort_by(Images, &CreationDate)[*].[CreationDate,Name,ImageId]" \
+  --filters "Name=name,Values=ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-*-*"
+
+# Google Cloud Platform (GCP)
+gcloud compute images list --filter ubuntu-2604-resolute-v \
+  --project ubuntu-os-cloud
+
+# Microsoft Azure
+az vm image list --all --output table \
+  --publisher Canonical --offer 0001-com-ubuntu-server-resolute --sku 26_04-lts-gen2
 ```
 
 ## Owner aliases
