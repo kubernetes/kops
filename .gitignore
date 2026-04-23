@@ -95,3 +95,6 @@ _rundir
 
 # kustomize helm chart cache
 charts/
+
+# Used by asdf (https://asdf-vm.com/), ignore local file directing which version of a tool to use
+.tool-versions
