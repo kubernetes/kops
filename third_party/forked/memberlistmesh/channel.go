@@ -17,11 +17,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/hashicorp/memberlist"
-	"k8s.io/kops/third_party/forked/memberlistmesh/clusterpb"
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/klog"
+	"google.golang.org/protobuf/proto"
+	"k8s.io/klog/v2"
+
+	"k8s.io/kops/third_party/forked/memberlistmesh/clusterpb"
 )
 
 // Channel allows clients to send messages for a specific state type that will be

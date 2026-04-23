@@ -43,7 +43,6 @@ require (
 	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/go-logr/logr v1.4.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
-	github.com/gogo/protobuf v1.3.2
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-containerregistry v0.20.7
 	github.com/google/go-tpm v0.9.7
@@ -94,7 +93,6 @@ require (
 	k8s.io/cloud-provider-gcp/providers v0.28.2
 	k8s.io/component-base v0.36.0
 	k8s.io/gengo v0.0.0-20250922181213-ec3ebc5fd46b
-	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.140.0
 	k8s.io/kubectl v0.36.0
 	k8s.io/kubelet v0.36.0
@@ -169,6 +167,7 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.1 // indirect
 	github.com/go-resty/resty/v2 v2.17.2 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect

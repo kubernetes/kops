@@ -16,11 +16,12 @@ package cluster
 import (
 	"time"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/hashicorp/memberlist"
-	"k8s.io/kops/third_party/forked/memberlistmesh/clusterpb"
 	"github.com/prometheus/client_golang/prometheus"
-	"k8s.io/klog"
+	"google.golang.org/protobuf/proto"
+	"k8s.io/klog/v2"
+
+	"k8s.io/kops/third_party/forked/memberlistmesh/clusterpb"
 )
 
 const (
@@ -35,7 +36,7 @@ const (
 type delegate struct {
 	*Peer
 
-	bcast  *memberlist.TransmitLimitedQueue
+	bcast *memberlist.TransmitLimitedQueue
 
 	messagesReceived     *prometheus.CounterVec
 	messagesReceivedSize *prometheus.CounterVec
@@ -177,7 +178,7 @@ func (d *delegate) GetBroadcasts(overhead, limit int) [][]byte {
 // LocalState is called when gossip fetches local state.
 func (d *delegate) LocalState(_ bool) []byte {
 	all := &clusterpb.FullState{
-		Parts: make([]clusterpb.Part, 0, len(d.states)),
+		Parts: make([]*clusterpb.Part, 0, len(d.states)),
 	}
 
 	for key, s := range d.states {
@@ -186,7 +187,7 @@ func (d *delegate) LocalState(_ bool) []byte {
 			klog.Warningf("encode local state err=%v key=%v", err, key)
 			return nil
 		}
-		all.Parts = append(all.Parts, clusterpb.Part{Key: key, Data: b})
+		all.Parts = append(all.Parts, &clusterpb.Part{Key: key, Data: b})
 	}
 	b, err := proto.Marshal(all)
 	if err != nil {

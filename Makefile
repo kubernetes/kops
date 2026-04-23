@@ -169,6 +169,8 @@ protobuf:
 	go run golang.org/x/tools/cmd/goimports@latest -w pkg/otel/otlptracefile/pb/file.pb.go
 	protoc --go_out=. --go_opt=paths=source_relative protokube/pkg/gossip/mesh/mesh.proto
 	go run golang.org/x/tools/cmd/goimports@latest -w protokube/pkg/gossip/mesh/mesh.pb.go
+	protoc --go_out=. --go_opt=paths=source_relative third_party/forked/memberlistmesh/clusterpb/cluster.proto
+	go run golang.org/x/tools/cmd/goimports@latest -w third_party/forked/memberlistmesh/clusterpb/cluster.pb.go
 
 .PHONY: hooks
 hooks: # Install Git hooks
