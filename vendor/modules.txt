@@ -850,9 +850,12 @@ github.com/muesli/termenv
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
-# github.com/oklog/ulid v1.3.1
+# github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f
 ## explicit
-github.com/oklog/ulid
+github.com/mxk/go-flowrate/flowrate
+# github.com/oklog/ulid/v2 v2.1.1
+## explicit; go 1.15
+github.com/oklog/ulid/v2
 # github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852
 ## explicit
 github.com/oliveagle/jsonpath

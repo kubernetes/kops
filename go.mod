@@ -53,7 +53,7 @@ require (
 	github.com/hashicorp/memberlist v0.3.1
 	github.com/hetznercloud/hcloud-go/v2 v2.32.0
 	github.com/linode/linodego v1.67.0
-	github.com/oklog/ulid v1.3.1
+	github.com/oklog/ulid/v2 v2.1.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.10
 	github.com/prometheus/client_golang v1.23.2

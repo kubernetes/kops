@@ -15,7 +15,6 @@ package cluster
 
 import (
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
 	"net"
@@ -26,7 +25,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/memberlist"
-	"github.com/oklog/ulid"
+	"github.com/oklog/ulid/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog/v2"
 )
@@ -159,10 +158,7 @@ func Create(
 	}
 
 	// TODO(fabxc): generate human-readable but random names?
-	name, err := ulid.New(ulid.Now(), rand.Reader)
-	if err != nil {
-		return nil, err
-	}
+	name := ulid.Make()
 
 	p := &Peer{
 		states:        map[string]State{},

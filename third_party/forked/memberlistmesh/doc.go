@@ -22,7 +22,8 @@
 //     with protoc-gen-go, which changes FullState.Parts from []Part to []*Part
 //   - klog imports updated from k8s.io/klog to k8s.io/klog/v2
 //   - github.com/pkg/errors replaced with stdlib errors and fmt.Errorf("%w")
-//   - ulid entropy source simplified to crypto/rand.Reader
+//   - github.com/oklog/ulid upgraded to v2 and switched to ulid.Make(), which
+//     handles entropy internally (no explicit rand.Reader needed)
 //   - interface{} replaced with any
 //   - a handful of go vet / staticcheck cleanups (non-constant format strings,
 //     error-string capitalization)

@@ -23,11 +23,12 @@ import (
 	"math"
 	"math/bits"
 	"math/rand"
+	"sync"
 	"time"
 )
 
 /*
-An ULID is a 16 byte Universally Unique Lexicographically Sortable Identifier
+A ULID is a 16 byte Universally Unique Lexicographically Sortable Identifier
 
 	The components are encoded as 16 octets.
 	Each component is encoded with the MSB first (network byte order).
@@ -59,7 +60,7 @@ var (
 	// size.
 	ErrBufferSize = errors.New("ulid: bad buffer size when marshaling")
 
-	// ErrBigTime is returned when constructing an ULID with a time that is larger
+	// ErrBigTime is returned when constructing a ULID with a time that is larger
 	// than MaxTime.
 	ErrBigTime = errors.New("ulid: time too big")
 
@@ -74,14 +75,29 @@ var (
 	// ErrScanValue is returned when the value passed to scan cannot be unmarshaled
 	// into the ULID.
 	ErrScanValue = errors.New("ulid: source value must be a string or byte slice")
+
+	// Zero is a zero-value ULID.
+	Zero ULID
 )
 
-// New returns an ULID with the given Unix milliseconds timestamp and an
+// MonotonicReader is an interface that should yield monotonically increasing
+// entropy into the provided slice for all calls with the same ms parameter. If
+// a MonotonicReader is provided to the New constructor, its MonotonicRead
+// method will be used instead of Read.
+type MonotonicReader interface {
+	io.Reader
+	MonotonicRead(ms uint64, p []byte) error
+}
+
+// New returns a ULID with the given Unix milliseconds timestamp and an
 // optional entropy source. Use the Timestamp function to convert
 // a time.Time to Unix milliseconds.
 //
 // ErrBigTime is returned when passing a timestamp bigger than MaxTime.
 // Reading from the entropy source may also return an error.
+//
+// Safety for concurrent use is only dependent on the safety of the
+// entropy source.
 func New(ms uint64, entropy io.Reader) (id ULID, err error) {
 	if err = id.SetTime(ms); err != nil {
 		return id, err
@@ -90,7 +106,7 @@ func New(ms uint64, entropy io.Reader) (id ULID, err error) {
 	switch e := entropy.(type) {
 	case nil:
 		return id, err
-	case *monotonic:
+	case MonotonicReader:
 		err = e.MonotonicRead(ms, id[6:])
 	default:
 		_, err = io.ReadFull(e, id[6:])
@@ -107,6 +123,33 @@ func MustNew(ms uint64, entropy io.Reader) ULID {
 		panic(err)
 	}
 	return id
+}
+
+// MustNewDefault is a convenience function equivalent to MustNew with
+// DefaultEntropy as the entropy. It may panic if the given time.Time is too
+// large or too small.
+func MustNewDefault(t time.Time) ULID {
+	return MustNew(Timestamp(t), defaultEntropy)
+}
+
+var defaultEntropy = func() io.Reader {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return &LockedMonotonicReader{MonotonicReader: Monotonic(rng, 0)}
+}()
+
+// DefaultEntropy returns a thread-safe per process monotonically increasing
+// entropy source.
+func DefaultEntropy() io.Reader {
+	return defaultEntropy
+}
+
+// Make returns a ULID with the current time in Unix milliseconds and
+// monotonically increasing entropy for the same millisecond.
+// It is safe for concurrent use, leveraging a sync.Pool underneath for minimal
+// contention.
+func Make() (id ULID) {
+	// NOTE: MustNew can't panic since DefaultEntropy never returns an error.
+	return MustNew(Now(), defaultEntropy)
 }
 
 // Parse parses an encoded ULID, returning an error in case of failure.
@@ -180,24 +223,24 @@ func parse(v []byte, strict bool, id *ULID) error {
 	// to decode a base32 ULID.
 
 	// 6 bytes timestamp (48 bits)
-	(*id)[0] = ((dec[v[0]] << 5) | dec[v[1]])
-	(*id)[1] = ((dec[v[2]] << 3) | (dec[v[3]] >> 2))
-	(*id)[2] = ((dec[v[3]] << 6) | (dec[v[4]] << 1) | (dec[v[5]] >> 4))
-	(*id)[3] = ((dec[v[5]] << 4) | (dec[v[6]] >> 1))
-	(*id)[4] = ((dec[v[6]] << 7) | (dec[v[7]] << 2) | (dec[v[8]] >> 3))
-	(*id)[5] = ((dec[v[8]] << 5) | dec[v[9]])
+	(*id)[0] = (dec[v[0]] << 5) | dec[v[1]]
+	(*id)[1] = (dec[v[2]] << 3) | (dec[v[3]] >> 2)
+	(*id)[2] = (dec[v[3]] << 6) | (dec[v[4]] << 1) | (dec[v[5]] >> 4)
+	(*id)[3] = (dec[v[5]] << 4) | (dec[v[6]] >> 1)
+	(*id)[4] = (dec[v[6]] << 7) | (dec[v[7]] << 2) | (dec[v[8]] >> 3)
+	(*id)[5] = (dec[v[8]] << 5) | dec[v[9]]
 
 	// 10 bytes of entropy (80 bits)
-	(*id)[6] = ((dec[v[10]] << 3) | (dec[v[11]] >> 2))
-	(*id)[7] = ((dec[v[11]] << 6) | (dec[v[12]] << 1) | (dec[v[13]] >> 4))
-	(*id)[8] = ((dec[v[13]] << 4) | (dec[v[14]] >> 1))
-	(*id)[9] = ((dec[v[14]] << 7) | (dec[v[15]] << 2) | (dec[v[16]] >> 3))
-	(*id)[10] = ((dec[v[16]] << 5) | dec[v[17]])
-	(*id)[11] = ((dec[v[18]] << 3) | dec[v[19]]>>2)
-	(*id)[12] = ((dec[v[19]] << 6) | (dec[v[20]] << 1) | (dec[v[21]] >> 4))
-	(*id)[13] = ((dec[v[21]] << 4) | (dec[v[22]] >> 1))
-	(*id)[14] = ((dec[v[22]] << 7) | (dec[v[23]] << 2) | (dec[v[24]] >> 3))
-	(*id)[15] = ((dec[v[24]] << 5) | dec[v[25]])
+	(*id)[6] = (dec[v[10]] << 3) | (dec[v[11]] >> 2)
+	(*id)[7] = (dec[v[11]] << 6) | (dec[v[12]] << 1) | (dec[v[13]] >> 4)
+	(*id)[8] = (dec[v[13]] << 4) | (dec[v[14]] >> 1)
+	(*id)[9] = (dec[v[14]] << 7) | (dec[v[15]] << 2) | (dec[v[16]] >> 3)
+	(*id)[10] = (dec[v[16]] << 5) | dec[v[17]]
+	(*id)[11] = (dec[v[18]] << 3) | dec[v[19]]>>2
+	(*id)[12] = (dec[v[19]] << 6) | (dec[v[20]] << 1) | (dec[v[21]] >> 4)
+	(*id)[13] = (dec[v[21]] << 4) | (dec[v[22]] >> 1)
+	(*id)[14] = (dec[v[22]] << 7) | (dec[v[23]] << 2) | (dec[v[24]] >> 3)
+	(*id)[15] = (dec[v[24]] << 5) | dec[v[25]]
 
 	return nil
 }
@@ -222,9 +265,14 @@ func MustParseStrict(ulid string) ULID {
 	return id
 }
 
+// Bytes returns bytes slice representation of ULID.
+func (id ULID) Bytes() []byte {
+	return id[:]
+}
+
 // String returns a lexicographically sortable string encoded ULID
-// (26 characters, non-standard base 32) e.g. 01AN4Z07BY79KA1307SR9X4MV3
-// Format: tttttttttteeeeeeeeeeeeeeee where t is time and e is entropy
+// (26 characters, non-standard base 32) e.g. 01AN4Z07BY79KA1307SR9X4MV3.
+// Format: tttttttttteeeeeeeeeeeeeeee where t is time and e is entropy.
 func (id ULID) String() string {
 	ulid := make([]byte, EncodedSize)
 	_ = id.MarshalTextTo(ulid)
@@ -250,7 +298,7 @@ func (id ULID) MarshalBinaryTo(dst []byte) error {
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface by
-// copying the passed data and converting it to an ULID. ErrDataSize is
+// copying the passed data and converting it to a ULID. ErrDataSize is
 // returned if the data length is different from ULID length.
 func (id *ULID) UnmarshalBinary(data []byte) error {
 	if len(data) != len(*id) {
@@ -366,17 +414,28 @@ func (id ULID) Time() uint64 {
 		uint64(id[1])<<32 | uint64(id[0])<<40
 }
 
+// Timestamp returns the time encoded in the ULID as a time.Time.
+func (id ULID) Timestamp() time.Time {
+	return Time(id.Time())
+}
+
+// IsZero returns true if the ULID is a zero-value ULID, i.e. ulid.Zero.
+func (id ULID) IsZero() bool {
+	return id.Compare(Zero) == 0
+}
+
 // maxTime is the maximum Unix time in milliseconds that can be
-// represented in an ULID.
+// represented in a ULID.
 var maxTime = ULID{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}.Time()
 
 // MaxTime returns the maximum Unix time in milliseconds that
-// can be encoded in an ULID.
+// can be encoded in a ULID.
 func MaxTime() uint64 { return maxTime }
 
 // Now is a convenience function that returns the current
 // UTC time in Unix milliseconds. Equivalent to:
-//   Timestamp(time.Now().UTC())
+//
+//	Timestamp(time.Now().UTC())
 func Now() uint64 { return Timestamp(time.Now().UTC()) }
 
 // Timestamp converts a time.Time to Unix milliseconds.
@@ -452,41 +511,62 @@ func (id *ULID) Scan(src interface{}) error {
 	return ErrScanValue
 }
 
-// Value implements the sql/driver.Valuer interface. This returns the value
-// represented as a byte slice. If instead a string is desirable, a wrapper
-// type can be created that calls String().
+// Value implements the sql/driver.Valuer interface, returning the ULID as a
+// slice of bytes, by invoking MarshalBinary. If your use case requires a string
+// representation instead, you can create a wrapper type that calls String()
+// instead.
 //
-//	// stringValuer wraps a ULID as a string-based driver.Valuer.
-// 	type stringValuer ULID
+//	type stringValuer ulid.ULID
 //
-//	func (id stringValuer) Value() (driver.Value, error) {
-//		return ULID(id).String(), nil
+//	func (v stringValuer) Value() (driver.Value, error) {
+//	    return ulid.ULID(v).String(), nil
 //	}
 //
 //	// Example usage.
 //	db.Exec("...", stringValuer(id))
+//
+// All valid ULIDs, including zero-value ULIDs, return a valid Value with a nil
+// error. If your use case requires zero-value ULIDs to return a non-nil error,
+// you can create a wrapper type that special-cases this behavior.
+//
+//	var zeroValueULID ulid.ULID
+//
+//	type invalidZeroValuer ulid.ULID
+//
+//	func (v invalidZeroValuer) Value() (driver.Value, error) {
+//	    if ulid.ULID(v).Compare(zeroValueULID) == 0 {
+//	        return nil, fmt.Errorf("zero value")
+//	    }
+//	    return ulid.ULID(v).Value()
+//	}
+//
+//	// Example usage.
+//	db.Exec("...", invalidZeroValuer(id))
 func (id ULID) Value() (driver.Value, error) {
 	return id.MarshalBinary()
 }
 
-// Monotonic returns an entropy source that is guaranteed to yield
-// strictly increasing entropy bytes for the same ULID timestamp.
-// On conflicts, the previous ULID entropy is incremented with a
-// random number between 1 and `inc` (inclusive).
+// Monotonic returns a source of entropy that yields strictly increasing entropy
+// bytes, to a limit governeed by the `inc` parameter.
 //
-// The provided entropy source must actually yield random bytes or else
-// monotonic reads are not guaranteed to terminate, since there isn't
-// enough randomness to compute an increment number.
+// Specifically, calls to MonotonicRead within the same ULID timestamp return
+// entropy incremented by a random number between 1 and `inc` inclusive. If an
+// increment results in entropy that would overflow available space,
+// MonotonicRead returns ErrMonotonicOverflow.
 //
-// When `inc == 0`, it'll be set to a secure default of `math.MaxUint32`.
-// The lower the value of `inc`, the easier the next ULID within the
-// same millisecond is to guess. If your code depends on ULIDs having
-// secure entropy bytes, then don't go under this default unless you know
-// what you're doing.
+// Passing `inc == 0` results in the reasonable default `math.MaxUint32`. Lower
+// values of `inc` provide more monotonic entropy in a single millisecond, at
+// the cost of easier "guessability" of generated ULIDs. If your code depends on
+// ULIDs having secure entropy bytes, then it's recommended to use the secure
+// default value of `inc == 0`, unless you know what you're doing.
 //
-// The returned io.Reader isn't safe for concurrent use.
-func Monotonic(entropy io.Reader, inc uint64) io.Reader {
-	m := monotonic{
+// The provided entropy source must actually yield random bytes. Otherwise,
+// monotonic reads are not guaranteed to terminate, since there isn't enough
+// randomness to compute an increment number.
+//
+// The returned type isn't safe for concurrent use.
+func Monotonic(entropy io.Reader, inc uint64) *MonotonicEntropy {
+	m := MonotonicEntropy{
 		Reader: bufio.NewReader(entropy),
 		inc:    inc,
 	}
@@ -495,23 +575,42 @@ func Monotonic(entropy io.Reader, inc uint64) io.Reader {
 		m.inc = math.MaxUint32
 	}
 
-	if rng, ok := entropy.(*rand.Rand); ok {
+	if rng, ok := entropy.(rng); ok {
 		m.rng = rng
 	}
 
 	return &m
 }
 
-type monotonic struct {
+type rng interface{ Int63n(n int64) int64 }
+
+// LockedMonotonicReader wraps a MonotonicReader with a sync.Mutex for safe
+// concurrent use.
+type LockedMonotonicReader struct {
+	mu sync.Mutex
+	MonotonicReader
+}
+
+// MonotonicRead synchronizes calls to the wrapped MonotonicReader.
+func (r *LockedMonotonicReader) MonotonicRead(ms uint64, p []byte) (err error) {
+	r.mu.Lock()
+	err = r.MonotonicReader.MonotonicRead(ms, p)
+	r.mu.Unlock()
+	return err
+}
+
+// MonotonicEntropy is an opaque type that provides monotonic entropy.
+type MonotonicEntropy struct {
 	io.Reader
 	ms      uint64
 	inc     uint64
 	entropy uint80
 	rand    [8]byte
-	rng     *rand.Rand
+	rng     rng
 }
 
-func (m *monotonic) MonotonicRead(ms uint64, entropy []byte) (err error) {
+// MonotonicRead implements the MonotonicReader interface.
+func (m *MonotonicEntropy) MonotonicRead(ms uint64, entropy []byte) (err error) {
 	if !m.entropy.IsZero() && m.ms == ms {
 		err = m.increment()
 		m.entropy.AppendTo(entropy)
@@ -524,7 +623,7 @@ func (m *monotonic) MonotonicRead(ms uint64, entropy []byte) (err error) {
 
 // increment the previous entropy number with a random number
 // of up to m.inc (inclusive).
-func (m *monotonic) increment() error {
+func (m *MonotonicEntropy) increment() error {
 	if inc, err := m.random(); err != nil {
 		return err
 	} else if m.entropy.Add(inc) {
@@ -536,7 +635,7 @@ func (m *monotonic) increment() error {
 // random returns a uniform random value in [1, m.inc), reading entropy
 // from m.Reader. When m.inc == 0 || m.inc == 1, it returns 1.
 // Adapted from: https://golang.org/pkg/crypto/rand/#Int
-func (m *monotonic) random() (inc uint64, err error) {
+func (m *MonotonicEntropy) random() (inc uint64, err error) {
 	if m.inc <= 1 {
 		return 1, nil
 	}
