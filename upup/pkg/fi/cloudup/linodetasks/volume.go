@@ -43,8 +43,6 @@ type Volume struct {
 
 var _ fi.CloudupTask = &Volume{}
 var _ fi.CompareWithID = &Volume{}
-var _ fi.HasLifecycle = &Volume{}
-var _ fi.HasName = &Volume{}
 
 var invalidVolumeLabelChars = regexp.MustCompile(`[^a-z0-9_-]+`)
 
@@ -54,22 +52,6 @@ func (v *Volume) CompareWithID() *string {
 	}
 	id := strconv.Itoa(fi.ValueOf(v.ID))
 	return fi.PtrTo(id)
-}
-
-func (v *Volume) GetLifecycle() fi.Lifecycle {
-	return v.Lifecycle
-}
-
-func (v *Volume) SetLifecycle(lifecycle fi.Lifecycle) {
-	v.Lifecycle = lifecycle
-}
-
-func (v *Volume) GetName() *string {
-	return v.Name
-}
-
-func (v *Volume) String() string {
-	return fi.CloudupTaskAsString(v)
 }
 
 func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {

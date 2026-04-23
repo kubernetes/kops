@@ -231,33 +231,11 @@ func TestExtractClusterTag(t *testing.T) {
 	}
 }
 
-func TestLoadBalancerRunWithoutBackendsDoesNotBlock(t *testing.T) {
-	client := &linode.MockLinodeClient{
-		ListNodeBalancersResponse: []linodego.NodeBalancer{
-			{ID: 1, Label: fi.PtrTo("api-kops-test-linode-k8s-local"), Region: "us-east"},
-		},
-	}
-	cloud := &linode.MockLinodeCloud{Client_: client}
-	ctx := newTestCloudupContext(t, cloud)
-
-	task := &LoadBalancer{
-		Name:      fi.PtrTo("api.kops-test.linode.k8s.local"),
-		ID:        fi.PtrTo(1),
-		Lifecycle: fi.LifecycleSync,
-		Tags:      []string{kops.LabelClusterName + ":kops-test.linode.k8s.local"},
-	}
-
-	err := task.Run(ctx)
-	if err != nil {
-		t.Fatalf("expected non-blocking run when no control-plane backends are discovered, got %v", err)
-	}
-}
-
-func TestLoadBalancerBackendsRunWithoutLoadBalancerDoesNotBlock(t *testing.T) {
+func TestLoadBalancerBackendsRenderLinodeWithoutLoadBalancerDoesNotBlock(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: &linode.MockLinodeClient{}}
-	ctx := newTestCloudupContext(t, cloud)
+	target := linode.NewAPITarget(cloud)
 
-	task := &LoadBalancerBackends{
+	expected := &LoadBalancerBackends{
 		Name: fi.PtrTo("backends.api.kops-test.linode.k8s.local"),
 		LoadBalancer: &LoadBalancer{
 			Name: fi.PtrTo("api.kops-test.linode.k8s.local"),
@@ -265,19 +243,18 @@ func TestLoadBalancerBackendsRunWithoutLoadBalancerDoesNotBlock(t *testing.T) {
 		},
 	}
 
-	err := task.Run(ctx)
-	// With APITarget (actual execution), should retry when LB not ready
+	err := (&LoadBalancerBackends{}).RenderLinode(target, nil, expected, nil)
 	if _, ok := err.(*fi.TryAgainLaterError); !ok {
 		t.Fatalf("expected TryAgainLaterError when LB not ready, got %v", err)
 	}
 }
 
-func TestLoadBalancerBackendsRunWithoutBackendsDoesNotBlock(t *testing.T) {
+func TestLoadBalancerBackendsRenderLinodeWithoutBackendsDoesNotBlock(t *testing.T) {
 	client := &linode.MockLinodeClient{}
 	cloud := &linode.MockLinodeCloud{Client_: client}
-	ctx := newTestCloudupContext(t, cloud)
+	target := linode.NewAPITarget(cloud)
 
-	task := &LoadBalancerBackends{
+	expected := &LoadBalancerBackends{
 		Name: fi.PtrTo("backends.api.kops-test.linode.k8s.local"),
 		LoadBalancer: &LoadBalancer{
 			Name: fi.PtrTo("api.kops-test.linode.k8s.local"),
@@ -286,14 +263,13 @@ func TestLoadBalancerBackendsRunWithoutBackendsDoesNotBlock(t *testing.T) {
 		},
 	}
 
-	err := task.Run(ctx)
-	// With APITarget (actual execution), should retry when backends not ready
+	err := (&LoadBalancerBackends{}).RenderLinode(target, nil, expected, nil)
 	if _, ok := err.(*fi.TryAgainLaterError); !ok {
 		t.Fatalf("expected TryAgainLaterError when backends not ready, got %v", err)
 	}
 }
 
-func TestLoadBalancerBackendsRunReconcilesWhenBackendsReady(t *testing.T) {
+func TestLoadBalancerBackendsRenderLinodeReconcilesWhenBackendsReady(t *testing.T) {
 	privateIP := net.ParseIP("192.168.210.226")
 	client := &linode.MockLinodeClient{
 		ListInstancesResponse: []linodego.Instance{
@@ -305,9 +281,9 @@ func TestLoadBalancerBackendsRunReconcilesWhenBackendsReady(t *testing.T) {
 		},
 	}
 	cloud := &linode.MockLinodeCloud{Client_: client}
-	ctx := newTestCloudupContext(t, cloud)
+	target := linode.NewAPITarget(cloud)
 
-	task := &LoadBalancerBackends{
+	expected := &LoadBalancerBackends{
 		Name: fi.PtrTo("backends.api.kops-test.linode.k8s.local"),
 		LoadBalancer: &LoadBalancer{
 			Name: fi.PtrTo("api.kops-test.linode.k8s.local"),
@@ -316,26 +292,11 @@ func TestLoadBalancerBackendsRunReconcilesWhenBackendsReady(t *testing.T) {
 		},
 	}
 
-	if err := task.Run(ctx); err != nil {
+	if err := (&LoadBalancerBackends{}).RenderLinode(target, nil, expected, nil); err != nil {
 		t.Fatalf("unexpected error reconciling backends: %v", err)
 	}
 
 	if got, want := client.CreateNodeBalancerConfigCalls, 2; got != want {
 		t.Fatalf("expected backend reconcile to create both configs: got %d, want %d", got, want)
-	}
-}
-
-func TestLoadBalancerBackendsGetDependenciesOnlyLoadBalancer(t *testing.T) {
-	lb := &LoadBalancer{Name: fi.PtrTo("api.kops-test.linode.k8s.local")}
-
-	tasks := map[string]fi.CloudupTask{}
-
-	deps := (&LoadBalancerBackends{LoadBalancer: lb}).GetDependencies(tasks)
-	if got, want := len(deps), 1; got != want {
-		t.Fatalf("unexpected dependency count: got %d, want %d", got, want)
-	}
-
-	if !slices.Contains(deps, fi.CloudupTask(lb)) {
-		t.Fatalf("expected load balancer dependency")
 	}
 }

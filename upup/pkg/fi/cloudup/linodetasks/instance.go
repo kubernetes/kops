@@ -46,29 +46,11 @@ type Instance struct {
 
 var _ fi.CloudupTask = &Instance{}
 var _ fi.CompareWithID = &Instance{}
-var _ fi.HasLifecycle = &Instance{}
-var _ fi.HasName = &Instance{}
 
 var invalidInstanceLabelChars = regexp.MustCompile(`[^a-z0-9._-]+`)
 
 func (i *Instance) CompareWithID() *string {
 	return i.Name
-}
-
-func (i *Instance) GetLifecycle() fi.Lifecycle {
-	return i.Lifecycle
-}
-
-func (i *Instance) SetLifecycle(lifecycle fi.Lifecycle) {
-	i.Lifecycle = lifecycle
-}
-
-func (i *Instance) GetName() *string {
-	return i.Name
-}
-
-func (i *Instance) String() string {
-	return fi.CloudupTaskAsString(i)
 }
 
 func (i *Instance) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {

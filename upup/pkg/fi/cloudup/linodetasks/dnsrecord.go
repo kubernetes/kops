@@ -41,15 +41,6 @@ type DNSRecord struct {
 }
 
 var _ fi.CloudupTask = &DNSRecord{}
-var _ fi.HasName = &DNSRecord{}
-
-func (d *DNSRecord) GetName() *string {
-	return d.Name
-}
-
-func (d *DNSRecord) String() string {
-	return fi.CloudupTaskAsString(d)
-}
 
 func (d *DNSRecord) Find(c *fi.CloudupContext) (*DNSRecord, error) {
 	cloud := c.T.Cloud.(linode.LinodeCloud)

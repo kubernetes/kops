@@ -48,8 +48,6 @@ type LoadBalancer struct {
 
 var _ fi.CloudupTask = &LoadBalancer{}
 var _ fi.CompareWithID = &LoadBalancer{}
-var _ fi.HasLifecycle = &LoadBalancer{}
-var _ fi.HasName = &LoadBalancer{}
 var _ fi.HasAddress = &LoadBalancer{}
 
 func (l *LoadBalancer) CompareWithID() *string {
@@ -58,22 +56,6 @@ func (l *LoadBalancer) CompareWithID() *string {
 	}
 	id := strconv.Itoa(fi.ValueOf(l.ID))
 	return fi.PtrTo(id)
-}
-
-func (l *LoadBalancer) GetLifecycle() fi.Lifecycle {
-	return l.Lifecycle
-}
-
-func (l *LoadBalancer) SetLifecycle(lifecycle fi.Lifecycle) {
-	l.Lifecycle = lifecycle
-}
-
-func (l *LoadBalancer) GetName() *string {
-	return l.Name
-}
-
-func (l *LoadBalancer) String() string {
-	return fi.CloudupTaskAsString(l)
 }
 
 // GetWellKnownServices returns the well-known services this load balancer provides.
@@ -137,25 +119,7 @@ func (l *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 }
 
 func (l *LoadBalancer) Run(c *fi.CloudupContext) error {
-	if err := fi.CloudupDefaultDeltaRunMethod(l, c); err != nil {
-		return err
-	}
-
-	if l.ID == nil {
-		// LB does not yet exist (e.g., dry-run); nothing to reconcile.
-		return nil
-	}
-
-	cloud := c.T.Cloud.(linode.LinodeCloud)
-	backends, err := linodeDiscoverControlPlaneBackends(cloud.Client(), l.Tags)
-	if err != nil {
-		return err
-	}
-	if len(backends) == 0 {
-		return nil
-	}
-
-	return ensureLoadBalancerConfigs(cloud.Client(), fi.ValueOf(l.ID), fi.ValueOf(l.Name), backends)
+	return fi.CloudupDefaultDeltaRunMethod(l, c)
 }
 
 func (_ *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {

@@ -36,28 +36,10 @@ type SSHKey struct {
 }
 
 var _ fi.CompareWithID = &SSHKey{}
-var _ fi.HasLifecycle = &SSHKey{}
-var _ fi.HasName = &SSHKey{}
 var _ fi.CloudupTask = &SSHKey{}
 
 func (s *SSHKey) CompareWithID() *string {
 	return s.Name
-}
-
-func (s *SSHKey) GetLifecycle() fi.Lifecycle {
-	return s.Lifecycle
-}
-
-func (s *SSHKey) SetLifecycle(lifecycle fi.Lifecycle) {
-	s.Lifecycle = lifecycle
-}
-
-func (s *SSHKey) GetName() *string {
-	return s.Name
-}
-
-func (s *SSHKey) String() string {
-	return fi.CloudupTaskAsString(s)
 }
 
 func (s *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
