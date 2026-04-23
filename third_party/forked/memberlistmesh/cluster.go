@@ -147,7 +147,7 @@ func Create(
 	// Initial validation of user-specified advertise address.
 	addr, err := calculateAdvertiseAddress(bindHost, advertiseHost)
 	if err != nil {
-		klog.Warningf("couldn't deduce an advertise address: " + err.Error())
+		klog.Warningf("couldn't deduce an advertise address: %v", err)
 	} else if hasNonlocal(resolvedPeers) && isUnroutable(addr.String()) {
 		klog.Warningf("this node advertises itself on an unroutable address addr=%v", addr.String())
 		klog.Warningf("this node will be unreachable in the cluster")

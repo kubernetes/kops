@@ -18,7 +18,7 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/hashicorp/memberlist"
-	"github.com/jacksontj/memberlistmesh/clusterpb"
+	"k8s.io/kops/third_party/forked/memberlistmesh/clusterpb"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog"
 )

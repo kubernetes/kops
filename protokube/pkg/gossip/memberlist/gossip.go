@@ -24,10 +24,10 @@ import (
 	"strings"
 	"time"
 
-	cluster "github.com/jacksontj/memberlistmesh"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
+	cluster "k8s.io/kops/third_party/forked/memberlistmesh"
 )
 
 func init() {
