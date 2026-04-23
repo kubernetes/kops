@@ -167,7 +167,8 @@ verify-codegen:
 protobuf:
 	protoc --go_out=. --go_opt=paths=source_relative pkg/otel/otlptracefile/pb/file.proto
 	go run golang.org/x/tools/cmd/goimports@latest -w pkg/otel/otlptracefile/pb/file.pb.go
-	cd ${GOPATH_1ST}/src; protoc --gogo_out=. k8s.io/kops/protokube/pkg/gossip/mesh/mesh.proto
+	protoc --go_out=. --go_opt=paths=source_relative protokube/pkg/gossip/mesh/mesh.proto
+	go run golang.org/x/tools/cmd/goimports@latest -w protokube/pkg/gossip/mesh/mesh.pb.go
 
 .PHONY: hooks
 hooks: # Install Git hooks

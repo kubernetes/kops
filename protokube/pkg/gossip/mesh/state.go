@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/weaveworks/mesh"
+	"google.golang.org/protobuf/proto"
 	"k8s.io/kops/protokube/pkg/gossip"
 )
 
@@ -140,7 +140,7 @@ func (s *state) merge(message *KVState, changes *KVState) {
 
 	if changed {
 		s.version++
-		s.data = c
+		s.data.Records = c.Records
 	}
 }
 

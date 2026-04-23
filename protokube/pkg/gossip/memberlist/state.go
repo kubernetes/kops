@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
@@ -37,7 +37,7 @@ type state struct {
 func (s *state) MarshalBinary() ([]byte, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
-	klog.V(4).Infof("Gossip => %v", s.data)
+	klog.V(4).Infof("Gossip => %v", &s.data)
 	return proto.Marshal(&s.data)
 }
 
@@ -70,10 +70,10 @@ func (s *state) Merge(b []byte) error {
 
 	if len(deltas.Records) == 0 {
 		// per OnGossip requirements
-		klog.V(4).Infof("MergeGossip %v => delta empty", other)
+		klog.V(4).Infof("MergeGossip %v => delta empty", &other)
 	} else {
 		s.version++
-		klog.V(4).Infof("MergeGossip %v => delta %v", other, deltas)
+		klog.V(4).Infof("MergeGossip %v => delta %v", &other, &deltas)
 	}
 
 	return nil
