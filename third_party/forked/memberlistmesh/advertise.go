@@ -14,10 +14,11 @@
 package cluster
 
 import (
+	"errors"
+	"fmt"
 	"net"
 
 	sockaddr "github.com/hashicorp/go-sockaddr"
-	"github.com/pkg/errors"
 )
 
 type getPrivateIPFunc func() (string, error)
@@ -35,7 +36,7 @@ func calculateAdvertiseAddress(bindAddr, advertiseAddr string) (net.IP, error) {
 	if advertiseAddr != "" {
 		ip := net.ParseIP(advertiseAddr)
 		if ip == nil {
-			return nil, errors.Errorf("failed to parse advertise addr '%s'", advertiseAddr)
+			return nil, fmt.Errorf("failed to parse advertise addr '%s'", advertiseAddr)
 		}
 		if ip4 := ip.To4(); ip4 != nil {
 			ip = ip4
@@ -46,21 +47,21 @@ func calculateAdvertiseAddress(bindAddr, advertiseAddr string) (net.IP, error) {
 	if isAny(bindAddr) {
 		privateIP, err := getPrivateAddress()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get private IP")
+			return nil, fmt.Errorf("failed to get private IP: %w", err)
 		}
 		if privateIP == "" {
 			return nil, errors.New("no private IP found, explicit advertise addr not provided")
 		}
 		ip := net.ParseIP(privateIP)
 		if ip == nil {
-			return nil, errors.Errorf("failed to parse private IP '%s'", privateIP)
+			return nil, fmt.Errorf("failed to parse private IP '%s'", privateIP)
 		}
 		return ip, nil
 	}
 
 	ip := net.ParseIP(bindAddr)
 	if ip == nil {
-		return nil, errors.Errorf("failed to parse bind addr '%s'", bindAddr)
+		return nil, fmt.Errorf("failed to parse bind addr '%s'", bindAddr)
 	}
 	return ip, nil
 }

@@ -15,8 +15,9 @@ package cluster
 
 import (
 	"context"
+	"crypto/rand"
+	"errors"
 	"fmt"
-	"math/rand"
 	"net"
 	"sort"
 	"strconv"
@@ -26,7 +27,6 @@ import (
 
 	"github.com/hashicorp/memberlist"
 	"github.com/oklog/ulid"
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/klog/v2"
 )
@@ -120,7 +120,7 @@ func Create(
 	}
 	bindPort, err := strconv.Atoi(bindPortStr)
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid listen address")
+		return nil, fmt.Errorf("invalid listen address: %w", err)
 	}
 
 	var advertiseHost string
@@ -129,17 +129,17 @@ func Create(
 		var advertisePortStr string
 		advertiseHost, advertisePortStr, err = net.SplitHostPort(advertiseAddr)
 		if err != nil {
-			return nil, errors.Wrap(err, "invalid advertise address")
+			return nil, fmt.Errorf("invalid advertise address: %w", err)
 		}
 		advertisePort, err = strconv.Atoi(advertisePortStr)
 		if err != nil {
-			return nil, errors.Wrap(err, "invalid advertise address, wrong port")
+			return nil, fmt.Errorf("invalid advertise address, wrong port: %w", err)
 		}
 	}
 
 	resolvedPeers, err := resolvePeers(context.Background(), knownPeers, advertiseAddr, &net.Resolver{}, waitIfEmpty)
 	if err != nil {
-		return nil, errors.Wrap(err, "resolve peers")
+		return nil, fmt.Errorf("resolve peers: %w", err)
 	}
 	klog.V(2).Infof("resolved peers to following addresses peers=%v", strings.Join(resolvedPeers, ","))
 
@@ -159,7 +159,7 @@ func Create(
 	}
 
 	// TODO(fabxc): generate human-readable but random names?
-	name, err := ulid.New(ulid.Now(), rand.New(rand.NewSource(time.Now().UnixNano())))
+	name, err := ulid.New(ulid.Now(), rand.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func Create(
 
 	ml, err := memberlist.Create(cfg)
 	if err != nil {
-		return nil, errors.Wrap(err, "create memberlist")
+		return nil, fmt.Errorf("create memberlist: %w", err)
 	}
 	p.mlist = ml
 	return p, nil
@@ -264,7 +264,7 @@ func (p *Peer) AddPeer(peerAddr string) error {
 	if ip == nil {
 		// Don't add textual addresses since memberlist only advertises
 		// dotted decimal or IPv6 addresses.
-		return fmt.Errorf("Invalid peerAddr")
+		return fmt.Errorf("invalid peerAddr")
 	}
 	portUint, err := strconv.ParseUint(port, 10, 16)
 	if err != nil {
@@ -605,11 +605,11 @@ func (p *Peer) Status() string {
 
 // Info returns a JSON-serializable dump of cluster state.
 // Useful for debug.
-func (p *Peer) Info() map[string]interface{} {
+func (p *Peer) Info() map[string]any {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
 
-	return map[string]interface{}{
+	return map[string]any{
 		"self":    p.mlist.LocalNode(),
 		"members": p.mlist.Members(),
 	}
@@ -706,7 +706,7 @@ func resolvePeers(ctx context.Context, peers []string, myAddress string, res *ne
 	for _, peer := range peers {
 		host, port, err := net.SplitHostPort(peer)
 		if err != nil {
-			return nil, errors.Wrapf(err, "split host/port for peer %s", peer)
+			return nil, fmt.Errorf("split host/port for peer %s: %w", peer, err)
 		}
 
 		retryCtx, cancel := context.WithCancel(ctx)
@@ -731,7 +731,7 @@ func resolvePeers(ctx context.Context, peers []string, myAddress string, res *ne
 				ips, err = res.LookupIPAddr(retryCtx, host)
 				if err != nil {
 					lookupErrSpotted = true
-					return errors.Wrapf(err, "IP Addr lookup for peer %s", peer)
+					return fmt.Errorf("IP Addr lookup for peer %s: %w", peer, err)
 				}
 
 				ips = removeMyAddr(ips, port, myAddress)
