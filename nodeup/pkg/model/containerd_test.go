@@ -48,6 +48,10 @@ func TestContainerdBuilder_Complex(t *testing.T) {
 	runContainerdBuilderTest(t, "complex", distributions.DistributionUbuntu2604)
 }
 
+func TestContainerdBuilder_Nftables(t *testing.T) {
+	runContainerdBuilderTest(t, "nftables", distributions.DistributionRocky10)
+}
+
 func TestContainerdBuilder_BuildFlags(t *testing.T) {
 	grid := []struct {
 		config   kops.ContainerdConfig

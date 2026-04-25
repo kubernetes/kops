@@ -79,7 +79,7 @@ type: file
 Name: cni-iptables-setup.service
 definition: |
   [Unit]
-  Description=Configure iptables for kubernetes CNI
+  Description=Configure masquerade rules for kubernetes CNI
   Documentation=https://github.com/kubernetes/kops
   Before=network.target
 
