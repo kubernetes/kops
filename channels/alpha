@@ -82,6 +82,14 @@ spec:
       providerID: aws
       architectureID: arm64
       kubernetesVersion: ">=1.32.0"
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20260425
+      providerID: aws
+      architectureID: amd64
+      kubernetesVersion: ">=1.36.0"
+    - name: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-arm64-server-20260425
+      providerID: aws
+      architectureID: arm64
+      kubernetesVersion: ">=1.36.0"
     - name: cos-cloud/cos-stable-65-10323-99-0
       providerID: gce
       architectureID: amd64
@@ -102,6 +110,10 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
+    - name: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20260425
+      providerID: gce
+      architectureID: amd64
+      kubernetesVersion: ">=1.36.0"
     - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202406060
       providerID: azure
       architectureID: amd64
@@ -114,6 +126,10 @@ spec:
       providerID: azure
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
+    - name: Canonical:ubuntu-26_04-lts:server:26.04.20260425
+      providerID: azure
+      architectureID: amd64
+      kubernetesVersion: ">=1.36.0"
   cluster:
     kubernetesVersion: v1.5.8
     networking:
