@@ -50,6 +50,12 @@ fi
 
 export KOPS_BASE_URL
 
+# Configure a gossip cluster: cluster name must end in .k8s.local. The kubetest2
+# deployer builds the auto-generated cluster name as <jobname>.${KOPS_DNS_DOMAIN}
+# for AWS when --dns=none is not in create-args, so overriding KOPS_DNS_DOMAIN
+# yields a .k8s.local suffix without changing the rest of the name.
+export KOPS_DNS_DOMAIN="tests-kops-aws.k8s.local"
+
 echo "Cleaning up any leaked resources from previous cluster"
 # For KOPS_VERSION_B, the value "latest" means build of the tree
 if [[ "${KOPS_VERSION_B}" == "latest" ]]; then
@@ -93,7 +99,7 @@ ${KUBETEST2} \
     --kubernetes-version="${K8S_VERSION_A}" \
     --control-plane-size="${KOPS_CONTROL_PLANE_COUNT:-1}" \
     --template-path="${KOPS_TEMPLATE:-}" \
-    --create-args="--networking calico ${KOPS_EXTRA_FLAGS:-}"
+    --create-args="--networking cilium --api-loadbalancer-type=public ${KOPS_EXTRA_FLAGS:-}"
 
 # Source the env file to get exported variables, in particular CLUSTER_NAME and KOPS_STATE_STORE
 # shellcheck disable=SC1091

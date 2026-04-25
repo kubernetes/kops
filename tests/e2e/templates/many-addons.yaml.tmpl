@@ -10,7 +10,7 @@ spec:
   authorization:
     rbac: {}
   awsLoadBalancerController:
-    enabled: true
+    enabled: false
   kubernetesApiAccess:
   - {{.publicIP}}
   certManager:
@@ -54,7 +54,7 @@ spec:
   nodeProblemDetector:
     enabled: true
   nodeTerminationHandler:
-    enabled: true
+    enabled: false
     enableSQSTerminationDraining: true
   nonMasqueradeCIDR: 100.64.0.0/10
   podIdentityWebhook:
@@ -72,7 +72,7 @@ spec:
     maxSurge: "100%"
   topology:
     dns:
-      type: None
+      type: Private
 ---
 
 apiVersion: kops.k8s.io/v1alpha2

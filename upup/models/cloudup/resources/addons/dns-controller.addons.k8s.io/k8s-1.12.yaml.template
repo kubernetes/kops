@@ -21,7 +21,6 @@ spec:
         k8s-app: dns-controller
         version: {{ KopsVersionForLabel }}
     spec:
-      priorityClassName: system-cluster-critical
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
