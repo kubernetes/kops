@@ -211,7 +211,7 @@ spec:
     version: 9.99.0
   - id: k8s-1.19
     manifest: aws-load-balancer-controller.addons.k8s.io/k8s-1.19.yaml
-    manifestHash: aae9daba9c9ddadef1d7a1256698ab867b67f94441d5ff143ef88b0cc1106ead
+    manifestHash: 6d242b4ef9701832ac3592c399922ccbb765e5df64ba359fd5629ccb4f4ae89a
     name: aws-load-balancer-controller.addons.k8s.io
     needsPKI: true
     selector:

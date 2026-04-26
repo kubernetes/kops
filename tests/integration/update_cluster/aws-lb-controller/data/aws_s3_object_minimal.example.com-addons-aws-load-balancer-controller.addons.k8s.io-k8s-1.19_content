@@ -1428,6 +1428,12 @@ webhooks:
       path: /mutate-v1-service
   failurePolicy: Fail
   name: mservice.elbv2.k8s.aws
+  namespaceSelector:
+    matchExpressions:
+    - key: kubernetes.io/metadata.name
+      operator: NotIn
+      values:
+      - kube-system
   objectSelector:
     matchExpressions:
     - key: app.kubernetes.io/name
