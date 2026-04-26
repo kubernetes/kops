@@ -61,7 +61,14 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 
 	instanceDetails := instanceMap[u.Name]
 	if instanceDetails == nil {
-		klog.Warningf("instance %q not found", instance.Instance)
+		var sb strings.Builder
+		fmt.Fprintf(&sb, "instance %q not found (currentAction=%q instanceStatus=%q)", instance.Instance, instance.CurrentAction, instance.InstanceStatus)
+		if instance.LastAttempt != nil && instance.LastAttempt.Errors != nil {
+			for _, e := range instance.LastAttempt.Errors.Errors {
+				fmt.Fprintf(&sb, "; lastAttempt.error code=%q location=%q message=%q", e.Code, e.Location, e.Message)
+			}
+		}
+		klog.Warning(sb.String())
 		return nil
 	}
 
