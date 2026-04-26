@@ -463,7 +463,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
-	if !b.Cluster.UsesNoneDNS() {
+	if !model.UseKopsControllerForNodeConfig(b.Cluster) {
 		if err := b.AddS3Permissions(p); err != nil {
 			return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 		}
