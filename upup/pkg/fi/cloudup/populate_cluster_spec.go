@@ -259,7 +259,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		cluster.Spec.API.LoadBalancer.Class = kopsapi.LoadBalancerClassClassic
 	}
 
-	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() {
+	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() && cluster.GetCloudProvider() != kopsapi.CloudProviderElemento {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err
