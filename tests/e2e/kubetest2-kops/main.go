@@ -17,11 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"os"
+
 	"sigs.k8s.io/kubetest2/pkg/app"
 
 	"k8s.io/kops/tests/e2e/kubetest2-kops/deployer"
 )
 
 func main() {
+	// Prow's Azure WI preset exports AZURE_STORAGE_ACCOUNT; kOps now rejects it.
+	os.Unsetenv("AZURE_STORAGE_ACCOUNT")
+
 	app.Main(deployer.Name, deployer.New)
 }

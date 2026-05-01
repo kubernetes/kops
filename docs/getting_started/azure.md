@@ -29,13 +29,12 @@ export KOPS_FEATURE_FLAGS="Azure"
 
 ```bash
 export AZURE_SUBSCRIPTION_ID=<subscription-id>
-export AZURE_STORAGE_ACCOUNT=<storage-account-name>
 ```
 
 ### kOps-specific
 
 ```bash
-export KOPS_STATE_STORE=azureblob://<container-name>
+export KOPS_STATE_STORE=azureblob://<storage-account-name>/<container-name>
 ```
 
 ## Creating a Single Master Cluster
@@ -90,3 +89,11 @@ kOps for Azure currently does not support the following features:
 ## Next steps
 
 Now that you have a working kOps cluster, read through the recommendations for [production setups guide](production.md) to learn more about how to configure kOps for production workloads.
+
+## Migrating from earlier alpha versions
+
+Older alpha releases used `azureblob://<container>/...` URLs and read the storage account from `AZURE_STORAGE_ACCOUNT`. To upgrade an existing cluster:
+
+1. `unset AZURE_STORAGE_ACCOUNT` and re-export `KOPS_STATE_STORE` in the new shape.
+2. `kops edit cluster` to update `spec.configStore.base` to the updated URL.
+3. `kops update cluster --yes` and `kops rolling-update cluster --yes`.

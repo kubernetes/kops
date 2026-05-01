@@ -45,7 +45,7 @@ func TestAzureBlobPathBase(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("Test case %d", i), func(t *testing.T) {
-			p := NewAzureBlobPath(nil, tc.container, tc.key)
+			p := NewAzureBlobPath(nil, "a", tc.container, tc.key)
 			if a := p.Base(); a != tc.base {
 				t.Errorf("expected %s, but got %s", tc.base, a)
 			}
@@ -55,44 +55,105 @@ func TestAzureBlobPathBase(t *testing.T) {
 
 func TestAzureBlobPathPath(t *testing.T) {
 	testCases := []struct {
+		account   string
 		container string
 		key       string
 		path      string
 	}{
 		{
+			account:   "a",
 			container: "c",
 			key:       "foo/bar",
-			path:      "azureblob://c/foo/bar",
+			path:      "azureblob://a/c/foo/bar",
 		},
 		{
+			account:   "a",
 			container: "c/",
 			key:       "/foo/bar",
-			path:      "azureblob://c/foo/bar",
+			path:      "azureblob://a/c/foo/bar",
 		},
 		{
+			account:   "a",
 			container: "c",
 			key:       "/foo/bar/",
-			path:      "azureblob://c/foo/bar/",
+			path:      "azureblob://a/c/foo/bar/",
 		},
 	}
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("Test case %d", i), func(t *testing.T) {
-			p := NewAzureBlobPath(nil, tc.container, tc.key)
+			p := NewAzureBlobPath(nil, tc.account, tc.container, tc.key)
 			if a := p.Path(); a != tc.path {
 				t.Errorf("expected %s, but got %s", tc.path, a)
 			}
 		})
 	}
-	p := NewAzureBlobPath(nil, "container", "foo/bar")
-	if a, e := p.Path(), "azureblob://container/foo/bar"; a != e {
+	p := NewAzureBlobPath(nil, "account", "container", "foo/bar")
+	if a, e := p.Path(), "azureblob://account/container/foo/bar"; a != e {
 		t.Errorf("expected %s, but got %s", e, a)
 	}
 }
 
 func TestAzureBlobPathJoin(t *testing.T) {
-	p := NewAzureBlobPath(nil, "c", "foo/bar")
+	p := NewAzureBlobPath(nil, "a", "c", "foo/bar")
 	joined := p.Join("p1", "p2")
-	if a, e := joined.Path(), "azureblob://c/foo/bar/p1/p2"; a != e {
+	if a, e := joined.Path(), "azureblob://a/c/foo/bar/p1/p2"; a != e {
 		t.Errorf("expected %s, but got %s", e, a)
+	}
+}
+
+func TestBuildAzureBlobPath(t *testing.T) {
+	testCases := []struct {
+		input     string
+		account   string
+		container string
+		key       string
+		wantErr   bool
+	}{
+		{
+			input:     "azureblob://account/container/key/path",
+			account:   "account",
+			container: "container",
+			key:       "key/path",
+		},
+		{
+			input:     "azureblob://account/container",
+			account:   "account",
+			container: "container",
+			key:       "",
+		},
+		{
+			// Old format without account is rejected.
+			input:   "azureblob://container",
+			wantErr: true,
+		},
+		{
+			// Account but no container.
+			input:   "azureblob://account/",
+			wantErr: true,
+		},
+	}
+	c := &VFSContext{}
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			p, err := c.buildAzureBlobPath(tc.input)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected error for %q, got %+v", tc.input, p)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error for %q: %v", tc.input, err)
+			}
+			if p.account != tc.account {
+				t.Errorf("account: expected %q, got %q", tc.account, p.account)
+			}
+			if p.container != tc.container {
+				t.Errorf("container: expected %q, got %q", tc.container, p.container)
+			}
+			if p.key != tc.key {
+				t.Errorf("key: expected %q, got %q", tc.key, p.key)
+			}
+		})
 	}
 }

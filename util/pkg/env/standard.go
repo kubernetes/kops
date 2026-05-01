@@ -76,9 +76,6 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	// Hetzner Cloud related values.
 	vars.addEnvVariableIfExist("HCLOUD_TOKEN")
 
-	// Azure related values.
-	vars.addEnvVariableIfExist("AZURE_STORAGE_ACCOUNT")
-
 	// Scaleway related values.
 	profile, err := scaleway.CreateValidScalewayProfile()
 	if err == nil {

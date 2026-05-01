@@ -287,10 +287,6 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
 	}
 
-	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
-		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
-	}
-
 	if t.CloudProvider() == kops.CloudProviderScaleway {
 		if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
 			profile, err := scaleway.CreateValidScalewayProfile()

@@ -46,7 +46,45 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/exec"
+	"k8s.io/kops/util/pkg/vfs"
 )
+
+// resolveAzureBackupStore rewrites azureblob://<account>/<container>/<key> into
+// the legacy azureblob://<container>/<key> shape understood by the pinned
+// etcd-manager image, returning the storage account derived from
+// configStoreBase (the single source of truth for the cluster) for
+// AZURE_STORAGE_ACCOUNT injection. Non-azureblob backup stores pass through
+// unchanged. Errors if a backup store is azureblob:// but configStoreBase is
+// not, since validation already enforces account uniformity.
+//
+// TODO: remove once etcd-manager is bumped to a release whose vendored VFS
+// understands azureblob://<account>/<container>/<key>.
+func resolveAzureBackupStore(configStoreBase, backupStore string) (legacyURL string, storageAccount string, err error) {
+	if !strings.HasPrefix(backupStore, "azureblob://") {
+		return backupStore, "", nil
+	}
+	bp, err := vfs.Context.BuildVfsPath(backupStore)
+	if err != nil {
+		return "", "", fmt.Errorf("parsing etcd backup-store %q: %w", backupStore, err)
+	}
+	bpAzure, ok := bp.(*vfs.AzureBlobPath)
+	if !ok {
+		return "", "", fmt.Errorf("expected azureblob:// backup-store, got %q", backupStore)
+	}
+	csp, err := vfs.Context.BuildVfsPath(configStoreBase)
+	if err != nil {
+		return "", "", fmt.Errorf("parsing configStore.base %q: %w", configStoreBase, err)
+	}
+	csAzure, ok := csp.(*vfs.AzureBlobPath)
+	if !ok {
+		return "", "", fmt.Errorf("backup-store %q is azureblob:// but configStore.base %q is not", backupStore, configStoreBase)
+	}
+	legacy := "azureblob://" + bpAzure.Container()
+	if bpAzure.Key() != "" {
+		legacy += "/" + bpAzure.Key()
+	}
+	return legacy, csAzure.Account(), nil
+}
 
 // EtcdManagerBuilder builds the manifest for the etcd-manager
 type EtcdManagerBuilder struct {
@@ -437,6 +475,14 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		DNSSuffix:     dnsInternalSuffix,
 	}
 
+	// Rewrite to the legacy URL shape for the pinned etcd-manager image; see
+	// resolveAzureBackupStore.
+	legacyBackupStore, azureStorageAccount, err := resolveAzureBackupStore(b.Cluster.Spec.ConfigStore.Base, backupStore)
+	if err != nil {
+		return nil, err
+	}
+	config.BackupStore = legacyBackupStore
+
 	config.LogLevel = 6
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.LogLevel != nil {
@@ -618,6 +664,14 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	envMap := env.BuildSystemComponentEnvVars(&b.Cluster.Spec)
 
 	container.Env = envMap.ToEnvVars()
+
+	// Required by the pinned etcd-manager's legacy VFS; see resolveAzureBackupStore.
+	if azureStorageAccount != "" {
+		container.Env = append(container.Env, v1.EnvVar{
+			Name:  "AZURE_STORAGE_ACCOUNT",
+			Value: azureStorageAccount,
+		})
+	}
 
 	if etcdCluster.Manager != nil {
 		if etcdCluster.Manager.BackupRetentionDays != nil {

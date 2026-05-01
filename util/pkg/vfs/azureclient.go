@@ -19,16 +19,14 @@ package vfs
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 )
 
-func newAzureClient(ctx context.Context) (*azblob.Client, error) {
-	accountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
+func newAzureClient(ctx context.Context, accountName string) (*azblob.Client, error) {
 	if accountName == "" {
-		return nil, fmt.Errorf("AZURE_STORAGE_ACCOUNT must be set")
+		return nil, fmt.Errorf("Azure storage account name is required")
 	}
 
 	url := fmt.Sprintf("https://%s.blob.core.windows.net/", accountName)

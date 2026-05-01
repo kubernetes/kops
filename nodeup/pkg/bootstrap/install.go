@@ -127,10 +127,6 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
 	}
 
-	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
-		envVars["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
-	}
-
 	if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
 		profile, err := scaleway.CreateValidScalewayProfile()
 		if err != nil {
