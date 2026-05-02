@@ -141,6 +141,38 @@ Unmanaged=yes
 	})
 }
 
+// narrowCloudIfupdownHelperRule rewrites Debian 11's
+// /etc/udev/rules.d/75-cloud-ifupdown.rules to exclude AWS VPC CNI veths.
+// The package-shipped rule matches ENV{INTERFACE}=="eth*|en*", which catches
+// real ENIs (ens*) and CNI veths (eni*) alike. For each new netdev,
+// /etc/network/cloud-ifupdown-helper generates a DHCP ifupdown stanza and
+// starts ifup@$IFACE.service. On CNI veths DHCP times out, ifdown then takes
+// the veth DOWN, and pod networking is broken.
+//
+// The rule and helper are written by cloud-init at first boot and are not
+// owned by any dpkg package, so overwriting the file is safe.
+//
+// Debian 11 only.
+func narrowCloudIfupdownHelperRule(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
+	if dist != distributions.DistributionDebian11 {
+		return
+	}
+
+	contents := `# Handle allow-hotplug interfaces.
+# kops: ENV{INTERFACE} narrowed from "eth*|en*" to "eth*|ens*" so AWS VPC CNI
+# veths (eni*) are not hijacked by cloud-ifupdown-helper.
+SUBSYSTEM=="net", ACTION=="add", ENV{INTERFACE}=="eth*|ens*", RUN+="/etc/network/cloud-ifupdown-helper"
+`
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/udev/rules.d/75-cloud-ifupdown.rules",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			{"udevadm", "control", "--reload-rules"},
+		},
+	})
+}
+
 // disableCloudInitNetworkHotplug prevents cloud-init from reconfiguring the network
 // when ENIs are attached, which breaks CNI networking.
 // Ubuntu 24.04+.

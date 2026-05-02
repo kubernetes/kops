@@ -39,6 +39,7 @@ func (b *AmazonVPCRoutedENIBuilder) Build(c *fi.NodeupModelBuilderContext) error
 	setMACAddressPolicyNone(c, b.Distribution)
 	markSecondaryENIsUnmanaged(c, b.Distribution)
 	disableCloudInitNetworkHotplug(c, b.Distribution)
+	narrowCloudIfupdownHelperRule(c, b.Distribution)
 
 	return nil
 }
