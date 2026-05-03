@@ -194,3 +194,38 @@ updates:
 		Type:     nodetasks.FileType_File,
 	})
 }
+
+// disableNMCloudSetup masks NetworkManager's nm-cloud-setup service and timer.
+// nm-cloud-setup polls IMDS, sees the secondary IPs assigned to ENIs (the pod
+// IPs), and tells NetworkManager to install per-IP source-routing rules in
+// reserved tables 30200/30201/30400/30401 with priority 30200-30401. Those
+// priorities are lower (= higher precedence) than the AWS VPC CNI rules at
+// 32765, so pod traffic is routed through tables that don't have the routes
+// the CNI needs for the service CIDR or IMDS — pods can't reach 100.64.0.1
+// or 169.254.169.254 and cluster validation fails.
+// ref: https://github.com/aws/amazon-vpc-cni-k8s/blob/master/docs/troubleshooting.md
+// RHEL 9 only.
+func disableNMCloudSetup(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
+	if dist != distributions.DistributionRhel9 {
+		return
+	}
+
+	// Use a marker file so we run the disable steps once and idempotently. The
+	// File task triggers OnChangeExecute the first time we land it.
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/kops/nm-cloud-setup-disabled",
+		Contents: fi.NewStringResource("# Marker: nm-cloud-setup disabled by kops to avoid breaking AWS VPC CNI pod routing.\n"),
+		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			// Stop and disable the unit + timer so they can't run again.
+			{"bash", "-c", "systemctl disable --now nm-cloud-setup.service nm-cloud-setup.timer 2>/dev/null; true"},
+			// Mask so future package updates / preset re-enables can't bring them back.
+			{"systemctl", "mask", "nm-cloud-setup.service", "nm-cloud-setup.timer"},
+			// Drop any rules/routes nm-cloud-setup already installed before we
+			// got here. NetworkManager owns these via "device-reapply" with
+			// proto=static; tearing the connections down and back up clears the
+			// per-IP rules in tables 30200/30201/30400/30401.
+			{"bash", "-c", "for c in $(nmcli -t -f NAME connection show --active 2>/dev/null); do nmcli connection down \"$c\" 2>/dev/null; nmcli connection up \"$c\" 2>/dev/null; done; true"},
+		},
+	})
+}
