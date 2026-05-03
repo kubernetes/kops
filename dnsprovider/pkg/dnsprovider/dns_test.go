@@ -94,7 +94,7 @@ func TestEquivalent(t *testing.T) {
 	for _, test := range testData {
 		output := ResourceRecordSetsEquivalent(test.inputs[0], test.inputs[1])
 		if output != test.expectedOutput {
-			t.Errorf("Expected equivalence comparison of %q and %q to yield %v, but it vielded %v", test.inputs[0], test.inputs[1], test.expectedOutput, output)
+			t.Errorf("Expected equivalence comparison of %v and %v to yield %v, but it vielded %v", test.inputs[0], test.inputs[1], test.expectedOutput, output)
 		}
 	}
 }

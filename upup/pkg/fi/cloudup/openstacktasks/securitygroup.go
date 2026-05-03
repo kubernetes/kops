@@ -185,7 +185,7 @@ func (s *SecurityGroup) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeletio
 			}
 		}
 		if !match {
-			klog.V(4).Infof("Ignoring security group permission %q (did not match removal rules)", permission)
+			klog.V(4).Infof("Ignoring security group permission %v (did not match removal rules)", permission)
 			continue
 		}
 

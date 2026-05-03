@@ -153,14 +153,14 @@ func (c *doCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) 
 
 	_, _, err = c.Client.DropletActions.Shutdown(context.TODO(), dropletID)
 	if err != nil {
-		return fmt.Errorf("error stopping instance %q: %v", dropletID, err)
+		return fmt.Errorf("error stopping instance %d: %v", dropletID, err)
 	}
 
 	// Wait for 5 min to stop the instance
 	for i := 0; i < 5; i++ {
 		droplet, _, err := c.Client.Droplets.Get(context.TODO(), dropletID)
 		if err != nil {
-			return fmt.Errorf("error describing instance %q: %v", dropletID, err)
+			return fmt.Errorf("error describing instance %d: %v", dropletID, err)
 		}
 
 		klog.V(8).Infof("stopping DO instance %q, current Status: %q", droplet, droplet.Status)
@@ -178,10 +178,10 @@ func (c *doCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstance) 
 
 	_, err = c.Client.Droplets.Delete(context.TODO(), dropletID)
 	if err != nil {
-		return fmt.Errorf("error stopping instance %q: %v", dropletID, err)
+		return fmt.Errorf("error stopping instance %d: %v", dropletID, err)
 	}
 
-	klog.V(8).Infof("deleted droplet instance %q", dropletID)
+	klog.V(8).Infof("deleted droplet instance %d", dropletID)
 
 	return nil
 }

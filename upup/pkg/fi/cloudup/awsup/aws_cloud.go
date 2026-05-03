@@ -1703,7 +1703,7 @@ func FindLatestELBV2ByNameTag(loadBalancers []*LoadBalancerInfo, findNameTag str
 		} else {
 			n, err := strconv.Atoi(revisionTag)
 			if err != nil {
-				klog.Warningf("ignoring load balancer %q with revision %q", aws.ToString(lb.LoadBalancer.LoadBalancerArn), revision)
+				klog.Warningf("ignoring load balancer %q with revision %d", aws.ToString(lb.LoadBalancer.LoadBalancerArn), revision)
 				continue
 			}
 			revision = n
