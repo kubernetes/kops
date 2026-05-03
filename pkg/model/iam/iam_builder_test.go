@@ -18,6 +18,7 @@ package iam
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -28,6 +29,8 @@ import (
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestRoundTrip(t *testing.T) {
@@ -274,5 +277,85 @@ func TestEmptyPolicy(t *testing.T) {
 
 	if policy != "" {
 		t.Errorf("empty policy should result in empty string, but was %q", policy)
+	}
+}
+
+func TestPolicyResourceOpenWithoutDNSZoneID(t *testing.T) {
+	vfs.Context.ResetMemfsContext(true)
+	cluster := testutils.BuildMinimalClusterAWS("example.com")
+	builder := &PolicyBuilder{
+		Cluster:   cluster,
+		Role:      &NodeRoleMaster{},
+		Partition: "aws",
+	}
+
+	pr := &PolicyResource{
+		Builder: builder,
+		DNSZone: &awstasks.DNSZone{
+			Name:    fi.PtrTo(cluster.Spec.DNSZone),
+			DNSName: fi.PtrTo(cluster.Spec.DNSZone),
+		},
+	}
+
+	policy, err := fi.ResourceAsString(pr)
+	if err != nil {
+		t.Fatalf("expected policy rendering to succeed when DNS zone ID is unavailable, got error: %v", err)
+	}
+
+	if strings.Contains(policy, "route53:ChangeResourceRecordSets") {
+		t.Fatalf("expected zone-scoped route53 permissions to be omitted when zone ID is unavailable, got policy: %s", policy)
+	}
+}
+
+func TestPolicyResourceOpenWithDNSZoneID(t *testing.T) {
+	vfs.Context.ResetMemfsContext(true)
+	cluster := testutils.BuildMinimalClusterAWS("example.com")
+	builder := &PolicyBuilder{
+		Cluster:   cluster,
+		Role:      &NodeRoleMaster{},
+		Partition: "aws",
+	}
+
+	pr := &PolicyResource{
+		Builder: builder,
+		DNSZone: &awstasks.DNSZone{
+			Name:   fi.PtrTo(cluster.Spec.DNSZone),
+			ZoneID: fi.PtrTo("Z123EXAMPLE"),
+		},
+	}
+
+	policy, err := fi.ResourceAsString(pr)
+	if err != nil {
+		t.Fatalf("expected policy rendering to succeed when DNS zone ID is set, got error: %v", err)
+	}
+
+	if !strings.Contains(policy, "arn:aws:route53:::hostedzone/Z123EXAMPLE") {
+		t.Fatalf("expected route53 hosted zone ARN in policy, got: %s", policy)
+	}
+}
+
+func TestPolicyResourceOpenWithDNSZoneNameSetToHostedZoneID(t *testing.T) {
+	vfs.Context.ResetMemfsContext(true)
+	cluster := testutils.BuildMinimalClusterAWS("example.com")
+	builder := &PolicyBuilder{
+		Cluster:   cluster,
+		Role:      &NodeRoleMaster{},
+		Partition: "aws",
+	}
+
+	pr := &PolicyResource{
+		Builder: builder,
+		DNSZone: &awstasks.DNSZone{
+			Name: fi.PtrTo("Z999EXAMPLE"),
+		},
+	}
+
+	policy, err := fi.ResourceAsString(pr)
+	if err != nil {
+		t.Fatalf("expected policy rendering to succeed when DNS zone name is already a hosted zone ID, got error: %v", err)
+	}
+
+	if !strings.Contains(policy, "arn:aws:route53:::hostedzone/Z999EXAMPLE") {
+		t.Fatalf("expected route53 hosted zone ARN in policy from DNS zone name fallback, got: %s", policy)
 	}
 }
