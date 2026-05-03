@@ -79,4 +79,3 @@ func TestDefaultClusterNameGCETruncationKeepsBuildIDPrefix(t *testing.T) {
 		t.Fatalf("defaultClusterName for gce should be <= 63 chars, got len=%d value=%q", len(got), got)
 	}
 }
-
