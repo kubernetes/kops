@@ -124,7 +124,7 @@ func (e *TargetGroup) findLatestTargetGroupByName(ctx context.Context, cloud aws
 		} else {
 			n, err := strconv.Atoi(revisionTag)
 			if err != nil {
-				klog.Warningf("ignoring target group %q with revision %q", targetGroup.ARN, revision)
+				klog.Warningf("ignoring target group %q with revision %d", targetGroup.ARN, revision)
 				continue
 			}
 			revision = n
