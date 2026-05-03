@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestRoundTrip(t *testing.T) {
@@ -280,6 +281,7 @@ func TestEmptyPolicy(t *testing.T) {
 }
 
 func TestPolicyResourceOpenWithoutDNSZoneID(t *testing.T) {
+	vfs.Context.ResetMemfsContext(true)
 	cluster := testutils.BuildMinimalClusterAWS("example.com")
 	builder := &PolicyBuilder{
 		Cluster:   cluster,
@@ -306,6 +308,7 @@ func TestPolicyResourceOpenWithoutDNSZoneID(t *testing.T) {
 }
 
 func TestPolicyResourceOpenWithDNSZoneID(t *testing.T) {
+	vfs.Context.ResetMemfsContext(true)
 	cluster := testutils.BuildMinimalClusterAWS("example.com")
 	builder := &PolicyBuilder{
 		Cluster:   cluster,
@@ -332,6 +335,7 @@ func TestPolicyResourceOpenWithDNSZoneID(t *testing.T) {
 }
 
 func TestPolicyResourceOpenWithDNSZoneNameSetToHostedZoneID(t *testing.T) {
+	vfs.Context.ResetMemfsContext(true)
 	cluster := testutils.BuildMinimalClusterAWS("example.com")
 	builder := &PolicyBuilder{
 		Cluster:   cluster,
