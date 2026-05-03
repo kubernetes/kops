@@ -379,6 +379,9 @@ func (d *deployer) defaultClusterName() (string, error) {
 	if jobType == "presubmit" && pullNumber == "" {
 		return "", errors.New("PULL_NUMBER must be set when JOB_TYPE=presubmit and --cluster-name is not set")
 	}
+	if len(buildID) > 14 {
+		buildID = buildID[:14]
+	}
 
 	var suffix string
 	switch d.CloudProvider {
@@ -399,9 +402,9 @@ func (d *deployer) defaultClusterName() (string, error) {
 		jobName = jobName[:79]
 	}
 	if jobType == "presubmit" {
-		jobName = fmt.Sprintf("e2e-pr%s.%s", pullNumber, jobName)
+		jobName = fmt.Sprintf("e2e-pr%s-%s.%s", pullNumber, buildID, jobName)
 	} else {
-		jobName = fmt.Sprintf("e2e-%s", jobName)
+		jobName = fmt.Sprintf("e2e-%s-%s", buildID, jobName)
 	}
 
 	// GCP has char limit of 64
