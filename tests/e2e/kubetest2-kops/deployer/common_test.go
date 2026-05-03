@@ -79,3 +79,31 @@ func TestDefaultClusterNameGCETruncationKeepsBuildIDPrefix(t *testing.T) {
 		t.Fatalf("defaultClusterName for gce should be <= 63 chars, got len=%d value=%q", len(got), got)
 	}
 }
+
+func TestDefaultClusterNameAzureTruncationKeepsVMSSNameValid(t *testing.T) {
+	t.Setenv("JOB_NAME", "pull-kops-e2e-azure-cni-calico")
+	t.Setenv("JOB_TYPE", "presubmit")
+	t.Setenv("BUILD_ID", "2050912098761838592")
+	t.Setenv("PULL_NUMBER", "18266")
+
+	d := &deployer{
+		CloudProvider: "azure",
+		CreateArgs:    "--zones=uksouth-1",
+	}
+	got, err := d.defaultClusterName()
+	if err != nil {
+		t.Fatalf("defaultClusterName returned error: %v", err)
+	}
+
+	if !strings.HasPrefix(got, "e2e-pr18266-20509120987618.") {
+		t.Fatalf("defaultClusterName should keep presubmit+build-id prefix, got %q", got)
+	}
+
+	vmssName := "control-plane-uksouth-1.masters." + got
+	if len(vmssName) > 80 {
+		t.Fatalf("azure VMSS name must be <= 80 chars, got len=%d value=%q", len(vmssName), vmssName)
+	}
+	if strings.HasSuffix(vmssName, "-") || strings.HasSuffix(vmssName, ".") {
+		t.Fatalf("azure VMSS name cannot end with '-' or '.', got %q", vmssName)
+	}
+}

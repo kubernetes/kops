@@ -407,6 +407,15 @@ func (d *deployer) defaultClusterName() (string, error) {
 		jobName = fmt.Sprintf("e2e-%s-%s", buildID, jobName)
 	}
 
+	// Azure VMSS names are derived from "<ig-name>.masters.<cluster-name>" and
+	// must not exceed 80 characters. Keep cluster names within a safe budget.
+	if d.CloudProvider == "azure" {
+		maxClusterNameLength := d.maxAzureClusterNameLength()
+		if len(jobName) > maxClusterNameLength {
+			jobName = strings.TrimRight(jobName[:maxClusterNameLength], "-.")
+		}
+	}
+
 	// GCP has char limit of 64
 	gcpLimit := 63 - (len(suffix) + 1) // 1 for the dot
 	if len(jobName) > gcpLimit && d.CloudProvider == "gce" {
@@ -418,6 +427,29 @@ func (d *deployer) defaultClusterName() (string, error) {
 	}
 
 	return jobName, nil
+}
+
+func (d *deployer) maxAzureClusterNameLength() int {
+	const (
+		azureVMScaleSetNameLimit = 80
+		controlPlanePrefix       = "control-plane-"
+		controlPlaneSuffix       = ".masters."
+		defaultZone              = "uksouth-1"
+	)
+
+	longestZone := defaultZone
+	zones := extractZones(d.CreateArgs)
+	for _, zone := range zones {
+		if len(zone) > len(longestZone) {
+			longestZone = zone
+		}
+	}
+
+	limit := azureVMScaleSetNameLimit - len(controlPlanePrefix) - len(longestZone) - len(controlPlaneSuffix)
+	if limit < 1 {
+		return 1
+	}
+	return limit
 }
 
 // stateStore returns the kops state store to use
