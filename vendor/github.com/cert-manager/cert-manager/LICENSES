@@ -171,11 +171,15 @@ go.opentelemetry.io/auto/sdk,Apache-2.0
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc,Apache-2.0
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp,Apache-2.0
 go.opentelemetry.io/otel,Apache-2.0
+go.opentelemetry.io/otel,BSD-3-Clause
 go.opentelemetry.io/otel/exporters/otlp/otlptrace,Apache-2.0
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc,Apache-2.0
 go.opentelemetry.io/otel/metric,Apache-2.0
+go.opentelemetry.io/otel/metric,BSD-3-Clause
 go.opentelemetry.io/otel/sdk,Apache-2.0
+go.opentelemetry.io/otel/sdk,BSD-3-Clause
 go.opentelemetry.io/otel/trace,Apache-2.0
+go.opentelemetry.io/otel/trace,BSD-3-Clause
 go.opentelemetry.io/proto/otlp,Apache-2.0
 go.uber.org/multierr,MIT
 go.uber.org/ratelimit,MIT

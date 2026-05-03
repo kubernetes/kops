@@ -781,7 +781,7 @@ type ACMEIssuerDNS01ProviderAcmeDNS struct {
 type ACMEIssuerDNS01ProviderRFC2136 struct {
 	// The IP address or hostname of an authoritative DNS server supporting
 	// RFC2136 in the form host:port. If the host is an IPv6 address it must be
-	// enclosed in square brackets (e.g [2001:db8::1]) ; port is optional.
+	// enclosed in square brackets (e.g [2001:db8::1]); port is optional.
 	// This field is required.
 	Nameserver string `json:"nameserver"`
 
