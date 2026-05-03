@@ -753,10 +753,16 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 	if b.DNSZone != nil {
 		hostedZoneID := fi.ValueOf(b.DNSZone.ZoneID)
 		if hostedZoneID == "" {
-			// Dependency analysis failure?
-			return nil, fmt.Errorf("DNS ZoneID not set")
+			// In dry-run paths (for example `kops get assets`), task outputs are not resolved.
+			// If the DNS zone was configured by ID, fall back to the task name.
+			dnsZoneName := fi.ValueOf(b.DNSZone.Name)
+			if dnsZoneName != "" && !strings.Contains(dnsZoneName, ".") {
+				hostedZoneID = dnsZoneName
+			}
 		}
-		pb.HostedZoneID = hostedZoneID
+		if hostedZoneID != "" {
+			pb.HostedZoneID = hostedZoneID
+		}
 	}
 
 	policy, err := pb.BuildAWSPolicy()
