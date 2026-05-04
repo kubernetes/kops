@@ -226,3 +226,13 @@ func (t *Tester) setSkipRegexFlag() error {
 	t.SkipRegex = skipRegex
 	return nil
 }
+
+func matchesAnySubstrings(s string, substrings []string) bool {
+	s = strings.ToLower(s)
+	for _, substr := range substrings {
+		if strings.Contains(s, substr) {
+			return true
+		}
+	}
+	return false
+}
