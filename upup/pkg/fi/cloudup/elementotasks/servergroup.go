@@ -52,6 +52,13 @@ type ServerGroup struct {
 
 	Labels map[string]string
 
+	ClusterName *string
+	DNSZone     *string
+
+	APIPublicName              *string
+	APIInternalName            *string
+	KopsControllerInternalName *string
+
 	// RootVolumeSize is the size of the root volume in GB
 	RootVolumeSize *int32
 }
@@ -286,15 +293,115 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 			name, e.Location, e.Size, e.Image)
 		fmt.Printf("EKOPS: Calling client.Create() for server %q\n", name)
 
-		_, _, err = client.Create(context.TODO(), opts)
+		result, _, err := client.Create(context.TODO(), opts)
 		if err != nil {
 			fmt.Printf("EKOPS: ERROR creating server %q: %v\n", name, err)
 			return err
 		}
 		fmt.Printf("EKOPS: Successfully created server %q\n", name)
+
+		if e.ClusterName != nil && e.DNSZone != nil {
+			if err := createElementoServerDNSRecord(context.TODO(), t.Cloud.DnsClient(), fi.ValueOf(e.ClusterName), fi.ValueOf(e.DNSZone), name, result.Server); err != nil {
+				return err
+			}
+			if err := createElementoControlPlaneDNSRecords(context.TODO(), t.Cloud.DnsClient(), fi.ValueOf(e.DNSZone), e, result.Server); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
+}
+
+func createElementoServerDNSRecord(ctx context.Context, client ecloud.DnsClient, clusterName, zoneName, serverName string, server *ecloud.Server) error {
+	recordValue := serverDNSAddress(server)
+	if recordValue == "" {
+		klog.V(2).Infof("Skipping Elemento DNS record for server %q because it has no IP address yet", serverName)
+		return nil
+	}
+
+	recordName := trimElementoDNSZoneSuffix(fmt.Sprintf("%s.%s", serverName, clusterName), zoneName)
+	if err := ensureElementoDNSZone(ctx, client, zoneName); err != nil {
+		return err
+	}
+	if err := ensureElementoDNSRecord(ctx, client, zoneName, recordName, recordValue); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createElementoControlPlaneDNSRecords(ctx context.Context, client ecloud.DnsClient, zoneName string, serverGroup *ServerGroup, server *ecloud.Server) error {
+	if serverGroup.APIPublicName == nil && serverGroup.APIInternalName == nil && serverGroup.KopsControllerInternalName == nil {
+		return nil
+	}
+
+	if err := ensureElementoDNSZone(ctx, client, zoneName); err != nil {
+		return err
+	}
+
+	publicAddress := serverPublicDNSAddress(server)
+	internalAddress := serverPrivateDNSAddress(server)
+	if publicAddress == "" {
+		publicAddress = internalAddress
+	}
+	if internalAddress == "" {
+		internalAddress = publicAddress
+	}
+
+	if serverGroup.APIPublicName != nil && publicAddress != "" {
+		recordName := trimElementoDNSZoneSuffix(fi.ValueOf(serverGroup.APIPublicName), zoneName)
+		if err := ensureElementoDNSRecord(ctx, client, zoneName, recordName, publicAddress); err != nil {
+			return err
+		}
+	}
+	if serverGroup.APIInternalName != nil && internalAddress != "" {
+		recordName := trimElementoDNSZoneSuffix(fi.ValueOf(serverGroup.APIInternalName), zoneName)
+		if err := ensureElementoDNSRecord(ctx, client, zoneName, recordName, internalAddress); err != nil {
+			return err
+		}
+	}
+	if serverGroup.KopsControllerInternalName != nil && internalAddress != "" {
+		recordName := trimElementoDNSZoneSuffix(fi.ValueOf(serverGroup.KopsControllerInternalName), zoneName)
+		if err := ensureElementoDNSRecord(ctx, client, zoneName, recordName, internalAddress); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func serverPrivateDNSAddress(server *ecloud.Server) string {
+	if server == nil {
+		return ""
+	}
+	for _, privateNet := range server.PrivateNet {
+		if privateNet.IP != nil {
+			return privateNet.IP.String()
+		}
+	}
+	return ""
+}
+
+func serverPublicDNSAddress(server *ecloud.Server) string {
+	if server == nil {
+		return ""
+	}
+	if server.PublicNet.IPv4 != "" {
+		return server.PublicNet.IPv4
+	}
+	return server.PublicNet.IPv6
+}
+
+func serverDNSAddress(server *ecloud.Server) string {
+	if address := serverPrivateDNSAddress(server); address != "" {
+		return address
+	}
+	return serverPublicDNSAddress(server)
+}
+
+func trimElementoDNSZoneSuffix(name, zone string) string {
+	return strings.TrimSuffix(name, "."+strings.TrimSuffix(zone, "."))
 }
 
 func safeBytesHash(data []byte) string {

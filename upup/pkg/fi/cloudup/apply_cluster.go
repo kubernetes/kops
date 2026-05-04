@@ -303,7 +303,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	if cluster.Spec.KubernetesVersion == "" {
 		return nil, fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() {
+	if cluster.Spec.DNSZone == "" && cluster.PublishesDNSRecords() && cluster.GetCloudProvider() != kops.CloudProviderElemento {
 		return nil, fmt.Errorf("DNSZone not set")
 	}
 
@@ -515,7 +515,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	modelContext.SSHPublicKeys = sshPublicKeys
 	modelContext.Region = cloud.Region()
 
-	if cluster.PublishesDNSRecords() {
+	if cluster.PublishesDNSRecords() && cluster.GetCloudProvider() != kops.CloudProviderElemento {
 		err = validateDNS(cluster, cloud)
 		if err != nil {
 			return nil, err
@@ -838,7 +838,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		return nil, fmt.Errorf("error running tasks: %v", err)
 	}
 
-	if !cluster.PublishesDNSRecords() {
+	if !cluster.PublishesDNSRecords() || cluster.GetCloudProvider() == kops.CloudProviderElemento {
 		shouldPrecreateDNS = false
 	}
 

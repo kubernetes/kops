@@ -63,6 +63,9 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		if err != nil {
 			return err
 		}
+		labels[elemento.TagKubernetesClusterName] = b.ClusterName()
+		labels[elemento.TagKubernetesInstanceGroup] = ig.Name
+		labels[elemento.TagKubernetesInstanceRole] = string(ig.Spec.Role)
 
 		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
 		if err != nil {
@@ -108,6 +111,23 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 			UserData:       userData,
 			Labels:         labels,
 			RootVolumeSize: rootVolumeSize,
+		}
+		if b.Cluster.PublishesDNSRecords() {
+			serverGroup.ClusterName = fi.PtrTo(b.ClusterName())
+			serverGroup.DNSZone = fi.PtrTo(b.ClusterName())
+			if ig.HasAPIServer() {
+				if !b.UseLoadBalancerForAPI() {
+					apiPublicName := b.Cluster.Spec.API.PublicName
+					if apiPublicName == "" {
+						apiPublicName = "api." + b.ClusterName()
+					}
+					serverGroup.APIPublicName = fi.PtrTo(apiPublicName)
+				}
+				if !b.UseLoadBalancerForInternalAPI() {
+					serverGroup.APIInternalName = fi.PtrTo(b.Cluster.APIInternalName())
+				}
+				serverGroup.KopsControllerInternalName = fi.PtrTo("kops-controller.internal." + b.ClusterName())
+			}
 		}
 
 		c.AddTask(&serverGroup)

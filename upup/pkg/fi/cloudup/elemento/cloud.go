@@ -24,6 +24,7 @@ import (
 	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
@@ -50,9 +51,6 @@ type ElementoCloud interface {
 	VolumeClient() ecloud.VolumeClient
 	NodeupClient(ctx context.Context) ecloud.NodeupClient
 
-	// Add DNS-zone / DNS-record client accessors here once
-	// the Elemento SDK exposes them. The provider-native DNS tasks in
-	// elementotasks/dns_record.go are the intended callers.
 	DnsClient() ecloud.DnsClient
 }
 
@@ -151,8 +149,11 @@ func findServerGroups(c *elementoCloudImplementation, clusterName string) (map[s
 	return serverGroups, nil
 }
 
-func (c *elementoCloudImplementation) DNS() ecloud.DnsClient {
-	// Elemento DNS is expected to be managed through provider-native cloudup tasks,
+func (c *elementoCloudImplementation) DNS() (dnsprovider.Interface, error) {
+	return NewDNSProvider(c.Client.Dns, "")
+}
+
+func (c *elementoCloudImplementation) DnsClient() ecloud.DnsClient {
 	return c.Client.Dns
 }
 
