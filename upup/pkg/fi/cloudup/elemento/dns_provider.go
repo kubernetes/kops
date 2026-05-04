@@ -202,18 +202,19 @@ func (r *dnsResourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) 
 }
 
 func (r *dnsResourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordSet, error) {
-	recordSets, err := r.List()
+	recordName := trimZoneSuffix(name, r.zone.Name())
+	record, _, err := r.client.GetDnsRecord(context.TODO(), r.zone.Name(), recordName, string(rrstype.A))
 	if err != nil {
-		return nil, err
+		if IsDNSMissing(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("getting Elemento DNS record %q in zone %q: %w", recordName, r.zone.Name(), err)
+	}
+	if record == nil {
+		return nil, nil
 	}
 
-	var matches []dnsprovider.ResourceRecordSet
-	for _, recordSet := range recordSets {
-		if recordSet.Name() == name {
-			matches = append(matches, recordSet)
-		}
-	}
-	return matches, nil
+	return []dnsprovider.ResourceRecordSet{rrsetFromElementoRecord(record)}, nil
 }
 
 func (r *dnsResourceRecordSets) New(name string, rrdatas []string, ttl int64, recordType rrstype.RrsType) dnsprovider.ResourceRecordSet {
@@ -351,6 +352,12 @@ func IsDNSAlreadyExists(err error) bool {
 	return strings.Contains(message, "already exists") ||
 		strings.Contains(message, "already defined") ||
 		strings.Contains(message, "uniqueness")
+}
+
+// IsDNSMissing reports whether an Elemento DNS read operation did not find the
+// requested zone or record.
+func IsDNSMissing(err error) bool {
+	return ecloud.IsError(err, ecloud.ErrorCodeNotFound, ecloud.ErrorCodeDNSZoneNotFound)
 }
 
 func trimZoneSuffix(name, zone string) string {

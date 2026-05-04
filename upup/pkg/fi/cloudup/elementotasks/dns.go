@@ -40,9 +40,29 @@ type DNSRecord struct {
 var _ fi.CloudupTask = &DNSRecord{}
 
 func (d *DNSRecord) Find(c *fi.CloudupContext) (*DNSRecord, error) {
-	// The Elemento SDK currently exposes create-only DNS methods. We therefore
-	// reconcile DNS by issuing create calls and tolerating "already exists" errors.
-	return nil, nil
+	cloud := c.T.Cloud.(elemento.ElementoCloud)
+	client := cloud.DnsClient()
+
+	record, _, err := client.GetDnsRecord(context.TODO(), fi.ValueOf(d.DNSZone), fi.ValueOf(d.Name), fi.ValueOf(d.Type))
+	if err != nil {
+		if elemento.IsDNSMissing(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("getting Elemento DNS record %q in zone %q: %w", fi.ValueOf(d.Name), fi.ValueOf(d.DNSZone), err)
+	}
+	if record == nil {
+		return nil, nil
+	}
+
+	return &DNSRecord{
+		Name:      fi.PtrTo(record.Name),
+		Data:      fi.PtrTo(record.Value),
+		DNSZone:   d.DNSZone,
+		Type:      fi.PtrTo(record.Type),
+		TTL:       fi.PtrTo(int64(record.TTL)),
+		Lifecycle: d.Lifecycle,
+		Comment:   d.Comment,
+	}, nil
 }
 
 func (d *DNSRecord) Run(c *fi.CloudupContext) error {
