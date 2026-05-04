@@ -25,9 +25,9 @@ import (
 	"golang.org/x/sys/unix"
 
 	"k8s.io/kops/nodeup/pkg/model"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/distributions"
 )
 
 // CiliumBuilder writes Cilium's assets
@@ -58,36 +58,13 @@ func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return fmt.Errorf("failed to create cgroupv2 mount unit: %w", err)
 	}
 
-	if (b.Distribution.IsUbuntu() && b.Distribution.Version() >= 22.04) ||
-		b.Distribution == distributions.DistributionAmazonLinux2023 {
-		// Make systemd-networkd ignore foreign settings, else it may
-		// unexpectedly delete IP rules and routes added by CNI
-		contents := `
-# Do not clobber any routes or rules added by CNI.
-[Network]
-ManageForeignRoutes=no
-ManageForeignRoutingPolicyRules=no
-`
-		c.AddTask(&nodetasks.File{
-			Path:            "/usr/lib/systemd/networkd.conf.d/40-disable-manage-foreign-routes.conf",
-			Contents:        fi.NewStringResource(contents),
-			Type:            nodetasks.FileType_File,
-			OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
-		})
-	}
+	disableManageForeignRoutes(c, b.Distribution)
+	disableCloudInitNetworkHotplug(c, b.Distribution)
 
-	if b.Distribution.IsUbuntu() && b.Distribution.Version() >= 24.04 {
-		contents := `# Disable cloud-init network hotplug to prevent interference with Cilium ENI management.
-# See: https://github.com/kubernetes/kops/issues/17881
-updates:
-  network:
-    when: [boot-new-instance]
-`
-		c.AddTask(&nodetasks.File{
-			Path:     "/etc/cloud/cloud.cfg.d/99-disable-network-hotplug.cfg",
-			Contents: fi.NewStringResource(contents),
-			Type:     nodetasks.FileType_File,
-		})
+	if b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni {
+		maskEC2NetUtilsUdevRules(c, b.Distribution)
+		setMACAddressPolicyNone(c, b.Distribution)
+		markSecondaryENIsUnmanaged(c, b.Distribution)
 	}
 
 	return nil
