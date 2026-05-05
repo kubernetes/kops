@@ -18,17 +18,14 @@ package nodetasks
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"os/exec"
-	"path"
-	"path/filepath"
 	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/backoff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -87,7 +84,7 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 	return nil
 }
 
-func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
+func (_ *LoadImageTask) RenderLocal(_ *local.LocalTarget, a, e, changes *LoadImageTask) error {
 	hash, err := hashing.FromString(e.Hash)
 	if err != nil {
 		return err
@@ -98,15 +95,11 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 		return fmt.Errorf("no sources specified: %v", err)
 	}
 
-	// We assume the first url is the "main" url, and download to a local file based on that _name_, wherever we get it from
 	primaryURL := urls[0]
-	key := path.Base(primaryURL)
-	localFile := filepath.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(key))
-
 	for _, url := range urls {
-		_, err = fi.DownloadURL(url, localFile, hash)
+		err = importContainerImage(url, hash)
 		if err != nil {
-			klog.Warningf("error downloading url %q: %v", url, err)
+			klog.Warningf("error importing image from url %q: %v", url, err)
 			continue
 		} else {
 			break
@@ -114,43 +107,73 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	}
 	if err != nil {
 		// Hack to try to avoid failed downloads causing massive bandwidth bills
-		backoff.DoGlobalBackoff(fmt.Errorf("failed to download image %s: %v", primaryURL, err))
+		backoff.DoGlobalBackoff(fmt.Errorf("failed to import image %s: %v", primaryURL, err))
 		return err
 	}
 
-	// containerd can't import gzipped container images, if the image is gzipped extract it to tmp dir
-	// TODO: Improve the naive gzip format detection by checking the content type bytes "\x1F\x8B\x08"
-	var tarFile string
-	if strings.HasSuffix(localFile, "gz") {
-		tmpDir, err := os.MkdirTemp("", "loadimage")
-		if err != nil {
-			return fmt.Errorf("error creating temp dir: %v", err)
-		}
-		defer func() {
-			if err := os.RemoveAll(tmpDir); err != nil {
-				klog.Warningf("error deleting temp dir %q: %v", tmpDir, err)
-			}
-		}()
-		tarFile = path.Join(tmpDir, utils.SanitizeString(primaryURL))
-		err = utils.UngzipFile(localFile, tarFile)
-		if err != nil {
-			return fmt.Errorf("error ungzipping container image: %v", err)
-		}
-	} else {
-		// Assume container image is tar file alerady
-		tarFile = localFile
+	return nil
+}
+
+func importContainerImage(url string, expectedHash *hashing.Hash) error {
+	responseBody, err := fi.OpenURL(url)
+	if err != nil {
+		return err
+	}
+	defer responseBody.Close()
+
+	imageReader, verifyHash, imageCloser, err := imageImportReader(responseBody, expectedHash)
+	if err != nil {
+		return err
 	}
 
-	// Load the container image
-	args := []string{"ctr", "--namespace", "k8s.io", "images", "import", tarFile}
+	args := containerImageImportArgs()
 	human := strings.Join(args, " ")
 
 	klog.Infof("running command %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdin = imageReader
 	output, err := cmd.CombinedOutput()
+	if imageCloser != nil {
+		if closeErr := imageCloser.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}
 	if err != nil {
 		return fmt.Errorf("error loading docker image with '%s': %v: %s", human, err, string(output))
 	}
+	if err := verifyHash(); err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func containerImageImportArgs() []string {
+	return []string{"ctr", "--namespace", "k8s.io", "images", "import", "--no-unpack", "-"}
+}
+
+func imageImportReader(r io.Reader, expectedHash *hashing.Hash) (io.Reader, func() error, io.Closer, error) {
+	algorithm := hashing.HashAlgorithmSHA256
+	if expectedHash != nil {
+		algorithm = expectedHash.Algorithm
+	}
+
+	hasher := algorithm.NewHasher()
+	hashedReader := io.TeeReader(r, hasher)
+	imageReader, closer, err := maybeGzipReader(hashedReader)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("error reading container image stream: %v", err)
+	}
+
+	verifyHash := func() error {
+		actualHash := &hashing.Hash{
+			Algorithm: algorithm,
+			HashValue: hasher.Sum(nil),
+		}
+		if expectedHash != nil && !actualHash.Equal(expectedHash) {
+			return fmt.Errorf("downloaded container image but hash did not match expected %q", expectedHash)
+		}
+		return nil
+	}
+	return imageReader, verifyHash, closer, nil
 }

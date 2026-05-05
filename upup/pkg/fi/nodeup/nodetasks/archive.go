@@ -20,11 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -159,16 +157,8 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 			if err := os.MkdirAll(targetDir, 0o755); err != nil {
 				return fmt.Errorf("error creating directories %q: %v", targetDir, err)
 			}
-
-			args := []string{"tar", "xf", localFile, "-C", targetDir}
-			if e.StripComponents != 0 {
-				args = append(args, "--strip-components="+strconv.Itoa(e.StripComponents))
-			}
-
-			klog.Infof("running command %s", args)
-			cmd := exec.Command(args[0], args[1:]...)
-			if output, err := cmd.CombinedOutput(); err != nil {
-				return fmt.Errorf("error installing archive %q: %v: %s", e.Name, err, string(output))
+			if err := extractArchive(localFile, targetDir, e.StripComponents, ""); err != nil {
+				return fmt.Errorf("error installing archive %q: %v", e.Name, err)
 			}
 		} else {
 			for src, dest := range e.MapFiles {
@@ -177,13 +167,8 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 				if err := os.MkdirAll(targetDir, 0o755); err != nil {
 					return fmt.Errorf("error creating directories %q: %v", targetDir, err)
 				}
-
-				args := []string{"tar", "xf", localFile, "-C", targetDir, "--wildcards", "--strip-components=" + strconv.Itoa(stripCount), src}
-
-				klog.Infof("running command %s", args)
-				cmd := exec.Command(args[0], args[1:]...)
-				if output, err := cmd.CombinedOutput(); err != nil {
-					return fmt.Errorf("error installing archive %q: %v: %s", e.Name, err, string(output))
+				if err := extractArchive(localFile, targetDir, stripCount, src); err != nil {
+					return fmt.Errorf("error installing archive %q: %v", e.Name, err)
 				}
 			}
 		}

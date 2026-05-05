@@ -17,10 +17,14 @@ limitations under the License.
 package nodetasks
 
 import (
+	"bytes"
+	"compress/gzip"
+	"io"
 	"reflect"
 	"testing"
 
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 func TestLoadImageTask_Deps(t *testing.T) {
@@ -36,5 +40,51 @@ func TestLoadImageTask_Deps(t *testing.T) {
 	expected := []fi.NodeupTask{tasks["ServiceDocker"]}
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
+	}
+}
+
+func TestImageImportReaderUngzipsAndHashesDownload(t *testing.T) {
+	image := []byte("container image tar")
+	var compressed bytes.Buffer
+	gzipWriter := gzip.NewWriter(&compressed)
+	if _, err := gzipWriter.Write(image); err != nil {
+		t.Fatalf("Write() error = %v", err)
+	}
+	if err := gzipWriter.Close(); err != nil {
+		t.Fatalf("Close() error = %v", err)
+	}
+
+	expectedHash, err := hashing.HashAlgorithmSHA256.Hash(bytes.NewReader(compressed.Bytes()))
+	if err != nil {
+		t.Fatalf("Hash() error = %v", err)
+	}
+
+	reader, verifyHash, closer, err := imageImportReader(bytes.NewReader(compressed.Bytes()), expectedHash)
+	if err != nil {
+		t.Fatalf("imageImportReader() error = %v", err)
+	}
+
+	actual, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatalf("ReadAll() error = %v", err)
+	}
+	if closer != nil {
+		if err := closer.Close(); err != nil {
+			t.Fatalf("Close() error = %v", err)
+		}
+	}
+	if !bytes.Equal(actual, image) {
+		t.Fatalf("imageImportReader() body = %q, expected %q", actual, image)
+	}
+	if err := verifyHash(); err != nil {
+		t.Fatalf("verifyHash() error = %v", err)
+	}
+}
+
+func TestContainerImageImportArgsDoesNotUnpack(t *testing.T) {
+	args := containerImageImportArgs()
+	expected := []string{"ctr", "--namespace", "k8s.io", "images", "import", "--no-unpack", "-"}
+	if !reflect.DeepEqual(args, expected) {
+		t.Fatalf("containerImageImportArgs() = %v, expected %v", args, expected)
 	}
 }
