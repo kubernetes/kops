@@ -77,12 +77,16 @@ const MaxTaskDuration = 365 * 24 * time.Hour
 type NodeUpCommand struct {
 	CacheDir       string
 	ConfigLocation string
+	LogMemory      bool
 	Target         string
 }
 
 // Run is responsible for perform the nodeup process
 func (c *NodeUpCommand) Run(out io.Writer) error {
 	ctx := context.Background()
+	memoryLogger := newNodeupMemoryLogger(c.LogMemory)
+	memoryLogger.Log("start", nil)
+	defer memoryLogger.Log("exit", nil)
 
 	var bootConfig nodeup.BootConfig
 	if c.ConfigLocation != "" {
@@ -102,6 +106,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.CacheDir == "" {
 		return fmt.Errorf("CacheDir is required")
 	}
+	memoryLogger.Log("boot-config-loaded", nil)
 
 	region, err := getRegion(ctx, &bootConfig)
 	if err != nil {
@@ -170,6 +175,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	memoryLogger.Log("nodeup-config-loaded", nil)
 
 	architecture, err := architectures.FindArchitecture()
 	if err != nil {
@@ -189,6 +195,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error adding asset %q: %v", asset, err)
 		}
 	}
+	memoryLogger.Log("assets-loaded", nil)
 
 	var cloud fi.Cloud
 
@@ -246,6 +253,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err := modelContext.Init(); err != nil {
 		return err
 	}
+	memoryLogger.Log("model-context-initialized", nil)
 
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
@@ -290,10 +298,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			modelContext.GPUVendor = architectures.GPUVendorNvidia
 		}
 	}
+	memoryLogger.Log("node-metadata-loaded", nil)
 
 	if err := loadKernelModules(modelContext, distribution); err != nil {
 		return err
 	}
+	memoryLogger.Log("kernel-modules-loaded", nil)
 
 	loader := &Loader{}
 	loader.Builders = append(loader.Builders, &model.DiscoveryService{NodeupModelContext: modelContext})
@@ -350,6 +360,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 	// Protokube load image task is in ProtokubeBuilder
+	taskSummary := summarizeNodeupMemoryTasks(taskMap)
+	memoryLogger.Log("task-graph-built", &taskSummary)
 
 	var target fi.NodeupTarget
 
@@ -370,24 +382,33 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err != nil {
 		klog.Exitf("error building context: %v", err)
 	}
+	memoryLogger.Log("context-built", &taskSummary)
 
 	var options fi.RunTasksOptions
 	options.InitDefaults()
 
+	memoryLogger.Log("before-run-tasks", &taskSummary)
+	stopMemoryLogging := memoryLogger.StartPeriodic("run-tasks", &taskSummary)
 	err = context.RunTasks(options)
+	stopMemoryLogging()
 	if err != nil {
+		memoryLogger.Log("run-tasks-error", &taskSummary)
 		klog.Exitf("error running tasks: %v", err)
 	}
+	memoryLogger.Log("after-run-tasks", &taskSummary)
 
 	err = target.Finish(taskMap)
 	if err != nil {
+		memoryLogger.Log("target-finish-error", &taskSummary)
 		klog.Exitf("error closing target: %v", err)
 	}
+	memoryLogger.Log("after-target-finish", &taskSummary)
 
 	if nodeupConfig.EnableLifecycleHook {
 		if bootConfig.CloudProvider == api.CloudProviderAWS {
 			err := completeWarmingLifecycleAction(ctx, cloud.(awsup.AWSCloud), modelContext)
 			if err != nil {
+				memoryLogger.Log("lifecycle-hook-error", &taskSummary)
 				return fmt.Errorf("failed to complete lifecylce action: %w", err)
 			}
 		}

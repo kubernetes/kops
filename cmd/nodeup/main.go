@@ -43,7 +43,7 @@ func main() {
 
 	var flagConf, flagCacheDir, gitVersion string
 	var flagRetries int
-	var dryrun, installSystemdUnit bool
+	var dryrun, installSystemdUnit, logMemory bool
 	target := "direct"
 
 	if kops.GitVersion != "" {
@@ -56,6 +56,7 @@ func main() {
 	flag.BoolVar(&dryrun, "dryrun", false, "Don't create cloud resources; just show what would be done")
 	flag.StringVar(&target, "target", target, "Target - direct, dryrun")
 	flag.BoolVar(&installSystemdUnit, "install-systemd-unit", installSystemdUnit, "If true, will install a systemd unit instead of running directly")
+	flag.BoolVar(&logMemory, "log-memory", true, "Log Go and cgroup memory statistics during nodeup")
 
 	if dryrun {
 		target = "dryrun"
@@ -118,6 +119,7 @@ func main() {
 				ConfigLocation: flagConf,
 				Target:         target,
 				CacheDir:       flagCacheDir,
+				LogMemory:      logMemory,
 			}
 			err = cmd.Run(os.Stdout)
 			if err == nil {
