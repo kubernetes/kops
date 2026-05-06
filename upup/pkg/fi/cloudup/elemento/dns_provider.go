@@ -357,7 +357,14 @@ func IsDNSAlreadyExists(err error) bool {
 // IsDNSMissing reports whether an Elemento DNS read operation did not find the
 // requested zone or record.
 func IsDNSMissing(err error) bool {
-	return ecloud.IsError(err, ecloud.ErrorCodeNotFound, ecloud.ErrorCodeDNSZoneNotFound)
+	if ecloud.IsError(err, ecloud.ErrorCodeNotFound, ecloud.ErrorCodeDNSZoneNotFound) {
+		return true
+	}
+
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "dns service not found") ||
+		strings.Contains(message, "dns zone not found") ||
+		strings.Contains(message, "api error: 404")
 }
 
 func trimZoneSuffix(name, zone string) string {

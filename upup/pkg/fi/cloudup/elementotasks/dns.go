@@ -27,6 +27,80 @@ import (
 )
 
 // +kops:fitask
+type DNSZone struct {
+	Name      *string
+	Lifecycle fi.Lifecycle
+}
+
+var _ fi.CloudupTask = &DNSZone{}
+var _ fi.HasLifecycle = &DNSZone{}
+var _ fi.HasName = &DNSZone{}
+
+func (z *DNSZone) GetLifecycle() fi.Lifecycle {
+	return z.Lifecycle
+}
+
+func (z *DNSZone) SetLifecycle(lifecycle fi.Lifecycle) {
+	z.Lifecycle = lifecycle
+}
+
+func (z *DNSZone) GetName() *string {
+	return z.Name
+}
+
+func (z *DNSZone) String() string {
+	return fi.CloudupTaskAsString(z)
+}
+
+func (z *DNSZone) Find(c *fi.CloudupContext) (*DNSZone, error) {
+	cloud := c.T.Cloud.(elemento.ElementoCloud)
+	client := cloud.DnsClient()
+	zoneName := fi.ValueOf(z.Name)
+
+	fmt.Printf("EKOPS: Finding Elemento DNS zone %q\n", zoneName)
+
+	dns, _, err := client.Get(context.TODO(), zoneName)
+	if err != nil {
+		if elemento.IsDNSMissing(err) {
+			fmt.Printf("EKOPS: Elemento DNS zone %q not found\n", zoneName)
+			return nil, nil
+		}
+		return nil, fmt.Errorf("getting Elemento DNS zone %q: %w", zoneName, err)
+	}
+	if dns == nil {
+		fmt.Printf("EKOPS: Elemento DNS zone %q not found\n", zoneName)
+		return nil, nil
+	}
+
+	fmt.Printf("EKOPS: Elemento DNS zone %q already exists\n", zoneName)
+	return &DNSZone{
+		Name:      fi.PtrTo(dns.ZoneName),
+		Lifecycle: z.Lifecycle,
+	}, nil
+}
+
+func (z *DNSZone) Run(c *fi.CloudupContext) error {
+	return fi.CloudupDefaultDeltaRunMethod(z, c)
+}
+
+func (_ *DNSZone) CheckChanges(actual, expected, changes *DNSZone) error {
+	if expected.Name == nil {
+		return fi.RequiredField("Name")
+	}
+	return nil
+}
+
+func (_ *DNSZone) RenderElemento(t *elemento.ElementoAPITarget, actual, expected, changes *DNSZone) error {
+	zoneName := fi.ValueOf(expected.Name)
+	fmt.Printf("EKOPS: Ensuring Elemento DNS zone %q\n", zoneName)
+	if err := ensureElementoDNSZone(context.TODO(), t.Cloud.DnsClient(), zoneName); err != nil {
+		return err
+	}
+	fmt.Printf("EKOPS: Elemento DNS zone %q ensured\n", zoneName)
+	return nil
+}
+
+// +kops:fitask
 type DNSRecord struct {
 	Name      *string
 	Data      *string

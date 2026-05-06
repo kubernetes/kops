@@ -21,7 +21,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"math/rand"
 	"strings"
 
 	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
@@ -54,6 +53,7 @@ type ServerGroup struct {
 
 	ClusterName *string
 	DNSZone     *string
+	DNSZoneTask *DNSZone
 
 	APIPublicName              *string
 	APIInternalName            *string
@@ -244,8 +244,9 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 	fmt.Printf("EKOPS: UserData length: %d bytes, hash: %s\n", len(userData), userDataHash)
 
 	for i := 1; i <= expectedCount-actualCount; i++ {
-		// Append a random/unique ID to the node name
-		name := fmt.Sprintf("%s-%x", fi.ValueOf(e.Name), rand.Int63())
+		// Use deterministic names so manual DNS records can be created before VM creation.
+		ordinal := actualCount + i
+		name := fmt.Sprintf("%s-%d", fi.ValueOf(e.Name), ordinal)
 
 		// Initialize labels if nil
 		labels := e.Labels

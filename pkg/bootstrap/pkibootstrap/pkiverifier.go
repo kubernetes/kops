@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -128,11 +129,25 @@ func (v *verifier) VerifyToken(ctx context.Context, rawRequest *http.Request, au
 	*/
 
 	// DISABLED: Return a dummy successful verification result
+	nodeName := "nodes-europe-1"
+	certificateNames := []string{nodeName}
+	if host, _, err := net.SplitHostPort(rawRequest.RemoteAddr); err == nil {
+		certificateNames = append(certificateNames, host)
+		switch host {
+		case "192.168.100.10":
+			nodeName = "control-plane-europe-1"
+		case "192.168.100.11":
+			nodeName = "nodes-europe-1"
+		case "192.168.100.12":
+			nodeName = "nodes-europe-2"
+		}
+		certificateNames[0] = nodeName
+	}
 	result := &bootstrap.VerifyResult{
-		NodeName:          "test-node",
-		CertificateNames:  []string{"127.0.0.1"},
-		ChallengeEndpoint: "127.0.0.1:10000",
-		InstanceGroupName: "nodes",
+		NodeName:          nodeName,
+		CertificateNames:  certificateNames,
+		ChallengeEndpoint: "",
+		InstanceGroupName: "nodes-europe",
 	}
 
 	return result, nil

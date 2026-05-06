@@ -687,7 +687,22 @@ func (b *ConfigBuilder) GetWellKnownAddresses(ctx context.Context) (model.WellKn
 		}
 	}
 	if len(wellKnownAddresses[wellknownservices.KubeAPIServer]) == 0 {
-		// TODO: Should we support DNS?
+		names := []string{fullCluster.APIInternalName()}
+		if fullCluster.Spec.API.PublicName != "" {
+			names = append(names, fullCluster.Spec.API.PublicName)
+		}
+		for _, name := range names {
+			ips, err := net.LookupIP(name)
+			if err != nil {
+				klog.Warningf("unable to resolve kube-apiserver DNS name %q: %v", name, err)
+				continue
+			}
+			for _, ip := range ips {
+				wellKnownAddresses[wellknownservices.KubeAPIServer] = append(wellKnownAddresses[wellknownservices.KubeAPIServer], ip.String())
+			}
+		}
+	}
+	if len(wellKnownAddresses[wellknownservices.KubeAPIServer]) == 0 {
 		return nil, fmt.Errorf("unable to determine IP address for kube-apiserver")
 	}
 	for k := range wellKnownAddresses {

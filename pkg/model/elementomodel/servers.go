@@ -57,6 +57,15 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		sshkeyTasks = append(sshkeyTasks, t)
 	}
 
+	var dnsZoneTask *elementotasks.DNSZone
+	if b.Cluster.PublishesDNSRecords() {
+		dnsZoneTask = &elementotasks.DNSZone{
+			Name:      fi.PtrTo(b.ClusterName()),
+			Lifecycle: b.Lifecycle,
+		}
+		c.EnsureTask(dnsZoneTask)
+	}
+
 	for _, ig := range b.InstanceGroups {
 		igSize := fi.ValueOf(ig.Spec.MinSize)
 		labels, err := b.CloudTagsForInstanceGroup(ig)
@@ -115,6 +124,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		if b.Cluster.PublishesDNSRecords() {
 			serverGroup.ClusterName = fi.PtrTo(b.ClusterName())
 			serverGroup.DNSZone = fi.PtrTo(b.ClusterName())
+			serverGroup.DNSZoneTask = dnsZoneTask
 			if ig.HasAPIServer() {
 				if !b.UseLoadBalancerForAPI() {
 					apiPublicName := b.Cluster.Spec.API.PublicName
