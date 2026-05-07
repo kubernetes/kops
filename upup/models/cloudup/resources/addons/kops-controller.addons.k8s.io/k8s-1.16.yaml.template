@@ -144,6 +144,14 @@ rules:
   - list
   - watch
   - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - get
+  - patch
+  - update
 {{- if GossipEnabled }}
 - apiGroups:
   - ""

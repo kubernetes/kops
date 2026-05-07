@@ -19,91 +19,83 @@ package elemento
 import (
 	"context"
 	"fmt"
-
-	// "net"
+	"net"
 	"net/http"
-	// "strings"
-	// "strconv"
+	"strings"
 
-	"github.com/Elemento-Modular-Cloud/ecloud-go/ecloud"
 	"k8s.io/kops/pkg/bootstrap"
-	// "k8s.io/kops/pkg/wellknownports"
 )
 
 type ElementoVerifierOptions struct {
 }
 
 type elementoVerifier struct {
-	opt    ElementoVerifierOptions
-	client *ecloud.Client
+	opt ElementoVerifierOptions
 }
 
 var _ bootstrap.Verifier = &elementoVerifier{}
 
-func NewElementoVerifier(opt *ElementoVerifierOptions) (bootstrap.Verifier, error) {
-	elementoClient, err := ecloud.NewClient("kops-elemento", "1.0")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get server info: %w", err)
-	}
+type staticBootstrapNode struct {
+	NodeName          string
+	InstanceGroupName string
+}
 
+var staticBootstrapNodesByIP = map[string]staticBootstrapNode{
+	"192.168.100.10": {NodeName: "control-plane-europe-1", InstanceGroupName: "control-plane-europe"},
+	"192.168.100.11": {NodeName: "nodes-europe-1", InstanceGroupName: "nodes-europe"},
+	"192.168.100.12": {NodeName: "nodes-europe-2", InstanceGroupName: "nodes-europe"},
+}
+
+func NewElementoVerifier(opt *ElementoVerifierOptions) (bootstrap.Verifier, error) {
 	return &elementoVerifier{
-		opt:    *opt,
-		client: elementoClient,
+		opt: *opt,
 	}, nil
 }
 
 func (e elementoVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	// DISABLED: Comment out all verification checks for testing
-	/*
-		if !strings.HasPrefix(token, ElementoAuthenticationTokenPrefix) {
-			return nil, fmt.Errorf("invalid token format")
-		}
-		token = strings.TrimPrefix(token, ElementoAuthenticationTokenPrefix)
+	if !strings.HasPrefix(token, ElementoAuthenticationTokenPrefix) {
+		return nil, bootstrap.ErrNotThisVerifier
+	}
+	token = strings.TrimSpace(strings.TrimPrefix(token, ElementoAuthenticationTokenPrefix))
 
-		server, _, err := e.client.Server.GetByID(ctx, token)
-		if err != nil || server == nil {
-			return nil, fmt.Errorf("failed to get server info: %w", err)
-		}
-
-		var addrs []string
-		var challengeEndpoints []string
-		if server.PublicNet.IPv4 != "" {
-			// Don't challenge over the public network
-			addrs = append(addrs, server.PublicNet.IPv4)
-		}
-		for _, network := range server.PrivateNet {
-			if network.IP != nil {
-				addrs = append(addrs, network.IP.String())
-				challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(network.IP.String(), strconv.Itoa(wellknownports.NodeupChallenge)))
-			}
-		}
-
-		if len(challengeEndpoints) == 0 {
-			return nil, fmt.Errorf("cannot determine challenge endpoint for server %q", server.ID)
-		}
-
-		result := &bootstrap.VerifyResult{
-			NodeName:          server.Name,
-			CertificateNames:  addrs,
-			ChallengeEndpoint: challengeEndpoints[0],
-		}
-
-		for key, value := range server.Labels {
-			if key == TagKubernetesInstanceGroup {
-				result.InstanceGroupName = value
-			}
-		}
-
-		return result, nil
-	*/
-
-	// DISABLED: Return a dummy successful verification result
-	result := &bootstrap.VerifyResult{
-		NodeName:          "test-node",
-		CertificateNames:  []string{"127.0.0.1"},
-		ChallengeEndpoint: "127.0.0.1:10000",
-		InstanceGroupName: "nodes",
+	remoteHost, _, err := net.SplitHostPort(rawRequest.RemoteAddr)
+	if err != nil {
+		remoteHost = rawRequest.RemoteAddr
 	}
 
-	return result, nil
+	nodeName := token
+	instanceGroupName := ""
+	if node, ok := staticBootstrapNodesByIP[remoteHost]; ok {
+		nodeName = node.NodeName
+		instanceGroupName = node.InstanceGroupName
+	}
+	if instanceGroupName == "" {
+		instanceGroupName = inferInstanceGroupName(nodeName)
+	}
+	if instanceGroupName == "" {
+		return nil, fmt.Errorf("failed to determine instance group for node %q", nodeName)
+	}
+	certificateNames := []string{nodeName}
+	if remoteHost != "" {
+		certificateNames = append(certificateNames, remoteHost)
+	}
+
+	return &bootstrap.VerifyResult{
+		NodeName:          nodeName,
+		CertificateNames:  certificateNames,
+		InstanceGroupName: instanceGroupName,
+	}, nil
+}
+
+func inferInstanceGroupName(serverName string) string {
+	i := strings.LastIndex(serverName, "-")
+	if i == -1 || i == len(serverName)-1 {
+		return serverName
+	}
+	for _, r := range serverName[i+1:] {
+		if r < '0' || r > '9' {
+			return serverName
+		}
+	}
+	return serverName[:i]
 }

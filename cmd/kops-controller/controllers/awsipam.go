@@ -160,8 +160,9 @@ func (r *AWSIPAMReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 type nodePatchSpec struct {
-	PodCIDR  string   `json:"podCIDR,omitempty"`
-	PodCIDRs []string `json:"podCIDRs,omitempty"`
+	PodCIDR    string   `json:"podCIDR,omitempty"`
+	PodCIDRs   []string `json:"podCIDRs,omitempty"`
+	ProviderID *string  `json:"providerID,omitempty"`
 }
 
 // patchNodePodCIDRs patches the node podCIDRs to the specified value(s).

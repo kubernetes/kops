@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -68,7 +69,10 @@ type NodeReconciler struct {
 	identifier nodeidentity.Identifier
 }
 
+const externalCloudProviderTaint = "node.cloudprovider.kubernetes.io/uninitialized"
+
 // +kubebuilder:rbac:groups=,resources=nodes,verbs=get;list;watch;patch
+// +kubebuilder:rbac:groups=,resources=nodes/status,verbs=get;patch;update
 // Reconcile is the main reconciler function that observes node changes.
 func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = r.log.WithValues("nodecontroller", req.NamespacedName)
@@ -111,14 +115,30 @@ func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		}
 	}
 
-	if len(updateLabels) == 0 && len(deleteLabels) == 0 {
-		klog.V(4).Infof("no label changes needed for %s", node.Name)
-		return ctrl.Result{}, nil
+	providerID := ""
+	if info.ProviderID != "" && node.Spec.ProviderID != info.ProviderID {
+		providerID = info.ProviderID
 	}
 
-	if err := patchNodeLabels(r.coreV1Client, ctx, node, updateLabels, deleteLabels); err != nil {
-		klog.Warningf("failed to patch node labels on %s: %v", node.Name, err)
+	var taints *[]corev1.Taint
+	if info.Initialized {
+		if updatedTaints, changed := removeTaint(node.Spec.Taints, externalCloudProviderTaint); changed {
+			taints = &updatedTaints
+		}
+	}
+
+	if len(updateLabels) == 0 && len(deleteLabels) == 0 && providerID == "" && taints == nil {
+		klog.V(4).Infof("no spec or label changes needed for %s", node.Name)
+	} else if err := patchNode(r.coreV1Client, ctx, node, updateLabels, deleteLabels, providerID, taints); err != nil {
+		klog.Warningf("failed to patch node on %s: %v", node.Name, err)
 		return ctrl.Result{}, err
+	}
+
+	if len(info.Addresses) != 0 && !reflect.DeepEqual(node.Status.Addresses, info.Addresses) {
+		if err := patchNodeStatusAddresses(r.coreV1Client, ctx, node, info.Addresses); err != nil {
+			klog.Warningf("failed to patch node status addresses on %s: %v", node.Name, err)
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
@@ -142,6 +162,11 @@ type nodePatchMetadata struct {
 
 // patchNodeLabels patches the node labels to set the specified labels
 func patchNodeLabels(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, setLabels map[string]string, deleteLabels map[string]struct{}) error {
+	return patchNode(client, ctx, node, setLabels, deleteLabels, "", nil)
+}
+
+// patchNode patches node metadata and spec fields managed by the node controller.
+func patchNode(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, setLabels map[string]string, deleteLabels map[string]struct{}, providerID string, taints *[]corev1.Taint) error {
 	nodePatchMetadata := &nodePatchMetadata{
 		Labels: make(map[string]*string),
 	}
@@ -153,20 +178,90 @@ func patchNodeLabels(client *corev1client.CoreV1Client, ctx context.Context, nod
 		nodePatchMetadata.Labels[k] = nil
 	}
 
-	nodePatch := &nodePatch{
-		Metadata: nodePatchMetadata,
+	nodePatch := &nodePatch{}
+	if len(nodePatchMetadata.Labels) != 0 {
+		nodePatch.Metadata = nodePatchMetadata
 	}
-	nodePatchJson, err := json.Marshal(nodePatch)
-	if err != nil {
-		return fmt.Errorf("error building node patch: %v", err)
+	if providerID != "" {
+		nodePatch.Spec = &nodePatchSpec{ProviderID: &providerID}
 	}
 
-	klog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
+	if nodePatch.Metadata != nil || nodePatch.Spec != nil {
+		nodePatchJson, err := json.Marshal(nodePatch)
+		if err != nil {
+			return fmt.Errorf("error building node patch: %v", err)
+		}
 
-	_, err = client.Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, nodePatchJson, metav1.PatchOptions{})
-	if err != nil {
-		return fmt.Errorf("error applying patch to node: %v", err)
+		klog.V(2).Infof("sending patch for node %q: %q", node.Name, string(nodePatchJson))
+
+		_, err = client.Nodes().Patch(ctx, node.Name, types.StrategicMergePatchType, nodePatchJson, metav1.PatchOptions{})
+		if err != nil {
+			return fmt.Errorf("error applying patch to node: %v", err)
+		}
+	}
+
+	if taints != nil {
+		if err := patchNodeTaints(client, ctx, node, *taints); err != nil {
+			return err
+		}
 	}
 
 	return nil
+}
+
+func patchNodeTaints(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, taints []corev1.Taint) error {
+	nodePatchJson, err := json.Marshal(struct {
+		Spec struct {
+			Taints []corev1.Taint `json:"taints"`
+		} `json:"spec"`
+	}{Spec: struct {
+		Taints []corev1.Taint `json:"taints"`
+	}{Taints: taints}})
+	if err != nil {
+		return fmt.Errorf("error building node taints patch: %v", err)
+	}
+
+	klog.V(2).Infof("sending taints patch for node %q: %q", node.Name, string(nodePatchJson))
+
+	_, err = client.Nodes().Patch(ctx, node.Name, types.MergePatchType, nodePatchJson, metav1.PatchOptions{})
+	if err != nil {
+		return fmt.Errorf("error applying taints patch to node: %v", err)
+	}
+
+	return nil
+}
+
+func patchNodeStatusAddresses(client *corev1client.CoreV1Client, ctx context.Context, node *corev1.Node, addresses []corev1.NodeAddress) error {
+	nodePatchJson, err := json.Marshal(struct {
+		Status struct {
+			Addresses []corev1.NodeAddress `json:"addresses"`
+		} `json:"status"`
+	}{Status: struct {
+		Addresses []corev1.NodeAddress `json:"addresses"`
+	}{Addresses: addresses}})
+	if err != nil {
+		return fmt.Errorf("error building node status patch: %v", err)
+	}
+
+	klog.V(2).Infof("sending status patch for node %q: %q", node.Name, string(nodePatchJson))
+
+	_, err = client.Nodes().Patch(ctx, node.Name, types.MergePatchType, nodePatchJson, metav1.PatchOptions{}, "status")
+	if err != nil {
+		return fmt.Errorf("error applying status patch to node: %v", err)
+	}
+
+	return nil
+}
+
+func removeTaint(taints []corev1.Taint, key string) ([]corev1.Taint, bool) {
+	updated := make([]corev1.Taint, 0, len(taints))
+	changed := false
+	for _, taint := range taints {
+		if taint.Key == key {
+			changed = true
+			continue
+		}
+		updated = append(updated, taint)
+	}
+	return updated, changed
 }

@@ -149,6 +149,8 @@ func run() error {
 		}
 		cloudProvider = scwCloudProvider
 
+	} else if cloud == "elemento" {
+		cloudProvider = nil
 	} else if cloud == "metal" {
 		cloudProvider = nil
 	} else {

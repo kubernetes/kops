@@ -27,8 +27,11 @@ type Identifier interface {
 }
 
 type Info struct {
-	InstanceID string
-	Labels     map[string]string
+	InstanceID  string
+	ProviderID  string
+	Labels      map[string]string
+	Addresses   []corev1.NodeAddress
+	Initialized bool
 }
 
 type LegacyIdentifier interface {
