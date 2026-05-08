@@ -5611,6 +5611,13 @@ spec:
                           The cluster is operated by cilium-etcd-operator.
                           Default: false
                         type: boolean
+                      extraConfig:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          ExtraConfig is appended to the cilium-config ConfigMap. Keys here override any value
+                          rendered by kops. All values must be strings (e.g. "true", not true).
+                        type: object
                       gatewayAPI:
                         description: GatewayAPI specifies the configuration for Cilium
                           Gateway API settings.

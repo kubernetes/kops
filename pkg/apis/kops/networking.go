@@ -528,6 +528,10 @@ type CiliumNetworkingSpec struct {
 
 	// GatewayAPI specifies the configuration for Cilium Gateway API settings.
 	GatewayAPI *CiliumGatewayAPISpec `json:"gatewayAPI,omitempty"`
+
+	// ExtraConfig is appended to the cilium-config ConfigMap. Keys here override any value
+	// rendered by kops. All values must be strings (e.g. "true", not true).
+	ExtraConfig map[string]string `json:"extraConfig,omitempty"`
 }
 
 // CiliumIngressSpec configures Cilium Ingress settings.
