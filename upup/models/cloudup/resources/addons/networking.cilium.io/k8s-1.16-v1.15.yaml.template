@@ -473,8 +473,11 @@ data:
   enable-non-default-deny-policies: "true"
   enable-source-ip-verification: "true"
 
-# Extra config allows adding arbitrary properties to the cilium config.
-# By putting it at the end of the ConfigMap, it's also possible to override existing properties.
+  # Extra config allows adding arbitrary properties to the cilium config.
+  # By putting it at the end of the ConfigMap, it's also possible to override existing properties.
+  {{- range $k, $v := .ExtraConfig }}
+  {{ $k }}: {{ printf "%q" $v }}
+  {{- end }}
 
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---
