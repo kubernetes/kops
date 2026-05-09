@@ -99,6 +99,9 @@ const TagRoleMaster = "master"
 // TagNameKopsRole is the AWS tag used to identify the role an object plays for a cluster
 const TagNameKopsRole = "kubernetes.io/kops/role"
 
+// TagNameKopsInstanceGroup is the AWS tag used to identify the kOps instance group an object belongs to.
+const TagNameKopsInstanceGroup = "kops.k8s.io/instancegroup"
+
 // TagNameClusterOwnershipPrefix is the AWS tag used for ownership
 const TagNameClusterOwnershipPrefix = "kubernetes.io/cluster/"
 
