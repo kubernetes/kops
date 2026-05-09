@@ -7,18 +7,6 @@ contents: |2
 path: /etc/containerd/certs.d/docker.io/hosts.toml
 type: file
 ---
-contents: |2
-
-  [host]
-
-    [host."https://backup.example.com"]
-      capabilities = ["pull", "resolve"]
-
-    [host."https://mirror.example.com"]
-      capabilities = ["pull", "resolve"]
-path: /etc/containerd/certs.d/registry.k8s.io/hosts.toml
-type: file
----
 contents: |
   {
       "cniVersion": "1.0.0",
@@ -42,36 +30,40 @@ path: /etc/containerd/config-cni.template
 type: file
 ---
 contents: |
-  version = 2
+  version = 3
 
   [plugins]
 
-    [plugins."io.containerd.grpc.v1.cri"]
-      sandbox_image = "registry.k8s.io/pause:3.10.1"
+    [plugins."io.containerd.cri.v1.images"]
 
-      [plugins."io.containerd.grpc.v1.cri".cni]
+      [plugins."io.containerd.cri.v1.images".pinned_images]
+        sandbox = "registry.k8s.io/pause:3.10.1"
+
+      [plugins."io.containerd.cri.v1.images".registry]
+        config_path = "/etc/containerd/certs.d"
+
+    [plugins."io.containerd.cri.v1.runtime"]
+      enable_selinux = true
+
+      [plugins."io.containerd.cri.v1.runtime".cni]
         conf_template = "/etc/containerd/config-cni.template"
 
-      [plugins."io.containerd.grpc.v1.cri".containerd]
+      [plugins."io.containerd.cri.v1.runtime".containerd]
         default_runtime_name = "runc"
 
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes]
 
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc]
             runtime_type = "io.containerd.runc.v2"
 
-            [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+            [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc.options]
               SystemdCgroup = true
 
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler]
-            test_bool_false = false
-            test_bool_true = true
-            test_int = 1
-            test_intstr = "1"
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.test-handler]
             test_str = "test"
 
-      [plugins."io.containerd.grpc.v1.cri".registry]
-        config_path = "/etc/containerd/certs.d"
+    [plugins."io.containerd.nri.v1.nri"]
+      disable = false
 path: /etc/containerd/config.toml
 type: file
 ---
