@@ -308,6 +308,7 @@ resource "aws_ebs_volume" "a-etcd-events-minimal-example-com" {
     "k8s.io/etcd/events"                        = "a/a"
     "k8s.io/role/control-plane"                 = "1"
     "k8s.io/role/master"                        = "1"
+    "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
   throughput = 125
@@ -325,6 +326,7 @@ resource "aws_ebs_volume" "a-etcd-main-minimal-example-com" {
     "k8s.io/etcd/main"                          = "a/a"
     "k8s.io/role/control-plane"                 = "1"
     "k8s.io/role/master"                        = "1"
+    "kops.k8s.io/instancegroup"                 = "master-us-test-1a"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
   }
   throughput = 125

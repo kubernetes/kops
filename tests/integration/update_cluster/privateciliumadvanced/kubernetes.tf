@@ -382,6 +382,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-cilium-privateciliumadvanced-example-
     "k8s.io/etcd/cilium"                                      = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                               = "1"
     "k8s.io/role/master"                                      = "1"
+    "kops.k8s.io/instancegroup"                               = "master-us-test-1a"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
   throughput = 125
@@ -399,6 +400,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privateciliumadvanced-example-
     "k8s.io/etcd/events"                                      = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                               = "1"
     "k8s.io/role/master"                                      = "1"
+    "kops.k8s.io/instancegroup"                               = "master-us-test-1a"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
   throughput = 125
@@ -416,6 +418,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateciliumadvanced-example-co
     "k8s.io/etcd/main"                                        = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                               = "1"
     "k8s.io/role/master"                                      = "1"
+    "kops.k8s.io/instancegroup"                               = "master-us-test-1a"
     "kubernetes.io/cluster/privateciliumadvanced.example.com" = "owned"
   }
   throughput = 125

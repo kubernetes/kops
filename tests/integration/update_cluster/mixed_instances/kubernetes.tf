@@ -471,6 +471,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-mixedinstances-example-com" {
     "k8s.io/etcd/events"                               = "us-test-1a/us-test-1a,us-test-1b,us-test-1c"
     "k8s.io/role/control-plane"                        = "1"
     "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   throughput = 125
@@ -488,6 +489,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-mixedinstances-example-com" {
     "k8s.io/etcd/main"                                 = "us-test-1a/us-test-1a,us-test-1b,us-test-1c"
     "k8s.io/role/control-plane"                        = "1"
     "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1a"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   throughput = 125
@@ -505,6 +507,7 @@ resource "aws_ebs_volume" "us-test-1b-etcd-events-mixedinstances-example-com" {
     "k8s.io/etcd/events"                               = "us-test-1b/us-test-1a,us-test-1b,us-test-1c"
     "k8s.io/role/control-plane"                        = "1"
     "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   throughput = 125
@@ -522,6 +525,7 @@ resource "aws_ebs_volume" "us-test-1b-etcd-main-mixedinstances-example-com" {
     "k8s.io/etcd/main"                                 = "us-test-1b/us-test-1a,us-test-1b,us-test-1c"
     "k8s.io/role/control-plane"                        = "1"
     "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1b"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   throughput = 125
@@ -539,6 +543,7 @@ resource "aws_ebs_volume" "us-test-1c-etcd-events-mixedinstances-example-com" {
     "k8s.io/etcd/events"                               = "us-test-1c/us-test-1a,us-test-1b,us-test-1c"
     "k8s.io/role/control-plane"                        = "1"
     "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   throughput = 125
@@ -556,6 +561,7 @@ resource "aws_ebs_volume" "us-test-1c-etcd-main-mixedinstances-example-com" {
     "k8s.io/etcd/main"                                 = "us-test-1c/us-test-1a,us-test-1b,us-test-1c"
     "k8s.io/role/control-plane"                        = "1"
     "k8s.io/role/master"                               = "1"
+    "kops.k8s.io/instancegroup"                        = "master-us-test-1c"
     "kubernetes.io/cluster/mixedinstances.example.com" = "owned"
   }
   throughput = 125
