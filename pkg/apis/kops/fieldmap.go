@@ -83,4 +83,5 @@ var clusterFieldMappings = []struct {
 	{V1Alpha2: "spec.topology.dns.type", V1Alpha3: "spec.networking.topology.dns"},
 	{V1Alpha2: "spec.topology.bastion.loadBalancer.type", V1Alpha3: "spec.networking.topology.bastion.loadBalancer.type"},
 	{V1Alpha2: "spec.externalDns.provider", V1Alpha3: "spec.externalDNS.provider"},
+	{V1Alpha2: "spec.externalDns.priorityClassName", V1Alpha3: "spec.externalDNS.priorityClassName"},
 }

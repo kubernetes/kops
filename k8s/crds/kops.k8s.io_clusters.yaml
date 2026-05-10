@@ -1464,6 +1464,11 @@ spec:
                     description: Disable indicates we do not wish to run the dns-controller
                       addon
                     type: boolean
+                  priorityClassName:
+                    description: |-
+                      PriorityClassName overrides the priorityClassName on the dns-controller pod.
+                      Defaults to "system-cluster-critical" when unset.
+                    type: string
                   provider:
                     description: |-
                       Provider determines which implementation of ExternalDNS to use.
