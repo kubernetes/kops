@@ -173,6 +173,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["OpenStackCCMTag"] = tf.OpenStackCCMTag
 	dest["OpenStackCSITag"] = tf.OpenStackCSITag
 	dest["DNSControllerEnvs"] = tf.DNSControllerEnvs
+	dest["DNSControllerPriorityClassName"] = tf.DNSControllerPriorityClassName
 	dest["ProxyEnv"] = tf.ProxyEnv
 
 	dest["KopsControllerEnv"] = tf.KopsControllerEnv
@@ -849,6 +850,15 @@ func (tf *TemplateFunctions) ExternalDNSArgv() ([]string, error) {
 	}
 
 	return argv, nil
+}
+
+// DNSControllerPriorityClassName returns the priorityClassName for the dns-controller pod,
+// defaulting to "system-cluster-critical" when the spec leaves it unset.
+func (tf *TemplateFunctions) DNSControllerPriorityClassName() string {
+	if tf.Cluster.Spec.ExternalDNS != nil && tf.Cluster.Spec.ExternalDNS.PriorityClassName != nil {
+		return *tf.Cluster.Spec.ExternalDNS.PriorityClassName
+	}
+	return "system-cluster-critical"
 }
 
 func (tf *TemplateFunctions) DNSControllerEnvs() map[string]string {

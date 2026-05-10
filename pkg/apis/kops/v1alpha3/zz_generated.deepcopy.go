@@ -2067,6 +2067,11 @@ func (in *ExternalDNSConfig) DeepCopyInto(out *ExternalDNSConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.PriorityClassName != nil {
+		in, out := &in.PriorityClassName, &out.PriorityClassName
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
