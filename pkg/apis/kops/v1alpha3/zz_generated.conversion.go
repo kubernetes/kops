@@ -4203,6 +4203,7 @@ func autoConvert_v1alpha3_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *Extern
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	out.Provider = kops.ExternalDNSProvider(in.Provider)
+	out.PriorityClassName = in.PriorityClassName
 	return nil
 }
 
@@ -4215,6 +4216,7 @@ func autoConvert_kops_ExternalDNSConfig_To_v1alpha3_ExternalDNSConfig(in *kops.E
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	out.Provider = ExternalDNSProvider(in.Provider)
+	out.PriorityClassName = in.PriorityClassName
 	return nil
 }
 

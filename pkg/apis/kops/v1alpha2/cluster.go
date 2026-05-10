@@ -636,6 +636,9 @@ type ExternalDNSConfig struct {
 	// 'dns-controller' will use kOps DNS Controller.
 	// 'external-dns' will use kubernetes-sigs/external-dns.
 	Provider ExternalDNSProvider `json:"provider,omitempty"`
+	// PriorityClassName overrides the priorityClassName on the dns-controller pod.
+	// Defaults to "system-cluster-critical" when unset.
+	PriorityClassName *string `json:"priorityClassName,omitempty"`
 }
 
 // EtcdProviderType describes etcd cluster provisioning types (Standalone, Manager)
