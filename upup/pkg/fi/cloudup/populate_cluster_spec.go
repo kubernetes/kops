@@ -284,9 +284,10 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 			cluster.Spec.API.PublicName = "api." + cluster.Name
 		}
 		if cluster.Spec.ExternalDNS == nil {
-			cluster.Spec.ExternalDNS = &kopsapi.ExternalDNSConfig{
-				Provider: kopsapi.ExternalDNSProviderDNSController,
-			}
+			cluster.Spec.ExternalDNS = &kopsapi.ExternalDNSConfig{}
+		}
+		if cluster.Spec.ExternalDNS.Provider == "" {
+			cluster.Spec.ExternalDNS.Provider = kopsapi.ExternalDNSProviderDNSController
 		}
 	}
 
