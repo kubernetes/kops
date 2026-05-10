@@ -144,6 +144,11 @@ func TestFindDistribution(t *testing.T) {
 			expected: DistributionUbuntu2510,
 		},
 		{
+			rootfs:   "ubuntu2604",
+			err:      nil,
+			expected: DistributionUbuntu2604,
+		},
+		{
 			rootfs:   "notfound",
 			err:      fmt.Errorf("reading /etc/os-release: open tests/notfound/etc/os-release: no such file or directory"),
 			expected: Distribution{},
