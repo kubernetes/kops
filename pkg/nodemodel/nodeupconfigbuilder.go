@@ -379,7 +379,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		controlPlaneIPs = append(controlPlaneIPs, wellKnownAddresses[wellknownservices.KubeAPIServer]...)
 	}
 
-	if cluster.UsesNoneDNS() {
+	if cluster.UsesLoadBalancerForKopsController() {
 		bootConfig.APIServerIPs = controlPlaneIPs
 	} else {
 		// If we do have a fixed IP, we use it (on some clouds, initially)
