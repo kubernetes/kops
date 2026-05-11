@@ -118,7 +118,7 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 			})
 		}
 
-		if b.Cluster.UsesNoneDNS() {
+		if b.Cluster.UsesLoadBalancerForKopsController() {
 			b.AddFirewallRulesTasks(c, "kops-controller", &gcetasks.FirewallRule{
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
@@ -211,7 +211,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				"name":           "api-" + sn.Name,
 			},
 		})
-		if b.Cluster.UsesNoneDNS() {
+		if b.Cluster.UsesLoadBalancerForKopsController() {
 			ipAddress.WellKnownServices = append(ipAddress.WellKnownServices, wellknownservices.KopsController)
 
 			fr := &gcetasks.ForwardingRule{
