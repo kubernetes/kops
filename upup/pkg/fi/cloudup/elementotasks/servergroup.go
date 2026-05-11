@@ -58,9 +58,31 @@ type ServerGroup struct {
 	APIPublicName              *string
 	APIInternalName            *string
 	KopsControllerInternalName *string
+	EtcdClusterNames           []string
 
 	// RootVolumeSize is the size of the root volume in GB
 	RootVolumeSize *int32
+}
+
+var _ fi.CloudupHasDependencies = &ServerGroup{}
+
+func (v *ServerGroup) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	var deps []fi.CloudupTask
+
+	for _, sshKey := range v.SSHKeys {
+		deps = append(deps, sshKey)
+	}
+	if v.Network != nil {
+		deps = append(deps, v.Network)
+	}
+	if v.DNSZoneTask != nil {
+		deps = append(deps, v.DNSZoneTask)
+	}
+	if v.UserData != nil {
+		deps = append(deps, fi.FindDependencies(tasks, v.UserData)...)
+	}
+
+	return deps
 }
 
 func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
@@ -302,10 +324,11 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 		fmt.Printf("EKOPS: Successfully created server %q\n", name)
 
 		if e.ClusterName != nil && e.DNSZone != nil {
+
 			if err := createElementoServerDNSRecord(context.TODO(), t.Cloud.DnsClient(), fi.ValueOf(e.ClusterName), fi.ValueOf(e.DNSZone), name, result.Server); err != nil {
 				return err
 			}
-			if err := createElementoControlPlaneDNSRecords(context.TODO(), t.Cloud.DnsClient(), fi.ValueOf(e.DNSZone), e, result.Server); err != nil {
+			if err := createElementoControlPlaneDNSRecords(context.TODO(), t.Cloud.DnsClient(), fi.ValueOf(e.DNSZone), e, name, result.Server); err != nil {
 				return err
 			}
 		}
@@ -315,7 +338,7 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 }
 
 func createElementoServerDNSRecord(ctx context.Context, client ecloud.DnsClient, clusterName, zoneName, serverName string, server *ecloud.Server) error {
-	recordValue := serverDNSAddress(server)
+	recordValue := serverDNSAddress(server, serverName)
 	if recordValue == "" {
 		klog.V(2).Infof("Skipping Elemento DNS record for server %q because it has no IP address yet", serverName)
 		return nil
@@ -332,7 +355,7 @@ func createElementoServerDNSRecord(ctx context.Context, client ecloud.DnsClient,
 	return nil
 }
 
-func createElementoControlPlaneDNSRecords(ctx context.Context, client ecloud.DnsClient, zoneName string, serverGroup *ServerGroup, server *ecloud.Server) error {
+func createElementoControlPlaneDNSRecords(ctx context.Context, client ecloud.DnsClient, zoneName string, serverGroup *ServerGroup, serverName string, server *ecloud.Server) error {
 	if serverGroup.APIPublicName == nil && serverGroup.APIInternalName == nil && serverGroup.KopsControllerInternalName == nil {
 		return nil
 	}
@@ -341,8 +364,8 @@ func createElementoControlPlaneDNSRecords(ctx context.Context, client ecloud.Dns
 		return err
 	}
 
-	publicAddress := serverPublicDNSAddress(server)
-	internalAddress := serverPrivateDNSAddress(server)
+	publicAddress := serverPublicDNSAddress(server, serverName)
+	internalAddress := serverPrivateDNSAddress(server, serverName)
 	if publicAddress == "" {
 		publicAddress = internalAddress
 	}
@@ -368,37 +391,89 @@ func createElementoControlPlaneDNSRecords(ctx context.Context, client ecloud.Dns
 			return err
 		}
 	}
+	if internalAddress != "" {
+		if err := createElementoEtcdDNSRecords(ctx, client, zoneName, fi.ValueOf(serverGroup.ClusterName), serverGroup.EtcdClusterNames, internalAddress); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
 
-func serverPrivateDNSAddress(server *ecloud.Server) string {
+func createElementoEtcdDNSRecords(ctx context.Context, client ecloud.DnsClient, zoneName, clusterName string, etcdClusterNames []string, recordValue string) error {
+	clusterName = strings.TrimSuffix(strings.TrimSpace(clusterName), ".")
+	if clusterName == "" {
+		clusterName = strings.TrimSuffix(strings.TrimSpace(zoneName), ".")
+	}
+	if clusterName == "" {
+		return nil
+	}
+
+	etcdClusterNames = normalizedElementoEtcdClusterNames(etcdClusterNames)
+	for _, etcdClusterName := range etcdClusterNames {
+		for _, recordName := range []string{
+			fmt.Sprintf("node0.%s", etcdClusterName),
+			fmt.Sprintf("%s--%s--0.internal", clusterName, etcdClusterName),
+		} {
+			if err := ensureElementoDNSRecord(ctx, client, zoneName, recordName, recordValue); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func normalizedElementoEtcdClusterNames(etcdClusterNames []string) []string {
+	var normalized []string
+	for _, name := range etcdClusterNames {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		normalized = append(normalized, name)
+	}
+	if len(normalized) == 0 {
+		normalized = []string{"main", "events"}
+	}
+	return normalized
+}
+
+func serverPrivateDNSAddress(server *ecloud.Server, serverName string) string {
 	if server == nil {
-		return ""
+		return staticServerDNSAddress(serverName)
 	}
 	for _, privateNet := range server.PrivateNet {
 		if privateNet.IP != nil {
 			return privateNet.IP.String()
 		}
 	}
-	return ""
+	return staticServerDNSAddress(serverName)
 }
 
-func serverPublicDNSAddress(server *ecloud.Server) string {
+func serverPublicDNSAddress(server *ecloud.Server, serverName string) string {
 	if server == nil {
-		return ""
+		return staticServerDNSAddress(serverName)
 	}
 	if server.PublicNet.IPv4 != "" {
 		return server.PublicNet.IPv4
 	}
-	return server.PublicNet.IPv6
+	if server.PublicNet.IPv6 != "" {
+		return server.PublicNet.IPv6
+	}
+	return staticServerDNSAddress(serverName)
 }
 
-func serverDNSAddress(server *ecloud.Server) string {
-	if address := serverPrivateDNSAddress(server); address != "" {
+func serverDNSAddress(server *ecloud.Server, serverName string) string {
+	if address := serverPrivateDNSAddress(server, serverName); address != "" {
 		return address
 	}
-	return serverPublicDNSAddress(server)
+	return serverPublicDNSAddress(server, serverName)
+}
+
+func staticServerDNSAddress(serverName string) string {
+	ip, _, _ := ecloud.StaticNetworkForServerName(serverName)
+	return ip
 }
 
 func trimElementoDNSZoneSuffix(name, zone string) string {

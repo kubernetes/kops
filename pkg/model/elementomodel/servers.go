@@ -137,6 +137,9 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 					serverGroup.APIInternalName = fi.PtrTo(b.Cluster.APIInternalName())
 				}
 				serverGroup.KopsControllerInternalName = fi.PtrTo("kops-controller.internal." + b.ClusterName())
+				for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
+					serverGroup.EtcdClusterNames = append(serverGroup.EtcdClusterNames, etcdCluster.Name)
+				}
 			}
 		}
 
