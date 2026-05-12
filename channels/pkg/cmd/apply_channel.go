@@ -22,6 +22,9 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/blang/semver/v4"
 	certmanager "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
@@ -31,6 +34,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/restmapper"
+	"k8s.io/klog/v2"
 
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
@@ -38,7 +42,8 @@ import (
 )
 
 type ApplyChannelOptions struct {
-	Yes bool
+	Yes      bool
+	Interval time.Duration
 }
 
 func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
@@ -48,14 +53,34 @@ func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 		Use:   "channel CHANNEL",
 		Short: "Applies updates from the given channel",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := context.TODO()
-			return RunApplyChannel(ctx, f, out, &options, args)
+			if options.Interval > 0 {
+				ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+				defer cancel()
+				return runApplyChannelLoop(ctx, f, out, &options, args)
+			}
+			return RunApplyChannel(context.TODO(), f, out, &options, args)
 		},
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
+	cmd.Flags().DurationVar(&options.Interval, "interval", 0, "If non-zero, re-apply the channel on this interval until interrupted (e.g. 60s)")
 
 	return cmd
+}
+
+// runApplyChannelLoop applies the channel on a fixed interval until the context is cancelled.
+// Errors in a single iteration are logged and do not stop the loop; the next tick retries.
+func runApplyChannelLoop(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
+	for {
+		if err := RunApplyChannel(ctx, f, out, options, args); err != nil {
+			klog.Warningf("error applying channel (will retry in %s): %v", options.Interval, err)
+		}
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-time.After(options.Interval):
+		}
+	}
 }
 
 func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
