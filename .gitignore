@@ -95,3 +95,6 @@ _rundir
 
 # kustomize helm chart cache
 charts/
+
+# Ignore asdf .tool-versions file
+.tool-versions
