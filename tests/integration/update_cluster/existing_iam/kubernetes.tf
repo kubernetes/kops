@@ -433,6 +433,7 @@ resource "aws_ebs_volume" "a-etcd-events-existing-iam-example-com" {
     "k8s.io/etcd/events"                             = "a/a,b,c"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
   throughput = 125
@@ -450,6 +451,7 @@ resource "aws_ebs_volume" "a-etcd-main-existing-iam-example-com" {
     "k8s.io/etcd/main"                               = "a/a,b,c"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
   throughput = 125
@@ -467,6 +469,7 @@ resource "aws_ebs_volume" "b-etcd-events-existing-iam-example-com" {
     "k8s.io/etcd/events"                             = "b/a,b,c"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1b"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
   throughput = 125
@@ -484,6 +487,7 @@ resource "aws_ebs_volume" "b-etcd-main-existing-iam-example-com" {
     "k8s.io/etcd/main"                               = "b/a,b,c"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1b"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
   throughput = 125
@@ -501,6 +505,7 @@ resource "aws_ebs_volume" "c-etcd-events-existing-iam-example-com" {
     "k8s.io/etcd/events"                             = "c/a,b,c"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1c"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
   throughput = 125
@@ -518,6 +523,7 @@ resource "aws_ebs_volume" "c-etcd-main-existing-iam-example-com" {
     "k8s.io/etcd/main"                               = "c/a,b,c"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1c"
     "kubernetes.io/cluster/existing-iam.example.com" = "owned"
   }
   throughput = 125

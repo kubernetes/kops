@@ -537,6 +537,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("kubernetes.io/cluster/%s=owned", b.Cluster.Name),
 				awsup.TagNameEtcdClusterPrefix + etcdCluster.Name,
 				awsup.TagNameRolePrefix + "control-plane=1",
+				fmt.Sprintf("%s=%s", awsup.TagNameKopsInstanceGroup, instanceGroupName),
 			}
 			config.VolumeNameTag = awsup.TagNameEtcdClusterPrefix + etcdCluster.Name
 

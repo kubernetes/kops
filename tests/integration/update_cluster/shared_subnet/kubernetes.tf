@@ -297,6 +297,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-sharedsubnet-example-com" {
     "k8s.io/etcd/events"                             = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
   throughput = 125
@@ -314,6 +315,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-sharedsubnet-example-com" {
     "k8s.io/etcd/main"                               = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                      = "1"
     "k8s.io/role/master"                             = "1"
+    "kops.k8s.io/instancegroup"                      = "master-us-test-1a"
     "kubernetes.io/cluster/sharedsubnet.example.com" = "owned"
   }
   throughput = 125

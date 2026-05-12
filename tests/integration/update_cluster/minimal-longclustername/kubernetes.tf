@@ -297,6 +297,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-this-is-truly-a-really-really-
     "k8s.io/etcd/events"                                                                                             = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                                                                                      = "1"
     "k8s.io/role/master"                                                                                             = "1"
+    "kops.k8s.io/instancegroup"                                                                                      = "master-us-test-1a"
     "kubernetes.io/cluster/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com" = "owned"
   }
   throughput = 125
@@ -314,6 +315,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-this-is-truly-a-really-really-re
     "k8s.io/etcd/main"                                                                                               = "us-test-1a/us-test-1a"
     "k8s.io/role/control-plane"                                                                                      = "1"
     "k8s.io/role/master"                                                                                             = "1"
+    "kops.k8s.io/instancegroup"                                                                                      = "master-us-test-1a"
     "kubernetes.io/cluster/this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com" = "owned"
   }
   throughput = 125

@@ -176,6 +176,9 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.CloudupModelBuilderContext, nam
 	// This says "only mount on a control plane node"
 	tags[awsup.TagNameRolePrefix+"control-plane"] = "1"
 	tags[awsup.TagNameRolePrefix+"master"] = "1"
+	// Identifies the instance group that owns this volume, so that an etcd-manager
+	// in the same AZ as another control-plane instance group will only attach its own volume.
+	tags[awsup.TagNameKopsInstanceGroup] = fi.ValueOf(m.InstanceGroup)
 
 	// We always add an owned tags (these can't be shared)
 	tags["kubernetes.io/cluster/"+b.Cluster.ObjectMeta.Name] = "owned"
