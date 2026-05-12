@@ -146,7 +146,7 @@ func (c *Client) ListVMScaleSets(ctx context.Context) ([]*compute.VirtualMachine
 // ListVMSSNetworkInterfaces returns the interfaces that the specified VM ScaleSet has.
 func (c *Client) ListVMSSNetworkInterfaces(ctx context.Context, vmScaleSetName string) ([]*network.Interface, error) {
 	var l []*network.Interface
-	pager := c.interfacesClient.NewListPager(c.resourceGroupName(), nil)
+	pager := c.interfacesClient.NewListVirtualMachineScaleSetNetworkInterfacesPager(c.resourceGroupName(), vmScaleSetName, nil)
 	for pager.More() {
 		resp, err := pager.NextPage(ctx)
 		if err != nil {
