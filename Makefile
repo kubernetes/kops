@@ -78,6 +78,8 @@ KOPS_CONTROLLER_TAG=$(IMAGE_TAG)
 KUBE_APISERVER_HEALTHCHECK_TAG=$(IMAGE_TAG)
 #   discovery/cmd/discovery-server/
 DISCOVERY_SERVER_TAG=$(IMAGE_TAG)
+#   nodeup/pkg/model/channels.go
+KOPS_CHANNELS_TAG=$(IMAGE_TAG)
 
 CGO_ENABLED=0
 export CGO_ENABLED
@@ -111,7 +113,7 @@ nodeup-install: nodeup
 all-install: all kops-install channels-install nodeup-install
 
 .PHONY: all
-all: kops protokube nodeup channels ko-kops-controller-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
+all: kops protokube nodeup channels ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
 
 include tests/e2e/e2e.mk
 
@@ -528,6 +530,17 @@ ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64: ko-
 ko-kops-controller-export: ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64
 	echo "Done exporting kops-controller images"
 
+.PHONY: ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64
+ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64: ko-kops-channels-export-linux-%:
+	mkdir -p ${IMAGES}
+	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-channels-$*.tar ./channels/cmd/channels/
+	gzip -f ${IMAGES}/kops-channels-$*.tar
+	tools/sha256 ${IMAGES}/kops-channels-$*.tar.gz ${IMAGES}/kops-channels-$*.tar.gz.sha256
+
+.PHONY: ko-kops-channels-export
+ko-kops-channels-export: ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64
+	echo "Done exporting kops-channels images"
+
 .PHONY: ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64
 ko-kube-apiserver-healthcheck-export-linux-amd64 ko-kube-apiserver-healthcheck-export-linux-arm64: ko-kube-apiserver-healthcheck-export-linux-%:
 	mkdir -p ${IMAGES}
@@ -693,6 +706,23 @@ dev-upload-kops-controller: version-dist-kops-controller
 dev-upload-kops-controller-amd64 dev-upload-kops-controller-arm64: dev-upload-kops-controller-%: version-dist-kops-controller-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
+# dev-upload-kops-channels uploads kops-channels
+.PHONY: version-dist-kops-channels version-dist-kops-channels-amd64 version-dist-kops-channels-arm64
+version-dist-kops-channels: version-dist-kops-channels-amd64 version-dist-kops-channels-arm64
+
+version-dist-kops-channels-amd64 version-dist-kops-channels-arm64: version-dist-kops-channels-%: ko-kops-channels-export-linux-%
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	cp -fp ${IMAGES}/kops-channels-$*.tar.gz ${UPLOAD}/kops/${VERSION}/images/kops-channels-$*.tar.gz
+	cp -fp ${IMAGES}/kops-channels-$*.tar.gz.sha256 ${UPLOAD}/kops/${VERSION}/images/kops-channels-$*.tar.gz.sha256
+
+.PHONY: dev-upload-kops-channels
+dev-upload-kops-channels: version-dist-kops-channels
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
+.PHONY: dev-upload-kops-channels-amd64 dev-upload-kops-channels-arm64
+dev-upload-kops-channels-amd64 dev-upload-kops-channels-arm64: dev-upload-kops-channels-%: version-dist-kops-channels-%
+	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+
 # dev-upload-kube-apiserver-healthcheck uploads kube-apiserver-healthcheck
 .PHONY: version-dist-kube-apiserver-healthcheck version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64
 version-dist-kube-apiserver-healthcheck: version-dist-kube-apiserver-healthcheck-amd64 version-dist-kube-apiserver-healthcheck-arm64
@@ -765,7 +795,7 @@ dev-upload-discovery-server-amd64 dev-upload-discovery-server-arm64: dev-upload-
 .PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
 dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
 
-dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%
@@ -790,6 +820,16 @@ kops-controller-push: ko-kops-controller-push
 .PHONY: ko-kops-controller-push
 ko-kops-controller-push:
 	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
+
+#------------------------------------------------------
+# kops-channels
+
+.PHONY: kops-channels-push
+kops-channels-push: ko-kops-channels-push
+
+.PHONY: ko-kops-channels-push
+ko-kops-channels-push:
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}channels" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/amd64,linux/arm64 --bare ./channels/cmd/channels/
 
 #------------------------------------------------------
 # kube-apiserver-healthcheck

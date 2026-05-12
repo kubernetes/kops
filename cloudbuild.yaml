@@ -18,6 +18,7 @@ steps:
     args:
       - kops-utils-cp-push
       - kops-controller-push
+      - kops-channels-push
       - dns-controller-push
       - kube-apiserver-healthcheck-push
       - discovery-server-push
