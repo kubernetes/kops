@@ -45,6 +45,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
@@ -198,6 +199,8 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 			allErrs = append(allErrs, validateEtcdStorage(spec.EtcdClusters, fieldEtcdClusters)...)
 		}
 	}
+
+	allErrs = append(allErrs, validateAzureBlobAccountUniformity(spec, fieldPath)...)
 
 	if spec.ContainerRuntime != "" {
 		allErrs = append(allErrs, validateContainerRuntime(c, spec.ContainerRuntime, fieldPath.Child("containerRuntime"))...)
@@ -1436,6 +1439,82 @@ func validateEtcdBackupStore(specs []kops.EtcdClusterSpec, fieldPath *field.Path
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Index(0).Child("backupStore"), "the backup store must be unique for each etcd cluster"))
 		}
 		etcdBackupStore[x.Name] = true
+	}
+
+	return allErrs
+}
+
+// azureBlobAccount returns the storage account encoded in an azureblob:// URL,
+// or "" with no error if the URL is not azureblob://. Returns an error only if
+// the URL has the azureblob:// prefix but fails to parse.
+func azureBlobAccount(rawURL string) (string, error) {
+	if !strings.HasPrefix(rawURL, "azureblob://") {
+		return "", nil
+	}
+	p, err := vfs.Context.BuildVfsPath(rawURL)
+	if err != nil {
+		return "", err
+	}
+	azPath, ok := p.(*vfs.AzureBlobPath)
+	if !ok {
+		return "", fmt.Errorf("expected azureblob:// URL, got %q", rawURL)
+	}
+	return azPath.Account(), nil
+}
+
+// validateAzureBlobAccountUniformity enforces that every azureblob:// URL in
+// the cluster spec uses the same storage account as configStore.base. Any
+// azureblob:// URL elsewhere in the spec is rejected when configStore.base is
+// not itself azureblob://.
+func validateAzureBlobAccountUniformity(spec *kops.ClusterSpec, fieldPath *field.Path) field.ErrorList {
+	var allErrs field.ErrorList
+	csPath := fieldPath.Child("configStore")
+
+	canonical := ""
+	if strings.HasPrefix(spec.ConfigStore.Base, "azureblob://") {
+		account, err := azureBlobAccount(spec.ConfigStore.Base)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(csPath.Child("base"), spec.ConfigStore.Base, err.Error()))
+			return allErrs
+		}
+		canonical = account
+	}
+
+	type entry struct {
+		path *field.Path
+		url  string
+	}
+	others := []entry{
+		{csPath.Child("keypairs"), spec.ConfigStore.Keypairs},
+		{csPath.Child("secrets"), spec.ConfigStore.Secrets},
+	}
+	for i, ec := range spec.EtcdClusters {
+		if ec.Backups != nil {
+			others = append(others, entry{
+				fieldPath.Child("etcdClusters").Index(i).Child("backups", "backupStore"),
+				ec.Backups.BackupStore,
+			})
+		}
+	}
+
+	for _, e := range others {
+		if !strings.HasPrefix(e.url, "azureblob://") {
+			continue
+		}
+		account, err := azureBlobAccount(e.url)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(e.path, e.url, err.Error()))
+			continue
+		}
+		if canonical == "" {
+			allErrs = append(allErrs, field.Invalid(e.path, e.url,
+				"azureblob:// URL requires configStore.base to also be azureblob://"))
+			continue
+		}
+		if account != canonical {
+			allErrs = append(allErrs, field.Invalid(e.path, e.url,
+				fmt.Sprintf("storage account %q does not match configStore.base account %q", account, canonical)))
+		}
 	}
 
 	return allErrs

@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -147,9 +146,9 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 	c.Spec.Networking.EgressProxy = proxy
 
 	if c.Spec.CloudProvider.Azure != nil && c.Spec.CloudProvider.Azure.StorageAccountID == "" {
-		storageAccountName := os.Getenv("AZURE_STORAGE_ACCOUNT")
-		if storageAccountName == "" {
-			return fmt.Errorf("AZURE_STORAGE_ACCOUNT must be set")
+		storageAccountName, err := azureStorageAccountFromConfigStore(vfsContext, c.Spec.ConfigStore.Base)
+		if err != nil {
+			return err
 		}
 		sa, err := cloud.(azure.AzureCloud).FindStorageAccountInfo(storageAccountName)
 		if err != nil {
@@ -160,6 +159,23 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 	}
 
 	return ensureKubernetesVersion(vfsContext, c)
+}
+
+// azureStorageAccountFromConfigStore extracts the Azure storage account
+// from an azureblob:// ConfigStore.Base.
+func azureStorageAccountFromConfigStore(vfsContext *vfs.VFSContext, configBase string) (string, error) {
+	if configBase == "" {
+		return "", fmt.Errorf("ConfigStore.Base is not set; cannot determine Azure storage account")
+	}
+	p, err := vfsContext.BuildVfsPath(configBase)
+	if err != nil {
+		return "", fmt.Errorf("parsing ConfigStore.Base %q: %w", configBase, err)
+	}
+	azurePath, ok := p.(*vfs.AzureBlobPath)
+	if !ok {
+		return "", fmt.Errorf("expected azureblob:// ConfigStore.Base for Azure cluster, got %q", configBase)
+	}
+	return azurePath.Account(), nil
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set

@@ -37,6 +37,7 @@ import (
 // AzureBlobPath is a path in the VFS space backed by Azure Blob.
 type AzureBlobPath struct {
 	vfsContext *VFSContext
+	account    string
 	container  string
 	key        string
 	md5Hash    string
@@ -48,12 +49,28 @@ var (
 )
 
 // NewAzureBlobPath returns a new AzureBlobPath.
-func NewAzureBlobPath(vfsContext *VFSContext, container string, key string) *AzureBlobPath {
+func NewAzureBlobPath(vfsContext *VFSContext, account string, container string, key string) *AzureBlobPath {
 	return &AzureBlobPath{
 		vfsContext: vfsContext,
+		account:    account,
 		container:  strings.TrimSuffix(container, "/"),
 		key:        strings.TrimPrefix(key, "/"),
 	}
+}
+
+// Account returns the Azure storage account name.
+func (p *AzureBlobPath) Account() string {
+	return p.account
+}
+
+// Container returns the Azure storage container name.
+func (p *AzureBlobPath) Container() string {
+	return p.container
+}
+
+// Key returns the blob key (path within the container).
+func (p *AzureBlobPath) Key() string {
+	return p.key
 }
 
 // Base returns the base name (last element).
@@ -86,7 +103,12 @@ func (p *AzureBlobPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 
 // Path returns a string representing the full path.
 func (p *AzureBlobPath) Path() string {
-	return fmt.Sprintf("azureblob://%s/%s", p.container, p.key)
+	return fmt.Sprintf("azureblob://%s/%s/%s", p.account, p.container, p.key)
+}
+
+// String implements fmt.Stringer; returns Path() so %s renders the full URL.
+func (p *AzureBlobPath) String() string {
+	return p.Path()
 }
 
 // Join returns a new path that joins the current path and given relative paths.
@@ -96,6 +118,7 @@ func (p *AzureBlobPath) Join(relativePath ...string) Path {
 	joined := path.Join(args...)
 	return &AzureBlobPath{
 		vfsContext: p.vfsContext,
+		account:    p.account,
 		container:  p.container,
 		key:        joined,
 	}
@@ -103,7 +126,7 @@ func (p *AzureBlobPath) Join(relativePath ...string) Path {
 
 // ReadFile returns the content of the blob.
 func (p *AzureBlobPath) ReadFile(ctx context.Context) ([]byte, error) {
-	klog.V(8).Infof("Reading file: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Reading file: %s", p)
 
 	client, err := p.getClient(ctx)
 	if err != nil {
@@ -130,7 +153,7 @@ func (p *AzureBlobPath) ReadFile(ctx context.Context) ([]byte, error) {
 
 // WriteTo writes the content of the blob to the writer.
 func (p *AzureBlobPath) WriteTo(w io.Writer) (int64, error) {
-	klog.V(8).Infof("Writing to: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Writing to: %s", p)
 
 	ctx := context.TODO()
 
@@ -153,7 +176,7 @@ var createFileLockAzureBlob sync.Mutex
 
 // CreateFile writes the file contents only if the file does not already exist.
 func (p *AzureBlobPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
-	klog.V(8).Infof("Creating file: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Creating file: %s", p)
 
 	createFileLockAzureBlob.Lock()
 	defer createFileLockAzureBlob.Unlock()
@@ -171,7 +194,7 @@ func (p *AzureBlobPath) CreateFile(ctx context.Context, data io.ReadSeeker, acl 
 
 // WriteFile writes the blob to the reader.
 func (p *AzureBlobPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
-	klog.V(8).Infof("Writing file: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Writing file: %s", p)
 
 	client, err := p.getClient(ctx)
 	if err != nil {
@@ -189,7 +212,7 @@ func (p *AzureBlobPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl A
 
 // Remove deletes the blob.
 func (p *AzureBlobPath) Remove(ctx context.Context) error {
-	klog.V(8).Infof("Removing file: %q - %q", p.container, p.key)
+	klog.V(8).Infof("Removing file: %s", p)
 
 	client, err := p.getClient(ctx)
 	if err != nil {
@@ -205,7 +228,7 @@ func (p *AzureBlobPath) Remove(ctx context.Context) error {
 }
 
 func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
-	klog.V(8).Infof("Removing ALL files: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Removing ALL files: %s", p)
 
 	tree, err := p.ReadTree(ctx)
 	if err != nil {
@@ -223,7 +246,7 @@ func (p *AzureBlobPath) RemoveAll(ctx context.Context) error {
 }
 
 func (p *AzureBlobPath) RemoveAllVersions(ctx context.Context) error {
-	klog.V(8).Infof("Removing ALL file versions: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Removing ALL file versions: %s", p)
 
 	tree, err := p.ReadTree(ctx)
 	if err != nil {
@@ -242,7 +265,7 @@ func (p *AzureBlobPath) RemoveAllVersions(ctx context.Context) error {
 
 // ReadDir lists the blobs under the current Path.
 func (p *AzureBlobPath) ReadDir() ([]Path, error) {
-	klog.V(8).Infof("Reading dir: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Reading dir: %s", p)
 
 	ctx := context.TODO()
 
@@ -264,7 +287,7 @@ func (p *AzureBlobPath) ReadDir() ([]Path, error) {
 
 // ReadTree lists all blobs (recursively) in the subtree rooted at the current Path.
 func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
-	klog.V(8).Infof("Reading tree: %s - %s", p.container, p.key)
+	klog.V(8).Infof("Reading tree: %s", p)
 
 	client, err := p.getClient(ctx)
 	if err != nil {
@@ -283,6 +306,7 @@ func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
 		for _, blob := range resp.Segment.BlobItems {
 			paths = append(paths, &AzureBlobPath{
 				vfsContext: p.vfsContext,
+				account:    p.account,
 				container:  p.container,
 				key:        *blob.Name,
 			})
@@ -294,5 +318,5 @@ func (p *AzureBlobPath) ReadTree(ctx context.Context) ([]Path, error) {
 
 // getClient returns the client for azure blob storage.
 func (p *AzureBlobPath) getClient(ctx context.Context) (*azblob.Client, error) {
-	return p.vfsContext.getAzureBlobClient(ctx)
+	return p.vfsContext.getAzureBlobClient(ctx, p.account)
 }

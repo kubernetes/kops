@@ -514,6 +514,9 @@ func NewDefaultTester() *Tester {
 }
 
 func Main() {
+	// Prow's Azure WI preset exports AZURE_STORAGE_ACCOUNT; kOps now rejects it.
+	os.Unsetenv("AZURE_STORAGE_ACCOUNT")
+
 	t := NewDefaultTester()
 	if err := t.execute(); err != nil {
 		klog.Fatalf("failed to run ginkgo tester: %v", err)

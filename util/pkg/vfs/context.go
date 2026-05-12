@@ -58,7 +58,7 @@ type vfsContextState struct {
 	// swiftClient is the openstack swift client
 	swiftClient *gophercloud.ServiceClient
 
-	azureClient *azblob.Client
+	azureClients map[string]*azblob.Client
 }
 
 // Context holds the global VFS state.
@@ -489,6 +489,10 @@ func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
 }
 
 func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
+	if os.Getenv("AZURE_STORAGE_ACCOUNT") != "" {
+		return nil, fmt.Errorf("unset AZURE_STORAGE_ACCOUNT; the storage account belongs in the URL:  azureblob://<account>/<container>/<key>")
+	}
+
 	u, err := url.Parse(p)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse %q: %s", p, err)
@@ -498,28 +502,42 @@ func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
 		return nil, fmt.Errorf("invalid Azure Blob scheme: %q", p)
 	}
 
-	container := strings.TrimSuffix(u.Host, "/")
-	if container == "" {
-		return nil, fmt.Errorf("no container specified: %q", p)
+	account := strings.TrimSuffix(u.Host, "/")
+	if account == "" {
+		return nil, fmt.Errorf("no storage account specified in %q; expected azureblob://<account>/<container>/<key>", p)
 	}
 
-	return NewAzureBlobPath(c, container, u.Path), nil
+	rest := strings.TrimPrefix(u.Path, "/")
+	container, key, _ := strings.Cut(rest, "/")
+	if container == "" {
+		return nil, fmt.Errorf("no container specified in %q; expected azureblob://<account>/<container>/<key>", p)
+	}
+
+	return NewAzureBlobPath(c, account, container, key), nil
 }
 
-// getAzureBlobClient returns the client for azure blob storage, caching it for future reuse.
-func (c *VFSContext) getAzureBlobClient(ctx context.Context) (*azblob.Client, error) {
+// getAzureBlobClient returns the client for azure blob storage for the given
+// storage account, caching it for future reuse.
+func (c *VFSContext) getAzureBlobClient(ctx context.Context, account string) (*azblob.Client, error) {
+	if account == "" {
+		return nil, fmt.Errorf("Azure storage account is required")
+	}
+
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	if c.azureClient != nil {
-		return c.azureClient, nil
+	if client, ok := c.azureClients[account]; ok {
+		return client, nil
 	}
 
-	client, err := newAzureClient(ctx)
+	client, err := newAzureClient(ctx, account)
 	if err != nil {
 		return nil, err
 	}
-	c.azureClient = client
+	if c.azureClients == nil {
+		c.azureClients = make(map[string]*azblob.Client)
+	}
+	c.azureClients[account] = client
 	return client, nil
 }
 

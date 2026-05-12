@@ -433,10 +433,9 @@ func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (m
 	}
 
 	if cluster.GetCloudProvider() == kops.CloudProviderAzure {
-		env["AZURE_STORAGE_ACCOUNT"] = os.Getenv("AZURE_STORAGE_ACCOUNT")
 		azureEnv := os.Getenv("AZURE_ENVIRONMENT")
 		if azureEnv != "" {
-			env["AZURE_ENVIRONMENT"] = os.Getenv("AZURE_ENVIRONMENT")
+			env["AZURE_ENVIRONMENT"] = azureEnv
 		}
 	}
 

@@ -250,7 +250,7 @@ func (d *deployer) env() []string {
 		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
 	case "azure":
 		// Pass through some env vars if set
-		for _, k := range []string{"AZURE_TENANT_ID", "AZURE_SUBSCRIPTION_ID", "AZURE_CLIENT_ID", "AZURE_FEDERATED_TOKEN_FILE", "AZURE_STORAGE_ACCOUNT"} {
+		for _, k := range []string{"AZURE_TENANT_ID", "AZURE_SUBSCRIPTION_ID", "AZURE_CLIENT_ID", "AZURE_FEDERATED_TOKEN_FILE"} {
 			v := os.Getenv(k)
 			if v != "" {
 				vars = append(vars, k+"="+v)
@@ -409,7 +409,7 @@ func (d *deployer) stateStore() string {
 			ss = "s3://" + bucketName
 		case "azure":
 			// TODO: Use dynamic container name
-			ss = "azureblob://cluster-state"
+			ss = "azureblob://stkopsstatestore/cluster-state"
 		case "gce":
 			d.createBucket = true
 			ss = "gs://" + gce.GCSBucketName(d.GCPProject, "state")
