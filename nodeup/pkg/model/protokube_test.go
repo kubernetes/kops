@@ -33,5 +33,4 @@ func TestProtokubeBuilder(t *testing.T) {
 func populateAssets(ctx *NodeupModelContext) {
 	ctx.Assets = fi.NewAssetStore("")
 	ctx.Assets.AddForTest("protokube", "/opt/kops/bin/protokube", "testing protokube content")
-	ctx.Assets.AddForTest("channels", "/opt/kops/bin/channels", "testing channels content")
 }
