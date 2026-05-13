@@ -95,6 +95,7 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 	d.podSelectors = []string{
 		"k8s-app=external-dns",
 		"k8s-app=dns-controller",
+		"k8s-app=kops-channels",
 	}
 
 	return d
