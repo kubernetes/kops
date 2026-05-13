@@ -23,6 +23,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+
+	"k8s.io/kops/channels/pkg/nodelabeler"
 )
 
 // KubeBoot is the options for the protokube service
@@ -76,8 +78,10 @@ func (k *KubeBoot) syncOnce(ctx context.Context) error {
 				klog.Warningf("error applying channel %q: %v", channel, err)
 			}
 		}
-		if err := bootstrapMasterNodeLabels(ctx, k.Kubernetes, k.NodeName); err != nil {
-			klog.Warningf("error bootstrapping master node labels: %v", err)
+		if client, err := k.Kubernetes.KubernetesClient(); err != nil {
+			klog.Warningf("error getting kubernetes client: %v", err)
+		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, client, k.NodeName); err != nil {
+			klog.Warningf("error bootstrapping control-plane node labels: %v", err)
 		}
 	}
 
