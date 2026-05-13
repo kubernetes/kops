@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -1084,8 +1086,121 @@ func buildCloudInstance(i autoscalingtypes.Instance, instances map[string]*ec2ty
 	return nil
 }
 
+// asgInstanceIDRegex extracts the first EC2 instance ID (i-xxxxxxxx) found in a
+// scaling activity's StatusMessage or Description. The capture is best-effort:
+// if no ID is found, CloudGroupError.Instance is left blank.
+var asgInstanceIDRegex = regexp.MustCompile(`i-[0-9a-f]{8,17}`)
+
+// GetCloudGroupErrors returns recent provisioning failures observed by the AWS
+// Auto Scaling group backing this CloudInstanceGroup. See getCloudGroupErrors
+// for the filtering and aggregation logic.
+func (c *awsCloudImplementation) GetCloudGroupErrors(ctx context.Context, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.CloudGroupError, error) {
+	return getCloudGroupErrors(ctx, c, group)
+}
+
+// getCloudGroupErrors returns recent failed scaling activities for the ASG
+// backing the given group.
+//
+// Results are filtered to errors timestamped after the most recent successful
+// instance creation in the group (the LaunchTime of an existing instance). If
+// the group has no instances at all, no filter is applied so the full retention
+// window is surfaced — that is precisely the failure mode this exists to
+// diagnose. Pagination short-circuits once activities pre-date the watermark,
+// since DescribeScalingActivities returns most-recent-first.
+func getCloudGroupErrors(ctx context.Context, c AWSCloud, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.CloudGroupError, error) {
+	asg, ok := group.Raw.(*autoscalingtypes.AutoScalingGroup)
+	if !ok || asg == nil {
+		return nil, nil
+	}
+	asgName := aws.ToString(asg.AutoScalingGroupName)
+	if asgName == "" {
+		return nil, nil
+	}
+
+	var watermark time.Time
+	for _, m := range group.Ready {
+		if m.CreationTimestamp.After(watermark) {
+			watermark = m.CreationTimestamp
+		}
+	}
+	for _, m := range group.NeedUpdate {
+		if m.CreationTimestamp.After(watermark) {
+			watermark = m.CreationTimestamp
+		}
+	}
+
+	type key struct{ code, message string }
+	agg := map[key]*cloudinstances.CloudGroupError{}
+
+	paginator := autoscaling.NewDescribeScalingActivitiesPaginator(c.Autoscaling(), &autoscaling.DescribeScalingActivitiesInput{
+		AutoScalingGroupName: aws.String(asgName),
+	})
+paginate:
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("describing scaling activities for ASG %q: %w", asgName, err)
+		}
+		for _, a := range page.Activities {
+			if a.StatusCode != autoscalingtypes.ScalingActivityStatusCodeFailed && a.StatusCode != autoscalingtypes.ScalingActivityStatusCodeCancelled {
+				continue
+			}
+			var ts time.Time
+			if a.StartTime != nil {
+				ts = *a.StartTime
+			}
+			if !watermark.IsZero() && !ts.IsZero() && ts.Before(watermark) {
+				// Activities are returned most-recent-first; everything after
+				// this is older, so stop paginating.
+				break paginate
+			}
+			message := aws.ToString(a.StatusMessage)
+			if message == "" {
+				message = aws.ToString(a.Cause)
+			}
+			k := key{string(a.StatusCode), message}
+			e, ok := agg[k]
+			if !ok {
+				instance := asgInstanceIDRegex.FindString(message)
+				if instance == "" {
+					instance = asgInstanceIDRegex.FindString(aws.ToString(a.Description))
+				}
+				e = &cloudinstances.CloudGroupError{
+					Code:      string(a.StatusCode),
+					Message:   message,
+					Instance:  instance,
+					FirstSeen: ts,
+					LastSeen:  ts,
+				}
+				agg[k] = e
+			}
+			e.Count++
+			if !ts.IsZero() {
+				if e.FirstSeen.IsZero() || ts.Before(e.FirstSeen) {
+					e.FirstSeen = ts
+				}
+				if ts.After(e.LastSeen) {
+					e.LastSeen = ts
+				}
+			}
+		}
+	}
+
+	out := make([]cloudinstances.CloudGroupError, 0, len(agg))
+	for _, e := range agg {
+		out = append(out, *e)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].LastSeen.After(out[j].LastSeen)
+	})
+	return out, nil
+}
+
 func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *ec2types.Instance) {
 	cm.MachineType = string(instance.InstanceType)
+	if instance.LaunchTime != nil {
+		cm.CreationTimestamp = *instance.LaunchTime
+	}
 	for _, tag := range instance.Tags {
 		key := aws.ToString(tag.Key)
 		if !strings.HasPrefix(key, TagNameRolePrefix) {
