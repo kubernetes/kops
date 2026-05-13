@@ -37,6 +37,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/channels/pkg/channels"
+	"k8s.io/kops/channels/pkg/nodelabeler"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -44,43 +45,79 @@ import (
 type ApplyChannelOptions struct {
 	Yes      bool
 	Interval time.Duration
+	NodeName string
 }
 
 func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	var options ApplyChannelOptions
 
 	cmd := &cobra.Command{
-		Use:   "channel CHANNEL",
-		Short: "Applies updates from the given channel",
+		Use:   "channel CHANNEL...",
+		Short: "Applies updates from the given channel(s)",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if options.Interval > 0 {
 				ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 				defer cancel()
-				return runApplyChannelLoop(ctx, f, out, &options, args)
+				return runApplyChannelLoop(ctx, out, &options, args)
 			}
-			return RunApplyChannel(context.TODO(), f, out, &options, args)
+			return runApplyChannelIteration(context.TODO(), NewChannelsFactory(), out, &options, args)
 		},
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
 	cmd.Flags().DurationVar(&options.Interval, "interval", 0, "If non-zero, re-apply the channel on this interval until interrupted (e.g. 60s)")
+	cmd.Flags().StringVar(&options.NodeName, "node-name", "", "If set, patch the named node with the mandatory control-plane labels each iteration; typically supplied via the downward API.")
 
 	return cmd
 }
 
-// runApplyChannelLoop applies the channel on a fixed interval until the context is cancelled.
-// Errors in a single iteration are logged and do not stop the loop; the next tick retries.
-func runApplyChannelLoop(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
+// runApplyChannelIteration patches node labels (when --node-name is set) then
+// applies the channel. Labels go first so addons targeting the control-plane
+// label can schedule on the local node as soon as their manifests land.
+func runApplyChannelIteration(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
+	var merr error
+	if options.NodeName != "" {
+		labelerClient, err := buildKubernetesClient(f)
+		if err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("building kubernetes client for node labeler: %w", err))
+		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, labelerClient, options.NodeName); err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("bootstrapping node labels: %w", err))
+		}
+	}
+	if err := RunApplyChannel(ctx, f, out, options, args); err != nil {
+		merr = multierr.Append(merr, err)
+	}
+	return merr
+}
+
+// runApplyChannelLoop runs iterations on a fixed interval until ctx is cancelled.
+// A fresh ChannelsFactory per iteration drops cached REST configs, HTTP clients,
+// and the discovery cache — picks up cert rotation and CRD additions without restart.
+func runApplyChannelLoop(ctx context.Context, out io.Writer, options *ApplyChannelOptions, args []string) error {
+	ticker := time.NewTicker(options.Interval)
+	defer ticker.Stop()
 	for {
-		if err := RunApplyChannel(ctx, f, out, options, args); err != nil {
-			klog.Warningf("error applying channel (will retry in %s): %v", options.Interval, err)
+		if err := runApplyChannelIteration(ctx, NewChannelsFactory(), out, options, args); err != nil {
+			klog.Warningf("error in apply iteration (will retry in %s): %v", options.Interval, err)
 		}
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-time.After(options.Interval):
+		case <-ticker.C:
 		}
 	}
+}
+
+func buildKubernetesClient(f *ChannelsFactory) (kubernetes.Interface, error) {
+	restConfig, err := f.RESTConfig()
+	if err != nil {
+		return nil, err
+	}
+	httpClient, err := f.HTTPClient()
+	if err != nil {
+		return nil, err
+	}
+	return kubernetes.NewForConfigAndClient(restConfig, httpClient)
 }
 
 func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
@@ -126,19 +163,22 @@ func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, opt
 	// Remove Pre and Patch, as they make semver comparisons impractical
 	kubernetesVersion.Pre = nil
 
-	if len(args) != 1 {
-		return fmt.Errorf("unexpected number of arguments. Only one channel may be processed at the same time")
+	if len(args) == 0 {
+		return fmt.Errorf("at least one channel URL is required")
 	}
 
-	channelLocation := args[0]
-
-	// menu is the expected list of addons in the cluster and their configurations.
-	menu, err := buildMenu(f.VFSContext(), kubernetesVersion, channelLocation)
-	if err != nil {
-		return fmt.Errorf("cannot build the addon menu from args: %w", err)
+	var merr error
+	for _, channelLocation := range args {
+		menu, err := buildMenu(f.VFSContext(), kubernetesVersion, channelLocation)
+		if err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("building menu for %q: %w", channelLocation, err))
+			continue
+		}
+		if err := applyMenu(ctx, menu, f.VFSContext(), k8sClient, cmClient, dynamicClient, restMapper, options.Yes); err != nil {
+			merr = multierr.Append(merr, fmt.Errorf("applying %q: %w", channelLocation, err))
+		}
 	}
-
-	return applyMenu(ctx, menu, f.VFSContext(), k8sClient, cmClient, dynamicClient, restMapper, options.Yes)
+	return merr
 }
 
 func applyMenu(ctx context.Context, menu *channels.AddonMenu, vfsContext *vfs.VFSContext, k8sClient kubernetes.Interface, cmClient certmanager.Interface, dynamicClient dynamic.Interface, restMapper *restmapper.DeferredDiscoveryRESTMapper, apply bool) error {
