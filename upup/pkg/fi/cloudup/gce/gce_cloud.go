@@ -280,11 +280,7 @@ func (c *gceCloudImplementation) Labels() map[string]string {
 	return tags
 }
 
-// TODO refactor this out of resources
-// this is needed for delete groups and other new methods
-
-// Zones returns the zones in a region
-func (c *gceCloudImplementation) Zones() ([]string, error) {
+func GetZones(c GCECloud) ([]string, error) {
 	var zones []string
 	// TODO: Only zones in api.Cluster object, if we have one?
 	gceZones, err := c.Compute().Zones().List(context.Background(), c.Project())
@@ -307,6 +303,14 @@ func (c *gceCloudImplementation) Zones() ([]string, error) {
 
 	klog.Infof("Scanning zones: %v", zones)
 	return zones, nil
+}
+
+// TODO refactor this out of resources
+// this is needed for delete groups and other new methods
+
+// Zones returns the zones in a region
+func (c *gceCloudImplementation) Zones() ([]string, error) {
+	return GetZones(c)
 }
 
 func (c *gceCloudImplementation) WaitForOp(op *compute.Operation) error {
