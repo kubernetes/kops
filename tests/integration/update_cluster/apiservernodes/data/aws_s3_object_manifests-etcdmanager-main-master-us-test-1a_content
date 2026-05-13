@@ -45,35 +45,39 @@ spec:
     - mountPath: /opt/etcd-v3.4.3
       name: etcd-v3-4-13
     - mountPath: /opt/etcd-v3.5.0
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.1
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.13
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.17
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.21
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.23
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.24
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.25
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.3
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
+    - mountPath: /opt/etcd-v3.5.30
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.4
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.6
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.7
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
     - mountPath: /opt/etcd-v3.5.9
-      name: etcd-v3-5-25
+      name: etcd-v3-5-30
+    - mountPath: /opt/etcd-v3.6.11
+      name: etcd-v3-6-11
     - mountPath: /opt/etcd-v3.6.5
-      name: etcd-v3-6-6
+      name: etcd-v3-6-11
     - mountPath: /opt/etcd-v3.6.6
-      name: etcd-v3-6-6
+      name: etcd-v3-6-11
     - mountPath: /var/log/etcd.log
       name: varlogetcd
   hostNetwork: true
@@ -103,12 +107,12 @@ spec:
     name: etcd-v3-4-13
   - image:
       pullPolicy: IfNotPresent
-      reference: registry.k8s.io/etcd:v3.5.25
-    name: etcd-v3-5-25
+      reference: registry.k8s.io/etcd:v3.5.30
+    name: etcd-v3-5-30
   - image:
       pullPolicy: IfNotPresent
-      reference: registry.k8s.io/etcd:v3.6.6
-    name: etcd-v3-6-6
+      reference: registry.k8s.io/etcd:v3.6.11
+    name: etcd-v3-6-11
   - hostPath:
       path: /var/log/etcd.log
       type: FileOrCreate
