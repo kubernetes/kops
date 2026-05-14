@@ -622,6 +622,15 @@ build-docs-netlify:
 	pip install -r ${KOPS_ROOT}/images/mkdocs/requirements.txt
 	python -m mkdocs build
 
+# mdBook-based docs build (in-progress replacement for mkdocs).
+.PHONY: build-docs-mdbook
+build-docs-mdbook:
+	${KOPS_ROOT}/hack/build-mdbook.sh build
+
+.PHONY: live-docs-mdbook
+live-docs-mdbook:
+	${KOPS_ROOT}/hack/build-mdbook.sh serve
+
 #-----------------------------------------------------------
 # development targets
 

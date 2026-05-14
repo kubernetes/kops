@@ -1,0 +1,32 @@
+[book]
+title = "kOps - Kubernetes Operations"
+authors = ["The Kubernetes Authors"]
+description = "Production-grade Kubernetes cluster lifecycle management"
+src = "docs"
+language = "en"
+
+[build]
+build-dir = "site"
+
+[output.html]
+git-repository-url = "https://github.com/kubernetes/kops"
+edit-url-template = "https://github.com/kubernetes/kops/edit/master/docs/{path}"
+site-url = "/"
+default-theme = "light"
+preferred-dark-theme = "navy"
+no-section-label = true
+additional-css = ["docs/extra.css"]
+
+[output.html.fold]
+enable = true
+level = 1
+
+[output.html.search]
+enable = true
+limit-results = 30
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 1
+boost-paragraph = 1
+expand = true
+heading-split-level = 3
