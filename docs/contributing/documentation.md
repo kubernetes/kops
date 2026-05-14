@@ -19,8 +19,11 @@ It does not update the cloud resources, to apply the changes use "kops update cl
 
 * `Example`: Example(s) of how to use the command. This field is formatted as a code snippet in the docs, so make sure if you have comments that these are written as a bash comment (e.g. `# this is a comment`).
 
-## Mkdocs
+## mdBook
 
-`make live-docs` runs a docker container to live build and view docs when working on them locally
+`make live-docs` runs a local mdBook server on port 3000 for previewing docs.
 
-`make build-docs` will build a final version of docs which will be checked in via automation.
+`make build-docs` builds the static site into `site/`.
+
+The site navigation is hand-maintained in [docs/SUMMARY.md](https://github.com/kubernetes/kops/tree/master/docs/SUMMARY.md);
+new pages must be linked there to be rendered.

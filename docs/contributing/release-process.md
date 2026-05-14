@@ -219,7 +219,7 @@ This step is only necessary for a first beta minor release (a ".0-beta.1").
 
 Create a PR that updates the following document:
 
-* Add a reference to the version's release notes in [mkdocs.yml](https://github.com/kubernetes/kops/tree/master/mkdocs.yml)
+* Add a reference to the version's release notes in [docs/SUMMARY.md](https://github.com/kubernetes/kops/tree/master/docs/SUMMARY.md)
 
 ### Update the alpha channel and/or stable channel
 
