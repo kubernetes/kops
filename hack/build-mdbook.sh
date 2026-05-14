@@ -52,8 +52,9 @@ if [[ ! -x "${MDBOOK}" ]] || ! "${MDBOOK}" --version 2>/dev/null | grep -q "${MD
 fi
 
 cd "${KOPS_ROOT}"
+PORT="${PORT:-3000}"
 case "${CMD}" in
   build) "${MDBOOK}" build ;;
-  serve) "${MDBOOK}" serve --hostname 0.0.0.0 --port 3000 --open ;;
+  serve) "${MDBOOK}" serve --hostname localhost --port "${PORT}" ;;
   *) echo "unknown command: ${CMD}" >&2; exit 1 ;;
 esac
