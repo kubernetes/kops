@@ -4,7 +4,9 @@
 
 ### Dedicated API Server nodes
 
-{{ kops_feature_table(kops_added_default='1.21') }}
+| Introduced |
+| :-: |
+| kOps 1.21 |
 
 A common bottleneck of the control plane is the API server. As the number of pods and nodes grow, you will want to add more resources to handle the load.
 

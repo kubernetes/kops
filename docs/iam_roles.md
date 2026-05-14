@@ -47,7 +47,9 @@ The additional permissions are:
 ```
 
 ## Permissions Boundaries
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 AWS Permissions Boundaries enable you to use a policy (managed or custom) to set the maximum permissions that roles created by kOps will be able to grant to instances they're attached to. It can be useful to prevent possible privilege escalations.
 
@@ -61,7 +63,9 @@ iam:
 
 ## Adding External Policies
 
-{{ kops_feature_table(kops_added_default='1.18') }}
+| Introduced |
+| :-: |
+| kOps 1.18 |
 
 At times, you may want to attach policies shared to you by another AWS account or that are maintained by an outside application. You can specify managed policies through the `externalPolicies` spec field.
 

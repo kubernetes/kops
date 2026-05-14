@@ -45,8 +45,6 @@ theme:
 
 plugins:
   - search
-  - macros:
-      module_name: hack/mkdocs_macros/feature_stability_table
 extra_css: [extra.css]
 
 nav:

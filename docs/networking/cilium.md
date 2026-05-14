@@ -27,7 +27,9 @@ kops create cluster \
 
 ### Using etcd for agent state sync
 
-{{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
+| Beta | Default |
+| :-: | :-: |
+| kOps 1.18 | kOps 1.26 |
 
 By default, Cilium will use CRDs for synchronizing agent state. This can cause performance problems on larger clusters. As of kOps 1.18, kOps can manage an etcd cluster using etcd-manager dedicated for cilium agent state sync. The [Cilium docs](https://docs.cilium.io/en/v1.13/installation/k8s-install-external-etcd/) contains recommendations for when this must be enabled.
 
@@ -110,7 +112,9 @@ kops rolling-update cluster --yes
 
 ### Enabling Cilium ENI IPAM (IPv4 only)
 
-{{ kops_feature_table(kops_added_beta='1.18', kops_added_default='1.26') }}
+| Beta | Default |
+| :-: | :-: |
+| kOps 1.18 | kOps 1.26 |
 
 You can have Cilium provision AWS managed addresses and attach them directly to Pods much like AWS VPC. See [the Cilium docs for more information](https://docs.cilium.io/en/v1.13/network/concepts/ipam/eni/)
 
@@ -138,7 +142,9 @@ Also note that this feature has only been tested on the default kOps AMIs.
 #### Enabling Encryption in Cilium (IPv4 only)
 
 ##### IPsec
-{{ kops_feature_table(kops_added_default='1.19', k8s_min='1.17') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.19 | k8s 1.17 |
 
 As of kOps 1.19, it is possible to enable encryption for Cilium agent in IPv4 clusters.
 In order to enable encryption, you must first generate the pre-shared key using this command:
@@ -156,7 +162,9 @@ Once the secret has been created, encryption can be enabled by setting `enableEn
 ```
 
 ##### WireGuard
-{{ kops_feature_table(kops_added_default='1.22', k8s_min='1.17') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.22 | k8s 1.17 |
 
 Cilium can make use of the [wireguard protocol for transparent encryption](https://docs.cilium.io/en/v1.13/security/network/encryption-wireguard/). Take care to familiarise yourself with the [limitations](https://docs.cilium.io/en/v1.13/security/network/encryption-wireguard/#limitations).
 
@@ -169,7 +177,9 @@ Cilium can make use of the [wireguard protocol for transparent encryption](https
 ```
 
 ### Resources in Cilium
-{{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.21 | k8s 1.20 |
 
 As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Operator. Example:
 ```yaml
@@ -180,7 +190,9 @@ As of kOps 1.20, it is possible to choose your own values for Cilium Agents + Op
 ```
 
 ### CNI Exclusive
-{{ kops_feature_table(kops_added_default='1.32') }}
+| Introduced |
+| :-: |
+| kOps 1.32 |
 
 If you want to use additional CNI plugins, for example when using service meshes like Istio or Linkerd, It is required to disable the `cni-exclusive` option so that Cilium does not remove the other CNI configuration files.
 
@@ -191,7 +203,9 @@ If you want to use additional CNI plugins, for example when using service meshes
 ```
 
 ## Hubble
-{{ kops_feature_table(kops_added_default='1.20.1', k8s_min='1.20') }}
+| Introduced | Minimum K8s Version |
+| :-: | :-: |
+| kOps 1.20.1 | k8s 1.20 |
 
 Hubble is the observability layer of Cilium and can be used to obtain cluster-wide visibility into the network and security layer of your Kubernetes cluster. See the [Hubble documentation](https://docs.cilium.io/en/v1.13/gettingstarted/hubble_setup/) for more information.
 
@@ -251,7 +265,9 @@ Note that you can create an ingress resource for Hubble UI by configuring the `h
 
 ## Gateway API Support
 
-{{ kops_feature_table(kops_added_default='1.32') }}
+| Introduced |
+| :-: |
+| kOps 1.32 |
 
 Cilium supports the Kubernetes Gateway API, which provides a more expressive and extensible way to configure ingress traffic. To enable Gateway API support in Cilium, you need to:
 
