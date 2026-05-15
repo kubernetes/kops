@@ -18,7 +18,6 @@ package model
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -29,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 
 	kopsroot "k8s.io/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/rbac"
@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/env"
-	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
 const (
@@ -103,7 +102,6 @@ func (b *ChannelsBuilder) buildPod() (*v1.Pod, error) {
 	// TODO: route through AssetBuilder.RemapImage at cloudup so
 	// containerRegistry/containerProxy/dev overrides apply.
 	image := b.RemapImage("registry.k8s.io/kops/channels:" + kopsroot.KopsVersionImageTag())
-	envVars := b.channelsEnvVars()
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -139,12 +137,18 @@ func (b *ChannelsBuilder) buildPod() (*v1.Pod, error) {
 		Name:  "kops-channels",
 		Image: image,
 		Args:  args,
-		Env: append([]v1.EnvVar{{
-			Name: "NODE_NAME",
-			ValueFrom: &v1.EnvVarSource{
-				FieldRef: &v1.ObjectFieldSelector{FieldPath: "spec.nodeName"},
+		Env: append([]v1.EnvVar{
+			{
+				Name: "NODE_NAME",
+				ValueFrom: &v1.EnvVarSource{
+					FieldRef: &v1.ObjectFieldSelector{FieldPath: "spec.nodeName"},
+				},
 			},
-		}}, envVars...),
+			{
+				Name:  "KUBECONFIG",
+				Value: channelsKubeconfig,
+			},
+		}, b.channelsEnvVars()...),
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
 				v1.ResourceCPU:    resource.MustParse("50m"),
@@ -196,44 +200,17 @@ func fileChannelDirs(channels []string) []string {
 	return dirs
 }
 
-// channelsEnvVars returns the credentials and proxy env vars VFS reads to
-// fetch channel manifests. Only S3 (non-AWS backends) and OpenStack
-// credentials are wired through; DO/Hetzner/Scaleway use S3-compatible
-// config stores so their cloud-API tokens aren't needed. AWS_REGION is a
-// non-secret hint kept to skip an IMDS round-trip.
+// channelsEnvVars returns the shared system-component env vars (cloud
+// credentials and proxy settings) VFS reads to fetch channel manifests. It
+// uses the same set as kops-controller and etcd-manager.
 func (b *ChannelsBuilder) channelsEnvVars() []v1.EnvVar {
-	var out []v1.EnvVar
-	add := func(name, value string) {
-		if value != "" {
-			out = append(out, v1.EnvVar{Name: name, Value: value})
-		}
+	clusterSpec := &kops.ClusterSpec{
+		Networking: kops.NetworkingSpec{
+			EgressProxy: b.NodeupConfig.Networking.EgressProxy,
+		},
+		CloudProvider: kops.CloudProviderSpec{
+			Openstack: b.NodeupConfig.Openstack,
+		},
 	}
-
-	add("KUBECONFIG", channelsKubeconfig)
-	add("AWS_REGION", os.Getenv("AWS_REGION"))
-
-	if os.Getenv("S3_ENDPOINT") != "" {
-		for _, name := range []string{"S3_ENDPOINT", "S3_REGION", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"} {
-			add(name, os.Getenv(name))
-		}
-	}
-
-	if os.Getenv("OS_AUTH_URL") != "" {
-		for _, name := range []string{
-			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
-			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
-			"OS_DOMAIN_NAME", "OS_DOMAIN_ID",
-			"OS_USERNAME", "OS_PASSWORD", "OS_AUTH_URL", "OS_REGION_NAME",
-			"OS_APPLICATION_CREDENTIAL_ID", "OS_APPLICATION_CREDENTIAL_SECRET",
-			openstackconfig.EnvKeyOpenstackTLSInsecureSkipVerify,
-		} {
-			add(name, os.Getenv(name))
-		}
-	}
-
-	for _, ev := range env.GetProxyEnvVars(b.NodeupConfig.Networking.EgressProxy) {
-		out = append(out, v1.EnvVar{Name: ev.Name, Value: ev.Value})
-	}
-
-	return out
+	return env.BuildSystemComponentEnvVars(clusterSpec).ToEnvVars()
 }
