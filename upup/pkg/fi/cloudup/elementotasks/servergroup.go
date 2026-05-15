@@ -297,7 +297,7 @@ func (*ServerGroup) RenderElemento(t *elemento.ElementoAPITarget, a, e, changes 
 
 		// Add root volume configuration if specified
 		if e.RootVolumeSize != nil {
-			opts.ServerType.Disk = int(fi.ValueOf(e.RootVolumeSize))
+			opts.ServerType.Disk = float64(fi.ValueOf(e.RootVolumeSize))
 		}
 
 		// Add the SSH keys.
