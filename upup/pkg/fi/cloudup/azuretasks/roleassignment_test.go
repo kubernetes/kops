@@ -23,7 +23,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
-	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi"
 	"github.com/google/uuid"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
@@ -36,8 +36,8 @@ func TestRoleAssignmentRenderAzure(t *testing.T) {
 	expected := &RoleAssignment{
 		Name:  to.Ptr("ra"),
 		Scope: to.Ptr("scope"),
-		VMScaleSet: &VMScaleSet{
-			Name:        to.Ptr("vmss"),
+		ManagedIdentity: &ManagedIdentity{
+			Name:        to.Ptr("mi"),
 			PrincipalID: to.Ptr("pid"),
 		},
 		RoleDefID: to.Ptr("rdid0"),
@@ -51,8 +51,8 @@ func TestRoleAssignmentRenderAzure(t *testing.T) {
 		t.Fatalf("id must be set")
 	}
 	actual := cloud.RoleAssignmentsClient.RAs[*expected.ID]
-	if a, e := *actual.Properties.PrincipalID, *expected.VMScaleSet.PrincipalID; a != e {
-		t.Errorf("unexpected role definition ID: expected %s, but got %s", e, a)
+	if a, e := *actual.Properties.PrincipalID, *expected.ManagedIdentity.PrincipalID; a != e {
+		t.Errorf("unexpected principal ID: expected %s, but got %s", e, a)
 	}
 }
 
@@ -64,27 +64,25 @@ func TestRoleAssignmentFind(t *testing.T) {
 		},
 	}
 
-	rg := &ResourceGroup{
-		Name: to.Ptr("rg"),
-	}
-	vmssName := "vmss"
-	resp, err := cloud.VMScaleSet().CreateOrUpdate(context.TODO(), *rg.Name, vmssName, newTestVMSSParameters())
+	// Create a managed identity.
+	miName := "test-identity"
+	miResult, err := cloud.ManagedIdentity().CreateOrUpdate(context.TODO(), "rg", miName, armmsi.Identity{
+		Location: to.Ptr("eastus"),
+	})
 	if err != nil {
-		t.Fatalf("failed to create: %s", err)
-	}
-	vmss := &VMScaleSet{
-		Name:          to.Ptr(vmssName),
-		PrincipalID:   resp.Identity.PrincipalID,
-		ResourceGroup: rg,
+		t.Fatalf("failed to create managed identity: %s", err)
 	}
 
-	scope := "scope"
+	scope := "/subscriptions/sub/resourceGroups/rg"
 	roleDefID := "rdid0"
 	ra := &RoleAssignment{
-		Name:       vmss.Name,
-		Scope:      &scope,
-		VMScaleSet: vmss,
-		RoleDefID:  &roleDefID,
+		Name:  to.Ptr(miName),
+		Scope: &scope,
+		ManagedIdentity: &ManagedIdentity{
+			Name:        to.Ptr(miName),
+			PrincipalID: miResult.Properties.PrincipalID,
+		},
+		RoleDefID: &roleDefID,
 	}
 	// Find will return nothing if there is no Role Assignment created.
 	actual, err := ra.Find(ctx)
@@ -92,7 +90,7 @@ func TestRoleAssignmentFind(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	if actual != nil {
-		t.Errorf("unexpected vmss found: %+v", actual)
+		t.Errorf("unexpected role assignment found: %+v", actual)
 	}
 
 	// Create Role Assignments. One of them has irrelevant (different role definition ID).
@@ -100,7 +98,7 @@ func TestRoleAssignmentFind(t *testing.T) {
 	roleAssignment := authz.RoleAssignmentCreateParameters{
 		Properties: &authz.RoleAssignmentProperties{
 			RoleDefinitionID: to.Ptr(roleDefID),
-			PrincipalID:      vmss.PrincipalID,
+			PrincipalID:      miResult.Properties.PrincipalID,
 		},
 	}
 	if _, err := cloud.RoleAssignment().Create(context.TODO(), scope, roleAssignmentName, roleAssignment); err != nil {
@@ -110,7 +108,7 @@ func TestRoleAssignmentFind(t *testing.T) {
 	irrelevant := authz.RoleAssignmentCreateParameters{
 		Properties: &authz.RoleAssignmentProperties{
 			RoleDefinitionID: to.Ptr("irrelevant"),
-			PrincipalID:      vmss.PrincipalID,
+			PrincipalID:      miResult.Properties.PrincipalID,
 		},
 	}
 	if _, err := cloud.RoleAssignment().Create(context.TODO(), scope, uuid.New().String(), irrelevant); err != nil {
@@ -123,7 +121,7 @@ func TestRoleAssignmentFind(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	if actual == nil {
-		t.Fatalf("unexpected vmss not found: %+v", actual)
+		t.Fatalf("expected role assignment to be found")
 	}
 	if a, e := *actual.Name, *ra.Name; a != e {
 		t.Errorf("unexpected Role name Assignment: expected %+v, but got %+v", e, a)
@@ -134,22 +132,13 @@ func TestRoleAssignmentFind(t *testing.T) {
 }
 
 // TestRoleAssignmentFind_NoPrincipalID verifies that Find doesn't find any Role Assignment
-// when the principal ID of VM Scale Set hasn't yet been set.
+// when the principal ID of the Managed Identity hasn't yet been set.
 func TestRoleAssignmentFind_NoPrincipalID(t *testing.T) {
 	cloud := NewMockAzureCloud("eastus")
 	ctx := &fi.CloudupContext{
 		T: fi.CloudupSubContext{
 			Cloud: cloud,
 		},
-	}
-
-	// Create a VM Scale Set.
-	rg := &ResourceGroup{
-		Name: to.Ptr("rg"),
-	}
-	vmssName := "vmss"
-	if _, err := cloud.VMScaleSet().CreateOrUpdate(context.TODO(), *rg.Name, vmssName, newTestVMSSParameters()); err != nil {
-		t.Fatalf("failed to create VM Scale Set: %s", err)
 	}
 
 	// Create a dummy Role Assignment to ensure that this won't be returned by Find.
@@ -164,10 +153,10 @@ func TestRoleAssignmentFind_NoPrincipalID(t *testing.T) {
 
 	scope := "scope"
 	ra := &RoleAssignment{
-		Name:  to.Ptr(vmssName),
+		Name:  to.Ptr("test"),
 		Scope: to.Ptr(scope),
-		VMScaleSet: &VMScaleSet{
-			Name: to.Ptr(vmssName),
+		ManagedIdentity: &ManagedIdentity{
+			Name: to.Ptr("mi"),
 			// Do not set principal ID.
 		},
 	}
@@ -216,13 +205,5 @@ func TestRoleAssignmentCheckChanges(t *testing.T) {
 				t.Errorf("expected success=%t, but got err=%v", tc.success, err)
 			}
 		})
-	}
-}
-
-func newTestVMSSParameters() compute.VirtualMachineScaleSet {
-	return compute.VirtualMachineScaleSet{
-		Identity: &compute.VirtualMachineScaleSetIdentity{
-			Type: to.Ptr(compute.ResourceIdentityTypeSystemAssigned),
-		},
 	}
 }

@@ -63,6 +63,7 @@ type AzureCloud interface {
 	LoadBalancer() LoadBalancersClient
 	PublicIPAddress() PublicIPAddressesClient
 	NatGateway() NatGatewaysClient
+	ManagedIdentity() ManagedIdentitiesClient
 }
 
 type azureCloudImplementation struct {
@@ -84,6 +85,7 @@ type azureCloudImplementation struct {
 	loadBalancersClient             LoadBalancersClient
 	publicIPAddressesClient         PublicIPAddressesClient
 	natGatewaysClient               NatGatewaysClient
+	managedIdentitiesClient         ManagedIdentitiesClient
 	storageAccountsClient           StorageAccountsClient
 }
 
@@ -163,6 +165,9 @@ func newAzureCloud(subscriptionID, resourceGroupName, location string, tags map[
 		return nil, err
 	}
 	if azureCloudImpl.natGatewaysClient, err = newNatGatewaysClientImpl(subscriptionID, cred); err != nil {
+		return nil, err
+	}
+	if azureCloudImpl.managedIdentitiesClient, err = newManagedIdentitiesClientImpl(subscriptionID, cred); err != nil {
 		return nil, err
 	}
 	if azureCloudImpl.storageAccountsClient, err = newStorageAccountsClientImpl(subscriptionID, cred); err != nil {
@@ -420,4 +425,8 @@ func (c *azureCloudImplementation) PublicIPAddress() PublicIPAddressesClient {
 
 func (c *azureCloudImplementation) NatGateway() NatGatewaysClient {
 	return c.natGatewaysClient
+}
+
+func (c *azureCloudImplementation) ManagedIdentity() ManagedIdentitiesClient {
+	return c.managedIdentitiesClient
 }

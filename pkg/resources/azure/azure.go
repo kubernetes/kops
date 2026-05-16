@@ -46,6 +46,7 @@ const (
 	typeLoadBalancer             = "LoadBalancer"
 	typePublicIPAddress          = "PublicIPAddress"
 	typeNatGateway               = "NatGateway"
+	typeManagedIdentity          = "ManagedIdentity"
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
@@ -421,10 +422,33 @@ func (g *resourceGetter) listVMScaleSetsAndRoleAssignments(ctx context.Context) 
 		}
 		rs = append(rs, r)
 
-		if vmss.Identity != nil && vmss.Identity.PrincipalID != nil {
-			principalIDs[*vmss.Identity.PrincipalID] = vmss
+		if vmss.Identity != nil {
+			// Collect principal IDs from both system-assigned and user-assigned identities.
+			if vmss.Identity.PrincipalID != nil {
+				principalIDs[*vmss.Identity.PrincipalID] = vmss
+			}
+			for _, uai := range vmss.Identity.UserAssignedIdentities {
+				if uai != nil && uai.PrincipalID != nil {
+					principalIDs[*uai.PrincipalID] = vmss
+				}
+			}
 		}
 	}
+
+	// Collect VMSS IDs so that managed identities are not deleted before all VMSS are gone.
+	var blocked []string
+	for _, r := range rs {
+		if r.Type == typeVMScaleSet {
+			blocked = append(blocked, toKey(typeVMScaleSet, r.ID))
+		}
+	}
+
+	// Also list and delete managed identities owned by the cluster.
+	miResources, err := g.listManagedIdentities(ctx, blocked)
+	if err != nil {
+		return nil, err
+	}
+	rs = append(rs, miResources...)
 
 	resourceGroupRAs, err := g.listRoleAssignments(ctx, principalIDs, g.resourceGroupID())
 	if err != nil {
@@ -777,6 +801,32 @@ func (g *resourceGetter) toNatGatewayResource(natGateway *network.NatGateway) (*
 
 func (g *resourceGetter) deleteNatGateway(_ fi.Cloud, r *resources.Resource) error {
 	return g.cloud.NatGateway().Delete(context.TODO(), g.resourceGroupName(), r.Name)
+}
+
+func (g *resourceGetter) listManagedIdentities(ctx context.Context, blocked []string) ([]*resources.Resource, error) {
+	mis, err := g.cloud.ManagedIdentity().List(ctx, g.resourceGroupName())
+	if err != nil {
+		return nil, err
+	}
+
+	var rs []*resources.Resource
+	for _, mi := range mis {
+		if !g.isOwnedByCluster(mi.Tags) {
+			continue
+		}
+		rs = append(rs, &resources.Resource{
+			Obj:  mi,
+			Type: typeManagedIdentity,
+			ID:   *mi.ID,
+			Name: *mi.Name,
+			Deleter: func(_ fi.Cloud, r *resources.Resource) error {
+				return g.cloud.ManagedIdentity().Delete(context.TODO(), g.resourceGroupName(), r.Name)
+			},
+			Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupID())},
+			Blocked: blocked,
+		})
+	}
+	return rs, nil
 }
 
 // isOwnedByCluster returns true if the resource is owned by the cluster.

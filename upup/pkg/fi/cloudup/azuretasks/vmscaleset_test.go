@@ -26,6 +26,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 )
@@ -126,12 +127,11 @@ func TestVMScaleSetRenderAzure(t *testing.T) {
 		t.Errorf("unexpected user data: expected %v, but got %v", expectedUserData, actualUserData)
 	}
 
-	if expected.PrincipalID == nil {
-		t.Errorf("unexpected nil principalID")
-	}
-
 	if a, e := actual.Zones, expected.Zones; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected Zone: expected %+v, but got %+v", e, a)
+	}
+	if actual.Identity != nil {
+		t.Fatalf("expected VMSS identity to be omitted, got %+v", actual.Identity)
 	}
 }
 
@@ -298,6 +298,46 @@ func TestVMScaleSetFind(t *testing.T) {
 	}
 	if a, e := actual.Zones, vmssParameters.Zones; !reflect.DeepEqual(a, e) {
 		t.Errorf("unexpected Zone: expected %v, but got %v", e, a)
+	}
+}
+
+func TestVMScaleSetFindPreservesManagedIdentityName(t *testing.T) {
+	cloud := NewMockAzureCloud("eastus")
+	ctx := &fi.CloudupContext{
+		T: fi.CloudupSubContext{
+			Cloud: cloud,
+		},
+	}
+
+	vmss := newTestVMScaleSet()
+	for _, managedIdentityName := range []string{"vmss-mi-b", "vmss-mi-a"} {
+		managedIdentity, err := cloud.ManagedIdentity().CreateOrUpdate(context.Background(), *vmss.ResourceGroup.Name, managedIdentityName, armmsi.Identity{
+			Location: to.Ptr(cloud.Location),
+		})
+		if err != nil {
+			t.Fatalf("failed to create managed identity: %s", err)
+		}
+		vmss.ManagedIdentities = append(vmss.ManagedIdentities, &ManagedIdentity{
+			Name:       to.Ptr(managedIdentityName),
+			ResourceID: managedIdentity.ID,
+		})
+	}
+	if err := (&VMScaleSet{}).RenderAzure(azure.NewAzureAPITarget(cloud), nil, vmss, nil); err != nil {
+		t.Fatalf("failed to create vmss: %s", err)
+	}
+
+	actual, err := vmss.Find(ctx)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if actual == nil || len(actual.ManagedIdentities) != 2 {
+		t.Fatalf("expected managed identities to be discovered, got %+v", actual.ManagedIdentities)
+	}
+	expected := *actual
+
+	changes := &VMScaleSet{}
+	if changed := fi.BuildChanges(actual, &expected, changes); changed {
+		t.Fatalf("expected no changes when managed identities match, got %+v", changes.ManagedIdentities)
 	}
 }
 

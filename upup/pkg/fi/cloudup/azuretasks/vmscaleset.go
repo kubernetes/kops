@@ -20,8 +20,10 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"sort"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"k8s.io/klog/v2"
@@ -55,10 +57,11 @@ type VMScaleSet struct {
 	AdminUser    *string
 	SSHPublicKey *string
 	// UserData is the user data configuration
-	UserData    fi.Resource
-	Tags        map[string]*string
-	Zones       []*string
-	PrincipalID *string
+	UserData fi.Resource
+	Tags     map[string]*string
+	Zones    []*string
+	// ManagedIdentities are the user-assigned managed identities for this VMSS.
+	ManagedIdentities []*ManagedIdentity
 }
 
 var _ fi.CloudupTaskNormalize = (*VMScaleSet)(nil)
@@ -213,8 +216,23 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 		vmss.SKUName = found.SKU.Name
 		vmss.Capacity = found.SKU.Capacity
 	}
-	if found.Identity != nil {
-		vmss.PrincipalID = found.Identity.PrincipalID
+	// Extract user-assigned managed identities if present.
+	if found.Identity != nil && found.Identity.UserAssignedIdentities != nil {
+		var resourceIDs []string
+		for resourceID := range found.Identity.UserAssignedIdentities {
+			resourceIDs = append(resourceIDs, resourceID)
+		}
+		sort.Strings(resourceIDs)
+		for _, resourceID := range resourceIDs {
+			parsedID, err := arm.ParseResourceID(resourceID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse managed identity ID %s: %w", resourceID, err)
+			}
+			vmss.ManagedIdentities = append(vmss.ManagedIdentities, &ManagedIdentity{
+				Name:       to.Ptr(parsedID.Name),
+				ResourceID: to.Ptr(resourceID),
+			})
+		}
 	}
 	if ipConfig.Properties != nil && ipConfig.Properties.ApplicationSecurityGroups != nil {
 		for _, asg := range ipConfig.Properties.ApplicationSecurityGroups {
@@ -230,9 +248,6 @@ func (s *VMScaleSet) Find(c *fi.CloudupContext) (*VMScaleSet, error) {
 	}
 	if found.Zones != nil {
 		vmss.Zones = found.Zones
-	}
-	if found.Identity != nil {
-		s.PrincipalID = found.Identity.PrincipalID
 	}
 	return vmss, nil
 }
@@ -375,26 +390,30 @@ func (s *VMScaleSet) RenderAzure(t *azure.AzureAPITarget, a, e, changes *VMScale
 				},
 			},
 		},
-		// Assign a system-assigned managed identity so that
-		// Azure creates an identity for VMs and provision
-		// its credentials on the VMs.
-		Identity: &compute.VirtualMachineScaleSetIdentity{
-			Type: to.Ptr(compute.ResourceIdentityTypeSystemAssigned),
-		},
 		Tags:  e.Tags,
 		Zones: e.Zones,
 	}
 
-	result, err := t.Cloud.VMScaleSet().CreateOrUpdate(
+	if len(e.ManagedIdentities) > 0 {
+		vmss.Identity = &compute.VirtualMachineScaleSetIdentity{
+			Type:                   to.Ptr(compute.ResourceIdentityTypeUserAssigned),
+			UserAssignedIdentities: make(map[string]*compute.VirtualMachineScaleSetIdentityUserAssignedIdentitiesValue, len(e.ManagedIdentities)),
+		}
+		for _, managedIdentity := range e.ManagedIdentities {
+			if managedIdentity == nil || managedIdentity.ResourceID == nil {
+				return fmt.Errorf("user-assigned identities require managed identity resource IDs")
+			}
+			vmss.Identity.UserAssignedIdentities[*managedIdentity.ResourceID] = &compute.VirtualMachineScaleSetIdentityUserAssignedIdentitiesValue{}
+		}
+	}
+
+	_, err := t.Cloud.VMScaleSet().CreateOrUpdate(
 		context.TODO(),
 		*e.ResourceGroup.Name,
 		name,
 		vmss)
 	if err != nil {
 		return err
-	}
-	if result.Identity != nil {
-		e.PrincipalID = result.Identity.PrincipalID
 	}
 	return nil
 }

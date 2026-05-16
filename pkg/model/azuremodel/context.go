@@ -97,22 +97,32 @@ func (c *AzureModelContext) LinkToApplicationSecurityGroupNodes() *azuretasks.Ap
 	return &azuretasks.ApplicationSecurityGroup{Name: fi.PtrTo(c.NameForApplicationSecurityGroupNodes())}
 }
 
-// CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
-// Mostly copied from pkg/model/context.go, but "/" in tag keys are replaced with "_" as Azure
-// doesn't allow "/" in tag keys.
-func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) map[string]*string {
+// CloudTagsForClusterResource returns tags for a cluster-scoped resource
+// (one that is not tied to a specific instance group).
+func (c *AzureModelContext) CloudTagsForClusterResource() map[string]*string {
+	labels := make(map[string]string)
+	for k, v := range c.Cluster.Spec.CloudLabels {
+		labels[k] = v
+	}
+	labels[azure.TagClusterName] = c.ClusterName()
+	return toAzureTags(labels)
+}
+
+// CloudTagsForInstanceGroupResource computes the tags to apply to instances in the specified InstanceGroup.
+// "/" in tag keys are replaced with "_" as Azure doesn't allow "/" in tag keys.
+func (c *AzureModelContext) CloudTagsForInstanceGroupResource(ig *kops.InstanceGroup) map[string]*string {
 	const (
 		clusterNodeTemplateLabel = "k8s.io_cluster_node-template_label_"
 		clusterNodeTemplateTaint = "k8s.io_cluster_node-template_taint_"
 	)
 
 	labels := make(map[string]string)
-	// Apply any user-specified global labels first so they can be overridden by IG-specific labels.
+	// Apply any user-specified global labels first (may be overridden by IG-level labels).
 	for k, v := range c.Cluster.Spec.CloudLabels {
 		labels[k] = v
 	}
 
-	// Apply any user-specified labels.
+	// Apply any user-specified IG labels (may override cluster-level labels).
 	for k, v := range ig.Spec.CloudLabels {
 		labels[k] = v
 	}
@@ -134,7 +144,8 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 		}
 	}
 
-	// The system tags take priority because the cluster likely breaks without them...
+	// System tags take priority because the cluster likely breaks without them.
+	labels[azure.TagClusterName] = c.ClusterName()
 	labels[azure.TagNameRolePrefix+ig.Spec.Role.ToLowerString()] = "1"
 	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
 		labels[azure.TagNameRolePrefix+"master"] = "1"
@@ -143,7 +154,10 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 	// Set the tag used by kops-controller to identify the instance group to which the VM ScaleSet belongs.
 	labels[nodeidentityazure.InstanceGroupNameTag] = ig.Name
 
-	// Replace all "/" with "_" as "/" is not an allowed key character in Azure.
+	return toAzureTags(labels)
+}
+
+func toAzureTags(labels map[string]string) map[string]*string {
 	m := make(map[string]*string)
 	for k, v := range labels {
 		m[strings.ReplaceAll(k, "/", "_")] = fi.PtrTo(v)

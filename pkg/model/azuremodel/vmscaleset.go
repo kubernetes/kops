@@ -54,41 +54,58 @@ func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Tags:          map[string]*string{},
 	})
 
+	controlPlaneIdentity := b.addControlPlaneManagedIdentityTasks(c)
+
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 		vmss, err := b.buildVMScaleSetTask(c, name, ig)
 		if err != nil {
 			return err
 		}
-		c.AddTask(vmss)
 
 		if ig.IsControlPlane() || b.Cluster.UsesLegacyGossip() {
-			// Create tasks for assigning built-in roles to VM Scale Sets.
-			// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-			resourceGroupID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s",
-				b.Cluster.Spec.CloudProvider.Azure.SubscriptionID,
-				b.Cluster.AzureResourceGroupName(),
-			)
-			c.AddTask(&azuretasks.RoleAssignment{
-				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "owner")),
-				Lifecycle:  b.Lifecycle,
-				Scope:      to.Ptr(resourceGroupID),
-				VMScaleSet: vmss,
-				// Owner
-				RoleDefID: to.Ptr("8e3af657-a8ff-443c-a75c-2fe8c4bcb635"),
-			})
-			c.AddTask(&azuretasks.RoleAssignment{
-				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "blob")),
-				Lifecycle:  b.Lifecycle,
-				Scope:      to.Ptr(b.Cluster.Spec.CloudProvider.Azure.StorageAccountID),
-				VMScaleSet: vmss,
-				// Storage Blob Data Contributor
-				RoleDefID: to.Ptr("ba92f5b4-2d11-453d-a403-e96b0029c9fe"),
-			})
+			vmss.ManagedIdentities = []*azuretasks.ManagedIdentity{controlPlaneIdentity}
 		}
+
+		c.AddTask(vmss)
 	}
 
 	return nil
+}
+
+func (b *VMScaleSetModelBuilder) addControlPlaneManagedIdentityTasks(c *fi.CloudupModelBuilderContext) *azuretasks.ManagedIdentity {
+	// Create tasks for assigning built-in roles to the shared control-plane managed identity.
+	// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+	controlPlaneIdentity := &azuretasks.ManagedIdentity{
+		Name:          fi.PtrTo(b.NameForUserAssignedManagedIdentityControlPlane()),
+		Lifecycle:     b.Lifecycle,
+		ResourceGroup: b.LinkToResourceGroup(),
+		Tags:          b.CloudTagsForClusterResource(),
+	}
+	c.AddTask(controlPlaneIdentity)
+
+	resourceGroupID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s",
+		b.Cluster.Spec.CloudProvider.Azure.SubscriptionID,
+		b.Cluster.AzureResourceGroupName(),
+	)
+	// Owner role on the resource group.
+	c.AddTask(&azuretasks.RoleAssignment{
+		Name:            to.Ptr(fmt.Sprintf("owner-%s", *controlPlaneIdentity.Name)),
+		Lifecycle:       b.Lifecycle,
+		Scope:           to.Ptr(resourceGroupID),
+		ManagedIdentity: controlPlaneIdentity,
+		RoleDefID:       to.Ptr("8e3af657-a8ff-443c-a75c-2fe8c4bcb635"),
+	})
+	// Storage Blob Data Contributor role on the storage account.
+	c.AddTask(&azuretasks.RoleAssignment{
+		Name:            to.Ptr(fmt.Sprintf("blob-%s", *controlPlaneIdentity.Name)),
+		Lifecycle:       b.Lifecycle,
+		Scope:           to.Ptr(b.Cluster.Spec.CloudProvider.Azure.StorageAccountID),
+		ManagedIdentity: controlPlaneIdentity,
+		RoleDefID:       to.Ptr("ba92f5b4-2d11-453d-a403-e96b0029c9fe"),
+	})
+
+	return controlPlaneIdentity
 }
 
 func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
@@ -176,7 +193,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		}
 	}
 
-	t.Tags = b.CloudTagsForInstanceGroup(ig)
+	t.Tags = b.CloudTagsForInstanceGroupResource(ig)
 
 	return t, nil
 }

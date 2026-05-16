@@ -66,7 +66,8 @@ type terraformAzureVMScaleSetNetworkInterface struct {
 }
 
 type terraformAzureVMScaleSetIdentity struct {
-	Type *string `cty:"type"`
+	Type        *string                    `cty:"type"`
+	IdentityIDs []*terraformWriter.Literal `cty:"identity_ids"`
 }
 
 type terraformAzureVMScaleSet struct {
@@ -124,10 +125,18 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 			StorageAccountType: storageAccountType(storageProfile.OSDisk.ManagedDisk),
 			DiskSizeGB:         storageProfile.OSDisk.DiskSizeGB,
 		},
-		Identity: &terraformAzureVMScaleSetIdentity{
-			Type: fi.PtrTo("SystemAssigned"),
-		},
 		Tags: stringMap(e.Tags),
+	}
+
+	if len(e.ManagedIdentities) > 0 {
+		var identityIDs []*terraformWriter.Literal
+		for _, mi := range e.ManagedIdentities {
+			identityIDs = append(identityIDs, mi.terraformID())
+		}
+		tf.Identity = &terraformAzureVMScaleSetIdentity{
+			Type:        fi.PtrTo("UserAssigned"),
+			IdentityIDs: identityIDs,
+		}
 	}
 
 	if e.UserData != nil {

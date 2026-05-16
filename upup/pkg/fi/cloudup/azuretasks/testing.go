@@ -21,9 +21,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/msi/armmsi"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -58,6 +60,7 @@ type MockAzureCloud struct {
 	LoadBalancersClient             *MockLoadBalancersClient
 	PublicIPAddressesClient         *MockPublicIPAddressesClient
 	NatGatewaysClient               *MockNatGatewaysClient
+	ManagedIdentitiesClient         *MockManagedIdentitiesClient
 	StorageAccountsClient           *MockStorageAccountsClient
 }
 
@@ -116,6 +119,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		NatGatewaysClient: &MockNatGatewaysClient{
 			NGWs: map[string]*network.NatGateway{},
+		},
+		ManagedIdentitiesClient: &MockManagedIdentitiesClient{
+			MIs: map[string]*armmsi.Identity{},
 		},
 		StorageAccountsClient: &MockStorageAccountsClient{
 			SAs: map[string]*armstorage.Account{},
@@ -270,6 +276,11 @@ func (c *MockAzureCloud) PublicIPAddress() azure.PublicIPAddressesClient {
 // NatGateway returns the nat gateway client.
 func (c *MockAzureCloud) NatGateway() azure.NatGatewaysClient {
 	return c.NatGatewaysClient
+}
+
+// ManagedIdentity returns the managed identity client.
+func (c *MockAzureCloud) ManagedIdentity() azure.ManagedIdentitiesClient {
+	return c.ManagedIdentitiesClient
 }
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
@@ -433,7 +444,9 @@ func (c *MockVMScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGrou
 	}
 	parameters.Name = &vmScaleSetName
 	parameters.ID = &vmScaleSetName
-	parameters.Identity.PrincipalID = to.Ptr(uuid.New().String())
+	if parameters.Identity != nil {
+		parameters.Identity.PrincipalID = to.Ptr(uuid.New().String())
+	}
 	c.VMSSes[vmScaleSetName] = &parameters
 	return &parameters, nil
 }
@@ -545,12 +558,13 @@ func (c *MockRoleAssignmentsClient) Create(
 	if _, ok := c.RAs[roleAssignmentName]; ok {
 		return nil, fmt.Errorf("update not supported")
 	}
+	roleDefID := fmt.Sprintf("%s/providers/Microsoft.Authorization/roleDefinitions/%s", scope, *parameters.Properties.RoleDefinitionID)
 	ra := &authz.RoleAssignment{
 		ID:   to.Ptr(roleAssignmentName),
 		Name: to.Ptr(roleAssignmentName),
 		Properties: &authz.RoleAssignmentProperties{
 			Scope:            to.Ptr(scope),
-			RoleDefinitionID: parameters.Properties.RoleDefinitionID,
+			RoleDefinitionID: to.Ptr(roleDefID),
 			PrincipalID:      parameters.Properties.PrincipalID,
 		},
 	}
@@ -816,6 +830,58 @@ func (c *MockNatGatewaysClient) Delete(ctx context.Context, resourceGroupName, n
 		return fmt.Errorf("%s does not exist", ngwName)
 	}
 	delete(c.NGWs, ngwName)
+	return nil
+}
+
+// MockManagedIdentitiesClient is a mock implementation of managed identities client.
+type MockManagedIdentitiesClient struct {
+	MIs map[string]*armmsi.Identity
+}
+
+var _ azure.ManagedIdentitiesClient = (*MockManagedIdentitiesClient)(nil)
+
+// CreateOrUpdate creates or updates a managed identity.
+func (c *MockManagedIdentitiesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, name string, parameters armmsi.Identity) (*armmsi.Identity, error) {
+	principalID := uuid.New().String()
+	resourceID := fmt.Sprintf("/subscriptions/sub/resourceGroups/%s/providers/Microsoft.ManagedIdentity/userAssignedIdentities/%s", resourceGroupName, name)
+	mi := &armmsi.Identity{
+		Name:     to.Ptr(name),
+		ID:       to.Ptr(resourceID),
+		Location: parameters.Location,
+		Tags:     parameters.Tags,
+		Properties: &armmsi.UserAssignedIdentityProperties{
+			PrincipalID: to.Ptr(principalID),
+			ClientID:    to.Ptr(uuid.New().String()),
+		},
+	}
+	c.MIs[name] = mi
+	return mi, nil
+}
+
+// Get returns a managed identity by name.
+func (c *MockManagedIdentitiesClient) Get(ctx context.Context, resourceGroupName, name string) (*armmsi.Identity, error) {
+	mi, ok := c.MIs[name]
+	if !ok {
+		return nil, &azcore.ResponseError{ErrorCode: "ResourceNotFound"}
+	}
+	return mi, nil
+}
+
+// List returns a slice of managed identities.
+func (c *MockManagedIdentitiesClient) List(ctx context.Context, resourceGroupName string) ([]*armmsi.Identity, error) {
+	var l []*armmsi.Identity
+	for _, mi := range c.MIs {
+		l = append(l, mi)
+	}
+	return l, nil
+}
+
+// Delete deletes a managed identity.
+func (c *MockManagedIdentitiesClient) Delete(ctx context.Context, resourceGroupName, name string) error {
+	if _, ok := c.MIs[name]; !ok {
+		return fmt.Errorf("%s does not exist", name)
+	}
+	delete(c.MIs, name)
 	return nil
 }
 

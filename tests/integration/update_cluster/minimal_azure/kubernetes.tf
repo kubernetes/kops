@@ -117,7 +117,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
   computer_name_prefix            = "control-plane-eastus-1"
   disable_password_authentication = true
   identity {
-    type = "SystemAssigned"
+    identity_ids = [azurerm_user_assigned_identity.minimal-azure-example-com.id]
+    type         = "UserAssigned"
   }
   instances = 1
   location  = "eastus"
@@ -170,12 +171,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "nodes-minimal-azure-example-
   admin_username                  = "admin-user"
   computer_name_prefix            = "nodes"
   disable_password_authentication = true
-  identity {
-    type = "SystemAssigned"
-  }
-  instances = 1
-  location  = "eastus"
-  name      = "nodes.minimal-azure.example.com"
+  instances                       = 1
+  location                        = "eastus"
+  name                            = "nodes.minimal-azure.example.com"
   network_interface {
     enable_ip_forwarding = true
     ip_configuration {
@@ -469,15 +467,15 @@ resource "azurerm_resource_group" "minimal-azure-example-com" {
   }
 }
 
-resource "azurerm_role_assignment" "control-plane-eastus-1-masters-minimal-azure-example-com-blob" {
-  principal_id                     = azurerm_linux_virtual_machine_scale_set.control-plane-eastus-1-masters-minimal-azure-example-com.identity[0].principal_id
+resource "azurerm_role_assignment" "blob-minimal-azure-example-com" {
+  principal_id                     = azurerm_user_assigned_identity.minimal-azure-example-com.principal_id
   role_definition_id               = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/providers/Microsoft.Authorization/roleDefinitions/ba92f5b4-2d11-453d-a403-e96b0029c9fe"
   scope                            = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage"
   skip_service_principal_aad_check = true
 }
 
-resource "azurerm_role_assignment" "control-plane-eastus-1-masters-minimal-azure-example-com-owner" {
-  principal_id                     = azurerm_linux_virtual_machine_scale_set.control-plane-eastus-1-masters-minimal-azure-example-com.identity[0].principal_id
+resource "azurerm_role_assignment" "owner-minimal-azure-example-com" {
+  principal_id                     = azurerm_user_assigned_identity.minimal-azure-example-com.principal_id
   role_definition_id               = "/subscriptions/sub-123/resourceGroups/minimal-azure.example.com/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
   scope                            = "/subscriptions/sub-123/resourceGroups/minimal-azure.example.com"
   skip_service_principal_aad_check = true
@@ -674,6 +672,15 @@ resource "azurerm_subnet_network_security_group_association" "minimal-azure-exam
 resource "azurerm_subnet_route_table_association" "minimal-azure-example-com-eastus-rt" {
   route_table_id = azurerm_route_table.minimal-azure-example-com.id
   subnet_id      = azurerm_subnet.eastus.id
+}
+
+resource "azurerm_user_assigned_identity" "minimal-azure-example-com" {
+  location            = "eastus"
+  name                = "minimal-azure-example-com"
+  resource_group_name = azurerm_resource_group.minimal-azure-example-com.name
+  tags = {
+    "KubernetesCluster" = "minimal-azure.example.com"
+  }
 }
 
 resource "azurerm_virtual_network" "minimal-azure-example-com" {

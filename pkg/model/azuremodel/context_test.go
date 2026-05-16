@@ -18,12 +18,13 @@ package azuremodel
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func TestCloudTagsForInstanceGroup(t *testing.T) {
+func TestCloudTagsForInstanceGroupResource(t *testing.T) {
 	c := newTestAzureModelContext()
 	c.Cluster.Spec.CloudLabels = map[string]string{
 		"cluster_label_key": "cluster_label_value",
@@ -41,7 +42,7 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 		"taint_key=taint_value",
 	}
 
-	actual := c.CloudTagsForInstanceGroup(c.InstanceGroups[0])
+	actual := c.CloudTagsForInstanceGroupResource(c.InstanceGroups[0])
 	expected := map[string]*string{
 		"cluster_label_key":                            fi.PtrTo("cluster_label_value"),
 		"ig_label_key":                                 fi.PtrTo("ig_label_value"),
@@ -50,9 +51,57 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 		"k8s.io_cluster_node-template_taint_taint_key": fi.PtrTo("taint_value"),
 		"k8s.io_role_node":                             fi.PtrTo("1"),
 		"kops.k8s.io_instancegroup":                    fi.PtrTo("nodes"),
+		"KubernetesCluster":                            fi.PtrTo("testcluster.test.com"),
 	}
 
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("expected tags %+v, but got %+v", expected, actual)
 	}
+}
+
+func TestCloudTagsForClusterResource(t *testing.T) {
+	c := newTestAzureModelContext()
+	c.Cluster.ObjectMeta.Name = "my.k8s"
+	c.Cluster.Spec.CloudLabels = map[string]string{
+		"cluster_label_key": "cluster_label_value",
+		"node_label/key":    "node_label_value",
+	}
+
+	actual := c.CloudTagsForClusterResource()
+	expected := map[string]*string{
+		"cluster_label_key": fi.PtrTo("cluster_label_value"),
+		"node_label_key":    fi.PtrTo("node_label_value"),
+		"KubernetesCluster": fi.PtrTo("my.k8s"),
+	}
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("expected tags %+v, but got %+v", expected, actual)
+	}
+}
+
+func TestSanitizeUserAssignedManagedIdentityName(t *testing.T) {
+	t.Run("preserves valid names", func(t *testing.T) {
+		const name = "nodepool-1"
+		if got := sanitizeUserAssignedManagedIdentityName(name); got != name {
+			t.Fatalf("expected %q, but got %q", name, got)
+		}
+	})
+
+	t.Run("replaces invalid characters", func(t *testing.T) {
+		got := sanitizeUserAssignedManagedIdentityName("my.cluster.example.com")
+		if strings.Contains(got, ".") {
+			t.Fatalf("expected dots to be replaced, got %q", got)
+		}
+		if got != "my-cluster-example-com" {
+			t.Fatalf("expected %q, but got %q", "my-cluster-example-com", got)
+		}
+	})
+
+	t.Run("truncates long names", func(t *testing.T) {
+		name := strings.Repeat("a", maxUserAssignedManagedIdentityNameLength+1)
+		got := sanitizeUserAssignedManagedIdentityName(name)
+		if len(got) > maxUserAssignedManagedIdentityNameLength {
+			t.Fatalf("expected name length <= %d, got %d (%q)", maxUserAssignedManagedIdentityNameLength, len(got), got)
+		}
+	})
 }

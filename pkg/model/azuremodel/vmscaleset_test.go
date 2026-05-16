@@ -79,6 +79,16 @@ func TestVMScaleSetModelBuilder_Build(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error %s", err)
 	}
+	expectedName := b.NameForUserAssignedManagedIdentityControlPlane()
+	for _, taskKey := range []string{
+		"ManagedIdentity/" + expectedName,
+		"RoleAssignment/owner-" + expectedName,
+		"RoleAssignment/blob-" + expectedName,
+	} {
+		if _, ok := c.Tasks[taskKey]; !ok {
+			t.Fatalf("expected task %q", taskKey)
+		}
+	}
 }
 
 func TestGetCapacity(t *testing.T) {

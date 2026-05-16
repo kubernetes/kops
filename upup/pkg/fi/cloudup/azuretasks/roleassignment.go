@@ -20,15 +20,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
-	"strings"
 
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
-	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
 	"github.com/google/uuid"
 )
 
@@ -43,10 +41,10 @@ type RoleAssignment struct {
 	Name      *string
 	Lifecycle fi.Lifecycle
 
-	Scope      *string
-	VMScaleSet *VMScaleSet
-	ID         *string
-	RoleDefID  *string
+	Scope           *string
+	ManagedIdentity *ManagedIdentity
+	ID              *string
+	RoleDefID       *string
 }
 
 var (
@@ -55,17 +53,17 @@ var (
 	// RoleAssignment does not implement CloudupTaskNormalize because Azure role assignments do not support tags.
 )
 
-// CompareWithID returns the Name of the VM Scale Set.
+// CompareWithID returns the Name of the RoleAssignment.
 func (r *RoleAssignment) CompareWithID() *string {
 	return r.Name
 }
 
 // Find discovers the RoleAssignment in the cloud provider.
 func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
-	if r.VMScaleSet.PrincipalID == nil {
-		// PrincipalID of the VM Scale Set hasn't yet been
+	if r.ManagedIdentity.PrincipalID == nil {
+		// PrincipalID of the Managed Identity hasn't yet been
 		// populated. No corresponding Role Assignment
-		// shouldn't exist in Cloud.
+		// should exist in Cloud.
 		return nil, nil
 	}
 
@@ -75,18 +73,18 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		return nil, err
 	}
 
-	principalID := *r.VMScaleSet.PrincipalID
+	principalID := *r.ManagedIdentity.PrincipalID
 	var found *authz.RoleAssignment
 	for i := range rs {
 		ra := rs[i]
-		if ra.Properties == nil {
+		if ra.Properties == nil || ra.Properties.RoleDefinitionID == nil || ra.Properties.PrincipalID == nil {
 			continue
 		}
-		// Use a name constructed by VMSS and Role definition ID to find a Role Assignment. We cannot use ra.Name
-		// as it is set to a randomly generated GUID.
-		l := strings.Split(*ra.Properties.RoleDefinitionID, "/")
-		roleDefID := l[len(l)-1]
-		if *ra.Properties.PrincipalID == principalID && roleDefID == *r.RoleDefID {
+		parsed, err := arm.ParseResourceID(*ra.Properties.RoleDefinitionID)
+		if err != nil {
+			continue
+		}
+		if *ra.Properties.PrincipalID == principalID && parsed.Name == *r.RoleDefID {
 			found = ra
 			break
 		}
@@ -95,35 +93,16 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		return nil, nil
 	}
 
-	// Query VM Scale Sets and find one that has matching Principal ID.
-	vs, err := cloud.VMScaleSet().List(context.TODO(), *r.VMScaleSet.ResourceGroup.Name)
-	if err != nil {
-		return nil, err
-	}
-	var foundVMSS *compute.VirtualMachineScaleSet
-	for _, v := range vs {
-		if v.Identity == nil {
-			continue
-		}
-		if *v.Identity.PrincipalID == principalID {
-			foundVMSS = v
-			break
-		}
-	}
-	if foundVMSS == nil {
-		return nil, fmt.Errorf("corresponding VM Scale Set not found for Role Assignment: %s", *found.ID)
-	}
-
 	r.ID = found.ID
 	return &RoleAssignment{
 		Name:      r.Name,
 		Lifecycle: r.Lifecycle,
 		Scope:     found.Properties.Scope,
-		VMScaleSet: &VMScaleSet{
-			Name: foundVMSS.Name,
+		ManagedIdentity: &ManagedIdentity{
+			Name: r.ManagedIdentity.Name,
 		},
 		ID:        found.ID,
-		RoleDefID: to.Ptr(filepath.Base(*found.Properties.RoleDefinitionID)),
+		RoleDefID: r.RoleDefID,
 	}, nil
 }
 
@@ -169,7 +148,10 @@ func createNewRoleAssignment(t *azure.AzureAPITarget, e *RoleAssignment) error {
 	roleAssignment := authz.RoleAssignmentCreateParameters{
 		Properties: &authz.RoleAssignmentProperties{
 			RoleDefinitionID: to.Ptr(roleDefID),
-			PrincipalID:      e.VMScaleSet.PrincipalID,
+			PrincipalID:      e.ManagedIdentity.PrincipalID,
+			// PrincipalType must be set to avoid PrincipalNotFound errors caused by
+			// Entra ID replication delay after managed identity creation.
+			PrincipalType: to.Ptr(authz.PrincipalTypeServicePrincipal),
 		},
 	}
 	ra, err := t.Cloud.RoleAssignment().Create(context.TODO(), scope, roleAssignmentName, roleAssignment)
