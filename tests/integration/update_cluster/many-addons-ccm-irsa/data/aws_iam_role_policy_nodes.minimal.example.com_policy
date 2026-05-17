@@ -18,7 +18,6 @@
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ec2:DescribeNetworkInterfaces",
-        "ec2:DescribeRegions",
         "ec2:DescribeSubnets",
         "ec2:DescribeTags",
         "ec2:DetachNetworkInterface",

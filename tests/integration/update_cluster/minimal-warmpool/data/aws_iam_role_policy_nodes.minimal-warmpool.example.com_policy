@@ -3,9 +3,7 @@
     {
       "Action": [
         "autoscaling:DescribeLifecycleHooks",
-        "ec2:DescribeInstanceTypes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions"
+        "ec2:DescribeInstanceTypes"
       ],
       "Effect": "Allow",
       "Resource": "*"

@@ -22,8 +22,6 @@
     {
       "Action": [
         "ec2:DescribeInstanceTypes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions",
         "kms:CreateGrant",
         "kms:Decrypt",
         "kms:DescribeKey",
