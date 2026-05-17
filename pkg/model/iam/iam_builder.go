@@ -468,6 +468,9 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
 	if !model.UseKopsControllerForNodeConfig(b.Cluster) {
+		// Legacy-gossip workers that bootstrap without kops-controller run protokube.
+		addProtokubePermissions(p)
+
 		if err := b.AddS3Permissions(p); err != nil {
 			return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 		}
@@ -825,8 +828,6 @@ func addKindnetSrcDstCheckPermissions(p *Policy) {
 func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) {
 	addASLifecyclePolicies(p, enableHookSupport)
 	p.unconditionalAction.Insert(
-		"ec2:DescribeRegions",
-		"ec2:DescribeInstances", // aws.go
 		"ec2:DescribeInstanceTypes",
 	)
 
@@ -837,6 +838,13 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 	}
 }
 
+// addProtokubePermissions adds the permission protokube uses to discover gossip seeds.
+func addProtokubePermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:DescribeInstances",
+	)
+}
+
 func addKopsControllerIPAMPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:DescribeNetworkInterfaces",
@@ -845,7 +853,9 @@ func addKopsControllerIPAMPermissions(p *Policy) {
 
 func addEtcdManagerPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
-		"ec2:DescribeVolumes", // aws.go
+		"ec2:DescribeInstances",
+		"ec2:DescribeRegions",
+		"ec2:DescribeVolumes",
 	)
 
 	p.Statement = append(p.Statement,
