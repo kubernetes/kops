@@ -178,7 +178,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 	}
 	sv, err := semver.ParseTolerant(containerdVersion)
 	if err != nil {
-		return fmt.Errorf("error parsing container runtime version %q: %v", containerdVersion, err)
+		return fmt.Errorf("error parsing container runtime version %q: %w", containerdVersion, err)
 	}
 	c.AddTask(b.buildSystemdService(sv))
 
@@ -526,6 +526,7 @@ func useContainerdConfigV3(version string) (bool, error) {
 func (b *ContainerdBuilder) buildContainerdConfigV2() (string, error) {
 	containerd := b.NodeupConfig.ContainerdConfig
 
+	// toml.Load("") never fails for empty input; we use it to obtain an empty tree.
 	config, _ := toml.Load("")
 	config.SetPath([]string{"version"}, int64(2))
 
@@ -576,6 +577,7 @@ func (b *ContainerdBuilder) buildContainerdConfigV2() (string, error) {
 func (b *ContainerdBuilder) buildContainerdConfigV3() (string, error) {
 	containerd := b.NodeupConfig.ContainerdConfig
 
+	// toml.Load("") never fails for empty input; we use it to obtain an empty tree.
 	config, _ := toml.Load("")
 	config.SetPath([]string{"version"}, int64(3))
 
@@ -721,8 +723,15 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 			fmt.Fprintf(&buf, "[host.%q]\n", endpoint)
 			buf.WriteString("  capabilities = [\"pull\", \"resolve\"]\n\n")
 		}
+		// containerd uses the special "_default" directory as the catch-all namespace.
+		// Translate the kops convention of "*" so users don't end up with a literal
+		// /etc/containerd/certs.d/* directory that containerd would not interpret as a fallback.
+		dir := name
+		if dir == "*" {
+			dir = "_default"
+		}
 		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join(containerdRegistryDirPath, name, "hosts.toml"),
+			Path:     filepath.Join(containerdRegistryDirPath, dir, "hosts.toml"),
 			Contents: fi.NewStringResource(buf.String()),
 			Type:     nodetasks.FileType_File,
 		})

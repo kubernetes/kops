@@ -18,6 +18,8 @@ spec:
       plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_intstr: "1"
       plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_str: test
     registryMirrors:
+      "*":
+        - https://fallback.example.com
       docker.io:
         - https://registry-1.docker.io
       registry.k8s.io:

@@ -1,4 +1,11 @@
 contents: |+
+  [host."https://fallback.example.com"]
+    capabilities = ["pull", "resolve"]
+
+path: /etc/containerd/certs.d/_default/hosts.toml
+type: file
+---
+contents: |+
   [host."https://registry-1.docker.io"]
     capabilities = ["pull", "resolve"]
 
