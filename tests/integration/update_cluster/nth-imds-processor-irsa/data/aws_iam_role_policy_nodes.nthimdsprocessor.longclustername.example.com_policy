@@ -1,11 +1,7 @@
 {
   "Statement": [
     {
-      "Action": [
-        "ec2:DescribeInstanceTypes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions"
-      ],
+      "Action": "ec2:DescribeInstanceTypes",
       "Effect": "Allow",
       "Resource": "*"
     }

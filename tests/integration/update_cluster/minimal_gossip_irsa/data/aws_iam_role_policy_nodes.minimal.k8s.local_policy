@@ -25,8 +25,7 @@
     {
       "Action": [
         "ec2:DescribeInstanceTypes",
-        "ec2:DescribeInstances",
-        "ec2:DescribeRegions"
+        "ec2:DescribeInstances"
       ],
       "Effect": "Allow",
       "Resource": "*"
