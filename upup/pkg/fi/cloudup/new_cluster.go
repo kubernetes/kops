@@ -513,7 +513,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 			}
 		}
+		g.Spec.Image = "309956199498/RHEL-10.1.0_HVM-20260331-arm64-0-Hourly2-GP3"
 
+		if cluster.GetCloudProvider() == api.CloudProviderAWS {
+			g.Spec.MachineType = "m6g.large"
+		}
 		// TODO: Clean up
 		if g.IsControlPlane() {
 			if g.Spec.MachineType == "" {

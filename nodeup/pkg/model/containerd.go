@@ -386,7 +386,24 @@ func (b *ContainerdBuilder) buildIPMasqueradeRules(c *fi.NodeupModelBuilderConte
 	// On GCE custom routes are at the network level, on AWS they are at the route-table / subnet level.
 	// We cannot generally assume that because something is in the private network space, that it can reach us.
 	// If we adopt "native" pod IPs (GCP ip-alias, AWS VPC CNI, etc) we can likely move to rules closer to the upstream ones.
-	script := `#!/bin/bash
+
+	var script string
+	var serviceName string
+	if b.Distribution.ForceNftables() {
+		// On distributions where iptables is not functional (e.g. RHEL 10+, Rocky 10+),
+		// use native nftables rules for pod masquerading.
+		script = `#!/bin/bash
+# Built by kOps - do not edit
+
+nft add table ip kops-cni-nat
+nft add chain ip kops-cni-nat postrouting '{ type nat hook postrouting priority srcnat; policy accept; }'
+nft add rule ip kops-cni-nat postrouting ip daddr {{.NonMasqueradeCIDR}} counter return comment \"ip-masq: pod cidr is not subject to MASQUERADE\"
+nft add rule ip kops-cni-nat postrouting fib daddr type local counter return comment \"ip-masq: local traffic is not subject to MASQUERADE\"
+nft add rule ip kops-cni-nat postrouting counter masquerade random comment \"ip-masq: outbound traffic is subject to MASQUERADE\"
+`
+		serviceName = "cni-nftables-setup"
+	} else {
+		script = `#!/bin/bash
 # Built by kOps - do not edit
 
 iptables -w -t nat -N IP-MASQ
@@ -394,30 +411,32 @@ iptables -w -t nat -A POSTROUTING -m comment --comment "ip-masq: ensure nat POST
 iptables -w -t nat -A IP-MASQ -d {{.NonMasqueradeCIDR}} -m comment --comment "ip-masq: pod cidr is not subject to MASQUERADE" -j RETURN
 iptables -w -t nat -A IP-MASQ -m comment --comment "ip-masq: outbound traffic is subject to MASQUERADE (must be last in chain)" -j MASQUERADE
 `
+		serviceName = "cni-iptables-setup"
+	}
 
 	script = strings.ReplaceAll(script, "{{.NonMasqueradeCIDR}}", b.NodeupConfig.Networking.NonMasqueradeCIDR)
 
 	c.AddTask(&nodetasks.File{
-		Path:     "/opt/kops/bin/cni-iptables-setup",
+		Path:     "/opt/kops/bin/" + serviceName,
 		Contents: fi.NewStringResource(script),
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0755"),
 	})
 
 	manifest := &systemd.Manifest{}
-	manifest.Set("Unit", "Description", "Configure iptables for kubernetes CNI")
+	manifest.Set("Unit", "Description", "Configure masquerade rules for kubernetes CNI")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 	manifest.Set("Unit", "Before", "network.target")
 	manifest.Set("Service", "Type", "oneshot")
 	manifest.Set("Service", "RemainAfterExit", "yes")
-	manifest.Set("Service", "ExecStart", "/opt/kops/bin/cni-iptables-setup")
+	manifest.Set("Service", "ExecStart", "/opt/kops/bin/"+serviceName)
 	manifest.Set("Install", "WantedBy", "basic.target")
 
 	manifestString := manifest.Render()
-	klog.V(8).Infof("Built service manifest %q\n%s", "cni-iptables-setup", manifestString)
+	klog.V(8).Infof("Built service manifest %q\n%s", serviceName, manifestString)
 
 	service := &nodetasks.Service{
-		Name:       "cni-iptables-setup.service",
+		Name:       serviceName + ".service",
 		Definition: s(manifestString),
 	}
 	service.InitDefaults()
