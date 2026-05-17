@@ -1,9 +1,7 @@
-contents: |2
+contents: |+
+  [host."https://registry-1.docker.io"]
+    capabilities = ["pull", "resolve"]
 
-  [host]
-
-    [host."https://registry-1.docker.io"]
-      capabilities = ["pull", "resolve"]
 path: /etc/containerd/certs.d/docker.io/hosts.toml
 type: file
 ---

@@ -1,21 +1,17 @@
-contents: |2
+contents: |+
+  [host."https://registry-1.docker.io"]
+    capabilities = ["pull", "resolve"]
 
-  [host]
-
-    [host."https://registry-1.docker.io"]
-      capabilities = ["pull", "resolve"]
 path: /etc/containerd/certs.d/docker.io/hosts.toml
 type: file
 ---
-contents: |2
+contents: |+
+  [host."https://mirror.example.com"]
+    capabilities = ["pull", "resolve"]
 
-  [host]
+  [host."https://backup.example.com"]
+    capabilities = ["pull", "resolve"]
 
-    [host."https://backup.example.com"]
-      capabilities = ["pull", "resolve"]
-
-    [host."https://mirror.example.com"]
-      capabilities = ["pull", "resolve"]
 path: /etc/containerd/certs.d/registry.k8s.io/hosts.toml
 type: file
 ---

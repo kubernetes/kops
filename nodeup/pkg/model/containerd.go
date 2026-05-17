@@ -694,8 +694,15 @@ func appendNvidiaGPURuntimeConfig(config *toml.Tree, runtimesPath []string) erro
 // emit-files-iff-mirrors-non-empty condition here must stay in sync with the registry.config_path
 // emission in buildContainerdConfigV2/V3.
 // containerd watches this directory at runtime, so no daemon reload is needed when a hosts.toml changes.
+// containerd uses host declaration order as mirror priority, so endpoints are emitted in the order
+// the user provided them rather than sorted (go-toml's Tree.String alphabetizes subtables).
 // Format reference: https://github.com/containerd/containerd/blob/main/docs/hosts.md
 func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) error {
+	// ConfigOverride is a complete bypass of the generated containerd config; honour
+	// that contract by also skipping the registry hosts.toml files it would reference.
+	if b.NodeupConfig.ContainerdConfig.ConfigOverride != nil {
+		return nil
+	}
 	mirrors := b.NodeupConfig.ContainerdConfig.RegistryMirrors
 	if len(mirrors) == 0 {
 		return nil
@@ -709,16 +716,14 @@ func (b *ContainerdBuilder) buildRegistryHosts(c *fi.NodeupModelBuilderContext) 
 	sort.Strings(names)
 
 	for _, name := range names {
-		tree, err := toml.Load("")
-		if err != nil {
-			return fmt.Errorf("initializing hosts.toml for registry %q: %w", name, err)
-		}
+		var buf strings.Builder
 		for _, endpoint := range mirrors[name] {
-			tree.SetPath([]string{"host", endpoint, "capabilities"}, []string{"pull", "resolve"})
+			fmt.Fprintf(&buf, "[host.%q]\n", endpoint)
+			buf.WriteString("  capabilities = [\"pull\", \"resolve\"]\n\n")
 		}
 		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(containerdRegistryDirPath, name, "hosts.toml"),
-			Contents: fi.NewStringResource(tree.String()),
+			Contents: fi.NewStringResource(buf.String()),
 			Type:     nodetasks.FileType_File,
 		})
 	}
