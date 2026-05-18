@@ -10,21 +10,16 @@ spec:
   configBase: memfs://clusters.example.com/minimal.example.com
   containerRuntime: containerd
   containerd:
-    version: 1.4.4
+    version: 2.1.6
+    sandboxImage: registry.k8s.io/pause:3.10.1
+    selinuxEnabled: true
+    nri:
+      enabled: true
     configAdditions:
-      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_bool_false: "false"
-      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_bool_true: "true"
-      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_int: 1
-      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_intstr: "1"
-      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.test_str: test
+      plugins."io.containerd.cri.v1.runtime".containerd.runtimes.test-handler.test_str: test
     registryMirrors:
-      "*":
-        - https://fallback.example.com
       docker.io:
         - https://registry-1.docker.io
-      registry.k8s.io:
-        - https://mirror.example.com
-        - https://backup.example.com
   etcdClusters:
     - etcdMembers:
         - instanceGroup: master-us-test-1a
@@ -36,7 +31,7 @@ spec:
       name: events
   iam:
     legacy: false
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.32.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:

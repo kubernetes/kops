@@ -180,7 +180,16 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		"--kubernetes-version", d.KubernetesVersion,
 		"--ssh-public-key", d.SSHPublicKeyPath,
 		"--set", "cluster.spec.nodePortAccess=0.0.0.0/0",
+		// Register a test-handler runtime under both containerd config schemas so that
+		// RuntimeClass e2e tests work across the matrix: kops < 1.36 (always emits v2)
+		// and kops 1.36+ with k8s < 1.32 (emits v2) need the v2 path; kops 1.36+ with
+		// k8s >= 1.32 (emits v3) needs the v3 path. containerd reads only the plugin
+		// namespace matching its config version, so the other entry is inert.
+		// TODO(rifelpet): drop the v2 path once kops < 1.36 and k8s < 1.32 are no longer tested.
+		// containerd config schema v2 (containerd < 2.0):
 		"--set", `spec.containerd.configAdditions=plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`,
+		// containerd config schema v3 (containerd >= 2.0):
+		"--set", `spec.containerd.configAdditions=plugins."io.containerd.cri.v1.runtime".containerd.runtimes.test-handler.runtime_type=io.containerd.runc.v2`,
 	}
 
 	if d.discoveryStore() != "" {

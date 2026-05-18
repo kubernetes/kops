@@ -26,6 +26,9 @@ type ContainerdConfig struct {
 	// Address of containerd's GRPC server (default "/run/containerd/containerd.sock").
 	Address *string `json:"address,omitempty" flag:"address"`
 	// ConfigAdditions adds additional config entries to the generated config file.
+	// Paths are written to the config as-is, so they must match the schema version of the
+	// configured containerd: v2 paths (e.g. plugins."io.containerd.grpc.v1.cri".*) for
+	// containerd < 2.0, v3 paths (e.g. plugins."io.containerd.cri.v1.runtime".*) for >= 2.0.
 	ConfigAdditions map[string]intstr.IntOrString `json:"configAdditions,omitempty"`
 	// ConfigOverride is the complete containerd config file provided by the user.
 	ConfigOverride *string `json:"configOverride,omitempty"`
