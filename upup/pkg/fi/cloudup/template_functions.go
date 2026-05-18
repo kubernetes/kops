@@ -66,6 +66,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/util/pkg/env"
@@ -191,6 +192,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 			return cluster.Spec.Networking.NetworkID
 		}
 		return cluster.Name
+	}
+
+	dest["LINODE_TOKEN"] = func() string {
+		return os.Getenv("LINODE_TOKEN")
+	}
+	dest["LINODE_REGION"] = func() string {
+		return tf.cloud.Region()
 	}
 
 	dest["OPENSTACK_CONF"] = func() string {
@@ -668,6 +676,8 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 			argv = append(argv, "--dns=openstack-designate")
 		case kops.CloudProviderScaleway:
 			argv = append(argv, "--dns=scaleway")
+		case kops.CloudProviderLinode:
+			argv = append(argv, "--dns=linode")
 
 		default:
 			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.GetCloudProvider())
@@ -807,6 +817,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 			config.Server.Provider.Azure = &azure.AzureVerifierOptions{
 				ClusterName: tf.ClusterName(),
 			}
+
+		case kops.CloudProviderLinode:
+			config.Server.Provider.Linode = &linode.LinodeVerifierOptions{}
 
 		case kops.CloudProviderMetal:
 			// Use crypto public/private keys for Metal

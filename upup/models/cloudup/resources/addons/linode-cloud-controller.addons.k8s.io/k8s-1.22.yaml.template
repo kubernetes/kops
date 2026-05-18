@@ -1,0 +1,181 @@
+# Linode Cloud Controller Manager Addon
+# Based on https://github.com/linode/linode-cloud-controller-manager/tree/main/deploy/chart
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: linode
+  namespace: kube-system
+type: Opaque
+stringData:
+  apiToken: "{{ LINODE_TOKEN }}"
+  region: "{{ LINODE_REGION }}"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: linode-cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:linode-cloud-controller-manager
+rules:
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "watch", "list", "update", "create"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "update", "create"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "watch", "list", "update", "delete", "patch"]
+- apiGroups: [""]
+  resources: ["nodes/status"]
+  verbs: ["get", "watch", "list", "update", "delete", "patch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "watch", "list", "update", "create", "patch"]
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get", "watch", "list", "update"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["create", "get"]
+- apiGroups: [""]
+  resources: ["serviceaccounts/token"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["services/status"]
+  verbs: ["get", "watch", "list", "update", "patch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:linode-cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:linode-cloud-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: linode-cloud-controller-manager
+  namespace: kube-system
+- kind: ServiceAccount
+  name: linode-shared-informers
+  namespace: kube-system
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:linode-shared-informers
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:linode-cloud-controller-manager
+subjects:
+- kind: ServiceAccount
+  name: linode-shared-informers
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: linode-cloud-controller-manager
+  labels:
+    app: linode-cloud-controller-manager
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: linode-cloud-controller-manager
+  template:
+    metadata:
+      labels:
+        app: linode-cloud-controller-manager
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+              - matchExpressions:
+                - key: node-role.kubernetes.io/master
+                  operator: Exists
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: linode-cloud-controller-manager
+      dnsPolicy: Default
+      hostNetwork: true
+      priorityClassName: system-cluster-critical
+      tolerations:
+        # Allow CCM to run on control plane nodes
+        - key: "node-role.kubernetes.io/control-plane"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          effect: "NoSchedule"
+        # CCM is a critical addon
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+        # Allow CCM to schedule on nodes with uninitialized taint (it removes this taint)
+        - key: "node.cloudprovider.kubernetes.io/uninitialized"
+          value: "true"
+          effect: "NoSchedule"
+        # Allow scheduling on not-ready/unreachable nodes
+        - key: "node.kubernetes.io/not-ready"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "node.kubernetes.io/unreachable"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: linode-cloud-controller-manager
+          image: '{{ .ExternalCloudControllerManager.Image }}'
+          imagePullPolicy: IfNotPresent
+          args:
+            - --leader-elect-resource-lock=leases
+            {{- range $arg := CloudControllerConfigArgv }}
+            - "{{ $arg }}"
+            {{- end }}
+          env:
+            - name: LINODE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: linode
+                  key: apiToken
+            - name: LINODE_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: linode
+                  key: region
+          volumeMounts:
+            - mountPath: /etc/kubernetes
+              name: k8s
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          ports:
+            - name: metrics
+              containerPort: 10253
+      volumes:
+        - name: k8s
+          hostPath:
+            path: /etc/kubernetes

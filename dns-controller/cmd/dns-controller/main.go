@@ -37,6 +37,7 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/do"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/linode"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/scaleway"
 	"k8s.io/kops/pkg/wellknownports"

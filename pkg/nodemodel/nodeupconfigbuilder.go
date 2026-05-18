@@ -340,6 +340,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
+	case kops.CloudProviderLinode:
+		// Linode (Akamai) may expose API through a public load-balancer endpoint; use any discovered API IPs.
+		controlPlaneIPs = append(controlPlaneIPs, wellKnownAddresses[wellknownservices.KubeAPIServer]...)
+
 	case kops.CloudProviderGCE:
 		// Use the IP address of the internal load balancer (forwarding-rule)
 		// Note that on GCE subnets have IP ranges, networks do not
@@ -373,7 +377,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		bootConfig.APIServerIPs = controlPlaneIPs
 	} else {
 		switch cluster.GetCloudProvider() {
-		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO, kops.CloudProviderMetal:
+		case kops.CloudProviderHetzner, kops.CloudProviderScaleway, kops.CloudProviderDO, kops.CloudProviderMetal, kops.CloudProviderLinode:
 			bootConfig.APIServerIPs = controlPlaneIPs
 		}
 	}
