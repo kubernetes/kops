@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/kops/util/pkg/vfs"
@@ -36,6 +37,7 @@ type ChannelsFactory struct {
 	vfsContext       *vfs.VFSContext
 	restMapper       *restmapper.DeferredDiscoveryRESTMapper
 	dynamicClient    dynamic.Interface
+	kubernetesClient kubernetes.Interface
 }
 
 func NewChannelsFactory() *ChannelsFactory {
@@ -106,6 +108,25 @@ func (f *ChannelsFactory) DynamicClient() (dynamic.Interface, error) {
 		f.dynamicClient = dynamicClient
 	}
 	return f.dynamicClient, nil
+}
+
+func (f *ChannelsFactory) KubernetesClient() (kubernetes.Interface, error) {
+	if f.kubernetesClient == nil {
+		restConfig, err := f.RESTConfig()
+		if err != nil {
+			return nil, err
+		}
+		httpClient, err := f.HTTPClient()
+		if err != nil {
+			return nil, err
+		}
+		kubernetesClient, err := kubernetes.NewForConfigAndClient(restConfig, httpClient)
+		if err != nil {
+			return nil, err
+		}
+		f.kubernetesClient = kubernetesClient
+	}
+	return f.kubernetesClient, nil
 }
 
 func (f *ChannelsFactory) VFSContext() *vfs.VFSContext {

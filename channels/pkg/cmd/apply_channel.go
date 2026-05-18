@@ -60,7 +60,7 @@ func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 				defer cancel()
 				return runApplyChannelLoop(ctx, out, &options, args)
 			}
-			return runApplyChannelIteration(context.TODO(), NewChannelsFactory(), out, &options, args)
+			return runApplyChannelIteration(context.TODO(), f, out, &options, args)
 		},
 	}
 
@@ -77,7 +77,7 @@ func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 func runApplyChannelIteration(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
 	var merr error
 	if options.NodeName != "" {
-		labelerClient, err := buildKubernetesClient(f)
+		labelerClient, err := f.KubernetesClient()
 		if err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("building kubernetes client for node labeler: %w", err))
 		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, labelerClient, options.NodeName); err != nil {
@@ -90,34 +90,31 @@ func runApplyChannelIteration(ctx context.Context, f *ChannelsFactory, out io.Wr
 	return merr
 }
 
-// runApplyChannelLoop runs iterations on a fixed interval until ctx is cancelled.
-// A fresh ChannelsFactory per iteration drops cached REST configs, HTTP clients,
-// and the discovery cache — picks up cert rotation and CRD additions without restart.
+// runApplyChannelLoop reconciles repeatedly until ctx is cancelled. A fresh
+// ChannelsFactory per iteration drops cached REST configs and the discovery
+// cache, picking up cert rotation and new CRDs without a restart.
 func runApplyChannelLoop(ctx context.Context, out io.Writer, options *ApplyChannelOptions, args []string) error {
-	ticker := time.NewTicker(options.Interval)
-	defer ticker.Stop()
+	// Retry quickly until the first success: the apiserver is usually
+	// unreachable while the control plane is still coming up.
+	const startupRetryInterval = 5 * time.Second
+
+	settled := false
 	for {
+		interval := options.Interval
 		if err := runApplyChannelIteration(ctx, NewChannelsFactory(), out, options, args); err != nil {
-			klog.Warningf("error in apply iteration (will retry in %s): %v", options.Interval, err)
+			if !settled {
+				interval = min(startupRetryInterval, options.Interval)
+			}
+			klog.Warningf("error in apply iteration (will retry in %s): %v", interval, err)
+		} else {
+			settled = true
 		}
 		select {
 		case <-ctx.Done():
 			return nil
-		case <-ticker.C:
+		case <-time.After(interval):
 		}
 	}
-}
-
-func buildKubernetesClient(f *ChannelsFactory) (kubernetes.Interface, error) {
-	restConfig, err := f.RESTConfig()
-	if err != nil {
-		return nil, err
-	}
-	httpClient, err := f.HTTPClient()
-	if err != nil {
-		return nil, err
-	}
-	return kubernetes.NewForConfigAndClient(restConfig, httpClient)
 }
 
 func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, options *ApplyChannelOptions, args []string) error {
@@ -130,7 +127,7 @@ func RunApplyChannel(ctx context.Context, f *ChannelsFactory, out io.Writer, opt
 		return err
 	}
 
-	k8sClient, err := kubernetes.NewForConfigAndClient(restConfig, httpClient)
+	k8sClient, err := f.KubernetesClient()
 	if err != nil {
 		return fmt.Errorf("building kube client: %w", err)
 	}
