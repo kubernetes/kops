@@ -13,6 +13,7 @@ Assets:
   - d6dcab36d1b6af1b72c7f0662e5fcf446a291271ba6006532b95c4144e19d428@https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.arm64
 CAs: {}
 ClusterName: privatecilium.example.com
+DefaultMachineType: t2.medium
 Hooks:
 - null
 - null

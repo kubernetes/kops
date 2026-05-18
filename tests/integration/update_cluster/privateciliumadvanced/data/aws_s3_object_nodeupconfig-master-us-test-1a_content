@@ -311,6 +311,7 @@ ControlPlaneConfig:
       leaderElect: true
     logLevel: 2
 DNSZone: Z1AFAKE1ZON3YO
+DefaultMachineType: m3.medium
 EtcdClusterNames:
 - main
 - events
