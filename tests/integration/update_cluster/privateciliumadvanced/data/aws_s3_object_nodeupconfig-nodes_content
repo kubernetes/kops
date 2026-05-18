@@ -36,6 +36,7 @@ CAs:
     MQNfAQ==
     -----END CERTIFICATE-----
 ClusterName: privateciliumadvanced.example.com
+DefaultMachineType: t2.medium
 Hooks:
 - null
 - null
