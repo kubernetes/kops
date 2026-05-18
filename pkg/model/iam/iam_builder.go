@@ -50,9 +50,11 @@ const PolicyDefaultVersion = "2012-10-17"
 // Policy Struct is a collection of fields that form a valid AWS policy document
 type Policy struct {
 	clusterName               string
+	region                    string
 	unconditionalAction       sets.Set[string]
 	clusterTaggedAction       sets.Set[string]
 	clusterTaggedCreateAction sets.Set[string]
+	kmsDataPlaneAction        sets.Set[string]
 	Statement                 []*Statement
 	partition                 string
 	Version                   string
@@ -108,6 +110,19 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 
 // AsJSON converts the policy document to JSON format (parsable by AWS)
 func (p *Policy) AsJSON() (string, error) {
+	if len(p.kmsDataPlaneAction) > 0 {
+		services := kmsViaServices(p.partition, p.region)
+		p.Statement = append(p.Statement, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorset.Of(sets.List(p.kmsDataPlaneAction)...),
+			Resource: stringorset.String("*"),
+			Condition: Condition{
+				"StringLike": map[string][]string{
+					"kms:ViaService": services,
+				},
+			},
+		})
+	}
 	if len(p.unconditionalAction) > 0 {
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
@@ -334,13 +349,15 @@ func (b *PolicyBuilder) BuildAWSPolicy() (*Policy, error) {
 	return p, nil
 }
 
-func NewPolicy(clusterName, partition string) *Policy {
+func NewPolicy(clusterName, partition, region string) *Policy {
 	p := &Policy{
 		Version:                   PolicyDefaultVersion,
 		clusterName:               clusterName,
+		region:                    region,
 		unconditionalAction:       sets.New[string](),
 		clusterTaggedAction:       sets.New[string](),
 		clusterTaggedCreateAction: sets.New[string](),
+		kmsDataPlaneAction:        sets.New[string](),
 		partition:                 partition,
 	}
 	return p
@@ -348,7 +365,7 @@ func NewPolicy(clusterName, partition string) *Policy {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetName(), b.Partition)
+	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
 
 	b.addNodeupPermissions(p, r.warmPool)
 
@@ -356,7 +373,10 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	addKMSIAMPolicies(p)
+	// The API server role may host a kms-plugin sidecar wired to the instance role
+	// when EncryptionConfig is enabled; bypass kms:ViaService so that direct KMS
+	// calls from kube-apiserver are not denied.
+	addKMSIAMPolicies(p, fi.ValueOf(b.Cluster.Spec.EncryptionConfig))
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -389,7 +409,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	clusterName := b.Cluster.GetName()
 
-	p := NewPolicy(clusterName, b.Partition)
+	p := NewPolicy(clusterName, b.Partition, b.Region)
 
 	addEtcdManagerPermissions(p)
 	b.addNodeupPermissions(p, false)
@@ -402,7 +422,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	addKMSIAMPolicies(p)
+	// The combined master role hosts kube-apiserver, so a user-supplied kms-plugin
+	// for EncryptionConfig will call KMS directly from this role. Bypass ViaService
+	// in that case.
+	addKMSIAMPolicies(p, fi.ValueOf(b.Cluster.Spec.EncryptionConfig))
 
 	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountExternalPermissions.
 	AddDNSControllerPermissions(b, p)
@@ -463,7 +486,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a Kubernetes node.
 func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetName(), b.Partition)
+	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
 
 	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
 
@@ -505,7 +528,7 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a bastion host.
 func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetName(), b.Partition)
+	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
 
 	// Bastion hosts currently don't require any specific permissions.
 	// A trivial permission is granted, because empty policies are not allowed.
@@ -1084,7 +1107,8 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
 func AddAWSEBSCSIDriverPermissions(b *PolicyBuilder, p *Policy, appendSnapshotPermissions bool) {
-	addKMSIAMPolicies(p)
+	// EBS CSI's data-plane KMS calls flow through EC2, so kms:ViaService applies.
+	addKMSIAMPolicies(p, false)
 
 	if appendSnapshotPermissions {
 		addSnapshotPermissions(b, p)
@@ -1197,16 +1221,76 @@ func AddKubeRouterPermissions(b *PolicyBuilder, p *Policy) {
 	)
 }
 
-func addKMSIAMPolicies(p *Policy) {
-	// TODO could use "kms:ViaService" Condition Key here?
+func addKMSIAMPolicies(p *Policy, bypassViaService bool) {
+	// kms:CreateGrant is called directly by the EBS CSI driver pod (no AWS
+	// service makes the call on its behalf), so kms:ViaService is not set and
+	// we cannot use it as a guard here. kms:DescribeKey is also typically
+	// called directly. Phase 3 of the KMS restriction plan will scope
+	// CreateGrant with kms:GrantIsForAWSResource.
 	p.unconditionalAction.Insert(
 		"kms:CreateGrant",
-		"kms:Decrypt",
 		"kms:DescribeKey",
+	)
+
+	dataActions := []string{
+		"kms:Decrypt",
 		"kms:Encrypt",
 		"kms:GenerateDataKey*",
 		"kms:ReEncrypt*",
-	)
+	}
+
+	// bypassViaService is set by callers whose role may need to talk to KMS
+	// without an AWS service in the call chain -- currently only the API server
+	// role when EncryptionConfig is enabled, since a user-supplied kms-plugin
+	// sidecar wired to the instance role calls KMS directly from kube-apiserver.
+	// In that mode kms:ViaService never matches and the conditional grant
+	// would deny every encrypt/decrypt of etcd data.
+	//
+	// An empty region also falls back to unconditional grants to preserve
+	// existing behavior for callers (e.g. unit tests) that have not populated
+	// PolicyBuilder.Region; kmsViaServices needs the region to build the
+	// service endpoint strings.
+	if bypassViaService || p.region == "" {
+		p.unconditionalAction.Insert(dataActions...)
+		return
+	}
+
+	p.kmsDataPlaneAction.Insert(dataActions...)
+}
+
+// kmsViaServices returns the kms:ViaService endpoint patterns that AWS services
+// present to KMS when acting on behalf of an IAM principal. Used to bound the
+// data-plane KMS actions (Decrypt/Encrypt/GenerateDataKey*/ReEncrypt*) to the
+// services we actually use them through: EC2 (for EBS volume encryption) and
+// S3 (for SSE-KMS on the state-store bucket).
+//
+// Per AWS KMS docs, the value is "<service>.<region>.<url-suffix>" where the
+// URL suffix is partition-specific. Suffixes mirror the four forms recognized
+// by aws-cdk's region-info defaults; aws-us-gov shares the commercial suffix.
+// See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/region-info/lib/default.ts
+//
+// EC2 is pinned to the cluster's region (EBS is always in-region). S3 uses a
+// region wildcard because kops supports cross-region state-store buckets; the
+// caller must therefore evaluate the values under StringLike, not StringEquals.
+func kmsViaServices(partition, region string) []string {
+	if region == "" {
+		return nil
+	}
+	var suffix string
+	switch partition {
+	case "aws-cn":
+		suffix = "amazonaws.com.cn"
+	case "aws-iso":
+		suffix = "c2s.ic.gov"
+	case "aws-iso-b":
+		suffix = "sc2s.sgov.gov"
+	default:
+		suffix = "amazonaws.com"
+	}
+	return []string{
+		fmt.Sprintf("ec2.%s.%s", region, suffix),
+		fmt.Sprintf("s3.*.%s", suffix),
+	}
 }
 
 func addASLifecyclePolicies(p *Policy, enableHookSupport bool) {
