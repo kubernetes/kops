@@ -105,6 +105,24 @@
     },
     {
       "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-test-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
         "ec2:AssignPrivateIpAddresses",
         "ec2:AttachNetworkInterface",
         "ec2:CreateNetworkInterface",
@@ -120,11 +138,7 @@
         "ec2:ModifyNetworkInterfaceAttribute",
         "ec2:UnassignPrivateIpAddresses",
         "kms:CreateGrant",
-        "kms:Decrypt",
-        "kms:DescribeKey",
-        "kms:Encrypt",
-        "kms:GenerateDataKey*",
-        "kms:ReEncrypt*"
+        "kms:DescribeKey"
       ],
       "Effect": "Allow",
       "Resource": "*"

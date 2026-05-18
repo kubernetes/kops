@@ -21,13 +21,27 @@
     },
     {
       "Action": [
-        "ec2:DescribeInstanceTypes",
-        "kms:CreateGrant",
         "kms:Decrypt",
-        "kms:DescribeKey",
         "kms:Encrypt",
         "kms:GenerateDataKey*",
         "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-test-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "ec2:DescribeInstanceTypes",
+        "kms:CreateGrant",
+        "kms:DescribeKey"
       ],
       "Effect": "Allow",
       "Resource": "*"
