@@ -330,6 +330,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.Networking.Cilium = &kops.CiliumNetworkingSpec{}
 		if cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
 			config.Networking.Cilium.IPAM = kops.CiliumIpamEni
+			config.DefaultMachineType = aws.String(strings.Split(instanceGroup.Spec.MachineType, ",")[0])
 		}
 		if model.UseCiliumEtcd(cluster) {
 			config.UseCiliumEtcd = true
