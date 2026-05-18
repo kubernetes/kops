@@ -38,6 +38,24 @@
     },
     {
       "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-test-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
@@ -46,11 +64,7 @@
         "ec2:DescribeVolumes",
         "ec2:DescribeVolumesModifications",
         "kms:CreateGrant",
-        "kms:Decrypt",
-        "kms:DescribeKey",
-        "kms:Encrypt",
-        "kms:GenerateDataKey*",
-        "kms:ReEncrypt*"
+        "kms:DescribeKey"
       ],
       "Effect": "Allow",
       "Resource": "*"

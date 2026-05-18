@@ -18,6 +18,7 @@ package iam
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -224,6 +225,7 @@ func TestPolicyGeneration(t *testing.T) {
 				},
 			},
 			Role:      x.Role,
+			Region:    "us-test-1",
 			Partition: "aws-test",
 		}
 		if x.Gossip {
@@ -274,5 +276,78 @@ func TestEmptyPolicy(t *testing.T) {
 
 	if policy != "" {
 		t.Errorf("empty policy should result in empty string, but was %q", policy)
+	}
+}
+
+func TestAddKMSIAMPolicies(t *testing.T) {
+	dataActions := []string{
+		"kms:Decrypt",
+		"kms:Encrypt",
+		"kms:GenerateDataKey*",
+		"kms:ReEncrypt*",
+	}
+	alwaysUnconditional := []string{"kms:CreateGrant", "kms:DescribeKey"}
+
+	tests := []struct {
+		name             string
+		region           string
+		bypassViaService bool
+		wantConditional  bool
+	}{
+		{name: "region set, bypass off", region: "us-east-1", bypassViaService: false, wantConditional: true},
+		{name: "region set, bypass on", region: "us-east-1", bypassViaService: true, wantConditional: false},
+		{name: "region unset, bypass off", region: "", bypassViaService: false, wantConditional: false},
+		{name: "region unset, bypass on", region: "", bypassViaService: true, wantConditional: false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			p := NewPolicy("c.example.com", "aws", tc.region)
+			addKMSIAMPolicies(p, tc.bypassViaService)
+			for _, action := range dataActions {
+				inConditional := p.kmsDataPlaneAction.Has(action)
+				inUnconditional := p.unconditionalAction.Has(action)
+				wantInConditional := tc.wantConditional
+				wantInUnconditional := !tc.wantConditional
+				if inConditional != wantInConditional || inUnconditional != wantInUnconditional {
+					t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) action %q: conditional=%v unconditional=%v, want conditional=%v unconditional=%v",
+						tc.region, tc.bypassViaService, action, inConditional, inUnconditional, wantInConditional, wantInUnconditional)
+				}
+			}
+			// CreateGrant and DescribeKey are always unconditional regardless of
+			// region or bypass, since the EBS CSI driver calls them directly.
+			for _, action := range alwaysUnconditional {
+				if !p.unconditionalAction.Has(action) {
+					t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) missing unconditional %q", tc.region, tc.bypassViaService, action)
+				}
+				if p.kmsDataPlaneAction.Has(action) {
+					t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) %q unexpectedly in kmsDataPlaneAction", tc.region, tc.bypassViaService, action)
+				}
+			}
+		})
+	}
+}
+
+func TestKmsViaServices(t *testing.T) {
+	tests := []struct {
+		name      string
+		partition string
+		region    string
+		want      []string
+	}{
+		{name: "empty region returns nil", partition: "aws", region: "", want: nil},
+		{name: "aws commercial", partition: "aws", region: "us-east-1", want: []string{"ec2.us-east-1.amazonaws.com", "s3.*.amazonaws.com"}},
+		{name: "aws-us-gov uses commercial suffix", partition: "aws-us-gov", region: "us-gov-west-1", want: []string{"ec2.us-gov-west-1.amazonaws.com", "s3.*.amazonaws.com"}},
+		{name: "aws-cn", partition: "aws-cn", region: "cn-north-1", want: []string{"ec2.cn-north-1.amazonaws.com.cn", "s3.*.amazonaws.com.cn"}},
+		{name: "aws-iso", partition: "aws-iso", region: "us-iso-east-1", want: []string{"ec2.us-iso-east-1.c2s.ic.gov", "s3.*.c2s.ic.gov"}},
+		{name: "aws-iso-b", partition: "aws-iso-b", region: "us-isob-east-1", want: []string{"ec2.us-isob-east-1.sc2s.sgov.gov", "s3.*.sc2s.sgov.gov"}},
+		{name: "unknown partition falls through to commercial suffix", partition: "made-up", region: "x-1", want: []string{"ec2.x-1.amazonaws.com", "s3.*.amazonaws.com"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := kmsViaServices(tc.partition, tc.region)
+			if !slices.Equal(got, tc.want) {
+				t.Errorf("kmsViaServices(%q, %q) = %v, want %v", tc.partition, tc.region, got, tc.want)
+			}
+		})
 	}
 }

@@ -254,6 +254,24 @@
     },
     {
       "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-test-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
         "acm:DescribeCertificate",
         "acm:ListCertificates",
         "autoscaling:DescribeAutoScalingGroups",
@@ -308,11 +326,7 @@
         "elasticloadbalancing:SetRulePriorities",
         "iam:CreateServiceLinkedRole",
         "kms:CreateGrant",
-        "kms:Decrypt",
         "kms:DescribeKey",
-        "kms:Encrypt",
-        "kms:GenerateDataKey*",
-        "kms:ReEncrypt*",
         "sqs:DeleteMessage",
         "sqs:ReceiveMessage"
       ],
