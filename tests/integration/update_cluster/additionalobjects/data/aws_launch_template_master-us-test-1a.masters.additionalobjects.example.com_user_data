@@ -126,7 +126,7 @@ ClusterName: additionalobjects.example.com
 ConfigBase: memfs://tests/additionalobjects.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: NpxNB7RIbJydu739DjrvD5RI6JD7kO9gqyivY22Al/Q=
+NodeupConfigHash: zmzAtra8J9lw7YQMxuQKmFd0m3cZL4CT6+Ov3bq7k1I=
 
 __EOF_KUBE_ENV
 

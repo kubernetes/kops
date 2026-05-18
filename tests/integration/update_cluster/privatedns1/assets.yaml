@@ -11,12 +11,12 @@ files:
 - canonical: https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
   download: https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
   sha: b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090
-- canonical: https://github.com/containerd/containerd/releases/download/v2.1.6/containerd-2.1.6-linux-amd64.tar.gz
-  download: https://github.com/containerd/containerd/releases/download/v2.1.6/containerd-2.1.6-linux-amd64.tar.gz
-  sha: 4793dc5c1f34ebf8402990d0050f3c294aa3c794cd5a4baa403c1cf10602326d
-- canonical: https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.amd64
-  download: https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.amd64
-  sha: 5966ca40b6187b30e33bfc299c5f1fe72e8c1aa01cf3fefdadf391668f47f103
+- canonical: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-amd64.tar.gz
+  download: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-amd64.tar.gz
+  sha: 62e77f6294e432dca5b56ad7e7d6085b5bbb526ebba0a51d832714f9b04cfdfd
+- canonical: https://github.com/opencontainers/runc/releases/download/v1.3.5/runc.amd64
+  download: https://github.com/opencontainers/runc/releases/download/v1.3.5/runc.amd64
+  sha: 66fa8390be8fb3b23dfbb60c767368bb5b51f1acfa88692bbff1a82953d4d9e9
 - canonical: https://dl.k8s.io/release/v1.34.0/bin/linux/arm64/kubelet
   download: https://dl.k8s.io/release/v1.34.0/bin/linux/arm64/kubelet
   sha: e45a7795391cd62ee226666039153832d3096c0f892266cd968936e18b2b40b0
@@ -29,12 +29,12 @@ files:
 - canonical: https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz
   download: https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz
   sha: 01e0e22acc7f7004e4588c1fe1871cc86d7ab562cd858e1761c4641d89ebfaa4
-- canonical: https://github.com/containerd/containerd/releases/download/v2.1.6/containerd-2.1.6-linux-arm64.tar.gz
-  download: https://github.com/containerd/containerd/releases/download/v2.1.6/containerd-2.1.6-linux-arm64.tar.gz
-  sha: 88d6e32348c36628c8500a630c6dd4b3cb8c680b1d18dc8d1d19041f67757c6e
-- canonical: https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.arm64
-  download: https://github.com/opencontainers/runc/releases/download/v1.3.4/runc.arm64
-  sha: d6dcab36d1b6af1b72c7f0662e5fcf446a291271ba6006532b95c4144e19d428
+- canonical: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-arm64.tar.gz
+  download: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-arm64.tar.gz
+  sha: d0897c8e27c96a7b7d4c73e9b278ea9f559dda619d497d88b323a528bd1412c3
+- canonical: https://github.com/opencontainers/runc/releases/download/v1.3.5/runc.arm64
+  download: https://github.com/opencontainers/runc/releases/download/v1.3.5/runc.arm64
+  sha: bd843d75a788e612c9df286b1fa519a44fcbb7a7b8d01e2268431433cc7c718c
 images:
 - canonical: registry.k8s.io/kube-apiserver:v1.34.0
   download: registry.k8s.io/kube-apiserver:v1.34.0
