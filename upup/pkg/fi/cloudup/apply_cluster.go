@@ -48,6 +48,7 @@ import (
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/hetznermodel"
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/pkg/model/linodemodel"
 	"k8s.io/kops/pkg/model/openstackmodel"
 	"k8s.io/kops/pkg/model/scalewaymodel"
 	"k8s.io/kops/pkg/nodemodel"
@@ -61,6 +62,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/metal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -496,6 +498,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			scwZone = scwCloud.Zone()
 		}
 
+	case kops.CloudProviderLinode:
+		{
+			if !featureflag.Linode.Enabled() {
+				return nil, fmt.Errorf("Linode (Akamai) support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Linode")
+			}
+		}
+
 	case kops.CloudProviderMetal:
 		// Metal is a special case, we don't need to do anything here (yet)
 
@@ -707,6 +716,14 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				&scalewaymodel.SSHKeyModelBuilder{ScwModelContext: scwModelContext, Lifecycle: securityLifecycle},
 			)
 
+		case kops.CloudProviderLinode:
+			linodeModelContext := &linodemodel.LinodeModelContext{
+				KopsModelContext: modelContext,
+			}
+			l.Builders = append(l.Builders,
+				&linodemodel.VPCModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: networkLifecycle},
+			)
+
 		case kops.CloudProviderMetal:
 			// No special builders for bare metal (yet)
 
@@ -740,6 +757,8 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			target = azure.NewAzureAPITarget(cloud.(azure.AzureCloud))
 		case kops.CloudProviderScaleway:
 			target = scaleway.NewScwAPITarget(cloud.(scaleway.ScwCloud))
+		case kops.CloudProviderLinode:
+			target = linode.NewAPITarget(cloud.(linode.LinodeCloud))
 		case kops.CloudProviderMetal:
 			target = metal.NewAPITarget(cloud.(*metal.Cloud), nil)
 		default:

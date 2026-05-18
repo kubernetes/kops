@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/pkg/resources/hetzner"
+	resourcelinode "k8s.io/kops/pkg/resources/linode"
 	"k8s.io/kops/pkg/resources/openstack"
 	"k8s.io/kops/pkg/resources/scaleway"
 	"k8s.io/kops/upup/pkg/fi"
@@ -34,6 +35,7 @@ import (
 	clouddo "k8s.io/kops/upup/pkg/fi/cloudup/do"
 	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	cloudhetzner "k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	cloudlinode "k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	cloudopenstack "k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	cloudscaleway "k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
@@ -66,6 +68,8 @@ func ListResources(cloud fi.Cloud, cluster *kops.Cluster) (map[string]*resources
 		return azure.ListResourcesAzure(cloud.(cloudazure.AzureCloud), clusterInfo)
 	case kops.CloudProviderScaleway:
 		return scaleway.ListResources(cloud.(cloudscaleway.ScwCloud), clusterInfo)
+	case kops.CloudProviderLinode:
+		return resourcelinode.ListResources(cloud.(cloudlinode.LinodeCloud), clusterInfo)
 	default:
 		return nil, fmt.Errorf("delete on clusters on %q not (yet) supported", cloud.ProviderID())
 	}
