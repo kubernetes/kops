@@ -328,25 +328,24 @@ func TestAddKMSIAMPolicies(t *testing.T) {
 }
 
 func TestKmsViaServices(t *testing.T) {
+	// Per AWS KMS docs, kms:ViaService uses the .amazonaws.com suffix in all
+	// partitions, so the result depends only on the region.
 	tests := []struct {
-		name      string
-		partition string
-		region    string
-		want      []string
+		name   string
+		region string
+		want   []string
 	}{
-		{name: "empty region returns nil", partition: "aws", region: "", want: nil},
-		{name: "aws commercial", partition: "aws", region: "us-east-1", want: []string{"ec2.us-east-1.amazonaws.com", "s3.*.amazonaws.com"}},
-		{name: "aws-us-gov uses commercial suffix", partition: "aws-us-gov", region: "us-gov-west-1", want: []string{"ec2.us-gov-west-1.amazonaws.com", "s3.*.amazonaws.com"}},
-		{name: "aws-cn", partition: "aws-cn", region: "cn-north-1", want: []string{"ec2.cn-north-1.amazonaws.com.cn", "s3.*.amazonaws.com.cn"}},
-		{name: "aws-iso", partition: "aws-iso", region: "us-iso-east-1", want: []string{"ec2.us-iso-east-1.c2s.ic.gov", "s3.*.c2s.ic.gov"}},
-		{name: "aws-iso-b", partition: "aws-iso-b", region: "us-isob-east-1", want: []string{"ec2.us-isob-east-1.sc2s.sgov.gov", "s3.*.sc2s.sgov.gov"}},
-		{name: "unknown partition falls through to commercial suffix", partition: "made-up", region: "x-1", want: []string{"ec2.x-1.amazonaws.com", "s3.*.amazonaws.com"}},
+		{name: "empty region returns nil", region: "", want: nil},
+		{name: "commercial region", region: "us-east-1", want: []string{"ec2.us-east-1.amazonaws.com", "s3.*.amazonaws.com"}},
+		{name: "gov region keeps amazonaws.com suffix", region: "us-gov-west-1", want: []string{"ec2.us-gov-west-1.amazonaws.com", "s3.*.amazonaws.com"}},
+		{name: "china region keeps amazonaws.com suffix", region: "cn-north-1", want: []string{"ec2.cn-north-1.amazonaws.com", "s3.*.amazonaws.com"}},
+		{name: "iso region keeps amazonaws.com suffix", region: "us-iso-east-1", want: []string{"ec2.us-iso-east-1.amazonaws.com", "s3.*.amazonaws.com"}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := kmsViaServices(tc.partition, tc.region)
+			got := kmsViaServices(tc.region)
 			if !slices.Equal(got, tc.want) {
-				t.Errorf("kmsViaServices(%q, %q) = %v, want %v", tc.partition, tc.region, got, tc.want)
+				t.Errorf("kmsViaServices(%q) = %v, want %v", tc.region, got, tc.want)
 			}
 		})
 	}
