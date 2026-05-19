@@ -30,6 +30,12 @@ if [[ -z "${SCALE_SCENARIO:-}" ]]; then
   export SCALE_SCENARIO
 fi
 
+# Default scale test tool to clusterloader2
+if [[ -z "${SCALE_TEST_TOOL:-}" ]]; then
+  SCALE_TEST_TOOL="clusterloader2"
+fi
+echo "SCALE_TEST_TOOL=${SCALE_TEST_TOOL}"
+
 # Default cloud provider to aws
 if [[ -z "${CLOUD_PROVIDER:-}" ]]; then
   CLOUD_PROVIDER="aws"
@@ -197,37 +203,83 @@ fi
 # used by CL2 Prometheus here https://github.com/kubernetes/perf-tests/blob/master/clusterloader2/pkg/prometheus/manifests/default/kube-proxy-service.yaml#L2
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export ETCD_PORT="4001" # we want cl2 to use this port for etcd instead of 2379
-if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
-  # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
-  cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
-  # we are not testing PVS at this point
-  CL2_ENABLE_PVS: false
-  ENABLE_RESTART_COUNT_CHECK: false
+
+if [[ "${SCALE_TEST_TOOL}" == "clusterloader2" ]]; then
+  if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
+    # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
+    cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
+    # we are not testing PVS at this point
+    CL2_ENABLE_PVS: false
+    ENABLE_RESTART_COUNT_CHECK: false
 EOL
-  cat "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml
-else
-  cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
-  # setting a default value here to avoid an incorrect yaml file
-  CL2_ENABLE_PVS: true
+    cat "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml
+  else
+    cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
+    # setting a default value here to avoid an incorrect yaml file
+    CL2_ENABLE_PVS: true
 EOL
+  fi
+
+  CLUSTERLOADER2_ARGS=()
+  if [[ -n "${KOPS_CL2_TEST_CONFIG}" ]]; then
+    CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/${KOPS_CL2_TEST_CONFIG}")
+  else
+    CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml")
+    CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/access-tokens/config.yaml")
+    CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml")
+    CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/enable_restart_count_check.yaml")
+    CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml")
+    CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml")
+    CLUSTERLOADER2_ARGS+=("--extra-args=--experimental-prometheus-snapshot-to-report-dir=true")
+  fi
+
+  # ToDo: remove this once we can run the huge-service test on AWS
+  if [[ -z "${KOPS_CL2_TEST_CONFIG}" && "${CLOUD_PROVIDER}" == "gce" ]]; then
+    CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml")
+  fi
 fi
 
-CLUSTERLOADER2_ARGS=()
-if [[ -n "${KOPS_CL2_TEST_CONFIG}" ]]; then
-  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/${KOPS_CL2_TEST_CONFIG}")
-else
-  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/config.yaml")
-  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/access-tokens/config.yaml")
-  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml")
-  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/enable_restart_count_check.yaml")
-  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml")
-  CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml")
-  CLUSTERLOADER2_ARGS+=("--extra-args=--experimental-prometheus-snapshot-to-report-dir=true")
-fi
+if [[ "${SCALE_TEST_TOOL}" == "kube-burner" ]]; then
+  # Download and install kube-burner if path not already specified
+  if [[ -z "${KUBE_BURNER_PATH:-}" ]]; then
+    if [[ -z "${KUBE_BURNER_VERSION:-}" ]]; then
+      KUBE_BURNER_VERSION=$(curl -fsSL https://api.github.com/repos/kube-burner/kube-burner/releases/latest | grep -o '"tag_name": "v[^"]*"' | sed 's/"tag_name": "v\(.*\)"/\1/')
+    fi
+    KUBE_BURNER_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    KUBE_BURNER_ARCH=$(uname -m)
+    if [[ "${KUBE_BURNER_ARCH}" == "aarch64" ]]; then
+      KUBE_BURNER_ARCH="arm64"
+    fi
+    KUBE_BURNER_DIR=$(mktemp -d)
+    KUBE_BURNER_TARBALL="kube-burner-V${KUBE_BURNER_VERSION}-${KUBE_BURNER_OS}-${KUBE_BURNER_ARCH}.tar.gz"
+    KUBE_BURNER_URL="https://github.com/kube-burner/kube-burner/releases/download/v${KUBE_BURNER_VERSION}/${KUBE_BURNER_TARBALL}"
+    echo "Downloading kube-burner ${KUBE_BURNER_VERSION} from ${KUBE_BURNER_URL}"
+    curl -fsSL "${KUBE_BURNER_URL}" -o "${KUBE_BURNER_DIR}/${KUBE_BURNER_TARBALL}"
+    tar -xzf "${KUBE_BURNER_DIR}/${KUBE_BURNER_TARBALL}" -C "${KUBE_BURNER_DIR}"
+    KUBE_BURNER_PATH="${KUBE_BURNER_DIR}/kube-burner"
+    chmod +x "${KUBE_BURNER_PATH}"
+    echo "kube-burner ${KUBE_BURNER_VERSION} installed at ${KUBE_BURNER_PATH}"
+  fi
 
-# ToDo: remove this once we can run the huge-service test on AWS
-if [[ -z "${KOPS_CL2_TEST_CONFIG}" && "${CLOUD_PROVIDER}" == "gce" ]]; then
-  CLUSTERLOADER2_ARGS+=("--test-configs=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/huge-service/config.yaml")
+  KUBE_BURNER_ARGS=()
+  KUBE_BURNER_ARGS+=("--workdir=${KUBE_BURNER_WORKDIR:-k8s.io/perf-tests}")
+  KUBE_BURNER_ARGS+=("--workload=${KUBE_BURNER_WORKLOAD}")
+  KUBE_BURNER_ARGS+=("--kube-burner-path=${KUBE_BURNER_PATH}")
+  if [[ -n "${KUBE_BURNER_UUID:-}" ]]; then
+    KUBE_BURNER_ARGS+=("--uuid=${KUBE_BURNER_UUID}")
+  fi
+  if [[ "${KUBE_BURNER_SKIP_TLS_VERIFY:-}" == "true" ]]; then
+    KUBE_BURNER_ARGS+=("--skip-tls-verify")
+  fi
+  if [[ -n "${KUBE_BURNER_KUBECONFIG:-}" ]]; then
+    KUBE_BURNER_ARGS+=("--kubeconfig=${KUBE_BURNER_KUBECONFIG}")
+  fi
+  if [[ -n "${KUBE_BURNER_LOG_LEVEL:-}" ]]; then
+    KUBE_BURNER_ARGS+=("--log-level=${KUBE_BURNER_LOG_LEVEL}")
+  fi
+  if [[ -n "${KUBE_BURNER_EXTRA_ARGS:-}" ]]; then
+    KUBE_BURNER_ARGS+=("--extra-args=${KUBE_BURNER_EXTRA_ARGS}")
+  fi
 fi
 
 if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
@@ -243,14 +295,31 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]\[KubeUp\]" \
     --parallel=25
 else
-  kubetest2 kops "${KUBETEST2_ARGS[@]}" \
-    --up \
-    --kubernetes-version="${K8S_VERSION}" \
-    --create-args="${create_args[*]}" \
-    --test=clusterloader2 \
-    -- \
-    --provider="${CLOUD_PROVIDER}" \
-    --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
-    --kube-config="${HOME}/.kube/config" \
-    "${CLUSTERLOADER2_ARGS[@]}"
+  if [[ "${SCALE_TEST_TOOL}" == "kube-burner" ]]; then
+    kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+      --up \
+      --kubernetes-version="${K8S_VERSION}" \
+      --create-args="${create_args[*]}" \
+      --test=kube-burner \
+      -- \
+      "${KUBE_BURNER_ARGS[@]}"
+    if [[ -n "${KUBE_BURNER_REPORT_DIR:-}" ]]; then
+      mkdir -p "${ARTIFACTS}/${KUBE_BURNER_REPORT_DIR}"
+      if ls collected-metrics* 1>/dev/null 2>&1; then
+        mv collected-metrics* "${ARTIFACTS}/${KUBE_BURNER_REPORT_DIR}/"
+        echo "Kube-burner locally indexed metrics moved to ${ARTIFACTS}/${KUBE_BURNER_REPORT_DIR}"
+      fi
+    fi
+  else
+    kubetest2 kops "${KUBETEST2_ARGS[@]}" \
+      --up \
+      --kubernetes-version="${K8S_VERSION}" \
+      --create-args="${create_args[*]}" \
+      --test=clusterloader2 \
+      -- \
+      --provider="${CLOUD_PROVIDER}" \
+      --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
+      --kube-config="${HOME}/.kube/config" \
+      "${CLUSTERLOADER2_ARGS[@]}"
+  fi
 fi
