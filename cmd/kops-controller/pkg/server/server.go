@@ -289,6 +289,9 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) issueCert(ctx context.Context, name string, pubKey string, id *bootstrap.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
 	block, _ := pem.Decode([]byte(pubKey))
+	if block == nil {
+		return "", fmt.Errorf("decoding pem public key")
+	}
 	if block.Type != "RSA PUBLIC KEY" {
 		return "", fmt.Errorf("unexpected key type %q", block.Type)
 	}
