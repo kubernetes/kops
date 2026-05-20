@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    k8s-app: kops-channels
+  name: kops-channels
+  namespace: kube-system
+spec:
+  containers:
+  - args:
+    - apply
+    - channel
+    - --v=4
+    - --yes
+    - --interval=1m0s
+    - --node-name=$(NODE_NAME)
+    - memfs://tests/gossip.k8s.local/addons/bootstrap-channel.yaml
+    env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: KUBECONFIG
+      value: /var/lib/kops/kubeconfig
+    image: registry.k8s.io/kops/channels:1.34.0-beta.1
+    name: kops-channels
+    resources:
+      requests:
+        cpu: 50m
+        memory: 50Mi
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 10013
+    volumeMounts:
+    - mountPath: /var/lib/kops/kubeconfig
+      name: kubeconfig
+      readOnly: true
+  dnsPolicy: Default
+  hostNetwork: true
+  priorityClassName: system-node-critical
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /var/lib/kops/kubeconfig
+      type: File
+    name: kubeconfig
+status: {}

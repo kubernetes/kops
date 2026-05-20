@@ -304,8 +304,7 @@ NvidiaGPU:
   image: nvcr.io/nvidia/k8s-device-plugin:v0.17.3
   package: nvidia-driver-535-server
 UpdatePolicy: automatic
-channels:
-- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
+channelsManifest: memfs://clusters.example.com/minimal.example.com/manifests/channels/kops-channels.yaml
 configStore:
   keypairs: memfs://clusters.example.com/minimal.example.com/pki
   secrets: memfs://clusters.example.com/minimal.example.com/secrets

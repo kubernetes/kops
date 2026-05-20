@@ -299,8 +299,7 @@ Networking:
   nonMasqueradeCIDR: 172.20.0.0/16
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
-channels:
-- memfs://tests/many-addons.example.com/addons/bootstrap-channel.yaml
+channelsManifest: memfs://tests/many-addons.example.com/manifests/channels/kops-channels.yaml
 configStore:
   keypairs: memfs://tests/many-addons.example.com/pki
   secrets: memfs://tests/many-addons.example.com/secrets

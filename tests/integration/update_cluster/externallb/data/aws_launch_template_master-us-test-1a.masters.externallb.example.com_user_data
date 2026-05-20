@@ -126,7 +126,7 @@ ClusterName: externallb.example.com
 ConfigBase: memfs://clusters.example.com/externallb.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: Lr8IjyufPqma55LOLzB4c+mV/hDFW6ozwk/YPJIJ2FE=
+NodeupConfigHash: SmyUTJ4Cfn8K1f42DRRv1u8VUlF4AJHNXfB5qZegS2s=
 
 __EOF_KUBE_ENV
 
