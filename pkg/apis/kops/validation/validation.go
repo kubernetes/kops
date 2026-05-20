@@ -176,6 +176,15 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateSnapshotController(c, spec.SnapshotController, fieldPath.Child("snapshotController"))...)
 	}
 
+	// Custom addons: the kops-channels static pod fetches manifests via VFS at boot, so file:// schemes
+	// (which would resolve inside the container's mount namespace) aren't supported. Push the manifest
+	// to the state store or another VFS-supported backend.
+	for i, addon := range spec.Addons {
+		if strings.HasPrefix(addon.Manifest, "file://") {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("addons").Index(i).Child("manifest"), addon.Manifest, "file:// addon manifests are not supported"))
+		}
+	}
+
 	// IAM additional policies
 	for k, v := range spec.AdditionalPolicies {
 		allErrs = append(allErrs, validateAdditionalPolicy(k, v, fieldPath.Child("additionalPolicies"))...)
