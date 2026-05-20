@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
@@ -58,24 +57,18 @@ func main() {
 
 // run is responsible for running the protokube service controller
 func run() error {
-	var containerized, master, gossip bool
+	var containerized, gossip bool
 	var cloud, gossipSecret, gossipListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
-	var flagChannels string
 
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized")
 	flag.BoolVar(&gossip, "gossip", gossip, "Set if we are using gossip dns")
-	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
 	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,digitalocean,gce,openstack)")
-	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
 	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
 	flag.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipWeaveMesh), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "memberlist", "mesh/memberlist")
 	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.ProtokubeGossipMemberlist), "address:port on which to bind for gossip")
 	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
-
-	nodeName := ""
-	flag.StringVar(&nodeName, "node-name", nodeName, "name of the node as will be created in kubernetes")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -168,25 +161,9 @@ func run() error {
 			klog.Fatalf("error creating zone: %v", err)
 		}
 
-		go func() {
-			gossipdns.RunDNSUpdates(dnsTarget, dnsView)
-			klog.Fatalf("RunDNSUpdates exited unexpectedly")
-		}()
+		gossipdns.RunDNSUpdates(dnsTarget, dnsView)
+		return fmt.Errorf("gossipdns.RunDNSUpdates returned unexpectedly")
+	} else {
+		return fmt.Errorf("--gossip is required; protokube has no other responsibilities since channel application moved to the kops-channels static pod")
 	}
-
-	var channels []string
-	if flagChannels != "" {
-		channels = strings.Split(flagChannels, ",")
-	}
-
-	k := &protokube.KubeBoot{
-		NodeName:   nodeName,
-		Channels:   channels,
-		Kubernetes: protokube.NewKubernetesContext(),
-		Master:     master,
-	}
-
-	k.RunSyncLoop()
-
-	return fmt.Errorf("Unexpected exit")
 }

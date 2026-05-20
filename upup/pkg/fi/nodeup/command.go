@@ -300,6 +300,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.VolumesBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ContainerdBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.ChannelsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})

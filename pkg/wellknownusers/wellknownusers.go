@@ -41,4 +41,12 @@ const (
 
 	// KubeApiserverHealthcheckName is the username for the kube-apiserver-healthcheck user
 	KubeApiserverHealthcheckName = "kube-apiserver-healthcheck"
+
+	// KopsChannelsID is the user id for the kops-channels static pod.
+	// The user owns the kubeconfig mounted into the container.
+	// This should match the static pod's runAsUser.
+	KopsChannelsID = 10013
+
+	// KopsChannelsName is the username for the kops-channels user.
+	KopsChannelsName = "kops-channels"
 )

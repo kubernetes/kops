@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -44,11 +43,8 @@ var _ fi.NodeupModelBuilder = &ProtokubeBuilder{}
 
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	// Skip protokube on workers when it isn't needed: either the cluster doesn't use gossip,
-	// or this worker bootstraps via kops-controller NLB (hybrid mode, signalled by APIServerIPs
-	// populated on the boot config). Gossip stays alive on control-plane nodes.
-	if !t.IsMaster && (!t.UsesLegacyGossip() || len(t.BootConfig.APIServerIPs) > 0) {
-		klog.V(2).Infof("skipping the provisioning of protokube on the nodes")
+	if !t.UsesLegacyGossip() {
+		klog.V(2).Infof("skipping protokube provisioning: legacy gossip is not in use")
 		return nil
 	}
 
@@ -63,36 +59,6 @@ func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Contents: res,
 			Type:     nodetasks.FileType_File,
 			Mode:     fi.PtrTo("0755"),
-		})
-	}
-
-	// The channels binary is only invoked on control-plane nodes.
-	if t.IsMaster {
-		name, res, err := t.Assets.FindMatch(regexp.MustCompile("channels$"))
-		if err != nil {
-			return err
-		}
-
-		c.AddTask(&nodetasks.File{
-			Path:     filepath.Join("/opt/kops/bin", name),
-			Contents: res,
-			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
-		})
-	}
-
-	if t.IsMaster {
-		name := nodetasks.PKIXName{
-			CommonName:   "kops",
-			Organization: []string{rbac.SystemPrivilegedGroup},
-		}
-		kubeconfig := t.BuildIssuedKubeconfig("kops", name, c)
-
-		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kops/kubeconfig",
-			Contents: kubeconfig,
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
 		})
 	}
 
@@ -148,15 +114,10 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 // ProtokubeFlags are the flags for protokube
 type ProtokubeFlags struct {
-	Channels      []string `json:"channels,omitempty" flag:"channels"`
-	Cloud         *string  `json:"cloud,omitempty" flag:"cloud"`
-	Containerized *bool    `json:"containerized,omitempty" flag:"containerized"`
-	Gossip        *bool    `json:"gossip,omitempty" flag:"gossip"`
-	LogLevel      *int32   `json:"logLevel,omitempty" flag:"v"`
-	Master        *bool    `json:"master,omitempty" flag:"master"`
-
-	// NodeName is the name of the node as will be created in kubernetes.
-	NodeName string `json:"nodeName,omitempty" flag:"node-name"`
+	Cloud         *string `json:"cloud,omitempty" flag:"cloud"`
+	Containerized *bool   `json:"containerized,omitempty" flag:"containerized"`
+	Gossip        *bool   `json:"gossip,omitempty" flag:"gossip"`
+	LogLevel      *int32  `json:"logLevel,omitempty" flag:"v"`
 
 	GossipProtocol *string `json:"gossip-protocol" flag:"gossip-protocol"`
 	GossipListen   *string `json:"gossip-listen" flag:"gossip-listen"`
@@ -170,11 +131,9 @@ type ProtokubeFlags struct {
 // ProtokubeFlags is responsible for building the command line flags for protokube
 func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
-		Channels:      t.NodeupConfig.Channels,
 		Cloud:         fi.PtrTo(string(t.CloudProvider())),
 		Containerized: fi.PtrTo(false),
 		LogLevel:      fi.PtrTo(int32(4)),
-		Master:        b(t.IsMaster),
 	}
 
 	if t.UsesLegacyGossip() {
@@ -192,12 +151,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 			}
 		}
 	}
-
-	nodeName, err := t.NodeName()
-	if err != nil {
-		return nil, fmt.Errorf("error getting NodeName: %v", err)
-	}
-	f.NodeName = nodeName
 
 	return f, nil
 }
