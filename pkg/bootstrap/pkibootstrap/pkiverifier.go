@@ -61,7 +61,7 @@ var _ bootstrap.Verifier = &verifier{}
 // TODO: Dedup with gce
 func (v *verifier) parseTokenData(tokenPrefix string, authToken string, body []byte) (*AuthToken, *AuthTokenData, error) {
 	if !strings.HasPrefix(authToken, tokenPrefix) {
-		return nil, nil, fmt.Errorf("incorrect authorization type")
+		return nil, nil, bootstrap.ErrNotThisVerifier
 	}
 	authToken = strings.TrimPrefix(authToken, tokenPrefix)
 
