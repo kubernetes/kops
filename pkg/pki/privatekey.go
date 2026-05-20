@@ -153,7 +153,7 @@ func (k *PrivateKey) WriteTo(w io.Writer) (int64, error) {
 
 	switch pk := k.Key.(type) {
 	case *rsa.PrivateKey:
-		if err := pem.Encode(w, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(pk)}); err != nil {
+		if err := pem.Encode(&data, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(pk)}); err != nil {
 			return 0, fmt.Errorf("error encoding RSA private key: %w", err)
 		}
 	case *ecdsa.PrivateKey:
@@ -161,7 +161,7 @@ func (k *PrivateKey) WriteTo(w io.Writer) (int64, error) {
 		if err != nil {
 			return 0, fmt.Errorf("error encoding ECDSA private key: %w", err)
 		}
-		if err := pem.Encode(w, &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}); err != nil {
+		if err := pem.Encode(&data, &pem.Block{Type: "EC PRIVATE KEY", Bytes: b}); err != nil {
 			return 0, fmt.Errorf("error encoding ECDSA private key: %w", err)
 		}
 	default:

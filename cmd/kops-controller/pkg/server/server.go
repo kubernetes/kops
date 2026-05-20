@@ -259,8 +259,10 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 	// Skew the certificate lifetime by up to 30 days based on information about the requesting node.
 	// This is so that different nodes created at the same time have the certificates they generated
 	// expire at different times, but all certificates on a given node expire around the same time.
+	// We salt on the verified NodeName so nodes sharing a NAT/load balancer (same RemoteAddr) still
+	// get independent skews.
 	hash := fnv.New32()
-	_, _ = hash.Write([]byte(r.RemoteAddr))
+	_, _ = hash.Write([]byte(id.NodeName))
 	validHours := (455 * 24) + (hash.Sum32() % (30 * 24))
 
 	for name, pubKey := range req.Certs {
@@ -281,6 +283,9 @@ func (s *Server) bootstrap(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) issueCert(ctx context.Context, name string, pubKey string, id *bootstrap.VerifyResult, validHours uint32, keypairIDs map[string]string) (string, error) {
 	block, _ := pem.Decode([]byte(pubKey))
+	if block == nil {
+		return "", fmt.Errorf("decoding pem public key")
+	}
 	if block.Type != "RSA PUBLIC KEY" {
 		return "", fmt.Errorf("unexpected key type %q", block.Type)
 	}
