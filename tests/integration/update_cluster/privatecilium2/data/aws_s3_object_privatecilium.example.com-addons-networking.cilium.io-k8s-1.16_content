@@ -71,6 +71,7 @@ data:
   bpf-lb-map-max: "65536"
   bpf-lb-mode-annotation: "false"
   bpf-lb-sock: "false"
+  bpf-lb-sock-hostns-only: "false"
   bpf-lb-source-range-all-types: "false"
   bpf-map-dynamic-size-ratio: "0.0025"
   bpf-policy-map-max: "16384"
@@ -1400,6 +1401,15 @@ spec:
         name: cilium-operator
     spec:
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:

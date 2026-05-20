@@ -47,7 +47,7 @@ spec:
       k8s-addon: scaleway-csi-driver.addons.k8s.io
   - id: k8s-1.16
     manifest: networking.cilium.io/k8s-1.16-v1.15.yaml
-    manifestHash: 662bc706e53a3260abcf1379e33f3b60d5ce03b0915613ac9b5477e2b036dc4b
+    manifestHash: 77ed52a6a118a135070434a64562e7b81a89dda6543c0d9c91e0abd419657347
     name: networking.cilium.io
     needsRollingUpdate: all
     selector:
