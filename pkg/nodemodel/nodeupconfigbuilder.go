@@ -379,9 +379,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	if role != kops.InstanceGroupRoleBastion {
-		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via
-		// kops-controller. Must match the provisioning condition in nodeup/pkg/model/protokube.go.
-		if usesLegacyGossip && (isMaster || len(bootConfig.APIServerIPs) == 0) {
+		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
+		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
 			config.Channels = n.channels
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
@@ -529,6 +528,7 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 	}
 	assetBuilder := n.assetBuilder
 	if assetBuilder != nil {
+		// Add kops-managed images
 		for _, image := range assetBuilder.ImageAssets() {
 			for _, prefix := range desiredImagePrefixes {
 				remappedPrefix := assets.NormalizeImage(assetBuilder, prefix)
@@ -537,13 +537,13 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 				}
 			}
 		}
-	}
 
-	// Add ig-level extra images
-	if ig.Spec.WarmPool != nil && len(ig.Spec.WarmPool.AdditionalImages) > 0 {
-		for _, image := range ig.Spec.WarmPool.AdditionalImages {
-			remapped := assets.NormalizeImage(assetBuilder, image)
-			images[remapped] = true
+		// Add ig-level extra images
+		if ig.Spec.WarmPool != nil && len(ig.Spec.WarmPool.AdditionalImages) > 0 {
+			for _, image := range ig.Spec.WarmPool.AdditionalImages {
+				remapped := assets.NormalizeImage(assetBuilder, image)
+				images[remapped] = true
+			}
 		}
 	}
 
