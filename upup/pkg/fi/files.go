@@ -88,6 +88,10 @@ func writeFileContents(destPath string, src Resource, fileMode os.FileMode) erro
 		return fmt.Errorf("error writing file %q: %v", tempFile.Name(), err)
 	}
 
+	if err := tempFile.Chmod(fileMode); err != nil {
+		return fmt.Errorf("error setting mode on temp file %q: %w", tempFile.Name(), err)
+	}
+
 	if err := tempFile.Close(); err != nil {
 		return fmt.Errorf("error closing temp file %q: %w", tempFile.Name(), err)
 	}
