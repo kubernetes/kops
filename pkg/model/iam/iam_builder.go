@@ -111,7 +111,7 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 // AsJSON converts the policy document to JSON format (parsable by AWS)
 func (p *Policy) AsJSON() (string, error) {
 	if len(p.kmsDataPlaneAction) > 0 {
-		services := kmsViaServices(p.partition, p.region)
+		services := kmsViaServices(p.region)
 		p.Statement = append(p.Statement, &Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorset.Of(sets.List(p.kmsDataPlaneAction)...),
@@ -1264,32 +1264,22 @@ func addKMSIAMPolicies(p *Policy, bypassViaService bool) {
 // services we actually use them through: EC2 (for EBS volume encryption) and
 // S3 (for SSE-KMS on the state-store bucket).
 //
-// Per AWS KMS docs, the value is "<service>.<region>.<url-suffix>" where the
-// URL suffix is partition-specific. Suffixes mirror the four forms recognized
-// by aws-cdk's region-info defaults; aws-us-gov shares the commercial suffix.
-// See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/region-info/lib/default.ts
+// Per AWS KMS docs the value is "<service>.<region>.amazonaws.com" — the
+// ".amazonaws.com" suffix is used in all partitions (including aws-cn,
+// aws-us-gov, aws-iso, aws-iso-b); the partition-specific suffixes used for
+// service endpoints do NOT apply to kms:ViaService.
+// See: https://docs.aws.amazon.com/kms/latest/developerguide/conditions-kms.html
 //
 // EC2 is pinned to the cluster's region (EBS is always in-region). S3 uses a
 // region wildcard because kops supports cross-region state-store buckets; the
 // caller must therefore evaluate the values under StringLike, not StringEquals.
-func kmsViaServices(partition, region string) []string {
+func kmsViaServices(region string) []string {
 	if region == "" {
 		return nil
 	}
-	var suffix string
-	switch partition {
-	case "aws-cn":
-		suffix = "amazonaws.com.cn"
-	case "aws-iso":
-		suffix = "c2s.ic.gov"
-	case "aws-iso-b":
-		suffix = "sc2s.sgov.gov"
-	default:
-		suffix = "amazonaws.com"
-	}
 	return []string{
-		fmt.Sprintf("ec2.%s.%s", region, suffix),
-		fmt.Sprintf("s3.*.%s", suffix),
+		fmt.Sprintf("ec2.%s.amazonaws.com", region),
+		"s3.*.amazonaws.com",
 	}
 }
 
