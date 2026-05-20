@@ -37,7 +37,6 @@ fi
 
 export KOPS_BASE_URL
 export KOPS
-export CHANNELS
 
 export KOPS_RUN_TOO_NEW_VERSION=1
 
@@ -97,14 +96,6 @@ function kops-download-from-base() {
     echo "${kops}"
 }
 
-function kops-channels-download-from-base() {
-    local channels
-    channels=$(mktemp -t channels.XXXXXXXXX)
-    wget -qO "${channels}" "$KOPS_BASE_URL/$(go env GOOS)/$(go env GOARCH)/channels"
-    chmod +x "${channels}"
-    echo "${channels}"
-}
-
 function kops-base-from-marker() {
     if [[ "${1}" =~ ^https: ]]; then
         curl -fs "${1}"
@@ -120,14 +111,12 @@ function kops-acquire-latest() {
     if [[ "${JOB_TYPE-}" == "periodic" ]]; then
         KOPS_BASE_URL="$(curl -fs https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci-updown-green.txt)"
         KOPS=$(kops-download-from-base)
-        CHANNELS=$(kops-channels-download-from-base)
     else
          if [[ -n "${KOPS_BASE_URL-}" ]]; then
             KOPS_BASE_URL=""
          fi
          $KUBETEST2 --build
          KOPS="${REPO_ROOT}/.build/dist/linux/amd64/kops"
-         CHANNELS="${REPO_ROOT}/.build/dist/linux/amd64/channels"
          KOPS_BASE_URL=$(cat "${REPO_ROOT}/.kubetest2/kops-base-url")
          export KOPS_BASE_URL
          echo "KOPS_BASE_URL=$KOPS_BASE_URL"
