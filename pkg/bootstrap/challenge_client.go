@@ -114,6 +114,7 @@ func (c *ChallengeClient) DoCallbackChallenge(ctx context.Context, clusterName s
 	if err != nil {
 		return fmt.Errorf("error dialing target %q: %w", targetEndpoint, err)
 	}
+	defer conn.Close()
 	client := pb.NewCallbackServiceClient(conn)
 
 	response, err := client.Challenge(ctx, req)
