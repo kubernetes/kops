@@ -379,8 +379,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	if role != kops.InstanceGroupRoleBastion {
-		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
-		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
+		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via
+		// kops-controller. Must match the provisioning condition in nodeup/pkg/model/protokube.go.
+		if usesLegacyGossip && (isMaster || len(bootConfig.APIServerIPs) == 0) {
 			config.Channels = n.channels
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
