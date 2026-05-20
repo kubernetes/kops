@@ -77,8 +77,6 @@ function kops-upgrade() {
         KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
         KOPS_BASE_URL_B="${KOPS_BASE_URL}"
         KOPS_B=$(kops-download-from-base)
-        CHANNELS=$(kops-channels-download-from-base)
-        export CHANNELS
     fi
 
     ${KUBETEST2} \

@@ -47,10 +47,6 @@ declare -A BINARIES=(
   ["linux/amd64/protokube.sha256"]="protokube-linux-amd64.sha256"
   ["linux/arm64/protokube"]="protokube-linux-arm64"
   ["linux/arm64/protokube.sha256"]="protokube-linux-arm64.sha256"
-  ["linux/amd64/channels"]="channels-linux-amd64"
-  ["linux/amd64/channels.sha256"]="channels-linux-amd64.sha256"
-  ["linux/arm64/channels"]="channels-linux-arm64"
-  ["linux/arm64/channels.sha256"]="channels-linux-arm64.sha256"
 )
 
 if [[ $# -ne 1 ]]; then

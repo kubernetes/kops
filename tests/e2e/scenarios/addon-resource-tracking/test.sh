@@ -45,7 +45,7 @@ CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
 "${KOPS}" update cluster
 "${KOPS}" update cluster --yes
 
-# Rolling-upgrade is needed so we get the new channels binary that supports prune
+# Rolling-upgrade is needed so we get the new kops-channels image that supports prune
 "${KOPS}" rolling-update cluster --instance-group-roles=master --yes
 
 # just make sure pods are ready

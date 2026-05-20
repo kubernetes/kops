@@ -48,7 +48,6 @@ type nodeUpConfigBuilder struct {
 	etcdManifests              map[string][]string
 	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
 	protokubeAsset             map[architectures.Architecture][]*assets.MirroredAsset
-	channelsAsset              map[architectures.Architecture][]*assets.MirroredAsset
 	encryptionConfigSecretHash string
 }
 
@@ -69,7 +68,6 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	etcdManifests := map[string][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
 	protokubeAsset := map[architectures.Architecture][]*assets.MirroredAsset{}
-	channelsAsset := map[architectures.Architecture][]*assets.MirroredAsset{}
 
 	for _, arch := range architectures.GetSupported() {
 		asset, err := wellknownassets.ProtokubeAsset(assetBuilder, arch)
@@ -77,14 +75,6 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 			return nil, err
 		}
 		protokubeAsset[arch] = append(protokubeAsset[arch], asset)
-	}
-
-	for _, arch := range architectures.GetSupported() {
-		asset, err := wellknownassets.ChannelsAsset(assetBuilder, arch)
-		if err != nil {
-			return nil, err
-		}
-		channelsAsset[arch] = append(channelsAsset[arch], asset)
 	}
 
 	for _, role := range kops.AllInstanceGroupRoles {
@@ -193,7 +183,6 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		etcdManifests:              etcdManifests,
 		images:                     images,
 		protokubeAsset:             protokubeAsset,
-		channelsAsset:              channelsAsset,
 		encryptionConfigSecretHash: encryptionConfigSecretHash,
 	}
 
@@ -384,15 +373,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			config.Channels = n.channels
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
-					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
-				}
-			}
-		}
-
-		// The channels binary is only ever run by protokube on control-plane nodes.
-		if isMaster {
-			for _, arch := range architectures.GetSupported() {
-				for _, a := range n.channelsAsset[arch] {
 					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
 				}
 			}

@@ -310,7 +310,7 @@ func (a *AddonList) Add(spec *channelsapi.AddonSpec) *Addon {
 }
 
 type Addon struct {
-	// Spec is the spec that will (eventually) be passed to the channels binary.
+	// Spec is the spec that will (eventually) be passed to the kops-channels static pod.
 	Spec *channelsapi.AddonSpec
 
 	// ManifestData is the object data loaded from the manifest.

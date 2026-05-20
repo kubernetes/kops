@@ -101,19 +101,15 @@ endif
 kops-install: kops
 	cp ${DIST}/$(shell go env GOOS)/$(shell go env GOARCH)/kops* ${GOBIN}
 
-.PHONY: channels-install # install channels to local $gopath/bin
-channels-install: channels
-	cp ${DIST}/${OSARCH}/channels ${GOPATH_1ST}/bin
-
-.PHONY: nodeup-install # install channels to local $gopath/bin
+.PHONY: nodeup-install # install nodeup to local $gopath/bin
 nodeup-install: nodeup
-	cp ${DIST}/${OSARCH}/channels ${GOPATH_1ST}/bin
+	cp ${DIST}/${OSARCH}/nodeup ${GOPATH_1ST}/bin
 
 .PHONY: all-install # Install all kops project binaries
-all-install: all kops-install channels-install nodeup-install
+all-install: all kops-install nodeup-install
 
 .PHONY: all
-all: kops protokube nodeup channels ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
+all: kops protokube nodeup ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
 
 include tests/e2e/e2e.mk
 
@@ -234,16 +230,10 @@ protokube: protokube-amd64
 .PHONY: crossbuild-protokube
 crossbuild-protokube: protokube-amd64 protokube-arm64
 
-.PHONY: channels-amd64 channels-arm64
-channels-amd64 channels-arm64: channels-%:
-	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/channels/cmd/channels
-
 .PHONY: channels
-channels: channels-amd64
-
-.PHONY: crossbuild-channels
-crossbuild-channels: channels-amd64 channels-arm64
+channels:
+	mkdir -p ${DIST}/linux/amd64
+	GOOS=linux GOARCH=amd64 go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/channels ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/channels/cmd/channels
 
 .PHONY: upload
 upload: version-dist # Upload kops to S3
@@ -672,23 +662,6 @@ dev-upload-protokube: version-dist-protokube
 dev-upload-protokube-amd64 dev-upload-protokube-arm64: dev-upload-protokube-%: version-dist-protokube-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
-# dev-upload-channels uploads channels
-.PHONY: version-dist-channels version-dist-channels-amd64 version-dist-channels-arm64
-version-dist-channels: version-dist-channels-amd64 version-dist-channels-arm64
-
-version-dist-channels-amd64 version-dist-channels-arm64: version-dist-channels-%: channels-%
-	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
-	cp -fp ${DIST}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels
-	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/channels ${UPLOAD}/kops/${VERSION}/linux/$*/channels.sha256
-
-.PHONY: dev-upload-channels
-dev-upload-channels: version-dist-channels
-	${UPLOAD_CMD} ${PLOAD}/ ${UPLOAD_DEST}
-
-.PHONY: dev-upload-channels-amd64 dev-upload-channels-arm64
-dev-upload-channels-amd64 dev-upload-channels-arm64: dev-upload-channels-%: version-dist-channels-%
-	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
-
 # dev-upload-kops-controller uploads kops-controller
 .PHONY: version-dist-kops-controller version-dist-kops-controller-amd64 version-dist-kops-controller-arm64
 version-dist-kops-controller: version-dist-kops-controller-amd64 version-dist-kops-controller-arm64
@@ -795,7 +768,7 @@ dev-upload-discovery-server-amd64 dev-upload-discovery-server-arm64: dev-upload-
 .PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
 dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
 
-dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-channels-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%

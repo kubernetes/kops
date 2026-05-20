@@ -62,8 +62,6 @@ func (m *mirrorConfig) findMirrors(u string) ([]string, bool) {
 			suffix = strings.ReplaceAll(suffix, "linux-arm64-nodeup", "nodeup-linux-arm64")
 			suffix = strings.ReplaceAll(suffix, "linux-amd64-protokube", "protokube-linux-amd64")
 			suffix = strings.ReplaceAll(suffix, "linux-arm64-protokube", "protokube-linux-arm64")
-			suffix = strings.ReplaceAll(suffix, "linux-amd64-channels", "channels-linux-amd64")
-			suffix = strings.ReplaceAll(suffix, "linux-arm64-channels", "channels-linux-arm64")
 		}
 
 		mirrors = append(mirrors, mirror+suffix)
