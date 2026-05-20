@@ -43,8 +43,10 @@ var _ fi.NodeupModelBuilder = &ProtokubeBuilder{}
 
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !t.UsesLegacyGossip() {
-		klog.V(2).Infof("skipping protokube provisioning: legacy gossip is not in use")
+	// Skip the cluster doesn't use gossip, or this is a worker that bootstraps via kops-controller.
+	// Must match the asset-skip condition in pkg/nodemodel/nodeupconfigbuilder.go.
+	if !t.UsesLegacyGossip() || (!t.IsMaster && len(t.BootConfig.APIServerIPs) > 0) {
+		klog.V(2).Infof("skipping protokube provisioning")
 		return nil
 	}
 

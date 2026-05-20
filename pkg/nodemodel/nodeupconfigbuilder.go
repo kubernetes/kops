@@ -528,6 +528,7 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 	}
 	assetBuilder := n.assetBuilder
 	if assetBuilder != nil {
+		// Add kops-managed images
 		for _, image := range assetBuilder.ImageAssets() {
 			for _, prefix := range desiredImagePrefixes {
 				remappedPrefix := assets.NormalizeImage(assetBuilder, prefix)
@@ -536,13 +537,13 @@ func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []stri
 				}
 			}
 		}
-	}
 
-	// Add ig-level extra images
-	if ig.Spec.WarmPool != nil && len(ig.Spec.WarmPool.AdditionalImages) > 0 {
-		for _, image := range ig.Spec.WarmPool.AdditionalImages {
-			remapped := assets.NormalizeImage(assetBuilder, image)
-			images[remapped] = true
+		// Add ig-level extra images
+		if ig.Spec.WarmPool != nil && len(ig.Spec.WarmPool.AdditionalImages) > 0 {
+			for _, image := range ig.Spec.WarmPool.AdditionalImages {
+				remapped := assets.NormalizeImage(assetBuilder, image)
+				images[remapped] = true
+			}
 		}
 	}
 
