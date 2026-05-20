@@ -1,5 +1,4 @@
-contents: |
-  KUBECONFIG=/var/lib/kops/kubeconfig
+contents: ""
 path: /etc/sysconfig/protokube
 type: file
 ---

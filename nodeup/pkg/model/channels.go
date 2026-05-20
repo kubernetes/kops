@@ -18,51 +18,39 @@ package model
 
 import (
 	"fmt"
-	"path/filepath"
-	"strings"
-	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
+	"sigs.k8s.io/yaml"
 
-	kopsroot "k8s.io/kops"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/util/pkg/env"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
-	channelsManifestPath = "/etc/kubernetes/manifests/kops-channels.manifest"
-	channelsKubeconfig   = "/var/lib/kops/kubeconfig"
-	channelsInterval     = 60 * time.Second
+	channelsManifestPath   = "/etc/kubernetes/manifests/kops-channels.manifest"
+	channelsKubeconfigPath = "/var/lib/kops/kubeconfig"
 )
 
-// ChannelsBuilder renders the kops-channels static pod that reconciles addon
-// channels against the cluster.
+// ChannelsBuilder writes the host-side artifacts the kops-channels static pod needs: the
+// kops-channels user, the kubeconfig owned by that user, and the pod manifest copied from
+// the state store (built by the cloudup channels builder).
 type ChannelsBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.NodeupModelBuilder = &ChannelsBuilder{}
 
-// Build emits the kops-channels static pod manifest on control-plane nodes.
 func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
-	if len(b.NodeupConfig.Channels) == 0 {
-		klog.V(2).Infof("no channels configured; skipping kops-channels static pod")
-		return nil
-	}
 
-	// Match runAsUser to the kubeconfig file's owner.
+	// Host user that owns the kubeconfig the kops-channels container reads via hostPath.
 	c.AddTask(&nodetasks.UserTask{
 		Name:  wellknownusers.KopsChannelsName,
 		UID:   wellknownusers.KopsChannelsID,
@@ -75,20 +63,16 @@ func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Organization: []string{rbac.SystemPrivilegedGroup},
 	}, c)
 	c.AddTask(&nodetasks.File{
-		Path:     channelsKubeconfig,
+		Path:     channelsKubeconfigPath,
 		Contents: kubeconfig,
 		Type:     nodetasks.FileType_File,
 		Mode:     fi.PtrTo("0400"),
 		Owner:    fi.PtrTo(wellknownusers.KopsChannelsName),
 	})
 
-	pod, err := b.buildPod()
+	manifest, err := b.readChannelsManifest(c)
 	if err != nil {
-		return fmt.Errorf("building kops-channels pod: %w", err)
-	}
-	manifest, err := k8scodecs.ToVersionedYaml(pod)
-	if err != nil {
-		return fmt.Errorf("marshaling kops-channels pod: %w", err)
+		return err
 	}
 	c.AddTask(&nodetasks.File{
 		Path:     channelsManifestPath,
@@ -98,119 +82,32 @@ func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	return nil
 }
 
-func (b *ChannelsBuilder) buildPod() (*v1.Pod, error) {
-	// TODO: route through AssetBuilder.RemapImage at cloudup so
-	// containerRegistry/containerProxy/dev overrides apply.
-	image := b.RemapImage("registry.k8s.io/kops/channels:" + kopsroot.KopsVersionImageTag())
-
-	pod := &v1.Pod{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kops-channels",
-			Namespace: "kube-system",
-			Labels: map[string]string{
-				"k8s-app": "kops-channels",
-			},
-		},
-		Spec: v1.PodSpec{
-			HostNetwork: true,
-			// kops-channels installs CoreDNS via the bootstrap channel, so it
-			// cannot itself depend on cluster DNS. Use the host resolver so
-			// VFS can reach S3/GCS/HTTPS-backed channel stores at boot.
-			DNSPolicy: v1.DNSDefault,
-		},
+// readChannelsManifest fetches the cloudup-built manifest and applies node-local SELinux
+// decoration when needed. Otherwise it passes the bytes through unchanged.
+func (b *ChannelsBuilder) readChannelsManifest(c *fi.NodeupModelBuilderContext) ([]byte, error) {
+	ctx := c.Context()
+	p, err := vfs.Context.BuildVfsPath(b.NodeupConfig.ChannelsManifest)
+	if err != nil {
+		return nil, fmt.Errorf("parsing path for kops-channels manifest %s: %w", b.NodeupConfig.ChannelsManifest, err)
+	}
+	data, err := p.ReadFile(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("reading kops-channels manifest %s: %w", b.NodeupConfig.ChannelsManifest, err)
 	}
 
-	args := []string{
-		"apply", "channel",
-		"--v=4",
-		"--yes",
-		"--interval=" + channelsInterval.String(),
-		"--node-name=$(NODE_NAME)",
+	// SELinux is per-IG via containerdConfig, so the decoration can only be applied at nodeup.
+	// Skip the parse/reserialize round-trip when there's nothing to add.
+	if b.NodeupConfig.ContainerdConfig == nil || !b.NodeupConfig.ContainerdConfig.SeLinuxEnabled {
+		return data, nil
 	}
-	args = append(args, b.NodeupConfig.Channels...)
-
-	container := v1.Container{
-		Name:  "kops-channels",
-		Image: image,
-		Args:  args,
-		Env: append([]v1.EnvVar{
-			{
-				Name: "NODE_NAME",
-				ValueFrom: &v1.EnvVarSource{
-					FieldRef: &v1.ObjectFieldSelector{FieldPath: "spec.nodeName"},
-				},
-			},
-			{
-				Name:  "KUBECONFIG",
-				Value: channelsKubeconfig,
-			},
-		}, b.channelsEnvVars()...),
-		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU:    resource.MustParse("50m"),
-				v1.ResourceMemory: resource.MustParse("50Mi"),
-			},
-		},
-		// ko-distroless defaults to a nonroot uid that can't read /var/lib/kops/kubeconfig.
-		SecurityContext: &v1.SecurityContext{
-			RunAsUser:    fi.PtrTo(int64(wellknownusers.KopsChannelsID)),
-			RunAsNonRoot: fi.PtrTo(true),
-		},
+	pod := &v1.Pod{}
+	if err := yaml.Unmarshal(data, pod); err != nil {
+		return nil, fmt.Errorf("parsing kops-channels manifest: %w", err)
 	}
-	kubemanifest.AddHostPathMapping(pod, &container, "kubeconfig", channelsKubeconfig,
-		kubemanifest.WithType(v1.HostPathFile))
-	// `kops toolbox enroll` rewrites channel URLs to file:// pointing at
-	// /etc/kubernetes/kops/config/addons/ on the host; the container needs
-	// that tree mounted to read the channel and its referenced manifests.
-	for i, dir := range fileChannelDirs(b.NodeupConfig.Channels) {
-		name := fmt.Sprintf("channels-%d", i)
-		kubemanifest.AddHostPathMapping(pod, &container, name, dir,
-			kubemanifest.WithType(v1.HostPathDirectory))
-	}
-	pod.Spec.Containers = append(pod.Spec.Containers, container)
-
-	kubemanifest.MarkPodAsCritical(pod)
-	kubemanifest.MarkPodAsNodeCritical(pod)
 	kubemanifest.AddHostPathSELinuxContext(pod, b.NodeupConfig)
-
-	return pod, nil
-}
-
-// fileChannelDirs returns the unique parent directories of any file:// channel
-// URLs in channels, preserving input order.
-func fileChannelDirs(channels []string) []string {
-	seen := map[string]bool{}
-	var dirs []string
-	for _, c := range channels {
-		p, ok := strings.CutPrefix(c, "file://")
-		if !ok {
-			continue
-		}
-		dir := filepath.Dir(p)
-		if seen[dir] {
-			continue
-		}
-		seen[dir] = true
-		dirs = append(dirs, dir)
+	out, err := k8scodecs.ToVersionedYaml(pod)
+	if err != nil {
+		return nil, fmt.Errorf("re-marshaling kops-channels manifest: %w", err)
 	}
-	return dirs
-}
-
-// channelsEnvVars returns the shared system-component env vars (cloud
-// credentials and proxy settings) VFS reads to fetch channel manifests. It
-// uses the same set as kops-controller and etcd-manager.
-func (b *ChannelsBuilder) channelsEnvVars() []v1.EnvVar {
-	clusterSpec := &kops.ClusterSpec{
-		Networking: kops.NetworkingSpec{
-			EgressProxy: b.NodeupConfig.Networking.EgressProxy,
-		},
-		CloudProvider: kops.CloudProviderSpec{
-			Openstack: b.NodeupConfig.Openstack,
-		},
-	}
-	return env.BuildSystemComponentEnvVars(clusterSpec).ToEnvVars()
+	return out, nil
 }
