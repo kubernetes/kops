@@ -601,3 +601,51 @@ func TestCrossValidateAPIServerRole(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateInstanceGroupName(t *testing.T) {
+	cases := []struct {
+		name      string
+		input     string
+		wantError bool
+	}{
+		// Empty is rejected; the validator does not have a special-case bypass.
+		// Callers that allow an empty name in a specific branch (e.g. the
+		// CAPI synthesis path in kops-controller) must skip the call.
+		{name: "empty", input: "", wantError: true},
+
+		// Valid DNS1123 subdomain names.
+		{name: "simple", input: "nodes", wantError: false},
+		{name: "with hyphen", input: "nodes-us-east-1a", wantError: false},
+		{name: "control plane", input: "control-plane-us-east-1a", wantError: false},
+		{name: "fqdn style", input: "nodes.example.k8s.local", wantError: false},
+		{name: "numeric", input: "nodes1", wantError: false},
+
+		// Path-traversal payloads.
+		{name: "parent traversal", input: "..", wantError: true},
+		{name: "parent traversal with target", input: "../master-foo", wantError: true},
+		{name: "embedded traversal", input: "nodes/../master-foo", wantError: true},
+		{name: "forward slash", input: "nodes/foo", wantError: true},
+		{name: "backslash", input: "nodes\\foo", wantError: true},
+		{name: "absolute path", input: "/etc/passwd", wantError: true},
+
+		// Other invalid DNS1123 subdomain inputs.
+		{name: "leading dot", input: ".nodes", wantError: true},
+		{name: "trailing dot", input: "nodes.", wantError: true},
+		{name: "uppercase", input: "Nodes", wantError: true},
+		{name: "whitespace", input: "nodes foo", wantError: true},
+		{name: "null byte", input: "nodes\x00", wantError: true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			errs := ValidateInstanceGroupName(tc.input, field.NewPath("name"))
+			if tc.wantError {
+				if len(errs) == 0 {
+					t.Fatalf("expected errors for input %q, got none", tc.input)
+				}
+			} else if len(errs) > 0 {
+				t.Fatalf("unexpected errors for input %q: %v", tc.input, errs.ToAggregate())
+			}
+		})
+	}
+}
