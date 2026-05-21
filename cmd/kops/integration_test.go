@@ -842,6 +842,7 @@ func TestPrivateDns1(t *testing.T) {
 			awsEBSCSIAddon,
 			dnsControllerAddon,
 		).
+		withTestGetAssets().
 		runTestTerraformAWS(t)
 }
 
