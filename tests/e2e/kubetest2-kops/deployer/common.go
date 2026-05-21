@@ -419,6 +419,7 @@ func (d *deployer) defaultClusterName() (string, error) {
 	gcpLimit := 63 - (len(suffix) + 1) // 1 for the dot
 	if len(jobName) > gcpLimit && d.CloudProvider == "gce" {
 		jobName = jobName[:gcpLimit]
+		jobName = strings.TrimRight(jobName, "-")
 	}
 
 	if suffix != "" {
