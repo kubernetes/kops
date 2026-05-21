@@ -43,6 +43,15 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 		vars[v.Name] = v.Value
 	}
 
+	// VFS uses AWS_REGION to skip the IMDS region probe, which fails as non-root because
+	// /sys/.../product_uuid is mode 0400.
+	if region := awsRegionFromSpec(spec); region != "" {
+		vars["AWS_REGION"] = region
+	} else {
+		// Stub specs without subnets fall back to the parent process env.
+		vars.addEnvVariableIfExist("AWS_REGION")
+	}
+
 	// Custom S3 endpoint
 	vars.addEnvVariableIfExist("S3_REGION")
 	vars.addEnvVariableIfExist("S3_ENDPOINT")
@@ -88,6 +97,21 @@ func BuildSystemComponentEnvVars(spec *kops.ClusterSpec) EnvVars {
 	}
 
 	return vars
+}
+
+// awsRegionFromSpec returns the region derived from a subnet zone, or "" for non-AWS specs and
+// AWS specs without zoned subnets.
+func awsRegionFromSpec(spec *kops.ClusterSpec) string {
+	if spec.CloudProvider.AWS == nil {
+		return ""
+	}
+	for _, subnet := range spec.Networking.Subnets {
+		// "us-east-1a" -> "us-east-1".
+		if len(subnet.Zone) > 1 {
+			return subnet.Zone[:len(subnet.Zone)-1]
+		}
+	}
+	return ""
 }
 
 func (m EnvVars) ToEnvVars() []corev1.EnvVar {

@@ -59,7 +59,8 @@ func isHealthy(u *unstructured.Unstructured) bool {
 
 	ready := true
 	statusConditions, found, err := unstructured.NestedFieldNoCopy(u.Object, "status", "conditions")
-	if err != nil || !found {
+	// CRDs may have status.conditions: null (found=true, value=nil); treat as absent.
+	if err != nil || !found || statusConditions == nil {
 		klog.Infof("status conditions not found for %s", humanName(u))
 		return true
 	}

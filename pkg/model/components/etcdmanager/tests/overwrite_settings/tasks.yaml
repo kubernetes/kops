@@ -85,6 +85,8 @@ Contents: |
         --volume-provider=aws --volume-tag=k8s.io/etcd/events --volume-tag=k8s.io/role/control-plane=1
         --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
       env:
+      - name: AWS_REGION
+        value: us-test-1
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
       image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260512
@@ -260,6 +262,8 @@ Contents: |
         --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
         --volume-tag=kubernetes.io/cluster/minimal.example.com=owned > /tmp/pipe 2>&1
       env:
+      - name: AWS_REGION
+        value: us-test-1
       - name: ETCD_QUOTA_BACKEND_BYTES
         value: "10737418240"
       image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260512

@@ -5,7 +5,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 17e966abf05680651e9113970ae7aeb371fc039792b56afd8f4366bdb1a160e3
+    manifestHash: 297ce9d2db16553ebcc2886f751bb7f8494ad06f9de339c2f9067cbea377d5d6
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -97,7 +97,7 @@ spec:
       role.kubernetes.io/authentication: "1"
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 2b244e8c080581cd5ced9a30c525cd1c0c82180c05f35ca83c870d8f51d89a31
+    manifestHash: 9c58545e8729ec86ab40ad062d37791f78bdc168c982d2487e417b2ca08902fb
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
