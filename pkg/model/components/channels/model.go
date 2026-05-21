@@ -143,6 +143,12 @@ func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 				Name:  "KUBECONFIG",
 				Value: channelsKubeconfigPath,
 			},
+			{
+				// client-go's discovery cache writes to $HOME/.kube; /tmp is the writable dir
+				// for the non-root uid.
+				Name:  "HOME",
+				Value: "/tmp",
+			},
 		}, env.BuildSystemComponentEnvVars(&b.Cluster.Spec).ToEnvVars()...),
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
