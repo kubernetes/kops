@@ -528,6 +528,15 @@ resource "azurerm_storage_blob" "kops-version-txt" {
   type                   = "Block"
 }
 
+resource "azurerm_storage_blob" "manifests-channels-kops-channels" {
+  name                   = "tests/minimal-azure.example.com/manifests/channels/kops-channels.yaml"
+  provider               = azurerm.files
+  source                 = "${path.module}/data/azurerm_storage_blob_manifests-channels-kops-channels_source"
+  storage_account_name   = "teststorage"
+  storage_container_name = "testcontainer"
+  type                   = "Block"
+}
+
 resource "azurerm_storage_blob" "manifests-etcdmanager-events-control-plane-eastus-1" {
   name                   = "tests/minimal-azure.example.com/manifests/etcd/events-control-plane-eastus-1.yaml"
   provider               = azurerm.files

@@ -36,8 +36,6 @@ type Config struct {
 	Images map[architectures.Architecture][]*Image `json:"images,omitempty"`
 	// ClusterName is the name of the cluster
 	ClusterName string `json:",omitempty"`
-	// Channels is a list of channels that we should apply
-	Channels []string `json:"channels,omitempty"`
 	// ApiserverAdditionalIPs are additional IP address to put in the apiserver server cert.
 	ApiserverAdditionalIPs []string `json:",omitempty"`
 	// KubernetesVersion is the version of Kubernetes to install.
@@ -52,6 +50,9 @@ type Config struct {
 	EtcdClusterNames []string `json:",omitempty"`
 	// EtcdManifests are the manifests for running etcd.
 	EtcdManifests []string `json:"etcdManifests,omitempty"`
+	// ChannelsManifest is the state-store path of the kops-channels static pod manifest,
+	// set on control-plane instance groups.
+	ChannelsManifest string `json:"channelsManifest,omitempty"`
 
 	// CAs are the CA certificates to trust.
 	CAs map[string]string

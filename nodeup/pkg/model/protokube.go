@@ -160,8 +160,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 	envVars := make(map[string]string)
 
-	envVars["KUBECONFIG"] = "/var/lib/kops/kubeconfig"
-
 	// Pass in gossip dns connection limit
 	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
 		envVars["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")

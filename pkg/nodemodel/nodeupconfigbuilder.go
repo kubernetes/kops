@@ -42,7 +42,7 @@ import (
 
 type nodeUpConfigBuilder struct {
 	assetBuilder               *assets.AssetBuilder
-	channels                   []string
+	channelsManifest           string
 	configBase                 vfs.Path
 	cluster                    *kops.Cluster
 	etcdManifests              map[string][]string
@@ -57,13 +57,8 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
 	}
 
-	channels := []string{
-		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
-	}
-
-	for i := range cluster.Spec.Addons {
-		channels = append(channels, cluster.Spec.Addons[i].Manifest)
-	}
+	// Must match channelsManifestPath in pkg/model/components/channels/model.go.
+	channelsManifest := configBase.Join("manifests/channels/kops-channels.yaml").Path()
 
 	etcdManifests := map[string][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
@@ -177,7 +172,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	configBuilder := nodeUpConfigBuilder{
 		assetBuilder:               assetBuilder,
-		channels:                   channels,
+		channelsManifest:           channelsManifest,
 		configBase:                 configBase,
 		cluster:                    cluster,
 		etcdManifests:              etcdManifests,
@@ -370,7 +365,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	if role != kops.InstanceGroupRoleBastion {
 		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
 		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
-			config.Channels = n.channels
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
 					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
@@ -423,6 +417,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			config.EtcdClusterNames = append(config.EtcdClusterNames, etcdCluster.Name)
 		}
 		config.EtcdManifests = n.etcdManifests[ig.Name]
+		config.ChannelsManifest = n.channelsManifest
 	}
 
 	if cluster.Spec.CloudProvider.AWS != nil {

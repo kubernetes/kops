@@ -988,6 +988,14 @@ resource "aws_s3_object" "kops-version-txt" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "manifests-channels-kops-channels" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_manifests-channels-kops-channels_content")
+  key                    = "clusters.example.com/privateciliumadvanced.example.com/manifests/channels/kops-channels.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "manifests-etcdmanager-cilium-master-us-test-1a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_manifests-etcdmanager-cilium-master-us-test-1a_content")

@@ -300,8 +300,7 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
-channels:
-- memfs://clusters.example.com/compress.example.com/addons/bootstrap-channel.yaml
+channelsManifest: memfs://clusters.example.com/compress.example.com/manifests/channels/kops-channels.yaml
 configStore:
   keypairs: memfs://clusters.example.com/compress.example.com/pki
   secrets: memfs://clusters.example.com/compress.example.com/secrets

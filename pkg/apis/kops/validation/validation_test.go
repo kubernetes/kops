@@ -709,6 +709,50 @@ func Test_Validate_AdditionalPolicies(t *testing.T) {
 	}
 }
 
+func Test_Validate_Addons(t *testing.T) {
+	grid := []struct {
+		Input          []kops.AddonSpec
+		ExpectedErrors []string
+	}{
+		{},
+		{
+			Input: []kops.AddonSpec{{Manifest: "s3://somebucket/example.yaml"}},
+		},
+		{
+			Input:          []kops.AddonSpec{{Manifest: "file:///etc/kubernetes/kops/config/addons/extra.yaml"}},
+			ExpectedErrors: []string{"Invalid value::spec.addons[0].manifest"},
+		},
+	}
+	for _, g := range grid {
+		clusterSpec := &kops.ClusterSpec{
+			KubernetesVersion: "1.35.0",
+			Addons:            g.Input,
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
+			Networking: kops.NetworkingSpec{
+				NetworkCIDR:           "10.10.0.0/16",
+				NonMasqueradeCIDR:     "100.64.0.0/10",
+				PodCIDR:               "100.96.0.0/11",
+				ServiceClusterIPRange: "100.64.0.0/13",
+				Subnets: []kops.ClusterSubnetSpec{
+					{Name: "subnet1", Type: kops.SubnetTypePublic, CIDR: "10.10.10.0/24"},
+				},
+			},
+			EtcdClusters: []kops.EtcdClusterSpec{
+				{
+					Name: "main",
+					Members: []kops.EtcdMemberSpec{
+						{Name: "us-test-1a", InstanceGroup: fi.PtrTo("master-us-test-1a")},
+					},
+				},
+			},
+		}
+		errs := validateClusterSpec(clusterSpec, &kops.Cluster{Spec: *clusterSpec}, field.NewPath("spec"), true)
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
 type caliInput struct {
 	Cluster *kops.ClusterSpec
 	Calico  *kops.CalicoNetworkingSpec
