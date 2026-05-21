@@ -779,6 +779,14 @@ func (b *PolicyResource) Open() (io.Reader, error) {
 	if b.DNSZone != nil {
 		hostedZoneID := fi.ValueOf(b.DNSZone.ZoneID)
 		if hostedZoneID == "" {
+			// ZoneID is normally populated by DNSZone.Find before this runs. In dry-run modes that
+			// skip Find (e.g. `kops get assets`), it may still be empty; fall back to the DNS name
+			// so the policy renders. The resulting ARN is not a valid Route53 ARN, but the policy
+			// is not applied in that mode.
+			hostedZoneID = fi.ValueOf(b.DNSZone.DNSName)
+			klog.V(4).Infof("Falling back to DNS name %q for IAM policy because ZoneID is empty", hostedZoneID)
+		}
+		if hostedZoneID == "" {
 			// Dependency analysis failure?
 			return nil, fmt.Errorf("DNS ZoneID not set")
 		}
