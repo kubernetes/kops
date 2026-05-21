@@ -21,7 +21,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
+	kopsvalidation "k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/commands"
@@ -33,6 +35,9 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	instanceGroupName := identity.InstanceGroupName
 	if instanceGroupName == "" {
 		return nil, fmt.Errorf("did not find InstanceGroup for node %q", identity.NodeName)
+	}
+	if errs := kopsvalidation.ValidateInstanceGroupName(instanceGroupName, field.NewPath("instanceGroupName")); len(errs) > 0 {
+		return nil, fmt.Errorf("invalid InstanceGroup name: %v", errs.ToAggregate())
 	}
 
 	nodeConfig := &nodeup.NodeConfig{}
