@@ -21,8 +21,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	kopsvalidation "k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/commands"
@@ -39,8 +41,14 @@ func (s *Server) getNodeConfig(ctx context.Context, req *nodeup.BootstrapRequest
 	log.Info("getting node config", "req", req, "identity", identity)
 
 	instanceGroupName := identity.InstanceGroupName
-	if instanceGroupName == "" && identity.CAPIMachine == nil {
-		return nil, fmt.Errorf("did not find owner for node %q", identity.NodeName)
+	if instanceGroupName == "" {
+		if identity.CAPIMachine == nil {
+			return nil, fmt.Errorf("did not find owner for node %q", identity.NodeName)
+		}
+		// CAPI path: the InstanceGroup is synthesized from the Machine and
+		// the name never reaches the configBase path, so we don't validate it.
+	} else if errs := kopsvalidation.ValidateInstanceGroupName(instanceGroupName, field.NewPath("instanceGroupName")); len(errs) > 0 {
+		return nil, fmt.Errorf("invalid InstanceGroup name: %v", errs.ToAggregate())
 	}
 
 	var nodeConfig *nodeup.NodeConfig

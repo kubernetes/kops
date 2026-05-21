@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	apivalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
@@ -33,6 +34,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
+
+// ValidateInstanceGroupName validates that an InstanceGroup name
+// is a valid Kubernetes ObjectMeta name (DNS subdomain).
+func ValidateInstanceGroupName(name string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if name == "" {
+		allErrs = append(allErrs, field.Required(fldPath, ""))
+		return allErrs
+	}
+	for _, msg := range apivalidation.NameIsDNSSubdomain(name, false) {
+		allErrs = append(allErrs, field.Invalid(fldPath, name, msg))
+	}
+	return allErrs
+}
 
 // ValidateInstanceGroup is responsible for validating the configuration of a instancegroup
 func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) field.ErrorList {
