@@ -19,6 +19,8 @@ spec:
       --volume-tag=kubernetes.io/cluster/containerd.example.com=owned > /tmp/pipe
       2>&1
     env:
+    - name: AWS_REGION
+      value: us-test-1
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
     image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260512

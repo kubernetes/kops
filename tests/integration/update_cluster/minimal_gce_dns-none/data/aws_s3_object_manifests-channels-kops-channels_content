@@ -22,6 +22,8 @@ spec:
           fieldPath: spec.nodeName
     - name: KUBECONFIG
       value: /var/lib/kops/kubeconfig
+    - name: HOME
+      value: /tmp
     image: registry.k8s.io/kops/channels:1.34.0-beta.1
     name: kops-channels
     resources:

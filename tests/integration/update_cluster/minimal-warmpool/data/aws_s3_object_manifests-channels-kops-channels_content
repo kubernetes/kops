@@ -22,6 +22,10 @@ spec:
           fieldPath: spec.nodeName
     - name: KUBECONFIG
       value: /var/lib/kops/kubeconfig
+    - name: HOME
+      value: /tmp
+    - name: AWS_REGION
+      value: us-test-1
     image: kops.k8s.io/remapped-image/kops/channels:1.34.0-beta.1
     name: kops-channels
     resources:

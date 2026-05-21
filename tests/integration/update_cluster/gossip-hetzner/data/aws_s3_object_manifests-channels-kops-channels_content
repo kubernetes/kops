@@ -22,6 +22,8 @@ spec:
           fieldPath: spec.nodeName
     - name: KUBECONFIG
       value: /var/lib/kops/kubeconfig
+    - name: HOME
+      value: /tmp
     - name: HCLOUD_TOKEN
       value: REDACTED
     image: registry.k8s.io/kops/channels:1.34.0-beta.1

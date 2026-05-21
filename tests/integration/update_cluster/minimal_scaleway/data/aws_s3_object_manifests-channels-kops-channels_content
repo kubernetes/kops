@@ -22,6 +22,8 @@ spec:
           fieldPath: spec.nodeName
     - name: KUBECONFIG
       value: /var/lib/kops/kubeconfig
+    - name: HOME
+      value: /tmp
     - name: SCW_ACCESS_KEY
     - name: SCW_DEFAULT_PROJECT_ID
     - name: SCW_SECRET_KEY

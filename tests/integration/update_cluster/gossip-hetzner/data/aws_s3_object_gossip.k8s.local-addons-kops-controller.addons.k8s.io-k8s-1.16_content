@@ -47,11 +47,6 @@ spec:
                 operator: Exists
               - key: kops.k8s.io/kops-controller-pki
                 operator: Exists
-            - matchExpressions:
-              - key: node-role.kubernetes.io/master
-                operator: Exists
-              - key: kops.k8s.io/kops-controller-pki
-                operator: Exists
       containers:
       - args:
         - --v=2

@@ -5,7 +5,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 7b6f0779fb49aa87a08017f757ac88b70795605fd3ca9687a724d353bb604bd0
+    manifestHash: cbe1d68907c90d6bf963f4682465b71cc037ea0ad03e0354ca8b4c59f3a7cfca
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -91,7 +91,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: 471b8b962e838707cde28100a68c774a0612c32262962f4b01dae32ad98dda63
+    manifestHash: 0c8760e9e730a88658c771ac947e6b471e0e750b39847027dfa125062fd683e6
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
