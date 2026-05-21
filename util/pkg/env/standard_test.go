@@ -32,6 +32,46 @@ func TestBuildSystemComponentEnvVars(t *testing.T) {
 		wantExist bool
 	}{
 		{
+			name: "AWS region derived from subnet zone",
+			spec: &kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+				Networking: kops.NetworkingSpec{
+					Subnets: []kops.ClusterSubnetSpec{
+						{Zone: "ap-northeast-1a"},
+						{Zone: "ap-northeast-1c"},
+					},
+				},
+			},
+			envVar:    "AWS_REGION",
+			wantVal:   "ap-northeast-1",
+			wantExist: true,
+		},
+		{
+			name: "AWS region absent when no subnets",
+			spec: &kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+			},
+			envVar:    "AWS_REGION",
+			wantExist: false,
+		},
+		{
+			name: "AWS region not set for non-AWS clouds",
+			spec: &kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{},
+				Networking: kops.NetworkingSpec{
+					Subnets: []kops.ClusterSubnetSpec{
+						{Zone: "us-east-1a"},
+					},
+				},
+			},
+			envVar:    "AWS_REGION",
+			wantExist: false,
+		},
+		{
 			name: "Openstack nil",
 			spec: &kops.ClusterSpec{
 				CloudProvider: kops.CloudProviderSpec{},
