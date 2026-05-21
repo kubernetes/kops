@@ -112,6 +112,32 @@ func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expec
 	}
 }
 
+func TestValidateKubeletTaints(t *testing.T) {
+	grid := []struct {
+		taints   []string
+		expected []string
+	}{
+		{
+			taints: []string{
+				"dedicated=gpu:NoSchedule",
+				"spot:PreferNoSchedule",
+				"drain:NoExecute",
+			},
+		},
+		{
+			taints: []string{
+				"dedicated=gpu:ScheduleSometimes",
+			},
+			expected: []string{"Invalid value::spec.kubelet.taints[0]"},
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateKubelet(&kops.KubeletConfigSpec{Taints: g.taints}, &kops.Cluster{}, field.NewPath("spec", "kubelet"))
+		testErrors(t, g.taints, errs, g.expected)
+	}
+}
+
 func TestValidateSubnets(t *testing.T) {
 	grid := []struct {
 		Input          []kops.ClusterSubnetSpec
