@@ -19,7 +19,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/apparentlymart/go-cidr v1.1.0
 	github.com/aws/amazon-ec2-instance-selector/v3 v3.1.2
-	github.com/aws/aws-sdk-go-v2 v1.41.0
+	github.com/aws/aws-sdk-go-v2 v1.41.5
 	github.com/aws/aws-sdk-go-v2/config v1.32.5
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.5
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.16
@@ -30,16 +30,16 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.45.17
 	github.com/aws/aws-sdk-go-v2/service/iam v1.53.1
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.93.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.97.3
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.20
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.67.7
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5
-	github.com/aws/smithy-go v1.24.0
+	github.com/aws/smithy-go v1.24.2
 	github.com/blang/semver/v4 v4.0.0
-	github.com/cert-manager/cert-manager v1.19.2
+	github.com/cert-manager/cert-manager v1.19.3
 	github.com/digitalocean/godo v1.170.0
 	github.com/go-ini/ini v1.67.0
-	github.com/go-jose/go-jose/v4 v4.1.3
+	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/go-logr/logr v1.4.3
 	github.com/go-viper/mapstructure/v2 v2.4.0
 	github.com/google/go-cmp v0.7.0
@@ -110,15 +110,15 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.4 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.16 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.16 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.8 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.21 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.21 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.16 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.7 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.16 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.22 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.7 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.13 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.21 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.21 // indirect
 	github.com/aws/aws-sdk-go-v2/service/pricing v1.34.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.7 // indirect
@@ -137,7 +137,7 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.18.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/docker/cli v29.0.3+incompatible // indirect
+	github.com/docker/cli v29.2.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.3 // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
