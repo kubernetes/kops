@@ -1,6 +1,6 @@
 module k8s.io/kops/tests/e2e/scenarios/ai-conformance/tools/check-aws-availability
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
