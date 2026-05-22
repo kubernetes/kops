@@ -88,7 +88,7 @@ func (h hetznerVerifier) VerifyToken(ctx context.Context, rawRequest *http.Reque
 	}
 
 	if len(challengeEndpoints) == 0 {
-		return nil, fmt.Errorf("cannot determine challenge endpoint for server %q", serverID)
+		return nil, fmt.Errorf("cannot determine challenge endpoint for server %d", serverID)
 	}
 
 	result := &bootstrap.VerifyResult{
