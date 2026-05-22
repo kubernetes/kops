@@ -19,7 +19,7 @@ package kops
 import "strings"
 
 // Version can be replaced by build tooling
-var Version = "unknown"
+var Version = "0.0.0"
 
 // KopsVersionImageTag is like Version, but with + replaced by - (so it can be used in docker tags)
 func KopsVersionImageTag() string {
