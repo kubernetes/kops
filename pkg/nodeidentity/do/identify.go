@@ -136,7 +136,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	dropletID, err := strconv.Atoi(provIDNum)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert provider ID number %q: %s", dropletID, err)
+		return nil, fmt.Errorf("failed to convert provider ID number %d: %s", dropletID, err)
 	}
 
 	kopsGroup, err := i.getInstanceGroup(dropletID)
