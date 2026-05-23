@@ -1871,6 +1871,43 @@ func Test_Validate_Nvidia_Ig(t *testing.T) {
 	}
 }
 
+func Test_Validate_GVisor(t *testing.T) {
+	grid := []struct {
+		name            string
+		inClusterConfig bool
+		enabled         *bool
+		expectedErrors  []string
+	}{
+		{
+			name:            "enabled in cluster config",
+			inClusterConfig: true,
+			enabled:         fi.PtrTo(true),
+			expectedErrors:  []string{"Forbidden::containerd.gvisor"},
+		},
+		{
+			name:            "disabled in cluster config",
+			inClusterConfig: true,
+			enabled:         fi.PtrTo(false),
+			expectedErrors:  []string{"Forbidden::containerd.gvisor"},
+		},
+		{
+			name:    "enabled in instance group config",
+			enabled: fi.PtrTo(true),
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.name, func(t *testing.T) {
+			containerd := &kops.ContainerdConfig{
+				GVisor: &kops.GVisorConfig{
+					Enabled: g.enabled,
+				},
+			}
+			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), g.inClusterConfig)
+			testErrors(t, g.name, errs, g.expectedErrors)
+		})
+	}
+}
+
 func Test_Validate_NriConfig(t *testing.T) {
 	unsupportedContainerdVersion := "1.6.0"
 	supportedContainerdVersion := "1.7.0"

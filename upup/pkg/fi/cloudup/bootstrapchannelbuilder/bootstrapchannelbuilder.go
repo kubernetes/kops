@@ -615,16 +615,15 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
-	gvisor := b.Cluster.Spec.Containerd.GVisor
 	igGVisor := false
 	for _, ig := range b.KopsModelContext.InstanceGroups {
-		if ig.Spec.Containerd != nil && ig.Spec.Containerd.GVisor != nil && fi.ValueOf(ig.Spec.Containerd.GVisor.Enabled) {
+		if ig.Spec.Role == kops.InstanceGroupRoleNode && ig.Spec.Containerd != nil && ig.Spec.Containerd.GVisor != nil && fi.ValueOf(ig.Spec.Containerd.GVisor.Enabled) {
 			igGVisor = true
 			break
 		}
 	}
 
-	if gvisor != nil && fi.ValueOf(gvisor.Enabled) || igGVisor {
+	if igGVisor {
 		key := "gvisor.addons.k8s.io"
 
 		{

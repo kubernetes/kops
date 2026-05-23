@@ -35,11 +35,17 @@ func (b *GVisorBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return nil
 	}
 
+	// gVisor packages are only published in the upstream apt repository,
+	// so installation is limited to Debian-family distributions (Debian, Ubuntu).
+	if !b.Distribution.IsDebianFamily() {
+		return nil
+	}
+
 	c.AddTask(&nodetasks.AptSource{
 		Name:    "gvisor",
 		Keyring: "https://gvisor.dev/archive.key",
 		Sources: []string{
-			"deb [arch=$(dpkg --print-architecture)] https://storage.googleapis.com/gvisor/releases release main",
+			"deb [arch=$(ARCH)] https://storage.googleapis.com/gvisor/releases release main",
 		},
 	})
 	// The runsc package bundles both runsc and containerd-shim-runsc-v1.

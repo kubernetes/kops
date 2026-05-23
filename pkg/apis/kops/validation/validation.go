@@ -1945,6 +1945,10 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 		allErrs = append(allErrs, validateNvidiaConfig(cluster, config.NvidiaGPU, fldPath.Child("nvidia"), inClusterConfig)...)
 	}
 
+	if config.GVisor != nil {
+		allErrs = append(allErrs, validateGVisorConfig(fldPath.Child("gvisor"), inClusterConfig)...)
+	}
+
 	return allErrs
 }
 
@@ -1977,6 +1981,13 @@ func validateNvidiaConfig(cluster *kops.Cluster, nvidia *kops.NvidiaGPUConfig, f
 	}
 	if cluster.GetCloudProvider() == kops.CloudProviderOpenstack && inClusterConfig {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "OpenStack supports nvidia configuration only in instance group"))
+	}
+	return allErrs
+}
+
+func validateGVisorConfig(fldPath *field.Path, inClusterConfig bool) (allErrs field.ErrorList) {
+	if inClusterConfig {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "gVisor can only be configured on instance groups"))
 	}
 	return allErrs
 }

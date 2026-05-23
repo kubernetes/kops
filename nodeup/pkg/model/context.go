@@ -564,11 +564,9 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 }
 
 // InstallGVisorRuntime returns true if the gVisor (runsc) runtime should be installed.
-// gVisor is only supported on Debian-family distributions (Debian, Ubuntu).
 func (c *NodeupModelContext) InstallGVisorRuntime() bool {
 	return c.NodeupConfig.GVisor != nil &&
-		fi.ValueOf(c.NodeupConfig.GVisor.Enabled) &&
-		c.Distribution.IsDebianFamily()
+		fi.ValueOf(c.NodeupConfig.GVisor.Enabled)
 }
 
 // CloudProvider returns the cloud provider we are running on

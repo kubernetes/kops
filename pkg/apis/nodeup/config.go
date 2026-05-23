@@ -270,9 +270,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.NvidiaGPU = buildNvidiaConfig(cluster, instanceGroup)
 	}
 
-	if (cluster.Spec.Containerd != nil && cluster.Spec.Containerd.GVisor != nil) || (instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.GVisor != nil) {
-		config.GVisor = buildGVisorConfig(cluster, instanceGroup)
-	}
+	config.GVisor = buildGVisorConfig(instanceGroup)
 
 	config.KubeProxy = buildKubeProxy(cluster, instanceGroup)
 
@@ -433,9 +431,15 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 // buildContainerdConfig builds containerd configuration for instance. Instance group configuration will override cluster configuration
 func buildContainerdConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.ContainerdConfig {
-	config := cluster.Spec.Containerd.DeepCopy()
+	config := &kops.ContainerdConfig{}
+	if cluster.Spec.Containerd != nil {
+		config = cluster.Spec.Containerd.DeepCopy()
+	}
 	if instanceGroup.Spec.Containerd != nil {
 		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd)
+	}
+	if instanceGroup.Spec.Role != kops.InstanceGroupRoleNode || instanceGroup.Spec.Containerd == nil || instanceGroup.Spec.Containerd.GVisor == nil {
+		config.GVisor = nil
 	}
 	return config
 }
@@ -459,16 +463,12 @@ func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup)
 }
 
 // buildGVisorConfig builds gVisor configuration for instance group
-func buildGVisorConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.GVisorConfig {
-	config := &kops.GVisorConfig{}
-	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.GVisor != nil {
-		config = cluster.Spec.Containerd.GVisor
+func buildGVisorConfig(instanceGroup *kops.InstanceGroup) *kops.GVisorConfig {
+	if instanceGroup.Spec.Role != kops.InstanceGroupRoleNode || instanceGroup.Spec.Containerd == nil || instanceGroup.Spec.Containerd.GVisor == nil {
+		return nil
 	}
 
-	if instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.GVisor != nil {
-		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd.GVisor)
-	}
-
+	config := instanceGroup.Spec.Containerd.GVisor.DeepCopy()
 	if config.Platform == "" {
 		config.Platform = kops.GVisorDefaultPlatform
 	}
