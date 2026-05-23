@@ -24,7 +24,9 @@ cd "${KOPS_ROOT}"
 
 make gomod
 
-changes=$(git status --porcelain go.mod go.sum vendor/ tests/e2e/go.mod  tests/e2e/go.sum || true)
+# Check every module's go.mod/go.sum plus the vendored tree, excluding hidden directories
+# that aren't part of the source (e.g. .claude worktrees, .idea).
+changes=$(git status --porcelain -- '*go.mod' '*go.sum' vendor/ ':(exclude,glob)**/.*/**' || true)
 if [ -n "${changes}" ]; then
   echo "ERROR: go modules are not up to date; please run: make gomod"
   echo "changed files:"
