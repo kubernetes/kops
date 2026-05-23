@@ -48,6 +48,8 @@ type ContainerdConfig struct {
 	Version *string `json:"version,omitempty"`
 	// NvidiaGPU configures the Nvidia GPU runtime.
 	NvidiaGPU *NvidiaGPUConfig `json:"nvidiaGPU,omitempty"`
+	// GVisor configures the gVisor (runsc) sandboxed runtime.
+	GVisor *GVisorConfig `json:"gvisor,omitempty"`
 	// Runc configures the runc runtime.
 	Runc *Runc `json:"runc,omitempty"`
 	// SelinuxEnabled enables SELinux support
@@ -97,5 +99,19 @@ type Runc struct {
 	// Version used to pick the runc package.
 	Version *string `json:"version,omitempty"`
 	// Packages overrides the URL and hash for the packages.
+	Packages *PackagesConfig `json:"packages,omitempty"`
+}
+
+// GVisorConfig configures the gVisor sandboxed container runtime.
+// When enabled, kOps installs runsc and containerd-shim-runsc-v1,
+// registers the "runsc" runtime handler in containerd, and deploys
+// a Kubernetes RuntimeClass named "gvisor".
+type GVisorConfig struct {
+	// Enabled determines if kOps will install the gVisor runtime.
+	Enabled *bool `json:"enabled,omitempty"`
+	// Platform is the gVisor execution platform: "systrap" (default, works
+	// everywhere including VMs) or "kvm" (bare-metal with KVM support).
+	Platform string `json:"platform,omitempty"`
+	// Packages overrides the URL and hash for the gVisor packages.
 	Packages *PackagesConfig `json:"packages,omitempty"`
 }

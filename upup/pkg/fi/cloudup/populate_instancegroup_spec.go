@@ -229,6 +229,16 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	}
 
+	// Label nodes that have gVisor enabled so the RuntimeClass nodeSelector works.
+	clusterGVisor := cluster.Spec.Containerd != nil && cluster.Spec.Containerd.GVisor != nil && fi.ValueOf(cluster.Spec.Containerd.GVisor.Enabled)
+	igGVisor := ig.Spec.Containerd != nil && ig.Spec.Containerd.GVisor != nil && fi.ValueOf(ig.Spec.Containerd.GVisor.Enabled)
+	if clusterGVisor || igGVisor {
+		if ig.Spec.NodeLabels == nil {
+			ig.Spec.NodeLabels = make(map[string]string)
+		}
+		ig.Spec.NodeLabels["kops.k8s.io/gvisor"] = "1"
+	}
+
 	if ig.Spec.Manager == "" {
 		ig.Spec.Manager = kops.InstanceManagerCloudGroup
 	}

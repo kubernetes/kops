@@ -105,6 +105,8 @@ type Config struct {
 	DNSZone string `json:",omitempty"`
 	// NvidiaGPU contains the configuration for nvidia
 	NvidiaGPU *kops.NvidiaGPUConfig `json:",omitempty"`
+	// GVisor contains the configuration for gVisor sandboxed runtime
+	GVisor *kops.GVisorConfig `json:",omitempty"`
 
 	// AWS-specific
 	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
@@ -266,6 +268,10 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 
 	if (cluster.Spec.Containerd != nil && cluster.Spec.Containerd.NvidiaGPU != nil) || (instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.NvidiaGPU != nil) {
 		config.NvidiaGPU = buildNvidiaConfig(cluster, instanceGroup)
+	}
+
+	if (cluster.Spec.Containerd != nil && cluster.Spec.Containerd.GVisor != nil) || (instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.GVisor != nil) {
+		config.GVisor = buildGVisorConfig(cluster, instanceGroup)
 	}
 
 	config.KubeProxy = buildKubeProxy(cluster, instanceGroup)
@@ -447,6 +453,24 @@ func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup)
 
 	if config.DriverPackage == "" {
 		config.DriverPackage = kops.NvidiaDefaultDriverPackage
+	}
+
+	return config
+}
+
+// buildGVisorConfig builds gVisor configuration for instance group
+func buildGVisorConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) *kops.GVisorConfig {
+	config := &kops.GVisorConfig{}
+	if cluster.Spec.Containerd != nil && cluster.Spec.Containerd.GVisor != nil {
+		config = cluster.Spec.Containerd.GVisor
+	}
+
+	if instanceGroup.Spec.Containerd != nil && instanceGroup.Spec.Containerd.GVisor != nil {
+		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd.GVisor)
+	}
+
+	if config.Platform == "" {
+		config.Platform = kops.GVisorDefaultPlatform
 	}
 
 	return config
