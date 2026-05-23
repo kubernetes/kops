@@ -324,9 +324,10 @@ ko-kops-utils-cp-push:
 gomod:
 	go mod tidy
 	go mod vendor
-	cd hack; go mod tidy
-	cd tests/e2e; go mod tidy
-	cd tools/otel/traceserver; go mod tidy
+	for dir in $$(find . -name go.mod -not -path './go.mod' -not -path './vendor/*' -not -path '*/.*' | xargs -n1 dirname | sort); do \
+		echo "go mod tidy: $$dir"; \
+		( cd "$$dir" && go mod tidy ); \
+	done
 
 .PHONY: gofmt
 gofmt:
