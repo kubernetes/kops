@@ -17,7 +17,7 @@ spec:
   configBase: "{{.stateStore}}/{{.clusterName}}"
   containerd:
     configAdditions:
-      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type: io.containerd.runc.v2
+      plugins."io.containerd.cri.v1.runtime".containerd.runtimes.test-handler.runtime_type: io.containerd.runc.v2
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-{{$zone}}
