@@ -28,6 +28,7 @@ When defining a new function:
 package cloudup
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -78,6 +79,57 @@ type TemplateFunctions struct {
 	model.KopsModelContext
 
 	cloud fi.Cloud
+
+	tasks map[string]fi.CloudupTask
+}
+
+// addonTemplateRenderer constructs a fresh TemplateFunctions per addon render,
+// so each addon sees its own task-bound func map.
+type addonTemplateRenderer struct {
+	modelContext *model.KopsModelContext
+	cloud        fi.Cloud
+	secretStore  fi.SecretStore
+}
+
+func (r *addonTemplateRenderer) newTemplateFunctions(tasks map[string]fi.CloudupTask) *TemplateFunctions {
+	return &TemplateFunctions{
+		KopsModelContext: *r.modelContext,
+		cloud:            r.cloud,
+		tasks:            tasks,
+	}
+}
+
+// RenderTemplate parses and executes an addon template source against a func map
+// derived from a per-call *TemplateFunctions bound to the given task graph.
+// When tasks is nil, task-based functions return empty stubs so templates still
+// render — used for Build-time image discovery before the task graph exists.
+func (r *addonTemplateRenderer) RenderTemplate(name string, source []byte, tasks map[string]fi.CloudupTask) ([]byte, error) {
+	tf := r.newTemplateFunctions(tasks)
+	funcMap := template.FuncMap{}
+	if err := tf.AddTo(funcMap, r.secretStore); err != nil {
+		return nil, err
+	}
+	if tasks == nil {
+		funcMap["Task"] = func(typeName, name string) (fi.CloudupTask, error) { return nil, nil }
+		funcMap["HasTask"] = func(typeName, name string) bool { return false }
+		funcMap["TasksByType"] = func(typeName string) ([]fi.CloudupTask, error) { return nil, nil }
+	}
+
+	t := template.New(name).Funcs(funcMap).Option("missingkey=zero")
+	if _, err := t.Parse(string(source)); err != nil {
+		return nil, fmt.Errorf("error parsing template %q: %w", name, err)
+	}
+
+	var buf bytes.Buffer
+	if err := t.ExecuteTemplate(&buf, name, r.modelContext.Cluster.Spec); err != nil {
+		return nil, fmt.Errorf("error executing template %q: %w", name, err)
+	}
+	return buf.Bytes(), nil
+}
+
+// CloudControllerConfigArgv returns the cloud controller argv without binding any task graph.
+func (r *addonTemplateRenderer) CloudControllerConfigArgv() ([]string, error) {
+	return r.newTemplateFunctions(nil).CloudControllerConfigArgv()
 }
 
 // AddTo defines the available functions we can use in our YAML models.
@@ -124,6 +176,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 	dest["GetNodeInstanceGroups"] = tf.GetNodeInstanceGroups
 	dest["GetClusterAutoscalerNodeGroups"] = tf.GetClusterAutoscalerNodeGroups
+	dest["Task"] = tf.Task
+	dest["HasTask"] = tf.HasTask
+	dest["TasksByType"] = tf.TasksByType
+	dest["TaskKey"] = tf.TaskKey
 	dest["HasHighlyAvailableControlPlane"] = tf.HasHighlyAvailableControlPlane
 	dest["ControlPlaneControllerReplicas"] = tf.ControlPlaneControllerReplicas
 	dest["APIServerNodeRole"] = tf.APIServerNodeRole
@@ -455,6 +511,75 @@ func (tf *TemplateFunctions) ToYAML(data interface{}) string {
 	}
 
 	return string(encoded)
+}
+
+func (tf *TemplateFunctions) taskMap() (map[string]fi.CloudupTask, error) {
+	if tf.tasks == nil {
+		return nil, fmt.Errorf("template tasks are not available during this render phase")
+	}
+	return tf.tasks, nil
+}
+
+// Task returns a task by type and name, for example Task "IAMRole" "nodes.example.com".
+func (tf *TemplateFunctions) Task(typeName, name string) (fi.CloudupTask, error) {
+	tasks, err := tf.taskMap()
+	if err != nil {
+		return nil, err
+	}
+
+	key := typeName + "/" + name
+	task := tasks[key]
+	if task == nil {
+		return nil, fmt.Errorf("task %q not found", key)
+	}
+	return task, nil
+}
+
+// HasTask reports whether the named task exists in the final task graph.
+func (tf *TemplateFunctions) HasTask(typeName, name string) bool {
+	if tf.tasks == nil {
+		return false
+	}
+	return tf.tasks[typeName+"/"+name] != nil
+}
+
+// TasksByType returns tasks of a specific type in deterministic task-key order.
+func (tf *TemplateFunctions) TasksByType(typeName string) ([]fi.CloudupTask, error) {
+	tasks, err := tf.taskMap()
+	if err != nil {
+		return nil, err
+	}
+
+	prefix := typeName + "/"
+	var keys []string
+	for key := range tasks {
+		if strings.HasPrefix(key, prefix) {
+			keys = append(keys, key)
+		}
+	}
+	sort.Strings(keys)
+
+	matches := make([]fi.CloudupTask, 0, len(keys))
+	for _, key := range keys {
+		matches = append(matches, tasks[key])
+	}
+	return matches, nil
+}
+
+// TaskKey returns the canonical task key used in the task map.
+func (tf *TemplateFunctions) TaskKey(task fi.CloudupTask) (string, error) {
+	if task == nil {
+		return "", fmt.Errorf("task is nil")
+	}
+	hasName, ok := task.(fi.HasName)
+	if !ok {
+		return "", fmt.Errorf("task %T does not implement HasName", task)
+	}
+	name := fi.ValueOf(hasName.GetName())
+	if name == "" {
+		return "", fmt.Errorf("task %T did not have a name", task)
+	}
+	return fi.TypeNameForTask(task) + "/" + name, nil
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer

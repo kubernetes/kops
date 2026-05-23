@@ -523,9 +523,10 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		}
 	}
 
-	tf := &TemplateFunctions{
-		KopsModelContext: *modelContext,
-		cloud:            cloud,
+	addonRenderer := &addonTemplateRenderer{
+		modelContext: modelContext,
+		cloud:        cloud,
+		secretStore:  secretStore,
 	}
 
 	nodeUpAssets, err := nodemodel.BuildNodeUpAssets(ctx, assetBuilder)
@@ -544,14 +545,9 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	}
 
 	{
-		templates, err := templates.LoadTemplates(ctx, cluster, models.NewAssetPath("cloudup/resources"))
+		templates, err := templates.LoadTemplates(ctx, models.NewAssetPath("cloudup/resources"))
 		if err != nil {
 			return nil, fmt.Errorf("error loading templates: %v", err)
-		}
-
-		err = tf.AddTo(templates.TemplateFunctions, secretStore)
-		if err != nil {
-			return nil, err
 		}
 
 		bcb := bootstrapchannelbuilder.NewBootstrapChannelBuilder(
@@ -560,6 +556,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			assetBuilder,
 			templates,
 			addons,
+			addonRenderer,
 		)
 
 		l.Builders = append(l.Builders,

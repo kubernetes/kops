@@ -17,31 +17,25 @@ limitations under the License.
 package templates
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"strings"
-	"text/template"
 
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Templates struct {
-	cluster           *kops.Cluster
-	resources         map[string]fi.Resource
-	TemplateFunctions template.FuncMap
+	resources  map[string]fi.Resource
+	isTemplate map[string]bool
 }
 
-func LoadTemplates(ctx context.Context, cluster *kops.Cluster, base vfs.Path) (*Templates, error) {
+func LoadTemplates(ctx context.Context, base vfs.Path) (*Templates, error) {
 	t := &Templates{
-		cluster:           cluster,
-		resources:         make(map[string]fi.Resource),
-		TemplateFunctions: make(template.FuncMap),
+		resources:  make(map[string]fi.Resource),
+		isTemplate: make(map[string]bool),
 	}
 	err := t.loadFrom(ctx, base)
 	if err != nil {
@@ -52,6 +46,11 @@ func LoadTemplates(ctx context.Context, cluster *kops.Cluster, base vfs.Path) (*
 
 func (t *Templates) Find(key string) fi.Resource {
 	return t.resources[key]
+}
+
+// IsTemplate reports whether key was loaded from a file ending in .template.
+func (t *Templates) IsTemplate(key string) bool {
+	return t.isTemplate[key]
 }
 
 func (t *Templates) loadFrom(ctx context.Context, base vfs.Path) error {
@@ -75,74 +74,11 @@ func (t *Templates) loadFrom(ctx context.Context, base vfs.Path) error {
 			return fmt.Errorf("error getting relative path for %s", f)
 		}
 
-		var resource fi.Resource
-		if strings.HasSuffix(key, ".template") {
-			key = strings.TrimSuffix(key, ".template")
-			klog.V(6).Infof("loading (templated) resource %q", key)
-
-			resource = &templateResource{
-				template: string(contents),
-				loader:   t,
-				key:      key,
-			}
-		} else {
-			klog.V(6).Infof("loading resource %q", key)
-			resource = fi.NewBytesResource(contents)
-
-		}
-
-		t.resources[key] = resource
+		isTemplate := strings.HasSuffix(key, ".template")
+		key = strings.TrimSuffix(key, ".template")
+		klog.V(6).Infof("loading resource %q", key)
+		t.resources[key] = fi.NewBytesResource(contents)
+		t.isTemplate[key] = isTemplate
 	}
 	return nil
-}
-
-func (l *Templates) executeTemplate(key string, d string) (string, error) {
-	t := template.New(key)
-
-	funcMap := make(template.FuncMap)
-	// funcMap["Args"] = func() []string {
-	//	return args
-	//}
-	//funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
-	//	return l.renderResource(resourceName, args)
-	//}
-	for k, fn := range l.TemplateFunctions {
-		funcMap[k] = fn
-	}
-	t.Funcs(funcMap)
-
-	t.Option("missingkey=zero")
-
-	spec := l.cluster.Spec
-
-	_, err := t.Parse(d)
-	if err != nil {
-		return "", fmt.Errorf("error parsing template %q: %v", key, err)
-	}
-
-	var buffer bytes.Buffer
-	err = t.ExecuteTemplate(&buffer, key, spec)
-	if err != nil {
-		return "", fmt.Errorf("error executing template %q: %v", key, err)
-	}
-
-	return buffer.String(), nil
-}
-
-type templateResource struct {
-	key      string
-	loader   *Templates
-	template string
-}
-
-var _ fi.Resource = &templateResource{}
-
-func (a *templateResource) Open() (io.Reader, error) {
-	var err error
-	result, err := a.loader.executeTemplate(a.key, a.template)
-	if err != nil {
-		return nil, fmt.Errorf("error executing resource template %q: %v", a.key, err)
-	}
-	reader := bytes.NewReader([]byte(result))
-	return reader, nil
 }

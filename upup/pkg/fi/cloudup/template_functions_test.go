@@ -17,14 +17,17 @@ limitations under the License.
 package cloudup
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
+	"text/template"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -439,5 +442,71 @@ func TestHasHighlyAvailableControlPlane(t *testing.T) {
 				t.Errorf("expected HA to be %t, got %t", tc.expectedHA, actual)
 			}
 		})
+	}
+}
+
+func TestTemplateFunctions_TaskHelpers(t *testing.T) {
+	tf := &TemplateFunctions{}
+	tf.Cluster = &kops.Cluster{}
+	tf.tasks = map[string]fi.CloudupTask{
+		"ManagedFile/zeta": &fitasks.ManagedFile{
+			Name:     fi.PtrTo("zeta"),
+			Location: fi.PtrTo("addons/zeta.yaml"),
+		},
+		"ManagedFile/alpha": &fitasks.ManagedFile{
+			Name:     fi.PtrTo("alpha"),
+			Location: fi.PtrTo("addons/alpha.yaml"),
+		},
+	}
+
+	if !tf.HasTask("ManagedFile", "alpha") {
+		t.Fatalf("expected alpha task to exist")
+	}
+	if tf.HasTask("ManagedFile", "missing") {
+		t.Fatalf("did not expect missing task to exist")
+	}
+
+	task, err := tf.Task("ManagedFile", "alpha")
+	if err != nil {
+		t.Fatalf("Task returned error: %v", err)
+	}
+	if key, err := tf.TaskKey(task); err != nil || key != "ManagedFile/alpha" {
+		t.Fatalf("unexpected task key %q, err=%v", key, err)
+	}
+
+	tasks, err := tf.TasksByType("ManagedFile")
+	if err != nil {
+		t.Fatalf("TasksByType returned error: %v", err)
+	}
+	var gotKeys []string
+	for _, task := range tasks {
+		key, err := tf.TaskKey(task)
+		if err != nil {
+			t.Fatalf("TaskKey returned error: %v", err)
+		}
+		gotKeys = append(gotKeys, key)
+	}
+	expectedKeys := []string{"ManagedFile/alpha", "ManagedFile/zeta"}
+	if !reflect.DeepEqual(gotKeys, expectedKeys) {
+		t.Fatalf("unexpected task order %v", gotKeys)
+	}
+
+	funcMap := template.FuncMap{}
+	if err := tf.AddTo(funcMap, nil); err != nil {
+		t.Fatalf("AddTo returned error: %v", err)
+	}
+
+	tmpl, err := template.New("tasks").Funcs(funcMap).Parse(`{{ TaskKey (Task "ManagedFile" "alpha") }}|{{ range $task := TasksByType "ManagedFile" }}{{ TaskKey $task }};{{ end }}`)
+	if err != nil {
+		t.Fatalf("error parsing template: %v", err)
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, tf.Cluster.Spec); err != nil {
+		t.Fatalf("error executing template: %v", err)
+	}
+
+	if actual := buf.String(); actual != "ManagedFile/alpha|ManagedFile/alpha;ManagedFile/zeta;" {
+		t.Fatalf("unexpected rendered template %q", actual)
 	}
 }
