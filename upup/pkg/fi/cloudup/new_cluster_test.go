@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/util/pkg/vfs"
 	"sigs.k8s.io/yaml"
 
@@ -431,6 +432,67 @@ func TestSetupTopology(t *testing.T) {
 			diffString := diff.FormatDiff(string(expectedYaml), string(actualYaml))
 			t.Errorf("unexpected cluster topology setup:\n%s", diffString)
 		}
+	}
+}
+
+func TestNewClusterValidatesKubernetesFeatureGates(t *testing.T) {
+	vfsContext := vfs.NewTestingVFSContext()
+	basePath, err := vfsContext.BuildVfsPath("memfs://tests")
+	if err != nil {
+		t.Fatalf("error building test state store: %v", err)
+	}
+	clientset := vfsclientset.NewVFSClientset(vfsContext, basePath)
+
+	tests := []struct {
+		name    string
+		gates   []string
+		wantErr string
+	}{
+		{
+			name:    "should reject empty feature gate if entry is blank",
+			gates:   []string{""},
+			wantErr: "must not be empty",
+		},
+		{
+			name:    "should reject feature gate if entry is sign only plus",
+			gates:   []string{"+"},
+			wantErr: "must include a feature name",
+		},
+		{
+			name:    "should reject feature gate if entry is sign only minus",
+			gates:   []string{"-"},
+			wantErr: "must include a feature name",
+		},
+		{
+			name:    "should continue past feature gate validation if entry is valid",
+			gates:   []string{"+ReadWriteOncePod"},
+			wantErr: "must specify at least one zone",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			opt := &NewClusterOptions{
+				ClusterName:            "test.example.com",
+				Channel:                "file://tests/channels/channel.yaml",
+				KubernetesVersion:      "v1.32.0",
+				KubernetesFeatureGates: test.gates,
+			}
+
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("NewCluster panicked: %v", r)
+				}
+			}()
+
+			_, err := NewCluster(opt, clientset)
+			if err == nil {
+				t.Fatalf("expected error containing %q", test.wantErr)
+			}
+			if !strings.Contains(err.Error(), test.wantErr) {
+				t.Fatalf("unexpected error %q, expected to contain %q", err, test.wantErr)
+			}
+		})
 	}
 }
 
