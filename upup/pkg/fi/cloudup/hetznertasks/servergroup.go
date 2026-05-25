@@ -80,7 +80,7 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 	if err != nil {
 		return nil, err
 	}
-	userDataHash := safeBytesHash(userDataBytes)
+	userDataHash := SafeBytesHash(userDataBytes)
 
 	// Add the expected user-data hash label
 	v.Labels[hetzner.TagKubernetesInstanceUserData] = userDataHash
@@ -204,7 +204,7 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 	if err != nil {
 		return err
 	}
-	userDataHash := safeBytesHash(userDataBytes)
+	userDataHash := SafeBytesHash(userDataBytes)
 
 	networkID, err := strconv.ParseInt(fi.ValueOf(e.Network.ID), 10, 64)
 	if err != nil {
@@ -257,7 +257,7 @@ func (_ *ServerGroup) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *
 	return nil
 }
 
-func safeBytesHash(data []byte) string {
+func SafeBytesHash(data []byte) string {
 	// Calculate the SHA256 checksum of the data
 	sum256 := sha256.Sum256(data)
 

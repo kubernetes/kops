@@ -281,6 +281,21 @@ data:
   priorities: |- {{ ClusterAutoscalerPriorities | nindent 4 }}
 {{ end }}
 ---
+{{ if (eq GetCloudProvider "hetzner") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-autoscaler-hcloud-config
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: "cluster-autoscaler"
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+data:
+  cluster-config.json: |
+{{ HCLOUD_CLUSTER_CONFIG | indent 4 }}
+---
+{{ end }}
 # Source: cluster-autoscaler/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -307,6 +322,9 @@ spec:
       annotations:
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
+        {{ if (eq GetCloudProvider "hetzner") }}
+        checksum/hcloud-cluster-config: "{{ HCLOUD_CLUSTER_CONFIG_CHECKSUM }}"
+        {{ end }}
         {{- range $key, $value := .PodAnnotations }}
         {{ $key }}: "{{ $value }}"
         {{- end }}
@@ -386,6 +404,18 @@ spec:
                 secretKeyRef:
                   name: hcloud
                   key: network
+            - name: HCLOUD_SSH_KEY
+              value: "{{ HCLOUD_SSH_KEY }}"
+            - name: HCLOUD_PUBLIC_IPV4
+              value: "true"
+            - name: HCLOUD_PUBLIC_IPV6
+              value: "false"
+            - name: HCLOUD_CLUSTER_CONFIG_FILE
+              value: /etc/cluster-autoscaler/cluster-config.json
+          volumeMounts:
+            - name: hcloud-cluster-config
+              mountPath: /etc/cluster-autoscaler
+              readOnly: true
           {{ end }}
           livenessProbe:
             failureThreshold: 3
@@ -426,4 +456,10 @@ spec:
         labelSelector:
           matchLabels:
             app: cluster-autoscaler
+      {{ if (eq GetCloudProvider "hetzner") }}
+      volumes:
+      - name: hcloud-cluster-config
+        configMap:
+          name: cluster-autoscaler-hcloud-config
+      {{ end }}
 {{ end }}

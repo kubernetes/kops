@@ -10,6 +10,8 @@ spec:
   authorization:
     rbac: {}
   channel: stable
+  clusterAutoscaler:
+    enabled: true
   cloudProvider: hetzner
   configBase: memfs://tests/minimal.example.com
   etcdClusters:
