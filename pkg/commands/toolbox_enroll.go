@@ -216,7 +216,12 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, bootstrapData *Boot
 	if err := v1alpha2.AddToScheme(scheme); err != nil {
 		return fmt.Errorf("building kubernetes scheme: %w", err)
 	}
-	kubeClient, err := client.New(restConfig, client.Options{
+	// Ensure that we don't try to use proto with our CRD
+	restConfigNoProto := rest.CopyConfig(restConfig)
+	restConfigNoProto.ContentType = runtime.ContentTypeJSON
+	restConfigNoProto.AcceptContentTypes = runtime.ContentTypeJSON
+
+	kubeClient, err := client.New(restConfigNoProto, client.Options{
 		Scheme: scheme,
 	})
 	if err != nil {
