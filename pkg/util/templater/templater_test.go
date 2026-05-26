@@ -87,7 +87,7 @@ func TestRenderChannelFunctions(t *testing.T) {
 		{
 			Context:  map[string]interface{}{},
 			Template: `{{ ChannelRecommendedKopsKubernetesVersion }}`,
-			Expected: "1.5.2",
+			Expected: "1.4.8",
 		},
 		{
 			Context:  map[string]interface{}{},

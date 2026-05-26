@@ -51,7 +51,7 @@ spec:
     - --src=/ko-app/kops-utils-cp
     command:
     - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.35.0-beta.1
+    image: registry.k8s.io/kops/kops-utils-cp:0.0.0
     name: kops-utils-cp
     resources: {}
     volumeMounts:
@@ -117,7 +117,7 @@ spec:
     - --src=/opt/etcd-v3.5.30/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.35.0-beta.1
+    image: registry.k8s.io/kops/kops-utils-cp:0.0.0
     name: init-etcd-symlinks-3-5-30
     resources: {}
     volumeMounts:
@@ -140,7 +140,7 @@ spec:
     - --src=/opt/etcd-v3.6.11/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.35.0-beta.1
+    image: registry.k8s.io/kops/kops-utils-cp:0.0.0
     name: init-etcd-symlinks-3-6-11
     resources: {}
     volumeMounts:
