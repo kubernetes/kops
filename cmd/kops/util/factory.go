@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
@@ -200,6 +201,8 @@ func configureRESTConfig(restConfig *rest.Config) {
 	restConfig.UserAgent = "kops"
 	restConfig.Burst = 50
 	restConfig.QPS = 20
+	restConfig.AcceptContentTypes = runtime.ContentTypeProtobuf
+	restConfig.ContentType = runtime.ContentTypeProtobuf
 }
 
 func (f *Factory) HTTPClient(restConfig *rest.Config) (*http.Client, error) {
