@@ -707,6 +707,8 @@ type EtcdManagerSpec struct {
 	DiscoveryPollInterval *metav1.Duration `json:"discoveryPollInterval,omitempty"`
 	// ListenMetricsURLs is the list of URLs to listen on that will respond to both the /metrics and /health endpoints
 	ListenMetricsURLs []string `json:"listenMetricsURLs,omitempty"`
+	// ListenClientHTTPURLs is the list of URLs to listen on for HTTP-only client traffic
+	ListenClientHTTPURLs []string `json:"listenClientHTTPURLs,omitempty"`
 	// LogLevel allows the klog library verbose log level to be set for etcd-manager. The default is 6.
 	// https://github.com/google/glog#verbose-logging
 	LogLevel *int32 `json:"logLevel,omitempty"`
