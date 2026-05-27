@@ -47,7 +47,9 @@ through a particular AWS Endpoint.
 
 ## Copying assets into repositories
 
-{{ kops_feature_table(kops_added_default='1.22') }}
+| Introduced |
+| :-: |
+| kOps 1.22 |
 
 You can copy assets into their repositories either by running `kops get assets --copy` or through an external process.
 
@@ -60,7 +62,9 @@ A GCS bucket must be configured with a prefix of `https://storage.googleapis.com
 
 ## Listing assets
 
-{{ kops_feature_table(kops_added_default='1.22') }}
+| Introduced |
+| :-: |
+| kOps 1.22 |
 
 You can obtain a list of image and file assets used by a particular cluster by running `kops get assets`. You can get output in table, YAML, or JSON format.
 You can feed this into a process, external to kOps, for copying the assets to their respective repositories.

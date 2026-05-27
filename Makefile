@@ -613,18 +613,11 @@ prow-postsubmit: version-dist
 
 .PHONY: live-docs
 live-docs:
-	docker build -t kops/mkdocs images/mkdocs
-	docker run --rm -it -p 3000:3000 -v ${PWD}:/docs kops/mkdocs
+	${KOPS_ROOT}/hack/build-mdbook.sh serve
 
 .PHONY: build-docs
 build-docs:
-	docker build --pull -t kops/mkdocs images/mkdocs
-	docker run --rm -v ${PWD}:/docs kops/mkdocs build
-
-.PHONY: build-docs-netlify
-build-docs-netlify:
-	pip install -r ${KOPS_ROOT}/images/mkdocs/requirements.txt
-	python -m mkdocs build
+	${KOPS_ROOT}/hack/build-mdbook.sh build
 
 #-----------------------------------------------------------
 # development targets

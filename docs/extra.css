@@ -8,7 +8,7 @@
 	display: none;
 }
 
-.md-content {
-  /* Needed so that content doesn't overflow under right sidebar (and not be copyable) */
+/* Wrap long CLI strings/URLs so they don't overflow mdBook's content column. */
+.content {
   overflow-wrap: break-word;
 }

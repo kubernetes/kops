@@ -194,7 +194,9 @@ using preemptible/spot instances you might be waiting for a long time.
 
 ## Fetching images via AWS SSM (AWS Only)
 
-{{ kops_feature_table(kops_added_default='1.25.3') }}
+| Introduced |
+| :-: |
+| kOps 1.25.3 |
 
 If you are using AWS, you can dynamically fetch instance group images from an AWS SSM Parameter. kOps will automatically fetch SSM Parameter and lookup the AMI ID on every `kops update cluster` run. This is useful if you often update your images and don't want to update your instance group configuration every time. Your SSM Parameter must start with `ssm:` and contain the full path of the SSM Parameter.
 
@@ -270,7 +272,9 @@ spec:
 ```
 
 ## Encrypting the root volume
-{{ kops_feature_table(kops_added_default='1.19') }}
+| Introduced |
+| :-: |
+| kOps 1.19 |
 
 You can encrypt the root volume  _(note, presently confined to AWS)_ via the instancegroup specification.
 
@@ -289,7 +293,9 @@ In the above example the encryption key is optional. The default key for EBS enc
 The encryption key can specified as the key ID, alias or ARN, as described in the [AWS docs](https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id).
 
 ## Adding additional storage to the instance groups
-{{ kops_feature_table(kops_added_default='1.12') }}
+| Introduced |
+| :-: |
+| kOps 1.12 |
 
 You can add additional storage _(note, presently confined to AWS)_ via the instancegroup specification.
 
@@ -436,7 +442,9 @@ So the procedure is:
 * (no instances need to be relaunched, so no rolling-update is needed)
 
 ## Creating an instance group of mixed instances types (AWS Only)
-{{ kops_feature_table(kops_added_default='1.12') }}
+| Introduced |
+| :-: |
+| kOps 1.12 |
 
 AWS permits the creation of mixed instance EC2 Autoscaling Groups using a [mixed instance policy](https://aws.amazon.com/blogs/aws/new-ec2-auto-scaling-groups-with-multiple-instance-types-purchase-options/), allowing the users to build a target capacity and make up of on-demand and spot instances while offloading the allocation strategy to AWS.
 

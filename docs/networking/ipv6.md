@@ -1,6 +1,8 @@
 # IPv6
 
-{{ kops_feature_table(kops_added_ff='1.23', kops_added_beta='1.26') }}
+| Alpha (Feature Flag) | Beta |
+| :-: | :-: |
+| kOps 1.23 | kOps 1.26 |
 
 kOps has beta support for configuring clusters with IPv6-only pods and IPv6-only or dual-stack nodes.
 

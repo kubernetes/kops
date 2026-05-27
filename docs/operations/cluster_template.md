@@ -13,11 +13,11 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: InstanceGroup
 metadata:
   labels:
-  kops.k8s.io/cluster: {{ '{{.clusterName}}.{{.dnsZone}}' }}
+  kops.k8s.io/cluster: {{.clusterName}}.{{.dnsZone}}
   name: nodes
 spec:
-  image: {{ '{{ ChannelRecommendedImage .cloud .kubernetesVersion .architecture }}' }}
-  kubernetesVersion: {{ '{{ ChannelRecommendedKubernetesUpgradeVersion .kubernetesVersion }}' }}
+  image: {{ ChannelRecommendedImage .cloud .kubernetesVersion .architecture }}
+  kubernetesVersion: {{ ChannelRecommendedKubernetesUpgradeVersion .kubernetesVersion }}
   machineType: m4.large
   maxPrice: "0.5"
   maxSize: 20
@@ -25,9 +25,9 @@ spec:
   role: Node
   rootVolumeSize: 100
   subnets:
-  - {{ '{{.awsRegion}}' }}a
-  - {{ '{{.awsRegion}}' }}b
-  - {{ '{{.awsRegion}}' }}c
+  - {{.awsRegion}}a
+  - {{.awsRegion}}b
+  - {{.awsRegion}}c
 ```
 
 You can pass configuration such as an environment file by using the `--values PATH` command line option. Note `--values` is a slice so can be defined multiple times; the configuration is overridden by each configuration file *(so order is important assuming duplicating values)*; a use-case for this would be a default configuration which upstream clusters can override.
@@ -108,15 +108,15 @@ The example below assumes you have placed the appropriate files i.e. *(nodes.jso
 apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
-  name: {{ '{{ .environment }}.{{ .dns_zone }}' }}
+  name: {{ .environment }}.{{ .dns_zone }}
 spec:
   docker:
-    {{ '{{ include "docker" . | indent 4 }}' }}
+    {{ include "docker" . | indent 4 }}
   additionalPolicies:
     master: |
-      {{ '{{ include "masters.json" . | indent 6 }}' }}
+      {{ include "masters.json" . | indent 6 }}
     node: |
-      {{ '{{ include "nodes.json" . | indent 6 }}' }}
+      {{ include "nodes.json" . | indent 6 }}
 ```
 
 ### Template Functions
@@ -140,10 +140,10 @@ This function returns the recommended image for the given cloud provider and kub
 The entire set of [Sprig functions](https://masterminds.github.io/sprig/) are available within the templates for you. Note if you want to use the 'defaults' functions switch off the verification check on the command line by `--fail-on-missing=false`;
 
 ```YAML
-image: {{ '{{ default $image $node.image }}' }}
-machineType: {{ '{{ default $instance $node.machine_type }}' }}
-maxSize: {{ '{{ default "10" $node.max_size }}' }}
-minSize: {{ '{{ default "1" $node.min_size }}' }}
+image: {{ default $image $node.image }}
+machineType: {{ default $instance $node.machine_type }}
+maxSize: {{ default "10" $node.max_size }}
+minSize: {{ default "1" $node.min_size }}
 ```
 
 Assigning entire arrays is also supported with Sprig's [toJson function](https://masterminds.github.io/sprig/defaults.html).
@@ -151,7 +151,7 @@ Assigning entire arrays is also supported with Sprig's [toJson function](https:/
 ```yaml
 # template
 spec:
-  kubernetesApiAccess: {{ '{{.allowedIPs | toJson }}' }}
+  kubernetesApiAccess: {{.allowedIPs | toJson }}
 ```
 
 ```yaml
