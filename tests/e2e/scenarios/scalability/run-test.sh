@@ -64,7 +64,7 @@ if [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   create_args+=("--dns=none")
 fi
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
-  create_args+=("--zones=us-east1-b,us-east1-c,us-east1-d")
+  create_args+=("--zones=us-central1-a,us-central1-b,us-central1-c")
   create_args+=("--node-size=${NODE_SIZE:-e2-medium}")
   create_args+=("--node-volume-size=30")
   create_args+=("--control-plane-volume-size=1000")
