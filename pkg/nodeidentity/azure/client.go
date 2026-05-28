@@ -36,8 +36,8 @@ type client struct {
 
 // newClient returns a new Client.
 func newClient() (*client, error) {
-	// nodeidentity.Identifier.New does not propagate a context; the IMDS HTTP client's own
-	// timeout bounds this call.
+	// nodeidentity.Identifier.New does not propagate a context; the IMDS HTTP client's own timeout
+	// bounds this call.
 	metadata, err := azurecloud.QueryComputeInstanceMetadata(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("error querying instance metadata: %s", err)

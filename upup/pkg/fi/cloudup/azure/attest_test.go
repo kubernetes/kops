@@ -46,8 +46,8 @@ func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
 }
 
-// newTestIntermediateCertCaches returns fresh positive and negative TTL
-// caches so tests run independently from the package-level caches.
+// newTestIntermediateCertCaches returns fresh positive and negative TTL caches so tests run
+// independently from the package-level caches.
 func newTestIntermediateCertCaches(positiveTTL, negativeTTL time.Duration) (expirationcache.Store, expirationcache.Store) {
 	return expirationcache.NewTTLStore(intermediateCertCacheEntryKeyFunc, positiveTTL),
 		expirationcache.NewTTLStore(intermediateCertCacheEntryKeyFunc, negativeTTL)
@@ -104,8 +104,8 @@ func testPKI(tb testing.TB) (*x509.Certificate, *rsa.PrivateKey, *x509.Certifica
 	return caCert, caKey, leafCert, leafKey
 }
 
-// testPKIChain generates a root CA, an intermediate CA, and a leaf signer for
-// tests that need to distinguish embedded-chain verification from fetch fallback.
+// testPKIChain generates a root CA, an intermediate CA, and a leaf signer for tests that need to
+// distinguish embedded-chain verification from fetch fallback.
 func testPKIChain(tb testing.TB) (*x509.Certificate, *x509.Certificate, *x509.Certificate, *rsa.PrivateKey) {
 	tb.Helper()
 
@@ -211,14 +211,14 @@ func testSignature(tb testing.TB, data attestedData, leafCert *x509.Certificate,
 	return base64.StdEncoding.EncodeToString(pkcs7DER)
 }
 
-// formatMicrosoftAttestedTime formats a time the way Azure IMDS actually
-// emits it: with a "-0000" UTC offset instead of Go's default "+0000".
+// formatMicrosoftAttestedTime formats a time the way Azure IMDS actually emits it: with a "-0000"
+// UTC offset instead of Go's default "+0000".
 func formatMicrosoftAttestedTime(ts time.Time) string {
 	return strings.TrimSuffix(ts.UTC().Format(attestedDocumentTimeFormat), "+0000") + "-0000"
 }
 
-// TestNonceForBody verifies that the nonce derivation is deterministic,
-// produces the expected hex length, and varies with input.
+// TestNonceForBody verifies that the nonce derivation is deterministic, produces the expected hex
+// length, and varies with input.
 func TestNonceForBody(t *testing.T) {
 	testCases := []struct {
 		name  string
@@ -245,8 +245,8 @@ func TestNonceForBody(t *testing.T) {
 	}
 }
 
-// TestMicrosoftIntermediateCandidateURLs verifies that only normalized
-// Microsoft PKI AIA URLs are returned.
+// TestMicrosoftIntermediateCandidateURLs verifies that only normalized Microsoft PKI AIA URLs are
+// returned.
 func TestMicrosoftIntermediateCandidateURLs(t *testing.T) {
 	signer := &x509.Certificate{
 		IssuingCertificateURL: []string{
@@ -269,8 +269,8 @@ func TestMicrosoftIntermediateCandidateURLs(t *testing.T) {
 	}
 }
 
-// TestMicrosoftIntermediateCandidateURLs_RejectsNonMicrosoftPKIURLs verifies
-// that out-of-scope AIA URLs are rejected.
+// TestMicrosoftIntermediateCandidateURLs_RejectsNonMicrosoftPKIURLs verifies that out-of-scope AIA
+// URLs are rejected.
 func TestMicrosoftIntermediateCandidateURLs_RejectsNonMicrosoftPKIURLs(t *testing.T) {
 	signer := &x509.Certificate{
 		IssuingCertificateURL: []string{
@@ -286,8 +286,8 @@ func TestMicrosoftIntermediateCandidateURLs_RejectsNonMicrosoftPKIURLs(t *testin
 	}
 }
 
-// TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA verifies that
-// fetching uses only normalized, validated AIA URLs.
+// TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA verifies that fetching uses only
+// normalized, validated AIA URLs.
 func TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA(t *testing.T) {
 	caCert, _, _, _ := testPKI(t)
 	signer := &x509.Certificate{
@@ -328,8 +328,8 @@ func TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA(t *testing.T) 
 	}
 }
 
-// TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate verifies
-// that fetched certificates are ignored unless they match the signer's issuer identity.
+// TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate verifies that fetched
+// certificates are ignored unless they match the signer's issuer identity.
 func TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate(t *testing.T) {
 	expectedIssuer, _, _, _ := testPKI(t)
 	_, otherIssuer, _, _ := testPKIChain(t)
@@ -358,9 +358,9 @@ func TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate(t *tes
 	}
 }
 
-// TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate verifies
-// that when multiple AIA URLs return different certs, only the one that matches
-// the signer's issuer identity ends up in the pool.
+// TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate verifies that when multiple
+// AIA URLs return different certs, only the one that matches the signer's issuer identity ends up
+// in the pool.
 func TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate(t *testing.T) {
 	matchingCA, _, leafCert, _ := testPKI(t)
 	_, otherIssuer, _, _ := testPKIChain(t)
@@ -399,9 +399,8 @@ func TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate(t *test
 	if calls != 2 {
 		t.Fatalf("expected both URLs to be fetched, got %d calls", calls)
 	}
-	// Pool should contain matchingCA (not otherIssuer). Verify by using the pool
-	// as roots and verifying the leaf signed by matchingCA — succeeds iff the
-	// matching CA is in the pool.
+	// Pool should contain matchingCA (not otherIssuer). Verify by using the pool as roots and
+	// verifying the leaf signed by matchingCA — succeeds iff the matching CA is in the pool.
 	if _, err := leafCert.Verify(x509.VerifyOptions{
 		Roots:     pool,
 		KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
@@ -410,8 +409,8 @@ func TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate(t *test
 	}
 }
 
-// TestValidateFetchedIntermediateForSigner exercises each per-branch
-// reject/accept rule for the fetched intermediate identity check.
+// TestValidateFetchedIntermediateForSigner exercises each per-branch reject/accept rule for the
+// fetched intermediate identity check.
 func TestValidateFetchedIntermediateForSigner(t *testing.T) {
 	caCert, _, _, _ := testPKI(t)
 
@@ -477,8 +476,8 @@ func TestValidateFetchedIntermediateForSigner(t *testing.T) {
 	})
 }
 
-// TestFetchCertificate_RejectsBadResponse exercises the rejection paths of
-// fetchCertificate: oversized body, non-200 status, and unparseable DER.
+// TestFetchCertificate_RejectsBadResponse exercises the rejection paths of fetchCertificate:
+// oversized body, non-200 status, and unparseable DER.
 func TestFetchCertificate_RejectsBadResponse(t *testing.T) {
 	testCases := []struct {
 		name   string
@@ -507,8 +506,8 @@ func TestFetchCertificate_RejectsBadResponse(t *testing.T) {
 	}
 }
 
-// TestIntermediateCertPoolWithCaches_ReusesSameSignerCacheEntry verifies
-// cache reuse for repeated lookups of the same signer issuer.
+// TestIntermediateCertPoolWithCaches_ReusesSameSignerCacheEntry verifies cache reuse for repeated
+// lookups of the same signer issuer.
 func TestIntermediateCertPoolWithCaches_ReusesSameSignerCacheEntry(t *testing.T) {
 	positive, negative := newTestIntermediateCertCaches(24*time.Hour, 5*time.Minute)
 
@@ -544,8 +543,8 @@ func TestIntermediateCertPoolWithCaches_ReusesSameSignerCacheEntry(t *testing.T)
 	}
 }
 
-// TestIntermediateCertPoolWithCaches_SeparatesDifferentSignerCacheEntries
-// verifies that different issuer keys do not share one cache entry.
+// TestIntermediateCertPoolWithCaches_SeparatesDifferentSignerCacheEntries verifies that different
+// issuer keys do not share one cache entry.
 func TestIntermediateCertPoolWithCaches_SeparatesDifferentSignerCacheEntries(t *testing.T) {
 	positive, negative := newTestIntermediateCertCaches(24*time.Hour, 5*time.Minute)
 
@@ -598,9 +597,8 @@ func TestIntermediateCertPoolWithCaches_SeparatesDifferentSignerCacheEntries(t *
 	}
 }
 
-// TestIntermediateCertPoolWithCaches_CachesFetchFailure verifies that a
-// failed fetch is remembered so repeated attempts for the same issuer cannot
-// amplify into repeated network calls.
+// TestIntermediateCertPoolWithCaches_CachesFetchFailure verifies that a failed fetch is remembered
+// so repeated attempts for the same issuer cannot amplify into repeated network calls.
 func TestIntermediateCertPoolWithCaches_CachesFetchFailure(t *testing.T) {
 	positive, negative := newTestIntermediateCertCaches(24*time.Hour, 5*time.Minute)
 
@@ -627,8 +625,8 @@ func TestIntermediateCertPoolWithCaches_CachesFetchFailure(t *testing.T) {
 	}
 }
 
-// TestIntermediateCertPoolWithCaches_NegativeCacheExpires verifies that
-// once the negative cache TTL passes, the fetcher is invoked again.
+// TestIntermediateCertPoolWithCaches_NegativeCacheExpires verifies that once the negative cache TTL
+// passes, the fetcher is invoked again.
 func TestIntermediateCertPoolWithCaches_NegativeCacheExpires(t *testing.T) {
 	// Short negative TTL so the test doesn't have to sleep long.
 	positive, negative := newTestIntermediateCertCaches(24*time.Hour, 50*time.Millisecond)
@@ -659,9 +657,9 @@ func TestIntermediateCertPoolWithCaches_NegativeCacheExpires(t *testing.T) {
 	}
 }
 
-// TestIntermediateCertPoolWithCaches_PositiveOverridesStaleNegative verifies
-// that a positive cache entry wins over a still-live negative entry for the
-// same issuer, per the positive-first lookup order documented in the code.
+// TestIntermediateCertPoolWithCaches_PositiveOverridesStaleNegative verifies that a positive cache
+// entry wins over a still-live negative entry for the same issuer, per the positive-first lookup
+// order documented in the code.
 func TestIntermediateCertPoolWithCaches_PositiveOverridesStaleNegative(t *testing.T) {
 	positive, negative := newTestIntermediateCertCaches(24*time.Hour, 5*time.Minute)
 
@@ -685,9 +683,8 @@ func TestIntermediateCertPoolWithCaches_PositiveOverridesStaleNegative(t *testin
 		t.Fatal("expected error from first fetch")
 	}
 
-	// Inject a positive entry under the same key, simulating a later success
-	// that bypassed the negative-cache check (e.g., via a second TTLStore
-	// instance or concurrent write).
+	// Inject a positive entry under the same key, simulating a later success that bypassed the
+	// negative-cache check (e.g., via a second TTLStore instance or concurrent write).
 	entry := &intermediateCertCacheEntry{
 		key:  intermediateCacheKey{rawIssuer: "issuer-1", authorityKeyID: "akid-1"},
 		pool: expectedPool,
@@ -709,8 +706,8 @@ func TestIntermediateCertPoolWithCaches_PositiveOverridesStaleNegative(t *testin
 	}
 }
 
-// TestValidateAzureMetadataSignerSAN verifies that signer certificates are
-// accepted iff their SAN identifies an Azure metadata endpoint.
+// TestValidateAzureMetadataSignerSAN verifies that signer certificates are accepted iff their SAN
+// identifies an Azure metadata endpoint.
 func TestValidateAzureMetadataSignerSAN(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -740,9 +737,9 @@ func TestValidateAzureMetadataSignerSAN(t *testing.T) {
 	}
 }
 
-// TestVerifyAttestedDocumentWithRootAndFetcher exercises chain-trust, replay
-// protection, expiration, and the happy path in one table. The test PKCS7
-// already embeds the issuing root, so no intermediate fetch should be needed.
+// TestVerifyAttestedDocumentWithRootAndFetcher exercises chain-trust, replay protection,
+// expiration, and the happy path in one table. The test PKCS7 already embeds the issuing root, so
+// no intermediate fetch should be needed.
 func TestVerifyAttestedDocumentWithRootAndFetcher(t *testing.T) {
 	caCert, _, leafCert, leafKey := testPKI(t)
 	body := []byte("test-body")
@@ -907,10 +904,9 @@ func TestVerifyAttestedDocumentWithRootAndFetcher(t *testing.T) {
 	}
 }
 
-// TestVerifyAttestedDocumentWithRootAndFetcher_ChainResolution exercises
-// the chain-resolution and fetch-fallback logic in a single table: whether
-// the embedded PKCS7 chain suffices, whether the fetcher is consulted, and
-// whether content or fetch errors short-circuit correctly.
+// TestVerifyAttestedDocumentWithRootAndFetcher_ChainResolution exercises the chain-resolution and
+// fetch-fallback logic in a single table: whether the embedded PKCS7 chain suffices, whether the
+// fetcher is consulted, and whether content or fetch errors short-circuit correctly.
 func TestVerifyAttestedDocumentWithRootAndFetcher_ChainResolution(t *testing.T) {
 	rootCert, intermediateCert, leafCert, leafKey := testPKIChain(t)
 	body := []byte("test-body")
@@ -1015,11 +1011,10 @@ func TestVerifyAttestedDocumentWithRootAndFetcher_ChainResolution(t *testing.T) 
 	}
 }
 
-// TestParseAndValidateAttestedDocumentContent_AcceptsMicrosoftFormat verifies
-// that the verifier decodes the JSON field names and timestamp format that
-// Azure IMDS actually emits — including the -0000 timezone suffix that Go's
-// default time formatter does not produce. This locks in compatibility with
-// real Microsoft IMDS responses without depending on a signed fixture whose
+// TestParseAndValidateAttestedDocumentContent_AcceptsMicrosoftFormat verifies that the verifier
+// decodes the JSON field names and timestamp format that Azure IMDS actually emits — including the
+// -0000 timezone suffix that Go's default time formatter does not produce. This locks in
+// compatibility with real Microsoft IMDS responses without depending on a signed fixture whose
 // certificates expire.
 func TestParseAndValidateAttestedDocumentContent_AcceptsMicrosoftFormat(t *testing.T) {
 	body := []byte("test-body")

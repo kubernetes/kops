@@ -41,25 +41,23 @@ const (
 	// attestedDocumentTimeFormat is the timestamp format used by the Azure IMDS attested document.
 	attestedDocumentTimeFormat = "01/02/06 15:04:05 -0700"
 
-	// attestedDocumentMaxAge bounds how old an IMDS attested document may be,
-	// independent of the service-provided expiration. This narrows the replay
-	// window when the nonce is derived from deterministic request content.
+	// attestedDocumentMaxAge bounds how old an IMDS attested document may be, independent of the
+	// service-provided expiration. This narrows the replay window when the nonce is derived from
+	// deterministic request content.
 	attestedDocumentMaxAge = 5 * time.Minute
 
-	// attestedDocumentMaxClockSkew allows a modest amount of node/controller
-	// clock skew on all verifier-vs-local-time checks before rejecting the document.
+	// attestedDocumentMaxClockSkew allows a modest amount of node/controller clock skew on all
+	// verifier-vs-local-time checks before rejecting the document.
 	attestedDocumentMaxClockSkew = 2 * time.Minute
 
-	// attestedDocumentNonceLength is the length of the hex-encoded SHA256 prefix
-	// used as the Azure IMDS attested document nonce. IMDS enforces a 32-character
-	// maximum for the nonce parameter; 32 hex chars is 128 bits of entropy, well
-	// above the cryptographic nonce floor.
+	// attestedDocumentNonceLength is the length of the hex-encoded SHA256 prefix used as the Azure
+	// IMDS attested document nonce. IMDS enforces a 32-character maximum for the nonce parameter; 32
+	// hex chars is 128 bits of entropy, well above the cryptographic nonce floor.
 	attestedDocumentNonceLength = 32
 
-	// azureMetadataDNSName and azureMetadataSubdomainSuffix restrict the PKCS7
-	// signer certificate to AzureCloud (public) metadata endpoints.
-	// Sovereign cloud environments use different domains and are not yet
-	// supported:
+	// azureMetadataDNSName and azureMetadataSubdomainSuffix restrict the PKCS7 signer certificate to
+	// AzureCloud (public) metadata endpoints. Sovereign cloud environments use different domains and
+	// are not yet supported:
 	//   - metadata.azure.us         (AzureUSGovernment)
 	//   - metadata.azure.cn         (AzureChinaCloud)
 	//   - metadata.microsoftazure.de (AzureGermanCloud)
@@ -67,34 +65,31 @@ const (
 	azureMetadataDNSName         = "metadata.azure.com"
 	azureMetadataSubdomainSuffix = ".metadata.azure.com"
 
-	// microsoftIntermediateCertBaseURL is the only location we should consult
-	// when constructing Azure metadata intermediate certificate URLs.
+	// microsoftIntermediateCertBaseURL is the only location we should consult when constructing Azure
+	// metadata intermediate certificate URLs.
 	microsoftIntermediateCertBaseURL = "https://www.microsoft.com/pkiops/certs"
 
-	// intermediateCertRefreshInterval is how long intermediate CA certificates
-	// are cached before re-fetching from the Microsoft PKI repository. Microsoft
-	// rotates intermediate CAs infrequently (typically yearly), so 24 hours
-	// keeps the cache fresh without unnecessary network requests.
+	// intermediateCertRefreshInterval is how long intermediate CA certificates are cached before
+	// re-fetching from the Microsoft PKI repository. Microsoft rotates intermediate CAs infrequently
+	// (typically yearly), so 24 hours keeps the cache fresh without unnecessary network requests.
 	intermediateCertRefreshInterval = 24 * time.Hour
 
-	// intermediateCertNegativeCacheInterval is how long a failed intermediate
-	// fetch result is cached. Short enough to recover from a transient Microsoft
-	// PKI blip, long enough to stop an attacker from using bogus AIA URLs to
-	// amplify network fetches via repeated verification attempts.
+	// intermediateCertNegativeCacheInterval is how long a failed intermediate fetch result is cached.
+	// Short enough to recover from a transient Microsoft PKI blip, long enough to stop an attacker
+	// from using bogus AIA URLs to amplify network fetches via repeated verification attempts.
 	intermediateCertNegativeCacheInterval = 5 * time.Minute
 
-	// intermediateCertMaxResponseBytes caps the body size accepted from an
-	// intermediate certificate fetch. Real Microsoft PKI intermediates are
-	// ~1.5 KB in DER; 16 KiB leaves ample headroom while preventing a
-	// pathological response from consuming memory.
+	// intermediateCertMaxResponseBytes caps the body size accepted from an intermediate certificate
+	// fetch. Real Microsoft PKI intermediates are ~1.5 KB in DER; 16 KiB leaves ample headroom while
+	// preventing a pathological response from consuming memory.
 	intermediateCertMaxResponseBytes = 16 * 1024
 )
 
 var (
 	// intermediateCertPositiveCache caches successful intermediate fetches.
-	// intermediateCertNegativeCache caches recent fetch failures for a shorter
-	// window, keyed the same way, so attackers cannot amplify fetches via bogus
-	// AIA URLs. Stores are read positive-first; transient overlap is harmless.
+	// intermediateCertNegativeCache caches recent fetch failures for a shorter window, keyed the same
+	// way, so attackers cannot amplify fetches via bogus AIA URLs. Stores are read positive-first;
+	// transient overlap is harmless.
 	intermediateCertPositiveCache = expirationcache.NewTTLStore(
 		intermediateCertCacheEntryKeyFunc, intermediateCertRefreshInterval)
 	intermediateCertNegativeCache = expirationcache.NewTTLStore(
@@ -103,30 +98,28 @@ var (
 	cachedSystemCertPool *x509.CertPool
 	cachedSystemMu       sync.Mutex
 
-	// Reuse one client for intermediate fetches so each lookup does not build a
-	// new transport stack. The allowlist lives in URL validation, not in the client.
+	// Reuse one client for intermediate fetches so each lookup does not build a new transport stack.
+	// The allowlist lives in URL validation, not in the client.
 	intermediateCertHTTPClient = &http.Client{Timeout: 10 * time.Second}
 )
 
-// intermediateCacheKey scopes the cache to the issuing CA identity rather than
-// the leaf signer. Caching by issuer avoids refetching for every leaf, while
-// RawIssuer and AuthorityKeyId together distinguish issuers that may share
-// names across renewals or cross-signs.
+// intermediateCacheKey scopes the cache to the issuing CA identity rather than the leaf signer.
+// Caching by issuer avoids refetching for every leaf, while RawIssuer and AuthorityKeyId together
+// distinguish issuers that may share names across renewals or cross-signs.
 type intermediateCacheKey struct {
 	rawIssuer      string
 	authorityKeyID string
 }
 
-// intermediateCertCacheEntry is the object stored in the TTLStore caches. A
-// nil pool marks a negative entry (a cached fetch failure).
+// intermediateCertCacheEntry is the object stored in the TTLStore caches. A nil pool marks a
+// negative entry (a cached fetch failure).
 type intermediateCertCacheEntry struct {
 	key  intermediateCacheKey
 	pool *x509.CertPool
 }
 
-// intermediateCertCacheEntryKeyFunc is the TTLStore key function for cache
-// entries. \x00 is used as a separator to combine the two fields into a
-// single cache key string.
+// intermediateCertCacheEntryKeyFunc is the TTLStore key function for cache entries. \x00 is used as
+// a separator to combine the two fields into a single cache key string.
 func intermediateCertCacheEntryKeyFunc(obj any) (string, error) {
 	e, ok := obj.(*intermediateCertCacheEntry)
 	if !ok {
@@ -149,10 +142,9 @@ type attestedTimeStamp struct {
 	ExpiresOn string `json:"expiresOn"`
 }
 
-// verifyAttestedDocument verifies a PKCS7 attested document using the system
-// root certificate pool, validating cheap signed-content checks before chain
-// building and consulting Microsoft PKI only if the embedded PKCS7 chain does
-// not already provide the required issuer certificate.
+// verifyAttestedDocument verifies a PKCS7 attested document using the system root certificate pool,
+// validating cheap signed-content checks before chain building and consulting Microsoft PKI only if
+// the embedded PKCS7 chain does not already provide the required issuer certificate.
 func verifyAttestedDocument(signature string, body []byte) (*attestedData, error) {
 	rootCertPool, err := systemCertPool()
 	if err != nil {
@@ -162,14 +154,14 @@ func verifyAttestedDocument(signature string, body []byte) (*attestedData, error
 	return verifyAttestedDocumentWithRootAndFetcher(signature, body, rootCertPool, intermediateCertPoolForSigner)
 }
 
-// intermediateCertPoolForSigner returns intermediates for the signer's issuer
-// using the package-level TTL caches, fetching from Microsoft PKI on miss.
+// intermediateCertPoolForSigner returns intermediates for the signer's issuer using the
+// package-level TTL caches, fetching from Microsoft PKI on miss.
 func intermediateCertPoolForSigner(signer *x509.Certificate) (*x509.CertPool, error) {
 	return intermediateCertPoolWithCaches(signer, fetchIntermediateCerts, intermediateCertPositiveCache, intermediateCertNegativeCache)
 }
 
-// verifyAttestedDocumentWithRootAndFetcher verifies a PKCS7 attested document
-// using the supplied root pool and intermediate fetcher.
+// verifyAttestedDocumentWithRootAndFetcher verifies a PKCS7 attested document using the supplied
+// root pool and intermediate fetcher.
 //
 // The trust progression is:
 //  1. parseAndValidatePKCS7Signer verifies the PKCS7 self-signature against the embedded leaf
@@ -195,17 +187,16 @@ func verifyAttestedDocumentWithRootAndFetcher(signature string, body []byte, roo
 	}
 
 	// The signature binds this content to the (still-untrusted) leaf, so it is safe to run
-	// rejection-only checks (nonce, freshness) before paying for chain building or network
-	// fetches below.
+	// rejection-only checks (nonce, freshness) before paying for chain building or network fetches
+	// below.
 	data, err := parseAndValidateAttestedDocumentContent(p7.Content, body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Verify using only the certificates embedded in the PKCS7 structure; if that succeeds, the
-	// signer is trusted. If it fails but the PKCS7 already embeds a cert matching the signer's
-	// issuer, the chain is genuinely broken (not just missing an intermediate), so fail fast
-	// instead of fetching.
+	// Verify using only the certificates embedded in the PKCS7 structure; if that succeeds, the signer
+	// is trusted. If it fails but the PKCS7 already embeds a cert matching the signer's issuer, the
+	// chain is genuinely broken (not just missing an intermediate), so fail fast instead of fetching.
 	chainErr := verifySignerCertChain(signer, p7.Certificates, rootCertPool, x509.NewCertPool())
 	if chainErr == nil {
 		klog.V(2).Infof("PKCS7 certificate chain verified with embedded certificates for signer issuer %q", signer.Issuer)
@@ -230,11 +221,10 @@ func verifyAttestedDocumentWithRootAndFetcher(signature string, body []byte, roo
 	return data, nil
 }
 
-// parseAndValidatePKCS7Signer decodes and parses a base64-encoded PKCS7
-// signature, verifies its self-signature, and validates that the signer
-// certificate's SAN identifies an Azure metadata endpoint. All checks here
-// are CPU-only; no network I/O is performed, so this is safe to call before
-// triggering intermediate certificate fetches.
+// parseAndValidatePKCS7Signer decodes and parses a base64-encoded PKCS7 signature, verifies its
+// self-signature, and validates that the signer certificate's SAN identifies an Azure metadata
+// endpoint. All checks here are CPU-only; no network I/O is performed, so this is safe to call
+// before triggering intermediate certificate fetches.
 func parseAndValidatePKCS7Signer(signature string) (*pkcs7.PKCS7, *x509.Certificate, error) {
 	if signature == "" {
 		return nil, nil, fmt.Errorf("empty PKCS7 signature")
@@ -271,15 +261,15 @@ func parseAndValidatePKCS7Signer(signature string) (*pkcs7.PKCS7, *x509.Certific
 	return p7, signer, nil
 }
 
-// nonceForBody derives the IMDS attestation nonce from the request body.
-// Must be identical on the authenticator and verifier sides.
+// nonceForBody derives the IMDS attestation nonce from the request body. Must be identical on the
+// authenticator and verifier sides.
 func nonceForBody(body []byte) string {
 	hash := sha256.Sum256(body)
 	return hex.EncodeToString(hash[:])[:attestedDocumentNonceLength]
 }
 
-// parseAndValidateAttestedDocumentContent unmarshals the signed attestation
-// payload and validates its nonce and freshness timestamps.
+// parseAndValidateAttestedDocumentContent unmarshals the signed attestation payload and validates
+// its nonce and freshness timestamps.
 func parseAndValidateAttestedDocumentContent(content []byte, body []byte) (*attestedData, error) {
 	// Parse the signed attested data.
 	var data attestedData
@@ -337,8 +327,8 @@ func parseAndValidateAttestedDocumentContent(content []byte, body []byte) (*atte
 }
 
 // systemCertPool returns the system root certificate pool, loaded once and cached.
-// x509.SystemCertPool returns a fresh clone of its pool on every call, so caching avoids
-// re-cloning the roots on each verification.
+// x509.SystemCertPool returns a fresh clone of its pool on every call, so caching avoids re-cloning
+// the roots on each verification.
 func systemCertPool() (*x509.CertPool, error) {
 	cachedSystemMu.Lock()
 	defer cachedSystemMu.Unlock()
@@ -356,9 +346,8 @@ func systemCertPool() (*x509.CertPool, error) {
 	return pool, nil
 }
 
-// intermediateCertPoolWithCaches performs a cached lookup against the supplied
-// positive and negative TTL caches, invoking fetch on a miss. Tests inject
-// their own stores and fetchers.
+// intermediateCertPoolWithCaches performs a cached lookup against the supplied positive and
+// negative TTL caches, invoking fetch on a miss. Tests inject their own stores and fetchers.
 func intermediateCertPoolWithCaches(signer *x509.Certificate, fetch func(*x509.Certificate) (*x509.CertPool, error), positive, negative expirationcache.Store) (*x509.CertPool, error) {
 	if signer == nil {
 		return nil, fmt.Errorf("signer certificate is required")
@@ -379,8 +368,8 @@ func intermediateCertPoolWithCaches(signer *x509.Certificate, fetch func(*x509.C
 		return nil, err
 	}
 
-	// Positive cache wins over negative: a successful later fetch overwrites
-	// any stale negative entry, which expires on its own shorter TTL.
+	// Positive cache wins over negative: a successful later fetch overwrites any stale negative entry,
+	// which expires on its own shorter TTL.
 	if obj, ok, _ := positive.GetByKey(keyStr); ok {
 		klog.V(4).Infof("Intermediate certificate cache hit (positive) for signer issuer %q", signer.Issuer)
 		return obj.(*intermediateCertCacheEntry).pool, nil
@@ -394,14 +383,12 @@ func intermediateCertPoolWithCaches(signer *x509.Certificate, fetch func(*x509.C
 	pool, fetchErr := fetch(signer)
 	entry.pool = pool
 	if fetchErr != nil {
-		// List() walks every entry and lazily deletes expired ones; ListKeys()
-		// would not trigger expiration. Doing this before each write bounds
-		// cache memory to ~(write_rate × TTL) without a background goroutine,
-		// which matters most for the negative cache since an attacker rotating
-		// issuer keys can drive writes to it at the fetch rate. Cost is O(N)
-		// per write, so in attack conditions writes become slower as the cache
-		// grows, which also acts as a natural rate limit. For legitimate
-		// traffic (a handful of entries), this is effectively free.
+		// List() walks every entry and lazily deletes expired ones; ListKeys() would not trigger
+		// expiration. Doing this before each write bounds cache memory to ~(write_rate × TTL) without a
+		// background goroutine, which matters most for the negative cache since an attacker rotating
+		// issuer keys can drive writes to it at the fetch rate. Cost is O(N) per write, so in attack
+		// conditions writes become slower as the cache grows, which also acts as a natural rate limit.
+		// For legitimate traffic (a handful of entries), this is effectively free.
 		_ = negative.List()
 		_ = negative.Add(entry)
 		return nil, fetchErr
@@ -412,15 +399,14 @@ func intermediateCertPoolWithCaches(signer *x509.Certificate, fetch func(*x509.C
 	return pool, nil
 }
 
-// fetchIntermediateCerts fetches intermediate CA certificates from validated
-// Microsoft PKI AIA URLs from the signer certificate.
+// fetchIntermediateCerts fetches intermediate CA certificates from validated Microsoft PKI AIA URLs
+// from the signer certificate.
 func fetchIntermediateCerts(signer *x509.Certificate) (*x509.CertPool, error) {
 	return fetchIntermediateCertsFromBaseURL(intermediateCertHTTPClient, microsoftIntermediateCertBaseURL, signer)
 }
 
-// fetchIntermediateCertsFromBaseURL collects validated Microsoft PKI AIA URLs
-// for the signer, downloads each certificate, and keeps only those that match
-// the signer's issuer identity.
+// fetchIntermediateCertsFromBaseURL collects validated Microsoft PKI AIA URLs for the signer,
+// downloads each certificate, and keeps only those that match the signer's issuer identity.
 func fetchIntermediateCertsFromBaseURL(client *http.Client, baseURL string, signer *x509.Certificate) (*x509.CertPool, error) {
 	if client == nil {
 		return nil, fmt.Errorf("HTTP client is required")
@@ -476,8 +462,8 @@ func fetchCertificate(client *http.Client, url string) (*x509.Certificate, error
 		return nil, fmt.Errorf("fetching intermediate certificate from %s: status %d", url, resp.StatusCode)
 	}
 
-	// Cap the body read to reject pathologically large responses. Read one
-	// extra byte so we can distinguish "at the limit" from "exceeded limit".
+	// Cap the body read to reject pathologically large responses. Read one extra byte so we can
+	// distinguish "at the limit" from "exceeded limit".
 	body, err := io.ReadAll(io.LimitReader(resp.Body, intermediateCertMaxResponseBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("reading intermediate certificate from %s: %w", url, err)
@@ -521,9 +507,9 @@ func validateFetchedIntermediateForSigner(signer *x509.Certificate, cert *x509.C
 	return nil
 }
 
-// microsoftIntermediateCandidateURLs treats signer AIA values as untrusted
-// input. It keeps only entries that stay within the configured Microsoft PKI
-// host/path allowlist and normalizes them onto the configured scheme and host.
+// microsoftIntermediateCandidateURLs treats signer AIA values as untrusted input. It keeps only
+// entries that stay within the configured Microsoft PKI host/path allowlist and normalizes them
+// onto the configured scheme and host.
 func microsoftIntermediateCandidateURLs(baseURL string, signer *x509.Certificate) ([]string, error) {
 	if signer == nil {
 		return nil, fmt.Errorf("signer certificate is required")
@@ -566,9 +552,9 @@ func microsoftIntermediateCandidateURLs(baseURL string, signer *x509.Certificate
 	return urls, nil
 }
 
-// normalizeMicrosoftIntermediateURL copies only the allowed parts of a signer
-// AIA URL onto the configured Microsoft PKI base URL. This keeps the path we
-// need while ignoring attacker-controlled scheme, query, fragment, and userinfo.
+// normalizeMicrosoftIntermediateURL copies only the allowed parts of a signer AIA URL onto the
+// configured Microsoft PKI base URL. This keeps the path we need while ignoring attacker-controlled
+// scheme, query, fragment, and userinfo.
 func normalizeMicrosoftIntermediateURL(base *url.URL, basePath string, rawURL string) (string, bool) {
 	if base == nil {
 		return "", false
@@ -600,8 +586,8 @@ func normalizeMicrosoftIntermediateURL(base *url.URL, basePath string, rawURL st
 	}).String(), true
 }
 
-// Azure guidance requires the metadata signer certificate to identify
-// metadata.azure.com or a regional *.metadata.azure.com name in its DNS SANs.
+// Azure guidance requires the metadata signer certificate to identify metadata.azure.com or a
+// regional *.metadata.azure.com name in its DNS SANs.
 func validateAzureMetadataSignerSAN(signer *x509.Certificate) error {
 	if signer == nil {
 		return fmt.Errorf("signer certificate is required")

@@ -79,9 +79,8 @@ func setTestSystemCertPool(t *testing.T, pool *x509.CertPool) {
 	})
 }
 
-// TestVerifyToken covers the early rejection paths: wrong prefix (different
-// cloud verifier), malformed two-part payload, mismatched subscription/RG,
-// and unparseable PKCS7.
+// TestVerifyToken covers the early rejection paths: wrong prefix (different cloud verifier),
+// malformed two-part payload, mismatched subscription/RG, and unparseable PKCS7.
 func TestVerifyToken(t *testing.T) {
 	matchingResourceID := "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"
 	wrongSubResourceID := "/subscriptions/other/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"

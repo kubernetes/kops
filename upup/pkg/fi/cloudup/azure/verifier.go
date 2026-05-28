@@ -34,7 +34,8 @@ import (
 )
 
 const (
-	// InstanceGroupNameTag is the key of the tag used to identify an instance group that VM belongs to.
+	// InstanceGroupNameTag is the key of the tag used to identify an instance group that VM belongs
+	// to.
 	InstanceGroupNameTag = "kops.k8s.io_instancegroup"
 )
 
@@ -50,8 +51,8 @@ type azureVerifier struct {
 
 var _ bootstrap.Verifier = (*azureVerifier)(nil)
 
-// NewAzureVerifier returns a verifier that validates Azure IMDS attestation
-// tokens and resolves the claimed VM identity through the Azure API.
+// NewAzureVerifier returns a verifier that validates Azure IMDS attestation tokens and resolves the
+// claimed VM identity through the Azure API.
 func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap.Verifier, error) {
 	azureClient, err := newVerifierClient(ctx)
 	if err != nil {
@@ -68,8 +69,8 @@ func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap
 	}, nil
 }
 
-// vmLogIDFromResource returns a short human-readable identifier for a VM
-// resource, used in log messages throughout the verifier.
+// vmLogIDFromResource returns a short human-readable identifier for a VM resource, used in log
+// messages throughout the verifier.
 func vmLogIDFromResource(res *arm.ResourceID) string {
 	if res == nil {
 		return "<nil>"
@@ -85,8 +86,8 @@ func vmLogIDFromResource(res *arm.ResourceID) string {
 	}
 }
 
-// VerifyToken validates the Azure attestation token, confirms the claimed VM
-// through the Azure API, and returns the node bootstrap identity.
+// VerifyToken validates the Azure attestation token, confirms the claimed VM through the Azure API,
+// and returns the node bootstrap identity.
 func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, AzureAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
@@ -108,10 +109,9 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	resourceType := res.ResourceType.String()
 	klog.V(4).Infof("Azure verifier for VM %q parsed resource ID: subscription=%q resourceGroup=%q", vmLogID, res.SubscriptionID, res.ResourceGroupName)
 
-	// Reject resource IDs outside the verifier's own subscription / resource
-	// group. The Azure API lookup below is already scoped to kops-controller's
-	// subscription and resource group, so any claim that names a different
-	// location cannot describe a cluster VM. Failing here avoids a wasted
+	// Reject resource IDs outside the verifier's own subscription / resource group. The Azure API
+	// lookup below is already scoped to kops-controller's subscription and resource group, so any
+	// claim that names a different location cannot describe a cluster VM. Failing here avoids a wasted
 	// Azure API call and makes the scope explicit instead of implicit.
 	if !strings.EqualFold(res.SubscriptionID, a.client.subscriptionID) {
 		return nil, fmt.Errorf("resource ID subscription %q does not match verifier subscription %q", res.SubscriptionID, a.client.subscriptionID)
@@ -139,8 +139,8 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		return nil, fmt.Errorf("attested subscriptionId %q does not match verifier subscription %q", data.SubscriptionId, a.client.subscriptionID)
 	}
 
-	// Look up the VM or VMSS VM via the Azure API using the resource ID,
-	// cross-verify the attested vmId, and extract node identity.
+	// Look up the VM or VMSS VM via the Azure API using the resource ID, cross-verify the attested
+	// vmId, and extract node identity.
 	var nodeName, igName string
 	var addrs, challengeEndpoints []string
 
@@ -158,8 +158,8 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 			return nil, fmt.Errorf("determining VMID for VM %q", vmName)
 		}
 
-		// Cross-verify: the vmId from the cryptographically signed attested document
-		// must match the vmId from the Azure API for the claimed resource ID.
+		// Cross-verify: the vmId from the cryptographically signed attested document must match the vmId
+		// from the Azure API for the claimed resource ID.
 		klog.V(4).Infof("Azure verifier for VM %q cross-verifying vmId: attested=%q api=%q", vmLogID, data.VMId, *vm.Properties.VMID)
 		if data.VMId != *vm.Properties.VMID {
 			return nil, fmt.Errorf("attested vmId %q does not match VM %q (API vmId %q)", data.VMId, vmName, *vm.Properties.VMID)
@@ -204,8 +204,8 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 			return nil, fmt.Errorf("determining VMID for VMSS %q VM #%s", vmssName, vmssIndex)
 		}
 
-		// Cross-verify: the vmId from the cryptographically signed attested document
-		// must match the vmId from the Azure API for the claimed resource ID.
+		// Cross-verify: the vmId from the cryptographically signed attested document must match the vmId
+		// from the Azure API for the claimed resource ID.
 		klog.V(4).Infof("Azure verifier for VM %q cross-verifying vmId: attested=%q api=%q", vmLogID, data.VMId, *vm.Properties.VMID)
 		if data.VMId != *vm.Properties.VMID {
 			return nil, fmt.Errorf("attested vmId %q does not match VMSS %q VM #%s (API vmId %q)", data.VMId, vmssName, vmssIndex, *vm.Properties.VMID)
@@ -259,8 +259,8 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	return result, nil
 }
 
-// appendPrivateIP appends the private IP address from an interface IP
-// configuration to the address and challenge endpoint slices.
+// appendPrivateIP appends the private IP address from an interface IP configuration to the address
+// and challenge endpoint slices.
 func appendPrivateIP(addrs, challengeEndpoints []string, ipc *network.InterfaceIPConfiguration) ([]string, []string) {
 	if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
 		addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
@@ -278,8 +278,8 @@ type client struct {
 	vmssVMsClient  *compute.VirtualMachineScaleSetVMsClient
 }
 
-// newVerifierClient builds Azure API clients scoped to the local instance's
-// subscription and resource group from IMDS metadata.
+// newVerifierClient builds Azure API clients scoped to the local instance's subscription and
+// resource group from IMDS metadata.
 func newVerifierClient(ctx context.Context) (*client, error) {
 	metadata, err := QueryComputeInstanceMetadata(ctx)
 	if err != nil || metadata == nil {

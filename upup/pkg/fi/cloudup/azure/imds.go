@@ -37,9 +37,9 @@ const (
 	imdsAPIVersion = "2025-04-07"
 )
 
-// imdsHTTPClient is shared by all IMDS queries. The explicit Transport{Proxy: nil}
-// bypasses any system proxy since IMDS lives at the link-local 169.254.169.254
-// address and must not be routed through one.
+// imdsHTTPClient is shared by all IMDS queries. The explicit Transport{Proxy: nil} bypasses any
+// system proxy since IMDS lives at the link-local 169.254.169.254 address and must not be routed
+// through one.
 var imdsHTTPClient = &http.Client{
 	Transport: &http.Transport{Proxy: nil},
 	Timeout:   10 * time.Second,
@@ -114,8 +114,8 @@ func QueryComputeInstanceMetadata(ctx context.Context) (*InstanceMetadata, error
 	return metadata, nil
 }
 
-// queryIMDSAttestedDocument queries the Azure IMDS attested document endpoint.
-// The nonce is included in the PKCS7 signed content for replay protection.
+// queryIMDSAttestedDocument queries the Azure IMDS attested document endpoint. The nonce is
+// included in the PKCS7 signed content for replay protection.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service#attested-data
 func queryIMDSAttestedDocument(ctx context.Context, nonce string) (*attestedDocument, error) {
 	if nonce == "" {

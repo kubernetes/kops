@@ -24,22 +24,22 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 )
 
-// AzureAuthenticationTokenPrefix prefixes bootstrap tokens created from Azure
-// IMDS instance identity data.
+// AzureAuthenticationTokenPrefix prefixes bootstrap tokens created from Azure IMDS instance
+// identity data.
 const AzureAuthenticationTokenPrefix = "x-azure-id "
 
 type azureAuthenticator struct{}
 
 var _ bootstrap.Authenticator = (*azureAuthenticator)(nil)
 
-// NewAzureAuthenticator returns an authenticator that mints Azure bootstrap
-// tokens backed by IMDS metadata and an attested document signature.
+// NewAzureAuthenticator returns an authenticator that mints Azure bootstrap tokens backed by IMDS
+// metadata and an attested document signature.
 func NewAzureAuthenticator() (bootstrap.Authenticator, error) {
 	return &azureAuthenticator{}, nil
 }
 
-// CreateToken fetches the local VM identity from IMDS and returns a bootstrap
-// token containing the resource ID and signed attested document.
+// CreateToken fetches the local VM identity from IMDS and returns a bootstrap token containing the
+// resource ID and signed attested document.
 func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 	klog.V(4).Infof("Azure authenticator creating bootstrap token")
 
