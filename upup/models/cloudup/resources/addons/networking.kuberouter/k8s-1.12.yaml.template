@@ -1,5 +1,4 @@
-# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.6.0/daemonset/kubeadm-kuberouter.yaml
-
+# Pulled and modified from https://raw.githubusercontent.com/cloudnativelabs/kube-router/v2.1.0/daemonset/kubeadm-kuberouter.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -61,9 +60,10 @@ spec:
           level: s0
 {{ end }}
       serviceAccountName: kube-router
+      serviceAccount: kube-router
       containers:
       - name: kube-router
-        image: docker.io/cloudnativelabs/kube-router:v2.7.1
+        image: docker.io/cloudnativelabs/kube-router:v2.10.0
         args:
         - --run-router=true
         - --run-firewall=true
@@ -93,7 +93,7 @@ spec:
           periodSeconds: 3
         resources:
           requests:
-            cpu: 100m
+            cpu: 250m
             memory: 250Mi
         securityContext:
           privileged: true
@@ -117,7 +117,7 @@ spec:
           readOnly: true
       initContainers:
       - name: install-cni
-        image: docker.io/cloudnativelabs/kube-router:v2.7.1
+        image: docker.io/cloudnativelabs/kube-router:v2.10.0
         command:
         - /bin/sh
         - -c
