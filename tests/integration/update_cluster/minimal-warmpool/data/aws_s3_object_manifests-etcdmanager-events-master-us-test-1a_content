@@ -48,7 +48,7 @@ spec:
     - --src=/ko-app/kops-utils-cp
     command:
     - /ko-app/kops-utils-cp
-    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.0
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.1
     name: kops-utils-cp
     resources: {}
     volumeMounts:
@@ -97,7 +97,7 @@ spec:
     - --src=/opt/etcd-v3.4.13/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.0
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.1
     name: init-etcd-symlinks-3-4-13
     resources: {}
     volumeMounts:
@@ -122,7 +122,7 @@ spec:
     - --src=/opt/etcd-v3.5.30/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.0
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.1
     name: init-etcd-symlinks-3-5-30
     resources: {}
     volumeMounts:
@@ -136,7 +136,7 @@ spec:
     - --src=/opt/etcd-v3.6.11/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.0
+    image: kops.k8s.io/remapped-image/kops/kops-utils-cp:1.35.1
     name: init-etcd-symlinks-3-6-11
     resources: {}
     volumeMounts:
