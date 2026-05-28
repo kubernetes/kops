@@ -225,6 +225,7 @@ else
   CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/experiments/ignore_known_gce_container_restarts.yaml")
   CLUSTERLOADER2_ARGS+=("--test-overrides=${GOPATH}/src/k8s.io/perf-tests/clusterloader2/testing/overrides/5000_nodes.yaml")
   CLUSTERLOADER2_ARGS+=("--extra-args=--experimental-prometheus-snapshot-to-report-dir=true")
+  CLUSTERLOADER2_ARGS+=("--v=2")
 fi
 
 # ToDo: remove this once we can run the huge-service test on AWS
