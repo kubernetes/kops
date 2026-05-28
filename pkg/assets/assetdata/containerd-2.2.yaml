@@ -14,3 +14,18 @@ files:
   sha256: f5d8e90ecb6c1c7e33ecddf8cc268a93b9e5b54e0e850320d765511d76624f41
 - name: v2.2.1/containerd-2.2.1-linux-arm64.tar.gz
   sha256: dac15a0d412a24be8bfe6a40cec8f51829062725169f1e72ac7d120a891ef5b6
+# containerd 2.2.2
+- name: v2.2.2/containerd-2.2.2-linux-amd64.tar.gz
+  sha256: 2c08c99cbde73b3388c6d5da68e0bcaebc70c9174f2b14d785695e4401b3ede0
+- name: v2.2.2/containerd-2.2.2-linux-arm64.tar.gz
+  sha256: cb102473d6e353beb604178879d51cc456da0cdf368d9437d8d404ed01baf674
+# containerd 2.2.3
+- name: v2.2.3/containerd-2.2.3-linux-amd64.tar.gz
+  sha256: ca26ef5138f17b847bbeeec36d4bf5e002b54d25858197a870c125d57f44d32f
+- name: v2.2.3/containerd-2.2.3-linux-arm64.tar.gz
+  sha256: 2942d72435b18610f7b69c1ddb74f99cef5c549425ff80d3e74f04e5e80db6a4
+# containerd 2.2.4
+- name: v2.2.4/containerd-2.2.4-linux-amd64.tar.gz
+  sha256: 62e77f6294e432dca5b56ad7e7d6085b5bbb526ebba0a51d832714f9b04cfdfd
+- name: v2.2.4/containerd-2.2.4-linux-arm64.tar.gz
+  sha256: d0897c8e27c96a7b7d4c73e9b278ea9f559dda619d497d88b323a528bd1412c3
