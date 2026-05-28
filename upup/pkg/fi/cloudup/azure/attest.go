@@ -170,6 +170,17 @@ func intermediateCertPoolForSigner(signer *x509.Certificate) (*x509.CertPool, er
 
 // verifyAttestedDocumentWithRootAndFetcher verifies a PKCS7 attested document
 // using the supplied root pool and intermediate fetcher.
+//
+// The trust progression is:
+//  1. parseAndValidatePKCS7Signer verifies the PKCS7 self-signature against the embedded leaf
+//     certificate. At this point the signed content is integrity-bound to the leaf, but the
+//     leaf itself is still untrusted — its chain to a root has not been built. The leaf's SAN
+//     is sanity-checked against the Azure metadata domains here too.
+//  2. parseAndValidateAttestedDocumentContent parses the now-integrity-checked signed content
+//     for cheap rejection-only checks (nonce binding, freshness) before paying for chain
+//     building or network fetches.
+//  3. verifySignerCertChain performs the actual cryptographic chain validation against
+//     rootCertPool. This is the call that establishes trust in the signer.
 func verifyAttestedDocumentWithRootAndFetcher(signature string, body []byte, rootCertPool *x509.CertPool, fetchIntermediates func(*x509.Certificate) (*x509.CertPool, error)) (*attestedData, error) {
 	if rootCertPool == nil {
 		return nil, fmt.Errorf("root certificate pool is required")
@@ -183,19 +194,18 @@ func verifyAttestedDocumentWithRootAndFetcher(signature string, body []byte, roo
 		return nil, err
 	}
 
-	// The PKCS7 signature is already integrity-checked above, so it is safe to
-	// parse the signed content now for rejection-only checks like nonce and time
-	// bounds before paying for chain building or network fetches.
+	// The signature binds this content to the (still-untrusted) leaf, so it is safe to run
+	// rejection-only checks (nonce, freshness) before paying for chain building or network
+	// fetches below.
 	data, err := parseAndValidateAttestedDocumentContent(p7.Content, body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Try to verify using only the certificates embedded in the PKCS7 structure.
-	// If that succeeds, we are done. If it fails, check whether the PKCS7
-	// already contains a certificate matching the signer's issuer — if so,
-	// the chain is genuinely broken (not just missing an intermediate) and
-	// we should fail immediately rather than wasting a network fetch.
+	// Verify using only the certificates embedded in the PKCS7 structure; if that succeeds, the
+	// signer is trusted. If it fails but the PKCS7 already embeds a cert matching the signer's
+	// issuer, the chain is genuinely broken (not just missing an intermediate), so fail fast
+	// instead of fetching.
 	chainErr := verifySignerCertChain(signer, p7.Certificates, rootCertPool, x509.NewCertPool())
 	if chainErr == nil {
 		klog.V(2).Infof("PKCS7 certificate chain verified with embedded certificates for signer issuer %q", signer.Issuer)
@@ -326,8 +336,9 @@ func parseAndValidateAttestedDocumentContent(content []byte, body []byte) (*atte
 	return &data, nil
 }
 
-// systemCertPool returns a cached system root certificate pool,
-// loading it on first call.
+// systemCertPool returns the system root certificate pool, loaded once and cached.
+// x509.SystemCertPool returns a fresh clone of its pool on every call, so caching avoids
+// re-cloning the roots on each verification.
 func systemCertPool() (*x509.CertPool, error) {
 	cachedSystemMu.Lock()
 	defer cachedSystemMu.Unlock()
@@ -475,11 +486,16 @@ func fetchCertificate(client *http.Client, url string) (*x509.Certificate, error
 		return nil, fmt.Errorf("intermediate certificate from %s exceeds %d bytes", url, intermediateCertMaxResponseBytes)
 	}
 
-	return x509.ParseCertificate(body)
+	cert, err := x509.ParseCertificate(body)
+	if err != nil {
+		return nil, fmt.Errorf("parsing intermediate certificate from %s: %w", url, err)
+	}
+	return cert, nil
 }
 
-// validateFetchedIntermediateForSigner checks that a fetched intermediate is
-// actually the issuer referenced by the signer certificate before it is used or cached.
+// validateFetchedIntermediateForSigner checks that a fetched intermediate is actually the issuer
+// referenced by the signer certificate before it is used or cached. This is a structural check
+// only; the cryptographic signature is verified later by verifySignerCertChain.
 func validateFetchedIntermediateForSigner(signer *x509.Certificate, cert *x509.Certificate) error {
 	if signer == nil {
 		return fmt.Errorf("signer certificate is required")
@@ -489,6 +505,11 @@ func validateFetchedIntermediateForSigner(signer *x509.Certificate, cert *x509.C
 	}
 	if !cert.IsCA {
 		return fmt.Errorf("fetched certificate is not a CA certificate")
+	}
+	// Require at least one issuer identifier so the per-field length guards below cannot silently
+	// degrade to "no identity check" if both fields happen to be empty.
+	if len(signer.RawIssuer) == 0 && len(signer.AuthorityKeyId) == 0 {
+		return fmt.Errorf("signer certificate has neither RawIssuer nor AuthorityKeyId set")
 	}
 	if len(signer.RawIssuer) > 0 && !bytes.Equal(cert.RawSubject, signer.RawIssuer) {
 		return fmt.Errorf("fetched certificate subject does not match signer issuer")

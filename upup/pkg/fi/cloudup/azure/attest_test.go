@@ -468,6 +468,13 @@ func TestValidateFetchedIntermediateForSigner(t *testing.T) {
 			t.Fatal("expected error for nil cert")
 		}
 	})
+
+	t.Run("rejects signer with empty RawIssuer and AuthorityKeyId", func(t *testing.T) {
+		signer := &x509.Certificate{}
+		if err := validateFetchedIntermediateForSigner(signer, caCert); err == nil {
+			t.Fatal("expected error when signer has neither RawIssuer nor AuthorityKeyId set")
+		}
+	})
 }
 
 // TestFetchCertificate_RejectsBadResponse exercises the rejection paths of

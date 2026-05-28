@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -60,7 +61,7 @@ type attestedDocument struct {
 
 // queryIMDS queries an Azure IMDS endpoint and unmarshals the JSON response.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
-func queryIMDS(path string, params url.Values, result any) error {
+func queryIMDS(ctx context.Context, path string, params url.Values, result any) error {
 	if path == "" {
 		return fmt.Errorf("IMDS path is required")
 	}
@@ -68,7 +69,7 @@ func queryIMDS(path string, params url.Values, result any) error {
 		return fmt.Errorf("result is required")
 	}
 
-	req, err := http.NewRequest("GET", imdsBaseURL+path, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", imdsBaseURL+path, nil)
 	if err != nil {
 		return fmt.Errorf("creating IMDS request: %w", err)
 	}
@@ -104,10 +105,10 @@ func queryIMDS(path string, params url.Values, result any) error {
 
 // QueryComputeInstanceMetadata queries Azure IMDS for compute instance metadata.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service#instance-metadata
-func QueryComputeInstanceMetadata() (*InstanceMetadata, error) {
+func QueryComputeInstanceMetadata(ctx context.Context) (*InstanceMetadata, error) {
 	metadata := &InstanceMetadata{}
 	params := url.Values{"format": {"json"}}
-	if err := queryIMDS("/metadata/instance/compute", params, metadata); err != nil {
+	if err := queryIMDS(ctx, "/metadata/instance/compute", params, metadata); err != nil {
 		return nil, err
 	}
 	return metadata, nil
@@ -116,14 +117,14 @@ func QueryComputeInstanceMetadata() (*InstanceMetadata, error) {
 // queryIMDSAttestedDocument queries the Azure IMDS attested document endpoint.
 // The nonce is included in the PKCS7 signed content for replay protection.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service#attested-data
-func queryIMDSAttestedDocument(nonce string) (*attestedDocument, error) {
+func queryIMDSAttestedDocument(ctx context.Context, nonce string) (*attestedDocument, error) {
 	if nonce == "" {
 		return nil, fmt.Errorf("nonce is required")
 	}
 
 	doc := &attestedDocument{}
 	params := url.Values{"nonce": {nonce}}
-	if err := queryIMDS("/metadata/attested/document", params, doc); err != nil {
+	if err := queryIMDS(ctx, "/metadata/attested/document", params, doc); err != nil {
 		return nil, err
 	}
 	return doc, nil

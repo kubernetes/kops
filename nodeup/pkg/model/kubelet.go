@@ -127,7 +127,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			}
 			providerID = fmt.Sprintf("aws:///%s/%s", instanceIdentity.AvailabilityZone, instanceIdentity.InstanceID)
 		} else if b.CloudProvider() == kops.CloudProviderAzure {
-			metadata, err := azurecloud.QueryComputeInstanceMetadata()
+			metadata, err := azurecloud.QueryComputeInstanceMetadata(ctx)
 			if err != nil {
 				return fmt.Errorf("error querying Azure instance metadata: %v", err)
 			}

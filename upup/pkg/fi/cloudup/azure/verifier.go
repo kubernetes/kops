@@ -53,7 +53,7 @@ var _ bootstrap.Verifier = (*azureVerifier)(nil)
 // NewAzureVerifier returns a verifier that validates Azure IMDS attestation
 // tokens and resolves the claimed VM identity through the Azure API.
 func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap.Verifier, error) {
-	azureClient, err := newVerifierClient()
+	azureClient, err := newVerifierClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -280,8 +280,8 @@ type client struct {
 
 // newVerifierClient builds Azure API clients scoped to the local instance's
 // subscription and resource group from IMDS metadata.
-func newVerifierClient() (*client, error) {
-	metadata, err := QueryComputeInstanceMetadata()
+func newVerifierClient(ctx context.Context) (*client, error) {
+	metadata, err := QueryComputeInstanceMetadata(ctx)
 	if err != nil || metadata == nil {
 		return nil, fmt.Errorf("getting instance metadata: %w", err)
 	}

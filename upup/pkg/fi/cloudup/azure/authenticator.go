@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 
 	"k8s.io/klog/v2"
@@ -42,8 +43,12 @@ func NewAzureAuthenticator() (bootstrap.Authenticator, error) {
 func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 	klog.V(4).Infof("Azure authenticator creating bootstrap token")
 
+	// bootstrap.Authenticator.CreateToken carries no context; the IMDS HTTP client's own timeout
+	// bounds these calls.
+	ctx := context.TODO()
+
 	// Query IMDS for the VM's resource ID.
-	metadata, err := QueryComputeInstanceMetadata()
+	metadata, err := QueryComputeInstanceMetadata(ctx)
 	if err != nil {
 		return "", fmt.Errorf("querying instance metadata: %w", err)
 	}
@@ -54,7 +59,7 @@ func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 
 	// Query IMDS for a PKCS7-signed attested document containing the nonce.
 	nonce := nonceForBody(body)
-	doc, err := queryIMDSAttestedDocument(nonce)
+	doc, err := queryIMDSAttestedDocument(ctx, nonce)
 	if err != nil {
 		return "", fmt.Errorf("querying attested document: %w", err)
 	}
