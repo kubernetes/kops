@@ -126,7 +126,7 @@ ClusterName: minimal-etcd.example.com
 ConfigBase: memfs://clusters.example.com/minimal-etcd.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 9DuxemHxQ7qARooRxmfXHLKuJl9rd7weZFlKWqHY90M=
+NodeupConfigHash: yVV7x+jBDGF5x1W5/gLsbsVVeW3Yw8gIqbt9PsK/aXw=
 
 __EOF_KUBE_ENV
 

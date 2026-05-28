@@ -17,12 +17,12 @@ files:
 - canonical: https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
   download: https://dl.k8s.io/release/v1.32.0/bin/linux/arm64/kubelet
   sha: bda9b2324c96693b38c41ecea051bab4c7c434be5683050b5e19025b50dbc0bf
-- canonical: https://github.com/containerd/containerd/releases/download/v2.2.3/containerd-2.2.3-linux-amd64.tar.gz
-  download: https://github.com/containerd/containerd/releases/download/v2.2.3/containerd-2.2.3-linux-amd64.tar.gz
-  sha: ca26ef5138f17b847bbeeec36d4bf5e002b54d25858197a870c125d57f44d32f
-- canonical: https://github.com/containerd/containerd/releases/download/v2.2.3/containerd-2.2.3-linux-arm64.tar.gz
-  download: https://github.com/containerd/containerd/releases/download/v2.2.3/containerd-2.2.3-linux-arm64.tar.gz
-  sha: 2942d72435b18610f7b69c1ddb74f99cef5c549425ff80d3e74f04e5e80db6a4
+- canonical: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-amd64.tar.gz
+  download: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-amd64.tar.gz
+  sha: 62e77f6294e432dca5b56ad7e7d6085b5bbb526ebba0a51d832714f9b04cfdfd
+- canonical: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-arm64.tar.gz
+  download: https://github.com/containerd/containerd/releases/download/v2.2.4/containerd-2.2.4-linux-arm64.tar.gz
+  sha: d0897c8e27c96a7b7d4c73e9b278ea9f559dda619d497d88b323a528bd1412c3
 - canonical: https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
   download: https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
   sha: b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090
