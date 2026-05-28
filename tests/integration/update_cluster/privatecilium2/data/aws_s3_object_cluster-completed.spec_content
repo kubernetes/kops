@@ -33,7 +33,7 @@ spec:
     runc:
       version: 1.3.5
     sandboxImage: registry.k8s.io/pause:3.10.1
-    version: 1.7.31
+    version: 1.7.32
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:

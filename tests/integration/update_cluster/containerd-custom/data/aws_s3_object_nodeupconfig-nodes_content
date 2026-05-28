@@ -60,6 +60,6 @@ containerdConfig:
   sandboxImage: registry.k8s.io/pause:3.10.1
   skipInstall: true
   useECRCredentialsForMirrors: true
-  version: 2.2.3
+  version: 2.2.4
 usesLegacyGossip: false
 usesNoneDNS: false

@@ -31,7 +31,7 @@ spec:
     runc:
       version: 1.3.5
     sandboxImage: kops.k8s.io/remapped-image/pause:3.10.1
-    version: 2.2.3
+    version: 2.2.4
   dnsZone: Z1AFAKE1ZON3YO
   etcdClusters:
   - backups:

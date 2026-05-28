@@ -126,7 +126,7 @@ ClusterName: gossip.k8s.local
 ConfigBase: memfs://tests/gossip.k8s.local
 InstanceGroupName: master-fsn1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: wYt3+o+uTzBcn4KMDGDs3zkhZflvdO3x2D9/EofGE4o=
+NodeupConfigHash: alSe245GY4rH3OA1yhyudm5h7wdSLWq92+RhTKxlaBI=
 
 __EOF_KUBE_ENV
 

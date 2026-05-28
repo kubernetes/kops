@@ -315,7 +315,7 @@ containerdConfig:
   sandboxImage: registry.k8s.io/pause:3.10.1
   skipInstall: true
   useECRCredentialsForMirrors: true
-  version: 2.2.3
+  version: 2.2.4
 etcdManifests:
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/main-master-us-test-1a.yaml
 - memfs://clusters.example.com/containerd.example.com/manifests/etcd/events-master-us-test-1a.yaml

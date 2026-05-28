@@ -4,14 +4,14 @@ Assets:
   - 837bb39bfdf84d6b63f2d53e1f73bc6034bc2b2393641c8d2ba69d2b3b174092@https://dl.k8s.io/release/v1.36.0-rc.1/bin/linux/amd64/kubectl
   - 7644623e4ec9ad443ab352a8a5800a5180ee28741288be805286ba72bb8e7164@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/amd64/ecr-credential-provider-linux-amd64
   - b8e811578fb66023f90d2e238d80cec3bdfca4b44049af74c374d4fae0f9c090@https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz
-  - 4cb83e7100a5e73fcb626207d0b5bcfd1294e26aeddfe075dcfb38f375c5f887@https://github.com/containerd/containerd/releases/download/v2.3.0/containerd-2.3.0-linux-amd64.tar.gz
+  - 628448bd973610c656c1cbea8e88b32fafd85b23cc1aa4a3372eb7198478c054@https://github.com/containerd/containerd/releases/download/v2.3.1/containerd-2.3.1-linux-amd64.tar.gz
   - ac8a90f9e225bb9322189937b230cdc5478d5753f0e31e1bda98a5cf06bd9539@https://github.com/opencontainers/runc/releases/download/v1.4.2/runc.amd64
   arm64:
   - c7fd6b5d5af23079afb98695d9b2e2ed764c1b5581c43a994f8ca062fd154139@https://dl.k8s.io/release/v1.36.0-rc.1/bin/linux/arm64/kubelet
   - 626d71ed21b05fedd56a1dc49ebee8e7217d170d75496f7cd8ee1f0721262e59@https://dl.k8s.io/release/v1.36.0-rc.1/bin/linux/arm64/kubectl
   - 1980e3a038cb16da48a137743b31fb81de6c0b59fa06c206c2bc20ce0a52f849@https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7/linux/arm64/ecr-credential-provider-linux-arm64
   - 01e0e22acc7f7004e4588c1fe1871cc86d7ab562cd858e1761c4641d89ebfaa4@https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz
-  - 06623dc8719b30d06303420f7eae91b0a9ade4e71243a4102f6375e585fb0a42@https://github.com/containerd/containerd/releases/download/v2.3.0/containerd-2.3.0-linux-arm64.tar.gz
+  - 46a83603a850f3916ca7c942310daaf82ed17773a85b1d431e92d4a541e46d0d@https://github.com/containerd/containerd/releases/download/v2.3.1/containerd-2.3.1-linux-arm64.tar.gz
   - ea54032310588e115633aa2f4bba8bf9500257f657e1deca88df5778775138db@https://github.com/opencontainers/runc/releases/download/v1.4.2/runc.arm64
 CAs: {}
 ClusterName: minimal.example.com
@@ -54,6 +54,6 @@ containerdConfig:
   runc:
     version: 1.4.2
   sandboxImage: registry.k8s.io/pause:3.10.1
-  version: 2.3.0
+  version: 2.3.1
 usesLegacyGossip: false
 usesNoneDNS: false
