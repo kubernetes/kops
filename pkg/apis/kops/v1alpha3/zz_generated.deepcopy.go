@@ -2003,6 +2003,11 @@ func (in *EtcdManagerSpec) DeepCopyInto(out *EtcdManagerSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.ListenClientHTTPURLs != nil {
+		in, out := &in.ListenClientHTTPURLs, &out.ListenClientHTTPURLs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.LogLevel != nil {
 		in, out := &in.LogLevel, &out.LogLevel
 		*out = new(int32)

@@ -1433,6 +1433,12 @@ spec:
                         image:
                           description: Image is the etcd manager image to use.
                           type: string
+                        listenClientHTTPURLs:
+                          description: ListenClientHTTPURLs is the list of URLs to
+                            listen on for HTTP-only client traffic
+                          items:
+                            type: string
+                          type: array
                         listenMetricsURLs:
                           description: ListenMetricsURLs is the list of URLs to listen
                             on that will respond to both the /metrics and /health
