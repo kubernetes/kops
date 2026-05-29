@@ -20,7 +20,7 @@ contents: |
       - --anonymous-auth=false
       - --api-audiences=kubernetes.svc.default
       - --apiserver-count=1
-      - --authorization-mode=AlwaysAllow
+      - --authorization-mode=Node,RBAC
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
       - --enable-admission-plugins=DefaultStorageClass,DefaultTolerationSeconds,LimitRanger,MutatingAdmissionWebhook,NamespaceLifecycle,NodeRestriction,ResourceQuota,RuntimeClass,ServiceAccount,ValidatingAdmissionPolicy,ValidatingAdmissionWebhook

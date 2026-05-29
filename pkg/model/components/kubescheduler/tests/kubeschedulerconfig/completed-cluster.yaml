@@ -3,7 +3,7 @@ metadata:
 spec:
   api: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   cloudProvider: {}
   configStore: {}
   kubernetesVersion: v1.24.0

@@ -28,7 +28,7 @@ contents: |
       - --audit-webhook-batch-max-wait=5s
       - --audit-webhook-config-file=/etc/kubernetes/audit/webhook-config.yaml
       - --authentication-config=/etc/kubernetes/authentication-config.yaml
-      - --authorization-mode=AlwaysAllow
+      - --authorization-mode=Node,RBAC
       - --bind-address=0.0.0.0
       - --client-ca-file=/srv/kubernetes/ca.crt
       - --enable-admission-plugins=DefaultStorageClass,DefaultTolerationSeconds,LimitRanger,MutatingAdmissionWebhook,NamespaceLifecycle,NodeRestriction,ResourceQuota,RuntimeClass,ServiceAccount,ValidatingAdmissionPolicy,ValidatingAdmissionWebhook

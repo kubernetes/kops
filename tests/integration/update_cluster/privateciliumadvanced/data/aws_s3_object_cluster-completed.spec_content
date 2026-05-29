@@ -9,7 +9,7 @@ spec:
       class: Classic
       type: Public
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
@@ -72,7 +72,7 @@ spec:
     apiAudiences:
     - kubernetes.svc.default
     apiServerCount: 1
-    authorizationMode: AlwaysAllow
+    authorizationMode: Node,RBAC
     bindAddress: 0.0.0.0
     cloudProvider: external
     enableAdmissionPlugins:

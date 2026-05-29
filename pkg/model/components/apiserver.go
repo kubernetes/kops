@@ -81,8 +81,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 	}
 
 	if clusterSpec.Authorization == nil || clusterSpec.Authorization.IsEmpty() {
-		// Do nothing - use the default as defined by the apiserver
-		// (this won't happen anyway because of our default logic)
+		// Do nothing - use the default as defined by the apiserver.
+		// In practice unreachable: defaulting sets RBAC when authorization is omitted.
 	} else if clusterSpec.Authorization.AlwaysAllow != nil {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.PtrTo("AlwaysAllow")
 	} else if clusterSpec.Authorization.RBAC != nil {
