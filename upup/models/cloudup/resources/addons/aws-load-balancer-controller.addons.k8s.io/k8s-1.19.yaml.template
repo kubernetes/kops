@@ -2870,7 +2870,7 @@ spec:
     port: 443
     targetPort: webhook-server
   selector:
-    app.kubernetes.io/instance: aws-load-balancer-controller
+    app.kubernetes.io/component: controller
     app.kubernetes.io/name: aws-load-balancer-controller
 ---
 apiVersion: apps/v1
@@ -2889,7 +2889,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app.kubernetes.io/instance: aws-load-balancer-controller
+      app.kubernetes.io/component: controller
       app.kubernetes.io/name: aws-load-balancer-controller
   strategy:
     rollingUpdate:
@@ -2901,6 +2901,7 @@ spec:
         prometheus.io/port: "9442"
         prometheus.io/scrape: "true"
       labels:
+        app.kubernetes.io/component: controller
         app.kubernetes.io/instance: aws-load-balancer-controller
         app.kubernetes.io/name: aws-load-balancer-controller
     spec:

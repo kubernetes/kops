@@ -89,6 +89,31 @@ patches:
         path: /spec/template/spec/volumes/0/secret/secretName
         value: aws-load-balancer-webhook-tls
 
+  # A Deployment's spec.selector is immutable, so adopting the chart's
+  # {instance, name} selector breaks in-place upgrades from kops <1.36. Pin both
+  # selectors to the historical {component, name} labels and label pods to match.
+  - target:
+      kind: Deployment
+      name: aws-load-balancer-controller
+    patch: |
+      - op: replace
+        path: /spec/selector/matchLabels
+        value:
+          app.kubernetes.io/component: controller
+          app.kubernetes.io/name: aws-load-balancer-controller
+      - op: add
+        path: /spec/template/metadata/labels/app.kubernetes.io~1component
+        value: controller
+  - target:
+      kind: Service
+      name: aws-load-balancer-webhook-service
+    patch: |
+      - op: replace
+        path: /spec/selector
+        value:
+          app.kubernetes.io/component: controller
+          app.kubernetes.io/name: aws-load-balancer-controller
+
   # The E2E suite runs a test that requires the ALBTargetControlAgent=true feature gate
   # the test is skipped based on the presence of this CRD and the upstream helm chart
   # doesn't offer a way to not render it, so we delete it here instead.
