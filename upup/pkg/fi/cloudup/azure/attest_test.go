@@ -409,6 +409,122 @@ func TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate(t *test
 	}
 }
 
+// TestFetchIntermediateCertsFromBaseURL_ChasesCrossSignedChain verifies the fetch follows AIA issuer
+// links up multiple hops. It mirrors Azure signing through an issuing CA and a cross-signed root:
+// resolving only the direct issuer leaves the chain one hop short, so both intermediates must be
+// fetched. The cross-signed root's issuer is outside the allowlist (as DigiCert is for the real
+// chain), so the walk stops there and the trusted root pool anchors the chain.
+func TestFetchIntermediateCertsFromBaseURL_ChasesCrossSignedChain(t *testing.T) {
+	const base = "https://mspki.test/pkiops/certs"
+
+	mkKey := func(name string) *rsa.PrivateKey {
+		key, err := rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			t.Fatalf("generating %s key: %v", name, err)
+		}
+		return key
+	}
+	mkCert := func(name string, tmpl, parent *x509.Certificate, key, parentKey *rsa.PrivateKey) *x509.Certificate {
+		der, err := x509.CreateCertificate(rand.Reader, tmpl, parent, &key.PublicKey, parentKey)
+		if err != nil {
+			t.Fatalf("creating %s cert: %v", name, err)
+		}
+		cert, err := x509.ParseCertificate(der)
+		if err != nil {
+			t.Fatalf("parsing %s cert: %v", name, err)
+		}
+		return cert
+	}
+	caTemplate := func(serial int64, cn, ski string, aia []string) *x509.Certificate {
+		return &x509.Certificate{
+			SerialNumber:          big.NewInt(serial),
+			Subject:               pkix.Name{CommonName: cn},
+			SubjectKeyId:          []byte(ski),
+			NotBefore:             time.Now().Add(-time.Hour),
+			NotAfter:              time.Now().Add(24 * time.Hour),
+			KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+			BasicConstraintsValid: true,
+			IsCA:                  true,
+			IssuingCertificateURL: aia,
+		}
+	}
+
+	// Chain: root -> crossRoot -> issuing -> leaf. Only root is trusted. crossRoot's AIA points
+	// outside the allowlist, so the walk must stop at it and let the root pool anchor the chain.
+	rootKey := mkKey("root")
+	rootTmpl := caTemplate(100, "Test Cross-Sign Root", "xsign-root-ski", nil)
+	root := mkCert("root", rootTmpl, rootTmpl, rootKey, rootKey)
+
+	crossKey := mkKey("crossRoot")
+	crossRoot := mkCert("crossRoot", caTemplate(101, "Test Cross-Signed Root", "xsign-cross-ski", []string{"https://other.test/roots/root.crt"}), root, crossKey, rootKey)
+
+	issuingKey := mkKey("issuing")
+	issuing := mkCert("issuing", caTemplate(102, "Test Issuing CA", "xsign-issuing-ski", []string{base + "/crossroot.crt"}), crossRoot, issuingKey, crossKey)
+
+	leafKey := mkKey("leaf")
+	leaf := mkCert("leaf", &x509.Certificate{
+		SerialNumber:          big.NewInt(103),
+		Subject:               pkix.Name{CommonName: "Test Signer"},
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(24 * time.Hour),
+		KeyUsage:              x509.KeyUsageDigitalSignature,
+		DNSNames:              []string{"metadata.azure.com"},
+		IssuingCertificateURL: []string{base + "/issuing.crt"},
+	}, issuing, leafKey, issuingKey)
+
+	served := map[string][]byte{
+		base + "/issuing.crt":   issuing.Raw,
+		base + "/crossroot.crt": crossRoot.Raw,
+	}
+	var calls []string
+	client := &http.Client{
+		Transport: roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			calls = append(calls, req.URL.String())
+			body, ok := served[req.URL.String()]
+			if !ok {
+				return &http.Response{StatusCode: http.StatusNotFound, Body: io.NopCloser(bytes.NewReader(nil)), Header: make(http.Header)}, nil
+			}
+			return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(body)), Header: make(http.Header)}, nil
+		}),
+	}
+
+	pool, err := fetchIntermediateCertsFromBaseURL(client, base, leaf)
+	if err != nil {
+		t.Fatalf("fetching intermediate certificates: %v", err)
+	}
+
+	// Both the issuing CA and the cross-signed root were fetched (two hops), and nothing beyond the
+	// allowlist boundary.
+	wantCalls := []string{base + "/issuing.crt", base + "/crossroot.crt"}
+	if !slices.Equal(calls, wantCalls) {
+		t.Fatalf("fetched URLs mismatch: got %v, want %v", calls, wantCalls)
+	}
+
+	rootPool := x509.NewCertPool()
+	rootPool.AddCert(root)
+
+	// The full fetched chain anchors the leaf to the trusted root.
+	if _, err := leaf.Verify(x509.VerifyOptions{
+		Roots:         rootPool,
+		Intermediates: pool,
+		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+	}); err != nil {
+		t.Fatalf("expected leaf to verify with fetched chain: %v", err)
+	}
+
+	// Resolving only the signer's direct issuer (the old single-hop behavior) leaves the chain one
+	// hop short of the trusted root.
+	directIssuerOnly := x509.NewCertPool()
+	directIssuerOnly.AddCert(issuing)
+	if _, err := leaf.Verify(x509.VerifyOptions{
+		Roots:         rootPool,
+		Intermediates: directIssuerOnly,
+		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+	}); err == nil {
+		t.Fatal("expected verification to fail with only the direct issuer (single-hop)")
+	}
+}
+
 // TestValidateFetchedIntermediateForSigner exercises each per-branch reject/accept rule for the
 // fetched intermediate identity check.
 func TestValidateFetchedIntermediateForSigner(t *testing.T) {

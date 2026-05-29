@@ -83,6 +83,10 @@ const (
 	// fetch. Real Microsoft PKI intermediates are ~1.5 KB in DER; 16 KiB leaves ample headroom while
 	// preventing a pathological response from consuming memory.
 	intermediateCertMaxResponseBytes = 16 * 1024
+
+	// maxIntermediateChainHops caps issuer fetches while walking the chain to a trusted root in
+	// fetchIntermediateCertsFromBaseURL, allowing for cross-signed roots while bounding requests.
+	maxIntermediateChainHops = 4
 )
 
 var (
@@ -405,8 +409,13 @@ func fetchIntermediateCerts(signer *x509.Certificate) (*x509.CertPool, error) {
 	return fetchIntermediateCertsFromBaseURL(intermediateCertHTTPClient, microsoftIntermediateCertBaseURL, signer)
 }
 
-// fetchIntermediateCertsFromBaseURL collects validated Microsoft PKI AIA URLs for the signer,
-// downloads each certificate, and keeps only those that match the signer's issuer identity.
+// fetchIntermediateCertsFromBaseURL walks up the Microsoft PKI chain from the signer, following
+// each certificate's AIA issuer links, collecting the issuer certificates that match. It resolves
+// more than the signer's direct issuer because Azure's attested-document signer can chain through
+// an issuing CA and a cross-signed root (e.g. ... -> Microsoft TLS RSA Root G2 -> DigiCert Global
+// Root G2) before reaching a system trust anchor. The walk stops at maxIntermediateChainHops, or
+// when the next issuer can't be resolved within the allowlist (e.g. DigiCert, already a system
+// root). The caller verifies the assembled chain against the trusted root pool.
 func fetchIntermediateCertsFromBaseURL(client *http.Client, baseURL string, signer *x509.Certificate) (*x509.CertPool, error) {
 	if client == nil {
 		return nil, fmt.Errorf("HTTP client is required")
@@ -415,29 +424,45 @@ func fetchIntermediateCertsFromBaseURL(client *http.Client, baseURL string, sign
 		return nil, fmt.Errorf("signer certificate is required")
 	}
 
-	urls, err := microsoftIntermediateCandidateURLs(baseURL, signer)
-	if err != nil {
-		return nil, err
-	}
-
 	pool := x509.NewCertPool()
-	matched := 0
-	for _, url := range urls {
-		klog.V(2).Infof("Fetching intermediate certificate from %s", url)
-		cert, err := fetchCertificate(client, url)
+	current := signer
+	for hop := 0; hop < maxIntermediateChainHops; hop++ {
+		urls, err := microsoftIntermediateCandidateURLs(baseURL, current)
 		if err != nil {
-			return nil, err
+			if hop == 0 {
+				return nil, err
+			}
+			// No further in-allowlist issuer to fetch; the certificates collected so far must bridge
+			// to a system trust anchor, which the caller verifies.
+			break
 		}
-		if err := validateFetchedIntermediateForSigner(signer, cert); err != nil {
-			klog.V(2).Infof("Fetched intermediate certificate from %s did not match signer issuer: %v", url, err)
-			continue
+
+		// Add every match to the pool; follow the first up the chain to the next hop.
+		var issuer *x509.Certificate
+		for _, url := range urls {
+			klog.V(2).Infof("Fetching intermediate certificate from %s", url)
+			cert, err := fetchCertificate(client, url)
+			if err != nil {
+				return nil, err
+			}
+			if err := validateFetchedIntermediateForSigner(current, cert); err != nil {
+				klog.V(2).Infof("Fetched intermediate certificate from %s did not match issuer: %v", url, err)
+				continue
+			}
+			klog.V(2).Infof("Fetched intermediate certificate from %s matched issuer", url)
+			pool.AddCert(cert)
+			if issuer == nil {
+				issuer = cert
+			}
 		}
-		klog.V(2).Infof("Fetched intermediate certificate from %s matched signer issuer", url)
-		pool.AddCert(cert)
-		matched++
-	}
-	if matched == 0 {
-		return nil, fmt.Errorf("no fetched intermediate certificates matched signer issuer %q", signer.Issuer)
+		if issuer == nil {
+			if hop == 0 {
+				return nil, fmt.Errorf("no fetched intermediate certificates matched signer issuer %q", signer.Issuer)
+			}
+			// Fetched, but nothing matched current's issuer; stop with what we have.
+			break
+		}
+		current = issuer
 	}
 
 	return pool, nil
