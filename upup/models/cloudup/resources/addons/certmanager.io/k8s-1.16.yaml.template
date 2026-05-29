@@ -13365,6 +13365,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          {{ if (eq GetCloudProvider "aws") }}
+          # Set the region so the Route53 dns-01 solver can resolve the regional
+          # STS endpoint when using IRSA, where no region is otherwise provided.
+          - name: AWS_REGION
+            value: "{{ Region }}"
+          {{ end }}
           # LivenessProbe settings are based on those used for the Kubernetes
           # controller-manager. See:
           # https://github.com/kubernetes/kubernetes/blob/806b30170c61a38fedd54cc9ede4cd6275a1ad3b/cmd/kubeadm/app/util/staticpod/utils.go#L241-L245
