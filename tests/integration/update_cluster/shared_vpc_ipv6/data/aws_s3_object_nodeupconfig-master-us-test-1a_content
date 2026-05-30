@@ -8,7 +8,7 @@ APIServerConfig:
     apiAudiences:
     - kubernetes.svc.default
     apiServerCount: 1
-    authorizationMode: AlwaysAllow
+    authorizationMode: Node,RBAC
     bindAddress: '::'
     cloudProvider: external
     enableAdmissionPlugins:

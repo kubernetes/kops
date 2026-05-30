@@ -25,7 +25,7 @@ spec:
   authentication:
     aws: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:
@@ -85,7 +85,7 @@ spec:
     - kubernetes.svc.default
     apiServerCount: 1
     auditWebhookBatchThrottleQps: 3140m
-    authorizationMode: AlwaysAllow
+    authorizationMode: Node,RBAC
     bindAddress: 0.0.0.0
     cloudProvider: external
     cpuLimit: 500m

@@ -55,8 +55,9 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Authorization = &AuthorizationSpec{}
 	}
 	if obj.Authorization.IsEmpty() {
-		// Before the Authorization field was introduced, the behaviour was alwaysAllow
-		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
+		// Default an omitted authorization to RBAC, matching "kops create cluster".
+		// AlwaysAllow is still honored when set explicitly.
+		obj.Authorization.RBAC = &RBACAuthorizationSpec{}
 	}
 
 	if obj.LegacyNetworking != nil {

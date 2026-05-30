@@ -7,7 +7,7 @@ spec:
   api:
     dns: {}
   authorization:
-    alwaysAllow: {}
+    rbac: {}
   awsLoadBalancerController:
     cpuLimit: 300m
     cpuRequest: 150m
@@ -88,7 +88,7 @@ spec:
     apiAudiences:
     - kubernetes.svc.default
     apiServerCount: 1
-    authorizationMode: AlwaysAllow
+    authorizationMode: Node,RBAC
     bindAddress: 0.0.0.0
     cloudProvider: external
     enableAdmissionPlugins:
