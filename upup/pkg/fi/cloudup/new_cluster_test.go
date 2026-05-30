@@ -602,3 +602,73 @@ func TestSetupZonesLinodeSingleRegionOnly(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+func TestParseFeatureGates(t *testing.T) {
+	tests := []struct {
+		name        string
+		gates       []string
+		shouldError bool
+		expected    map[string]bool
+	}{
+		{
+			name:        "empty string",
+			gates:       []string{""},
+			shouldError: true,
+		},
+		{
+			name:        "sign only plus",
+			gates:       []string{"+"},
+			shouldError: true,
+		},
+		{
+			name:        "sign only minus",
+			gates:       []string{"-"},
+			shouldError: true,
+		},
+		{
+			name:        "simple feature gate",
+			gates:       []string{"Foo"},
+			shouldError: false,
+			expected:    map[string]bool{"Foo": true},
+		},
+		{
+			name:        "feature gate with plus",
+			gates:       []string{"+Bar"},
+			shouldError: false,
+			expected:    map[string]bool{"Bar": true},
+		},
+		{
+			name:        "feature gate with minus",
+			gates:       []string{"-Baz"},
+			shouldError: false,
+			expected:    map[string]bool{"Baz": false},
+		},
+		{
+			name:        "multiple gates",
+			gates:       []string{"Foo", "+Bar", "-Baz"},
+			shouldError: false,
+			expected:    map[string]bool{"Foo": true, "Bar": true, "Baz": false},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := parseFeatureGates(test.gates)
+
+			if test.shouldError {
+				if err == nil {
+					t.Errorf("expected error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(result, test.expected) {
+				t.Errorf("expected %v, got %v", test.expected, result)
+			}
+		})
+	}
+}
