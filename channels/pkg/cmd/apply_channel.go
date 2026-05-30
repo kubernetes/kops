@@ -94,6 +94,15 @@ func runApplyChannelIteration(ctx context.Context, f *ChannelsFactory, out io.Wr
 // ChannelsFactory per iteration drops cached REST configs and the discovery
 // cache, picking up cert rotation and new CRDs without a restart.
 func runApplyChannelLoop(ctx context.Context, out io.Writer, options *ApplyChannelOptions, args []string) error {
+	// In daemon mode kops-channels runs as a system-node-critical static pod; serve a
+	// readiness probe reporting the last apply outcome, so a persistent failure surfaces
+	// as NotReady (failing `kops validate cluster`, which gates rolling updates) instead
+	// of only being logged. Starts NotReady until the first successful apply.
+	readiness, err := serveReadiness(ctx)
+	if err != nil {
+		return fmt.Errorf("serving readiness probe: %w", err)
+	}
+
 	// Retry quickly until the first success: the apiserver is usually
 	// unreachable while the control plane is still coming up.
 	const startupRetryInterval = 5 * time.Second
@@ -101,7 +110,9 @@ func runApplyChannelLoop(ctx context.Context, out io.Writer, options *ApplyChann
 	settled := false
 	for {
 		interval := options.Interval
-		if err := runApplyChannelIteration(ctx, NewChannelsFactory(), out, options, args); err != nil {
+		err := runApplyChannelIteration(ctx, NewChannelsFactory(), out, options, args)
+		readiness.recordApplyResult(err)
+		if err != nil {
 			if !settled {
 				interval = min(startupRetryInterval, options.Interval)
 			}

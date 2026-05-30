@@ -23,12 +23,14 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	kopsroot "k8s.io/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -155,6 +157,23 @@ func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 				v1.ResourceCPU:    resource.MustParse("50m"),
 				v1.ResourceMemory: resource.MustParse("50Mi"),
 			},
+		},
+		// kops-channels is system-node-critical, so a NotReady container fails `kops validate
+		// cluster`. The apply loop serves /readyz on loopback, publishing the most recent apply
+		// outcome. failureThreshold 2 (~20s at periodSeconds 10) trips within one apply
+		// interval (channelsInterval, 60s), so a single failed apply surfaces as NotReady; 2
+		// (not 1) rides out one flaky probe sample.
+		ReadinessProbe: &v1.Probe{
+			ProbeHandler: v1.ProbeHandler{
+				HTTPGet: &v1.HTTPGetAction{
+					Host: "127.0.0.1",
+					Path: "/readyz",
+					Port: intstr.FromInt(wellknownports.KopsChannelsHealthCheck),
+				},
+			},
+			InitialDelaySeconds: 30,
+			PeriodSeconds:       10,
+			FailureThreshold:    2,
 		},
 		// ko-distroless's default nonroot uid can't read /var/lib/kops/kubeconfig.
 		SecurityContext: &v1.SecurityContext{
