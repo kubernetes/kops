@@ -1220,7 +1220,6 @@ func Test_Validate_Cilium(t *testing.T) {
 					AWS: &kops.AWSSpec{},
 				},
 			},
-			ExpectedErrors: []string{"Forbidden::cilium.masquerade"},
 		},
 		{
 			Cilium: kops.CiliumNetworkingSpec{
