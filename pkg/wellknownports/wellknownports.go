@@ -26,6 +26,9 @@ const (
 	// EtcdMetricsPort is used to serve etcd metrics
 	EtcdMetricsPort = 2382
 
+	// KopsChannelsHealthCheck is the loopback port the kops-channels static pod serves /readyz on.
+	KopsChannelsHealthCheck = 3986
+
 	// NodeupChallenge is the port where nodeup listens for challenges.
 	NodeupChallenge = 3987
 

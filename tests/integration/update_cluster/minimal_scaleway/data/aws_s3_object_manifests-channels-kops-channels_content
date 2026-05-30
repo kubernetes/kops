@@ -29,6 +29,14 @@ spec:
     - name: SCW_SECRET_KEY
     image: registry.k8s.io/kops/channels:1.34.0-beta.1
     name: kops-channels
+    readinessProbe:
+      failureThreshold: 2
+      httpGet:
+        host: 127.0.0.1
+        path: /readyz
+        port: 3986
+      initialDelaySeconds: 30
+      periodSeconds: 10
     resources:
       requests:
         cpu: 50m
