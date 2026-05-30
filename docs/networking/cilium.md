@@ -122,7 +122,7 @@ Enable this by setting `--networking=cilium-eni` (as of kOps 1.26) or by specify
       ipam: eni
 ```
 
-In kOps versions before 1.22, when using ENI IPAM you need to explicitly disable masquerading in Cilium as well.
+When using ENI IPAM, kOps enables masquerading by default. If pods in your cluster can reach external destinations without it — for example, nodes in private subnets behind a NAT gateway, or via VPC endpoints — you can disable masquerading to match Cilium's upstream default for ENI IPAM:
 
 ```yaml
   networking:
@@ -130,6 +130,8 @@ In kOps versions before 1.22, when using ENI IPAM you need to explicitly disable
       disableMasquerade: true
       ipam: eni
 ```
+
+Do not disable masquerading if pods rely on the node's address to reach external destinations (for example, nodes in public subnets without a NAT gateway), as their traffic would otherwise be dropped.
 
 Note that since Cilium Operator is the entity that interacts with the EC2 API to provision and attaching ENIs, we force it to run on the master nodes when this IPAM is used.
 
