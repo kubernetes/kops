@@ -98,3 +98,4 @@ charts/
 
 # Ignore asdf .tool-versions file
 .tool-versions
+go1.26.3.linux-amd64.tar.gz

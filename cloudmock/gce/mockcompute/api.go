@@ -41,6 +41,7 @@ type MockClient struct {
 
 	instanceTemplateClient     *instanceTemplateClient
 	instanceGroupManagerClient *instanceGroupManagerClient
+	regionInstanceGroupManagerClient *regionInstanceGroupManagerClient
 	targetPoolClient           *targetPoolClient
 
 	diskClient *diskClient
@@ -70,6 +71,7 @@ func NewMockClient(project string) *MockClient {
 
 		instanceTemplateClient:     newInstanceTemplateClient(),
 		instanceGroupManagerClient: newInstanceGroupManagerClient(instanceClient),
+			regionInstanceGroupManagerClient: newRegionInstanceGroupManagerClient(),
 		targetPoolClient:           newTargetPoolClient(),
 
 		diskClient: newDiskClient(),
@@ -171,6 +173,10 @@ func (c *MockClient) InstanceTemplates() gce.InstanceTemplateClient {
 
 func (c *MockClient) InstanceGroupManagers() gce.InstanceGroupManagerClient {
 	return c.instanceGroupManagerClient
+}
+
+func (c *MockClient) RegionInstanceGroupManagers() gce.RegionInstanceGroupManagerClient {
+	return c.regionInstanceGroupManagerClient
 }
 
 func (c *MockClient) TargetPools() gce.TargetPoolClient {

@@ -322,3 +322,9 @@ func addCloudInstanceData(cm *cloudinstances.CloudInstance, instance *compute.In
 		}
 	}
 }
+
+// NameForRegionInstanceGroupManager builds a name for a regional InstanceGroupManager.
+func NameForRegionInstanceGroupManager(clusterName, instanceGroupName string) string {
+	name := SafeObjectName(instanceGroupName, clusterName)
+	return name
+}
