@@ -269,6 +269,19 @@ func BuildNodeupModelContext(model *testutils.Model) (*NodeupModelContext, error
 		if ig.Spec.Kubelet == nil {
 			nodeupModelContext.NodeupConfig.KubeletConfig = *cluster.Spec.Kubelet
 		}
+		// Mirror what nodeUpConfigBuilder.BuildConfig does: populate EtcdManifests when
+		// the IG is referenced as an etcd member. Tests rely on the resulting HostsEtcd
+		// flag to gate etcd-aware code paths in nodeup builders.
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			for _, member := range etcdCluster.Members {
+				if fi.ValueOf(member.InstanceGroup) == ig.ObjectMeta.Name {
+					nodeupModelContext.NodeupConfig.EtcdManifests = append(
+						nodeupModelContext.NodeupConfig.EtcdManifests,
+						fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, ig.ObjectMeta.Name),
+					)
+				}
+			}
+		}
 	} else {
 		return nil, fmt.Errorf("unexpected number of instance groups: found %d", len(model.InstanceGroups))
 	}

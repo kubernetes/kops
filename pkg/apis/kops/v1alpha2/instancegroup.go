@@ -184,6 +184,15 @@ type InstanceGroupSpec struct {
 	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
 	//   'SPOT': heavily discounted, no guaranteed run time.
 	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
+	// ExcludeFromExternalAPILoadBalancer opts this instance group out of being a backend
+	// target of the external (public) API load balancer. The instance group continues to
+	// serve traffic on the internal API load balancer. Only meaningful for instance groups
+	// that run kube-apiserver (ControlPlane or APIServer roles). Defaults to false.
+	// This enables "split control plane" topologies in which dedicated APIServer instance
+	// groups front external traffic and ControlPlane instance groups — which host etcd,
+	// kube-controller-manager, kube-scheduler, and cloud-controller-manager — are only
+	// reachable internally.
+	ExcludeFromExternalAPILoadBalancer *bool `json:"excludeFromExternalAPILoadBalancer,omitempty"`
 }
 
 // InstanceMetadataOptions defines the EC2 instance metadata service options (AWS Only)

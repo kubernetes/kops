@@ -170,6 +170,11 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleControlPlane)...)
 	}
 
+	if fi.ValueOf(g.Spec.ExcludeFromExternalAPILoadBalancer) && !g.HasAPIServer() {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "excludeFromExternalAPILoadBalancer"),
+			"only meaningful on instance groups with role ControlPlane or APIServer"))
+	}
+
 	if g.Spec.NodeLabels != nil {
 		allErrs = append(allErrs, validateNodeLabels(g.Spec.NodeLabels, field.NewPath("spec", "nodeLabels"))...)
 	}

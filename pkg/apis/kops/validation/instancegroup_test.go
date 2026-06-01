@@ -488,6 +488,74 @@ func TestValidInstanceGroup(t *testing.T) {
 			},
 			Description: "Invalid control-plane instance group sizes",
 		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:                               kops.InstanceGroupRoleControlPlane,
+					Subnets:                            []string{"eu-central-1a"},
+					MaxSize:                            fi.PtrTo(int32(1)),
+					MinSize:                            fi.PtrTo(int32(1)),
+					Image:                              "my-image",
+					ExcludeFromExternalAPILoadBalancer: fi.PtrTo(true),
+				},
+			},
+			ExpectedErrors: []string{},
+			Description:    "ExcludeFromExternalAPILoadBalancer is allowed on ControlPlane",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:                               kops.InstanceGroupRoleAPIServer,
+					Subnets:                            []string{"eu-central-1a"},
+					MaxSize:                            fi.PtrTo(int32(1)),
+					MinSize:                            fi.PtrTo(int32(1)),
+					Image:                              "my-image",
+					ExcludeFromExternalAPILoadBalancer: fi.PtrTo(true),
+				},
+			},
+			ExpectedErrors: []string{},
+			Description:    "ExcludeFromExternalAPILoadBalancer is allowed on APIServer",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:                               kops.InstanceGroupRoleNode,
+					Subnets:                            []string{"eu-central-1a"},
+					MaxSize:                            fi.PtrTo(int32(1)),
+					MinSize:                            fi.PtrTo(int32(1)),
+					Image:                              "my-image",
+					ExcludeFromExternalAPILoadBalancer: fi.PtrTo(true),
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.excludeFromExternalAPILoadBalancer"},
+			Description:    "ExcludeFromExternalAPILoadBalancer is rejected on Node role",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:                               kops.InstanceGroupRoleBastion,
+					Subnets:                            []string{"eu-central-1a"},
+					MaxSize:                            fi.PtrTo(int32(1)),
+					MinSize:                            fi.PtrTo(int32(1)),
+					Image:                              "my-image",
+					ExcludeFromExternalAPILoadBalancer: fi.PtrTo(true),
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.excludeFromExternalAPILoadBalancer"},
+			Description:    "ExcludeFromExternalAPILoadBalancer is rejected on Bastion role",
+		},
 	}
 	for _, g := range grid {
 		errList := ValidateInstanceGroup(g.IG, nil, true)
