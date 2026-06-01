@@ -2422,11 +2422,6 @@ func (in *GVisorConfig) DeepCopyInto(out *GVisorConfig) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.Packages != nil {
-		in, out := &in.Packages, &out.Packages
-		*out = new(PackagesConfig)
-		(*in).DeepCopyInto(*out)
-	}
 	return
 }
 

@@ -112,6 +112,4 @@ type GVisorConfig struct {
 	// Platform is the gVisor execution platform: "systrap" (default, works
 	// everywhere including VMs) or "kvm" (bare-metal with KVM support).
 	Platform string `json:"platform,omitempty"`
-	// Packages overrides the URL and hash for the gVisor packages.
-	Packages *PackagesConfig `json:"packages,omitempty"`
 }

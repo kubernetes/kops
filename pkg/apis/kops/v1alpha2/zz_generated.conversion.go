@@ -4098,15 +4098,6 @@ func Convert_kops_GCPNetworkingSpec_To_v1alpha2_GCPNetworkingSpec(in *kops.GCPNe
 func autoConvert_v1alpha2_GVisorConfig_To_kops_GVisorConfig(in *GVisorConfig, out *kops.GVisorConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Platform = in.Platform
-	if in.Packages != nil {
-		in, out := &in.Packages, &out.Packages
-		*out = new(kops.PackagesConfig)
-		if err := Convert_v1alpha2_PackagesConfig_To_kops_PackagesConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Packages = nil
-	}
 	return nil
 }
 
@@ -4118,15 +4109,6 @@ func Convert_v1alpha2_GVisorConfig_To_kops_GVisorConfig(in *GVisorConfig, out *k
 func autoConvert_kops_GVisorConfig_To_v1alpha2_GVisorConfig(in *kops.GVisorConfig, out *GVisorConfig, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.Platform = in.Platform
-	if in.Packages != nil {
-		in, out := &in.Packages, &out.Packages
-		*out = new(PackagesConfig)
-		if err := Convert_kops_PackagesConfig_To_v1alpha2_PackagesConfig(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.Packages = nil
-	}
 	return nil
 }
 
