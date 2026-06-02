@@ -44,7 +44,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.6.11
+    version: 3.6.12
   - backups:
       backupStore: memfs://tests/gossip.k8s.local/backups/etcd/events
     cpuRequest: 100m
@@ -56,7 +56,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.6.11
+    version: 3.6.12
   externalDns:
     provider: dns-controller
   iam:
