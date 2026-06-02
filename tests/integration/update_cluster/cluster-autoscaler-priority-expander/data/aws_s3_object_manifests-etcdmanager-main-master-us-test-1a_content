@@ -21,7 +21,7 @@ spec:
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260512
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
     name: etcd-manager
     resources:
       requests:
@@ -67,25 +67,25 @@ spec:
     - mountPath: /opt
       name: opt
   - args:
-    - --target-dir=/opt/etcd-v3.5.30
+    - --target-dir=/opt/etcd-v3.5.31
     - --src=/usr/local/bin/etcd
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/etcd:v3.5.30
-    name: init-etcd-3-5-30
+    image: registry.k8s.io/etcd:v3.5.31
+    name: init-etcd-3-5-31
     resources: {}
     volumeMounts:
     - mountPath: /opt
       name: opt
   - args:
-    - --target-dir=/opt/etcd-v3.6.11
+    - --target-dir=/opt/etcd-v3.6.12
     - --src=/usr/local/bin/etcd
     - --src=/usr/local/bin/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
-    image: registry.k8s.io/etcd:v3.6.11
-    name: init-etcd-3-6-11
+    image: registry.k8s.io/etcd:v3.6.12
+    name: init-etcd-3-6-12
     resources: {}
     volumeMounts:
     - mountPath: /opt
@@ -114,30 +114,32 @@ spec:
     - --target-dir=/opt/etcd-v3.5.24
     - --target-dir=/opt/etcd-v3.5.25
     - --target-dir=/opt/etcd-v3.5.3
+    - --target-dir=/opt/etcd-v3.5.30
     - --target-dir=/opt/etcd-v3.5.4
     - --target-dir=/opt/etcd-v3.5.6
     - --target-dir=/opt/etcd-v3.5.7
     - --target-dir=/opt/etcd-v3.5.9
-    - --src=/opt/etcd-v3.5.30/etcd
-    - --src=/opt/etcd-v3.5.30/etcdctl
+    - --src=/opt/etcd-v3.5.31/etcd
+    - --src=/opt/etcd-v3.5.31/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/kops/kops-utils-cp:1.35.1
-    name: init-etcd-symlinks-3-5-30
+    name: init-etcd-symlinks-3-5-31
     resources: {}
     volumeMounts:
     - mountPath: /opt
       name: opt
   - args:
     - --symlink
+    - --target-dir=/opt/etcd-v3.6.11
     - --target-dir=/opt/etcd-v3.6.5
     - --target-dir=/opt/etcd-v3.6.6
-    - --src=/opt/etcd-v3.6.11/etcd
-    - --src=/opt/etcd-v3.6.11/etcdctl
+    - --src=/opt/etcd-v3.6.12/etcd
+    - --src=/opt/etcd-v3.6.12/etcdctl
     command:
     - /opt/kops-utils/kops-utils-cp
     image: registry.k8s.io/kops/kops-utils-cp:1.35.1
-    name: init-etcd-symlinks-3-6-11
+    name: init-etcd-symlinks-3-6-12
     resources: {}
     volumeMounts:
     - mountPath: /opt
