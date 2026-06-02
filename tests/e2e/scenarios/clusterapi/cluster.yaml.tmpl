@@ -1,0 +1,126 @@
+{{$zone := index .zones 0}}
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  name: {{.clusterName}}
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig:
+    gceServiceAccount: default
+  cloudLabels:
+    group: sig-cluster-lifecycle
+    subproject: kops
+  cloudProvider: gce
+  configBase: "{{.stateStore}}/{{.clusterName}}"
+  containerd:
+    configAdditions:
+      plugins."io.containerd.grpc.v1.cri".containerd.runtimes.test-handler.runtime_type: io.containerd.runc.v2
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: cp-back-{{$zone}}
+      name: {{$zone}}
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: cp-back-{{$zone}}
+      name: {{$zone}}
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - {{.publicIP}}
+  kubernetesVersion: v1.36.0
+  networking:
+    gce: {}
+  nodePortAccess:
+  - 0.0.0.0/0
+  nonMasqueradeCIDR: 10.0.0.0/8
+  podCIDR: 10.4.0.0/14
+  project: {{.project}}
+  serviceClusterIPRange: 10.1.0.0/16
+  sshAccess:
+  - {{.publicIP}}
+  subnets:
+  - cidr: 10.0.32.0/19
+    name: {{.region}}
+    region: {{.region}}
+    type: Public
+  topology:
+    dns:
+      type: None
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+  name: cp-front-{{$zone}}
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
+  machineType: e2-standard-2
+  role: APIServer
+  rootVolumeSize: 48
+  subnets:
+  - {{.region}}
+  zones:
+  - {{$zone}}
+  maxSize: 1
+  minSize: 1
+  excludeFromExternalAPILoadBalancer: False
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+  name: cp-back-{{$zone}}
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
+  machineType: e2-standard-4
+  role: ControlPlane
+  rootVolumeSize: 48
+  subnets:
+  - {{.region}}
+  zones:
+  - {{$zone}}
+  maxSize: 1
+  minSize: 1
+  excludeFromExternalAPILoadBalancer: True
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{.clusterName}}
+  name: nodes-{{$zone}}
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20250606
+  machineType: e2-standard-2
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+  - {{.region}}
+  zones:
+  - {{$zone}}

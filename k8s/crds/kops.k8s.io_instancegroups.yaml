@@ -270,6 +270,17 @@ spec:
                 description: DetailedInstanceMonitoring defines if detailed-monitoring
                   is enabled (AWS only)
                 type: boolean
+              excludeFromExternalAPILoadBalancer:
+                description: |-
+                  ExcludeFromExternalAPILoadBalancer opts this instance group out of being a backend
+                  target of the external (public) API load balancer. The instance group continues to
+                  serve traffic on the internal API load balancer. Only meaningful for instance groups
+                  that run kube-apiserver (ControlPlane or APIServer roles). Defaults to false.
+                  This enables "split control plane" topologies in which dedicated APIServer instance
+                  groups front external traffic and ControlPlane instance groups — which host etcd,
+                  kube-controller-manager, kube-scheduler, and cloud-controller-manager — are only
+                  reachable internally.
+                type: boolean
               externalLoadBalancers:
                 description: ExternalLoadBalancers define loadbalancers that should
                   be attached to this instance group
