@@ -129,6 +129,9 @@ fi
 create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
 create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+if [[ -n "${CONTROL_PLANE_LB_TYPE:-}" ]]; then
+  create_args+=("--api-loadbalancer-type=${CONTROL_PLANE_LB_TYPE}")
+fi
 
 # Enable HTTP for events etcd to reduce TLS overhead in scale tests
 KOPS_FEATURE_FLAGS="EtcdEventsHTTP,${KOPS_FEATURE_FLAGS:-}"
