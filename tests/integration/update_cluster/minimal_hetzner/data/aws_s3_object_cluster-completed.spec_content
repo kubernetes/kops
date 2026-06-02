@@ -58,7 +58,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
-    version: 3.5.30
+    version: 3.5.31
   - backups:
       backupStore: memfs://tests/minimal.example.com/backups/etcd/events
     cpuRequest: 100m
@@ -69,7 +69,7 @@ spec:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: events
-    version: 3.5.30
+    version: 3.5.31
   iam:
     allowContainerRegistry: true
     legacy: false

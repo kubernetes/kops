@@ -42,12 +42,12 @@ images:
   download: registry.k8s.io/coredns/coredns:v1.14.2
 - canonical: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
   download: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
-- canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260512
-  download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260512
-- canonical: registry.k8s.io/etcd:v3.5.30
-  download: registry.k8s.io/etcd:v3.5.30
-- canonical: registry.k8s.io/etcd:v3.6.11
-  download: registry.k8s.io/etcd:v3.6.11
+- canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
+  download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
+- canonical: registry.k8s.io/etcd:v3.5.31
+  download: registry.k8s.io/etcd:v3.5.31
+- canonical: registry.k8s.io/etcd:v3.6.12
+  download: registry.k8s.io/etcd:v3.6.12
 - canonical: registry.k8s.io/kops/channels:1.34.0-beta.1
   download: registry.k8s.io/kops/channels:1.34.0-beta.1
 - canonical: registry.k8s.io/kops/dns-controller:1.34.0-beta.1
