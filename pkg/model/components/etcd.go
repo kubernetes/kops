@@ -29,8 +29,8 @@ type EtcdOptionsBuilder struct {
 var _ loader.ClusterOptionsBuilder = &EtcdOptionsBuilder{}
 
 const (
-	DefaultEtcd3Version_1_22 = "3.5.30"
-	DefaultEtcd3Version_1_34 = "3.6.11"
+	LatestEtcd35Version = "3.5.31"
+	LatestEtcd36Version = "3.6.12"
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
@@ -43,9 +43,9 @@ func (b *EtcdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		if c.Version == "" {
 			// We run the k8s-recommended versions of etcd
 			if b.ControlPlaneKubernetesVersion().IsLT("1.34.0") {
-				c.Version = DefaultEtcd3Version_1_22
+				c.Version = LatestEtcd35Version
 			} else {
-				c.Version = DefaultEtcd3Version_1_34
+				c.Version = LatestEtcd36Version
 			}
 		}
 	}

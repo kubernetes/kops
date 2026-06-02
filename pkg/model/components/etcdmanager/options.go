@@ -94,8 +94,8 @@ type etcdVersion struct {
 // supported minor. All earlier patch versions within the same minor are
 // generated as SymlinkToVersion entries by etcdSupportedVersions.
 var etcdLatestImages = []etcdVersion{
-	{Version: "3.5.30", Image: "registry.k8s.io/etcd:v3.5.30"},
-	{Version: "3.6.11", Image: "registry.k8s.io/etcd:v3.6.11"},
+	{Version: components.LatestEtcd35Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd35Version},
+	{Version: components.LatestEtcd36Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd36Version},
 }
 
 func etcdSupportedVersions() []etcdVersion {
