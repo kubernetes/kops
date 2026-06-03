@@ -40,13 +40,16 @@ type logDumper struct {
 
 	artifactsDir string
 
+	// nodeDumpTimeout bounds the time spent connecting to and dumping a single node.
+	nodeDumpTimeout time.Duration
+
 	services     []string
 	files        []string
 	podSelectors []string
 }
 
 // NewLogDumper is the constructor for a logDumper
-func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing agent.Agent, artifactsDir string) *logDumper {
+func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing agent.Agent, artifactsDir string, nodeDumpTimeout time.Duration) *logDumper {
 	sshClientFactory := &sshClientFactoryImplementation{
 		keyRing:   keyRing,
 		sshConfig: sshConfig,
@@ -56,9 +59,14 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 		sshClientFactory.bastion = bastionAddress
 	}
 
+	if nodeDumpTimeout <= 0 {
+		nodeDumpTimeout = defaultNodeDumpTimeout
+	}
+
 	d := &logDumper{
 		sshClientFactory: sshClientFactory,
 		artifactsDir:     artifactsDir,
+		nodeDumpTimeout:  nodeDumpTimeout,
 	}
 
 	d.services = []string{
@@ -245,10 +253,13 @@ func (d *logDumper) dumpNotRegistered(ctx context.Context, node *resources.Insta
 	return "", fmt.Errorf("no known addresses for node %s", node.Name)
 }
 
-// nodeDumpTimeout bounds the time spent connecting to and dumping a single node.
+// defaultNodeDumpTimeout bounds the time spent connecting to and dumping a single node.
 // A healthy node dumps in well under a minute. Without this cap, an SSH operation
 // against an unreachable node blocks until the OS TCP timeout (~15 min) expires.
-const nodeDumpTimeout = time.Minute
+// Large clusters dump multi-GB logs per node and need a higher value, configurable
+// via the --node-dump-timeout flag, because the files are dumped sequentially and a
+// single oversized log can otherwise exhaust the budget before the rest are read.
+const defaultNodeDumpTimeout = time.Minute
 
 // DumpNode connects to a node and dumps the logs.
 func (d *logDumper) dumpNode(ctx context.Context, name string, ip string, useBastion bool) error {
@@ -258,7 +269,7 @@ func (d *logDumper) dumpNode(ctx context.Context, name string, ip string, useBas
 
 	klog.Infof("Dumping node %s", name)
 
-	ctx, cancel := context.WithTimeout(ctx, nodeDumpTimeout)
+	ctx, cancel := context.WithTimeout(ctx, d.nodeDumpTimeout)
 	defer cancel()
 
 	n, err := d.connectToNode(ctx, name, ip, useBastion)

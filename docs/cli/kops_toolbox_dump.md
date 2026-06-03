@@ -23,14 +23,15 @@ kops toolbox dump [CLUSTER] [flags]
 ### Options
 
 ```
-      --cloud-resources      Include cloud resources in the dump (default true)
-      --dir string           Target directory; if specified will collect logs and other information.
-  -h, --help                 help for dump
-      --k8s-resources        Include k8s resources in the dump
-      --max-nodes int        The maximum number of nodes from which to dump logs (default 500)
-  -o, --output string        Output format.  One of json or yaml (default "yaml")
-      --private-key string   File containing private key to use for SSH access to instances (default "~/.ssh/id_rsa")
-      --ssh-user string      The remote user for SSH access to instances (default "ubuntu")
+      --cloud-resources              Include cloud resources in the dump (default true)
+      --dir string                   Target directory; if specified will collect logs and other information.
+  -h, --help                         help for dump
+      --k8s-resources                Include k8s resources in the dump
+      --max-nodes int                The maximum number of nodes from which to dump logs (default 500)
+      --node-dump-timeout duration   Timeout for connecting to and dumping logs from a single node (default 1m0s)
+  -o, --output string                Output format.  One of json or yaml (default "yaml")
+      --private-key string           File containing private key to use for SSH access to instances (default "~/.ssh/id_rsa")
+      --ssh-user string              The remote user for SSH access to instances (default "ubuntu")
 ```
 
 ### Options inherited from parent commands
