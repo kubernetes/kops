@@ -60,6 +60,9 @@ func (b *PackagesBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			c.AddTask(&nodetasks.Package{Name: "iptables"})
 		default:
 			c.AddTask(&nodetasks.Package{Name: "nftables"})
+			// Also install iptables-nft so that CNI plugins that shell
+			// out to the iptables binary get the nf_tables backend
+			c.AddTask(&nodetasks.Package{Name: "iptables-nft"})
 		}
 		c.AddTask(&nodetasks.Package{Name: "libseccomp"})
 		if b.NodeupConfig.KubeProxy != nil && fi.ValueOf(b.NodeupConfig.KubeProxy.Enabled) && b.NodeupConfig.KubeProxy.ProxyMode == "nftables" {
