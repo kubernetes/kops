@@ -40,5 +40,8 @@ unset SCW_ACCESS_KEY SCW_SECRET_KEY SCW_DEFAULT_PROJECT_ID SCW_PROFILE
 unset AZURE_CLIENT_ID AZURE_CLIENT_SECRET AZURE_SUBSCRIPTION_ID AZURE_TENANT_ID
 unset DIGITALOCEAN_ACCESS_TOKEN
 
+# Avoid reading a developer's default kubeconfig while regenerating golden files.
+export KUBECONFIG=/dev/null
+
 # Run the tests in "autofix mode"
 HACK_UPDATE_EXPECTED_IN_PLACE=1 go test "${PKG}" "${RUN_FILTER[@]}" -count=1
