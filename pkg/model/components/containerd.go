@@ -51,15 +51,12 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.3.5"),
 			}
-		case b.IsKubernetesLT("1.36"):
+		default:
+			// Stay on containerd 2.2.x rather than 2.3.x to avoid a sandbox-image
+			// regression in 2.3 (https://github.com/containerd/containerd/issues/13529).
 			containerd.Version = fi.PtrTo("2.2.4")
 			containerd.Runc = &kops.Runc{
 				Version: fi.PtrTo("1.3.5"),
-			}
-		default:
-			containerd.Version = fi.PtrTo("2.3.1")
-			containerd.Runc = &kops.Runc{
-				Version: fi.PtrTo("1.4.2"),
 			}
 		}
 	}
