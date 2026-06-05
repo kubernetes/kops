@@ -1284,6 +1284,7 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 
 		// We don't test it here, and it adds a dependency on kubectl
 		options.CreateKubecfg = false
+		options.IgnoreKubeletVersionSkew = true
 		options.ClusterName = i.clusterName
 		options.LifecycleOverrides = i.lifecycleOverrides
 
