@@ -392,6 +392,26 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 			if err := ModifyTargetGroupAttributes(ctx, t.Cloud, a.ARN, e.Attributes); err != nil {
 				return err
 			}
+			// Health check settings are only applied on create, so reconcile them here for an existing target group.
+			if changes.HealthCheckProtocol != "" || changes.HealthCheckPath != nil ||
+				changes.HealthyThreshold != nil || changes.UnhealthyThreshold != nil {
+				klog.V(2).Infof("Modifying Target Group health check for NLB")
+				proto := e.HealthCheckProtocol
+				request := &elbv2.ModifyTargetGroupInput{
+					TargetGroupArn:          a.ARN,
+					HealthCheckProtocol:     proto,
+					HealthyThresholdCount:   e.HealthyThreshold,
+					UnhealthyThresholdCount: e.UnhealthyThreshold,
+				}
+				// HTTP/HTTPS health checks need a path and matcher, 200-399 matches the NLB create default.
+				if proto == elbv2types.ProtocolEnumHttp || proto == elbv2types.ProtocolEnumHttps {
+					request.HealthCheckPath = e.HealthCheckPath
+					request.Matcher = &elbv2types.Matcher{HttpCode: fi.PtrTo("200-399")}
+				}
+				if _, err := t.Cloud.ELBV2().ModifyTargetGroup(ctx, request); err != nil {
+					return fmt.Errorf("modifying NLB target group health check: %w", err)
+				}
+			}
 		}
 	}
 	return nil
