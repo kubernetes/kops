@@ -101,6 +101,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		}
 	}
 
+	if g.Spec.Containerd != nil && g.Spec.Containerd.GVisor != nil && fi.ValueOf(g.Spec.Containerd.GVisor.Enabled) && g.Spec.Role != kops.InstanceGroupRoleNode {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "containerd", "gvisor"), "gVisor can only be enabled on instance groups with role Node"))
+	}
+
 	if strict && g.Spec.Image == "" {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "image"), "image must be specified."))
 	}

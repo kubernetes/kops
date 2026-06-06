@@ -565,7 +565,9 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 
 // InstallGVisorRuntime returns true if the gVisor (runsc) runtime should be installed.
 func (c *NodeupModelContext) InstallGVisorRuntime() bool {
-	return c.NodeupConfig.GVisor != nil &&
+	return c.BootConfig != nil &&
+		c.BootConfig.InstanceGroupRole == kops.InstanceGroupRoleNode &&
+		c.NodeupConfig.GVisor != nil &&
 		fi.ValueOf(c.NodeupConfig.GVisor.Enabled)
 }
 

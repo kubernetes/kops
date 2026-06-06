@@ -384,6 +384,58 @@ func TestIGUpdatePolicy(t *testing.T) {
 	}
 }
 
+func TestValidateInstanceGroupGVisorWorkerOnly(t *testing.T) {
+	for _, test := range []struct {
+		name     string
+		role     kops.InstanceGroupRole
+		enabled  *bool
+		expected []string
+	}{
+		{
+			name:    "enabled on worker",
+			role:    kops.InstanceGroupRoleNode,
+			enabled: fi.PtrTo(true),
+		},
+		{
+			name:     "enabled on control plane",
+			role:     kops.InstanceGroupRoleControlPlane,
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:     "enabled on apiserver",
+			role:     kops.InstanceGroupRoleAPIServer,
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:     "enabled on bastion",
+			role:     kops.InstanceGroupRoleBastion,
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:    "disabled on apiserver",
+			role:    kops.InstanceGroupRoleAPIServer,
+			enabled: fi.PtrTo(false),
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Role = test.role
+			ig.Spec.Subnets = []string{"eu-central-1a"}
+			ig.Spec.Containerd = &kops.ContainerdConfig{
+				GVisor: &kops.GVisorConfig{
+					Enabled: test.enabled,
+				},
+			}
+
+			errs := ValidateInstanceGroup(ig, nil, true)
+			testErrors(t, test.name, errs, test.expected)
+		})
+	}
+}
+
 func TestValidInstanceGroup(t *testing.T) {
 	grid := []struct {
 		IG             *kops.InstanceGroup

@@ -29,28 +29,39 @@ func TestGVisorBuilderBuild(t *testing.T) {
 	tests := []struct {
 		name         string
 		distribution distributions.Distribution
+		role         kops.InstanceGroupRole
 		gvisor       *kops.GVisorConfig
 		wantTasks    []string
 	}{
 		{
 			name:         "disabled",
 			distribution: distributions.DistributionDebian13,
+			role:         kops.InstanceGroupRoleNode,
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(false)},
 		},
 		{
 			name:         "enabled debian",
 			distribution: distributions.DistributionDebian13,
+			role:         kops.InstanceGroupRoleNode,
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(true)},
 			wantTasks:    []string{"AptSource/gvisor", "Package/runsc"},
 		},
 		{
 			name:         "enabled non debian",
 			distribution: distributions.DistributionRhel9,
+			role:         kops.InstanceGroupRoleNode,
+			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(true)},
+		},
+		{
+			name:         "enabled control plane",
+			distribution: distributions.DistributionDebian13,
+			role:         kops.InstanceGroupRoleControlPlane,
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(true)},
 		},
 		{
 			name:         "unset",
 			distribution: distributions.DistributionDebian13,
+			role:         kops.InstanceGroupRoleNode,
 		},
 	}
 
@@ -62,6 +73,9 @@ func TestGVisorBuilderBuild(t *testing.T) {
 			builder := &GVisorBuilder{
 				NodeupModelContext: &NodeupModelContext{
 					Distribution: test.distribution,
+					BootConfig: &nodeup.BootConfig{
+						InstanceGroupRole: test.role,
+					},
 					NodeupConfig: &nodeup.Config{
 						GVisor: test.gvisor,
 					},
