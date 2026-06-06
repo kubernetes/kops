@@ -161,6 +161,9 @@ if [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernete
 elif [[ "${JOB_TYPE}" == "presubmit" && "${REPO_OWNER}/${REPO_NAME}" == "kubernetes/kubernetes" ]]; then
   KUBETEST2_ARGS+=("--build")
   KUBETEST2_ARGS+=("--build-kubernetes=true")
+  # Scale clusters run linux/amd64 nodes only, so build a single arch instead of
+  # the full multi-arch release matrix.
+  KUBETEST2_ARGS+=("--target-build-arch=linux/amd64")
   KUBETEST2_ARGS+=("--kops-version-marker=${KOPS_VERSION_MARKER:-https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/master/latest-ci.txt}")
   cd "${GOPATH}/src/k8s.io/kubernetes"
 else
