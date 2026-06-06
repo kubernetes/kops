@@ -17,6 +17,7 @@ limitations under the License.
 package flagbuilder
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -209,6 +210,44 @@ func TestBuildAPIServerFlags(t *testing.T) {
 		if actual != test.Expected {
 			t.Errorf("unexpected flags.  actual=%q expected=%q", actual, test.Expected)
 			continue
+		}
+	}
+}
+
+// TestBuildFlagsQuoting checks that the quote function is applied: neverQuote leaves argv values
+// verbatim while maybeQuote quotes those containing a double quote. Regression for etcd-manager's
+// --static-config JSON, executes directly via go-runner with no shell to strip quotes.
+func TestBuildFlagsQuoting(t *testing.T) {
+	options := &struct {
+		StaticConfig string `flag:"static-config"`
+	}{
+		StaticConfig: `{"etcdVersion":"3.6.12"}`,
+	}
+
+	grid := []struct {
+		Quote    func(string) string
+		Expected string
+	}{
+		{
+			Quote:    neverQuote,
+			Expected: `--static-config={"etcdVersion":"3.6.12"}`,
+		},
+		{
+			Quote:    maybeQuote,
+			Expected: `--static-config="{\"etcdVersion\":\"3.6.12\"}"`,
+		},
+	}
+
+	for _, test := range grid {
+		flags, err := buildFlagsList(options, test.Quote)
+		if err != nil {
+			t.Errorf("error from buildFlagsList: %v", err)
+			continue
+		}
+
+		actual := strings.Join(flags, " ")
+		if actual != test.Expected {
+			t.Errorf("unexpected flags.  actual=%q expected=%q", actual, test.Expected)
 		}
 	}
 }

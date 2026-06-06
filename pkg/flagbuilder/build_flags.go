@@ -29,10 +29,10 @@ import (
 	"k8s.io/kops/util/pkg/reflectutils"
 )
 
-// BuildFlags returns a space separated list arguments
+// BuildFlags returns a space-separated list of arguments.
 // @deprecated: please use BuildFlagsList
 func BuildFlags(options interface{}) (string, error) {
-	flags, err := BuildFlagsList(options)
+	flags, err := buildFlagsList(options, maybeQuote)
 	if err != nil {
 		return "", err
 	}
@@ -40,8 +40,12 @@ func BuildFlags(options interface{}) (string, error) {
 	return strings.Join(flags, " "), nil
 }
 
-// BuildFlagsList reflects the options interface and extracts the flags from struct tags
+// BuildFlagsList reflects the options interface and extracts the flags from struct tags.
 func BuildFlagsList(options interface{}) ([]string, error) {
+	return buildFlagsList(options, neverQuote)
+}
+
+func buildFlagsList(options interface{}, quote func(string) string) ([]string, error) {
 	var flags []string
 
 	walker := func(path *reflectutils.FieldPath, field *reflect.StructField, val reflect.Value) error {
@@ -143,7 +147,7 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 		case string:
 			vString := fmt.Sprintf("%v", v)
 			if vString != "" && vString != flagEmpty {
-				flag = fmt.Sprintf("--%s=%s", flagName, maybeQuote(vString))
+				flag = fmt.Sprintf("--%s=%s", flagName, quote(vString))
 			}
 
 		case *string:
@@ -152,10 +156,10 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 				// just like the string case above.
 				vString := fmt.Sprintf("%v", *v)
 				if flagIncludeEmpty {
-					flag = fmt.Sprintf("--%s=%s", flagName, maybeQuote(vString))
+					flag = fmt.Sprintf("--%s=%s", flagName, quote(vString))
 				} else {
 					if vString != "" && vString != flagEmpty {
-						flag = fmt.Sprintf("--%s=%s", flagName, maybeQuote(vString))
+						flag = fmt.Sprintf("--%s=%s", flagName, quote(vString))
 					}
 				}
 			}
@@ -214,9 +218,16 @@ func BuildFlagsList(options interface{}) ([]string, error) {
 	return flags, nil
 }
 
+// maybeQuote quotes s when it contains a double quote, so values survive the space-separated
+// string form that a shell or systemd may parse. argv values use neverQuote instead.
 func maybeQuote(s string) string {
 	if strings.Contains(s, "\"") {
 		return fmt.Sprintf("%q", s)
 	}
+	return s
+}
+
+// neverQuote returns s unchanged, for values used directly as exec argv.
+func neverQuote(s string) string {
 	return s
 }
