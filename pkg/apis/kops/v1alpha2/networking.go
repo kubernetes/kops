@@ -197,6 +197,9 @@ type CalicoNetworkingSpec struct {
 	LogSeverityScreen string `json:"logSeverityScreen,omitempty"`
 	// MTU to be set in the cni-network-config for calico.
 	MTU *int32 `json:"mtu,omitempty"`
+	// NFTablesMode configures nftables support in Felix
+	// Options: Disabled, Enabled, Auto
+	NFTablesMode string `json:"nftablesMode,omitempty"`
 	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
 	// metrics server (default: false)
 	PrometheusMetricsEnabled bool `json:"prometheusMetricsEnabled,omitempty"`
