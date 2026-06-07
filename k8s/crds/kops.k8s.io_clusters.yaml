@@ -954,6 +954,19 @@ spec:
                     description: ConfigOverride is the complete containerd config
                       file provided by the user.
                     type: string
+                  gvisor:
+                    description: GVisor configures the gVisor (runsc) sandboxed runtime.
+                    properties:
+                      enabled:
+                        description: Enabled determines if kOps will install the gVisor
+                          runtime.
+                        type: boolean
+                      platform:
+                        description: |-
+                          Platform is the gVisor execution platform: "systrap" (default, works
+                          everywhere including VMs) or "kvm" (bare-metal with KVM support).
+                        type: string
+                    type: object
                   installCriCtl:
                     description: InstallCriCtl installs crictl (default "false").
                     type: boolean

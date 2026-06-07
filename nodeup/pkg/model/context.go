@@ -563,6 +563,14 @@ func (c *NodeupModelContext) InstallNvidiaRuntime() bool {
 		c.GPUVendor == architectures.GPUVendorNvidia
 }
 
+// InstallGVisorRuntime returns true if the gVisor (runsc) runtime should be installed.
+func (c *NodeupModelContext) InstallGVisorRuntime() bool {
+	return c.BootConfig != nil &&
+		c.BootConfig.InstanceGroupRole == kops.InstanceGroupRoleNode &&
+		c.NodeupConfig.GVisor != nil &&
+		fi.ValueOf(c.NodeupConfig.GVisor.Enabled)
+}
+
 // CloudProvider returns the cloud provider we are running on
 func (c *NodeupModelContext) CloudProvider() kops.CloudProviderID {
 	return c.BootConfig.CloudProvider

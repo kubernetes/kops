@@ -93,6 +93,11 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		return err
 	}
 
+	// If gVisor is enabled, emit the runsc shim config file
+	if b.InstallGVisorRuntime() {
+		b.buildGVisorShimConfig(c)
+	}
+
 	if installContainerd {
 		if err := b.installContainerd(c); err != nil {
 			return err
@@ -564,6 +569,12 @@ func (b *ContainerdBuilder) buildContainerdConfigV2() (string, error) {
 		}
 	}
 
+	if b.InstallGVisorRuntime() {
+		if err := appendGVisorRuntimeConfig(config, []string{"plugins", "io.containerd.grpc.v1.cri", "containerd", "runtimes"}); err != nil {
+			return "", fmt.Errorf("appending gvisor runtime to v2 containerd config: %w", err)
+		}
+	}
+
 	if err := applyConfigAdditions(config, containerd.ConfigAdditions); err != nil {
 		return "", fmt.Errorf("applying ConfigAdditions to v2 containerd config: %w", err)
 	}
@@ -614,6 +625,12 @@ func (b *ContainerdBuilder) buildContainerdConfigV3() (string, error) {
 	if b.InstallNvidiaRuntime() {
 		if err := appendNvidiaGPURuntimeConfig(config, []string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"}); err != nil {
 			return "", fmt.Errorf("appending nvidia gpu runtime to v3 containerd config: %w", err)
+		}
+	}
+
+	if b.InstallGVisorRuntime() {
+		if err := appendGVisorRuntimeConfig(config, []string{"plugins", "io.containerd.cri.v1.runtime", "containerd", "runtimes"}); err != nil {
+			return "", fmt.Errorf("appending gvisor runtime to v3 containerd config: %w", err)
 		}
 	}
 
@@ -689,6 +706,45 @@ func appendNvidiaGPURuntimeConfig(config *toml.Tree, runtimesPath []string) erro
 	config.SetPath(path, gpuConfig)
 
 	return nil
+}
+
+// appendGVisorRuntimeConfig adds the "runsc" runtime entry under runtimesPath.
+// runtimesPath is schema-specific so the same helper can serve both v2 and v3 builders.
+func appendGVisorRuntimeConfig(config *toml.Tree, runtimesPath []string) error {
+	gvisorConfig, err := toml.TreeFromMap(
+		map[string]interface{}{
+			"runtime_type": "io.containerd.runsc.v1",
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	path := make([]string, len(runtimesPath)+1)
+	copy(path, runtimesPath)
+	path[len(runtimesPath)] = "runsc"
+	config.SetPath(path, gvisorConfig)
+
+	return nil
+}
+
+// buildGVisorShimConfig emits /etc/containerd/runsc.toml, the shim-level
+// configuration consumed by containerd-shim-runsc-v1 at container creation.
+// See https://gvisor.dev/docs/user_guide/containerd/configuration/
+func (b *ContainerdBuilder) buildGVisorShimConfig(c *fi.NodeupModelBuilderContext) {
+	platform := b.NodeupConfig.GVisor.Platform
+	if platform == "" {
+		platform = "systrap"
+	}
+
+	shimConfig, _ := toml.Load("")
+	shimConfig.SetPath([]string{"runsc_config", "platform"}, platform)
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/containerd/runsc.toml",
+		Contents: fi.NewStringResource(shimConfig.String()),
+		Type:     nodetasks.FileType_File,
+	})
 }
 
 // buildRegistryHosts emits one hosts.toml per RegistryMirrors entry under containerdRegistryDirPath.

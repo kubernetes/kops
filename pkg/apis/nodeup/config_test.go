@@ -88,3 +88,93 @@ func TestNewConfigDefaultMachineType(t *testing.T) {
 		})
 	}
 }
+
+func TestNewConfigGVisorWorkerOnly(t *testing.T) {
+	ptrToBool := func(v bool) *bool {
+		return &v
+	}
+
+	newCluster := func(containerd *kops.ContainerdConfig) *kops.Cluster {
+		cluster := &kops.Cluster{
+			Spec: kops.ClusterSpec{
+				Containerd:            containerd,
+				KubernetesVersion:     "1.32.0",
+				KubeAPIServer:         &kops.KubeAPIServerConfig{},
+				KubeControllerManager: &kops.KubeControllerManagerConfig{},
+				KubeScheduler:         &kops.KubeSchedulerConfig{},
+				Networking:            kops.NetworkingSpec{Calico: &kops.CalicoNetworkingSpec{}},
+			},
+		}
+		cluster.Name = "test.example.com"
+		return cluster
+	}
+
+	for _, test := range []struct {
+		name                string
+		role                kops.InstanceGroupRole
+		containerd          *kops.ContainerdConfig
+		instanceGroupConfig bool
+		wantGVisor          bool
+	}{
+		{
+			name:       "cluster config ignored on worker",
+			role:       kops.InstanceGroupRoleNode,
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on control plane",
+			role:       kops.InstanceGroupRoleControlPlane,
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on apiserver",
+			role:       kops.InstanceGroupRoleAPIServer,
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on bastion",
+			role:       kops.InstanceGroupRoleBastion,
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:                "instance group config on worker",
+			role:                kops.InstanceGroupRoleNode,
+			containerd:          &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+			instanceGroupConfig: true,
+			wantGVisor:          true,
+		},
+		{
+			name:                "instance group config on control plane",
+			role:                kops.InstanceGroupRoleControlPlane,
+			containerd:          &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+			instanceGroupConfig: true,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			clusterContainerd := test.containerd
+			igContainerd := (*kops.ContainerdConfig)(nil)
+			if test.instanceGroupConfig {
+				clusterContainerd = nil
+				igContainerd = test.containerd
+			}
+			ig := &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role:       test.role,
+					Containerd: igContainerd,
+				},
+			}
+
+			config, _ := NewConfig(newCluster(clusterContainerd), ig)
+
+			if got := config.GVisor != nil; got != test.wantGVisor {
+				t.Errorf("GVisor config presence = %v, want %v", got, test.wantGVisor)
+			}
+			if config.ContainerdConfig == nil {
+				t.Fatalf("ContainerdConfig = nil, want non-nil")
+			}
+			if got := config.ContainerdConfig.GVisor != nil; got != test.wantGVisor {
+				t.Errorf("ContainerdConfig.GVisor presence = %v, want %v", got, test.wantGVisor)
+			}
+		})
+	}
+}

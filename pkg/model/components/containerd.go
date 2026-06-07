@@ -78,5 +78,11 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		}
 	}
 
+	if containerd.GVisor != nil && fi.ValueOf(containerd.GVisor.Enabled) {
+		if containerd.GVisor.Platform == "" {
+			containerd.GVisor.Platform = kops.GVisorDefaultPlatform
+		}
+	}
+
 	return nil
 }

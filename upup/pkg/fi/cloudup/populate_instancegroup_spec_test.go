@@ -235,6 +235,56 @@ func TestPopulateInstanceGroup_AddTaints(t *testing.T) {
 	}
 }
 
+func TestPopulateInstanceGroup_GVisorLabelsWorkersOnly(t *testing.T) {
+	_, cluster := buildMinimalCluster()
+
+	channel := &kopsapi.Channel{}
+	cloud, err := BuildCloud(cluster)
+	if err != nil {
+		t.Fatalf("error from BuildCloud: %v", err)
+	}
+
+	for _, test := range []struct {
+		name      string
+		ig        *kopsapi.InstanceGroup
+		cluster   *kopsapi.GVisorConfig
+		wantLabel bool
+	}{
+		{
+			name:    "cluster config ignored on worker",
+			ig:      buildMinimalNodeInstanceGroup(),
+			cluster: &kopsapi.GVisorConfig{Enabled: fi.PtrTo(true)},
+		},
+		{
+			name: "worker instance group",
+			ig: func() *kopsapi.InstanceGroup {
+				ig := buildMinimalNodeInstanceGroup()
+				ig.Spec.Containerd = &kopsapi.ContainerdConfig{
+					GVisor: &kopsapi.GVisorConfig{Enabled: fi.PtrTo(true)},
+				}
+				return ig
+			}(),
+			wantLabel: true,
+		},
+		{
+			name: "control plane",
+			ig:   buildMinimalMasterInstanceGroup("us-test-1"),
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			cluster.Spec.Containerd.GVisor = test.cluster
+			output, err := PopulateInstanceGroupSpec(cluster, test.ig, cloud, channel)
+			if err != nil {
+				t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+			}
+			gotLabel := output.Spec.NodeLabels["kops.k8s.io/gvisor"] == "1"
+			if gotLabel != test.wantLabel {
+				t.Errorf("gVisor node label presence = %v, want %v", gotLabel, test.wantLabel)
+			}
+		})
+	}
+}
+
 func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *kopsapi.Cluster, g *kopsapi.InstanceGroup, channel *kopsapi.Channel, message string) {
 	cloud, err := BuildCloud(cluster)
 	if err != nil {

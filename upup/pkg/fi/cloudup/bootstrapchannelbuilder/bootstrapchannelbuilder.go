@@ -597,6 +597,30 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		}
 	}
 
+	igGVisor := false
+	for _, ig := range b.KopsModelContext.InstanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleNode && ig.Spec.Containerd != nil && ig.Spec.Containerd.GVisor != nil && fi.ValueOf(ig.Spec.Containerd.GVisor.Enabled) {
+			igGVisor = true
+			break
+		}
+	}
+
+	if igGVisor {
+		key := "gvisor.addons.k8s.io"
+
+		{
+			location := key + "/k8s-1.20.yaml"
+			id := "k8s-1.20"
+
+			addons.Add(&channelsapi.AddonSpec{
+				Name:     fi.PtrTo(key),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.PtrTo(location),
+				Id:       id,
+			})
+		}
+	}
+
 	if b.Cluster.Spec.CloudProvider.AWS != nil {
 		if b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController != nil && fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.LoadBalancerController.Enabled) {
 
