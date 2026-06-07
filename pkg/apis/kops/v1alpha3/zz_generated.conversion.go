@@ -2078,6 +2078,7 @@ func autoConvert_v1alpha3_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
+	out.NFTablesMode = in.NFTablesMode
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
@@ -2114,6 +2115,7 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha3_CalicoNetworkingSpec(in *
 	out.IptablesBackend = in.IptablesBackend
 	out.LogSeverityScreen = in.LogSeverityScreen
 	out.MTU = in.MTU
+	out.NFTablesMode = in.NFTablesMode
 	out.PrometheusMetricsEnabled = in.PrometheusMetricsEnabled
 	out.PrometheusMetricsPort = in.PrometheusMetricsPort
 	out.PrometheusGoMetricsEnabled = in.PrometheusGoMetricsEnabled
