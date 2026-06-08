@@ -147,6 +147,18 @@ Contents: |
       - mountPath: /opt
         name: opt
     - args:
+      - --target-dir=/opt/etcd-v3.7.0-rc.0
+      - --src=/usr/local/bin/etcd
+      - --src=/usr/local/bin/etcdctl
+      command:
+      - /opt/kops-utils/kops-utils-cp
+      image: registry.k8s.io/etcd:v3.7.0-rc.0
+      name: init-etcd-3-7-0-rc-0
+      resources: {}
+      volumeMounts:
+      - mountPath: /opt
+        name: opt
+    - args:
       - --symlink
       - --target-dir=/opt/etcd-v3.5.0
       - --target-dir=/opt/etcd-v3.5.1
@@ -321,6 +333,18 @@ Contents: |
       - /opt/kops-utils/kops-utils-cp
       image: registry.k8s.io/etcd:v3.6.12
       name: init-etcd-3-6-12
+      resources: {}
+      volumeMounts:
+      - mountPath: /opt
+        name: opt
+    - args:
+      - --target-dir=/opt/etcd-v3.7.0-rc.0
+      - --src=/usr/local/bin/etcd
+      - --src=/usr/local/bin/etcdctl
+      command:
+      - /opt/kops-utils/kops-utils-cp
+      image: registry.k8s.io/etcd:v3.7.0-rc.0
+      name: init-etcd-3-7-0-rc-0
       resources: {}
       volumeMounts:
       - mountPath: /opt

@@ -132,6 +132,8 @@ spec:
       name: etcd-v3-6-12
     - mountPath: /opt/etcd-v3.6.12
       name: etcd-v3-6-12
+    - mountPath: /opt/etcd-v3.7.0-rc.0
+      name: etcd-v3-7-0-rc-0
     - mountPath: /var/log/etcd.log
       name: varlogetcd
   hostNetwork: true
@@ -163,6 +165,10 @@ spec:
       pullPolicy: IfNotPresent
       reference: registry.k8s.io/etcd:v3.6.12
     name: etcd-v3-6-12
+  - image:
+      pullPolicy: IfNotPresent
+      reference: registry.k8s.io/etcd:v3.7.0-rc.0
+    name: etcd-v3-7-0-rc-0
   - hostPath:
       path: /var/log/etcd.log
       type: FileOrCreate
