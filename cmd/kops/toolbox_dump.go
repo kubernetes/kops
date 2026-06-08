@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
@@ -62,11 +63,12 @@ type ToolboxDumpOptions struct {
 
 	ClusterName string
 
-	Dir          string
-	PrivateKey   string
-	SSHUser      string
-	MaxNodes     int
-	K8sResources bool
+	Dir             string
+	PrivateKey      string
+	SSHUser         string
+	MaxNodes        int
+	NodeDumpTimeout time.Duration
+	K8sResources    bool
 
 	// CloudResources controls whether we dump the cloud resources
 	CloudResources bool
@@ -77,6 +79,7 @@ func (o *ToolboxDumpOptions) InitDefaults() {
 	o.PrivateKey = "~/.ssh/id_rsa"
 	o.SSHUser = "ubuntu"
 	o.MaxNodes = 500
+	o.NodeDumpTimeout = time.Minute
 	o.K8sResources = k8sResources != ""
 	o.CloudResources = true
 }
@@ -107,6 +110,7 @@ func NewCmdToolboxDump(f commandutils.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.K8sResources, "k8s-resources", options.K8sResources, "Include k8s resources in the dump")
 	cmd.Flags().BoolVar(&options.CloudResources, "cloud-resources", options.CloudResources, "Include cloud resources in the dump")
 	cmd.Flags().IntVar(&options.MaxNodes, "max-nodes", options.MaxNodes, "The maximum number of nodes from which to dump logs")
+	cmd.Flags().DurationVar(&options.NodeDumpTimeout, "node-dump-timeout", options.NodeDumpTimeout, "Timeout for connecting to and dumping logs from a single node")
 	cmd.Flags().StringVar(&options.PrivateKey, "private-key", options.PrivateKey, "File containing private key to use for SSH access to instances")
 	cmd.Flags().StringVar(&options.SSHUser, "ssh-user", options.SSHUser, "The remote user for SSH access to instances")
 	cmd.RegisterFlagCompletionFunc("ssh-user", cobra.NoFileCompletions)
@@ -241,7 +245,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			}
 		}
 
-		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir)
+		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir, options.NodeDumpTimeout)
 
 		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, cloudResources); err != nil {
 			klog.Warningf("error dumping nodes: %v", err)
