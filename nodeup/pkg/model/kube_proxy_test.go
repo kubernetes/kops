@@ -23,10 +23,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	kopsmodel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
-	"k8s.io/kops/util/pkg/exec"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -47,14 +45,6 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 	nodeupConfig := &nodeup.Config{
 		KubeProxy: &kubeProxy,
 	}
-
-	flags, _ := flagbuilder.BuildFlagsList(&kubeProxy)
-
-	flags = append(flags, []string{
-		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
-		"--oom-score-adj=-998",
-		`--resource-container=""`,
-	}...)
 
 	type fields struct {
 		NodeupModelContext *NodeupModelContext
@@ -96,7 +86,7 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 									v1.ResourceCPU: *resource.NewScaledQuantity(30, resource.Milli),
 								},
 							},
-							Command: exec.WithTee("/usr/local/bin/kube-proxy", sortedStrings(flags), "/var/log/kube-proxy.log"),
+							Command: []string{"/go-runner"},
 						},
 					},
 				},
@@ -146,6 +136,11 @@ func TestKubeProxyBuilder_buildPod(t *testing.T) {
 			// compare pod spec container resource
 			if !reflect.DeepEqual(got.Spec.Containers[0].Resources, tt.want.Spec.Containers[0].Resources) {
 				t.Errorf("KubeProxyBuilder.buildPod() Resources = %v, want %v", got.Spec.Containers[0].Resources, tt.want.Spec.Containers[0].Resources)
+			}
+
+			// compare pod spec container command
+			if !reflect.DeepEqual(got.Spec.Containers[0].Command, tt.want.Spec.Containers[0].Command) {
+				t.Errorf("KubeProxyBuilder.buildPod() Command = %v, want %v", got.Spec.Containers[0].Command, tt.want.Spec.Containers[0].Command)
 			}
 		})
 	}
