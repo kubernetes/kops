@@ -5241,6 +5241,11 @@ spec:
                         description: MTU to be set in the cni-network-config for calico.
                         format: int32
                         type: integer
+                      nftablesMode:
+                        description: |-
+                          NFTablesMode configures nftables support in Felix
+                          Options: Disabled, Enabled, Auto
+                        type: string
                       prometheusGoMetricsEnabled:
                         description: PrometheusGoMetricsEnabled enables Prometheus
                           Go runtime metrics collection

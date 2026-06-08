@@ -7352,6 +7352,11 @@ spec:
             # Set Felix iptables binary variant, Legacy or NFT
             - name: FELIX_IPTABLESBACKEND
               value: "{{- or .Networking.Calico.IptablesBackend "Auto" }}"
+            {{ if .Networking.Calico.NFTablesMode -}}
+            # Configures nftables support in Felix (Disabled, Enabled, Auto)
+            - name: FELIX_NFTABLESMODE
+              value: "{{ .Networking.Calico.NFTablesMode }}"
+            {{ end -}}
             # Controls the log level
             - name: FELIX_LOGSEVERITYSCREEN
               value: "{{- or .Networking.Calico.LogSeverityScreen "info" }}"
