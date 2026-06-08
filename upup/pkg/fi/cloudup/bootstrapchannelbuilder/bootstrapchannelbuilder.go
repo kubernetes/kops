@@ -599,7 +599,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 	igGVisor := false
 	for _, ig := range b.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleNode && ig.Spec.Containerd != nil && ig.Spec.Containerd.GVisor != nil && fi.ValueOf(ig.Spec.Containerd.GVisor.Enabled) {
+		if ig.HasGVisor() {
 			igGVisor = true
 			break
 		}
