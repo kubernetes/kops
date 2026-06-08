@@ -150,6 +150,7 @@ echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 KUBETEST2_ARGS=()
 KUBETEST2_ARGS+=("-v=2")
 KUBETEST2_ARGS+=("--max-nodes-to-dump=${MAX_NODES_TO_DUMP:-5}")
+KUBETEST2_ARGS+=("--node-dump-timeout=${NODE_DUMP_TIMEOUT:-5m}")
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
