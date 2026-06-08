@@ -438,7 +438,7 @@ func buildContainerdConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGr
 	if instanceGroup.Spec.Containerd != nil {
 		reflectutils.JSONMergeStruct(&config, instanceGroup.Spec.Containerd)
 	}
-	if instanceGroup.Spec.Role != kops.InstanceGroupRoleNode || instanceGroup.Spec.Containerd == nil || instanceGroup.Spec.Containerd.GVisor == nil {
+	if !instanceGroup.HasGVisor() {
 		config.GVisor = nil
 	}
 	return config
@@ -464,7 +464,7 @@ func buildNvidiaConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup)
 
 // buildGVisorConfig builds gVisor configuration for instance group
 func buildGVisorConfig(instanceGroup *kops.InstanceGroup) *kops.GVisorConfig {
-	if instanceGroup.Spec.Role != kops.InstanceGroupRoleNode || instanceGroup.Spec.Containerd == nil || instanceGroup.Spec.Containerd.GVisor == nil {
+	if !instanceGroup.HasGVisor() {
 		return nil
 	}
 

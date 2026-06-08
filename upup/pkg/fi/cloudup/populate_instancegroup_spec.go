@@ -230,8 +230,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	// Label nodes that have gVisor enabled so the RuntimeClass nodeSelector works.
-	igGVisor := ig.Spec.Containerd != nil && ig.Spec.Containerd.GVisor != nil && fi.ValueOf(ig.Spec.Containerd.GVisor.Enabled)
-	if ig.Spec.Role == kops.InstanceGroupRoleNode && igGVisor {
+	if ig.HasGVisor() {
 		if ig.Spec.NodeLabels == nil {
 			ig.Spec.NodeLabels = make(map[string]string)
 		}

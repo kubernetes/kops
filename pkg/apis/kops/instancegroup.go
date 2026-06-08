@@ -368,6 +368,16 @@ func (g *InstanceGroup) HasAPIServer() bool {
 	return g.IsControlPlane() || g.IsAPIServerOnly()
 }
 
+// HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.
+// gVisor is only valid on workers; ValidateInstanceGroup rejects it on other roles.
+func (g *InstanceGroup) HasGVisor() bool {
+	return g.Spec.Role == InstanceGroupRoleNode &&
+		g.Spec.Containerd != nil &&
+		g.Spec.Containerd.GVisor != nil &&
+		g.Spec.Containerd.GVisor.Enabled != nil &&
+		*g.Spec.Containerd.GVisor.Enabled
+}
+
 // IsBastion checks if instanceGroup is a bastion
 func (g *InstanceGroup) IsBastion() bool {
 	switch g.Spec.Role {
