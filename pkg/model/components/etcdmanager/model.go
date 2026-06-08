@@ -45,7 +45,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/env"
-	"k8s.io/kops/util/pkg/exec"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -210,7 +209,7 @@ metadata:
 spec:
   containers:
   - name: etcd-manager
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
     resources:
       requests:
         cpu: 100m
@@ -637,7 +636,13 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	{
-		container.Command = exec.WithTee("/ko-app/etcd-manager", args, "/var/log/etcd.log")
+		container.Command = []string{"/go-runner"}
+		container.Args = []string{
+			"--log-file=/var/log/etcd.log",
+			"--also-stdout",
+			"/ko-app/etcd-manager",
+		}
+		container.Args = append(container.Args, args...)
 
 		cpuRequest := resource.MustParse("200m")
 		if etcdCluster.CPURequest != nil {

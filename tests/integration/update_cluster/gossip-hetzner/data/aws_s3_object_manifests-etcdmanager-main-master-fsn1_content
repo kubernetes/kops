@@ -7,22 +7,31 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - command:
-    - /bin/sh
-    - -c
-    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
-      --backup-store=memfs://tests/gossip.k8s.local/backups/etcd/main --client-urls=https://__name__:4001
-      --cluster-name=etcd --containerized=true --dns-suffix=.internal.gossip.k8s.local
-      --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
-      --v=6 --volume-name-tag=kops.k8s.io/instance-group=master-fsn1 --volume-provider=hetzner
-      --volume-tag=kops.k8s.io/cluster=gossip.k8s.local --volume-tag=kops.k8s.io/volume-role=main
-      > /tmp/pipe 2>&1
+  - args:
+    - --log-file=/var/log/etcd.log
+    - --also-stdout
+    - /ko-app/etcd-manager
+    - --backup-store=memfs://tests/gossip.k8s.local/backups/etcd/main
+    - --client-urls=https://__name__:4001
+    - --cluster-name=etcd
+    - --containerized=true
+    - --dns-suffix=.internal.gossip.k8s.local
+    - --grpc-port=3996
+    - --peer-urls=https://__name__:2380
+    - --quarantine-client-urls=https://__name__:3994
+    - --v=6
+    - --volume-name-tag=kops.k8s.io/instance-group=master-fsn1
+    - --volume-provider=hetzner
+    - --volume-tag=kops.k8s.io/cluster=gossip.k8s.local
+    - --volume-tag=kops.k8s.io/volume-role=main
+    command:
+    - /go-runner
     env:
     - name: HCLOUD_TOKEN
       value: REDACTED
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
     name: etcd-manager
     resources:
       requests:
