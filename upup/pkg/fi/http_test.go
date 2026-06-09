@@ -40,7 +40,7 @@ func TestDownloadURLRejectsNon2xxAndPreservesDestination(t *testing.T) {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
-	if _, err := DownloadURL(server.URL, dest, nil); err == nil {
+	if _, err := DownloadURL(context.TODO(), server.URL, dest, nil); err == nil {
 		t.Fatalf("DownloadURL() expected error")
 	}
 

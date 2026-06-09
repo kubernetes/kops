@@ -25,6 +25,9 @@ const (
 	// KopsController is the service where kops-controller listens.
 	KopsController WellKnownService = "kops-controller"
 
+	// EtcdMain is the service where K8s main etcd listens.
+	EtcdMain WellKnownService = "etcd-main"
+
 	// EtcdCilium is the service where Cilium etcd listens.
 	EtcdCilium WellKnownService = "etcd-cilium"
 )

@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -199,13 +200,16 @@ func hashFromHTTPHeader(url string) (*hashing.Hash, error) {
 }
 
 // Add an asset into the store, in one of the recognized formats (see Assets in types package)
-func (a *AssetStore) Add(id string) error {
-	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") {
-		return a.addURLs(strings.Split(id, ","), nil)
+func (a *AssetStore) Add(ctx context.Context, id string) error {
+	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") || strings.HasPrefix(id, "gs://") {
+		return a.addURLs(ctx, strings.Split(id, ","), nil)
 	}
 	i := strings.Index(id, "@http://")
 	if i == -1 {
 		i = strings.Index(id, "@https://")
+	}
+	if i == -1 {
+		i = strings.Index(id, "@gs://")
 	}
 	if i != -1 {
 		urls := strings.Split(id[i+1:], ",")
@@ -213,13 +217,13 @@ func (a *AssetStore) Add(id string) error {
 		if err != nil {
 			return err
 		}
-		return a.addURLs(urls, hash)
+		return a.addURLs(ctx, urls, hash)
 	}
 	// TODO: local files!
 	return fmt.Errorf("unknown asset format: %q", id)
 }
 
-func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
+func (a *AssetStore) addURLs(ctx context.Context, urls []string, hash *hashing.Hash) error {
 	if len(urls) == 0 {
 		return fmt.Errorf("no urls were specified")
 	}
@@ -246,7 +250,7 @@ func (a *AssetStore) addURLs(urls []string, hash *hashing.Hash) error {
 	localFile := path.Join(a.cacheDir, hash.String()+"_"+utils.SanitizeString(key))
 
 	for _, url := range urls {
-		_, err = DownloadURL(url, localFile, hash)
+		_, err = DownloadURL(ctx, url, localFile, hash)
 		if err != nil {
 			klog.Warningf("error downloading url %q: %v", url, err)
 			continue

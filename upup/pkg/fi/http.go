@@ -37,7 +37,7 @@ const downloadTimeout = 3 * time.Minute
 
 // DownloadURL will download the file at the given url and store it as dest.
 // If hash is non-nil, it will also verify that it matches the hash of the downloaded file.
-func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, error) {
+func DownloadURL(ctx context.Context, url string, dest string, hash *hashing.Hash) (*hashing.Hash, error) {
 	if hash != nil {
 		match, err := fileHasHash(dest, hash)
 		if err != nil {
@@ -48,10 +48,10 @@ func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, er
 		}
 	}
 
-	return downloadURLToFile(url, dest, hash)
+	return downloadURLToFile(ctx, url, dest, hash)
 }
 
-func downloadURLToFile(url string, destPath string, hash *hashing.Hash) (*hashing.Hash, error) {
+func downloadURLToFile(ctx context.Context, url string, destPath string, hash *hashing.Hash) (*hashing.Hash, error) {
 	dir := filepath.Dir(destPath)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, fmt.Errorf("error creating directories for destination file %q: %v", destPath, err)
@@ -64,7 +64,7 @@ func downloadURLToFile(url string, destPath string, hash *hashing.Hash) (*hashin
 	tempPath := output.Name()
 	defer os.Remove(tempPath)
 
-	actual, err := downloadURLToWriter(context.TODO(), url, output, hash)
+	actual, err := downloadURLToWriter(ctx, url, output, hash)
 	if closeErr := output.Close(); closeErr != nil && err == nil {
 		err = closeErr
 	}
