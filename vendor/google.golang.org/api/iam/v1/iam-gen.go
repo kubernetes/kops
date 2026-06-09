@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -1246,7 +1246,7 @@ func (s GetPolicyOptions) MarshalJSON() ([]byte, error) {
 // GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client: Represents
 // the OAuth 2.0 client credential configuration for retrieving additional user
 // attributes that are not present in the initial authentication credentials
-// from the identity provider, e.g. groups. See
+// from the identity provider, for example, groups. See
 // https://datatracker.ietf.org/doc/html/rfc6749#section-4.4 for more details
 // on client credentials grant flow.
 type GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client struct {
@@ -1271,6 +1271,15 @@ type GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client struct {
 	// https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties
 	// for more details on `microsoft.graph.group` properties. The group IDs of the
 	// user's groups that are returned from Microsoft Entra ID can be mapped by
+	// using the following attributes: * OIDC: `assertion.groups` * SAML:
+	// `assertion.attributes.groups`
+	//   "AZURE_AD_GROUPS_DISPLAY_NAME" - Used to get the user's group claims from
+	// the Microsoft Entra ID identity provider using the configuration provided in
+	// ExtraAttributesOAuth2Client. The `displayName` property of the
+	// `microsoft.graph.group` object is used for claim mapping. See
+	// https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties
+	// for more details on `microsoft.graph.group` properties. The display names of
+	// the user's groups that are returned from Microsoft Entra ID can be mapped by
 	// using the following attributes: * OIDC: `assertion.groups` * SAML:
 	// `assertion.attributes.groups`
 	AttributesType string `json:"attributesType,omitempty"`
@@ -1346,7 +1355,7 @@ func (s GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2ClientQueryPar
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// GoogleIamAdminV1WorkforcePoolProviderOidc: Represents an OpenId Connect 1.0
+// GoogleIamAdminV1WorkforcePoolProviderOidc: Represents an OpenID Connect 1.0
 // identity provider.
 type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
 	// ClientId: Required. The client ID. Must match the audience claim of the JWT
@@ -1360,11 +1369,11 @@ type GoogleIamAdminV1WorkforcePoolProviderOidc struct {
 	IssuerUri string `json:"issuerUri,omitempty"`
 	// JwksJson: Optional. OIDC JWKs in JSON String format. For details on the
 	// definition of a JWK, see https://tools.ietf.org/html/rfc7517. If not set,
-	// the `jwks_uri` from the discovery document(fetched from the .well-known path
-	// of the `issuer_uri`) will be used. Currently, RSA and EC asymmetric keys are
-	// supported. The JWK must use following format and include only the following
-	// fields: { "keys": [ { "kty": "RSA/EC", "alg": "", "use": "sig", "kid": "",
-	// "n": "", "e": "", "x": "", "y": "", "crv": "" } ] }
+	// the `jwks_uri` from the discovery document that is fetched from the
+	// well-known path of the `issuer_uri`, will be used. RSA and EC asymmetric
+	// keys are supported. The JWK must use the following format and include only
+	// the following fields: { "keys": [ { "kty": "RSA/EC", "alg": "", "use":
+	// "sig", "kid": "", "n": "", "e": "", "x": "", "y": "", "crv": "" } ] }
 	JwksJson string `json:"jwksJson,omitempty"`
 	// WebSsoConfig: Required. Configuration for web single sign-on for the OIDC
 	// provider. Here, web sign-in refers to console sign-in and gcloud sign-in
@@ -1559,6 +1568,15 @@ type InlineCertificateIssuanceConfig struct {
 	// initiated. Must be between 50 and 80. If no value is specified, rotation
 	// window percentage is defaulted to 50.
 	RotationWindowPercentage int64 `json:"rotationWindowPercentage,omitempty"`
+	// UseDefaultSharedCa: Optional. If set to true, the trust domain will utilize
+	// the GCP-provisioned default CA. A default CA in the same region as the
+	// workload will be selected to issue the certificate. Enabling this will clear
+	// any existing `ca_pools` configuration to provision the certificates. NOTE:
+	// This field is mutually exclusive with `ca_pools`. If this flag is enabled,
+	// certificates will be automatically provisioned from the default shared CAs.
+	// This flag should not be set if you want to use your own CA pools to
+	// provision the certificates.
+	UseDefaultSharedCa bool `json:"useDefaultSharedCa,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "CaPools") to unconditionally
 	// include in API requests. By default, fields with empty or default values are
 	// omitted from API requests. See
@@ -2000,15 +2018,15 @@ func (s ListWorkforcePoolProviderKeysResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// ListWorkforcePoolProviderScimTenantsResponse: Agentspace only. Response
-// message for ListWorkforcePoolProviderScimTenants.
+// ListWorkforcePoolProviderScimTenantsResponse: Gemini Enterprise only.
+// Response message for ListWorkforcePoolProviderScimTenants.
 type ListWorkforcePoolProviderScimTenantsResponse struct {
-	// NextPageToken: Optional. Agentspace only. A token, which can be sent as
-	// `page_token` to retrieve the next page. If this field is omitted, there are
-	// no subsequent pages.
+	// NextPageToken: Optional. Gemini Enterprise only. A token, which can be sent
+	// as `page_token` to retrieve the next page. If this field is omitted, there
+	// are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-	// WorkforcePoolProviderScimTenants: Output only. Agentspace only. A list of
-	// SCIM tenants.
+	// WorkforcePoolProviderScimTenants: Output only. Gemini Enterprise only. A
+	// list of SCIM tenants.
 	WorkforcePoolProviderScimTenants []*WorkforcePoolProviderScimTenant `json:"workforcePoolProviderScimTenants,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -2031,15 +2049,15 @@ func (s ListWorkforcePoolProviderScimTenantsResponse) MarshalJSON() ([]byte, err
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// ListWorkforcePoolProviderScimTokensResponse: Agentspace only. Response
-// message for ListWorkforcePoolProviderScimTokens.
+// ListWorkforcePoolProviderScimTokensResponse: Gemini Enterprise only.
+// Response message for ListWorkforcePoolProviderScimTokens.
 type ListWorkforcePoolProviderScimTokensResponse struct {
-	// NextPageToken: Optional. Agentspace only. A token, which can be sent as
-	// `page_token` to retrieve the next page. If this field is omitted, there are
-	// no subsequent pages.
+	// NextPageToken: Optional. Gemini Enterprise only. A token, which can be sent
+	// as `page_token` to retrieve the next page. If this field is omitted, there
+	// are no subsequent pages.
 	NextPageToken string `json:"nextPageToken,omitempty"`
-	// WorkforcePoolProviderScimTokens: Output only. Agentspace only. A list of
-	// SCIM tokens.
+	// WorkforcePoolProviderScimTokens: Output only. Gemini Enterprise only. A list
+	// of SCIM tokens.
 	WorkforcePoolProviderScimTokens []*WorkforcePoolProviderScimToken `json:"workforcePoolProviderScimTokens,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -2283,10 +2301,7 @@ type OauthClient struct {
 	// to request during OAuth flows. The following scopes are supported: *
 	// `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and
 	// delete your Google Cloud data and see the email address for your Google
-	// Account. * `openid`: The OAuth client can associate you with your personal
-	// information on Google Cloud. * `email`: The OAuth client can read a
-	// federated identity's email address. * `groups`: The OAuth client can read a
-	// federated identity's groups.
+	// Account.
 	AllowedScopes []string `json:"allowedScopes,omitempty"`
 	// ClientId: Output only. The system-generated OauthClient id.
 	ClientId string `json:"clientId,omitempty"`
@@ -3542,7 +3557,7 @@ func (s TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
 // TrustAnchor: Represents a root of trust.
 type TrustAnchor struct {
 	// PemCertificate: PEM certificate of the PKI used for validation. Must only
-	// contain one ca certificate(either root or intermediate cert).
+	// contain one ca certificate (either root or intermediate cert).
 	PemCertificate string `json:"pemCertificate,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "PemCertificate") to
 	// unconditionally include in API requests. By default, fields with empty or
@@ -3574,6 +3589,11 @@ type TrustStore struct {
 	// validation against a given TrustStore. The incoming end entity's certificate
 	// must be in the trust chain of one of the trust anchors here.
 	TrustAnchors []*TrustAnchor `json:"trustAnchors,omitempty"`
+	// TrustDefaultSharedCa: Optional. If set to True, the trust bundle will
+	// include the private ca managed identity regional root public certificates.
+	// Important: `trust_default_shared_ca` is only supported for managed identity
+	// trust domain resource.
+	TrustDefaultSharedCa bool `json:"trustDefaultSharedCa,omitempty"`
 	// ForceSendFields is a list of field names (e.g. "IntermediateCas") to
 	// unconditionally include in API requests. By default, fields with empty or
 	// default values are omitted from API requests. See
@@ -3656,14 +3676,9 @@ type UndeleteWorkforcePoolProviderKeyRequest struct {
 type UndeleteWorkforcePoolProviderRequest struct {
 }
 
-// UndeleteWorkforcePoolProviderScimTenantRequest: Agentspace only. Request
-// message for UndeleteWorkforcePoolProviderScimTenant.
+// UndeleteWorkforcePoolProviderScimTenantRequest: Gemini Enterprise only.
+// Request message for UndeleteWorkforcePoolProviderScimTenant.
 type UndeleteWorkforcePoolProviderScimTenantRequest struct {
-}
-
-// UndeleteWorkforcePoolProviderScimTokenRequest: Agentspace only. Request
-// message for UndeleteWorkforcePoolProviderScimToken.
-type UndeleteWorkforcePoolProviderScimTokenRequest struct {
 }
 
 // UndeleteWorkforcePoolRequest: Request message for UndeleteWorkforcePool.
@@ -3830,13 +3845,13 @@ type WorkforcePoolProvider struct {
 	// generic user icon will be displayed instead. This attribute cannot be
 	// referenced in IAM bindings. * `google.posix_username`: The Linux username
 	// used by OS Login. This is an optional field and the mapped POSIX username
-	// cannot exceed 32 characters, The key must match the regex
-	// "^a-zA-Z0-9._{0,31}$". This attribute cannot be referenced in IAM bindings.
+	// cannot exceed 32 characters. The key must match the regex
+	// `^a-zA-Z0-9._{0,31}$`. This attribute cannot be referenced in IAM bindings.
 	// You can also provide custom attributes by specifying
 	// `attribute.{custom_attribute}`, where {custom_attribute} is the name of the
 	// custom attribute to be mapped. You can define a maximum of 50 custom
 	// attributes. The maximum length of a mapped attribute key is 100 characters,
-	// and the key may only contain the characters [a-z0-9_]. You can reference
+	// and the key may only contain the characters `[a-z0-9_]`. You can reference
 	// these attributes in IAM policies to define fine-grained access for a
 	// workforce pool to Google Cloud resources. For example: * `google.subject`:
 	// `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subjec
@@ -3885,20 +3900,22 @@ type WorkforcePoolProvider struct {
 	// intervals during the user's active session. Each user identity in the
 	// workforce identity pool must map to a unique Microsoft Entra ID user.
 	ExtendedAttributesOauth2Client *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client `json:"extendedAttributesOauth2Client,omitempty"`
-	// ExtraAttributesOauth2Client: Optional. The configuration for OAuth 2.0
-	// client used to get the additional user attributes. This should be used when
-	// users can't get the desired claims in authentication credentials. Currently
-	// this configuration is only supported with OIDC protocol.
+	// ExtraAttributesOauth2Client: Optional. Defines the configuration for the
+	// OAuth 2.0 client that is used to get the additional user attributes in a
+	// separate backchannel call to the identity provider. This should be used when
+	// users can't get the required claims in authentication credentials.
+	// Currently, the OAuth 2.0 protocol is the only supported authorization method
+	// for this backchannel call.
 	ExtraAttributesOauth2Client *GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client `json:"extraAttributesOauth2Client,omitempty"`
 	// Name: Identifier. The resource name of the provider. Format:
 	// `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_
 	// id}`
 	Name string `json:"name,omitempty"`
-	// Oidc: An OpenId Connect 1.0 identity provider configuration.
+	// Oidc: An OpenID Connect 1.0 identity provider configuration.
 	Oidc *GoogleIamAdminV1WorkforcePoolProviderOidc `json:"oidc,omitempty"`
 	// Saml: A SAML identity provider configuration.
 	Saml *GoogleIamAdminV1WorkforcePoolProviderSaml `json:"saml,omitempty"`
-	// ScimUsage: Optional. Agentspace only. Specifies whether the workforce
+	// ScimUsage: Optional. Gemini Enterprise only. Specifies whether the workforce
 	// identity pool provider uses SCIM-managed groups instead of the
 	// `google.groups` attribute mapping for authorization checks. The `scim_usage`
 	// and `extended_attributes_oauth2_client` fields are mutually exclusive. A
@@ -3906,8 +3923,8 @@ type WorkforcePoolProvider struct {
 	// provider will produce an error.
 	//
 	// Possible values:
-	//   "SCIM_USAGE_UNSPECIFIED" - Agentspace only. Do not use SCIM data.
-	//   "ENABLED_FOR_GROUPS" - Agentspace only. SCIM sync is enabled and
+	//   "SCIM_USAGE_UNSPECIFIED" - Gemini Enterprise only. Do not use SCIM data.
+	//   "ENABLED_FOR_GROUPS" - Gemini Enterprise only. SCIM sync is enabled and
 	// SCIM-managed groups are used for authorization checks.
 	ScimUsage string `json:"scimUsage,omitempty"`
 	// State: Output only. The state of the provider.
@@ -3993,42 +4010,60 @@ func (s WorkforcePoolProviderKey) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkforcePoolProviderScimTenant: Agentspace only. Represents a SCIM tenant.
-// Used for provisioning and managing identity data (such as Users and Groups)
-// in cross-domain environments.
+// WorkforcePoolProviderScimTenant: Gemini Enterprise only. Represents a SCIM
+// tenant. Used for provisioning and managing identity data (such as Users and
+// Groups) in cross-domain environments.
 type WorkforcePoolProviderScimTenant struct {
-	// BaseUri: Output only. Agentspace only. Represents the base URI as defined in
-	// RFC 7644, Section 1.3
+	// BaseUri: Output only. Gemini Enterprise only. Represents the base URI as
+	// defined in RFC 7644, Section 1.3
 	// (https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must
 	// use this as the root address for managing resources under the tenant.
 	// Format: https://iamscim.googleapis.com/{version}/{tenant_id}/
 	BaseUri string `json:"baseUri,omitempty"`
-	// ClaimMapping: Optional. Agentspace only. Maps BYOID claims to SCIM claims.
+	// ClaimMapping: Required. Immutable. Gemini Enterprise only. Maps SCIM
+	// attributes to Google attributes. This mapping is used to associate the
+	// attributes synced via SCIM with the Google Cloud attributes used in IAM
+	// policies for Workforce Identity Federation. SCIM-managed user and group
+	// attributes are mapped to `google.subject` and `google.group` respectively.
+	// Each key must be a string specifying the Google Cloud IAM attribute to map
+	// to. The supported keys are as follows: * `google.subject`: The principal IAM
+	// is authenticating. You can reference this value in IAM bindings. This is
+	// also the subject that appears in Cloud Logging logs. This is a required
+	// field and the mapped subject cannot exceed 127 bytes. * `google.group`:
+	// Group the authenticating user belongs to. You can grant group access to
+	// resources using an IAM `principalSet` binding; access applies to all members
+	// of the group. Each value must be a [Common Expression Language]
+	// (https://opensource.google/projects/cel) expression that maps SCIM user or
+	// group attribute to the normalized attribute specified by the corresponding
+	// map key. Example: To map the SCIM user's `externalId` to `google.subject`
+	// and the SCIM group's `externalId` to `google.group`: ``` { "google.subject":
+	// "user.externalId", "google.group": "group.externalId" } ```
 	ClaimMapping map[string]string `json:"claimMapping,omitempty"`
-	// Description: Optional. Agentspace only. The description of the SCIM tenant.
-	// Cannot exceed 256 characters.
+	// Description: Optional. Gemini Enterprise only. The description of the SCIM
+	// tenant. Cannot exceed 256 characters.
 	Description string `json:"description,omitempty"`
-	// DisplayName: Optional. Agentspace only. The display name of the SCIM tenant.
-	// Cannot exceed 32 characters.
+	// DisplayName: Optional. Gemini Enterprise only. The display name of the SCIM
+	// tenant. Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-	// Name: Identifier. Agentspace only. The resource name of the SCIM Tenant.
-	// Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
+	// Name: Identifier. Gemini Enterprise only. The resource name of the SCIM
+	// Tenant. Format:
+	// `locations/{location}/workforcePools/{workforce_pool}/providers/
 	// {workforce_pool_provider}/scimTenants/{scim_tenant}`
 	Name string `json:"name,omitempty"`
-	// PurgeTime: Output only. Agentspace only. The timestamp that represents the
-	// time when the SCIM tenant is purged.
+	// PurgeTime: Output only. Gemini Enterprise only. The timestamp that
+	// represents the time when the SCIM tenant is purged.
 	PurgeTime string `json:"purgeTime,omitempty"`
 	// ServiceAgent: Output only. Service Agent created by SCIM Tenant API. SCIM
 	// tokens created under this tenant will be attached to this service agent.
 	ServiceAgent string `json:"serviceAgent,omitempty"`
-	// State: Output only. Agentspace only. The state of the tenant.
+	// State: Output only. Gemini Enterprise only. The state of the tenant.
 	//
 	// Possible values:
-	//   "STATE_UNSPECIFIED" - Agentspace only. State unspecified.
-	//   "ACTIVE" - Agentspace only. The tenant is active and may be used to
+	//   "STATE_UNSPECIFIED" - Gemini Enterprise only. State unspecified.
+	//   "ACTIVE" - Gemini Enterprise only. The tenant is active and may be used to
 	// provision users and groups.
-	//   "DELETED" - Agentspace only. The tenant is soft-deleted. Soft-deleted
-	// tenants are permanently deleted after approximately 30 days.
+	//   "DELETED" - Gemini Enterprise only. The tenant is soft-deleted.
+	// Soft-deleted tenants are permanently deleted after approximately 30 days.
 	State string `json:"state,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -4051,28 +4086,30 @@ func (s WorkforcePoolProviderScimTenant) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(NoMethod(s), s.ForceSendFields, s.NullFields)
 }
 
-// WorkforcePoolProviderScimToken: Agentspace only. Represents a token for the
-// WorkforcePoolProviderScimTenant. Used for authenticating SCIM provisioning
-// requests.
+// WorkforcePoolProviderScimToken: Gemini Enterprise only. Represents a token
+// for the WorkforcePoolProviderScimTenant. Used for authenticating SCIM
+// provisioning requests.
 type WorkforcePoolProviderScimToken struct {
-	// DisplayName: Optional. Agentspace only. The display name of the SCIM token.
-	// Cannot exceed 32 characters.
+	// DisplayName: Optional. Gemini Enterprise only. The display name of the SCIM
+	// token. Cannot exceed 32 characters.
 	DisplayName string `json:"displayName,omitempty"`
-	// Name: Identifier. Agentspace only. The resource name of the SCIM Token.
-	// Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
+	// Name: Identifier. Gemini Enterprise only. The resource name of the SCIM
+	// Token. Format:
+	// `locations/{location}/workforcePools/{workforce_pool}/providers/
 	// {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`
 	Name string `json:"name,omitempty"`
-	// SecurityToken: Output only. Agentspace only. The token string. Provide this
-	// to the IdP for authentication. Will be set only during creation.
+	// SecurityToken: Output only. Gemini Enterprise only. The token string.
+	// Provide this to the IdP for authentication. Will be set only during
+	// creation.
 	SecurityToken string `json:"securityToken,omitempty"`
-	// State: Output only. Agentspace only. The state of the token.
+	// State: Output only. Gemini Enterprise only. The state of the token.
 	//
 	// Possible values:
-	//   "STATE_UNSPECIFIED" - Agentspace only. State unspecified.
-	//   "ACTIVE" - Agentspace only. The token is active and may be used to
+	//   "STATE_UNSPECIFIED" - Gemini Enterprise only. State unspecified.
+	//   "ACTIVE" - Gemini Enterprise only. The token is active and may be used to
 	// provision users and groups.
-	//   "DELETED" - Agentspace only. The token is soft-deleted. Soft-deleted
-	// tokens are permanently deleted after approximately 30 days.
+	//   "DELETED" - Gemini Enterprise only. The token is soft-deleted.
+	// Soft-deleted tokens are permanently deleted after approximately 30 days.
 	State string `json:"state,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the server.
@@ -4125,19 +4162,22 @@ type WorkloadIdentityPool struct {
 	//   "MODE_UNSPECIFIED" - State unspecified. New pools should not use this
 	// mode. Pools with an unspecified mode will operate as if they are in
 	// federation-only mode.
-	//   "FEDERATION_ONLY" - Federation-only mode. Federation-only pools can only
-	// be used for federating external workload identities into Google Cloud.
+	//   "FEDERATION_ONLY" - Federation-only mode. FEDERATION_ONLY mode pools can
+	// only be used for federating external workload identities into Google Cloud.
 	// Unless otherwise noted, no structure or format constraints are applied to
-	// workload identities in a federation-only pool, and you cannot create any
-	// resources within the pool besides providers.
-	//   "TRUST_DOMAIN" - Trust-domain mode. Trust-domain pools can be used to
-	// assign identities to Google Cloud workloads. All identities within a
-	// trust-domain pool must consist of a single namespace and individual workload
-	// identifier. The subject identifier for all identities must conform to the
-	// following format: `ns//sa/` WorkloadIdentityPoolProviders cannot be created
-	// within trust-domain pools.
+	// workload identities in a FEDERATION_ONLY mode pool, and you cannot create
+	// any resources within the pool besides providers.
+	//   "TRUST_DOMAIN" - Trust-domain mode. TRUST_DOMAIN mode pools can be used to
+	// assign identities to Google Cloud workloads. Identities within a
+	// TRUST_DOMAIN mode pool share the same root of trust.
+	// WorkloadIdentityPoolProviders cannot be created within trust-domain pools.
+	//   "SYSTEM_TRUST_DOMAIN" - SYSTEM_TRUST_DOMAIN mode pools are managed by
+	// Google Cloud services. Neither WorkloadIdentityPoolNamespaces nor
+	// WorkloadIdentityPoolProviders can be created within SYSTEM_TRUST_DOMAIN mode
+	// pools. All identities within a SYSTEM_TRUST_DOMAIN mode pool are in one of
+	// the following formats: * `spiffe:///ns//sa/` * `spiffe:///resources//`
 	Mode string `json:"mode,omitempty"`
-	// Name: Output only. The resource name of the pool.
+	// Name: Identifier. The resource name of the pool.
 	Name string `json:"name,omitempty"`
 	// State: Output only. The state of the pool.
 	//
@@ -4185,7 +4225,7 @@ type WorkloadIdentityPoolManagedIdentity struct {
 	// ExpireTime: Output only. Time after which the managed identity will be
 	// permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Output only. The resource name of the managed identity.
+	// Name: Identifier. The resource name of the managed identity.
 	Name string `json:"name,omitempty"`
 	// State: Output only. The state of the managed identity.
 	//
@@ -4232,7 +4272,7 @@ type WorkloadIdentityPoolNamespace struct {
 	// ExpireTime: Output only. Time after which the namespace will be permanently
 	// purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Output only. The resource name of the namespace.
+	// Name: Identifier. The resource name of the namespace.
 	Name string `json:"name,omitempty"`
 	// OwnerService: Output only. The Google Cloud service that owns this
 	// namespace.
@@ -4348,7 +4388,7 @@ type WorkloadIdentityPoolProvider struct {
 	// ExpireTime: Output only. Time after which the workload identity pool
 	// provider will be permanently purged and cannot be recovered.
 	ExpireTime string `json:"expireTime,omitempty"`
-	// Name: Output only. The resource name of the provider.
+	// Name: Identifier. The resource name of the provider.
 	Name string `json:"name,omitempty"`
 	// Oidc: An OpenId Connect 1.0 identity provider.
 	Oidc *Oidc `json:"oidc,omitempty"`
@@ -4399,7 +4439,7 @@ type WorkloadIdentityPoolProviderKey struct {
 	ExpireTime string `json:"expireTime,omitempty"`
 	// KeyData: Immutable. Public half of the asymmetric key.
 	KeyData *KeyData `json:"keyData,omitempty"`
-	// Name: Output only. The resource name of the key.
+	// Name: Identifier. The resource name of the key.
 	Name string `json:"name,omitempty"`
 	// State: Output only. The state of the key.
 	//
@@ -5827,7 +5867,7 @@ func (r *LocationsWorkforcePoolsProvidersService) Create(parent string, workforc
 // WorkforcePoolProviderId sets the optional parameter
 // "workforcePoolProviderId": Required. The ID for the provider, which becomes
 // the final component of the resource name. This value must be 4-32
-// characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is
+// characters, and may contain the characters `[a-z0-9-]`. The prefix `gcp-` is
 // reserved for use by Google, and may not be specified.
 func (c *LocationsWorkforcePoolsProvidersCreateCall) WorkforcePoolProviderId(workforcePoolProviderId string) *LocationsWorkforcePoolsProvidersCreateCall {
 	c.urlParams_.Set("workforcePoolProviderId", workforcePoolProviderId)
@@ -6529,7 +6569,7 @@ func (r *LocationsWorkforcePoolsProvidersKeysService) Create(parent string, work
 // WorkforcePoolProviderKeyId sets the optional parameter
 // "workforcePoolProviderKeyId": Required. The ID to use for the key, which
 // becomes the final component of the resource name. This value must be 4-32
-// characters, and may contain the characters [a-z0-9-].
+// characters, and may contain the characters `[a-z0-9-]`.
 func (c *LocationsWorkforcePoolsProvidersKeysCreateCall) WorkforcePoolProviderKeyId(workforcePoolProviderKeyId string) *LocationsWorkforcePoolsProvidersKeysCreateCall {
 	c.urlParams_.Set("workforcePoolProviderKeyId", workforcePoolProviderKeyId)
 	return c
@@ -7320,11 +7360,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsCreateCall struct {
 	header_                         http.Header
 }
 
-// Create: Agentspace only. Creates a new WorkforcePoolProviderScimTenant in a
-// WorkforcePoolProvider. You cannot reuse the name of a deleted SCIM tenant
-// until 30 days after deletion.
+// Create: Gemini Enterprise only. Creates a new
+// WorkforcePoolProviderScimTenant in a WorkforcePoolProvider. You cannot reuse
+// the name of a deleted SCIM tenant until 30 days after deletion.
 //
-//   - parent: Agentspace only. The parent to create SCIM tenant. Format:
+//   - parent: Gemini Enterprise only. The parent to create SCIM tenant. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Create(parent string, workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7334,10 +7374,10 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Create(parent strin
 }
 
 // WorkforcePoolProviderScimTenantId sets the optional parameter
-// "workforcePoolProviderScimTenantId": Required. Agentspace only. The ID to
-// use for the SCIM tenant, which becomes the final component of the resource
-// name. This value should be 4-32 characters, containing the characters
-// [a-z0-9-].
+// "workforcePoolProviderScimTenantId": Required. Gemini Enterprise only. The
+// ID to use for the SCIM tenant, which becomes the final component of the
+// resource name. This value should be 4-32 characters, containing the
+// characters `[a-z0-9-]`.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsCreateCall) WorkforcePoolProviderScimTenantId(workforcePoolProviderScimTenantId string) *LocationsWorkforcePoolsProvidersScimTenantsCreateCall {
 	c.urlParams_.Set("workforcePoolProviderScimTenantId", workforcePoolProviderScimTenantId)
 	return c
@@ -7436,11 +7476,13 @@ type LocationsWorkforcePoolsProvidersScimTenantsDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Agentspace only. Deletes a WorkforcePoolProviderScimTenant. You can
-// undelete a SCIM tenant for 30 days. After 30 days, deletion is permanent.
-// You cannot update deleted SCIM tenants. However, you can view and list them.
+// Delete: Gemini Enterprise only. Deletes a WorkforcePoolProviderScimTenant.
+// You can undelete a SCIM tenant for 30 days. After 30 days, deletion is
+// permanent. You cannot update deleted SCIM tenants. However, you can view and
+// list them.
 //
-//   - name: Agentspace only. The name of the scim tenant to delete. Format:
+//   - name: Gemini Enterprise only. The name of the SCIM tenant to delete.
+//     Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Delete(name string) *LocationsWorkforcePoolsProvidersScimTenantsDeleteCall {
@@ -7546,9 +7588,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsGetCall struct {
 	header_      http.Header
 }
 
-// Get: Agentspace only. Gets an individual WorkforcePoolProviderScimTenant.
+// Get: Gemini Enterprise only. Gets an individual
+// WorkforcePoolProviderScimTenant.
 //
-//   - name: Agentspace only. The name of the SCIM tenant to retrieve. Format:
+//   - name: Gemini Enterprise only. The name of the SCIM tenant to retrieve.
+//     Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Get(name string) *LocationsWorkforcePoolsProvidersScimTenantsGetCall {
@@ -7658,11 +7702,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsListCall struct {
 	header_      http.Header
 }
 
-// List: Agentspace only. Lists all non-deleted
+// List: Gemini Enterprise only. Lists all non-deleted
 // WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If
 // `show_deleted` is set to `true`, then deleted SCIM tenants are also listed.
 //
-//   - parent: Agentspace only. The parent to list SCIM tenants. Format:
+//   - parent: Gemini Enterprise only. The parent to list SCIM tenants. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) List(parent string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7670,24 +7714,25 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsService) List(parent string)
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Agentspace only. The
-// maximum number of SCIM tenants to return. If unspecified, at most 1 scim
-// tenant will be returned.
+// PageSize sets the optional parameter "pageSize": Gemini Enterprise only. The
+// maximum number of SCIM tenants to return. If unspecified, at most 50 SCIM
+// tenants will be returned. The maximum value is 100; values above 100 are
+// truncated to 100.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Agentspace only. A page
-// token, received from a previous `ListScimTenants` call. Provide this to
+// PageToken sets the optional parameter "pageToken": Gemini Enterprise only. A
+// page token, received from a previous `ListScimTenants` call. Provide this to
 // retrieve the subsequent page.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Agentspace only.
-// Whether to return soft-deleted SCIM tenants.
+// ShowDeleted sets the optional parameter "showDeleted": Gemini Enterprise
+// only. Whether to return soft-deleted SCIM tenants.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersScimTenantsListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
@@ -7815,10 +7860,12 @@ type LocationsWorkforcePoolsProvidersScimTenantsPatchCall struct {
 	header_                         http.Header
 }
 
-// Patch: Agentspace only. Updates an existing WorkforcePoolProviderScimTenant.
+// Patch: Gemini Enterprise only. Updates an existing
+// WorkforcePoolProviderScimTenant.
 //
-//   - name: Identifier. Agentspace only. The resource name of the SCIM Tenant.
-//     Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
+//   - name: Identifier. Gemini Enterprise only. The resource name of the SCIM
+//     Tenant. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/
 //     {workforce_pool_provider}/scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Patch(name string, workforcepoolproviderscimtenant *WorkforcePoolProviderScimTenant) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -7827,8 +7874,8 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Patch(name string, 
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Agentspace only. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Gemini Enterprise only.
+// The list of fields to update.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersScimTenantsPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
@@ -7928,10 +7975,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall struct {
 	header_                                        http.Header
 }
 
-// Undelete: Agentspace only. Undeletes a WorkforcePoolProviderScimTenant, that
-// was deleted fewer than 30 days ago.
+// Undelete: Gemini Enterprise only. Undeletes a
+// WorkforcePoolProviderScimTenant, that was deleted fewer than 30 days ago.
 //
-//   - name: Agentspace only. The name of the SCIM tenant to undelete. Format:
+//   - name: Gemini Enterprise only. The name of the SCIM tenant to undelete.
+//     Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsService) Undelete(name string, undeleteworkforcepoolproviderscimtenantrequest *UndeleteWorkforcePoolProviderScimTenantRequest) *LocationsWorkforcePoolsProvidersScimTenantsUndeleteCall {
@@ -8035,11 +8083,12 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall struct {
 	header_                        http.Header
 }
 
-// Create: Agentspace only. Creates a new WorkforcePoolProviderScimToken in a
-// WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM
-// token until 30 days after deletion.
+// Create: Gemini Enterprise only. Creates a new WorkforcePoolProviderScimToken
+// in a WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted
+// SCIM token until 30 days after deletion.
 //
-//   - parent: Agentspace only. The parent tenant to create SCIM token. Format:
+//   - parent: Gemini Enterprise only. The parent tenant to create SCIM token.
+//     Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Create(parent string, workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
@@ -8050,10 +8099,10 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Create(parent
 }
 
 // WorkforcePoolProviderScimTokenId sets the optional parameter
-// "workforcePoolProviderScimTokenId": Required. Agentspace only. The ID to use
-// for the SCIM token, which becomes the final component of the resource name.
-// This value should be 4-32 characters and follow the pattern: "(a-z
-// ([a-z0-9\\-]{2,30}[a-z0-9]))"
+// "workforcePoolProviderScimTokenId": Required. Gemini Enterprise only. The ID
+// to use for the SCIM token, which becomes the final component of the resource
+// name. This value should be 4-32 characters and follow the pattern: `(a-z
+// ([a-z0-9\\-]{2,30}[a-z0-9]))`
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall) WorkforcePoolProviderScimTokenId(workforcePoolProviderScimTokenId string) *LocationsWorkforcePoolsProvidersScimTenantsTokensCreateCall {
 	c.urlParams_.Set("workforcePoolProviderScimTokenId", workforcePoolProviderScimTokenId)
 	return c
@@ -8152,12 +8201,13 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall struct {
 	header_    http.Header
 }
 
-// Delete: Agentspace only. Deletes a WorkforcePoolProviderScimToken. You can
-// undelete a SCIM token for 30 days. After 30 days, the SCIM token is
+// Delete: Gemini Enterprise only. Deletes a WorkforcePoolProviderScimToken.
+// You can undelete a SCIM token for 30 days. After 30 days, the SCIM token is
 // permanently deleted. You cannot update deleted SCIM tokens, however, you can
 // view and list them.
 //
-//   - name: Agentspace only. The name of the SCIM token to delete. Format:
+//   - name: Gemini Enterprise only. The name of the SCIM token to delete.
+//     Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Delete(name string) *LocationsWorkforcePoolsProvidersScimTenantsTokensDeleteCall {
@@ -8256,9 +8306,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall struct {
 	header_      http.Header
 }
 
-// Get: Agentspace only. Gets an individual WorkforcePoolProviderScimToken.
+// Get: Gemini Enterprise only. Gets an individual
+// WorkforcePoolProviderScimToken.
 //
-//   - name: Agentspace only. The name of the SCIM token to retrieve. Format:
+//   - name: Gemini Enterprise only. The name of the SCIM token to retrieve.
+//     Format:
 //     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Get(name string) *LocationsWorkforcePoolsProvidersScimTenantsTokensGetCall {
@@ -8368,11 +8420,11 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensListCall struct {
 	header_      http.Header
 }
 
-// List: Agentspace only. Lists all non-deleted
+// List: Gemini Enterprise only. Lists all non-deleted
 // WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If
 // `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.
 //
-//   - parent: Agentspace only. The parent to list SCIM tokens. Format:
+//   - parent: Gemini Enterprise only. The parent to list SCIM tokens. Format:
 //     'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
 //     scimTenants/{scim_tenant}'.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) List(parent string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
@@ -8381,24 +8433,24 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) List(parent s
 	return c
 }
 
-// PageSize sets the optional parameter "pageSize": Agentspace only. The
-// maximum number of scim tokens to return. If unspecified, at most 2 SCIM
+// PageSize sets the optional parameter "pageSize": Gemini Enterprise only. The
+// maximum number of SCIM tokens to return. If unspecified, at most 2 SCIM
 // tokens will be returned.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) PageSize(pageSize int64) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
-// PageToken sets the optional parameter "pageToken": Agentspace only. A page
-// token, received from a previous `ListWorkforcePoolProviderScimTokens` call.
-// Provide this to retrieve the subsequent page.
+// PageToken sets the optional parameter "pageToken": Gemini Enterprise only. A
+// page token, received from a previous `ListWorkforcePoolProviderScimTokens`
+// call. Provide this to retrieve the subsequent page.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) PageToken(pageToken string) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// ShowDeleted sets the optional parameter "showDeleted": Agentspace only.
-// Whether to return soft-deleted scim tokens.
+// ShowDeleted sets the optional parameter "showDeleted": Gemini Enterprise
+// only. Whether to return soft-deleted SCIM tokens.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall) ShowDeleted(showDeleted bool) *LocationsWorkforcePoolsProvidersScimTenantsTokensListCall {
 	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
@@ -8526,10 +8578,12 @@ type LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall struct {
 	header_                        http.Header
 }
 
-// Patch: Agentspace only. Updates an existing WorkforcePoolProviderScimToken.
+// Patch: Gemini Enterprise only. Updates an existing
+// WorkforcePoolProviderScimToken.
 //
-//   - name: Identifier. Agentspace only. The resource name of the SCIM Token.
-//     Format: `locations/{location}/workforcePools/{workforce_pool}/providers/
+//   - name: Identifier. Gemini Enterprise only. The resource name of the SCIM
+//     Token. Format:
+//     `locations/{location}/workforcePools/{workforce_pool}/providers/
 //     {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`.
 func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Patch(name string, workforcepoolproviderscimtoken *WorkforcePoolProviderScimToken) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
 	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -8538,8 +8592,8 @@ func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Patch(name st
 	return c
 }
 
-// UpdateMask sets the optional parameter "updateMask": Agentspace only. The
-// list of fields to update.
+// UpdateMask sets the optional parameter "updateMask": Gemini Enterprise only.
+// The list of fields to update.
 func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) UpdateMask(updateMask string) *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
@@ -8627,113 +8681,6 @@ func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensPatchCall) Do(opts ...
 		return nil, err
 	}
 	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.patch", "response", internallog.HTTPResponse(res, b))
-	return ret, nil
-}
-
-type LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall struct {
-	s                                             *Service
-	name                                          string
-	undeleteworkforcepoolproviderscimtokenrequest *UndeleteWorkforcePoolProviderScimTokenRequest
-	urlParams_                                    gensupport.URLParams
-	ctx_                                          context.Context
-	header_                                       http.Header
-}
-
-// Undelete: Agentspace only. Undeletes a WorkforcePoolProviderScimToken,that
-// was deleted fewer than 30 days ago.
-//
-//   - name: Agentspace only. The name of the SCIM token to undelete. Format:
-//     `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/
-//     scimTenants/{scim_tenant}/tokens/{token}`.
-func (r *LocationsWorkforcePoolsProvidersScimTenantsTokensService) Undelete(name string, undeleteworkforcepoolproviderscimtokenrequest *UndeleteWorkforcePoolProviderScimTokenRequest) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
-	c := &LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	c.undeleteworkforcepoolproviderscimtokenrequest = undeleteworkforcepoolproviderscimtokenrequest
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
-// details.
-func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Fields(s ...googleapi.Field) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method.
-func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Context(ctx context.Context) *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns a http.Header that can be modified by the caller to add
-// headers to the request.
-func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
-	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.undeleteworkforcepoolproviderscimtokenrequest)
-	if err != nil {
-		return nil, err
-	}
-	c.urlParams_.Set("alt", alt)
-	c.urlParams_.Set("prettyPrint", "false")
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}:undelete")
-	urls += "?" + c.urlParams_.Encode()
-	req, err := http.NewRequest("POST", urls, body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.undelete", "request", internallog.HTTPRequest(req, body.Bytes()))
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "iam.locations.workforcePools.providers.scimTenants.tokens.undelete" call.
-// Any non-2xx status code is an error. Response headers are in either
-// *WorkforcePoolProviderScimToken.ServerResponse.Header or (if a response was
-// returned at all) in error.(*googleapi.Error).Header. Use
-// googleapi.IsNotModified to check whether the returned error was because
-// http.StatusNotModified was returned.
-func (c *LocationsWorkforcePoolsProvidersScimTenantsTokensUndeleteCall) Do(opts ...googleapi.CallOption) (*WorkforcePoolProviderScimToken, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, gensupport.WrapError(&googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		})
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, gensupport.WrapError(err)
-	}
-	ret := &WorkforcePoolProviderScimToken{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	b, err := gensupport.DecodeResponseBytes(target, res)
-	if err != nil {
-		return nil, err
-	}
-	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.locations.workforcePools.providers.scimTenants.tokens.undelete", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -11289,6 +11236,112 @@ func (c *ProjectsLocationsOauthClientsCredentialsPatchCall) Do(opts ...googleapi
 	return ret, nil
 }
 
+type ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall struct {
+	s                         *Service
+	resource                  string
+	addattestationrulerequest *AddAttestationRuleRequest
+	urlParams_                gensupport.URLParams
+	ctx_                      context.Context
+	header_                   http.Header
+}
+
+// AddAttestationRule: Add an AttestationRule on a
+// WorkloadIdentityPoolManagedIdentity. The total attestation rules after
+// addition must not exceed 50.
+//
+//   - resource: The resource name of the managed identity or namespace resource
+//     to add an attestation rule to.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) AddAttestationRule(resource string, addattestationrulerequest *AddAttestationRuleRequest) *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.addattestationrulerequest = addattestationrulerequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.addattestationrulerequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:addAttestationRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.addAttestationRule", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.addAttestationRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsAddAttestationRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.addAttestationRule", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
 type ProjectsLocationsWorkloadIdentityPoolsCreateCall struct {
 	s                    *Service
 	parent               string
@@ -11878,6 +11931,165 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsListCall) Pages(ctx context.Conte
 	}
 }
 
+type ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall struct {
+	s            *Service
+	resource     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListAttestationRules: List all AttestationRule on a
+// WorkloadIdentityPoolManagedIdentity.
+//
+//   - resource: The resource name of the managed identity or namespace resource
+//     to list attestation rules of.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) ListAttestationRules(resource string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	return c
+}
+
+// Filter sets the optional parameter "filter": A query filter. Supports the
+// following function: * `container_ids()`: Returns only the AttestationRules
+// under the specific container ids. The function expects a comma-delimited
+// list with only project numbers and must use the format `projects/`. For
+// example: `container_ids(projects/, projects/,...)`.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Filter(filter string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number of
+// AttestationRules to return. If unspecified, at most 50 AttestationRules are
+// returned. The maximum value is 100; values above 100 are truncated to 100.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) PageSize(pageSize int64) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": A page token, received
+// from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to
+// retrieve the subsequent page.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) PageToken(pageToken string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets an optional parameter which makes the operation fail if the
+// object's ETag matches the given value. This is useful for getting updates
+// only after the object has changed since the last request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) IfNoneMatch(entityTag string) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "", c.header_)
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:listAttestationRules")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.listAttestationRules", "request", internallog.HTTPRequest(req, nil))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.listAttestationRules" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *ListAttestationRulesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Do(opts ...googleapi.CallOption) (*ListAttestationRulesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &ListAttestationRulesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.listAttestationRules", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsListAttestationRulesCall) Pages(ctx context.Context, f func(*ListAttestationRulesResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken"))
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 type ProjectsLocationsWorkloadIdentityPoolsPatchCall struct {
 	s                    *Service
 	name                 string
@@ -11889,7 +12101,7 @@ type ProjectsLocationsWorkloadIdentityPoolsPatchCall struct {
 
 // Patch: Updates an existing WorkloadIdentityPool.
 //
-// - name: Output only. The resource name of the pool.
+// - name: Identifier. The resource name of the pool.
 func (r *ProjectsLocationsWorkloadIdentityPoolsService) Patch(name string, workloadidentitypool *WorkloadIdentityPool) *ProjectsLocationsWorkloadIdentityPoolsPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -11985,6 +12197,217 @@ func (c *ProjectsLocationsWorkloadIdentityPoolsPatchCall) Do(opts ...googleapi.C
 		return nil, err
 	}
 	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.patch", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall struct {
+	s                            *Service
+	resource                     string
+	removeattestationrulerequest *RemoveAttestationRuleRequest
+	urlParams_                   gensupport.URLParams
+	ctx_                         context.Context
+	header_                      http.Header
+}
+
+// RemoveAttestationRule: Remove an AttestationRule on a
+// WorkloadIdentityPoolManagedIdentity.
+//
+//   - resource: The resource name of the managed identity or namespace resource
+//     to remove an attestation rule from.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) RemoveAttestationRule(resource string, removeattestationrulerequest *RemoveAttestationRuleRequest) *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.removeattestationrulerequest = removeattestationrulerequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.removeattestationrulerequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:removeAttestationRule")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.removeAttestationRule", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.removeAttestationRule" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsRemoveAttestationRuleCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.removeAttestationRule", "response", internallog.HTTPResponse(res, b))
+	return ret, nil
+}
+
+type ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall struct {
+	s                          *Service
+	resource                   string
+	setattestationrulesrequest *SetAttestationRulesRequest
+	urlParams_                 gensupport.URLParams
+	ctx_                       context.Context
+	header_                    http.Header
+}
+
+// SetAttestationRules: Set all AttestationRule on a
+// WorkloadIdentityPoolManagedIdentity. A maximum of 50 AttestationRules can be
+// set.
+//
+//   - resource: The resource name of the managed identity or namespace resource
+//     to add an attestation rule to.
+func (r *ProjectsLocationsWorkloadIdentityPoolsService) SetAttestationRules(resource string, setattestationrulesrequest *SetAttestationRulesRequest) *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall {
+	c := &ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.resource = resource
+	c.setattestationrulesrequest = setattestationrulesrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse for more
+// details.
+func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Fields(s ...googleapi.Field) *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method.
+func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Context(ctx context.Context) *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns a http.Header that can be modified by the caller to add
+// headers to the request.
+func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := gensupport.SetHeaders(c.s.userAgent(), "application/json", c.header_)
+	body, err := googleapi.WithoutDataWrapper.JSONBuffer(c.setattestationrulesrequest)
+	if err != nil {
+		return nil, err
+	}
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+resource}:setAttestationRules")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"resource": c.resource,
+	})
+	c.s.logger.DebugContext(c.ctx_, "api request", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.setAttestationRules", "request", internallog.HTTPRequest(req, body.Bytes()))
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "iam.projects.locations.workloadIdentityPools.setAttestationRules" call.
+// Any non-2xx status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was returned.
+func (c *ProjectsLocationsWorkloadIdentityPoolsSetAttestationRulesCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, gensupport.WrapError(&googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, gensupport.WrapError(err)
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	b, err := gensupport.DecodeResponseBytes(target, res)
+	if err != nil {
+		return nil, err
+	}
+	c.s.logger.DebugContext(c.ctx_, "api response", "serviceName", apiName, "rpcName", "iam.projects.locations.workloadIdentityPools.setAttestationRules", "response", internallog.HTTPResponse(res, b))
 	return ret, nil
 }
 
@@ -12797,7 +13220,7 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesPatchCall struct {
 // Patch: Updates an existing WorkloadIdentityPoolNamespace in a
 // WorkloadIdentityPool.
 //
-// - name: Output only. The resource name of the namespace.
+// - name: Identifier. The resource name of the namespace.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesService) Patch(name string, workloadidentitypoolnamespace *WorkloadIdentityPoolNamespace) *ProjectsLocationsWorkloadIdentityPoolsNamespacesPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -13758,7 +14181,7 @@ type ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall 
 // Patch: Updates an existing WorkloadIdentityPoolManagedIdentity in a
 // WorkloadIdentityPoolNamespace.
 //
-// - name: Output only. The resource name of the managed identity.
+// - name: Identifier. The resource name of the managed identity.
 func (r *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesService) Patch(name string, workloadidentitypoolmanagedidentity *WorkloadIdentityPoolManagedIdentity) *ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -15109,7 +15532,7 @@ type ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall struct {
 
 // Patch: Updates an existing WorkloadIdentityPoolProvider.
 //
-// - name: Output only. The resource name of the provider.
+// - name: Identifier. The resource name of the provider.
 func (r *ProjectsLocationsWorkloadIdentityPoolsProvidersService) Patch(name string, workloadidentitypoolprovider *WorkloadIdentityPoolProvider) *ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall {
 	c := &ProjectsLocationsWorkloadIdentityPoolsProvidersPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name

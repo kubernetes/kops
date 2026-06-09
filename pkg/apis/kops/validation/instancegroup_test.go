@@ -602,7 +602,7 @@ func TestCrossValidateAPIServerRole(t *testing.T) {
 					Networking: kops.NetworkingSpec{Topology: noneDNSTopology},
 				},
 			},
-			ExpectedErrors: 1,
+			ExpectedErrors: 0,
 		},
 		{
 			Description: "APIServer role forbidden on AWS with dns=None",

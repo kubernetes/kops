@@ -97,6 +97,8 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 }
 
 func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
+	// Not adding ctx to signature as RenderLocal seems to be part of a common interface
+	ctx := context.TODO()
 	hash, err := hashing.FromString(e.Hash)
 	if err != nil {
 		return err
@@ -112,7 +114,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	}
 
 	for _, url := range urls {
-		err = importContainerImage(url, hash, t.CacheDir)
+		err = importContainerImage(ctx, url, hash, t.CacheDir)
 		if err == nil {
 			return nil
 		}
@@ -136,12 +138,12 @@ func isContainerdReady() bool {
 	return cmd.Run() == nil
 }
 
-func importContainerImage(url string, expectedHash *hashing.Hash, cacheDir string) error {
+func importContainerImage(ctx context.Context, url string, expectedHash *hashing.Hash, cacheDir string) error {
 	// Phase 1: fetch (or reuse cached) verified bytes. fi.DownloadURL writes via a
 	// temp-file + atomic rename and short-circuits if cacheFile already matches the hash,
 	// so a re-run of nodeup that already populated the cache skips the network round-trip.
 	cacheFile := filepath.Join(cacheDir, expectedHash.Hex()+"_"+utils.SanitizeString(path.Base(url)))
-	if _, err := fi.DownloadURL(url, cacheFile, expectedHash); err != nil {
+	if _, err := fi.DownloadURL(ctx, url, cacheFile, expectedHash); err != nil {
 		return err
 	}
 

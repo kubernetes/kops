@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"sort"
+	"strings"
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -115,6 +116,10 @@ func (b *BootstrapScript) kubeEnv(cluster *kops.Cluster, ig *kops.InstanceGroup,
 	config, bootConfig, err := b.builder.NodeUpConfigBuilder.BuildConfig(ig, wellKnownAddresses, keysets)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(wellKnownAddresses[wellknownservices.EtcdMain]) > 0 {
+		bootConfig.EtcdLBAddress = strings.Join(wellKnownAddresses[wellknownservices.EtcdMain], ",")
 	}
 
 	configData, err := utils.YamlMarshal(config)

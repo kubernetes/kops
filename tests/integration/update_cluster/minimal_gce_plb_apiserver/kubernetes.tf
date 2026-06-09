@@ -197,6 +197,13 @@ resource "google_compute_address" "api-us-test1-minimal-gce-plb-apiserver-exampl
   subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
 }
 
+resource "google_compute_address" "etcd-us-test1-minimal-gce-plb-apiserver-example-com" {
+  address_type = "INTERNAL"
+  name         = "etcd-us-test1-minimal-gce-plb-apiserver-example-com"
+  purpose      = "SHARED_LOADBALANCER_VIP"
+  subnetwork   = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
+}
+
 resource "google_compute_disk" "a-etcd-events-minimal-gce-plb-apiserver-example-com" {
   labels = {
     "k8s-io-cluster-name" = "minimal-gce-plb-apiserver-example-com"
@@ -462,6 +469,21 @@ resource "google_compute_forwarding_rule" "api-us-test1-minimal-gce-plb-apiserve
   subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
 }
 
+resource "google_compute_forwarding_rule" "etcd-us-test1-minimal-gce-plb-apiserver-example-com" {
+  backend_service = google_compute_region_backend_service.etcd-minimal-gce-plb-apiserver-example-com.id
+  ip_address      = google_compute_address.etcd-us-test1-minimal-gce-plb-apiserver-example-com.address
+  ip_protocol     = "TCP"
+  labels = {
+    "k8s-io-cluster-name" = "minimal-gce-plb-apiserver-example-com"
+    "name"                = "etcd-us-test1"
+  }
+  load_balancing_scheme = "INTERNAL"
+  name                  = "etcd-us-test1-minimal-gce-plb-apiserver-example-com"
+  network               = google_compute_network.minimal-gce-plb-apiserver-example-com.name
+  ports                 = ["4001", "4002"]
+  subnetwork            = google_compute_subnetwork.us-test1-minimal-gce-plb-apiserver-example-com.name
+}
+
 resource "google_compute_http_health_check" "api-minimal-gce-plb-apiserver-example-com" {
   name         = "api-minimal-gce-plb-apiserver-example-com"
   port         = 3990
@@ -717,6 +739,17 @@ resource "google_compute_region_backend_service" "api-minimal-gce-plb-apiserver-
   protocol              = "TCP"
 }
 
+resource "google_compute_region_backend_service" "etcd-minimal-gce-plb-apiserver-example-com" {
+  backend {
+    balancing_mode = "CONNECTION"
+    group          = google_compute_instance_group_manager.a-master-us-test1-a-minimal-gce-plb-apiserver-example-com.instance_group
+  }
+  health_checks         = [google_compute_region_health_check.etcd-main-minimal-gce-plb-apiserver-example-com.id]
+  load_balancing_scheme = "INTERNAL"
+  name                  = "etcd-minimal-gce-plb-apiserver-example-com"
+  protocol              = "TCP"
+}
+
 resource "google_compute_region_backend_service" "kops-controller-minimal-gce-plb-apiserver-example-com" {
   backend {
     balancing_mode = "CONNECTION"
@@ -732,6 +765,13 @@ resource "google_compute_region_health_check" "api-minimal-gce-plb-apiserver-exa
   name = "api-minimal-gce-plb-apiserver-example-com"
   tcp_health_check {
     port = 443
+  }
+}
+
+resource "google_compute_region_health_check" "etcd-main-minimal-gce-plb-apiserver-example-com" {
+  name = "etcd-main-minimal-gce-plb-apiserver-example-com"
+  tcp_health_check {
+    port = 4001
   }
 }
 
