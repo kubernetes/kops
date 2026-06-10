@@ -31,6 +31,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -46,137 +47,114 @@ func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
 }
 
-// newTestIntermediateCertCaches returns fresh positive and negative TTL caches so tests run
-// independently from the package-level caches.
+// newTestIntermediateCertCaches returns fresh positive and negative TTL caches so each test runs
+// against its own stores.
 func newTestIntermediateCertCaches(positiveTTL, negativeTTL time.Duration) (expirationcache.Store, expirationcache.Store) {
 	return expirationcache.NewTTLStore(intermediateCertCacheEntryKeyFunc, positiveTTL),
 		expirationcache.NewTTLStore(intermediateCertCacheEntryKeyFunc, negativeTTL)
 }
 
-// testPKI generates a CA certificate, a leaf certificate, and their keys for test PKCS7 signing.
-func testPKI(tb testing.TB) (*x509.Certificate, *rsa.PrivateKey, *x509.Certificate, *rsa.PrivateKey) {
-	tb.Helper()
-
-	caKey, err := rsa.GenerateKey(rand.Reader, 2048)
+// testGenerateKey generates an RSA test key, panicking on failure so it can run inside the
+// fixture sync.Once blocks below.
+func testGenerateKey() *rsa.PrivateKey {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		tb.Fatalf("generating CA key: %v", err)
+		panic(fmt.Sprintf("generating test key: %v", err))
 	}
-	caTemplate := &x509.Certificate{
-		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "Test Root CA"},
-		SubjectKeyId:          []byte("test-ca-ski"),
+	return key
+}
+
+// testCreateCert signs and parses a certificate template, panicking on failure so it can run
+// inside the fixture sync.Once blocks below.
+func testCreateCert(template, parent *x509.Certificate, pub *rsa.PublicKey, signingKey *rsa.PrivateKey) *x509.Certificate {
+	der, err := x509.CreateCertificate(rand.Reader, template, parent, pub, signingKey)
+	if err != nil {
+		panic(fmt.Sprintf("creating test cert %q: %v", template.Subject.CommonName, err))
+	}
+	cert, err := x509.ParseCertificate(der)
+	if err != nil {
+		panic(fmt.Sprintf("parsing test cert %q: %v", template.Subject.CommonName, err))
+	}
+	return cert
+}
+
+// testCATemplate returns a CA certificate template for test chains.
+func testCATemplate(serial int64, cn, ski string, aia []string) *x509.Certificate {
+	return &x509.Certificate{
+		SerialNumber:          big.NewInt(serial),
+		Subject:               pkix.Name{CommonName: cn},
+		SubjectKeyId:          []byte(ski),
 		NotBefore:             time.Now().Add(-time.Hour),
 		NotAfter:              time.Now().Add(24 * time.Hour),
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
 		BasicConstraintsValid: true,
 		IsCA:                  true,
+		IssuingCertificateURL: aia,
 	}
-	caCertDER, err := x509.CreateCertificate(rand.Reader, caTemplate, caTemplate, &caKey.PublicKey, caKey)
-	if err != nil {
-		tb.Fatalf("creating CA cert: %v", err)
-	}
-	caCert, err := x509.ParseCertificate(caCertDER)
-	if err != nil {
-		tb.Fatalf("parsing CA cert: %v", err)
-	}
-
-	leafKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		tb.Fatalf("generating leaf key: %v", err)
-	}
-	leafTemplate := &x509.Certificate{
-		SerialNumber: big.NewInt(2),
-		Subject:      pkix.Name{CommonName: "Test Signer"},
-		NotBefore:    time.Now().Add(-time.Hour),
-		NotAfter:     time.Now().Add(24 * time.Hour),
-		KeyUsage:     x509.KeyUsageDigitalSignature,
-		DNSNames:     []string{"metadata.azure.com"},
-	}
-	leafCertDER, err := x509.CreateCertificate(rand.Reader, leafTemplate, caCert, &leafKey.PublicKey, caKey)
-	if err != nil {
-		tb.Fatalf("creating leaf cert: %v", err)
-	}
-	leafCert, err := x509.ParseCertificate(leafCertDER)
-	if err != nil {
-		tb.Fatalf("parsing leaf cert: %v", err)
-	}
-
-	return caCert, caKey, leafCert, leafKey
 }
 
-// testPKIChain generates a root CA, an intermediate CA, and a leaf signer for tests that need to
+// testLeafTemplate returns a metadata-signer leaf certificate template for test chains.
+func testLeafTemplate(serial int64, aia []string) *x509.Certificate {
+	return &x509.Certificate{
+		SerialNumber:          big.NewInt(serial),
+		Subject:               pkix.Name{CommonName: "Test Signer"},
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(24 * time.Hour),
+		KeyUsage:              x509.KeyUsageDigitalSignature,
+		DNSNames:              []string{"metadata.azure.com"},
+		IssuingCertificateURL: aia,
+	}
+}
+
+// Test PKI fixtures are generated once per test binary and treated as read-only by every test;
+// repeated RSA key generation would otherwise dominate this package's test runtime.
+var (
+	testPKIOnce    sync.Once
+	testPKICA      *x509.Certificate
+	testPKILeaf    *x509.Certificate
+	testPKILeafKey *rsa.PrivateKey
+
+	testPKIChainOnce         sync.Once
+	testPKIChainRoot         *x509.Certificate
+	testPKIChainIntermediate *x509.Certificate
+	testPKIChainLeaf         *x509.Certificate
+	testPKIChainLeafKey      *rsa.PrivateKey
+)
+
+// testPKI returns a memoized CA certificate, leaf certificate, and leaf key for test PKCS7 signing.
+func testPKI(tb testing.TB) (*x509.Certificate, *x509.Certificate, *rsa.PrivateKey) {
+	tb.Helper()
+
+	testPKIOnce.Do(func() {
+		caKey := testGenerateKey()
+		caTemplate := testCATemplate(1, "Test Root CA", "test-ca-ski", nil)
+		testPKICA = testCreateCert(caTemplate, caTemplate, &caKey.PublicKey, caKey)
+
+		testPKILeafKey = testGenerateKey()
+		testPKILeaf = testCreateCert(testLeafTemplate(2, nil), testPKICA, &testPKILeafKey.PublicKey, caKey)
+	})
+
+	return testPKICA, testPKILeaf, testPKILeafKey
+}
+
+// testPKIChain returns a memoized root CA, intermediate CA, and leaf signer for tests that need to
 // distinguish embedded-chain verification from fetch fallback.
 func testPKIChain(tb testing.TB) (*x509.Certificate, *x509.Certificate, *x509.Certificate, *rsa.PrivateKey) {
 	tb.Helper()
 
-	rootKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		tb.Fatalf("generating root key: %v", err)
-	}
-	rootTemplate := &x509.Certificate{
-		SerialNumber:          big.NewInt(10),
-		Subject:               pkix.Name{CommonName: "Test Root CA"},
-		SubjectKeyId:          []byte("test-root-ski"),
-		NotBefore:             time.Now().Add(-time.Hour),
-		NotAfter:              time.Now().Add(24 * time.Hour),
-		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		BasicConstraintsValid: true,
-		IsCA:                  true,
-	}
-	rootCertDER, err := x509.CreateCertificate(rand.Reader, rootTemplate, rootTemplate, &rootKey.PublicKey, rootKey)
-	if err != nil {
-		tb.Fatalf("creating root cert: %v", err)
-	}
-	rootCert, err := x509.ParseCertificate(rootCertDER)
-	if err != nil {
-		tb.Fatalf("parsing root cert: %v", err)
-	}
+	testPKIChainOnce.Do(func() {
+		rootKey := testGenerateKey()
+		rootTemplate := testCATemplate(10, "Test Root CA", "test-root-ski", nil)
+		testPKIChainRoot = testCreateCert(rootTemplate, rootTemplate, &rootKey.PublicKey, rootKey)
 
-	intermediateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		tb.Fatalf("generating intermediate key: %v", err)
-	}
-	intermediateTemplate := &x509.Certificate{
-		SerialNumber:          big.NewInt(11),
-		Subject:               pkix.Name{CommonName: "Test Intermediate CA"},
-		SubjectKeyId:          []byte("test-intermediate-ski"),
-		NotBefore:             time.Now().Add(-time.Hour),
-		NotAfter:              time.Now().Add(24 * time.Hour),
-		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		BasicConstraintsValid: true,
-		IsCA:                  true,
-	}
-	intermediateCertDER, err := x509.CreateCertificate(rand.Reader, intermediateTemplate, rootCert, &intermediateKey.PublicKey, rootKey)
-	if err != nil {
-		tb.Fatalf("creating intermediate cert: %v", err)
-	}
-	intermediateCert, err := x509.ParseCertificate(intermediateCertDER)
-	if err != nil {
-		tb.Fatalf("parsing intermediate cert: %v", err)
-	}
+		intermediateKey := testGenerateKey()
+		testPKIChainIntermediate = testCreateCert(testCATemplate(11, "Test Intermediate CA", "test-intermediate-ski", nil), testPKIChainRoot, &intermediateKey.PublicKey, rootKey)
 
-	leafKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		tb.Fatalf("generating leaf key: %v", err)
-	}
-	leafTemplate := &x509.Certificate{
-		SerialNumber: big.NewInt(12),
-		Subject:      pkix.Name{CommonName: "Test Signer"},
-		NotBefore:    time.Now().Add(-time.Hour),
-		NotAfter:     time.Now().Add(24 * time.Hour),
-		KeyUsage:     x509.KeyUsageDigitalSignature,
-		DNSNames:     []string{"metadata.azure.com"},
-	}
-	leafCertDER, err := x509.CreateCertificate(rand.Reader, leafTemplate, intermediateCert, &leafKey.PublicKey, intermediateKey)
-	if err != nil {
-		tb.Fatalf("creating leaf cert: %v", err)
-	}
-	leafCert, err := x509.ParseCertificate(leafCertDER)
-	if err != nil {
-		tb.Fatalf("parsing leaf cert: %v", err)
-	}
+		testPKIChainLeafKey = testGenerateKey()
+		testPKIChainLeaf = testCreateCert(testLeafTemplate(12, nil), testPKIChainIntermediate, &testPKIChainLeafKey.PublicKey, intermediateKey)
+	})
 
-	return rootCert, intermediateCert, leafCert, leafKey
+	return testPKIChainRoot, testPKIChainIntermediate, testPKIChainLeaf, testPKIChainLeafKey
 }
 
 // createTestPKCS7 creates a PKCS7 SignedData containing the given content, signed by the leaf cert.
@@ -289,7 +267,7 @@ func TestMicrosoftIntermediateCandidateURLs_RejectsNonMicrosoftPKIURLs(t *testin
 // TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA verifies that fetching uses only
 // normalized, validated AIA URLs.
 func TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA(t *testing.T) {
-	caCert, _, _, _ := testPKI(t)
+	caCert, _, _ := testPKI(t)
 	signer := &x509.Certificate{
 		RawIssuer:      caCert.RawSubject,
 		AuthorityKeyId: caCert.SubjectKeyId,
@@ -331,7 +309,7 @@ func TestFetchIntermediateCertsFromBaseURL_UsesValidatedSignerAIA(t *testing.T) 
 // TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate verifies that fetched
 // certificates are ignored unless they match the signer's issuer identity.
 func TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate(t *testing.T) {
-	expectedIssuer, _, _, _ := testPKI(t)
+	expectedIssuer, _, _ := testPKI(t)
 	_, otherIssuer, _, _ := testPKIChain(t)
 
 	signer := &x509.Certificate{
@@ -362,7 +340,7 @@ func TestFetchIntermediateCertsFromBaseURL_RejectsNonMatchingIntermediate(t *tes
 // AIA URLs return different certs, only the one that matches the signer's issuer identity ends up
 // in the pool.
 func TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate(t *testing.T) {
-	matchingCA, _, leafCert, _ := testPKI(t)
+	matchingCA, leafCert, _ := testPKI(t)
 	_, otherIssuer, _, _ := testPKIChain(t)
 
 	signer := &x509.Certificate{
@@ -417,60 +395,20 @@ func TestFetchIntermediateCertsFromBaseURL_KeepsOnlyMatchingIntermediate(t *test
 func TestFetchIntermediateCertsFromBaseURL_ChasesCrossSignedChain(t *testing.T) {
 	const base = "https://mspki.test/pkiops/certs"
 
-	mkKey := func(name string) *rsa.PrivateKey {
-		key, err := rsa.GenerateKey(rand.Reader, 2048)
-		if err != nil {
-			t.Fatalf("generating %s key: %v", name, err)
-		}
-		return key
-	}
-	mkCert := func(name string, tmpl, parent *x509.Certificate, key, parentKey *rsa.PrivateKey) *x509.Certificate {
-		der, err := x509.CreateCertificate(rand.Reader, tmpl, parent, &key.PublicKey, parentKey)
-		if err != nil {
-			t.Fatalf("creating %s cert: %v", name, err)
-		}
-		cert, err := x509.ParseCertificate(der)
-		if err != nil {
-			t.Fatalf("parsing %s cert: %v", name, err)
-		}
-		return cert
-	}
-	caTemplate := func(serial int64, cn, ski string, aia []string) *x509.Certificate {
-		return &x509.Certificate{
-			SerialNumber:          big.NewInt(serial),
-			Subject:               pkix.Name{CommonName: cn},
-			SubjectKeyId:          []byte(ski),
-			NotBefore:             time.Now().Add(-time.Hour),
-			NotAfter:              time.Now().Add(24 * time.Hour),
-			KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-			BasicConstraintsValid: true,
-			IsCA:                  true,
-			IssuingCertificateURL: aia,
-		}
-	}
-
 	// Chain: root -> crossRoot -> issuing -> leaf. Only root is trusted. crossRoot's AIA points
 	// outside the allowlist, so the walk must stop at it and let the root pool anchor the chain.
-	rootKey := mkKey("root")
-	rootTmpl := caTemplate(100, "Test Cross-Sign Root", "xsign-root-ski", nil)
-	root := mkCert("root", rootTmpl, rootTmpl, rootKey, rootKey)
+	rootKey := testGenerateKey()
+	rootTmpl := testCATemplate(100, "Test Cross-Sign Root", "xsign-root-ski", nil)
+	root := testCreateCert(rootTmpl, rootTmpl, &rootKey.PublicKey, rootKey)
 
-	crossKey := mkKey("crossRoot")
-	crossRoot := mkCert("crossRoot", caTemplate(101, "Test Cross-Signed Root", "xsign-cross-ski", []string{"https://other.test/roots/root.crt"}), root, crossKey, rootKey)
+	crossKey := testGenerateKey()
+	crossRoot := testCreateCert(testCATemplate(101, "Test Cross-Signed Root", "xsign-cross-ski", []string{"https://other.test/roots/root.crt"}), root, &crossKey.PublicKey, rootKey)
 
-	issuingKey := mkKey("issuing")
-	issuing := mkCert("issuing", caTemplate(102, "Test Issuing CA", "xsign-issuing-ski", []string{base + "/crossroot.crt"}), crossRoot, issuingKey, crossKey)
+	issuingKey := testGenerateKey()
+	issuing := testCreateCert(testCATemplate(102, "Test Issuing CA", "xsign-issuing-ski", []string{base + "/crossroot.crt"}), crossRoot, &issuingKey.PublicKey, crossKey)
 
-	leafKey := mkKey("leaf")
-	leaf := mkCert("leaf", &x509.Certificate{
-		SerialNumber:          big.NewInt(103),
-		Subject:               pkix.Name{CommonName: "Test Signer"},
-		NotBefore:             time.Now().Add(-time.Hour),
-		NotAfter:              time.Now().Add(24 * time.Hour),
-		KeyUsage:              x509.KeyUsageDigitalSignature,
-		DNSNames:              []string{"metadata.azure.com"},
-		IssuingCertificateURL: []string{base + "/issuing.crt"},
-	}, issuing, leafKey, issuingKey)
+	leafKey := testGenerateKey()
+	leaf := testCreateCert(testLeafTemplate(103, []string{base + "/issuing.crt"}), issuing, &leafKey.PublicKey, issuingKey)
 
 	served := map[string][]byte{
 		base + "/issuing.crt":   issuing.Raw,
@@ -528,7 +466,7 @@ func TestFetchIntermediateCertsFromBaseURL_ChasesCrossSignedChain(t *testing.T) 
 // TestValidateFetchedIntermediateForSigner exercises each per-branch reject/accept rule for the
 // fetched intermediate identity check.
 func TestValidateFetchedIntermediateForSigner(t *testing.T) {
-	caCert, _, _, _ := testPKI(t)
+	caCert, _, _ := testPKI(t)
 
 	signerMatching := &x509.Certificate{
 		RawIssuer:      caCert.RawSubject,
@@ -802,7 +740,7 @@ func TestIntermediateCertPoolWithCaches_PositiveOverridesStaleNegative(t *testin
 	// Inject a positive entry under the same key, simulating a later success that bypassed the
 	// negative-cache check (e.g., via a second TTLStore instance or concurrent write).
 	entry := &intermediateCertCacheEntry{
-		key:  intermediateCacheKey{rawIssuer: "issuer-1", authorityKeyID: "akid-1"},
+		key:  intermediateCacheKeyForSigner(signer),
 		pool: expectedPool,
 	}
 	if err := positive.Add(entry); err != nil {
@@ -857,7 +795,7 @@ func TestValidateAzureMetadataSignerSAN(t *testing.T) {
 // expiration, and the happy path in one table. The test PKCS7 already embeds the issuing root, so
 // no intermediate fetch should be needed.
 func TestVerifyAttestedDocumentWithRootAndFetcher(t *testing.T) {
-	caCert, _, leafCert, leafKey := testPKI(t)
+	caCert, leafCert, leafKey := testPKI(t)
 	body := []byte("test-body")
 	now := time.Now().UTC()
 

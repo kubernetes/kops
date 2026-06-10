@@ -37,6 +37,10 @@ const (
 	// InstanceGroupNameTag is the key of the tag used to identify an instance group that VM belongs
 	// to.
 	InstanceGroupNameTag = "kops.k8s.io_instancegroup"
+
+	// vmResourceType and vmssVMResourceType are the Azure resource types accepted in bootstrap tokens.
+	vmResourceType     = "Microsoft.Compute/virtualMachines"
+	vmssVMResourceType = "Microsoft.Compute/virtualMachineScaleSets/virtualMachines"
 )
 
 // AzureVerifierOptions configures the Azure bootstrap token verifier.
@@ -47,6 +51,7 @@ type AzureVerifierOptions struct {
 type azureVerifier struct {
 	client      *client
 	clusterName string
+	attestation *attestationVerifier
 }
 
 var _ bootstrap.Verifier = (*azureVerifier)(nil)
@@ -63,9 +68,15 @@ func NewAzureVerifier(ctx context.Context, opt *AzureVerifierOptions) (bootstrap
 		return nil, fmt.Errorf("determining cluster name")
 	}
 
+	attestation, err := newAttestationVerifier()
+	if err != nil {
+		return nil, err
+	}
+
 	return &azureVerifier{
 		client:      azureClient,
 		clusterName: opt.ClusterName,
+		attestation: attestation,
 	}, nil
 }
 
@@ -77,9 +88,9 @@ func vmLogIDFromResource(res *arm.ResourceID) string {
 	}
 
 	switch res.ResourceType.String() {
-	case "Microsoft.Compute/virtualMachines":
+	case vmResourceType:
 		return res.Name
-	case "Microsoft.Compute/virtualMachineScaleSets/virtualMachines":
+	case vmssVMResourceType:
 		return res.Parent.Name + "/" + res.Name
 	default:
 		return res.ResourceType.String() + "/" + res.Name
@@ -109,10 +120,10 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	resourceType := res.ResourceType.String()
 	klog.V(4).Infof("Azure verifier for VM %q parsed resource ID: subscription=%q resourceGroup=%q", vmLogID, res.SubscriptionID, res.ResourceGroupName)
 
-	// Reject resource IDs outside the verifier's own subscription / resource group. The Azure API
-	// lookup below is already scoped to kops-controller's subscription and resource group, so any
-	// claim that names a different location cannot describe a cluster VM. Failing here avoids a wasted
-	// Azure API call and makes the scope explicit instead of implicit.
+	// Reject resource IDs outside the verifier's own subscription / resource group. The Azure API lookup below
+	// is already scoped to kops-controller's subscription and resource group, so any claim that names a different
+	// location cannot describe a cluster VM. Failing here avoids a wasted Azure API call and makes the scope
+	// explicit instead of implicit.
 	if !strings.EqualFold(res.SubscriptionID, a.client.subscriptionID) {
 		return nil, fmt.Errorf("resource ID subscription %q does not match verifier subscription %q", res.SubscriptionID, a.client.subscriptionID)
 	}
@@ -120,8 +131,8 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 		return nil, fmt.Errorf("resource ID resource group %q does not match verifier resource group %q", res.ResourceGroupName, a.client.resourceGroup)
 	}
 	switch resourceType {
-	case "Microsoft.Compute/virtualMachines":
-	case "Microsoft.Compute/virtualMachineScaleSets/virtualMachines":
+	case vmResourceType:
+	case vmssVMResourceType:
 		if !strings.HasSuffix(res.Parent.Name, "."+a.clusterName) {
 			return nil, fmt.Errorf("resource ID VMSS name %q does not match cluster name %q", res.Parent.Name, a.clusterName)
 		}
@@ -130,7 +141,7 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	}
 
 	// Verify the PKCS7 attested document: signature, certificate chain, nonce, and expiration.
-	data, err := verifyAttestedDocument(signature, body)
+	data, err := a.attestation.verifyAttestedDocument(signature, body)
 	if err != nil {
 		return nil, err
 	}
@@ -145,95 +156,59 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	var addrs, challengeEndpoints []string
 
 	switch resourceType {
-	case "Microsoft.Compute/virtualMachines":
+	case vmResourceType:
 		vmName := res.Name
+		desc := fmt.Sprintf("VM %q", vmName)
 		klog.V(2).Infof("Azure verifier for VM %q looking up Azure API object", vmLogID)
 
-		// Fetch the VM from the Azure API.
 		vm, err := a.client.vmsClient.Get(ctx, a.client.resourceGroup, vmName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("getting info for VM %q: %w", vmName, err)
+			return nil, fmt.Errorf("getting info for %s: %w", desc, err)
 		}
-		if vm.Properties == nil || vm.Properties.VMID == nil {
-			return nil, fmt.Errorf("determining VMID for VM %q", vmName)
+		if vm.Properties == nil {
+			return nil, fmt.Errorf("determining VMID for %s", desc)
 		}
-
-		// Cross-verify: the vmId from the cryptographically signed attested document must match the vmId
-		// from the Azure API for the claimed resource ID.
-		klog.V(4).Infof("Azure verifier for VM %q cross-verifying vmId: attested=%q api=%q", vmLogID, data.VMId, *vm.Properties.VMID)
-		if data.VMId != *vm.Properties.VMID {
-			return nil, fmt.Errorf("attested vmId %q does not match VM %q (API vmId %q)", data.VMId, vmName, *vm.Properties.VMID)
+		nodeName, igName, err = extractNodeIdentity(data, desc, vm.Properties.VMID, vm.Properties.OSProfile, vm.Tags)
+		if err != nil {
+			return nil, err
 		}
-		if vm.Properties.OSProfile == nil || vm.Properties.OSProfile.ComputerName == nil || *vm.Properties.OSProfile.ComputerName == "" {
-			return nil, fmt.Errorf("determining ComputerName for VM %q", vmName)
-		}
-
-		// Extract node name and instance group from VM metadata.
-		nodeName = strings.ToLower(*vm.Properties.OSProfile.ComputerName)
-		if igNameTag, ok := vm.Tags[InstanceGroupNameTag]; ok && igNameTag != nil {
-			igName = *igNameTag
-		} else {
-			return nil, fmt.Errorf("determining IG name for VM %q", vmName)
-		}
-		klog.V(4).Infof("Azure verifier for VM %q resolved identity: node=%q instanceGroup=%q", vmLogID, nodeName, igName)
 
 		// Collect private IP addresses from the VM's network interface.
 		ni, err := a.client.nisClient.Get(ctx, a.client.resourceGroup, nodeName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("getting info for VM network interface %q: %w", nodeName, err)
+			return nil, fmt.Errorf("getting info for %s network interface %q: %w", desc, nodeName, err)
 		}
-		if ni.Properties == nil {
-			return nil, fmt.Errorf("determining IP configurations for VM network interface %q", nodeName)
-		}
-
-		for _, ipc := range ni.Properties.IPConfigurations {
-			addrs, challengeEndpoints = appendPrivateIP(addrs, challengeEndpoints, ipc)
+		addrs, challengeEndpoints, err = privateIPEndpoints(ni.Interface, desc)
+		if err != nil {
+			return nil, err
 		}
 
-	case "Microsoft.Compute/virtualMachineScaleSets/virtualMachines":
+	case vmssVMResourceType:
 		vmssName := res.Parent.Name
 		vmssIndex := res.Name
+		desc := fmt.Sprintf("VMSS %q VM #%s", vmssName, vmssIndex)
 		klog.V(2).Infof("Azure verifier for VM %q looking up Azure API object", vmLogID)
 
-		// Fetch the VMSS VM from the Azure API.
 		vm, err := a.client.vmssVMsClient.Get(ctx, a.client.resourceGroup, vmssName, vmssIndex, nil)
 		if err != nil {
-			return nil, fmt.Errorf("getting info for VMSS %q VM #%s: %w", vmssName, vmssIndex, err)
+			return nil, fmt.Errorf("getting info for %s: %w", desc, err)
 		}
-		if vm.Properties == nil || vm.Properties.VMID == nil {
-			return nil, fmt.Errorf("determining VMID for VMSS %q VM #%s", vmssName, vmssIndex)
+		if vm.Properties == nil {
+			return nil, fmt.Errorf("determining VMID for %s", desc)
 		}
-
-		// Cross-verify: the vmId from the cryptographically signed attested document must match the vmId
-		// from the Azure API for the claimed resource ID.
-		klog.V(4).Infof("Azure verifier for VM %q cross-verifying vmId: attested=%q api=%q", vmLogID, data.VMId, *vm.Properties.VMID)
-		if data.VMId != *vm.Properties.VMID {
-			return nil, fmt.Errorf("attested vmId %q does not match VMSS %q VM #%s (API vmId %q)", data.VMId, vmssName, vmssIndex, *vm.Properties.VMID)
+		nodeName, igName, err = extractNodeIdentity(data, desc, vm.Properties.VMID, vm.Properties.OSProfile, vm.Tags)
+		if err != nil {
+			return nil, err
 		}
-		if vm.Properties.OSProfile == nil || vm.Properties.OSProfile.ComputerName == nil || *vm.Properties.OSProfile.ComputerName == "" {
-			return nil, fmt.Errorf("determining ComputerName for VMSS %q VM #%s", vmssName, vmssIndex)
-		}
-
-		// Extract node name and instance group from VMSS VM metadata.
-		nodeName = strings.ToLower(*vm.Properties.OSProfile.ComputerName)
-		if igNameTag, ok := vm.Tags[InstanceGroupNameTag]; ok && igNameTag != nil {
-			igName = *igNameTag
-		} else {
-			return nil, fmt.Errorf("determining IG name for VMSS %q VM #%s", vmssName, vmssIndex)
-		}
-		klog.V(4).Infof("Azure verifier for VM %q resolved identity: node=%q instanceGroup=%q", vmLogID, nodeName, igName)
 
 		// Collect private IP addresses from the VMSS VM's network interface.
 		ni, err := a.client.nisClient.GetVirtualMachineScaleSetNetworkInterface(ctx, a.client.resourceGroup, vmssName, vmssIndex, vmssName, nil)
 		if err != nil {
-			return nil, fmt.Errorf("getting info for VMSS %q VM #%s network interface: %w", vmssName, vmssIndex, err)
+			return nil, fmt.Errorf("getting info for %s network interface: %w", desc, err)
 		}
-		if ni.Properties == nil {
-			return nil, fmt.Errorf("determining IP configurations for VMSS %q VM #%s network interface", vmssName, vmssIndex)
-		}
-
-		for _, ipc := range ni.Properties.IPConfigurations {
-			addrs, challengeEndpoints = appendPrivateIP(addrs, challengeEndpoints, ipc)
+		addrs, challengeEndpoints, err = privateIPEndpoints(ni.Interface, desc)
+		if err != nil {
+			return nil, err
 		}
 
 	default:
@@ -259,14 +234,48 @@ func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request
 	return result, nil
 }
 
-// appendPrivateIP appends the private IP address from an interface IP configuration to the address
-// and challenge endpoint slices.
-func appendPrivateIP(addrs, challengeEndpoints []string, ipc *network.InterfaceIPConfiguration) ([]string, []string) {
-	if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
-		addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
-		challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.Properties.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
+// extractNodeIdentity cross-verifies the attested vmId against the Azure API vmId for the claimed resource and
+// extracts the node name and instance group from the API object. desc is a human-readable resource description
+// used in errors and logs.
+func extractNodeIdentity(data *attestedData, desc string, apiVMID *string, osProfile *compute.OSProfile, tags map[string]*string) (nodeName, igName string, err error) {
+	if apiVMID == nil {
+		return "", "", fmt.Errorf("determining VMID for %s", desc)
 	}
-	return addrs, challengeEndpoints
+
+	// Cross-verify: the vmId from the cryptographically signed attested document must match the vmId from the
+	// Azure API for the claimed resource ID.
+	klog.V(4).Infof("Azure verifier for %s cross-verifying vmId: attested=%q api=%q", desc, data.VMId, *apiVMID)
+	if data.VMId != *apiVMID {
+		return "", "", fmt.Errorf("attested vmId %q does not match %s (API vmId %q)", data.VMId, desc, *apiVMID)
+	}
+	if osProfile == nil || osProfile.ComputerName == nil || *osProfile.ComputerName == "" {
+		return "", "", fmt.Errorf("determining ComputerName for %s", desc)
+	}
+
+	nodeName = strings.ToLower(*osProfile.ComputerName)
+	igNameTag, ok := tags[InstanceGroupNameTag]
+	if !ok || igNameTag == nil {
+		return "", "", fmt.Errorf("determining IG name for %s", desc)
+	}
+	klog.V(4).Infof("Azure verifier for %s resolved identity: node=%q instanceGroup=%q", desc, nodeName, *igNameTag)
+
+	return nodeName, *igNameTag, nil
+}
+
+// privateIPEndpoints collects the private IP addresses and nodeup challenge endpoints from a
+// network interface's IP configurations.
+func privateIPEndpoints(ni network.Interface, desc string) (addrs, challengeEndpoints []string, err error) {
+	if ni.Properties == nil {
+		return nil, nil, fmt.Errorf("determining IP configurations for %s network interface", desc)
+	}
+
+	for _, ipc := range ni.Properties.IPConfigurations {
+		if ipc.Properties != nil && ipc.Properties.PrivateIPAddress != nil {
+			addrs = append(addrs, *ipc.Properties.PrivateIPAddress)
+			challengeEndpoints = append(challengeEndpoints, net.JoinHostPort(*ipc.Properties.PrivateIPAddress, strconv.Itoa(wellknownports.NodeupChallenge)))
+		}
+	}
+	return addrs, challengeEndpoints, nil
 }
 
 // client is an Azure client.

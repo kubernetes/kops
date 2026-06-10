@@ -55,20 +55,12 @@ type InstanceMetadata struct {
 
 // attestedDocument is the JSON response from the IMDS attested/document endpoint.
 type attestedDocument struct {
-	Encoding  string `json:"encoding"`
 	Signature string `json:"signature"`
 }
 
 // queryIMDS queries an Azure IMDS endpoint and unmarshals the JSON response.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service
 func queryIMDS(ctx context.Context, path string, params url.Values, result any) error {
-	if path == "" {
-		return fmt.Errorf("IMDS path is required")
-	}
-	if result == nil {
-		return fmt.Errorf("result is required")
-	}
-
 	req, err := http.NewRequestWithContext(ctx, "GET", imdsBaseURL+path, nil)
 	if err != nil {
 		return fmt.Errorf("creating IMDS request: %w", err)
@@ -118,10 +110,6 @@ func QueryComputeInstanceMetadata(ctx context.Context) (*InstanceMetadata, error
 // included in the PKCS7 signed content for replay protection.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/instance-metadata-service#attested-data
 func queryIMDSAttestedDocument(ctx context.Context, nonce string) (*attestedDocument, error) {
-	if nonce == "" {
-		return nil, fmt.Errorf("nonce is required")
-	}
-
 	doc := &attestedDocument{}
 	params := url.Values{"nonce": {nonce}}
 	if err := queryIMDS(ctx, "/metadata/attested/document", params, doc); err != nil {

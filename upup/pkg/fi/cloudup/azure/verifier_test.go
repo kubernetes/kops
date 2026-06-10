@@ -64,21 +64,6 @@ func TestVMLogIDFromResource(t *testing.T) {
 	}
 }
 
-func setTestSystemCertPool(t *testing.T, pool *x509.CertPool) {
-	t.Helper()
-
-	cachedSystemMu.Lock()
-	previous := cachedSystemCertPool
-	cachedSystemCertPool = pool
-	cachedSystemMu.Unlock()
-
-	t.Cleanup(func() {
-		cachedSystemMu.Lock()
-		cachedSystemCertPool = previous
-		cachedSystemMu.Unlock()
-	})
-}
-
 // TestVerifyToken covers the early rejection paths: wrong prefix (different cloud verifier),
 // malformed two-part payload, mismatched subscription/RG, and unparseable PKCS7.
 func TestVerifyToken(t *testing.T) {
@@ -108,6 +93,7 @@ func TestVerifyToken(t *testing.T) {
 			resourceGroup:  "rg",
 		},
 		clusterName: "cluster",
+		attestation: &attestationVerifier{rootCertPool: x509.NewCertPool()},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -130,10 +116,9 @@ func TestVerifyToken(t *testing.T) {
 }
 
 func TestVerifyToken_SignedSubscriptionMismatch(t *testing.T) {
-	caCert, _, leafCert, leafKey := testPKI(t)
+	caCert, leafCert, leafKey := testPKI(t)
 	rootPool := x509.NewCertPool()
 	rootPool.AddCert(caCert)
-	setTestSystemCertPool(t, rootPool)
 
 	body := []byte("test-body")
 	now := time.Now().UTC()
@@ -153,6 +138,7 @@ func TestVerifyToken_SignedSubscriptionMismatch(t *testing.T) {
 			resourceGroup:  "rg",
 		},
 		clusterName: "cluster",
+		attestation: &attestationVerifier{rootCertPool: rootPool},
 	}
 
 	token := AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm " + sig

@@ -52,7 +52,7 @@ func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("querying instance metadata: %w", err)
 	}
-	if metadata == nil || metadata.ResourceID == "" {
+	if metadata.ResourceID == "" {
 		return "", fmt.Errorf("missing resource ID")
 	}
 	klog.V(4).Infof("Azure authenticator obtained resource ID %q", metadata.ResourceID)
