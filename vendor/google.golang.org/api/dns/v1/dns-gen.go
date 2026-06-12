@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC.
+// Copyright 2026 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -5923,6 +5923,20 @@ func (r *ResourceRecordSetsService) List(project string, managedZone string) *Re
 	return c
 }
 
+// Filter sets the optional parameter "filter": Specify a filter expression to
+// view records that exactly match the specified domain. Both the name and type
+// parameters are not supported when you use filter and must be omitted. Your
+// filter expression must conform to AIP-160 and you must specify a domain in
+// the name field. Optionally, you can include the type field to filter records
+// by type. You can also include the has_suffix function to view records that
+// match by domain suffix. Examples: - name="example.com." -
+// name="example.com." AND type="A" - name=has_suffix("example.com.") -
+// name=has_suffix("example.com.") AND type="A"
+func (c *ResourceRecordSetsListCall) Filter(filter string) *ResourceRecordSetsListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
 // MaxResults sets the optional parameter "maxResults": Maximum number of
 // results to be returned. If unspecified, the server decides how many results
 // to return.
@@ -5931,9 +5945,9 @@ func (c *ResourceRecordSetsListCall) MaxResults(maxResults int64) *ResourceRecor
 	return c
 }
 
-// Name sets the optional parameter "name": Restricts the list to return only
-// records with this fully qualified domain name. Mutually exclusive with the
-// {@code filter} field.
+// Name sets the optional parameter "name": Specify a fully qualified domain
+// name to view only those records. The name parameter is not supported and
+// must be omitted when you use filter.
 func (c *ResourceRecordSetsListCall) Name(name string) *ResourceRecordSetsListCall {
 	c.urlParams_.Set("name", name)
 	return c
@@ -5947,9 +5961,9 @@ func (c *ResourceRecordSetsListCall) PageToken(pageToken string) *ResourceRecord
 	return c
 }
 
-// Type sets the optional parameter "type": Restricts the list to return only
-// records of this type. If present, the "name" parameter must also be present.
-// Mutually exclusive with the {@code filter} field.
+// Type sets the optional parameter "type": Specify a record type to view only
+// those records. You must also specify the name parameter. The type parameter
+// is not supported and must be omitted when you use filter.
 func (c *ResourceRecordSetsListCall) Type(type_ string) *ResourceRecordSetsListCall {
 	c.urlParams_.Set("type", type_)
 	return c
