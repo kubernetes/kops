@@ -54,8 +54,8 @@ images:
   download: registry.k8s.io/kops/dns-controller:1.34.0-beta.1
 - canonical: registry.k8s.io/kops/kops-controller:1.34.0-beta.1
   download: registry.k8s.io/kops/kops-controller:1.34.0-beta.1
-- canonical: registry.k8s.io/kops/kops-utils-cp:1.36.0-alpha.1
-  download: registry.k8s.io/kops/kops-utils-cp:1.36.0-alpha.1
+- canonical: registry.k8s.io/kops/kops-utils-cp:1.36.0-beta.1
+  download: registry.k8s.io/kops/kops-utils-cp:1.36.0-beta.1
 - canonical: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-beta.1
   download: registry.k8s.io/kops/kube-apiserver-healthcheck:1.34.0-beta.1
 - canonical: registry.k8s.io/kube-apiserver:v1.32.0
