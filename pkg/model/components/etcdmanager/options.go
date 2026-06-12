@@ -96,6 +96,7 @@ type etcdVersion struct {
 var etcdLatestImages = []etcdVersion{
 	{Version: components.LatestEtcd35Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd35Version},
 	{Version: components.LatestEtcd36Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd36Version},
+	{Version: components.LatestEtcd37Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd37Version},
 }
 
 func etcdSupportedVersions() []etcdVersion {
