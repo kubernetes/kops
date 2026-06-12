@@ -1584,6 +1584,14 @@ spec:
 {{ end }}
         - name: tmp
           mountPath: /tmp
+{{- if GossipEnabled }}
+        # Gossip clusters update the host's /etc/hosts as control-plane nodes
+        # are replaced; mount it so the agent sees those updates instead of
+        # the static copy kubelet makes at container start.
+        - name: etc-hosts
+          mountPath: /etc/hosts
+          readOnly: true
+{{- end }}
 
 {{ if .Debug }}
       - name: cilium-monitor
@@ -1925,6 +1933,13 @@ spec:
         hostPath:
           path: /proc/sys/kernel
           type: Directory
+{{- if GossipEnabled }}
+        # To see protokube's updates to the host's /etc/hosts (gossip clusters)
+      - name: etc-hosts
+        hostPath:
+          path: /etc/hosts
+          type: File
+{{- end }}
 {{ if WithDefaultBool .Hubble.Enabled false }}
       - name: hubble-tls
         projected:
@@ -2059,6 +2074,14 @@ spec:
           mountPath: /var/lib/etcd-secrets
           readOnly: true
 {{- end }}
+{{- if GossipEnabled }}
+        # Gossip clusters update the host's /etc/hosts as control-plane nodes
+        # are replaced; mount it so the operator sees those updates instead of
+        # the static copy kubelet makes at container start.
+        - name: etc-hosts
+          mountPath: /etc/hosts
+          readOnly: true
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -2122,6 +2145,13 @@ spec:
         hostPath:
           path: /etc/kubernetes/pki/cilium
           type: Directory
+{{- end }}
+{{- if GossipEnabled }}
+        # To see protokube's updates to the host's /etc/hosts (gossip clusters)
+      - name: etc-hosts
+        hostPath:
+          path: /etc/hosts
+          type: File
 {{- end }}
 {{ if WithDefaultBool .Hubble.Enabled false }}
 ---

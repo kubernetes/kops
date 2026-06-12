@@ -791,6 +791,9 @@ spec:
           name: xtables-lock
         - mountPath: /tmp
           name: tmp
+        - mountPath: /etc/hosts
+          name: etc-hosts
+          readOnly: true
       hostNetwork: true
       initContainers:
       - command:
@@ -1049,6 +1052,10 @@ spec:
           path: /proc/sys/kernel
           type: Directory
         name: host-proc-sys-kernel
+      - hostPath:
+          path: /etc/hosts
+          type: File
+        name: etc-hosts
   updateStrategy:
     type: OnDelete
 
@@ -1168,6 +1175,9 @@ spec:
         - mountPath: /tmp/cilium/config-map
           name: cilium-config-path
           readOnly: true
+        - mountPath: /etc/hosts
+          name: etc-hosts
+          readOnly: true
       hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
@@ -1192,3 +1202,7 @@ spec:
       - configMap:
           name: cilium-config
         name: cilium-config-path
+      - hostPath:
+          path: /etc/hosts
+          type: File
+        name: etc-hosts
