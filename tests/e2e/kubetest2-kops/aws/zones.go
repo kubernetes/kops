@@ -17,11 +17,19 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"math/rand/v2"
 	"os"
 	"sort"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"k8s.io/klog/v2"
 )
 
 var allZones = []string{
@@ -104,8 +112,9 @@ func newRand() *rand.Rand {
 	return rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 }
 
-// RandomZones returns a random set of availability zones within a region
-func RandomZones(count int) ([]string, error) {
+// RandomZones returns a random set of availability zones within a region,
+// ensuring the provided instance types are available in those zones.
+func RandomZones(count int, instanceTypes []string) ([]string, error) {
 	rng := newRand()
 	regions := make(map[string][]string)
 	for _, zone := range allZones {
@@ -125,13 +134,100 @@ func RandomZones(count int) ([]string, error) {
 	sort.Slice(eligibleRegions, func(i, j int) bool {
 		return eligibleRegions[i][0] < eligibleRegions[j][0]
 	})
-	chosenRegion := eligibleRegions[rng.IntN(len(eligibleRegions))]
 
-	chosenZones := make([]string, 0, count)
-	randIndexes := rng.Perm(len(chosenRegion))
-	for i := 0; i < count; i++ {
-		chosenZones = append(chosenZones, chosenRegion[randIndexes[i]])
+	// Try regions in a random order so that a single region without the
+	// requested instance types does not deterministically fail.
+	regionOrder := rng.Perm(len(eligibleRegions))
+	var lastErr error
+	for _, idx := range regionOrder {
+		regionZones := eligibleRegions[idx]
+		region := regionZones[0][:len(regionZones[0])-1]
+
+		candidateZones := regionZones
+		if len(instanceTypes) > 0 {
+			filtered, err := zonesWithInstanceTypes(region, regionZones, instanceTypes)
+			if err != nil {
+				klog.Warningf("skipping region %s: could not describe instance type offerings: %v", region, err)
+				lastErr = err
+				continue
+			}
+			if len(filtered) < count {
+				klog.V(2).Infof("region %s has only %d of %d zones offering %v, trying next region", region, len(filtered), count, instanceTypes)
+				continue
+			}
+			candidateZones = filtered
+		}
+
+		chosenZones := make([]string, 0, count)
+		randIndexes := rng.Perm(len(candidateZones))
+		for i := 0; i < count; i++ {
+			chosenZones = append(chosenZones, candidateZones[randIndexes[i]])
+		}
+		sort.Strings(chosenZones)
+		return chosenZones, nil
 	}
-	sort.Strings(chosenZones)
-	return chosenZones, nil
+
+	if lastErr != nil {
+		return nil, fmt.Errorf("no eligible region found with instance types %v: %w", instanceTypes, lastErr)
+	}
+	return nil, fmt.Errorf("no eligible region found with %d zones offering instance types %v", count, instanceTypes)
+}
+
+// zonesWithInstanceTypes returns the subset of zones in which every one of
+// instanceTypes is offered, according to DescribeInstanceTypeOfferings.
+func zonesWithInstanceTypes(region string, zones []string, instanceTypes []string) ([]string, error) {
+	ctx := context.Background()
+	cfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
+	if err != nil {
+		return nil, fmt.Errorf("loading AWS config for region %s: %w", region, err)
+	}
+	client := ec2.NewFromConfig(cfg)
+
+	zoneSet := make(map[string]bool, len(zones))
+	for _, z := range zones {
+		zoneSet[z] = true
+	}
+
+	// zoneOfferings[zone] is the set of requested instance types offered in that zone.
+	zoneOfferings := make(map[string]map[string]bool, len(zones))
+	paginator := ec2.NewDescribeInstanceTypeOfferingsPaginator(client, &ec2.DescribeInstanceTypeOfferingsInput{
+		LocationType: ec2types.LocationTypeAvailabilityZone,
+		Filters: []ec2types.Filter{
+			{
+				Name:   aws.String("instance-type"),
+				Values: instanceTypes,
+			},
+			{
+				Name:   aws.String("location"),
+				Values: zones,
+			},
+		},
+	})
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("describing instance type offerings in %s: %w", region, err)
+		}
+		for _, offering := range page.InstanceTypeOfferings {
+			if offering.Location == nil {
+				continue
+			}
+			zone := *offering.Location
+			if !zoneSet[zone] {
+				continue
+			}
+			if zoneOfferings[zone] == nil {
+				zoneOfferings[zone] = make(map[string]bool, len(instanceTypes))
+			}
+			zoneOfferings[zone][string(offering.InstanceType)] = true
+		}
+	}
+
+	matching := make([]string, 0, len(zones))
+	for _, zone := range zones {
+		if len(zoneOfferings[zone]) == len(instanceTypes) {
+			matching = append(matching, zone)
+		}
+	}
+	return matching, nil
 }
