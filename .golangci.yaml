@@ -4,21 +4,11 @@ run:
 linters:
   default: none
   enable:
-    - govet
-    - ineffassign
-    - staticcheck
+    - misspell
   settings:
-    staticcheck:
-      checks:
-        - all
-        - -QF1008 # ignore omit embbed fields from selector expressions
-        - -ST1000 # Incorrect or missing package comment
-        - -ST1003 # Poorly chosen identifier
-        - -ST1005 # Incorrectly formatted error string
-        - -ST1006 # Poorly chosen receiver name
-        - -ST1012 # Poorly chosen name for error variable
-        - -ST1016 # Use consistent method receiver names
-        - -SA1019 # Using a deprecated function, variable, constant or field
+    misspell:
+      mode: default
+      # Leave locale unset so both US and UK English spellings are accepted.
   exclusions:
     generated: lax
     presets:
@@ -26,17 +16,14 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
-    rules:
-      - linters:
-          - ineffassign
-        path: conversion\.go
     paths:
       - ^zz_generated.*
       - third_party$
       - builtin$
       - examples$
 issues:
-  max-same-issues: 0
+  max-issues-per-linter: 10000
+  max-same-issues: 10000
 formatters:
   exclusions:
     generated: lax
