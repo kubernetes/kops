@@ -177,6 +177,7 @@ type NewClusterOptions struct {
 	ControlPlaneImage string
 	BastionImage      string
 	ControlPlaneSizes []string
+	APIServerSizes    []string
 	NodeSizes         []string
 }
 
@@ -1248,6 +1249,15 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnets
 
 		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
+		}
+
+		for i, size := range opt.APIServerSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if i > 0 {
+				klog.Fatalf("multiple machine types for IG group not currently supported")
+			}
 		}
 
 		nodes = append(nodes, g)

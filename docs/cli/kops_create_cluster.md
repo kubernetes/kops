@@ -52,6 +52,22 @@ kops create cluster [CLUSTER] [flags]
   --node-count 3 \
   --yes
   
+  # Create a cluster in GCE with a dedicated APIServer-Only front-end.
+  export KOPS_FEATURE_FLAGS="+APIServerNodes"
+  export ZONES="us-west1-a,us-west1-b,us-west1-c"
+  export PROJECT="my-project"
+  export KOPS_STATE_STORE="gs://${PROJECT}-kops-state"
+  export KOPS_CLUSTER_NAME="k8s-cluster.example.com"
+  kops create cluster --name=${KOPS_CLUSTER_NAME} \
+  --cloud=gce \
+  --zones=${ZONES} \
+  --project=${PROJECT} \
+  --node-count=3 --node-size=e2-standard-2 \
+  --api-server-count=2 --api-server-size=e2-standard-2 \
+  --control-plane-count=3 --control-plane-size=e2-standard-4 \
+  --yes
+  
+  
   # Generate a cluster spec to apply later.
   # Run the following, then: kops create -f filename.yaml
   kops create cluster --name=k8s-cluster.example.com \

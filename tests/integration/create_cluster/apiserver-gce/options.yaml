@@ -1,0 +1,17 @@
+ClusterName: apiserver.k8s.local
+Zones:
+- us-west1-a
+- us-west1-b
+- us-west1-c
+CloudProvider: gce
+Networking: cni
+KubernetesVersion: v1.36.0
+DNSType: Private
+Project: testproject
+ControlPlaneCount: 3
+APIServerCount: 4
+NodeCount: 5
+APIServerSizes:
+- e2-standard-2
+ControlPlaneSizes:
+- e2-standard-4
