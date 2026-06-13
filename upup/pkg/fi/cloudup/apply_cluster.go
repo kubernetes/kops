@@ -725,6 +725,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			}
 			l.Builders = append(l.Builders,
 				&linodemodel.VPCModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: networkLifecycle},
+				&linodemodel.SSHKeyModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: securityLifecycle},
 			)
 
 		case kops.CloudProviderMetal:

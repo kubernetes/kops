@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -39,6 +38,9 @@ type LinodeClient interface {
 	CreateVPC(ctx context.Context, opts linodego.VPCCreateOptions) (*linodego.VPC, error)
 	UpdateVPC(ctx context.Context, vpcID int, opts linodego.VPCUpdateOptions) (*linodego.VPC, error)
 	DeleteVPC(ctx context.Context, vpcID int) error
+	ListSSHKeys(ctx context.Context, opts *linodego.ListOptions) ([]linodego.SSHKey, error)
+	CreateSSHKey(ctx context.Context, opts linodego.SSHKeyCreateOptions) (*linodego.SSHKey, error)
+	DeleteSSHKey(ctx context.Context, sshKeyID int) error
 }
 
 // LinodeCloud exposes Linode (Akamai) cloud APIs used by kOps.
@@ -53,6 +55,8 @@ type Cloud struct {
 }
 
 var _ LinodeCloud = &Cloud{}
+
+var invalidLinodeLabelChars = regexp.MustCompile(`[^A-Za-z0-9_-]+`)
 
 func NewCloud(region string) (LinodeCloud, error) {
 	if region == "" {
@@ -122,21 +126,10 @@ func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatu
 	return nil, nil
 }
 
-var invalidLinodeLabelChars = regexp.MustCompile(`[^A-Za-z0-9_-]+`)
-
-// NormalizeLinodeVPCLabel returns the label kOps uses for a Linode (Akamai) VPC.
-func NormalizeLinodeVPCLabel(name string) string {
+// NormalizeLinodeLabel returns a normalized label for Linode (Akamai) resources
+func NormalizeLinodeLabel(name string) string {
 	name = invalidLinodeLabelChars.ReplaceAllString(name, "-")
 	name = strings.Trim(name, "-_")
-	if name == "" {
-		return "kops-vpc"
-	}
-
-	name = truncate.TruncateString(name, truncate.TruncateStringOptions{MaxLength: 64, AlwaysAddHash: false})
-	name = strings.Trim(name, "-_")
-	if name == "" {
-		return "kops-vpc"
-	}
 
 	return name
 }

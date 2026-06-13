@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/linode/linodego"
 	"k8s.io/kops/pkg/resources"
@@ -27,18 +28,66 @@ import (
 	cloudlinode "k8s.io/kops/upup/pkg/fi/cloudup/linode"
 )
 
-const resourceTypeVPC = "vpc"
+type listFn func(fi.Cloud, resources.ClusterInfo) ([]*resources.Resource, error)
+
+const (
+	resourceTypeVPC    = "vpc"
+	resourceTypeSSHKey = "ssh-key"
+)
+
+// parseTrackerIntID parses the tracker's string ID into an integer, which is used for Linode (Akamai) resource IDs.
+func parseTrackerIntID(tracker *resources.Resource) (int, error) {
+	id, err := strconv.Atoi(tracker.ID)
+	if err != nil {
+		return 0, fmt.Errorf("error parsing Linode (Akamai) %s ID %q: %w", tracker.Type, tracker.ID, err)
+	}
+	return id, nil
+}
 
 // ListResources collects Linode (Akamai) cloud resources owned by the cluster.
 func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	resourceTrackers := make(map[string]*resources.Resource)
 
-	trackers, err := listVPCs(cloud, clusterInfo)
-	if err != nil {
-		return nil, err
+	listFunctions := []listFn{
+		listVPCs,
+		listSSHKeys,
 	}
-	for _, tracker := range trackers {
-		resourceTrackers[tracker.Type+":"+tracker.ID] = tracker
+
+	for _, fn := range listFunctions {
+		trackers, err := fn(cloud, clusterInfo)
+		if err != nil {
+			return nil, err
+		}
+		for _, tracker := range trackers {
+			resourceTrackers[tracker.Type+":"+tracker.ID] = tracker
+		}
+	}
+
+	return resourceTrackers, nil
+}
+
+// listSSHKeys lists Linode (Akamai) SSH keys that were generated for the cluster.
+func listSSHKeys(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
+	c := cloud.(cloudlinode.LinodeCloud)
+	keys, err := c.Client().ListSSHKeys(context.Background(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("error listing Linode (Akamai) SSH keys: %w", err)
+	}
+
+	keyLabelPrefix := cloudlinode.NormalizeLinodeLabel("kubernetes."+clusterInfo.Name) + "-"
+	var resourceTrackers []*resources.Resource
+	for _, key := range keys {
+		if !strings.HasPrefix(key.Label, keyLabelPrefix) {
+			continue
+		}
+
+		resourceTrackers = append(resourceTrackers, &resources.Resource{
+			Name:    key.Label,
+			ID:      strconv.Itoa(key.ID),
+			Type:    resourceTypeSSHKey,
+			Deleter: deleteSSHKey,
+			Obj:     key,
+		})
 	}
 
 	return resourceTrackers, nil
@@ -52,7 +101,7 @@ func listVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.R
 		return nil, fmt.Errorf("error listing Linode (Akamai) VPCs: %w", err)
 	}
 
-	vpcLabel := cloudlinode.NormalizeLinodeVPCLabel(clusterInfo.Name)
+	vpcLabel := cloudlinode.NormalizeLinodeLabel(clusterInfo.Name)
 	region := c.Region()
 	var resourceTrackers []*resources.Resource
 	for _, vpc := range vpcs {
@@ -75,12 +124,30 @@ func listVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.R
 	return resourceTrackers, nil
 }
 
+// deleteSSHKey deletes a Linode (Akamai) SSH key.
+func deleteSSHKey(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(cloudlinode.LinodeCloud)
+	keyID, err := parseTrackerIntID(tracker)
+	if err != nil {
+		return err
+	}
+
+	if err := c.Client().DeleteSSHKey(context.Background(), keyID); err != nil {
+		if linodego.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("error deleting Linode (Akamai) SSH key %s(%s): %w", tracker.Name, tracker.ID, err)
+	}
+
+	return nil
+}
+
 // deleteVPC deletes a Linode (Akamai) VPC.
 func deleteVPC(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(cloudlinode.LinodeCloud)
-	vpcID, err := strconv.Atoi(tracker.ID)
+	vpcID, err := parseTrackerIntID(tracker)
 	if err != nil {
-		return fmt.Errorf("error parsing Linode (Akamai) %s ID %q: %w", tracker.Type, tracker.ID, err)
+		return err
 	}
 
 	if err := c.Client().DeleteVPC(context.Background(), vpcID); err != nil {
