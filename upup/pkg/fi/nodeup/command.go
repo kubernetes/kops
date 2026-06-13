@@ -517,7 +517,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error)
 
 		// Linode cloud-init does not set the OS hostname.
 		// Set it here so the OS hostname matches the kubelet hostname override.
-		if err := os.WriteFile("/etc/hostname", []byte(label+"\n"), 0644); err != nil {
+		if err := os.WriteFile("/etc/hostname", []byte(label+"\n"), 0o644); err != nil { //nolint:gosec // /etc/hostname is conventionally world-readable system configuration.
 			klog.Warningf("Failed to write /etc/hostname: %v", err)
 		} else if err := exec.Command("hostname", label).Run(); err != nil {
 			klog.Warningf("Failed to set runtime hostname %q: %v", label, err)

@@ -30,10 +30,10 @@ func TestLoadTemplatesTracksTemplateSources(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, "addons", "example"), 0755); err != nil {
 		t.Fatalf("creating addon dir: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "addons", "example", "plain.yaml"), []byte("plain"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "addons", "example", "plain.yaml"), []byte("plain"), 0o600); err != nil {
 		t.Fatalf("writing plain resource: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "addons", "example", "rendered.yaml.template"), []byte("template"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "addons", "example", "rendered.yaml.template"), []byte("template"), 0o600); err != nil {
 		t.Fatalf("writing template resource: %v", err)
 	}
 

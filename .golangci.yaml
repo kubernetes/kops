@@ -4,8 +4,52 @@ run:
 linters:
   default: none
   enable:
+    - gocritic
+    - gosec
     - misspell
   settings:
+    gocritic:
+      # Keep gocritic focused on correctness checks for the initial adoption.
+      # These checks are mostly style churn in the existing codebase.
+      disabled-checks:
+        - appendAssign
+        - assignOp
+        - captLocal
+        - commentFormatting
+        - deprecatedComment
+        - elseif
+        - ifElseChain
+        - singleCaseSwitch
+        - sloppyLen
+    gosec:
+      # Keep the initial gosec adoption to high-signal checks. The broader
+      # default set reports many legacy taint, weak hash, math/rand, and
+      # integer conversion findings that need separate audits.
+      includes:
+        - G101
+        - G103
+        - G104
+        - G106
+        - G108
+        - G109
+        - G110
+        - G111
+        - G201
+        - G202
+        - G203
+        - G301
+        - G302
+        - G303
+        - G304
+        - G305
+        - G306
+        - G307
+        - G403
+        - G502
+        - G503
+        - G504
+        - G601
+        - G602
     misspell:
       mode: default
       # Leave locale unset so both US and UK English spellings are accepted.
@@ -16,6 +60,12 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - gosec
+        # Test fixtures intentionally contain fake keys and tokens.
+        path: _test\.go$
+        text: "G101:"
     paths:
       - ^zz_generated.*
       - third_party$

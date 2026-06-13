@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 )
 
-const HetznerAuthenticationTokenPrefix = "x-hetzner-id "
+const HetznerAuthenticationTokenPrefix = "x-hetzner-id " //nolint:gosec // This is an authentication scheme prefix, not a credential.
 
 type hetznerAuthenticator struct {
 }

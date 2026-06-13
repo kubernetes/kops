@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 )
 
-const LinodeAuthenticationTokenPrefix = "x-linode-instance-id "
+const LinodeAuthenticationTokenPrefix = "x-linode-instance-id " //nolint:gosec // This is an authentication scheme prefix, not a credential.
 
 const (
 	linodeMetadataBaseURL  = "http://169.254.169.254"

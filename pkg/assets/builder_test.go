@@ -131,7 +131,7 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 func TestRemapEmptySection(t *testing.T) {
 	builder := buildAssetBuilder(t)
 
-	testdir := filepath.Join("testdata")
+	testdir := "testdata"
 
 	key := "emptysection"
 
