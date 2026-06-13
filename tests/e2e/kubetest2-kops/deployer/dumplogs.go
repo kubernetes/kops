@@ -41,7 +41,7 @@ func (d *deployer) DumpClusterLogs() error {
 		"--name", d.ClusterName,
 		"--dir", d.ArtifactsDir,
 		"--private-key", d.SSHPrivateKeyPath,
-		"--ssh-user", d.SSHUser,
+		"--ssh-user", "ec2-user",
 	}
 
 	if d.MaxNodesToDump != "" {

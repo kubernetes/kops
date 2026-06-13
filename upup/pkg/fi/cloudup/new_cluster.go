@@ -513,7 +513,11 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 			}
 		}
+		g.Spec.Image = "309956199498/RHEL-10.1.0_HVM-20260331-arm64-0-Hourly2-GP3"
 
+		if cluster.GetCloudProvider() == api.CloudProviderAWS {
+			g.Spec.MachineType = "m6g.large"
+		}
 		// TODO: Clean up
 		if g.IsControlPlane() {
 			if g.Spec.MachineType == "" {
@@ -1268,12 +1272,14 @@ func setupNetworking(opt *NewClusterOptions, cluster *api.Cluster) error {
 		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
 	case "flannel", "flannel-vxlan":
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
-			Backend: "vxlan",
+			Backend:        "vxlan",
+			EnableNFTables: true,
 		}
 	case "flannel-udp":
 		klog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
-			Backend: "udp",
+			Backend:        "udp",
+			EnableNFTables: true,
 		}
 	case "calico":
 		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
