@@ -353,8 +353,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				ListManagedInstancesResults: "PAGINATED",
 			}
 
-			// Attach API server instances to load balancer if we're using one
-			if ig.HasAPIServer() {
+			// Attach API server instances to the public API load balancer's target pool.
+			// An IG that opts out via ExcludeFromExternalAPILoadBalancer (split control-plane
+			// topology) is intentionally not attached, so external traffic skips it. The
+			// internal LB attachment is per-backend-service in api_loadbalancer.go, not here.
+			if b.IsExternalAPILoadBalancerTarget(ig) {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {

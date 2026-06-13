@@ -2855,6 +2855,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExcludeFromExternalAPILoadBalancer != nil {
+		in, out := &in.ExcludeFromExternalAPILoadBalancer, &out.ExcludeFromExternalAPILoadBalancer
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

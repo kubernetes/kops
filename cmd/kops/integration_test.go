@@ -493,6 +493,24 @@ func TestMinimalGCEPublicLoadBalancerAPIServer(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
+// TestMinimalGCESplitControlPlane runs tests on a "split control plane" GCE configuration:
+// ControlPlane IGs host etcd/KCM/scheduler/CCM and opt out of the external API LB via
+// excludeFromExternalAPILoadBalancer, while dedicated APIServer (frontend) IGs front
+// external traffic. ControlPlane apiservers remain reachable on the internal LB only.
+func TestMinimalGCESplitControlPlane(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	defer featureflag.ParseFlags("-APIServerNodes")
+
+	newIntegrationTest("minimal-gce-split-cp.example.com", "minimal_gce_split_cp").
+		withAddons(
+			dnsControllerAddon,
+			gcpCCMAddon,
+			gcpPDCSIAddon,
+		).
+		withGCEDedicatedAPIServer("apiserver-us-test1-a", "us-test1-a").
+		runTestTerraformGCE(t)
+}
+
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").

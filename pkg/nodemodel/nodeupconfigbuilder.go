@@ -200,6 +200,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	usesLegacyGossip := cluster.UsesLegacyGossip()
 	isMaster := role == kops.InstanceGroupRoleControlPlane
 	hasAPIServer := isMaster || role == kops.InstanceGroupRoleAPIServer
+	// hostsEtcd is true when the InstanceGroup is named as a member in any etcd cluster.
+	// In standard topologies this lines up exactly with ControlPlane; in split-control-plane
+	// topologies where APIServer (frontend) IGs are configured as etcd members, it is also true.
+	hostsEtcd := len(n.etcdManifests[ig.ObjectMeta.Name]) > 0
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
@@ -241,7 +245,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
-		if isMaster {
+		if isMaster || hostsEtcd {
 			if err := loadCertificates(keysets, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
@@ -259,6 +263,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 					}
 				}
 			}
+		}
+		if isMaster {
 			config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
 
 			// Add key for registering with the discovery service (if configured)
@@ -363,8 +369,10 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	if role != kops.InstanceGroupRoleBastion {
-		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
-		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
+		// protokube runs on control-plane nodes, on any IG that hosts etcd (etcd-manager
+		// is launched from protokube), and on legacy-gossip workers that don't bootstrap
+		// via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
+		if isMaster || hostsEtcd || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
 			for _, arch := range architectures.GetSupported() {
 				for _, a := range n.protokubeAsset[arch] {
 					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
@@ -413,11 +421,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	config.Images = n.images[role]
 
 	if isMaster {
+		config.ChannelsManifest = n.channelsManifest
+	}
+	if isMaster || hostsEtcd {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
 			config.EtcdClusterNames = append(config.EtcdClusterNames, etcdCluster.Name)
 		}
 		config.EtcdManifests = n.etcdManifests[ig.Name]
-		config.ChannelsManifest = n.channelsManifest
 	}
 
 	if cluster.Spec.CloudProvider.AWS != nil {

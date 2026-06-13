@@ -66,6 +66,12 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
+	// HostsEtcd is true if this node hosts at least one etcd member, regardless of role.
+	// In split-control-plane topologies, an APIServer (frontend) IG can be configured
+	// as an etcd member; for such a node, HostsEtcd is true even though IsMaster is false.
+	// Populated by Init from NodeupConfig.EtcdManifests.
+	HostsEtcd bool
+
 	// usesLegacyGossip is true if the cluster runs (legacy) Gossip DNS.
 	usesLegacyGossip bool
 
@@ -106,6 +112,10 @@ func (c *NodeupModelContext) Init() error {
 
 	if role == kops.InstanceGroupRoleControlPlane || role == kops.InstanceGroupRoleAPIServer {
 		c.HasAPIServer = true
+	}
+
+	if len(c.NodeupConfig.EtcdManifests) > 0 {
+		c.HostsEtcd = true
 	}
 
 	c.usesNoneDNS = c.NodeupConfig.UsesNoneDNS
