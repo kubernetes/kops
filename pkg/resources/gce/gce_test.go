@@ -16,7 +16,12 @@ limitations under the License.
 
 package gce
 
-import "testing"
+import (
+	"testing"
+
+	compute "google.golang.org/api/compute/v1"
+	"k8s.io/kops/pkg/resources"
+)
 
 func TestNameMatch(t *testing.T) {
 	grid := []struct {
@@ -110,5 +115,64 @@ func TestMatchesClusterNameWithUUID(t *testing.T) {
 		if got != g.Want {
 			t.Errorf("{clusterName=%q}.matchesClusterNameWithUUID(%q) got %v, want %v", g.ClusterName, g.Name, got, g.Want)
 		}
+	}
+}
+
+func TestContainsOnlyListedIGMs(t *testing.T) {
+	igms := []*resources.Resource{
+		{Name: "nodes-igm"},
+		{Name: "master-igm"},
+	}
+
+	tests := []struct {
+		name    string
+		service *compute.BackendService
+		want    bool
+	}{
+		{
+			name: "empty backends",
+			service: &compute.BackendService{
+				Backends: nil,
+			},
+			want: false,
+		},
+		{
+			name: "all backends match listed igms",
+			service: &compute.BackendService{
+				Backends: []*compute.Backend{
+					{Group: "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-a/instanceGroups/nodes-igm"},
+					{Group: "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-b/instanceGroups/master-igm"},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "contains backend from non listed igm",
+			service: &compute.BackendService{
+				Backends: []*compute.Backend{
+					{Group: "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-a/instanceGroups/nodes-igm"},
+					{Group: "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-b/instanceGroups/gke-default-igm"},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "NEG backends from GKE Gateway do not match any IGM",
+			service: &compute.BackendService{
+				Backends: []*compute.Backend{
+					{Group: "https://www.googleapis.com/compute/v1/projects/p/zones/us-central1-a/networkEndpointGroups/gkegw1-serve404-neg"},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := containsOnlyListedIGMs(tt.service, igms)
+			if got != tt.want {
+				t.Fatalf("containsOnlyListedIGMs() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

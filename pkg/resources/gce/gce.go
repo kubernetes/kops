@@ -1049,6 +1049,10 @@ func deleteServiceAccount(cloud fi.Cloud, r *resources.Resource) error {
 // containsOnlyListedIGMs returns true if all the given backend service's backends
 // are contained in the provided list of IGM resources.
 func containsOnlyListedIGMs(svc *compute.BackendService, igms []*resources.Resource) bool {
+	if len(svc.Backends) == 0 {
+		return false
+	}
+
 	for _, be := range svc.Backends {
 		listed := false
 		for _, igm := range igms {
