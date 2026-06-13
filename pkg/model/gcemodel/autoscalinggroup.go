@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/pkg/model/iam"
@@ -334,26 +335,34 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 		}
 		c.AddTask(instanceTemplate)
 
-		instanceCountByZone, err := b.splitToZones(ig)
-		if err != nil {
-			return err
-		}
+		if featureflag.GCERegionalMIG.Enabled() {
+			// Use a single regional MIG spanning all zones
+			zones, err := b.FindZonesForInstanceGroup(ig)
+			if err != nil {
+				return err
+			}
 
-		for zone, targetSize := range instanceCountByZone {
-			name := gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)
+			minSize := 1
+			if ig.Spec.MinSize != nil {
+				minSize = int(fi.ValueOf(ig.Spec.MinSize))
+			} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+				minSize = 2
+			}
 
-			t := &gcetasks.InstanceGroupManager{
+			name := gce.NameForRegionInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name)
+
+			t := &gcetasks.RegionInstanceGroupManager{
 				Name:                        s(name),
 				Lifecycle:                   b.Lifecycle,
-				Zone:                        s(zone),
-				TargetSize:                  fi.PtrTo(int64(targetSize)),
+				Region:                      s(b.Region),
+				TargetSize:                  fi.PtrTo(int64(minSize)),
 				UpdatePolicy:                &gcetasks.UpdatePolicy{MinimalAction: "REPLACE", Type: "OPPORTUNISTIC"},
 				BaseInstanceName:            s(ig.ObjectMeta.Name),
 				InstanceTemplate:            instanceTemplate,
 				ListManagedInstancesResults: "PAGINATED",
+				DistributionPolicyZones:     zones,
 			}
 
-			// Attach API server instances to load balancer if we're using one
 			if ig.HasAPIServer() {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
@@ -369,6 +378,42 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			}
 
 			c.AddTask(t)
+		} else {
+			instanceCountByZone, err := b.splitToZones(ig)
+			if err != nil {
+				return err
+			}
+
+			for zone, targetSize := range instanceCountByZone {
+				name := gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)
+
+				t := &gcetasks.InstanceGroupManager{
+					Name:                        s(name),
+					Lifecycle:                   b.Lifecycle,
+					Zone:                        s(zone),
+					TargetSize:                  fi.PtrTo(int64(targetSize)),
+					UpdatePolicy:                &gcetasks.UpdatePolicy{MinimalAction: "REPLACE", Type: "OPPORTUNISTIC"},
+					BaseInstanceName:            s(ig.ObjectMeta.Name),
+					InstanceTemplate:            instanceTemplate,
+					ListManagedInstancesResults: "PAGINATED",
+				}
+
+				if ig.HasAPIServer() {
+					if b.UseLoadBalancerForAPI() {
+						lbSpec := b.Cluster.Spec.API.LoadBalancer
+						if lbSpec != nil {
+							switch lbSpec.Type {
+							case kops.LoadBalancerTypePublic:
+								t.TargetPools = append(t.TargetPools, b.LinkToTargetPool("api"))
+							case kops.LoadBalancerTypeInternal:
+								klog.Warningf("Not hooking the instance group manager up to anything.")
+							}
+						}
+					}
+				}
+
+				c.AddTask(t)
+			}
 		}
 	}
 
