@@ -17,6 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -56,6 +57,8 @@ func (*AptSource) CheckChanges(a, e, changes *AptSource) error {
 }
 
 func (f *AptSource) RenderLocal(t *local.LocalTarget, a, e, changes *AptSource) error {
+	// Not adding ctx to signature as RenderLocal seems to be part of a common interface
+	ctx := context.TODO()
 	tmpDir, err := os.MkdirTemp("", "aptsource")
 	if err != nil {
 		return fmt.Errorf("error creating temp dir: %v", err)
@@ -67,7 +70,7 @@ func (f *AptSource) RenderLocal(t *local.LocalTarget, a, e, changes *AptSource) 
 	}()
 	filename := path.Join(tmpDir, f.Name+".gpg")
 
-	if _, err := fi.DownloadURL(f.Keyring, filename, nil); err != nil {
+	if _, err := fi.DownloadURL(ctx, f.Keyring, filename, nil); err != nil {
 		return err
 	}
 

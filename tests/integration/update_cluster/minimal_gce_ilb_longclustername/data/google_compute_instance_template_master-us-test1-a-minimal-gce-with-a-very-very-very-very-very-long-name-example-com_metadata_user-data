@@ -48,14 +48,15 @@ download-or-bust() {
   while true; do
     for url in "${urls[@]}"; do
       commands=(
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
+        "gcloud storage cp ${url} ${file}"
+        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
+        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10 ${url}"
+        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
+        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10 ${url}"
       )
       for cmd in "${commands[@]}"; do
         echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd} "${url}"); then
+        if ! (${cmd}); then
           echo "== Failed to download ${url} using ${cmd} =="
           continue
         fi
