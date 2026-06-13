@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -65,7 +66,7 @@ func TestDownloadURLToWriterVerifiesHash(t *testing.T) {
 	}
 
 	var output bytes.Buffer
-	actualHash, err := downloadURLToWriter(server.URL, &output, expectedHash)
+	actualHash, err := downloadURLToWriter(context.TODO(), server.URL, &output, expectedHash)
 	if err != nil {
 		t.Fatalf("downloadURLToWriter() error = %v", err)
 	}
@@ -89,7 +90,7 @@ func TestDownloadURLToWriterRejectsHashMismatch(t *testing.T) {
 	}
 
 	var output bytes.Buffer
-	if _, err := downloadURLToWriter(server.URL, &output, wrongHash); err == nil {
+	if _, err := downloadURLToWriter(context.TODO(), server.URL, &output, wrongHash); err == nil {
 		t.Fatalf("downloadURLToWriter() expected hash mismatch error")
 	}
 }

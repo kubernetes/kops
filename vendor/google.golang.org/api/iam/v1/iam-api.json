@@ -474,7 +474,7 @@
                       "type": "string"
                     },
                     "workforcePoolProviderId": {
-                      "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-]. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
+                      "description": "Required. The ID for the provider, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters `[a-z0-9-]`. The prefix `gcp-` is reserved for use by Google, and may not be specified.",
                       "location": "query",
                       "type": "string"
                     }
@@ -664,7 +664,7 @@
                           "type": "string"
                         },
                         "workforcePoolProviderKeyId": {
-                          "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters [a-z0-9-].",
+                          "description": "Required. The ID to use for the key, which becomes the final component of the resource name. This value must be 4-32 characters, and may contain the characters `[a-z0-9-]`.",
                           "location": "query",
                           "type": "string"
                         }
@@ -864,7 +864,7 @@
                 "scimTenants": {
                   "methods": {
                     "create": {
-                      "description": "Agentspace only. Creates a new WorkforcePoolProviderScimTenant in a WorkforcePoolProvider. You cannot reuse the name of a deleted SCIM tenant until 30 days after deletion.",
+                      "description": "Gemini Enterprise only. Creates a new WorkforcePoolProviderScimTenant in a WorkforcePoolProvider. You cannot reuse the name of a deleted SCIM tenant until 30 days after deletion.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants",
                       "httpMethod": "POST",
                       "id": "iam.locations.workforcePools.providers.scimTenants.create",
@@ -873,14 +873,14 @@
                       ],
                       "parameters": {
                         "parent": {
-                          "description": "Required. Agentspace only. The parent to create SCIM tenant. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
+                          "description": "Required. Gemini Enterprise only. The parent to create SCIM tenant. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
                           "required": true,
                           "type": "string"
                         },
                         "workforcePoolProviderScimTenantId": {
-                          "description": "Required. Agentspace only. The ID to use for the SCIM tenant, which becomes the final component of the resource name. This value should be 4-32 characters, containing the characters [a-z0-9-].",
+                          "description": "Required. Gemini Enterprise only. The ID to use for the SCIM tenant, which becomes the final component of the resource name. This value should be 4-32 characters, containing the characters `[a-z0-9-]`.",
                           "location": "query",
                           "type": "string"
                         }
@@ -897,7 +897,7 @@
                       ]
                     },
                     "delete": {
-                      "description": "Agentspace only. Deletes a WorkforcePoolProviderScimTenant. You can undelete a SCIM tenant for 30 days. After 30 days, deletion is permanent. You cannot update deleted SCIM tenants. However, you can view and list them.",
+                      "description": "Gemini Enterprise only. Deletes a WorkforcePoolProviderScimTenant. You can undelete a SCIM tenant for 30 days. After 30 days, deletion is permanent. You cannot update deleted SCIM tenants. However, you can view and list them.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
                       "httpMethod": "DELETE",
                       "id": "iam.locations.workforcePools.providers.scimTenants.delete",
@@ -911,7 +911,7 @@
                           "type": "boolean"
                         },
                         "name": {
-                          "description": "Required. Agentspace only. The name of the scim tenant to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "description": "Required. Gemini Enterprise only. The name of the SCIM tenant to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
@@ -927,7 +927,7 @@
                       ]
                     },
                     "get": {
-                      "description": "Agentspace only. Gets an individual WorkforcePoolProviderScimTenant.",
+                      "description": "Gemini Enterprise only. Gets an individual WorkforcePoolProviderScimTenant.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
                       "httpMethod": "GET",
                       "id": "iam.locations.workforcePools.providers.scimTenants.get",
@@ -936,7 +936,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Required. Agentspace only. The name of the SCIM tenant to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "description": "Required. Gemini Enterprise only. The name of the SCIM tenant to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
@@ -952,7 +952,7 @@
                       ]
                     },
                     "list": {
-                      "description": "Agentspace only. Lists all non-deleted WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted SCIM tenants are also listed.",
+                      "description": "Gemini Enterprise only. Lists all non-deleted WorkforcePoolProviderScimTenants in a WorkforcePoolProvider. If `show_deleted` is set to `true`, then deleted SCIM tenants are also listed.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants",
                       "httpMethod": "GET",
                       "id": "iam.locations.workforcePools.providers.scimTenants.list",
@@ -961,25 +961,25 @@
                       ],
                       "parameters": {
                         "pageSize": {
-                          "description": "Optional. Agentspace only. The maximum number of SCIM tenants to return. If unspecified, at most 1 scim tenant will be returned.",
+                          "description": "Optional. Gemini Enterprise only. The maximum number of SCIM tenants to return. If unspecified, at most 50 SCIM tenants will be returned. The maximum value is 100; values above 100 are truncated to 100.",
                           "format": "int32",
                           "location": "query",
                           "type": "integer"
                         },
                         "pageToken": {
-                          "description": "Optional. Agentspace only. A page token, received from a previous `ListScimTenants` call. Provide this to retrieve the subsequent page.",
+                          "description": "Optional. Gemini Enterprise only. A page token, received from a previous `ListScimTenants` call. Provide this to retrieve the subsequent page.",
                           "location": "query",
                           "type": "string"
                         },
                         "parent": {
-                          "description": "Required. Agentspace only. The parent to list SCIM tenants. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
+                          "description": "Required. Gemini Enterprise only. The parent to list SCIM tenants. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}'",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+$",
                           "required": true,
                           "type": "string"
                         },
                         "showDeleted": {
-                          "description": "Optional. Agentspace only. Whether to return soft-deleted SCIM tenants.",
+                          "description": "Optional. Gemini Enterprise only. Whether to return soft-deleted SCIM tenants.",
                           "location": "query",
                           "type": "boolean"
                         }
@@ -993,7 +993,7 @@
                       ]
                     },
                     "patch": {
-                      "description": "Agentspace only. Updates an existing WorkforcePoolProviderScimTenant.",
+                      "description": "Gemini Enterprise only. Updates an existing WorkforcePoolProviderScimTenant.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}",
                       "httpMethod": "PATCH",
                       "id": "iam.locations.workforcePools.providers.scimTenants.patch",
@@ -1002,14 +1002,14 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Identifier. Agentspace only. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
+                          "description": "Identifier. Gemini Enterprise only. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
                           "type": "string"
                         },
                         "updateMask": {
-                          "description": "Optional. Agentspace only. The list of fields to update.",
+                          "description": "Optional. Gemini Enterprise only. The list of fields to update.",
                           "format": "google-fieldmask",
                           "location": "query",
                           "type": "string"
@@ -1027,7 +1027,7 @@
                       ]
                     },
                     "undelete": {
-                      "description": "Agentspace only. Undeletes a WorkforcePoolProviderScimTenant, that was deleted fewer than 30 days ago.",
+                      "description": "Gemini Enterprise only. Undeletes a WorkforcePoolProviderScimTenant, that was deleted fewer than 30 days ago.",
                       "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}:undelete",
                       "httpMethod": "POST",
                       "id": "iam.locations.workforcePools.providers.scimTenants.undelete",
@@ -1036,7 +1036,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Required. Agentspace only. The name of the SCIM tenant to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
+                          "description": "Required. Gemini Enterprise only. The name of the SCIM tenant to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}`",
                           "location": "path",
                           "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                           "required": true,
@@ -1059,7 +1059,7 @@
                     "tokens": {
                       "methods": {
                         "create": {
-                          "description": "Agentspace only. Creates a new WorkforcePoolProviderScimToken in a WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM token until 30 days after deletion.",
+                          "description": "Gemini Enterprise only. Creates a new WorkforcePoolProviderScimToken in a WorkforcePoolProviderScimTenant. You cannot reuse the name of a deleted SCIM token until 30 days after deletion.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens",
                           "httpMethod": "POST",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.create",
@@ -1068,14 +1068,14 @@
                           ],
                           "parameters": {
                             "parent": {
-                              "description": "Required. Agentspace only. The parent tenant to create SCIM token. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
+                              "description": "Required. Gemini Enterprise only. The parent tenant to create SCIM token. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                               "required": true,
                               "type": "string"
                             },
                             "workforcePoolProviderScimTokenId": {
-                              "description": "Required. Agentspace only. The ID to use for the SCIM token, which becomes the final component of the resource name. This value should be 4-32 characters and follow the pattern: \"([a-z]([a-z0-9\\\\-]{2,30}[a-z0-9]))\"",
+                              "description": "Required. Gemini Enterprise only. The ID to use for the SCIM token, which becomes the final component of the resource name. This value should be 4-32 characters and follow the pattern: `([a-z]([a-z0-9\\\\-]{2,30}[a-z0-9]))`",
                               "location": "query",
                               "type": "string"
                             }
@@ -1092,7 +1092,7 @@
                           ]
                         },
                         "delete": {
-                          "description": "Agentspace only. Deletes a WorkforcePoolProviderScimToken. You can undelete a SCIM token for 30 days. After 30 days, the SCIM token is permanently deleted. You cannot update deleted SCIM tokens, however, you can view and list them.",
+                          "description": "Gemini Enterprise only. Deletes a WorkforcePoolProviderScimToken. You can undelete a SCIM token for 30 days. After 30 days, the SCIM token is permanently deleted. You cannot update deleted SCIM tokens, however, you can view and list them.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
                           "httpMethod": "DELETE",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.delete",
@@ -1101,7 +1101,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Required. Agentspace only. The name of the SCIM token to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Required. Gemini Enterprise only. The name of the SCIM token to delete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
@@ -1117,7 +1117,7 @@
                           ]
                         },
                         "get": {
-                          "description": "Agentspace only. Gets an individual WorkforcePoolProviderScimToken.",
+                          "description": "Gemini Enterprise only. Gets an individual WorkforcePoolProviderScimToken.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
                           "httpMethod": "GET",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.get",
@@ -1126,7 +1126,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Required. Agentspace only. The name of the SCIM token to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Required. Gemini Enterprise only. The name of the SCIM token to retrieve. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
@@ -1142,7 +1142,7 @@
                           ]
                         },
                         "list": {
-                          "description": "Agentspace only. Lists all non-deleted WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.",
+                          "description": "Gemini Enterprise only. Lists all non-deleted WorkforcePoolProviderScimTokenss in a WorkforcePoolProviderScimTenant. If `show_deleted` is set to `true`, then deleted SCIM tokens are also listed.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens",
                           "httpMethod": "GET",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.list",
@@ -1151,25 +1151,25 @@
                           ],
                           "parameters": {
                             "pageSize": {
-                              "description": "Optional. Agentspace only. The maximum number of scim tokens to return. If unspecified, at most 2 SCIM tokens will be returned.",
+                              "description": "Optional. Gemini Enterprise only. The maximum number of SCIM tokens to return. If unspecified, at most 2 SCIM tokens will be returned.",
                               "format": "int32",
                               "location": "query",
                               "type": "integer"
                             },
                             "pageToken": {
-                              "description": "Optional. Agentspace only. A page token, received from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to retrieve the subsequent page.",
+                              "description": "Optional. Gemini Enterprise only. A page token, received from a previous `ListWorkforcePoolProviderScimTokens` call. Provide this to retrieve the subsequent page.",
                               "location": "query",
                               "type": "string"
                             },
                             "parent": {
-                              "description": "Required. Agentspace only. The parent to list SCIM tokens. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
+                              "description": "Required. Gemini Enterprise only. The parent to list SCIM tokens. Format: 'locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}'",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+$",
                               "required": true,
                               "type": "string"
                             },
                             "showDeleted": {
-                              "description": "Optional. Agentspace only. Whether to return soft-deleted scim tokens.",
+                              "description": "Optional. Gemini Enterprise only. Whether to return soft-deleted SCIM tokens.",
                               "location": "query",
                               "type": "boolean"
                             }
@@ -1183,7 +1183,7 @@
                           ]
                         },
                         "patch": {
-                          "description": "Agentspace only. Updates an existing WorkforcePoolProviderScimToken.",
+                          "description": "Gemini Enterprise only. Updates an existing WorkforcePoolProviderScimToken.",
                           "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}",
                           "httpMethod": "PATCH",
                           "id": "iam.locations.workforcePools.providers.scimTenants.tokens.patch",
@@ -1192,14 +1192,14 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Identifier. Agentspace only. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+                              "description": "Identifier. Gemini Enterprise only. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
                               "location": "path",
                               "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
                               "required": true,
                               "type": "string"
                             },
                             "updateMask": {
-                              "description": "Optional. Agentspace only. The list of fields to update.",
+                              "description": "Optional. Gemini Enterprise only. The list of fields to update.",
                               "format": "google-fieldmask",
                               "location": "query",
                               "type": "string"
@@ -1208,34 +1208,6 @@
                           "path": "v1/{+name}",
                           "request": {
                             "$ref": "WorkforcePoolProviderScimToken"
-                          },
-                          "response": {
-                            "$ref": "WorkforcePoolProviderScimToken"
-                          },
-                          "scopes": [
-                            "https://www.googleapis.com/auth/cloud-platform"
-                          ]
-                        },
-                        "undelete": {
-                          "description": "Agentspace only. Undeletes a WorkforcePoolProviderScimToken,that was deleted fewer than 30 days ago.",
-                          "flatPath": "v1/locations/{locationsId}/workforcePools/{workforcePoolsId}/providers/{providersId}/scimTenants/{scimTenantsId}/tokens/{tokensId}:undelete",
-                          "httpMethod": "POST",
-                          "id": "iam.locations.workforcePools.providers.scimTenants.tokens.undelete",
-                          "parameterOrder": [
-                            "name"
-                          ],
-                          "parameters": {
-                            "name": {
-                              "description": "Required. Agentspace only. The name of the SCIM token to undelete. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/{provider}/scimTenants/{scim_tenant}/tokens/{token}`",
-                              "location": "path",
-                              "pattern": "^locations/[^/]+/workforcePools/[^/]+/providers/[^/]+/scimTenants/[^/]+/tokens/[^/]+$",
-                              "required": true,
-                              "type": "string"
-                            }
-                          },
-                          "path": "v1/{+name}:undelete",
-                          "request": {
-                            "$ref": "UndeleteWorkforcePoolProviderScimTokenRequest"
                           },
                           "response": {
                             "$ref": "WorkforcePoolProviderScimToken"
@@ -1916,6 +1888,34 @@
             },
             "workloadIdentityPools": {
               "methods": {
+                "addAttestationRule": {
+                  "description": "Add an AttestationRule on a WorkloadIdentityPoolManagedIdentity. The total attestation rules after addition must not exceed 50.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:addAttestationRule",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.addAttestationRule",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:addAttestationRule",
+                  "request": {
+                    "$ref": "AddAttestationRuleRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "create": {
                   "description": "Creates a new WorkloadIdentityPool. You cannot reuse the name of a deleted pool until 30 days after deletion.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools",
@@ -2068,6 +2068,47 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
+                "listAttestationRules": {
+                  "description": "List all AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:listAttestationRules",
+                  "httpMethod": "GET",
+                  "id": "iam.projects.locations.workloadIdentityPools.listAttestationRules",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "filter": {
+                      "description": "Optional. A query filter. Supports the following function: * `container_ids()`: Returns only the AttestationRules under the specific container ids. The function expects a comma-delimited list with only project numbers and must use the format `projects/`. For example: `container_ids(projects/, projects/,...)`.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "Optional. The maximum number of AttestationRules to return. If unspecified, at most 50 AttestationRules are returned. The maximum value is 100; values above 100 are truncated to 100.",
+                      "format": "int32",
+                      "location": "query",
+                      "type": "integer"
+                    },
+                    "pageToken": {
+                      "description": "Optional. A page token, received from a previous `ListWorkloadIdentityPoolProviderKeys` call. Provide this to retrieve the subsequent page.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to list attestation rules of.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:listAttestationRules",
+                  "response": {
+                    "$ref": "ListAttestationRulesResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
                 "patch": {
                   "description": "Updates an existing WorkloadIdentityPool.",
                   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}",
@@ -2078,7 +2119,7 @@
                   ],
                   "parameters": {
                     "name": {
-                      "description": "Output only. The resource name of the pool.",
+                      "description": "Identifier. The resource name of the pool.",
                       "location": "path",
                       "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
                       "required": true,
@@ -2094,6 +2135,62 @@
                   "path": "v1/{+name}",
                   "request": {
                     "$ref": "WorkloadIdentityPool"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "removeAttestationRule": {
+                  "description": "Remove an AttestationRule on a WorkloadIdentityPoolManagedIdentity.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:removeAttestationRule",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.removeAttestationRule",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to remove an attestation rule from.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:removeAttestationRule",
+                  "request": {
+                    "$ref": "RemoveAttestationRuleRequest"
+                  },
+                  "response": {
+                    "$ref": "Operation"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ]
+                },
+                "setAttestationRules": {
+                  "description": "Set all AttestationRule on a WorkloadIdentityPoolManagedIdentity. A maximum of 50 AttestationRules can be set.",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/workloadIdentityPools/{workloadIdentityPoolsId}:setAttestationRules",
+                  "httpMethod": "POST",
+                  "id": "iam.projects.locations.workloadIdentityPools.setAttestationRules",
+                  "parameterOrder": [
+                    "resource"
+                  ],
+                  "parameters": {
+                    "resource": {
+                      "description": "Required. The resource name of the managed identity or namespace resource to add an attestation rule to.",
+                      "location": "path",
+                      "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+$",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "path": "v1/{+resource}:setAttestationRules",
+                  "request": {
+                    "$ref": "SetAttestationRulesRequest"
                   },
                   "response": {
                     "$ref": "Operation"
@@ -2324,7 +2421,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Output only. The resource name of the namespace.",
+                          "description": "Identifier. The resource name of the namespace.",
                           "location": "path",
                           "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+$",
                           "required": true,
@@ -2583,7 +2680,7 @@
                           ],
                           "parameters": {
                             "name": {
-                              "description": "Output only. The resource name of the managed identity.",
+                              "description": "Identifier. The resource name of the managed identity.",
                               "location": "path",
                               "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/namespaces/[^/]+/managedIdentities/[^/]+$",
                               "required": true,
@@ -2953,7 +3050,7 @@
                       ],
                       "parameters": {
                         "name": {
-                          "description": "Output only. The resource name of the provider.",
+                          "description": "Identifier. The resource name of the provider.",
                           "location": "path",
                           "pattern": "^projects/[^/]+/locations/[^/]+/workloadIdentityPools/[^/]+/providers/[^/]+$",
                           "required": true,
@@ -4160,7 +4257,7 @@
       }
     }
   },
-  "revision": "20251010",
+  "revision": "20260320",
   "rootUrl": "https://iam.googleapis.com/",
   "schemas": {
     "AccessRestrictions": {
@@ -4538,7 +4635,7 @@
       "type": "object"
     },
     "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client": {
-      "description": "Represents the OAuth 2.0 client credential configuration for retrieving additional user attributes that are not present in the initial authentication credentials from the identity provider, e.g. groups. See https://datatracker.ietf.org/doc/html/rfc6749#section-4.4 for more details on client credentials grant flow.",
+      "description": "Represents the OAuth 2.0 client credential configuration for retrieving additional user attributes that are not present in the initial authentication credentials from the identity provider, for example, groups. See https://datatracker.ietf.org/doc/html/rfc6749#section-4.4 for more details on client credentials grant flow.",
       "id": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client",
       "properties": {
         "attributesType": {
@@ -4546,12 +4643,14 @@
           "enum": [
             "ATTRIBUTES_TYPE_UNSPECIFIED",
             "AZURE_AD_GROUPS_MAIL",
-            "AZURE_AD_GROUPS_ID"
+            "AZURE_AD_GROUPS_ID",
+            "AZURE_AD_GROUPS_DISPLAY_NAME"
           ],
           "enumDescriptions": [
             "No AttributesType specified.",
             "Used to get the user's group claims from the Microsoft Entra ID identity provider using the configuration provided in ExtraAttributesOAuth2Client. The `mail` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The group mail addresses of the user's groups that are returned from Microsoft Entra ID can be mapped by using the following attributes: * OIDC: `assertion.groups` * SAML: `assertion.attributes.groups`",
-            "Used to get the user's group claims from the Microsoft Entra ID identity provider using the configuration provided in ExtraAttributesOAuth2Client. The `id` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The group IDs of the user's groups that are returned from Microsoft Entra ID can be mapped by using the following attributes: * OIDC: `assertion.groups` * SAML: `assertion.attributes.groups`"
+            "Used to get the user's group claims from the Microsoft Entra ID identity provider using the configuration provided in ExtraAttributesOAuth2Client. The `id` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The group IDs of the user's groups that are returned from Microsoft Entra ID can be mapped by using the following attributes: * OIDC: `assertion.groups` * SAML: `assertion.attributes.groups`",
+            "Used to get the user's group claims from the Microsoft Entra ID identity provider using the configuration provided in ExtraAttributesOAuth2Client. The `displayName` property of the `microsoft.graph.group` object is used for claim mapping. See https://learn.microsoft.com/en-us/graph/api/resources/group?view=graph-rest-1.0#properties for more details on `microsoft.graph.group` properties. The display names of the user's groups that are returned from Microsoft Entra ID can be mapped by using the following attributes: * OIDC: `assertion.groups` * SAML: `assertion.attributes.groups`"
           ],
           "type": "string"
         },
@@ -4586,7 +4685,7 @@
       "type": "object"
     },
     "GoogleIamAdminV1WorkforcePoolProviderOidc": {
-      "description": "Represents an OpenId Connect 1.0 identity provider.",
+      "description": "Represents an OpenID Connect 1.0 identity provider.",
       "id": "GoogleIamAdminV1WorkforcePoolProviderOidc",
       "properties": {
         "clientId": {
@@ -4602,7 +4701,7 @@
           "type": "string"
         },
         "jwksJson": {
-          "description": "Optional. OIDC JWKs in JSON String format. For details on the definition of a JWK, see https://tools.ietf.org/html/rfc7517. If not set, the `jwks_uri` from the discovery document(fetched from the .well-known path of the `issuer_uri`) will be used. Currently, RSA and EC asymmetric keys are supported. The JWK must use following format and include only the following fields: { \"keys\": [ { \"kty\": \"RSA/EC\", \"alg\": \"\", \"use\": \"sig\", \"kid\": \"\", \"n\": \"\", \"e\": \"\", \"x\": \"\", \"y\": \"\", \"crv\": \"\" } ] }",
+          "description": "Optional. OIDC JWKs in JSON String format. For details on the definition of a JWK, see https://tools.ietf.org/html/rfc7517. If not set, the `jwks_uri` from the discovery document that is fetched from the well-known path of the `issuer_uri`, will be used. RSA and EC asymmetric keys are supported. The JWK must use the following format and include only the following fields: { \"keys\": [ { \"kty\": \"RSA/EC\", \"alg\": \"\", \"use\": \"sig\", \"kid\": \"\", \"n\": \"\", \"e\": \"\", \"x\": \"\", \"y\": \"\", \"crv\": \"\" } ] }",
           "type": "string"
         },
         "webSsoConfig": {
@@ -4732,6 +4831,10 @@
           "description": "Optional. Rotation window percentage, the percentage of remaining lifetime after which certificate rotation is initiated. Must be between 50 and 80. If no value is specified, rotation window percentage is defaulted to 50.",
           "format": "int32",
           "type": "integer"
+        },
+        "useDefaultSharedCa": {
+          "description": "Optional. If set to true, the trust domain will utilize the GCP-provisioned default CA. A default CA in the same region as the workload will be selected to issue the certificate. Enabling this will clear any existing `ca_pools` configuration to provision the certificates. NOTE: This field is mutually exclusive with `ca_pools`. If this flag is enabled, certificates will be automatically provisioned from the default shared CAs. This flag should not be set if you want to use your own CA pools to provision the certificates.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -5018,15 +5121,15 @@
       "type": "object"
     },
     "ListWorkforcePoolProviderScimTenantsResponse": {
-      "description": "Agentspace only. Response message for ListWorkforcePoolProviderScimTenants.",
+      "description": "Gemini Enterprise only. Response message for ListWorkforcePoolProviderScimTenants.",
       "id": "ListWorkforcePoolProviderScimTenantsResponse",
       "properties": {
         "nextPageToken": {
-          "description": "Optional. Agentspace only. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "description": "Optional. Gemini Enterprise only. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
           "type": "string"
         },
         "workforcePoolProviderScimTenants": {
-          "description": "Output only. Agentspace only. A list of SCIM tenants.",
+          "description": "Output only. Gemini Enterprise only. A list of SCIM tenants.",
           "items": {
             "$ref": "WorkforcePoolProviderScimTenant"
           },
@@ -5037,15 +5140,15 @@
       "type": "object"
     },
     "ListWorkforcePoolProviderScimTokensResponse": {
-      "description": "Agentspace only. Response message for ListWorkforcePoolProviderScimTokens.",
+      "description": "Gemini Enterprise only. Response message for ListWorkforcePoolProviderScimTokens.",
       "id": "ListWorkforcePoolProviderScimTokensResponse",
       "properties": {
         "nextPageToken": {
-          "description": "Optional. Agentspace only. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
+          "description": "Optional. Gemini Enterprise only. A token, which can be sent as `page_token` to retrieve the next page. If this field is omitted, there are no subsequent pages.",
           "type": "string"
         },
         "workforcePoolProviderScimTokens": {
-          "description": "Output only. Agentspace only. A list of SCIM tokens.",
+          "description": "Output only. Gemini Enterprise only. A list of SCIM tokens.",
           "items": {
             "$ref": "WorkforcePoolProviderScimToken"
           },
@@ -5210,7 +5313,7 @@
           "type": "array"
         },
         "allowedScopes": {
-          "description": "Required. The list of scopes that the OauthClient is allowed to request during OAuth flows. The following scopes are supported: * `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account. * `openid`: The OAuth client can associate you with your personal information on Google Cloud. * `email`: The OAuth client can read a federated identity's email address. * `groups`: The OAuth client can read a federated identity's groups.",
+          "description": "Required. The list of scopes that the OauthClient is allowed to request during OAuth flows. The following scopes are supported: * `https://www.googleapis.com/auth/cloud-platform`: See, edit, configure, and delete your Google Cloud data and see the email address for your Google Account.",
           "items": {
             "type": "string"
           },
@@ -6099,7 +6202,7 @@
       "id": "TrustAnchor",
       "properties": {
         "pemCertificate": {
-          "description": "PEM certificate of the PKI used for validation. Must only contain one ca certificate(either root or intermediate cert).",
+          "description": "PEM certificate of the PKI used for validation. Must only contain one ca certificate (either root or intermediate cert).",
           "type": "string"
         }
       },
@@ -6122,6 +6225,10 @@
             "$ref": "TrustAnchor"
           },
           "type": "array"
+        },
+        "trustDefaultSharedCa": {
+          "description": "Optional. If set to True, the trust bundle will include the private ca managed identity regional root public certificates. Important: `trust_default_shared_ca` is only supported for managed identity trust domain resource.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -6173,14 +6280,8 @@
       "type": "object"
     },
     "UndeleteWorkforcePoolProviderScimTenantRequest": {
-      "description": "Agentspace only. Request message for UndeleteWorkforcePoolProviderScimTenant.",
+      "description": "Gemini Enterprise only. Request message for UndeleteWorkforcePoolProviderScimTenant.",
       "id": "UndeleteWorkforcePoolProviderScimTenantRequest",
-      "properties": {},
-      "type": "object"
-    },
-    "UndeleteWorkforcePoolProviderScimTokenRequest": {
-      "description": "Agentspace only. Request message for UndeleteWorkforcePoolProviderScimToken.",
-      "id": "UndeleteWorkforcePoolProviderScimTokenRequest",
       "properties": {},
       "type": "object"
     },
@@ -6307,7 +6408,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Required. Maps attributes from the authentication credentials issued by an external identity provider to Google Cloud attributes, such as `subject` and `segment`. Each key must be a string specifying the Google Cloud IAM attribute to map to. The following keys are supported: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. This is a required field and the mapped subject cannot exceed 127 bytes. * `google.groups`: Groups the authenticating user belongs to. You can grant groups access to resources using an IAM `principalSet` binding; access applies to all members of the group. * `google.display_name`: The name of the authenticated user. This is an optional field and the mapped display name cannot exceed 100 bytes. If not set, `google.subject` will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.profile_photo`: The URL that specifies the authenticated user's thumbnail photo. This is an optional field. When set, the image will be visible as the user's profile picture. If not set, a generic user icon will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.posix_username`: The Linux username used by OS Login. This is an optional field and the mapped POSIX username cannot exceed 32 characters, The key must match the regex \"^a-zA-Z0-9._{0,31}$\". This attribute cannot be referenced in IAM bindings. You can also provide custom attributes by specifying `attribute.{custom_attribute}`, where {custom_attribute} is the name of the custom attribute to be mapped. You can define a maximum of 50 custom attributes. The maximum length of a mapped attribute key is 100 characters, and the key may only contain the characters [a-z0-9_]. You can reference these attributes in IAM policies to define fine-grained access for a workforce pool to Google Cloud resources. For example: * `google.subject`: `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subject/{value}` * `google.groups`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/group/{value}` * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/attribute.{custom_attribute}/{value}` Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) function that maps an identity provider credential to the normalized attribute specified by the corresponding map key. You can use the `assertion` keyword in the expression to access a JSON representation of the authentication credential issued by the provider. The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the total size of all mapped attributes must not exceed 16 KB. For OIDC providers, you must supply a custom mapping that includes the `google.subject` attribute. For example, the following maps the `sub` claim of the incoming credential to the `subject` attribute on a Google token: ``` {\"google.subject\": \"assertion.sub\"} ```",
+          "description": "Required. Maps attributes from the authentication credentials issued by an external identity provider to Google Cloud attributes, such as `subject` and `segment`. Each key must be a string specifying the Google Cloud IAM attribute to map to. The following keys are supported: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. This is a required field and the mapped subject cannot exceed 127 bytes. * `google.groups`: Groups the authenticating user belongs to. You can grant groups access to resources using an IAM `principalSet` binding; access applies to all members of the group. * `google.display_name`: The name of the authenticated user. This is an optional field and the mapped display name cannot exceed 100 bytes. If not set, `google.subject` will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.profile_photo`: The URL that specifies the authenticated user's thumbnail photo. This is an optional field. When set, the image will be visible as the user's profile picture. If not set, a generic user icon will be displayed instead. This attribute cannot be referenced in IAM bindings. * `google.posix_username`: The Linux username used by OS Login. This is an optional field and the mapped POSIX username cannot exceed 32 characters. The key must match the regex `^a-zA-Z0-9._{0,31}$`. This attribute cannot be referenced in IAM bindings. You can also provide custom attributes by specifying `attribute.{custom_attribute}`, where {custom_attribute} is the name of the custom attribute to be mapped. You can define a maximum of 50 custom attributes. The maximum length of a mapped attribute key is 100 characters, and the key may only contain the characters `[a-z0-9_]`. You can reference these attributes in IAM policies to define fine-grained access for a workforce pool to Google Cloud resources. For example: * `google.subject`: `principal://iam.googleapis.com/locations/global/workforcePools/{pool}/subject/{value}` * `google.groups`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/group/{value}` * `attribute.{custom_attribute}`: `principalSet://iam.googleapis.com/locations/global/workforcePools/{pool}/attribute.{custom_attribute}/{value}` Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) function that maps an identity provider credential to the normalized attribute specified by the corresponding map key. You can use the `assertion` keyword in the expression to access a JSON representation of the authentication credential issued by the provider. The maximum length of an attribute mapping expression is 2048 characters. When evaluated, the total size of all mapped attributes must not exceed 16 KB. For OIDC providers, you must supply a custom mapping that includes the `google.subject` attribute. For example, the following maps the `sub` claim of the incoming credential to the `subject` attribute on a Google token: ``` {\"google.subject\": \"assertion.sub\"} ```",
           "type": "object"
         },
         "description": {
@@ -6338,7 +6439,7 @@
         },
         "extraAttributesOauth2Client": {
           "$ref": "GoogleIamAdminV1WorkforcePoolProviderExtraAttributesOAuth2Client",
-          "description": "Optional. The configuration for OAuth 2.0 client used to get the additional user attributes. This should be used when users can't get the desired claims in authentication credentials. Currently this configuration is only supported with OIDC protocol."
+          "description": "Optional. Defines the configuration for the OAuth 2.0 client that is used to get the additional user attributes in a separate backchannel call to the identity provider. This should be used when users can't get the required claims in authentication credentials. Currently, the OAuth 2.0 protocol is the only supported authorization method for this backchannel call."
         },
         "name": {
           "description": "Identifier. The resource name of the provider. Format: `locations/{location}/workforcePools/{workforce_pool_id}/providers/{provider_id}`",
@@ -6346,21 +6447,21 @@
         },
         "oidc": {
           "$ref": "GoogleIamAdminV1WorkforcePoolProviderOidc",
-          "description": "An OpenId Connect 1.0 identity provider configuration."
+          "description": "An OpenID Connect 1.0 identity provider configuration."
         },
         "saml": {
           "$ref": "GoogleIamAdminV1WorkforcePoolProviderSaml",
           "description": "A SAML identity provider configuration."
         },
         "scimUsage": {
-          "description": "Optional. Agentspace only. Specifies whether the workforce identity pool provider uses SCIM-managed groups instead of the `google.groups` attribute mapping for authorization checks. The `scim_usage` and `extended_attributes_oauth2_client` fields are mutually exclusive. A request that enables both fields on the same workforce identity pool provider will produce an error.",
+          "description": "Optional. Gemini Enterprise only. Specifies whether the workforce identity pool provider uses SCIM-managed groups instead of the `google.groups` attribute mapping for authorization checks. The `scim_usage` and `extended_attributes_oauth2_client` fields are mutually exclusive. A request that enables both fields on the same workforce identity pool provider will produce an error.",
           "enum": [
             "SCIM_USAGE_UNSPECIFIED",
             "ENABLED_FOR_GROUPS"
           ],
           "enumDescriptions": [
-            "Agentspace only. Do not use SCIM data.",
-            "Agentspace only. SCIM sync is enabled and SCIM-managed groups are used for authorization checks."
+            "Gemini Enterprise only. Do not use SCIM data.",
+            "Gemini Enterprise only. SCIM sync is enabled and SCIM-managed groups are used for authorization checks."
           ],
           "type": "string"
         },
@@ -6431,11 +6532,11 @@
       "type": "object"
     },
     "WorkforcePoolProviderScimTenant": {
-      "description": "Agentspace only. Represents a SCIM tenant. Used for provisioning and managing identity data (such as Users and Groups) in cross-domain environments.",
+      "description": "Gemini Enterprise only. Represents a SCIM tenant. Used for provisioning and managing identity data (such as Users and Groups) in cross-domain environments.",
       "id": "WorkforcePoolProviderScimTenant",
       "properties": {
         "baseUri": {
-          "description": "Output only. Agentspace only. Represents the base URI as defined in [RFC 7644, Section 1.3](https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must use this as the root address for managing resources under the tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/",
+          "description": "Output only. Gemini Enterprise only. Represents the base URI as defined in [RFC 7644, Section 1.3](https://datatracker.ietf.org/doc/html/rfc7644#section-1.3). Clients must use this as the root address for managing resources under the tenant. Format: https://iamscim.googleapis.com/{version}/{tenant_id}/",
           "readOnly": true,
           "type": "string"
         },
@@ -6443,23 +6544,23 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Optional. Agentspace only. Maps BYOID claims to SCIM claims.",
+          "description": "Required. Immutable. Gemini Enterprise only. Maps SCIM attributes to Google attributes. This mapping is used to associate the attributes synced via SCIM with the Google Cloud attributes used in IAM policies for Workforce Identity Federation. SCIM-managed user and group attributes are mapped to `google.subject` and `google.group` respectively. Each key must be a string specifying the Google Cloud IAM attribute to map to. The supported keys are as follows: * `google.subject`: The principal IAM is authenticating. You can reference this value in IAM bindings. This is also the subject that appears in Cloud Logging logs. This is a required field and the mapped subject cannot exceed 127 bytes. * `google.group`: Group the authenticating user belongs to. You can grant group access to resources using an IAM `principalSet` binding; access applies to all members of the group. Each value must be a [Common Expression Language] (https://opensource.google/projects/cel) expression that maps SCIM user or group attribute to the normalized attribute specified by the corresponding map key. Example: To map the SCIM user's `externalId` to `google.subject` and the SCIM group's `externalId` to `google.group`: ``` { \"google.subject\": \"user.externalId\", \"google.group\": \"group.externalId\" } ```",
           "type": "object"
         },
         "description": {
-          "description": "Optional. Agentspace only. The description of the SCIM tenant. Cannot exceed 256 characters.",
+          "description": "Optional. Gemini Enterprise only. The description of the SCIM tenant. Cannot exceed 256 characters.",
           "type": "string"
         },
         "displayName": {
-          "description": "Optional. Agentspace only. The display name of the SCIM tenant. Cannot exceed 32 characters.",
+          "description": "Optional. Gemini Enterprise only. The display name of the SCIM tenant. Cannot exceed 32 characters.",
           "type": "string"
         },
         "name": {
-          "description": "Identifier. Agentspace only. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
+          "description": "Identifier. Gemini Enterprise only. The resource name of the SCIM Tenant. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}`",
           "type": "string"
         },
         "purgeTime": {
-          "description": "Output only. Agentspace only. The timestamp that represents the time when the SCIM tenant is purged.",
+          "description": "Output only. Gemini Enterprise only. The timestamp that represents the time when the SCIM tenant is purged.",
           "format": "google-datetime",
           "readOnly": true,
           "type": "string"
@@ -6470,16 +6571,16 @@
           "type": "string"
         },
         "state": {
-          "description": "Output only. Agentspace only. The state of the tenant.",
+          "description": "Output only. Gemini Enterprise only. The state of the tenant.",
           "enum": [
             "STATE_UNSPECIFIED",
             "ACTIVE",
             "DELETED"
           ],
           "enumDescriptions": [
-            "Agentspace only. State unspecified.",
-            "Agentspace only. The tenant is active and may be used to provision users and groups.",
-            "Agentspace only. The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
+            "Gemini Enterprise only. State unspecified.",
+            "Gemini Enterprise only. The tenant is active and may be used to provision users and groups.",
+            "Gemini Enterprise only. The tenant is soft-deleted. Soft-deleted tenants are permanently deleted after approximately 30 days."
           ],
           "readOnly": true,
           "type": "string"
@@ -6488,33 +6589,33 @@
       "type": "object"
     },
     "WorkforcePoolProviderScimToken": {
-      "description": "Agentspace only. Represents a token for the WorkforcePoolProviderScimTenant. Used for authenticating SCIM provisioning requests.",
+      "description": "Gemini Enterprise only. Represents a token for the WorkforcePoolProviderScimTenant. Used for authenticating SCIM provisioning requests.",
       "id": "WorkforcePoolProviderScimToken",
       "properties": {
         "displayName": {
-          "description": "Optional. Agentspace only. The display name of the SCIM token. Cannot exceed 32 characters.",
+          "description": "Optional. Gemini Enterprise only. The display name of the SCIM token. Cannot exceed 32 characters.",
           "type": "string"
         },
         "name": {
-          "description": "Identifier. Agentspace only. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
+          "description": "Identifier. Gemini Enterprise only. The resource name of the SCIM Token. Format: `locations/{location}/workforcePools/{workforce_pool}/providers/ {workforce_pool_provider}/scimTenants/{scim_tenant}/tokens/{token}`",
           "type": "string"
         },
         "securityToken": {
-          "description": "Output only. Agentspace only. The token string. Provide this to the IdP for authentication. Will be set only during creation.",
+          "description": "Output only. Gemini Enterprise only. The token string. Provide this to the IdP for authentication. Will be set only during creation.",
           "readOnly": true,
           "type": "string"
         },
         "state": {
-          "description": "Output only. Agentspace only. The state of the token.",
+          "description": "Output only. Gemini Enterprise only. The state of the token.",
           "enum": [
             "STATE_UNSPECIFIED",
             "ACTIVE",
             "DELETED"
           ],
           "enumDescriptions": [
-            "Agentspace only. State unspecified.",
-            "Agentspace only. The token is active and may be used to provision users and groups.",
-            "Agentspace only. The token is soft-deleted. Soft-deleted tokens are permanently deleted after approximately 30 days."
+            "Gemini Enterprise only. State unspecified.",
+            "Gemini Enterprise only. The token is active and may be used to provision users and groups.",
+            "Gemini Enterprise only. The token is soft-deleted. Soft-deleted tokens are permanently deleted after approximately 30 days."
           ],
           "readOnly": true,
           "type": "string"
@@ -6557,18 +6658,19 @@
           "enum": [
             "MODE_UNSPECIFIED",
             "FEDERATION_ONLY",
-            "TRUST_DOMAIN"
+            "TRUST_DOMAIN",
+            "SYSTEM_TRUST_DOMAIN"
           ],
           "enumDescriptions": [
             "State unspecified. New pools should not use this mode. Pools with an unspecified mode will operate as if they are in federation-only mode.",
-            "Federation-only mode. Federation-only pools can only be used for federating external workload identities into Google Cloud. Unless otherwise noted, no structure or format constraints are applied to workload identities in a federation-only pool, and you cannot create any resources within the pool besides providers.",
-            "Trust-domain mode. Trust-domain pools can be used to assign identities to Google Cloud workloads. All identities within a trust-domain pool must consist of a single namespace and individual workload identifier. The subject identifier for all identities must conform to the following format: `ns//sa/` WorkloadIdentityPoolProviders cannot be created within trust-domain pools."
+            "Federation-only mode. FEDERATION_ONLY mode pools can only be used for federating external workload identities into Google Cloud. Unless otherwise noted, no structure or format constraints are applied to workload identities in a FEDERATION_ONLY mode pool, and you cannot create any resources within the pool besides providers.",
+            "Trust-domain mode. TRUST_DOMAIN mode pools can be used to assign identities to Google Cloud workloads. Identities within a TRUST_DOMAIN mode pool share the same root of trust. WorkloadIdentityPoolProviders cannot be created within trust-domain pools.",
+            "SYSTEM_TRUST_DOMAIN mode pools are managed by Google Cloud services. Neither WorkloadIdentityPoolNamespaces nor WorkloadIdentityPoolProviders can be created within SYSTEM_TRUST_DOMAIN mode pools. All identities within a SYSTEM_TRUST_DOMAIN mode pool are in one of the following formats: * `spiffe:///ns//sa/` * `spiffe:///resources//`"
           ],
           "type": "string"
         },
         "name": {
-          "description": "Output only. The resource name of the pool.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the pool.",
           "type": "string"
         },
         "state": {
@@ -6608,8 +6710,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Output only. The resource name of the managed identity.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the managed identity.",
           "type": "string"
         },
         "state": {
@@ -6649,8 +6750,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Output only. The resource name of the namespace.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the namespace.",
           "type": "string"
         },
         "ownerService": {
@@ -6720,8 +6820,7 @@
           "type": "string"
         },
         "name": {
-          "description": "Output only. The resource name of the provider.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the provider.",
           "type": "string"
         },
         "oidc": {
@@ -6769,8 +6868,7 @@
           "description": "Immutable. Public half of the asymmetric key."
         },
         "name": {
-          "description": "Output only. The resource name of the key.",
-          "readOnly": true,
+          "description": "Identifier. The resource name of the key.",
           "type": "string"
         },
         "state": {

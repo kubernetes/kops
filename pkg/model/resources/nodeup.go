@@ -87,26 +87,7 @@ download-or-bust() {
 
   while true; do
     for url in "${urls[@]}"; do
-      commands=(
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd} "${url}"); then
-          echo "== Failed to download ${url} using ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
-      done
+      {{ CopyCheckUrlBlock }}
     done
 
     echo "== All downloads failed; sleeping before retrying =="
@@ -253,9 +234,57 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 
 		"ProxyEnv":             b.ProxyEnv,
 		"EnvironmentVariables": b.EnvironmentVariables,
+		"CopyCheckUrlBlock":    b.copyCheckUrlBlock,
 	}
 
 	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
+}
+
+func (b *NodeUpScript) copyCheckUrlBlock() (string, error) {
+	if b.CloudProvider == string(kops.CloudProviderGCE) {
+		return `commands=(
+        "gcloud storage cp ${url} ${file}"
+        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
+        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10 ${url}"
+        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
+        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10 ${url}"
+      )
+      for cmd in "${commands[@]}"; do
+        echo "== Downloading ${url} using ${cmd} =="
+        if ! (${cmd}); then
+          echo "== Failed to download ${url} using ${cmd} =="
+          continue
+        fi
+        if ! validate-hash "${file}" "${hash}"; then
+          echo "== Failed to validate hash for ${url} =="
+          rm -f "${file}"
+        else
+          echo "== Downloaded ${url} with hash ${hash} =="
+          return 0
+        fi
+      done`, nil
+	} else {
+		return `commands=(
+        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
+      )
+      for cmd in "${commands[@]}"; do
+        echo "== Downloading ${url} using ${cmd} =="
+        if ! (${cmd} "${url}"); then
+          echo "== Failed to download ${url} using ${cmd} =="
+          continue
+        fi
+        if ! validate-hash "${file}" "${hash}"; then
+          echo "== Failed to validate hash for ${url} =="
+          rm -f "${file}"
+        else
+          echo "== Downloaded ${url} with hash ${hash} =="
+          return 0
+        fi
+      done`, nil
+	}
 }
 
 func gzipBase64(data string) (string, error) {
