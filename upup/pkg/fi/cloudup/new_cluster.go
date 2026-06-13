@@ -202,6 +202,29 @@ type NewClusterResult struct {
 	Channel *api.Channel
 }
 
+// parseFeatureGates parses feature gates in the form of "+GateName" or "-GateName".
+// Returns a map of gate name to enabled bool, or error if parsing fails.
+func parseFeatureGates(gates []string) (map[string]bool, error) {
+	result := make(map[string]bool)
+	for _, featureGate := range gates {
+		if len(featureGate) == 0 {
+			return nil, fmt.Errorf("--kubernetes-feature-gates: empty feature gate name")
+		}
+		enabled := true
+		if featureGate[0] == '+' {
+			featureGate = featureGate[1:]
+		} else if featureGate[0] == '-' {
+			enabled = false
+			featureGate = featureGate[1:]
+		}
+		if len(featureGate) == 0 {
+			return nil, fmt.Errorf("--kubernetes-feature-gates: feature gate name is empty after stripping sign prefix")
+		}
+		result[featureGate] = enabled
+	}
+	return result, nil
+}
+
 // NewCluster initializes cluster and instance groups specifications as
 // intended for newly created clusters.
 // It is the responsibility of the caller to call cloudup.PerformAssignments() on
@@ -284,20 +307,16 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 			FeatureGates: make(map[string]string),
 		}
 
-		for _, featureGate := range opt.KubernetesFeatureGates {
-			enabled := true
-			if featureGate[0] == '+' {
-				featureGate = featureGate[1:]
-			}
-			if featureGate[0] == '-' {
-				enabled = false
-				featureGate = featureGate[1:]
-			}
-			cluster.Spec.Kubelet.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeAPIServer.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeControllerManager.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeProxy.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeScheduler.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+		gates, err := parseFeatureGates(opt.KubernetesFeatureGates)
+		if err != nil {
+			return nil, err
+		}
+		for name, enabled := range gates {
+			cluster.Spec.Kubelet.FeatureGates[name] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeAPIServer.FeatureGates[name] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeControllerManager.FeatureGates[name] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeProxy.FeatureGates[name] = strconv.FormatBool(enabled)
+			cluster.Spec.KubeScheduler.FeatureGates[name] = strconv.FormatBool(enabled)
 		}
 	}
 
