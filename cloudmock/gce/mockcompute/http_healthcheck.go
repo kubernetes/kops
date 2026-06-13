@@ -78,6 +78,23 @@ func (c *httpHealthChecksClient) Delete(project, name string) (*compute.Operatio
 	return doneOperation(), nil
 }
 
+func (c *httpHealthChecksClient) Update(project, name string, hc *compute.HttpHealthCheck) (*compute.Operation, error) {
+	c.Lock()
+	defer c.Unlock()
+	hcs, ok := c.httpHealthchecks[project]
+	if !ok {
+		return nil, notFoundError()
+	}
+	existing, ok := hcs[name]
+	if !ok {
+		return nil, notFoundError()
+	}
+	// Update is a full PUT; preserve the server-assigned SelfLink.
+	hc.SelfLink = existing.SelfLink
+	hcs[name] = hc
+	return doneOperation(), nil
+}
+
 func (c *httpHealthChecksClient) Get(project, name string) (*compute.HttpHealthCheck, error) {
 	c.Lock()
 	defer c.Unlock()

@@ -74,6 +74,9 @@ func (_ *HTTPHealthcheck) CheckChanges(a, e, changes *HTTPHealthcheck) error {
 	if fi.ValueOf(e.Name) == "" {
 		return fi.RequiredField("Name")
 	}
+	if a != nil && changes.Name != nil {
+		return fi.CannotChangeField("Name")
+	}
 	return nil
 }
 
@@ -94,6 +97,22 @@ func (h *HTTPHealthcheck) RenderGCE(t *gce.GCEAPITarget, a, e, changes *HTTPHeal
 			return fmt.Errorf("error creating Healthcheck: %v", err)
 		}
 		h.SelfLink = r.TargetLink
+	} else if changes.Port != nil || changes.RequestPath != nil {
+		// Insert only applies these on create, so reconcile changes to an existing check with a separate Update.
+		o := &compute.HttpHealthCheck{
+			Name:        fi.ValueOf(e.Name),
+			Port:        fi.ValueOf(e.Port),
+			RequestPath: fi.ValueOf(e.RequestPath),
+		}
+
+		klog.V(4).Infof("Updating Healthcheck %q", o.Name)
+		r, err := t.Cloud.Compute().HTTPHealthChecks().Update(t.Cloud.Project(), o.Name, o)
+		if err != nil {
+			return fmt.Errorf("error updating Healthcheck %q: %v", o.Name, err)
+		}
+		if err := t.Cloud.WaitForOp(r); err != nil {
+			return fmt.Errorf("error updating Healthcheck: %v", err)
+		}
 	}
 	return nil
 }
