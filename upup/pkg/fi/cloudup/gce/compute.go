@@ -674,6 +674,7 @@ type InstanceGroupManagerClient interface {
 	Get(project, zone, name string) (*compute.InstanceGroupManager, error)
 	List(ctx context.Context, project, zone string) ([]*compute.InstanceGroupManager, error)
 	ListManagedInstances(ctx context.Context, project, zone, name string) ([]*compute.ManagedInstance, error)
+	ListErrors(ctx context.Context, project, zone, name string) ([]*compute.InstanceManagedByIgmError, error)
 	RecreateInstances(project, zone, name, id string) (*compute.Operation, error)
 	SetTargetPools(project, zone, name string, targetPools []string) (*compute.Operation, error)
 	SetInstanceTemplate(project, zone, name, instanceTemplateURL string) (*compute.Operation, error)
@@ -718,6 +719,17 @@ func (c *instanceGroupManagerClientImpl) ListManagedInstances(ctx context.Contex
 		return nil, err
 	}
 	return instances, nil
+}
+
+func (c *instanceGroupManagerClientImpl) ListErrors(ctx context.Context, project, zone, name string) ([]*compute.InstanceManagedByIgmError, error) {
+	var items []*compute.InstanceManagedByIgmError
+	if err := c.srv.ListErrors(project, zone, name).Pages(ctx, func(page *compute.InstanceGroupManagersListErrorsResponse) error {
+		items = append(items, page.Items...)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 func (c *instanceGroupManagerClientImpl) RecreateInstances(project, zone, name, id string) (*compute.Operation, error) {
