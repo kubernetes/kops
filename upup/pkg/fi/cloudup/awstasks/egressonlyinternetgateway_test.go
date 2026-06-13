@@ -19,6 +19,7 @@ package awstasks
 import (
 	"context"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,59 +30,79 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
+func TestSharedEgressOnlyInternetGateway(t *testing.T) {
 	ctx := context.TODO()
 
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
 
-	// Pre-create the vpc / subnet
-	vpc, err := c.CreateVpc(ctx, &ec2.CreateVpcInput{
-		CidrBlock: aws.String("172.20.0.0/16"),
-	})
-	if err != nil {
-		t.Fatalf("error creating test VPC: %v", err)
-	}
-	_, err = c.CreateTags(ctx, &ec2.CreateTagsInput{
-		Resources: []string{aws.ToString(vpc.Vpc.VpcId)},
-		Tags: []ec2types.Tag{
-			{
-				Key:   aws.String("Name"),
-				Value: aws.String("ExistingVPC"),
-			},
-		},
-	})
-	if err != nil {
-		t.Fatalf("error tagging test vpc: %v", err)
-	}
+	// Pre-create multiple VPC & Egress Only Internet Gateways.
+	// This is a broader test scenario that will also cover filtering Egress Only
+	// Internet Gateways so that only the appropiate one for the VPC is selected.
+	var vpcs []*ec2types.Vpc
+	var eigws []*ec2types.EgressOnlyInternetGateway
 
-	internetGateway, err := c.CreateEgressOnlyInternetGateway(ctx, &ec2.CreateEgressOnlyInternetGatewayInput{
-		VpcId: vpc.Vpc.VpcId,
-		TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeEgressOnlyInternetGateway, map[string]string{
-			"Name": "ExistingInternetGateway",
-		}),
-	})
-	if err != nil {
-		t.Fatalf("error creating test eigw: %v", err)
+	for index, cidr := range []string{"172.20.0.0/24", "172.20.1.0/24"} {
+		vpc, err := c.CreateVpc(ctx, &ec2.CreateVpcInput{
+			CidrBlock: aws.String(cidr),
+		})
+
+		if err != nil {
+			t.Fatalf("error creating test VPC: %v", err)
+		}
+
+		_, err = c.CreateTags(ctx, &ec2.CreateTagsInput{
+			Resources: []string{aws.ToString(vpc.Vpc.VpcId)},
+			Tags: []ec2types.Tag{
+				{
+					Key:   aws.String("Name"),
+					Value: aws.String("ExistingVPC"),
+				},
+				{
+					Key:   aws.String("Index"),
+					Value: aws.String(strconv.Itoa(index)),
+				},
+			},
+		})
+
+		if err != nil {
+			t.Fatalf("error tagging test vpc: %v", err)
+		}
+
+		eigw, err := c.CreateEgressOnlyInternetGateway(ctx, &ec2.CreateEgressOnlyInternetGatewayInput{
+			VpcId: vpc.Vpc.VpcId,
+			TagSpecifications: awsup.EC2TagSpecification(ec2types.ResourceTypeEgressOnlyInternetGateway, map[string]string{
+				"Name":  "ExistingInternetGateway",
+				"Index": strconv.Itoa(index),
+			}),
+		})
+
+		if err != nil {
+			t.Fatalf("error creating test eigw: %v", err)
+		}
+
+		vpcs = append(vpcs, vpc.Vpc)
+		eigws = append(eigws, eigw.EgressOnlyInternetGateway)
 	}
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
+	// Only use the first cloud VPC and Egress Only Internet Gateway for KOPS tasks.
 	buildTasks := func() map[string]fi.CloudupTask {
 		vpc1 := &VPC{
 			Name:      s("vpc1"),
 			Lifecycle: fi.LifecycleSync,
-			CIDR:      s("172.20.0.0/16"),
+			CIDR:      vpcs[0].CidrBlock,
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
 			Shared:    fi.PtrTo(true),
-			ID:        vpc.Vpc.VpcId,
+			ID:        vpcs[0].VpcId,
 		}
 		eigw1 := &EgressOnlyInternetGateway{
 			Name:      s("eigw1"),
 			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
 			Shared:    fi.PtrTo(true),
-			ID:        internetGateway.EgressOnlyInternetGateway.EgressOnlyInternetGatewayId,
+			ID:        eigws[0].EgressOnlyInternetGatewayId,
 			Tags:      make(map[string]string),
 		}
 
@@ -97,26 +118,32 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 
 		runTasks(t, cloud, allTasks)
 
+		// Check the created Egress Only Internet Gateway has a valid ID
 		if fi.ValueOf(eigw1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
-		if len(c.EgressOnlyInternetGatewayIds()) != 1 {
-			t.Fatalf("Expected exactly one EgressOnlyInternetGateway; found %v", c.EgressOnlyInternetGatewayIds())
+		// Check that there are still 2 Egress Only Internet Gateways and that none
+		// extra have been created (or destroyed).
+		if len(c.EgressOnlyInternetGatewayIds()) != 2 {
+			t.Fatalf("Expected exactly two EgressOnlyInternetGateway; found %v", c.EgressOnlyInternetGatewayIds())
 		}
 
-		actual := c.FindEgressOnlyInternetGateway(*internetGateway.EgressOnlyInternetGateway.EgressOnlyInternetGatewayId)
+		// Check the Egress Only Internet Gateway in our build context is the one
+		// that we expect to be there.
+		actual := c.FindEgressOnlyInternetGateway(*eigws[0].EgressOnlyInternetGatewayId)
 		if actual == nil {
 			t.Fatalf("EgressOnlyInternetGateway created but then not found")
 		}
 		expected := &ec2types.EgressOnlyInternetGateway{
 			EgressOnlyInternetGatewayId: aws.String("eigw-1"),
 			Tags: buildTags(map[string]string{
-				"Name": "ExistingInternetGateway",
+				"Name":  "ExistingInternetGateway",
+				"Index": "0",
 			}),
 			Attachments: []ec2types.InternetGatewayAttachment{
 				{
-					VpcId: vpc.Vpc.VpcId,
+					VpcId: vpcs[0].VpcId,
 				},
 			},
 		}
@@ -130,6 +157,7 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 	}
 
 	{
+		// Check the Egress Only Internet Gateway does not change on further runs.
 		allTasks := buildTasks()
 		checkNoChanges(t, ctx, cloud, allTasks)
 	}
