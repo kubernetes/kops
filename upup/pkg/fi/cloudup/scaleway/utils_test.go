@@ -49,7 +49,7 @@ func createScalewayConfigFile() error {
 	if err != nil {
 		return fmt.Errorf("error marshalling yaml file: %w", err)
 	}
-	err = os.WriteFile("./scw_config_test.yaml", out, 0644)
+	err = os.WriteFile("./scw_config_test.yaml", out, 0o600)
 	if err != nil {
 		return fmt.Errorf("error writing yaml file: %w", err)
 	}

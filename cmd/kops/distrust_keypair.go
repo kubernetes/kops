@@ -125,7 +125,7 @@ func RunDistrustKeypair(ctx context.Context, f *util.Factory, out io.Writer, opt
 	}
 
 	if options.Keyset != "all" {
-		return distrustKeypair(ctx, out, options.Keyset, options.KeypairIDs[:], keyStore)
+		return distrustKeypair(ctx, out, options.Keyset, options.KeypairIDs, keyStore)
 	}
 
 	keysets, err := keyStore.ListKeysets()

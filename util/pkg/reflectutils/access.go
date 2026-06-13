@@ -181,21 +181,32 @@ func setType(v reflect.Value, newValue string) error {
 		newV = reflect.ValueOf(b)
 
 	case "int64", "int32", "int16", "int":
-		v, err := strconv.Atoi(newValue)
-		if err != nil {
-			return fmt.Errorf("cannot interpret %q value as integer", newValue)
-		}
-
 		switch t {
 		case "int":
+			v, err := strconv.Atoi(newValue)
+			if err != nil {
+				return fmt.Errorf("cannot interpret %q value as integer", newValue)
+			}
 			newV = reflect.ValueOf(v)
 		case "int16":
+			v, err := strconv.ParseInt(newValue, 10, 16)
+			if err != nil {
+				return fmt.Errorf("cannot interpret %q value as int16", newValue)
+			}
 			v16 := int16(v)
 			newV = reflect.ValueOf(v16)
 		case "int32":
+			v, err := strconv.ParseInt(newValue, 10, 32)
+			if err != nil {
+				return fmt.Errorf("cannot interpret %q value as int32", newValue)
+			}
 			v32 := int32(v)
 			newV = reflect.ValueOf(v32)
 		case "int64":
+			v, err := strconv.ParseInt(newValue, 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot interpret %q value as int64", newValue)
+			}
 			v64 := int64(v)
 			newV = reflect.ValueOf(v64)
 		default:

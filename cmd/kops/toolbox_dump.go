@@ -202,7 +202,7 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 			Auth: []ssh.AuthMethod{
 				ssh.PublicKeys(signer),
 			},
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(), //nolint:gosec // toolbox dump connects to cluster nodes without managed host keys.
 		}
 
 		klog.Infof("will SSH using username %q", sshConfig.User)

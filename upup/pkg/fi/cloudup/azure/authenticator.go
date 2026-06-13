@@ -26,7 +26,7 @@ import (
 
 // AzureAuthenticationTokenPrefix prefixes bootstrap tokens created from Azure IMDS instance
 // identity data.
-const AzureAuthenticationTokenPrefix = "x-azure-id "
+const AzureAuthenticationTokenPrefix = "x-azure-id " //nolint:gosec // This is an authentication scheme prefix, not a credential.
 
 type azureAuthenticator struct{}
 

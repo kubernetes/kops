@@ -147,9 +147,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["SharedVPC"] = tf.SharedVPC
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
-	dest["replace"] = func(s, find, replace string) string {
-		return strings.ReplaceAll(s, find, replace)
-	}
+	dest["replace"] = strings.ReplaceAll
 	dest["joinHostPort"] = net.JoinHostPort
 
 	sprigTxtFuncMap := sprig.TxtFuncMap()
@@ -482,7 +480,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
 	dest["KopsVersion"] = func() string { return kopsroot.Version }
-	dest["KopsVersionImageTag"] = func() string { return kopsroot.KopsVersionImageTag() }
+	dest["KopsVersionImageTag"] = kopsroot.KopsVersionImageTag
 	dest["KopsVersionForLabel"] = func() string {
 		// Labels follow strict rules: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character
 		// By convention we use a v prefix here

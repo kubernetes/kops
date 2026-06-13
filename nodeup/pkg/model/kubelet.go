@@ -58,7 +58,7 @@ const (
 	kubeletService = "kubelet.service"
 
 	kubeletConfigFilePath            = "/var/lib/kubelet/kubelet.conf"
-	credentialProviderConfigFilePath = "/var/lib/kubelet/credential-provider.conf"
+	credentialProviderConfigFilePath = "/var/lib/kubelet/credential-provider.conf" //nolint:gosec // This is a config file path, not a credential.
 )
 
 // Scheme registration is shared across all calls in this file because the

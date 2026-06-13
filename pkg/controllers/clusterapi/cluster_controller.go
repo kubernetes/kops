@@ -276,7 +276,7 @@ func (s *clusterScope) createKopsControlPlane(ctx context.Context, kube client.C
 			"users": []map[string]any{
 				{
 					"name": "in-cluster",
-					"user": map[string]any{
+					"user": map[string]any{ //nolint:gosec // This is a kubeconfig field name, not a credential.
 						"tokenFile": "/var/run/secrets/kubernetes.io/serviceaccount/token",
 					},
 				},

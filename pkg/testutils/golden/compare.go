@@ -68,7 +68,7 @@ func AssertMatchesFile(t *testing.T, actual string, p string) {
 		if err := os.MkdirAll(path.Dir(p), 0o755); err != nil {
 			t.Errorf("error creating directory %s: %v", path.Dir(p), err)
 		}
-		if err := os.WriteFile(p, []byte(actual), 0o644); err != nil {
+		if err := os.WriteFile(p, []byte(actual), 0o644); err != nil { //nolint:gosec // Updated golden files should be readable in the worktree.
 			t.Errorf("error writing expected output %s: %v", p, err)
 		}
 

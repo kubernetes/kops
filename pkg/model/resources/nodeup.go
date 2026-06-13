@@ -235,9 +235,7 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 			return string(bootConfigData), nil
 		},
 
-		"GzipBase64": func(data string) (string, error) {
-			return gzipBase64(data)
-		},
+		"GzipBase64": gzipBase64,
 
 		"CompressUserData": func() bool {
 			return b.CompressUserData

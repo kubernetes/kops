@@ -35,7 +35,7 @@ func TestDownloadURLRejectsNon2xxAndPreservesDestination(t *testing.T) {
 	defer server.Close()
 
 	dest := filepath.Join(t.TempDir(), "download")
-	if err := os.WriteFile(dest, []byte("original"), 0o644); err != nil {
+	if err := os.WriteFile(dest, []byte("original"), 0o600); err != nil {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
