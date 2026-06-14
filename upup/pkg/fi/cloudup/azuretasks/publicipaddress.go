@@ -33,6 +33,7 @@ type PublicIPAddress struct {
 	Lifecycle fi.Lifecycle
 
 	ID            *string
+	IPAddress     *string
 	ResourceGroup *ResourceGroup
 
 	// IPVersion is the IP version, e.g. network.IPVersionIPv4.
@@ -79,6 +80,9 @@ func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
 	}
 
 	p.ID = found.ID
+	if found.Properties != nil {
+		p.IPAddress = found.Properties.IPAddress
+	}
 
 	actual := &PublicIPAddress{
 		Name:      p.Name,
@@ -92,6 +96,7 @@ func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
 	if found.Properties != nil {
 		actual.IPVersion = fi.ValueOf(found.Properties.PublicIPAddressVersion)
 		actual.AllocationMethod = fi.ValueOf(found.Properties.PublicIPAllocationMethod)
+		actual.IPAddress = found.Properties.IPAddress
 	}
 	if found.SKU != nil {
 		actual.SKU = fi.ValueOf(found.SKU.Name)
@@ -157,6 +162,9 @@ func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Publ
 	}
 
 	e.ID = pip.ID
+	if pip.Properties != nil {
+		e.IPAddress = pip.Properties.IPAddress
+	}
 
 	return nil
 }

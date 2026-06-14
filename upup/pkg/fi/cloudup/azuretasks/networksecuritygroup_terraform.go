@@ -28,8 +28,8 @@ type terraformAzureNetworkSecurityRule struct {
 	Access                                 *string                    `cty:"access"`
 	Direction                              *string                    `cty:"direction"`
 	Protocol                               *string                    `cty:"protocol"`
-	SourceAddressPrefix                    *string                    `cty:"source_address_prefix"`
-	SourceAddressPrefixes                  []string                   `cty:"source_address_prefixes"`
+	SourceAddressPrefix                    *terraformWriter.Literal   `cty:"source_address_prefix"`
+	SourceAddressPrefixes                  []*terraformWriter.Literal `cty:"source_address_prefixes"`
 	SourceApplicationSecurityGroupIDs      []*terraformWriter.Literal `cty:"source_application_security_group_ids"`
 	SourcePortRange                        *string                    `cty:"source_port_range"`
 	DestinationAddressPrefix               *string                    `cty:"destination_address_prefix"`
@@ -69,14 +69,19 @@ func (rule *NetworkSecurityRule) toTerraform() *terraformAzureNetworkSecurityRul
 	access := string(rule.Access)
 	direction := string(rule.Direction)
 	protocol := string(rule.Protocol)
+	sourceAddressPrefix := stringValueLiteral(rule.SourceAddressPrefix)
+	sourceAddressPrefixes := stringSliceLiterals(rule.SourceAddressPrefixes)
+	if rule.SourcePublicIPAddress != nil {
+		sourceAddressPrefixes = []*terraformWriter.Literal{rule.SourcePublicIPAddress.terraformIPAddress()}
+	}
 	return &terraformAzureNetworkSecurityRule{
 		Name:                                   rule.Name,
 		Priority:                               rule.Priority,
 		Access:                                 &access,
 		Direction:                              &direction,
 		Protocol:                               &protocol,
-		SourceAddressPrefix:                    rule.SourceAddressPrefix,
-		SourceAddressPrefixes:                  stringSlice(rule.SourceAddressPrefixes),
+		SourceAddressPrefix:                    sourceAddressPrefix,
+		SourceAddressPrefixes:                  sourceAddressPrefixes,
 		SourceApplicationSecurityGroupIDs:      applicationSecurityGroupNameIDs(rule.SourceApplicationSecurityGroupNames),
 		SourcePortRange:                        rule.SourcePortRange,
 		DestinationAddressPrefix:               rule.DestinationAddressPrefix,
@@ -84,4 +89,24 @@ func (rule *NetworkSecurityRule) toTerraform() *terraformAzureNetworkSecurityRul
 		DestinationApplicationSecurityGroupIDs: applicationSecurityGroupNameIDs(rule.DestinationApplicationSecurityGroupNames),
 		DestinationPortRange:                   rule.DestinationPortRange,
 	}
+}
+
+func stringValueLiteral(s *string) *terraformWriter.Literal {
+	if s == nil {
+		return nil
+	}
+	return terraformWriter.LiteralFromStringValue(*s)
+}
+
+func stringSliceLiterals(values []*string) []*terraformWriter.Literal {
+	if len(values) == 0 {
+		return nil
+	}
+	out := make([]*terraformWriter.Literal, 0, len(values))
+	for _, value := range values {
+		if value != nil {
+			out = append(out, terraformWriter.LiteralFromStringValue(*value))
+		}
+	}
+	return out
 }

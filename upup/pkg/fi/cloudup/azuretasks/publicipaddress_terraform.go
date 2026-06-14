@@ -51,3 +51,7 @@ func (*PublicIPAddress) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 func (pip *PublicIPAddress) terraformID() *terraformWriter.Literal {
 	return terraformWriter.LiteralProperty("azurerm_public_ip", fi.ValueOf(pip.Name), "id")
 }
+
+func (pip *PublicIPAddress) terraformIPAddress() *terraformWriter.Literal {
+	return terraformWriter.LiteralProperty("azurerm_public_ip", fi.ValueOf(pip.Name), "ip_address")
+}
