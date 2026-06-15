@@ -65,6 +65,16 @@ func TestCreateClusterGossipHetzner(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/gossip-hetzner", "v1alpha2")
 }
 
+// TestCreateClusterAPIServerGCE creates a GCE cluster with both control plane and api-server IGs
+func TestCreateClusterAPIServerGCE(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes")
+	unsetFeatureFlags := func() {
+		featureflag.ParseFlags("-APIServerNodes")
+	}
+	defer unsetFeatureFlags()
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/apiserver-gce", "v1alpha2")
+}
+
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal-1.31", "v1alpha2")
