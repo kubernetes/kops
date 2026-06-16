@@ -118,6 +118,16 @@ func (a *ApplySet) ApplyOnce(ctx context.Context) (*ApplyResults, error) {
 
 		currentObj, err := client.Get(ctx, gvk, nn)
 		if err != nil {
+			if meta.IsNoMatchError(err) {
+				// The CRD for this object is not registered yet. This is common during
+				// bootstrap when an operator or a separate addon installs the CRD on its
+				// own schedule (e.g. Cilium's GatewayClass before the Gateway API CRDs
+				// are installed). Defer the object so a single missing CRD does not
+				// fail the whole channel apply; the next reconcile will retry it once
+				// the CRD lands.
+				results.applyDeferred(gvk, nn, err)
+				continue
+			}
 			if !apierrors.IsNotFound(err) {
 				results.applyError(gvk, nn, err)
 				continue

@@ -24,14 +24,17 @@ import (
 
 // ApplyResults contains the results of an Apply operation.
 type ApplyResults struct {
-	total             int
-	applySuccessCount int
-	applyFailCount    int
-	healthyCount      int
-	unhealthyCount    int
+	total              int
+	applySuccessCount  int
+	applyFailCount     int
+	applyDeferredCount int
+	healthyCount       int
+	unhealthyCount     int
 }
 
 // AllApplied is true if the desired state has been successfully applied for all objects.
+// Objects whose CRD is not yet registered are reported as deferred (not failed): the
+// reconcile loop will retry them once the CRD lands, so they should not block readiness.
 // Note: you likely also want to check AllHealthy, if you want to be sure the objects are "ready".
 func (r *ApplyResults) AllApplied() bool {
 	r.checkInvariants()
@@ -49,10 +52,10 @@ func (r *ApplyResults) AllHealthy() bool {
 
 // checkInvariants is an internal function that warns if the object doesn't match the expected invariants.
 func (r *ApplyResults) checkInvariants() {
-	if r.total != (r.applySuccessCount + r.applyFailCount) {
+	if r.total != (r.applySuccessCount + r.applyFailCount + r.applyDeferredCount) {
 		klog.Warningf("consistency error (apply counts): %#v", r)
-	} else if r.total != (r.healthyCount + r.unhealthyCount) {
-		// This "invariant" only holds when all objects could be applied
+	} else if r.applySuccessCount != (r.healthyCount + r.unhealthyCount) {
+		// Health is only reported for objects that applied successfully.
 		klog.Warningf("consistency error (healthy counts): %#v", r)
 	}
 }
@@ -61,6 +64,14 @@ func (r *ApplyResults) checkInvariants() {
 func (r *ApplyResults) applyError(gvk schema.GroupVersionKind, nn types.NamespacedName, err error) {
 	r.applyFailCount++
 	klog.Warningf("error from apply on %s %s: %v", gvk, nn, err)
+}
+
+// applyDeferred records that an object was skipped because its CRD is not yet
+// registered. This is not a failure: a subsequent reconcile will retry once the
+// CRD is installed.
+func (r *ApplyResults) applyDeferred(gvk schema.GroupVersionKind, nn types.NamespacedName, err error) {
+	r.applyDeferredCount++
+	klog.V(2).Infof("deferring apply of %s %s until CRD is registered: %v", gvk, nn, err)
 }
 
 // applySuccess records that an object was applied and this succeeded.
