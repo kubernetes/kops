@@ -169,8 +169,9 @@ type BootConfig struct {
 	InstanceGroupRole kops.InstanceGroupRole
 	// NodeupConfigHash holds a secure hash of the nodeup.Config.
 	NodeupConfigHash string
-	// EtcdLBAddress holds the address of the load balancer to use if Etcd is not local.
-	EtcdLBAddress string `json:",omitempty"`
+	// EtcdIPs holds the address of the load balancer to use if Etcd is not local.
+	// This field is used for adding an alias for the *.etcd.internal. in /etc/hosts when etcd is not local
+	EtcdIPs []string `json:",omitempty"`
 }
 
 type ConfigServerOptions struct {

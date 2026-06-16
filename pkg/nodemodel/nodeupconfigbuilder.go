@@ -362,6 +362,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
+	// Bake Etcd LB IPs into /etc/hosts if etcd is not local and there is an API Server.
+	if role == kops.InstanceGroupRoleAPIServer {
+		if len(wellKnownAddresses[wellknownservices.EtcdMain]) > 0 {
+			if len(wellKnownAddresses[wellknownservices.EtcdMain]) > 1 {
+				return nil, nil, fmt.Errorf("we currently do not support multiple Etcd IPs")
+			}
+			bootConfig.EtcdIPs = wellKnownAddresses[wellknownservices.EtcdMain]
+		}
+	}
+
 	if role != kops.InstanceGroupRoleBastion {
 		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
 		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {

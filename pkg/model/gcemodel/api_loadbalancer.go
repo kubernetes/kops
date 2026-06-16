@@ -179,12 +179,12 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		if ig.IsControlPlane() {
 			controlPlaneIGMs = append(controlPlaneIGMs, igm)
 		} else if ig.IsAPIServerOnly() {
-			requireEtcdLB = true
+			requireEtcdLB = b.Cluster.UsesNoneDNS()
 		} else {
 			return fmt.Errorf("instance group %q neither control-plane nor api-server", ig.GetName())
 		}
 	}
-	bs := &gcetasks.BackendService{
+	backendService := &gcetasks.BackendService{
 		Name:                  s(b.NameForBackendService("api")),
 		Protocol:              s("TCP"),
 		HealthChecks:          []*gcetasks.HealthCheck{hc},
@@ -192,13 +192,13 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		LoadBalancingScheme:   s("INTERNAL"),
 		InstanceGroupManagers: apiIGMs,
 	}
-	c.AddTask(bs)
+	c.AddTask(backendService)
 
 	// controlPlaneBS is a backend service that only targets ControlPlane MIGs.
 	// It is used for kops-controller and etcd forwarding rules, which only run
 	// on ControlPlane nodes. When there are no dedicated APIServer IGs, this is
 	// the same set of backends as the API backend service.
-	controlPlaneBS := bs
+	controlPlaneBS := backendService
 	if b.HasAPIServerOnlyInstanceGroups() {
 		controlPlaneHC := &gcetasks.HealthCheck{
 			Name:      s(b.NameForHealthCheck("kops-controller")),
@@ -249,7 +249,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		c.AddTask(&gcetasks.ForwardingRule{
 			Name:                s(b.NameForForwardingRule("api-" + sn.Name)),
 			Lifecycle:           b.Lifecycle,
-			BackendService:      bs,
+			BackendService:      backendService,
 			Ports:               []string{strconv.Itoa(wellknownports.KubeAPIServer)},
 			IPAddress:           ipAddress,
 			IPProtocol:          "TCP",
@@ -305,7 +305,9 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	}
 
 	if requireEtcdLB {
-		b.createEtcdInternalLB(c, controlPlaneIGMs)
+		if err := b.createEtcdInternalLB(c, controlPlaneIGMs); err != nil {
+			return err
+		}
 	}
 
 	return nil

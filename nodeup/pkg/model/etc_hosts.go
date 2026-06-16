@@ -17,8 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"strings"
-
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -63,11 +61,11 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		// APIServer only, no Etcd, need to point to the Etcd
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  "main.etcd.internal." + b.NodeupConfig.ClusterName,
-			Addresses: strings.Split(b.BootConfig.EtcdLBAddress, ","),
+			Addresses: b.BootConfig.EtcdIPs,
 		})
 		task.Records = append(task.Records, nodetasks.HostRecord{
 			Hostname:  "events.etcd.internal." + b.NodeupConfig.ClusterName,
-			Addresses: strings.Split(b.BootConfig.EtcdLBAddress, ","),
+			Addresses: b.BootConfig.EtcdIPs,
 		})
 	}
 
