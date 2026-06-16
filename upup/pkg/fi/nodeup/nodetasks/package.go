@@ -17,6 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -272,6 +273,8 @@ var packageManagerLock sync.Mutex
 var packageManagerLastUpdated time.Time
 
 func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) error {
+	// Not adding ctx to signature as RenderLocal seems to be part of a common interface
+	ctx := context.TODO()
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
 
@@ -314,7 +317,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 					}
 					hash = parsed
 				}
-				_, err = fi.DownloadURL(fi.ValueOf(pkg.Source), local, hash)
+				_, err = fi.DownloadURL(ctx, fi.ValueOf(pkg.Source), local, hash)
 				if err != nil {
 					return err
 				}

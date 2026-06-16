@@ -258,11 +258,16 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 	}
 
 	if g.Spec.Role == kops.InstanceGroupRoleAPIServer {
-		if cluster.GetCloudProvider() != kops.CloudProviderAWS && cluster.GetCloudProvider() != kops.CloudProviderGCE {
+		switch cluster.GetCloudProvider() {
+		case kops.CloudProviderGCE:
+			// Fully supported do nothing.
+		case kops.CloudProviderAWS:
+			// AWS only supports APIServer if DNS is set to None
+			if cluster.UsesNoneDNS() {
+				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer cannot be used with topology.dns.type=None"))
+			}
+		default:
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer role only supported on AWS and GCE"))
-		}
-		if cluster.UsesNoneDNS() {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer cannot be used with topology.dns.type=None"))
 		}
 	}
 
@@ -318,14 +323,17 @@ func ValidateControlPlaneInstanceGroup(g *kops.InstanceGroup, cluster *kops.Clus
 	allErrs := field.ErrorList{}
 	for _, etcd := range cluster.Spec.EtcdClusters {
 		hasEtcd := false
+		last := ""
 		for _, m := range etcd.Members {
 			if fi.ValueOf(m.InstanceGroup) == g.ObjectMeta.Name {
 				hasEtcd = true
 				break
+			} else {
+				last = fi.ValueOf(m.InstanceGroup)
 			}
 		}
 		if !hasEtcd {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role ControlPlane must have a member in etcd cluster \"%s\"", g.ObjectMeta.Name, etcd.Name)))
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role ControlPlane must have a member in etcd (IG: \"%s\") cluster \"%s\"", g.ObjectMeta.Name, last, etcd.Name)))
 		}
 	}
 	return allErrs

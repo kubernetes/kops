@@ -57,6 +57,18 @@ func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		})
 	}
 
+	if b.HasAPIServer && !b.IsMaster {
+		// APIServer only, no Etcd, need to point to the Etcd
+		task.Records = append(task.Records, nodetasks.HostRecord{
+			Hostname:  "main.etcd.internal." + b.NodeupConfig.ClusterName,
+			Addresses: b.BootConfig.EtcdIPs,
+		})
+		task.Records = append(task.Records, nodetasks.HostRecord{
+			Hostname:  "events.etcd.internal." + b.NodeupConfig.ClusterName,
+			Addresses: b.BootConfig.EtcdIPs,
+		})
+	}
+
 	if len(task.Records) != 0 {
 		c.AddTask(task)
 	}
