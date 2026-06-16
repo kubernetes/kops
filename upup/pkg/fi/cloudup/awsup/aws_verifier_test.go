@@ -525,7 +525,11 @@ func computeSignatureV4(req *http.Request, region string, service string, secret
 	}
 	timeStampISO8601Format := reqTime
 
-	today := reqTime[:strings.Index(reqTime, "T")]
+	tIndex := strings.Index(reqTime, "T")
+	if tIndex < 0 {
+		return "", fmt.Errorf("cannot determine signature day")
+	}
+	today := reqTime[:tIndex]
 
 	scope := today + "/" + region + "/" + service + "/aws4_request"
 

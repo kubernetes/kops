@@ -23,7 +23,7 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 )
 
-const ScalewayAuthenticationTokenPrefix = "x-scaleway-instance-server-id "
+const ScalewayAuthenticationTokenPrefix = "x-scaleway-instance-server-id " //nolint:gosec // This is an authentication scheme prefix, not a credential.
 
 type scalewayAuthenticator struct{}
 
