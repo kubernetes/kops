@@ -279,11 +279,19 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 
 	controlPlaneGroupCount := 0
 	nodeGroupCount := 0
+	apiServerCount := 0
+	externalAPILBTargetCount := 0
 	for _, g := range groups {
 		if g.IsControlPlane() {
 			controlPlaneGroupCount++
 		} else {
 			nodeGroupCount++
+		}
+		if g.HasAPIServer() {
+			apiServerCount++
+			if !fi.ValueOf(g.Spec.ExcludeFromExternalAPILoadBalancer) {
+				externalAPILBTargetCount++
+			}
 		}
 	}
 
@@ -293,6 +301,37 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 
 	if nodeGroupCount == 0 {
 		return fmt.Errorf("must configure at least one Node InstanceGroup")
+	}
+
+	// Split control plane: if any IG opts out of the external API LB, the cluster
+	// must retain at least one IG that is still a candidate external LB target.
+	if apiServerCount > 0 && externalAPILBTargetCount == 0 {
+		for _, g := range groups {
+			if !g.HasAPIServer() {
+				continue
+			}
+			if !fi.ValueOf(g.Spec.ExcludeFromExternalAPILoadBalancer) {
+				continue
+			}
+			return field.Forbidden(
+				field.NewPath("spec", "excludeFromExternalAPILoadBalancer"),
+				fmt.Sprintf("instance group %q opts out of the external API load balancer, "+
+					"but no other ControlPlane or APIServer instance group remains as a target", g.ObjectMeta.Name),
+			)
+		}
+	}
+
+	// ExcludeFromExternalAPILoadBalancer is currently only implemented on GCE.
+	if c.GetCloudProvider() != kops.CloudProviderGCE {
+		for _, g := range groups {
+			if fi.ValueOf(g.Spec.ExcludeFromExternalAPILoadBalancer) {
+				return field.Forbidden(
+					field.NewPath("spec", "excludeFromExternalAPILoadBalancer"),
+					fmt.Sprintf("instance group %q sets excludeFromExternalAPILoadBalancer, "+
+						"which is only supported on cloud provider gce", g.ObjectMeta.Name),
+				)
+			}
+		}
 	}
 
 	for _, g := range groups {

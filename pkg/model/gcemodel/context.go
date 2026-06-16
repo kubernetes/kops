@@ -114,6 +114,60 @@ func (c *GCEModelContext) GCETagsForAPIServerTargets() []string {
 	return tags
 }
 
+// IsExternalAPILoadBalancerTarget reports whether the instance group is a backend
+// target of the external (public) API load balancer. Only IGs that run kube-apiserver
+// are candidates; an IG opts out by setting Spec.ExcludeFromExternalAPILoadBalancer.
+func (c *GCEModelContext) IsExternalAPILoadBalancerTarget(ig *kops.InstanceGroup) bool {
+	if !ig.HasAPIServer() {
+		return false
+	}
+	return !fi.ValueOf(ig.Spec.ExcludeFromExternalAPILoadBalancer)
+}
+
+// HasSplitControlPlane reports whether the cluster has at least one ControlPlane or
+// APIServer instance group that opts out of the external API load balancer. This is
+// the signal for the "split control plane" topology, where the public LB and its
+// associated firewall should target a narrower set of IGs than the internal LB.
+func (c *GCEModelContext) HasSplitControlPlane() bool {
+	for _, ig := range c.InstanceGroups {
+		if !ig.HasAPIServer() {
+			continue
+		}
+		if fi.ValueOf(ig.Spec.ExcludeFromExternalAPILoadBalancer) {
+			return true
+		}
+	}
+	return false
+}
+
+// GCETagsForExternalAPIServerTargets returns the network tags that should be used as
+// firewall targets for rules that need to reach API server instances *from outside*
+// the cluster (the public API LB). A role tag is only included when at least one IG
+// of that role is still an external LB target — so a fully opted-out role drops its
+// tag from the external firewall, narrowing the publicly-reachable surface.
+func (c *GCEModelContext) GCETagsForExternalAPIServerTargets() []string {
+	var includeControlPlane, includeAPIServer bool
+	for _, ig := range c.InstanceGroups {
+		if !c.IsExternalAPILoadBalancerTarget(ig) {
+			continue
+		}
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleControlPlane:
+			includeControlPlane = true
+		case kops.InstanceGroupRoleAPIServer:
+			includeAPIServer = true
+		}
+	}
+	var tags []string
+	if includeControlPlane {
+		tags = append(tags, c.GCETagForRole(kops.InstanceGroupRoleControlPlane))
+	}
+	if includeAPIServer {
+		tags = append(tags, c.GCETagForRole(kops.InstanceGroupRoleAPIServer))
+	}
+	return tags
+}
+
 func (c *GCEModelContext) LinkToTargetPool(id string) *gcetasks.TargetPool {
 	return &gcetasks.TargetPool{Name: s(c.NameForTargetPool(id))}
 }

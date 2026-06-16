@@ -174,6 +174,11 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleControlPlane)...)
 	}
 
+	if fi.ValueOf(g.Spec.ExcludeFromExternalAPILoadBalancer) && !g.HasAPIServer() {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "excludeFromExternalAPILoadBalancer"),
+			"only meaningful on instance groups with role ControlPlane or APIServer"))
+	}
+
 	if g.Spec.NodeLabels != nil {
 		allErrs = append(allErrs, validateNodeLabels(g.Spec.NodeLabels, field.NewPath("spec", "nodeLabels"))...)
 	}
@@ -261,9 +266,9 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		if cluster.GetCloudProvider() != kops.CloudProviderAWS && cluster.GetCloudProvider() != kops.CloudProviderGCE {
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer role only supported on AWS and GCE"))
 		}
-		if cluster.UsesNoneDNS() {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer cannot be used with topology.dns.type=None"))
-		}
+		// if cluster.UsesNoneDNS() {
+		// 	allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer cannot be used with topology.dns.type=None"))
+		// }
 	}
 
 	// Check that instance groups are defined in subnets that are defined in the cluster
@@ -318,14 +323,17 @@ func ValidateControlPlaneInstanceGroup(g *kops.InstanceGroup, cluster *kops.Clus
 	allErrs := field.ErrorList{}
 	for _, etcd := range cluster.Spec.EtcdClusters {
 		hasEtcd := false
+		last := ""
 		for _, m := range etcd.Members {
 			if fi.ValueOf(m.InstanceGroup) == g.ObjectMeta.Name {
 				hasEtcd = true
 				break
+			} else {
+				last = fi.ValueOf(m.InstanceGroup)
 			}
 		}
 		if !hasEtcd {
-			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role ControlPlane must have a member in etcd cluster \"%s\"", g.ObjectMeta.Name, etcd.Name)))
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "metadata", "name"), fmt.Sprintf("InstanceGroup \"%s\" with role ControlPlane must have a member in etcd (IG: \"%s\") cluster \"%s\"", g.ObjectMeta.Name, last, etcd.Name)))
 		}
 	}
 	return allErrs

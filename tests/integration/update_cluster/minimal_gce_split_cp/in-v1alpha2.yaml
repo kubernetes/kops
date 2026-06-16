@@ -1,0 +1,134 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: minimal-gce-split-cp.example.com
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      useForInternalApi: true
+      subnets:
+        - name: us-test-1
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: gce
+  configBase: memfs://tests/minimal-gce-split-cp.example.com
+  etcdClusters:
+    - cpuRequest: 200m
+      etcdMembers:
+        - instanceGroup: master-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: main
+      volumeIops: 6000
+      volumeSize: 120
+      volumeThroughput: 1000
+      type: hyperdisk-balanced
+    - cpuRequest: 100m
+      etcdMembers:
+        - instanceGroup: master-us-test1-a
+          name: a
+      memoryRequest: 100Mi
+      name: events
+      type: hyperdisk-balanced
+  cloudConfig:
+    gceServiceAccount: default
+    gcpPDCSIDriver:
+      defaultStorageClassName: balanced-storage
+  iam:
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+    - 0.0.0.0/0
+    - ::/0
+  kubernetesVersion: v1.32.0
+  masterPublicName: api.minimal-gce-split-cp.example.com
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  project: testproject
+  sshAccess:
+    - 0.0.0.0/0
+    - ::/0
+  subnets:
+    - name: us-test1
+      region: us-test1
+      type: Private
+  topology:
+    dns:
+      type: Public
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-split-cp.example.com
+  name: master-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: c4-standard-4
+  rootVolume:
+    volumeIops: 6000
+    volumeThroughput: 1000
+    type: hyperdisk-balanced
+  maxSize: 1
+  minSize: 1
+  role: Master
+  excludeFromExternalAPILoadBalancer: true
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-split-cp.example.com
+  name: apiserver-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: c4-standard-4
+  rootVolume:
+    volumeIops: 6000
+    volumeThroughput: 1000
+    type: hyperdisk-balanced
+  maxSize: 2
+  minSize: 2
+  role: APIServer
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal-gce-split-cp.example.com
+  name: nodes
+spec:
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: c4-standard-8
+  rootVolume:
+    size: 100
+    volumeIops: 6000
+    volumeThroughput: 1000
+    type: hyperdisk-balanced
+  maxSize: 2
+  minSize: 2
+  role: Node
+  subnets:
+    - us-test1
+  zones:
+    - us-test1-a
+    - us-test1-b

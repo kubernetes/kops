@@ -37,8 +37,8 @@ var _ fi.NodeupModelBuilder = &ManifestsBuilder{}
 func (b *ManifestsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	ctx := c.Context()
 
-	// Write etcd manifests (currently etcd <=> master)
-	if b.IsMaster {
+	// Write etcd manifests on any node hosting an etcd member.
+	if b.HostsEtcd {
 		for _, manifest := range b.NodeupConfig.EtcdManifests {
 			p, err := vfs.Context.BuildVfsPath(manifest)
 			if err != nil {

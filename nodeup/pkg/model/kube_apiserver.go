@@ -588,9 +588,10 @@ func (b *KubeAPIServerBuilder) allAuthTokens() (map[string]string, error) {
 
 // buildPod is responsible for generating the kube-apiserver pod and thus manifest file
 func (b *KubeAPIServerBuilder) buildPod(ctx context.Context, kubeAPIServer *kops.KubeAPIServerConfig) (*v1.Pod, error) {
-	// we need to replace 127.0.0.1 for etcd urls with the dns names in case this apiserver is not
-	// running on master nodes
-	if !b.IsMaster {
+	// we need to replace 127.0.0.1 for etcd urls with the dns names whenever this apiserver
+	// is not co-located with an etcd member — that is, the loopback shortcut only works when
+	// this node also hosts etcd.
+	if !b.HostsEtcd {
 		clusterName := b.NodeupConfig.ClusterName
 		mainEtcdDNSName := "main.etcd.internal." + clusterName
 		eventsEtcdDNSName := "events.etcd.internal." + clusterName

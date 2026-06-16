@@ -20,8 +20,8 @@ set -euo pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}/"
 
-# Enable feature flag for CAPI support
-export KOPS_FEATURE_FLAGS=ClusterAPI
+# Enable feature flag for CAPI support & APIServer only nodes
+export KOPS_FEATURE_FLAGS="+ClusterAPI,+APIServerNodes"
 
 # Override some settings
 CLUSTER_NAME="clusterapi.k8s.local"
@@ -34,6 +34,9 @@ OVERRIDES="${OVERRIDES} --gce-service-account=default" # Use default service acc
 
 # Create kOps cluster
 source "${REPO_ROOT}/tests/e2e/scenarios/lib/common.sh"
+
+# Use a custom template for the cluster shape.
+export KOPS_TEMPLATE="${REPO_ROOT}/tests/e2e/scenarios/clusterapi/cluster.yaml.tmpl"
 
 kops-acquire-latest
 

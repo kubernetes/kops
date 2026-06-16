@@ -99,15 +99,20 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 		if err != nil {
 			return err
 		}
+		// Public-CIDR rule targets only IGs that are external LB targets. In a split
+		// control-plane topology, ControlPlane IGs that opt out of the external LB
+		// drop their tag here so the public path can't reach them directly.
 		b.AddFirewallRulesTasks(c, "https-api", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
 			Network:      network,
 			SourceRanges: b.Cluster.Spec.API.Access,
-			TargetTags:   b.GCETagsForAPIServerTargets(),
+			TargetTags:   b.GCETagsForExternalAPIServerTargets(),
 			Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KubeAPIServer)},
 		})
 
 		if b.NetworkingIsIPAlias() {
+			// Pod-CIDR rule keeps the wider tag set: internal cluster traffic still
+			// needs to reach every apiserver, including those on opted-out IGs.
 			c.AddTask(&gcetasks.FirewallRule{
 				Name:         s(b.NameForFirewallRule("pod-cidrs-to-https-api")),
 				Lifecycle:    b.Lifecycle,
