@@ -75,6 +75,8 @@ func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
 		allErrs = append(allErrs, awsValidateCluster(cluster, strict)...)
 	case kops.CloudProviderGCE:
 		allErrs = append(allErrs, gceValidateCluster(cluster)...)
+	case kops.CloudProviderLinode:
+		allErrs = append(allErrs, linodeValidateCluster(cluster)...)
 	}
 
 	return allErrs
