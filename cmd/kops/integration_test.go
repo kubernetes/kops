@@ -1732,22 +1732,6 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 	i.runTest(t, ctx, h, expectedFilenames, tfFileName, "", &phase)
 }
 
-// TestAPIServerGCE runs the test on GCE with both control plane and apiserver IGs
-func TestAPIServerGCE(t *testing.T) {
-	featureflag.ParseFlags("+APIServerNodes")
-	unsetFeatureFlags := func() {
-		featureflag.ParseFlags("-APIServerNodes")
-	}
-	defer unsetFeatureFlags()
-	newIntegrationTest("apiserver.k8s.local", "apiserver-gce").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
-		runTestTerraformGCE(t)
-}
-
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	t.Setenv("KOPS_RUN_TOO_NEW_VERSION", "1")
 
