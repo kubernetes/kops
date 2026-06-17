@@ -17,6 +17,11 @@
 set -e
 set -x
 
+# Report the experiment variant so TestGrid can show it as a column header.
+if [[ -n "${ARTIFACTS:-}" ]]; then
+  echo "{\"variant\":\"${EXPERIMENT_VARIANT:-base}\"}" > "${ARTIFACTS}/metadata.json"
+fi
+
 make test-e2e-install
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
