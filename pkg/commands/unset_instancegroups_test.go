@@ -19,7 +19,9 @@ package commands
 import (
 	"reflect"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -96,6 +98,68 @@ func TestUnsetInstanceGroupsFields(t *testing.T) {
 			},
 			Output: kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.rootVolumeType",
+			},
+			Input: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Type: new("gp3"),
+					},
+				},
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.rootVolumeSize",
+			},
+			Input: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Size: new(int32(64)),
+					},
+				},
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.associatePublicIp",
+			},
+			Input: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					AssociatePublicIP: new(true),
+				},
+			},
+			Output: kops.InstanceGroup{},
+		},
+		{
+			Fields: []string{
+				"spec.kubelet.authenticationTokenWebhookCacheTtl",
+			},
+			Input: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Kubelet: &kops.KubeletConfigSpec{
+						AuthenticationTokenWebhookCacheTTL: &metav1.Duration{Duration: 10 * time.Second},
+					},
+				},
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Kubelet: &kops.KubeletConfigSpec{},
+				},
 			},
 		},
 	}
