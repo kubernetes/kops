@@ -592,9 +592,15 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 		}
 	}
 	if distribution.ForceNftables() {
-		// Distributions like RHEL10+ use nftables exclusively
-		// Load nf_tables and nf_conntrack to fix CNI plugins that use iptables-nft
-		for _, mod := range []string{"nf_tables", "nf_conntrack"} {
+		// Distributions like RHEL10+ use nftables exclusively.
+		// - nf_tables / nf_conntrack: required by CNI plugins that shell out
+		//   to iptables-nft.
+		// - ip_set: Calico's Felix unconditionally starts an `ipsetsManager`
+		//   that shells out to `ipset list -name` during dataplane resync,
+		//   even when NFTablesMode=Enabled. On RHEL10 family kernels the
+		//   ip_set module isn't auto-loaded, so the ipset call returns
+		//   EINVAL and Felix panics, crashlooping calico-node.
+		for _, mod := range []string{"nf_tables", "nf_conntrack", "ip_set"} {
 			if err := modprobe(mod); err != nil {
 				klog.Warningf("error loading %s module: %v", mod, err)
 			}
