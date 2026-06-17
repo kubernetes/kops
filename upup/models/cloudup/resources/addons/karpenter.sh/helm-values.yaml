@@ -11,15 +11,6 @@ affinity:
           operator: DoesNotExist
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
-      - matchExpressions:
-        - key: kubernetes.io/os
-          operator: In
-          values:
-          - linux
-        - key: karpenter.sh/nodepool
-          operator: DoesNotExist
-        - key: node-role.kubernetes.io/master
-          operator: Exists
 controller:
   resources:
     requests:
