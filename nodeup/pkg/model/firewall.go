@@ -36,6 +36,29 @@ func (b *FirewallBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	c.AddTask(b.buildFirewallScript())
 	c.AddTask(b.buildSystemdService())
 
+	// On distros where Kubernetes CNIs (notably Calico) document firewalld
+	// as incompatible, stop and mask it. firewalld's default-reject
+	// filter_INPUT/filter_FORWARD policies and periodic-reload behavior
+	// conflict with the iptables/nftables rules CNIs install for pod and
+	// service traffic. Most cloud images in the RHEL family already ship
+	// firewalld off (AWS RHEL/Rocky AMIs, upstream Rocky GenericCloud); the
+	// GCE-optimized Rocky 10 image is the known outlier. The disable/mask
+	// sequence is idempotent and a no-op where firewalld isn't installed.
+	// See: https://docs.tigera.io/calico/latest/getting-started/kubernetes/requirements
+	if b.Distribution.ForceNftables() {
+		c.AddTask(&nodetasks.File{
+			Path:     "/etc/kops/firewalld-disabled",
+			Contents: fi.NewStringResource("# Marker: firewalld disabled by kops to avoid conflicts with the Kubernetes CNI dataplane.\n"),
+			Type:     nodetasks.FileType_File,
+			OnChangeExecute: [][]string{
+				// Stop and disable so it can't restart at boot.
+				{"bash", "-c", "systemctl disable --now firewalld.service 2>/dev/null; true"},
+				// Mask so package updates or preset reloads can't bring it back.
+				{"bash", "-c", "systemctl mask firewalld.service 2>/dev/null; true"},
+			},
+		})
+	}
+
 	return nil
 }
 
