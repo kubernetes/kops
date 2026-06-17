@@ -100,10 +100,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		nodeLabels[k] = v
 	}
 
-	if instanceGroup.Spec.Manager == api.InstanceManagerKarpenter {
-		nodeLabels["karpenter.sh/provisioner-name"] = instanceGroup.ObjectMeta.Name
-	}
-
 	return nodeLabels, nil
 }
 
