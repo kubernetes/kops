@@ -38,7 +38,6 @@ KubeletConfig:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   nodeLabels:
-    karpenter.sh/provisioner-name: karpenter-nodes-single-machinetype
     node-role.kubernetes.io/node: ""
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true

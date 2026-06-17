@@ -42,7 +42,6 @@ KubeletConfig:
   logLevel: 2
   maxPods: 50
   nodeLabels:
-    karpenter.sh/provisioner-name: karpenter-nodes-default
     node-role.kubernetes.io/node: ""
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
