@@ -2597,7 +2597,7 @@ spec:
                 operator: In
                 values:
                 - linux
-              - key: karpenter.sh/provisioner-name
+              - key: karpenter.sh/nodepool
                 operator: DoesNotExist
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
@@ -2606,7 +2606,7 @@ spec:
                 operator: In
                 values:
                 - linux
-              - key: karpenter.sh/provisioner-name
+              - key: karpenter.sh/nodepool
                 operator: DoesNotExist
               - key: node-role.kubernetes.io/master
                 operator: Exists
