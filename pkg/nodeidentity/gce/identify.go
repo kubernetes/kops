@@ -138,6 +138,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		capiMachine = m
 	}
 
+	var igName string
 	if capiMachine == nil {
 		// The metadata itself is potentially mutable from the instance
 		// We instead look at the MIG configuration
@@ -170,7 +171,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 			return nil, err
 		}
 
-		igName := getMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
+		igName = getMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
 		if igName == "" {
 			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 		}
@@ -200,6 +201,9 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 				klog.Warningf("unknown node role %q for server %q", role, instance.SelfLink)
 			}
 		}
+	}
+	if igName != "" {
+		labels[kops.NodeLabelInstanceGroup] = igName
 	}
 	info.Labels = labels
 	return info, nil
