@@ -262,7 +262,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		case kops.CloudProviderGCE:
 			// Fully supported do nothing.
 		case kops.CloudProviderAWS:
-			// AWS only supports APIServer if DNS is set to None
+			// AWS only supports APIServer if DNS is not set to None
 			if cluster.UsesNoneDNS() {
 				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer cannot be used with topology.dns.type=None"))
 			}
