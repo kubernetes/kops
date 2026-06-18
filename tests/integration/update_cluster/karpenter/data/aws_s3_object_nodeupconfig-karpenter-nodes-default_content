@@ -51,6 +51,8 @@ KubeletConfig:
   systemReserved:
     cpu: 500m
     memory: 1G
+  taints:
+  - karpenter.sh/unregistered=:NoExecute
 KubernetesVersion: 1.32.0
 Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
