@@ -80,8 +80,8 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Name:       s(b.NameForFirewallRule("node-to-node")),
 			Lifecycle:  b.Lifecycle,
 			Network:    network,
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 			Allowed:    allProtocols,
 		}
 		c.AddTask(t)
@@ -116,7 +116,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle:  b.Lifecycle,
 			Network:    network,
 			SourceTags: append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master")),
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 			Allowed:    allProtocols,
 		}
 		c.AddTask(t)
@@ -132,7 +132,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Name:       s(b.NameForFirewallRule("node-to-master")),
 			Lifecycle:  b.Lifecycle,
 			Network:    network,
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 			TargetTags: append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master")),
 			Allowed: []string{
 				fmt.Sprintf("tcp:%d", wellknownports.KubeAPIServer),
@@ -183,7 +183,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
 				SourceRanges: []string{b.Cluster.Spec.Networking.PodCIDR},
-				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 				Allowed:      allProtocols,
 			})
 		}

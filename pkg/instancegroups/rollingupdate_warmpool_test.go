@@ -39,7 +39,7 @@ func TestRollingUpdateOnlyWarmPoolNodes(t *testing.T) {
 	c, cloud := getTestSetup()
 	k8sClient := c.K8sClient
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroupWithWarmPool(groups, k8sClient, cloud, "node-1", kops.InstanceGroupRoleNode, 3, 0, 3, 3)
+	makeGroupWithWarmPool(groups, k8sClient, cloud, "node-1", kops.InstanceGroupSubRoleNode.Role(), 3, 0, 3, 3)
 
 	validator := &countingValidator{}
 	c.ClusterValidator = validator
@@ -56,7 +56,7 @@ func TestRollingWarmPoolBeforeJoinedNodes(t *testing.T) {
 	c, cloud := getTestSetup()
 	k8sClient := c.K8sClient
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroupWithWarmPool(groups, k8sClient, cloud, "node-1", kops.InstanceGroupRoleNode, 3, 3, 3, 3)
+	makeGroupWithWarmPool(groups, k8sClient, cloud, "node-1", kops.InstanceGroupSubRoleNode.Role(), 3, 3, 3, 3)
 
 	warmPoolBeforeJoinedNodesTest := &warmPoolBeforeJoinedNodesTest{
 		EC2API: cloud.MockEC2,

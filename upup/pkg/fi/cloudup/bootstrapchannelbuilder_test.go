@@ -142,12 +142,12 @@ func runChannelBuilderTest(t *testing.T, key string, addonManifests []string) {
 					IAM: &kopsapi.IAMProfileSpec{
 						Profile: &role,
 					},
-					Role: kopsapi.InstanceGroupRoleNode,
+					Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 				},
 			},
 			{
 				Spec: kopsapi.InstanceGroupSpec{
-					Role: kopsapi.InstanceGroupRoleNode,
+					Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 				},
 			},
 		},

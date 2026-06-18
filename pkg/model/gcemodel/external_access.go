@@ -57,7 +57,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-bastion", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupSubRoleBastion.Role())},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
 			Network:      network,
@@ -66,14 +66,14 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			Lifecycle:  b.Lifecycle,
 			TargetTags: append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master")),
 			Allowed:    []string{"tcp:22"},
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleBastion.Role())},
 			Network:    network,
 		})
 		b.AddFirewallRulesTasks(c, "bastion-to-node-ssh", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 			Allowed:    []string{"tcp:22"},
-			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleBastion)},
+			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleBastion.Role())},
 			Network:    network,
 		})
 	} else {
@@ -91,7 +91,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 
 		b.AddFirewallRulesTasks(c, "ssh-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:    b.Lifecycle,
-			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
 			Network:      network,
@@ -112,7 +112,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		}
 		b.AddFirewallRulesTasks(c, "nodeport-external-to-node", &gcetasks.FirewallRule{
 			Lifecycle:  b.Lifecycle,
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role())},
 			Allowed: []string{
 				"tcp:" + nodePortRangeString,
 				"udp:" + nodePortRangeString,

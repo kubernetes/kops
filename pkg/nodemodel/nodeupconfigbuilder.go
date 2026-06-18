@@ -72,9 +72,10 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		protokubeAsset[arch] = append(protokubeAsset[arch], asset)
 	}
 
-	for _, role := range kops.AllInstanceGroupRoles {
-		isMaster := role == kops.InstanceGroupRoleControlPlane
-		isAPIServer := role == kops.InstanceGroupRoleAPIServer
+	for _, subrole := range kops.AllInstanceGroupSubRoles {
+		role := subrole.Role()
+		isMaster := role.HasControlPlane()
+		isAPIServer := role.HasAPIServer()
 
 		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
 		if kopsmodel.IsBaseURL(cluster.Spec.KubernetesVersion) {
@@ -198,8 +199,8 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	usesLegacyGossip := cluster.UsesLegacyGossip()
-	isMaster := role == kops.InstanceGroupRoleControlPlane
-	hasAPIServer := isMaster || role == kops.InstanceGroupRoleAPIServer
+	isMaster := role.HasControlPlane()
+	hasAPIServer := isMaster || role.HasAPIServer()
 
 	config, bootConfig := nodeup.NewConfig(cluster, ig)
 
@@ -231,7 +232,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	if role != kops.InstanceGroupRoleBastion {
+	if !role.HasBastion() {
 		if err := loadCertificates(keysets, fi.CertificateIDCA, config, true); err != nil {
 			return nil, nil, err
 		}
@@ -363,7 +364,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	// Bake Etcd LB IPs into /etc/hosts if etcd is not local and there is an API Server.
-	if role == kops.InstanceGroupRoleAPIServer {
+	if role.HasAPIServer() {
 		if len(wellKnownAddresses[wellknownservices.EtcdMain]) > 0 {
 			if len(wellKnownAddresses[wellknownservices.EtcdMain]) > 1 {
 				return nil, nil, fmt.Errorf("we currently do not support multiple Etcd IPs")
@@ -372,7 +373,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	if role != kops.InstanceGroupRoleBastion {
+	if !role.HasBastion() {
 		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
 		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
 			for _, arch := range architectures.GetSupported() {
@@ -487,7 +488,7 @@ func loadCertificates(keysets map[string]*fi.Keyset, name string, config *nodeup
 
 // buildWarmPoolImages returns a list of container images that should be pre-pulled during instance pre-initialization
 func (n *nodeUpConfigBuilder) buildWarmPoolImages(ig *kops.InstanceGroup) []string {
-	if ig == nil || ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+	if ig == nil || ig.Spec.Role.HasControlPlane() {
 		return nil
 	}
 

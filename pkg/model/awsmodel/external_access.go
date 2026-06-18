@@ -43,11 +43,11 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		klog.Warningf("SSHAccess is empty")
 	}
 
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleControlPlane.Role())
 	if err != nil {
 		return err
 	}
-	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleNode.Role())
 	if err != nil {
 		return err
 	}

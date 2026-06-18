@@ -341,11 +341,11 @@ func dumpServer(op *resources.DumpOperation, r *resources.Resource) error {
 		if key == hetzner.TagKubernetesInstanceRole {
 			role := kops.InstanceGroupRole(value)
 			switch role {
-			case kops.InstanceGroupRoleControlPlane:
+			case kops.InstanceGroupSubRoleControlPlane.Role():
 				i.Roles = append(i.Roles, string(role))
-			case kops.InstanceGroupRoleNode:
+			case kops.InstanceGroupSubRoleNode.Role():
 				i.Roles = append(i.Roles, string(role))
-			case kops.InstanceGroupRoleAPIServer:
+			case kops.InstanceGroupSubRoleAPIServer.Role():
 				i.Roles = append(i.Roles, string(role))
 			default:
 				klog.Warningf("Unknown node role %q for server %s(%d)", value, server.Name, server.ID)

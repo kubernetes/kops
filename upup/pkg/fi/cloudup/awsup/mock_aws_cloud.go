@@ -309,12 +309,12 @@ func (c *MockAWSCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngre
 
 // DefaultInstanceType determines an instance type for the specified cluster & instance group
 func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer:
+	switch {
+	case ig.Spec.Role.IsControlPlaneType():
 		return "m3.medium", nil
-	case kops.InstanceGroupRoleNode:
+	case ig.Spec.Role.HasNode():
 		return "t2.medium", nil
-	case kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasBastion():
 		return "t2.micro", nil
 	default:
 		return "", fmt.Errorf("MockAWSCloud DefaultInstanceType does not handle %s", ig.Spec.Role)

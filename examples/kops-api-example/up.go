@@ -86,7 +86,7 @@ func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
 		ig := &api.InstanceGroup{}
 		ig.ObjectMeta.Name = "master"
 		ig.Spec = api.InstanceGroupSpec{
-			Role:    api.InstanceGroupRoleControlPlane,
+			Role:    api.InstanceGroupSubRoleControlPlane.Role(),
 			Subnets: masterZones,
 		}
 		_, err := clientset.InstanceGroupsFor(cluster).Create(ctx, ig, metav1.CreateOptions{})
@@ -100,7 +100,7 @@ func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
 		ig := &api.InstanceGroup{}
 		ig.ObjectMeta.Name = "nodes"
 		ig.Spec = api.InstanceGroupSpec{
-			Role:    api.InstanceGroupRoleNode,
+			Role:    api.InstanceGroupSubRoleNode.Role(),
 			Subnets: nodeZones,
 		}
 

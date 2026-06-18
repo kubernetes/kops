@@ -115,10 +115,10 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		Zones:              azNumbers,
 	}
 
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane:
+	switch {
+	case ig.Spec.Role.HasControlPlane():
 		t.ApplicationSecurityGroups = append(t.ApplicationSecurityGroups, b.LinkToApplicationSecurityGroupControlPlane())
-	case kops.InstanceGroupRoleNode:
+	case ig.Spec.Role.HasNode():
 		t.ApplicationSecurityGroups = append(t.ApplicationSecurityGroups, b.LinkToApplicationSecurityGroupNodes())
 	default:
 		return nil, fmt.Errorf("unexpected instance group role for instance group: %q, %q", ig.Name, ig.Spec.Role)
@@ -170,7 +170,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		return nil, fmt.Errorf("unexpected subnet type: for InstanceGroup %q; type was %s", ig.Name, subnet.Type)
 	}
 
-	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane && b.Cluster.Spec.API.LoadBalancer != nil {
+	if ig.Spec.Role.HasControlPlane() && b.Cluster.Spec.API.LoadBalancer != nil {
 		t.LoadBalancer = &azuretasks.LoadBalancer{
 			Name: to.Ptr(b.NameForLoadBalancer()),
 		}
@@ -187,12 +187,12 @@ func getCapacity(spec *kops.InstanceGroupSpec) (*int64, error) {
 	maxSize := int32(1)
 	if spec.MinSize != nil {
 		minSize = fi.ValueOf(spec.MinSize)
-	} else if spec.Role == kops.InstanceGroupRoleNode {
+	} else if spec.Role.HasNode() {
 		minSize = 2
 	}
 	if spec.MaxSize != nil {
 		maxSize = *spec.MaxSize
-	} else if spec.Role == kops.InstanceGroupRoleNode {
+	} else if spec.Role.HasNode() {
 		maxSize = 2
 	}
 	if minSize != maxSize {

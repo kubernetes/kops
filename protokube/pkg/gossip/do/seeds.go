@@ -80,7 +80,7 @@ func NewSeedProvider(godoClient *godo.Client, tag string) (*SeedProvider, error)
 
 // dropletIsControlPlane reports whether the droplet hosts a control-plane node.
 func dropletIsControlPlane(droplet godo.Droplet) bool {
-	roleTag := do.TagKubernetesInstanceRole + ":" + string(kops.InstanceGroupRoleControlPlane)
+	roleTag := do.TagKubernetesInstanceRole + ":" + string(kops.InstanceGroupSubRoleControlPlane.Role())
 	for _, tag := range droplet.Tags {
 		if tag == roleTag {
 			return true

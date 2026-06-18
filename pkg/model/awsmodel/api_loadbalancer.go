@@ -536,7 +536,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	if b.Cluster.UsesLoadBalancerForKopsController() {
-		nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+		nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleNode.Role())
 		if err != nil {
 			return err
 		}
@@ -553,7 +553,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 	}
 
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleControlPlane.Role())
 	if err != nil {
 		return err
 	}

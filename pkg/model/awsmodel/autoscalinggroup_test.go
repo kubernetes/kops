@@ -41,7 +41,7 @@ func buildMinimalCluster() *kops.Cluster {
 func buildNodeInstanceGroup(subnets ...string) *kops.InstanceGroup {
 	g := &kops.InstanceGroup{}
 	g.ObjectMeta.Name = "nodes"
-	g.Spec.Role = kops.InstanceGroupRoleNode
+	g.Spec.Role = kops.InstanceGroupSubRoleNode.Role()
 	g.Spec.Subnets = subnets
 
 	return g
@@ -149,7 +149,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name: "bastion1",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:                     kops.InstanceGroupRoleBastion,
+			Role:                     kops.InstanceGroupSubRoleBastion.Role(),
 			Subnets:                  subnets,
 			AdditionalSecurityGroups: []string{"sg-1234567890abcdef0"},
 		},
@@ -159,7 +159,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name: "master1",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:                     kops.InstanceGroupRoleControlPlane,
+			Role:                     kops.InstanceGroupSubRoleControlPlane.Role(),
 			Subnets:                  subnets,
 			AdditionalSecurityGroups: []string{"sg-234567890abcdef01"},
 		},
@@ -169,7 +169,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 			Name: "node1",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:                     kops.InstanceGroupRoleNode,
+			Role:                     kops.InstanceGroupSubRoleNode.Role(),
 			Subnets:                  subnets,
 			AdditionalSecurityGroups: []string{"sg-34567890abcdef012"},
 		},
@@ -253,7 +253,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	launchTemplateForGroup := func(t *testing.T, ig *kops.InstanceGroup) *awstasks.LaunchTemplate {
 		t.Helper()
 		subdomain := ig.Name
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		if ig.Spec.Role.HasControlPlane() {
 			subdomain = ig.Name + ".masters"
 		}
 		task, ok := c.Tasks[fmt.Sprintf("LaunchTemplate/%s.%s", subdomain, cluster.Name)]

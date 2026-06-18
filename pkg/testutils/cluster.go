@@ -68,7 +68,7 @@ func addEtcdClusters(c *kops.Cluster) {
 func BuildMinimalNodeInstanceGroup(name string, subnets ...string) kops.InstanceGroup {
 	g := kops.InstanceGroup{}
 	g.ObjectMeta.Name = name
-	g.Spec.Role = kops.InstanceGroupRoleNode
+	g.Spec.Role = kops.InstanceGroupSubRoleNode.Role()
 	g.Spec.Image = "ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404"
 	g.Spec.Subnets = subnets
 
@@ -78,7 +78,7 @@ func BuildMinimalNodeInstanceGroup(name string, subnets ...string) kops.Instance
 func BuildMinimalBastionInstanceGroup(name string, subnets ...string) kops.InstanceGroup {
 	g := kops.InstanceGroup{}
 	g.ObjectMeta.Name = name
-	g.Spec.Role = kops.InstanceGroupRoleNode
+	g.Spec.Role = kops.InstanceGroupSubRoleNode.Role()
 	g.Spec.Image = "ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404"
 	g.Spec.Subnets = subnets
 
@@ -88,7 +88,7 @@ func BuildMinimalBastionInstanceGroup(name string, subnets ...string) kops.Insta
 func BuildMinimalMasterInstanceGroup(subnet string) kops.InstanceGroup {
 	g := kops.InstanceGroup{}
 	g.ObjectMeta.Name = "master-" + subnet
-	g.Spec.Role = kops.InstanceGroupRoleControlPlane
+	g.Spec.Role = kops.InstanceGroupSubRoleControlPlane.Role()
 	g.Spec.Subnets = []string{subnet}
 	g.Spec.Image = "ami-1234abcd"
 

@@ -139,8 +139,12 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 	{
 		opt := *c
 		opt.InstanceGroupRoles = []string{
-			string(kops.InstanceGroupRoleAPIServer),
-			string(kops.InstanceGroupRoleControlPlane),
+			string(kops.InstanceGroupSubRoleAPIServer.Role()),
+			string(kops.InstanceGroupSubRoleControlPlane.Role()),
+			string(kops.InstanceGroupSubRoleEtcd.Role()),
+			string(kops.InstanceGroupSubRoleScheduler.Role()),
+			string(kops.InstanceGroupSubRoleCloudControllerManager.Role()),
+			string(kops.InstanceGroupSubRoleKubeControllerManager.Role()),
 		}
 		opt.Prune = false // Do not prune until after the last rolling update
 		if _, err := RunCoreUpdateCluster(ctx, f, out, &opt); err != nil {
@@ -160,7 +164,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 
 		// filter the instance group to only include the control plane
 		opt.filterInstanceGroups = func(ig *kops.InstanceGroup) bool {
-			return ig.Spec.Role == kops.InstanceGroupRoleAPIServer || ig.Spec.Role == kops.InstanceGroupRoleControlPlane
+			return ig.Spec.Role.IsControlPlaneType()
 		}
 
 		// Ignore all pods, we just want to check the control plane is responding
@@ -180,8 +184,12 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 		opt.ClusterName = c.ClusterName
 		opt.CreateKubecfgOptions = options.CreateKubecfgOptions
 		opt.InstanceGroupRoles = []string{
-			string(kops.InstanceGroupRoleAPIServer),
-			string(kops.InstanceGroupRoleControlPlane),
+			string(kops.InstanceGroupSubRoleAPIServer.Role()),
+			string(kops.InstanceGroupSubRoleControlPlane.Role()),
+			string(kops.InstanceGroupSubRoleEtcd.Role()),
+			string(kops.InstanceGroupSubRoleScheduler.Role()),
+			string(kops.InstanceGroupSubRoleCloudControllerManager.Role()),
+			string(kops.InstanceGroupSubRoleKubeControllerManager.Role()),
 		}
 		opt.Yes = c.Yes
 		if err := RunRollingUpdateCluster(ctx, f, out, opt); err != nil {

@@ -201,7 +201,7 @@ func (r *KopsConfigReconciler) buildBootstrapData(ctx context.Context, cluster *
 	ig := &kops.InstanceGroup{}
 	{
 		ig.SetName("placeholder-ig-name") // IG name is not used for nodeup config generation
-		ig.Spec.Role = kops.InstanceGroupRoleNode
+		ig.Spec.Role = kops.InstanceGroupSubRoleNode.Role()
 
 		configBuilder.InstanceGroup = ig
 		configBuilder.InstanceGroupName = ig.Name

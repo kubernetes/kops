@@ -137,7 +137,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		if ig.Spec.Role.HasNode() {
 			autoscalerEnvVars := "os_distribution=ubuntu;arch=amd64;os=linux"
 			if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
 				autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
@@ -206,23 +206,39 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			t.Metadata["ssh-keys"] = fi.NewStringResource(strings.Join(gFmtKeys, "\n"))
 		}
 
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			// Grant DNS permissions
 			// TODO: migrate to IAM permissions instead of oldschool scopes?
 			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleControlPlane))
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleControlPlane.Role()))
 			t.Tags = append(t.Tags, b.GCETagForRole("master"))
 
-		case kops.InstanceGroupRoleAPIServer:
+		case ig.Spec.Role.HasAPIServer():
 			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleAPIServer))
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleAPIServer.Role()))
 
-		case kops.InstanceGroupRoleNode:
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleNode))
+		case ig.Spec.Role.HasEtcd():
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleEtcd.Role()))
 
-		case kops.InstanceGroupRoleBastion:
-			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
+		case ig.Spec.Role.HasScheduler():
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleScheduler.Role()))
+
+		case ig.Spec.Role.HasCloudControllerManager():
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleCloudControllerManager.Role()))
+
+		case ig.Spec.Role.HasKubeControllerManager():
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleKubeControllerManager.Role()))
+
+		case ig.Spec.Role.HasNode():
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleNode.Role()))
+
+		case ig.Spec.Role.HasBastion():
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupSubRoleBastion.Role()))
 		}
 
 		if gce.UsesIPAliases(b.Cluster) {
@@ -278,7 +294,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 		minSize := 1
 		if ig.Spec.MinSize != nil {
 			minSize = int(fi.ValueOf(ig.Spec.MinSize))
-		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		} else if ig.Spec.Role.HasNode() {
 			minSize = 2
 		}
 

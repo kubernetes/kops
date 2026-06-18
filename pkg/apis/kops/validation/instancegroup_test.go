@@ -131,7 +131,7 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role: kops.InstanceGroupRoleControlPlane,
+					Role: kops.InstanceGroupSubRoleControlPlane.Role(),
 				},
 			},
 			ExpectedErrors: 0,
@@ -166,7 +166,7 @@ func TestValidMasterInstanceGroup(t *testing.T) {
 					Name: "eu-central-1d",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role: kops.InstanceGroupRoleControlPlane,
+					Role: kops.InstanceGroupSubRoleControlPlane.Role(),
 				},
 			},
 			ExpectedErrors: 1,
@@ -393,30 +393,74 @@ func TestValidateInstanceGroupGVisorWorkerOnly(t *testing.T) {
 	}{
 		{
 			name:    "enabled on worker",
-			role:    kops.InstanceGroupRoleNode,
+			role:    kops.InstanceGroupSubRoleNode.Role(),
 			enabled: fi.PtrTo(true),
 		},
 		{
 			name:     "enabled on control plane",
-			role:     kops.InstanceGroupRoleControlPlane,
+			role:     kops.InstanceGroupSubRoleControlPlane.Role(),
 			enabled:  fi.PtrTo(true),
 			expected: []string{"Forbidden::spec.containerd.gvisor"},
 		},
 		{
 			name:     "enabled on apiserver",
-			role:     kops.InstanceGroupRoleAPIServer,
+			role:     kops.InstanceGroupSubRoleAPIServer.Role(),
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:     "enabled on etcd",
+			role:     kops.InstanceGroupSubRoleEtcd.Role(),
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:     "enabled on Scheduler",
+			role:     kops.InstanceGroupSubRoleScheduler.Role(),
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:     "enabled on cloud controller manager",
+			role:     kops.InstanceGroupSubRoleCloudControllerManager.Role(),
+			enabled:  fi.PtrTo(true),
+			expected: []string{"Forbidden::spec.containerd.gvisor"},
+		},
+		{
+			name:     "enabled on kube controller manager",
+			role:     kops.InstanceGroupSubRoleKubeControllerManager.Role(),
 			enabled:  fi.PtrTo(true),
 			expected: []string{"Forbidden::spec.containerd.gvisor"},
 		},
 		{
 			name:     "enabled on bastion",
-			role:     kops.InstanceGroupRoleBastion,
+			role:     kops.InstanceGroupSubRoleBastion.Role(),
 			enabled:  fi.PtrTo(true),
 			expected: []string{"Forbidden::spec.containerd.gvisor"},
 		},
 		{
 			name:    "disabled on apiserver",
-			role:    kops.InstanceGroupRoleAPIServer,
+			role:    kops.InstanceGroupSubRoleAPIServer.Role(),
+			enabled: fi.PtrTo(false),
+		},
+		{
+			name:    "disabled on etcd",
+			role:    kops.InstanceGroupSubRoleEtcd.Role(),
+			enabled: fi.PtrTo(false),
+		},
+		{
+			name:    "disabled on Scheduler",
+			role:    kops.InstanceGroupSubRoleScheduler.Role(),
+			enabled: fi.PtrTo(false),
+		},
+		{
+			name:    "disabled on cloud controller manager",
+			role:    kops.InstanceGroupSubRoleCloudControllerManager.Role(),
+			enabled: fi.PtrTo(false),
+		},
+		{
+			name:    "disabled on kube controller manager",
+			role:    kops.InstanceGroupSubRoleKubeControllerManager.Role(),
 			enabled: fi.PtrTo(false),
 		},
 	} {
@@ -448,7 +492,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleControlPlane,
+					Role:    kops.InstanceGroupSubRoleControlPlane.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),
@@ -464,7 +508,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleAPIServer,
+					Role:    kops.InstanceGroupSubRoleAPIServer.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),
@@ -480,7 +524,71 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleNode,
+					Role:    kops.InstanceGroupSubRoleEtcd.Role(),
+					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
+					Image:   "my-image",
+				},
+			},
+			ExpectedErrors: []string{},
+			Description:    "Valid Etcd instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupSubRoleScheduler.Role(),
+					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
+					Image:   "my-image",
+				},
+			},
+			ExpectedErrors: []string{},
+			Description:    "Valid Scheduler instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupSubRoleCloudControllerManager.Role(),
+					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
+					Image:   "my-image",
+				},
+			},
+			ExpectedErrors: []string{},
+			Description:    "Valid Cloud Controller Manager instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupSubRoleKubeControllerManager.Role(),
+					Subnets: []string{"eu-central-1a"},
+					MaxSize: fi.PtrTo(int32(1)),
+					MinSize: fi.PtrTo(int32(1)),
+					Image:   "my-image",
+				},
+			},
+			ExpectedErrors: []string{},
+			Description:    "Valid Kube Controller Manager instance group failed to validate",
+		},
+		{
+			IG: &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "eu-central-1a",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Role:    kops.InstanceGroupSubRoleNode.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),
@@ -496,7 +604,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleBastion,
+					Role:    kops.InstanceGroupSubRoleBastion.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),
@@ -512,7 +620,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleBastion,
+					Role:    kops.InstanceGroupSubRoleBastion.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),
@@ -527,7 +635,7 @@ func TestValidInstanceGroup(t *testing.T) {
 					Name: "eu-central-1a",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleControlPlane,
+					Role:    kops.InstanceGroupSubRoleControlPlane.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(2)),
 					MinSize: fi.PtrTo(int32(2)),
@@ -554,7 +662,7 @@ func createMinimalInstanceGroup() *kops.InstanceGroup {
 		},
 		Spec: kops.InstanceGroupSpec{
 			CloudLabels: make(map[string]string),
-			Role:        "Node",
+			Role:        kops.InstanceGroupSubRoleNode.Role(),
 			MaxSize:     fi.PtrTo(int32(1)),
 			MinSize:     fi.PtrTo(int32(1)),
 			Image:       "my-image",
@@ -636,7 +744,7 @@ func TestCrossValidateAPIServerRole(t *testing.T) {
 					Name: "apiserver",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role:    kops.InstanceGroupRoleAPIServer,
+					Role:    kops.InstanceGroupSubRoleAPIServer.Role(),
 					Subnets: []string{"eu-central-1a"},
 					MaxSize: fi.PtrTo(int32(1)),
 					MinSize: fi.PtrTo(int32(1)),

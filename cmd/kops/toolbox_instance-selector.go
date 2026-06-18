@@ -494,7 +494,7 @@ func validateAllPrivateOrPublicSubnets(userSubnets []string) error {
 func createInstanceGroup(groupName, clusterName string, subnets []string) *kops.InstanceGroup {
 	ig := &kops.InstanceGroup{}
 	ig.ObjectMeta.Name = groupName
-	ig.Spec.Role = kops.InstanceGroupRoleNode
+	ig.Spec.Role = kops.InstanceGroupSubRoleNode.Role()
 	ig.Spec.Subnets = subnets
 	ig.ObjectMeta.Labels = make(map[string]string)
 	ig.ObjectMeta.Labels[kops.LabelClusterName] = clusterName

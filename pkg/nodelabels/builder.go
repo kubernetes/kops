@@ -25,8 +25,12 @@ import (
 )
 
 const (
-	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
-	RoleLabelNode16      = "node-role.kubernetes.io/node"
+	RoleLabelAPIServer16              = "node-role.kubernetes.io/api-server"
+	RoleLabelEtcd36                   = "node-role.kubernetes.io/etcd"
+	RoleLabelScheduler36              = "node-role.kubernetes.io/scheduler"
+	RoleLabelCloudControllerManager36 = "node-role.kubernetes.io/ccm"
+	RoleLabelKubeControllerManager36  = "node-role.kubernetes.io/kcm"
+	RoleLabelNode16                   = "node-role.kubernetes.io/node"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
@@ -37,14 +41,14 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 	isControlPlane := false
 	isAPIServer := false
 	isNode := false
-	switch instanceGroup.Spec.Role {
-	case api.InstanceGroupRoleControlPlane:
+	switch {
+	case instanceGroup.Spec.Role.HasControlPlane():
 		isControlPlane = true
-	case api.InstanceGroupRoleAPIServer:
+	case instanceGroup.Spec.Role.HasAPIServer():
 		isAPIServer = true
-	case api.InstanceGroupRoleNode:
+	case instanceGroup.Spec.Role.HasNode():
 		isNode = true
-	case api.InstanceGroupRoleBastion:
+	case instanceGroup.Spec.Role.HasBastion():
 		// no labels to add
 	default:
 		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)

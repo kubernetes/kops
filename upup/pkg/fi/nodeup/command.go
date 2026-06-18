@@ -758,8 +758,9 @@ func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (
 
 	// Only worker nodes and apiservers can actually autoscale.
 	// We are not adding describe permissions to the other roles
+	// TODO: Etcd should not autoscale. Can Scheduler, KCM or CCM?
 	role := c.BootConfig.InstanceGroupRole
-	if role != api.InstanceGroupRoleNode && role != api.InstanceGroupRoleAPIServer {
+	if !role.HasNode() && !role.HasAPIServer() {
 		return "", nil
 	}
 

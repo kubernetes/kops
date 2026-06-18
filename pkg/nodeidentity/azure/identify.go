@@ -109,11 +109,11 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		if strings.HasPrefix(k, azure.TagNameRolePrefix) {
 			role := strings.TrimPrefix(k, azure.TagNameRolePrefix)
 			switch role {
-			case kops.InstanceGroupRoleControlPlane.ToLowerString():
+			case kops.InstanceGroupSubRoleControlPlane.Role().ToLowerString():
 				labels[nodelabels.RoleLabelControlPlane20] = ""
 			case "master":
 				labels[nodelabels.RoleLabelControlPlane20] = ""
-			case kops.InstanceGroupRoleNode.ToLowerString():
+			case kops.InstanceGroupSubRoleNode.Role().ToLowerString():
 				labels[nodelabels.RoleLabelNode16] = ""
 			default:
 				klog.Warningf("Unknown or unsupported node role tag %q for VM %q", k, vmName)

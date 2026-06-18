@@ -46,7 +46,7 @@ var _ fi.CloudupModelBuilder = &BastionModelBuilder{}
 func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var bastionInstanceGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.Role.HasBastion() {
 			bastionInstanceGroups = append(bastionInstanceGroups, ig)
 		}
 	}
@@ -55,15 +55,15 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return nil
 	}
 
-	bastionGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleBastion)
+	bastionGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleBastion.Role())
 	if err != nil {
 		return err
 	}
-	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleNode.Role())
 	if err != nil {
 		return err
 	}
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleControlPlane.Role())
 	if err != nil {
 		return err
 	}

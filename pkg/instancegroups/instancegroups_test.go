@@ -35,7 +35,7 @@ func TestWarmPoolOnlyRoll(t *testing.T) {
 	instanceID := "node-1"
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	makeGroup(groups, c.K8sClient, cloud, groupName, kopsapi.InstanceGroupRoleNode, 0, 0)
+	makeGroup(groups, c.K8sClient, cloud, groupName, kopsapi.InstanceGroupSubRoleNode.Role(), 0, 0)
 
 	group := groups[groupName]
 	group.MinSize = 0

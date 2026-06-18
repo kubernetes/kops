@@ -50,7 +50,7 @@ func (r *Discovery) GetSeeds() ([]string, error) {
 	ctx := context.TODO()
 
 	// Seed only from control-plane nodes; workers do not run gossip.
-	controlPlaneTag := gce.TagForRole(r.clusterName, kops.InstanceGroupRoleControlPlane)
+	controlPlaneTag := gce.TagForRole(r.clusterName, kops.InstanceGroupSubRoleControlPlane.Role())
 
 	if err := r.findInstances(ctx, func(i *compute.Instance) (bool, error) {
 		// TODO: Expose multiple IPs topologies?
@@ -243,7 +243,7 @@ func (r *Discovery) Resolve(ctx context.Context, name string) ([]string, error) 
 	var requiredTags []string
 
 	// We assume we are trying to resolve a component that runs on the control plane
-	requiredTags = append(requiredTags, gce.TagForRole(r.clusterName, kops.InstanceGroupRoleControlPlane))
+	requiredTags = append(requiredTags, gce.TagForRole(r.clusterName, kops.InstanceGroupSubRoleControlPlane.Role()))
 
 	if err := r.findInstances(ctx, func(i *compute.Instance) (bool, error) {
 		// Make sure the instance has any required tags

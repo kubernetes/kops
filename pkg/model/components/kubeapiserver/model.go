@@ -66,7 +66,7 @@ func (b *KubeApiserverBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		Key:      key,
 		Path:     location,
 		Contents: manifestYAML,
-		Roles:    []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer},
+		Roles:    []kops.InstanceGroupRole{kops.InstanceGroupSubRoleControlPlane.Role(), kops.InstanceGroupSubRoleAPIServer.Role()},
 	})
 	return nil
 }

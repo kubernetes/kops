@@ -17,6 +17,7 @@ limitations under the License.
 package kops
 
 import (
+	"slices"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -54,23 +55,138 @@ type InstanceGroupList struct {
 // InstanceGroupRole describes the roles of the nodes in this InstanceGroup.
 type InstanceGroupRole string
 
+type InstanceGroupSubRole string
+
 const (
-	// InstanceGroupRoleControlPlane is a control-plane role.
-	InstanceGroupRoleControlPlane InstanceGroupRole = "ControlPlane"
-	// InstanceGroupRoleNode is a node role.
-	InstanceGroupRoleNode InstanceGroupRole = "Node"
-	// InstanceGroupRoleBastion is a bastion role.
-	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
-	// InstanceGroupRoleAPIServer is an API server role.
-	InstanceGroupRoleAPIServer InstanceGroupRole = "APIServer"
+	// InstanceGroupSubRoleControlPlane is a control-plane sub-role.
+	InstanceGroupSubRoleControlPlane InstanceGroupSubRole = "ControlPlane"
+	canocicalControlPlane            InstanceGroupSubRole = "control-plane"
+	// InstanceGroupSubRoleNode is a node sub-role.
+	InstanceGroupSubRoleNode InstanceGroupSubRole = "Node"
+	canocicalNode            InstanceGroupSubRole = "node"
+	// InstanceGroupSubRoleBastion is a bastion sub-role.
+	InstanceGroupSubRoleBastion InstanceGroupSubRole = "Bastion"
+	canocicalBastion            InstanceGroupSubRole = "bastion"
+	// InstanceGroupSubRoleAPIServer is an API server sub-role.
+	InstanceGroupSubRoleAPIServer InstanceGroupSubRole = "APIServer"
+	canocicalAPIServer            InstanceGroupSubRole = "apiserver"
+	// InstanceGroupSubRoleEtcd is an etcd sub-role.
+	InstanceGroupSubRoleEtcd InstanceGroupSubRole = "Etcd"
+	canocicalEtcd            InstanceGroupSubRole = "etcd"
+	// InstanceGroupSubRoleScheduler is a scheduler sub-role.
+	InstanceGroupSubRoleScheduler InstanceGroupSubRole = "Scheduler"
+	canocicalScheduler            InstanceGroupSubRole = "scheduler"
+	// InstanceGroupSubRoleCloudControllerManager is a cloud controller manager sub-role.
+	InstanceGroupSubRoleCloudControllerManager InstanceGroupSubRole = "CloudControllerManager"
+	canocicalCloudControllerManager            InstanceGroupSubRole = "cloudcontrollermanager"
+	// InstanceGroupSubRoleKubeControllerManager is a kubernetes controller manager sub-role.
+	InstanceGroupSubRoleKubeControllerManager InstanceGroupSubRole = "KubeControllerManager"
+	canocicalKubeControllerManager            InstanceGroupSubRole = "kubecontrollermanager"
 )
 
-// AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
-var AllInstanceGroupRoles = []InstanceGroupRole{
-	InstanceGroupRoleControlPlane,
-	InstanceGroupRoleAPIServer,
-	InstanceGroupRoleNode,
-	InstanceGroupRoleBastion,
+// AllInstanceGroupSubRoles is a slice of all valid InstanceGroupSubRole values
+var AllInstanceGroupSubRoles = []InstanceGroupSubRole{
+	InstanceGroupSubRoleControlPlane,
+	InstanceGroupSubRoleAPIServer,
+	InstanceGroupSubRoleEtcd,
+	InstanceGroupSubRoleScheduler,
+	InstanceGroupSubRoleCloudControllerManager,
+	InstanceGroupSubRoleKubeControllerManager,
+	InstanceGroupSubRoleNode,
+	InstanceGroupSubRoleBastion,
+}
+
+func canonical(igsr string) InstanceGroupSubRole {
+	input := strings.ToLower(string(igsr))
+	switch input {
+	case "control-plane", "control-planes", "controlplane", "controlplanes":
+		return canocicalControlPlane
+	case "node", "nodes":
+		return canocicalNode
+	case "bastion", "bastions":
+		return canocicalBastion
+	case "apiserver", "apiservers", "api-server", "api-servers":
+		return canocicalAPIServer
+	case "etcd", "etcds":
+		return canocicalEtcd
+	case "scheduler", "schedulers":
+		return canocicalScheduler
+	case "cloudcontrollermanager", "cloudcontrollermanagers", "cloud-controller-manager", "cloud-controller-managers", "ccm", "ccms":
+		return canocicalCloudControllerManager
+	case "kubecontrollermanager", "kubecontrollermanagers", "kube-controller-manager", "kube-controller-managers", "kcm", "kcms":
+		return canocicalKubeControllerManager
+	default:
+		return "unknown"
+	}
+}
+
+func (igsr InstanceGroupSubRole) Role() InstanceGroupRole {
+	return InstanceGroupRole(igsr)
+}
+
+func (igr InstanceGroupRole) SubRoles() []InstanceGroupSubRole {
+	substrings := strings.Split(strings.ToLower(string(igr)), ",")
+	subroles := make([]InstanceGroupSubRole, len(substrings))
+	for index, subrole := range substrings {
+		subroles[index] = canonical(subrole)
+	}
+	slices.Sort(subroles)
+	return subroles
+}
+
+func (igr InstanceGroupRole) IsControlPlaneType() bool {
+	// Current assumption is we do not mix control plane sub role types
+	// with non control plane sub role types. So we *should* only need
+	// to check 1 but we currently return on the first we recognize.
+	for _, subrole := range igr.SubRoles() {
+		switch subrole {
+		case canocicalControlPlane,
+			canocicalAPIServer,
+			canocicalEtcd,
+			canocicalScheduler,
+			canocicalCloudControllerManager,
+			canocicalKubeControllerManager:
+			return true
+		case canocicalNode,
+			canocicalBastion:
+			return false
+		}
+	}
+	// TODO: Should we throw an error here?
+	return false
+}
+
+func (igr InstanceGroupRole) HasControlPlane() bool {
+	subroles := igr.SubRoles()
+	return slices.Contains(subroles, canocicalControlPlane)
+}
+
+func (igr InstanceGroupRole) HasAPIServer() bool {
+	return slices.Contains(igr.SubRoles(), canocicalAPIServer)
+}
+
+func (igr InstanceGroupRole) HasEtcd() bool {
+	return slices.Contains(igr.SubRoles(), canocicalEtcd)
+}
+
+func (igr InstanceGroupRole) HasScheduler() bool {
+	return slices.Contains(igr.SubRoles(), canocicalScheduler)
+}
+
+func (igr InstanceGroupRole) HasKubeControllerManager() bool {
+	return slices.Contains(igr.SubRoles(), canocicalKubeControllerManager)
+}
+
+func (igr InstanceGroupRole) HasCloudControllerManager() bool {
+	return slices.Contains(igr.SubRoles(), canocicalCloudControllerManager)
+}
+
+func (igr InstanceGroupRole) HasNode() bool {
+	return slices.Contains(igr.SubRoles(), canocicalNode)
+}
+
+func (igr InstanceGroupRole) HasBastion() bool {
+	return slices.Contains(igr.SubRoles(), canocicalBastion)
 }
 
 const (
@@ -96,7 +212,7 @@ const (
 type InstanceGroupSpec struct {
 	// Manager determines what is managing the node lifecycle
 	Manager InstanceManager `json:"manager,omitempty"`
-	// Role determines the role of instances in this instance group.
+	// Role determines the role of instances in this instance group. Comma-delimited list of sub-roles.
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
@@ -343,10 +459,10 @@ type IAMProfileSpec struct {
 	Profile *string `json:"profile,omitempty"`
 }
 
-// IsControlPlane checks if instanceGroup is a control-plane node.
+// IsControlPlane checks if instanceGroup has a control-plane sub-role.
 func (g *InstanceGroup) IsControlPlane() bool {
-	switch g.Spec.Role {
-	case InstanceGroupRoleControlPlane:
+	switch {
+	case g.Spec.Role.HasControlPlane():
 		return true
 	default:
 		return false
@@ -355,8 +471,48 @@ func (g *InstanceGroup) IsControlPlane() bool {
 
 // IsAPIServerOnly checks if instanceGroup runs only the API Server
 func (g *InstanceGroup) IsAPIServerOnly() bool {
-	switch g.Spec.Role {
-	case InstanceGroupRoleAPIServer:
+	switch {
+	case g.Spec.Role.HasAPIServer():
+		return true
+	default:
+		return false
+	}
+}
+
+// IsEtcdOnly checks if instanceGroup runs only the Etcd
+func (g *InstanceGroup) IsEtcdOnly() bool {
+	switch {
+	case g.Spec.Role.HasEtcd():
+		return true
+	default:
+		return false
+	}
+}
+
+// IsSchedulerOnly checks if instanceGroup runs only the Scheduler
+func (g *InstanceGroup) IsSchedulerOnly() bool {
+	switch {
+	case g.Spec.Role.HasScheduler():
+		return true
+	default:
+		return false
+	}
+}
+
+// IsCloudControllerManagerOnly checks if instanceGroup runs only the Cloud Controller Manager
+func (g *InstanceGroup) IsCloudControllerManagerOnly() bool {
+	switch {
+	case g.Spec.Role.HasCloudControllerManager():
+		return true
+	default:
+		return false
+	}
+}
+
+// IsKubeControllerManagerOnly checks if instanceGroup runs only the Kube Controller Manager
+func (g *InstanceGroup) IsKubeControllerManagerOnly() bool {
+	switch {
+	case g.Spec.Role.HasKubeControllerManager():
 		return true
 	default:
 		return false
@@ -371,7 +527,7 @@ func (g *InstanceGroup) HasAPIServer() bool {
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.
 // gVisor is only valid on workers; ValidateInstanceGroup rejects it on other roles.
 func (g *InstanceGroup) HasGVisor() bool {
-	return g.Spec.Role == InstanceGroupRoleNode &&
+	return g.Spec.Role.HasNode() &&
 		g.Spec.Containerd != nil &&
 		g.Spec.Containerd.GVisor != nil &&
 		g.Spec.Containerd.GVisor.Enabled != nil &&
@@ -380,8 +536,8 @@ func (g *InstanceGroup) HasGVisor() bool {
 
 // IsBastion checks if instanceGroup is a bastion
 func (g *InstanceGroup) IsBastion() bool {
-	switch g.Spec.Role {
-	case InstanceGroupRoleBastion:
+	switch {
+	case g.Spec.Role.HasBastion():
 		return true
 	default:
 		return false
@@ -396,8 +552,17 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 }
 
 func (r InstanceGroupRole) ToLowerString() string {
+	switch {
+	case r.HasControlPlane():
+		return "control-plane"
+	default:
+		return strings.ToLower(string(r))
+	}
+}
+
+func (r InstanceGroupSubRole) ToLowerString() string {
 	switch r {
-	case InstanceGroupRoleControlPlane:
+	case InstanceGroupSubRoleControlPlane:
 		return "control-plane"
 	default:
 		return strings.ToLower(string(r))

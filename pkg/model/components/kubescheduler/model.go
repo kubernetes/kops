@@ -59,7 +59,8 @@ func (b *KubeSchedulerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	b.AssetBuilder.AddStaticFile(&assets.StaticFile{
 		Path:    KubeSchedulerConfigPath,
 		Content: string(configYAML),
-		Roles:   []kops.InstanceGroupRole{kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer},
+		// TODO: Why add the static file to APIServer only?
+		Roles: []kops.InstanceGroupRole{kops.InstanceGroupSubRoleControlPlane.Role(), kops.InstanceGroupSubRoleAPIServer.Role(), kops.InstanceGroupSubRoleScheduler.Role()},
 	})
 	return nil
 }

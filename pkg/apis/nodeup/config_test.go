@@ -66,7 +66,7 @@ func TestNewConfigDefaultMachineType(t *testing.T) {
 
 			ig := &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
-					Role:        kops.InstanceGroupRoleNode,
+					Role:        kops.InstanceGroupSubRoleNode.Role(),
 					MachineType: "m5.large,m5.xlarge",
 				},
 			}
@@ -118,34 +118,54 @@ func TestNewConfigGVisorWorkerOnly(t *testing.T) {
 	}{
 		{
 			name:       "cluster config ignored on worker",
-			role:       kops.InstanceGroupRoleNode,
+			role:       kops.InstanceGroupSubRoleNode.Role(),
 			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
 		},
 		{
 			name:       "cluster config on control plane",
-			role:       kops.InstanceGroupRoleControlPlane,
+			role:       kops.InstanceGroupSubRoleControlPlane.Role(),
 			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
 		},
 		{
 			name:       "cluster config on apiserver",
-			role:       kops.InstanceGroupRoleAPIServer,
+			role:       kops.InstanceGroupSubRoleAPIServer.Role(),
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on etcd",
+			role:       kops.InstanceGroupSubRoleEtcd.Role(),
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on scheduler",
+			role:       kops.InstanceGroupSubRoleScheduler.Role(),
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on cloud controller manager",
+			role:       kops.InstanceGroupSubRoleCloudControllerManager.Role(),
+			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
+		},
+		{
+			name:       "cluster config on kube controller manager",
+			role:       kops.InstanceGroupSubRoleKubeControllerManager.Role(),
 			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
 		},
 		{
 			name:       "cluster config on bastion",
-			role:       kops.InstanceGroupRoleBastion,
+			role:       kops.InstanceGroupSubRoleBastion.Role(),
 			containerd: &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
 		},
 		{
 			name:                "instance group config on worker",
-			role:                kops.InstanceGroupRoleNode,
+			role:                kops.InstanceGroupSubRoleNode.Role(),
 			containerd:          &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
 			instanceGroupConfig: true,
 			wantGVisor:          true,
 		},
 		{
 			name:                "instance group config on control plane",
-			role:                kops.InstanceGroupRoleControlPlane,
+			role:                kops.InstanceGroupSubRoleControlPlane.Role(),
 			containerd:          &kops.ContainerdConfig{GVisor: &kops.GVisorConfig{Enabled: ptrToBool(true)}},
 			instanceGroupConfig: true,
 		},

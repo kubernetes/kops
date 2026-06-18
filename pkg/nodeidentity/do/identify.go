@@ -185,13 +185,13 @@ func labelsFromTags(tags []string) map[string]string {
 	}
 
 	switch role {
-	case kops.InstanceGroupRoleControlPlane:
+	case kops.InstanceGroupSubRoleControlPlane.Role():
 		labels[nodelabels.RoleLabelControlPlane20] = ""
-	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupSubRoleNode.Role():
 		labels[nodelabels.RoleLabelNode16] = ""
-	case kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupSubRoleAPIServer.Role():
 		labels[nodelabels.RoleLabelAPIServer16] = ""
-	case kops.InstanceGroupRoleBastion:
+	case kops.InstanceGroupSubRoleBastion.Role():
 		// Bastions don't join the cluster; nothing to label.
 	default:
 		klog.Warningf("Unknown instance role %q on droplet tags", role)
@@ -212,10 +212,10 @@ func roleFromTags(tags []string) (kops.InstanceGroupRole, bool) {
 func fallbackRoleFromTags(tags []string) kops.InstanceGroupRole {
 	for _, tag := range tags {
 		if strings.HasPrefix(tag, do.TagKubernetesClusterMasterPrefix+":") {
-			return kops.InstanceGroupRoleControlPlane
+			return kops.InstanceGroupSubRoleControlPlane.Role()
 		}
 	}
-	return kops.InstanceGroupRoleNode
+	return kops.InstanceGroupSubRoleNode.Role()
 }
 
 func stringKeyFunc(obj interface{}) (string, error) {

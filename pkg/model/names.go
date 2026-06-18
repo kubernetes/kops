@@ -34,12 +34,12 @@ import (
 
 // SecurityGroupName returns the security group name for the specific role
 func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string {
-	switch role {
-	case kops.InstanceGroupRoleBastion:
+	switch {
+	case role.HasBastion():
 		return "bastion." + b.ClusterName()
-	case kops.InstanceGroupRoleNode:
+	case role.HasNode():
 		return "nodes." + b.ClusterName()
-	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleAPIServer:
+	case role.IsControlPlaneType():
 		return "masters." + b.ClusterName()
 	default:
 		klog.Fatalf("unknown role: %v", role)
@@ -55,15 +55,24 @@ func (b *KopsModelContext) LinkToSecurityGroup(role kops.InstanceGroupRole) *aws
 
 // AutoscalingGroupName derives the autoscaling group name for us
 func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane:
+	switch {
+	case ig.Spec.Role.HasControlPlane():
 		// We need to keep this back-compatible, so we introduce the masters name,
 		// though the IG name suffices for uniqueness, and with sensible naming masters
 		// should be redundant...
 		return ig.ObjectMeta.Name + ".masters." + b.ClusterName()
-	case kops.InstanceGroupRoleAPIServer:
+	case ig.Spec.Role.HasAPIServer():
 		return ig.ObjectMeta.Name + ".apiservers." + b.ClusterName()
-	case kops.InstanceGroupRoleNode, kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasEtcd():
+		return ig.ObjectMeta.Name + ".etcd." + b.ClusterName()
+	case ig.Spec.Role.HasScheduler():
+		return ig.ObjectMeta.Name + ".scheduler." + b.ClusterName()
+	case ig.Spec.Role.HasCloudControllerManager():
+		return ig.ObjectMeta.Name + ".ccm." + b.ClusterName()
+	case ig.Spec.Role.HasKubeControllerManager():
+		return ig.ObjectMeta.Name + ".kcm." + b.ClusterName()
+	case ig.Spec.Role.HasNode(),
+		ig.Spec.Role.HasBastion():
 		return ig.ObjectMeta.Name + "." + b.ClusterName()
 
 	default:
@@ -149,13 +158,21 @@ func (b *KopsModelContext) NameForDNSZone() string {
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	var rolename string
 	switch role {
-	case kops.InstanceGroupRoleControlPlane:
+	case kops.InstanceGroupSubRoleControlPlane.Role():
 		rolename = "masters." + b.ClusterName()
-	case kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupSubRoleAPIServer.Role():
 		rolename = "apiservers." + b.ClusterName()
-	case kops.InstanceGroupRoleBastion:
+	case kops.InstanceGroupSubRoleEtcd.Role():
+		rolename = "etcd." + b.ClusterName()
+	case kops.InstanceGroupSubRoleScheduler.Role():
+		rolename = "scheduler." + b.ClusterName()
+	case kops.InstanceGroupSubRoleCloudControllerManager.Role():
+		rolename = "ccm." + b.ClusterName()
+	case kops.InstanceGroupSubRoleKubeControllerManager.Role():
+		rolename = "kcm." + b.ClusterName()
+	case kops.InstanceGroupSubRoleBastion.Role():
 		rolename = "bastions." + b.ClusterName()
-	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupSubRoleNode.Role():
 		rolename = "nodes." + b.ClusterName()
 
 	default:

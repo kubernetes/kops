@@ -524,7 +524,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 
 			}
-		} else if g.Spec.Role == api.InstanceGroupRoleBastion {
+		} else if g.Spec.Role.HasBastion() {
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, g)
 				if err != nil {
@@ -980,7 +980,7 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			}
 
 			g := &api.InstanceGroup{}
-			g.Spec.Role = api.InstanceGroupRoleControlPlane
+			g.Spec.Role = api.InstanceGroupSubRoleControlPlane.Role()
 			g.Spec.MinSize = fi.PtrTo(int32(1))
 			g.Spec.MaxSize = fi.PtrTo(int32(1))
 			g.ObjectMeta.Name = "control-plane-" + name
@@ -1106,7 +1106,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 		}
 
 		g := &api.InstanceGroup{}
-		g.Spec.Role = api.InstanceGroupRoleNode
+		g.Spec.Role = api.InstanceGroupSubRoleNode.Role()
 		g.Spec.MinSize = fi.PtrTo(nodeCount)
 		g.Spec.MaxSize = fi.PtrTo(nodeCount)
 		g.ObjectMeta.Name = "nodes"
@@ -1155,7 +1155,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 		}
 
 		g := &api.InstanceGroup{}
-		g.Spec.Role = api.InstanceGroupRoleNode
+		g.Spec.Role = api.InstanceGroupSubRoleNode.Role()
 		g.Spec.MinSize = fi.PtrTo(count)
 		g.Spec.MaxSize = fi.PtrTo(count)
 		g.ObjectMeta.Name = "nodes-" + zone
@@ -1205,7 +1205,7 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 
 func setupKarpenterNodes(cluster *api.Cluster) ([]*api.InstanceGroup, error) {
 	g := &api.InstanceGroup{}
-	g.Spec.Role = api.InstanceGroupRoleNode
+	g.Spec.Role = api.InstanceGroupSubRoleNode.Role()
 	g.Spec.Manager = api.InstanceManagerKarpenter
 	g.ObjectMeta.Name = "nodes"
 
@@ -1234,7 +1234,7 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnets
 		}
 
 		g := &api.InstanceGroup{}
-		g.Spec.Role = api.InstanceGroupRoleAPIServer
+		g.Spec.Role = api.InstanceGroupSubRoleAPIServer.Role()
 		g.Spec.MinSize = fi.PtrTo(count)
 		g.Spec.MaxSize = fi.PtrTo(count)
 		g.ObjectMeta.Name = "apiserver-" + zone
@@ -1423,7 +1423,7 @@ func setupTopology(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.S
 
 		if opt.Bastion {
 			bastionGroup := &api.InstanceGroup{}
-			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
+			bastionGroup.Spec.Role = api.InstanceGroupSubRoleBastion.Role()
 			bastionGroup.ObjectMeta.Name = "bastions"
 			bastionGroup.Spec.MaxSize = fi.PtrTo(int32(1))
 			bastionGroup.Spec.MinSize = fi.PtrTo(int32(1))

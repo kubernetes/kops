@@ -242,7 +242,7 @@ func TestGetCloudGroups(t *testing.T) {
 				Name: masterIG,
 			},
 			Spec: kops.InstanceGroupSpec{
-				Role: kops.InstanceGroupRoleControlPlane,
+				Role: kops.InstanceGroupSubRoleControlPlane.Role(),
 			},
 		},
 		{
@@ -250,7 +250,7 @@ func TestGetCloudGroups(t *testing.T) {
 				Name: nodeIG,
 			},
 			Spec: kops.InstanceGroupSpec{
-				Role: kops.InstanceGroupRoleNode,
+				Role: kops.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 	}

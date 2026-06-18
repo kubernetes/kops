@@ -79,12 +79,12 @@ func (c *AzureModelContext) NameForLoadBalancer() string {
 
 // NameForApplicationSecurityGroupControlPlane returns the name of the Application Security Group object for the ControlPlane role.
 func (c *AzureModelContext) NameForApplicationSecurityGroupControlPlane() string {
-	return kops.InstanceGroupRoleControlPlane.ToLowerString() + "." + c.ClusterName()
+	return kops.InstanceGroupSubRoleControlPlane.Role().ToLowerString() + "." + c.ClusterName()
 }
 
 // NameForApplicationSecurityGroupNodes returns the name of the Application Security Group object for the Node role.
 func (c *AzureModelContext) NameForApplicationSecurityGroupNodes() string {
-	return kops.InstanceGroupRoleNode.ToLowerString() + "s." + c.ClusterName()
+	return kops.InstanceGroupSubRoleNode.Role().ToLowerString() + "s." + c.ClusterName()
 }
 
 // LinkToApplicationSecurityGroupControlPlane returns the Application Security Group object for the ControlPlane role.
@@ -136,7 +136,7 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 
 	// The system tags take priority because the cluster likely breaks without them...
 	labels[azure.TagNameRolePrefix+ig.Spec.Role.ToLowerString()] = "1"
-	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+	if ig.Spec.Role.HasControlPlane() {
 		labels[azure.TagNameRolePrefix+"master"] = "1"
 	}
 

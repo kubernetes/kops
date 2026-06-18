@@ -28,14 +28,22 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 	var instancegroup *kops.InstanceGroup
 	for _, g := range instancegroups {
 		var groupName string
-		switch g.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case g.Spec.Role.HasControlPlane():
 			groupName = g.ObjectMeta.Name + ".masters." + clusterName
-		case kops.InstanceGroupRoleAPIServer:
+		case g.Spec.Role.HasAPIServer():
 			groupName = g.ObjectMeta.Name + ".apiservers." + clusterName
-		case kops.InstanceGroupRoleNode:
+		case g.Spec.Role.HasEtcd():
+			groupName = g.ObjectMeta.Name + ".etcd." + clusterName
+		case g.Spec.Role.HasScheduler():
+			groupName = g.ObjectMeta.Name + ".scheduler." + clusterName
+		case g.Spec.Role.HasCloudControllerManager():
+			groupName = g.ObjectMeta.Name + ".ccm." + clusterName
+		case g.Spec.Role.HasKubeControllerManager():
+			groupName = g.ObjectMeta.Name + ".kcm." + clusterName
+		case g.Spec.Role.HasNode():
 			groupName = g.ObjectMeta.Name + "." + clusterName
-		case kops.InstanceGroupRoleBastion:
+		case g.Spec.Role.HasBastion():
 			groupName = g.ObjectMeta.Name + "." + clusterName
 		default:
 			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
