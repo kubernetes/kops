@@ -39,6 +39,7 @@ type ComputeClient interface {
 	Instances() InstanceClient
 	InstanceTemplates() InstanceTemplateClient
 	InstanceGroupManagers() InstanceGroupManagerClient
+	RegionInstanceGroupManagers() RegionInstanceGroupManagerClient
 	TargetPools() TargetPoolClient
 	Disks() DiskClient
 	RegionBackendServices() RegionBackendServiceClient
@@ -847,4 +848,68 @@ func (c *diskClientImpl) AggregatedList(ctx context.Context, project string) ([]
 func (c *diskClientImpl) SetLabels(project, zone, name string, req *compute.ZoneSetLabelsRequest) error {
 	_, err := c.srv.SetLabels(project, zone, name, req).Do()
 	return err
+}
+
+// RegionInstanceGroupManagerClient wraps the GCE RegionInstanceGroupManagers API.
+type RegionInstanceGroupManagerClient interface {
+Insert(project, region string, i *compute.InstanceGroupManager) (*compute.Operation, error)
+Delete(project, region, name string) (*compute.Operation, error)
+Get(project, region, name string) (*compute.InstanceGroupManager, error)
+List(ctx context.Context, project, region string) ([]*compute.InstanceGroupManager, error)
+SetTargetPools(project, region, name string, targetPools []string) (*compute.Operation, error)
+SetInstanceTemplate(project, region, name, instanceTemplateURL string) (*compute.Operation, error)
+Resize(project, region, name string, newSize int64) (*compute.Operation, error)
+}
+
+type regionInstanceGroupManagerClientImpl struct {
+srv *compute.RegionInstanceGroupManagersService
+}
+
+var _ RegionInstanceGroupManagerClient = (*regionInstanceGroupManagerClientImpl)(nil)
+
+func (c *regionInstanceGroupManagerClientImpl) Insert(project, region string, i *compute.InstanceGroupManager) (*compute.Operation, error) {
+return c.srv.Insert(project, region, i).Do()
+}
+
+func (c *regionInstanceGroupManagerClientImpl) Delete(project, region, name string) (*compute.Operation, error) {
+return c.srv.Delete(project, region, name).Do()
+}
+
+func (c *regionInstanceGroupManagerClientImpl) Get(project, region, name string) (*compute.InstanceGroupManager, error) {
+return c.srv.Get(project, region, name).Do()
+}
+
+func (c *regionInstanceGroupManagerClientImpl) List(ctx context.Context, project, region string) ([]*compute.InstanceGroupManager, error) {
+var ms []*compute.InstanceGroupManager
+if err := c.srv.List(project, region).Pages(ctx, func(page *compute.RegionInstanceGroupManagerList) error {
+ms = append(ms, page.Items...)
+return nil
+}); err != nil {
+return nil, err
+}
+return ms, nil
+}
+
+func (c *regionInstanceGroupManagerClientImpl) SetTargetPools(project, region, name string, targetPools []string) (*compute.Operation, error) {
+req := &compute.RegionInstanceGroupManagersSetTargetPoolsRequest{
+TargetPools: targetPools,
+}
+return c.srv.SetTargetPools(project, region, name, req).Do()
+}
+
+func (c *regionInstanceGroupManagerClientImpl) SetInstanceTemplate(project, region, name, instanceTemplateURL string) (*compute.Operation, error) {
+req := &compute.RegionInstanceGroupManagersSetTemplateRequest{
+InstanceTemplate: instanceTemplateURL,
+}
+return c.srv.SetInstanceTemplate(project, region, name, req).Do()
+}
+
+func (c *regionInstanceGroupManagerClientImpl) Resize(project, region, name string, newSize int64) (*compute.Operation, error) {
+return c.srv.Resize(project, region, name, newSize).Do()
+}
+
+func (c *computeClientImpl) RegionInstanceGroupManagers() RegionInstanceGroupManagerClient {
+return &regionInstanceGroupManagerClientImpl{
+srv: c.srv.RegionInstanceGroupManagers,
+}
 }

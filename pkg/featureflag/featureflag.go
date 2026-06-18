@@ -69,6 +69,7 @@ var (
 	SpotinstController = new("SpotinstController", Bool(true))
 	// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 	VPCSkipEnableDNSSupport = new("VPCSkipEnableDNSSupport", Bool(false))
+	GCERegionalMIG = new("GCERegionalMIG", Bool(false))
 	// SkipEtcdVersionCheck will bypass the check that etcd-manager is using a supported etcd version
 	SkipEtcdVersionCheck = new("SkipEtcdVersionCheck", Bool(false))
 	// EtcdEventsHTTP enables HTTP (non-TLS) for the events etcd cluster.
