@@ -17,11 +17,6 @@
 set -e
 set -x
 
-# Report the experiment variant so TestGrid can show it as a column header.
-if [[ -n "${ARTIFACTS:-}" ]]; then
-  echo "{\"variant\":\"${EXPERIMENT_VARIANT:-base}\"}" > "${ARTIFACTS}/metadata.json"
-fi
-
 make test-e2e-install
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
@@ -261,6 +256,7 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]\[KubeUp\]" \
     --parallel=25
 else
+  rc=0
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
     --kubernetes-version="${K8S_VERSION}" \
@@ -270,5 +266,13 @@ else
     --provider="${CLOUD_PROVIDER}" \
     --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
     --kube-config="${HOME}/.kube/config" \
-    "${CLUSTERLOADER2_ARGS[@]}"
+    "${CLUSTERLOADER2_ARGS[@]}" || rc=$?
+
+  # Add the variant after kubetest2, which would otherwise overwrite metadata.json.
+  if [[ -n "${ARTIFACTS:-}" ]]; then
+    if jq --arg v "${EXPERIMENT_VARIANT:-base}" '. + {variant:$v}' "${ARTIFACTS}/metadata.json" >"${ARTIFACTS}/metadata.json.tmp"; then
+      mv "${ARTIFACTS}/metadata.json.tmp" "${ARTIFACTS}/metadata.json" || true
+    fi
+  fi
+  exit $rc
 fi
