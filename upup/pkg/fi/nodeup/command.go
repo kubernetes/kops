@@ -593,8 +593,8 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 	}
 	if distribution.ForceNftables() {
 		// Distributions like RHEL10+ use nftables exclusively
-		// Load nf_tables and nf_conntrack to fix CNI plugins that use iptables-nft
-		for _, mod := range []string{"nf_tables", "nf_conntrack"} {
+		// Load nft-related modules to fix CNI plugins that use iptables-nft
+		for _, mod := range []string{"nf_tables", "nf_conntrack", "nft_compat"} {
 			if err := modprobe(mod); err != nil {
 				klog.Warningf("error loading %s module: %v", mod, err)
 			}
