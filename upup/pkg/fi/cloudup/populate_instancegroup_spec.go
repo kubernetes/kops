@@ -297,6 +297,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelAPIServer16 + "=:" + string(v1.TaintEffectNoSchedule))
 		}
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+			// Karpenter v1 expects its nodes to register with this taint as a race guard; it removes the taint once
+			// the NodeClaim is synced. The empty value still requires the <Key>=<Value>:<Effect> form.
+			taints.Insert("karpenter.sh/unregistered=:" + string(v1.TaintEffectNoExecute))
+		}
 	}
 
 	igKubeletConfig.Taints = taints.List()
