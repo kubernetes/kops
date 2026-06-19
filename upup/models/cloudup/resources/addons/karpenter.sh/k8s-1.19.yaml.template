@@ -2891,3 +2891,9 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: karpenter
       app.kubernetes.io/name: karpenter
+{{- range $ig := KarpenterInstanceGroups }}
+---
+{{ KarpenterEC2NodeClass $ig }}
+---
+{{ KarpenterNodePool $ig }}
+{{- end }}

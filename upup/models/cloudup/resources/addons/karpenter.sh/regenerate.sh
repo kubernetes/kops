@@ -16,9 +16,11 @@
 
 # Regenerate k8s-1.19.yaml.template from the upstream karpenter Helm chart.
 # Chart version and kops patches live in kustomization.yaml; kops value
-# overrides are in helm-values.yaml.
+# overrides are in helm-values.yaml. The kops-managed EC2NodeClass/NodePool
+# template (instancegroups.yaml.template) is appended so both ship as one addon.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 kustomize build --enable-helm . > k8s-1.19.yaml.template
+cat instancegroups.yaml.template >> k8s-1.19.yaml.template
 echo "Wrote k8s-1.19.yaml.template"

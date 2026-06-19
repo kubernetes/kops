@@ -494,6 +494,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return false
 	}
 
+	dest["KarpenterEC2NodeClass"] = tf.KarpenterEC2NodeClass
+	dest["KarpenterInstanceGroups"] = tf.KarpenterInstanceGroups
+	dest["KarpenterNodePool"] = tf.KarpenterNodePool
+
 	return nil
 }
 
