@@ -130,11 +130,13 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 				return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
 			}
 		}
-		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.PtrTo(int32(2))
-		}
-		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.PtrTo(int32(2))
+		if ig.Spec.Manager != kops.InstanceManagerKarpenter {
+			if ig.Spec.MinSize == nil {
+				ig.Spec.MinSize = fi.PtrTo(int32(2))
+			}
+			if ig.Spec.MaxSize == nil {
+				ig.Spec.MaxSize = fi.PtrTo(int32(2))
+			}
 		}
 	}
 

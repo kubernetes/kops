@@ -60,6 +60,12 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 		{Group: "rbac.authorization.k8s.io", Kind: "RoleBinding"},
 		{Group: "policy", Kind: "PodDisruptionBudget"},
 	}
+	if *spec.Name == "karpenter.sh" {
+		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
+			schema.GroupKind{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
+			schema.GroupKind{Group: "karpenter.sh", Kind: "NodePool"},
+		)
+	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {
 		pruneGroupKind[gk] = true

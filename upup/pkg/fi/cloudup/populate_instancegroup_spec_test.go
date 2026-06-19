@@ -70,6 +70,21 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "spec.role")
 }
 
+func TestPopulateInstanceGroup_KarpenterMinSize(t *testing.T) {
+	cloud, cluster := buildMinimalCluster()
+	input := buildMinimalNodeInstanceGroup()
+	input.Spec.Manager = kopsapi.InstanceManagerKarpenter
+	input.Spec.MinSize = nil
+
+	output, err := PopulateInstanceGroupSpec(cluster, input, cloud, &kopsapi.Channel{})
+	if err != nil {
+		t.Fatalf("error from PopulateInstanceGroupSpec: %v", err)
+	}
+	if output.Spec.MinSize != nil {
+		t.Errorf("expected minSize to be omitted, got %v", output.Spec.MinSize)
+	}
+}
+
 // TestPopulateInstanceGroup_AddTaintsCollision ensures we handle IGs with a user configured taint that kOps also adds by default
 func TestPopulateInstanceGroup_AddTaintsCollision(t *testing.T) {
 	_, cluster := buildMinimalCluster()

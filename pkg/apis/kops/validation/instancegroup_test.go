@@ -259,6 +259,223 @@ func TestValidNodeLabels(t *testing.T) {
 	}
 }
 
+func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
+	awsCluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
+		},
+	}
+	gceCluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				GCE: &kops.GCESpec{},
+			},
+		},
+	}
+
+	grid := []struct {
+		desc     string
+		cluster  *kops.Cluster
+		role     kops.InstanceGroupRole
+		image    string
+		expected []string
+	}{
+		{
+			desc:    "ami id",
+			cluster: awsCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "ami-0123456789abcdef0",
+		},
+		{
+			desc:    "ssm parameter",
+			cluster: awsCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "ssm:/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id",
+		},
+		{
+			desc:    "name",
+			cluster: awsCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "kops-node-image",
+		},
+		{
+			desc:    "owner and name",
+			cluster: awsCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*",
+		},
+		{
+			desc:     "not aws",
+			cluster:  gceCluster,
+			role:     kops.InstanceGroupRoleNode,
+			image:    "ami-0123456789abcdef0",
+			expected: []string{"Forbidden::spec.manager"},
+		},
+		{
+			desc:     "not node",
+			cluster:  awsCluster,
+			role:     kops.InstanceGroupRoleAPIServer,
+			image:    "ami-0123456789abcdef0",
+			expected: []string{"Forbidden::spec.role"},
+		},
+		{
+			desc:     "url image",
+			cluster:  awsCluster,
+			role:     kops.InstanceGroupRoleNode,
+			image:    "https://example.com/image",
+			expected: []string{"Invalid value::spec.image"},
+		},
+		{
+			desc:     "empty ssm parameter",
+			cluster:  awsCluster,
+			role:     kops.InstanceGroupRoleNode,
+			image:    "ssm:",
+			expected: []string{"Invalid value::spec.image"},
+		},
+		{
+			desc:     "missing owner",
+			cluster:  awsCluster,
+			role:     kops.InstanceGroupRoleNode,
+			image:    "/missing-owner",
+			expected: []string{"Invalid value::spec.image"},
+		},
+		{
+			desc:     "missing name",
+			cluster:  awsCluster,
+			role:     kops.InstanceGroupRoleNode,
+			image:    "missing-name/",
+			expected: []string{"Invalid value::spec.image"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			ig := createMinimalInstanceGroup()
+			ig.Spec.Manager = kops.InstanceManagerKarpenter
+			ig.Spec.Role = g.role
+			ig.Spec.Image = g.image
+
+			errs := CrossValidateInstanceGroup(ig, g.cluster, nil, true)
+			testErrors(t, g.desc, errs, g.expected)
+		})
+	}
+}
+
+func TestValidateKarpenterStaticCapacity(t *testing.T) {
+	grid := []struct {
+		desc         string
+		minSize      *int32
+		maxSize      *int32
+		featureGates string
+		expected     []string
+	}{
+		{
+			desc:         "dynamic",
+			featureGates: "StaticCapacity=false",
+		},
+		{
+			desc:    "static with default feature gates",
+			minSize: fi.PtrTo(int32(4)),
+		},
+		{
+			desc:         "static with custom feature gates",
+			minSize:      fi.PtrTo(int32(4)),
+			featureGates: "NodeRepair=false,StaticCapacity=true",
+		},
+		{
+			desc:         "static with final feature gate enabled",
+			minSize:      fi.PtrTo(int32(4)),
+			featureGates: "StaticCapacity=false,StaticCapacity=true",
+		},
+		{
+			desc:     "zero minSize",
+			minSize:  fi.PtrTo(int32(0)),
+			expected: []string{"Invalid value::spec.minSize"},
+		},
+		{
+			desc:     "negative minSize",
+			minSize:  fi.PtrTo(int32(-1)),
+			expected: []string{"Invalid value::spec.minSize"},
+		},
+		{
+			desc:         "custom feature gates omit static capacity",
+			minSize:      fi.PtrTo(int32(4)),
+			featureGates: "NodeRepair=true",
+			expected:     []string{"Forbidden::spec.minSize"},
+		},
+		{
+			desc:         "whitespace feature gates",
+			minSize:      fi.PtrTo(int32(4)),
+			featureGates: " ",
+			expected:     []string{"Forbidden::spec.minSize"},
+		},
+		{
+			desc:         "static capacity disabled",
+			minSize:      fi.PtrTo(int32(4)),
+			featureGates: "StaticCapacity=false",
+			expected:     []string{"Forbidden::spec.minSize"},
+		},
+		{
+			desc:         "final feature gate disabled",
+			minSize:      fi.PtrTo(int32(4)),
+			featureGates: "StaticCapacity=true,StaticCapacity=false",
+			expected:     []string{"Forbidden::spec.minSize"},
+		},
+		{
+			desc:    "maxSize for dynamic",
+			maxSize: fi.PtrTo(int32(4)),
+		},
+		{
+			desc:    "maxSize for static",
+			minSize: fi.PtrTo(int32(4)),
+			maxSize: fi.PtrTo(int32(4)),
+		},
+		{
+			desc:     "zero maxSize",
+			maxSize:  fi.PtrTo(int32(0)),
+			expected: []string{"Invalid value::spec.maxSize"},
+		},
+		{
+			desc:     "negative maxSize",
+			maxSize:  fi.PtrTo(int32(-1)),
+			expected: []string{"Invalid value::spec.maxSize"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			cluster := &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						AWS: &kops.AWSSpec{},
+					},
+					Karpenter: &kops.KarpenterConfig{
+						Enabled:      true,
+						FeatureGates: g.featureGates,
+					},
+				},
+			}
+			ig := &kops.InstanceGroup{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "some-ig",
+				},
+				Spec: kops.InstanceGroupSpec{
+					Manager: kops.InstanceManagerKarpenter,
+					Role:    kops.InstanceGroupRoleNode,
+					Image:   "my-image",
+					MinSize: g.minSize,
+					MaxSize: g.maxSize,
+				},
+			}
+
+			errs := CrossValidateInstanceGroup(ig, cluster, nil, true)
+			testErrors(t, g.desc, errs, g.expected)
+		})
+	}
+}
+
 func TestValidateIGCloudLabels(t *testing.T) {
 	grid := []struct {
 		label    string

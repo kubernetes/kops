@@ -47,76 +47,65 @@ To create a Karpenter InstanceGroup, set the following in its InstanceGroup spec
 
 ```yaml
 spec:
+  role: Node
   manager: Karpenter
 ```
 
 ### EC2NodeClass and NodePool
+{{ kops_feature_table(kops_added_default='1.36') }}
 
-```sh
-USER_DATA=$(aws s3 cp ${KOPS_STATE_STORE}/${NAME}/igconfig/node/nodes/nodeupscript.sh -)
-USER_DATA=${USER_DATA//$'\n'/$'\n    '}
+kOps generates one `EC2NodeClass` and one `NodePool` for each AWS node InstanceGroup with `spec.manager: Karpenter`.
+The generated objects use the InstanceGroup name, are delivered by the `karpenter.sh` addon, and are pruned when the InstanceGroup is removed.
 
-kubectl apply -f - <<YAML
-apiVersion: karpenter.k8s.aws/v1
-kind: EC2NodeClass
-metadata:
-  name: default
-spec:
-  amiFamily: Custom
-  amiSelectorTerms:
-    - ssmParameter: /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id 
-    - ssmParameter: /aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id 
-  associatePublicIPAddress: true
-  tags:
-    KubernetesCluster: ${NAME}
-    kops.k8s.io/instancegroup: nodes
-    k8s.io/role/node: "1"
-  subnetSelectorTerms:
-    - tags:
-        KubernetesCluster: ${NAME}
-  securityGroupSelectorTerms:
-    - tags:
-        KubernetesCluster: ${NAME}
-        Name: nodes.${NAME}
-  instanceProfile: nodes.${NAME}
-  userData: |
-    ${USER_DATA}
-YAML
+The generated `EC2NodeClass` uses:
 
-kubectl apply -f - <<YAML
-apiVersion: karpenter.sh/v1
-kind: NodePool
-metadata:
-  name: default
-spec:
-  template:
-    spec:
-      requirements:
-        - key: kubernetes.io/arch
-          operator: In
-          values: ["amd64", "arm64"]
-        - key: kubernetes.io/os
-          operator: In
-          values: ["linux"]
-        - key: karpenter.sh/capacity-type
-          operator: In
-          values: ["on-demand", "spot"]
-      nodeClassRef:
-        group: karpenter.k8s.aws
-        kind: EC2NodeClass
-        name: default
-YAML
-```
+* `amiFamily: Custom`
+* the InstanceGroup image translated into `amiSelectorTerms`
+* the kOps node instance profile
+* the kOps node security groups
+* the subnets tagged for the InstanceGroup
+* the kOps nodeup bootstrap script as `userData`
+
+The generated `NodePool` references that `EC2NodeClass`, sets Linux as a requirement, and includes instance type and capacity type requirements when they are configured on the InstanceGroup.
+Safe InstanceGroup node labels and taints are added to the NodePool template.
+
+Supported image selector forms are:
+
+* `ami-*`
+* `ssm:<parameter>`
+* `<name>`
+* `<owner>/<name>`
 
 ## Karpenter-managed InstanceGroups
+{{ kops_feature_table(kops_added_default='1.36') }}
 
-A Karpenter-managed InstanceGroup controls the bootstrap script. kOps will ensure the correct AWS security groups, subnets and permissions.
-`EC2NodeClass` and `NodePool` objects must be created by the cluster operator.
+A Karpenter-managed InstanceGroup controls the bootstrap script. kOps ensures the correct AWS security groups, subnets, permissions, and Karpenter resource definitions.
+
+When `minSize` is omitted, kOps generates a dynamic NodePool and Karpenter owns scale-out decisions.
+For a static NodePool, set `minSize` to a positive number:
+
+```yaml
+spec:
+  role: Node
+  manager: Karpenter
+  minSize: 4
+```
+
+For new clusters, `--instance-manager=karpenter --node-count=4` creates the same static configuration.
+Zero and negative `minSize` values are rejected.
+
+The Karpenter addon enables `StaticCapacity` by default.
+If `cluster.spec.karpenter.featureGates` is customized, it must include `StaticCapacity=true` for static InstanceGroups.
+When set, `maxSize` is mapped to `NodePool.spec.limits.nodes`, capping the number of nodes the NodePool may provision.
+
+Karpenter does not allow an existing NodePool to transition between dynamic and static modes.
+Delete the generated NodePool before running `kops update cluster` after adding or removing `minSize`.
 
 ## Known limitations
 
-* **Upgrade is not supported** from the previous version of managed Karpenter.
+* **Upgrade is not supported** from the legacy Karpenter integration (Karpenter v0.x, using the `Provisioner` and `AWSNodeTemplate` resources).
+* Karpenter-managed InstanceGroups are only supported on AWS.
 * Control plane nodes must be provisioned with an ASG.
-* All `EC2NodeClass` objects must have the `spec.amiFamily` set to `Custom`.
-* `spec.instanceStorePolicy` configuration is not supported in `EC2NodeClass`. 
-* `spec.kubelet`, `spec.taints` and `spec.labels` configuration are not supported in `EC2NodeClass`, but they can be configured in the `Cluster` or `InstanceGroup` spec.
+* Generated `EC2NodeClass` objects use `spec.amiFamily: Custom`.
+* `spec.instanceStorePolicy` configuration is not supported in `EC2NodeClass`.
+* `spec.kubelet` settings that affect Karpenter scheduling (`maxPods`, `systemReserved`, `kubeReserved`) are mapped to `EC2NodeClass.spec.kubelet` so Karpenter computes node allocatable capacity correctly. Other `spec.kubelet` settings are applied via the nodeup bootstrap script but are not surfaced to `EC2NodeClass`.
