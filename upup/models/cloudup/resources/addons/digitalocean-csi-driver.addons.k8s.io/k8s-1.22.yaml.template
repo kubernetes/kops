@@ -1166,7 +1166,6 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: csi-do-node-driver-registrar-role
-  namespace: kube-system
 rules:
   - apiGroups: [""]
     resources: ["events"]
