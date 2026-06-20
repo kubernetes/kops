@@ -18,6 +18,7 @@ package deployer
 
 import (
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -78,6 +79,74 @@ func TestAppendIfUnset(t *testing.T) {
 			actual := appendIfUnset(tc.args, tc.arg, tc.val)
 			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Errorf("arguments didn't match: %v vs %v", actual, tc.expected)
+			}
+		})
+	}
+}
+
+func TestBuiltFromKopsRoot(t *testing.T) {
+	const root = "/home/prow/go/src/k8s.io/kops"
+	cases := []struct {
+		name       string
+		binaryPath string
+		kopsRoot   string
+		want       bool
+	}{
+		{"binary built under the checkout", root + "/.build/dist/linux/amd64/kops", root, true},
+		{"binary downloaded to a temp dir", "/tmp/kops.abc123", root, false},
+		{"sibling dir is not under the checkout", "/home/prow/go/src/k8s.io/kops-other/kops", root, false},
+		{"empty kops root", root + "/.build/dist/linux/amd64/kops", "", false},
+		{"empty binary path", "", root, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := builtFromKopsRoot(tc.binaryPath, tc.kopsRoot); got != tc.want {
+				t.Errorf("builtFromKopsRoot(%q, %q) = %v, want %v", tc.binaryPath, tc.kopsRoot, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestLocalChannelArgs(t *testing.T) {
+	const kopsRoot = "/home/prow/go/src/k8s.io/kops"
+	base := "file://" + kopsRoot + "/channels/"
+	cases := []struct {
+		name     string
+		args     []string
+		expected []string
+	}{
+		{
+			name:     "rewrites shorthand in equals form",
+			args:     []string{"create", "cluster", "--channel=alpha", "--networking=cilium"},
+			expected: []string{"create", "cluster", "--channel=" + base + "alpha", "--networking=cilium"},
+		},
+		{
+			name:     "rewrites shorthand in space form",
+			args:     []string{"--channel", "stable"},
+			expected: []string{"--channel", base + "stable"},
+		},
+		{
+			name:     "leaves absolute channel URL unchanged",
+			args:     []string{"--channel=https://example.com/channels/alpha"},
+			expected: []string{"--channel=https://example.com/channels/alpha"},
+		},
+		{
+			name:     "leaves none unchanged",
+			args:     []string{"--channel=none"},
+			expected: []string{"--channel=none"},
+		},
+		{
+			name:     "absent channel defaults to alpha pointed at the checkout",
+			args:     []string{"create", "cluster", "--networking=cilium"},
+			expected: []string{"create", "cluster", "--networking=cilium", "--channel=" + base + "alpha"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := localChannelArgs(slices.Clone(tc.args), kopsRoot)
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("localChannelArgs() = %v, want %v", actual, tc.expected)
 			}
 		})
 	}
