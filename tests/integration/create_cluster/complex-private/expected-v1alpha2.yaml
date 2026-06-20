@@ -135,7 +135,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: bastions
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -161,7 +161,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: control-plane-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -181,7 +181,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: control-plane-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -201,7 +201,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: control-plane-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -221,7 +221,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: nodes-us-test-1a
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: t2.medium
   maxSize: 4
   minSize: 4
@@ -242,7 +242,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: nodes-us-test-1b
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: t2.medium
   maxSize: 3
   minSize: 3
@@ -262,7 +262,7 @@ metadata:
     kops.k8s.io/cluster: complex.example.com
   name: nodes-us-test-1c
 spec:
-  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
+  image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260610
   machineType: t2.medium
   maxSize: 3
   minSize: 3
