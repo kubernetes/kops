@@ -102,6 +102,10 @@ spec:
       providerID: gce
       architectureID: amd64
       kubernetesVersion: ">=1.32.0"
+    - name: ubuntu-os-cloud/ubuntu-2404-noble-arm64-v20260615
+      providerID: gce
+      architectureID: arm64
+      kubernetesVersion: ">=1.32.0"
     - name: Canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:20.04.202505200
       providerID: azure
       architectureID: amd64
@@ -113,6 +117,10 @@ spec:
     - name: Canonical:ubuntu-24_04-lts:server:24.04.202606120
       providerID: azure
       architectureID: amd64
+      kubernetesVersion: ">=1.32.0"
+    - name: Canonical:ubuntu-24_04-lts:server-arm64:24.04.202606110
+      providerID: azure
+      architectureID: arm64
       kubernetesVersion: ">=1.32.0"
   cluster:
     kubernetesVersion: v1.5.8
