@@ -28,3 +28,16 @@ DriverInfo:
     pvcDataSource: false
     RWX: false
     readWriteOncePod: true
+# The disk.csi.azure.com driver's attach/detach operations are ARM control-plane
+# calls that routinely take longer than the framework's default TimeoutContext
+# values, causing PersistentVolume e2e flakes (pods stuck Pending on volume mount,
+# slow PV deletion). These keys map to framework.TimeoutContext fields and override
+# the defaults for the external storage tests only.
+Timeouts:
+  PodStart: 15m
+  PodStartSlow: 20m
+  ClaimProvision: 10m
+  ClaimBound: 10m
+  PVDelete: 15m
+  PVDeleteSlow: 30m
+  PodDelete: 10m
