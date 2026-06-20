@@ -84,7 +84,8 @@ create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
   create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
 fi
-create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+# bind metrics to all interfaces so Prometheus can scrape etcd metrics
+create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0.0:2382")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
 create_args+=("--set spec.etcdClusters[0].manager.listenClientHTTPURLs=http://localhost:2385")
