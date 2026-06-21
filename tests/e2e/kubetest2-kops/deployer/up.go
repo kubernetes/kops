@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	osexec "os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -232,6 +233,12 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 			return err
 		}
 		args = append(args, createArgs...)
+	}
+	// Use the PR's own channels only when kops was built from the checkout. Downloaded
+	// --kops-version[-marker] binaries can land in <cwd>/_rundir under KopsRoot, where path
+	// containment alone wouldn't exclude them.
+	if d.KopsVersionMarker == "" && d.KopsVersion == "" && builtFromKopsRoot(d.KopsBinaryPath, d.KopsRoot) {
+		args = localChannelArgs(args, d.KopsRoot)
 	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 
@@ -521,6 +528,49 @@ func extractFlagValues(args, flag string) []string {
 		}
 	}
 	return values
+}
+
+// builtFromKopsRoot reports whether kopsBinaryPath lies inside the repo checkout at kopsRoot.
+// Scenario scripts always pass --kops-root, so its presence alone doesn't imply a source build.
+func builtFromKopsRoot(kopsBinaryPath, kopsRoot string) bool {
+	if kopsBinaryPath == "" || kopsRoot == "" {
+		return false
+	}
+	rel, err := filepath.Rel(kopsRoot, kopsBinaryPath)
+	if err != nil {
+		return false
+	}
+	return filepath.IsLocal(rel)
+}
+
+// localChannelArgs rewrites a bare --channel shorthand (e.g. alpha) to a file:// URL under the
+// checkout's channels/ dir, defaulting to alpha when absent. URLs and "none" are passed through.
+func localChannelArgs(args []string, kopsRoot string) []string {
+	for i, a := range args {
+		if v, ok := strings.CutPrefix(a, "--channel="); ok {
+			if isChannelShorthand(v) {
+				args[i] = "--channel=" + localChannelURL(kopsRoot, v)
+			}
+			return args
+		}
+		if a == "--channel" && i+1 < len(args) {
+			if isChannelShorthand(args[i+1]) {
+				args[i+1] = localChannelURL(kopsRoot, args[i+1])
+			}
+			return args
+		}
+	}
+	return append(args, "--channel="+localChannelURL(kopsRoot, "alpha"))
+}
+
+// isChannelShorthand reports whether v is a bare channel name, not a URL or the "none" sentinel.
+func isChannelShorthand(v string) bool {
+	return v != "" && v != "none" && !strings.Contains(v, "://")
+}
+
+// localChannelURL returns the file:// URL for channel name under the checkout's channels/ dir.
+func localChannelURL(kopsRoot, name string) string {
+	return "file://" + filepath.ToSlash(filepath.Join(kopsRoot, "channels", name))
 }
 
 // prowJobLabel returns a "key=value" cloud-label fragment recording the prow
