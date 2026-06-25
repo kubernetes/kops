@@ -87,10 +87,13 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.check.kube-proxy.urls"
 
 		if k8sVersion.Minor < 38 {
-			// This seems to be specific to the kube-proxy replacement
+			// Cilium fails the externalTrafficPolicy=Local sig-network tests: the client source IP is
+			// SNATed to a pod IP instead of being preserved (long-standing, every build in the retention
+			// window). Tracked in https://github.com/cilium/cilium/issues/37613, which Cilium's own CI
+			// cites to skip the whole externalTrafficPolicy family.
 			// < 38 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
-			// https://github.com/kubernetes/kubernetes/issues/129221
+			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
@@ -105,7 +108,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	if cluster.Spec.LegacyCloudProvider == "azure" {
 		// Azure Disk CSI fsgroupchangepolicy tests are flaky due to SCSI device discovery
 		// latency during rapid attach/detach cycles on VMSS nodes.
-		// See https://github.com/kubernetes/kops/issues/17146
 		skipRegex += "|fsgroupchangepolicy"
 		// Skipped upstream in azuredisk-csi-driver external E2E:
 		// https://github.com/kubernetes-sigs/azuredisk-csi-driver/blob/master/test/external-e2e/run.sh
@@ -120,16 +122,14 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.be.mountable.when.non-attachable"
 	}
 
-	// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
-	// Dedicated job testing this: https://testgrid.k8s.io/kops-misc#kops-aws-k28-hostname-bug123255
-	// ref: https://github.com/kubernetes/kops/issues/16349
-	// ref: https://github.com/kubernetes/kubernetes/issues/123255
-	// ref: https://github.com/kubernetes/kubernetes/issues/121018
-	// ref: https://github.com/kubernetes/kubernetes/pull/126896
-	// < 38 so we look at this again
-	if k8sVersion.Minor < 38 {
+	if k8sVersion.Minor < 37 {
+		// Services.should.function.for.service.endpoints.using.hostNetwork fails only on distros that
+		// return fully qualified hostnames (e.g. RHEL) where the k8s node name is not fully qualified;
+		// it already passes where the system hostname matches the node name. Fixed in k8s 1.37 by
+		// kubernetes/kubernetes#139819 (compares spec.nodeName instead of os.Hostname()); the
+		// dedicated reproduction jobs have been removed.
+		// refs: https://github.com/kubernetes/kops/issues/16349, https://github.com/kubernetes/kubernetes/issues/123255
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
-		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
 
 	for _, subnet := range cluster.Spec.Subnets {
