@@ -165,7 +165,7 @@ func makeGroup(groups map[string]*cloudinstances.CloudInstanceGroup, k8sClient k
 	for i := 0; i < count; i++ {
 		id := name + string(rune('a'+i))
 		var node *v1.Node
-		if role != kopsapi.InstanceGroupRoleBastion {
+		if !role.HasBastion() {
 			node = &v1.Node{
 				ObjectMeta: v1meta.ObjectMeta{Name: id + ".local"},
 			}

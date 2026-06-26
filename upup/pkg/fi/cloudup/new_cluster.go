@@ -524,7 +524,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 
 			}
-		} else if g.Spec.Role == api.InstanceGroupRoleBastion {
+		} else if g.Spec.Role.HasBastion() {
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, g)
 				if err != nil {

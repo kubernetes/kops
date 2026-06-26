@@ -638,7 +638,7 @@ func (tf *TemplateFunctions) APIServerNodeRole() string {
 func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 	cp := 0
 	for _, ig := range tf.AllInstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		if ig.Spec.Role.HasControlPlane() {
 			cp++
 			if cp > 1 {
 				return true
@@ -882,7 +882,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		case kops.CloudProviderAWS:
 			nodesRoles := sets.String{}
 			for _, ig := range tf.AllInstanceGroups {
-				if ig.Spec.Role == kops.InstanceGroupRoleNode || ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
+				if ig.Spec.Role.HasNode() || ig.Spec.Role.HasAPIServer() {
 					profile, err := tf.LinkToIAMInstanceProfile(ig)
 					if err != nil {
 						return "", fmt.Errorf("getting profile for ig %s: %v", ig.Name, err)
@@ -1115,7 +1115,7 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGroupSpec {
 	nodegroups := make(map[string]kops.InstanceGroupSpec)
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		if ig.Spec.Role.HasNode() {
 			nodegroups[ig.ObjectMeta.Name] = ig.Spec
 		}
 	}
@@ -1134,7 +1134,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 	cluster := tf.Cluster
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleNode && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
+		if ig.Spec.Role.HasNode() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
 			group := ClusterAutoscalerNodeGroup{
 				AutoScale: ig.Spec.Autoscale,
 				MinSize:   fi.ValueOf(ig.Spec.MinSize),
@@ -1177,7 +1177,7 @@ func (tf *TemplateFunctions) HCloudClusterConfig() (string, error) {
 	}
 
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleNode {
+		if !ig.Spec.Role.HasNode() {
 			continue
 		}
 		if ig.Spec.Autoscale != nil && !fi.ValueOf(ig.Spec.Autoscale) {
