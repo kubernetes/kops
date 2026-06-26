@@ -18,79 +18,12 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# Get the cluster name from the KUBECONFIG context
-CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
+# Wait for the generated static NodePool.
+kubectl wait --for=create nodepool/nodes --timeout=5m
+test "$(kubectl get nodepool/nodes -o jsonpath='{.spec.replicas}')" = "4"
+kubectl wait --for=jsonpath='{.status.nodes}'=4 nodepool/nodes --timeout=15m
 
-# Get KOPS_STATE_STORE from kubeconfig server URL (the bucket name is embedded)
-# Alternatively, we can get it from environment if kubetest2 passes it
-if [[ -z "${KOPS_STATE_STORE:-}" ]]; then
-  echo "KOPS_STATE_STORE must be set"
-  exit 1
-fi
-
-# Get the node instance group user data script from the kOps state store
-USER_DATA=$(aws s3 cp "${KOPS_STATE_STORE}/${CLUSTER_NAME}/igconfig/node/nodes/nodeupscript.sh" -)
-# Indent the user data script for embedding in the EC2NodeClass
-USER_DATA=${USER_DATA//$'\n'/$'\n    '}
-
-# Create a EC2NodeClass for Karpenter
-kubectl apply -f - <<YAML
-apiVersion: karpenter.k8s.aws/v1
-kind: EC2NodeClass
-metadata:
-  name: default
-spec:
-  amiFamily: Custom
-  amiSelectorTerms:
-    - ssmParameter: /aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id
-  associatePublicIPAddress: true
-  tags:
-    KubernetesCluster: ${CLUSTER_NAME}
-    kops.k8s.io/instancegroup: nodes
-    k8s.io/role/node: "1"
-  subnetSelectorTerms:
-    - tags:
-        KubernetesCluster: ${CLUSTER_NAME}
-  securityGroupSelectorTerms:
-    - tags:
-        KubernetesCluster: ${CLUSTER_NAME}
-        Name: nodes.${CLUSTER_NAME}
-  instanceProfile: nodes.${CLUSTER_NAME}
-  userData: |
-    ${USER_DATA}
-YAML
-
-# Create a NodePool for Karpenter
-# Effectively disable consolidation for 30 minutes to avoid flakes in the tests
-kubectl apply -f - <<YAML
-apiVersion: karpenter.sh/v1
-kind: NodePool
-metadata:
-  name: default
-spec:
-  template:
-    spec:
-      requirements:
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values: ["m6g.large"]
-        - key: karpenter.sh/capacity-type
-          operator: In
-          values: ["on-demand"]
-      nodeClassRef:
-        group: karpenter.k8s.aws
-        kind: EC2NodeClass
-        name: default
-  replicas: 4
-  disruption:
-    consolidationPolicy: WhenEmpty
-    consolidateAfter: 30m
-YAML
-
-# Wait for the nodes to start being provisioned
-sleep 30
-
-# Wait for the nodes to be ready
+# Wait for the cluster to be ready.
 "${KOPS}" validate cluster --wait=10m
 
 if [[ -z "${K8S_VERSION:-}" ]]; then

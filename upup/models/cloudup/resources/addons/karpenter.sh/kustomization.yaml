@@ -1,0 +1,38 @@
+# To regenerate the manifest:
+#   cd upup/models/cloudup/resources/addons/karpenter.sh
+#   ./regenerate.sh
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: karpenter
+    repo: oci://public.ecr.aws/karpenter
+    version: "1.13.0"
+    releaseName: karpenter
+    namespace: kube-system
+    valuesFile: helm-values.yaml
+    includeCRDs: true
+
+patches:
+  - target:
+      kind: Deployment
+      name: karpenter
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: karpenter
+      spec:
+        template:
+          spec:
+            # Use Default dnsPolicy except on IPv6 clusters, which need ClusterFirst for DNS64.
+            dnsPolicy: '{{ if IsIPv6Only }}ClusterFirst{{ else }}Default{{ end }}'
+            containers:
+              - name: controller
+                # The chart builds the image from repo/tag/digest; replace with the kops value.
+                image: '{{ .Karpenter.Image }}'
+                env:
+                  # Make the controller feature gates configurable, defaulting StaticCapacity on.
+                  - name: FEATURE_GATES
+                    value: '{{ or .Karpenter.FeatureGates "ReservedCapacity=true,SpotToSpotConsolidation=false,NodeRepair=false,NodeOverlay=false,StaticCapacity=true" }}'

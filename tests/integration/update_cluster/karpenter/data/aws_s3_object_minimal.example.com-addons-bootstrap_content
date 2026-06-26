@@ -53,7 +53,7 @@ spec:
       k8s-addon: aws-ebs-csi-driver.addons.k8s.io
   - id: k8s-1.19
     manifest: karpenter.sh/k8s-1.19.yaml
-    manifestHash: 59095ecba37bcee840f11306998b495fea5da1c3b5bf4ef95b9bbae0ff5c9bf0
+    manifestHash: 34bfc2069ea36de0e099580b8ab51e2932386f0951db29df658db3db1008e36e
     name: karpenter.sh
     prune:
       kinds:
@@ -83,6 +83,12 @@ spec:
         - kube-system
       - group: apps
         kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: karpenter.sh
+        kind: NodePool
         labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
       - group: policy
         kind: PodDisruptionBudget

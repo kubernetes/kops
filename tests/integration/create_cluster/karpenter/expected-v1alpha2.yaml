@@ -104,6 +104,7 @@ metadata:
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-20260218
   manager: Karpenter
+  minSize: 4
   nodeLabels:
     kops.k8s.io/instancegroup: nodes
   role: Node

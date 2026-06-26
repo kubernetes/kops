@@ -388,6 +388,11 @@ func (g *InstanceGroup) IsBastion() bool {
 	}
 }
 
+// IsKarpenterManaged checks if instanceGroup is a worker node group managed by Karpenter.
+func (g *InstanceGroup) IsKarpenterManaged() bool {
+	return g.Spec.Manager == InstanceManagerKarpenter && g.Spec.Role == InstanceGroupRoleNode
+}
+
 func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 	if g.Spec.NodeLabels == nil {
 		g.Spec.NodeLabels = make(map[string]string)
