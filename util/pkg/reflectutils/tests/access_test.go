@@ -117,6 +117,20 @@ func TestSet(t *testing.T) {
 			Value:    "allowed",
 		},
 		{
+			Name:     "creating missing slice element",
+			Input:    "{}",
+			Expected: "{ 'spec': { 'containers': [ { 'policy': { 'name': 'allowed' } } ] } }",
+			Path:     "spec.containers[0].policy.name",
+			Value:    "allowed",
+		},
+		{
+			Name:     "growing missing slice element",
+			Input:    "{ 'spec': { 'containers': [ { 'image': 'existing' } ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'image': 'existing' }, { 'image': 'hello-world' } ] } }",
+			Path:     "spec.containers[1].image",
+			Value:    "hello-world",
+		},
+		{
 			Name:     "set int",
 			Input:    "{ 'spec': { 'containers': [ {} ] } }",
 			Expected: "{ 'spec': { 'containers': [ { 'int': 123 } ] } }",
@@ -180,6 +194,13 @@ func TestSet(t *testing.T) {
 			Value:    "GHI,JKL",
 		},
 		{
+			Name:     "set enum slice element",
+			Input:    "{ 'spec': { 'containers': [ {} ] } }",
+			Expected: "{ 'spec': { 'containers': [ { 'enumSlice': [ 'ABC' ] } ] } }",
+			Path:     "spec.containers[0].enumSlice[0]",
+			Value:    "ABC",
+		},
+		{
 			Name:     "set env var",
 			Input:    "{ 'spec': { 'containers': [ {} ] } }",
 			Expected: "{ 'spec': { 'containers': [ { 'env': [ { 'name': 'ABC' } ] } ] } }",
@@ -221,14 +242,6 @@ func TestSet(t *testing.T) {
 			Path:     "spec.containers[0].stringMap",
 			Value:    "GHI=JKL",
 		},
-		// Not sure if we should do this...
-		// {
-		// 	Name:     "creating missing array elements",
-		// 	Input:    "{}",
-		// 	Expected: "{ 'spec': { 'containers': [ { 'policy': { 'name': 'allowed' } } ] } }",
-		// 	Path:     "spec.containers[0].policy.name",
-		// 	Value:    "allowed",
-		// },
 	}
 
 	for _, g := range grid {
@@ -302,6 +315,13 @@ func TestSetInvalidPath(t *testing.T) {
 			Value:         "123",
 			ExpectedError: "field wrong.path.check not found in *fakeObject",
 		},
+		{
+			Name:          "creating missing slice gap",
+			Input:         "{}",
+			Path:          "spec.containers[1].image",
+			Value:         "hello-world",
+			ExpectedError: "field spec.containers[1].image not found in *fakeObject",
+		},
 	}
 
 	for _, g := range grid {
@@ -322,6 +342,20 @@ func TestSetInvalidPath(t *testing.T) {
 				t.Fatalf("Expected Error: %s\n Actual Error: %s", g.ExpectedError, err.Error())
 			}
 		})
+	}
+}
+
+func TestSetHugeSliceIndexDoesNotPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("SetString panicked: %v", r)
+		}
+	}()
+
+	c := &fakeObject{}
+	err := reflectutils.SetString(c, "spec.containers[9223372036854775807].image", "hello-world")
+	if err == nil {
+		t.Fatal("expected error")
 	}
 }
 

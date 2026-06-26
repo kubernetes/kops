@@ -24,6 +24,7 @@ import (
 	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -45,16 +46,41 @@ func LoadAddons(vfsContext *vfs.VFSContext, name string, location *url.URL) (*Ad
 }
 
 func ParseAddons(name string, location *url.URL, data []byte) (*Addons, error) {
-	// Yaml can't parse empty strings
-	configString := string(data)
-	configString = strings.TrimSpace(configString)
+	configString := strings.TrimSpace(string(data))
+
+	objects, err := kubemanifest.LoadObjectsFrom([]byte(configString))
+	if err != nil {
+		return nil, fmt.Errorf("error parsing addons or manifest: %v", err)
+	}
 
 	apiObject := &api.Addons{}
-	if configString != "" {
-		err := utils.YamlUnmarshal([]byte(configString), apiObject)
-		if err != nil {
+	if len(objects) == 0 {
+		// No objects (empty, whitespace, or comment-only content): nothing to apply.
+	} else if gvk := objects[0].GroupVersionKind(); gvk.Kind == "Addons" && gvk.Group == "" && gvk.Version == "" {
+		// Reuse the document already parsed by LoadObjectsFrom instead of parsing it again.
+		if err := objects[0].Reparse(apiObject); err != nil {
 			return nil, fmt.Errorf("error parsing addons: %v", err)
 		}
+	} else {
+		manifest := location.String()
+		manifestHash, err := utils.HashString(configString)
+		if err != nil {
+			return nil, fmt.Errorf("error hashing manifest: %v", err)
+		}
+		manifestLocationHash, err := utils.HashString(manifest)
+		if err != nil {
+			return nil, fmt.Errorf("error hashing manifest location: %v", err)
+		}
+		addonName := "manifest-" + manifestLocationHash[:12]
+		addonSpec := &api.AddonSpec{
+			Name:         &addonName,
+			Manifest:     &manifest,
+			ManifestHash: manifestHash,
+		}
+
+		apiObject.Kind = "Addons"
+		apiObject.ObjectMeta.Name = addonName
+		apiObject.Spec.Addons = []*api.AddonSpec{addonSpec}
 	}
 
 	return &Addons{ChannelName: name, ChannelLocation: *location, APIObject: apiObject}, nil
