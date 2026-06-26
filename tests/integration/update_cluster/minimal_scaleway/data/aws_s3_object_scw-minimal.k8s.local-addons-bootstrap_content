@@ -35,7 +35,7 @@ spec:
       k8s-addon: dns-controller.addons.k8s.io
   - id: k8s-1.24
     manifest: scaleway-cloud-controller.addons.k8s.io/k8s-1.24.yaml
-    manifestHash: fb9f1a97680793793c38db19bbfe317b58628b6bc9bca16a4124afe9539aa294
+    manifestHash: 2203789dbfc24d40f55d6bb9d6a7c7a8ad1b9f39ec99ca561ed9302741675c13
     name: scaleway-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: scaleway-cloud-controller.addons.k8s.io
