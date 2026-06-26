@@ -312,10 +312,89 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 		}
 	}
 
+	allErrs = append(allErrs, validateKarpenterInstanceGroup(g, cluster)...)
+
 	if g.Spec.Containerd != nil {
 		allErrs = append(allErrs, validateContainerdConfig(cluster, g.Spec.Containerd, field.NewPath("spec", "containerd"), false)...)
 	}
 
+	return allErrs
+}
+
+func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if g.Spec.Manager != kops.InstanceManagerKarpenter {
+		return allErrs
+	}
+
+	if cluster.GetCloudProvider() != kops.CloudProviderAWS {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups are only supported on AWS"))
+	}
+	if g.Spec.Role != kops.InstanceGroupRoleNode {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Karpenter InstanceGroups must have role Node"))
+	}
+	if g.Spec.MaxSize != nil && *g.Spec.MaxSize <= 0 {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), *g.Spec.MaxSize, "must be greater than zero"))
+	}
+	allErrs = append(allErrs, validateKarpenterAMISelectorImage(g.Spec.Image, field.NewPath("spec", "image"))...)
+	allErrs = append(allErrs, validateKarpenterStaticCapacity(g, cluster)...)
+	return allErrs
+}
+
+func validateKarpenterStaticCapacity(g *kops.InstanceGroup, cluster *kops.Cluster) field.ErrorList {
+	minPath := field.NewPath("spec", "minSize")
+
+	if g.Spec.MinSize == nil {
+		return nil
+	}
+	if *g.Spec.MinSize <= 0 {
+		return field.ErrorList{field.Invalid(minPath, *g.Spec.MinSize, "must be greater than zero for static capacity")}
+	}
+	if !karpenterStaticCapacityEnabled(cluster) {
+		return field.ErrorList{field.Forbidden(minPath, "static capacity requires StaticCapacity=true in cluster.spec.karpenter.featureGates")}
+	}
+	return nil
+}
+
+func karpenterStaticCapacityEnabled(cluster *kops.Cluster) bool {
+	if cluster.Spec.Karpenter == nil || cluster.Spec.Karpenter.FeatureGates == "" {
+		return true
+	}
+
+	enabled := false
+	for _, featureGate := range strings.Split(cluster.Spec.Karpenter.FeatureGates, ",") {
+		name, value, ok := strings.Cut(featureGate, "=")
+		if !ok || strings.TrimSpace(name) != "StaticCapacity" {
+			continue
+		}
+		enabled = strings.EqualFold(strings.TrimSpace(value), "true")
+	}
+	return enabled
+}
+
+func validateKarpenterAMISelectorImage(image string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	image = strings.TrimSpace(image)
+	if image == "" {
+		return allErrs
+	}
+	if strings.Contains(image, "://") {
+		return append(allErrs, field.Invalid(fldPath, image, "must be ami-*, ssm:<parameter>, <name>, or <owner>/<name>"))
+	}
+	if strings.HasPrefix(image, "ami-") {
+		return allErrs
+	}
+	if strings.HasPrefix(image, "ssm:") {
+		if strings.TrimPrefix(image, "ssm:") == "" {
+			return append(allErrs, field.Invalid(fldPath, image, "ssm image parameter is required"))
+		}
+		return allErrs
+	}
+
+	tokens := strings.SplitN(image, "/", 2)
+	if len(tokens) == 2 && (tokens[0] == "" || tokens[1] == "") {
+		return append(allErrs, field.Invalid(fldPath, image, "must be ami-*, ssm:<parameter>, <name>, or <owner>/<name>"))
+	}
 	return allErrs
 }
 

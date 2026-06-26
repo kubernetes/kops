@@ -142,8 +142,7 @@ type NewClusterOptions struct {
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
 	EtcdStorageType string
 
-	// NodeCount is the number of nodes to create. Defaults to leaving the count unspecified
-	// on the InstanceGroup, which results in a count of 2.
+	// NodeCount is the number of nodes to create.
 	NodeCount int32
 	// Bastion enables the creation of a Bastion instance.
 	Bastion bool
@@ -469,7 +468,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.Karpenter = &api.KarpenterConfig{
 			Enabled: true,
 		}
-		nodes, err = setupKarpenterNodes(cluster)
+		nodes, err = setupKarpenterNodes(opt)
 		if err != nil {
 			return nil, err
 		}
@@ -1203,11 +1202,26 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 	return nodes, nil
 }
 
-func setupKarpenterNodes(cluster *api.Cluster) ([]*api.InstanceGroup, error) {
+func setupKarpenterNodes(opt *NewClusterOptions) ([]*api.InstanceGroup, error) {
 	g := &api.InstanceGroup{}
 	g.Spec.Role = api.InstanceGroupRoleNode
 	g.Spec.Manager = api.InstanceManagerKarpenter
 	g.ObjectMeta.Name = "nodes"
+	if opt.NodeCount > 0 {
+		g.Spec.MinSize = fi.PtrTo(opt.NodeCount)
+	}
+
+	for i, size := range opt.NodeSizes {
+		if i == 0 {
+			g.Spec.MachineType = size
+		}
+		if len(opt.NodeSizes) > 1 {
+			if g.Spec.MixedInstancesPolicy == nil {
+				g.Spec.MixedInstancesPolicy = &api.MixedInstancesPolicySpec{}
+			}
+			g.Spec.MixedInstancesPolicy.Instances = append(g.Spec.MixedInstancesPolicy.Instances, size)
+		}
+	}
 
 	return []*api.InstanceGroup{g}, nil
 }

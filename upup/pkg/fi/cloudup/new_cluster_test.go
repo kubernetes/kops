@@ -86,6 +86,71 @@ func TestCreateEtcdCluster(t *testing.T) {
 	}
 }
 
+func TestSetupKarpenterNodes(t *testing.T) {
+	grid := []struct {
+		desc        string
+		nodeCount   int32
+		nodeSizes   []string
+		static      bool
+		machineType string
+		mixedTypes  []string
+	}{
+		{
+			desc: "dynamic",
+		},
+		{
+			desc:      "static",
+			nodeCount: 4,
+			static:    true,
+		},
+		{
+			desc:        "single node size",
+			nodeSizes:   []string{"m6g.large"},
+			machineType: "m6g.large",
+		},
+		{
+			desc:        "multiple node sizes",
+			nodeSizes:   []string{"m6g.large", "m6gd.large"},
+			machineType: "m6g.large",
+			mixedTypes:  []string{"m6g.large", "m6gd.large"},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			groups, err := setupKarpenterNodes(&NewClusterOptions{NodeCount: g.nodeCount, NodeSizes: g.nodeSizes})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(groups) != 1 {
+				t.Fatalf("expected one InstanceGroup, got %d", len(groups))
+			}
+
+			ig := groups[0]
+			if ig.Spec.Manager != api.InstanceManagerKarpenter {
+				t.Errorf("expected Karpenter manager, got %q", ig.Spec.Manager)
+			}
+			if g.static {
+				if fi.ValueOf(ig.Spec.MinSize) != g.nodeCount {
+					t.Errorf("expected minSize %d, got %v", g.nodeCount, ig.Spec.MinSize)
+				}
+			} else if ig.Spec.MinSize != nil {
+				t.Errorf("expected minSize to be omitted, got %v", ig.Spec.MinSize)
+			}
+			if ig.Spec.MachineType != g.machineType {
+				t.Errorf("expected machineType %q, got %q", g.machineType, ig.Spec.MachineType)
+			}
+			if g.mixedTypes == nil {
+				if ig.Spec.MixedInstancesPolicy != nil {
+					t.Errorf("expected no MixedInstancesPolicy, got %v", ig.Spec.MixedInstancesPolicy)
+				}
+			} else if !reflect.DeepEqual(ig.Spec.MixedInstancesPolicy.Instances, g.mixedTypes) {
+				t.Errorf("expected mixed instances %v, got %v", g.mixedTypes, ig.Spec.MixedInstancesPolicy.Instances)
+			}
+		})
+	}
+}
+
 func TestSetupNetworking(t *testing.T) {
 	tests := []struct {
 		options  NewClusterOptions
