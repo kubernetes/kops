@@ -17,3 +17,5 @@ KubernetesVersion: v1.32.0
 # We specify SSHAccess but _not_ AdminAccess
 SSHAccess:
 - 1.2.3.4/32
+Sets:
+- cluster.spec.addons[0].manifest=https://example.com/addon.yaml
