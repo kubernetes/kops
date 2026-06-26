@@ -39,23 +39,7 @@ spec:
       hostNetwork: true
       priorityClassName: system-node-critical
       tolerations:
-        - key: "node.cloudprovider.kubernetes.io/uninitialized"
-          value: "true"
-          effect: "NoSchedule"
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
-        - key: "node-role.kubernetes.io/master"
-          effect: NoSchedule
-        - key: "node-role.kubernetes.io/control-plane"
-          effect: NoSchedule
-        - effect: NoExecute
-          key: node.kubernetes.io/not-ready
-          operator: Exists
-          tolerationSeconds: 300
-        - effect: NoExecute
-          key: node.kubernetes.io/unreachable
-          operator: Exists
-          tolerationSeconds: 300
+        - operator: Exists
       containers:
       - image: digitalocean/digitalocean-cloud-controller-manager:v0.1.45
         name: digitalocean-cloud-controller-manager
