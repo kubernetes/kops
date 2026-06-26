@@ -821,14 +821,14 @@ func (b *SpotInstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*
 	minSize := int32(1)
 	if ig.Spec.MinSize != nil {
 		minSize = fi.ValueOf(ig.Spec.MinSize)
-	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+	} else if ig.Spec.Role.HasNode() {
 		minSize = 2
 	}
 
 	maxSize := int32(1)
 	if ig.Spec.MaxSize != nil {
 		maxSize = *ig.Spec.MaxSize
-	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+	} else if ig.Spec.Role.HasNode() {
 		maxSize = 2
 	}
 
@@ -851,7 +851,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 		}
 	}
 
-	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+	if ig.Spec.Role.HasBastion() {
 		loadBalancers = append(loadBalancers, b.LinkToCLB("bastion"))
 	}
 

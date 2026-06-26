@@ -345,7 +345,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 			if node == nil {
 				nodeExpectedToJoin := true
-				if cloudGroup.InstanceGroup.Spec.Role == kops.InstanceGroupRoleBastion {
+				if cloudGroup.InstanceGroup.Spec.Role.HasBastion() {
 					// bastion nodes don't join the cluster
 					nodeExpectedToJoin = false
 				}

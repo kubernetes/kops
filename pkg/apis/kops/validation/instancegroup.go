@@ -101,7 +101,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		}
 	}
 
-	if g.Spec.Containerd != nil && g.Spec.Containerd.GVisor != nil && fi.ValueOf(g.Spec.Containerd.GVisor.Enabled) && g.Spec.Role != kops.InstanceGroupRoleNode {
+	if g.Spec.Containerd != nil && g.Spec.Containerd.GVisor != nil && fi.ValueOf(g.Spec.Containerd.GVisor.Enabled) && !g.Spec.Role.HasNode() {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "containerd", "gvisor"), "gVisor can only be enabled on instance groups with role Node"))
 	}
 
@@ -171,7 +171,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	if g.Spec.RollingUpdate != nil {
-		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleControlPlane)...)
+		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role.HasControlPlane())...)
 	}
 
 	if g.Spec.NodeLabels != nil {
@@ -273,11 +273,11 @@ func instanceManager(g *kops.InstanceGroup) kops.InstanceManager {
 func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cloud fi.Cloud, strict bool) field.ErrorList {
 	allErrs := ValidateInstanceGroup(g, cloud, strict)
 
-	if g.Spec.Role == kops.InstanceGroupRoleControlPlane {
+	if g.Spec.Role.HasControlPlane() {
 		allErrs = append(allErrs, ValidateControlPlaneInstanceGroup(g, cluster)...)
 	}
 
-	if g.Spec.Role == kops.InstanceGroupRoleAPIServer {
+	if g.Spec.Role.HasAPIServer() {
 		if cluster.GetCloudProvider() != kops.CloudProviderAWS && cluster.GetCloudProvider() != kops.CloudProviderGCE {
 			allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "APIServer role only supported on AWS and GCE"))
 		}
@@ -308,7 +308,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 
 		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(g)
 		if warmPool.MaxSize == nil || *warmPool.MaxSize != 0 {
-			if g.Spec.Role != kops.InstanceGroupRoleNode && g.Spec.Role != kops.InstanceGroupRoleAPIServer {
+			if !g.Spec.Role.HasNode() && !g.Spec.Role.HasAPIServer() {
 				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only allowed on instance groups with role Node or APIServer"))
 			}
 			if g.Spec.MaxPrice != nil {
@@ -345,7 +345,7 @@ func validateKarpenterInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster
 	if cluster.GetCloudProvider() != kops.CloudProviderAWS {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "manager"), "Karpenter InstanceGroups are only supported on AWS"))
 	}
-	if g.Spec.Role != kops.InstanceGroupRoleNode {
+	if !g.Spec.Role.HasNode() {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Karpenter InstanceGroups must have role Node"))
 	}
 	if g.Spec.MaxSize != nil && *g.Spec.MaxSize <= 0 {

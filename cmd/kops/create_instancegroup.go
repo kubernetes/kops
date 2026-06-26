@@ -126,7 +126,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
 	for _, r := range kopsapi.AllInstanceGroupRoles {
-		if r == kopsapi.InstanceGroupRoleAPIServer && !featureflag.APIServerNodes.Enabled() {
+		if r.HasAPIServer() && !featureflag.APIServerNodes.Enabled() {
 			continue
 		}
 		allRoles = append(allRoles, r.ToLowerString())

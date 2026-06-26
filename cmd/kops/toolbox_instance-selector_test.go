@@ -143,7 +143,7 @@ func TestValidateUserSubnetsWithClusterSubnets(t *testing.T) {
 func TestCreateInstanceGroup(t *testing.T) {
 	zones := []string{"us-east-2a", "us-east-2b", "us-east-2c"}
 	actualIG := createInstanceGroup("testGroup", "clusterTest", zones)
-	if actualIG.Spec.Role != kops.InstanceGroupRoleNode {
+	if !actualIG.Spec.Role.HasNode() {
 		t.Fatalf("instance group should have the \"%s\" role but got %s", kops.InstanceGroupRoleNode, actualIG.Spec.Role)
 	}
 	if !reflect.DeepEqual(actualIG.Spec.Subnets, zones) {

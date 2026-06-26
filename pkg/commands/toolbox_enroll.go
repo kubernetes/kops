@@ -853,7 +853,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 
 	// If this is the control plane, we want to copy the config from s3/gcs to the local file system on the target node,
 	// so that we don't need credentials to the state store.
-	if bootConfig.InstanceGroupRole == kops.InstanceGroupRoleControlPlane {
+	if bootConfig.InstanceGroupRole.HasControlPlane() {
 		remapPrefix := "s3://" // TODO: Support GCS?
 
 		// targetDir is the location of the config on the target node.

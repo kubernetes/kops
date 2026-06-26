@@ -253,7 +253,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 	launchTemplateForGroup := func(t *testing.T, ig *kops.InstanceGroup) *awstasks.LaunchTemplate {
 		t.Helper()
 		subdomain := ig.Name
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		if ig.Spec.Role.HasControlPlane() {
 			subdomain = ig.Name + ".masters"
 		}
 		task, ok := c.Tasks[fmt.Sprintf("LaunchTemplate/%s.%s", subdomain, cluster.Name)]

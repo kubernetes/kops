@@ -46,7 +46,7 @@ var _ fi.CloudupModelBuilder = &BastionModelBuilder{}
 func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var bastionInstanceGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.Role.HasBastion() {
 			bastionInstanceGroups = append(bastionInstanceGroups, ig)
 		}
 	}
