@@ -18,6 +18,8 @@ package channels
 
 import (
 	"context"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/blang/semver/v4"
@@ -28,7 +30,209 @@ import (
 	fakekubernetes "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
+
+func TestParseAddons(t *testing.T) {
+	location := mustParseURL(t, "https://example.com/addons/addon.yaml")
+
+	data := []byte(`
+kind: Addons
+metadata:
+  name: example
+spec:
+  addons:
+  - name: example.addons.k8s.io
+    manifest: example.yaml
+    manifestHash: abc123
+`)
+
+	addons, err := ParseAddons("channel", location, data)
+	if err != nil {
+		t.Fatalf("ParseAddons returned error: %v", err)
+	}
+
+	if addons.APIObject.ObjectMeta.Name != "example" {
+		t.Fatalf("expected Addons object name %q, got %q", "example", addons.APIObject.ObjectMeta.Name)
+	}
+	if len(addons.APIObject.Spec.Addons) != 1 {
+		t.Fatalf("expected one addon, got %d", len(addons.APIObject.Spec.Addons))
+	}
+	addon := addons.APIObject.Spec.Addons[0]
+	if addon.Name == nil || *addon.Name != "example.addons.k8s.io" {
+		t.Fatalf("expected addon name %q, got %v", "example.addons.k8s.io", addon.Name)
+	}
+}
+
+// A kOps Addons index may contain more than one YAML document; it must still be
+// parsed as an index (from the first document) rather than wrapped as a raw manifest.
+func TestParseAddonsMultiDocIndex(t *testing.T) {
+	location := mustParseURL(t, "https://example.com/addons/addon.yaml")
+
+	data := []byte(`
+kind: Addons
+metadata:
+  name: example
+spec:
+  addons:
+  - name: example.addons.k8s.io
+    manifest: example.yaml
+    manifestHash: abc123
+---
+kind: Addons
+metadata:
+  name: other
+spec:
+  addons:
+  - name: other.addons.k8s.io
+    manifest: other.yaml
+    manifestHash: def456
+`)
+
+	addons, err := ParseAddons("channel", location, data)
+	if err != nil {
+		t.Fatalf("ParseAddons returned error: %v", err)
+	}
+
+	if addons.APIObject.ObjectMeta.Name != "example" {
+		t.Fatalf("expected Addons index to be parsed (name %q), got %q", "example", addons.APIObject.ObjectMeta.Name)
+	}
+	if len(addons.APIObject.Spec.Addons) != 1 {
+		t.Fatalf("expected one addon, got %d", len(addons.APIObject.Spec.Addons))
+	}
+	addon := addons.APIObject.Spec.Addons[0]
+	if addon.Name == nil || *addon.Name != "example.addons.k8s.io" {
+		t.Fatalf("expected addon name %q, got %v", "example.addons.k8s.io", addon.Name)
+	}
+}
+
+func TestParseAddonsWrapsDirectManifest(t *testing.T) {
+	location := mustParseURL(t, "https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml")
+	data := []byte(`
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: gateways.gateway.networking.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+  namespace: gateway-system
+`)
+
+	addons, err := ParseAddons("channel", location, data)
+	if err != nil {
+		t.Fatalf("ParseAddons returned error: %v", err)
+	}
+
+	expectedHash, err := utils.HashString(strings.TrimSpace(string(data)))
+	if err != nil {
+		t.Fatalf("HashString returned error: %v", err)
+	}
+	expectedLocationHash, err := utils.HashString(location.String())
+	if err != nil {
+		t.Fatalf("HashString returned error: %v", err)
+	}
+	expectedName := "manifest-" + expectedLocationHash[:12]
+
+	if addons.APIObject.ObjectMeta.Name != expectedName {
+		t.Fatalf("expected Addons object name %q, got %q", expectedName, addons.APIObject.ObjectMeta.Name)
+	}
+	if len(addons.APIObject.Spec.Addons) != 1 {
+		t.Fatalf("expected one addon, got %d", len(addons.APIObject.Spec.Addons))
+	}
+	addon := addons.APIObject.Spec.Addons[0]
+	if addon.Name == nil || *addon.Name != expectedName {
+		t.Fatalf("expected addon name %q, got %v", expectedName, addon.Name)
+	}
+	if addon.Manifest == nil || *addon.Manifest != location.String() {
+		t.Fatalf("expected manifest %q, got %v", location.String(), addon.Manifest)
+	}
+	if addon.ManifestHash != expectedHash {
+		t.Fatalf("expected manifest hash %q, got %q", expectedHash, addon.ManifestHash)
+	}
+}
+
+func TestParseAddonsDirectManifestNameUsesLocationHash(t *testing.T) {
+	location := mustParseURL(t, "https://example.com/addons/direct.yaml")
+
+	data1 := []byte(`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: version-1
+`)
+	data2 := []byte(`
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: version-2
+`)
+
+	addons1, err := ParseAddons("channel", location, data1)
+	if err != nil {
+		t.Fatalf("ParseAddons returned error: %v", err)
+	}
+	addons2, err := ParseAddons("channel", location, data2)
+	if err != nil {
+		t.Fatalf("ParseAddons returned error: %v", err)
+	}
+
+	addon1 := addons1.APIObject.Spec.Addons[0]
+	addon2 := addons2.APIObject.Spec.Addons[0]
+	if addon1.Name == nil || addon2.Name == nil {
+		t.Fatalf("expected addon names, got %v and %v", addon1.Name, addon2.Name)
+	}
+	if *addon1.Name != *addon2.Name {
+		t.Fatalf("expected stable addon name, got %q and %q", *addon1.Name, *addon2.Name)
+	}
+	if addon1.ManifestHash == addon2.ManifestHash {
+		t.Fatalf("expected content hash to change, got %q", addon1.ManifestHash)
+	}
+}
+
+func TestParseAddonsRejectsInvalidYAML(t *testing.T) {
+	location := mustParseURL(t, "https://example.com/addons/not-yaml.yaml")
+
+	_, err := ParseAddons("channel", location, []byte("not: [valid"))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "error parsing addons or manifest") {
+		t.Fatalf("expected parse error, got %v", err)
+	}
+}
+
+// Content with no objects (empty, whitespace, or comment-only) is a no-op, not an error.
+func TestParseAddonsEmpty(t *testing.T) {
+	location := mustParseURL(t, "https://example.com/addons/addon.yaml")
+
+	for name, data := range map[string][]byte{
+		"empty":        []byte(""),
+		"whitespace":   []byte("\n  \n"),
+		"comment only": []byte("# nothing to see here\n"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			addons, err := ParseAddons("channel", location, data)
+			if err != nil {
+				t.Fatalf("ParseAddons returned error: %v", err)
+			}
+			if len(addons.APIObject.Spec.Addons) != 0 {
+				t.Fatalf("expected no addons, got %d", len(addons.APIObject.Spec.Addons))
+			}
+		})
+	}
+}
+
+func mustParseURL(t *testing.T, rawURL string) *url.URL {
+	t.Helper()
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		t.Fatalf("failed to parse URL %q: %v", rawURL, err)
+	}
+	return u
+}
 
 func Test_Filtering(t *testing.T) {
 	grid := []struct {

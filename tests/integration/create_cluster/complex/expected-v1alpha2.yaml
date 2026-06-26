@@ -9,6 +9,8 @@ spec:
   - 10.2.0.0/16
   - 10.3.0.0/16
   - 10.4.0.0/16
+  addons:
+  - manifest: https://example.com/addon.yaml
   api:
     loadBalancer:
       class: Network

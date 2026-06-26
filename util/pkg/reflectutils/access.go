@@ -56,6 +56,23 @@ func SetString(target interface{}, targetPath string, newValue string) error {
 			return nil
 		}
 
+		// Partial match, append the next explicitly indexed slice element.
+		if v.Kind() == reflect.Slice {
+			if len(targetFieldPath.elements) > len(path.elements) {
+				next := targetFieldPath.elements[len(path.elements)]
+				if next.Type == FieldPathElementTypeArrayIndex && next.number == v.Len() {
+					if !v.CanSet() {
+						return fmt.Errorf("cannot set field %q (marked immutable)", path)
+					}
+
+					newLen := v.Len() + 1
+					grown := reflect.MakeSlice(v.Type(), newLen, newLen)
+					reflect.Copy(grown, v)
+					v.Set(grown)
+				}
+			}
+		}
+
 		// Partial match, check for nil struct and auto-populate
 		if v.Kind() == reflect.Ptr && v.IsNil() {
 			if !v.CanSet() {

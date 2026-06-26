@@ -63,6 +63,7 @@ cp "${KOPS}" "${BIN_DIR}/kops"
 # - Metrics Server: For HPA support
 OVERRIDES="${OVERRIDES-} --networking=cilium"
 OVERRIDES="${OVERRIDES} --set=cluster.spec.networking.cilium.gatewayAPI.enabled=true"
+OVERRIDES="${OVERRIDES} --set=cluster.spec.addons[0].manifest=https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml"
 OVERRIDES="${OVERRIDES} --node-size=c5.large"
 OVERRIDES="${OVERRIDES} --node-count=2"
 OVERRIDES="${OVERRIDES} --zones=us-east-2a,us-east-2b,us-east-2c"
@@ -102,10 +103,6 @@ kubectl get nodes --show-labels
 echo "----------------------------------------------------------------"
 echo "Deploying AI Conformance Components"
 echo "----------------------------------------------------------------"
-
-# 0. Gateway API CRDs (Required for Cilium)
-echo "Installing Gateway API CRDs v1.2.0..."
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
 
 # cert-manager
 echo "Installing cert-manager..."
@@ -232,10 +229,7 @@ helm install kueue https://github.com/kubernetes-sigs/kueue/releases/download/v0
   --create-namespace \
   --wait --timeout 300s
 
-# Gateway API
-kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.5.0" | kubectl apply -f -
-
-# Gateway API Implenmentation - Istio
+# Gateway API Implementation - Istio
 helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo update
 
@@ -339,13 +333,13 @@ kubectl -n default logs job/test-gpu-pod || echo "Failed to get logs"
 echo "Verifying GPU Metrics in Prometheus..."
 # Wait for DCGM exporter to start collecting metrics
 # Query Prometheus for DCGM GPU metrics with retries
-PROM_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')
+PROM_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
 if [ -n "${PROM_POD}" ]; then
   echo "Querying Prometheus for DCGM_FI_DEV_GPU_UTIL metric (retrying up to 5 times)..."
   for i in {1..5}; do
     echo "Attempt $i..."
     METRICS=$(kubectl exec -n monitoring "${PROM_POD}" -c prometheus -- \
-      wget -qO- 'http://localhost:9090/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL' 2>/dev/null)
+      wget -qO- 'http://localhost:9090/api/v1/query?query=DCGM_FI_DEV_GPU_UTIL' 2>/dev/null || true)
     if echo "${METRICS}" | grep -q "result"; then
       echo "Successfully retrieved GPU metrics:"
       echo "${METRICS}" | head -c 500
