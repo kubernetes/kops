@@ -70,7 +70,7 @@ metadata:
     kops.k8s.io/cluster: gossip.k8s.local
   name: control-plane-eastus-1
 spec:
-  image: Canonical:ubuntu-24_04-lts:server:24.04.202606120
+  image: Canonical:ubuntu-24_04-lts:server:24.04.202606060
   machineType: Standard_B2s
   maxSize: 1
   minSize: 1
@@ -92,7 +92,7 @@ metadata:
     kops.k8s.io/cluster: gossip.k8s.local
   name: nodes-eastus-1
 spec:
-  image: Canonical:ubuntu-24_04-lts:server:24.04.202606120
+  image: Canonical:ubuntu-24_04-lts:server:24.04.202606060
   machineType: Standard_B2s
   maxSize: 1
   minSize: 1
