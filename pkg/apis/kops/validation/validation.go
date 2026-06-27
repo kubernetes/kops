@@ -41,6 +41,7 @@ import (
 	netutils "k8s.io/utils/net"
 
 	"k8s.io/kops/pkg/apis/kops"
+	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
@@ -1088,6 +1089,13 @@ func validateKubelet(k *kops.KubeletConfigSpec, c *kops.Cluster, kubeletPath *fi
 
 		if k.MemorySwapBehavior != "" {
 			allErrs = append(allErrs, IsValidValue(kubeletPath.Child("memorySwapBehavior"), &k.MemorySwapBehavior, []string{"LimitedSwap", "UnlimitedSwap"})...)
+		}
+
+		for i, taint := range k.Taints {
+			path := kubeletPath.Child("taints").Index(i)
+			if _, err := kopsutil.ParseTaint(taint); err != nil {
+				allErrs = append(allErrs, field.Invalid(path, taint, "invalid taint value"))
+			}
 		}
 	}
 	return allErrs
