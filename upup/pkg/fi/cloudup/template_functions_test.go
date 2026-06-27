@@ -330,17 +330,17 @@ func TestHasHighlyAvailableControlPlane(t *testing.T) {
 			allInstanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleNode.Role()},
 				},
 			},
 			instanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleNode.Role()},
 				},
 			},
 			expectedHA: false,
@@ -350,21 +350,21 @@ func TestHasHighlyAvailableControlPlane(t *testing.T) {
 			allInstanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleNode.Role()},
 				},
 			},
 			instanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleNode.Role()},
 				},
 			},
 			expectedHA: true,
@@ -374,25 +374,25 @@ func TestHasHighlyAvailableControlPlane(t *testing.T) {
 			allInstanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1c"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleNode.Role()},
 				},
 			},
 			instanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "nodes"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleNode},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleNode.Role()},
 				},
 			},
 			expectedHA: true,
@@ -402,29 +402,29 @@ func TestHasHighlyAvailableControlPlane(t *testing.T) {
 			allInstanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1c"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 			},
 			instanceGroups: []*kops.InstanceGroup{
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1a"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1b"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{Name: "master-us-east-1c"},
-					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupRoleControlPlane},
+					Spec:       kops.InstanceGroupSpec{Role: kops.InstanceGroupSubRoleControlPlane.Role()},
 				},
 			},
 			expectedHA: true,

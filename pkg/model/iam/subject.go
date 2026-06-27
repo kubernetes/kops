@@ -54,6 +54,42 @@ func (_ *NodeRoleAPIServer) ServiceAccount() (types.NamespacedName, bool) {
 	return types.NamespacedName{}, false
 }
 
+// NodeRoleEtcd represents the role of Etcd nodes, and implements Subject.
+type NodeRoleEtcd struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleEtcd) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
+// NodeRoleScheduler represents the role of Scheduler-only nodes, and implements Subject.
+type NodeRoleScheduler struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleScheduler) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
+// NodeRoleCloudControllerManager represents the role of Cloud Controller Manager-only nodes, and implements Subject.
+type NodeRoleCloudControllerManager struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleCloudControllerManager) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
+// NodeRoleKubeControllerManager represents the role of API server-only nodes, and implements Subject.
+type NodeRoleKubeControllerManager struct {
+}
+
+// ServiceAccount implements Subject.
+func (_ *NodeRoleKubeControllerManager) ServiceAccount() (types.NamespacedName, bool) {
+	return types.NamespacedName{}, false
+}
+
 // NodeRoleNode represents the role of normal ("worker") nodes, and implements Subject.
 type NodeRoleNode struct {
 	enableLifecycleHookPermissions bool
@@ -88,17 +124,20 @@ func (g *GenericServiceAccount) BuildAWSPolicy(*PolicyBuilder) (*Policy, error) 
 // BuildNodeRoleSubject returns a Subject implementation for the specified InstanceGroupRole.
 func BuildNodeRoleSubject(igRole kops.InstanceGroupRole, enableLifecycleHookPermissions bool) (Subject, error) {
 	switch igRole {
-	case kops.InstanceGroupRoleControlPlane:
+	case kops.InstanceGroupSubRoleControlPlane.Role():
 		return &NodeRoleMaster{}, nil
-	case kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupSubRoleAPIServer.Role():
 		return &NodeRoleAPIServer{
 			warmPool: enableLifecycleHookPermissions,
 		}, nil
-	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupSubRoleEtcd.Role(), kops.InstanceGroupSubRoleScheduler.Role(), kops.InstanceGroupSubRoleCloudControllerManager.Role(), kops.InstanceGroupSubRoleKubeControllerManager.Role():
+		// TODO: Break out and handle each of these cases
+		return nil, fmt.Errorf("Still need to implement handling for instancegroup role %q", igRole)
+	case kops.InstanceGroupSubRoleNode.Role():
 		return &NodeRoleNode{
 			enableLifecycleHookPermissions: enableLifecycleHookPermissions,
 		}, nil
-	case kops.InstanceGroupRoleBastion:
+	case kops.InstanceGroupSubRoleBastion.Role():
 		return &NodeRoleBastion{}, nil
 	default:
 		return nil, fmt.Errorf("unknown instancegroup role %q", igRole)

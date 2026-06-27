@@ -372,12 +372,12 @@ func dumpDroplet(op *resources.DumpOperation, r *resources.Resource) error {
 	}
 	for _, tag := range droplet.Tags {
 		if strings.HasPrefix(tag, "KubernetesCluster-Master") {
-			i.Roles = []string{string(kops.InstanceGroupRoleControlPlane)}
+			i.Roles = []string{string(kops.InstanceGroupSubRoleControlPlane.Role())}
 			break
 		}
 	}
 	if len(i.Roles) == 0 {
-		i.Roles = []string{string(kops.InstanceGroupRoleNode)}
+		i.Roles = []string{string(kops.InstanceGroupSubRoleNode.Role())}
 	}
 
 	op.Dump.Instances = append(op.Dump.Instances, i)

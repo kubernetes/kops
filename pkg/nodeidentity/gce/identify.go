@@ -181,9 +181,9 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	// info.InstanceID TODO: InstanceID is only used by the provider?
 
 	tagToRole := make(map[string]kops.InstanceGroupRole)
-	for _, role := range kops.AllInstanceGroupRoles {
-		tag := gce.TagForRole(i.clusterName, role)
-		tagToRole[tag] = role
+	for _, role := range kops.AllInstanceGroupSubRoles {
+		tag := gce.TagForRole(i.clusterName, role.Role())
+		tagToRole[tag] = role.Role()
 	}
 
 	labels := make(map[string]string)
@@ -191,12 +191,20 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		role, found := tagToRole[tag]
 		if found {
 			switch role {
-			case kops.InstanceGroupRoleControlPlane:
+			case kops.InstanceGroupSubRoleControlPlane.Role():
 				labels[nodelabels.RoleLabelControlPlane20] = ""
-			case kops.InstanceGroupRoleNode:
+			case kops.InstanceGroupSubRoleNode.Role():
 				labels[nodelabels.RoleLabelNode16] = ""
-			case kops.InstanceGroupRoleAPIServer:
+			case kops.InstanceGroupSubRoleAPIServer.Role():
 				labels[nodelabels.RoleLabelAPIServer16] = ""
+			case kops.InstanceGroupSubRoleEtcd.Role():
+				labels[nodelabels.RoleLabelEtcd36] = ""
+			case kops.InstanceGroupSubRoleScheduler.Role():
+				labels[nodelabels.RoleLabelScheduler36] = ""
+			case kops.InstanceGroupSubRoleCloudControllerManager.Role():
+				labels[nodelabels.RoleLabelCloudControllerManager36] = ""
+			case kops.InstanceGroupSubRoleKubeControllerManager.Role():
+				labels[nodelabels.RoleLabelKubeControllerManager36] = ""
 			default:
 				klog.Warningf("unknown node role %q for server %q", role, instance.SelfLink)
 			}

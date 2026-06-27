@@ -36,32 +36,32 @@ func TestGVisorBuilderBuild(t *testing.T) {
 		{
 			name:         "disabled",
 			distribution: distributions.DistributionDebian13,
-			role:         kops.InstanceGroupRoleNode,
+			role:         kops.InstanceGroupSubRoleNode.Role(),
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(false)},
 		},
 		{
 			name:         "enabled debian",
 			distribution: distributions.DistributionDebian13,
-			role:         kops.InstanceGroupRoleNode,
+			role:         kops.InstanceGroupSubRoleNode.Role(),
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(true)},
 			wantTasks:    []string{"AptSource/gvisor", "Package/runsc"},
 		},
 		{
 			name:         "enabled non debian",
 			distribution: distributions.DistributionRhel9,
-			role:         kops.InstanceGroupRoleNode,
+			role:         kops.InstanceGroupSubRoleNode.Role(),
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(true)},
 		},
 		{
 			name:         "enabled control plane",
 			distribution: distributions.DistributionDebian13,
-			role:         kops.InstanceGroupRoleControlPlane,
+			role:         kops.InstanceGroupSubRoleControlPlane.Role(),
 			gvisor:       &kops.GVisorConfig{Enabled: fi.PtrTo(true)},
 		},
 		{
 			name:         "unset",
 			distribution: distributions.DistributionDebian13,
-			role:         kops.InstanceGroupRoleNode,
+			role:         kops.InstanceGroupSubRoleNode.Role(),
 		},
 	}
 

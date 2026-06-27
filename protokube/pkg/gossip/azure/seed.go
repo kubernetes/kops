@@ -106,7 +106,7 @@ func (p *SeedProvider) isVMSSForCluster(vmss *compute.VirtualMachineScaleSet) bo
 func isControlPlaneVMSS(vmss *compute.VirtualMachineScaleSet) bool {
 	// VMSS carry the "control-plane" role tag; azure.TagRoleControlPlane
 	// ("control_plane") is a different spelling, used for disk tags.
-	controlPlaneRoleTag := azure.TagNameRolePrefix + kops.InstanceGroupRoleControlPlane.ToLowerString()
+	controlPlaneRoleTag := azure.TagNameRolePrefix + kops.InstanceGroupSubRoleControlPlane.Role().ToLowerString()
 	_, ok := vmss.Tags[controlPlaneRoleTag]
 	return ok
 }

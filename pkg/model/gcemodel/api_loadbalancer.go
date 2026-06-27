@@ -124,7 +124,7 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
 				SourceRanges: b.Cluster.Spec.API.Access,
-				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupSubRoleControlPlane.Role())},
 				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.KopsControllerPort)},
 			})
 		}
@@ -134,7 +134,7 @@ func (b *APILoadBalancerBuilder) addFirewallRules(c *fi.CloudupModelBuilderConte
 				Lifecycle:    b.Lifecycle,
 				Network:      network,
 				SourceRanges: b.Cluster.Spec.API.Access,
-				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleControlPlane)},
+				TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupSubRoleControlPlane.Role())},
 				Allowed:      []string{"tcp:" + strconv.Itoa(wellknownports.EtcdCiliumClientPort)},
 			})
 		}

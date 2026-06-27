@@ -47,7 +47,7 @@ func (p *SeedProvider) GetSeeds() ([]string, error) {
 	// Seed only from control-plane nodes; workers do not run gossip.
 	labelSelector := fmt.Sprintf("%s=%s,%s=%s",
 		hetzner.TagKubernetesClusterName, p.tag,
-		hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane))
+		hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupSubRoleControlPlane.Role()))
 	listOptions := hcloud.ListOpts{
 		PerPage:       50,
 		LabelSelector: labelSelector,

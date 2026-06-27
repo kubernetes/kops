@@ -137,7 +137,7 @@ func (b *KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
 func (b *KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
 	var groups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleNode {
+		if !ig.Spec.Role.HasNode() {
 			continue
 		}
 		groups = append(groups, ig)
@@ -208,27 +208,43 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[clusterLabel.Key] = clusterLabel.Value
 		labels[roleLabel] = ig.Spec.Role.ToLowerString()
 		labels[gce.GceLabelNameInstanceGroup] = ig.ObjectMeta.Name
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		if ig.Spec.Role.HasControlPlane() {
 			labels[gce.GceLabelNameRolePrefix+"master"] = "master"
 		}
 	default:
 		// The system tags take priority because the cluster likely breaks without them...
 
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		if ig.Spec.Role.HasControlPlane() {
 			labels[awstasks.CloudTagInstanceGroupRolePrefix+"master"] = "1"
-			labels[awstasks.CloudTagInstanceGroupRolePrefix+kops.InstanceGroupRoleControlPlane.ToLowerString()] = "1"
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+kops.InstanceGroupSubRoleControlPlane.ToLowerString()] = "1"
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
-			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleAPIServer))] = "1"
+		if ig.Spec.Role.HasAPIServer() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleAPIServer))] = "1"
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleNode))] = "1"
+		if ig.Spec.Role.HasEtcd() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleEtcd))] = "1"
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
+		if ig.Spec.Role.HasScheduler() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleScheduler))] = "1"
+		}
+
+		if ig.Spec.Role.HasCloudControllerManager() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleCloudControllerManager))] = "1"
+		}
+
+		if ig.Spec.Role.HasKubeControllerManager() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleKubeControllerManager))] = "1"
+		}
+
+		if ig.Spec.Role.HasNode() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleNode))] = "1"
+		}
+
+		if ig.Spec.Role.HasBastion() {
+			labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupSubRoleBastion))] = "1"
 		}
 
 		labels[nodeidentityaws.CloudTagInstanceGroupName] = ig.Name
@@ -303,7 +319,7 @@ func (b *KopsModelContext) UsesBastionDns() bool {
 // UsesSSHBastion checks if we have a Bastion in the cluster
 func (b *KopsModelContext) UsesSSHBastion() bool {
 	for _, ig := range b.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.Role.HasBastion() {
 			return true
 		}
 	}

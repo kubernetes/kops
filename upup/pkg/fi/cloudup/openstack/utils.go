@@ -71,8 +71,8 @@ func defaultInstanceType(c OpenstackCloud, cluster *kops.Cluster, ig *kops.Insta
 	sort.Sort(&fList)
 
 	var candidates flavorList
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane:
+	switch {
+	case ig.Spec.Role.HasControlPlane():
 		// Requirements based on awsCloudImplementation.DefaultInstanceType
 		for _, flavor := range fList {
 			if flavor.RAM >= 4096 && flavor.VCPUs >= 1 {
@@ -80,14 +80,14 @@ func defaultInstanceType(c OpenstackCloud, cluster *kops.Cluster, ig *kops.Insta
 			}
 		}
 
-	case kops.InstanceGroupRoleNode:
+	case ig.Spec.Role.HasNode():
 		for _, flavor := range fList {
 			if flavor.RAM >= 4096 && flavor.VCPUs >= 2 {
 				candidates = append(candidates, flavor)
 			}
 		}
 
-	case kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasBastion():
 		for _, flavor := range fList {
 			if flavor.RAM >= 1024 {
 				candidates = append(candidates, flavor)

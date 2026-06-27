@@ -57,10 +57,10 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		allErrs = append(allErrs, field.Required(field.NewPath("objectMeta", "name"), ""))
 	}
 
-	switch g.Spec.Role {
-	case "":
+	switch {
+	case g.Spec.Role == "":
 		allErrs = append(allErrs, field.Required(field.NewPath("spec", "role"), "Role must be set"))
-	case kops.InstanceGroupRoleControlPlane:
+	case g.Spec.Role.HasControlPlane():
 		if len(g.Spec.Subnets) == 0 {
 			allErrs = append(allErrs, field.Required(field.NewPath("spec", "subnets"), "controlPlane InstanceGroup must specify at least one Subnet"))
 		}
@@ -70,12 +70,16 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		if fi.ValueOf(g.Spec.MaxSize) > 1 {
 			allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "maxSize"), fi.ValueOf(g.Spec.MaxSize), "controlPlane InstanceGroup must have maxSize set to 1, add more InstanceGroups instead"))
 		}
-	case kops.InstanceGroupRoleNode:
-	case kops.InstanceGroupRoleBastion:
-	case kops.InstanceGroupRoleAPIServer:
+	case g.Spec.Role.HasNode():
+	case g.Spec.Role.HasBastion():
+	case g.Spec.Role.HasAPIServer():
+	case g.Spec.Role.HasEtcd():
+	case g.Spec.Role.HasScheduler():
+	case g.Spec.Role.HasCloudControllerManager():
+	case g.Spec.Role.HasKubeControllerManager():
 	default:
 		var supported []string
-		for _, role := range kops.AllInstanceGroupRoles {
+		for _, role := range kops.AllInstanceGroupSubRoles {
 			supported = append(supported, string(role))
 		}
 		allErrs = append(allErrs, field.NotSupported(field.NewPath("spec", "role"), g.Spec.Role, supported))
@@ -101,7 +105,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 		}
 	}
 
-	if g.Spec.Containerd != nil && g.Spec.Containerd.GVisor != nil && fi.ValueOf(g.Spec.Containerd.GVisor.Enabled) && g.Spec.Role != kops.InstanceGroupRoleNode {
+	if g.Spec.Containerd != nil && g.Spec.Containerd.GVisor != nil && fi.ValueOf(g.Spec.Containerd.GVisor.Enabled) && !g.Spec.Role.HasNode() {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "containerd", "gvisor"), "gVisor can only be enabled on instance groups with role Node"))
 	}
 
@@ -171,7 +175,7 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	}
 
 	if g.Spec.RollingUpdate != nil {
-		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role == kops.InstanceGroupRoleControlPlane)...)
+		allErrs = append(allErrs, validateRollingUpdate(g.Spec.RollingUpdate, field.NewPath("spec", "rollingUpdate"), g.Spec.Role.HasControlPlane())...)
 	}
 
 	if g.Spec.NodeLabels != nil {
@@ -253,11 +257,18 @@ func validateVolumeMountSpec(path *field.Path, spec kops.VolumeMountSpec) field.
 func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cloud fi.Cloud, strict bool) field.ErrorList {
 	allErrs := ValidateInstanceGroup(g, cloud, strict)
 
-	if g.Spec.Role == kops.InstanceGroupRoleControlPlane {
+	switch {
+	case g.Spec.Role.HasControlPlane():
 		allErrs = append(allErrs, ValidateControlPlaneInstanceGroup(g, cluster)...)
-	}
-
-	if g.Spec.Role == kops.InstanceGroupRoleAPIServer {
+	case g.Spec.Role.HasEtcd():
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Please implement ValidateEtcdInstanceGroup"))
+	case g.Spec.Role.HasScheduler():
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Please implement ValidateSchedulerInstanceGroup"))
+	case g.Spec.Role.HasCloudControllerManager():
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Please implement ValidateCloudControllerManagerInstanceGroup"))
+	case g.Spec.Role.HasKubeControllerManager():
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "role"), "Please implement ValidateKubeControllerManagerInstanceGroup"))
+	case g.Spec.Role.HasAPIServer():
 		switch cluster.GetCloudProvider() {
 		case kops.CloudProviderGCE:
 			// Fully supported do nothing.
@@ -293,7 +304,7 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, cl
 
 		warmPool := cluster.Spec.CloudProvider.AWS.WarmPool.ResolveDefaults(g)
 		if warmPool.MaxSize == nil || *warmPool.MaxSize != 0 {
-			if g.Spec.Role != kops.InstanceGroupRoleNode && g.Spec.Role != kops.InstanceGroupRoleAPIServer {
+			if !g.Spec.Role.HasNode() && !g.Spec.Role.HasAPIServer() {
 				allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "warmPool"), "warm pool only allowed on instance groups with role Node or APIServer"))
 			}
 			if g.Spec.MaxPrice != nil {

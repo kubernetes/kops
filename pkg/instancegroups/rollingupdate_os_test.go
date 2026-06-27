@@ -124,11 +124,11 @@ func makeGroupOS(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGr
 
 	var newIg kopsapi.InstanceGroup
 	switch role {
-	case kopsapi.InstanceGroupRoleNode:
+	case kopsapi.InstanceGroupSubRoleNode.Role():
 		newIg = testutils.BuildMinimalNodeInstanceGroup("nodes-"+subnet, subnet)
-	case kopsapi.InstanceGroupRoleControlPlane:
+	case kopsapi.InstanceGroupSubRoleControlPlane.Role():
 		newIg = testutils.BuildMinimalMasterInstanceGroup(subnet)
-	case kopsapi.InstanceGroupRoleBastion:
+	case kopsapi.InstanceGroupSubRoleBastion.Role():
 		newIg = testutils.BuildMinimalBastionInstanceGroup("bastion-"+subnet, subnet)
 	}
 
@@ -168,7 +168,7 @@ func makeGroupOS(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGr
 		}
 		id := server.ID
 		var node *v1.Node
-		if role != kopsapi.InstanceGroupRoleBastion {
+		if !role.HasBastion() {
 			node = &v1.Node{
 				ObjectMeta: v1meta.ObjectMeta{Name: id + ".local"},
 			}
@@ -190,12 +190,12 @@ func makeGroupOS(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGr
 func getGroupsAllNeedUpdateOS(t *testing.T, c *RollingUpdateCluster) (map[string]*cloudinstances.CloudInstanceGroup, *kopsapi.InstanceGroupList) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	igList := &kopsapi.InstanceGroupList{}
-	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[0].Name, kopsapi.InstanceGroupRoleNode, 3, 3)
-	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[1].Name, kopsapi.InstanceGroupRoleNode, 3, 3)
-	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[0].Name, kopsapi.InstanceGroupRoleControlPlane, 1, 1)
-	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[1].Name, kopsapi.InstanceGroupRoleControlPlane, 1, 1)
-	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[2].Name, kopsapi.InstanceGroupRoleControlPlane, 1, 1)
-	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[0].Name, kopsapi.InstanceGroupRoleBastion, 1, 1)
+	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[0].Name, kopsapi.InstanceGroupSubRoleNode.Role(), 3, 3)
+	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[1].Name, kopsapi.InstanceGroupSubRoleNode.Role(), 3, 3)
+	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[0].Name, kopsapi.InstanceGroupSubRoleControlPlane.Role(), 1, 1)
+	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[1].Name, kopsapi.InstanceGroupSubRoleControlPlane.Role(), 1, 1)
+	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[2].Name, kopsapi.InstanceGroupSubRoleControlPlane.Role(), 1, 1)
+	makeGroupOS(t, groups, igList, c, c.Cluster.Spec.Networking.Subnets[0].Name, kopsapi.InstanceGroupSubRoleBastion.Role(), 1, 1)
 	return groups, igList
 }
 

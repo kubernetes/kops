@@ -189,9 +189,9 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
-	for _, r := range kopsapi.AllInstanceGroupRoles {
-		allRoles = append(allRoles, r.ToLowerString())
+	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupSubRoles))
+	for _, subrole := range kopsapi.AllInstanceGroupSubRoles {
+		allRoles = append(allRoles, subrole.ToLowerString())
 	}
 
 	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately; without --yes rolling-update executes a dry-run")
@@ -280,7 +280,7 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		return err
 	}
 
-	countByRole := make(map[kopsapi.InstanceGroupRole]int32)
+	countByRole := make(map[kopsapi.InstanceGroupSubRole]int32)
 	var instanceGroups []*kopsapi.InstanceGroup
 	for i := range list.Items {
 		instanceGroup := &list.Items[i]
@@ -290,9 +290,11 @@ func RunRollingUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer
 		if instanceGroup.Spec.MinSize != nil {
 			minSize = *instanceGroup.Spec.MinSize
 		}
-		countByRole[instanceGroup.Spec.Role] = countByRole[instanceGroup.Spec.Role] + minSize
+		for _, subrole := range instanceGroup.Spec.Role.SubRoles() {
+			countByRole[subrole] = countByRole[subrole] + minSize
+		}
 	}
-	if countByRole[kopsapi.InstanceGroupRoleAPIServer]+countByRole[kopsapi.InstanceGroupRoleControlPlane] <= 1 {
+	if countByRole[kopsapi.InstanceGroupSubRoleAPIServer]+countByRole[kopsapi.InstanceGroupSubRoleControlPlane] <= 1 {
 		options.DeregisterControlPlaneNodes = false
 	}
 

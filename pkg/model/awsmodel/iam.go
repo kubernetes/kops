@@ -271,11 +271,19 @@ func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 	case *iam.NodeRoleMaster:
 		return "master", false
 	case *iam.NodeRoleAPIServer:
-		return strings.ToLower(string(kops.InstanceGroupRoleAPIServer)), false
+		return strings.ToLower(string(kops.InstanceGroupSubRoleAPIServer.Role())), false
+	case *iam.NodeRoleEtcd:
+		return strings.ToLower(string(kops.InstanceGroupSubRoleEtcd.Role())), false
+	case *iam.NodeRoleScheduler:
+		return strings.ToLower(string(kops.InstanceGroupSubRoleScheduler.Role())), false
+	case *iam.NodeRoleCloudControllerManager:
+		return strings.ToLower(string(kops.InstanceGroupSubRoleCloudControllerManager.Role())), false
+	case *iam.NodeRoleKubeControllerManager:
+		return strings.ToLower(string(kops.InstanceGroupSubRoleKubeControllerManager.Role())), false
 	case *iam.NodeRoleNode:
-		return strings.ToLower(string(kops.InstanceGroupRoleNode)), false
+		return strings.ToLower(string(kops.InstanceGroupSubRoleNode.Role())), false
 	case *iam.NodeRoleBastion:
-		return strings.ToLower(string(kops.InstanceGroupRoleBastion)), false
+		return strings.ToLower(string(kops.InstanceGroupSubRoleBastion.Role())), false
 
 	default:
 		klog.Fatalf("unknown node role type: %T", role)

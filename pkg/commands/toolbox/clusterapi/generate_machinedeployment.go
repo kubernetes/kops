@@ -208,7 +208,7 @@ func RunGenerateMachineDeployment(ctx context.Context, f commandutils.Factory, o
 
 	kubernetesVersion := cluster.Spec.KubernetesVersion
 
-	role := kops.InstanceGroupRoleNode
+	role := kops.InstanceGroupSubRoleNode.Role()
 
 	b := &builders.MachineDeploymentBuilder{
 		ClusterName:       cluster.GetName(),

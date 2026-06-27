@@ -28,7 +28,7 @@ func TestAPILoadBalancerModelBuilder_Build(t *testing.T) {
 	b := APILoadBalancerModelBuilder{
 		AzureModelContext: newTestAzureModelContext(),
 	}
-	b.InstanceGroups[0].Spec.Role = kops.InstanceGroupRoleControlPlane
+	b.InstanceGroups[0].Spec.Role = kops.InstanceGroupSubRoleControlPlane.Role()
 	c := &fi.CloudupModelBuilderContext{
 		Tasks: make(map[string]fi.CloudupTask),
 	}
@@ -56,7 +56,7 @@ func TestSubnetForLoadbalancer(t *testing.T) {
 			Type: kops.SubnetTypeUtility,
 		},
 	}
-	b.InstanceGroups[0].Spec.Role = kops.InstanceGroupRoleControlPlane
+	b.InstanceGroups[0].Spec.Role = kops.InstanceGroupSubRoleControlPlane.Role()
 	b.InstanceGroups[0].Spec.Subnets = []string{
 		"master",
 	}

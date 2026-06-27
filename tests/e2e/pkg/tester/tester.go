@@ -195,7 +195,7 @@ func (t *Tester) addNodeIG() error {
 
 	var ig *api.InstanceGroup
 	for _, v := range igs {
-		if unversioned.InstanceGroupRole(v.Spec.Role) == unversioned.InstanceGroupRoleNode {
+		if unversioned.InstanceGroupRole(v.Spec.Role).HasNode() {
 			ig = v
 		}
 	}
@@ -210,7 +210,7 @@ func (t *Tester) addNodeIG() error {
 		return nil
 	}
 
-	nodeTag := gce.TagForRole(cluster.ObjectMeta.Name, unversioned.InstanceGroupRoleNode)
+	nodeTag := gce.TagForRole(cluster.ObjectMeta.Name, unversioned.InstanceGroupSubRoleNode.Role())
 	klog.Infof("Setting --node-tag=%s", nodeTag)
 	t.TestArgs += " --node-tag=" + nodeTag
 	igName := gce.NameForInstanceGroupManager(cluster.ObjectMeta.Name, ig.ObjectMeta.Name, ig.Spec.Zones[0])
@@ -366,10 +366,10 @@ func (t *Tester) getSchedulableZones() ([]string, error) {
 
 	var schedulable []*api.InstanceGroup
 	for _, ig := range igs {
-		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleControlPlane {
+		if unversioned.InstanceGroupRole(ig.Spec.Role).HasControlPlane() {
 			continue
 		}
-		if unversioned.InstanceGroupRole(ig.Spec.Role) == unversioned.InstanceGroupRoleAPIServer {
+		if unversioned.InstanceGroupRole(ig.Spec.Role).HasAPIServer() {
 			continue
 		}
 

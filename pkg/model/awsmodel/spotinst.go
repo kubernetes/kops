@@ -174,15 +174,16 @@ func (b *SpotInstanceGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) 
 		}
 
 		klog.V(2).Infof("Building instance group: %q", name)
-		switch ig.Spec.Role {
+		switch {
 
 		// Create both Master and Bastion instance groups as Elastigroups.
-		case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleBastion:
+		case ig.Spec.Role.HasControlPlane(),
+			ig.Spec.Role.HasBastion():
 			err = b.buildElastigroup(c, ig)
 
 		// Create Node instance groups as Elastigroups or a single Ocean with
 		// multiple LaunchSpecs.
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			if featureflag.SpotinstOcean.Enabled() {
 				nodeSpotInstanceGroups = append(nodeSpotInstanceGroups, ig)
 			} else {
@@ -821,14 +822,14 @@ func (b *SpotInstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*
 	minSize := int32(1)
 	if ig.Spec.MinSize != nil {
 		minSize = fi.ValueOf(ig.Spec.MinSize)
-	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+	} else if ig.Spec.Role.HasNode() {
 		minSize = 2
 	}
 
 	maxSize := int32(1)
 	if ig.Spec.MaxSize != nil {
 		maxSize = *ig.Spec.MaxSize
-	} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+	} else if ig.Spec.Role.HasNode() {
 		maxSize = 2
 	}
 
@@ -851,7 +852,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 		}
 	}
 
-	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+	if ig.Spec.Role.HasBastion() {
 		loadBalancers = append(loadBalancers, b.LinkToCLB("bastion"))
 	}
 
@@ -896,11 +897,11 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 		ClusterID: fi.PtrTo(clusterID),
 	}
 
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane:
+	switch {
+	case ig.Spec.Role.HasControlPlane():
 		return opts, nil
 
-	case kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasBastion():
 		return nil, nil
 	}
 
@@ -1172,10 +1173,11 @@ func parseStringSlice(str string) ([]string, error) {
 func defaultSpotPercentage(ig *kops.InstanceGroup) *float64 {
 	var percentage float64
 
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleBastion:
+	switch {
+	case ig.Spec.Role.HasControlPlane(),
+		ig.Spec.Role.HasBastion():
 		percentage = 0
-	case kops.InstanceGroupRoleNode:
+	case ig.Spec.Role.HasNode():
 		percentage = 100
 	}
 

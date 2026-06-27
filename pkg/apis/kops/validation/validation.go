@@ -1478,7 +1478,7 @@ func validateAdditionalPolicy(role string, policy string, fldPath *field.Path) f
 	allErrs := field.ErrorList{}
 
 	var valid []string
-	for _, r := range kops.AllInstanceGroupRoles {
+	for _, r := range kops.AllInstanceGroupSubRoles {
 		valid = append(valid, r.ToLowerString())
 	}
 	allErrs = append(allErrs, IsValidValue(fldPath, &role, valid)...)
@@ -1505,7 +1505,7 @@ func validateExternalPolicies(role string, policies []string, fldPath *field.Pat
 	allErrs := field.ErrorList{}
 
 	var valid []string
-	for _, r := range kops.AllInstanceGroupRoles {
+	for _, r := range kops.AllInstanceGroupSubRoles {
 		valid = append(valid, r.ToLowerString())
 	}
 	allErrs = append(allErrs, IsValidValue(fldPath, &role, valid)...)

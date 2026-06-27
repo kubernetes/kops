@@ -64,7 +64,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 }
 
 func (b *FirewallModelBuilder) buildNodeRules(c *fi.CloudupModelBuilderContext) ([]SecurityGroupInfo, error) {
-	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleNode)
+	nodeGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleNode.Role())
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +241,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 }
 
 func (b *FirewallModelBuilder) buildMasterRules(c *fi.CloudupModelBuilderContext, nodeGroups []SecurityGroupInfo) ([]SecurityGroupInfo, error) {
-	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupRoleControlPlane)
+	masterGroups, err := b.GetSecurityGroups(kops.InstanceGroupSubRoleControlPlane.Role())
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +314,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 	var baseGroup *awstasks.SecurityGroup
 	name := b.SecurityGroupName(role)
 	switch role {
-	case kops.InstanceGroupRoleControlPlane:
+	case kops.InstanceGroupSubRoleControlPlane.Role():
 		removeExtraRules := []string{
 			"port=22",  // SSH
 			"port=443", // k8s api
@@ -350,7 +350,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			RemoveExtraRules: removeExtraRules,
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
-	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupSubRoleNode.Role():
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:             fi.PtrTo(name),
@@ -359,7 +359,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			RemoveExtraRules: []string{"port=22"},
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
-	case kops.InstanceGroupRoleBastion:
+	case kops.InstanceGroupSubRoleBastion.Role():
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
 			Name:        fi.PtrTo(name),

@@ -67,7 +67,7 @@ func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
 			cluster := testutils.BuildMinimalClusterAWS("testcluster.test.com")
 			ig := &kops.InstanceGroup{}
 			ig.ObjectMeta.Name = "nodes"
-			ig.Spec.Role = kops.InstanceGroupRoleNode
+			ig.Spec.Role = kops.InstanceGroupSubRoleNode.Role()
 			ig.Spec.Taints = tc.taints
 
 			b := &KopsModelContext{

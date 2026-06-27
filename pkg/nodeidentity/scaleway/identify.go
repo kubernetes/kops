@@ -102,11 +102,11 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	labels := map[string]string{}
 	role := scaleway.InstanceRoleFromTags(server.Tags)
 	switch kops.InstanceGroupRole(role) {
-	case kops.InstanceGroupRoleControlPlane:
+	case kops.InstanceGroupSubRoleControlPlane.Role():
 		labels[nodelabels.RoleLabelControlPlane20] = ""
-	case kops.InstanceGroupRoleNode:
+	case kops.InstanceGroupSubRoleNode.Role():
 		labels[nodelabels.RoleLabelNode16] = ""
-	case kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupSubRoleAPIServer.Role():
 		labels[nodelabels.RoleLabelAPIServer16] = ""
 	default:
 		klog.Warningf("Unknown node role %q for server %s(%s)", role, server.Name, server.ID)

@@ -405,6 +405,26 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	return p, nil
 }
 
+// BuildAWSPolicy generates a custom policy for a Kubernetes master:Etcd.
+func (r *NodeRoleEtcd) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	return nil, fmt.Errorf("Please implement NodeRoleEtcd::BuildAWSPolicy")
+}
+
+// BuildAWSPolicy generates a custom policy for a Kubernetes master:Scheduler.
+func (r *NodeRoleScheduler) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	return nil, fmt.Errorf("Please implement NodeRoleScheduler::BuildAWSPolicy")
+}
+
+// BuildAWSPolicy generates a custom policy for a Kubernetes master:CloudControllerManager.
+func (r *NodeRoleCloudControllerManager) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	return nil, fmt.Errorf("Please implement NodeRoleCloudControllerManager::BuildAWSPolicy")
+}
+
+// BuildAWSPolicy generates a custom policy for a Kubernetes master:KubeControllerManager.
+func (r *NodeRoleKubeControllerManager) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	return nil, fmt.Errorf("Please implement NodeRoleKubeControllerManager::BuildAWSPolicy")
+}
+
 // BuildAWSPolicy generates a custom policy for a Kubernetes master.
 func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	clusterName := b.Cluster.GetName()

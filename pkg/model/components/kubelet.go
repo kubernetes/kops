@@ -140,7 +140,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 			cluster.Spec.CloudConfig = &kops.CloudConfiguration{}
 		}
 		cluster.Spec.CloudProvider.GCE.Multizone = fi.PtrTo(true)
-		cluster.Spec.CloudProvider.GCE.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+		cluster.Spec.CloudProvider.GCE.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupSubRoleNode.Role()))
 	}
 
 	// Set systemd as the default cgroup driver for kubelet

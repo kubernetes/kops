@@ -182,7 +182,7 @@ func (c *RollingUpdateCluster) rollingUpdateInstanceGroup(ctx context.Context, g
 		maxSurge = 0
 	}
 
-	if group.InstanceGroup.Spec.Role == api.InstanceGroupRoleControlPlane && maxSurge != 0 {
+	if group.InstanceGroup.Spec.Role.HasControlPlane() && maxSurge != 0 {
 		// Control plane nodes are incapable of surging because they rely on registering themselves through
 		// the local apiserver. That apiserver depends on the local etcd, which relies on being
 		// joined to the etcd cluster.
@@ -712,8 +712,7 @@ func (c *RollingUpdateCluster) drainNode(ctx context.Context, u *cloudinstances.
 	if !c.Options.DeregisterControlPlaneNodes {
 		if u.CloudInstanceGroup != nil && u.CloudInstanceGroup.InstanceGroup != nil {
 			role := u.CloudInstanceGroup.InstanceGroup.Spec.Role
-			switch role {
-			case api.InstanceGroupRoleAPIServer, api.InstanceGroupRoleControlPlane:
+			if role.IsControlPlaneType() {
 				klog.Infof("skipping deregistration of instance %q, as part of instancegroup with role %q", u.ID, role)
 				shouldDeregister = false
 			}

@@ -18,6 +18,7 @@ package kops
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -25,10 +26,44 @@ import (
 )
 
 // ParseInstanceGroupRole converts a string to an InstanceGroupRole.
+// A InstanceGroupRole is a comma-delimited list of SubRoles.
 //
 // If lenient is set to true, the function will match pluralised words too.
 // It will return the instance group role and true if a match was found.
 func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool) {
+	subroles := []string{}
+	for _, val := range strings.Split(input, ",") {
+		if subrole, success := parseInstanceGroupSubRole(val, lenient); success == true {
+			subroles = append(subroles, subrole.ToLowerString())
+		} else {
+			return "", false
+		}
+	}
+	// "ControlPlane" is a shortcut for "APIServer,Etcd,Scheduler,CloudControllerManager,KubeControllerManager"
+	// As such it should not contain any of these "ControlPlane,APIServer" is an error.
+	if slices.Contains(subroles, string(InstanceGroupSubRoleControlPlane)) {
+		if slices.Contains(subroles, string(InstanceGroupSubRoleAPIServer)) {
+			return "", false
+		}
+		if slices.Contains(subroles, string(InstanceGroupSubRoleEtcd)) {
+			return "", false
+		}
+		if slices.Contains(subroles, string(InstanceGroupSubRoleScheduler)) {
+			return "", false
+		}
+		if slices.Contains(subroles, string(InstanceGroupSubRoleCloudControllerManager)) {
+			return "", false
+		}
+		if slices.Contains(subroles, string(InstanceGroupSubRoleKubeControllerManager)) {
+			return "", false
+		}
+	}
+	// We do string match on role. So we need to have the sub-roles in a stable order.
+	slices.Sort(subroles)
+	return InstanceGroupRole(strings.Join(subroles, ",")), true
+}
+
+func parseInstanceGroupSubRole(input string, lenient bool) (InstanceGroupSubRole, bool) {
 	findRole := strings.ToLower(input)
 	if lenient {
 		// Accept pluralized "bastions" for "bastion"
@@ -36,7 +71,7 @@ func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool
 	}
 	findRole = strings.Replace(findRole, "controlplane", "control-plane", 1)
 
-	for _, role := range AllInstanceGroupRoles {
+	for _, role := range AllInstanceGroupSubRoles {
 		s := role.ToLowerString()
 		if lenient {
 			s = strings.TrimSuffix(s, "s")
@@ -47,7 +82,7 @@ func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool
 	}
 
 	if lenient && strings.ToLower(findRole) == "master" {
-		return InstanceGroupRoleControlPlane, true
+		return InstanceGroupSubRoleControlPlane, true
 	}
 
 	return "", false

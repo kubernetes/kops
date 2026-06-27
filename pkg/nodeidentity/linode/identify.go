@@ -167,11 +167,11 @@ func buildLabelsFromTags(tags []string) map[string]string {
 		// Derive role labels from instance role tag (must be checked before direct label handling)
 		if key == linode.TagKubernetesInstanceRole {
 			switch kops.InstanceGroupRole(value) {
-			case kops.InstanceGroupRoleControlPlane:
+			case kops.InstanceGroupSubRoleControlPlane.Role():
 				labels[nodelabels.RoleLabelControlPlane20] = ""
-			case kops.InstanceGroupRoleNode:
+			case kops.InstanceGroupSubRoleNode.Role():
 				labels[nodelabels.RoleLabelNode16] = ""
-			case kops.InstanceGroupRoleAPIServer:
+			case kops.InstanceGroupSubRoleAPIServer.Role():
 				labels[nodelabels.RoleLabelAPIServer16] = ""
 			default:
 				klog.Warningf("Unknown node role %q for Linode (Akamai) instance", value)

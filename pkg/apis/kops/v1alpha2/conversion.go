@@ -684,7 +684,7 @@ func Convert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 	if in.Roles != nil {
 		for i := range in.Roles {
 			if in.Roles[i] == "Master" {
-				out.Roles[i] = kops.InstanceGroupRoleControlPlane
+				out.Roles[i] = kops.InstanceGroupSubRoleControlPlane.Role()
 			}
 		}
 	}
@@ -697,7 +697,7 @@ func Convert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec
 	}
 	if in.Roles != nil {
 		for i := range in.Roles {
-			if in.Roles[i] == kops.InstanceGroupRoleControlPlane {
+			if in.Roles[i].HasControlPlane() {
 				out.Roles[i] = "Master"
 			}
 		}
@@ -710,7 +710,7 @@ func Convert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 		return err
 	}
 	if in.Role == "Master" {
-		out.Role = kops.InstanceGroupRoleControlPlane
+		out.Role = kops.InstanceGroupSubRoleControlPlane.Role()
 	}
 	if in.RootVolumeEncryption != nil {
 		if out.RootVolume == nil {
@@ -761,7 +761,7 @@ func Convert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.Insta
 	if err := autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in, out, s); err != nil {
 		return err
 	}
-	if in.Role == kops.InstanceGroupRoleControlPlane {
+	if in.Role.HasControlPlane() {
 		out.Role = "Master"
 	}
 	if in.RootVolume != nil {

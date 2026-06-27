@@ -77,7 +77,7 @@ func newTestInstanceGroup() *kops.InstanceGroup {
 			Name: "nodes",
 		},
 		Spec: kops.InstanceGroupSpec{
-			Role:  kops.InstanceGroupRoleNode,
+			Role:  kops.InstanceGroupSubRoleNode.Role(),
 			Image: "Canonical:UbuntuServer:18.04-LTS:latest",
 			RootVolume: &kops.InstanceRootVolumeSpec{
 				Size: fi.PtrTo(int32(32)),

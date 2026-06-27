@@ -95,7 +95,7 @@ func (c *GCEModelContext) GCETagForRole(role kops.InstanceGroupRole) string {
 // HasAPIServerOnlyInstanceGroups returns true if the cluster has any APIServer-only instance groups.
 func (c *GCEModelContext) HasAPIServerOnlyInstanceGroups() bool {
 	for _, ig := range c.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
+		if ig.Spec.Role.HasAPIServer() {
 			return true
 		}
 	}
@@ -107,9 +107,9 @@ func (c *GCEModelContext) HasAPIServerOnlyInstanceGroups() bool {
 // ControlPlane tag, and adds the APIServer tag only when the cluster has dedicated
 // APIServer instance groups.
 func (c *GCEModelContext) GCETagsForAPIServerTargets() []string {
-	tags := []string{c.GCETagForRole(kops.InstanceGroupRoleControlPlane)}
+	tags := []string{c.GCETagForRole(kops.InstanceGroupSubRoleControlPlane.Role())}
 	if c.HasAPIServerOnlyInstanceGroups() {
-		tags = append(tags, c.GCETagForRole(kops.InstanceGroupRoleAPIServer))
+		tags = append(tags, c.GCETagForRole(kops.InstanceGroupSubRoleAPIServer.Role()))
 	}
 	return tags
 }
@@ -177,14 +177,14 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 	role := ig.Spec.Role
 
 	name := ""
-	switch role {
-	case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane:
+	switch {
+	case role.IsControlPlaneType():
 		name = gce.ControlPlane
 
-	case kops.InstanceGroupRoleBastion:
+	case role.HasBastion():
 		name = gce.Bastion
 
-	case kops.InstanceGroupRoleNode:
+	case role.HasNode():
 		name = gce.Node
 
 	default:

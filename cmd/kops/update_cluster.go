@@ -141,9 +141,9 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &UpdateClusterOptions{}
 	options.InitDefaults()
 
-	allRoles := make([]string, 0, len(kops.AllInstanceGroupRoles))
-	for _, r := range kops.AllInstanceGroupRoles {
-		allRoles = append(allRoles, r.ToLowerString())
+	allRoles := make([]string, 0, len(kops.AllInstanceGroupSubRoles))
+	for _, subrole := range kops.AllInstanceGroupSubRoles {
+		allRoles = append(allRoles, subrole.ToLowerString())
 	}
 
 	cmd := &cobra.Command{
@@ -510,7 +510,7 @@ func parseLifecycle(lifecycle string) (fi.Lifecycle, error) {
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
 	for _, ig := range instanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.Role.HasBastion() {
 			return true
 		}
 	}

@@ -386,7 +386,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 					Name: "some-ig",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role: "Node",
+					Role: kops.InstanceGroupSubRoleNode.Role(),
 					InstanceMetadata: &kops.InstanceMetadataOptions{
 						HTTPPutResponseHopLimit: fi.PtrTo(int64(1)),
 						HTTPTokens:              fi.PtrTo("abc"),
@@ -402,7 +402,7 @@ func TestInstanceMetadataOptions(t *testing.T) {
 					Name: "some-ig",
 				},
 				Spec: kops.InstanceGroupSpec{
-					Role: "Node",
+					Role: kops.InstanceGroupSubRoleNode.Role(),
 					InstanceMetadata: &kops.InstanceMetadataOptions{
 						HTTPPutResponseHopLimit: fi.PtrTo(int64(-1)),
 						HTTPTokens:              fi.PtrTo("required"),

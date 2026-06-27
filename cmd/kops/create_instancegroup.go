@@ -83,7 +83,7 @@ var (
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
-		Role: kopsapi.InstanceGroupRoleNode.ToLowerString(),
+		Role: kopsapi.InstanceGroupSubRoleNode.Role().ToLowerString(),
 		Edit: true,
 	}
 
@@ -124,12 +124,15 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupRoles))
-	for _, r := range kopsapi.AllInstanceGroupRoles {
-		if r == kopsapi.InstanceGroupRoleAPIServer && !featureflag.APIServerNodes.Enabled() {
+	allRoles := make([]string, 0, len(kopsapi.AllInstanceGroupSubRoles))
+	for _, subrole := range kopsapi.AllInstanceGroupSubRoles {
+		role := subrole.Role()
+		if role.HasAPIServer() && !featureflag.APIServerNodes.Enabled() {
 			continue
 		}
-		allRoles = append(allRoles, r.ToLowerString())
+		// TODO: Can we GA the APIServerNodes feature flag?
+		// TODO: Do we need feature flag for the new roles and multi role support?
+		allRoles = append(allRoles, role.ToLowerString())
 	}
 
 	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")

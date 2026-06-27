@@ -141,7 +141,7 @@ func (s *Server) buildInstanceGroupFromCAPI(ctx context.Context, capiMachine *cl
 	// "machineType": "", // Should not matter
 	// "subnets": // Should not matter
 	ig.Spec.Zones = []string{failureDomain}
-	ig.Spec.Role = "Node" // TODO: Support other roles?
+	ig.Spec.Role = kops.InstanceGroupSubRoleNode.Role() // TODO: Support other roles?
 
 	log.Info("built InstanceGroup from CAPI Machine", "instanceGroup", ig)
 	return ig, nil

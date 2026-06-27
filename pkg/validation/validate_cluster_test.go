@@ -90,7 +90,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 					Name: "master-1",
 				},
 				Spec: kopsapi.InstanceGroupSpec{
-					Role: kopsapi.InstanceGroupRoleControlPlane,
+					Role: kopsapi.InstanceGroupSubRoleControlPlane.Role(),
 				},
 			},
 			MinSize: 1,
@@ -158,7 +158,7 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
+				Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 	}
@@ -191,7 +191,7 @@ func Test_ValidateNodesNotEnough(t *testing.T) {
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
+				Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 		MinSize:    2,
@@ -245,7 +245,7 @@ func Test_ValidateDetachedNodesDontCount(t *testing.T) {
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
+				Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 		MinSize:    2,
@@ -300,7 +300,7 @@ func Test_ValidateNodeNotReady(t *testing.T) {
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
+				Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 		MinSize:    2,
@@ -354,7 +354,7 @@ func Test_ValidateMastersNotEnough(t *testing.T) {
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleControlPlane,
+				Role: kopsapi.InstanceGroupSubRoleControlPlane.Role(),
 			},
 		},
 		MinSize:    2,
@@ -408,7 +408,7 @@ func Test_ValidateMasterNotReady(t *testing.T) {
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleControlPlane,
+				Role: kopsapi.InstanceGroupSubRoleControlPlane.Role(),
 			},
 		},
 		MinSize:    2,
@@ -462,7 +462,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleControlPlane,
+				Role: kopsapi.InstanceGroupSubRoleControlPlane.Role(),
 			},
 		},
 		MinSize:    1,
@@ -646,7 +646,7 @@ func Test_ValidatePodFailure(t *testing.T) {
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
+				Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 		MinSize:    1,
@@ -841,7 +841,7 @@ func Test_ValidateBastionNodes(t *testing.T) {
 
 	// When an instancegroup's nodes are not ready, that is an error
 	t.Run("instancegroup's nodes not ready", func(t *testing.T) {
-		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleNode
+		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupSubRoleNode.Role()
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
 		if !assert.Len(t, v.Failures, 1) {
@@ -853,7 +853,7 @@ func Test_ValidateBastionNodes(t *testing.T) {
 
 	// Except for a bastion instancegroup - those are not expected to join as nodes
 	t.Run("bastion instancegroup nodes not ready", func(t *testing.T) {
-		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupRoleBastion
+		groups["ig1"].InstanceGroup.Spec.Role = kopsapi.InstanceGroupSubRoleBastion.Role()
 		v, err := testValidate(t, groups, nil)
 		require.NoError(t, err)
 		if !assert.Empty(t, v.Failures, "Bastion nodes are not expected to join cluster") {
@@ -870,7 +870,7 @@ func Test_ValidateDetachedNodesNotValidated(t *testing.T) {
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
-				Role: kopsapi.InstanceGroupRoleNode,
+				Role: kopsapi.InstanceGroupSubRoleNode.Role(),
 			},
 		},
 		MinSize:    2,

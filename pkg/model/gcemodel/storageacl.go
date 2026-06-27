@@ -75,7 +75,7 @@ func (b *StorageAclBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		klog.Warningf("we need to split control-plane / worker node roles")
-		nodeRole, err := iam.BuildNodeRoleSubject(kops.InstanceGroupRoleControlPlane, false)
+		nodeRole, err := iam.BuildNodeRoleSubject(kops.InstanceGroupSubRoleControlPlane.Role(), false)
 		if err != nil {
 			return err
 		}

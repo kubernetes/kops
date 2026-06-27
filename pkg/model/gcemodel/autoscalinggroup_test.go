@@ -87,7 +87,7 @@ func TestSplitToZones(t *testing.T) {
 		{
 			name:    "2 zones, default minSize (Node)",
 			minSize: nil, // Defaults to 2 for Node
-			role:    kops.InstanceGroupRoleNode,
+			role:    kops.InstanceGroupSubRoleNode.Role(),
 			zones:   []string{"us-central1-a", "us-central1-b"},
 			expected: map[string]int{
 				"us-central1-a": 1,

@@ -47,7 +47,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 	}
 	controlPlaneLabelSelector := []string{
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.ClusterName()),
-		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupSubRoleControlPlane.Role())),
 	}
 	controlPlaneFirewall := &hetznertasks.Firewall{
 		Name:      fi.PtrTo("control-plane." + b.ClusterName()),
@@ -68,7 +68,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 	}
 	nodesLabelSelector := []string{
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesClusterName, b.ClusterName()),
-		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleNode)),
+		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupSubRoleNode.Role())),
 	}
 	nodesFirewall := &hetznertasks.Firewall{
 		Name:      fi.PtrTo("nodes." + b.ClusterName()),
