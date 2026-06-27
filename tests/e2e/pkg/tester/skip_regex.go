@@ -103,10 +103,12 @@ func (t *Tester) setSkipRegexFlag() error {
 	// test requires externalTrafficPolicy=Local source-IP preservation, which is broken on these
 	// CNIs: the client IP is SNATed to a pod IP instead of being preserved (kube-router instead
 	// times out reaching the local endpoint). Confirmed failing on cilium, flannel, kopeio and
-	// kube-router; amazon-vpc, calico and kindnet preserve the source IP and keep running it.
+	// kube-router on all clouds, and on calico on GCE (calico preserves the source IP on AWS).
+	// amazon-vpc and kindnet preserve it and keep running the test.
 	// < 38 so we look at this again
 	if k8sVersion.Minor < 38 &&
-		(networking.Cilium != nil || networking.Flannel != nil || networking.Kopeio != nil || networking.KubeRouter != nil) {
+		(networking.Cilium != nil || networking.Flannel != nil || networking.Kopeio != nil || networking.KubeRouter != nil ||
+			(networking.Calico != nil && cluster.Spec.LegacyCloudProvider == "gce")) {
 		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
 
