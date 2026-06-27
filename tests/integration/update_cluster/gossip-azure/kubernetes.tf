@@ -385,7 +385,7 @@ resource "azurerm_network_security_group" "gossip-k8s-local" {
     name                                       = "AllowNodesToKubernetesAPI"
     priority                                   = 2000
     protocol                                   = "Tcp"
-    source_address_prefix                      = "*"
+    source_address_prefixes                    = [azurerm_public_ip.gossip-k8s-local.ip_address]
     source_port_range                          = "*"
   }
   security_rule {
@@ -396,7 +396,7 @@ resource "azurerm_network_security_group" "gossip-k8s-local" {
     name                                       = "AllowNodesToKopsController"
     priority                                   = 2001
     protocol                                   = "Tcp"
-    source_address_prefix                      = "*"
+    source_address_prefixes                    = [azurerm_public_ip.gossip-k8s-local.ip_address]
     source_port_range                          = "*"
   }
   security_rule {

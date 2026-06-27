@@ -92,6 +92,7 @@ func TestPublicIPAddressFind(t *testing.T) {
 		Properties: &network.PublicIPAddressPropertiesFormat{
 			PublicIPAddressVersion:   to.Ptr(network.IPVersionIPv4),
 			PublicIPAllocationMethod: to.Ptr(network.IPAllocationMethodDynamic),
+			IPAddress:                to.Ptr("203.0.113.10"),
 		},
 	}
 	if _, err := cloud.PublicIPAddress().CreateOrUpdate(context.Background(), *rg.Name, *publicIPAddress.Name, publicIPAddressParameters); err != nil {
@@ -108,6 +109,12 @@ func TestPublicIPAddressFind(t *testing.T) {
 	}
 	if a, e := *actual.ResourceGroup.Name, *rg.Name; a != e {
 		t.Errorf("unexpected Resource Group name: expected %s, but got %s", e, a)
+	}
+	if a, e := fi.ValueOf(actual.IPAddress), "203.0.113.10"; a != e {
+		t.Errorf("unexpected publicIPAddress IPAddress: expected %s, but got %s", e, a)
+	}
+	if a, e := fi.ValueOf(publicIPAddress.IPAddress), "203.0.113.10"; a != e {
+		t.Errorf("expected publicIPAddress Find to populate IPAddress: expected %s, but got %s", e, a)
 	}
 }
 

@@ -18,6 +18,7 @@ package azuretasks
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -139,6 +140,11 @@ func (nsg *NetworkSecurityGroup) Find(c *fi.CloudupContext) (*NetworkSecurityGro
 
 func (nsg *NetworkSecurityGroup) Normalize(c *fi.CloudupContext) error {
 	c.T.Cloud.(azure.AzureCloud).AddClusterTags(nsg.Tags)
+	if _, ok := c.Target.(*azure.AzureAPITarget); ok {
+		if err := nsg.resolvePublicIPAddressSourcePrefixes(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -239,6 +245,15 @@ func (*NetworkSecurityGroup) RenderAzure(t *azure.AzureAPITarget, a, e, changes 
 	return nil
 }
 
+func (nsg *NetworkSecurityGroup) resolvePublicIPAddressSourcePrefixes() error {
+	for _, rule := range nsg.SecurityRules {
+		if err := rule.resolvePublicIPAddressSourcePrefix(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // NetworkSecurityRule represents a NetworkSecurityGroup rule.
 type NetworkSecurityRule struct {
 	Name                                     *string
@@ -254,10 +269,33 @@ type NetworkSecurityRule struct {
 	DestinationAddressPrefix                 *string
 	DestinationApplicationSecurityGroupNames []*string
 	DestinationPortRange                     *string
+
+	SourcePublicIPAddress *PublicIPAddress
 }
 
 var _ fi.CloudupHasDependencies = (*NetworkSecurityRule)(nil)
 
 func (e *NetworkSecurityRule) GetDependencies(tasks map[string]fi.CloudupTask) []fi.CloudupTask {
+	if e.SourcePublicIPAddress == nil {
+		return nil
+	}
+	return []fi.CloudupTask{e.SourcePublicIPAddress}
+}
+
+func (e *NetworkSecurityRule) resolvePublicIPAddressSourcePrefix() error {
+	if e.SourcePublicIPAddress == nil {
+		return nil
+	}
+	if e.SourceAddressPrefix != nil {
+		return fmt.Errorf("cannot specify both SourceAddressPrefix and SourcePublicIPAddress for network security rule %q", fi.ValueOf(e.Name))
+	}
+	if len(e.SourceAddressPrefixes) != 0 {
+		return fmt.Errorf("cannot specify both SourceAddressPrefixes and SourcePublicIPAddress for network security rule %q", fi.ValueOf(e.Name))
+	}
+	if e.SourcePublicIPAddress.IPAddress == nil || fi.ValueOf(e.SourcePublicIPAddress.IPAddress) == "" {
+		return fmt.Errorf("public IP address %q has no assigned IP address for network security rule %q", fi.ValueOf(e.SourcePublicIPAddress.Name), fi.ValueOf(e.Name))
+	}
+	e.SourceAddressPrefixes = []*string{e.SourcePublicIPAddress.IPAddress}
+	e.SourcePublicIPAddress = nil
 	return nil
 }
