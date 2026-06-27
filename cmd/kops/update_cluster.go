@@ -510,7 +510,7 @@ func parseLifecycle(lifecycle string) (fi.Lifecycle, error) {
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
 	for _, ig := range instanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		if ig.Spec.Role.HasBastion() {
 			return true
 		}
 	}

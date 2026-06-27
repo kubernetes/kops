@@ -160,7 +160,7 @@ func RunReconcileCluster(ctx context.Context, f *util.Factory, out io.Writer, op
 
 		// filter the instance group to only include the control plane
 		opt.filterInstanceGroups = func(ig *kops.InstanceGroup) bool {
-			return ig.Spec.Role == kops.InstanceGroupRoleAPIServer || ig.Spec.Role == kops.InstanceGroupRoleControlPlane
+			return ig.Spec.Role.HasAPIServer() || ig.Spec.Role.HasControlPlane()
 		}
 
 		// Ignore all pods, we just want to check the control plane is responding

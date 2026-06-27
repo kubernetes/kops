@@ -137,7 +137,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		if ig.Spec.Role.HasNode() {
 			autoscalerEnvVars := "os_distribution=ubuntu;arch=amd64;os=linux"
 			if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
 				autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
@@ -278,7 +278,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 		minSize := 1
 		if ig.Spec.MinSize != nil {
 			minSize = int(fi.ValueOf(ig.Spec.MinSize))
-		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		} else if ig.Spec.Role.HasNode() {
 			minSize = 2
 		}
 

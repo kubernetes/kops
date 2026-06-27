@@ -339,7 +339,7 @@ govet:
 
 # verify is ran by the pull-kops-verify prow job
 .PHONY: verify
-verify: quick-ci verify-gofmt
+verify: quick-ci verify-gofmt verify-ig-role-comparisons
 
 .PHONY: verify-boilerplate
 verify-boilerplate:
@@ -386,10 +386,14 @@ verify-terraform:
 verify-hashes:
 	hack/verify-hashes.sh
 
+.PHONY: verify-ig-role-comparisons
+verify-ig-role-comparisons:
+	hack/verify-ig-role-comparisons.sh
+
 # ci target is for developers, it aims to cover all the CI jobs
 # verify-gendocs will call kops target
 .PHONY: ci
-ci: govet verify-gofmt verify-crds verify-gomod verify-goimports verify-boilerplate verify-versions verify-misspelling verify-shellcheck verify-golangci-lint verify-terraform nodeup examples test | verify-gendocs verify-apimachinery verify-codegen
+ci: govet verify-gofmt verify-ig-role-comparisons verify-crds verify-gomod verify-goimports verify-boilerplate verify-versions verify-misspelling verify-shellcheck verify-golangci-lint verify-terraform nodeup examples test | verify-gendocs verify-apimachinery verify-codegen
 	echo "Done!"
 
 # we skip tasks that are covered by other jobs

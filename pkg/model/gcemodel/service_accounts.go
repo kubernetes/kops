@@ -77,7 +77,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		c.AddTask(serviceAccount)
 
 		role := ig.Spec.Role
-		if role == kops.InstanceGroupRoleAPIServer {
+		if role.HasAPIServer() {
 			// Because these share a serviceaccount, we share a role
 			role = kops.InstanceGroupRoleControlPlane
 		}

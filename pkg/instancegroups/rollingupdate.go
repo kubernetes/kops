@@ -121,14 +121,14 @@ func (c *RollingUpdateCluster) RollingUpdate(ctx context.Context, groups map[str
 	nodeGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	bastionGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for k, group := range groups {
-		switch group.InstanceGroup.Spec.Role {
-		case api.InstanceGroupRoleNode:
+		switch {
+		case group.InstanceGroup.Spec.Role.HasNode():
 			nodeGroups[k] = group
-		case api.InstanceGroupRoleAPIServer:
+		case group.InstanceGroup.Spec.Role.HasAPIServer():
 			apiServerGroups[k] = group
-		case api.InstanceGroupRoleControlPlane:
+		case group.InstanceGroup.Spec.Role.HasControlPlane():
 			masterGroups[k] = group
-		case api.InstanceGroupRoleBastion:
+		case group.InstanceGroup.Spec.Role.HasBastion():
 			bastionGroups[k] = group
 		default:
 			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.ObjectMeta.Name)
