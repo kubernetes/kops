@@ -304,12 +304,7 @@ spec:
       priorityClassName: system-node-critical
       serviceAccountName: cloud-controller-manager
       tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
-      - effect: NoExecute
-        key: node-role.kubernetes.io/etcd
+      - operator: Exists
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
@@ -389,13 +384,4 @@ spec:
       priorityClassName: system-node-critical
       serviceAccountName: cloud-node-manager
       tolerations:
-      - key: CriticalAddonsOnly
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/control-plane
-      - effect: NoExecute
-        operator: Exists
-      - effect: NoSchedule
-        operator: Exists
+      - operator: Exists
