@@ -87,18 +87,27 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.check.kube-proxy.urls"
 
 		if k8sVersion.Minor < 38 {
-			// Cilium fails the externalTrafficPolicy=Local sig-network tests: the client source IP is
-			// SNATed to a pod IP instead of being preserved (long-standing, every build in the retention
-			// window). Tracked in https://github.com/cilium/cilium/issues/37613, which Cilium's own CI
-			// cites to skip the whole externalTrafficPolicy family.
+			// Cilium SNATs the client source IP to a pod IP instead of preserving it, so it fails the
+			// externalTrafficPolicy=Local for type=NodePort test. This test passes on every other CNI,
+			// so it stays gated to Cilium.
 			// < 38 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
-			skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
+	}
+
+	// The "implement NodePort and HealthCheckNodePort correctly when ExternalTrafficPolicy changes"
+	// test requires externalTrafficPolicy=Local source-IP preservation, which is broken on these
+	// CNIs: the client IP is SNATed to a pod IP instead of being preserved (kube-router instead
+	// times out reaching the local endpoint). Confirmed failing on cilium, flannel, kopeio and
+	// kube-router; amazon-vpc, calico and kindnet preserve the source IP and keep running it.
+	// < 38 so we look at this again
+	if k8sVersion.Minor < 38 &&
+		(networking.Cilium != nil || networking.Flannel != nil || networking.Kopeio != nil || networking.KubeRouter != nil) {
+		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
