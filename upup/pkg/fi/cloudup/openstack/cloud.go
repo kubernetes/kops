@@ -811,7 +811,7 @@ func getIPIngressStatus(c OpenstackCloud, cluster *kops.Cluster) (ingresses []fi
 			val2, ok2 := instance.Metadata["KopsRole"]
 			if ok && val == cluster.Name && ok2 {
 				role, success := kops.ParseInstanceGroupRole(val2, false)
-				if success && role == kops.InstanceGroupRoleControlPlane {
+				if success && role.HasControlPlane() {
 					ifName := instance.Metadata[TagKopsNetwork]
 					address, err := GetServerFixedIP(&instance, ifName)
 					if err == nil {

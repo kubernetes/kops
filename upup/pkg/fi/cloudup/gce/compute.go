@@ -441,6 +441,7 @@ func (c *healthCheckClientImpl) List(ctx context.Context, project, region string
 type HttpHealthChecksClient interface {
 	Insert(project string, fr *compute.HttpHealthCheck) (*compute.Operation, error)
 	Delete(project, name string) (*compute.Operation, error)
+	Update(project, name string, fr *compute.HttpHealthCheck) (*compute.Operation, error)
 	Get(project, name string) (*compute.HttpHealthCheck, error)
 	List(ctx context.Context, project string) ([]*compute.HttpHealthCheck, error)
 }
@@ -457,6 +458,10 @@ func (c *httpHealthCheckClientImpl) Insert(project string, fr *compute.HttpHealt
 
 func (c *httpHealthCheckClientImpl) Delete(project, name string) (*compute.Operation, error) {
 	return c.srv.Delete(project, name).Do()
+}
+
+func (c *httpHealthCheckClientImpl) Update(project, name string, fr *compute.HttpHealthCheck) (*compute.Operation, error) {
+	return c.srv.Update(project, name, fr).Do()
 }
 
 func (c *httpHealthCheckClientImpl) Get(project, name string) (*compute.HttpHealthCheck, error) {

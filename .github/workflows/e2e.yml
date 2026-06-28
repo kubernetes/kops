@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
           fetch-depth: 3
 
       - name: Set up go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
           go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 
@@ -56,13 +56,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           path: ${{ env.GOPATH }}/src/k8s.io/kops
           fetch-depth: 3
 
       - name: Set up go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
           go-version-file: '${{ env.GOPATH }}/src/k8s.io/kops/go.mod'
 

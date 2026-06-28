@@ -494,7 +494,6 @@ resource "google_compute_instance_group_manager" "a-master-us-test1-a-minimal-gc
   }
   list_managed_instances_results = "PAGINATED"
   name                           = "a-master-us-test1-a-minimal-gce-plb-apiserver-example-com"
-  target_pools                   = [google_compute_target_pool.api-minimal-gce-plb-apiserver-example-com.self_link]
   target_size                    = 1
   update_policy {
     minimal_action = "REPLACE"

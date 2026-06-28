@@ -58,7 +58,7 @@ const (
 	kubeletService = "kubelet.service"
 
 	kubeletConfigFilePath            = "/var/lib/kubelet/kubelet.conf"
-	credentialProviderConfigFilePath = "/var/lib/kubelet/credential-provider.conf"
+	credentialProviderConfigFilePath = "/var/lib/kubelet/credential-provider.conf" //nolint:gosec // This is a config file path, not a credential.
 )
 
 // Scheme registration is shared across all calls in this file because the
@@ -127,7 +127,7 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			}
 			providerID = fmt.Sprintf("aws:///%s/%s", instanceIdentity.AvailabilityZone, instanceIdentity.InstanceID)
 		} else if b.CloudProvider() == kops.CloudProviderAzure {
-			metadata, err := azurecloud.QueryComputeInstanceMetadata()
+			metadata, err := azurecloud.QueryComputeInstanceMetadata(ctx)
 			if err != nil {
 				return fmt.Errorf("error querying Azure instance metadata: %v", err)
 			}

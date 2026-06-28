@@ -157,6 +157,22 @@ var (
 		--node-count 3 \
 		--yes
 
+	# Create a cluster in GCE with a dedicated APIServer-Only front-end.
+	export KOPS_FEATURE_FLAGS="+APIServerNodes"
+	export ZONES="us-west1-a,us-west1-b,us-west1-c"
+	export PROJECT="my-project"
+	export KOPS_STATE_STORE="gs://${PROJECT}-kops-state"
+	export KOPS_CLUSTER_NAME="k8s-cluster.example.com"
+	kops create cluster --name=${KOPS_CLUSTER_NAME} \
+	    --cloud=gce \
+	    --zones=${ZONES} \
+		--project=${PROJECT} \
+		--node-count=3 --node-size=e2-standard-2 \
+		--api-server-count=2 --api-server-size=e2-standard-2 \
+		--control-plane-count=3 --control-plane-size=e2-standard-4 \
+		--yes
+
+
 	# Generate a cluster spec to apply later.
 	# Run the following, then: kops create -f filename.yaml
 	kops create cluster --name=k8s-cluster.example.com \
@@ -279,6 +295,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().MarkDeprecated("master-count", "use --control-plane-count instead")
 	cmd.Flags().Int32Var(&options.ControlPlaneCount, "control-plane-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Total number of worker nodes. Defaults to one node per zone")
+	if featureflag.APIServerNodes.Enabled() {
+		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Number of API server nodes. Defaults to 0.")
+	}
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Machine image for all instances")
 	cmd.RegisterFlagCompletionFunc("image", completeInstanceImage)
@@ -297,6 +316,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().MarkDeprecated("master-size", "use --control-plane-size instead")
 	cmd.Flags().StringSliceVar(&options.ControlPlaneSizes, "control-plane-size", options.ControlPlaneSizes, "Machine type(s) for control-plane nodes")
 	cmd.RegisterFlagCompletionFunc("control-plane-size", completeMachineType)
+	if featureflag.APIServerNodes.Enabled() {
+		cmd.Flags().StringSliceVar(&options.APIServerSizes, "api-server-size", options.APIServerSizes, "Machine type(s) for API server nodes")
+		cmd.RegisterFlagCompletionFunc("api-server-size", completeMachineType)
+	}
 
 	cmd.Flags().Int32Var(&options.ControlPlaneVolumeSize, "master-volume-size", options.ControlPlaneVolumeSize, "Instance volume size (in GB) for control-plane nodes")
 	cmd.Flags().MarkDeprecated("master-volume-size", "use --control-plane-volume-size instead")
@@ -462,10 +485,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.RegisterFlagCompletionFunc("spotinst-orientation", completeSpotinstOrientation)
 	}
 
-	if featureflag.APIServerNodes.Enabled() {
-		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Number of API server nodes. Defaults to 0.")
-	}
-
 	// Openstack flags
 	cmd.Flags().StringVar(&options.OpenstackExternalNet, "os-ext-net", options.OpenstackExternalNet, "External network to use with the openstack router")
 	cmd.RegisterFlagCompletionFunc("os-ext-net", completeOpenstackExternalNet)
@@ -566,10 +585,10 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	var controlPlanes []*api.InstanceGroup
 	var nodes []*api.InstanceGroup
 	for _, ig := range instanceGroups {
-		switch ig.Spec.Role {
-		case api.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			controlPlanes = append(controlPlanes, ig)
-		case api.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			nodes = append(nodes, ig)
 		}
 	}

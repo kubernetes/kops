@@ -32,6 +32,8 @@ fi
 CREATE_ARGS="--networking cilium"
 CREATE_ARGS="${CREATE_ARGS} --instance-manager=karpenter"
 CREATE_ARGS="${CREATE_ARGS} --control-plane-size=c6g.large"
+CREATE_ARGS="${CREATE_ARGS} --node-count=4"
+CREATE_ARGS="${CREATE_ARGS} --node-size=m6g.large"
 CREATE_ARGS="${CREATE_ARGS} --set=cluster.spec.karpenter.featureGates=StaticCapacity=true"
 
 K8S_VERSION="${K8S_VERSION:-$(curl -s -L https://dl.k8s.io/release/stable.txt)}"

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	osexec "os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -38,6 +39,15 @@ import (
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"k8s.io/kops/tests/e2e/pkg/version"
 	"sigs.k8s.io/kubetest2/pkg/exec"
+)
+
+// Default AWS instance types that createCluster injects when the caller did
+// not pin --control-plane-size / --node-size. awsInstanceTypes mirrors this
+// for zone selection, so update both call sites by editing these constants.
+const (
+	awsDefaultControlPlaneSize    = "c5.large"
+	awsDefaultArmControlPlaneSize = "c6g.large"
+	awsDefaultArmNodeSize         = "c6g.large"
 )
 
 func (d *deployer) Up() error {
@@ -224,6 +234,12 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		}
 		args = append(args, createArgs...)
 	}
+	// Use the PR's own channels only when kops was built from the checkout. Downloaded
+	// --kops-version[-marker] binaries can land in <cwd>/_rundir under KopsRoot, where path
+	// containment alone wouldn't exclude them.
+	if d.KopsVersionMarker == "" && d.KopsVersion == "" && builtFromKopsRoot(d.KopsBinaryPath, d.KopsRoot) {
+		args = localChannelArgs(args, d.KopsRoot)
+	}
 	args = appendIfUnset(args, "--admin-access", adminAccess)
 
 	// Dont set --control-plane-count if either --control-plane-count or --master-count
@@ -243,10 +259,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 	switch d.CloudProvider {
 	case "aws":
 		if isArm {
-			args = appendIfUnset(args, "--control-plane-size", "c6g.large")
-			args = appendIfUnset(args, "--node-size", "c6g.large")
+			args = appendIfUnset(args, "--control-plane-size", awsDefaultArmControlPlaneSize)
+			args = appendIfUnset(args, "--node-size", awsDefaultArmNodeSize)
 		} else {
-			args = appendIfUnset(args, "--control-plane-size", "c5.large")
+			args = appendIfUnset(args, "--control-plane-size", awsDefaultControlPlaneSize)
 		}
 	case "azure":
 		// Use SKUs for which there is enough quota
@@ -435,7 +451,7 @@ func (d *deployer) getZones() ([]string, error) {
 	}
 	switch d.CloudProvider {
 	case "aws":
-		return aws.RandomZones(d.ControlPlaneCount)
+		return aws.RandomZones(d.ControlPlaneCount, d.awsInstanceTypes())
 	case "azure":
 		return azure.RandomZones(1)
 	case "gce":
@@ -444,6 +460,117 @@ func (d *deployer) getZones() ([]string, error) {
 		return do.RandomZones(1)
 	}
 	return nil, fmt.Errorf("unsupported CloudProvider: %v", d.CloudProvider)
+}
+
+// awsInstanceTypes returns the AWS instance types that the cluster will use,
+// so that zone selection can be restricted to AZs offering them. It collects
+// the types from any --control-plane-size / --master-size / --node-size flags
+// in CreateArgs and falls back to the same defaults createCluster would inject
+// when those flags are absent. When a template is in use the instance types
+// live in the template (not in CreateArgs), so zone filtering only covers the
+// defaults and may pick zones incompatible with template-pinned types.
+func (d *deployer) awsInstanceTypes() []string {
+	if d.TemplatePath != "" {
+		klog.V(2).Infof("template %q in use; AWS zone selection will only filter on default instance types, not types pinned inside the template", d.TemplatePath)
+	}
+	seen := make(map[string]bool)
+	var types []string
+	add := func(values ...string) {
+		for _, v := range values {
+			for _, t := range strings.Split(v, ",") {
+				t = strings.TrimSpace(t)
+				if t == "" || seen[t] {
+					continue
+				}
+				seen[t] = true
+				types = append(types, t)
+			}
+		}
+	}
+
+	cpSizes := extractFlagValues(d.CreateArgs, "--control-plane-size")
+	cpSizes = append(cpSizes, extractFlagValues(d.CreateArgs, "--master-size")...)
+	nodeSizes := extractFlagValues(d.CreateArgs, "--node-size")
+	add(cpSizes...)
+	add(nodeSizes...)
+
+	// Mirror the defaults in createCluster when the user did not pin sizes.
+	isArm := strings.Contains(d.CreateArgs, "arm64")
+	if len(cpSizes) == 0 {
+		if isArm {
+			add(awsDefaultArmControlPlaneSize)
+		} else {
+			add(awsDefaultControlPlaneSize)
+		}
+	}
+	if len(nodeSizes) == 0 && isArm {
+		add(awsDefaultArmNodeSize)
+	}
+	return types
+}
+
+// extractFlagValues returns every value passed for the given flag in args,
+// supporting both "--flag=value" and "--flag value" forms. StringSlice flags
+// may be comma-separated; callers are expected to split on commas.
+func extractFlagValues(args, flag string) []string {
+	if args == "" {
+		return nil
+	}
+	var values []string
+	fields := strings.Fields(args)
+	for i := 0; i < len(fields); i++ {
+		f := fields[i]
+		if f == flag && i+1 < len(fields) {
+			values = append(values, fields[i+1])
+			i++
+		} else if strings.HasPrefix(f, flag+"=") {
+			values = append(values, strings.TrimPrefix(f, flag+"="))
+		}
+	}
+	return values
+}
+
+// builtFromKopsRoot reports whether kopsBinaryPath lies inside the repo checkout at kopsRoot.
+// Scenario scripts always pass --kops-root, so its presence alone doesn't imply a source build.
+func builtFromKopsRoot(kopsBinaryPath, kopsRoot string) bool {
+	if kopsBinaryPath == "" || kopsRoot == "" {
+		return false
+	}
+	rel, err := filepath.Rel(kopsRoot, kopsBinaryPath)
+	if err != nil {
+		return false
+	}
+	return filepath.IsLocal(rel)
+}
+
+// localChannelArgs rewrites a bare --channel shorthand (e.g. alpha) to a file:// URL under the
+// checkout's channels/ dir, defaulting to alpha when absent. URLs and "none" are passed through.
+func localChannelArgs(args []string, kopsRoot string) []string {
+	for i, a := range args {
+		if v, ok := strings.CutPrefix(a, "--channel="); ok {
+			if isChannelShorthand(v) {
+				args[i] = "--channel=" + localChannelURL(kopsRoot, v)
+			}
+			return args
+		}
+		if a == "--channel" && i+1 < len(args) {
+			if isChannelShorthand(args[i+1]) {
+				args[i+1] = localChannelURL(kopsRoot, args[i+1])
+			}
+			return args
+		}
+	}
+	return append(args, "--channel="+localChannelURL(kopsRoot, "alpha"))
+}
+
+// isChannelShorthand reports whether v is a bare channel name, not a URL or the "none" sentinel.
+func isChannelShorthand(v string) bool {
+	return v != "" && v != "none" && !strings.Contains(v, "://")
+}
+
+// localChannelURL returns the file:// URL for channel name under the checkout's channels/ dir.
+func localChannelURL(kopsRoot, name string) string {
+	return "file://" + filepath.ToSlash(filepath.Join(kopsRoot, "channels", name))
 }
 
 // prowJobLabel returns a "key=value" cloud-label fragment recording the prow

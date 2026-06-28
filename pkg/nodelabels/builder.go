@@ -37,14 +37,14 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 	isControlPlane := false
 	isAPIServer := false
 	isNode := false
-	switch instanceGroup.Spec.Role {
-	case api.InstanceGroupRoleControlPlane:
+	switch {
+	case instanceGroup.Spec.Role.HasControlPlane():
 		isControlPlane = true
-	case api.InstanceGroupRoleAPIServer:
+	case instanceGroup.Spec.Role.HasAPIServer():
 		isAPIServer = true
-	case api.InstanceGroupRoleNode:
+	case instanceGroup.Spec.Role.HasNode():
 		isNode = true
-	case api.InstanceGroupRoleBastion:
+	case instanceGroup.Spec.Role.HasBastion():
 		// no labels to add
 	default:
 		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
@@ -98,10 +98,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[k] = v
-	}
-
-	if instanceGroup.Spec.Manager == api.InstanceManagerKarpenter {
-		nodeLabels["karpenter.sh/provisioner-name"] = instanceGroup.ObjectMeta.Name
 	}
 
 	return nodeLabels, nil

@@ -48,7 +48,7 @@ type AuthTokenData struct {
 }
 
 // GCETPMAuthenticationTokenPrefix is the prefix used for authentication using the GCE TPM
-const GCETPMAuthenticationTokenPrefix = "x-gce-tpm "
+const GCETPMAuthenticationTokenPrefix = "x-gce-tpm " //nolint:gosec // This is an authentication scheme prefix, not a credential.
 
 // AudienceNodeAuthentication is used in case we have multiple audiences using the TPM in future
 const AudienceNodeAuthentication = "kops.k8s.io/node-bootstrap"

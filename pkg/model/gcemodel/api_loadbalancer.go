@@ -161,7 +161,8 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	// includes both (both serve the kube-apiserver), while the kops-controller and
 	// etcd backend services only include ControlPlane MIGs.
 	var apiIGMs []*gcetasks.InstanceGroupManager
-	var controlPlaneIGMs []*gcetasks.InstanceGroupManager
+	var controlPlaneIGMs []*gcetasks.InstanceGroupManager // Currently these contain etcd instances
+	requireEtcdLB := false
 	for _, ig := range b.InstanceGroups {
 		if !ig.HasAPIServer() {
 			continue
@@ -177,9 +178,13 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		apiIGMs = append(apiIGMs, igm)
 		if ig.IsControlPlane() {
 			controlPlaneIGMs = append(controlPlaneIGMs, igm)
+		} else if ig.IsAPIServerOnly() {
+			requireEtcdLB = b.Cluster.UsesNoneDNS()
+		} else {
+			return fmt.Errorf("instance group %q neither control-plane nor api-server", ig.GetName())
 		}
 	}
-	bs := &gcetasks.BackendService{
+	backendService := &gcetasks.BackendService{
 		Name:                  s(b.NameForBackendService("api")),
 		Protocol:              s("TCP"),
 		HealthChecks:          []*gcetasks.HealthCheck{hc},
@@ -187,13 +192,13 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		LoadBalancingScheme:   s("INTERNAL"),
 		InstanceGroupManagers: apiIGMs,
 	}
-	c.AddTask(bs)
+	c.AddTask(backendService)
 
 	// controlPlaneBS is a backend service that only targets ControlPlane MIGs.
 	// It is used for kops-controller and etcd forwarding rules, which only run
 	// on ControlPlane nodes. When there are no dedicated APIServer IGs, this is
 	// the same set of backends as the API backend service.
-	controlPlaneBS := bs
+	controlPlaneBS := backendService
 	if b.HasAPIServerOnlyInstanceGroups() {
 		controlPlaneHC := &gcetasks.HealthCheck{
 			Name:      s(b.NameForHealthCheck("kops-controller")),
@@ -244,7 +249,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		c.AddTask(&gcetasks.ForwardingRule{
 			Name:                s(b.NameForForwardingRule("api-" + sn.Name)),
 			Lifecycle:           b.Lifecycle,
-			BackendService:      bs,
+			BackendService:      backendService,
 			Ports:               []string{strconv.Itoa(wellknownports.KubeAPIServer)},
 			IPAddress:           ipAddress,
 			IPProtocol:          "TCP",
@@ -297,6 +302,87 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 				},
 			})
 		}
+	}
+
+	if requireEtcdLB {
+		if err := b.createEtcdInternalLB(c, controlPlaneIGMs); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (b *APILoadBalancerBuilder) createEtcdInternalLB(c *fi.CloudupModelBuilderContext, etcdIGMs []*gcetasks.InstanceGroupManager) error {
+	clusterLabel := gce.LabelForCluster(b.ClusterName())
+	main_hc := &gcetasks.HealthCheck{
+		Name:      s(b.NameForHealthCheck("etcd-main")),
+		Port:      wellknownports.EtcdMainClientPort,
+		Protocol:  gcetasks.HealthCheckProtocolTCP,
+		Lifecycle: b.Lifecycle,
+	}
+	c.AddTask(main_hc)
+	// "Value for field 'resource.healthChecks' is too large: maximum size 1 element(s); actual size 2."
+	// Skipping event health check till this is supported.
+	/*
+	   event_hc := &gcetasks.HealthCheck{
+	           Name:      s(b.NameForHealthCheck("etcd-event")),
+	           Port:      wellknownports.EtcdEventsClientPort,
+	           Protocol:  gcetasks.HealthCheckProtocolTCP,
+	           Lifecycle: b.Lifecycle,
+	   }
+	   c.AddTask(event_hc)
+	*/
+	bs := &gcetasks.BackendService{
+		Name:                  s(b.NameForBackendService("etcd")),
+		Protocol:              s("TCP"),
+		HealthChecks:          []*gcetasks.HealthCheck{main_hc /*event_hc,*/},
+		Lifecycle:             b.Lifecycle,
+		LoadBalancingScheme:   s("INTERNAL"),
+		InstanceGroupManagers: etcdIGMs,
+	}
+	c.AddTask(bs)
+	network, err := b.LinkToNetwork()
+	if err != nil {
+		return err
+	}
+	for _, sn := range b.Cluster.Spec.Networking.Subnets {
+		var subnet *gcetasks.Subnet
+		for _, ig := range b.InstanceGroups {
+			if ig.HasAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
+				subnet = b.LinkToSubnet(&sn)
+				break
+			}
+		}
+		if subnet == nil {
+			continue
+		}
+
+		ipAddress := &gcetasks.Address{
+			Name:          s(b.NameForIPAddress("etcd-" + sn.Name)),
+			IPAddressType: s("INTERNAL"),
+			Purpose:       s("SHARED_LOADBALANCER_VIP"),
+			Subnetwork:    subnet,
+
+			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.EtcdMain},
+			Lifecycle:         b.Lifecycle,
+		}
+		c.AddTask(ipAddress)
+		c.AddTask(&gcetasks.ForwardingRule{
+			Name:                s(b.NameForForwardingRule("etcd-" + sn.Name)),
+			Lifecycle:           b.Lifecycle,
+			BackendService:      bs,
+			Ports:               []string{strconv.Itoa(wellknownports.EtcdMainClientPort), strconv.Itoa(wellknownports.EtcdEventsClientPort)},
+			IPAddress:           ipAddress,
+			IPProtocol:          "TCP",
+			LoadBalancingScheme: s("INTERNAL"),
+			Network:             network,
+			Subnetwork:          subnet,
+			Labels: map[string]string{
+				clusterLabel.Key: clusterLabel.Value,
+				"name":           "etcd-" + sn.Name,
+			},
+		})
 	}
 	return nil
 }

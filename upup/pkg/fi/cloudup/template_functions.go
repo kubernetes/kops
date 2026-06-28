@@ -147,9 +147,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["SharedVPC"] = tf.SharedVPC
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
-	dest["replace"] = func(s, find, replace string) string {
-		return strings.ReplaceAll(s, find, replace)
-	}
+	dest["replace"] = strings.ReplaceAll
 	dest["joinHostPort"] = net.JoinHostPort
 
 	sprigTxtFuncMap := sprig.TxtFuncMap()
@@ -482,7 +480,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsFeatureEnabled"] = tf.kopsFeatureEnabled
 	dest["KopsVersion"] = func() string { return kopsroot.Version }
-	dest["KopsVersionImageTag"] = func() string { return kopsroot.KopsVersionImageTag() }
+	dest["KopsVersionImageTag"] = kopsroot.KopsVersionImageTag
 	dest["KopsVersionForLabel"] = func() string {
 		// Labels follow strict rules: a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character
 		// By convention we use a v prefix here
@@ -495,6 +493,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		}
 		return false
 	}
+
+	dest["KarpenterEC2NodeClass"] = tf.KarpenterEC2NodeClass
+	dest["KarpenterInstanceGroups"] = tf.KarpenterInstanceGroups
+	dest["KarpenterNodePool"] = tf.KarpenterNodePool
 
 	return nil
 }
@@ -640,7 +642,7 @@ func (tf *TemplateFunctions) APIServerNodeRole() string {
 func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 	cp := 0
 	for _, ig := range tf.AllInstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+		if ig.Spec.Role.HasControlPlane() {
 			cp++
 			if cp > 1 {
 				return true
@@ -884,7 +886,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 		case kops.CloudProviderAWS:
 			nodesRoles := sets.String{}
 			for _, ig := range tf.AllInstanceGroups {
-				if ig.Spec.Role == kops.InstanceGroupRoleNode || ig.Spec.Role == kops.InstanceGroupRoleAPIServer {
+				if ig.Spec.Role.HasNode() || ig.Spec.Role.HasAPIServer() {
 					profile, err := tf.LinkToIAMInstanceProfile(ig)
 					if err != nil {
 						return "", fmt.Errorf("getting profile for ig %s: %v", ig.Name, err)
@@ -1117,7 +1119,7 @@ func (tf *TemplateFunctions) OpenStackCSITag() string {
 func (tf *TemplateFunctions) GetNodeInstanceGroups() map[string]kops.InstanceGroupSpec {
 	nodegroups := make(map[string]kops.InstanceGroupSpec)
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		if ig.Spec.Role.HasNode() {
 			nodegroups[ig.ObjectMeta.Name] = ig.Spec
 		}
 	}
@@ -1136,7 +1138,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 	cluster := tf.Cluster
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role == kops.InstanceGroupRoleNode && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
+		if ig.Spec.Role.HasNode() && (ig.Spec.Autoscale == nil || fi.ValueOf(ig.Spec.Autoscale)) {
 			group := ClusterAutoscalerNodeGroup{
 				AutoScale: ig.Spec.Autoscale,
 				MinSize:   fi.ValueOf(ig.Spec.MinSize),
@@ -1179,7 +1181,7 @@ func (tf *TemplateFunctions) HCloudClusterConfig() (string, error) {
 	}
 
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
-		if ig.Spec.Role != kops.InstanceGroupRoleNode {
+		if !ig.Spec.Role.HasNode() {
 			continue
 		}
 		if ig.Spec.Autoscale != nil && !fi.ValueOf(ig.Spec.Autoscale) {

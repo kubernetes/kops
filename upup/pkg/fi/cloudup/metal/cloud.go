@@ -91,13 +91,13 @@ func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.Ins
 			}
 
 			match := true
-			switch ig.Spec.Role {
-			case kops.InstanceGroupRoleControlPlane:
+			switch {
+			case ig.Spec.Role.HasControlPlane():
 				if !isControlPlaneNode {
 					match = false
 				}
 
-			case kops.InstanceGroupRoleNode:
+			case ig.Spec.Role.HasNode():
 				if isControlPlaneNode {
 					match = false
 				}

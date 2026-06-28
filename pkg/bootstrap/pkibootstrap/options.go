@@ -23,4 +23,4 @@ type Options struct {
 }
 
 // AuthenticationTokenPrefix is the prefix used for authentication using PKI
-const AuthenticationTokenPrefix = "x-pki-tpm "
+const AuthenticationTokenPrefix = "x-pki-tpm " //nolint:gosec // This is an authentication scheme prefix, not a credential.

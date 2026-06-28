@@ -17,6 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -272,6 +273,8 @@ var packageManagerLock sync.Mutex
 var packageManagerLastUpdated time.Time
 
 func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) error {
+	// Not adding ctx to signature as RenderLocal seems to be part of a common interface
+	ctx := context.TODO()
 	packageManagerLock.Lock()
 	defer packageManagerLock.Unlock()
 
@@ -314,7 +317,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 					}
 					hash = parsed
 				}
-				_, err = fi.DownloadURL(fi.ValueOf(pkg.Source), local, hash)
+				_, err = fi.DownloadURL(ctx, fi.ValueOf(pkg.Source), local, hash)
 				if err != nil {
 					return err
 				}
@@ -330,9 +333,8 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 
 		// If the package manager update was less than 10 minutes ago, skip updating the package list.
 		if d.IsDebianFamily() && time.Since(packageManagerLastUpdated) > 10*time.Minute {
-			args := []string{"apt-get", "update"}
-			klog.Infof("Running command %s", args)
-			cmd := exec.Command(args[0], args[1:]...)
+			klog.Infof("Running command apt-get update")
+			cmd := exec.Command("apt-get", "update")
 			cmd.Env = env
 			output, err := cmd.CombinedOutput()
 			if err != nil {

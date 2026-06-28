@@ -44,7 +44,7 @@ func (b *VPCModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return fmt.Errorf("linode VPC requires at least one subnet with a region")
 	}
 
-	name := linode.NormalizeLinodeVPCLabel(b.ClusterName())
+	name := linode.NormalizeLinodeLabel(b.ClusterName())
 	description := fmt.Sprintf("kOps VPC for %s", b.ClusterName())
 	c.AddTask(&linodetasks.VPC{
 		Name:        fi.PtrTo(name),

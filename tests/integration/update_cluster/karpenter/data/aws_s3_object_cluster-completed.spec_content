@@ -59,7 +59,7 @@ spec:
     cpuRequest: 100m
     enabled: true
     featureGates: StaticCapacity=true
-    image: public.ecr.aws/karpenter/controller:1.8.1
+    image: public.ecr.aws/karpenter/controller:1.13.0
     logEncoding: console
     logLevel: debug
     memoryLimit: 2Gi

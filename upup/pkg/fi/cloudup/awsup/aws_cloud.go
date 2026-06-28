@@ -1909,25 +1909,7 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 			request.Owners = []string{"self"}
 			request.Filters = append(request.Filters, NewEC2Filter("name", name))
 		} else if len(tokens) == 2 {
-			owner := tokens[0]
-
-			// Check for well known owner aliases
-			switch owner {
-			case "amazon", "amazon.com":
-				owner = WellKnownAccountAmazonLinux2023
-			case "debian11":
-				owner = WellKnownAccountDebian
-			case "debian":
-				owner = WellKnownAccountDebian
-			case "flatcar":
-				owner = WellKnownAccountFlatcar
-			case "redhat", "redhat.com":
-				owner = WellKnownAccountRedhat
-			case "ubuntu":
-				owner = WellKnownAccountUbuntu
-			case "rocky", "rockylinux":
-				owner = WellKnownAccountRockyLinux
-			}
+			owner := ResolveImageOwnerAlias(tokens[0])
 
 			request.Owners = []string{owner}
 			request.Filters = append(request.Filters, NewEC2Filter("name", tokens[1]))
@@ -1962,6 +1944,26 @@ func resolveImage(ctx context.Context, ssmClient awsinterfaces.SSMAPI, ec2Client
 
 	klog.V(4).Infof("Resolved image %q", aws.ToString(image.ImageId))
 	return image, nil
+}
+
+// ResolveImageOwnerAlias maps a well-known image owner alias (e.g. "ubuntu") to its
+// AWS account ID. Unrecognized owners are returned unchanged.
+func ResolveImageOwnerAlias(owner string) string {
+	switch owner {
+	case "amazon", "amazon.com":
+		return WellKnownAccountAmazonLinux2023
+	case "debian", "debian11":
+		return WellKnownAccountDebian
+	case "flatcar":
+		return WellKnownAccountFlatcar
+	case "redhat", "redhat.com":
+		return WellKnownAccountRedhat
+	case "ubuntu":
+		return WellKnownAccountUbuntu
+	case "rocky", "rockylinux":
+		return WellKnownAccountRockyLinux
+	}
+	return owner
 }
 
 func (c *awsCloudImplementation) DescribeAvailabilityZones() ([]ec2types.AvailabilityZone, error) {
@@ -2154,8 +2156,8 @@ func findDNSName(cloud AWSCloud, cluster *kops.Cluster) (string, error) {
 func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	var candidates []ec2types.InstanceType
 
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode, kops.InstanceGroupRoleAPIServer:
+	switch {
+	case ig.Spec.Role.HasNode() || ig.Spec.Role.IsControlPlaneType():
 		// t3.medium is the cheapest instance with 4GB of mem, unlimited by default, fast and has decent network
 		// c5.large and c4.large are a good second option in case t3.medium is not available in the AZ
 		candidates = []ec2types.InstanceType{
@@ -2165,7 +2167,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 			ec2types.InstanceTypeT4gMedium,
 		}
 
-	case kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasBastion():
 		candidates = []ec2types.InstanceType{
 			ec2types.InstanceTypeT3Micro,
 			ec2types.InstanceTypeT2Micro,

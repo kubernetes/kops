@@ -37,7 +37,7 @@ func TestRandomZones(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%v zones", tt.count), func(t *testing.T) {
-			zones, err := RandomZones(tt.count)
+			zones, err := RandomZones(tt.count, nil)
 			if err != tt.err {
 				t.Errorf("unexpected error response: %v vs %v. zones: %v", err, tt.err, zones)
 				t.Fail()

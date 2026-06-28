@@ -416,12 +416,12 @@ func findInstanceGroupFromResource(cluster *kops.Cluster, instanceGroups []*kops
 func getGroupNameByRole(cluster *kops.Cluster, ig *kops.InstanceGroup) string {
 	var groupName string
 
-	switch ig.Spec.Role {
-	case kops.InstanceGroupRoleControlPlane:
+	switch {
+	case ig.Spec.Role.HasControlPlane():
 		groupName = ig.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
-	case kops.InstanceGroupRoleNode:
+	case ig.Spec.Role.HasNode():
 		groupName = ig.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-	case kops.InstanceGroupRoleBastion:
+	case ig.Spec.Role.HasBastion():
 		groupName = ig.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
 	default:
 		klog.Warningf("Ignoring InstanceGroup of unknown role %q", ig.Spec.Role)

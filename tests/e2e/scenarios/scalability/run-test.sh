@@ -84,11 +84,15 @@ create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
   create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
 fi
-create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://localhost:2382")
+# bind metrics to all interfaces so Prometheus can scrape etcd metrics
+create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0.0:2382")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_ENABLE_PPROF=true")
 create_args+=("--set spec.etcdClusters[0].manager.listenClientHTTPURLs=http://localhost:2385")
 create_args+=("--set spec.etcdClusters[1].manager.listenClientHTTPURLs=http://localhost:2386")
+if [[ -n "${ETCD_VERSION:-}" ]]; then
+  create_args+=("--set spec.etcdClusters[*].version=${ETCD_VERSION}")
+fi
 create_args+=("--set spec.cloudControllerManager.concurrentNodeSyncs=10")
 create_args+=("--set spec.kubelet.maxPods=96")
 create_args+=("--set spec.kubelet.kubeAPIQPS=100")
@@ -150,6 +154,7 @@ echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 KUBETEST2_ARGS=()
 KUBETEST2_ARGS+=("-v=2")
 KUBETEST2_ARGS+=("--max-nodes-to-dump=${MAX_NODES_TO_DUMP:-5}")
+KUBETEST2_ARGS+=("--node-dump-timeout=${NODE_DUMP_TIMEOUT:-5m}")
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")
@@ -252,6 +257,7 @@ if [[ "${SCALE_SCENARIO:performance}" == "correctness" ]]; then
     --skip-regex="\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:([^L].*|L[^o].*|Lo[^a].*|Loa[^d].*)\]\[KubeUp\]" \
     --parallel=25
 else
+  rc=0
   kubetest2 kops "${KUBETEST2_ARGS[@]}" \
     --up \
     --kubernetes-version="${K8S_VERSION}" \
@@ -261,5 +267,13 @@ else
     --provider="${CLOUD_PROVIDER}" \
     --repo-root="${GOPATH}"/src/k8s.io/perf-tests \
     --kube-config="${HOME}/.kube/config" \
-    "${CLUSTERLOADER2_ARGS[@]}"
+    "${CLUSTERLOADER2_ARGS[@]}" || rc=$?
+
+  # Add the variant after kubetest2, which would otherwise overwrite metadata.json.
+  if [[ -n "${ARTIFACTS:-}" ]]; then
+    if jq --arg v "${EXPERIMENT_VARIANT:-base}" '. + {variant:$v}' "${ARTIFACTS}/metadata.json" >"${ARTIFACTS}/metadata.json.tmp"; then
+      mv "${ARTIFACTS}/metadata.json.tmp" "${ARTIFACTS}/metadata.json" || true
+    fi
+  fi
+  exit $rc
 fi

@@ -171,7 +171,7 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
 
-	expectErrorFromDeepValidate(t, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-test-1a\" with role ControlPlane must have a member in etcd cluster \"main\"")
+	expectErrorFromDeepValidate(t, c, groups, "spec.metadata.name: Forbidden: InstanceGroup \"master-subnet-us-test-1a\" with role ControlPlane must have a member in etcd (IG: \"us-test-1c\") cluster \"main\"")
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *kopsapi.Cluster, groups []*kopsapi.InstanceGroup, message string) {

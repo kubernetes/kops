@@ -100,6 +100,18 @@ type MockLinodeClient struct {
 	DeleteVPCError error
 	DeleteVPCCalls int
 	DeletedVPCIDs  []int
+
+	ListSSHKeysResponse []linodego.SSHKey
+	ListSSHKeysError    error
+
+	CreateSSHKeyResponse *linodego.SSHKey
+	CreateSSHKeyError    error
+	CreateSSHKeyCalls    int
+	LastCreateSSHKeyOpts linodego.SSHKeyCreateOptions
+
+	DeleteSSHKeyError error
+	DeleteSSHKeyCalls int
+	DeletedSSHKeyIDs  []int
 }
 
 var _ LinodeClient = &MockLinodeClient{}
@@ -140,4 +152,29 @@ func (c *MockLinodeClient) DeleteVPC(ctx context.Context, vpcID int) error {
 	c.DeleteVPCCalls++
 	c.DeletedVPCIDs = append(c.DeletedVPCIDs, vpcID)
 	return c.DeleteVPCError
+}
+
+func (c *MockLinodeClient) ListSSHKeys(ctx context.Context, opts *linodego.ListOptions) ([]linodego.SSHKey, error) {
+	if c.ListSSHKeysError != nil {
+		return nil, c.ListSSHKeysError
+	}
+	return c.ListSSHKeysResponse, nil
+}
+
+func (c *MockLinodeClient) CreateSSHKey(ctx context.Context, opts linodego.SSHKeyCreateOptions) (*linodego.SSHKey, error) {
+	c.CreateSSHKeyCalls++
+	c.LastCreateSSHKeyOpts = opts
+	if c.CreateSSHKeyError != nil {
+		return nil, c.CreateSSHKeyError
+	}
+	if c.CreateSSHKeyResponse == nil {
+		return &linodego.SSHKey{}, nil
+	}
+	return c.CreateSSHKeyResponse, nil
+}
+
+func (c *MockLinodeClient) DeleteSSHKey(ctx context.Context, sshKeyID int) error {
+	c.DeleteSSHKeyCalls++
+	c.DeletedSSHKeyIDs = append(c.DeletedSSHKeyIDs, sshKeyID)
+	return c.DeleteSSHKeyError
 }

@@ -42,7 +42,6 @@ KubeletConfig:
   logLevel: 2
   maxPods: 50
   nodeLabels:
-    karpenter.sh/provisioner-name: karpenter-nodes-default
     node-role.kubernetes.io/node: ""
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -52,6 +51,8 @@ KubeletConfig:
   systemReserved:
     cpu: 500m
     memory: 1G
+  taints:
+  - karpenter.sh/unregistered=:NoExecute
 KubernetesVersion: 1.32.0
 Networking:
   nonMasqueradeCIDR: 100.64.0.0/10

@@ -142,8 +142,7 @@ type NewClusterOptions struct {
 	// EtcdStorageType is the underlying cloud storage class of the etcd volumes.
 	EtcdStorageType string
 
-	// NodeCount is the number of nodes to create. Defaults to leaving the count unspecified
-	// on the InstanceGroup, which results in a count of 2.
+	// NodeCount is the number of nodes to create.
 	NodeCount int32
 	// Bastion enables the creation of a Bastion instance.
 	Bastion bool
@@ -177,6 +176,7 @@ type NewClusterOptions struct {
 	ControlPlaneImage string
 	BastionImage      string
 	ControlPlaneSizes []string
+	APIServerSizes    []string
 	NodeSizes         []string
 }
 
@@ -468,7 +468,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		cluster.Spec.Karpenter = &api.KarpenterConfig{
 			Enabled: true,
 		}
-		nodes, err = setupKarpenterNodes(cluster)
+		nodes, err = setupKarpenterNodes(opt)
 		if err != nil {
 			return nil, err
 		}
@@ -523,7 +523,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 				}
 
 			}
-		} else if g.Spec.Role == api.InstanceGroupRoleBastion {
+		} else if g.Spec.Role.HasBastion() {
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, g)
 				if err != nil {
@@ -1202,11 +1202,26 @@ func setupNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap m
 	return nodes, nil
 }
 
-func setupKarpenterNodes(cluster *api.Cluster) ([]*api.InstanceGroup, error) {
+func setupKarpenterNodes(opt *NewClusterOptions) ([]*api.InstanceGroup, error) {
 	g := &api.InstanceGroup{}
 	g.Spec.Role = api.InstanceGroupRoleNode
 	g.Spec.Manager = api.InstanceManagerKarpenter
 	g.ObjectMeta.Name = "nodes"
+	if opt.NodeCount > 0 {
+		g.Spec.MinSize = fi.PtrTo(opt.NodeCount)
+	}
+
+	for i, size := range opt.NodeSizes {
+		if i == 0 {
+			g.Spec.MachineType = size
+		}
+		if len(opt.NodeSizes) > 1 {
+			if g.Spec.MixedInstancesPolicy == nil {
+				g.Spec.MixedInstancesPolicy = &api.MixedInstancesPolicySpec{}
+			}
+			g.Spec.MixedInstancesPolicy.Instances = append(g.Spec.MixedInstancesPolicy.Instances, size)
+		}
+	}
 
 	return []*api.InstanceGroup{g}, nil
 }
@@ -1248,6 +1263,15 @@ func setupAPIServers(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnets
 
 		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
 			g.Spec.Zones = []string{zone}
+		}
+
+		for i, size := range opt.APIServerSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if i > 0 {
+				klog.Fatalf("multiple machine types for IG group not currently supported")
+			}
 		}
 
 		nodes = append(nodes, g)

@@ -488,8 +488,9 @@ func matchInstanceGroup(name string, clusterName string, instancegroups []*kops.
 	for _, g := range instancegroups {
 		var groupName string
 
-		switch g.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleNode:
+		switch {
+		case g.Spec.Role.HasControlPlane(),
+			g.Spec.Role.HasNode():
 			groupName = clusterName + "-" + g.ObjectMeta.Name
 		default:
 			klog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)

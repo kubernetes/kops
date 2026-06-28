@@ -34,6 +34,10 @@ func TestListResources(t *testing.T) {
 			{ID: 702, Label: "example-k8s-local", Region: "us-west"},
 			{ID: 703, Label: "other-k8s-local", Region: "us-east"},
 		},
+		ListSSHKeysResponse: []linodego.SSHKey{
+			{ID: 801, Label: "kubernetes-example-k8s-local-aa-bb"},
+			{ID: 802, Label: "custom-key"},
+		},
 	}
 	cloud := &linode.MockLinodeCloud{Client_: client, Region_: "us-east"}
 
@@ -42,7 +46,7 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("ListResources returned error: %v", err)
 	}
 
-	wantKeys := []string{"vpc:701"}
+	wantKeys := []string{"ssh-key:801", "vpc:701"}
 	if gotKeys := sortedResourceKeys(resourceMap); !reflect.DeepEqual(gotKeys, wantKeys) {
 		t.Fatalf("unexpected resources\nwant: %v\n got: %v", wantKeys, gotKeys)
 	}
@@ -53,6 +57,14 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("unexpected VPC Name: got %q, want %q", got, want)
 	} else if got, want := r.Type, resourceTypeVPC; got != want {
 		t.Fatalf("unexpected VPC Type: got %q, want %q", got, want)
+	}
+
+	if r := resourceMap["ssh-key:801"]; r == nil {
+		t.Fatalf("missing ssh-key:801")
+	} else if got, want := r.Name, "kubernetes-example-k8s-local-aa-bb"; got != want {
+		t.Fatalf("unexpected SSH key Name: got %q, want %q", got, want)
+	} else if got, want := r.Type, resourceTypeSSHKey; got != want {
+		t.Fatalf("unexpected SSH key Type: got %q, want %q", got, want)
 	}
 }
 
@@ -87,6 +99,30 @@ func TestDeleteVPC_NotFound(t *testing.T) {
 	tracker := &resources.Resource{Name: "example-k8s-local", ID: "701", Type: resourceTypeVPC}
 	if err := deleteVPC(cloud, tracker); err != nil {
 		t.Fatalf("deleteVPC returned error for not found response: %v", err)
+	}
+}
+
+func TestDeleteSSHKey(t *testing.T) {
+	client := &linode.MockLinodeClient{}
+	cloud := &linode.MockLinodeCloud{Client_: client}
+
+	tracker := &resources.Resource{Name: "kubernetes-example-k8s-local-aa-bb", ID: "801", Type: resourceTypeSSHKey}
+	if err := deleteSSHKey(cloud, tracker); err != nil {
+		t.Fatalf("deleteSSHKey returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(client.DeletedSSHKeyIDs, []int{801}) {
+		t.Fatalf("unexpected deleted SSH key IDs: %v", client.DeletedSSHKeyIDs)
+	}
+}
+
+func TestDeleteSSHKey_NotFound(t *testing.T) {
+	client := &linode.MockLinodeClient{DeleteSSHKeyError: &linodego.Error{Code: 404, Message: "not found"}}
+	cloud := &linode.MockLinodeCloud{Client_: client}
+
+	tracker := &resources.Resource{Name: "kubernetes-example-k8s-local-aa-bb", ID: "801", Type: resourceTypeSSHKey}
+	if err := deleteSSHKey(cloud, tracker); err != nil {
+		t.Fatalf("deleteSSHKey returned error for not found response: %v", err)
 	}
 }
 

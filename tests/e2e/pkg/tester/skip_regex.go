@@ -87,15 +87,29 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.check.kube-proxy.urls"
 
 		if k8sVersion.Minor < 38 {
-			// This seems to be specific to the kube-proxy replacement
+			// Cilium SNATs the client source IP to a pod IP instead of preserving it, so it fails the
+			// externalTrafficPolicy=Local for type=NodePort test. This test passes on every other CNI,
+			// so it stays gated to Cilium.
 			// < 38 so we look at this again
 			skipRegex += "|Services.should.support.externalTrafficPolicy.Local.for.type.NodePort"
-			// https://github.com/kubernetes/kubernetes/issues/129221
 		}
 	} else if networking.KubeRouter != nil {
 		skipRegex += "|should set TCP CLOSE_WAIT timeout|should check kube-proxy urls"
 	} else if networking.Kubenet != nil {
 		skipRegex += "|Services.*affinity"
+	}
+
+	// The "implement NodePort and HealthCheckNodePort correctly when ExternalTrafficPolicy changes"
+	// test requires externalTrafficPolicy=Local source-IP preservation, which is broken on these
+	// CNIs: the client IP is SNATed to a pod IP instead of being preserved (kube-router instead
+	// times out reaching the local endpoint). Confirmed failing on cilium, flannel, kopeio and
+	// kube-router on all clouds, and on calico on GCE (calico preserves the source IP on AWS).
+	// amazon-vpc and kindnet preserve it and keep running the test.
+	// < 38 so we look at this again
+	if k8sVersion.Minor < 38 &&
+		(networking.Cilium != nil || networking.Flannel != nil || networking.Kopeio != nil || networking.KubeRouter != nil ||
+			(networking.Calico != nil && cluster.Spec.LegacyCloudProvider == "gce")) {
+		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "digitalocean" {
@@ -105,7 +119,6 @@ func (t *Tester) setSkipRegexFlag() error {
 	if cluster.Spec.LegacyCloudProvider == "azure" {
 		// Azure Disk CSI fsgroupchangepolicy tests are flaky due to SCSI device discovery
 		// latency during rapid attach/detach cycles on VMSS nodes.
-		// See https://github.com/kubernetes/kops/issues/17146
 		skipRegex += "|fsgroupchangepolicy"
 		// Skipped upstream in azuredisk-csi-driver external E2E:
 		// https://github.com/kubernetes-sigs/azuredisk-csi-driver/blob/master/test/external-e2e/run.sh
@@ -120,16 +133,14 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.be.mountable.when.non-attachable"
 	}
 
-	// This test fails on RHEL-based distros because they return fully qualified hostnames yet the k8s node names are not fully qualified.
-	// Dedicated job testing this: https://testgrid.k8s.io/kops-misc#kops-aws-k28-hostname-bug123255
-	// ref: https://github.com/kubernetes/kops/issues/16349
-	// ref: https://github.com/kubernetes/kubernetes/issues/123255
-	// ref: https://github.com/kubernetes/kubernetes/issues/121018
-	// ref: https://github.com/kubernetes/kubernetes/pull/126896
-	// < 38 so we look at this again
-	if k8sVersion.Minor < 38 {
+	if k8sVersion.Minor < 37 {
+		// Services.should.function.for.service.endpoints.using.hostNetwork fails only on distros that
+		// return fully qualified hostnames (e.g. RHEL) where the k8s node name is not fully qualified;
+		// it already passes where the system hostname matches the node name. Fixed in k8s 1.37 by
+		// kubernetes/kubernetes#139819 (compares spec.nodeName instead of os.Hostname()); the
+		// dedicated reproduction jobs have been removed.
+		// refs: https://github.com/kubernetes/kops/issues/16349, https://github.com/kubernetes/kubernetes/issues/123255
 		skipRegex += "|Services.should.function.for.service.endpoints.using.hostNetwork"
-		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}
 
 	for _, subnet := range cluster.Spec.Subnets {
@@ -154,8 +165,11 @@ func (t *Tester) setSkipRegexFlag() error {
 			// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#implementations-supplementalgroupspolicy
 			// https://github.com/kubernetes/test-infra/blob/0fa3c1f53ee2b715469380f9e50200d6b7612dff/config/jobs/kubernetes/kops/helpers.py#L107-L109
 			skipMap["SupplementalGroupsPolicy"] = nil
+		}
+		if matchesAnySubstrings(ig.Spec.Image, []string{"debian-11", "cos-121", "cos-arm64-121"}) {
 			// ImageVolume requires containerd v2.1
 			// ref: https://github.com/containerd/containerd/releases/tag/v2.1.0
+			// https://docs.cloud.google.com/container-optimized-os/docs/release-notes/m121
 			skipMap["ImageVolume"] = nil
 		}
 		if matchesAnySubstrings(ig.Spec.Image, []string{

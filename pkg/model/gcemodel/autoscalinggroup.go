@@ -137,7 +137,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			}
 		}
 
-		if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		if ig.Spec.Role.HasNode() {
 			autoscalerEnvVars := "os_distribution=ubuntu;arch=amd64;os=linux"
 			if strings.HasPrefix(ig.Spec.Image, "cos-cloud/") {
 				autoscalerEnvVars = "os_distribution=cos;arch=amd64;os=linux"
@@ -278,7 +278,7 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 		minSize := 1
 		if ig.Spec.MinSize != nil {
 			minSize = int(fi.ValueOf(ig.Spec.MinSize))
-		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		} else if ig.Spec.Role.HasNode() {
 			minSize = 2
 		}
 
@@ -314,6 +314,14 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 }
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
+	clusterHasApiServerOnly := false
+	for _, ig := range b.InstanceGroups {
+		if ig.IsAPIServerOnly() {
+			clusterHasApiServerOnly = true
+			break
+		}
+	}
+
 	for _, ig := range b.InstanceGroups {
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
@@ -354,7 +362,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 			}
 
 			// Attach API server instances to load balancer if we're using one
-			if ig.HasAPIServer() {
+			// Do not attach API server instances from the control plane if we
+			// have an APIServer only IG declared. We are assuming that APIServer
+			// only IG is a front end and other APIServers are dedicated for
+			// internal use
+			if ig.IsAPIServerOnly() || (!clusterHasApiServerOnly && ig.IsControlPlane()) {
 				if b.UseLoadBalancerForAPI() {
 					lbSpec := b.Cluster.Spec.API.LoadBalancer
 					if lbSpec != nil {

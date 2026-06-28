@@ -96,6 +96,8 @@ spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
   machineType: t2.medium
+  minSize: 2
+  maxSize: 10
   role: Node
   subnets:
   - us-test-1a
@@ -122,6 +124,7 @@ spec:
   associatePublicIp: true
   image: ubuntu/images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
   role: Node
+  maxSize: 20
   subnets:
   - us-test-1a
 

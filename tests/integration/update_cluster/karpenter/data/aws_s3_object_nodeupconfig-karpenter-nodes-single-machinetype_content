@@ -38,13 +38,14 @@ KubeletConfig:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   nodeLabels:
-    karpenter.sh/provisioner-name: karpenter-nodes-single-machinetype
     node-role.kubernetes.io/node: ""
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
   registerSchedulable: true
   shutdownGracePeriod: 30s
   shutdownGracePeriodCriticalPods: 10s
+  taints:
+  - karpenter.sh/unregistered=:NoExecute
 KubernetesVersion: 1.32.0
 Networking:
   nonMasqueradeCIDR: 100.64.0.0/10

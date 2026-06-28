@@ -136,7 +136,7 @@ func (c *AzureModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) ma
 
 	// The system tags take priority because the cluster likely breaks without them...
 	labels[azure.TagNameRolePrefix+ig.Spec.Role.ToLowerString()] = "1"
-	if ig.Spec.Role == kops.InstanceGroupRoleControlPlane {
+	if ig.Spec.Role.HasControlPlane() {
 		labels[azure.TagNameRolePrefix+"master"] = "1"
 	}
 

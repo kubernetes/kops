@@ -1979,7 +1979,7 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
-	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return err
 	}
@@ -1989,7 +1989,7 @@ func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
 	if err := pem.Encode(&privateKeyBytes, privateKeyPEM); err != nil {
 		return err
 	}
-	if err := os.WriteFile(privateKeyPath, privateKeyBytes.Bytes(), os.FileMode(0o700)); err != nil {
+	if err := os.WriteFile(privateKeyPath, privateKeyBytes.Bytes(), os.FileMode(0o600)); err != nil {
 		return err
 	}
 
@@ -1998,7 +1998,7 @@ func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
 		return err
 	}
 	publicKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
-	if err := os.WriteFile(publicKeyPath, publicKeyBytes, os.FileMode(0o744)); err != nil {
+	if err := os.WriteFile(publicKeyPath, publicKeyBytes, os.FileMode(0o644)); err != nil {
 		return err
 	}
 

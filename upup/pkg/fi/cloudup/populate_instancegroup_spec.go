@@ -107,7 +107,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		if ig.Spec.MaxSize == nil {
 			ig.Spec.MaxSize = fi.PtrTo(int32(1))
 		}
-	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+	} else if ig.Spec.Role.HasBastion() {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {
@@ -130,11 +130,13 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 				return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
 			}
 		}
-		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.PtrTo(int32(2))
-		}
-		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.PtrTo(int32(2))
+		if ig.Spec.Manager != kops.InstanceManagerKarpenter {
+			if ig.Spec.MinSize == nil {
+				ig.Spec.MinSize = fi.PtrTo(int32(2))
+			}
+			if ig.Spec.MaxSize == nil {
+				ig.Spec.MaxSize = fi.PtrTo(int32(2))
+			}
 		}
 	}
 
@@ -297,6 +299,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelAPIServer16 + "=:" + string(v1.TaintEffectNoSchedule))
 		}
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+			// Karpenter v1 expects its nodes to register with this taint as a race guard; it removes the taint once
+			// the NodeClaim is synced. The empty value still requires the <Key>=<Value>:<Effect> form.
+			taints.Insert("karpenter.sh/unregistered=:" + string(v1.TaintEffectNoExecute))
+		}
 	}
 
 	igKubeletConfig.Taints = taints.List()
@@ -325,36 +332,36 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		return instanceType, nil
 
 	case kops.CloudProviderGCE:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeGCE, nil
 
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			return defaultNodeMachineTypeGCE, nil
 
-		case kops.InstanceGroupRoleBastion:
+		case ig.Spec.Role.HasBastion():
 			return defaultBastionMachineTypeGCE, nil
 		}
 
 	case kops.CloudProviderDO:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeDO, nil
 
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			return defaultNodeMachineTypeDO, nil
 
 		}
 
 	case kops.CloudProviderHetzner:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeHetzner, nil
 
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			return defaultNodeMachineTypeHetzner, nil
 
-		case kops.InstanceGroupRoleBastion:
+		case ig.Spec.Role.HasBastion():
 			return defaultBastionMachineTypeHetzner, nil
 		}
 
@@ -366,35 +373,35 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		return instanceType, nil
 
 	case kops.CloudProviderAzure:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeAzure, nil
 
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			return defaultNodeMachineTypeAzure, nil
 
-		case kops.InstanceGroupRoleBastion:
+		case ig.Spec.Role.HasBastion():
 			return defaultBastionMachineTypeAzure, nil
 		}
 
 	case kops.CloudProviderScaleway:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeScaleway, nil
 
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			return defaultNodeMachineTypeScaleway, nil
 		}
 
 	case kops.CloudProviderLinode:
-		switch ig.Spec.Role {
-		case kops.InstanceGroupRoleControlPlane:
+		switch {
+		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeLinode, nil
 
-		case kops.InstanceGroupRoleNode:
+		case ig.Spec.Role.HasNode():
 			return defaultNodeMachineTypeLinode, nil
 
-		case kops.InstanceGroupRoleBastion:
+		case ig.Spec.Role.HasBastion():
 			return defaultBastionMachineTypeLinode, nil
 		}
 	}

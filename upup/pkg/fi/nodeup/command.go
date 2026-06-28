@@ -180,7 +180,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	configAssets := nodeupConfig.Assets[architecture]
 	assetStore := fi.NewAssetStore(c.CacheDir)
 	for _, asset := range configAssets {
-		err := assetStore.Add(asset)
+		err := assetStore.Add(ctx, asset)
 		if err != nil {
 			return fmt.Errorf("error adding asset %q: %v", asset, err)
 		}
@@ -517,7 +517,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error)
 
 		// Linode cloud-init does not set the OS hostname.
 		// Set it here so the OS hostname matches the kubelet hostname override.
-		if err := os.WriteFile("/etc/hostname", []byte(label+"\n"), 0644); err != nil {
+		if err := os.WriteFile("/etc/hostname", []byte(label+"\n"), 0o644); err != nil { //nolint:gosec // /etc/hostname is conventionally world-readable system configuration.
 			klog.Warningf("Failed to write /etc/hostname: %v", err)
 		} else if err := exec.Command("hostname", label).Run(); err != nil {
 			klog.Warningf("Failed to set runtime hostname %q: %v", label, err)
@@ -592,9 +592,15 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 		}
 	}
 	if distribution.ForceNftables() {
-		// Distributions like RHEL10+ use nftables exclusively
-		// Load nf_tables and nf_conntrack to fix CNI plugins that use iptables-nft
-		for _, mod := range []string{"nf_tables", "nf_conntrack"} {
+		// Distributions like RHEL10+ use nftables exclusively.
+		// - nf_tables / nf_conntrack: required by CNI plugins that shell out
+		//   to iptables-nft.
+		// - ip_set: Calico's Felix unconditionally starts an `ipsetsManager`
+		//   that shells out to `ipset list -name` during dataplane resync,
+		//   even when NFTablesMode=Enabled. On RHEL10 family kernels the
+		//   ip_set module isn't auto-loaded, so the ipset call returns
+		//   EINVAL and Felix panics, crashlooping calico-node.
+		for _, mod := range []string{"nf_tables", "nf_conntrack", "ip_set"} {
 			if err := modprobe(mod); err != nil {
 				klog.Warningf("error loading %s module: %v", mod, err)
 			}
@@ -753,7 +759,7 @@ func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (
 	// Only worker nodes and apiservers can actually autoscale.
 	// We are not adding describe permissions to the other roles
 	role := c.BootConfig.InstanceGroupRole
-	if role != api.InstanceGroupRoleNode && role != api.InstanceGroupRoleAPIServer {
+	if !role.HasNode() && !role.HasAPIServer() {
 		return "", nil
 	}
 
