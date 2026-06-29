@@ -298,6 +298,12 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if featureflag.APIServerNodes.Enabled() {
 		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Number of API server nodes. Defaults to 0.")
 	}
+	if featureflag.ExperimentalRoles.Enabled() {
+		cmd.Flags().Int32Var(&options.EtcdCount, "etcd-count", options.EtcdCount, "Number of etcd nodes. Defaults to 0.")
+		cmd.Flags().Int32Var(&options.SchedulerCount, "scheduler-count", options.SchedulerCount, "Number of scheduler nodes. Defaults to 0.")
+		cmd.Flags().Int32Var(&options.CloudControllerManagerCount, "ccm-count", options.CloudControllerManagerCount, "Number of cloud-controller-manager nodes. Defaults to 0.")
+		cmd.Flags().Int32Var(&options.KubeControllerManagerCount, "kcm-count", options.KubeControllerManagerCount, "Number of kube-controller-manager nodes. Defaults to 0.")
+	}
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Machine image for all instances")
 	cmd.RegisterFlagCompletionFunc("image", completeInstanceImage)
@@ -319,6 +325,16 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if featureflag.APIServerNodes.Enabled() {
 		cmd.Flags().StringSliceVar(&options.APIServerSizes, "api-server-size", options.APIServerSizes, "Machine type(s) for API server nodes")
 		cmd.RegisterFlagCompletionFunc("api-server-size", completeMachineType)
+	}
+	if featureflag.ExperimentalRoles.Enabled() {
+		cmd.Flags().StringSliceVar(&options.EtcdSizes, "etcd-size", options.EtcdSizes, "Machine type(s) for etcd nodes")
+		cmd.RegisterFlagCompletionFunc("etcd-size", completeMachineType)
+		cmd.Flags().StringSliceVar(&options.SchedulerSizes, "scheduler-size", options.SchedulerSizes, "Machine type(s) for scheduler nodes")
+		cmd.RegisterFlagCompletionFunc("scheduler-size", completeMachineType)
+		cmd.Flags().StringSliceVar(&options.CloudControllerManagerSizes, "ccm-size", options.CloudControllerManagerSizes, "Machine type(s) for cloud-controller-manager nodes")
+		cmd.RegisterFlagCompletionFunc("ccm-size", completeMachineType)
+		cmd.Flags().StringSliceVar(&options.KubeControllerManagerSizes, "kcm-size", options.KubeControllerManagerSizes, "Machine type(s) for kube-controller-manager nodes")
+		cmd.RegisterFlagCompletionFunc("kcm-size", completeMachineType)
 	}
 
 	cmd.Flags().Int32Var(&options.ControlPlaneVolumeSize, "master-volume-size", options.ControlPlaneVolumeSize, "Instance volume size (in GB) for control-plane nodes")

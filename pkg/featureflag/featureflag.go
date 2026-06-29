@@ -84,6 +84,9 @@ var (
 	AzureTerraform = new("AzureTerraform", Bool(false))
 	// APIServerNodes enables ability to provision nodes that only run the kube-apiserver.
 	APIServerNodes = new("APIServerNodes", Bool(false))
+	// ExperimentalRoles enables the InstanceGroup Role field to have a comma delineated roles list.
+	// It also enables the etcd, scheduler, kube-controller-manager and cloud-controller-manager roles.
+	ExperimentalRoles = new("ExperimentalRoles", Bool(false))
 	// UseAddonOperators activates experimental addon operator support
 	UseAddonOperators = new("UseAddonOperators", Bool(false))
 	// TerraformManagedFiles enables rendering managed files into the Terraform configuration.

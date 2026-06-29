@@ -63,6 +63,14 @@ const (
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 	// InstanceGroupRoleAPIServer is an API server role.
 	InstanceGroupRoleAPIServer InstanceGroupRole = "APIServer"
+	// InstanceGroupRoleEtcd is an Etcd role.
+	InstanceGroupRoleEtcd InstanceGroupRole = "Etcd"
+	// InstanceGroupRoleScheduler is a Scheduler role.
+	InstanceGroupRoleScheduler InstanceGroupRole = "Scheduler"
+	// InstanceGroupRoleCloudControllerManager is a CloudControllerManager role.
+	InstanceGroupRoleCloudControllerManager InstanceGroupRole = "CloudControllerManager"
+	// InstanceGroupRoleKubControllerManager is a KubControllerManager role.
+	InstanceGroupRoleKubControllerManager InstanceGroupRole = "KubControllerManager"
 )
 
 // AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
@@ -87,6 +95,22 @@ func (r InstanceGroupRole) HasBastion() bool {
 
 func (r InstanceGroupRole) HasAPIServer() bool {
 	return r == InstanceGroupRoleAPIServer
+}
+
+func (r InstanceGroupRole) HasEtcd() bool {
+	return r == InstanceGroupRoleEtcd
+}
+
+func (r InstanceGroupRole) HasScheduler() bool {
+	return r == InstanceGroupRoleScheduler
+}
+
+func (r InstanceGroupRole) HasCloudControllerManager() bool {
+	return r == InstanceGroupRoleCloudControllerManager
+}
+
+func (r InstanceGroupRole) HasKubControllerManager() bool {
+	return r == InstanceGroupRoleKubControllerManager
 }
 
 func (r InstanceGroupRole) IsControlPlaneType() bool {

@@ -124,6 +124,18 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
 			return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
 		}
+		if !featureflag.ExperimentalRoles.Enabled() {
+			switch {
+			case ig.Spec.Role.HasEtcd():
+				return nil, fmt.Errorf("etcd nodes requires the ExperimentalNodes feature flag to be enabled")
+			case ig.Spec.Role.HasScheduler():
+				return nil, fmt.Errorf("scheduler nodes requires the ExperimentalNodes feature flag to be enabled")
+			case ig.Spec.Role.HasCloudControllerManager():
+				return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalNodes feature flag to be enabled")
+			case ig.Spec.Role.HasKubControllerManager():
+				return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalNodes feature flag to be enabled")
+			}
+		}
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType, err = defaultMachineType(cloud, cluster, ig)
 			if err != nil {

@@ -34,7 +34,7 @@ files=$(find . -name "*.go" -not -path "./vendor/*" -not -path "./.build/*" -not
 #   constant == variable
 #   variable != constant
 #   constant != variable
-REGEX='==[[:space:]]*([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)\b|\b([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)[[:space:]]*==|!=[[:space:]]*([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)\b|\b([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)[[:space:]]*!='
+REGEX='==[[:space:]]*([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer|Etcd|Scheduler|CloudControllerManager|KubeControllerManager)\b|\b([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)[[:space:]]*==|!=[[:space:]]*([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)\b|\b([a-zA-Z0-9_]+\.)?InstanceGroupRole(ControlPlane|Node|Bastion|APIServer)[[:space:]]*!='
 
 for file in $files; do
     if grep -E "${REGEX}" "${file}" > /dev/null; then
@@ -45,7 +45,7 @@ for file in $files; do
 done
 
 if [ "${errors}" -ne 0 ]; then
-  echo "Error: Found ${errors} files with direct InstanceGroupRole comparisons (== or !=). Use HasControlPlane(), HasNode(), HasBastion(), or HasAPIServer() instead."
+  echo "Error: Found ${errors} files with direct InstanceGroupRole comparisons (== or !=). Use HasControlPlane(), HasNode(), HasBastion(), HasAPIServer(), HasEtcd(), HasScheduler(), HasCloudControllerManager() or HasKubeControllerManager() instead."
     exit 1
 fi
 
