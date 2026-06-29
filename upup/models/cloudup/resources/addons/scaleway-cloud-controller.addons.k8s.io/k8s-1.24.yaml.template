@@ -34,28 +34,21 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
       dnsPolicy: Default
       hostNetwork: true
       serviceAccountName: cloud-controller-manager
       tolerations:
-        # we sould allow to schedule on uninitialized and master nodes
-        - key: "node.cloudprovider.kubernetes.io/uninitialized"
-          value: "true"
-          effect: "NoSchedule"
-        - key: "CriticalAddonsOnly"
-          operator: "Exists"
-        - key: "node-role.kubernetes.io/master"
-          effect: NoSchedule
-        - key: "node-role.kubernetes.io/control-plane"
-          effect: NoSchedule
-        - key: node.kubernetes.io/not-ready
-          effect: NoExecute
-          operator: Exists
-          tolerationSeconds: 300
-        - key: node.kubernetes.io/unreachable
-          effect: NoExecute
-          operator: Exists
-          tolerationSeconds: 300
+        - operator: Exists
       containers:
         - name: scaleway-cloud-controller-manager
           image: scaleway/scaleway-cloud-controller-manager:latest
