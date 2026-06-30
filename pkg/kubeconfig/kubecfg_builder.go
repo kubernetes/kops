@@ -184,11 +184,9 @@ func (b *KubeconfigBuilder) WriteKubecfg(configAccess clientcmd.ConfigAccess) er
 		}
 
 		context.Cluster = b.Context
-		if haveUserInfo {
-			if b.User != "" {
-				context.AuthInfo = b.User
-			}
-		}
+        if b.User != "" {
+            context.AuthInfo = b.User
+        }
 
 		if b.Namespace != "" {
 			context.Namespace = b.Namespace
