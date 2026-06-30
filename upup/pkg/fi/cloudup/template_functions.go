@@ -638,6 +638,34 @@ func (tf *TemplateFunctions) APIServerNodeRole() string {
 	return "node-role.kubernetes.io/control-plane"
 }
 
+func (tf *TemplateFunctions) EtcdRole() string {
+	if featureflag.ExperimentalRoles.Enabled() {
+		return "node-role.kubernetes.io/etcd"
+	}
+	return "node-role.kubernetes.io/control-plane"
+}
+
+func (tf *TemplateFunctions) SchedulerRole() string {
+	if featureflag.ExperimentalRoles.Enabled() {
+		return "node-role.kubernetes.io/scheduler"
+	}
+	return "node-role.kubernetes.io/control-plane"
+}
+
+func (tf *TemplateFunctions) CloudControllerManagerRole() string {
+	if featureflag.ExperimentalRoles.Enabled() {
+		return "node-role.kubernetes.io/cloud-controller-manager"
+	}
+	return "node-role.kubernetes.io/control-plane"
+}
+
+func (tf *TemplateFunctions) KubeControllerManagerRole() string {
+	if featureflag.ExperimentalRoles.Enabled() {
+		return "node-role.kubernetes.io/kube-controller-manager"
+	}
+	return "node-role.kubernetes.io/control-plane"
+}
+
 // HasHighlyAvailableControlPlane returns true of the cluster has more than one control plane node. False otherwise.
 func (tf *TemplateFunctions) HasHighlyAvailableControlPlane() bool {
 	cp := 0

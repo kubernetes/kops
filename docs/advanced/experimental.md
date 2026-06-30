@@ -18,3 +18,4 @@ The following experimental features are currently available:
 * `+SkipEtcdVersionCheck` - Bypasses the check that etcd-manager is using a supported etcd version
 * `+EtcdEventsHTTP` - Enables HTTP (non-TLS) for the events etcd cluster, matching GCE scale test patterns
 * `+APIServerNodes` - Enables support for dedicated API server nodes
+* `+ExperimentalRoles` - Not fully implemented. Enable support for dedicated Etcd, Scheduler, CloudControllerManager and KubeControllerManager nodes. 

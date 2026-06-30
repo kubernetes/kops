@@ -134,6 +134,14 @@ type NewClusterOptions struct {
 	ControlPlaneCount int32
 	// APIServerCount is the number of API servers to create. Defaults to 0.
 	APIServerCount int32
+	// EtcdCount is the number of API servers to create. Defaults to 0.
+	EtcdCount int32
+	// SchedulerCount is the number of API servers to create. Defaults to 0.
+	SchedulerCount int32
+	// CloudControllerManagerCount is the number of API servers to create. Defaults to 0.
+	CloudControllerManagerCount int32
+	// KubeControllerManagerCount is the number of API servers to create. Defaults to 0.
+	KubeControllerManagerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
 	EncryptEtcdStorage *bool
 
@@ -171,13 +179,17 @@ type NewClusterOptions struct {
 	// InstanceManager specifies which manager to use for managing instances.
 	InstanceManager string
 
-	Image             string
-	NodeImage         string
-	ControlPlaneImage string
-	BastionImage      string
-	ControlPlaneSizes []string
-	APIServerSizes    []string
-	NodeSizes         []string
+	Image                       string
+	NodeImage                   string
+	ControlPlaneImage           string
+	BastionImage                string
+	ControlPlaneSizes           []string
+	APIServerSizes              []string
+	EtcdSizes                   []string
+	SchedulerSizes              []string
+	CloudControllerManagerSizes []string
+	KubeControllerManagerSizes  []string
+	NodeSizes                   []string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -533,6 +545,18 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		} else {
 			if g.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
 				return nil, fmt.Errorf("apiserver nodes requires the APIServerNodes feature flag to be enabled")
+			}
+			if !featureflag.ExperimentalRoles.Enabled() {
+				switch {
+				case g.Spec.Role.HasEtcd():
+					return nil, fmt.Errorf("etcd nodes requires the ExperimentalRoles feature flag to be enabled")
+				case g.Spec.Role.HasScheduler():
+					return nil, fmt.Errorf("scheduler nodes requires the ExperimentalRoles feature flag to be enabled")
+				case g.Spec.Role.HasCloudControllerManager():
+					return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
+				case g.Spec.Role.HasKubControllerManager():
+					return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
+				}
 			}
 			if g.Spec.MachineType == "" {
 				g.Spec.MachineType, err = defaultMachineType(cloud, cluster, g)

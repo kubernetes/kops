@@ -129,6 +129,23 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		if r.HasAPIServer() && !featureflag.APIServerNodes.Enabled() {
 			continue
 		}
+		if !featureflag.ExperimentalRoles.Enabled() {
+			if roles := strings.Split(string(r), ","); len(roles) > 1 {
+				continue
+			}
+			if r.HasEtcd() {
+				continue
+			}
+			if r.HasScheduler() {
+				continue
+			}
+			if r.HasCloudControllerManager() {
+				continue
+			}
+			if r.HasKubControllerManager() {
+				continue
+			}
+		}
 		allRoles = append(allRoles, r.ToLowerString())
 	}
 
