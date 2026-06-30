@@ -297,19 +297,16 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		}
 
 		for _, featureGate := range opt.KubernetesFeatureGates {
-			enabled := true
-			if featureGate[0] == '+' {
-				featureGate = featureGate[1:]
+			featureGate, enabled, err := parseKubernetesFeatureGate(featureGate)
+			if err != nil {
+				return nil, err
 			}
-			if featureGate[0] == '-' {
-				enabled = false
-				featureGate = featureGate[1:]
-			}
-			cluster.Spec.Kubelet.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeAPIServer.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeControllerManager.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeProxy.FeatureGates[featureGate] = strconv.FormatBool(enabled)
-			cluster.Spec.KubeScheduler.FeatureGates[featureGate] = strconv.FormatBool(enabled)
+			value := strconv.FormatBool(enabled)
+			cluster.Spec.Kubelet.FeatureGates[featureGate] = value
+			cluster.Spec.KubeAPIServer.FeatureGates[featureGate] = value
+			cluster.Spec.KubeControllerManager.FeatureGates[featureGate] = value
+			cluster.Spec.KubeProxy.FeatureGates[featureGate] = value
+			cluster.Spec.KubeScheduler.FeatureGates[featureGate] = value
 		}
 	}
 
@@ -621,6 +618,28 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		Channel:        channel,
 	}
 	return &result, nil
+}
+
+func parseKubernetesFeatureGate(featureGate string) (string, bool, error) {
+	featureGate = strings.TrimSpace(featureGate)
+	if featureGate == "" {
+		return "", false, fmt.Errorf("kubernetes feature gate must not be empty")
+	}
+
+	enabled := true
+	switch featureGate[0] {
+	case '+':
+		featureGate = strings.TrimSpace(featureGate[1:])
+	case '-':
+		enabled = false
+		featureGate = strings.TrimSpace(featureGate[1:])
+	}
+
+	if featureGate == "" {
+		return "", false, fmt.Errorf("kubernetes feature gate must include a feature name")
+	}
+
+	return featureGate, enabled, nil
 }
 
 func setupVPC(opt *NewClusterOptions, cluster *api.Cluster, cloud fi.Cloud) error {
