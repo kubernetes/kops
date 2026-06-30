@@ -38,6 +38,10 @@ const (
 	// SourceSubnetworkIPRangesSpecificSubnets is specified when we should NAT only specific listed subnets.
 	SourceSubnetworkIPRangesSpecificSubnets = "LIST_OF_SUBNETWORKS"
 
+	// SourceSubnetworkIPRangesAllIPv6 enables NAT64 for all IPv6 subnetwork ranges.
+	// In dual-stack subnets GCE only applies NAT64 to IPv6-only VMs, which is exactly our scenario.
+	SourceSubnetworkIPRangesAllIPv6 = "ALL_IPV6_SUBNETWORKS"
+
 	// subnetNatAllIPRanges specifies that we should NAT all IP ranges in the subnet.
 	subnetNatAllIPRanges = "ALL_IP_RANGES"
 )
@@ -51,8 +55,9 @@ type Router struct {
 	Network *Network
 	Region  *string
 
-	NATIPAllocationOption         *string
-	SourceSubnetworkIPRangesToNAT *string
+	NATIPAllocationOption           *string
+	SourceSubnetworkIPRangesToNAT   *string
+	SourceSubnetworkIPRangesToNAT64 *string
 
 	Subnetworks []*Subnet
 }
@@ -92,6 +97,9 @@ func (r *Router) Find(c *fi.CloudupContext) (*Router, error) {
 		Region:                        fi.PtrTo(lastComponent(found.Region)),
 		NATIPAllocationOption:         &nat.NatIpAllocateOption,
 		SourceSubnetworkIPRangesToNAT: &nat.SourceSubnetworkIpRangesToNat,
+	}
+	if nat.SourceSubnetworkIpRangesToNat64 != "" {
+		actual.SourceSubnetworkIPRangesToNAT64 = &nat.SourceSubnetworkIpRangesToNat64
 	}
 
 	for _, subnet := range nat.Subnetworks {
@@ -155,9 +163,10 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 			Network: e.Network.URL(project),
 			Nats: []*compute.RouterNat{
 				{
-					Name:                          *e.Name,
-					NatIpAllocateOption:           *e.NATIPAllocationOption,
-					SourceSubnetworkIpRangesToNat: *e.SourceSubnetworkIPRangesToNAT,
+					Name:                            *e.Name,
+					NatIpAllocateOption:             *e.NATIPAllocationOption,
+					SourceSubnetworkIpRangesToNat:   *e.SourceSubnetworkIPRangesToNAT,
+					SourceSubnetworkIpRangesToNat64: fi.ValueOf(e.SourceSubnetworkIPRangesToNAT64),
 				},
 			},
 		}
@@ -185,12 +194,13 @@ func (*Router) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Router) error {
 }
 
 type terraformRouterNat struct {
-	Name                          *string                         `cty:"name"`
-	Region                        *string                         `cty:"region"`
-	Router                        *terraformWriter.Literal        `cty:"router"`
-	NATIPAllocateOption           *string                         `cty:"nat_ip_allocate_option"`
-	SourceSubnetworkIPRangesToNat *string                         `cty:"source_subnetwork_ip_ranges_to_nat"`
-	Subnetworks                   []*terraformRouterNatSubnetwork `cty:"subnetwork"`
+	Name                            *string                         `cty:"name"`
+	Region                          *string                         `cty:"region"`
+	Router                          *terraformWriter.Literal        `cty:"router"`
+	NATIPAllocateOption             *string                         `cty:"nat_ip_allocate_option"`
+	SourceSubnetworkIPRangesToNat   *string                         `cty:"source_subnetwork_ip_ranges_to_nat"`
+	SourceSubnetworkIPRangesToNat64 *string                         `cty:"source_subnetwork_ip_ranges_to_nat64"`
+	Subnetworks                     []*terraformRouterNatSubnetwork `cty:"subnetwork"`
 }
 
 type terraformRouterNatSubnetwork struct {
@@ -218,11 +228,12 @@ func (*Router) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rout
 	}
 
 	trn := &terraformRouterNat{
-		Name:                          e.Name,
-		Region:                        e.Region,
-		Router:                        e.TerraformLink(),
-		NATIPAllocateOption:           e.NATIPAllocationOption,
-		SourceSubnetworkIPRangesToNat: e.SourceSubnetworkIPRangesToNAT,
+		Name:                            e.Name,
+		Region:                          e.Region,
+		Router:                          e.TerraformLink(),
+		NATIPAllocateOption:             e.NATIPAllocationOption,
+		SourceSubnetworkIPRangesToNat:   e.SourceSubnetworkIPRangesToNAT,
+		SourceSubnetworkIPRangesToNat64: e.SourceSubnetworkIPRangesToNAT64,
 	}
 	for _, subnet := range e.Subnetworks {
 		trn.Subnetworks = append(trn.Subnetworks, &terraformRouterNatSubnetwork{
