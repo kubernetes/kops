@@ -228,6 +228,13 @@ func clusterOutputTable(clusters []*kopsapi.Cluster, out io.Writer) error {
 				zones.Insert(s.Zone)
 			}
 		}
+		if zones.Len() == 0 {
+			for _, s := range c.Spec.Networking.Subnets {
+				if s.Region != "" && s.Name != "" {
+					zones.Insert(s.Name)
+				}
+			}
+		}
 		return strings.Join(zones.List(), ",")
 	})
 
