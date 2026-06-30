@@ -174,6 +174,10 @@ func (c *instanceGroupManagerClient) ListManagedInstances(ctx context.Context, p
 	return l, nil
 }
 
+func (c *instanceGroupManagerClient) ListErrors(ctx context.Context, project, zone, name string) ([]*compute.InstanceManagedByIgmError, error) {
+	return nil, nil
+}
+
 func (c *instanceGroupManagerClient) RecreateInstances(project, zone, name, id string) (*compute.Operation, error) {
 	return doneOperation(), nil
 }

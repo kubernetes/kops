@@ -31,6 +31,11 @@ type MockAutoscaling struct {
 	Groups            map[string]*autoscalingtypes.AutoScalingGroup
 	WarmPoolInstances map[string][]autoscalingtypes.Instance
 	LifecycleHooks    map[string]*autoscalingtypes.LifecycleHook
+	// ScalingActivities is the canned response for DescribeScalingActivities,
+	// keyed by Auto Scaling group name.
+	ScalingActivities map[string][]autoscalingtypes.Activity
+	// DescribeScalingActivitiesCalls counts the number of paginated calls made.
+	DescribeScalingActivitiesCalls int
 }
 
 var _ awsinterfaces.AutoScalingAPI = &MockAutoscaling{}
