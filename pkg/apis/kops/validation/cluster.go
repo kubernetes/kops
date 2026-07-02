@@ -79,6 +79,13 @@ func validateEtcdClusterUpdate(fp *field.Path, obj kops.EtcdClusterSpec, status 
 
 	// If the etcd cluster has been created (i.e. if we have status) then we can't support some changes
 	if etcdClusterStatus != nil {
+		if obj.Image != old.Image {
+			allErrs = append(allErrs, field.Forbidden(fp.Child("image"), "image can only be set when creating a new etcd cluster"))
+		}
+		if obj.Image != "" && obj.Version != old.Version {
+			allErrs = append(allErrs, field.Forbidden(fp.Child("version"), "version cannot be changed when image is set"))
+		}
+
 		newMembers := make(map[string]kops.EtcdMemberSpec)
 		for _, member := range obj.Members {
 			newMembers[member.Name] = member

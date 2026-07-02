@@ -14,15 +14,18 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
       volumeSize: 20
+    image: gcr.io/etcd-development/etcd:v3.6.99
     manager:
       backupRetentionDays: 90
       image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
       logLevel: 10
     name: main
+    version: 3.6.99
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
       volumeSize: 20
+    image: gcr.io/etcd-development/etcd:v3.6.99
     manager:
       backupRetentionDays: 30
       env:
@@ -30,6 +33,7 @@ spec:
         value: 1d
       image: gcr.io/k8s-staging-etcdadm/etcd:v20210430-v0.1.3-739-g7da12acc
     name: events
+    version: 3.6.99
   iam: {}
   kubelet:
     anonymousAuth: false
