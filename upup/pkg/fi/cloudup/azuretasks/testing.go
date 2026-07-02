@@ -655,6 +655,9 @@ func (c *MockPublicIPAddressesClient) CreateOrUpdate(ctx context.Context, resour
 	}
 	parameters.Name = &publicIPAddressName
 	parameters.ID = &publicIPAddressName
+	if parameters.Properties != nil && parameters.Properties.IPAddress == nil {
+		parameters.Properties.IPAddress = to.Ptr("192.0.2.1")
+	}
 	c.PubIPs[publicIPAddressName] = &parameters
 	return &parameters, nil
 }
