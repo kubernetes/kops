@@ -84,6 +84,12 @@ create_args+=("--networking=${CNI_PLUGIN:-calico}")
 if [[ "${CNI_PLUGIN}" == "amazonvpc" ]]; then
   create_args+=("--set spec.networking.amazonVPC.env=ENABLE_PREFIX_DELEGATION=true")
 fi
+if [[ -n "${NETWORKING_CALICO_REGISTRY:-}" ]]; then
+  create_args+=("--set spec.networking.calico.registry=${NETWORKING_CALICO_REGISTRY}")
+fi
+if [[ -n "${NETWORKING_CALICO_VERSION:-}" ]]; then
+  create_args+=("--set spec.networking.calico.version=${NETWORKING_CALICO_VERSION}")
+fi
 # bind metrics to all interfaces so Prometheus can scrape etcd metrics
 create_args+=("--set spec.etcdClusters[0].manager.listenMetricsURLs=http://0.0.0.0:2382")
 create_args+=("--set spec.etcdClusters[*].manager.env=ETCD_QUOTA_BACKEND_BYTES=${ETCD_QUOTA_BACKEND_BYTES}")
