@@ -323,7 +323,8 @@ func NewSSHHost(ctx context.Context, host string, sshPort int, sshUser string, s
 		},
 		User: sshUser,
 	}
-	sshClient, err := ssh.Dial("tcp", host+":"+strconv.Itoa(sshPort), sshConfig)
+	// Use net.JoinHostPort so that IPv6 addresses are bracketed correctly.
+	sshClient, err := ssh.Dial("tcp", net.JoinHostPort(host, strconv.Itoa(sshPort)), sshConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to SSH to %q (with user %q): %w", host, sshUser, err)
 	}
