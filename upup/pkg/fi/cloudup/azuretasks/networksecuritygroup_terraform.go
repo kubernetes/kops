@@ -28,7 +28,7 @@ type terraformAzureNetworkSecurityRule struct {
 	Access                                 *string                    `cty:"access"`
 	Direction                              *string                    `cty:"direction"`
 	Protocol                               *string                    `cty:"protocol"`
-	SourceAddressPrefix                    *string                    `cty:"source_address_prefix"`
+	SourceAddressPrefix                    *terraformWriter.Literal   `cty:"source_address_prefix"`
 	SourceAddressPrefixes                  []string                   `cty:"source_address_prefixes"`
 	SourceApplicationSecurityGroupIDs      []*terraformWriter.Literal `cty:"source_application_security_group_ids"`
 	SourcePortRange                        *string                    `cty:"source_port_range"`
@@ -69,13 +69,19 @@ func (rule *NetworkSecurityRule) toTerraform() *terraformAzureNetworkSecurityRul
 	access := string(rule.Access)
 	direction := string(rule.Direction)
 	protocol := string(rule.Protocol)
+	var sourceAddressPrefix *terraformWriter.Literal
+	if rule.SourcePublicIPAddress != nil {
+		sourceAddressPrefix = terraformWriter.LiteralProperty("azurerm_public_ip", fi.ValueOf(rule.SourcePublicIPAddress.Name), "ip_address")
+	} else if rule.SourceAddressPrefix != nil {
+		sourceAddressPrefix = terraformWriter.LiteralFromStringValue(*rule.SourceAddressPrefix)
+	}
 	return &terraformAzureNetworkSecurityRule{
 		Name:                                   rule.Name,
 		Priority:                               rule.Priority,
 		Access:                                 &access,
 		Direction:                              &direction,
 		Protocol:                               &protocol,
-		SourceAddressPrefix:                    rule.SourceAddressPrefix,
+		SourceAddressPrefix:                    sourceAddressPrefix,
 		SourceAddressPrefixes:                  stringSlice(rule.SourceAddressPrefixes),
 		SourceApplicationSecurityGroupIDs:      applicationSecurityGroupNameIDs(rule.SourceApplicationSecurityGroupNames),
 		SourcePortRange:                        rule.SourcePortRange,

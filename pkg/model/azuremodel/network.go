@@ -47,6 +47,17 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 	c.AddTask(networkTask)
 
+	ngwPipTask := &azuretasks.PublicIPAddress{
+		Name:             fi.PtrTo(b.NameForVirtualNetwork()),
+		Lifecycle:        b.Lifecycle,
+		ResourceGroup:    b.LinkToResourceGroup(),
+		IPVersion:        network.IPVersionIPv4,
+		AllocationMethod: network.IPAllocationMethodStatic,
+		SKU:              network.PublicIPAddressSKUNameStandard,
+		Tags:             map[string]*string{},
+	}
+	c.AddTask(ngwPipTask)
+
 	nsgTask := &azuretasks.NetworkSecurityGroup{
 		Name:          fi.PtrTo(b.Cluster.AzureNetworkSecurityGroupName()),
 		Lifecycle:     b.Lifecycle,
@@ -237,14 +248,15 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		DestinationPortRange:                     fi.PtrTo("*"),
 	})
 	if b.Cluster.UsesLoadBalancerForKopsController() && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.Type == kops.LoadBalancerTypePublic {
-		// TODO: Limit access to necessary source address prefixes instead of "0.0.0.0/0" and "::/0"
+		// Node traffic to the public load balancer frontend egresses through the NAT gateway, so it
+		// arrives with the NAT gateway public IP as its source and cannot be matched by the nodes ASG.
 		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 			Name:                                     fi.PtrTo("AllowNodesToKubernetesAPI"),
 			Priority:                                 fi.PtrTo[int32](2000),
 			Access:                                   network.SecurityRuleAccessAllow,
 			Direction:                                network.SecurityRuleDirectionInbound,
 			Protocol:                                 network.SecurityRuleProtocolTCP,
-			SourceAddressPrefix:                      fi.PtrTo("*"),
+			SourcePublicIPAddress:                    ngwPipTask,
 			SourcePortRange:                          fi.PtrTo("*"),
 			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 			DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.KubeAPIServer)),
@@ -255,7 +267,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Access:                                   network.SecurityRuleAccessAllow,
 			Direction:                                network.SecurityRuleDirectionInbound,
 			Protocol:                                 network.SecurityRuleProtocolTCP,
-			SourceAddressPrefix:                      fi.PtrTo("*"),
+			SourcePublicIPAddress:                    ngwPipTask,
 			SourcePortRange:                          fi.PtrTo("*"),
 			DestinationApplicationSecurityGroupNames: []*string{fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane())},
 			DestinationPortRange:                     fi.PtrTo(strconv.Itoa(wellknownports.KopsControllerPort)),
@@ -296,16 +308,6 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	})
 	c.AddTask(nsgTask)
 
-	ngwPipTask := &azuretasks.PublicIPAddress{
-		Name:             fi.PtrTo(b.NameForVirtualNetwork()),
-		Lifecycle:        b.Lifecycle,
-		ResourceGroup:    b.LinkToResourceGroup(),
-		IPVersion:        network.IPVersionIPv4,
-		AllocationMethod: network.IPAllocationMethodStatic,
-		SKU:              network.PublicIPAddressSKUNameStandard,
-		Tags:             map[string]*string{},
-	}
-	c.AddTask(ngwPipTask)
 	ngwTask := &azuretasks.NatGateway{
 		Name:              fi.PtrTo(b.NameForVirtualNetwork()),
 		Lifecycle:         b.Lifecycle,
