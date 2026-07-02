@@ -41,6 +41,8 @@ type PublicIPAddress struct {
 	AllocationMethod network.IPAllocationMethod
 	// SKU is the public IP SKU, e.g. network.PublicIPAddressSKUNameStandard.
 	SKU network.PublicIPAddressSKUName
+	// IPAddress is the allocated address. It is output-only, populated by Find and RenderAzure.
+	IPAddress *string
 
 	Tags map[string]*string
 }
@@ -92,6 +94,9 @@ func (p *PublicIPAddress) Find(c *fi.CloudupContext) (*PublicIPAddress, error) {
 	if found.Properties != nil {
 		actual.IPVersion = fi.ValueOf(found.Properties.PublicIPAddressVersion)
 		actual.AllocationMethod = fi.ValueOf(found.Properties.PublicIPAllocationMethod)
+		actual.IPAddress = found.Properties.IPAddress
+		// Propagate to the expected task so that dependent tasks can use the address.
+		p.IPAddress = found.Properties.IPAddress
 	}
 	if found.SKU != nil {
 		actual.SKU = fi.ValueOf(found.SKU.Name)
@@ -157,6 +162,9 @@ func (*PublicIPAddress) RenderAzure(t *azure.AzureAPITarget, a, e, changes *Publ
 	}
 
 	e.ID = pip.ID
+	if pip.Properties != nil {
+		e.IPAddress = pip.Properties.IPAddress
+	}
 
 	return nil
 }

@@ -385,7 +385,7 @@ resource "azurerm_network_security_group" "minimal-azure-example-com" {
     name                                       = "AllowNodesToKubernetesAPI"
     priority                                   = 2000
     protocol                                   = "Tcp"
-    source_address_prefix                      = "*"
+    source_address_prefix                      = azurerm_public_ip.minimal-azure-example-com.ip_address
     source_port_range                          = "*"
   }
   security_rule {
@@ -396,7 +396,7 @@ resource "azurerm_network_security_group" "minimal-azure-example-com" {
     name                                       = "AllowNodesToKopsController"
     priority                                   = 2001
     protocol                                   = "Tcp"
-    source_address_prefix                      = "*"
+    source_address_prefix                      = azurerm_public_ip.minimal-azure-example-com.ip_address
     source_port_range                          = "*"
   }
   security_rule {
