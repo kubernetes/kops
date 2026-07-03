@@ -476,9 +476,9 @@ resource "azurerm_role_assignment" "control-plane-eastus-1-masters-gossip-k8s-lo
   skip_service_principal_aad_check = true
 }
 
-resource "azurerm_role_assignment" "control-plane-eastus-1-masters-gossip-k8s-local-owner" {
+resource "azurerm_role_assignment" "control-plane-eastus-1-masters-gossip-k8s-local-contributor" {
   principal_id                     = azurerm_linux_virtual_machine_scale_set.control-plane-eastus-1-masters-gossip-k8s-local.identity[0].principal_id
-  role_definition_id               = "/subscriptions/sub-123/resourceGroups/gossip.k8s.local/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+  role_definition_id               = "/subscriptions/sub-123/resourceGroups/gossip.k8s.local/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
   scope                            = "/subscriptions/sub-123/resourceGroups/gossip.k8s.local"
   skip_service_principal_aad_check = true
 }
