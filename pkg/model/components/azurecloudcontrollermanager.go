@@ -42,11 +42,11 @@ func (b *AzureCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.C
 	eccm := cluster.Spec.ExternalCloudControllerManager
 
 	if eccm.Image == "" {
-		eccm.Image = "mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.34.3"
+		eccm.Image = "mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.36.2"
 	}
 
 	if eccm.AzureNodeManagerImage == "" {
-		eccm.AzureNodeManagerImage = "mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.34.3"
+		eccm.AzureNodeManagerImage = "mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.36.2"
 	}
 
 	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
