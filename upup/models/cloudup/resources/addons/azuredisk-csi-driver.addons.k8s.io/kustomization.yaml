@@ -8,7 +8,7 @@ kind: Kustomization
 helmCharts:
   - name: azuredisk-csi-driver
     repo: https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/charts
-    version: "1.34.0"
+    version: "1.34.4"
     releaseName: azuredisk-csi-driver
     namespace: kube-system
     valuesFile: helm-values.yaml
