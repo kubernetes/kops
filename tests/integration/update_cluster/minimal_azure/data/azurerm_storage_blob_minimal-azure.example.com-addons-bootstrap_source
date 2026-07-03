@@ -85,7 +85,7 @@ spec:
       k8s-addon: azure-cloud-controller.addons.k8s.io
   - id: k8s-1.31
     manifest: azuredisk-csi-driver.addons.k8s.io/k8s-1.31.yaml
-    manifestHash: c4e39eea11e49c4ae1dbf981e9d98256de3183c496becbb1f175306a6c354eb3
+    manifestHash: 743cb817f7db9e63cdff793d07dd043b226b0de5c3a37ccdd4af4943e67176db
     name: azuredisk-csi-driver.addons.k8s.io
     prune:
       kinds:
