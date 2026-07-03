@@ -32,6 +32,11 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/cpu
         value: '{{ or .ExternalCloudControllerManager.CPURequest "100m" }}'
+      # kOps schedules the CCM on control-plane nodes that may carry arbitrary taints; tolerate all.
+      - op: replace
+        path: /spec/template/spec/tolerations
+        value:
+          - operator: Exists
   - target:
       kind: DaemonSet
       name: cloud-node-manager
@@ -39,6 +44,11 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/image
         value: '{{ .ExternalCloudControllerManager.AzureNodeManagerImage }}'
+      # node-manager runs on every node; tolerate all taints.
+      - op: replace
+        path: /spec/template/spec/tolerations
+        value:
+          - operator: Exists
   # Remove Windows resources.
   - target:
       kind: DaemonSet
