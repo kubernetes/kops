@@ -70,12 +70,12 @@ func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				b.Cluster.AzureResourceGroupName(),
 			)
 			c.AddTask(&azuretasks.RoleAssignment{
-				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "owner")),
+				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "contributor")),
 				Lifecycle:  b.Lifecycle,
 				Scope:      to.Ptr(resourceGroupID),
 				VMScaleSet: vmss,
-				// Owner
-				RoleDefID: to.Ptr("8e3af657-a8ff-443c-a75c-2fe8c4bcb635"),
+				// Contributor
+				RoleDefID: to.Ptr("b24988ac-6180-42a0-ab88-20f7382dd24c"),
 			})
 			c.AddTask(&azuretasks.RoleAssignment{
 				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "blob")),
