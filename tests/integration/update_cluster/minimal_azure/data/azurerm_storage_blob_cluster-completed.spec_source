@@ -19,9 +19,9 @@ spec:
       tenantId: tenant-123
     manageStorageClasses: true
   cloudControllerManager:
-    azureNodeManagerImage: mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.34.3
+    azureNodeManagerImage: mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-node-manager:v1.36.2
     configureCloudRoutes: false
-    image: mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.34.3
+    image: mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-controller-manager:v1.36.2
     leaderElection:
       leaderElect: true
     logLevel: 2

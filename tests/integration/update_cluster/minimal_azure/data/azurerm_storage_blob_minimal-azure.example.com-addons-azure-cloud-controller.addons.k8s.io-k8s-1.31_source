@@ -268,7 +268,7 @@ spec:
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: 127.0.0.1
-        image: mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.34.3
+        image: mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-controller-manager:v1.36.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -368,7 +368,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: mcr.microsoft.com/oss/kubernetes/azure-cloud-node-manager:v1.34.3
+        image: mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-node-manager:v1.36.2
         imagePullPolicy: IfNotPresent
         name: cloud-node-manager
         resources:
