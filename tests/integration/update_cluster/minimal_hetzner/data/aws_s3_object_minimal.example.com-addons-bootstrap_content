@@ -29,7 +29,7 @@ spec:
       k8s-addon: limit-range.addons.k8s.io
   - id: k8s-1.15
     manifest: cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml
-    manifestHash: e2156b91aef97324702360be3b28e7e1cd024c128d023c1f05464e3b4aa5b340
+    manifestHash: 43f620a4cd2eb6ebb7c87b3def7c6988cb6dc45d13e90a4ff3c3aa595a64cd4e
     name: cluster-autoscaler.addons.k8s.io
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io

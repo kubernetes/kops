@@ -86,49 +86,58 @@ func (v *ServerGroup) Find(c *fi.CloudupContext) (*ServerGroup, error) {
 	v.Labels[hetzner.TagKubernetesInstanceUserData] = userDataHash
 
 	actual := *v
-	actual.Count = len(servers)
 
-	// Find servers that need to be updated
-	for i, server := range servers {
+	needUpdate, actualCount := v.classifyServers(servers, userDataHash)
+	actual.NeedUpdate = needUpdate
+	actual.Count = actualCount
+
+	return &actual, nil
+}
+
+// classifyServers compares the real servers against the expected group template and returns the
+// servers that need to be replaced (needUpdate) and the count to report as actual.
+func (v *ServerGroup) classifyServers(servers []*hcloud.Server, userDataHash string) (needUpdate []string, actualCount int) {
+	for _, server := range servers {
 		// Ignore servers that are already labeled as needing update
 		if _, ok := server.Labels[hetzner.TagKubernetesInstanceNeedsUpdate]; ok {
 			continue
 		}
 
-		// Check if server index is higher than desired count
-		if i >= v.Count {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
-			continue
-		}
-
 		// Check if server matches the expected group template
 		if server.Labels[hetzner.TagKubernetesInstanceUserData] != userDataHash {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
 		if server.Datacenter == nil || server.Datacenter.Location == nil || server.Datacenter.Location.Name != v.Location {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
 		if server.ServerType == nil || server.ServerType.Name != v.Size {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
 		if server.Image == nil || server.Image.Name != v.Image {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
 		if (server.PublicNet.IPv4.IP != nil) != v.EnableIPv4 {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
 		if (server.PublicNet.IPv6.IP != nil) != v.EnableIPv6 {
-			actual.NeedUpdate = append(actual.NeedUpdate, server.Name)
+			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
 	}
 
-	return &actual, nil
+	// Count is a floor: surplus servers are left in place.
+	// Shrinking is done via `kops delete instance` or Cluster Autoscaler scale-down.
+	actualCount = len(servers)
+	if actualCount > v.Count {
+		actualCount = v.Count
+	}
+
+	return needUpdate, actualCount
 }
 
 func (v *ServerGroup) Run(c *fi.CloudupContext) error {

@@ -202,6 +202,9 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		labels[hetzner.TagKubernetesInstanceRole] = string(ig.Spec.Role)
 		labels[hetzner.TagKubernetesClusterName] = b.ClusterName()
 		labels[hetzner.TagKubernetesInstanceGroup] = ig.Name
+		if ig.Spec.Role.HasNode() {
+			labels[hetzner.TagClusterAutoscalerNodeGroup] = ig.Name
+		}
 	case kops.CloudProviderGCE:
 		clusterLabel := gce.LabelForCluster(b.ClusterName())
 		roleLabel := gce.GceLabelNameRolePrefix + ig.Spec.Role.ToLowerString()
