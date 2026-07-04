@@ -43,6 +43,8 @@ const (
 	TagKubernetesInstanceNeedsUpdate = "kops.k8s.io/needs-update"
 	TagKubernetesVolumeRole          = "kops.k8s.io/volume-role"
 	TagKubernetesNodeLabelPrefix     = "node-label.kops.k8s.io."
+	// TagClusterAutoscalerNodeGroup is the label Cluster Autoscaler uses to determine membership of a server.
+	TagClusterAutoscalerNodeGroup = "hcloud/node-group"
 )
 
 // HetznerCloud exposes all the interfaces required to operate on Hetzner Cloud resources

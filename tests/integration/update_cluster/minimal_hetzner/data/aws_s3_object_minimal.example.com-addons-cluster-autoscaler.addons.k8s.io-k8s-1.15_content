@@ -295,6 +295,7 @@ data:
             "node-role.kubernetes.io/node": ""
           },
           "serverLabels": {
+            "hcloud/node-group": "nodes-fsn1",
             "kops.k8s.io/cluster": "minimal.example.com",
             "kops.k8s.io/instance-group": "nodes-fsn1",
             "kops.k8s.io/instance-role": "Node",
@@ -344,7 +345,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/hcloud-cluster-config: 6b7e37db999d86fc14b812600dc73848da7c6aab60d3316be300af59701e643c
+        checksum/hcloud-cluster-config: fec176327c61c674272b4f0473ab1c595833b6377bc81c2f0db9be3c0ca33efc
         prometheus.io/port: "8085"
         prometheus.io/scrape: "true"
       labels:
