@@ -295,6 +295,9 @@ func (d *deployer) env() []string {
 	case "gce":
 		if d.GCPProject != "" {
 			vars = append(vars, fmt.Sprintf("GCP_PROJECT=%v", d.GCPProject))
+			// ClusterLoader2's managed Prometheus client reads the GCP project
+			// from the PROJECT env var, so also expose it under that name.
+			vars = append(vars, fmt.Sprintf("PROJECT=%v", d.GCPProject))
 		}
 	}
 
