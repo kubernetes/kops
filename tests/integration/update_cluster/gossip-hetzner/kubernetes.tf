@@ -284,6 +284,7 @@ resource "hcloud_server" "nodes-fsn1" {
   count = 1
   image = "ubuntu-26.04"
   labels = {
+    "hcloud/node-group"                                   = "nodes-fsn1"
     "kops.k8s.io/cluster"                                 = "gossip.k8s.local"
     "kops.k8s.io/instance-group"                          = "nodes-fsn1"
     "kops.k8s.io/instance-role"                           = "Node"
