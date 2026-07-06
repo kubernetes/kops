@@ -288,29 +288,41 @@ func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map
 		// 1) no support in terraform
 		// 2) we can't steer to specific zones AFAICT, only to all zones in the region
 
-		targetSizes := make([]int, len(zones))
-		totalSize := 0
-		for i := range zones {
-			targetSizes[i] = minSize / len(zones)
-			totalSize += targetSizes[i]
-		}
-		i := 0
-		for totalSize < minSize {
-			targetSizes[i]++
-			totalSize++
-
-			i++
-			if i >= len(targetSizes) {
-				i = 0
-			}
-		}
-
-		instanceCountByZone := make(map[string]int)
-		for i, zone := range zones {
-			instanceCountByZone[zone] = targetSizes[i]
-		}
-		return instanceCountByZone, nil
+		return SplitCountAcrossZones(minSize, zones), nil
 	}
+}
+
+// SplitCountAcrossZones distributes count across zones as evenly as possible,
+// assigning the remainder to zones in the order given. Both the target sizes
+// of the per-zone InstanceGroupManagers and the min/max sizes registered with
+// cluster-autoscaler are derived from this split, so they stay consistent.
+func SplitCountAcrossZones(count int, zones []string) map[string]int {
+	if len(zones) == 0 {
+		return map[string]int{}
+	}
+
+	targetSizes := make([]int, len(zones))
+	totalSize := 0
+	for i := range zones {
+		targetSizes[i] = count / len(zones)
+		totalSize += targetSizes[i]
+	}
+	i := 0
+	for totalSize < count {
+		targetSizes[i]++
+		totalSize++
+
+		i++
+		if i >= len(targetSizes) {
+			i = 0
+		}
+	}
+
+	countByZone := make(map[string]int)
+	for i, zone := range zones {
+		countByZone[zone] = targetSizes[i]
+	}
+	return countByZone
 }
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
