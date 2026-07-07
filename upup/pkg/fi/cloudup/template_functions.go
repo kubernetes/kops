@@ -57,6 +57,7 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/kopscontroller"
+	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/resources/spotinst"
@@ -1162,7 +1163,7 @@ type ClusterAutoscalerNodeGroup struct {
 }
 
 // GetClusterAutoscalerNodeGroups returns a map containing ClusterAutoscaler info for each instance group of type Node.
-func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]ClusterAutoscalerNodeGroup {
+func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() (map[string]ClusterAutoscalerNodeGroup, error) {
 	cluster := tf.Cluster
 	groups := make(map[string]ClusterAutoscalerNodeGroup)
 	for _, ig := range tf.KopsModelContext.InstanceGroups {
@@ -1173,9 +1174,37 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 				MaxSize:   fi.ValueOf(ig.Spec.MaxSize),
 			}
 			if cluster.GetCloudProvider() == kops.CloudProviderGCE {
+				// On GCE, kOps creates one zonal InstanceGroupManager per zone of the
+				// instance group, so each zonal MIG must be registered with
+				// cluster-autoscaler as its own node group. The min/max sizes are
+				// split across zones the same way the MIG target sizes are.
 				cloud := tf.cloud.(gce.GCECloud)
+				zones, err := apiModel.FindZonesForInstanceGroup(cluster, ig)
+				if err != nil {
+					return nil, err
+				}
+				if len(zones) == 0 {
+					return nil, fmt.Errorf("no zones found for instance group %q", ig.ObjectMeta.Name)
+				}
+				minSizeByZone := gcemodel.SplitCountAcrossZones(int(group.MinSize), zones)
+				maxSizeByZone := gcemodel.SplitCountAcrossZones(int(group.MaxSize), zones)
 				format := "https://www.googleapis.com/compute/v1/projects/%s/zones/%s/instanceGroups/%s"
-				group.Other = fmt.Sprintf(format, cloud.Project(), ig.Spec.Zones[0], gce.NameForInstanceGroupManager(cluster.ObjectMeta.Name, ig.ObjectMeta.Name, ig.Spec.Zones[0]))
+				for _, zone := range zones {
+					// A zone whose max size is zero can never hold an instance.
+					if len(zones) > 1 && maxSizeByZone[zone] == 0 {
+						continue
+					}
+					zoneGroup := group
+					zoneGroup.MinSize = int32(minSizeByZone[zone])
+					zoneGroup.MaxSize = int32(maxSizeByZone[zone])
+					zoneGroup.Other = fmt.Sprintf(format, cloud.Project(), zone, gce.NameForInstanceGroupManager(cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone))
+					key := ig.Name
+					if len(zones) > 1 {
+						key = ig.Name + "-" + zone
+					}
+					groups[key] = zoneGroup
+				}
+				continue
 			} else if cluster.GetCloudProvider() == kops.CloudProviderHetzner {
 				// Hetzner autoscaler expects --nodes=min:max:instanceType:region:name.
 				// The subnet name for Hetzner is the location (e.g. "hel1"), which is
@@ -1188,7 +1217,7 @@ func (tf *TemplateFunctions) GetClusterAutoscalerNodeGroups() map[string]Cluster
 			groups[ig.Name] = group
 		}
 	}
-	return groups
+	return groups, nil
 }
 
 // HCloudClusterConfig returns HCLOUD_CLUSTER_CONFIG as JSON.

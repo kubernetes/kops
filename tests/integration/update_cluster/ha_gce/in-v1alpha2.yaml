@@ -6,6 +6,8 @@ metadata:
 spec:
   api:
     dns: {}
+  clusterAutoscaler:
+    enabled: true
   authorization:
     rbac: {}
   channel: stable

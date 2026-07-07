@@ -554,6 +554,7 @@ func TestHA(t *testing.T) {
 func TestHighAvailabilityGCE(t *testing.T) {
 	newIntegrationTest("ha-gce.example.com", "ha_gce").withZones(3).
 		withAddons(
+			clusterAutoscalerAddon,
 			dnsControllerAddon,
 			gcpCCMAddon,
 			gcpPDCSIAddon,

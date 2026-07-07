@@ -1,0 +1,394 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      k8s-app: cluster-autoscaler
+
+---
+
+apiVersion: v1
+automountServiceAccountToken: true
+kind: ServiceAccount
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  - endpoints
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods/eviction
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resourceNames:
+  - cluster-autoscaler
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - watch
+  - list
+  - get
+  - update
+- apiGroups:
+  - resource.k8s.io
+  resources:
+  - resourceslices
+  - deviceclasses
+  - resourceclaims
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pods
+  - services
+  - replicationcontrollers
+  - persistentvolumeclaims
+  - persistentvolumes
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - batch
+  - extensions
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - patch
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - replicasets
+  - daemonsets
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  verbs:
+  - watch
+  - list
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  - csinodes
+  - csidrivers
+  - csistoragecapacities
+  - volumeattachments
+  verbs:
+  - watch
+  - list
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - list
+  - watch
+  - get
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resourceNames:
+  - cluster-autoscaler
+  resources:
+  - leases
+  verbs:
+  - get
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-autoscaler
+subjects:
+- kind: ServiceAccount
+  name: cluster-autoscaler
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resourceNames:
+  - cluster-autoscaler-status
+  resources:
+  - configmaps
+  verbs:
+  - delete
+  - get
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cluster-autoscaler
+subjects:
+- kind: ServiceAccount
+  name: cluster-autoscaler
+  namespace: kube-system
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  ports:
+  - name: http
+    port: 8085
+    protocol: TCP
+    targetPort: 8085
+  selector:
+    app.kubernetes.io/name: cluster-autoscaler
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    addon.kops.k8s.io/name: cluster-autoscaler.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    app.kubernetes.io/name: cluster-autoscaler
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "8085"
+        prometheus.io/scrape: "true"
+      labels:
+        app: cluster-autoscaler
+        app.kubernetes.io/name: cluster-autoscaler
+        k8s-addon: cluster-autoscaler.addons.k8s.io
+        k8s-app: cluster-autoscaler
+        kops.k8s.io/managed-by: kops
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      containers:
+      - command:
+        - ./cluster-autoscaler
+        - --balance-similar-node-groups=false
+        - --emit-per-nodegroup-metrics=false
+        - --cloud-provider=gce
+        - --expander=random
+        - --nodes=1:1:https://www.googleapis.com/compute/v1/projects/testproject/zones/us-test1-a/instanceGroups/a-nodes-ha-gce-example-com
+        - --nodes=1:1:https://www.googleapis.com/compute/v1/projects/testproject/zones/us-test1-b/instanceGroups/b-nodes-ha-gce-example-com
+        - --ignore-daemonsets-utilization=false
+        - --scale-down-utilization-threshold=0.5
+        - --skip-nodes-with-custom-controller-pods=true
+        - --skip-nodes-with-local-storage=true
+        - --skip-nodes-with-system-pods=true
+        - --scale-down-delay-after-add=10m0s
+        - --scale-down-unneeded-time=10m0s
+        - --scale-down-unready-time=20m0s
+        - --new-pod-scale-up-delay=0s
+        - --max-node-provision-time=15m0s
+        - --cordon-node-before-terminating=true
+        - --logtostderr=true
+        - --stderrthreshold=info
+        - --v=4
+        image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health-check
+            port: http
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: cluster-autoscaler
+        ports:
+        - containerPort: 8085
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 300Mi
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      nodeSelector: null
+      priorityClassName: system-cluster-critical
+      serviceAccountName: cluster-autoscaler
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      topologySpreadConstraints:
+      - labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
+        maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+      - labelSelector:
+          matchLabels:
+            app: cluster-autoscaler
+        maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
