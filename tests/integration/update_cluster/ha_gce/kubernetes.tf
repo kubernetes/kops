@@ -58,6 +58,14 @@ resource "aws_s3_object" "ha-gce-example-com-addons-bootstrap" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "ha-gce-example-com-addons-cluster-autoscaler-addons-k8s-io-k8s-1-15" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-cluster-autoscaler.addons.k8s.io-k8s-1.15_content")
+  key                    = "tests/ha-gce.example.com/addons/cluster-autoscaler.addons.k8s.io/k8s-1.15.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "ha-gce-example-com-addons-coredns-addons-k8s-io-k8s-1-12" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_ha-gce.example.com-addons-coredns.addons.k8s.io-k8s-1.12_content")

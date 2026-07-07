@@ -24,6 +24,7 @@ import (
 	"text/template"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -508,5 +509,80 @@ func TestTemplateFunctions_TaskHelpers(t *testing.T) {
 
 	if actual := buf.String(); actual != "ManagedFile/alpha|ManagedFile/alpha;ManagedFile/zeta;" {
 		t.Fatalf("unexpected rendered template %q", actual)
+	}
+}
+
+func TestGetClusterAutoscalerNodeGroupsGCE(t *testing.T) {
+	cloud := gcemock.InstallMockGCECloud("us-test1", "testproject")
+
+	cluster := &kops.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "minimal.example.com"},
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				GCE: &kops.GCESpec{},
+			},
+		},
+	}
+
+	newIG := func(name string, minSize, maxSize int32, zones []string) *kops.InstanceGroup {
+		return &kops.InstanceGroup{
+			ObjectMeta: metav1.ObjectMeta{Name: name},
+			Spec: kops.InstanceGroupSpec{
+				Role:    kops.InstanceGroupRoleNode,
+				MinSize: fi.PtrTo(minSize),
+				MaxSize: fi.PtrTo(maxSize),
+				Zones:   zones,
+			},
+		}
+	}
+
+	migURL := func(zone, name string) string {
+		return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/testproject/zones/%s/instanceGroups/%s", zone, name)
+	}
+
+	grid := []struct {
+		desc     string
+		ig       *kops.InstanceGroup
+		expected map[string]ClusterAutoscalerNodeGroup
+	}{
+		{
+			desc: "single zone",
+			ig:   newIG("nodes", 1, 10, []string{"us-test1-a"}),
+			expected: map[string]ClusterAutoscalerNodeGroup{
+				"nodes": {MinSize: 1, MaxSize: 10, Other: migURL("us-test1-a", "a-nodes-minimal-example-com")},
+			},
+		},
+		{
+			desc: "multiple zones split min and max",
+			ig:   newIG("nodes", 1, 3, []string{"us-test1-a", "us-test1-b", "us-test1-c"}),
+			expected: map[string]ClusterAutoscalerNodeGroup{
+				"nodes-us-test1-a": {MinSize: 1, MaxSize: 1, Other: migURL("us-test1-a", "a-nodes-minimal-example-com")},
+				"nodes-us-test1-b": {MinSize: 0, MaxSize: 1, Other: migURL("us-test1-b", "b-nodes-minimal-example-com")},
+				"nodes-us-test1-c": {MinSize: 0, MaxSize: 1, Other: migURL("us-test1-c", "c-nodes-minimal-example-com")},
+			},
+		},
+		{
+			desc: "max size smaller than zone count skips empty zones",
+			ig:   newIG("nodes", 1, 1, []string{"us-test1-a", "us-test1-b", "us-test1-c"}),
+			expected: map[string]ClusterAutoscalerNodeGroup{
+				"nodes-us-test1-a": {MinSize: 1, MaxSize: 1, Other: migURL("us-test1-a", "a-nodes-minimal-example-com")},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			tf := &TemplateFunctions{cloud: cloud}
+			tf.Cluster = cluster
+			tf.InstanceGroups = []*kops.InstanceGroup{g.ig}
+
+			actual, err := tf.GetClusterAutoscalerNodeGroups()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(actual, g.expected) {
+				t.Errorf("expected %+v, got %+v", g.expected, actual)
+			}
+		})
 	}
 }
