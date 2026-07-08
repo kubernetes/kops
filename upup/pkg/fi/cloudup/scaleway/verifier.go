@@ -30,6 +30,7 @@ import (
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 )
 
 type ScalewayVerifierOptions struct{}
@@ -41,7 +42,7 @@ type scalewayVerifier struct {
 var _ bootstrap.Verifier = (*scalewayVerifier)(nil)
 
 func NewScalewayVerifier(ctx context.Context, opt *ScalewayVerifierOptions) (bootstrap.Verifier, error) {
-	profile, err := CreateValidScalewayProfile()
+	profile, err := scalewaymetadata.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, fmt.Errorf("creating client for Scaleway Verifier: %w", err)
 	}
@@ -58,10 +59,10 @@ func NewScalewayVerifier(ctx context.Context, opt *ScalewayVerifierOptions) (boo
 }
 
 func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, ScalewayAuthenticationTokenPrefix) {
+	if !strings.HasPrefix(token, scalewaymetadata.ScalewayAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
-	serverID := strings.TrimPrefix(token, ScalewayAuthenticationTokenPrefix)
+	serverID := strings.TrimPrefix(token, scalewaymetadata.ScalewayAuthenticationTokenPrefix)
 
 	metadataAPI := instance.NewMetadataAPI()
 	metadata, err := metadataAPI.GetMetadata()
@@ -77,7 +78,7 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 		return nil, fmt.Errorf("unable to determine region from zone %s", zone)
 	}
 
-	profile, err := CreateValidScalewayProfile()
+	profile, err := scalewaymetadata.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, err
 	}

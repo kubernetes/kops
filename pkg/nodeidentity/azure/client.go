@@ -24,7 +24,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
-	azurecloud "k8s.io/kops/upup/pkg/fi/cloudup/azure"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
 )
 
 // client is an Azure client.
@@ -38,7 +38,7 @@ type client struct {
 func newClient() (*client, error) {
 	// nodeidentity.Identifier.New does not propagate a context; the IMDS HTTP client's own timeout
 	// bounds this call.
-	metadata, err := azurecloud.QueryComputeInstanceMetadata(context.TODO())
+	metadata, err := azuremetadata.QueryComputeInstanceMetadata(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("error querying instance metadata: %s", err)
 	}

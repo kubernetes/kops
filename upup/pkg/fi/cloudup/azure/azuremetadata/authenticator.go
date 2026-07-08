@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package azure
+package azuremetadata
 
 import (
 	"context"
@@ -58,7 +58,7 @@ func (h *azureAuthenticator) CreateToken(body []byte) (string, error) {
 	klog.V(4).Infof("Azure authenticator obtained resource ID %q", metadata.ResourceID)
 
 	// Query IMDS for a PKCS7-signed attested document containing the nonce.
-	nonce := nonceForBody(body)
+	nonce := NonceForBody(body)
 	doc, err := queryIMDSAttestedDocument(ctx, nonce)
 	if err != nil {
 		return "", fmt.Errorf("querying attested document: %w", err)

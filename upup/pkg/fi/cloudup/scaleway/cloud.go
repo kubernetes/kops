@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 )
 
 const (
@@ -123,7 +124,7 @@ func NewScwCloud(tags map[string]string) (ScwCloud, error) {
 			return nil, err
 		}
 	} else {
-		profile, err := CreateValidScalewayProfile()
+		profile, err := scalewaymetadata.CreateValidScalewayProfile()
 		if err != nil {
 			return nil, err
 		}

@@ -37,6 +37,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackmetadata"
 )
 
 type OpenStackVerifierOptions struct {
@@ -121,10 +122,10 @@ func readKubeConfig() (*restclient.Config, error) {
 }
 
 func (o openstackVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, OpenstackAuthenticationTokenPrefix) {
+	if !strings.HasPrefix(token, openstackmetadata.OpenstackAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
-	serverID := strings.TrimPrefix(token, OpenstackAuthenticationTokenPrefix)
+	serverID := strings.TrimPrefix(token, openstackmetadata.OpenstackAuthenticationTokenPrefix)
 
 	instance, err := servers.Get(ctx, o.novaClient, serverID).Extract()
 	if err != nil {

@@ -25,7 +25,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -128,7 +128,7 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 	}
 
 	if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
-		profile, err := scaleway.CreateValidScalewayProfile()
+		profile, err := scalewaymetadata.CreateValidScalewayProfile()
 		if err != nil {
 			return nil
 		}

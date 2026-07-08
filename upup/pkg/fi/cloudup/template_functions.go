@@ -73,7 +73,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackcloudconfig"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/util/pkg/env"
 	"k8s.io/kops/util/pkg/maps"
 	"sigs.k8s.io/yaml"
@@ -256,26 +258,26 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["HCLOUD_SSH_KEY"] = tf.HCloudSSHKey
 
 	dest["OPENSTACK_CONF"] = func() string {
-		lines := openstack.MakeCloudConfig(cluster.Spec.CloudProvider.Openstack)
+		lines := openstackcloudconfig.MakeCloudConfig(cluster.Spec.CloudProvider.Openstack)
 		return "[global]\n" + strings.Join(lines, "\n") + "\n"
 	}
 
 	dest["SCW_ACCESS_KEY"] = func() string {
-		profile, err := scaleway.CreateValidScalewayProfile()
+		profile, err := scalewaymetadata.CreateValidScalewayProfile()
 		if err != nil {
 			return ""
 		}
 		return fi.ValueOf(profile.AccessKey)
 	}
 	dest["SCW_SECRET_KEY"] = func() string {
-		profile, err := scaleway.CreateValidScalewayProfile()
+		profile, err := scalewaymetadata.CreateValidScalewayProfile()
 		if err != nil {
 			return ""
 		}
 		return fi.ValueOf(profile.SecretKey)
 	}
 	dest["SCW_DEFAULT_PROJECT_ID"] = func() string {
-		profile, err := scaleway.CreateValidScalewayProfile()
+		profile, err := scalewaymetadata.CreateValidScalewayProfile()
 		if err != nil {
 			return ""
 		}

@@ -24,13 +24,14 @@ import (
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipos "k8s.io/kops/protokube/pkg/gossip/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackmetadata"
 )
 
 // OpenStackCloudProvider is the CloudProvider implementation for OpenStack
 type OpenStackCloudProvider struct {
 	cloud openstack.OpenstackCloud
 
-	meta *openstack.InstanceMetadata
+	meta *openstackmetadata.InstanceMetadata
 
 	clusterName  string
 	project      string
@@ -41,7 +42,7 @@ var _ CloudProvider = &OpenStackCloudProvider{}
 
 // NewOpenStackCloudProvider builds a OpenStackCloudProvider
 func NewOpenStackCloudProvider() (*OpenStackCloudProvider, error) {
-	metadata, err := openstack.GetLocalMetadata()
+	metadata, err := openstackmetadata.GetLocalMetadata()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get server metadata: %v", err)
 	}

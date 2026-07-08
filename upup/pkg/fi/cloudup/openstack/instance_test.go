@@ -19,6 +19,7 @@ package openstack
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"time"
@@ -86,4 +87,14 @@ func Test_WaitForStatusActiveResultsInTimeout(t *testing.T) {
 
 	expectedErr := context.DeadlineExceeded
 	assertTestResults(t, nil, expectedErr, actualErr)
+}
+
+func assertTestResults(t *testing.T, err error, expected interface{}, actual interface{}) {
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("expected %+v, but got %+v", expected, actual)
+	}
 }

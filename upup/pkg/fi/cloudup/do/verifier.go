@@ -30,6 +30,7 @@ import (
 	"golang.org/x/oauth2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do/dometadata"
 )
 
 type DigitalOceanVerifierOptions struct {
@@ -56,10 +57,10 @@ func NewVerifier(ctx context.Context, opt *DigitalOceanVerifierOptions) (bootstr
 }
 
 func (o digitalOceanVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, DOAuthenticationTokenPrefix) {
+	if !strings.HasPrefix(token, dometadata.DOAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
-	serverIDString := strings.TrimPrefix(token, DOAuthenticationTokenPrefix)
+	serverIDString := strings.TrimPrefix(token, dometadata.DOAuthenticationTokenPrefix)
 
 	serverID, err := strconv.Atoi(serverIDString)
 	if err != nil {

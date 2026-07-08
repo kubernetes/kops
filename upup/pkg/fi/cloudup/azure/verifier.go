@@ -31,6 +31,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
 )
 
 const (
@@ -100,12 +101,12 @@ func vmLogIDFromResource(res *arm.ResourceID) string {
 // VerifyToken validates the Azure attestation token, confirms the claimed VM through the Azure API,
 // and returns the node bootstrap identity.
 func (a azureVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, AzureAuthenticationTokenPrefix) {
+	if !strings.HasPrefix(token, azuremetadata.AzureAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
 
 	// Token format: "x-azure-id <resourceID> <base64-pkcs7-signature>"
-	tokenPayload := strings.TrimPrefix(token, AzureAuthenticationTokenPrefix)
+	tokenPayload := strings.TrimPrefix(token, azuremetadata.AzureAuthenticationTokenPrefix)
 	resourceID, signature, ok := strings.Cut(tokenPayload, " ")
 	if !ok || resourceID == "" || signature == "" {
 		return nil, fmt.Errorf("incorrect token format")
@@ -290,7 +291,7 @@ type client struct {
 // newVerifierClient builds Azure API clients scoped to the local instance's subscription and
 // resource group from IMDS metadata.
 func newVerifierClient(ctx context.Context) (*client, error) {
-	metadata, err := QueryComputeInstanceMetadata(ctx)
+	metadata, err := azuremetadata.QueryComputeInstanceMetadata(ctx)
 	if err != nil || metadata == nil {
 		return nil, fmt.Errorf("getting instance metadata: %w", err)
 	}

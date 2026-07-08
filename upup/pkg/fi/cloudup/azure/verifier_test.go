@@ -24,6 +24,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"k8s.io/kops/pkg/bootstrap"
 )
@@ -79,12 +81,12 @@ func TestVerifyToken(t *testing.T) {
 		wantErrSubstr string
 	}{
 		{"wrong prefix", "x-aws-sts something", bootstrap.ErrNotThisVerifier, ""},
-		{"missing signature", AzureAuthenticationTokenPrefix + "no-space-here", nil, ""},
-		{"subscription mismatch", AzureAuthenticationTokenPrefix + wrongSubResourceID + " " + invalidPKCS7, nil, ""},
-		{"resource group mismatch", AzureAuthenticationTokenPrefix + wrongRGResourceID + " " + invalidPKCS7, nil, ""},
-		{"unsupported resource type", AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Network/networkInterfaces/nic-1 " + invalidPKCS7, nil, "unsupported resource type"},
-		{"vmss cluster mismatch", AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/nodes.other-cluster/virtualMachines/1 " + invalidPKCS7, nil, "does not match cluster name"},
-		{"invalid PKCS7", AzureAuthenticationTokenPrefix + matchingResourceID + " " + invalidPKCS7, nil, ""},
+		{"missing signature", azuremetadata.AzureAuthenticationTokenPrefix + "no-space-here", nil, ""},
+		{"subscription mismatch", azuremetadata.AzureAuthenticationTokenPrefix + wrongSubResourceID + " " + invalidPKCS7, nil, ""},
+		{"resource group mismatch", azuremetadata.AzureAuthenticationTokenPrefix + wrongRGResourceID + " " + invalidPKCS7, nil, ""},
+		{"unsupported resource type", azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Network/networkInterfaces/nic-1 " + invalidPKCS7, nil, "unsupported resource type"},
+		{"vmss cluster mismatch", azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/nodes.other-cluster/virtualMachines/1 " + invalidPKCS7, nil, "does not match cluster name"},
+		{"invalid PKCS7", azuremetadata.AzureAuthenticationTokenPrefix + matchingResourceID + " " + invalidPKCS7, nil, ""},
 	}
 
 	v := &azureVerifier{
@@ -141,7 +143,7 @@ func TestVerifyToken_SignedSubscriptionMismatch(t *testing.T) {
 		attestation: &attestationVerifier{rootCertPool: rootPool},
 	}
 
-	token := AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm " + sig
+	token := azuremetadata.AzureAuthenticationTokenPrefix + "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm " + sig
 	_, err := v.VerifyToken(context.Background(), nil, token, body)
 	if err == nil {
 		t.Fatal("expected error")

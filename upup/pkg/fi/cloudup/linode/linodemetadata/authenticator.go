@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package linode
+// Package linodemetadata provides the node-local (metadata-service based)
+// parts of the Linode support, kept separate so that nodeup does not link the
+// full cloud provider implementation.
+package linodemetadata
 
 import (
 	"context"

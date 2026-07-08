@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -48,7 +49,7 @@ type nodeIdentifier struct {
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on Scaleway
 func New(cacheNodeidentityInfo bool) (nodeidentity.Identifier, error) {
-	profile, err := scaleway.CreateValidScalewayProfile()
+	profile, err := scalewaymetadata.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, err
 	}

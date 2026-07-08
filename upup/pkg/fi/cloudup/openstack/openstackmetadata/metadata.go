@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package openstack
+// Package openstackmetadata provides the node-local (metadata-service and
+// config-drive based) parts of the OpenStack support, kept separate so that
+// nodeup does not link the full cloud provider implementation.
+package openstackmetadata
 
 import (
 	"encoding/json"
