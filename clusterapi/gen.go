@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package clusterapi
 
 //go:generate go run sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0 output:dir=config/crds crd:crdVersions=v1 paths=./bootstrap/kops/api/...;./controlplane/kops/api/...
 
