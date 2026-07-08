@@ -493,6 +493,11 @@ type KubeAPIServerConfig struct {
 	// RequestTimeout configures the duration a handler must keep a request open before timing it out. (default 1m0s)
 	RequestTimeout *metav1.Duration `json:"requestTimeout,omitempty" flag:"request-timeout"`
 
+	// StorageInitializationTimeout is the maximum amount of time to wait for the storage layer to initialize before declaring kube-apiserver ready.
+	// Increasing this value allows etcd more time to become ready on new control-plane nodes before kube-apiserver gives up and crashes.
+	// Default is 1m0s.
+	StorageInitializationTimeout *metav1.Duration `json:"storageInitializationTimeout,omitempty" flag:"storage-initialization-timeout"`
+
 	// MinRequestTimeout configures the minimum number of seconds a handler must keep a request open before timing it out.
 	// Currently only honored by the watch request handler
 	MinRequestTimeout *int32 `json:"minRequestTimeout,omitempty" flag:"min-request-timeout"`
