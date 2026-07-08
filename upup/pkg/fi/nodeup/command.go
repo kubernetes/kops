@@ -429,8 +429,7 @@ func getMachineType(ctx context.Context) (string, error) {
 func completeWarmingLifecycleAction(ctx context.Context, cloud *awsup.Cloud, modelContext *model.NodeupModelContext) error {
 	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.NodeupConfig.ClusterName
 	hookName := "kops-warmpool"
-	svc := cloud.Autoscaling()
-	hooks, err := svc.DescribeLifecycleHooks(ctx, &autoscaling.DescribeLifecycleHooksInput{
+	hooks, err := cloud.DescribeLifecycleHooks(ctx, &autoscaling.DescribeLifecycleHooksInput{
 		AutoScalingGroupName: &asgName,
 		LifecycleHookNames:   []string{hookName},
 	})
@@ -440,7 +439,7 @@ func completeWarmingLifecycleAction(ctx context.Context, cloud *awsup.Cloud, mod
 
 	if len(hooks.LifecycleHooks) > 0 {
 		klog.Info("Found ASG lifecycle hook")
-		_, err := svc.CompleteLifecycleAction(ctx, &autoscaling.CompleteLifecycleActionInput{
+		_, err := cloud.CompleteLifecycleAction(ctx, &autoscaling.CompleteLifecycleActionInput{
 			AutoScalingGroupName:  &asgName,
 			InstanceId:            &modelContext.InstanceID,
 			LifecycleHookName:     &hookName,

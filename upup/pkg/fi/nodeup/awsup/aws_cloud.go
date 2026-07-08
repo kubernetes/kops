@@ -17,11 +17,18 @@ limitations under the License.
 // Package awsup holds the AWS clients used by nodeup.
 //
 // Unlike the cloudup awsup package, it constructs only the clients that
-// nodeup needs and exposes them as concrete types. nodeup contains
-// reflect.Value.MethodByName call sites, which prevent the linker from
-// pruning methods of any type stored in an interface; keeping the AWS SDK
-// clients out of interface values keeps the thousands of unused SDK
-// operations out of the nodeup binary.
+// nodeup needs, and it keeps them out of reach of reflection. nodeup
+// contains reflect.Value.MethodByName call sites, so the linker keeps every
+// exported method of any type that is convertible to an interface value via
+// reflection; that property propagates from interface-stored types (such as
+// NodeupModelContext) through all struct fields, transitively. An AWS SDK
+// client reachable that way keeps every operation of its service in the
+// binary, which is tens of megabytes for EC2 alone.
+//
+// Cloud is therefore only a handle: the SDK clients live in unexported
+// package-level state, which is referenced from code but not from any type
+// descriptor, so the linker can discard the unused SDK operations. Do not
+// add SDK clients (or structs containing them) as fields on Cloud.
 package awsup
 
 import (
@@ -43,29 +50,45 @@ import (
 // ClientMaxRetries is the number of retries for AWS API calls, matching the cloudup awsup package.
 const ClientMaxRetries = 13
 
-// Cloud holds the AWS clients used by nodeup, for the region we are running in.
+// Cloud is a handle to the AWS clients, for the region we are running in.
 type Cloud struct {
 	region string
+}
 
+// clients holds the AWS clients used by nodeup. See the package comment for
+// why they are package state rather than fields on Cloud.
+var clients struct {
+	mutex sync.Mutex
+
+	region      string
 	ec2         *ec2.Client
 	autoscaling *autoscaling.Client
 
-	machineTypesMutex sync.Mutex
-	machineTypes      map[ec2types.InstanceType]*MachineTypeInfo
+	machineTypes map[ec2types.InstanceType]*MachineTypeInfo
 }
 
 // NewCloud constructs the AWS clients used by nodeup.
 func NewCloud(ctx context.Context, region string) (*Cloud, error) {
+	clients.mutex.Lock()
+	defer clients.mutex.Unlock()
+
+	if clients.ec2 != nil {
+		if clients.region != region {
+			return nil, fmt.Errorf("attempt to build AWS clients for region %q, already built for %q", region, clients.region)
+		}
+		return &Cloud{region: region}, nil
+	}
+
 	cfg, err := loadAWSConfig(ctx, region)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load default aws config: %w", err)
 	}
 
-	return &Cloud{
-		region:      region,
-		ec2:         ec2.NewFromConfig(cfg),
-		autoscaling: autoscaling.NewFromConfig(cfg),
-	}, nil
+	clients.region = region
+	clients.ec2 = ec2.NewFromConfig(cfg)
+	clients.autoscaling = autoscaling.NewFromConfig(cfg)
+
+	return &Cloud{region: region}, nil
 }
 
 // Region returns the AWS region we are running in.
@@ -73,14 +96,19 @@ func (c *Cloud) Region() string {
 	return c.region
 }
 
-// EC2 returns the EC2 client.
-func (c *Cloud) EC2() *ec2.Client {
-	return c.ec2
+// AssignIpv6Addresses calls ec2.AssignIpv6Addresses.
+func (c *Cloud) AssignIpv6Addresses(ctx context.Context, input *ec2.AssignIpv6AddressesInput) (*ec2.AssignIpv6AddressesOutput, error) {
+	return clients.ec2.AssignIpv6Addresses(ctx, input)
 }
 
-// Autoscaling returns the autoscaling client.
-func (c *Cloud) Autoscaling() *autoscaling.Client {
-	return c.autoscaling
+// DescribeLifecycleHooks calls autoscaling.DescribeLifecycleHooks.
+func (c *Cloud) DescribeLifecycleHooks(ctx context.Context, input *autoscaling.DescribeLifecycleHooksInput) (*autoscaling.DescribeLifecycleHooksOutput, error) {
+	return clients.autoscaling.DescribeLifecycleHooks(ctx, input)
+}
+
+// CompleteLifecycleAction calls autoscaling.CompleteLifecycleAction.
+func (c *Cloud) CompleteLifecycleAction(ctx context.Context, input *autoscaling.CompleteLifecycleActionInput) (*autoscaling.CompleteLifecycleActionOutput, error) {
+	return clients.autoscaling.CompleteLifecycleAction(ctx, input)
 }
 
 func loadAWSConfig(ctx context.Context, region string) (aws.Config, error) {

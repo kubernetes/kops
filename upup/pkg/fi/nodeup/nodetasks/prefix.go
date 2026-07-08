@@ -95,7 +95,7 @@ func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error 
 		return err
 	}
 
-	response, err := t.Cloud.EC2().AssignIpv6Addresses(ctx, &ec2.AssignIpv6AddressesInput{
+	response, err := t.Cloud.AssignIpv6Addresses(ctx, &ec2.AssignIpv6AddressesInput{
 		Ipv6PrefixCount:    new(int32(1)),
 		NetworkInterfaceId: new(interfaceId),
 	})

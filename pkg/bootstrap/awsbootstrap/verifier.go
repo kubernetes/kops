@@ -38,9 +38,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/bootstrap"
-	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	"k8s.io/kops/pkg/wellknownports"
 )
+
+// cloudTagInstanceGroupName is the cloud tag that identifies the instance group an instance belongs to.
+// It must match nodeidentityaws.CloudTagInstanceGroupName; it is declared here because importing
+// pkg/nodeidentity/aws would store *ec2.Client in an interface, keeping every EC2 operation in the
+// nodeup binary.
+const cloudTagInstanceGroupName = "kops.k8s.io/instancegroup"
 
 type AWSVerifierOptions struct {
 	// NodesRoles are the IAM roles that worker nodes are permitted to have.
@@ -334,7 +339,7 @@ func (a awsVerifier) verifyCallerIdentity(ctx context.Context, callerIdentity *G
 
 	for _, tag := range instance.Tags {
 		tagKey := aws.ToString(tag.Key)
-		if tagKey == nodeidentityaws.CloudTagInstanceGroupName {
+		if tagKey == cloudTagInstanceGroupName {
 			result.InstanceGroupName = aws.ToString(tag.Value)
 		}
 	}

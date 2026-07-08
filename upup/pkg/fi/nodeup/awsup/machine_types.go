@@ -34,14 +34,14 @@ type MachineTypeInfo struct {
 
 // GetMachineTypeInfo calls ec2.DescribeInstanceTypes to get information for a particular instance type, caching the result.
 func (c *Cloud) GetMachineTypeInfo(ctx context.Context, machineType ec2types.InstanceType) (*MachineTypeInfo, error) {
-	c.machineTypesMutex.Lock()
-	defer c.machineTypesMutex.Unlock()
+	clients.mutex.Lock()
+	defer clients.mutex.Unlock()
 
-	if info, ok := c.machineTypes[machineType]; ok {
+	if info, ok := clients.machineTypes[machineType]; ok {
 		return info, nil
 	}
 
-	resp, err := c.ec2.DescribeInstanceTypes(ctx, &ec2.DescribeInstanceTypesInput{
+	resp, err := clients.ec2.DescribeInstanceTypes(ctx, &ec2.DescribeInstanceTypesInput{
 		InstanceTypes: []ec2types.InstanceType{machineType},
 	})
 	if err != nil {
@@ -58,10 +58,10 @@ func (c *Cloud) GetMachineTypeInfo(ctx context.Context, machineType ec2types.Ins
 		InstanceIPsPerENI: aws.ToInt32(info.NetworkInfo.Ipv4AddressesPerInterface),
 	}
 
-	if c.machineTypes == nil {
-		c.machineTypes = make(map[ec2types.InstanceType]*MachineTypeInfo)
+	if clients.machineTypes == nil {
+		clients.machineTypes = make(map[ec2types.InstanceType]*MachineTypeInfo)
 	}
-	c.machineTypes[machineType] = machine
+	clients.machineTypes[machineType] = machine
 
 	return machine, nil
 }
