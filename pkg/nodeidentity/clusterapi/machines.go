@@ -23,6 +23,11 @@ type Machine struct {
 	u *unstructured.Unstructured
 }
 
+// NewMachine wraps the given unstructured clusterapi Machine object.
+func NewMachine(u *unstructured.Unstructured) *Machine {
+	return &Machine{u: u}
+}
+
 func (m *Machine) GetDeploymentName() string {
 	return m.u.GetLabels()["cluster.x-k8s.io/deployment-name"]
 }

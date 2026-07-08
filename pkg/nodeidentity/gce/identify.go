@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi"
+	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
@@ -53,11 +54,11 @@ type nodeIdentifier struct {
 	clusterName string
 
 	// capiManager contains our CAPI support, if CAPI support is enabled
-	capiManager *clusterapi.Manager
+	capiManager *capimanager.Manager
 }
 
 // New creates and returns a nodeidentity.Identifier for Nodes running on GCE
-func New(clusterName string, capiManager *clusterapi.Manager) (nodeidentity.Identifier, error) {
+func New(clusterName string, capiManager *capimanager.Manager) (nodeidentity.Identifier, error) {
 	ctx := context.Background()
 
 	computeService, err := compute.NewService(ctx)

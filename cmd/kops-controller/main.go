@@ -37,13 +37,13 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/bootstrap/awsbootstrap"
-	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap/pkiverifier"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/controllers/clusterapi"
 	"k8s.io/kops/pkg/nodeidentity"
 	nodeidentityaws "k8s.io/kops/pkg/nodeidentity/aws"
 	nodeidentityazure "k8s.io/kops/pkg/nodeidentity/azure"
-	nodeidentityclusterapi "k8s.io/kops/pkg/nodeidentity/clusterapi"
+	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
 	nodeidentitydo "k8s.io/kops/pkg/nodeidentity/do"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	nodeidentityhetzner "k8s.io/kops/pkg/nodeidentity/hetzner"
@@ -139,9 +139,9 @@ func main() {
 
 	vfsContext := vfs.NewVFSContext()
 
-	var capiManager *nodeidentityclusterapi.Manager
+	var capiManager *capimanager.Manager
 	if opt.CAPI.IsEnabled() {
-		capiManager = nodeidentityclusterapi.NewManager(mgr.GetClient())
+		capiManager = capimanager.NewManager(mgr.GetClient())
 	}
 
 	var clientset simple.Clientset
@@ -215,7 +215,7 @@ func main() {
 		}
 
 		if opt.Server.PKI != nil {
-			verifier, err := pkibootstrap.NewVerifier(opt.Server.PKI, mgr.GetClient())
+			verifier, err := pkiverifier.NewVerifier(opt.Server.PKI, mgr.GetClient())
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)
@@ -310,9 +310,9 @@ func buildScheme(opt *config.Options) (*runtime.Scheme, error) {
 }
 
 func addNodeController(ctx context.Context, mgr manager.Manager, opt *config.Options) error {
-	var capiManager *nodeidentityclusterapi.Manager
+	var capiManager *capimanager.Manager
 	if opt.CAPI.IsEnabled() {
-		capiManager = nodeidentityclusterapi.NewManager(mgr.GetClient())
+		capiManager = capimanager.NewManager(mgr.GetClient())
 	}
 
 	var identifier nodeidentity.Identifier

@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pkibootstrap
+// Package pkiverifier implements the kops-controller side of PKI machine-key
+// bootstrap; it is separate from pkibootstrap so that nodeup (which only needs
+// the authenticator) does not link the controller-runtime client.
+package pkiverifier
 
 import (
 	"bytes"
@@ -35,17 +38,18 @@ import (
 	"k8s.io/klog/v2"
 	kops "k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/pki"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type verifier struct {
-	opt    Options
+	opt    pkibootstrap.Options
 	client client.Client
 }
 
 // NewVerifier constructs a new verifier.
-func NewVerifier(options *Options, client client.Client) (bootstrap.Verifier, error) {
+func NewVerifier(options *pkibootstrap.Options, client client.Client) (bootstrap.Verifier, error) {
 	opt := *options
 	if opt.MaxTimeSkew == 0 {
 		opt.MaxTimeSkew = 300
@@ -59,7 +63,7 @@ func NewVerifier(options *Options, client client.Client) (bootstrap.Verifier, er
 var _ bootstrap.Verifier = &verifier{}
 
 // TODO: Dedup with gce
-func (v *verifier) parseTokenData(tokenPrefix string, authToken string, body []byte) (*AuthToken, *AuthTokenData, error) {
+func (v *verifier) parseTokenData(tokenPrefix string, authToken string, body []byte) (*pkibootstrap.AuthToken, *pkibootstrap.AuthTokenData, error) {
 	if !strings.HasPrefix(authToken, tokenPrefix) {
 		return nil, nil, bootstrap.ErrNotThisVerifier
 	}
@@ -70,18 +74,18 @@ func (v *verifier) parseTokenData(tokenPrefix string, authToken string, body []b
 		return nil, nil, fmt.Errorf("decoding authorization token: %w", err)
 	}
 
-	token := &AuthToken{}
+	token := &pkibootstrap.AuthToken{}
 	if err = json.Unmarshal(tokenBytes, token); err != nil {
 		return nil, nil, fmt.Errorf("unmarshalling authorization token: %w", err)
 	}
 
-	tokenData := &AuthTokenData{}
+	tokenData := &pkibootstrap.AuthTokenData{}
 	if err := json.Unmarshal(token.Data, tokenData); err != nil {
 		return nil, nil, fmt.Errorf("unmarshalling authorization token data: %w", err)
 	}
 
 	// Guard against replay attacks
-	if tokenData.Audience != AudienceNodeAuthentication {
+	if tokenData.Audience != pkibootstrap.AudienceNodeAuthentication {
 		return nil, nil, fmt.Errorf("incorrect Audience")
 	}
 	timeSkew := math.Abs(time.Since(time.Unix(tokenData.Timestamp, 0)).Seconds())
@@ -107,7 +111,7 @@ func (v *verifier) VerifyToken(ctx context.Context, rawRequest *http.Request, au
 	// Reminder: we shouldn't trust any data we get from the client until we've checked the signature (and even then...)
 	// Thankfully the GCE SDK does seem to escape the parameters correctly, for example.
 
-	token, tokenData, err := v.parseTokenData(AuthenticationTokenPrefix, authToken, body)
+	token, tokenData, err := v.parseTokenData(pkibootstrap.AuthenticationTokenPrefix, authToken, body)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +129,7 @@ func (v *verifier) VerifyToken(ctx context.Context, rawRequest *http.Request, au
 	return result, nil
 }
 
-func (v *verifier) getSigningKey(ctx context.Context, tokenData *AuthTokenData) (*bootstrap.VerifyResult, crypto.PublicKey, error) {
+func (v *verifier) getSigningKey(ctx context.Context, tokenData *pkibootstrap.AuthTokenData) (*bootstrap.VerifyResult, crypto.PublicKey, error) {
 	nodeName := tokenData.Instance
 	id := types.NamespacedName{
 		Namespace: "kops-system",
