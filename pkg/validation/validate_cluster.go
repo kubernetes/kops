@@ -28,8 +28,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/pager"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,7 +101,7 @@ func hasPlaceHolderIP(host string) (string, error) {
 
 	sort.Strings(hostAddrs)
 	for _, h := range hostAddrs {
-		if h == cloudup.PlaceholderIP || h == cloudup.PlaceholderIPv6 {
+		if h == dns.PlaceholderIP || h == dns.PlaceholderIPv6 {
 			return h, nil
 		}
 	}
