@@ -43,11 +43,12 @@ func (b *EtcdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		// Ensure the version is set
 		if c.Version == "" {
 			// We run the k8s-recommended versions of etcd
-			if b.ControlPlaneKubernetesVersion().IsLT("1.34.0") {
+			switch {
+			case b.ControlPlaneKubernetesVersion().IsLT("1.34.0"):
 				c.Version = LatestEtcd35Version
-			} else if b.ControlPlaneKubernetesVersion().IsLT("1.37.0") {
+			case b.ControlPlaneKubernetesVersion().IsLT("1.37.0"):
 				c.Version = LatestEtcd36Version
-			} else {
+			default:
 				c.Version = LatestEtcd37Version
 			}
 		}
