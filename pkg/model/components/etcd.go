@@ -31,8 +31,7 @@ var _ loader.ClusterOptionsBuilder = &EtcdOptionsBuilder{}
 const (
 	LatestEtcd35Version = "3.5.31"
 	LatestEtcd36Version = "3.6.12"
-	// TODO: replace with the released etcd 3.7 version before the Kubernetes 1.37 release.
-	LatestEtcd37Version = "3.7.0-rc.0"
+	LatestEtcd37Version = "3.7.0"
 )
 
 // BuildOptions is responsible for filling in the defaults for the etcd cluster model
@@ -47,7 +46,7 @@ func (b *EtcdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			if b.ControlPlaneKubernetesVersion().IsLT("1.34.0") {
 				c.Version = LatestEtcd35Version
 			} else {
-				c.Version = LatestEtcd36Version
+				c.Version = LatestEtcd37Version
 			}
 		}
 	}
