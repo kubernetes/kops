@@ -27,8 +27,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/go-containerregistry/pkg/authn"
-	"github.com/google/go-containerregistry/pkg/crane"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
@@ -39,6 +37,22 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
+
+// ImageDigestResolver looks up the manifest digest for an image, returning it in the form
+// "sha256:...".
+type ImageDigestResolver func(image string) (string, error)
+
+// imageDigestResolver is set (during startup) only by binaries that should resolve image digests
+// by querying container registries, i.e. the kops CLI. Runtime binaries (kops-controller, nodeup)
+// leave it unset, both because digest resolution is a cluster-configuration concern and so that
+// they do not link the registry client libraries it requires.
+var imageDigestResolver ImageDigestResolver
+
+// SetImageDigestResolver installs the function RemapImage uses to resolve image digests. When no
+// resolver is set, images are not pinned by digest.
+func SetImageDigestResolver(resolver ImageDigestResolver) {
+	imageDigestResolver = resolver
+}
 
 // AssetBuilder discovers and remaps assets.
 type AssetBuilder struct {
@@ -277,7 +291,7 @@ func (a *AssetBuilder) RemapImage(image string) string {
 
 	a.addImageAsset(asset)
 
-	if !featureflag.ImageDigest.Enabled() || os.Getenv("KOPS_BASE_URL") != "" {
+	if imageDigestResolver == nil || !featureflag.ImageDigest.Enabled() || os.Getenv("KOPS_BASE_URL") != "" {
 		return image
 	}
 
@@ -285,7 +299,7 @@ func (a *AssetBuilder) RemapImage(image string) string {
 		return image
 	}
 
-	digest, err := crane.Digest(image, crane.WithAuthFromKeychain(authn.DefaultKeychain))
+	digest, err := imageDigestResolver(image)
 	if err != nil {
 		klog.Warningf("failed to digest image %q: %s", image, err)
 		return image

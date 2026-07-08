@@ -21,7 +21,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"k8s.io/kops"
+	"k8s.io/kops/pkg/assets"
 )
 
 func main() {
@@ -32,6 +35,12 @@ func main() {
 }
 
 func run(ctx context.Context) error {
+	// Resolving image digests queries container registries, so only the CLI wires it up; runtime
+	// binaries (kops-controller, nodeup) deliberately do not link the registry client libraries.
+	assets.SetImageDigestResolver(func(image string) (string, error) {
+		return crane.Digest(image, crane.WithAuthFromKeychain(authn.DefaultKeychain))
+	})
+
 	// Set up OpenTelemetry.
 	serviceName := "kops"
 	serviceVersion := kops.Version
