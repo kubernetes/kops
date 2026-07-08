@@ -7,24 +7,33 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - command:
-    - /bin/sh
-    - -c
-    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
-      --backup-store=memfs://tests/scw-minimal.k8s.local/backups/etcd/main --client-urls=https://__name__:4001
-      --cluster-name=etcd --containerized=true --dns-suffix=.internal.scw-minimal.k8s.local
-      --grpc-port=3996 --peer-urls=https://__name__:2380 --quarantine-client-urls=https://__name__:3994
-      --v=6 --volume-name-tag=noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1
-      --volume-provider=scaleway --volume-tag=noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local
-      --volume-tag=noprefix=kops.k8s.io/etcd=main --volume-tag=noprefix=kops.k8s.io/role=ControlPlane
-      > /tmp/pipe 2>&1
+  - args:
+    - --log-file=/var/log/etcd.log
+    - --also-stdout
+    - /ko-app/etcd-manager
+    - --backup-store=memfs://tests/scw-minimal.k8s.local/backups/etcd/main
+    - --client-urls=https://__name__:4001
+    - --cluster-name=etcd
+    - --containerized=true
+    - --dns-suffix=.internal.scw-minimal.k8s.local
+    - --grpc-port=3996
+    - --peer-urls=https://__name__:2380
+    - --quarantine-client-urls=https://__name__:3994
+    - --v=6
+    - --volume-name-tag=noprefix=kops.k8s.io/instance-group=control-plane-fr-par-1
+    - --volume-provider=scaleway
+    - --volume-tag=noprefix=kops.k8s.io/cluster=scw-minimal.k8s.local
+    - --volume-tag=noprefix=kops.k8s.io/etcd=main
+    - --volume-tag=noprefix=kops.k8s.io/role=ControlPlane
+    command:
+    - /go-runner
     env:
     - name: SCW_ACCESS_KEY
     - name: SCW_DEFAULT_PROJECT_ID
     - name: SCW_SECRET_KEY
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
     name: etcd-manager
     resources:
       requests:

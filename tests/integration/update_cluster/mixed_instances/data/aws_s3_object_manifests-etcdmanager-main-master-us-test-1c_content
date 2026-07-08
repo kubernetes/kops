@@ -7,21 +7,30 @@ metadata:
   namespace: kube-system
 spec:
   containers:
-  - command:
-    - /bin/sh
-    - -c
-    - mkfifo /tmp/pipe; (tee -a /var/log/etcd.log < /tmp/pipe & ) ; exec /ko-app/etcd-manager
-      --backup-store=memfs://clusters.example.com/mixedinstances.example.com/backups/etcd/main
-      --client-urls=https://__name__:4001 --cluster-name=etcd --containerized=true
-      --dns-suffix=.internal.mixedinstances.example.com --grpc-port=3996 --peer-urls=https://__name__:2380
-      --quarantine-client-urls=https://__name__:3994 --v=6 --volume-name-tag=k8s.io/etcd/main
-      --volume-provider=aws --volume-tag=k8s.io/etcd/main --volume-tag=k8s.io/role/control-plane=1
-      --volume-tag=kubernetes.io/cluster/mixedinstances.example.com=owned > /tmp/pipe
-      2>&1
+  - args:
+    - --log-file=/var/log/etcd.log
+    - --also-stdout
+    - /ko-app/etcd-manager
+    - --backup-store=memfs://clusters.example.com/mixedinstances.example.com/backups/etcd/main
+    - --client-urls=https://__name__:4001
+    - --cluster-name=etcd
+    - --containerized=true
+    - --dns-suffix=.internal.mixedinstances.example.com
+    - --grpc-port=3996
+    - --peer-urls=https://__name__:2380
+    - --quarantine-client-urls=https://__name__:3994
+    - --v=6
+    - --volume-name-tag=k8s.io/etcd/main
+    - --volume-provider=aws
+    - --volume-tag=k8s.io/etcd/main
+    - --volume-tag=k8s.io/role/control-plane=1
+    - --volume-tag=kubernetes.io/cluster/mixedinstances.example.com=owned
+    command:
+    - /go-runner
     env:
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260531
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
     name: etcd-manager
     resources:
       requests:
