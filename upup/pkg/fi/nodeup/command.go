@@ -53,7 +53,6 @@ import (
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
@@ -61,6 +60,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/nodeup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/secrets"
@@ -187,14 +187,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	var cloud fi.Cloud
+	// cloud holds the AWS clients, on AWS only.
+	var cloud *awsup.Cloud
 
 	if bootConfig.CloudProvider == api.CloudProviderAWS {
-		awsCloud, err := awsup.NewAWSCloud(region, nil)
+		cloud, err = awsup.NewCloud(ctx, region)
 		if err != nil {
 			return err
 		}
-		cloud = awsCloud
 	}
 
 	modelContext := &model.NodeupModelContext{
@@ -268,9 +268,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		// If Nvidia is enabled in the cluster, check if this instance has support for it.
 		nvidia := modelContext.NodeupConfig.ContainerdConfig.NvidiaGPU
 		if nvidia != nil && fi.ValueOf(nvidia.Enabled) {
-			awsCloud := cloud.(awsup.AWSCloud)
 			// Get the instance type's detailed information.
-			instanceType, err := awsup.GetMachineTypeInfo(awsCloud, ec2types.InstanceType(modelContext.MachineType))
+			instanceType, err := cloud.GetMachineTypeInfo(ctx, ec2types.InstanceType(modelContext.MachineType))
 			if err != nil {
 				return err
 			}
@@ -395,7 +394,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	if nodeupConfig.EnableLifecycleHook {
 		if bootConfig.CloudProvider == api.CloudProviderAWS {
-			err := completeWarmingLifecycleAction(ctx, cloud.(awsup.AWSCloud), modelContext)
+			err := completeWarmingLifecycleAction(ctx, cloud, modelContext)
 			if err != nil {
 				return fmt.Errorf("failed to complete lifecylce action: %w", err)
 			}
@@ -427,7 +426,7 @@ func getMachineType(ctx context.Context) (string, error) {
 	return string(instanceTypeName), err
 }
 
-func completeWarmingLifecycleAction(ctx context.Context, cloud awsup.AWSCloud, modelContext *model.NodeupModelContext) error {
+func completeWarmingLifecycleAction(ctx context.Context, cloud *awsup.Cloud, modelContext *model.NodeupModelContext) error {
 	asgName := modelContext.BootConfig.InstanceGroupName + "." + modelContext.NodeupConfig.ClusterName
 	hookName := "kops-warmpool"
 	svc := cloud.Autoscaling()
