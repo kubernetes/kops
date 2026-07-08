@@ -47,6 +47,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/awsbootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/configserver"
 	"k8s.io/kops/pkg/kopscontrollerclient"
@@ -625,7 +626,7 @@ func loadKernelModules(context *model.NodeupModelContext, distribution distribut
 func getRegion(ctx context.Context, bootConfig *nodeup.BootConfig) (string, error) {
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
-		region, err := awsup.RegionFromMetadata(ctx)
+		region, err := awsbootstrap.RegionFromMetadata(ctx)
 		if err != nil {
 			return "", err
 		}
@@ -642,7 +643,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 
 	switch bootConfig.CloudProvider {
 	case api.CloudProviderAWS:
-		a, err := awsup.NewAWSAuthenticator(ctx, region)
+		a, err := awsbootstrap.NewAWSAuthenticator(ctx, region)
 		if err != nil {
 			return nil, err
 		}

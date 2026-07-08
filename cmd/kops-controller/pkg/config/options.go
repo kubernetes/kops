@@ -17,8 +17,8 @@ limitations under the License.
 package config
 
 import (
+	"k8s.io/kops/pkg/bootstrap/awsbootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
@@ -86,7 +86,7 @@ type ServerOptions struct {
 }
 
 type ServerProviderOptions struct {
-	AWS          *awsup.AWSVerifierOptions           `json:"aws,omitempty"`
+	AWS          *awsbootstrap.AWSVerifierOptions    `json:"aws,omitempty"`
 	GCE          *gcetpm.TPMVerifierOptions          `json:"gce,omitempty"`
 	Hetzner      *hetzner.HetznerVerifierOptions     `json:"hetzner,omitempty"`
 	OpenStack    *openstack.OpenStackVerifierOptions `json:"openstack,omitempty"`

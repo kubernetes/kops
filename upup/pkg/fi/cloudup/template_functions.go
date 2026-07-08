@@ -51,6 +51,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	apiModel "k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/bootstrap/awsbootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -938,7 +939,7 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 					}
 				}
 			}
-			config.Server.Provider.AWS = &awsup.AWSVerifierOptions{
+			config.Server.Provider.AWS = &awsbootstrap.AWSVerifierOptions{
 				NodesRoles: nodesRoles.List(),
 				Region:     tf.Region,
 			}

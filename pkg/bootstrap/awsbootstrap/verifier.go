@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package awsup
+package awsbootstrap
 
 import (
 	"bytes"
@@ -458,4 +458,44 @@ func buildSTSRequestValidator(ctx context.Context, stsClient *sts.Client) (*stsR
 		return nil, fmt.Errorf("parsing presigned url: %w", err)
 	}
 	return &stsRequestValidator{Host: u.Host}, nil
+}
+
+// GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
+// The first value is the node name and any additional values are the DNS name and IP addresses.
+func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
+	if len(instances.Reservations) != 1 {
+		return nil, fmt.Errorf("too many reservations returned for the single instance-id")
+	}
+
+	if len(instances.Reservations[0].Instances) != 1 {
+		return nil, fmt.Errorf("too many instances returned for the single instance-id")
+	}
+
+	instance := instances.Reservations[0].Instances[0]
+
+	addrs = append(addrs, *instance.InstanceId)
+
+	if instance.PrivateDnsName != nil {
+		addrs = append(addrs, *instance.PrivateDnsName)
+	}
+
+	// We only use data for the first interface, and only the first IP
+	for _, iface := range instance.NetworkInterfaces {
+		if iface.Attachment == nil {
+			continue
+		}
+		if *iface.Attachment.DeviceIndex != 0 {
+			continue
+		}
+		if iface.PrivateIpAddress != nil {
+			addrs = append(addrs, *iface.PrivateIpAddress)
+		}
+		if len(iface.Ipv6Addresses) > 0 {
+			addrs = append(addrs, *iface.Ipv6Addresses[0].Ipv6Address)
+		}
+		if iface.Association != nil && iface.Association.PublicIp != nil {
+			addrs = append(addrs, *iface.Association.PublicIp)
+		}
+	}
+	return addrs, nil
 }
