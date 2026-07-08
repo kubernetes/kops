@@ -14,7 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package assets
+// Package assetcopy copies cluster assets to a private file repository or container registry
+// (`kops get assets --copy`). It is separate from pkg/assets so that only the kops CLI links
+// the container registry client libraries; runtime binaries (kops-controller, nodeup) import
+// pkg/assets without inheriting those dependencies.
+package assetcopy
 
 import (
 	"fmt"
@@ -22,6 +26,7 @@ import (
 
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -29,7 +34,7 @@ type assetTask interface {
 	Run() error
 }
 
-func Copy(imageAssets []*ImageAsset, fileAssets []*FileAsset, vfsContext *vfs.VFSContext, cluster *kops.Cluster) error {
+func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, vfsContext *vfs.VFSContext, cluster *kops.Cluster) error {
 	tasks := map[string]assetTask{}
 
 	for _, imageAsset := range imageAssets {
