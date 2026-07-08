@@ -45,45 +45,45 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o *kops.Cluster) err
 	}
 	nth := clusterSpec.CloudProvider.AWS.NodeTerminationHandler
 	if nth.Enabled == nil {
-		nth.Enabled = fi.PtrTo(true)
+		nth.Enabled = new(true)
 	}
 	if !fi.ValueOf(nth.Enabled) {
 		return nil
 	}
 	if nth.DeleteSQSMsgIfNodeNotFound == nil {
-		nth.DeleteSQSMsgIfNodeNotFound = fi.PtrTo(false)
+		nth.DeleteSQSMsgIfNodeNotFound = new(false)
 	}
 	if nth.EnableSpotInterruptionDraining == nil {
-		nth.EnableSpotInterruptionDraining = fi.PtrTo(true)
+		nth.EnableSpotInterruptionDraining = new(true)
 	}
 	if nth.EnableScheduledEventDraining == nil {
-		nth.EnableScheduledEventDraining = fi.PtrTo(true)
+		nth.EnableScheduledEventDraining = new(true)
 	}
 	if nth.EnableRebalanceMonitoring == nil {
-		nth.EnableRebalanceMonitoring = fi.PtrTo(false)
+		nth.EnableRebalanceMonitoring = new(false)
 	}
 	if nth.EnableRebalanceDraining == nil {
-		nth.EnableRebalanceDraining = fi.PtrTo(false)
+		nth.EnableRebalanceDraining = new(false)
 	}
 
 	if nth.EnablePrometheusMetrics == nil {
-		nth.EnablePrometheusMetrics = fi.PtrTo(false)
+		nth.EnablePrometheusMetrics = new(false)
 	}
 
 	if nth.ExcludeFromLoadBalancers == nil {
-		nth.ExcludeFromLoadBalancers = fi.PtrTo(true)
+		nth.ExcludeFromLoadBalancers = new(true)
 	}
 
 	if nth.ManagedASGTag == nil {
-		nth.ManagedASGTag = fi.PtrTo("aws-node-termination-handler/managed")
+		nth.ManagedASGTag = new("aws-node-termination-handler/managed")
 	}
 
 	if nth.PodTerminationGracePeriod == nil {
-		nth.PodTerminationGracePeriod = fi.PtrTo(int32(-1))
+		nth.PodTerminationGracePeriod = new(int32(-1))
 	}
 
 	if nth.TaintNode == nil {
-		nth.TaintNode = fi.PtrTo(false)
+		nth.TaintNode = new(false)
 	}
 
 	if nth.CPURequest == nil {
@@ -97,7 +97,7 @@ func (b *NodeTerminationHandlerOptionsBuilder) BuildOptions(o *kops.Cluster) err
 	}
 
 	if nth.Version == nil {
-		nth.Version = fi.PtrTo("v1.22.0")
+		nth.Version = new("v1.22.0")
 	}
 
 	return nil

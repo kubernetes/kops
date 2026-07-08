@@ -25,10 +25,10 @@ import (
 
 func TestKeypairDeps(t *testing.T) {
 	ca := &Keypair{
-		Name: fi.PtrTo("ca"),
+		Name: new("ca"),
 	}
 	cert := &Keypair{
-		Name:   fi.PtrTo("cert"),
+		Name:   new("cert"),
 		Signer: ca,
 	}
 

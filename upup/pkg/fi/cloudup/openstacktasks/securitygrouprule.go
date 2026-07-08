@@ -100,17 +100,17 @@ func (r *SecurityGroupRule) Find(context *fi.CloudupContext) (*SecurityGroupRule
 	}
 	rule := rs[0]
 	actual := &SecurityGroupRule{
-		ID:             fi.PtrTo(rule.ID),
-		Direction:      fi.PtrTo(rule.Direction),
-		EtherType:      fi.PtrTo(rule.EtherType),
+		ID:             new(rule.ID),
+		Direction:      new(rule.Direction),
+		EtherType:      new(rule.EtherType),
 		PortRangeMax:   Int(rule.PortRangeMax),
 		PortRangeMin:   Int(rule.PortRangeMin),
-		Protocol:       fi.PtrTo(rule.Protocol),
-		RemoteIPPrefix: fi.PtrTo(rule.RemoteIPPrefix),
+		Protocol:       new(rule.Protocol),
+		RemoteIPPrefix: new(rule.RemoteIPPrefix),
 		RemoteGroup:    r.RemoteGroup,
 		SecGroup:       r.SecGroup,
 		Lifecycle:      r.Lifecycle,
-		Delete:         fi.PtrTo(false),
+		Delete:         new(false),
 	}
 
 	r.ID = actual.ID
@@ -178,7 +178,7 @@ func (*SecurityGroupRule) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			return fmt.Errorf("error creating SecurityGroupRule in SG %s: %v", fi.ValueOf(e.SecGroup.GetName()), err)
 		}
 
-		e.ID = fi.PtrTo(r.ID)
+		e.ID = new(r.ID)
 		return nil
 	}
 

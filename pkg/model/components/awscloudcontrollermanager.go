@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -47,11 +46,11 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 
 	// No significant downside to always doing a leader election.
 	// Also, having multiple control plane nodes requires leader election.
-	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
+	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: new(true)}
 
 	eccm.ClusterName = b.ClusterName
 
-	eccm.AllocateNodeCIDRs = fi.PtrTo(!clusterSpec.IsKopsControllerIPAM())
+	eccm.AllocateNodeCIDRs = new(!clusterSpec.IsKopsControllerIPAM())
 
 	if eccm.ClusterCIDR == "" && !clusterSpec.IsKopsControllerIPAM() {
 		eccm.ClusterCIDR = clusterSpec.Networking.PodCIDR
@@ -60,14 +59,14 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 	// TODO: we want to consolidate this with the logic from KCM
 	networking := &clusterSpec.Networking
 	if networking.Kubenet != nil {
-		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
+		eccm.ConfigureCloudRoutes = new(true)
 	} else if networking.External != nil {
-		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
+		eccm.ConfigureCloudRoutes = new(false)
 	} else if UsesCNI(networking) {
-		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
+		eccm.ConfigureCloudRoutes = new(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
-		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
+		eccm.ConfigureCloudRoutes = new(false)
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}

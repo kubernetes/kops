@@ -40,7 +40,6 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/validation"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/awsinterfaces"
 )
@@ -943,7 +942,7 @@ func TestRollingUpdateDisabled(t *testing.T) {
 	c.CloudOnly = true
 
 	c.Cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		DrainAndTerminate: fi.PtrTo(false),
+		DrainAndTerminate: new(false),
 	}
 
 	groups := getGroupsAllNeedUpdate(c.K8sClient, cloud)
@@ -987,7 +986,7 @@ func TestRollingUpdateDisabledSurge(t *testing.T) {
 
 	one := intstr.FromInt(1)
 	c.Cluster.Spec.RollingUpdate = &kopsapi.RollingUpdate{
-		DrainAndTerminate: fi.PtrTo(false),
+		DrainAndTerminate: new(false),
 		MaxSurge:          &one,
 	}
 

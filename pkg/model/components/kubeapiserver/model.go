@@ -58,8 +58,8 @@ func (b *KubeApiserverBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
 		Contents:  fi.NewBytesResource(manifestYAML),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.PtrTo(location),
-		Name:      fi.PtrTo("manifests-static-" + key),
+		Location:  new(location),
+		Name:      new("manifests-static-" + key),
 	})
 
 	b.AssetBuilder.StaticManifests = append(b.AssetBuilder.StaticManifests, &assets.StaticManifest{

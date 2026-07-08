@@ -125,14 +125,14 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 
 		actual.Tags = append(actual.Tags, p.Tags.Items...)
 		actual.Labels = p.Labels
-		actual.MachineType = fi.PtrTo(lastComponent(p.MachineType))
+		actual.MachineType = new(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
 		bootDiskImage, err := ShortenImageURL(cloud.Project(), p.Disks[0].InitializeParams.SourceImage)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing source image URL: %v", err)
 		}
-		actual.BootDiskImage = fi.PtrTo(bootDiskImage)
+		actual.BootDiskImage = new(bootDiskImage)
 		actual.BootDiskType = &p.Disks[0].InitializeParams.DiskType
 		actual.BootDiskSizeGB = &p.Disks[0].InitializeParams.DiskSizeGb
 		if p.Disks[0].InitializeParams.ProvisionedIops > 0 {
@@ -148,7 +148,7 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 		}
 		if len(p.NetworkInterfaces) != 0 {
 			ni := p.NetworkInterfaces[0]
-			actual.Network = &Network{Name: fi.PtrTo(lastComponent(ni.Network))}
+			actual.Network = &Network{Name: new(lastComponent(ni.Network))}
 			if ni.StackType != "" {
 				actual.StackType = &ni.StackType
 			}
@@ -161,7 +161,7 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 			}
 
 			if ni.Subnetwork != "" {
-				actual.Subnet = &Subnet{Name: fi.PtrTo(lastComponent(ni.Subnetwork))}
+				actual.Subnet = &Subnet{Name: new(lastComponent(ni.Subnetwork))}
 			}
 
 			acs := ni.AccessConfigs
@@ -172,9 +172,9 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 				if acs[0].Type != accessConfigOneToOneNAT {
 					return nil, fmt.Errorf("unexpected access type in template %q: %s", *actual.Name, acs[0].Type)
 				}
-				actual.HasExternalIP = fi.PtrTo(true)
+				actual.HasExternalIP = new(true)
 			} else {
-				actual.HasExternalIP = fi.PtrTo(false)
+				actual.HasExternalIP = new(false)
 			}
 		}
 
@@ -205,7 +205,7 @@ func (e *InstanceTemplate) Find(c *fi.CloudupContext) (*InstanceTemplate, error)
 		//			if err != nil {
 		//				return nil, fmt.Errorf("unable to parse image URL: %q", d.SourceImage)
 		//			}
-		//			actual.Image = fi.PtrTo(imageURL.Project + "/" + imageURL.Name)
+		//			actual.Image = new(imageURL.Project + "/" + imageURL.Name)
 		//		}
 		//	}
 		//}
@@ -263,14 +263,14 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 
 	if fi.ValueOf(e.Preemptible) {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart:  fi.PtrTo(false),
+			AutomaticRestart:  new(false),
 			OnHostMaintenance: "TERMINATE",
 			ProvisioningModel: fi.ValueOf(e.GCPProvisioningModel),
 			Preemptible:       true,
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: fi.PtrTo(true),
+			AutomaticRestart: new(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			ProvisioningModel: "STANDARD",
@@ -375,7 +375,7 @@ func (e *InstanceTemplate) mapToGCE(project string, region string) (*compute.Ins
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: fi.PtrTo(v),
+			Value: new(v),
 		})
 	}
 
@@ -642,7 +642,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	name := fi.ValueOf(e.Name)
 
 	tf := &terraformInstanceTemplate{
-		Lifecycle:  &terraform.Lifecycle{CreateBeforeDestroy: fi.PtrTo(true)},
+		Lifecycle:  &terraform.Lifecycle{CreateBeforeDestroy: new(true)},
 		NamePrefix: fi.ValueOf(e.NamePrefix) + "-",
 	}
 

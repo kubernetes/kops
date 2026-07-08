@@ -434,7 +434,7 @@ func completeWarmingLifecycleAction(ctx context.Context, cloud awsup.AWSCloud, m
 			AutoScalingGroupName:  &asgName,
 			InstanceId:            &modelContext.InstanceID,
 			LifecycleHookName:     &hookName,
-			LifecycleActionResult: fi.PtrTo("CONTINUE"),
+			LifecycleActionResult: new("CONTINUE"),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to complete lifecycle hook %q for %q: %v", hookName, modelContext.InstanceID, err)

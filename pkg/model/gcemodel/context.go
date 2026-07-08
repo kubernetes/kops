@@ -20,7 +20,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -148,7 +147,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 		return &gcetasks.ServiceAccount{
 			Name:   s("shared"),
 			Email:  &c.Cluster.Spec.CloudProvider.GCE.ServiceAccount,
-			Shared: fi.PtrTo(true),
+			Shared: new(true),
 		}
 	}
 

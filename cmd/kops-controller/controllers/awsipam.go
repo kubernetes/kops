@@ -35,7 +35,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/awslog"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -123,7 +122,7 @@ func (r *AWSIPAMReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		eni, err := r.ec2Client.DescribeNetworkInterfaces(ctx, &ec2.DescribeNetworkInterfacesInput{
 			Filters: []ec2types.Filter{
 				{
-					Name: fi.PtrTo("attachment.instance-id"),
+					Name: new("attachment.instance-id"),
 					Values: []string{
 						instanceID,
 					},

@@ -50,7 +50,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	// Create LoadBalancer for API ELB
 	lb := &azuretasks.LoadBalancer{
-		Name:              fi.PtrTo(b.NameForLoadBalancer()),
+		Name:              new(b.NameForLoadBalancer()),
 		Lifecycle:         b.Lifecycle,
 		ResourceGroup:     b.LinkToResourceGroup(),
 		Tags:              map[string]*string{},
@@ -70,7 +70,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 		// Create Public IP Address for Public Loadbalacer
 		p := &azuretasks.PublicIPAddress{
-			Name:          fi.PtrTo(b.NameForLoadBalancer()),
+			Name:          new(b.NameForLoadBalancer()),
 			Lifecycle:     b.Lifecycle,
 			ResourceGroup: b.LinkToResourceGroup(),
 			Tags:          map[string]*string{},

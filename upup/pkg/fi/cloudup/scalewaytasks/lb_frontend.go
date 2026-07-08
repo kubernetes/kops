@@ -87,17 +87,17 @@ func (l *LBFrontend) Find(context *fi.CloudupContext) (*LBFrontend, error) {
 	frontend := frontendResponse.Frontends[0]
 
 	return &LBFrontend{
-		Name:        fi.PtrTo(frontend.Name),
+		Name:        new(frontend.Name),
 		Lifecycle:   l.Lifecycle,
-		ID:          fi.PtrTo(frontend.ID),
-		Zone:        fi.PtrTo(string(frontend.LB.Zone)),
-		InboundPort: fi.PtrTo(frontend.InboundPort),
+		ID:          new(frontend.ID),
+		Zone:        new(string(frontend.LB.Zone)),
+		InboundPort: new(frontend.InboundPort),
 		LoadBalancer: &LoadBalancer{
-			Name: fi.PtrTo(frontend.LB.Name),
+			Name: new(frontend.LB.Name),
 		},
 		LBBackend: &LBBackend{
-			Name: fi.PtrTo(frontend.Backend.Name),
-			ID:   fi.PtrTo(frontend.Backend.ID),
+			Name: new(frontend.Backend.Name),
+			ID:   new(frontend.Backend.ID),
 		},
 	}, nil
 }

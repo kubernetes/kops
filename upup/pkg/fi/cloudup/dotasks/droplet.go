@@ -81,15 +81,15 @@ func (d *Droplet) Find(c *fi.CloudupContext) (*Droplet, error) {
 	}
 
 	return &Droplet{
-		Name:      fi.PtrTo(foundDroplet.Name),
+		Name:      new(foundDroplet.Name),
 		Count:     count,
-		Region:    fi.PtrTo(foundDroplet.Region.Slug),
-		Size:      fi.PtrTo(foundDroplet.Size.Slug),
+		Region:    new(foundDroplet.Region.Slug),
+		Size:      new(foundDroplet.Size.Slug),
 		Image:     d.Image, //Image should not change so we keep it as-is
 		Tags:      foundDroplet.Tags,
 		SSHKey:    d.SSHKey,   // TODO: get from droplet or ignore change
 		UserData:  d.UserData, // TODO: get from droplet or ignore change
-		VPCUUID:   fi.PtrTo(foundDroplet.VPCUUID),
+		VPCUUID:   new(foundDroplet.VPCUUID),
 		Lifecycle: d.Lifecycle,
 	}, nil
 }

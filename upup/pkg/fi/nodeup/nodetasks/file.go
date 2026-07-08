@@ -134,7 +134,7 @@ func findFile(p string) (*File, error) {
 
 	actual := &File{}
 	actual.Path = p
-	actual.Mode = fi.PtrTo(fi.FileModeToString(stat.Mode() & os.ModePerm))
+	actual.Mode = new(fi.FileModeToString(stat.Mode() & os.ModePerm))
 
 	uid := int(stat.Sys().(*syscall.Stat_t).Uid)
 	owner, err := fi.LookupUserByID(uid)
@@ -142,9 +142,9 @@ func findFile(p string) (*File, error) {
 		return nil, err
 	}
 	if owner != nil {
-		actual.Owner = fi.PtrTo(owner.Name)
+		actual.Owner = new(owner.Name)
 	} else {
-		actual.Owner = fi.PtrTo(strconv.Itoa(uid))
+		actual.Owner = new(strconv.Itoa(uid))
 	}
 
 	gid := int(stat.Sys().(*syscall.Stat_t).Gid)
@@ -153,9 +153,9 @@ func findFile(p string) (*File, error) {
 		return nil, err
 	}
 	if group != nil {
-		actual.Group = fi.PtrTo(group.Name)
+		actual.Group = new(group.Name)
 	} else {
-		actual.Group = fi.PtrTo(strconv.Itoa(gid))
+		actual.Group = new(strconv.Itoa(gid))
 	}
 
 	if (stat.Mode() & os.ModeSymlink) != 0 {
@@ -165,7 +165,7 @@ func findFile(p string) (*File, error) {
 		}
 
 		actual.Type = FileType_Symlink
-		actual.Symlink = fi.PtrTo(target)
+		actual.Symlink = new(target)
 	} else if (stat.Mode() & os.ModeDir) != 0 {
 		actual.Type = FileType_Directory
 	} else {

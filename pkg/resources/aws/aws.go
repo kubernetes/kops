@@ -1440,7 +1440,7 @@ func DeleteAutoScalingGroupLaunchTemplate(cloud fi.Cloud, r *resources.Resource)
 	klog.V(2).Infof("Deleting EC2 LaunchTemplate %q", r.ID)
 
 	if _, err := c.EC2().DeleteLaunchTemplate(ctx, &ec2.DeleteLaunchTemplateInput{
-		LaunchTemplateId: fi.PtrTo(r.ID),
+		LaunchTemplateId: new(r.ID),
 	}); err != nil {
 		return fmt.Errorf("error deleting ec2 LaunchTemplate %q: %v", r.ID, err)
 	}
@@ -2158,7 +2158,7 @@ func ListIAMOIDCProviders(cloud fi.Cloud, vpcID, clusterName string) ([]*resourc
 func DeleteIAMOIDCProvider(cloud fi.Cloud, r *resources.Resource) error {
 	ctx := context.TODO()
 	c := cloud.(awsup.AWSCloud)
-	arn := fi.PtrTo(r.ID)
+	arn := new(r.ID)
 	{
 		klog.V(2).Infof("Deleting IAM OIDC Provider %v", arn)
 		request := &iam.DeleteOpenIDConnectProviderInput{

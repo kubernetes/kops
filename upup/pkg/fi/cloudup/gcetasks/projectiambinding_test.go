@@ -37,15 +37,15 @@ func TestProjectIAMBinding(t *testing.T) {
 		serviceAccount := &ServiceAccount{
 			Lifecycle: fi.LifecycleSync,
 
-			Email: fi.PtrTo("foo@testproject.iam.gserviceaccount.com"),
+			Email: new("foo@testproject.iam.gserviceaccount.com"),
 		}
 
 		binding := &ProjectIAMBinding{
 			Lifecycle: fi.LifecycleSync,
 
-			Project:              fi.PtrTo("testproject"),
+			Project:              new("testproject"),
 			MemberServiceAccount: serviceAccount,
-			Role:                 fi.PtrTo("roles/owner"),
+			Role:                 new("roles/owner"),
 		}
 
 		return map[string]fi.CloudupTask{

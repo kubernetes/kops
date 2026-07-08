@@ -478,7 +478,7 @@ func buildLoadBalancerClient(c *openstackCloud, spec *kops.OpenstackSpec, provid
 			if err != nil || len(lbNet) != 1 {
 				return fmt.Errorf("could not establish floating network id")
 			}
-			spec.Loadbalancer.FloatingNetworkID = fi.PtrTo(lbNet[0].ID)
+			spec.Loadbalancer.FloatingNetworkID = new(lbNet[0].ID)
 		}
 
 		if spec.Loadbalancer.UseOctavia != nil {

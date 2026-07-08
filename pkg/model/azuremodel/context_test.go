@@ -19,8 +19,6 @@ package azuremodel
 import (
 	"reflect"
 	"testing"
-
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestCloudTagsForInstanceGroup(t *testing.T) {
@@ -43,13 +41,13 @@ func TestCloudTagsForInstanceGroup(t *testing.T) {
 
 	actual := c.CloudTagsForInstanceGroup(c.InstanceGroups[0])
 	expected := map[string]*string{
-		"cluster_label_key":                            fi.PtrTo("cluster_label_value"),
-		"ig_label_key":                                 fi.PtrTo("ig_label_value"),
-		"test_label":                                   fi.PtrTo("from_ig"),
-		"k8s.io_cluster_node-template_label_0":         fi.PtrTo("node_label/key=node_label_value"),
-		"k8s.io_cluster_node-template_taint_taint_key": fi.PtrTo("taint_value"),
-		"k8s.io_role_node":                             fi.PtrTo("1"),
-		"kops.k8s.io_instancegroup":                    fi.PtrTo("nodes"),
+		"cluster_label_key":                            new("cluster_label_value"),
+		"ig_label_key":                                 new("ig_label_value"),
+		"test_label":                                   new("from_ig"),
+		"k8s.io_cluster_node-template_label_0":         new("node_label/key=node_label_value"),
+		"k8s.io_cluster_node-template_taint_taint_key": new("taint_value"),
+		"k8s.io_role_node":                             new("1"),
+		"kops.k8s.io_instancegroup":                    new("nodes"),
 	}
 
 	if !reflect.DeepEqual(actual, expected) {

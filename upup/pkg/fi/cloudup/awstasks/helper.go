@@ -21,7 +21,6 @@ import (
 	"fmt"
 
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -38,7 +37,7 @@ func buildEphemeralDevices(cloud awsup.AWSCloud, machineType ec2types.InstanceTy
 	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
 
 	for _, ed := range mt.EphemeralDevices() {
-		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: fi.PtrTo(ed.VirtualName)}
+		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: new(ed.VirtualName)}
 	}
 
 	return blockDeviceMappings, nil

@@ -149,8 +149,8 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 	// Capacity.
 	{
 		if !fi.ValueOf(ocean.Compute.LaunchSpecification.UseAsTemplateOnly) {
-			actual.MinSize = fi.PtrTo(int64(fi.ValueOf(ocean.Capacity.Minimum)))
-			actual.MaxSize = fi.PtrTo(int64(fi.ValueOf(ocean.Capacity.Maximum)))
+			actual.MinSize = new(int64(fi.ValueOf(ocean.Capacity.Minimum)))
+			actual.MaxSize = new(int64(fi.ValueOf(ocean.Capacity.Maximum)))
 		}
 	}
 
@@ -162,15 +162,15 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 			actual.UtilizeCommitments = strategy.UtilizeCommitments
 
 			if strategy.DrainingTimeout != nil {
-				actual.DrainingTimeout = fi.PtrTo(int64(fi.ValueOf(strategy.DrainingTimeout)))
+				actual.DrainingTimeout = new(int64(fi.ValueOf(strategy.DrainingTimeout)))
 			}
 
 			if strategy.GracePeriod != nil {
-				actual.GracePeriod = fi.PtrTo(int64(fi.ValueOf(strategy.GracePeriod)))
+				actual.GracePeriod = new(int64(fi.ValueOf(strategy.GracePeriod)))
 			}
 			actual.SpreadNodesBy = strategy.SpreadNodesBy
 			if strategy.ClusterOrientation != nil && strategy.ClusterOrientation.AvailabilityVsCost != nil {
-				actual.AvailabilityVsCost = fi.PtrTo(fi.ValueOf(strategy.ClusterOrientation.AvailabilityVsCost))
+				actual.AvailabilityVsCost = new(fi.ValueOf(strategy.ClusterOrientation.AvailabilityVsCost))
 			}
 		}
 	}
@@ -184,7 +184,7 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 			if subnets := compute.SubnetIDs; subnets != nil {
 				for _, subnetID := range subnets {
 					actual.Subnets = append(actual.Subnets,
-						&awstasks.Subnet{ID: fi.PtrTo(subnetID)})
+						&awstasks.Subnet{ID: new(subnetID)})
 				}
 				if subnetSlicesEqualIgnoreOrder(actual.Subnets, o.Subnets) {
 					actual.Subnets = o.Subnets
@@ -243,7 +243,7 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 			if lc.SecurityGroupIDs != nil {
 				for _, sgID := range lc.SecurityGroupIDs {
 					actual.SecurityGroups = append(actual.SecurityGroups,
-						&awstasks.SecurityGroup{ID: fi.PtrTo(sgID)})
+						&awstasks.SecurityGroup{ID: new(sgID)})
 				}
 			}
 		}
@@ -287,7 +287,7 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 		// Root volume options.
 		if lc.RootVolumeSize != nil {
 			actual.RootVolumeOpts = new(RootVolumeOpts)
-			actual.RootVolumeOpts.Size = fi.PtrTo(int64(*lc.RootVolumeSize))
+			actual.RootVolumeOpts.Size = new(int64(*lc.RootVolumeSize))
 		}
 
 		// Monitoring.
@@ -303,13 +303,13 @@ func (o *Ocean) Find(c *fi.CloudupContext) (*Ocean, error) {
 		// Instance Metadata Options
 		if lc.InstanceMetadataOptions != nil {
 			actual.InstanceMetadataOptions = new(InstanceMetadataOptions)
-			actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(lc.InstanceMetadataOptions.HTTPTokens))
-			actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(lc.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
+			actual.InstanceMetadataOptions.HTTPTokens = new(fi.ValueOf(lc.InstanceMetadataOptions.HTTPTokens))
+			actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = new(int64(fi.ValueOf(lc.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
 		}
 
 		//
 		if lc.ResourceTagSpecification != nil {
-			actual.ResourceTagSpecificationVolumes = fi.PtrTo(fi.ValueOf(lc.ResourceTagSpecification.Volumes.ShouldTag))
+			actual.ResourceTagSpecificationVolumes = new(fi.ValueOf(lc.ResourceTagSpecification.Volumes.ShouldTag))
 		}
 	}
 
@@ -395,15 +395,15 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 	// General.
 	{
 		ocean.SetName(e.Name)
-		ocean.SetRegion(fi.PtrTo(cloud.Region()))
+		ocean.SetRegion(new(cloud.Region()))
 	}
 
 	// Capacity.
 	{
 		if !fi.ValueOf(e.UseAsTemplateOnly) {
-			ocean.Capacity.SetTarget(fi.PtrTo(int(*e.MinSize)))
-			ocean.Capacity.SetMinimum(fi.PtrTo(int(*e.MinSize)))
-			ocean.Capacity.SetMaximum(fi.PtrTo(int(*e.MaxSize)))
+			ocean.Capacity.SetTarget(new(int(*e.MinSize)))
+			ocean.Capacity.SetMinimum(new(int(*e.MinSize)))
+			ocean.Capacity.SetMaximum(new(int(*e.MaxSize)))
 		}
 	}
 
@@ -414,16 +414,16 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 		ocean.Strategy.SetUtilizeCommitments(e.UtilizeCommitments)
 
 		if e.DrainingTimeout != nil {
-			ocean.Strategy.SetDrainingTimeout(fi.PtrTo(int(*e.DrainingTimeout)))
+			ocean.Strategy.SetDrainingTimeout(new(int(*e.DrainingTimeout)))
 		}
 
 		if e.GracePeriod != nil {
-			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
+			ocean.Strategy.SetGracePeriod(new(int(*e.GracePeriod)))
 		}
 		ocean.Strategy.SetSpreadNodesBy(e.SpreadNodesBy)
 		if e.AvailabilityVsCost != nil {
 			orientation := new(aws.ClusterOrientation)
-			ocean.Strategy.SetClusterOrientation(orientation.SetAvailabilityVsCost(fi.PtrTo(*e.AvailabilityVsCost)))
+			ocean.Strategy.SetClusterOrientation(orientation.SetAvailabilityVsCost(new(*e.AvailabilityVsCost)))
 		}
 	}
 
@@ -490,8 +490,8 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			{
 				if e.InstanceMetadataOptions != nil {
 					opt := new(aws.InstanceMetadataOptions)
-					opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
-					opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+					opt.SetHTTPPutResponseHopLimit(new(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+					opt.SetHTTPTokens(new(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
 					ocean.Compute.LaunchSpecification.SetInstanceMetadataOptions(opt)
 				}
 			}
@@ -500,7 +500,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				if e.ResourceTagSpecificationVolumes != nil {
 					opt := new(aws.ResourceTagSpecification)
 					vol := new(aws.Volumes)
-					vol.SetShouldTag(fi.PtrTo(fi.ValueOf(e.ResourceTagSpecificationVolumes)))
+					vol.SetShouldTag(new(fi.ValueOf(e.ResourceTagSpecificationVolumes)))
 					opt.SetVolumes(vol)
 					ocean.Compute.LaunchSpecification.SetResourceTagSpecification(opt)
 				}
@@ -516,7 +516,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 						if len(userData) > 0 {
 							encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-							ocean.Compute.LaunchSpecification.SetUserData(fi.PtrTo(encoded))
+							ocean.Compute.LaunchSpecification.SetUserData(new(encoded))
 						}
 					}
 				}
@@ -536,7 +536,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 
 						// Volume size.
 						if opts.Size != nil {
-							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.PtrTo(int(*opts.Size)))
+							ocean.Compute.LaunchSpecification.SetRootVolumeSize(new(int(*opts.Size)))
 						}
 
 						// EBS optimization.
@@ -598,7 +598,7 @@ func (_ *Ocean) create(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 						if down := autoScaler.Down; down == nil {
 							autoScaler.Down = new(aws.AutoScalerDown)
 						}
-						autoScaler.Down.SetAggressiveScaleDown(aggressiveScaleDown.SetIsEnabled(fi.PtrTo(*e.AutoScalerAggressiveScaleDown)))
+						autoScaler.Down.SetAggressiveScaleDown(aggressiveScaleDown.SetIsEnabled(new(*e.AutoScalerAggressiveScaleDown)))
 					}
 				}
 
@@ -705,7 +705,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				ocean.Strategy = new(aws.Strategy)
 			}
 
-			ocean.Strategy.SetDrainingTimeout(fi.PtrTo(int(*e.DrainingTimeout)))
+			ocean.Strategy.SetDrainingTimeout(new(int(*e.DrainingTimeout)))
 			changes.DrainingTimeout = nil
 			changed = true
 		}
@@ -716,7 +716,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 				ocean.Strategy = new(aws.Strategy)
 			}
 
-			ocean.Strategy.SetGracePeriod(fi.PtrTo(int(*e.GracePeriod)))
+			ocean.Strategy.SetGracePeriod(new(int(*e.GracePeriod)))
 			changes.GracePeriod = nil
 			changed = true
 		}
@@ -738,7 +738,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 			}
 
 			orientation := new(aws.ClusterOrientation)
-			ocean.Strategy.SetClusterOrientation(orientation.SetAvailabilityVsCost(fi.PtrTo(*changes.AvailabilityVsCost)))
+			ocean.Strategy.SetClusterOrientation(orientation.SetAvailabilityVsCost(new(*changes.AvailabilityVsCost)))
 			changes.AvailabilityVsCost = nil
 			changed = true
 		}
@@ -872,7 +872,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 						ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
 					}
 					opt := new(aws.ResourceTagSpecification)
-					opt.Volumes.SetShouldTag(fi.PtrTo(fi.ValueOf(e.ResourceTagSpecificationVolumes)))
+					opt.Volumes.SetShouldTag(new(fi.ValueOf(e.ResourceTagSpecificationVolumes)))
 					ocean.Compute.LaunchSpecification.SetResourceTagSpecification(opt)
 					changes.ResourceTagSpecificationVolumes = nil
 					changed = true
@@ -920,8 +920,8 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					}
 
 					opt := new(aws.InstanceMetadataOptions)
-					opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
-					opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+					opt.SetHTTPPutResponseHopLimit(new(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+					opt.SetHTTPTokens(new(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
 					ocean.Compute.LaunchSpecification.SetInstanceMetadataOptions(opt)
 					changes.InstanceMetadataOptions = nil
 					changed = true
@@ -946,7 +946,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 							}
 
 							encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-							ocean.Compute.LaunchSpecification.SetUserData(fi.PtrTo(encoded))
+							ocean.Compute.LaunchSpecification.SetUserData(new(encoded))
 							changed = true
 						}
 
@@ -1018,7 +1018,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 								ocean.Compute.LaunchSpecification = new(aws.LaunchSpecification)
 							}
 
-							ocean.Compute.LaunchSpecification.SetRootVolumeSize(fi.PtrTo(int(*opts.Size)))
+							ocean.Compute.LaunchSpecification.SetRootVolumeSize(new(int(*opts.Size)))
 							changed = true
 						}
 
@@ -1050,13 +1050,13 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					ocean.Capacity = new(aws.Capacity)
 				}
 
-				ocean.Capacity.SetMinimum(fi.PtrTo(int(*e.MinSize)))
+				ocean.Capacity.SetMinimum(new(int(*e.MinSize)))
 				changes.MinSize = nil
 				changed = true
 
 				// Scale up the target capacity, if needed.
 				if int64(*actual.Capacity.Target) < *e.MinSize {
-					ocean.Capacity.SetTarget(fi.PtrTo(int(*e.MinSize)))
+					ocean.Capacity.SetTarget(new(int(*e.MinSize)))
 				}
 			}
 			if changes.MaxSize != nil {
@@ -1064,7 +1064,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					ocean.Capacity = new(aws.Capacity)
 				}
 
-				ocean.Capacity.SetMaximum(fi.PtrTo(int(*e.MaxSize)))
+				ocean.Capacity.SetMaximum(new(int(*e.MaxSize)))
 				changes.MaxSize = nil
 				changed = true
 			}
@@ -1106,7 +1106,7 @@ func (_ *Ocean) update(cloud awsup.AWSCloud, a, e, changes *Ocean) error {
 					if down := autoScaler.Down; down == nil {
 						autoScaler.Down = new(aws.AutoScalerDown)
 					}
-					autoScaler.Down.SetAggressiveScaleDown(aggressiveScaleDown.SetIsEnabled(fi.PtrTo(*changes.AutoScalerAggressiveScaleDown)))
+					autoScaler.Down.SetAggressiveScaleDown(aggressiveScaleDown.SetIsEnabled(new(*changes.AutoScalerAggressiveScaleDown)))
 					changes.AutoScalerAggressiveScaleDown = nil
 				}
 
@@ -1184,7 +1184,7 @@ func (_ *Ocean) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Oce
 
 	tf := &terraformOcean{
 		Name:                            e.Name,
-		Region:                          fi.PtrTo(cloud.Region()),
+		Region:                          new(cloud.Region()),
 		UseAsTemplateOnly:               e.UseAsTemplateOnly,
 		FallbackToOnDemand:              e.FallbackToOnDemand,
 		UtilizeReservedInstances:        e.UtilizeReservedInstances,
@@ -1360,8 +1360,8 @@ func (o *Ocean) buildTags() []*aws.Tag {
 
 	for key, value := range o.Tags {
 		tags = append(tags, &aws.Tag{
-			Key:   fi.PtrTo(key),
-			Value: fi.PtrTo(value),
+			Key:   new(key),
+			Value: new(value),
 		})
 	}
 
@@ -1398,7 +1398,7 @@ func ptrInt32ToPtrInt64(i *int32) *int64 {
 		return nil
 	}
 	v := int64(*i)
-	return fi.PtrTo(v)
+	return new(v)
 }
 
 func ptrInt64ToPtrInt32(i *int64) *int32 {
@@ -1406,5 +1406,5 @@ func ptrInt64ToPtrInt32(i *int64) *int32 {
 		return nil
 	}
 	v := int32(*i)
-	return fi.PtrTo(v)
+	return new(v)
 }

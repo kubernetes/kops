@@ -60,11 +60,11 @@ func (c *Volume) Find(context *fi.CloudupContext) (*Volume, error) {
 	}
 	v := volumes[0]
 	actual := &Volume{
-		ID:               fi.PtrTo(v.ID),
-		Name:             fi.PtrTo(v.Name),
-		AvailabilityZone: fi.PtrTo(v.AvailabilityZone),
-		VolumeType:       fi.PtrTo(v.VolumeType),
-		SizeGB:           fi.PtrTo(int64(v.Size)),
+		ID:               new(v.ID),
+		Name:             new(v.Name),
+		AvailabilityZone: new(v.AvailabilityZone),
+		VolumeType:       new(v.VolumeType),
+		SizeGB:           new(int64(v.Size)),
 		Tags:             v.Metadata,
 		Lifecycle:        c.Lifecycle,
 	}
@@ -142,8 +142,8 @@ func (_ *Volume) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes 
 			return fmt.Errorf("error creating PersistentVolume: %v", err)
 		}
 
-		e.ID = fi.PtrTo(v.ID)
-		e.AvailabilityZone = fi.PtrTo(v.AvailabilityZone)
+		e.ID = new(v.ID)
+		e.AvailabilityZone = new(v.AvailabilityZone)
 		return nil
 	}
 

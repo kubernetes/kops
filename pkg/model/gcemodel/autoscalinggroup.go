@@ -86,9 +86,9 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			return nil, err
 		}
 
-		HasExternalIP := fi.PtrTo(false)
+		HasExternalIP := new(false)
 		if subnet.Type == kops.SubnetTypePublic || subnet.Type == kops.SubnetTypeUtility || ig.IsBastion() {
-			HasExternalIP = fi.PtrTo(true)
+			HasExternalIP = new(true)
 		}
 		if ig.Spec.AssociatePublicIP != nil {
 			HasExternalIP = ig.Spec.AssociatePublicIP
@@ -104,7 +104,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 			BootDiskSizeGB: i64(int64(volumeSize)),
 			BootDiskImage:  s(ig.Spec.Image),
 
-			Preemptible:          fi.PtrTo(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
+			Preemptible:          new(fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT"),
 			GCPProvisioningModel: ig.Spec.GCPProvisioningModel,
 
 			HasExternalIP: HasExternalIP,
@@ -222,7 +222,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		}
 
 		if gce.UsesIPAliases(b.Cluster) {
-			t.CanIPForward = fi.PtrTo(false)
+			t.CanIPForward = new(false)
 
 			nodeCIDRMaskSize := int32(24)
 			if b.Cluster.Spec.KubeControllerManager.NodeCIDRMaskSize != nil {
@@ -232,7 +232,7 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 				b.NameForIPAliasRange("pods"): fmt.Sprintf("/%d", nodeCIDRMaskSize),
 			}
 		} else {
-			t.CanIPForward = fi.PtrTo(true)
+			t.CanIPForward = new(true)
 		}
 		t.Subnet = b.LinkToSubnet(subnet)
 
@@ -342,7 +342,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 				Name:                        s(name),
 				Lifecycle:                   b.Lifecycle,
 				Zone:                        s(zone),
-				TargetSize:                  fi.PtrTo(int64(targetSize)),
+				TargetSize:                  new(int64(targetSize)),
 				UpdatePolicy:                &gcetasks.UpdatePolicy{MinimalAction: "REPLACE", Type: "OPPORTUNISTIC"},
 				BaseInstanceName:            s(ig.ObjectMeta.Name),
 				InstanceTemplate:            instanceTemplate,

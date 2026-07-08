@@ -30,7 +30,6 @@ import (
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 type ScalewayVerifierOptions struct{}
@@ -101,9 +100,9 @@ func (v scalewayVerifier) VerifyToken(ctx context.Context, rawRequest *http.Requ
 
 	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
 		Region:     region,
-		ResourceID: fi.PtrTo(server.ID),
-		IsIPv6:     fi.PtrTo(false),
-		Zonal:      fi.PtrTo(zone.String()),
+		ResourceID: new(server.ID),
+		IsIPv6:     new(false),
+		Zonal:      new(zone.String()),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get IP for server %q: %w", server.Name, err)

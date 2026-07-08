@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/nodemodel/wellknownassets"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/architectures"
 )
 
@@ -79,7 +78,7 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 		case kops.CloudProviderGCE:
 			binaryLocation := ig.RawClusterSpec().CloudProvider.GCE.BinariesLocation
 			if binaryLocation == nil {
-				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-gcp/v35.0.0")
+				binaryLocation = new("https://artifacts.k8s.io/binaries/cloud-provider-gcp/v35.0.0")
 			}
 
 			u, err := url.Parse(fmt.Sprintf("%s/auth-provider-gcp/linux/%s/auth-provider-gcp", *binaryLocation, arch))
@@ -95,7 +94,7 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 		case kops.CloudProviderAWS:
 			binaryLocation := ig.RawClusterSpec().CloudProvider.AWS.BinariesLocation
 			if binaryLocation == nil {
-				binaryLocation = fi.PtrTo("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7")
+				binaryLocation = new("https://artifacts.k8s.io/binaries/cloud-provider-aws/v1.31.7")
 			}
 
 			u, err := url.Parse(fmt.Sprintf("%s/linux/%s/ecr-credential-provider-linux-%s", *binaryLocation, arch, arch))

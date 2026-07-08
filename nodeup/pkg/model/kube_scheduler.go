@@ -173,7 +173,7 @@ func (b *KubeSchedulerBuilder) writeServerCertificate(c *fi.NodeupModelBuilderCo
 			return err
 		}
 
-		kubeScheduler.TLSCertFile = fi.PtrTo(filepath.Join(pathSrvScheduler, "server.crt"))
+		kubeScheduler.TLSCertFile = new(filepath.Join(pathSrvScheduler, "server.crt"))
 		kubeScheduler.TLSPrivateKeyFile = filepath.Join(pathSrvScheduler, "server.key")
 	}
 

@@ -47,28 +47,28 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	if fi.ValueOf(containerd.Version) == "" {
 		switch {
 		case b.IsKubernetesLT("1.32"):
-			containerd.Version = fi.PtrTo("1.7.32")
+			containerd.Version = new("1.7.32")
 			containerd.Runc = &kops.Runc{
-				Version: fi.PtrTo("1.3.5"),
+				Version: new("1.3.5"),
 			}
 		case b.IsKubernetesLT("1.36"):
-			containerd.Version = fi.PtrTo("2.2.4")
+			containerd.Version = new("2.2.4")
 			containerd.Runc = &kops.Runc{
-				Version: fi.PtrTo("1.3.5"),
+				Version: new("1.3.5"),
 			}
 		default:
-			containerd.Version = fi.PtrTo("2.3.1")
+			containerd.Version = new("2.3.1")
 			containerd.Runc = &kops.Runc{
-				Version: fi.PtrTo("1.4.2"),
+				Version: new("1.4.2"),
 			}
 		}
 	}
 	// Set the default log level to INFO
-	containerd.LogLevel = fi.PtrTo("info")
+	containerd.LogLevel = new("info")
 
 	// Set the sandbox image used to scope pod shared resources used by the pod's containers.
 	if fi.ValueOf(containerd.SandboxImage) == "" {
-		containerd.SandboxImage = fi.PtrTo(b.AssetBuilder.RemapImage(DefaultSandboxImage))
+		containerd.SandboxImage = new(b.AssetBuilder.RemapImage(DefaultSandboxImage))
 	}
 
 	if containerd.NvidiaGPU != nil && fi.ValueOf(containerd.NvidiaGPU.Enabled) {

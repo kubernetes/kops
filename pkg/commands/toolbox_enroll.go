@@ -827,7 +827,7 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 
 	nodeupScript.CloudProvider = string(cluster.GetCloudProvider())
 
-	bootConfig.ConfigBase = fi.PtrTo("file:///etc/kubernetes/kops/config")
+	bootConfig.ConfigBase = new("file:///etc/kubernetes/kops/config")
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {

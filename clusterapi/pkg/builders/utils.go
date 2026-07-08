@@ -39,11 +39,7 @@ func makeRef(u *unstructured.Unstructured) map[string]any {
 // 			Kind:       kind,
 // 			Name:       owner.GetName(),
 // 			UID:        owner.GetUID(),
-// 			Controller: PtrTo(true),
+// 			Controller: new(true),
 // 		},
 // 	})
 // }
-
-func PtrTo[T any](t T) *T {
-	return &t
-}

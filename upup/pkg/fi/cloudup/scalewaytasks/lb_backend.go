@@ -88,17 +88,17 @@ func (l *LBBackend) Find(context *fi.CloudupContext) (*LBBackend, error) {
 	backend := backendResponse.Backends[0]
 
 	return &LBBackend{
-		Name:                 fi.PtrTo(backend.Name),
+		Name:                 new(backend.Name),
 		Lifecycle:            l.Lifecycle,
-		ID:                   fi.PtrTo(backend.ID),
-		Zone:                 fi.PtrTo(string(backend.LB.Zone)),
-		ForwardProtocol:      fi.PtrTo(string(backend.ForwardProtocol)),
-		ForwardPort:          fi.PtrTo(backend.ForwardPort),
-		ForwardPortAlgorithm: fi.PtrTo(string(backend.ForwardPortAlgorithm)),
-		StickySessions:       fi.PtrTo(string(backend.StickySessions)),
-		ProxyProtocol:        fi.PtrTo(string(backend.ProxyProtocol)),
+		ID:                   new(backend.ID),
+		Zone:                 new(string(backend.LB.Zone)),
+		ForwardProtocol:      new(string(backend.ForwardProtocol)),
+		ForwardPort:          new(backend.ForwardPort),
+		ForwardPortAlgorithm: new(string(backend.ForwardPortAlgorithm)),
+		StickySessions:       new(string(backend.StickySessions)),
+		ProxyProtocol:        new(string(backend.ProxyProtocol)),
 		LoadBalancer: &LoadBalancer{
-			Name: fi.PtrTo(backend.LB.Name),
+			Name: new(backend.LB.Name),
 		},
 	}, nil
 }
@@ -230,7 +230,7 @@ func (l *LBBackend) RenderTerraform(t *terraform.TerraformTarget, actual, expect
 		Name:            expected.Name,
 		ForwardProtocol: expected.ForwardProtocol,
 		ForwardPort:     expected.ForwardPort,
-		ProxyProtocol:   fi.PtrTo(strings.TrimPrefix(*expected.ProxyProtocol, "proxy_protocol_")),
+		ProxyProtocol:   new(strings.TrimPrefix(*expected.ProxyProtocol, "proxy_protocol_")),
 		ServerIPs:       serverIPs,
 	}
 	return t.RenderResource("scaleway_lb_backend", fi.ValueOf(expected.Name), tf)

@@ -142,7 +142,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 			continue
 		}
 		sgs = append(sgs, &SecurityGroup{
-			ID:        fi.PtrTo(sgid),
+			ID:        new(sgid),
 			Lifecycle: lifecycle,
 		})
 	}
@@ -153,7 +153,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 	subnets := make([]*Subnet, len(port.FixedIPs))
 	for i, subn := range port.FixedIPs {
 		subnets[i] = &Subnet{
-			ID:        fi.PtrTo(subn.SubnetID),
+			ID:        new(subn.SubnetID),
 			Lifecycle: lifecycle,
 		}
 	}
@@ -176,7 +176,7 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 		if !strings.HasPrefix(t, prefix) {
 			continue
 		}
-		cloudInstanceGroupName = fi.PtrTo("")
+		cloudInstanceGroupName = new("")
 		scanString := fmt.Sprintf("%s%%s", prefix)
 		if _, err := fmt.Sscanf(t, scanString, cloudInstanceGroupName); err != nil {
 			klog.V(2).Infof("Error extracting instance group for Port with name: %q", port.Name)
@@ -184,10 +184,10 @@ func newPortTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecycle
 	}
 
 	actual := &Port{
-		ID:                  fi.PtrTo(port.ID),
+		ID:                  new(port.ID),
 		InstanceGroupName:   cloudInstanceGroupName,
-		Name:                fi.PtrTo(port.Name),
-		Network:             &Network{ID: fi.PtrTo(port.NetworkID)},
+		Name:                new(port.Name),
+		Network:             &Network{ID: new(port.NetworkID)},
 		SecurityGroups:      sgs,
 		Subnets:             subnets,
 		Lifecycle:           lifecycle,
@@ -269,7 +269,7 @@ func (*Port) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *Por
 				}
 			}
 		}
-		e.ID = fi.PtrTo(v.ID)
+		e.ID = new(v.ID)
 		klog.V(2).Infof("Creating a new Openstack port, id=%s", v.ID)
 		return nil
 	}

@@ -64,7 +64,7 @@ func TestRoundTrip(t *testing.T) {
 		{
 			IAM: &Statement{
 				Effect:    StatementEffectDeny,
-				Principal: Principal{Service: fi.PtrTo(stringorset.Of("service"))},
+				Principal: Principal{Service: new(stringorset.Of("service"))},
 				Condition: map[string]interface{}{
 					"bar": "baz",
 				},
@@ -205,7 +205,7 @@ func TestPolicyGeneration(t *testing.T) {
 					CloudProvider: kops.CloudProviderSpec{
 						AWS: &kops.AWSSpec{
 							EBSCSIDriver: &kops.EBSCSIDriverSpec{
-								Enabled: fi.PtrTo(true),
+								Enabled: new(true),
 							},
 						},
 					},

@@ -72,8 +72,8 @@ func (e *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 
 	actual := &Subnet{}
 	actual.Name = &s.Name
-	actual.Network = &Network{Name: fi.PtrTo(lastComponent(s.Network))}
-	actual.Region = fi.PtrTo(lastComponent(s.Region))
+	actual.Network = &Network{Name: new(lastComponent(s.Network))}
+	actual.Region = new(lastComponent(s.Region))
 	actual.CIDR = &s.IpCidrRange
 	actual.StackType = &s.StackType
 	actual.Ipv6AccessType = &s.Ipv6AccessType

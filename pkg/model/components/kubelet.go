@@ -55,12 +55,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
 
 	// We _do_ allow debugging handlers, so we can do logs
 	// This does allow more access than we would like though
-	cluster.Spec.ControlPlaneKubelet.EnableDebuggingHandlers = fi.PtrTo(true)
+	cluster.Spec.ControlPlaneKubelet.EnableDebuggingHandlers = new(true)
 
 	// IsolateControlPlane enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
 	if fi.ValueOf(cluster.Spec.Networking.IsolateControlPlane) {
-		cluster.Spec.ControlPlaneKubelet.EnableDebuggingHandlers = fi.PtrTo(false)
+		cluster.Spec.ControlPlaneKubelet.EnableDebuggingHandlers = new(false)
 		cluster.Spec.ControlPlaneKubelet.HairpinMode = "none"
 	}
 
@@ -69,9 +69,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
 
 func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet *kops.KubeletConfigSpec, kubernetesVersion model.KubernetesVersion) error {
 	// Standard options
-	kubelet.EnableDebuggingHandlers = fi.PtrTo(true)
+	kubelet.EnableDebuggingHandlers = new(true)
 	kubelet.PodManifestPath = "/etc/kubernetes/manifests"
-	kubelet.LogLevel = fi.PtrTo(int32(2))
+	kubelet.LogLevel = new(int32(2))
 	kubelet.ClusterDomain = cluster.Spec.ClusterDNSDomain
 
 	// AllowPrivileged is deprecated and removed in v1.14.
@@ -112,7 +112,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 				"imagefs.available<10%",
 				"imagefs.inodesFree<5%",
 			}
-			kubelet.EvictionHard = fi.PtrTo(strings.Join(evictionHard, ","))
+			kubelet.EvictionHard = new(strings.Join(evictionHard, ","))
 		}
 	}
 
@@ -166,8 +166,8 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 		if cluster.Spec.CloudConfig == nil {
 			cluster.Spec.CloudConfig = &kops.CloudConfiguration{}
 		}
-		cluster.Spec.CloudProvider.GCE.Multizone = fi.PtrTo(true)
-		cluster.Spec.CloudProvider.GCE.NodeTags = fi.PtrTo(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
+		cluster.Spec.CloudProvider.GCE.Multizone = new(true)
+		cluster.Spec.CloudProvider.GCE.NodeTags = new(gce.TagForRole(b.ClusterName, kops.InstanceGroupRoleNode))
 	}
 
 	if kubelet.FeatureGates == nil {
@@ -187,7 +187,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	kubelet.CgroupDriver = "systemd"
 
 	if kubelet.ProtectKernelDefaults == nil {
-		kubelet.ProtectKernelDefaults = fi.PtrTo(true)
+		kubelet.ProtectKernelDefaults = new(true)
 	}
 
 	// We do not enable graceful shutdown when using amazonaws due to leaking ENIs.
@@ -201,7 +201,7 @@ func (b *KubeletOptionsBuilder) configureKubelet(cluster *kops.Cluster, kubelet 
 	}
 
 	if kubernetesVersion.IsLT("1.34") {
-		kubelet.RegisterSchedulable = fi.PtrTo(true)
+		kubelet.RegisterSchedulable = new(true)
 	}
 
 	return nil
