@@ -274,8 +274,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		}
 	}
 
+	etcdVersions := etcdSupportedVersions()
+	if etcdCluster.Image != "" {
+		// With a custom image, only the selected version's binaries are made
+		// available in the pod; restoring backups, which can require the
+		// binaries of a bundled version, is not supported.
+		etcdVersions = []etcdVersion{{Version: strings.TrimPrefix(etcdCluster.Version, "v"), Image: etcdCluster.Image}}
+	}
+
 	if b.Cluster.HasImageVolumesSupport() {
-		for _, etcdVersion := range etcdSupportedVersions() {
+		for _, etcdVersion := range etcdVersions {
 			if etcdVersion.SymlinkToVersion == "" {
 				volume := v1.Volume{
 					Name: "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
@@ -311,7 +319,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		}
 
 		symlinkToVersions := sets.NewString()
-		for _, etcdVersion := range etcdSupportedVersions() {
+		for _, etcdVersion := range etcdVersions {
 			if etcdVersion.SymlinkToVersion != "" {
 				symlinkToVersions.Insert(etcdVersion.SymlinkToVersion)
 				continue
@@ -336,7 +344,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		for _, symlinkToVersion := range symlinkToVersions.List() {
 			targetVersions := sets.NewString()
 
-			for _, etcdVersion := range etcdSupportedVersions() {
+			for _, etcdVersion := range etcdVersions {
 				if etcdVersion.SymlinkToVersion == symlinkToVersion {
 					targetVersions.Insert(etcdVersion.Version)
 				}
@@ -386,7 +394,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		container.Image = b.AssetBuilder.RemapImage(container.Image)
 
 		if b.Cluster.HasImageVolumesSupport() {
-			for _, etcdVersion := range etcdSupportedVersions() {
+			for _, etcdVersion := range etcdVersions {
 				volumeMount := v1.VolumeMount{
 					MountPath: "/opt/etcd-v" + etcdVersion.Version,
 				}

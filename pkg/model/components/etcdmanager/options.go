@@ -24,7 +24,6 @@ import (
 	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -65,17 +64,16 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		}
 
 		if !etcdVersionIsSupported(etcdCluster.Version) {
-			if featureflag.SkipEtcdVersionCheck.Enabled() {
-				klog.Warningf("etcd version %q is not known to be supported, but ignoring because of SkipEtcdVersionCheck feature flag", etcdCluster.Version)
+			if etcdCluster.Image != "" {
+				klog.Warningf("etcd version %q is not bundled by kOps and has not been tested; using binaries from custom image %q", etcdCluster.Version, etcdCluster.Image)
 			} else {
 				klog.Warningf("Unsupported etcd version %q detected; please update etcd version.", etcdCluster.Version)
-				klog.Warningf("Use export KOPS_FEATURE_FLAGS=SkipEtcdVersionCheck to override this check.")
 				var versions []string
 				for _, v := range etcdSupportedVersions() {
 					versions = append(versions, v.Version)
 				}
 				klog.Warningf("Supported etcd versions: %s", strings.Join(versions, ", "))
-				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version or remove the value to use the recommended version", etcdCluster.Version)
+				return fmt.Errorf("etcd version %q is not supported with etcd-manager, please specify a supported version, remove the value to use the recommended version, or also set the image field to run a custom version", etcdCluster.Version)
 			}
 		}
 	}

@@ -19,6 +19,7 @@ package validation
 import (
 	"testing"
 
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -157,5 +158,126 @@ func TestValidEtcdChanges(t *testing.T) {
 		if len(errorList) != 0 {
 			t.Errorf("%v: %v", g.Details, errorList)
 		}
+	}
+}
+
+func TestEtcdImageChanges(t *testing.T) {
+	createdStatus := &kops.ClusterStatus{
+		EtcdClusters: []kops.EtcdClusterStatus{
+			{
+				Name: "main",
+			},
+		},
+	}
+
+	grid := []struct {
+		Details        string
+		OldSpec        kops.EtcdClusterSpec
+		NewSpec        kops.EtcdClusterSpec
+		Status         *kops.ClusterStatus
+		ExpectedErrors []string
+	}{
+		{
+			Details: "image cannot be added to an existing etcd cluster",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			Status:  createdStatus,
+			ExpectedErrors: []string{
+				"Forbidden::spec.etcdClusters[main].image",
+			},
+		},
+		{
+			Details: "image cannot be changed on an existing etcd cluster",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "example.com/etcd:v3.6.99"},
+			Status:  createdStatus,
+			ExpectedErrors: []string{
+				"Forbidden::spec.etcdClusters[main].image",
+			},
+		},
+		{
+			Details: "image cannot be removed from an existing etcd cluster",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99"},
+			Status:  createdStatus,
+			ExpectedErrors: []string{
+				"Forbidden::spec.etcdClusters[main].image",
+			},
+		},
+		{
+			Details: "version cannot be changed when image is set",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.100", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			Status:  createdStatus,
+			ExpectedErrors: []string{
+				"Forbidden::spec.etcdClusters[main].version",
+			},
+		},
+		{
+			Details: "unchanged image and version are allowed",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			Status:  createdStatus,
+		},
+		{
+			Details: "version changes without image are allowed",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.11"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.12"},
+			Status:  createdStatus,
+		},
+		{
+			Details: "image can be set before the etcd cluster is created",
+			OldSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99"},
+			NewSpec: kops.EtcdClusterSpec{Name: "main", Version: "3.6.99", Image: "gcr.io/etcd-development/etcd:v3.6.99"},
+			Status:  &kops.ClusterStatus{},
+		},
+	}
+
+	for _, g := range grid {
+		fp := field.NewPath("spec", "etcdClusters").Key(g.NewSpec.Name)
+		errorList := validateEtcdClusterUpdate(fp, g.NewSpec, g.Status, g.OldSpec)
+		testErrors(t, g.Details, errorList, g.ExpectedErrors)
+	}
+}
+
+func TestEtcdVersionRequiredWithImage(t *testing.T) {
+	grid := []struct {
+		Details        string
+		Spec           kops.EtcdClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Details: "image requires version",
+			Spec: kops.EtcdClusterSpec{
+				Name:    "main",
+				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: fi.PtrTo("eu-central-1a")}},
+				Image:   "gcr.io/etcd-development/etcd:v3.6.99",
+			},
+			ExpectedErrors: []string{
+				"Required value::spec.etcdClusters[0].version",
+			},
+		},
+		{
+			Details: "image with version is valid",
+			Spec: kops.EtcdClusterSpec{
+				Name:    "main",
+				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: fi.PtrTo("eu-central-1a")}},
+				Version: "3.6.99",
+				Image:   "gcr.io/etcd-development/etcd:v3.6.99",
+			},
+		},
+		{
+			Details: "neither image nor version is valid",
+			Spec: kops.EtcdClusterSpec{
+				Name:    "main",
+				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: fi.PtrTo("eu-central-1a")}},
+			},
+		},
+	}
+
+	for _, g := range grid {
+		fp := field.NewPath("spec", "etcdClusters").Index(0)
+		errorList := validateEtcdClusterSpec(g.Spec, nil, fp)
+		testErrors(t, g.Details, errorList, g.ExpectedErrors)
 	}
 }

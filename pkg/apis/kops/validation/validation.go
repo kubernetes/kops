@@ -1535,6 +1535,9 @@ func validateEtcdClusterSpec(spec kops.EtcdClusterSpec, c *kops.Cluster, fieldPa
 		// Not technically a requirement, but doesn't really make sense to allow
 		allErrs = append(allErrs, field.Invalid(fieldPath.Child("etcdMembers"), len(spec.Members), "Should be an odd number of control-plane-zones for quorum. Use --zones and --control-plane-zones to declare node zones and control-plane zones separately"))
 	}
+	if spec.Image != "" && spec.Version == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("version"), "version must be set when image is set"))
+	}
 	allErrs = append(allErrs, validateEtcdVersion(spec, fieldPath, nil)...)
 	for i, m := range spec.Members {
 		allErrs = append(allErrs, validateEtcdMemberSpec(m, fieldPath.Child("etcdMembers").Index(i))...)
