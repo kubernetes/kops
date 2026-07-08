@@ -5759,6 +5759,7 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.HTTP2MaxStreamsPerConnection = in.HTTP2MaxStreamsPerConnection
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.RequestTimeout = in.RequestTimeout
+	out.StorageInitializationTimeout = in.StorageInitializationTimeout
 	out.MinRequestTimeout = in.MinRequestTimeout
 	out.WatchCache = in.WatchCache
 	out.WatchCacheSizes = in.WatchCacheSizes
@@ -5879,6 +5880,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.HTTP2MaxStreamsPerConnection = in.HTTP2MaxStreamsPerConnection
 	out.EtcdQuorumRead = in.EtcdQuorumRead
 	out.RequestTimeout = in.RequestTimeout
+	out.StorageInitializationTimeout = in.StorageInitializationTimeout
 	out.MinRequestTimeout = in.MinRequestTimeout
 	out.WatchCache = in.WatchCache
 	out.WatchCacheSizes = in.WatchCacheSizes
