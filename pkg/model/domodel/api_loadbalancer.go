@@ -61,19 +61,19 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	// Create LoadBalancer for API LB
 	loadbalancer := &dotasks.LoadBalancer{
-		Name:              fi.PtrTo(loadbalancerName),
-		Region:            fi.PtrTo(b.Cluster.Spec.Networking.Subnets[0].Region),
-		DropletTag:        fi.PtrTo(clusterMasterTag),
+		Name:              new(loadbalancerName),
+		Region:            new(b.Cluster.Spec.Networking.Subnets[0].Region),
+		DropletTag:        new(clusterMasterTag),
 		Lifecycle:         b.Lifecycle,
 		WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KopsController, wellknownservices.KubeAPIServer},
 	}
 
 	if b.Cluster.Spec.Networking.NetworkID != "" {
-		loadbalancer.VPCUUID = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
+		loadbalancer.VPCUUID = new(b.Cluster.Spec.Networking.NetworkID)
 	} else if b.Cluster.Spec.Networking.NetworkCIDR != "" {
 		vpcName := "vpc-" + clusterName
-		loadbalancer.VPCName = fi.PtrTo(vpcName)
-		loadbalancer.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
+		loadbalancer.VPCName = new(vpcName)
+		loadbalancer.NetworkCIDR = new(b.Cluster.Spec.Networking.NetworkCIDR)
 	}
 
 	c.AddTask(loadbalancer)

@@ -91,7 +91,7 @@ func (b *DiscoveryOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		}
 		kubeAPIServer.ServiceAccountIssuer = &serviceAccountIssuer
 	}
-	kubeAPIServer.ServiceAccountJWKSURI = fi.PtrTo(*kubeAPIServer.ServiceAccountIssuer + "/openid/v1/jwks")
+	kubeAPIServer.ServiceAccountJWKSURI = new(*kubeAPIServer.ServiceAccountIssuer + "/openid/v1/jwks")
 	// We set apiserver ServiceAccountKey and ServiceAccountSigningKeyFile in nodeup
 
 	return nil

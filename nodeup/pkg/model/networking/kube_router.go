@@ -53,7 +53,7 @@ func (b *KuberouterBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Path:           "/var/lib/kube-router/kubeconfig",
 		Contents:       kubeconfig,
 		Type:           nodetasks.FileType_File,
-		Mode:           fi.PtrTo("0400"),
+		Mode:           new("0400"),
 		BeforeServices: []string{"kubelet.service"},
 	})
 
@@ -68,10 +68,10 @@ func (b *KuberouterBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		c.AddTask(&nodetasks.File{
 			Path:    "/usr/share/iproute2",
 			Type:    nodetasks.FileType_Symlink,
-			Symlink: fi.PtrTo("/etc/iproute2"),
-			Owner:   fi.PtrTo("root"),
-			Group:   fi.PtrTo("root"),
-			Mode:    fi.PtrTo("0755"),
+			Symlink: new("/etc/iproute2"),
+			Owner:   new("root"),
+			Group:   new("root"),
+			Mode:    new("0755"),
 		})
 	}
 

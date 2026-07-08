@@ -72,8 +72,8 @@ func (s *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
 	}
 
 	actual := &SSHKey{
-		ID:        fi.PtrTo(matched.ID),
-		Name:      fi.PtrTo(matched.Label),
+		ID:        new(matched.ID),
+		Name:      new(matched.Label),
 		Lifecycle: s.Lifecycle,
 	}
 
@@ -141,7 +141,7 @@ func (*SSHKey) RenderLinode(t *linode.APITarget, actual, expected, changes *SSHK
 		return fmt.Errorf("error creating Linode (Akamai) SSH key %q: %w", name, err)
 	}
 
-	expected.ID = fi.PtrTo(created.ID)
+	expected.ID = new(created.ID)
 	klog.V(2).Infof("Created Linode (Akamai) SSH key %q (id=%d)", created.Label, created.ID)
 
 	return nil

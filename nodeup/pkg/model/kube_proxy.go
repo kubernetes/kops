@@ -170,7 +170,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 			Limits:   resourceLimits,
 		},
 		SecurityContext: &v1.SecurityContext{
-			Privileged: fi.PtrTo(true),
+			Privileged: new(true),
 		},
 	}
 

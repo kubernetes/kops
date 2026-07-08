@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstances int) kops.RollingUpdate {
@@ -43,7 +42,7 @@ func resolveSettings(cluster *kops.Cluster, group *kops.InstanceGroup, numInstan
 	}
 
 	if rollingUpdate.DrainAndTerminate == nil {
-		rollingUpdate.DrainAndTerminate = fi.PtrTo(true)
+		rollingUpdate.DrainAndTerminate = new(true)
 	}
 
 	if rollingUpdate.MaxSurge == nil {

@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 // BuildMinimalClusterAWS a generic minimal AWS cluster
@@ -58,7 +57,7 @@ func addEtcdClusters(c *kops.Cluster) {
 		for _, zone := range etcdZones {
 			m := kops.EtcdMemberSpec{}
 			m.Name = zone
-			m.InstanceGroup = fi.PtrTo("master-" + zone)
+			m.InstanceGroup = new("master-" + zone)
 			etcd.Members = append(etcd.Members, m)
 		}
 		c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
@@ -125,7 +124,7 @@ func buildMinimalCluster(clusterName string) *kops.Cluster {
 
 	c.Spec.DNSZone = "test.com"
 
-	c.Spec.SSHKeyName = fi.PtrTo("test")
+	c.Spec.SSHKeyName = new("test")
 
 	addEtcdClusters(c)
 

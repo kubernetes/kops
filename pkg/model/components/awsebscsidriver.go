@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -37,13 +36,13 @@ func (b *AWSEBSCSIDriverOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	if aws.EBSCSIDriver == nil {
 		aws.EBSCSIDriver = &kops.EBSCSIDriverSpec{
-			Enabled: fi.PtrTo(true),
+			Enabled: new(true),
 		}
 	}
 	c := aws.EBSCSIDriver
 
 	if c.Version == nil {
-		c.Version = fi.PtrTo("v1.58.0")
+		c.Version = new("v1.58.0")
 	}
 
 	return nil

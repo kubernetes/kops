@@ -49,7 +49,7 @@ type terraformAzureNetworkSecurityGroup struct {
 func (*NetworkSecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NetworkSecurityGroup) error {
 	tf := &terraformAzureNetworkSecurityGroup{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		Tags:              stringMap(e.Tags),
 	}

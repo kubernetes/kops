@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/wellknownports"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -44,11 +43,11 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.EnableEndpointHealthChecking == nil {
-		c.EnableEndpointHealthChecking = fi.PtrTo(true)
+		c.EnableEndpointHealthChecking = new(true)
 	}
 
 	if c.EnableHostFirewall == nil {
-		c.EnableHostFirewall = fi.PtrTo(false)
+		c.EnableHostFirewall = new(false)
 	}
 
 	if c.IdentityAllocationMode == "" {
@@ -116,7 +115,7 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.Masquerade == nil {
-		c.Masquerade = fi.PtrTo(!clusterSpec.IsIPv6Only())
+		c.Masquerade = new(!clusterSpec.IsIPv6Only())
 	}
 
 	if c.Tunnel == "" {
@@ -128,27 +127,27 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.EnableRemoteNodeIdentity == nil {
-		c.EnableRemoteNodeIdentity = fi.PtrTo(true)
+		c.EnableRemoteNodeIdentity = new(true)
 	}
 
 	if c.EnableUnreachableRoutes == nil {
-		c.EnableUnreachableRoutes = fi.PtrTo(false)
+		c.EnableUnreachableRoutes = new(false)
 	}
 
 	if c.EnableBPFMasquerade == nil {
-		c.EnableBPFMasquerade = fi.PtrTo(c.IPAM == "eni")
+		c.EnableBPFMasquerade = new(c.IPAM == "eni")
 	}
 
 	if c.EnableL7Proxy == nil {
-		c.EnableL7Proxy = fi.PtrTo(true)
+		c.EnableL7Proxy = new(true)
 	}
 
 	if c.EnableLocalRedirectPolicy == nil {
-		c.EnableLocalRedirectPolicy = fi.PtrTo(false)
+		c.EnableLocalRedirectPolicy = new(false)
 	}
 
 	if c.DisableCNPStatusUpdates == nil {
-		c.DisableCNPStatusUpdates = fi.PtrTo(true)
+		c.DisableCNPStatusUpdates = new(true)
 	}
 
 	if c.CPURequest == nil {
@@ -166,39 +165,39 @@ func (b *CiliumOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.CniExclusive == nil {
-		c.CniExclusive = fi.PtrTo(true)
+		c.CniExclusive = new(true)
 	}
 
 	hubble := c.Hubble
 	if hubble != nil {
 		if hubble.Enabled == nil {
-			hubble.Enabled = fi.PtrTo(true)
+			hubble.Enabled = new(true)
 		}
 	} else {
 		c.Hubble = &kops.HubbleSpec{
-			Enabled: fi.PtrTo(false),
+			Enabled: new(false),
 		}
 	}
 
 	ingress := c.Ingress
 	if ingress != nil {
 		if ingress.Enabled == nil {
-			ingress.Enabled = fi.PtrTo(true)
+			ingress.Enabled = new(true)
 		}
 	} else {
 		c.Ingress = &kops.CiliumIngressSpec{
-			Enabled: fi.PtrTo(false),
+			Enabled: new(false),
 		}
 	}
 
 	gatewayAPI := c.GatewayAPI
 	if gatewayAPI != nil {
 		if gatewayAPI.Enabled == nil {
-			gatewayAPI.Enabled = fi.PtrTo(true)
+			gatewayAPI.Enabled = new(true)
 		}
 	} else {
 		c.GatewayAPI = &kops.CiliumGatewayAPISpec{
-			Enabled: fi.PtrTo(false),
+			Enabled: new(false),
 		}
 	}
 

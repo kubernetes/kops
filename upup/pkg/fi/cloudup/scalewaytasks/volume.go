@@ -61,12 +61,12 @@ func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
 	for _, volume := range volumes.Volumes {
 		if volume.Name == fi.ValueOf(v.Name) {
 			return &Volume{
-				Name:      fi.PtrTo(volume.Name),
-				ID:        fi.PtrTo(volume.ID),
+				Name:      new(volume.Name),
+				ID:        new(volume.ID),
 				Lifecycle: v.Lifecycle,
-				Size:      fi.PtrTo(int64(volume.Size)),
-				Zone:      fi.PtrTo(string(volume.Zone)),
-				Type:      fi.PtrTo(string(volume.VolumeType)),
+				Size:      new(int64(volume.Size)),
+				Zone:      new(string(volume.Zone)),
+				Type:      new(string(volume.VolumeType)),
 			}, nil
 		}
 	}
@@ -112,7 +112,7 @@ func (_ *Volume) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes *
 			Zone:     zone,
 			VolumeID: fi.ValueOf(actual.ID),
 			Name:     expected.Name,
-			Tags:     fi.PtrTo(expected.Tags),
+			Tags:     new(expected.Tags),
 			Size:     scw.SizePtr(scw.Size(fi.ValueOf(expected.Size))),
 		})
 		if err != nil {
@@ -147,7 +147,7 @@ func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, actual, expected,
 	tfName := strings.ReplaceAll(fi.ValueOf(expected.Name), ".", "-")
 	tf := &terraformVolume{
 		Name:     expected.Name,
-		SizeInGB: fi.PtrTo(int(fi.ValueOf(expected.Size) / 1e9)),
+		SizeInGB: new(int(fi.ValueOf(expected.Size) / 1e9)),
 		Type:     expected.Type,
 		Tags:     expected.Tags,
 	}

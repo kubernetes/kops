@@ -60,10 +60,10 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			vpcTags = nil
 		}
 		t := &awstasks.VPC{
-			Name:             fi.PtrTo(vpcName),
+			Name:             new(vpcName),
 			Lifecycle:        b.Lifecycle,
-			Shared:           fi.PtrTo(sharedVPC),
-			EnableDNSSupport: fi.PtrTo(true),
+			Shared:           new(sharedVPC),
+			EnableDNSSupport: new(true),
 			Tags:             vpcTags,
 		}
 
@@ -74,20 +74,20 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour
-			t.EnableDNSHostnames = fi.PtrTo(true)
+			t.EnableDNSHostnames = new(true)
 
 			// Used only for Terraform rendering.
 			// Direct rendering is handled via the VPCAmazonIPv6CIDRBlock task
-			t.AmazonIPv6 = fi.PtrTo(true)
+			t.AmazonIPv6 = new(true)
 			t.AssociateExtraCIDRBlocks = b.Cluster.Spec.Networking.AdditionalNetworkCIDRs
 		}
 
 		if b.Cluster.Spec.Networking.NetworkID != "" {
-			t.ID = fi.PtrTo(b.Cluster.Spec.Networking.NetworkID)
+			t.ID = new(b.Cluster.Spec.Networking.NetworkID)
 		}
 
 		if b.Cluster.Spec.Networking.NetworkCIDR != "" {
-			t.CIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
+			t.CIDR = new(b.Cluster.Spec.Networking.NetworkCIDR)
 		}
 
 		c.AddTask(t)
@@ -96,20 +96,20 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !sharedVPC {
 		// Associate an Amazon-provided IPv6 CIDR block with the VPC
 		c.AddTask(&awstasks.VPCAmazonIPv6CIDRBlock{
-			Name:      fi.PtrTo("AmazonIPv6"),
+			Name:      new("AmazonIPv6"),
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
-			Shared:    fi.PtrTo(false),
+			Shared:    new(false),
 		})
 
 		// Associate additional CIDR blocks with the VPC
 		for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
 			c.AddTask(&awstasks.VPCCIDRBlock{
-				Name:      fi.PtrTo(cidr),
+				Name:      new(cidr),
 				Lifecycle: b.Lifecycle,
 				VPC:       b.LinkToVPC(),
-				Shared:    fi.PtrTo(false),
-				CIDRBlock: fi.PtrTo(cidr),
+				Shared:    new(false),
+				CIDRBlock: new(cidr),
 			})
 		}
 	}
@@ -117,22 +117,22 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	// TODO: would be good to create these as shared, to verify them
 	if !sharedVPC {
 		dhcp := &awstasks.DHCPOptions{
-			Name:              fi.PtrTo(b.ClusterName()),
+			Name:              new(b.ClusterName()),
 			Lifecycle:         b.Lifecycle,
-			DomainNameServers: fi.PtrTo("AmazonProvidedDNS"),
+			DomainNameServers: new("AmazonProvidedDNS"),
 
 			Tags:   tags,
-			Shared: fi.PtrTo(sharedVPC),
+			Shared: new(sharedVPC),
 		}
 		if b.Region == "us-east-1" {
-			dhcp.DomainName = fi.PtrTo("ec2.internal")
+			dhcp.DomainName = new("ec2.internal")
 		} else {
-			dhcp.DomainName = fi.PtrTo(b.Region + ".compute.internal")
+			dhcp.DomainName = new(b.Region + ".compute.internal")
 		}
 		c.AddTask(dhcp)
 
 		c.AddTask(&awstasks.VPCDHCPOptionsAssociation{
-			Name:        fi.PtrTo(b.ClusterName()),
+			Name:        new(b.ClusterName()),
 			Lifecycle:   b.Lifecycle,
 			VPC:         b.LinkToVPC(),
 			DHCPOptions: dhcp,
@@ -170,10 +170,10 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !allSubnetsUnmanaged {
 		// The internet gateway is the main entry point to the cluster.
 		igw = &awstasks.InternetGateway{
-			Name:      fi.PtrTo(b.ClusterName()),
+			Name:      new(b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
-			Shared:    fi.PtrTo(sharedVPC),
+			Shared:    new(sharedVPC),
 		}
 		igw.Tags = b.CloudTags(*igw.Name, *igw.Shared)
 		c.AddTask(igw)
@@ -186,28 +186,28 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			routeTableTags := b.CloudTags(vpcName, sharedRouteTable)
 			routeTableTags[awsup.TagNameKopsRole] = "public"
 			publicRouteTable = &awstasks.RouteTable{
-				Name:      fi.PtrTo(b.ClusterName()),
+				Name:      new(b.ClusterName()),
 				Lifecycle: b.Lifecycle,
 
 				VPC: b.LinkToVPC(),
 
 				Tags:   routeTableTags,
-				Shared: fi.PtrTo(sharedRouteTable),
+				Shared: new(sharedRouteTable),
 			}
 			c.AddTask(publicRouteTable)
 
 			// TODO: Validate when allSubnetsShared
 			c.AddTask(&awstasks.Route{
-				Name:            fi.PtrTo("0.0.0.0/0"),
+				Name:            new("0.0.0.0/0"),
 				Lifecycle:       b.Lifecycle,
-				CIDR:            fi.PtrTo("0.0.0.0/0"),
+				CIDR:            new("0.0.0.0/0"),
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
 			c.AddTask(&awstasks.Route{
-				Name:            fi.PtrTo("::/0"),
+				Name:            new("::/0"),
 				Lifecycle:       b.Lifecycle,
-				IPv6CIDR:        fi.PtrTo("::/0"),
+				IPv6CIDR:        new("::/0"),
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
@@ -279,21 +279,21 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		subnet := &awstasks.Subnet{
-			Name:             fi.PtrTo(subnetName),
-			ShortName:        fi.PtrTo(subnetSpec.Name),
+			Name:             new(subnetName),
+			ShortName:        new(subnetSpec.Name),
 			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
-			AvailabilityZone: fi.PtrTo(subnetSpec.Zone),
-			Shared:           fi.PtrTo(sharedSubnet),
+			AvailabilityZone: new(subnetSpec.Zone),
+			Shared:           new(sharedSubnet),
 			Tags:             tags,
 		}
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			subnet.ResourceBasedNaming = fi.PtrTo(true)
+			subnet.ResourceBasedNaming = new(true)
 		}
 
 		if subnetSpec.CIDR != "" {
-			subnet.CIDR = fi.PtrTo(subnetSpec.CIDR)
+			subnet.CIDR = new(subnetSpec.CIDR)
 			if !sharedVPC {
 				for _, cidr := range b.Cluster.Spec.Networking.AdditionalNetworkCIDRs {
 					_, additionalCIDR, err := net.ParseCIDR(cidr)
@@ -305,7 +305,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 						return err
 					}
 					if additionalCIDR.Contains(subnetIP) {
-						subnet.VPCCIDRBlock = &awstasks.VPCCIDRBlock{Name: fi.PtrTo(cidr)}
+						subnet.VPCCIDRBlock = &awstasks.VPCCIDRBlock{Name: new(cidr)}
 					}
 				}
 			}
@@ -315,10 +315,10 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			if !sharedVPC {
 				subnet.AmazonIPv6CIDR = b.LinkToAmazonVPCIPv6CIDR()
 			}
-			subnet.IPv6CIDR = fi.PtrTo(subnetSpec.IPv6CIDR)
+			subnet.IPv6CIDR = new(subnetSpec.IPv6CIDR)
 		}
 		if subnetSpec.ID != "" {
-			subnet.ID = fi.PtrTo(subnetSpec.ID)
+			subnet.ID = new(subnetSpec.ID)
 		}
 		c.AddTask(subnet)
 
@@ -328,7 +328,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				if b.IsIPv6Only() && subnetSpec.Type == kops.SubnetTypePublic && subnetSpec.IPv6CIDR != "" {
 					// Public IPv6-capable subnets route NAT64 to a NAT gateway
 					c.AddTask(&awstasks.RouteTableAssociation{
-						Name:       fi.PtrTo("public-" + subnetSpec.Name + "." + b.ClusterName()),
+						Name:       new("public-" + subnetSpec.Name + "." + b.ClusterName()),
 						Lifecycle:  b.Lifecycle,
 						RouteTable: b.LinkToPublicRouteTableInZone(subnetSpec.Zone),
 						Subnet:     subnet,
@@ -341,7 +341,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 					infoByZone[subnetSpec.Zone].HaveIPv6PublicSubnet = true
 				} else {
 					c.AddTask(&awstasks.RouteTableAssociation{
-						Name:       fi.PtrTo(subnetSpec.Name + "." + b.ClusterName()),
+						Name:       new(subnetSpec.Name + "." + b.ClusterName()),
 						Lifecycle:  b.Lifecycle,
 						RouteTable: publicRouteTable,
 						Subnet:     subnet,
@@ -357,7 +357,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				//
 				// Map the Private subnet to the Private route table
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       fi.PtrTo("private-" + subnetSpec.Name + "." + b.ClusterName()),
+					Name:       new("private-" + subnetSpec.Name + "." + b.ClusterName()),
 					Lifecycle:  b.Lifecycle,
 					RouteTable: b.LinkToPrivateRouteTableInZone(subnetSpec.Zone),
 					Subnet:     subnet,
@@ -382,10 +382,10 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var eigw *awstasks.EgressOnlyInternetGateway
 	if !allPrivateSubnetsUnmanaged && b.IsIPv6Only() {
 		eigw = &awstasks.EgressOnlyInternetGateway{
-			Name:      fi.PtrTo(b.ClusterName()),
+			Name:      new(b.ClusterName()),
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
-			Shared:    fi.PtrTo(sharedVPC),
+			Shared:    new(sharedVPC),
 		}
 		eigw.Tags = b.CloudTags(*eigw.Name, *eigw.Shared)
 		c.AddTask(eigw)
@@ -441,13 +441,13 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			if strings.HasPrefix(egress, "nat-") {
 
 				ngw = &awstasks.NatGateway{
-					Name:                 fi.PtrTo(zone + "." + b.ClusterName()),
+					Name:                 new(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               egressSubnet,
-					ID:                   fi.PtrTo(egress),
+					ID:                   new(egress),
 					AssociatedRouteTable: egressRouteTable,
 					// If we're here, it means this NatGateway was specified, so we are Shared
-					Shared: fi.PtrTo(true),
+					Shared: new(true),
 					Tags:   b.CloudTags(zone+"."+b.ClusterName(), true),
 				}
 
@@ -456,17 +456,17 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			} else if strings.HasPrefix(egress, "eipalloc-") {
 
 				eip := &awstasks.ElasticIP{
-					Name:                           fi.PtrTo(zone + "." + b.ClusterName()),
-					ID:                             fi.PtrTo(egress),
+					Name:                           new(zone + "." + b.ClusterName()),
+					ID:                             new(egress),
 					Lifecycle:                      b.Lifecycle,
 					AssociatedNatGatewayRouteTable: egressRouteTable,
-					Shared:                         fi.PtrTo(true),
+					Shared:                         new(true),
 					Tags:                           b.CloudTags(zone+"."+b.ClusterName(), true),
 				}
 				c.AddTask(eip)
 
 				ngw = &awstasks.NatGateway{
-					Name:                 fi.PtrTo(zone + "." + b.ClusterName()),
+					Name:                 new(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               egressSubnet,
 					ElasticIP:            eip,
@@ -478,10 +478,10 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			} else if strings.HasPrefix(egress, "i-") {
 
 				in = &awstasks.Instance{
-					Name:      fi.PtrTo(egress),
+					Name:      new(egress),
 					Lifecycle: b.Lifecycle,
-					ID:        fi.PtrTo(egress),
-					Shared:    fi.PtrTo(true),
+					ID:        new(egress),
+					Shared:    new(true),
 					Tags:      nil, // We don't need to add tags here
 				}
 
@@ -499,13 +499,13 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			// subnet needs a NGW, lets create it. We tie it to a subnet
 			// so we can track it in AWS
 			eip := &awstasks.ElasticIP{
-				Name:                           fi.PtrTo(zone + "." + b.ClusterName()),
+				Name:                           new(zone + "." + b.ClusterName()),
 				Lifecycle:                      b.Lifecycle,
 				AssociatedNatGatewayRouteTable: egressRouteTable,
 			}
 
 			if publicIP != "" {
-				eip.PublicIP = fi.PtrTo(publicIP)
+				eip.PublicIP = new(publicIP)
 				eip.Tags = b.CloudTags(*eip.Name, true)
 			} else {
 				eip.Tags = b.CloudTags(*eip.Name, false)
@@ -522,7 +522,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 			// var ngw = &awstasks.NatGateway{}
 			ngw = &awstasks.NatGateway{
-				Name:                 fi.PtrTo(zone + "." + b.ClusterName()),
+				Name:                 new(zone + "." + b.ClusterName()),
 				Lifecycle:            b.Lifecycle,
 				Subnet:               egressSubnet,
 				ElasticIP:            eip,
@@ -541,11 +541,11 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			routeTableTags := b.CloudTags(b.NamePrivateRouteTableInZone(zone), routeTableShared)
 			routeTableTags[awsup.TagNameKopsRole] = "private-" + zone
 			rt := &awstasks.RouteTable{
-				Name:      fi.PtrTo(b.NamePrivateRouteTableInZone(zone)),
+				Name:      new(b.NamePrivateRouteTableInZone(zone)),
 				VPC:       b.LinkToVPC(),
 				Lifecycle: b.Lifecycle,
 
-				Shared: fi.PtrTo(routeTableShared),
+				Shared: new(routeTableShared),
 				Tags:   routeTableTags,
 			}
 			c.AddTask(rt)
@@ -557,17 +557,17 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			var r *awstasks.Route
 			if in != nil {
 				r = &awstasks.Route{
-					Name:       fi.PtrTo("private-" + zone + "-0.0.0.0/0"),
+					Name:       new("private-" + zone + "-0.0.0.0/0"),
 					Lifecycle:  b.Lifecycle,
-					CIDR:       fi.PtrTo("0.0.0.0/0"),
+					CIDR:       new("0.0.0.0/0"),
 					RouteTable: rt,
 					Instance:   in,
 				}
 			} else {
 				r = &awstasks.Route{
-					Name:       fi.PtrTo("private-" + zone + "-0.0.0.0/0"),
+					Name:       new("private-" + zone + "-0.0.0.0/0"),
 					Lifecycle:  b.Lifecycle,
-					CIDR:       fi.PtrTo("0.0.0.0/0"),
+					CIDR:       new("0.0.0.0/0"),
 					RouteTable: rt,
 					// Only one of these will be not nil
 					NatGateway:       ngw,
@@ -579,9 +579,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			if b.IsIPv6Only() {
 				// Route NAT64 well-known prefix to the NAT gateway
 				c.AddTask(&awstasks.Route{
-					Name:       fi.PtrTo("private-" + zone + "-64:ff9b::/96"),
+					Name:       new("private-" + zone + "-64:ff9b::/96"),
 					Lifecycle:  b.Lifecycle,
-					IPv6CIDR:   fi.PtrTo("64:ff9b::/96"),
+					IPv6CIDR:   new("64:ff9b::/96"),
 					RouteTable: rt,
 					// Only one of these will be not nil
 					NatGateway:       ngw,
@@ -590,9 +590,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 				// Route IPv6 to the Egress-only Internet Gateway.
 				c.AddTask(&awstasks.Route{
-					Name:                      fi.PtrTo("private-" + zone + "-::/0"),
+					Name:                      new("private-" + zone + "-::/0"),
 					Lifecycle:                 b.Lifecycle,
-					IPv6CIDR:                  fi.PtrTo("::/0"),
+					IPv6CIDR:                  new("::/0"),
 					RouteTable:                rt,
 					EgressOnlyInternetGateway: eigw,
 				})
@@ -624,36 +624,36 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			routeTableTags := b.CloudTags(b.NamePublicRouteTableInZone(zone), routeTableShared)
 			routeTableTags[awsup.TagNameKopsRole] = "public-" + zone
 			rt := &awstasks.RouteTable{
-				Name:      fi.PtrTo(b.NamePublicRouteTableInZone(zone)),
+				Name:      new(b.NamePublicRouteTableInZone(zone)),
 				VPC:       b.LinkToVPC(),
 				Lifecycle: b.Lifecycle,
 
-				Shared: fi.PtrTo(routeTableShared),
+				Shared: new(routeTableShared),
 				Tags:   routeTableTags,
 			}
 			c.AddTask(rt)
 
 			// Routes for the public route table.
 			c.AddTask(&awstasks.Route{
-				Name:            fi.PtrTo("public-" + zone + "-0.0.0.0/0"),
+				Name:            new("public-" + zone + "-0.0.0.0/0"),
 				Lifecycle:       b.Lifecycle,
-				CIDR:            fi.PtrTo("0.0.0.0/0"),
+				CIDR:            new("0.0.0.0/0"),
 				RouteTable:      rt,
 				InternetGateway: igw,
 			})
 			c.AddTask(&awstasks.Route{
-				Name:            fi.PtrTo("public-" + zone + "-::/0"),
+				Name:            new("public-" + zone + "-::/0"),
 				Lifecycle:       b.Lifecycle,
-				IPv6CIDR:        fi.PtrTo("::/0"),
+				IPv6CIDR:        new("::/0"),
 				RouteTable:      rt,
 				InternetGateway: igw,
 			})
 
 			// Route NAT64 well-known prefix to the NAT gateway
 			c.AddTask(&awstasks.Route{
-				Name:       fi.PtrTo("public-" + zone + "-64:ff9b::/96"),
+				Name:       new("public-" + zone + "-64:ff9b::/96"),
 				Lifecycle:  b.Lifecycle,
-				IPv6CIDR:   fi.PtrTo("64:ff9b::/96"),
+				IPv6CIDR:   new("64:ff9b::/96"),
 				RouteTable: rt,
 				// Only one of these will be not nil
 				NatGateway:       ngw,
@@ -668,53 +668,53 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 func addAdditionalRoutes(routes []kops.RouteSpec, sbName string, rt *awstasks.RouteTable, lf fi.Lifecycle, c *fi.CloudupModelBuilderContext) error {
 	for _, r := range routes {
 		t := &awstasks.Route{
-			Name:       fi.PtrTo(sbName + "." + r.CIDR),
+			Name:       new(sbName + "." + r.CIDR),
 			Lifecycle:  lf,
-			CIDR:       fi.PtrTo(r.CIDR),
+			CIDR:       new(r.CIDR),
 			RouteTable: rt,
 		}
 		if strings.HasPrefix(r.Target, "pcx-") {
-			t.VPCPeeringConnectionID = fi.PtrTo(r.Target)
+			t.VPCPeeringConnectionID = new(r.Target)
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "i-") {
 			inst := &awstasks.Instance{
-				Name:      fi.PtrTo(r.Target),
+				Name:      new(r.Target),
 				Lifecycle: lf,
-				ID:        fi.PtrTo(r.Target),
-				Shared:    fi.PtrTo(true),
+				ID:        new(r.Target),
+				Shared:    new(true),
 			}
 			c.EnsureTask(inst)
 			t.Instance = inst
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "nat-") {
 			nat := &awstasks.NatGateway{
-				Name:      fi.PtrTo(r.Target),
+				Name:      new(r.Target),
 				Lifecycle: lf,
-				ID:        fi.PtrTo(r.Target),
-				Shared:    fi.PtrTo(true),
+				ID:        new(r.Target),
+				Shared:    new(true),
 			}
 			c.EnsureTask(nat)
 			t.NatGateway = nat
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "tgw-") {
-			t.TransitGatewayID = fi.PtrTo(r.Target)
+			t.TransitGatewayID = new(r.Target)
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "igw-") {
 			internetGW := &awstasks.InternetGateway{
-				Name:      fi.PtrTo(r.Target),
+				Name:      new(r.Target),
 				Lifecycle: lf,
-				ID:        fi.PtrTo(r.Target),
-				Shared:    fi.PtrTo(true),
+				ID:        new(r.Target),
+				Shared:    new(true),
 			}
 			c.EnsureTask(internetGW)
 			t.InternetGateway = internetGW
 			c.AddTask(t)
 		} else if strings.HasPrefix(r.Target, "eigw-") {
 			eigw := &awstasks.EgressOnlyInternetGateway{
-				Name:      fi.PtrTo(r.Target),
+				Name:      new(r.Target),
 				Lifecycle: lf,
-				ID:        fi.PtrTo(r.Target),
-				Shared:    fi.PtrTo(true),
+				ID:        new(r.Target),
+				Shared:    new(true),
 			}
 			c.EnsureTask(eigw)
 			t.EgressOnlyInternetGateway = eigw

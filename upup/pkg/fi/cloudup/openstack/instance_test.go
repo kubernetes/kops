@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/compute/v2/servers"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 type WaitForStatusActiveMock struct {
@@ -83,7 +82,7 @@ func Test_WaitForStatusActiveResultsInTimeout(t *testing.T) {
 	serverID := "mock-id"
 	c := createWaitForStatusActiveMock(serverID, "BUILD")
 
-	actualErr := waitForStatusActive(c, serverID, fi.PtrTo(time.Second))
+	actualErr := waitForStatusActive(c, serverID, new(time.Second))
 
 	expectedErr := context.DeadlineExceeded
 	assertTestResults(t, nil, expectedErr, actualErr)

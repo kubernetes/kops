@@ -388,7 +388,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		bootConfig.ConfigServer = buildConfigServerOptions(cluster.ObjectMeta.Name, config.CAs[fi.CertificateIDCA], bootConfig.APIServerIPs)
 		delete(config.CAs, fi.CertificateIDCA)
 	} else {
-		bootConfig.ConfigBase = fi.PtrTo(n.configBase.Path())
+		bootConfig.ConfigBase = new(n.configBase.Path())
 	}
 
 	for _, manifest := range n.assetBuilder.StaticManifests() {

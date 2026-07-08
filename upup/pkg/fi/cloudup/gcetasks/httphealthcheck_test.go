@@ -37,11 +37,11 @@ func TestHTTPHealthcheckChange(t *testing.T) {
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func(requestPath string) map[string]fi.CloudupTask {
 		healthcheck := &HTTPHealthcheck{
-			Name:      fi.PtrTo("api"),
+			Name:      new("api"),
 			Lifecycle: fi.LifecycleSync,
 
-			Port:        fi.PtrTo(int64(8080)),
-			RequestPath: fi.PtrTo(requestPath),
+			Port:        new(int64(8080)),
+			RequestPath: new(requestPath),
 		}
 
 		return map[string]fi.CloudupTask{

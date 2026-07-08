@@ -35,7 +35,7 @@ func TestSSHKeyModelBuilderBuildWithPublicKey(t *testing.T) {
 	sshKeyName := "custom.ssh:key"
 	cluster := &kops.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "example.k8s.local"},
-		Spec:       kops.ClusterSpec{SSHKeyName: fi.PtrTo(sshKeyName)},
+		Spec:       kops.ClusterSpec{SSHKeyName: new(sshKeyName)},
 	}
 	b := &SSHKeyModelBuilder{
 		LinodeModelContext: &LinodeModelContext{KopsModelContext: &model.KopsModelContext{
@@ -82,7 +82,7 @@ func TestSSHKeyModelBuilderBuildWithExistingKeyName(t *testing.T) {
 	sshKeyName := "existing.ssh:key"
 	cluster := &kops.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "example.k8s.local"},
-		Spec:       kops.ClusterSpec{SSHKeyName: fi.PtrTo(sshKeyName)},
+		Spec:       kops.ClusterSpec{SSHKeyName: new(sshKeyName)},
 	}
 	b := &SSHKeyModelBuilder{
 		LinodeModelContext: &LinodeModelContext{KopsModelContext: &model.KopsModelContext{

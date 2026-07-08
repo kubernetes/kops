@@ -172,7 +172,7 @@ func (t *LaunchTemplate) FindDeletions(c *fi.CloudupContext) ([]fi.CloudupDeleti
 
 	for _, lt := range list {
 		if aws.ToString(lt.LaunchTemplateName) != aws.ToString(t.Name) {
-			removals = append(removals, &deleteLaunchTemplate{lc: fi.PtrTo(lt)})
+			removals = append(removals, &deleteLaunchTemplate{lc: new(lt)})
 		}
 	}
 

@@ -106,15 +106,15 @@ func (p *PoolAssociation) Find(context *fi.CloudupContext) (*PoolAssociation, er
 	}
 
 	actual := &PoolAssociation{
-		ID:            fi.PtrTo(found.ID),
-		Name:          fi.PtrTo(found.Name),
+		ID:            new(found.ID),
+		Name:          new(found.Name),
 		Pool:          pool,
 		ServerPrefix:  p.ServerPrefix,
 		ClusterName:   p.ClusterName,
 		InterfaceName: p.InterfaceName,
 		ProtocolPort:  p.ProtocolPort,
 		Lifecycle:     p.Lifecycle,
-		Weight:        fi.PtrTo(found.Weight),
+		Weight:        new(found.Weight),
 	}
 	p.ID = actual.ID
 	return actual, nil
@@ -184,7 +184,7 @@ func (_ *PoolAssociation) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e,
 			if err != nil {
 				return fmt.Errorf("Failed to create member: %v", err)
 			}
-			e.ID = fi.PtrTo(member.ID)
+			e.ID = new(member.ID)
 		}
 	} else {
 		_, err := t.Cloud.UpdateMemberInPool(fi.ValueOf(a.Pool.ID), fi.ValueOf(a.ID), v2pools.UpdateMemberOpts{

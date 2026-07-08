@@ -29,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	fakekubernetes "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kops/channels/pkg/api"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -349,7 +348,7 @@ func Test_GetRequiredUpdates(t *testing.T) {
 	addon := &Addon{
 		Name: "test",
 		Spec: &api.AddonSpec{
-			Name:     fi.PtrTo("test"),
+			Name:     new("test"),
 			NeedsPKI: true,
 		},
 	}
@@ -377,7 +376,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.PtrTo("test"),
+					Name:               new("test"),
 					ManifestHash:       "originalHash",
 					NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 				},
@@ -387,7 +386,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.PtrTo("test"),
+					Name:               new("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 				},
@@ -399,7 +398,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.PtrTo("test"),
+					Name:               new("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: api.NeedsRollingUpdateWorkers,
 				},
@@ -411,7 +410,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.PtrTo("test"),
+					Name:               new("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: api.NeedsRollingUpdateControlPlane,
 				},
@@ -423,7 +422,7 @@ func Test_NeedsRollingUpdate(t *testing.T) {
 			newAddon: &Addon{
 				Name: "test",
 				Spec: &api.AddonSpec{
-					Name:               fi.PtrTo("test"),
+					Name:               new("test"),
 					ManifestHash:       "newHash",
 					NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 				},
@@ -542,7 +541,7 @@ func Test_InstallPKI(t *testing.T) {
 	addon := &Addon{
 		Name: "test",
 		Spec: &api.AddonSpec{
-			Name:     fi.PtrTo("test"),
+			Name:     new("test"),
 			NeedsPKI: true,
 		},
 	}

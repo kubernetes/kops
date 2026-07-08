@@ -63,12 +63,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("ssh-external-to-master-%s%s", sshAccess, suffix)),
+					Name:          new(fmt.Sprintf("ssh-external-to-master-%s%s", sshAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
-					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int32(22)),
-					ToPort:        fi.PtrTo(int32(22)),
+					Protocol:      new("tcp"),
+					FromPort:      new(int32(22)),
+					ToPort:        new(int32(22)),
 				}
 				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
@@ -77,12 +77,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			for _, nodeGroup := range nodeGroups {
 				suffix := nodeGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("ssh-external-to-node-%s%s", sshAccess, suffix)),
+					Name:          new(fmt.Sprintf("ssh-external-to-node-%s%s", sshAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
-					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int32(22)),
-					ToPort:        fi.PtrTo(int32(22)),
+					Protocol:      new("tcp"),
+					FromPort:      new(int32(22)),
+					ToPort:        new(int32(22)),
 				}
 				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
@@ -100,24 +100,24 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			suffix := nodeGroup.Suffix
 			{
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("nodeport-tcp-external-to-node-%s%s", nodePortAccess, suffix)),
+					Name:          new(fmt.Sprintf("nodeport-tcp-external-to-node-%s%s", nodePortAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
-					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int32(nodePortRange.Base)),
-					ToPort:        fi.PtrTo(int32(nodePortRange.Base + nodePortRange.Size - 1)),
+					Protocol:      new("tcp"),
+					FromPort:      new(int32(nodePortRange.Base)),
+					ToPort:        new(int32(nodePortRange.Base + nodePortRange.Size - 1)),
 				}
 				t.SetCidrOrPrefix(nodePortAccess)
 				c.AddTask(t)
 			}
 			{
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
+					Name:          new(fmt.Sprintf("nodeport-udp-external-to-node-%s%s", nodePortAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: nodeGroup.Task,
-					Protocol:      fi.PtrTo("udp"),
-					FromPort:      fi.PtrTo(int32(nodePortRange.Base)),
-					ToPort:        fi.PtrTo(int32(nodePortRange.Base + nodePortRange.Size - 1)),
+					Protocol:      new("udp"),
+					FromPort:      new(int32(nodePortRange.Base)),
+					ToPort:        new(int32(nodePortRange.Base + nodePortRange.Size - 1)),
 				}
 				t.SetCidrOrPrefix(nodePortAccess)
 				c.AddTask(t)
@@ -135,12 +135,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			for _, masterGroup := range masterGroups {
 				suffix := masterGroup.Suffix
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("https-external-to-master-%s%s", apiAccess, suffix)),
+					Name:          new(fmt.Sprintf("https-external-to-master-%s%s", apiAccess, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
-					Protocol:      fi.PtrTo("tcp"),
-					FromPort:      fi.PtrTo(int32(443)),
-					ToPort:        fi.PtrTo(int32(443)),
+					Protocol:      new("tcp"),
+					FromPort:      new(int32(443)),
+					ToPort:        new(int32(443)),
 				}
 				t.SetCidrOrPrefix(apiAccess)
 				AddDirectionalGroupRule(c, t)

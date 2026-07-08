@@ -192,16 +192,16 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 
 	server := filteredList[0]
 	actual := &Instance{
-		ID:               fi.PtrTo(server.ID),
+		ID:               new(server.ID),
 		Name:             e.Name,
-		SSHKey:           fi.PtrTo(server.KeyName),
+		SSHKey:           new(server.KeyName),
 		Lifecycle:        e.Lifecycle,
 		Metadata:         server.Metadata,
-		Role:             fi.PtrTo(server.Metadata["KopsRole"]),
+		Role:             new(server.Metadata["KopsRole"]),
 		AvailabilityZone: e.AvailabilityZone,
 		GroupName:        e.GroupName,
 		ConfigDrive:      e.ConfigDrive,
-		Status:           fi.PtrTo(server.Status),
+		Status:           new(server.Status),
 	}
 
 	ports, err := cloud.ListPorts(ports.ListOpts{
@@ -236,8 +236,8 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		if len(fips) == 1 {
 			fip := fips[0]
 			fipTask := &FloatingIP{
-				ID:   fi.PtrTo(fip.ID),
-				Name: fi.PtrTo(fip.Description),
+				ID:   new(fip.ID),
+				Name: new(fip.Description),
 			}
 
 			actual.FloatingIP = fipTask
@@ -248,7 +248,7 @@ func (e *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 
 	// Avoid flapping
 	e.ID = actual.ID
-	e.Status = fi.PtrTo(activeStatus)
+	e.Status = new(activeStatus)
 	actual.WellKnownServices = e.WellKnownServices
 
 	// Immutable fields
@@ -380,7 +380,7 @@ func (_ *Instance) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, change
 		if err != nil {
 			return fmt.Errorf("Error creating instance: %v", err)
 		}
-		e.ID = fi.PtrTo(v.ID)
+		e.ID = new(v.ID)
 
 		if e.FloatingIP != nil {
 			err = associateFloatingIP(t, e)

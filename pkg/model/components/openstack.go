@@ -21,7 +21,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -49,14 +48,14 @@ func (b *OpenStackOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if openstack.BlockStorage.CreateStorageClass == nil {
-		openstack.BlockStorage.CreateStorageClass = fi.PtrTo(true)
+		openstack.BlockStorage.CreateStorageClass = new(true)
 	}
 
 	if openstack.Metadata == nil {
 		openstack.Metadata = &kops.OpenstackMetadata{}
 	}
 	if openstack.Metadata.ConfigDrive == nil {
-		openstack.Metadata.ConfigDrive = fi.PtrTo(false)
+		openstack.Metadata.ConfigDrive = new(false)
 	}
 
 	if clusterSpec.ExternalCloudControllerManager == nil {
@@ -65,7 +64,7 @@ func (b *OpenStackOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	// No significant downside to always doing a leader election.
 	// Also, having a replicated (HA) control plane requires leader election.
-	clusterSpec.ExternalCloudControllerManager.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
+	clusterSpec.ExternalCloudControllerManager.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: new(true)}
 
 	// Node status updates are happening unnecessarily often in kOps OpenStack.
 	// Node status updates are useful if we are updating existing node flavor type or node addresses.

@@ -41,7 +41,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return nil
 	}
 	network.Lifecycle = b.Lifecycle
-	network.Shared = fi.PtrTo(sharedNetwork)
+	network.Shared = new(sharedNetwork)
 	if !sharedNetwork {
 		// As we're creating the network, we're also creating the subnets.
 		// We therefore use custom mode, for a few reasons:
@@ -65,7 +65,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Network:           network,
 			Lifecycle:         b.Lifecycle,
 			Region:            s(b.Region),
-			Shared:            fi.PtrTo(sharedSubnet),
+			Shared:            new(sharedSubnet),
 			SecondaryIpRanges: make(map[string]string),
 		}
 

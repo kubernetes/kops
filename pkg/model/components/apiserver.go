@@ -51,7 +51,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		if count == 0 {
 			return fmt.Errorf("no instance groups found")
 		}
-		c.APIServerCount = fi.PtrTo(int32(count))
+		c.APIServerCount = new(int32(count))
 	}
 
 	// @question: should the question every be able to set this?
@@ -62,7 +62,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		if err != nil {
 			return err
 		}
-		c.StorageBackend = fi.PtrTo(fmt.Sprintf("etcd%d", sem.Major))
+		c.StorageBackend = new(fmt.Sprintf("etcd%d", sem.Major))
 	}
 
 	if c.KubeletPreferredAddressTypes == nil {
@@ -76,7 +76,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 
 	if clusterSpec.Authentication != nil {
 		if clusterSpec.Authentication.Kopeio != nil {
-			c.AuthenticationTokenWebhookConfigFile = fi.PtrTo("/etc/kubernetes/authn.config")
+			c.AuthenticationTokenWebhookConfigFile = new("/etc/kubernetes/authn.config")
 		}
 	}
 
@@ -84,9 +84,9 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		// Do nothing - use the default as defined by the apiserver.
 		// In practice unreachable: defaulting sets RBAC when authorization is omitted.
 	} else if clusterSpec.Authorization.AlwaysAllow != nil {
-		clusterSpec.KubeAPIServer.AuthorizationMode = fi.PtrTo("AlwaysAllow")
+		clusterSpec.KubeAPIServer.AuthorizationMode = new("AlwaysAllow")
 	} else if clusterSpec.Authorization.RBAC != nil {
-		clusterSpec.KubeAPIServer.AuthorizationMode = fi.PtrTo("Node,RBAC")
+		clusterSpec.KubeAPIServer.AuthorizationMode = new("Node,RBAC")
 	}
 
 	if err := b.configureAggregation(clusterSpec); err != nil {
@@ -112,7 +112,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 		c.BindAddress = "0.0.0.0"
 	}
 
-	c.AllowPrivileged = fi.PtrTo(true)
+	c.AllowPrivileged = new(true)
 	c.ServiceClusterIPRange = clusterSpec.Networking.ServiceClusterIPRange
 	c.EtcdServers = nil
 	c.EtcdServersOverrides = nil
@@ -157,7 +157,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 	}
 
 	// We make sure to disable AnonymousAuth
-	c.AnonymousAuth = fi.PtrTo(false)
+	c.AnonymousAuth = new(false)
 
 	// We query via the kube-apiserver-healthcheck proxy, which listens on port 3990
 	c.InsecureBindAddress = ""
@@ -167,7 +167,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error 
 	metricsServer := clusterSpec.MetricsServer
 	if metricsServer != nil && fi.ValueOf(metricsServer.Enabled) {
 		if c.EnableAggregatorRouting == nil {
-			c.EnableAggregatorRouting = fi.PtrTo(true)
+			c.EnableAggregatorRouting = new(true)
 		}
 	}
 

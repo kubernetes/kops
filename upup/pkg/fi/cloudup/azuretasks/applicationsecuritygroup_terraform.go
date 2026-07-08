@@ -32,7 +32,7 @@ type terraformAzureApplicationSecurityGroup struct {
 func (*ApplicationSecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ApplicationSecurityGroup) error {
 	tf := &terraformAzureApplicationSecurityGroup{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		Tags:              stringMap(e.Tags),
 	}

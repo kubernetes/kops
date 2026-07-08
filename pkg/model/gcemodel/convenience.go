@@ -16,14 +16,12 @@ limitations under the License.
 
 package gcemodel
 
-import "k8s.io/kops/upup/pkg/fi"
-
 // s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return fi.PtrTo(v)
+	return new(v)
 }
 
 // i64 is a helper that builds a *int64 from an int64 value
 func i64(v int64) *int64 {
-	return fi.PtrTo(v)
+	return new(v)
 }

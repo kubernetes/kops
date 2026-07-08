@@ -19,18 +19,16 @@ package model
 import (
 	"fmt"
 	"sort"
-
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 // s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return fi.PtrTo(v)
+	return new(v)
 }
 
 // b returns a pointer to a boolean
 func b(v bool) *bool {
-	return fi.PtrTo(v)
+	return new(v)
 }
 
 // buildContainerRuntimeEnvironmentVars just converts a series of keypairs to docker environment variables switches

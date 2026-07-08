@@ -134,7 +134,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	}
 
 	if b.NodeupConfig.APIServerConfig.EncryptionConfigSecretHash != "" {
-		encryptionConfigPath := fi.PtrTo(filepath.Join(pathSrvKAPI, "encryptionconfig.yaml"))
+		encryptionConfigPath := new(filepath.Join(pathSrvKAPI, "encryptionconfig.yaml"))
 
 		kubeAPIServer.EncryptionProviderConfig = encryptionConfigPath
 
@@ -145,7 +145,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			t := &nodetasks.File{
 				Path:     *encryptionConfigPath,
 				Contents: fi.NewStringResource(contents),
-				Mode:     fi.PtrTo("600"),
+				Mode:     new("600"),
 				Type:     nodetasks.FileType_File,
 			}
 			c.AddTask(t)
@@ -176,7 +176,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Path:     filepath.Join(pathSrvKAPI, "etcd-ca.crt"),
 			Contents: fi.NewStringResource(b.NodeupConfig.CAs["etcd-clients-ca"]),
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0644"),
+			Mode:     new("0644"),
 		})
 		kubeAPIServer.EtcdCAFile = filepath.Join(pathSrvKAPI, "etcd-ca.crt")
 
@@ -202,7 +202,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Path:     filepath.Join(pathSrvKAPI, "apiserver-aggregator-ca.crt"),
 			Contents: fi.NewStringResource(b.NodeupConfig.CAs["apiserver-aggregator-ca"]),
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0644"),
+			Mode:     new("0644"),
 		})
 		kubeAPIServer.RequestheaderClientCAFile = filepath.Join(pathSrvKAPI, "apiserver-aggregator-ca.crt")
 
@@ -219,8 +219,8 @@ func (b *KubeAPIServerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
-		kubeAPIServer.ProxyClientCertFile = fi.PtrTo(filepath.Join(pathSrvKAPI, "apiserver-aggregator.crt"))
-		kubeAPIServer.ProxyClientKeyFile = fi.PtrTo(filepath.Join(pathSrvKAPI, "apiserver-aggregator.key"))
+		kubeAPIServer.ProxyClientCertFile = new(filepath.Join(pathSrvKAPI, "apiserver-aggregator.crt"))
+		kubeAPIServer.ProxyClientKeyFile = new(filepath.Join(pathSrvKAPI, "apiserver-aggregator.key"))
 	}
 
 	if err := b.writeServerCertificate(c, &kubeAPIServer); err != nil {
@@ -345,7 +345,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.NodeupModelBuilde
 
 	if b.NodeupConfig.APIServerConfig.Authentication.AWS != nil {
 		id := "aws-iam-authenticator"
-		kubeAPIServer.AuthenticationTokenWebhookConfigFile = fi.PtrTo(PathAuthnConfig)
+		kubeAPIServer.AuthenticationTokenWebhookConfigFile = new(PathAuthnConfig)
 
 		{
 			cluster := kubeconfig.KubectlCluster{
@@ -380,7 +380,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.NodeupModelBuilde
 				Path:     PathAuthnConfig,
 				Contents: fi.NewBytesResource(manifest),
 				Type:     nodetasks.FileType_File,
-				Mode:     fi.PtrTo("600"),
+				Mode:     new("600"),
 			})
 		}
 
@@ -415,18 +415,18 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.NodeupModelBuilde
 				Path:     "/srv/kubernetes/aws-iam-authenticator/cert.pem",
 				Contents: certificate,
 				Type:     nodetasks.FileType_File,
-				Mode:     fi.PtrTo("600"),
-				Owner:    fi.PtrTo("aws-iam-authenticator"),
-				Group:    fi.PtrTo("aws-iam-authenticator"),
+				Mode:     new("600"),
+				Owner:    new("aws-iam-authenticator"),
+				Group:    new("aws-iam-authenticator"),
 			})
 
 			c.AddTask(&nodetasks.File{
 				Path:     "/srv/kubernetes/aws-iam-authenticator/key.pem",
 				Contents: privateKey,
 				Type:     nodetasks.FileType_File,
-				Mode:     fi.PtrTo("600"),
-				Owner:    fi.PtrTo("aws-iam-authenticator"),
-				Group:    fi.PtrTo("aws-iam-authenticator"),
+				Mode:     new("600"),
+				Owner:    new("aws-iam-authenticator"),
+				Group:    new("aws-iam-authenticator"),
 			})
 		}
 

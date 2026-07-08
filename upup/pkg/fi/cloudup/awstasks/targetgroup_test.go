@@ -67,7 +67,7 @@ func TestTargetGroupHealthCheckChange(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared:    fi.PtrTo(true),
+			Shared:    new(true),
 			ID:        vpc.Vpc.VpcId,
 		}
 		tg1 := &TargetGroup{
@@ -76,13 +76,13 @@ func TestTargetGroupHealthCheckChange(t *testing.T) {
 			VPC:                 vpc1,
 			Tags:                map[string]string{"Name": "tg1"},
 			Protocol:            elbv2types.ProtocolEnumTcp,
-			Port:                fi.PtrTo(int32(3988)),
-			Interval:            fi.PtrTo(int32(10)),
-			HealthyThreshold:    fi.PtrTo(int32(2)),
-			UnhealthyThreshold:  fi.PtrTo(int32(2)),
+			Port:                new(int32(3988)),
+			Interval:            new(int32(10)),
+			HealthyThreshold:    new(int32(2)),
+			UnhealthyThreshold:  new(int32(2)),
 			HealthCheckProtocol: healthCheckProtocol,
 			HealthCheckPath:     healthCheckPath,
-			Shared:              fi.PtrTo(false),
+			Shared:              new(false),
 		}
 
 		return map[string]fi.CloudupTask{
