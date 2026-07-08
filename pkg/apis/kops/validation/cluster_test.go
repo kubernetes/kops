@@ -19,8 +19,6 @@ package validation
 import (
 	"testing"
 
-	"k8s.io/kops/upup/pkg/fi"
-
 	"k8s.io/kops/pkg/apis/kops"
 )
 
@@ -37,15 +35,15 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 					{
 						Name:          "b",
-						InstanceGroup: fi.PtrTo("eu-central-1b"),
+						InstanceGroup: new("eu-central-1b"),
 					},
 					{
 						Name:          "c",
-						InstanceGroup: fi.PtrTo("eu-central-1c"),
+						InstanceGroup: new("eu-central-1c"),
 					},
 				},
 			},
@@ -55,15 +53,15 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 					{
 						Name:          "b",
-						InstanceGroup: fi.PtrTo("eu-central-1b"),
+						InstanceGroup: new("eu-central-1b"),
 					},
 					{
 						Name:          "d",
-						InstanceGroup: fi.PtrTo("eu-central-1d"),
+						InstanceGroup: new("eu-central-1d"),
 					},
 				},
 			},
@@ -85,7 +83,7 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 				},
 			},
@@ -95,15 +93,15 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 					{
 						Name:          "b",
-						InstanceGroup: fi.PtrTo("eu-central-1b"),
+						InstanceGroup: new("eu-central-1b"),
 					},
 					{
 						Name:          "c",
-						InstanceGroup: fi.PtrTo("eu-central-1c"),
+						InstanceGroup: new("eu-central-1c"),
 					},
 				},
 			},
@@ -125,7 +123,7 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 				},
 			},
@@ -135,7 +133,7 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 				},
 			},

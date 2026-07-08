@@ -359,29 +359,29 @@ type terraformSecurityGroupIngress struct {
 
 func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroupRule) error {
 	tf := &terraformSecurityGroupIngress{
-		Type:          fi.PtrTo("ingress"),
+		Type:          new("ingress"),
 		SecurityGroup: e.SecurityGroup.TerraformLink(),
 		FromPort:      e.FromPort,
 		ToPort:        e.ToPort,
 		Protocol:      e.Protocol,
 	}
 	if fi.ValueOf(e.Egress) {
-		tf.Type = fi.PtrTo("egress")
+		tf.Type = new("egress")
 	}
 
 	if e.Protocol == nil {
-		tf.Protocol = fi.PtrTo("-1")
-		tf.FromPort = fi.PtrTo(int32(0))
-		tf.ToPort = fi.PtrTo(int32(0))
+		tf.Protocol = new("-1")
+		tf.FromPort = new(int32(0))
+		tf.ToPort = new(int32(0))
 	}
 
 	if tf.FromPort == nil {
 		// FromPort is required by tf
-		tf.FromPort = fi.PtrTo(int32(0))
+		tf.FromPort = new(int32(0))
 	}
 	if tf.ToPort == nil {
 		// ToPort is required by tf
-		tf.ToPort = fi.PtrTo(int32(65535))
+		tf.ToPort = new(int32(65535))
 	}
 
 	if e.SourceGroup != nil {

@@ -162,7 +162,7 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarge
 		if nameTag == "" {
 			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
 		}
-		return &NetworkLoadBalancer{Name: fi.PtrTo(nameTag)}, nil
+		return &NetworkLoadBalancer{Name: new(nameTag)}, nil
 	}
 	return nil, nil
 }
@@ -183,7 +183,7 @@ func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarge
 		if nameTag == "" {
 			return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
 		}
-		return &ClassicLoadBalancer{Name: fi.PtrTo(nameTag)}, nil
+		return &ClassicLoadBalancer{Name: new(nameTag)}, nil
 	}
 	return nil, nil
 }

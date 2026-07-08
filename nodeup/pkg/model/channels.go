@@ -66,8 +66,8 @@ func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		Path:     channelsKubeconfigPath,
 		Contents: kubeconfig,
 		Type:     nodetasks.FileType_File,
-		Mode:     fi.PtrTo("0400"),
-		Owner:    fi.PtrTo(wellknownusers.KopsChannelsName),
+		Mode:     new("0400"),
+		Owner:    new(wellknownusers.KopsChannelsName),
 	})
 
 	manifest, err := b.readChannelsManifest(c)

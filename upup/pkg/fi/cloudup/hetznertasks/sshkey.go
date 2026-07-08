@@ -44,7 +44,7 @@ type SSHKey struct {
 var _ fi.CompareWithID = (*SSHKey)(nil)
 
 func (v *SSHKey) CompareWithID() *string {
-	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
+	return new(strconv.FormatInt(fi.ValueOf(v.ID), 10))
 }
 
 func (v *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
@@ -65,7 +65,7 @@ func (v *SSHKey) Find(c *fi.CloudupContext) (*SSHKey, error) {
 			matches := &SSHKey{
 				Name:      v.Name,
 				Lifecycle: v.Lifecycle,
-				ID:        fi.PtrTo(sshkey.ID),
+				ID:        new(sshkey.ID),
 				PublicKey: sshkey.PublicKey,
 				Labels:    v.Labels,
 			}
@@ -124,7 +124,7 @@ func (_ *SSHKey) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes *SSHKe
 		if err != nil {
 			return err
 		}
-		e.ID = fi.PtrTo(sshkey.ID)
+		e.ID = new(sshkey.ID)
 	}
 
 	return nil
@@ -139,7 +139,7 @@ type terraformSSHKey struct {
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
 	tf := &terraformSSHKey{
 		Name:      e.Name,
-		PublicKey: fi.PtrTo(e.PublicKey),
+		PublicKey: new(e.PublicKey),
 		Labels:    e.Labels,
 	}
 

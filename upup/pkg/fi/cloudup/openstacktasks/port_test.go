@@ -45,7 +45,7 @@ func Test_Port_GetActualAllowedAddressPairs_ReturnsPortAddressPairsWhenFindIsNil
 		AllowedAddressPairs: expected,
 	}
 
-	actual := getActualAllowedAddressPairs(fi.PtrTo(port), nil)
+	actual := getActualAllowedAddressPairs(new(port), nil)
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Allowed address pairs differ:\n%v\n\tinstead of\n%v", actual, expected)
@@ -81,7 +81,7 @@ func Test_Port_GetAllowedAddressPairs_ReturnsModifiedPortAddressPairsWhenNoChang
 		AllowedAddressPairs: expected,
 	}
 
-	actual := getActualAllowedAddressPairs(fi.PtrTo(port), fi.PtrTo(find))
+	actual := getActualAllowedAddressPairs(new(port), new(find))
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Allowed address pairs differ:\n%v\n\tinstead of\n%v", actual, expected)
@@ -121,7 +121,7 @@ func Test_Port_GetActualAllowedAddressPairs_ReturnsModifiedPortAddressPairsOnCha
 		},
 	}
 
-	actual := getActualAllowedAddressPairs(fi.PtrTo(port), fi.PtrTo(find))
+	actual := getActualAllowedAddressPairs(new(port), new(find))
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Allowed address pairs differ:\n%v\n\tinstead of\n%v", actual, expected)
@@ -130,11 +130,11 @@ func Test_Port_GetActualAllowedAddressPairs_ReturnsModifiedPortAddressPairsOnCha
 
 func Test_Port_GetDependencies(t *testing.T) {
 	tasks := map[string]fi.CloudupTask{
-		"foo": &SecurityGroup{Name: fi.PtrTo("security-group")},
-		"bar": &Subnet{Name: fi.PtrTo("subnet")},
-		"baz": &Instance{Name: fi.PtrTo("instance")},
-		"qux": &FloatingIP{Name: fi.PtrTo("fip")},
-		"xxx": &Network{Name: fi.PtrTo("network")},
+		"foo": &SecurityGroup{Name: new("security-group")},
+		"bar": &Subnet{Name: new("subnet")},
+		"baz": &Instance{Name: new("instance")},
+		"qux": &FloatingIP{Name: new("fip")},
+		"xxx": &Network{Name: new("network")},
 	}
 
 	port := &Port{}
@@ -142,9 +142,9 @@ func Test_Port_GetDependencies(t *testing.T) {
 	actual := port.GetDependencies(tasks)
 
 	expected := []fi.CloudupTask{
-		&Subnet{Name: fi.PtrTo("subnet")},
-		&Network{Name: fi.PtrTo("network")},
-		&SecurityGroup{Name: fi.PtrTo("security-group")},
+		&Subnet{Name: new("subnet")},
+		&Network{Name: new("network")},
+		&SecurityGroup{Name: new("security-group")},
 	}
 
 	actualSorted := sortedTasks(actual)
@@ -176,9 +176,9 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 			foundPort:         nil,
 			modifiedFoundPort: nil,
 			expectedPortTask: &Port{
-				ID:             fi.PtrTo(""),
-				Name:           fi.PtrTo(""),
-				Network:        &Network{ID: fi.PtrTo("")},
+				ID:             new(""),
+				Name:           new(""),
+				Network:        &Network{ID: new("")},
 				SecurityGroups: []*SecurityGroup{},
 				Subnets:        []*Subnet{},
 				Lifecycle:      fi.LifecycleSync,
@@ -191,11 +191,11 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 			cloud:             &portCloud{},
 			cloudPort:         &ports.Port{},
 			foundPort:         &Port{},
-			modifiedFoundPort: &Port{ID: fi.PtrTo("")},
+			modifiedFoundPort: &Port{ID: new("")},
 			expectedPortTask: &Port{
-				ID:             fi.PtrTo(""),
-				Name:           fi.PtrTo(""),
-				Network:        &Network{ID: fi.PtrTo("")},
+				ID:             new(""),
+				Name:           new(""),
+				Network:        &Network{ID: new("")},
 				SecurityGroups: []*SecurityGroup{},
 				Subnets:        []*Subnet{},
 				Lifecycle:      fi.LifecycleSync,
@@ -220,18 +220,18 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			foundPort:         &Port{},
-			modifiedFoundPort: &Port{ID: fi.PtrTo("id")},
+			modifiedFoundPort: &Port{ID: new("id")},
 			expectedPortTask: &Port{
-				ID:      fi.PtrTo("id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Lifecycle: fi.LifecycleSync,
 			},
@@ -269,17 +269,17 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 			foundPort:         nil,
 			modifiedFoundPort: nil,
 			expectedPortTask: &Port{
-				ID:        fi.PtrTo("id"),
+				ID:        new("id"),
 				Lifecycle: fi.LifecycleSync,
-				Name:      fi.PtrTo("name"),
-				Network:   &Network{ID: fi.PtrTo("networkID")},
+				Name:      new("name"),
+				Network:   &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Tags: []string{
 					"cluster",
@@ -326,7 +326,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			foundPort: &Port{
-				InstanceGroupName: fi.PtrTo("node-ig"),
+				InstanceGroupName: new("node-ig"),
 				Tags: []string{
 					"KopsInstanceGroup=node-ig",
 				},
@@ -341,8 +341,8 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			modifiedFoundPort: &Port{
-				ID:                fi.PtrTo("id"),
-				InstanceGroupName: fi.PtrTo("node-ig"),
+				ID:                new("id"),
+				InstanceGroupName: new("node-ig"),
 				Tags: []string{
 					"KopsInstanceGroup=node-ig",
 				},
@@ -357,18 +357,18 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			expectedPortTask: &Port{
-				ID:                fi.PtrTo("id"),
-				InstanceGroupName: fi.PtrTo("node-ig"),
+				ID:                new("id"),
+				InstanceGroupName: new("node-ig"),
 				Lifecycle:         fi.LifecycleSync,
-				Name:              fi.PtrTo("name"),
-				Network:           &Network{ID: fi.PtrTo("networkID")},
+				Name:              new("name"),
+				Network:           &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Tags: []string{
 					"KopsInstanceGroup=node-ig",
@@ -418,18 +418,18 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 			foundPort:         nil,
 			modifiedFoundPort: nil,
 			expectedPortTask: &Port{
-				ID:                fi.PtrTo("id"),
-				InstanceGroupName: fi.PtrTo("node-ig"),
+				ID:                new("id"),
+				InstanceGroupName: new("node-ig"),
 				Lifecycle:         fi.LifecycleSync,
-				Name:              fi.PtrTo("name"),
-				Network:           &Network{ID: fi.PtrTo("networkID")},
+				Name:              new("name"),
+				Network:           &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Tags: []string{
 					"cluster",
@@ -482,27 +482,27 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			modifiedFoundPort: &Port{
-				ID: fi.PtrTo("id"),
+				ID: new("id"),
 				AdditionalSecurityGroups: []string{
 					"add-1",
 					"add-2",
 				},
 			},
 			expectedPortTask: &Port{
-				ID:      fi.PtrTo("id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				AdditionalSecurityGroups: []string{
 					"add-1",
 					"add-2",
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Lifecycle: fi.LifecycleSync,
 			},
@@ -548,7 +548,7 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			modifiedFoundPort: &Port{
-				ID: fi.PtrTo("id"),
+				ID: new("id"),
 				AllowedAddressPairs: []ports.AddressPair{
 					{
 						IPAddress:  "10.0.0.1",
@@ -560,14 +560,14 @@ func Test_NewPortTaskFromCloud(t *testing.T) {
 				},
 			},
 			expectedPortTask: &Port{
-				ID:      fi.PtrTo("id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
 				},
 				AllowedAddressPairs: []ports.AddressPair{
 					{
@@ -625,7 +625,7 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			port: &Port{
-				Name:      fi.PtrTo("name"),
+				Name:      new("name"),
 				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: nil,
@@ -661,20 +661,20 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			port: &Port{
-				Name:      fi.PtrTo("name"),
+				Name:      new("name"),
 				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: &Port{
-				ID:      fi.PtrTo("id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Lifecycle: fi.LifecycleSync,
 			},
@@ -710,21 +710,21 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			port: &Port{
-				Name:      fi.PtrTo("name"),
+				Name:      new("name"),
 				Lifecycle: fi.LifecycleSync,
 				Tags:      []string{"clusterName"},
 			},
 			expectedPortTask: &Port{
-				ID:      fi.PtrTo("id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Lifecycle: fi.LifecycleSync,
 				Tags:      []string{"clusterName"},
@@ -757,7 +757,7 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			port: &Port{
-				Name:      fi.PtrTo("name"),
+				Name:      new("name"),
 				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: nil,
@@ -784,7 +784,7 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			port: &Port{
-				Name:      fi.PtrTo("name"),
+				Name:      new("name"),
 				Lifecycle: fi.LifecycleSync,
 			},
 			expectedPortTask: nil,
@@ -829,7 +829,7 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			port: &Port{
-				Name:      fi.PtrTo("name"),
+				Name:      new("name"),
 				Lifecycle: fi.LifecycleSync,
 				Tags:      []string{"clusterName"},
 				AllowedAddressPairs: []ports.AddressPair{
@@ -843,16 +843,16 @@ func Test_Port_Find(t *testing.T) {
 				},
 			},
 			expectedPortTask: &Port{
-				ID:      fi.PtrTo("id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("sg-2"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-1"), Lifecycle: fi.LifecycleSync},
+					{ID: new("sg-2"), Lifecycle: fi.LifecycleSync},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a"), Lifecycle: fi.LifecycleSync},
-					{ID: fi.PtrTo("subnet-b"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-a"), Lifecycle: fi.LifecycleSync},
+					{ID: new("subnet-b"), Lifecycle: fi.LifecycleSync},
 				},
 				Lifecycle: fi.LifecycleSync,
 				Tags:      []string{"clusterName"},
@@ -895,8 +895,8 @@ func Test_Port_CheckChanges(t *testing.T) {
 			desc:   "actual nil all required fields set",
 			actual: nil,
 			expected: &Port{
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedError: nil,
 		},
@@ -905,7 +905,7 @@ func Test_Port_CheckChanges(t *testing.T) {
 			actual: nil,
 			expected: &Port{
 				Name:    nil,
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedError: fi.RequiredField("Name"),
 		},
@@ -913,7 +913,7 @@ func Test_Port_CheckChanges(t *testing.T) {
 			desc:   "actual nil required field Network nil",
 			actual: nil,
 			expected: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			expectedError: fi.RequiredField("Network"),
@@ -921,11 +921,11 @@ func Test_Port_CheckChanges(t *testing.T) {
 		{
 			desc: "actual not nil all changeable fields set",
 			actual: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			expected: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			changes: &Port{
@@ -937,31 +937,31 @@ func Test_Port_CheckChanges(t *testing.T) {
 		{
 			desc: "actual not nil all changeable fields set",
 			actual: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			expected: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			changes: &Port{
 				Name:    nil,
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedError: fi.CannotChangeField("Network"),
 		},
 		{
 			desc: "actual not nil unchangeable field Name set",
 			actual: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			expected: &Port{
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			changes: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			expectedError: fi.CannotChangeField("Name"),
@@ -969,16 +969,16 @@ func Test_Port_CheckChanges(t *testing.T) {
 		{
 			desc: "actual not nil unchangeable field Network set",
 			actual: &Port{
-				Name:    fi.PtrTo("name"),
+				Name:    new("name"),
 				Network: nil,
 			},
 			expected: &Port{
 				Name:    nil,
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				Network: &Network{ID: new("networkID")},
 			},
 			changes: &Port{
 				Name:    nil,
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedError: fi.CannotChangeField("Network"),
 		},
@@ -1008,19 +1008,19 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 		{
 			desc: "actual not nil",
 			actual: &Port{
-				ID:      fi.PtrTo("actual-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("actual-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			expected: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedAfter: &Port{
-				ID:      fi.PtrTo("actual-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("actual-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedCloudPort: nil,
 			expectedError:     nil,
@@ -1046,29 +1046,29 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 			},
 			actual: nil,
 			expected: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
-					{ID: fi.PtrTo("sg-2")},
+					{ID: new("sg-1")},
+					{ID: new("sg-2")},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
-					{ID: fi.PtrTo("subnet-b")},
+					{ID: new("subnet-a")},
+					{ID: new("subnet-b")},
 				},
 			},
 			expectedAfter: &Port{
-				ID:      fi.PtrTo("cloud-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("cloud-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
-					{ID: fi.PtrTo("sg-2")},
+					{ID: new("sg-1")},
+					{ID: new("sg-2")},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
-					{ID: fi.PtrTo("subnet-b")},
+					{ID: new("subnet-a")},
+					{ID: new("subnet-b")},
 				},
 			},
 			expectedCloudPort: &ports.Port{
@@ -1095,14 +1095,14 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 			},
 			actual: nil,
 			expected: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedAfter: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 			},
 			expectedCloudPort: nil,
 			expectedError:     fmt.Errorf("Error creating port: port create error"),
@@ -1134,14 +1134,14 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 				},
 			},
 			actual: &Port{
-				ID:      fi.PtrTo("cloud-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("cloud-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
+					{ID: new("sg-1")},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
+					{ID: new("subnet-a")},
 				},
 				AllowedAddressPairs: []ports.AddressPair{
 					{
@@ -1150,14 +1150,14 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 				},
 			},
 			expected: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
+					{ID: new("sg-1")},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
+					{ID: new("subnet-a")},
 				},
 				AllowedAddressPairs: []ports.AddressPair{
 					{
@@ -1178,14 +1178,14 @@ func Test_Port_RenderOpenstack(t *testing.T) {
 				},
 			},
 			expectedAfter: &Port{
-				ID:      fi.PtrTo("cloud-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("cloud-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
+					{ID: new("sg-1")},
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
+					{ID: new("subnet-a")},
 				},
 				AllowedAddressPairs: []ports.AddressPair{
 					{
@@ -1241,20 +1241,20 @@ func Test_Port_createOptsFromPortTask(t *testing.T) {
 				},
 			},
 			expected: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
-					{ID: fi.PtrTo("sg-2")},
+					{ID: new("sg-1")},
+					{ID: new("sg-2")},
 				},
 				AdditionalSecurityGroups: []string{
 					"add-1",
 					"add-2",
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
-					{ID: fi.PtrTo("subnet-b")},
+					{ID: new("subnet-a")},
+					{ID: new("subnet-b")},
 				},
 				AllowedAddressPairs: []ports.AddressPair{
 					{
@@ -1302,19 +1302,19 @@ func Test_Port_createOptsFromPortTask(t *testing.T) {
 				},
 			},
 			expected: &Port{
-				ID:      fi.PtrTo("expected-id"),
-				Name:    fi.PtrTo("name"),
-				Network: &Network{ID: fi.PtrTo("networkID")},
+				ID:      new("expected-id"),
+				Name:    new("name"),
+				Network: &Network{ID: new("networkID")},
 				SecurityGroups: []*SecurityGroup{
-					{ID: fi.PtrTo("sg-1")},
-					{ID: fi.PtrTo("sg-2")},
+					{ID: new("sg-1")},
+					{ID: new("sg-2")},
 				},
 				AdditionalSecurityGroups: []string{
 					"add-2",
 				},
 				Subnets: []*Subnet{
-					{ID: fi.PtrTo("subnet-a")},
-					{ID: fi.PtrTo("subnet-b")},
+					{ID: new("subnet-a")},
+					{ID: new("subnet-b")},
 				},
 			},
 			expectedError: fmt.Errorf("Additional SecurityGroup not found for name add-2"),

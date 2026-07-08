@@ -54,8 +54,8 @@ func TestAddonManifestNormalizeSkipsRenderForRawSources(t *testing.T) {
 		rendered: []byte("apiVersion: v1\nkind: ConfigMap\ndata:\n  literal: rendered\n"),
 	}
 	addon := &AddonManifest{
-		Name:          fi.PtrTo("raw-addon"),
-		Location:      fi.PtrTo("addons/raw-addon.yaml"),
+		Name:          new("raw-addon"),
+		Location:      new("addons/raw-addon.yaml"),
 		source:        fi.NewBytesResource(rawManifest),
 		skipRender:    true,
 		addonRenderer: renderer,
@@ -89,8 +89,8 @@ func TestAddonManifestNormalizeRendersTemplateSources(t *testing.T) {
 		rendered: []byte("apiVersion: v1\nkind: ConfigMap\ndata:\n  literal: rendered\n"),
 	}
 	addon := &AddonManifest{
-		Name:          fi.PtrTo("template-addon"),
-		Location:      fi.PtrTo("addons/template-addon.yaml"),
+		Name:          new("template-addon"),
+		Location:      new("addons/template-addon.yaml"),
 		source:        fi.NewBytesResource([]byte("apiVersion: v1\nkind: ConfigMap\ndata:\n  literal: {{ .Value }}\n")),
 		addonRenderer: renderer,
 		addonSpec:     testAddonSpec("template-addon"),
@@ -153,8 +153,8 @@ func TestAddonCollectImagesRendersTemplateSources(t *testing.T) {
 
 func testAddonSpec(name string) *channelsapi.AddonSpec {
 	return &channelsapi.AddonSpec{
-		Name:     fi.PtrTo(name),
+		Name:     new(name),
 		Selector: map[string]string{"k8s-addon": name},
-		Manifest: fi.PtrTo(name + ".yaml"),
+		Manifest: new(name + ".yaml"),
 	}
 }

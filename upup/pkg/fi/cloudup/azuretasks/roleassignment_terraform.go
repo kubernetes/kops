@@ -37,7 +37,7 @@ func (*RoleAssignment) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		Scope:                        e.Scope,
 		RoleDefinitionID:             &roleDefinitionID,
 		PrincipalID:                  e.VMScaleSet.terraformPrincipalID(),
-		SkipServicePrincipalAADCheck: fi.PtrTo(true),
+		SkipServicePrincipalAADCheck: new(true),
 	}
 	return t.RenderResource("azurerm_role_assignment", fi.ValueOf(e.Name), tf)
 }

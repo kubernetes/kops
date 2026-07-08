@@ -20,7 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -64,7 +63,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	if config.ClusterCIDR == nil {
 		if b.needsClusterCIDR(clusterSpec) {
-			config.ClusterCIDR = fi.PtrTo(clusterSpec.KubeControllerManager.ClusterCIDR)
+			config.ClusterCIDR = new(clusterSpec.KubeControllerManager.ClusterCIDR)
 		}
 	}
 

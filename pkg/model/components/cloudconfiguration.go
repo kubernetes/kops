@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -47,7 +46,7 @@ func (b *CloudConfigurationOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			// adopting that more particular setting generally.
 			manage = clusterSpec.CloudProvider.Openstack.BlockStorage.CreateStorageClass
 		} else {
-			manage = fi.PtrTo(true)
+			manage = new(true)
 		}
 		c.ManageStorageClasses = manage
 	}

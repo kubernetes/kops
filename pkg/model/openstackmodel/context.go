@@ -22,7 +22,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
@@ -131,5 +130,5 @@ func (c *OpenstackModelContext) LinkToPort(name *string) *openstacktasks.Port {
 }
 
 func (c *OpenstackModelContext) LinkToSecurityGroup(name string) *openstacktasks.SecurityGroup {
-	return &openstacktasks.SecurityGroup{Name: fi.PtrTo(name)}
+	return &openstacktasks.SecurityGroup{Name: new(name)}
 }

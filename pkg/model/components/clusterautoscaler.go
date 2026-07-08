@@ -57,53 +57,53 @@ func (b *ClusterAutoscalerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 				image = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.36.0"
 			}
 		}
-		cas.Image = fi.PtrTo(image)
+		cas.Image = new(image)
 	}
 
 	if cas.Expander == "" {
 		cas.Expander = "random"
 	}
 	if cas.IgnoreDaemonSetsUtilization == nil {
-		cas.IgnoreDaemonSetsUtilization = fi.PtrTo(false)
+		cas.IgnoreDaemonSetsUtilization = new(false)
 	}
 	if cas.ScaleDownUtilizationThreshold == nil {
-		cas.ScaleDownUtilizationThreshold = fi.PtrTo("0.5")
+		cas.ScaleDownUtilizationThreshold = new("0.5")
 	}
 	if cas.SkipNodesWithCustomControllerPods == nil {
-		cas.SkipNodesWithCustomControllerPods = fi.PtrTo(true)
+		cas.SkipNodesWithCustomControllerPods = new(true)
 	}
 	if cas.SkipNodesWithLocalStorage == nil {
-		cas.SkipNodesWithLocalStorage = fi.PtrTo(true)
+		cas.SkipNodesWithLocalStorage = new(true)
 	}
 	if cas.SkipNodesWithSystemPods == nil {
-		cas.SkipNodesWithSystemPods = fi.PtrTo(true)
+		cas.SkipNodesWithSystemPods = new(true)
 	}
 	if cas.BalanceSimilarNodeGroups == nil {
-		cas.BalanceSimilarNodeGroups = fi.PtrTo(false)
+		cas.BalanceSimilarNodeGroups = new(false)
 	}
 	if cas.EmitPerNodegroupMetrics == nil {
-		cas.EmitPerNodegroupMetrics = fi.PtrTo(false)
+		cas.EmitPerNodegroupMetrics = new(false)
 	}
 	if cas.AWSUseStaticInstanceList == nil {
-		cas.AWSUseStaticInstanceList = fi.PtrTo(false)
+		cas.AWSUseStaticInstanceList = new(false)
 	}
 	if cas.NewPodScaleUpDelay == nil {
-		cas.NewPodScaleUpDelay = fi.PtrTo("0s")
+		cas.NewPodScaleUpDelay = new("0s")
 	}
 	if cas.ScaleDownDelayAfterAdd == nil {
-		cas.ScaleDownDelayAfterAdd = fi.PtrTo("10m0s")
+		cas.ScaleDownDelayAfterAdd = new("10m0s")
 	}
 	if cas.ScaleDownUnneededTime == nil {
-		cas.ScaleDownUnneededTime = fi.PtrTo("10m0s")
+		cas.ScaleDownUnneededTime = new("10m0s")
 	}
 	if cas.ScaleDownUnreadyTime == nil {
-		cas.ScaleDownUnreadyTime = fi.PtrTo("20m0s")
+		cas.ScaleDownUnreadyTime = new("20m0s")
 	}
 	if cas.MaxNodeProvisionTime == "" {
 		cas.MaxNodeProvisionTime = "15m0s"
 	}
 	if cas.Expander == "priority" {
-		cas.CreatePriorityExpenderConfig = fi.PtrTo(true)
+		cas.CreatePriorityExpenderConfig = new(true)
 	}
 
 	return nil

@@ -65,20 +65,20 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		instance := scalewaytasks.Instance{
 			Count:          int(fi.ValueOf(ig.Spec.MinSize)),
-			Name:           fi.PtrTo(name),
+			Name:           new(name),
 			Lifecycle:      b.Lifecycle,
-			Zone:           fi.PtrTo(string(zone)),
-			CommercialType: fi.PtrTo(ig.Spec.MachineType),
-			Image:          fi.PtrTo(ig.Spec.Image),
+			Zone:           new(string(zone)),
+			CommercialType: new(ig.Spec.MachineType),
+			Image:          new(ig.Spec.Image),
 			UserData:       &userData,
 			Tags:           instanceTags,
 		}
 
 		if ig.IsControlPlane() {
 			instance.Tags = append(instance.Tags, scaleway.TagNameRolePrefix+"="+scaleway.TagRoleControlPlane)
-			instance.Role = fi.PtrTo(scaleway.TagRoleControlPlane)
+			instance.Role = new(scaleway.TagRoleControlPlane)
 		} else {
-			instance.Role = fi.PtrTo(scaleway.TagRoleWorker)
+			instance.Role = new(scaleway.TagRoleWorker)
 		}
 
 		// If the instance's commercial type is one that has no local storage, we have to specify for the
@@ -86,9 +86,9 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		for _, commercialType := range commercialTypesWithBlockStorageOnly {
 			if strings.HasPrefix(ig.Spec.MachineType, commercialType) {
 				if ig.IsControlPlane() {
-					instance.VolumeSize = fi.PtrTo(defaultControlPlaneRootVolumeSizeGB)
+					instance.VolumeSize = new(defaultControlPlaneRootVolumeSizeGB)
 				} else {
-					instance.VolumeSize = fi.PtrTo(defaultNodeRootVolumeSizeGB)
+					instance.VolumeSize = new(defaultNodeRootVolumeSizeGB)
 				}
 				break
 			}

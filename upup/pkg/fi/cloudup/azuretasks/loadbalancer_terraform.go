@@ -79,14 +79,14 @@ func (*LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	sku := string(e.SKU)
 	tf := &terraformAzureLoadBalancer{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		SKU:               &sku,
 		Tags:              stringMap(e.Tags),
 	}
 
 	frontend := &terraformAzureLoadBalancerFrontendIPConfiguration{
-		Name: fi.PtrTo(terraformAzureLoadBalancerFrontendName),
+		Name: new(terraformAzureLoadBalancerFrontendName),
 	}
 	if fi.ValueOf(e.External) {
 		frontend.PublicIPAddressID = e.PublicIPAddress.terraformID()
@@ -116,13 +116,13 @@ func (*LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 	for _, probe := range e.Probes {
 		probeResourceName := fmt.Sprintf("%s-%s", fi.ValueOf(e.Name), probe.Name)
 		if err := t.RenderResource("azurerm_lb_probe", probeResourceName, &terraformAzureLoadBalancerProbe{
-			Name:              fi.PtrTo(probe.Name),
+			Name:              new(probe.Name),
 			LoadBalancerID:    e.terraformID(),
-			Protocol:          fi.PtrTo(string(probe.Protocol)),
-			Port:              fi.PtrTo(probe.Port),
+			Protocol:          new(string(probe.Protocol)),
+			Port:              new(probe.Port),
 			RequestPath:       probe.RequestPath,
-			IntervalInSeconds: fi.PtrTo(probe.IntervalInSeconds),
-			NumberOfProbes:    fi.PtrTo(probe.NumberOfProbes),
+			IntervalInSeconds: new(probe.IntervalInSeconds),
+			NumberOfProbes:    new(probe.NumberOfProbes),
 		}); err != nil {
 			return err
 		}
@@ -134,16 +134,16 @@ func (*LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 		ruleProtocol := string(rule.Protocol)
 		loadDistribution := string(rule.LoadDistribution)
 		if err := t.RenderResource("azurerm_lb_rule", ruleResourceName, &terraformAzureLoadBalancerRule{
-			Name:                        fi.PtrTo(rule.Name),
+			Name:                        new(rule.Name),
 			LoadBalancerID:              e.terraformID(),
 			Protocol:                    &ruleProtocol,
-			FrontendPort:                fi.PtrTo(rule.Port),
-			BackendPort:                 fi.PtrTo(rule.Port),
-			FrontendIPConfigurationName: fi.PtrTo(terraformAzureLoadBalancerFrontendName),
+			FrontendPort:                new(rule.Port),
+			BackendPort:                 new(rule.Port),
+			FrontendIPConfigurationName: new(terraformAzureLoadBalancerFrontendName),
 			BackendAddressPoolIDs:       []*terraformWriter.Literal{e.terraformBackendAddressPoolID()},
 			ProbeID:                     terraformWriter.LiteralProperty("azurerm_lb_probe", probeResourceName, "id"),
-			IdleTimeoutInMinutes:        fi.PtrTo(rule.IdleTimeoutInMinutes),
-			FloatingIPEnabled:           fi.PtrTo(rule.EnableFloatingIP),
+			IdleTimeoutInMinutes:        new(rule.IdleTimeoutInMinutes),
+			FloatingIPEnabled:           new(rule.EnableFloatingIP),
 			LoadDistribution:            &loadDistribution,
 		}); err != nil {
 			return err

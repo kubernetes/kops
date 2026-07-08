@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -49,7 +48,7 @@ func (b *AzureCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.C
 		eccm.AzureNodeManagerImage = "mcr.microsoft.com/oss/v2/kubernetes/azure-cloud-node-manager:v1.36.2"
 	}
 
-	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
+	eccm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: new(true)}
 
 	if eccm.LogLevel == 0 {
 		eccm.LogLevel = 2
@@ -61,9 +60,9 @@ func (b *AzureCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.C
 	// kOps associates with the node subnet. EnableIPForwarding is already set on every NIC.
 	networking := cluster.Spec.Networking
 	if networking.Kubenet != nil || networking.Kindnet != nil {
-		eccm.ConfigureCloudRoutes = fi.PtrTo(true)
+		eccm.ConfigureCloudRoutes = new(true)
 	} else {
-		eccm.ConfigureCloudRoutes = fi.PtrTo(false)
+		eccm.ConfigureCloudRoutes = new(false)
 	}
 
 	return nil

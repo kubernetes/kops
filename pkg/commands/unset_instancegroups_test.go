@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestUnsetInstanceGroupsBadInput(t *testing.T) {
@@ -74,8 +73,8 @@ func TestUnsetInstanceGroupsFields(t *testing.T) {
 			},
 			Input: kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
-					MinSize: fi.PtrTo(int32(1)),
-					MaxSize: fi.PtrTo(int32(3)),
+					MinSize: new(int32(1)),
+					MaxSize: new(int32(3)),
 				},
 			},
 			Output: kops.InstanceGroup{

@@ -37,7 +37,7 @@ func (*VirtualNetwork) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 
 	tf := &terraformAzureVirtualNetwork{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		AddressSpace:      []string{fi.ValueOf(e.CIDR)},
 		Tags:              stringMap(e.Tags),

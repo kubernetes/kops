@@ -72,13 +72,13 @@ func (d *DropletBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		droplet := dotasks.Droplet{
 			Count:     int(fi.ValueOf(ig.Spec.MinSize)),
-			Name:      fi.PtrTo(name),
+			Name:      new(name),
 			Lifecycle: d.Lifecycle,
 
 			// kops do supports allow only 1 region
-			Region: fi.PtrTo(d.Cluster.Spec.Networking.Subnets[0].Region),
-			Size:   fi.PtrTo(ig.Spec.MachineType),
-			Image:  fi.PtrTo(ig.Spec.Image),
+			Region: new(d.Cluster.Spec.Networking.Subnets[0].Region),
+			Size:   new(ig.Spec.MachineType),
+			Image:  new(ig.Spec.Image),
 			SSHKey: sshKey,
 			Tags:   []string{clusterTag},
 		}
@@ -98,13 +98,13 @@ func (d *DropletBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		droplet.Tags = append(droplet.Tags, do.TagKubernetesInstanceRole+":"+string(ig.Spec.Role))
 
 		if d.Cluster.Spec.Networking.NetworkID != "" {
-			droplet.VPCUUID = fi.PtrTo(d.Cluster.Spec.Networking.NetworkID)
+			droplet.VPCUUID = new(d.Cluster.Spec.Networking.NetworkID)
 		} else if d.Cluster.Spec.Networking.NetworkCIDR != "" {
 			// since networkCIDR specified as part of the request, it is made sure that vpc with this cidr exist before
 			// creating the droplet, so you can associate with vpc uuid for this droplet.
 			vpcName := "vpc-" + clusterName
-			droplet.VPCName = fi.PtrTo(vpcName)
-			droplet.NetworkCIDR = fi.PtrTo(d.Cluster.Spec.Networking.NetworkCIDR)
+			droplet.VPCName = new(vpcName)
+			droplet.NetworkCIDR = new(d.Cluster.Spec.Networking.NetworkCIDR)
 		}
 
 		userData, err := d.BootstrapScriptBuilder.ResourceNodeUp(c, ig)

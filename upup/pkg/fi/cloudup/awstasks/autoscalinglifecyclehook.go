@@ -88,7 +88,7 @@ func (h *AutoscalingLifecycleHook) Find(c *fi.CloudupContext) (*AutoscalingLifec
 		DefaultResult:       hook.DefaultResult,
 		HeartbeatTimeout:    hook.HeartbeatTimeout,
 		LifecycleTransition: hook.LifecycleTransition,
-		Enabled:             fi.PtrTo(true),
+		Enabled:             new(true),
 	}
 
 	return actual, nil

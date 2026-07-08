@@ -35,7 +35,7 @@ func (*ResourceGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 
 	tf := &terraformAzureResourceGroup{
 		Name:     e.Name,
-		Location: fi.PtrTo(t.Cloud.Region()),
+		Location: new(t.Cloud.Region()),
 		Tags:     stringMap(e.Tags),
 	}
 	return t.RenderResource("azurerm_resource_group", fi.ValueOf(e.Name), tf)

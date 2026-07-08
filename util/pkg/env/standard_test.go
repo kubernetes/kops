@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestBuildSystemComponentEnvVars(t *testing.T) {
@@ -94,7 +93,7 @@ func TestBuildSystemComponentEnvVars(t *testing.T) {
 			spec: &kops.ClusterSpec{
 				CloudProvider: kops.CloudProviderSpec{
 					Openstack: &kops.OpenstackSpec{
-						InsecureSkipVerify: fi.PtrTo(false),
+						InsecureSkipVerify: new(false),
 					},
 				},
 			},
@@ -106,7 +105,7 @@ func TestBuildSystemComponentEnvVars(t *testing.T) {
 			spec: &kops.ClusterSpec{
 				CloudProvider: kops.CloudProviderSpec{
 					Openstack: &kops.OpenstackSpec{
-						InsecureSkipVerify: fi.PtrTo(true),
+						InsecureSkipVerify: new(true),
 					},
 				},
 			},

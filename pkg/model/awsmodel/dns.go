@@ -40,7 +40,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error 
 
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
-		Name:      fi.PtrTo(b.NameForDNSZone()),
+		Name:      new(b.NameForDNSZone()),
 		Lifecycle: b.Lifecycle,
 	}
 
@@ -51,7 +51,7 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error 
 		// Ignore
 
 		case kops.DNSTypePrivate:
-			dnsZone.Private = fi.PtrTo(true)
+			dnsZone.Private = new(true)
 			dnsZone.PrivateVPC = b.LinkToVPC()
 
 		default:
@@ -61,10 +61,10 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.CloudupModelBuilderContext) error 
 
 	if !strings.Contains(b.Cluster.Spec.DNSZone, ".") {
 		// Looks like a hosted zone ID
-		dnsZone.ZoneID = fi.PtrTo(b.Cluster.Spec.DNSZone)
+		dnsZone.ZoneID = new(b.Cluster.Spec.DNSZone)
 	} else {
 		// Looks like a normal DNS name
-		dnsZone.DNSName = fi.PtrTo(b.Cluster.Spec.DNSZone)
+		dnsZone.DNSName = new(b.Cluster.Spec.DNSZone)
 	}
 
 	c.EnsureTask(dnsZone)
@@ -101,19 +101,19 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 
 			c.AddTask(&awstasks.DNSName{
-				Name:               fi.PtrTo(b.Cluster.Spec.API.PublicName),
-				ResourceName:       fi.PtrTo(b.Cluster.Spec.API.PublicName),
+				Name:               new(b.Cluster.Spec.API.PublicName),
+				ResourceName:       new(b.Cluster.Spec.API.PublicName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
-				ResourceType:       fi.PtrTo("A"),
+				ResourceType:       new("A"),
 				TargetLoadBalancer: targetLoadBalancer,
 			})
 			c.AddTask(&awstasks.DNSName{
-				Name:               fi.PtrTo(b.Cluster.Spec.API.PublicName + "-AAAA"),
-				ResourceName:       fi.PtrTo(b.Cluster.Spec.API.PublicName),
+				Name:               new(b.Cluster.Spec.API.PublicName + "-AAAA"),
+				ResourceName:       new(b.Cluster.Spec.API.PublicName),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
-				ResourceType:       fi.PtrTo("AAAA"),
+				ResourceType:       new("AAAA"),
 				TargetLoadBalancer: targetLoadBalancer,
 			})
 		}
@@ -131,20 +131,20 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			// Using EnsureTask as APIInternalName() and APIPublicName could be the same
 			{
 				c.EnsureTask(&awstasks.DNSName{
-					Name:               fi.PtrTo(b.Cluster.APIInternalName()),
-					ResourceName:       fi.PtrTo(b.Cluster.APIInternalName()),
+					Name:               new(b.Cluster.APIInternalName()),
+					ResourceName:       new(b.Cluster.APIInternalName()),
 					Lifecycle:          b.Lifecycle,
 					Zone:               b.LinkToDNSZone(),
-					ResourceType:       fi.PtrTo("A"),
+					ResourceType:       new("A"),
 					TargetLoadBalancer: targetLoadBalancer,
 				})
 			}
 			c.EnsureTask(&awstasks.DNSName{
-				Name:               fi.PtrTo(b.Cluster.APIInternalName() + "-AAAA"),
-				ResourceName:       fi.PtrTo(b.Cluster.APIInternalName()),
+				Name:               new(b.Cluster.APIInternalName() + "-AAAA"),
+				ResourceName:       new(b.Cluster.APIInternalName()),
 				Lifecycle:          b.Lifecycle,
 				Zone:               b.LinkToDNSZone(),
-				ResourceType:       fi.PtrTo("AAAA"),
+				ResourceType:       new("AAAA"),
 				TargetLoadBalancer: targetLoadBalancer,
 			})
 		}

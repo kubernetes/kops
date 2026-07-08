@@ -50,7 +50,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleControlPlane)),
 	}
 	controlPlaneFirewall := &hetznertasks.Firewall{
-		Name:      fi.PtrTo("control-plane." + b.ClusterName()),
+		Name:      new("control-plane." + b.ClusterName()),
 		Lifecycle: b.Lifecycle,
 		Selector:  strings.Join(controlPlaneLabelSelector, ","),
 		Rules: []*hetznertasks.FirewallRule{
@@ -58,7 +58,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 				Direction: string(hcloud.FirewallRuleDirectionIn),
 				SourceIPs: sshAccess,
 				Protocol:  string(hcloud.FirewallRuleProtocolTCP),
-				Port:      fi.PtrTo("22"),
+				Port:      new("22"),
 			},
 		},
 		Labels: map[string]string{
@@ -71,7 +71,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 		fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceRole, string(kops.InstanceGroupRoleNode)),
 	}
 	nodesFirewall := &hetznertasks.Firewall{
-		Name:      fi.PtrTo("nodes." + b.ClusterName()),
+		Name:      new("nodes." + b.ClusterName()),
 		Lifecycle: b.Lifecycle,
 		Selector:  strings.Join(nodesLabelSelector, ","),
 		Rules: []*hetznertasks.FirewallRule{
@@ -79,7 +79,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 				Direction: string(hcloud.FirewallRuleDirectionIn),
 				SourceIPs: sshAccess,
 				Protocol:  string(hcloud.FirewallRuleProtocolTCP),
-				Port:      fi.PtrTo("22"),
+				Port:      new("22"),
 			},
 		},
 		Labels: map[string]string{
@@ -101,7 +101,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			Direction: string(hcloud.FirewallRuleDirectionIn),
 			SourceIPs: apiAccess,
 			Protocol:  string(hcloud.FirewallRuleProtocolTCP),
-			Port:      fi.PtrTo("443"),
+			Port:      new("443"),
 		})
 	}
 
@@ -122,13 +122,13 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			Direction: string(hcloud.FirewallRuleDirectionIn),
 			SourceIPs: nodePortAccess,
 			Protocol:  string(hcloud.FirewallRuleProtocolTCP),
-			Port:      fi.PtrTo(fmt.Sprintf("%d-%d", nodePortRange.Base, nodePortRange.Base+nodePortRange.Size-1)),
+			Port:      new(fmt.Sprintf("%d-%d", nodePortRange.Base, nodePortRange.Base+nodePortRange.Size-1)),
 		})
 		nodesFirewall.Rules = append(nodesFirewall.Rules, &hetznertasks.FirewallRule{
 			Direction: string(hcloud.FirewallRuleDirectionIn),
 			SourceIPs: nodePortAccess,
 			Protocol:  string(hcloud.FirewallRuleProtocolUDP),
-			Port:      fi.PtrTo(fmt.Sprintf("%d-%d", nodePortRange.Base, nodePortRange.Base+nodePortRange.Size-1)),
+			Port:      new(fmt.Sprintf("%d-%d", nodePortRange.Base, nodePortRange.Base+nodePortRange.Size-1)),
 		})
 	}
 

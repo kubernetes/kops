@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
@@ -60,7 +59,7 @@ func up(vfsContext *vfs.VFSContext, ctx context.Context) error {
 		for _, masterZone := range masterZones {
 			etcdMember := api.EtcdMemberSpec{
 				Name:          masterZone,
-				InstanceGroup: fi.PtrTo(masterZone),
+				InstanceGroup: new(masterZone),
 			}
 			etcdCluster.Members = append(etcdCluster.Members, etcdMember)
 		}

@@ -105,7 +105,7 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	tf := &terraformAzureVMScaleSet{
 		Name:                          e.Name,
 		ResourceGroupName:             e.ResourceGroup.terraformName(),
-		Location:                      fi.PtrTo(t.Cloud.Region()),
+		Location:                      new(t.Cloud.Region()),
 		SKU:                           e.SKUName,
 		Instances:                     e.Capacity,
 		Zones:                         stringSlice(e.Zones),
@@ -125,7 +125,7 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 			DiskSizeGB:         storageProfile.OSDisk.DiskSizeGB,
 		},
 		Identity: &terraformAzureVMScaleSetIdentity{
-			Type: fi.PtrTo("SystemAssigned"),
+			Type: new("SystemAssigned"),
 		},
 		Tags: stringMap(e.Tags),
 	}
@@ -145,8 +145,8 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	tf.NetworkInterface = []*terraformAzureVMScaleSetNetworkInterface{
 		{
 			Name:               e.Name,
-			Primary:            fi.PtrTo(true),
-			EnableIPForwarding: fi.PtrTo(true),
+			Primary:            new(true),
+			EnableIPForwarding: new(true),
 			IPConfiguration: []*terraformAzureVMScaleSetIPConfiguration{
 				ipConfig,
 			},
@@ -176,7 +176,7 @@ func (vmss *VMScaleSet) terraformIPConfiguration(t *terraform.TerraformTarget) (
 	}
 	cfg := &terraformAzureVMScaleSetIPConfiguration{
 		Name:                        vmss.Name,
-		Primary:                     fi.PtrTo(true),
+		Primary:                     new(true),
 		SubnetID:                    subnetID,
 		ApplicationSecurityGroupIDs: applicationSecurityGroupIDs(vmss.ApplicationSecurityGroups),
 	}

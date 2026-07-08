@@ -503,9 +503,9 @@ func (s *scwCloudImplementation) GetServerIP(serverID string, zone scw.Zone) (st
 
 	ips, err := s.ipamAPI.ListIPs(&ipam.ListIPsRequest{
 		Region:     region,
-		IsIPv6:     fi.PtrTo(false),
+		IsIPv6:     new(false),
 		ResourceID: &serverID,
-		Zonal:      fi.PtrTo(zone.String()),
+		Zonal:      new(zone.String()),
 	}, scw.WithAllPages())
 	if err != nil {
 		return "", fmt.Errorf("listing IPs for server %s: %w", serverID, err)
