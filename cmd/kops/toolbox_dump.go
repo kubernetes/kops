@@ -26,6 +26,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2instanceconnect"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -40,6 +42,7 @@ import (
 	"k8s.io/kops/pkg/resources"
 	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 )
@@ -246,6 +249,24 @@ func RunToolboxDump(ctx context.Context, f commandutils.Factory, out io.Writer, 
 		}
 
 		dumper := dump.NewLogDumper(bastionAddress, sshConfig, keyRing, options.Dir, options.NodeDumpTimeout)
+
+		// Karpenter nodes never get the cluster SSH key pair (their EC2NodeClass has no key-name
+		// field). When Karpenter is enabled, grant short-lived access via EC2 Instance Connect
+		// before connecting, using the public key matching --private-key. A no-op without the agent.
+		karpenterEnabled := cluster.Spec.Karpenter != nil && cluster.Spec.Karpenter.Enabled
+		if awsCloud, ok := cloud.(awsup.AWSCloud); ok && karpenterEnabled {
+			publicKey := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(signer.PublicKey())))
+			eicClient := ec2instanceconnect.NewFromConfig(awsCloud.Config())
+			sshUser := options.SSHUser
+			dumper.SetSSHAccessGranter(func(ctx context.Context, instanceID string) error {
+				_, err := eicClient.SendSSHPublicKey(ctx, &ec2instanceconnect.SendSSHPublicKeyInput{
+					InstanceId:     aws.String(instanceID),
+					InstanceOSUser: aws.String(sshUser),
+					SSHPublicKey:   aws.String(publicKey),
+				})
+				return err
+			})
+		}
 
 		if err := dumper.DumpAllNodes(ctx, nodes, options.MaxNodes, cloudResources); err != nil {
 			klog.Warningf("error dumping nodes: %v", err)
