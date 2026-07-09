@@ -609,6 +609,15 @@ resource "azurerm_storage_blob" "minimal-azure-example-com-addons-coredns-addons
   type                   = "Block"
 }
 
+resource "azurerm_storage_blob" "minimal-azure-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
+  name                   = "tests/minimal-azure.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  provider               = azurerm.files
+  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_source"
+  storage_account_name   = "teststorage"
+  storage_container_name = "testcontainer"
+  type                   = "Block"
+}
+
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   name                   = "tests/minimal-azure.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
   provider               = azurerm.files
