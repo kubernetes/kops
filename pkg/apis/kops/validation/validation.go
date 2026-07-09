@@ -1403,6 +1403,10 @@ func validateNetworkingCilium(cluster *kops.Cluster, v *kops.CiliumNetworkingSpe
 		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableL7Proxy"), "Cilium L7 Proxy requires installIptablesRules."))
 	}
 
+	if fi.ValueOf(v.EnableBBR) && !fi.ValueOf(v.EnableBandwidthManager) {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("enableBBR"), "enableBBR requires enableBandwidthManager"))
+	}
+
 	if v.IPAM != "" {
 		// "azure" not supported by kops
 		allErrs = append(allErrs, IsValidValue(fldPath.Child("ipam"), &v.IPAM, []string{"hostscope", "kubernetes", "crd", "eni"})...)

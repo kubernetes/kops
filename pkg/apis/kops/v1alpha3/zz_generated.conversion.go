@@ -2267,6 +2267,8 @@ func autoConvert_v1alpha3_CiliumNetworkingSpec_To_kops_CiliumNetworkingSpec(in *
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
 	out.EnableHostFirewall = in.EnableHostFirewall
+	out.EnableBandwidthManager = in.EnableBandwidthManager
+	out.EnableBBR = in.EnableBBR
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableEncryption = in.EnableEncryption
 	out.EncryptionType = kops.CiliumEncryptionType(in.EncryptionType)
@@ -2357,6 +2359,8 @@ func autoConvert_kops_CiliumNetworkingSpec_To_v1alpha3_CiliumNetworkingSpec(in *
 	out.EnableBPFMasquerade = in.EnableBPFMasquerade
 	out.EnableEndpointHealthChecking = in.EnableEndpointHealthChecking
 	out.EnableHostFirewall = in.EnableHostFirewall
+	out.EnableBandwidthManager = in.EnableBandwidthManager
+	out.EnableBBR = in.EnableBBR
 	out.EnablePrometheusMetrics = in.EnablePrometheusMetrics
 	out.EnableEncryption = in.EnableEncryption
 	out.EncryptionType = CiliumEncryptionType(in.EncryptionType)

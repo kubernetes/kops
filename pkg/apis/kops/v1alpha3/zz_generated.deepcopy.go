@@ -703,6 +703,16 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableBandwidthManager != nil {
+		in, out := &in.EnableBandwidthManager, &out.EnableBandwidthManager
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableBBR != nil {
+		in, out := &in.EnableBBR, &out.EnableBBR
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Masquerade != nil {
 		in, out := &in.Masquerade, &out.Masquerade
 		*out = new(bool)
