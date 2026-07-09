@@ -42,8 +42,8 @@ images:
   download: registry.k8s.io/coredns/coredns:v1.14.2
 - canonical: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
   download: registry.k8s.io/cpa/cluster-proportional-autoscaler:v1.9.0
-- canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
-  download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
+- canonical: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
+  download: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
 - canonical: registry.k8s.io/etcd:v3.5.31
   download: registry.k8s.io/etcd:v3.5.31
 - canonical: registry.k8s.io/etcd:v3.6.12

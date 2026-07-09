@@ -32,7 +32,7 @@ spec:
       value: us-test-1
     - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
       value: 90d
-    image: kops.k8s.io/remapped-image/etcd-manager/etcd-manager-slim:v3.0.20260608
+    image: kops.k8s.io/remapped-image/etcd-manager/etcd-manager-slim:v3.0.20260707
     name: etcd-manager
     resources:
       requests:
