@@ -796,6 +796,14 @@ resource "aws_s3_object" "minimal-example-com-addons-coredns-addons-k8s-io-k8s-1
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "minimal-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_content")
+  key                    = "tests/minimal.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "minimal-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_minimal.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
