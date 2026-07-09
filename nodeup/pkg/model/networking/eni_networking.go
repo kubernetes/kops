@@ -121,11 +121,12 @@ MACAddressPolicy=none
 // markSecondaryENIsUnmanaged tells systemd-networkd to ignore secondary ENIs (ens6+).
 // Without this, systemd-networkd fully manages secondary ENIs via DHCP, creating
 // competing routes that interfere with CNI networking.
-// AL2023 and Debian 12+.
+// AL2023, Debian 12+, and Ubuntu 22.04+.
 // ref: https://github.com/aws/amazon-vpc-cni-k8s/issues/3524
 func markSecondaryENIsUnmanaged(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) {
 	if !(dist == distributions.DistributionAmazonLinux2023 ||
-		(dist.IsDebian() && dist.Version() >= 12)) {
+		(dist.IsDebian() && dist.Version() >= 12) ||
+		(dist.IsUbuntu() && dist.Version() >= 22.04)) {
 		return
 	}
 
