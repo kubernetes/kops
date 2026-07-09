@@ -654,6 +654,16 @@ func (in *CiliumNetworkingSpec) DeepCopyInto(out *CiliumNetworkingSpec) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnableBandwidthManager != nil {
+		in, out := &in.EnableBandwidthManager, &out.EnableBandwidthManager
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EnableBBR != nil {
+		in, out := &in.EnableBBR, &out.EnableBBR
+		*out = new(bool)
+		**out = **in
+	}
 	if in.Labels != nil {
 		in, out := &in.Labels, &out.Labels
 		*out = make([]string, len(*in))
