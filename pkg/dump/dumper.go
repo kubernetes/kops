@@ -34,6 +34,10 @@ import (
 	"k8s.io/kops/pkg/resources"
 )
 
+// SSHAccessGranter grants short-lived SSH access to a cloud instance before the dumper connects.
+// instanceID matches resources.Instance.Name. AWS implements this with EC2 Instance Connect.
+type SSHAccessGranter func(ctx context.Context, instanceID string) error
+
 // logDumper gets all the nodes from a kubernetes cluster and dumps a well-known set of logs
 type logDumper struct {
 	sshClientFactory sshClientFactory
@@ -46,6 +50,10 @@ type logDumper struct {
 	services     []string
 	files        []string
 	podSelectors []string
+
+	// sshAccessGranter grants short-lived SSH access to a node before connecting. On AWS it uses
+	// EC2 Instance Connect so Karpenter nodes, lacking the cluster SSH key pair, are reachable.
+	sshAccessGranter SSHAccessGranter
 }
 
 // NewLogDumper is the constructor for a logDumper
@@ -107,6 +115,22 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 	}
 
 	return d
+}
+
+// SetSSHAccessGranter registers a hook to grant SSH access to a node before connecting.
+func (d *logDumper) SetSSHAccessGranter(granter SSHAccessGranter) {
+	d.sshAccessGranter = granter
+}
+
+// grantSSHAccess best-effort grants SSH access before connecting. Failures are non-fatal: some
+// nodes already trust our key (e.g. control plane via its launch template key pair).
+func (d *logDumper) grantSSHAccess(ctx context.Context, instanceID string) {
+	if d.sshAccessGranter == nil || instanceID == "" {
+		return
+	}
+	if err := d.sshAccessGranter(ctx, instanceID); err != nil {
+		klog.Infof("could not grant SSH access to instance %s: %v", instanceID, err)
+	}
 }
 
 // DumpAllNodes connects to every node from kubectl get nodes and dumps the logs.
@@ -212,6 +236,8 @@ func (d *logDumper) dumpRegistered(ctx context.Context, node *corev1.Node) (stri
 		return "", ctx.Err()
 	}
 
+	d.grantSSHAccess(ctx, node.Name)
+
 	var publicIP, privateIP string
 	for _, address := range node.Status.Addresses {
 		if address.Type == "ExternalIP" {
@@ -243,6 +269,7 @@ func (d *logDumper) dumpNotRegistered(ctx context.Context, node *resources.Insta
 	}
 
 	klog.Infof("dumping node not registered in kubernetes: %s", node.Name)
+	d.grantSSHAccess(ctx, node.Name)
 	if len(node.PublicAddresses) > 0 {
 		return node.PublicAddresses[0], d.dumpNode(ctx, node.PublicAddresses[0], node.PublicAddresses[0], false)
 	}
