@@ -371,6 +371,7 @@ func TestMinimal_NoneDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").
 		withAddons(
 			awsEBSCSIAddon,
+			dnsControllerAddon,
 			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
@@ -380,7 +381,7 @@ func TestMinimal_NoneDNS(t *testing.T) {
 func TestHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
 	newIntegrationTest("minimal.example.com", "minimal_hetzner").
-		withAddons(clusterAutoscalerAddon).
+		withAddons(clusterAutoscalerAddon, dnsControllerAddon).
 		runTestTerraformHetzner(t)
 }
 
@@ -520,6 +521,7 @@ func TestMinimalGCEInternalLoadBalancerLongClusterName(t *testing.T) {
 func TestMinimalGCEDNSNone(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce_dns-none").
 		withAddons(
+			dnsControllerAddon,
 			gcpCCMAddon,
 			gcpPDCSIAddon,
 		).
@@ -973,6 +975,7 @@ func TestExternalDNS(t *testing.T) {
 		withAddons(
 			awsEBSCSIAddon,
 			awsCCMAddon,
+			dnsControllerAddon,
 			"external-dns.addons.k8s.io-k8s-1.19",
 		).
 		runTestTerraformAWS(t)
@@ -984,6 +987,7 @@ func TestExternalDNSIRSA(t *testing.T) {
 		withAddons(
 			awsEBSCSIAddon,
 			awsCCMAddon,
+			dnsControllerAddon,
 			"external-dns.addons.k8s.io-k8s-1.19",
 		).
 		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
