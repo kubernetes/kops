@@ -3542,6 +3542,11 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.StorageInitializationTimeout != nil {
+		in, out := &in.StorageInitializationTimeout, &out.StorageInitializationTimeout
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	if in.MinRequestTimeout != nil {
 		in, out := &in.MinRequestTimeout, &out.MinRequestTimeout
 		*out = new(int32)

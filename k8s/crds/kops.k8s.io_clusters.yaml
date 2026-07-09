@@ -2407,6 +2407,12 @@ spec:
                   storageBackend:
                     description: StorageBackend is the backend storage
                     type: string
+                  storageInitializationTimeout:
+                    description: |-
+                      StorageInitializationTimeout is the maximum amount of time to wait for the storage layer to initialize before declaring kube-apiserver ready.
+                      Increasing this value allows etcd more time to become ready on new control-plane nodes before kube-apiserver gives up and crashes.
+                      Default is 1m0s.
+                    type: string
                   tlsCertFile:
                     type: string
                   tlsCipherSuites:
