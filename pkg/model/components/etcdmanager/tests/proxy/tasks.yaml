@@ -105,7 +105,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
       name: etcd-manager
       resources:
         requests:
@@ -300,7 +300,7 @@ Contents: |
         value: http://proxy.example.com
       - name: no_proxy
         value: noproxy.example.com
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
       name: etcd-manager
       resources:
         requests:
