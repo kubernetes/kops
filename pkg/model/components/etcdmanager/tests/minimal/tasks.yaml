@@ -94,7 +94,7 @@ Contents: |
       - --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
       command:
       - /go-runner
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
       name: etcd-manager
       resources:
         requests:
@@ -229,7 +229,7 @@ Contents: |
       - --volume-tag=kubernetes.io/cluster/minimal.example.com=owned
       command:
       - /go-runner
-      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260608
+      image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
       name: etcd-manager
       resources:
         requests:
