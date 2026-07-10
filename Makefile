@@ -83,7 +83,11 @@ KOPS_CHANNELS_TAG=$(IMAGE_TAG)
 
 CGO_ENABLED=0
 export CGO_ENABLED
-BUILDFLAGS=-trimpath -buildvcs=false
+# disable_grpc_modules removes the unused GCS gRPC transport from
+# cloud.google.com/go/storage, dropping its envoy/xds proto dependency chain;
+# kOps only uses the GCS HTTP JSON API. This shrinks binaries by ~12MB.
+BUILDTAGS=disable_grpc_modules
+BUILDFLAGS=-trimpath -buildvcs=false -tags=${BUILDTAGS}
 
 
 # Go exports:
@@ -220,9 +224,10 @@ nodeup: nodeup-amd64
 crossbuild-nodeup: nodeup-amd64 nodeup-arm64
 
 .PHONY: protokube-amd64 protokube-arm64
+protokube-amd64 protokube-arm64: BUILDTAGS:=${BUILDTAGS},peer_name_alternative,peer_name_hash
 protokube-amd64 protokube-arm64: protokube-%:
 	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build -tags=peer_name_alternative,peer_name_hash ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
+	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
 
 .PHONY: protokube
 protokube: protokube-amd64
@@ -517,7 +522,7 @@ check-markdown-links:
 .PHONY: ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64
 ko-kops-controller-export-linux-amd64 ko-kops-controller-export-linux-arm64: ko-kops-controller-export-linux-%:
 	mkdir -p ${IMAGES}
-	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-controller-$*.tar ./cmd/kops-controller/
+	KO_DOCKER_REPO="registry.k8s.io/kops" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-controller-$*.tar ./cmd/kops-controller/
 	gzip -f ${IMAGES}/kops-controller-$*.tar
 	tools/sha256 ${IMAGES}/kops-controller-$*.tar.gz ${IMAGES}/kops-controller-$*.tar.gz.sha256
 
@@ -797,7 +802,7 @@ kops-controller-push: ko-kops-controller-push
 
 .PHONY: ko-kops-controller-push
 ko-kops-controller-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}kops-controller" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${KOPS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./cmd/kops-controller/
 
 #------------------------------------------------------
 # kops-channels
