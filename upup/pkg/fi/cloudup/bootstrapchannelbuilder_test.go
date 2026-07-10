@@ -46,6 +46,8 @@ func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	h.SetupMockAWS()
 
 	runChannelBuilderTest(t, "simple", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
+	// Clusters with dns=none get an empty dns-controller manifest, so leftover resources are pruned
+	runChannelBuilderTest(t, "dns-none", []string{"dns-controller.addons.k8s.io-k8s-1.12"})
 	// Use cilium networking, proxy
 	runChannelBuilderTest(t, "cilium", []string{"kops-controller.addons.k8s.io-k8s-1.16"})
 	runChannelBuilderTest(t, "amazonvpc", []string{"networking.amazon-vpc-routed-eni-k8s-1.16"})
