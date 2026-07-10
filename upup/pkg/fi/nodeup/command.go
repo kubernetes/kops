@@ -53,13 +53,13 @@ import (
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
-	"k8s.io/kops/upup/pkg/fi/cloudup/do"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do/dometadata"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
-	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
-	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner/hetznermetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode/linodemetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackmetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/awsup"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -509,7 +509,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error)
 
 		return hostname, nil
 	case api.CloudProviderLinode:
-		label, err := linode.GetMetadataValue(context.TODO(), "label")
+		label, err := linodemetadata.GetMetadataValue(context.TODO(), "label")
 		if err != nil {
 			return "", fmt.Errorf("error reading hostname from Linode metadata: %v", err)
 		}
@@ -653,31 +653,31 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		}
 		authenticator = a
 	case api.CloudProviderHetzner:
-		a, err := hetzner.NewHetznerAuthenticator()
+		a, err := hetznermetadata.NewHetznerAuthenticator()
 		if err != nil {
 			return nil, err
 		}
 		authenticator = a
 	case api.CloudProviderOpenstack:
-		a, err := openstack.NewOpenstackAuthenticator()
+		a, err := openstackmetadata.NewOpenstackAuthenticator()
 		if err != nil {
 			return nil, err
 		}
 		authenticator = a
 	case api.CloudProviderDO:
-		a, err := do.NewAuthenticator()
+		a, err := dometadata.NewAuthenticator()
 		if err != nil {
 			return nil, err
 		}
 		authenticator = a
 	case api.CloudProviderScaleway:
-		a, err := scaleway.NewScalewayAuthenticator()
+		a, err := scalewaymetadata.NewScalewayAuthenticator()
 		if err != nil {
 			return nil, err
 		}
 		authenticator = a
 	case api.CloudProviderAzure:
-		a, err := azure.NewAzureAuthenticator()
+		a, err := azuremetadata.NewAzureAuthenticator()
 		if err != nil {
 			return nil, err
 		}
@@ -690,7 +690,7 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 		}
 		authenticator = a
 	case api.CloudProviderLinode:
-		a, err := linode.NewLinodeAuthenticator()
+		a, err := linodemetadata.NewLinodeAuthenticator()
 		if err != nil {
 			return nil, err
 		}

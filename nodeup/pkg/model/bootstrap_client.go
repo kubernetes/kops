@@ -29,13 +29,13 @@ import (
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
-	"k8s.io/kops/upup/pkg/fi/cloudup/do"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do/dometadata"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
-	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
-	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner/hetznermetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode/linodemetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackmetadata"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -65,37 +65,37 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 		}
 		authenticator = a
 	case kops.CloudProviderHetzner:
-		a, err := hetzner.NewHetznerAuthenticator()
+		a, err := hetznermetadata.NewHetznerAuthenticator()
 		if err != nil {
 			return err
 		}
 		authenticator = a
 	case kops.CloudProviderOpenstack:
-		a, err := openstack.NewOpenstackAuthenticator()
+		a, err := openstackmetadata.NewOpenstackAuthenticator()
 		if err != nil {
 			return err
 		}
 		authenticator = a
 	case kops.CloudProviderDO:
-		a, err := do.NewAuthenticator()
+		a, err := dometadata.NewAuthenticator()
 		if err != nil {
 			return err
 		}
 		authenticator = a
 	case kops.CloudProviderScaleway:
-		a, err := scaleway.NewScalewayAuthenticator()
+		a, err := scalewaymetadata.NewScalewayAuthenticator()
 		if err != nil {
 			return err
 		}
 		authenticator = a
 	case kops.CloudProviderAzure:
-		a, err := azure.NewAzureAuthenticator()
+		a, err := azuremetadata.NewAzureAuthenticator()
 		if err != nil {
 			return err
 		}
 		authenticator = a
 	case kops.CloudProviderLinode:
-		a, err := linode.NewLinodeAuthenticator()
+		a, err := linodemetadata.NewLinodeAuthenticator()
 		if err != nil {
 			return err
 		}

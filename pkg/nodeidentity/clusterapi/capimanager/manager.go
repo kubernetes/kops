@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clusterapi
+// Package capimanager looks up Cluster API objects via the controller-runtime
+// client; it is separate from the clusterapi types package so that nodeup
+// (which links the types via pkg/bootstrap) does not link controller-runtime.
+package capimanager
 
 import (
 	"context"
@@ -22,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kops/pkg/nodeidentity/clusterapi"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -35,7 +39,7 @@ func NewManager(kubeClient client.Client) *Manager {
 	}
 }
 
-func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string) (*Machine, error) {
+func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string) (*clusterapi.Machine, error) {
 	// TODO: Can we build an index
 	// selector := client.MatchingFieldsSelector{
 	// 	Selector: fields.OneTermEqualSelector("spec.providerID", providerID),
@@ -64,7 +68,7 @@ func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string
 		}
 		machine := matches[0]
 		machine = machine.DeepCopy()
-		return &Machine{u: machine}, nil
+		return clusterapi.NewMachine(machine), nil
 	}
 
 	return nil, nil

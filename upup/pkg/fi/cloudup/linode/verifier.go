@@ -28,6 +28,7 @@ import (
 	"github.com/linode/linodego"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode/linodemetadata"
 )
 
 type LinodeVerifierOptions struct{}
@@ -63,11 +64,11 @@ func NewLinodeVerifier(opt *LinodeVerifierOptions) (bootstrap.Verifier, error) {
 
 // VerifyToken verifies that the given token corresponds to a valid Linode (Akamai) instance.
 func (v *linodeVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, LinodeAuthenticationTokenPrefix) {
+	if !strings.HasPrefix(token, linodemetadata.LinodeAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
 
-	instanceIDString := strings.TrimPrefix(token, LinodeAuthenticationTokenPrefix)
+	instanceIDString := strings.TrimPrefix(token, linodemetadata.LinodeAuthenticationTokenPrefix)
 	instanceID, err := strconv.Atoi(instanceIDString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid authorization token")

@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package do
+// Package dometadata provides the node-local (metadata-service based) parts of
+// the DigitalOcean support, kept separate so that nodeup does not link the
+// full cloud provider implementation.
+package dometadata
 
 import (
 	"fmt"

@@ -18,10 +18,8 @@ package azure
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,6 +32,7 @@ import (
 	"github.com/smallstep/pkcs7"
 	expirationcache "k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
 )
 
 const (
@@ -48,11 +47,6 @@ const (
 	// attestedDocumentMaxClockSkew allows a modest amount of node/controller clock skew on all
 	// verifier-vs-local-time checks before rejecting the document.
 	attestedDocumentMaxClockSkew = 2 * time.Minute
-
-	// attestedDocumentNonceLength is the length of the hex-encoded SHA256 prefix used as the Azure
-	// IMDS attested document nonce. IMDS enforces a 32-character maximum for the nonce parameter; 32
-	// hex chars is 128 bits of entropy, well above the cryptographic nonce floor.
-	attestedDocumentNonceLength = 32
 
 	// azureMetadataDNSName and azureMetadataSubdomainSuffix restrict the PKCS7 signer certificate to
 	// AzureCloud (public) metadata endpoints. Sovereign cloud environments use different domains and
@@ -272,11 +266,10 @@ func parseAndValidatePKCS7Signer(signature string) (*pkcs7.PKCS7, *x509.Certific
 	return p7, signer, nil
 }
 
-// nonceForBody derives the IMDS attestation nonce from the request body. Must be identical on the
-// authenticator and verifier sides.
+// nonceForBody derives the IMDS attestation nonce from the request body; the shared
+// azuremetadata implementation keeps the authenticator and verifier sides identical.
 func nonceForBody(body []byte) string {
-	hash := sha256.Sum256(body)
-	return hex.EncodeToString(hash[:])[:attestedDocumentNonceLength]
+	return azuremetadata.NonceForBody(body)
 }
 
 // parseAndValidateAttestedDocumentContent unmarshals the signed attestation payload and validates

@@ -27,6 +27,7 @@ import (
 	"github.com/linode/linodego"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode/linodemetadata"
 )
 
 func TestLinodeVerifierVerifyToken(t *testing.T) {
@@ -41,7 +42,7 @@ func TestLinodeVerifierVerifyToken(t *testing.T) {
 		},
 	}
 
-	result, err := verifier.VerifyToken(context.Background(), &http.Request{}, LinodeAuthenticationTokenPrefix+"101", nil)
+	result, err := verifier.VerifyToken(context.Background(), &http.Request{}, linodemetadata.LinodeAuthenticationTokenPrefix+"101", nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -72,7 +73,7 @@ func TestLinodeVerifierVerifyTokenNoPrivateIP(t *testing.T) {
 		},
 	}
 
-	_, err := verifier.VerifyToken(context.Background(), &http.Request{}, LinodeAuthenticationTokenPrefix+"101", nil)
+	_, err := verifier.VerifyToken(context.Background(), &http.Request{}, linodemetadata.LinodeAuthenticationTokenPrefix+"101", nil)
 	if err == nil {
 		t.Fatalf("expected error")
 	}

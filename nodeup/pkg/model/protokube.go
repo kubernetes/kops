@@ -27,7 +27,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
 	"k8s.io/kops/util/pkg/env"
@@ -208,7 +208,7 @@ func (t *ProtokubeBuilder) buildEnvFile() (*nodetasks.File, error) {
 
 	if t.CloudProvider() == kops.CloudProviderScaleway {
 		if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
-			profile, err := scaleway.CreateValidScalewayProfile()
+			profile, err := scalewaymetadata.CreateValidScalewayProfile()
 			if err != nil {
 				return nil, err
 			}

@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipscw "k8s.io/kops/protokube/pkg/gossip/scaleway"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
+	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 )
 
 // ScwCloudProvider defines the Scaleway Cloud volume implementation.
@@ -60,7 +61,7 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 	}
 	klog.V(4).Infof("Found region of the running server: %v", region)
 
-	profile, err := scaleway.CreateValidScalewayProfile()
+	profile, err := scalewaymetadata.CreateValidScalewayProfile()
 	if err != nil {
 		return nil, err
 	}

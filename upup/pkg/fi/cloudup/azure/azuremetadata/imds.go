@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package azure
+// Package azuremetadata provides the node-local (IMDS based) parts of the
+// Azure support, kept separate so that nodeup does not link the full cloud
+// provider implementation.
+package azuremetadata
 
 import (
 	"context"

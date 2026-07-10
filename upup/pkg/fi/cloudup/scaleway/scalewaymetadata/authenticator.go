@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package scaleway
+// Package scalewaymetadata provides the node-local (metadata-service and
+// credential-profile based) parts of the Scaleway support, kept separate so
+// that nodeup does not link the full cloud provider implementation.
+package scalewaymetadata
 
 import (
 	"fmt"

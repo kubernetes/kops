@@ -29,6 +29,7 @@ import (
 	version "k8s.io/kops"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner/hetznermetadata"
 )
 
 type HetznerVerifierOptions struct {
@@ -60,10 +61,10 @@ func NewHetznerVerifier(opt *HetznerVerifierOptions) (bootstrap.Verifier, error)
 }
 
 func (h hetznerVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
-	if !strings.HasPrefix(token, HetznerAuthenticationTokenPrefix) {
+	if !strings.HasPrefix(token, hetznermetadata.HetznerAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
 	}
-	token = strings.TrimPrefix(token, HetznerAuthenticationTokenPrefix)
+	token = strings.TrimPrefix(token, hetznermetadata.HetznerAuthenticationTokenPrefix)
 
 	serverID, err := strconv.ParseInt(token, 10, 64)
 	if err != nil {

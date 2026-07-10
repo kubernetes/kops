@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack/openstackcloudconfig"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
@@ -82,7 +82,7 @@ func (b *CloudConfigBuilder) build(c *fi.NodeupModelBuilderContext) error {
 			lines = append(lines, "NodeIPFamilies = "+family)
 		}
 	case kops.CloudProviderOpenstack:
-		lines = append(lines, openstack.MakeCloudConfig(b.NodeupConfig.Openstack)...)
+		lines = append(lines, openstackcloudconfig.MakeCloudConfig(b.NodeupConfig.Openstack)...)
 	}
 
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"

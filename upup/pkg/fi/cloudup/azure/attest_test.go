@@ -35,6 +35,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/kops/upup/pkg/fi/cloudup/azure/azuremetadata"
+
 	"github.com/smallstep/pkcs7"
 	expirationcache "k8s.io/client-go/tools/cache"
 )
@@ -210,8 +212,8 @@ func TestNonceForBody(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			nonce := nonceForBody(tc.body)
-			if len(nonce) != attestedDocumentNonceLength {
-				t.Fatalf("nonce length: got %d, want %d", len(nonce), attestedDocumentNonceLength)
+			if len(nonce) != azuremetadata.NonceLength {
+				t.Fatalf("nonce length: got %d, want %d", len(nonce), azuremetadata.NonceLength)
 			}
 			if nonce != nonceForBody(tc.body) {
 				t.Fatal("nonce is not deterministic")

@@ -37,6 +37,7 @@ import (
 	"google.golang.org/api/googleapi"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi"
+	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
 	"k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,11 +50,11 @@ type tpmVerifier struct {
 
 	computeClient *compute.Service
 
-	capiManager *clusterapi.Manager
+	capiManager *capimanager.Manager
 }
 
 // NewTPMVerifier constructs a new TPM verifier for GCE.
-func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions, capiManager *clusterapi.Manager) (bootstrap.Verifier, error) {
+func NewTPMVerifier(opt *gcetpm.TPMVerifierOptions, capiManager *capimanager.Manager) (bootstrap.Verifier, error) {
 	ctx := context.Background()
 
 	computeClient, err := compute.NewService(ctx)
