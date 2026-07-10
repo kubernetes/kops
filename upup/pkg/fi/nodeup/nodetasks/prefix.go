@@ -97,8 +97,8 @@ func (_ *Prefix) RenderLocal(t *local.LocalTarget, a, e, changes *Prefix) error 
 	}
 
 	response, err := t.Cloud.(awsup.AWSCloud).EC2().AssignIpv6Addresses(ctx, &ec2.AssignIpv6AddressesInput{
-		Ipv6PrefixCount:    fi.PtrTo(int32(1)),
-		NetworkInterfaceId: fi.PtrTo(interfaceId),
+		Ipv6PrefixCount:    new(int32(1)),
+		NetworkInterfaceId: new(interfaceId),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to assign prefix: %w", err)

@@ -26,7 +26,6 @@ import (
 	kopsv "k8s.io/kops"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipscw "k8s.io/kops/protokube/pkg/gossip/scaleway"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 )
 
@@ -88,9 +87,9 @@ func NewScwCloudProvider() (*ScwCloudProvider, error) {
 
 	ips, err := ipam.NewAPI(scwClient).ListIPs(&ipam.ListIPsRequest{
 		Region:     region,
-		ResourceID: fi.PtrTo(serverID),
-		IsIPv6:     fi.PtrTo(false),
-		Zonal:      fi.PtrTo(zone.String()),
+		ResourceID: new(serverID),
+		IsIPv6:     new(false),
+		Zonal:      new(zone.String()),
 	}, scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("listing server's IPs: %w", err)

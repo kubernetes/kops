@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -89,9 +88,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 	kcm.Image = image
 
 	// Doesn't seem to be any real downside to always doing a leader election
-	kcm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
+	kcm.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: new(true)}
 
-	kcm.AllocateNodeCIDRs = fi.PtrTo(!clusterSpec.IsKopsControllerIPAM())
+	kcm.AllocateNodeCIDRs = new(!clusterSpec.IsKopsControllerIPAM())
 
 	if kcm.ClusterCIDR == "" && !clusterSpec.IsKopsControllerIPAM() {
 		kcm.ClusterCIDR = clusterSpec.Networking.PodCIDR
@@ -105,41 +104,41 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o *kops.Cluster) erro
 			// Kubernetes limitation
 			nodeSize = 16
 		}
-		kcm.NodeCIDRMaskSize = fi.PtrTo(int32(clusterSize + nodeSize))
+		kcm.NodeCIDRMaskSize = new(int32(clusterSize + nodeSize))
 	}
 
 	networking := &clusterSpec.Networking
 	if networking.Kubenet != nil {
-		kcm.ConfigureCloudRoutes = fi.PtrTo(true)
+		kcm.ConfigureCloudRoutes = new(true)
 	} else if networking.GCP != nil {
-		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+		kcm.ConfigureCloudRoutes = new(false)
 		if kcm.CloudProvider == "external" {
 			// kcm should not allocate node cidrs with the CloudAllocator if we're using the external CCM
-			kcm.AllocateNodeCIDRs = fi.PtrTo(false)
+			kcm.AllocateNodeCIDRs = new(false)
 		} else {
-			kcm.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
+			kcm.CIDRAllocatorType = new("CloudAllocator")
 		}
 	} else if networking.Kindnet != nil {
 		// We don't expect KCM to configure routes; it should be done by the CCM (or by the infrastructure)
-		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+		kcm.ConfigureCloudRoutes = new(false)
 
 		// If the cloud is allocating the node CIDRs, that should be done by CCM
 		if o.GetCloudProvider() == kops.CloudProviderGCE && gce.UsesIPAliases(o) {
-			kcm.AllocateNodeCIDRs = fi.PtrTo(false)
+			kcm.AllocateNodeCIDRs = new(false)
 		}
 	} else if networking.External != nil {
-		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+		kcm.ConfigureCloudRoutes = new(false)
 	} else if UsesCNI(networking) {
-		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+		kcm.ConfigureCloudRoutes = new(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
-		kcm.ConfigureCloudRoutes = fi.PtrTo(false)
+		kcm.ConfigureCloudRoutes = new(false)
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}
 
 	if kcm.UseServiceAccountCredentials == nil {
-		kcm.UseServiceAccountCredentials = fi.PtrTo(true)
+		kcm.UseServiceAccountCredentials = new(true)
 	}
 
 	if len(kcm.Controllers) == 0 {

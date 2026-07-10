@@ -61,7 +61,7 @@ func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Path:     filepath.Join("/opt/kops/bin", name),
 			Contents: res,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
+			Mode:     new("0755"),
 		})
 	}
 
@@ -75,7 +75,7 @@ func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Path:     filepath.Join("/opt/kops/bin", name),
 			Contents: res,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
+			Mode:     new("0755"),
 		})
 	}
 
@@ -177,13 +177,13 @@ type ProtokubeFlags struct {
 func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
-		Cloud:         fi.PtrTo(string(t.CloudProvider())),
-		Containerized: fi.PtrTo(false),
-		LogLevel:      fi.PtrTo(int32(4)),
+		Cloud:         new(string(t.CloudProvider())),
+		Containerized: new(false),
+		LogLevel:      new(int32(4)),
 		Master:        b(t.IsMaster),
 	}
 
-	f.ClusterID = fi.PtrTo(t.NodeupConfig.ClusterName)
+	f.ClusterID = new(t.NodeupConfig.ClusterName)
 
 	zone := t.NodeupConfig.DNSZone
 	if zone != "" {
@@ -202,7 +202,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 
 	if t.UsesLegacyGossip() {
 		klog.Warningf("using (legacy) gossip DNS")
-		f.Gossip = fi.PtrTo(true)
+		f.Gossip = new(true)
 		if t.NodeupConfig.GossipConfig != nil {
 			f.GossipProtocol = t.NodeupConfig.GossipConfig.Protocol
 			f.GossipListen = t.NodeupConfig.GossipConfig.Listen
@@ -218,11 +218,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 		// @TODO: This is hacky, but we want it so that we can have a different internal & external name
 		internalSuffix := t.APIInternalName()
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
-		f.DNSInternalSuffix = fi.PtrTo(internalSuffix)
+		f.DNSInternalSuffix = new(internalSuffix)
 	}
 
 	if f.DNSInternalSuffix == nil {
-		f.DNSInternalSuffix = fi.PtrTo(".internal." + t.NodeupConfig.ClusterName)
+		f.DNSInternalSuffix = new(".internal." + t.NodeupConfig.ClusterName)
 	}
 
 	f.BootstrapMasterNodeLabels = true

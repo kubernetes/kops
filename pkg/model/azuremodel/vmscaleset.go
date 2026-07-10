@@ -42,13 +42,13 @@ var _ fi.CloudupModelBuilder = &VMScaleSetModelBuilder{}
 // Build is responsible for constructing the VM ScaleSet from the kops spec.
 func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	c.AddTask(&azuretasks.ApplicationSecurityGroup{
-		Name:          fi.PtrTo(b.NameForApplicationSecurityGroupControlPlane()),
+		Name:          new(b.NameForApplicationSecurityGroupControlPlane()),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
 		Tags:          map[string]*string{},
 	})
 	c.AddTask(&azuretasks.ApplicationSecurityGroup{
-		Name:          fi.PtrTo(b.NameForApplicationSecurityGroupNodes()),
+		Name:          new(b.NameForApplicationSecurityGroupNodes()),
 		Lifecycle:     b.Lifecycle,
 		ResourceGroup: b.LinkToResourceGroup(),
 		Tags:          map[string]*string{},
@@ -105,13 +105,13 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		azNumbers = append(azNumbers, &az)
 	}
 	t := &azuretasks.VMScaleSet{
-		Name:               fi.PtrTo(name),
+		Name:               new(name),
 		Lifecycle:          b.Lifecycle,
 		ResourceGroup:      b.LinkToResourceGroup(),
 		VirtualNetwork:     b.LinkToVirtualNetwork(),
-		SKUName:            fi.PtrTo(ig.Spec.MachineType),
-		ComputerNamePrefix: fi.PtrTo(ig.Name),
-		AdminUser:          fi.PtrTo(b.Cluster.Spec.CloudProvider.Azure.AdminUser),
+		SKUName:            new(ig.Spec.MachineType),
+		ComputerNamePrefix: new(ig.Name),
+		AdminUser:          new(b.Cluster.Spec.CloudProvider.Azure.AdminUser),
 		Zones:              azNumbers,
 	}
 
@@ -141,7 +141,7 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 		if n > 1 {
 			return nil, fmt.Errorf("expected at most one SSH public key; found %d keys", n)
 		}
-		t.SSHPublicKey = fi.PtrTo(string(b.SSHPublicKeys[0]))
+		t.SSHPublicKey = new(string(b.SSHPublicKeys[0]))
 	}
 
 	if t.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
@@ -160,12 +160,12 @@ func (b *VMScaleSetModelBuilder) buildVMScaleSetTask(
 
 	switch subnet.Type {
 	case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-		t.RequirePublicIP = fi.PtrTo(true)
+		t.RequirePublicIP = new(true)
 		if ig.Spec.AssociatePublicIP != nil {
 			t.RequirePublicIP = ig.Spec.AssociatePublicIP
 		}
 	case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
-		t.RequirePublicIP = fi.PtrTo(false)
+		t.RequirePublicIP = new(false)
 	default:
 		return nil, fmt.Errorf("unexpected subnet type: for InstanceGroup %q; type was %s", ig.Name, subnet.Type)
 	}
@@ -198,7 +198,7 @@ func getCapacity(spec *kops.InstanceGroupSpec) (*int64, error) {
 	if minSize != maxSize {
 		return nil, fmt.Errorf("instance group must have the same min and max size in Azure, but got %d and %d", minSize, maxSize)
 	}
-	return fi.PtrTo(int64(minSize)), nil
+	return new(int64(minSize)), nil
 }
 
 func getStorageProfile(spec *kops.InstanceGroupSpec) (*compute.VirtualMachineScaleSetStorageProfile, error) {

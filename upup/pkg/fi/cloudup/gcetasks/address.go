@@ -98,7 +98,7 @@ func findAddressByIP(cloud gce.GCECloud, ip string, subnet string) (*Address, er
 	actual.Name = &addr.Name
 	if addr.Subnetwork != "" {
 		actual.Subnetwork = &Subnet{
-			Name: fi.PtrTo(lastComponent(addr.Subnetwork)),
+			Name: new(lastComponent(addr.Subnetwork)),
 		}
 	}
 
@@ -122,7 +122,7 @@ func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
 	actual.Name = &r.Name
 	if e.Subnetwork != nil {
 		actual.Subnetwork = &Subnet{
-			Name: fi.PtrTo(lastComponent(r.Subnetwork)),
+			Name: new(lastComponent(r.Subnetwork)),
 		}
 	}
 

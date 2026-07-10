@@ -43,7 +43,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 
 	// @step: lets build the launch template data
 	data := &ec2types.RequestLaunchTemplateData{
-		DisableApiTermination: fi.PtrTo(false),
+		DisableApiTermination: new(false),
 		EbsOptimized:          t.RootVolumeOptimization,
 		ImageId:               image.ImageId,
 		InstanceType:          fi.ValueOf(t.InstanceType),
@@ -56,7 +56,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 			{
 				AssociatePublicIpAddress: t.AssociatePublicIP,
 				DeleteOnTermination:      aws.Bool(true),
-				DeviceIndex:              fi.PtrTo(int32(0)),
+				DeviceIndex:              new(int32(0)),
 				Ipv6AddressCount:         t.IPv6AddressCount,
 			},
 		},
@@ -94,7 +94,7 @@ func (t *LaunchTemplate) RenderAWS(c *awsup.AWSAPITarget, a, e, changes *LaunchT
 		data.Placement = &ec2types.LaunchTemplatePlacementRequest{Tenancy: fi.ValueOf(t.Tenancy)}
 	}
 	// @step: set the instance monitoring
-	data.Monitoring = &ec2types.LaunchTemplatesMonitoringRequest{Enabled: fi.PtrTo(false)}
+	data.Monitoring = &ec2types.LaunchTemplatesMonitoringRequest{Enabled: new(false)}
 	if t.InstanceMonitoring != nil {
 		data.Monitoring = &ec2types.LaunchTemplatesMonitoringRequest{Enabled: t.InstanceMonitoring}
 	}
@@ -216,31 +216,31 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	klog.V(3).Infof("found existing LaunchTemplate: %s", fi.ValueOf(lt.LaunchTemplateName))
 
 	actual := &LaunchTemplate{
-		AssociatePublicIP:      fi.PtrTo(false),
+		AssociatePublicIP:      new(false),
 		ID:                     lt.LaunchTemplateId,
 		ImageID:                lt.LaunchTemplateData.ImageId,
-		InstanceMonitoring:     fi.PtrTo(false),
+		InstanceMonitoring:     new(false),
 		Lifecycle:              t.Lifecycle,
 		Name:                   t.Name,
 		RootVolumeOptimization: lt.LaunchTemplateData.EbsOptimized,
 	}
 	if len(lt.LaunchTemplateData.InstanceType) > 0 {
-		actual.InstanceType = fi.PtrTo(lt.LaunchTemplateData.InstanceType)
+		actual.InstanceType = new(lt.LaunchTemplateData.InstanceType)
 	}
 
 	// @step: check if any of the interfaces are public facing
 	for _, x := range lt.LaunchTemplateData.NetworkInterfaces {
 		if aws.ToBool(x.AssociatePublicIpAddress) {
-			actual.AssociatePublicIP = fi.PtrTo(true)
+			actual.AssociatePublicIP = new(true)
 		}
 		for _, id := range x.Groups {
-			actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: fi.PtrTo(id)})
+			actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: new(id)})
 		}
 		actual.IPv6AddressCount = x.Ipv6AddressCount
 	}
 	// In older Kops versions, security groups were added to LaunchTemplateData.SecurityGroupIds
 	for _, id := range lt.LaunchTemplateData.SecurityGroupIds {
-		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: fi.PtrTo("legacy-" + id)})
+		actual.SecurityGroups = append(actual.SecurityGroups, &SecurityGroup{ID: new("legacy-" + id)})
 	}
 	sort.Sort(OrderSecurityGroupsById(actual.SecurityGroups))
 
@@ -255,7 +255,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	}
 	// @step: add the tenancy
 	if lt.LaunchTemplateData.Placement != nil && len(lt.LaunchTemplateData.Placement.Tenancy) > 0 {
-		actual.Tenancy = fi.PtrTo(lt.LaunchTemplateData.Placement.Tenancy)
+		actual.Tenancy = new(lt.LaunchTemplateData.Placement.Tenancy)
 	}
 	// @step: add the ssh if there is one
 	if lt.LaunchTemplateData.KeyName != nil {
@@ -271,7 +271,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 		actual.SpotPrice = imo.SpotOptions.MaxPrice
 		actual.SpotDurationInMinutes = imo.SpotOptions.BlockDurationMinutes
 		if len(imo.SpotOptions.InstanceInterruptionBehavior) > 0 {
-			actual.InstanceInterruptionBehavior = fi.PtrTo(imo.SpotOptions.InstanceInterruptionBehavior)
+			actual.InstanceInterruptionBehavior = new(imo.SpotOptions.InstanceInterruptionBehavior)
 		}
 	} else {
 		actual.SpotPrice = aws.String("")
@@ -298,7 +298,7 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 			if b.Ebs.KmsKeyId != nil {
 				actual.RootVolumeKmsKey = b.Ebs.KmsKeyId
 			} else {
-				actual.RootVolumeKmsKey = fi.PtrTo("")
+				actual.RootVolumeKmsKey = new("")
 			}
 		} else {
 			_, d := BlockDeviceMappingFromLaunchTemplateBootDeviceRequest(b)
@@ -327,10 +327,10 @@ func (t *LaunchTemplate) Find(c *fi.CloudupContext) (*LaunchTemplate, error) {
 	if options := lt.LaunchTemplateData.MetadataOptions; options != nil {
 		actual.HTTPPutResponseHopLimit = options.HttpPutResponseHopLimit
 		if len(options.HttpTokens) > 0 {
-			actual.HTTPTokens = fi.PtrTo(options.HttpTokens)
+			actual.HTTPTokens = new(options.HttpTokens)
 		}
 		if len(options.HttpProtocolIpv6) > 0 {
-			actual.HTTPProtocolIPv6 = fi.PtrTo(options.HttpProtocolIpv6)
+			actual.HTTPProtocolIPv6 = new(options.HttpProtocolIpv6)
 		}
 	}
 

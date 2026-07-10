@@ -37,7 +37,7 @@ func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		serviceAccount := &gcetasks.ServiceAccount{
 			Name:      s("shared"),
 			Email:     &b.Cluster.Spec.CloudProvider.GCE.ServiceAccount,
-			Shared:    fi.PtrTo(true),
+			Shared:    new(true),
 			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(serviceAccount)
@@ -66,11 +66,11 @@ func (b *ServiceAccountsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 		switch ig.Spec.Role {
 		case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane:
-			serviceAccount.Description = fi.PtrTo("kubernetes control-plane instances")
+			serviceAccount.Description = new("kubernetes control-plane instances")
 		case kops.InstanceGroupRoleNode:
-			serviceAccount.Description = fi.PtrTo("kubernetes worker nodes")
+			serviceAccount.Description = new("kubernetes worker nodes")
 		case kops.InstanceGroupRoleBastion:
-			serviceAccount.Description = fi.PtrTo("bastion nodes")
+			serviceAccount.Description = new("bastion nodes")
 		default:
 			klog.Warningf("unknown instance role %q", ig.Spec.Role)
 		}

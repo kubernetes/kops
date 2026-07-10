@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func resourceValue(s string) *resource.Quantity {
@@ -46,7 +45,7 @@ func TestBuildKCMFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeControllerManagerConfig{
-				TerminatedPodGCThreshold: fi.PtrTo(int32(1500)),
+				TerminatedPodGCThreshold: new(int32(1500)),
 			},
 			Expected: "--terminated-pod-gc-threshold=1500",
 		},
@@ -58,7 +57,7 @@ func TestBuildKCMFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeControllerManagerConfig{
-				KubeAPIBurst: fi.PtrTo(int32(80)),
+				KubeAPIBurst: new(int32(80)),
 			},
 			Expected: "--kube-api-burst=80",
 		},
@@ -101,13 +100,13 @@ func TestKubeletConfigSpec(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				LogLevel: fi.PtrTo(int32(0)),
+				LogLevel: new(int32(0)),
 			},
 			Expected: "",
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				LogLevel: fi.PtrTo(int32(2)),
+				LogLevel: new(int32(2)),
 			},
 			Expected: "--v=2",
 		},
@@ -115,13 +114,13 @@ func TestKubeletConfigSpec(t *testing.T) {
 		// Test string pointers without the "flag-include-empty" tag
 		{
 			Config: &kops.KubeletConfigSpec{
-				EvictionHard: fi.PtrTo("memory.available<100Mi"),
+				EvictionHard: new("memory.available<100Mi"),
 			},
 			Expected: "--eviction-hard=memory.available<100Mi",
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				EvictionHard: fi.PtrTo(""),
+				EvictionHard: new(""),
 			},
 			Expected: "",
 		},
@@ -133,13 +132,13 @@ func TestKubeletConfigSpec(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				ResolverConfig: fi.PtrTo("test"),
+				ResolverConfig: new("test"),
 			},
 			Expected: "--resolv-conf=test",
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				ResolverConfig: fi.PtrTo(""),
+				ResolverConfig: new(""),
 			},
 			Expected: "--resolv-conf=",
 		},
@@ -182,13 +181,13 @@ func TestBuildAPIServerFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
-				AuditWebhookBatchThrottleEnable: fi.PtrTo(true),
+				AuditWebhookBatchThrottleEnable: new(true),
 			},
 			Expected: "--audit-webhook-batch-throttle-enable=true --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
-				AuditWebhookBatchThrottleEnable: fi.PtrTo(false),
+				AuditWebhookBatchThrottleEnable: new(false),
 			},
 			Expected: "--audit-webhook-batch-throttle-enable=false --secure-port=0",
 		},
@@ -200,13 +199,13 @@ func TestBuildAPIServerFlags(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
-				AuditWebhookBatchMaxSize: fi.PtrTo(int32(1000)),
+				AuditWebhookBatchMaxSize: new(int32(1000)),
 			},
 			Expected: "--audit-webhook-batch-max-size=1000 --secure-port=0",
 		},
 		{
 			Config: &kops.KubeAPIServerConfig{
-				AuthorizationWebhookConfigFile: fi.PtrTo("/authorization.yaml"),
+				AuthorizationWebhookConfigFile: new("/authorization.yaml"),
 			},
 			Expected: "--authorization-webhook-config-file=/authorization.yaml --secure-port=0",
 		},

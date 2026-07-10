@@ -68,10 +68,10 @@ func (e *DNSZone) Find(c *fi.CloudupContext) (*DNSZone, error) {
 	actual := &DNSZone{}
 	actual.Name = e.Name
 	if z.HostedZone.Name != nil {
-		actual.DNSName = fi.PtrTo(strings.TrimSuffix(*z.HostedZone.Name, "."))
+		actual.DNSName = new(strings.TrimSuffix(*z.HostedZone.Name, "."))
 	}
 	if z.HostedZone.Id != nil {
-		actual.ZoneID = fi.PtrTo(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
+		actual.ZoneID = new(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
 	}
 	actual.Private = aws.Bool(z.HostedZone.Config.PrivateZone)
 

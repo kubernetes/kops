@@ -56,7 +56,7 @@ type LoadBalancer struct {
 var _ fi.CompareWithID = &LoadBalancer{}
 
 func (v *LoadBalancer) CompareWithID() *string {
-	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
+	return new(strconv.FormatInt(fi.ValueOf(v.ID), 10))
 }
 
 var _ fi.HasAddress = &LoadBalancer{}
@@ -118,8 +118,8 @@ func (v *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 		if loadbalancer.Name == fi.ValueOf(v.Name) {
 			matches := &LoadBalancer{
 				Lifecycle: v.Lifecycle,
-				Name:      fi.PtrTo(loadbalancer.Name),
-				ID:        fi.PtrTo(loadbalancer.ID),
+				Name:      new(loadbalancer.Name),
+				ID:        new(loadbalancer.ID),
 				Labels:    loadbalancer.Labels,
 			}
 
@@ -133,8 +133,8 @@ func (v *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 			for _, service := range loadbalancer.Services {
 				loadbalancerService := LoadBalancerService{
 					Protocol:        string(service.Protocol),
-					ListenerPort:    fi.PtrTo(service.ListenPort),
-					DestinationPort: fi.PtrTo(service.DestinationPort),
+					ListenerPort:    new(service.ListenPort),
+					DestinationPort: new(service.DestinationPort),
 				}
 				matches.Services = append(matches.Services, &loadbalancerService)
 			}
@@ -257,7 +257,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 					LabelSelector: hcloud.LoadBalancerCreateOptsTargetLabelSelector{
 						Selector: e.Target,
 					},
-					UsePrivateIP: fi.PtrTo(true),
+					UsePrivateIP: new(true),
 				},
 			},
 			Network: &hcloud.Network{
@@ -341,7 +341,7 @@ func (_ *LoadBalancer) RenderHetzner(t *hetzner.HetznerAPITarget, a, e, changes 
 		if a.Target == "" {
 			action, _, err := client.AddLabelSelectorTarget(ctx, loadbalancer, hcloud.LoadBalancerAddLabelSelectorTargetOpts{
 				Selector:     e.Target,
-				UsePrivateIP: fi.PtrTo(true),
+				UsePrivateIP: new(true),
 			})
 			if err != nil {
 				return err
@@ -427,7 +427,7 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	for _, service := range e.Services {
 		tf := &terraformLoadBalancerService{
 			LoadBalancerID:  e.TerraformLink(),
-			Protocol:        fi.PtrTo(service.Protocol),
+			Protocol:        new(service.Protocol),
 			ListenPort:      service.ListenerPort,
 			DestinationPort: service.DestinationPort,
 		}
@@ -441,9 +441,9 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	{
 		tf := &terraformLoadBalancerTarget{
 			LoadBalancerID: e.TerraformLink(),
-			Type:           fi.PtrTo(string(hcloud.LoadBalancerTargetTypeLabelSelector)),
-			LabelSelector:  fi.PtrTo(e.Target),
-			UsePrivateIP:   fi.PtrTo(true),
+			Type:           new(string(hcloud.LoadBalancerTargetTypeLabelSelector)),
+			LabelSelector:  new(e.Target),
+			UsePrivateIP:   new(true),
 		}
 
 		err := t.RenderResource("hcloud_load_balancer_target", *e.Name, tf)

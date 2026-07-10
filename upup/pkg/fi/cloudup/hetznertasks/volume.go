@@ -41,7 +41,7 @@ type Volume struct {
 var _ fi.CompareWithID = &Volume{}
 
 func (v *Volume) CompareWithID() *string {
-	return fi.PtrTo(strconv.FormatInt(fi.ValueOf(v.ID), 10))
+	return new(strconv.FormatInt(fi.ValueOf(v.ID), 10))
 }
 
 func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
@@ -57,8 +57,8 @@ func (v *Volume) Find(c *fi.CloudupContext) (*Volume, error) {
 		if volume.Name == fi.ValueOf(v.Name) {
 			matches := &Volume{
 				Lifecycle: v.Lifecycle,
-				Name:      fi.PtrTo(volume.Name),
-				ID:        fi.PtrTo(volume.ID),
+				Name:      new(volume.Name),
+				ID:        new(volume.ID),
 				Size:      volume.Size,
 				Labels:    volume.Labels,
 			}
@@ -149,8 +149,8 @@ type terraformVolume struct {
 func (_ *Volume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Volume) error {
 	tf := &terraformVolume{
 		Name:     e.Name,
-		Size:     fi.PtrTo(e.Size),
-		Location: fi.PtrTo(e.Location),
+		Size:     new(e.Size),
+		Location: new(e.Location),
 		Labels:   e.Labels,
 	}
 

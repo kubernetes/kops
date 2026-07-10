@@ -57,7 +57,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/pki"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/util/pkg/vfs"
@@ -320,11 +319,11 @@ func SetupMockOpenstack() *openstack.MockCloud {
 	extNetworkName := "external"
 	networkCreateOpts := networks.CreateOpts{
 		Name:         extNetworkName,
-		AdminStateUp: fi.PtrTo(true),
+		AdminStateUp: new(true),
 	}
 	extNetwork := external.CreateOptsExt{
 		CreateOptsBuilder: networkCreateOpts,
-		External:          fi.PtrTo(true),
+		External:          new(true),
 	}
 	c.CreateNetwork(extNetwork)
 	c.SetExternalNetwork(&extNetworkName)
@@ -333,12 +332,12 @@ func SetupMockOpenstack() *openstack.MockCloud {
 	extSubnet := subnets.CreateOpts{
 		Name:       extSubnetName,
 		NetworkID:  extNetworkName,
-		EnableDHCP: fi.PtrTo(true),
+		EnableDHCP: new(true),
 		CIDR:       "172.20.0.0/22",
 	}
 	c.CreateSubnet(extSubnet)
-	c.SetExternalSubnet(fi.PtrTo(extSubnetName))
-	c.SetLBFloatingSubnet(fi.PtrTo(extSubnetName))
+	c.SetExternalSubnet(new(extSubnetName))
+	c.SetLBFloatingSubnet(new(extSubnetName))
 	images.Create(context.TODO(), c.MockImageClient.ServiceClient(), images.CreateOpts{
 		Name:    "Ubuntu-20.04",
 		MinDisk: 12,
@@ -347,13 +346,13 @@ func SetupMockOpenstack() *openstack.MockCloud {
 		Name:  "n1-standard-2",
 		RAM:   8192,
 		VCPUs: 8,
-		Disk:  fi.PtrTo(16),
+		Disk:  new(16),
 	})
 	flavors.Create(context.TODO(), c.MockNovaClient.ServiceClient(), flavors.CreateOpts{
 		Name:  "n1-standard-1",
 		RAM:   8192,
 		VCPUs: 4,
-		Disk:  fi.PtrTo(16),
+		Disk:  new(16),
 	})
 	zones.Create(context.TODO(), c.MockDNSClient.ServiceClient(), zones.CreateOpts{
 		Name: "minimal-openstack.k8s.local",

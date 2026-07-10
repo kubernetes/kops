@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -53,7 +52,7 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	if config.LeaderElection == nil {
 		//  Doesn't seem to be any real downside to always doing a leader election
 		config.LeaderElection = &kops.LeaderElectionConfiguration{
-			LeaderElect: fi.PtrTo(true),
+			LeaderElect: new(true),
 		}
 	}
 

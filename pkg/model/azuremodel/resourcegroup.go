@@ -32,10 +32,10 @@ var _ fi.CloudupModelBuilder = &ResourceGroupModelBuilder{}
 // Build builds a task for creating a Resource Group.
 func (b *ResourceGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	t := &azuretasks.ResourceGroup{
-		Name:      fi.PtrTo(b.NameForResourceGroup()),
+		Name:      new(b.NameForResourceGroup()),
 		Lifecycle: b.Lifecycle,
 		Tags:      map[string]*string{},
-		Shared:    fi.PtrTo(b.Cluster.IsSharedAzureResourceGroup()),
+		Shared:    new(b.Cluster.IsSharedAzureResourceGroup()),
 	}
 	c.AddTask(t)
 	return nil

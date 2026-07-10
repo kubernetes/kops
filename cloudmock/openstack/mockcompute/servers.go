@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
-	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/google/uuid"
 	"github.com/gophercloud/gophercloud/v2"
@@ -236,7 +235,7 @@ func (m *MockClient) createServer(w http.ResponseWriter, r *http.Request) {
 
 	portID := create.Server.Networks[0].Port
 	ports.Update(r.Context(), m.networkClient, portID, ports.UpdateOpts{
-		DeviceID: fi.PtrTo(server.ID),
+		DeviceID: new(server.ID),
 	})
 
 	// Assign an IP address

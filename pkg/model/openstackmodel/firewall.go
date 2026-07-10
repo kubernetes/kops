@@ -78,7 +78,7 @@ func (b *FirewallModelBuilder) addDirectionalGroupRule(c *fi.CloudupModelBuilder
 		RemoteGroup:    dest,
 		RemoteIPPrefix: sgr.RemoteIPPrefix,
 		SecGroup:       source,
-		Delete:         fi.PtrTo(false),
+		Delete:         new(false),
 	}
 
 	klog.V(8).Infof("Adding rule %v", fi.ValueOf(t.GetName()))
@@ -638,7 +638,7 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 			return fmt.Errorf("Found multiple security groups with the same name: %v", sgName)
 		}
 		sg := sgs[0]
-		sgt.Name = fi.PtrTo(sg.Name)
+		sgt.Name = new(sg.Name)
 		sgIdMap[sg.ID] = sgt
 	}
 
@@ -653,17 +653,17 @@ func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks
 		for _, rule := range sgRules {
 
 			t := &openstacktasks.SecurityGroupRule{
-				ID:             fi.PtrTo(rule.ID),
-				Direction:      fi.PtrTo(rule.Direction),
-				EtherType:      fi.PtrTo(rule.EtherType),
-				PortRangeMax:   fi.PtrTo(rule.PortRangeMax),
-				PortRangeMin:   fi.PtrTo(rule.PortRangeMin),
-				Protocol:       fi.PtrTo(rule.Protocol),
-				RemoteIPPrefix: fi.PtrTo(rule.RemoteIPPrefix),
+				ID:             new(rule.ID),
+				Direction:      new(rule.Direction),
+				EtherType:      new(rule.EtherType),
+				PortRangeMax:   new(rule.PortRangeMax),
+				PortRangeMin:   new(rule.PortRangeMin),
+				Protocol:       new(rule.Protocol),
+				RemoteIPPrefix: new(rule.RemoteIPPrefix),
 				RemoteGroup:    sgIdMap[rule.RemoteGroupID],
 				Lifecycle:      b.Lifecycle,
 				SecGroup:       sgIdMap[rule.SecGroupID],
-				Delete:         fi.PtrTo(true),
+				Delete:         new(true),
 			}
 			klog.V(8).Infof("Adding existing rule %v", t)
 			b.Rules[fi.ValueOf(t.GetName())] = t

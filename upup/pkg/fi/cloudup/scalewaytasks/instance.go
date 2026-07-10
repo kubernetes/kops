@@ -132,12 +132,12 @@ func (s *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 	}
 
 	return &Instance{
-		Name:           fi.PtrTo(igName),
+		Name:           new(igName),
 		Lifecycle:      s.Lifecycle,
-		Zone:           fi.PtrTo(server.Zone.String()),
-		Role:           fi.PtrTo(role),
-		CommercialType: fi.PtrTo(server.CommercialType),
-		Image:          fi.PtrTo(imageLabel),
+		Zone:           new(server.Zone.String()),
+		Role:           new(role),
+		CommercialType: new(server.CommercialType),
+		Image:          new(imageLabel),
 		Tags:           server.Tags,
 		Count:          len(servers),
 		NeedsUpdate:    needsUpdate,
@@ -226,15 +226,15 @@ func (_ *Instance) RenderScw(t *scaleway.ScwAPITarget, actual, expected, changes
 			CommercialType:  fi.ValueOf(expected.CommercialType),
 			Image:           expected.Image,
 			Tags:            expected.Tags,
-			RoutedIPEnabled: fi.PtrTo(true),
+			RoutedIPEnabled: new(true),
 		}
 
 		// We resize the root volume if needed (for instance types with no local storage)
 		if expected.VolumeSize != nil {
 			createServerRequest.Volumes = map[string]*instance.VolumeServerTemplate{
 				"0": {
-					Boot:       fi.PtrTo(true),
-					Size:       fi.PtrTo(scw.Size(fi.ValueOf(expected.VolumeSize)) * scw.GB),
+					Boot:       new(true),
+					Size:       new(scw.Size(fi.ValueOf(expected.VolumeSize)) * scw.GB),
 					VolumeType: instance.VolumeVolumeTypeBSSD,
 				},
 			}
@@ -333,8 +333,8 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 			Type:                expected.CommercialType,
 			Tags:                expected.Tags,
 			Image:               expected.Image,
-			EnableDynamicIP:     fi.PtrTo(true),
-			ReplaceOnTypeChange: fi.PtrTo(false),
+			EnableDynamicIP:     new(true),
+			ReplaceOnTypeChange: new(false),
 			Lifecycle:           nil,
 		}
 
@@ -360,7 +360,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, actual, expecte
 			tfInstance.RootVolume = []terraformVolume{
 				{
 					SizeInGB: expected.VolumeSize,
-					Boot:     fi.PtrTo(true),
+					Boot:     new(true),
 				},
 			}
 		}

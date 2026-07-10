@@ -431,8 +431,8 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	service.InitDefaults()
 
 	if b.ConfigurationMode == "Warming" {
-		service.Running = fi.PtrTo(false)
-		service.Enabled = fi.PtrTo(false)
+		service.Running = new(false)
+		service.Enabled = new(false)
 	}
 
 	return service
@@ -741,7 +741,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 		}
 
 		// Write back values that could have changed
-		c.MaxPods = fi.PtrTo(int32(maxPods))
+		c.MaxPods = new(int32(maxPods))
 	}
 
 	if c.VolumePluginDirectory == "" {
@@ -777,7 +777,7 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 	}
 
 	if c.AuthenticationTokenWebhook == nil {
-		c.AuthenticationTokenWebhook = fi.PtrTo(true)
+		c.AuthenticationTokenWebhook = new(true)
 	}
 
 	return &c, nil
@@ -816,7 +816,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 			Path:           filepath.Join(dir, name+".crt"),
 			Contents:       cert,
 			Type:           nodetasks.FileType_File,
-			Mode:           fi.PtrTo("0644"),
+			Mode:           new("0644"),
 			BeforeServices: []string{"kubelet.service"},
 		})
 
@@ -824,7 +824,7 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 			Path:           filepath.Join(dir, name+".key"),
 			Contents:       key,
 			Type:           nodetasks.FileType_File,
-			Mode:           fi.PtrTo("0400"),
+			Mode:           new("0400"),
 			BeforeServices: []string{"kubelet.service"},
 		})
 

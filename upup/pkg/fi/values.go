@@ -23,11 +23,6 @@ import (
 	"strconv"
 )
 
-// PtrTo returns a pointer to a copy of any value.
-func PtrTo[T any](v T) *T {
-	return &v
-}
-
 // ValueOf returns the value of a pointer or its zero value
 func ValueOf[T any](v *T) T {
 	if v == nil {

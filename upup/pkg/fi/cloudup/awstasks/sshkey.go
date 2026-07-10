@@ -95,7 +95,7 @@ func (e *SSHKey) find(ctx context.Context, cloud awsup.AWSCloud) (*SSHKey, error
 		fingerprint := fi.ValueOf(k.KeyFingerprint)
 		fingerprint = strings.TrimRight(fingerprint, "=")
 		fingerprint = fmt.Sprintf("SHA256:%s", fingerprint)
-		actual.KeyFingerprint = fi.PtrTo(fingerprint)
+		actual.KeyFingerprint = new(fingerprint)
 	}
 	if fi.ValueOf(actual.KeyFingerprint) == fi.ValueOf(e.KeyFingerprint) {
 		klog.V(2).Infof("SSH key fingerprints match; assuming public keys match")

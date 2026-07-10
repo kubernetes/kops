@@ -42,7 +42,7 @@ func (s *Chattr) String() string {
 var _ fi.HasName = &Archive{}
 
 func (e *Chattr) GetName() *string {
-	return fi.PtrTo("Chattr-" + e.File)
+	return new("Chattr-" + e.File)
 }
 
 var _ fi.NodeupHasDependencies = &Chattr{}

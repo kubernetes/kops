@@ -86,7 +86,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
 		clusterSpec.KubeDNS.NodeLocalDNS = nodeLocalDNS
 	}
 	if nodeLocalDNS.Enabled == nil {
-		nodeLocalDNS.Enabled = fi.PtrTo(false)
+		nodeLocalDNS.Enabled = new(false)
 	}
 	if fi.ValueOf(nodeLocalDNS.Enabled) && nodeLocalDNS.LocalIP == "" {
 		if clusterSpec.IsIPv6Only() {
@@ -96,7 +96,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
 		}
 	}
 	if fi.ValueOf(nodeLocalDNS.Enabled) && nodeLocalDNS.ForwardToKubeDNS == nil {
-		nodeLocalDNS.ForwardToKubeDNS = fi.PtrTo(false)
+		nodeLocalDNS.ForwardToKubeDNS = new(false)
 	}
 
 	if nodeLocalDNS.MemoryRequest == nil || nodeLocalDNS.MemoryRequest.IsZero() {
@@ -110,7 +110,7 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
 	}
 
 	if nodeLocalDNS.Image == nil {
-		nodeLocalDNS.Image = fi.PtrTo("registry.k8s.io/dns/k8s-dns-node-cache:1.26.0")
+		nodeLocalDNS.Image = new("registry.k8s.io/dns/k8s-dns-node-cache:1.26.0")
 	}
 
 	return nil

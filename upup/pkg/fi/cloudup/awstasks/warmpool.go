@@ -92,7 +92,7 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 		return &WarmPool{
 			Name:             e.Name,
 			Lifecycle:        e.Lifecycle,
-			Enabled:          fi.PtrTo(false),
+			Enabled:          new(false),
 			AutoscalingGroup: &AutoscalingGroup{Name: e.AutoscalingGroup.Name},
 		}, nil
 	}
@@ -100,7 +100,7 @@ func (e *WarmPool) Find(c *fi.CloudupContext) (*WarmPool, error) {
 	actual := &WarmPool{
 		Name:             e.Name,
 		Lifecycle:        e.Lifecycle,
-		Enabled:          fi.PtrTo(true),
+		Enabled:          new(true),
 		AutoscalingGroup: &AutoscalingGroup{Name: e.AutoscalingGroup.Name},
 		MaxSize:          warmPool.WarmPoolConfiguration.MaxGroupPreparedCapacity,
 		MinSize:          fi.ValueOf(warmPool.WarmPoolConfiguration.MinSize),
@@ -124,12 +124,12 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 			minSize := e.MinSize
 			maxSize := e.MaxSize
 			if maxSize == nil {
-				maxSize = fi.PtrTo(int32(-1))
+				maxSize = new(int32(-1))
 			}
 			request := &autoscaling.PutWarmPoolInput{
 				AutoScalingGroupName:     e.AutoscalingGroup.Name,
 				MaxGroupPreparedCapacity: maxSize,
-				MinSize:                  fi.PtrTo(minSize),
+				MinSize:                  new(minSize),
 			}
 
 			_, err := svc.PutWarmPool(ctx, request)
@@ -143,7 +143,7 @@ func (*WarmPool) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *WarmPool) error
 			_, err := svc.DeleteWarmPool(ctx, &autoscaling.DeleteWarmPoolInput{
 				AutoScalingGroupName: e.AutoscalingGroup.Name,
 				// We don't need to do any cleanup so, the faster the better
-				ForceDelete: fi.PtrTo(true),
+				ForceDelete: new(true),
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting warm pool: %w", err)

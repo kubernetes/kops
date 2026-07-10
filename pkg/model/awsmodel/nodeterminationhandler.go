@@ -127,7 +127,7 @@ func (b *NodeTerminationHandlerBuilder) build(c *fi.CloudupModelBuilderContext) 
 	policy.Statement = append(policy.Statement, &iam.Statement{
 		Effect: iam.StatementEffectAllow,
 		Principal: iam.Principal{
-			Service: fi.PtrTo(stringorset.Of("events.amazonaws.com", "sqs.amazonaws.com")),
+			Service: new(stringorset.Of("events.amazonaws.com", "sqs.amazonaws.com")),
 		},
 		Action:   stringorset.Of("sqs:SendMessage"),
 		Resource: stringorset.String(arn.String()),

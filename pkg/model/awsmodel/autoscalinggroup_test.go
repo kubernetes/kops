@@ -54,7 +54,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 	if ig.Spec.RootVolume == nil {
 		ig.Spec.RootVolume = &kops.InstanceRootVolumeSpec{}
 	}
-	ig.Spec.RootVolume.Optimization = fi.PtrTo(true)
+	ig.Spec.RootVolume.Optimization = new(true)
 
 	k := [][]byte{}
 	k = append(k, []byte(sshPublicKeyEntry))
@@ -96,7 +96,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 
 	// We need the CA for the bootstrap script
 	caTask := &fitasks.Keypair{
-		Name:    fi.PtrTo(fi.CertificateIDCA),
+		Name:    new(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
@@ -105,7 +105,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 		"etcd-clients-ca",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.PtrTo(keypair),
+			Name:    new(keypair),
 			Subject: "cn=" + keypair,
 			Type:    "ca",
 		}
@@ -201,7 +201,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 
 	// We need the CA for the bootstrap script
 	caTask := &fitasks.Keypair{
-		Name:    fi.PtrTo(fi.CertificateIDCA),
+		Name:    new(fi.CertificateIDCA),
 		Subject: "cn=kubernetes",
 		Type:    "ca",
 	}
@@ -216,7 +216,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		"service-account",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.PtrTo(keypair),
+			Name:    new(keypair),
 			Subject: "cn=" + keypair,
 			Type:    "ca",
 		}
@@ -227,7 +227,7 @@ func TestAPIServerAdditionalSecurityGroupsWithNLB(t *testing.T) {
 		"kube-proxy",
 	} {
 		task := &fitasks.Keypair{
-			Name:    fi.PtrTo(keypair),
+			Name:    new(keypair),
 			Subject: "cn=" + keypair,
 			Signer:  caTask,
 			Type:    "client",

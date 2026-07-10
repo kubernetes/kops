@@ -27,7 +27,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -103,10 +102,10 @@ func (b *Builder) loadClusterPackage(u *unstructured.Unstructured) (*Package, er
 	addon := &Package{
 		Manifest: manifestBytes,
 		Spec: channelsapi.AddonSpec{
-			Name:     fi.PtrTo(operatorKey),
+			Name:     new(operatorKey),
 			Id:       id,
 			Selector: map[string]string{"k8s-addon": operatorKey},
-			Manifest: fi.PtrTo(location),
+			Manifest: new(location),
 		},
 	}
 	return addon, nil

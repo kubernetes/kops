@@ -62,8 +62,8 @@ func (e *Disk) Find(c *fi.CloudupContext) (*Disk, error) {
 
 	actual := &Disk{}
 	actual.Name = &r.Name
-	actual.VolumeType = fi.PtrTo(gce.LastComponent(r.Type))
-	actual.Zone = fi.PtrTo(gce.LastComponent(r.Zone))
+	actual.VolumeType = new(gce.LastComponent(r.Type))
+	actual.Zone = new(gce.LastComponent(r.Zone))
 	actual.SizeGB = &r.SizeGb
 	actual.VolumeIops = &r.ProvisionedIops
 	actual.VolumeThroughput = &r.ProvisionedThroughput

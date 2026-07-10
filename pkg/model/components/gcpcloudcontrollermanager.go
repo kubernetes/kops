@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -44,19 +43,19 @@ func (b *GCPCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 
 	// No significant downside to always doing a leader election.
 	// Also, having multiple control plane nodes requires leader election.
-	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)}
+	ccmConfig.LeaderElection = &kops.LeaderElectionConfiguration{LeaderElect: new(true)}
 
 	// CCM interacts directly with the GCP API, use the name safe for GCP
 	ccmConfig.ClusterName = gce.SafeClusterName(b.ClusterName)
-	ccmConfig.AllocateNodeCIDRs = fi.PtrTo(true)
-	ccmConfig.CIDRAllocatorType = fi.PtrTo("CloudAllocator")
+	ccmConfig.AllocateNodeCIDRs = new(true)
+	ccmConfig.CIDRAllocatorType = new("CloudAllocator")
 	if ccmConfig.ClusterCIDR == "" {
 		ccmConfig.ClusterCIDR = clusterSpec.Networking.PodCIDR
 	}
 
 	if gce.UsesIPAliases(cluster) {
 		// We don't need to configure routes if we are using ipalias; these are "real" IPs
-		ccmConfig.ConfigureCloudRoutes = fi.PtrTo(false)
+		ccmConfig.ConfigureCloudRoutes = new(false)
 	}
 
 	if ccmConfig.Controllers == nil {

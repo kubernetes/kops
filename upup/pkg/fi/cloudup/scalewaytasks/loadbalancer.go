@@ -87,9 +87,9 @@ func (l *LoadBalancer) Find(context *fi.CloudupContext) (*LoadBalancer, error) {
 	}
 
 	return &LoadBalancer{
-		Name:              fi.PtrTo(loadBalancer.Name),
-		LBID:              fi.PtrTo(loadBalancer.ID),
-		Zone:              fi.PtrTo(string(loadBalancer.Zone)),
+		Name:              new(loadBalancer.Name),
+		LBID:              new(loadBalancer.ID),
+		Zone:              new(string(loadBalancer.Zone)),
 		LBAddresses:       lbIPs,
 		Tags:              loadBalancer.Tags,
 		Lifecycle:         l.Lifecycle,

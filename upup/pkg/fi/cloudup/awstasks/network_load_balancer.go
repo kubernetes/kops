@@ -269,7 +269,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 				if err != nil {
 					return nil, err
 				}
-				actual.CrossZoneLoadBalancing = fi.PtrTo(b)
+				actual.CrossZoneLoadBalancing = new(b)
 			case "access_logs.s3.enabled":
 				b, err := strconv.ParseBool(*value)
 				if err != nil {
@@ -278,7 +278,7 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}
 				}
-				actual.AccessLog.Enabled = fi.PtrTo(b)
+				actual.AccessLog.Enabled = new(b)
 			case "access_logs.s3.bucket":
 				if actual.AccessLog == nil {
 					actual.AccessLog = &NetworkLoadBalancerAccessLog{}

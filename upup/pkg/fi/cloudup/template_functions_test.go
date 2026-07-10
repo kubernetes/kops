@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
@@ -157,7 +156,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					AllocateNodeCIDRs: fi.PtrTo(true),
+					AllocateNodeCIDRs: new(true),
 				},
 			}},
 			expectedArgv: []string{
@@ -175,7 +174,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					ConfigureCloudRoutes: fi.PtrTo(true),
+					ConfigureCloudRoutes: new(true),
 				},
 			}},
 			expectedArgv: []string{
@@ -193,7 +192,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					CIDRAllocatorType: fi.PtrTo("RangeAllocator"),
+					CIDRAllocatorType: new("RangeAllocator"),
 				},
 			}},
 			expectedArgv: []string{
@@ -211,7 +210,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					UseServiceAccountCredentials: fi.PtrTo(false),
+					UseServiceAccountCredentials: new(false),
 				},
 			}},
 			expectedArgv: []string{
@@ -228,7 +227,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
+					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: new(true)},
 				},
 			}},
 			expectedArgv: []string{

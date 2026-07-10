@@ -38,9 +38,9 @@ func addCiliumAddon(b *BootstrapChannelBuilder, addons *AddonList) error {
 		location := key + "/" + id + "-v1.15.yaml"
 
 		addon := &api.AddonSpec{
-			Name:               fi.PtrTo(key),
+			Name:               new(key),
 			Selector:           networkingSelector(),
-			Manifest:           fi.PtrTo(location),
+			Manifest:           new(location),
 			Id:                 id,
 			NeedsRollingUpdate: api.NeedsRollingUpdateAll,
 		}

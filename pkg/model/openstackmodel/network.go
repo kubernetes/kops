@@ -77,7 +77,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			dnsSplitted := strings.Split(fi.ValueOf(osSpec.Router.DNSServers), ",")
 			dnsNameSrv := make([]*string, len(dnsSplitted))
 			for i, ns := range dnsSplitted {
-				dnsNameSrv[i] = fi.PtrTo(ns)
+				dnsNameSrv[i] = new(ns)
 			}
 			t.DNSServers = dnsNameSrv
 		}

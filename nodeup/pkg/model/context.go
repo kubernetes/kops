@@ -539,7 +539,7 @@ func (b *NodeupModelContext) AddCNIBinAssets(c *fi.NodeupModelBuilderContext) er
 			Path:     filepath.Join(b.CNIBinDir(), name),
 			Contents: res,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
+			Mode:     new("0755"),
 		})
 	}
 

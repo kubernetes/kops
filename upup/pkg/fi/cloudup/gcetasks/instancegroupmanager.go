@@ -61,10 +61,10 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 
 	actual := &InstanceGroupManager{}
 	actual.Name = &r.Name
-	actual.Zone = fi.PtrTo(lastComponent(r.Zone))
+	actual.Zone = new(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = e.TargetSize
-	actual.InstanceTemplate = &InstanceTemplate{ID: fi.PtrTo(lastComponent(r.InstanceTemplate))}
+	actual.InstanceTemplate = &InstanceTemplate{ID: new(lastComponent(r.InstanceTemplate))}
 	actual.ListManagedInstancesResults = r.ListManagedInstancesResults
 
 	if policy := r.UpdatePolicy; policy != nil {
@@ -73,7 +73,7 @@ func (e *InstanceGroupManager) Find(c *fi.CloudupContext) (*InstanceGroupManager
 
 	for _, targetPool := range r.TargetPools {
 		actual.TargetPools = append(actual.TargetPools, &TargetPool{
-			Name: fi.PtrTo(lastComponent(targetPool)),
+			Name: new(lastComponent(targetPool)),
 		})
 	}
 	// TODO: Sort by name

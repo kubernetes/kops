@@ -158,7 +158,7 @@ func (b *IAMModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				name := "external-" + fi.ValueOf(iamRole.Name)
 				externalPolicies := aws.PolicyARNs
 				c.AddTask(&awstasks.IAMRolePolicy{
-					Name:             fi.PtrTo(name),
+					Name:             new(name),
 					ExternalPolicies: &externalPolicies,
 					Managed:          true,
 					Role:             iamRole,
@@ -199,7 +199,7 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.C
 	}
 
 	iamRole := &awstasks.IAMRole{
-		Name:      fi.PtrTo(iamName),
+		Name:      new(iamName),
 		Lifecycle: b.Lifecycle,
 
 		RolePolicyDocument: rolePolicy,
@@ -207,14 +207,14 @@ func (b *IAMModelBuilder) buildIAMRole(role iam.Subject, iamName string, c *fi.C
 
 	if isServiceAccount {
 		// e.g. kube-system-dns-controller
-		iamRole.ExportWithID = fi.PtrTo(roleKey)
+		iamRole.ExportWithID = new(roleKey)
 		sa, ok := role.ServiceAccount()
 		if ok {
 			iamRole.Tags = b.CloudTagsForServiceAccount(iamName, sa)
 		}
 	} else {
 		// e.g. nodes
-		iamRole.ExportWithID = fi.PtrTo(roleKey + "s")
+		iamRole.ExportWithID = new(roleKey + "s")
 		iamRole.Tags = b.CloudTags(iamName, false)
 	}
 
@@ -243,12 +243,12 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 		// but we might be creating the hosted zone dynamically.
 		// We create a stub-reference which will be combined by the execution engine.
 		iamPolicy.DNSZone = &awstasks.DNSZone{
-			Name: fi.PtrTo(b.NameForDNSZone()),
+			Name: new(b.NameForDNSZone()),
 		}
 	}
 
 	t := &awstasks.IAMRolePolicy{
-		Name:      fi.PtrTo(iamName),
+		Name:      new(iamName),
 		Lifecycle: b.Lifecycle,
 
 		Role:           iamRole,
@@ -292,9 +292,9 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 		var iamInstanceProfile *awstasks.IAMInstanceProfile
 		{
 			iamInstanceProfile = &awstasks.IAMInstanceProfile{
-				Name:      fi.PtrTo(iamName),
+				Name:      new(iamName),
 				Lifecycle: b.Lifecycle,
-				Shared:    fi.PtrTo(shared),
+				Shared:    new(shared),
 				Tags:      b.CloudTags(iamName, shared),
 			}
 			c.AddTask(iamInstanceProfile)
@@ -314,7 +314,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				}
 				{
 					iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-						Name:      fi.PtrTo(iamName),
+						Name:      new(iamName),
 						Lifecycle: b.Lifecycle,
 
 						InstanceProfile: iamInstanceProfile,
@@ -336,7 +336,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 
 				name := fmt.Sprintf("%s-policyoverride", roleKey)
 				t := &awstasks.IAMRolePolicy{
-					Name:             fi.PtrTo(name),
+					Name:             new(name),
 					Lifecycle:        b.Lifecycle,
 					Role:             iamRole,
 					Managed:          true,
@@ -360,7 +360,7 @@ func (b *IAMModelBuilder) buildIAMTasks(role iam.Subject, iamName string, c *fi.
 				additionalPolicyName := "additional." + iamName
 
 				t := &awstasks.IAMRolePolicy{
-					Name:      fi.PtrTo(additionalPolicyName),
+					Name:      new(additionalPolicyName),
 					Lifecycle: b.Lifecycle,
 
 					Role: iamRole,

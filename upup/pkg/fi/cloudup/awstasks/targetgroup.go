@@ -399,8 +399,8 @@ func ModifyTargetGroupAttributes(ctx context.Context, cloud awsup.AWSCloud, arn 
 	}
 	for k, v := range attributes {
 		attrReq.Attributes = append(attrReq.Attributes, elbv2types.TargetGroupAttribute{
-			Key:   fi.PtrTo(k),
-			Value: fi.PtrTo(v),
+			Key:   new(k),
+			Value: new(v),
 		})
 	}
 	if _, err := cloud.ELBV2().ModifyTargetGroupAttributes(ctx, attrReq); err != nil {

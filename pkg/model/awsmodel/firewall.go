@@ -77,21 +77,21 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.CloudupModelBuilderContext) 
 		// Allow full egress
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("ipv4-node-egress" + src.Suffix),
+				Name:          new("ipv4-node-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: src.Task,
-				Egress:        fi.PtrTo(true),
-				CIDR:          fi.PtrTo("0.0.0.0/0"),
+				Egress:        new(true),
+				CIDR:          new("0.0.0.0/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("ipv6-node-egress" + src.Suffix),
+				Name:          new("ipv6-node-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: src.Task,
-				Egress:        fi.PtrTo(true),
-				IPv6CIDR:      fi.PtrTo("::/0"),
+				Egress:        new(true),
+				IPv6CIDR:      new("::/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -101,7 +101,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.CloudupModelBuilderContext) 
 			suffix := JoinSuffixes(src, dest)
 
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("all-node-to-node" + suffix),
+				Name:          new("all-node-to-node" + suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
@@ -168,25 +168,25 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 
 			for _, r := range udpRanges {
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("node-to-master-udp-%d-%d%s", r.From, r.To, suffix)),
+					Name:          new(fmt.Sprintf("node-to-master-udp-%d-%d%s", r.From, r.To, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
-					FromPort:      fi.PtrTo(int32(r.From)),
-					ToPort:        fi.PtrTo(int32(r.To)),
-					Protocol:      fi.PtrTo("udp"),
+					FromPort:      new(int32(r.From)),
+					ToPort:        new(int32(r.To)),
+					Protocol:      new("udp"),
 				}
 				AddDirectionalGroupRule(c, t)
 			}
 			for _, r := range tcpRanges {
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("node-to-master-tcp-%d-%d%s", r.From, r.To, suffix)),
+					Name:          new(fmt.Sprintf("node-to-master-tcp-%d-%d%s", r.From, r.To, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
-					FromPort:      fi.PtrTo(int32(r.From)),
-					ToPort:        fi.PtrTo(int32(r.To)),
-					Protocol:      fi.PtrTo("tcp"),
+					FromPort:      new(int32(r.From)),
+					ToPort:        new(int32(r.To)),
+					Protocol:      new("tcp"),
 				}
 				AddDirectionalGroupRule(c, t)
 			}
@@ -201,11 +201,11 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 				}
 
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
+					Name:          new(fmt.Sprintf("node-to-master-protocol-%s%s", name, suffix)),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: masterGroup.Task,
 					SourceGroup:   nodeGroup.Task,
-					Protocol:      fi.PtrTo(awsName),
+					Protocol:      new(awsName),
 				}
 				AddDirectionalGroupRule(c, t)
 			}
@@ -220,7 +220,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.Cloudup
 				suffix := JoinSuffixes(src, dest)
 
 				t := &awstasks.SecurityGroupRule{
-					Name:          fi.PtrTo("all-nodes-to-master" + suffix),
+					Name:          new("all-nodes-to-master" + suffix),
 					Lifecycle:     b.Lifecycle,
 					SecurityGroup: dest.Task,
 					SourceGroup:   src.Task,
@@ -246,21 +246,21 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.CloudupModelBuilderContext
 		// Allow full egress
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("ipv4-master-egress" + src.Suffix),
+				Name:          new("ipv4-master-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: src.Task,
-				Egress:        fi.PtrTo(true),
-				CIDR:          fi.PtrTo("0.0.0.0/0"),
+				Egress:        new(true),
+				CIDR:          new("0.0.0.0/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
 		{
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("ipv6-master-egress" + src.Suffix),
+				Name:          new("ipv6-master-egress" + src.Suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: src.Task,
-				Egress:        fi.PtrTo(true),
-				IPv6CIDR:      fi.PtrTo("::/0"),
+				Egress:        new(true),
+				IPv6CIDR:      new("::/0"),
 			}
 			AddDirectionalGroupRule(c, t)
 		}
@@ -270,7 +270,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.CloudupModelBuilderContext
 			suffix := JoinSuffixes(src, dest)
 
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("all-master-to-master" + suffix),
+				Name:          new("all-master-to-master" + suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
@@ -283,7 +283,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.CloudupModelBuilderContext
 			suffix := JoinSuffixes(src, dest)
 
 			t := &awstasks.SecurityGroupRule{
-				Name:          fi.PtrTo("all-master-to-node" + suffix),
+				Name:          new("all-master-to-node" + suffix),
 				Lifecycle:     b.Lifecycle,
 				SecurityGroup: dest.Task,
 				SourceGroup:   src.Task,
@@ -307,9 +307,9 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 	switch role {
 	case kops.InstanceGroupRoleControlPlane:
 		baseGroup = &awstasks.SecurityGroup{
-			Name:        fi.PtrTo(name),
+			Name:        new(name),
 			VPC:         b.LinkToVPC(),
-			Description: fi.PtrTo("Security group for masters"),
+			Description: new("Security group for masters"),
 			RemoveExtraRules: []string{
 				"port=22",   // SSH
 				"port=443",  // k8s api
@@ -332,18 +332,18 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 	case kops.InstanceGroupRoleNode:
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
-			Name:             fi.PtrTo(name),
+			Name:             new(name),
 			VPC:              b.LinkToVPC(),
-			Description:      fi.PtrTo("Security group for nodes"),
+			Description:      new("Security group for nodes"),
 			RemoveExtraRules: []string{"port=22"},
 		}
 		baseGroup.Tags = b.CloudTags(name, false)
 	case kops.InstanceGroupRoleBastion:
 		name := b.SecurityGroupName(role)
 		baseGroup = &awstasks.SecurityGroup{
-			Name:        fi.PtrTo(name),
+			Name:        new(name),
 			VPC:         b.LinkToVPC(),
-			Description: fi.PtrTo("Security group for bastion"),
+			Description: new("Security group for bastion"),
 			RemoveExtraRules: []string{
 				"port=22",  // SSH
 				"port=3:4", // ICMP
@@ -383,7 +383,7 @@ func (b *AWSModelContext) GetSecurityGroups(role kops.InstanceGroupRole) ([]Secu
 			Name:        &sgName,
 			ID:          ig.Spec.SecurityGroupOverride,
 			VPC:         b.LinkToVPC(),
-			Shared:      fi.PtrTo(true),
+			Shared:      new(true),
 			Description: baseGroup.Description,
 		}
 		// Because the SecurityGroup is shared, we don't set RemoveExtraRules
@@ -432,7 +432,7 @@ func JoinSuffixes(src SecurityGroupInfo, dest SecurityGroupInfo) string {
 
 func AddDirectionalGroupRule(c *fi.CloudupModelBuilderContext, t *awstasks.SecurityGroupRule) {
 	name := generateName(t)
-	t.Name = fi.PtrTo(name)
+	t.Name = new(name)
 	tags := make(map[string]string)
 	for key, value := range t.SecurityGroup.Tags {
 		tags[key] = value

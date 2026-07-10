@@ -152,8 +152,8 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 	// Capacity.
 	{
 		if spec.ResourceLimits != nil {
-			actual.MinSize = fi.PtrTo(int64(fi.ValueOf(spec.ResourceLimits.MinInstanceCount)))
-			actual.MaxSize = fi.PtrTo(int64(fi.ValueOf(spec.ResourceLimits.MaxInstanceCount)))
+			actual.MinSize = new(int64(fi.ValueOf(spec.ResourceLimits.MinInstanceCount)))
+			actual.MaxSize = new(int64(fi.ValueOf(spec.ResourceLimits.MaxInstanceCount)))
 		}
 	}
 
@@ -161,7 +161,7 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 	{
 		//		convert spec from api that reply for multi arch data only in spec.images
 		if len(spec.Images) > 1 {
-			spec.SetImageId(fi.PtrTo(fi.ValueOf(spec.Images[0].ImageId)))
+			spec.SetImageId(new(fi.ValueOf(spec.Images[0].ImageId)))
 			actual.OtherArchitectureImages = append(actual.OtherArchitectureImages, fi.ValueOf(spec.Images[1].ImageId))
 		}
 		actual.ImageID = spec.ImageID
@@ -211,7 +211,7 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 		{
 			if spec.RootVolumeSize != nil {
 				actual.RootVolumeOpts = new(RootVolumeOpts)
-				actual.RootVolumeOpts.Size = fi.PtrTo(int64(*spec.RootVolumeSize))
+				actual.RootVolumeOpts.Size = new(int64(*spec.RootVolumeSize))
 			}
 		}
 
@@ -226,16 +226,16 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 						actual.RootVolumeOpts = new(RootVolumeOpts)
 					}
 					if b.EBS.VolumeType != nil {
-						actual.RootVolumeOpts.Type = fi.PtrTo(strings.ToLower(fi.ValueOf(b.EBS.VolumeType)))
+						actual.RootVolumeOpts.Type = new(strings.ToLower(fi.ValueOf(b.EBS.VolumeType)))
 					}
 					if b.EBS.VolumeSize != nil {
-						actual.RootVolumeOpts.Size = fi.PtrTo(int64(fi.ValueOf(b.EBS.VolumeSize)))
+						actual.RootVolumeOpts.Size = new(int64(fi.ValueOf(b.EBS.VolumeSize)))
 					}
 					if b.EBS.IOPS != nil {
-						actual.RootVolumeOpts.IOPS = fi.PtrTo(int64(fi.ValueOf(b.EBS.IOPS)))
+						actual.RootVolumeOpts.IOPS = new(int64(fi.ValueOf(b.EBS.IOPS)))
 					}
 					if b.EBS.Throughput != nil {
-						actual.RootVolumeOpts.Throughput = fi.PtrTo(int64(fi.ValueOf(b.EBS.Throughput)))
+						actual.RootVolumeOpts.Throughput = new(int64(fi.ValueOf(b.EBS.Throughput)))
 					}
 					if b.EBS.Encrypted != nil {
 						actual.RootVolumeOpts.Encryption = b.EBS.Encrypted
@@ -250,7 +250,7 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 		if spec.SecurityGroupIDs != nil {
 			for _, sgID := range spec.SecurityGroupIDs {
 				actual.SecurityGroups = append(actual.SecurityGroups,
-					&awstasks.SecurityGroup{ID: fi.PtrTo(sgID)})
+					&awstasks.SecurityGroup{ID: new(sgID)})
 			}
 		}
 	}
@@ -260,7 +260,7 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 		if spec.SubnetIDs != nil {
 			for _, subnetID := range spec.SubnetIDs {
 				actual.Subnets = append(actual.Subnets,
-					&awstasks.Subnet{ID: fi.PtrTo(subnetID)})
+					&awstasks.Subnet{ID: new(subnetID)})
 			}
 			if subnetSlicesEqualIgnoreOrder(actual.Subnets, o.Subnets) {
 				actual.Subnets = o.Subnets
@@ -339,7 +339,7 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 	{
 		if strategy := spec.Strategy; strategy != nil {
 			if strategy.SpotPercentage != nil {
-				actual.SpotPercentage = fi.PtrTo(int64(fi.ValueOf(strategy.SpotPercentage)))
+				actual.SpotPercentage = new(int64(fi.ValueOf(strategy.SpotPercentage)))
 			}
 		}
 	}
@@ -347,8 +347,8 @@ func (o *LaunchSpec) Find(c *fi.CloudupContext) (*LaunchSpec, error) {
 	// Instance Metadata Options
 	if spec.InstanceMetadataOptions != nil {
 		actual.InstanceMetadataOptions = new(InstanceMetadataOptions)
-		actual.InstanceMetadataOptions.HTTPTokens = fi.PtrTo(fi.ValueOf(spec.InstanceMetadataOptions.HTTPTokens))
-		actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = fi.PtrTo(int64(fi.ValueOf(spec.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
+		actual.InstanceMetadataOptions.HTTPTokens = new(fi.ValueOf(spec.InstanceMetadataOptions.HTTPTokens))
+		actual.InstanceMetadataOptions.HTTPPutResponseHopLimit = new(int64(fi.ValueOf(spec.InstanceMetadataOptions.HTTPPutResponseHopLimit)))
 	}
 
 	// Avoid spurious changes.
@@ -404,8 +404,8 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	{
 		if e.MinSize != nil || e.MaxSize != nil {
 			spec.ResourceLimits = new(aws.ResourceLimits)
-			spec.ResourceLimits.SetMinInstanceCount(fi.PtrTo(int(*e.MinSize)))
-			spec.ResourceLimits.SetMaxInstanceCount(fi.PtrTo(int(*e.MaxSize)))
+			spec.ResourceLimits.SetMinInstanceCount(new(int(*e.MinSize)))
+			spec.ResourceLimits.SetMaxInstanceCount(new(int(*e.MaxSize)))
 		}
 	}
 
@@ -439,7 +439,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 			if len(userData) > 0 {
 				encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-				spec.SetUserData(fi.PtrTo(encoded))
+				spec.SetUserData(new(encoded))
 			}
 		}
 	}
@@ -532,8 +532,8 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				var labels []*aws.Label
 				for k, v := range opts.Labels {
 					labels = append(labels, &aws.Label{
-						Key:   fi.PtrTo(k),
-						Value: fi.PtrTo(v),
+						Key:   new(k),
+						Value: new(v),
 					})
 				}
 				spec.SetLabels(labels)
@@ -544,9 +544,9 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				taints := make([]*aws.Taint, len(opts.Taints))
 				for i, taint := range opts.Taints {
 					taints[i] = &aws.Taint{
-						Key:    fi.PtrTo(taint.Key),
-						Value:  fi.PtrTo(taint.Value),
-						Effect: fi.PtrTo(string(taint.Effect)),
+						Key:    new(taint.Key),
+						Value:  new(taint.Value),
+						Effect: new(string(taint.Effect)),
 					}
 				}
 				spec.SetTaints(taints)
@@ -557,7 +557,7 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	// Strategy.
 	{
 		if e.SpotPercentage != nil {
-			spec.Strategy.SetSpotPercentage(fi.PtrTo(int(*e.SpotPercentage)))
+			spec.Strategy.SetSpotPercentage(new(int(*e.SpotPercentage)))
 		}
 	}
 
@@ -571,8 +571,8 @@ func (_ *LaunchSpec) create(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	{
 		if e.InstanceMetadataOptions != nil {
 			opt := new(aws.LaunchspecInstanceMetadataOptions)
-			opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
-			opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+			opt.SetHTTPPutResponseHopLimit(new(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+			opt.SetHTTPTokens(new(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
 			spec.SetLaunchspecInstanceMetadataOptions(opt)
 		}
 	}
@@ -618,7 +618,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				spec.ResourceLimits = new(aws.ResourceLimits)
 			}
 
-			spec.ResourceLimits.SetMinInstanceCount(fi.PtrTo(int(*e.MinSize)))
+			spec.ResourceLimits.SetMinInstanceCount(new(int(*e.MinSize)))
 			changes.MinSize = nil
 			changed = true
 		}
@@ -627,7 +627,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				spec.ResourceLimits = new(aws.ResourceLimits)
 			}
 
-			spec.ResourceLimits.SetMaxInstanceCount(fi.PtrTo(int(*e.MaxSize)))
+			spec.ResourceLimits.SetMaxInstanceCount(new(int(*e.MaxSize)))
 			changes.MaxSize = nil
 			changed = true
 		}
@@ -671,7 +671,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 
 			if len(userData) > 0 {
 				encoded := base64.StdEncoding.EncodeToString([]byte(userData))
-				spec.SetUserData(fi.PtrTo(encoded))
+				spec.SetUserData(new(encoded))
 				changed = true
 			}
 
@@ -788,8 +788,8 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				labels := make([]*aws.Label, 0, len(e.AutoScalerOpts.Labels))
 				for k, v := range e.AutoScalerOpts.Labels {
 					labels = append(labels, &aws.Label{
-						Key:   fi.PtrTo(k),
-						Value: fi.PtrTo(v),
+						Key:   new(k),
+						Value: new(v),
 					})
 				}
 
@@ -803,9 +803,9 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				taints := make([]*aws.Taint, 0, len(e.AutoScalerOpts.Taints))
 				for _, taint := range e.AutoScalerOpts.Taints {
 					taints = append(taints, &aws.Taint{
-						Key:    fi.PtrTo(taint.Key),
-						Value:  fi.PtrTo(taint.Value),
-						Effect: fi.PtrTo(string(taint.Effect)),
+						Key:    new(taint.Key),
+						Value:  new(taint.Value),
+						Effect: new(string(taint.Effect)),
 					})
 				}
 
@@ -826,7 +826,7 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 				spec.Strategy = new(aws.LaunchSpecStrategy)
 			}
 
-			spec.Strategy.SetSpotPercentage(fi.PtrTo(int(fi.ValueOf(e.SpotPercentage))))
+			spec.Strategy.SetSpotPercentage(new(int(fi.ValueOf(e.SpotPercentage))))
 			changes.SpotPercentage = nil
 			changed = true
 		}
@@ -844,8 +844,8 @@ func (_ *LaunchSpec) update(cloud awsup.AWSCloud, a, e, changes *LaunchSpec) err
 	{
 		if changes.InstanceMetadataOptions != nil {
 			opt := new(aws.LaunchspecInstanceMetadataOptions)
-			opt.SetHTTPPutResponseHopLimit(fi.PtrTo(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
-			opt.SetHTTPTokens(fi.PtrTo(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
+			opt.SetHTTPPutResponseHopLimit(new(int(fi.ValueOf(e.InstanceMetadataOptions.HTTPPutResponseHopLimit))))
+			opt.SetHTTPTokens(new(fi.ValueOf(e.InstanceMetadataOptions.HTTPTokens)))
 			spec.SetLaunchspecInstanceMetadataOptions(opt)
 			changes.InstanceMetadataOptions = nil
 			changed = true
@@ -1048,12 +1048,12 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformBlockDeviceMapping{
 			DeviceName: rootDevice.DeviceName,
 			EBS: &terraformBlockDeviceMappingEBS{
-				VolumeType:          fi.PtrTo(string(rootDevice.EbsVolumeType)),
+				VolumeType:          new(string(rootDevice.EbsVolumeType)),
 				VolumeSize:          ptrInt32ToPtrInt64(rootDevice.EbsVolumeSize),
 				VolumeIOPS:          ptrInt32ToPtrInt64(rootDevice.EbsVolumeIops),
 				VolumeThroughput:    ptrInt32ToPtrInt64(rootDevice.EbsVolumeThroughput),
 				Encrypted:           rootDevice.EbsEncrypted,
-				DeleteOnTermination: fi.PtrTo(true),
+				DeleteOnTermination: new(true),
 			},
 		})
 	}
@@ -1090,8 +1090,8 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 				tf.Labels = make([]*terraformKV, 0, len(opts.Labels))
 				for k, v := range opts.Labels {
 					tf.Labels = append(tf.Labels, &terraformKV{
-						Key:   fi.PtrTo(k),
-						Value: fi.PtrTo(v),
+						Key:   new(k),
+						Value: new(v),
 					})
 				}
 			}
@@ -1101,11 +1101,11 @@ func (_ *LaunchSpec) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 				tf.Taints = make([]*terraformTaint, len(opts.Taints))
 				for i, taint := range opts.Taints {
 					t := &terraformTaint{
-						Key:    fi.PtrTo(taint.Key),
-						Effect: fi.PtrTo(string(taint.Effect)),
+						Key:    new(taint.Key),
+						Effect: new(string(taint.Effect)),
 					}
 					if taint.Value != "" {
-						t.Value = fi.PtrTo(taint.Value)
+						t.Value = new(taint.Value)
 					}
 					tf.Taints[i] = t
 				}
@@ -1141,8 +1141,8 @@ func (o *LaunchSpec) buildTags() []*aws.Tag {
 
 	for key, value := range o.Tags {
 		tags = append(tags, &aws.Tag{
-			Key:   fi.PtrTo(key),
-			Value: fi.PtrTo(value),
+			Key:   new(key),
+			Value: new(value),
 		})
 	}
 
@@ -1157,19 +1157,19 @@ func (o *LaunchSpec) convertBlockDeviceMapping(in *awstasks.BlockDeviceMapping) 
 
 	if in.EbsDeleteOnTermination != nil || in.EbsVolumeSize != nil || len(in.EbsVolumeType) > 0 {
 		out.EBS = &aws.EBS{
-			VolumeType:          fi.PtrTo(string(in.EbsVolumeType)),
-			VolumeSize:          fi.PtrTo(int(fi.ValueOf(in.EbsVolumeSize))),
+			VolumeType:          new(string(in.EbsVolumeType)),
+			VolumeSize:          new(int(fi.ValueOf(in.EbsVolumeSize))),
 			DeleteOnTermination: in.EbsDeleteOnTermination,
 		}
 
 		// IOPS is not valid for gp2 volumes.
 		if in.EbsVolumeIops != nil && in.EbsVolumeType != ec2types.VolumeTypeGp2 {
-			out.EBS.IOPS = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeIops)))
+			out.EBS.IOPS = new(int(fi.ValueOf(in.EbsVolumeIops)))
 		}
 
 		// Throughput is only valid for gp3 volumes.
 		if in.EbsVolumeThroughput != nil && in.EbsVolumeType == ec2types.VolumeTypeGp3 {
-			out.EBS.Throughput = fi.PtrTo(int(fi.ValueOf(in.EbsVolumeThroughput)))
+			out.EBS.Throughput = new(int(fi.ValueOf(in.EbsVolumeThroughput)))
 		}
 	}
 

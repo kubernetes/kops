@@ -88,16 +88,16 @@ func (s *ServerGroup) Find(context *fi.CloudupContext) (*ServerGroup, error) {
 
 				val, ok := igMap[igName]
 				if !ok {
-					igMap[igName] = fi.PtrTo(int32(1))
+					igMap[igName] = new(int32(1))
 				} else {
-					igMap[igName] = fi.PtrTo(fi.ValueOf(val) + 1)
+					igMap[igName] = new(fi.ValueOf(val) + 1)
 				}
 			}
 			actual = &ServerGroup{
-				Name:        fi.PtrTo(serverGroup.Name),
+				Name:        new(serverGroup.Name),
 				ClusterName: s.ClusterName,
 				IGMap:       igMap,
-				ID:          fi.PtrTo(serverGroup.ID),
+				ID:          new(serverGroup.ID),
 				Lifecycle:   s.Lifecycle,
 				Policies:    serverGroup.Policies,
 			}
@@ -153,7 +153,7 @@ func (_ *ServerGroup) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, cha
 		if err != nil {
 			return fmt.Errorf("error creating ServerGroup: %v", err)
 		}
-		e.ID = fi.PtrTo(g.ID)
+		e.ID = new(g.ID)
 		return nil
 	} else if changes.IGMap != nil {
 		for igName, maxSize := range changes.IGMap {
