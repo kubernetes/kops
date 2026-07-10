@@ -99,7 +99,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 			}
 			if !isPublic {
 				klog.Infof("serviceAccountIssuers bucket %q is not public; will use object ACL", discoveryStore.Bucket())
-				publicFileACL = fi.PtrTo(true)
+				publicFileACL = new(true)
 			}
 		} else {
 			klog.Infof("using user managed serviceAccountIssuers")
@@ -117,7 +117,7 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 			}
 			if !isPublic {
 				klog.Infof("serviceAccountIssuers bucket %q is not public; will use object ACL", discoveryStore.Bucket())
-				publicFileACL = fi.PtrTo(true)
+				publicFileACL = new(true)
 			}
 		} else {
 			klog.Infof("using user managed serviceAccountIssuers")
@@ -133,9 +133,9 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	keysFile := &fitasks.ManagedFile{
 		Contents:  keys,
 		Lifecycle: b.Lifecycle,
-		Location:  fi.PtrTo("openid/v1/jwks"),
-		Name:      fi.PtrTo("keys.json"),
-		Base:      fi.PtrTo(discoveryStorePath),
+		Location:  new("openid/v1/jwks"),
+		Name:      new("keys.json"),
+		Base:      new(discoveryStorePath),
 		PublicACL: publicFileACL,
 	}
 	c.AddTask(keysFile)
@@ -143,9 +143,9 @@ func (b *IssuerDiscoveryModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	discoveryFile := &fitasks.ManagedFile{
 		Contents:  fi.NewBytesResource(discovery),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.PtrTo(".well-known/openid-configuration"),
-		Name:      fi.PtrTo("discovery.json"),
-		Base:      fi.PtrTo(discoveryStorePath),
+		Location:  new(".well-known/openid-configuration"),
+		Name:      new("discovery.json"),
+		Base:      new(discoveryStorePath),
 		PublicACL: publicFileACL,
 	}
 	c.AddTask(discoveryFile)

@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/kops/upup/pkg/fi"
 
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -38,15 +37,15 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 					{
 						Name:          "b",
-						InstanceGroup: fi.PtrTo("eu-central-1b"),
+						InstanceGroup: new("eu-central-1b"),
 					},
 					{
 						Name:          "c",
-						InstanceGroup: fi.PtrTo("eu-central-1c"),
+						InstanceGroup: new("eu-central-1c"),
 					},
 				},
 			},
@@ -56,15 +55,15 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 					{
 						Name:          "b",
-						InstanceGroup: fi.PtrTo("eu-central-1b"),
+						InstanceGroup: new("eu-central-1b"),
 					},
 					{
 						Name:          "d",
-						InstanceGroup: fi.PtrTo("eu-central-1d"),
+						InstanceGroup: new("eu-central-1d"),
 					},
 				},
 			},
@@ -86,7 +85,7 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 				},
 			},
@@ -96,15 +95,15 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 					{
 						Name:          "b",
-						InstanceGroup: fi.PtrTo("eu-central-1b"),
+						InstanceGroup: new("eu-central-1b"),
 					},
 					{
 						Name:          "c",
-						InstanceGroup: fi.PtrTo("eu-central-1c"),
+						InstanceGroup: new("eu-central-1c"),
 					},
 				},
 			},
@@ -126,7 +125,7 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 				},
 			},
@@ -136,7 +135,7 @@ func TestValidEtcdChanges(t *testing.T) {
 				Members: []kops.EtcdMemberSpec{
 					{
 						Name:          "a",
-						InstanceGroup: fi.PtrTo("eu-central-1a"),
+						InstanceGroup: new("eu-central-1a"),
 					},
 				},
 			},
@@ -250,7 +249,7 @@ func TestEtcdVersionRequiredWithImage(t *testing.T) {
 			Details: "image requires version",
 			Spec: kops.EtcdClusterSpec{
 				Name:    "main",
-				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: fi.PtrTo("eu-central-1a")}},
+				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: new("eu-central-1a")}},
 				Image:   "gcr.io/etcd-development/etcd:v3.6.99",
 			},
 			ExpectedErrors: []string{
@@ -261,7 +260,7 @@ func TestEtcdVersionRequiredWithImage(t *testing.T) {
 			Details: "image with version is valid",
 			Spec: kops.EtcdClusterSpec{
 				Name:    "main",
-				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: fi.PtrTo("eu-central-1a")}},
+				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: new("eu-central-1a")}},
 				Version: "3.6.99",
 				Image:   "gcr.io/etcd-development/etcd:v3.6.99",
 			},
@@ -270,7 +269,7 @@ func TestEtcdVersionRequiredWithImage(t *testing.T) {
 			Details: "neither image nor version is valid",
 			Spec: kops.EtcdClusterSpec{
 				Name:    "main",
-				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: fi.PtrTo("eu-central-1a")}},
+				Members: []kops.EtcdMemberSpec{{Name: "a", InstanceGroup: new("eu-central-1a")}},
 			},
 		},
 	}

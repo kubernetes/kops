@@ -102,10 +102,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.PtrTo(int32(1))
+			ig.Spec.MinSize = new(int32(1))
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.PtrTo(int32(1))
+			ig.Spec.MaxSize = new(int32(1))
 		}
 	} else if ig.Spec.Role.HasBastion() {
 		if ig.Spec.MachineType == "" {
@@ -115,10 +115,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			}
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.PtrTo(int32(1))
+			ig.Spec.MinSize = new(int32(1))
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.PtrTo(int32(1))
+			ig.Spec.MaxSize = new(int32(1))
 		}
 	} else {
 		if ig.IsAPIServerOnly() && !featureflag.APIServerNodes.Enabled() {
@@ -144,10 +144,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 		if ig.Spec.Manager != kops.InstanceManagerKarpenter {
 			if ig.Spec.MinSize == nil {
-				ig.Spec.MinSize = fi.PtrTo(int32(2))
+				ig.Spec.MinSize = new(int32(2))
 			}
 			if ig.Spec.MaxSize == nil {
-				ig.Spec.MaxSize = fi.PtrTo(int32(2))
+				ig.Spec.MaxSize = new(int32(2))
 			}
 		}
 	}
@@ -269,7 +269,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 		// A few settings in Kubelet override those in ControlPlaneKubelet. I'm not sure why.
 		if cluster.Spec.Kubelet != nil && cluster.Spec.Kubelet.AnonymousAuth != nil && !*cluster.Spec.Kubelet.AnonymousAuth {
-			igKubeletConfig.AnonymousAuth = fi.PtrTo(false)
+			igKubeletConfig.AnonymousAuth = new(false)
 		}
 	} else {
 		if cluster.Spec.Kubelet != nil {
@@ -321,7 +321,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	igKubeletConfig.Taints = taints.List()
 
 	if useSecureKubelet {
-		igKubeletConfig.AnonymousAuth = fi.PtrTo(false)
+		igKubeletConfig.AnonymousAuth = new(false)
 	}
 
 	ig.Spec.Kubelet = igKubeletConfig

@@ -45,11 +45,11 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !b.UseLoadBalancerForAPI() {
 		recordShortName := strings.TrimSuffix(b.Cluster.Spec.API.PublicName, "."+b.Cluster.Spec.DNSZone)
 		dnsAPIExternal := &scalewaytasks.DNSRecord{
-			Name:      fi.PtrTo(recordShortName),
-			Data:      fi.PtrTo(placeholderIP),
-			DNSZone:   fi.PtrTo(b.Cluster.Spec.DNSZone),
-			Type:      fi.PtrTo(domain.RecordTypeA.String()),
-			TTL:       fi.PtrTo(defaultTTL),
+			Name:      new(recordShortName),
+			Data:      new(placeholderIP),
+			DNSZone:   new(b.Cluster.Spec.DNSZone),
+			Type:      new(domain.RecordTypeA.String()),
+			TTL:       new(defaultTTL),
 			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(dnsAPIExternal)
@@ -58,11 +58,11 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	if !b.UseLoadBalancerForInternalAPI() {
 		recordShortName := strings.TrimSuffix(b.Cluster.APIInternalName(), "."+b.Cluster.Spec.DNSZone)
 		dnsAPIInternal := &scalewaytasks.DNSRecord{
-			Name:      fi.PtrTo(recordShortName),
-			Data:      fi.PtrTo(placeholderIP),
-			DNSZone:   fi.PtrTo(b.Cluster.Spec.DNSZone),
-			Type:      fi.PtrTo(domain.RecordTypeA.String()),
-			TTL:       fi.PtrTo(defaultTTL),
+			Name:      new(recordShortName),
+			Data:      new(placeholderIP),
+			DNSZone:   new(b.Cluster.Spec.DNSZone),
+			Type:      new(domain.RecordTypeA.String()),
+			TTL:       new(defaultTTL),
 			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(dnsAPIInternal)
@@ -71,11 +71,11 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	recordSuffix := strings.TrimSuffix(b.Cluster.ObjectMeta.Name, "."+b.Cluster.Spec.DNSZone)
 	recordShortName := kopsControllerInternalRecordPrefix + recordSuffix
 	kopsControllerInternal := &scalewaytasks.DNSRecord{
-		Name:      fi.PtrTo(recordShortName),
-		Data:      fi.PtrTo(placeholderIP),
-		DNSZone:   fi.PtrTo(b.Cluster.Spec.DNSZone),
-		Type:      fi.PtrTo(domain.RecordTypeA.String()),
-		TTL:       fi.PtrTo(defaultTTL),
+		Name:      new(recordShortName),
+		Data:      new(placeholderIP),
+		DNSZone:   new(b.Cluster.Spec.DNSZone),
+		Type:      new(domain.RecordTypeA.String()),
+		TTL:       new(defaultTTL),
 		Lifecycle: b.Lifecycle,
 	}
 	c.AddTask(kopsControllerInternal)

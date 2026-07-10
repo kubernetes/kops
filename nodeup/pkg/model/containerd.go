@@ -142,7 +142,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 			Path:     filepath.Join("/usr/bin", k),
 			Contents: v,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
+			Mode:     new("0755"),
 		}
 		c.AddTask(fileTask)
 	}
@@ -167,7 +167,7 @@ func (b *ContainerdBuilder) installContainerd(c *fi.NodeupModelBuilderContext) e
 			Path:     "/usr/sbin/runc",
 			Contents: v,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
+			Mode:     new("0755"),
 		}
 		c.AddTask(fileTask)
 	}

@@ -65,7 +65,7 @@ func TestVPCCreate(t *testing.T) {
 
 		expected := &ec2types.Vpc{
 			CidrBlock: s("172.21.0.0/16"),
-			IsDefault: fi.PtrTo(false),
+			IsDefault: new(false),
 			VpcId:     vpc1.ID,
 			Tags: buildTags(map[string]string{
 				"Name": "vpc1",
@@ -155,7 +155,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.21.0.0/16"),
 			Tags:      map[string]string{"Name": "vpc-1"},
-			Shared:    fi.PtrTo(true),
+			Shared:    new(true),
 		}
 		return map[string]fi.CloudupTask{
 			"vpc-1": vpc1,
@@ -178,7 +178,7 @@ func TestSharedVPCAdditionalCIDR(t *testing.T) {
 
 		expected := &ec2types.Vpc{
 			CidrBlock: s("172.21.0.0/16"),
-			IsDefault: fi.PtrTo(false),
+			IsDefault: new(false),
 			VpcId:     vpc1.ID,
 			Tags: buildTags(map[string]string{
 				"Name": "vpc-1",

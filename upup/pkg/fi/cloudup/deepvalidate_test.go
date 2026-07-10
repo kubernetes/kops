@@ -23,7 +23,6 @@ import (
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -135,8 +134,8 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 		{
 			Name: "main",
 			Members: []kopsapi.EtcdMemberSpec{
-				{Name: "us-test-1a", InstanceGroup: fi.PtrTo("us-test-1a")},
-				{Name: "us-test-1b", InstanceGroup: fi.PtrTo("us-test-1b")},
+				{Name: "us-test-1a", InstanceGroup: new("us-test-1a")},
+				{Name: "us-test-1b", InstanceGroup: new("us-test-1b")},
 			},
 		},
 	}
@@ -157,9 +156,9 @@ func TestDeepValidate_MissingEtcdMember(t *testing.T) {
 		{
 			Name: "main",
 			Members: []kopsapi.EtcdMemberSpec{
-				{Name: "us-test-1a", InstanceGroup: fi.PtrTo("us-test-1a")},
-				{Name: "us-test-1b", InstanceGroup: fi.PtrTo("us-test-1b")},
-				{Name: "us-test-1c", InstanceGroup: fi.PtrTo("us-test-1c")},
+				{Name: "us-test-1a", InstanceGroup: new("us-test-1a")},
+				{Name: "us-test-1b", InstanceGroup: new("us-test-1b")},
+				{Name: "us-test-1c", InstanceGroup: new("us-test-1c")},
 			},
 		},
 	}

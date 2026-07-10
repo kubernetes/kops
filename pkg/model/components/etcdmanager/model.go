@@ -121,8 +121,8 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			c.AddTask(&fitasks.ManagedFile{
 				Contents:  fi.NewBytesResource(manifestYAML),
 				Lifecycle: b.Lifecycle,
-				Location:  fi.PtrTo("manifests/etcd/" + name + ".yaml"),
-				Name:      fi.PtrTo("manifests-etcdmanager-" + name),
+				Location:  new("manifests/etcd/" + name + ".yaml"),
+				Name:      new("manifests-etcdmanager-" + name),
 			})
 		}
 
@@ -146,15 +146,15 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		c.AddTask(&fitasks.ManagedFile{
 			Contents:  fi.NewBytesResource(d),
 			Lifecycle: b.Lifecycle,
-			Base:      fi.PtrTo(backupStore),
+			Base:      new(backupStore),
 			// TODO: We need this to match the backup base (currently)
-			Location: fi.PtrTo(location + "/control/etcd-cluster-spec"),
-			Name:     fi.PtrTo("etcd-cluster-spec-" + etcdCluster.Name),
+			Location: new(location + "/control/etcd-cluster-spec"),
+			Name:     new("etcd-cluster-spec-" + etcdCluster.Name),
 		})
 
 		// We create a CA keypair to enable secure communication
 		c.AddTask(&fitasks.Keypair{
-			Name:      fi.PtrTo("etcd-manager-ca-" + etcdCluster.Name),
+			Name:      new("etcd-manager-ca-" + etcdCluster.Name),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-manager-ca-" + etcdCluster.Name,
 			Type:      "ca",
@@ -162,7 +162,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		// We create a CA for etcd peers and a separate one for clients
 		c.AddTask(&fitasks.Keypair{
-			Name:      fi.PtrTo("etcd-peers-ca-" + etcdCluster.Name),
+			Name:      new("etcd-peers-ca-" + etcdCluster.Name),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-peers-ca-" + etcdCluster.Name,
 			Type:      "ca",
@@ -170,7 +170,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		// Because API server can only have a single client-cert, we need to share a client CA
 		c.EnsureTask(&fitasks.Keypair{
-			Name:      fi.PtrTo("etcd-clients-ca"),
+			Name:      new("etcd-clients-ca"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=etcd-clients-ca",
 			Type:      "ca",
@@ -178,7 +178,7 @@ func (b *EtcdManagerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 		if etcdCluster.Name == "cilium" {
 			clientsCaCilium := &fitasks.Keypair{
-				Name:      fi.PtrTo("etcd-clients-ca-cilium"),
+				Name:      new("etcd-clients-ca-cilium"),
 				Lifecycle: b.Lifecycle,
 				Subject:   "cn=etcd-clients-ca-cilium",
 				Type:      "ca",
@@ -502,11 +502,11 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	}
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.BackupInterval != nil {
-		config.BackupInterval = fi.PtrTo(etcdCluster.Manager.BackupInterval.Duration.String())
+		config.BackupInterval = new(etcdCluster.Manager.BackupInterval.Duration.String())
 	}
 
 	if etcdCluster.Manager != nil && etcdCluster.Manager.DiscoveryPollInterval != nil {
-		config.DiscoveryPollInterval = fi.PtrTo(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
+		config.DiscoveryPollInterval = new(etcdCluster.Manager.DiscoveryPollInterval.Duration.String())
 	}
 
 	{
@@ -515,7 +515,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		scheme := "https"
 		if etcdCluster.Name == "events" && featureflag.EtcdEventsHTTP.Enabled() {
 			scheme = "http"
-			config.EtcdInsecure = fi.PtrTo(true)
+			config.EtcdInsecure = new(true)
 			klog.Warningf("etcd cluster %q is configured with TLS disabled (HTTP) via KOPS_FEATURE_FLAGS=EtcdEventsHTTP. This is for experiments only.", etcdCluster.Name)
 		}
 
@@ -600,7 +600,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 				fmt.Sprintf("%s=%s", openstack.TagClusterName, b.Cluster.Name),
 			}
 			config.VolumeNameTag = openstack.TagNameEtcdClusterPrefix + etcdCluster.Name
-			config.NetworkCIDR = fi.PtrTo(b.Cluster.Spec.Networking.NetworkCIDR)
+			config.NetworkCIDR = new(b.Cluster.Spec.Networking.NetworkCIDR)
 
 		case kops.CloudProviderScaleway:
 			config.VolumeProvider = "scaleway"

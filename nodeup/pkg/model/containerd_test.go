@@ -64,56 +64,56 @@ func TestContainerdBuilder_BuildFlags(t *testing.T) {
 		{
 			kops.ContainerdConfig{
 				SkipInstall:    false,
-				ConfigOverride: fi.PtrTo("test"),
-				Version:        fi.PtrTo("test"),
+				ConfigOverride: new("test"),
+				Version:        new("test"),
 			},
 			"",
 		},
 		{
 			kops.ContainerdConfig{
-				Address: fi.PtrTo("/run/containerd/containerd.sock"),
+				Address: new("/run/containerd/containerd.sock"),
 			},
 			"--address=/run/containerd/containerd.sock",
 		},
 		{
 			kops.ContainerdConfig{
-				LogLevel: fi.PtrTo("info"),
+				LogLevel: new("info"),
 			},
 			"--log-level=info",
 		},
 		{
 			kops.ContainerdConfig{
-				Root: fi.PtrTo("/var/lib/containerd"),
+				Root: new("/var/lib/containerd"),
 			},
 			"--root=/var/lib/containerd",
 		},
 		{
 			kops.ContainerdConfig{
-				State: fi.PtrTo("/run/containerd"),
+				State: new("/run/containerd"),
 			},
 			"--state=/run/containerd",
 		},
 		{
 			kops.ContainerdConfig{
 				SkipInstall:    false,
-				Address:        fi.PtrTo("/run/containerd/containerd.sock"),
-				ConfigOverride: fi.PtrTo("test"),
-				LogLevel:       fi.PtrTo("info"),
-				Root:           fi.PtrTo("/var/lib/containerd"),
-				State:          fi.PtrTo("/run/containerd"),
-				Version:        fi.PtrTo("test"),
+				Address:        new("/run/containerd/containerd.sock"),
+				ConfigOverride: new("test"),
+				LogLevel:       new("info"),
+				Root:           new("/var/lib/containerd"),
+				State:          new("/run/containerd"),
+				Version:        new("test"),
 			},
 			"--address=/run/containerd/containerd.sock --log-level=info --root=/var/lib/containerd --state=/run/containerd",
 		},
 		{
 			kops.ContainerdConfig{
 				SkipInstall:    true,
-				Address:        fi.PtrTo("/run/containerd/containerd.sock"),
-				ConfigOverride: fi.PtrTo("test"),
-				LogLevel:       fi.PtrTo("info"),
-				Root:           fi.PtrTo("/var/lib/containerd"),
-				State:          fi.PtrTo("/run/containerd"),
-				Version:        fi.PtrTo("test"),
+				Address:        new("/run/containerd/containerd.sock"),
+				ConfigOverride: new("test"),
+				LogLevel:       new("info"),
+				Root:           new("/var/lib/containerd"),
+				State:          new("/run/containerd"),
+				Version:        new("test"),
 			},
 			"--address=/run/containerd/containerd.sock --log-level=info --root=/var/lib/containerd --state=/run/containerd",
 		},

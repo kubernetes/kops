@@ -169,9 +169,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		location := key + "/default.yaml"
 
 		addon := addons.Add(&channelsapi.AddonSpec{
-			Name:     fi.PtrTo(key),
+			Name:     new(key),
 			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.PtrTo(location),
+			Manifest: new(location),
 		})
 		addon.SkipRemap = true
 
@@ -194,9 +194,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		}
 
 		task := &AddonManifest{
-			Name:      fi.PtrTo(b.Cluster.ObjectMeta.Name + "-addons-" + addonKey(addon.Spec)),
+			Name:      new(b.Cluster.ObjectMeta.Name + "-addons-" + addonKey(addon.Spec)),
 			Lifecycle: b.Lifecycle,
-			Location:  fi.PtrTo("addons/" + *addon.Spec.Manifest),
+			Location:  new("addons/" + *addon.Spec.Manifest),
 
 			addonRenderer:   b.addonRenderer,
 			source:          addon.Source,
@@ -213,9 +213,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 	}
 
 	c.AddTask(&BootstrapChannel{
-		Name:           fi.PtrTo(b.Cluster.ObjectMeta.Name + "-addons-bootstrap"),
+		Name:           new(b.Cluster.ObjectMeta.Name + "-addons-bootstrap"),
 		Lifecycle:      b.Lifecycle,
-		Location:       fi.PtrTo("addons/bootstrap-channel.yaml"),
+		Location:       new("addons/bootstrap-channel.yaml"),
 		addonManifests: addonTasks,
 	})
 
@@ -319,9 +319,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.16"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:               fi.PtrTo(key),
+				Name:               new(key),
 				Selector:           map[string]string{"k8s-addon": key},
-				Manifest:           fi.PtrTo(location),
+				Manifest:           new(location),
 				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateControlPlane,
 				Id:                 id,
 			})
@@ -343,9 +343,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.12"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -361,9 +361,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.12"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -381,9 +381,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.9"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -395,9 +395,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		location := key + "/v" + version + ".yaml"
 
 		addons.Add(&channelsapi.AddonSpec{
-			Name:     fi.PtrTo(key),
+			Name:     new(key),
 			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.PtrTo(location),
+			Manifest: new(location),
 		})
 	}
 
@@ -407,9 +407,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		id := "k8s-1.12"
 
 		spec := &channelsapi.AddonSpec{
-			Name:     fi.PtrTo(key),
+			Name:     new(key),
 			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.PtrTo(location),
+			Manifest: new(location),
 			Id:       id,
 		}
 
@@ -436,9 +436,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		id := "k8s-1.19"
 
 		addons.Add(&channelsapi.AddonSpec{
-			Name:     fi.PtrTo(key),
+			Name:     new(key),
 			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.PtrTo(location),
+			Manifest: new(location),
 			Id:       id,
 		})
 
@@ -458,9 +458,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.12"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:               fi.PtrTo(key),
+					Name:               new(key),
 					Selector:           map[string]string{"k8s-addon": key},
-					Manifest:           fi.PtrTo(location),
+					Manifest:           new(location),
 					NeedsRollingUpdate: channelsapi.NeedsRollingUpdateAll,
 					Id:                 id,
 				})
@@ -477,9 +477,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.15"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -500,9 +500,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.11"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-app": "metrics-server"},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 					NeedsPKI: !fi.ValueOf(b.Cluster.Spec.MetricsServer.Insecure),
 				})
@@ -519,8 +519,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.16"
 
 				addon := addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Manifest: fi.PtrTo(location),
+					Name:     new(key),
+					Manifest: new(location),
 					Id:       id,
 				})
 				addon.BuildPrune = true
@@ -544,9 +544,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.11"
 
 				addon := addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 				addon.BuildPrune = true
@@ -569,9 +569,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.17"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 			addon.BuildPrune = true
@@ -596,9 +596,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.16"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -620,9 +620,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.20"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -645,9 +645,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 				NeedsPKI: true,
 			})
@@ -668,11 +668,11 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				location := key + "/" + id + ".yaml"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name: fi.PtrTo(key),
+					Name: new(key),
 					Selector: map[string]string{
 						"k8s-addon": key,
 					},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 					NeedsPKI: true,
 				})
@@ -689,9 +689,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				location := key + "/" + id + ".yaml"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -705,9 +705,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				location := key + "/" + id + ".yaml"
 
 				addon := addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 				addon.BuildPrune = true
@@ -723,9 +723,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -737,9 +737,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -752,9 +752,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -764,9 +764,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -776,9 +776,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -791,9 +791,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -803,9 +803,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -815,9 +815,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 			addon.BuildPrune = true
@@ -833,9 +833,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				location := key + "/" + id + ".yaml"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: map[string]string{"k8s-addon": key},
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -846,8 +846,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.23"
 				location := key + "/" + id + ".yaml"
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Manifest: fi.PtrTo(location),
+					Name:     new(key),
+					Manifest: new(location),
 					Selector: map[string]string{"k8s-addon": key},
 					Id:       id,
 				})
@@ -862,9 +862,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -874,9 +874,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -890,9 +890,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: map[string]string{"k8s-addon": key},
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 			addon.BuildPrune = true
@@ -938,8 +938,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.23"
 				location := key + "/" + id + ".yaml"
 				addon := addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Manifest: fi.PtrTo(location),
+					Name:     new(key),
+					Manifest: new(location),
 					Selector: map[string]string{"k8s-addon": key},
 					Id:       id,
 				})
@@ -961,9 +961,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.12"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 
@@ -979,9 +979,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 			addon.BuildPrune = true
@@ -996,9 +996,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 			addon.BuildPrune = true
@@ -1013,9 +1013,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.12"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
+				Name:     new(key),
 				Selector: networkingSelector(),
-				Manifest: fi.PtrTo(location),
+				Manifest: new(location),
 				Id:       id,
 			})
 		}
@@ -1034,9 +1034,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:               fi.PtrTo(key),
+				Name:               new(key),
 				Selector:           networkingSelector(),
-				Manifest:           fi.PtrTo(location),
+				Manifest:           new(location),
 				Id:                 id,
 				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateAll,
 			})
@@ -1051,9 +1051,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:               fi.PtrTo(key),
+				Name:               new(key),
 				Selector:           networkingSelector(),
-				Manifest:           fi.PtrTo(location),
+				Manifest:           new(location),
 				Id:                 id,
 				NeedsRollingUpdate: channelsapi.NeedsRollingUpdateAll,
 			})
@@ -1076,9 +1076,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.12"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: authenticationSelector,
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -1091,9 +1091,9 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.12"
 
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
+					Name:     new(key),
 					Selector: authenticationSelector,
-					Manifest: fi.PtrTo(location),
+					Manifest: new(location),
 					Id:       id,
 				})
 			}
@@ -1108,8 +1108,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			location := key + "/" + id + ".yaml"
 
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Manifest: fi.PtrTo(location),
+				Name:     new(key),
+				Manifest: new(location),
 				Selector: map[string]string{"k8s-addon": key},
 				Id:       id,
 			})
@@ -1124,8 +1124,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.13-ccm"
 
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Manifest: fi.PtrTo(location),
+				Name:     new(key),
+				Manifest: new(location),
 				Selector: map[string]string{"k8s-addon": key},
 				Id:       id,
 			})
@@ -1141,8 +1141,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.18"
 				location := key + "/" + id + ".yaml"
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Manifest: fi.PtrTo(location),
+					Name:     new(key),
+					Manifest: new(location),
 					Selector: map[string]string{"k8s-addon": key},
 					Id:       id,
 				})
@@ -1159,8 +1159,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 				id := "k8s-1.17"
 				location := key + "/" + id + ".yaml"
 				addons.Add(&channelsapi.AddonSpec{
-					Name:     fi.PtrTo(key),
-					Manifest: fi.PtrTo(location),
+					Name:     new(key),
+					Manifest: new(location),
 					Selector: map[string]string{"k8s-addon": key},
 					Id:       id,
 				})
@@ -1178,8 +1178,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.20"
 			location := key + "/" + id + ".yaml"
 			addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Manifest: fi.PtrTo(location),
+				Name:     new(key),
+				Manifest: new(location),
 				Selector: map[string]string{"k8s-addon": key},
 				NeedsPKI: true,
 				Id:       id,
@@ -1193,8 +1193,8 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 			id := "k8s-1.19"
 			location := key + "/" + id + ".yaml"
 			addon := addons.Add(&channelsapi.AddonSpec{
-				Name:     fi.PtrTo(key),
-				Manifest: fi.PtrTo(location),
+				Name:     new(key),
+				Manifest: new(location),
 				Selector: map[string]string{"k8s-addon": key},
 				Id:       id,
 			})

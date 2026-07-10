@@ -48,7 +48,7 @@ func TestVPCFindMatchByName(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	task := &VPC{Name: fi.PtrTo("example-k8s-local")}
+	task := &VPC{Name: new("example-k8s-local")}
 	actual, err := task.Find(ctx)
 	if err != nil {
 		t.Fatalf("Find returned error: %v", err)
@@ -80,7 +80,7 @@ func TestVPCFindMatchByNameAndRegion(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	task := &VPC{Name: fi.PtrTo("example-k8s-local"), Region: fi.PtrTo("us-east")}
+	task := &VPC{Name: new("example-k8s-local"), Region: new("us-east")}
 	actual, err := task.Find(ctx)
 	if err != nil {
 		t.Fatalf("Find returned error: %v", err)
@@ -98,7 +98,7 @@ func TestVPCFindListError(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	_, err := (&VPC{Name: fi.PtrTo("example-k8s-local")}).Find(ctx)
+	_, err := (&VPC{Name: new("example-k8s-local")}).Find(ctx)
 	if err == nil {
 		t.Fatalf("expected list error")
 	}
@@ -117,7 +117,7 @@ func TestVPCFindDuplicateName(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	_, err := (&VPC{Name: fi.PtrTo("example-k8s-local")}).Find(ctx)
+	_, err := (&VPC{Name: new("example-k8s-local")}).Find(ctx)
 	if err == nil {
 		t.Fatalf("expected duplicate name error")
 	}
@@ -131,9 +131,9 @@ func TestVPCRenderLinodeCreate(t *testing.T) {
 	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
 	expected := &VPC{
-		Name:        fi.PtrTo("example-k8s-local"),
-		Description: fi.PtrTo("kOps cluster VPC"),
-		Region:      fi.PtrTo("us-east"),
+		Name:        new("example-k8s-local"),
+		Description: new("kOps cluster VPC"),
+		Region:      new("us-east"),
 	}
 
 	if err := (&VPC{}).RenderLinode(target, nil, expected, nil); err != nil {
@@ -160,8 +160,8 @@ func TestVPCRenderLinodeUpdate(t *testing.T) {
 	client := &linode.MockLinodeClient{UpdateVPCResponse: &linodego.VPC{ID: 42, Label: "new-name", Description: "new description"}}
 	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
-	actual := &VPC{ID: fi.PtrTo(42), Name: fi.PtrTo("old-name"), Description: fi.PtrTo("old"), Region: fi.PtrTo("us-east")}
-	expected := &VPC{ID: fi.PtrTo(42), Name: fi.PtrTo("new-name"), Description: fi.PtrTo("new description"), Region: fi.PtrTo("us-east")}
+	actual := &VPC{ID: new(42), Name: new("old-name"), Description: new("old"), Region: new("us-east")}
+	expected := &VPC{ID: new(42), Name: new("new-name"), Description: new("new description"), Region: new("us-east")}
 	changes := &VPC{Name: expected.Name, Description: expected.Description}
 
 	if err := (&VPC{}).RenderLinode(target, actual, expected, changes); err != nil {
@@ -182,8 +182,8 @@ func TestVPCRenderLinodeUpdate(t *testing.T) {
 }
 
 func TestVPCCheckChangesRejectsRegionChange(t *testing.T) {
-	actual := &VPC{Name: fi.PtrTo("example-k8s-local"), ID: fi.PtrTo(42), Region: fi.PtrTo("us-east")}
-	expected := &VPC{Name: fi.PtrTo("example-k8s-local"), ID: fi.PtrTo(42), Region: fi.PtrTo("us-west")}
+	actual := &VPC{Name: new("example-k8s-local"), ID: new(42), Region: new("us-east")}
+	expected := &VPC{Name: new("example-k8s-local"), ID: new(42), Region: new("us-west")}
 	changes := &VPC{Region: expected.Region}
 
 	if err := (&VPC{}).CheckChanges(actual, expected, changes); err == nil {

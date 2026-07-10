@@ -41,7 +41,7 @@ func (*NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	skuName := string(e.SKU)
 	tf := &terraformAzureNatGateway{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		SKUName:           &skuName,
 		Tags:              stringMap(e.Tags),

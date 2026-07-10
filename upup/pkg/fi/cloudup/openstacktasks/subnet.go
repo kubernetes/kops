@@ -67,7 +67,7 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 
 	nameservers := make([]*string, len(subnet.DNSNameservers))
 	for i, ns := range subnet.DNSNameservers {
-		nameservers[i] = fi.PtrTo(ns)
+		nameservers[i] = new(ns)
 	}
 
 	tag := ""
@@ -76,13 +76,13 @@ func NewSubnetTaskFromCloud(cloud openstack.OpenstackCloud, lifecycle fi.Lifecyc
 	}
 
 	actual := &Subnet{
-		ID:         fi.PtrTo(subnet.ID),
-		Name:       fi.PtrTo(subnet.Name),
+		ID:         new(subnet.ID),
+		Name:       new(subnet.Name),
 		Network:    networkTask,
-		CIDR:       fi.PtrTo(subnet.CIDR),
+		CIDR:       new(subnet.CIDR),
 		Lifecycle:  lifecycle,
 		DNSServers: nameservers,
-		Tag:        fi.PtrTo(tag),
+		Tag:        new(tag),
 	}
 	if find != nil {
 		find.ID = actual.ID
@@ -97,7 +97,7 @@ func (s *Subnet) Find(context *fi.CloudupContext) (*Subnet, error) {
 		Name:       fi.ValueOf(s.Name),
 		NetworkID:  fi.ValueOf(s.Network.ID),
 		CIDR:       fi.ValueOf(s.CIDR),
-		EnableDHCP: fi.PtrTo(true),
+		EnableDHCP: new(true),
 		IPVersion:  4,
 	}
 	rs, err := cloud.ListSubnets(opt)
@@ -150,7 +150,7 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 			NetworkID:  fi.ValueOf(e.Network.ID),
 			IPVersion:  gophercloud.IPv4,
 			CIDR:       fi.ValueOf(e.CIDR),
-			EnableDHCP: fi.PtrTo(true),
+			EnableDHCP: new(true),
 		}
 
 		if len(e.DNSServers) > 0 {
@@ -170,7 +170,7 @@ func (*Subnet) RenderOpenstack(t *openstack.OpenstackAPITarget, a, e, changes *S
 			return fmt.Errorf("Error appending tag to subnet: %v", err)
 		}
 
-		e.ID = fi.PtrTo(v.ID)
+		e.ID = new(v.ID)
 		klog.V(2).Infof("Creating a new Openstack subnet, id=%s", v.ID)
 		return nil
 	} else {

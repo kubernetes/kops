@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -124,11 +123,11 @@ func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
 		},
 		{
 			label:  "automatic",
-			policy: fi.PtrTo(api.UpdatePolicyAutomatic),
+			policy: new(api.UpdatePolicyAutomatic),
 		},
 		{
 			label:  "external",
-			policy: fi.PtrTo(api.UpdatePolicyExternal),
+			policy: new(api.UpdatePolicyExternal),
 		},
 	} {
 		t.Run(test.label, func(t *testing.T) {

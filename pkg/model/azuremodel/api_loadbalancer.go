@@ -52,7 +52,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 	// Create LoadBalancer for API ELB
 	lb := &azuretasks.LoadBalancer{
-		Name:              fi.PtrTo(b.NameForLoadBalancer()),
+		Name:              new(b.NameForLoadBalancer()),
 		Lifecycle:         b.Lifecycle,
 		ResourceGroup:     b.LinkToResourceGroup(),
 		Tags:              map[string]*string{},
@@ -90,7 +90,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 
 		// Create Public IP Address for Public Loadbalacer
 		p := &azuretasks.PublicIPAddress{
-			Name:             fi.PtrTo(b.NameForLoadBalancer()),
+			Name:             new(b.NameForLoadBalancer()),
 			Lifecycle:        b.Lifecycle,
 			ResourceGroup:    b.LinkToResourceGroup(),
 			IPVersion:        network.IPVersionIPv4,
@@ -112,7 +112,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 			Name:              fmt.Sprintf("Health-HTTPS-%d", wellknownports.KopsControllerPort),
 			Protocol:          network.ProbeProtocolHTTPS,
 			Port:              wellknownports.KopsControllerPort,
-			RequestPath:       fi.PtrTo("/healthz"),
+			RequestPath:       new("/healthz"),
 			IntervalInSeconds: 15,
 			NumberOfProbes:    4,
 		})

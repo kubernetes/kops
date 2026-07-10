@@ -42,12 +42,12 @@ func TestServiceAccount(t *testing.T) {
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
 	buildTasks := func() map[string]fi.CloudupTask {
 		serviceAccount := &ServiceAccount{
-			Name:      fi.PtrTo("test"),
+			Name:      new("test"),
 			Lifecycle: fi.LifecycleSync,
 
-			Email:       fi.PtrTo("test@testproject.iam.gserviceaccount.com"),
-			Description: fi.PtrTo("description of ServiceAccount"),
-			DisplayName: fi.PtrTo("display name of ServiceAccount"),
+			Email:       new("test@testproject.iam.gserviceaccount.com"),
+			Description: new("description of ServiceAccount"),
+			DisplayName: new("display name of ServiceAccount"),
 		}
 
 		return map[string]fi.CloudupTask{

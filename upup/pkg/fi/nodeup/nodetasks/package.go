@@ -178,11 +178,11 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 		case "ii":
 			installed = true
 			installedVersion = version
-			healthy = fi.PtrTo(true)
+			healthy = new(true)
 		case "iF", "iU":
 			installed = true
 			installedVersion = version
-			healthy = fi.PtrTo(false)
+			healthy = new(false)
 		case "rc":
 			// removed
 			installed = false
@@ -204,7 +204,7 @@ func (e *Package) findDpkg(c *fi.NodeupContext) (*Package, error) {
 
 	return &Package{
 		Name:    e.Name,
-		Version: fi.PtrTo(installedVersion),
+		Version: new(installedVersion),
 		Healthy: healthy,
 	}, nil
 }
@@ -243,7 +243,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 		installed = true
 		installedVersion = tokens[1]
 		// If we implement unhealthy; be sure to implement repair in Render
-		healthy = fi.PtrTo(true)
+		healthy = new(true)
 	}
 
 	if !installed {
@@ -252,7 +252,7 @@ func (e *Package) findYum(c *fi.NodeupContext) (*Package, error) {
 
 	return &Package{
 		Name:    e.Name,
-		Version: fi.PtrTo(installedVersion),
+		Version: new(installedVersion),
 		Healthy: healthy,
 	}, nil
 }

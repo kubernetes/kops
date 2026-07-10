@@ -652,7 +652,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			if group.Spec.RootVolume == nil {
 				group.Spec.RootVolume = &api.InstanceRootVolumeSpec{}
 			}
-			group.Spec.RootVolume.Size = fi.PtrTo(c.ControlPlaneVolumeSize)
+			group.Spec.RootVolume.Size = new(c.ControlPlaneVolumeSize)
 		}
 	}
 
@@ -661,7 +661,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			if group.Spec.RootVolume == nil {
 				group.Spec.RootVolume = &api.InstanceRootVolumeSpec{}
 			}
-			group.Spec.RootVolume.Type = fi.PtrTo(c.ControlPlaneVolumeType)
+			group.Spec.RootVolume.Type = new(c.ControlPlaneVolumeType)
 		}
 	}
 
@@ -670,7 +670,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			if group.Spec.RootVolume == nil {
 				group.Spec.RootVolume = &api.InstanceRootVolumeSpec{}
 			}
-			group.Spec.RootVolume.Size = fi.PtrTo(c.NodeVolumeSize)
+			group.Spec.RootVolume.Size = new(c.NodeVolumeSize)
 		}
 	}
 
@@ -679,7 +679,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			if group.Spec.RootVolume == nil {
 				group.Spec.RootVolume = &api.InstanceRootVolumeSpec{}
 			}
-			group.Spec.RootVolume.Type = fi.PtrTo(c.NodeVolumeType)
+			group.Spec.RootVolume.Type = new(c.NodeVolumeType)
 		}
 	}
 
@@ -696,7 +696,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 	}
 
 	if c.DisableSubnetTags {
-		cluster.Spec.Networking.TagSubnets = fi.PtrTo(false)
+		cluster.Spec.Networking.TagSubnets = new(false)
 	}
 
 	if c.APIPublicName != "" {
@@ -719,7 +719,7 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 			cluster.Spec.KubeProxy = &api.KubeProxyConfig{}
 		}
 		if cluster.Spec.KubeProxy.Enabled == nil {
-			cluster.Spec.KubeProxy.Enabled = fi.PtrTo(false)
+			cluster.Spec.KubeProxy.Enabled = new(false)
 		}
 	}
 

@@ -123,7 +123,7 @@ func (s *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 	}
 	if found.Properties.RouteTable != nil {
 		fs.RouteTable = &RouteTable{
-			Name: fi.PtrTo(path.Base(fi.ValueOf(found.Properties.RouteTable.ID))),
+			Name: new(path.Base(fi.ValueOf(found.Properties.RouteTable.ID))),
 			ID:   found.Properties.RouteTable.ID,
 		}
 	}

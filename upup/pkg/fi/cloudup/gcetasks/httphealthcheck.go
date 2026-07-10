@@ -55,9 +55,9 @@ func (e *HTTPHealthcheck) Find(c *fi.CloudupContext) (*HTTPHealthcheck, error) {
 		return nil, fmt.Errorf("error getting HealthCheck %q: %v", name, err)
 	}
 	actual := &HTTPHealthcheck{
-		Name:        fi.PtrTo(r.Name),
-		Port:        fi.PtrTo(r.Port),
-		RequestPath: fi.PtrTo(r.RequestPath),
+		Name:        new(r.Name),
+		Port:        new(r.Port),
+		RequestPath: new(r.RequestPath),
 		SelfLink:    r.SelfLink,
 	}
 	// System fields

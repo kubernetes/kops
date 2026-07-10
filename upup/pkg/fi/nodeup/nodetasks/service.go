@@ -125,13 +125,13 @@ func (i *InstallService) InitDefaults() *InstallService {
 func (s *Service) InitDefaults() *Service {
 	// Default some values to true: Running, SmartRestart, ManageState
 	if s.Running == nil {
-		s.Running = fi.PtrTo(true)
+		s.Running = new(true)
 	}
 	if s.SmartRestart == nil {
-		s.SmartRestart = fi.PtrTo(true)
+		s.SmartRestart = new(true)
 	}
 	if s.ManageState == nil {
-		s.ManageState = fi.PtrTo(true)
+		s.ManageState = new(true)
 	}
 
 	// Default Enabled to be the same as running
@@ -208,13 +208,13 @@ func (e *Service) Find(_ *fi.NodeupContext) (*Service, error) {
 		return &Service{
 			Name:       e.Name,
 			Definition: nil,
-			Running:    fi.PtrTo(false),
+			Running:    new(false),
 		}, nil
 	}
 
 	actual := &Service{
 		Name:       e.Name,
-		Definition: fi.PtrTo(string(d)),
+		Definition: new(string(d)),
 
 		// Avoid spurious changes
 		ManageState:  e.ManageState,
@@ -229,27 +229,27 @@ func (e *Service) Find(_ *fi.NodeupContext) (*Service, error) {
 	activeState := properties["ActiveState"]
 	switch activeState {
 	case "active":
-		actual.Running = fi.PtrTo(true)
+		actual.Running = new(true)
 
 	case "failed", "inactive":
-		actual.Running = fi.PtrTo(false)
+		actual.Running = new(false)
 	default:
 		klog.Warningf("Unknown ActiveState=%q; will treat as not running", activeState)
-		actual.Running = fi.PtrTo(false)
+		actual.Running = new(false)
 	}
 
 	wantedBy := properties["WantedBy"]
 	switch wantedBy {
 	case "":
-		actual.Enabled = fi.PtrTo(false)
+		actual.Enabled = new(false)
 
 	// TODO: Can probably do better here!
 	case "multi-user.target", "graphical.target multi-user.target":
-		actual.Enabled = fi.PtrTo(true)
+		actual.Enabled = new(true)
 
 	default:
 		klog.Warningf("Unknown WantedBy=%q; will treat as not enabled", wantedBy)
-		actual.Enabled = fi.PtrTo(false)
+		actual.Enabled = new(false)
 	}
 
 	return actual, nil

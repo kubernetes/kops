@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestUnsetClusterBadInput(t *testing.T) {
@@ -52,7 +51,7 @@ func TestUnsetClusterFields(t *testing.T) {
 					KubernetesVersion: "1.8.2",
 					Kubelet: &kops.KubeletConfigSpec{
 						AuthorizationMode:          "Webhook",
-						AuthenticationTokenWebhook: fi.PtrTo(true),
+						AuthenticationTokenWebhook: new(true),
 					},
 				},
 			},
@@ -97,7 +96,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					Kubelet: &kops.KubeletConfigSpec{
-						AuthenticationTokenWebhook: fi.PtrTo(false),
+						AuthenticationTokenWebhook: new(false),
 					},
 				},
 			},
@@ -293,7 +292,7 @@ func TestUnsetClusterFields(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
-							Masquerade: fi.PtrTo(false),
+							Masquerade: new(false),
 						},
 					},
 				},
@@ -313,7 +312,7 @@ func TestUnsetClusterFields(t *testing.T) {
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubeProxy: &kops.KubeProxyConfig{
-						Enabled: fi.PtrTo(true),
+						Enabled: new(true),
 					},
 				},
 			},
@@ -379,13 +378,13 @@ func TestUnsetCiliumFields(t *testing.T) {
 			Input: kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubeProxy: &kops.KubeProxyConfig{
-						Enabled: fi.PtrTo(false),
+						Enabled: new(false),
 					},
 					Networking: kops.NetworkingSpec{
 						Cilium: &kops.CiliumNetworkingSpec{
 							IPAM:           "eni",
 							EnableNodePort: true,
-							Masquerade:     fi.PtrTo(false),
+							Masquerade:     new(false),
 						},
 					},
 				},

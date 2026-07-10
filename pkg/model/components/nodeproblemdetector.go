@@ -19,7 +19,6 @@ package components
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -38,7 +37,7 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o *kops.Cluster) error 
 	npd := clusterSpec.NodeProblemDetector
 
 	if npd.Enabled == nil {
-		npd.Enabled = fi.PtrTo(false)
+		npd.Enabled = new(false)
 	}
 
 	if npd.CPURequest == nil {
@@ -57,7 +56,7 @@ func (b *NodeProblemDetectorOptionsBuilder) BuildOptions(o *kops.Cluster) error 
 	}
 
 	if npd.Image == nil {
-		npd.Image = fi.PtrTo("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.18")
+		npd.Image = new("registry.k8s.io/node-problem-detector/node-problem-detector:v0.8.18")
 	}
 
 	return nil

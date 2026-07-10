@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -44,13 +43,13 @@ func (b *KindnetOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 		c.Masquerade = &kops.KindnetMasqueradeSpec{}
 		if clusterSpec.IsIPv6Only() {
 			// Kindnet should NOT masquerade when IPv6 is used
-			c.Masquerade.Enabled = fi.PtrTo(false)
+			c.Masquerade.Enabled = new(false)
 			if o.GetCloudProvider() != kops.CloudProviderAWS {
-				c.NAT64 = fi.PtrTo(true)
+				c.NAT64 = new(true)
 			}
 		} else {
 			// Kindnet should masquerade well known ranges if kops is not doing it
-			c.Masquerade.Enabled = fi.PtrTo(true)
+			c.Masquerade.Enabled = new(true)
 			if clusterSpec.Networking.NetworkCIDR != "" {
 				c.Masquerade.NonMasqueradeCIDRs = append(c.Masquerade.NonMasqueradeCIDRs, clusterSpec.Networking.NetworkCIDR)
 			}
@@ -64,11 +63,11 @@ func (b *KindnetOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.FastPathThreshold == nil {
-		c.FastPathThreshold = fi.PtrTo(int32(0))
+		c.FastPathThreshold = new(int32(0))
 	}
 
 	if c.LogLevel == nil {
-		c.LogLevel = fi.PtrTo(int32(2))
+		c.LogLevel = new(int32(2))
 	}
 
 	return nil

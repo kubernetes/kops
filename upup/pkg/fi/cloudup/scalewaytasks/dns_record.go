@@ -66,12 +66,12 @@ func (d *DNSRecord) Find(context *fi.CloudupContext) (*DNSRecord, error) {
 	recordFound := records.Records[0]
 
 	return &DNSRecord{
-		ID:        fi.PtrTo(recordFound.ID),
-		Name:      fi.PtrTo(recordFound.Name),
-		Data:      fi.PtrTo(recordFound.Data),
-		TTL:       fi.PtrTo(recordFound.TTL),
+		ID:        new(recordFound.ID),
+		Name:      new(recordFound.Name),
+		Data:      new(recordFound.Data),
+		TTL:       new(recordFound.TTL),
 		DNSZone:   d.DNSZone,
-		Type:      fi.PtrTo(recordFound.Type.String()),
+		Type:      new(recordFound.Type.String()),
 		Lifecycle: d.Lifecycle,
 	}, nil
 }
@@ -177,7 +177,7 @@ func (_ *DNSRecord) RenderTerraform(t *terraform.TerraformTarget, actual, expect
 		Data:    expected.Data,
 		DNSZone: expected.DNSZone,
 		Type:    expected.Type,
-		TTL:     fi.PtrTo(int32(fi.ValueOf(expected.TTL))),
+		TTL:     new(int32(fi.ValueOf(expected.TTL))),
 		Lifecycle: &terraform.Lifecycle{
 			IgnoreChanges: []*terraformWriter.Literal{{String: "data"}},
 		},

@@ -43,7 +43,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/testutils"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -101,7 +100,7 @@ func TestDeleteInstanceGroup_GCEWaitOnInstanceDeletion(t *testing.T) {
 					Items: []*compute.MetadataItems{
 						{
 							Key:   "cluster-name",
-							Value: fi.PtrTo(clusterName),
+							Value: new(clusterName),
 						},
 					},
 				},
@@ -189,7 +188,7 @@ func TestDeleteInstanceGroup_GCEMissingInstance(t *testing.T) {
 					Items: []*compute.MetadataItems{
 						{
 							Key:   "cluster-name",
-							Value: fi.PtrTo(clusterName),
+							Value: new(clusterName),
 						},
 					},
 				},

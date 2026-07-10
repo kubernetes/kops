@@ -45,7 +45,7 @@ func TestSSHKeyFindMatchByName(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	task := &SSHKey{Name: fi.PtrTo("example-k8s-local"), PublicKey: publicKey}
+	task := &SSHKey{Name: new("example-k8s-local"), PublicKey: publicKey}
 	actual, err := task.Find(ctx)
 	if err != nil {
 		t.Fatalf("Find returned error: %v", err)
@@ -69,7 +69,7 @@ func TestSSHKeyFindPublicKeyMismatch(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	_, err := (&SSHKey{Name: fi.PtrTo("example-k8s-local"), PublicKey: publicKey}).Find(ctx)
+	_, err := (&SSHKey{Name: new("example-k8s-local"), PublicKey: publicKey}).Find(ctx)
 	if err == nil {
 		t.Fatalf("expected public key mismatch error")
 	}
@@ -88,7 +88,7 @@ func TestSSHKeyFindDuplicateName(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	_, err := (&SSHKey{Name: fi.PtrTo("example-k8s-local")}).Find(ctx)
+	_, err := (&SSHKey{Name: new("example-k8s-local")}).Find(ctx)
 	if err == nil {
 		t.Fatalf("expected duplicate name error")
 	}
@@ -102,7 +102,7 @@ func TestSSHKeyFindListError(t *testing.T) {
 	cloud := &linode.MockLinodeCloud{Client_: client}
 	ctx := newTestCloudupContext(t, cloud)
 
-	_, err := (&SSHKey{Name: fi.PtrTo("example-k8s-local")}).Find(ctx)
+	_, err := (&SSHKey{Name: new("example-k8s-local")}).Find(ctx)
 	if err == nil {
 		t.Fatalf("expected list error")
 	}
@@ -116,7 +116,7 @@ func TestSSHKeyRenderLinodeCreate(t *testing.T) {
 	client := &linode.MockLinodeClient{CreateSSHKeyResponse: &linodego.SSHKey{ID: 42, Label: "example-k8s-local"}}
 	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
 
-	expected := &SSHKey{Name: fi.PtrTo("example-k8s-local"), PublicKey: publicKey}
+	expected := &SSHKey{Name: new("example-k8s-local"), PublicKey: publicKey}
 	if err := (&SSHKey{}).RenderLinode(target, nil, expected, nil); err != nil {
 		t.Fatalf("RenderLinode returned error: %v", err)
 	}
@@ -137,8 +137,8 @@ func TestSSHKeyRenderLinodeCreate(t *testing.T) {
 func TestSSHKeyCheckChangesRejectsPublicKeyChange(t *testing.T) {
 	actualPublicKey := newSSHKeyResource(t, testLinodeSSHPublicKey)
 	expectedPublicKey := newSSHKeyResource(t, testLinodeSSHPublicKey+"-changed")
-	actual := &SSHKey{Name: fi.PtrTo("example-k8s-local"), ID: fi.PtrTo(42), PublicKey: actualPublicKey}
-	expected := &SSHKey{Name: fi.PtrTo("example-k8s-local"), ID: fi.PtrTo(42), PublicKey: expectedPublicKey}
+	actual := &SSHKey{Name: new("example-k8s-local"), ID: new(42), PublicKey: actualPublicKey}
+	expected := &SSHKey{Name: new("example-k8s-local"), ID: new(42), PublicKey: expectedPublicKey}
 	changes := &SSHKey{PublicKey: expected.PublicKey}
 
 	if err := (&SSHKey{}).CheckChanges(actual, expected, changes); err == nil {

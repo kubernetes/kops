@@ -92,14 +92,14 @@ func (i *IssueCert) AddFileTasks(c *fi.NodeupModelBuilderContext, dir string, na
 	c.EnsureTask(&File{
 		Path: dir,
 		Type: FileType_Directory,
-		Mode: fi.PtrTo("0755"),
+		Mode: new("0755"),
 	})
 
 	c.AddTask(&File{
 		Path:     filepath.Join(dir, name+".crt"),
 		Contents: certResource,
 		Type:     FileType_File,
-		Mode:     fi.PtrTo("0644"),
+		Mode:     new("0644"),
 		Owner:    owner,
 	})
 
@@ -107,7 +107,7 @@ func (i *IssueCert) AddFileTasks(c *fi.NodeupModelBuilderContext, dir string, na
 		Path:     filepath.Join(dir, name+".key"),
 		Contents: keyResource,
 		Type:     FileType_File,
-		Mode:     fi.PtrTo("0600"),
+		Mode:     new("0600"),
 		Owner:    owner,
 	})
 
@@ -116,7 +116,7 @@ func (i *IssueCert) AddFileTasks(c *fi.NodeupModelBuilderContext, dir string, na
 			Path:     filepath.Join(dir, caName+".crt"),
 			Contents: caResource,
 			Type:     FileType_File,
-			Mode:     fi.PtrTo("0644"),
+			Mode:     new("0644"),
 			Owner:    owner,
 		})
 	}

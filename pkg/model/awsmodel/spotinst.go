@@ -211,10 +211,10 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 	klog.V(4).Infof("Building instance group as Elastigroup: %q", b.AutoscalingGroupName(ig))
 	group := &spotinsttasks.Elastigroup{
 		Lifecycle:            b.Lifecycle,
-		Name:                 fi.PtrTo(b.AutoscalingGroupName(ig)),
-		Region:               fi.PtrTo(b.Region),
-		ImageID:              fi.PtrTo(ig.Spec.Image),
-		OnDemandInstanceType: fi.PtrTo(strings.Split(ig.Spec.MachineType, ",")[0]),
+		Name:                 new(b.AutoscalingGroupName(ig)),
+		Region:               new(b.Region),
+		ImageID:              new(ig.Spec.Image),
+		OnDemandInstanceType: new(strings.Split(ig.Spec.MachineType, ",")[0]),
 		SpotInstanceTypes:    strings.Split(ig.Spec.MachineType, ","),
 	}
 
@@ -240,7 +240,7 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 			}
 
 		case SpotInstanceGroupLabelOrientation:
-			group.Orientation = fi.PtrTo(v)
+			group.Orientation = new(v)
 
 		case SpotInstanceGroupLabelUtilizeReservedInstances:
 			group.UtilizeReservedInstances, err = parseBool(v)
@@ -267,7 +267,7 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 			}
 
 		case SpotInstanceGroupLabelHealthCheckType:
-			group.HealthCheckType = fi.PtrTo(strings.ToUpper(v))
+			group.HealthCheckType = new(strings.ToUpper(v))
 		}
 	}
 
@@ -290,7 +290,7 @@ func (b *SpotInstanceGroupModelBuilder) buildElastigroup(c *fi.CloudupModelBuild
 
 	// Tenancy.
 	if ig.Spec.Tenancy != "" {
-		group.Tenancy = fi.PtrTo(ig.Spec.Tenancy)
+		group.Tenancy = new(ig.Spec.Tenancy)
 	}
 
 	// Security groups.
@@ -363,11 +363,11 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 	klog.V(4).Infof("Building instance group as Ocean: %q", "nodes."+b.ClusterName())
 	ocean := &spotinsttasks.Ocean{
 		Lifecycle: b.Lifecycle,
-		Name:      fi.PtrTo("nodes." + b.ClusterName()),
+		Name:      new("nodes." + b.ClusterName()),
 	}
 
 	if featureflag.SpotinstOceanTemplate.Enabled() {
-		ocean.UseAsTemplateOnly = fi.PtrTo(true)
+		ocean.UseAsTemplateOnly = new(true)
 	}
 
 	if len(igs) == 0 {
@@ -402,9 +402,9 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 	for k, v := range b.Cluster.Labels {
 		switch k {
 		case SpotClusterLabelSpreadNodesBy:
-			ocean.SpreadNodesBy = fi.PtrTo(v)
+			ocean.SpreadNodesBy = new(v)
 		case SpotClusterLabelStrategyClusterOrientationAvailabilityVsCost:
-			ocean.AvailabilityVsCost = fi.PtrTo(string(spotinsttasks.NormalizeClusterOrientation(&v)))
+			ocean.AvailabilityVsCost = new(string(spotinsttasks.NormalizeClusterOrientation(&v)))
 		case SpotClusterLabelResourceTagSpecificationVolumes:
 			ocean.ResourceTagSpecificationVolumes, err = parseBool(v)
 			if err != nil {
@@ -419,7 +419,7 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 	}
 
 	// Image.
-	ocean.ImageID = fi.PtrTo(ig.Spec.Image)
+	ocean.ImageID = new(ig.Spec.Image)
 
 	// Strategy and instance types.
 	for k, v := range ig.ObjectMeta.Labels {
@@ -505,8 +505,8 @@ func (b *SpotInstanceGroupModelBuilder) buildOcean(c *fi.CloudupModelBuilderCont
 
 	if !fi.ValueOf(ocean.UseAsTemplateOnly) {
 		// Capacity.
-		ocean.MinSize = fi.PtrTo(int64(0))
-		ocean.MaxSize = fi.PtrTo(int64(0))
+		ocean.MinSize = new(int64(0))
+		ocean.MaxSize = new(int64(0))
 
 		// User data.
 		ocean.UserData, err = b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
@@ -560,9 +560,9 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 	ig, igOcean *kops.InstanceGroup, ocean *spotinsttasks.Ocean) (err error) {
 	klog.V(4).Infof("Building instance group as LaunchSpec: %q", b.AutoscalingGroupName(ig))
 	launchSpec := &spotinsttasks.LaunchSpec{
-		Name:      fi.PtrTo(b.AutoscalingGroupName(ig)),
+		Name:      new(b.AutoscalingGroupName(ig)),
 		Lifecycle: b.Lifecycle,
-		ImageID:   fi.PtrTo(ig.Spec.Image),
+		ImageID:   new(ig.Spec.Image),
 		Ocean:     ocean, // link to Ocean
 	}
 
@@ -603,8 +603,8 @@ func (b *SpotInstanceGroupModelBuilder) buildLaunchSpec(c *fi.CloudupModelBuilde
 	// Capacity.
 	minSize, maxSize := b.buildCapacity(ig)
 	if !fi.ValueOf(ocean.UseAsTemplateOnly) {
-		ocean.MinSize = fi.PtrTo(fi.ValueOf(ocean.MinSize) + fi.ValueOf(minSize))
-		ocean.MaxSize = fi.PtrTo(fi.ValueOf(ocean.MaxSize) + fi.ValueOf(maxSize))
+		ocean.MinSize = new(fi.ValueOf(ocean.MinSize) + fi.ValueOf(minSize))
+		ocean.MaxSize = new(fi.ValueOf(ocean.MaxSize) + fi.ValueOf(maxSize))
 	}
 
 	launchSpec.MinSize = minSize
@@ -696,9 +696,9 @@ func (b *SpotInstanceGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBu
 	for _, id := range ig.Spec.AdditionalSecurityGroups {
 		sg := &awstasks.SecurityGroup{
 			Lifecycle: b.SecurityLifecycle,
-			ID:        fi.PtrTo(id),
-			Name:      fi.PtrTo(id),
-			Shared:    fi.PtrTo(true),
+			ID:        new(id),
+			Name:      new(id),
+			Shared:    new(true),
 		}
 		c.EnsureTask(sg)
 		securityGroups = append(securityGroups, sg)
@@ -761,7 +761,7 @@ func (b *SpotInstanceGroupModelBuilder) buildPublicIPOpts(ig *kops.InstanceGroup
 		return nil, fmt.Errorf("unknown subnet type %q", subnetType)
 	}
 
-	return fi.PtrTo(associatePublicIP), nil
+	return new(associatePublicIP), nil
 }
 
 func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGroup) (*spotinsttasks.RootVolumeOpts, error) {
@@ -799,19 +799,19 @@ func (b *SpotInstanceGroupModelBuilder) buildRootVolumeOpts(ig *kops.InstanceGro
 			return nil, err
 		}
 	}
-	opts.Size = fi.PtrTo(int64(size))
+	opts.Size = new(int64(size))
 
 	if typ == "" {
 		typ = "gp2"
 	}
-	opts.Type = fi.PtrTo(typ)
+	opts.Type = new(typ)
 
 	if iops > 0 {
-		opts.IOPS = fi.PtrTo(int64(iops))
+		opts.IOPS = new(int64(iops))
 	}
 
 	if throughput > 0 {
-		opts.Throughput = fi.PtrTo(int64(throughput))
+		opts.Throughput = new(int64(throughput))
 	}
 
 	return opts, nil
@@ -832,7 +832,7 @@ func (b *SpotInstanceGroupModelBuilder) buildCapacity(ig *kops.InstanceGroup) (*
 		maxSize = 2
 	}
 
-	return fi.PtrTo(int64(minSize)), fi.PtrTo(int64(maxSize))
+	return new(int64(minSize)), new(int64(maxSize))
 }
 
 func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBuilderContext,
@@ -860,7 +860,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 			lb := &awstasks.ClassicLoadBalancer{
 				Name:             extLB.LoadBalancerName,
 				LoadBalancerName: extLB.LoadBalancerName,
-				Shared:           fi.PtrTo(true),
+				Shared:           new(true),
 			}
 			loadBalancers = append(loadBalancers, lb)
 			c.EnsureTask(lb)
@@ -871,9 +871,9 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 				return nil, nil, err
 			}
 			tg := &awstasks.TargetGroup{
-				Name:   fi.PtrTo(ig.Name + "-" + targetGroupName),
+				Name:   new(ig.Name + "-" + targetGroupName),
 				ARN:    extLB.TargetGroupARN,
-				Shared: fi.PtrTo(true),
+				Shared: new(true),
 			}
 			targetGroups = append(targetGroups, tg)
 			c.AddTask(tg)
@@ -893,7 +893,7 @@ func (b *SpotInstanceGroupModelBuilder) buildTags(ig *kops.InstanceGroup) (map[s
 
 func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig *kops.InstanceGroup) (*spotinsttasks.AutoScalerOpts, error) {
 	opts := &spotinsttasks.AutoScalerOpts{
-		ClusterID: fi.PtrTo(clusterID),
+		ClusterID: new(clusterID),
 	}
 
 	switch ig.Spec.Role {
@@ -905,8 +905,8 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 	}
 
 	// Enable the auto scaler for Node instance groups.
-	opts.Enabled = fi.PtrTo(true)
-	opts.AutoConfig = fi.PtrTo(true)
+	opts.Enabled = new(true)
+	opts.AutoConfig = new(true)
 
 	// Parse instance group labels.
 	var defaultNodeLabels bool
@@ -918,7 +918,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if err != nil {
 					return nil, err
 				}
-				opts.Enabled = fi.PtrTo(!fi.ValueOf(v))
+				opts.Enabled = new(!fi.ValueOf(v))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerDefaultNodeLabels:
@@ -936,7 +936,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if err != nil {
 					return nil, err
 				}
-				opts.Cooldown = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.Cooldown = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerAutoConfig:
@@ -954,7 +954,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if err != nil {
 					return nil, err
 				}
-				opts.AutoHeadroomPercentage = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.AutoHeadroomPercentage = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerHeadroomCPUPerUnit:
@@ -966,7 +966,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.Headroom == nil {
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
-				opts.Headroom.CPUPerUnit = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.Headroom.CPUPerUnit = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerHeadroomGPUPerUnit:
@@ -978,7 +978,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.Headroom == nil {
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
-				opts.Headroom.GPUPerUnit = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.Headroom.GPUPerUnit = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerHeadroomMemPerUnit:
@@ -990,7 +990,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.Headroom == nil {
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
-				opts.Headroom.MemPerUnit = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.Headroom.MemPerUnit = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerHeadroomNumOfUnits:
@@ -1002,7 +1002,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.Headroom == nil {
 					opts.Headroom = new(spotinsttasks.AutoScalerHeadroomOpts)
 				}
-				opts.Headroom.NumOfUnits = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.Headroom.NumOfUnits = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerScaleDownMaxPercentage:
@@ -1026,7 +1026,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.Down == nil {
 					opts.Down = new(spotinsttasks.AutoScalerDownOpts)
 				}
-				opts.Down.EvaluationPeriods = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.Down.EvaluationPeriods = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerResourceLimitsMaxVCPU:
@@ -1038,7 +1038,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.ResourceLimits == nil {
 					opts.ResourceLimits = new(spotinsttasks.AutoScalerResourceLimitsOpts)
 				}
-				opts.ResourceLimits.MaxVCPU = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.ResourceLimits.MaxVCPU = new(int(fi.ValueOf(v)))
 			}
 
 		case SpotInstanceGroupLabelAutoScalerResourceLimitsMaxMemory:
@@ -1050,7 +1050,7 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 				if opts.ResourceLimits == nil {
 					opts.ResourceLimits = new(spotinsttasks.AutoScalerResourceLimitsOpts)
 				}
-				opts.ResourceLimits.MaxMemory = fi.PtrTo(int(fi.ValueOf(v)))
+				opts.ResourceLimits.MaxMemory = new(int(fi.ValueOf(v)))
 			}
 		}
 	}
@@ -1058,10 +1058,10 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 	// Configure Elastigroup defaults to avoid state drifts.
 	if !featureflag.SpotinstOcean.Enabled() {
 		if opts.Cooldown == nil {
-			opts.Cooldown = fi.PtrTo(300)
+			opts.Cooldown = new(300)
 		}
 		if opts.Down != nil && opts.Down.EvaluationPeriods == nil {
-			opts.Down.EvaluationPeriods = fi.PtrTo(5)
+			opts.Down.EvaluationPeriods = new(5)
 		}
 	}
 
@@ -1092,8 +1092,8 @@ func (b *SpotInstanceGroupModelBuilder) buildAutoScalerOpts(clusterID string, ig
 func (b *SpotInstanceGroupModelBuilder) buildInstanceMetadataOptions(ig *kops.InstanceGroup) *spotinsttasks.InstanceMetadataOptions {
 	if ig.Spec.InstanceMetadata != nil {
 		opt := new(spotinsttasks.InstanceMetadataOptions)
-		opt.HTTPPutResponseHopLimit = fi.PtrTo(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit))
-		opt.HTTPTokens = fi.PtrTo(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPTokens))
+		opt.HTTPPutResponseHopLimit = new(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPPutResponseHopLimit))
+		opt.HTTPTokens = new(fi.ValueOf(ig.Spec.InstanceMetadata.HTTPTokens))
 		return opt
 	}
 	return nil

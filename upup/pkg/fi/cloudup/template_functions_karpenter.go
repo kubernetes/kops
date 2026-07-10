@@ -296,7 +296,7 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*ka
 		Template: template,
 	}
 	if ig.Spec.MinSize != nil && *ig.Spec.MinSize > 0 {
-		spec.Replicas = fi.PtrTo(int64(*ig.Spec.MinSize))
+		spec.Replicas = new(int64(*ig.Spec.MinSize))
 	}
 	if ig.Spec.MaxSize != nil {
 		spec.Limits = &karpenterNodePoolLimits{Nodes: strconv.FormatInt(int64(*ig.Spec.MaxSize), 10)}
@@ -355,9 +355,9 @@ func (tf *TemplateFunctions) karpenterAssociatePublicIP(ig *kops.InstanceGroup) 
 		if ig.Spec.AssociatePublicIP != nil {
 			return ig.Spec.AssociatePublicIP, nil
 		}
-		return fi.PtrTo(true), nil
+		return new(true), nil
 	case kops.SubnetTypeDualStack, kops.SubnetTypePrivate:
-		return fi.PtrTo(false), nil
+		return new(false), nil
 	default:
 		return nil, fmt.Errorf("unknown subnet type %q for InstanceGroup %q", subnets[0].Type, ig.Name)
 	}

@@ -55,7 +55,7 @@ func PerformAssignments(c *kops.Cluster, vfsContext *vfs.VFSContext, cloud fi.Cl
 			etcdCluster.Manager = &kops.EtcdManagerSpec{}
 		}
 		if etcdCluster.Manager.BackupRetentionDays == nil {
-			etcdCluster.Manager.BackupRetentionDays = fi.PtrTo[uint32](90)
+			etcdCluster.Manager.BackupRetentionDays = new(uint32(90))
 		}
 	}
 

@@ -34,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -75,7 +74,7 @@ func IsPortInUse(err error) bool {
 // and will result in a timeout when not reaching status "ACTIVE" in time.
 func waitForStatusActive(c OpenstackCloud, serverID string, timeout *time.Duration) error {
 	if timeout == nil {
-		timeout = fi.PtrTo(defaultActiveTimeout)
+		timeout = new(defaultActiveTimeout)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(timeout.Seconds())*time.Second)
 	defer cancel()
@@ -114,7 +113,7 @@ func createInstance(c OpenstackCloud, opt servers.CreateOptsBuilder, schedulerHi
 				if port.DeviceID != "" && port.DeviceOwner == "" {
 					klog.Warningf("Port %s is attached to Device that does not exist anymore, reseting the status of DeviceID", portID)
 					_, err := c.UpdatePort(portID, ports.UpdateOpts{
-						DeviceID: fi.PtrTo(""),
+						DeviceID: new(""),
 					})
 					if err != nil {
 						return false, fmt.Errorf("error updating port %s deviceid: %v", portID, err)
@@ -163,10 +162,10 @@ func listServerFloatingIPs(c OpenstackCloud, instanceID string, floatingEnabled 
 			for _, props := range addrList {
 				if floatingEnabled {
 					if props.IPType == "floating" {
-						result = append(result, fi.PtrTo(props.Addr))
+						result = append(result, new(props.Addr))
 					}
 				} else {
-					result = append(result, fi.PtrTo(props.Addr))
+					result = append(result, new(props.Addr))
 				}
 			}
 		}
@@ -281,7 +280,7 @@ func drainSingleLB(c OpenstackCloud, lb loadbalancers.LoadBalancer, instanceName
 				// Setting the member weight to 0 means that the member will not receive new requests but will finish any existing connections.
 				// This “drains” the backend member of active connections.
 				_, err := c.UpdateMemberInPool(pool.ID, member.ID, v2pools.UpdateMemberOpts{
-					Weight: fi.PtrTo(0),
+					Weight: new(0),
 				})
 				if err != nil {
 					return err

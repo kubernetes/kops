@@ -52,7 +52,7 @@ func (b *SSHKeyModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	t := &linodetasks.SSHKey{
-		Name:      fi.PtrTo(name),
+		Name:      new(name),
 		Lifecycle: b.Lifecycle,
 	}
 	if len(b.SSHPublicKeys) > 0 {
