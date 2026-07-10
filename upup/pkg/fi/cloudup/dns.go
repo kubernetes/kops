@@ -28,15 +28,12 @@ import (
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 	"k8s.io/kops/pkg/apis/kops"
+	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 const (
-	// PlaceholderIP is from TEST-NET-3
-	// https://en.wikipedia.org/wiki/Reserved_IP_addresses
-	PlaceholderIP   = "203.0.113.123"
-	PlaceholderIPv6 = "fd00:dead:add::"
-	PlaceholderTTL  = 10
+	PlaceholderTTL = 10
 	// DigitalOcean's DNS servers require a certain minimum TTL (it's 30), keeping 60 here.
 	PlaceholderTTLDigitialOcean = 60
 )
@@ -206,9 +203,9 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 			continue
 		}
 
-		ip := PlaceholderIP
+		ip := kopsdns.PlaceholderIP
 		if recordKey.rrsType != rrstype.A {
-			ip = PlaceholderIPv6
+			ip = kopsdns.PlaceholderIPv6
 		}
 		klog.V(2).Infof("Pre-creating DNS record %s => %s", recordKey, ip)
 
@@ -222,7 +219,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 		if !foundTXT {
 			if cluster.Spec.ExternalDNS != nil && cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderExternalDNS {
 				domain := recordKey.hostname
-				if ip == PlaceholderIPv6 {
+				if ip == kopsdns.PlaceholderIPv6 {
 					domain = "aaaa-" + domain
 				}
 				changeset.Add(rrs.New(domain, []string{fmt.Sprintf("\"heritage=external-dns,external-dns/owner=kops-%s\"", cluster.ObjectMeta.Name)}, PlaceholderTTL, rrstype.TXT))

@@ -24,11 +24,11 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/awsbootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/kopscontrollerclient"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmsigner"
@@ -53,7 +53,7 @@ func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	switch b.CloudProvider() {
 	case kops.CloudProviderAWS:
-		a, err := awsup.NewAWSAuthenticator(c.Context(), b.Cloud.Region())
+		a, err := awsbootstrap.NewAWSAuthenticator(c.Context(), b.Cloud.Region())
 		if err != nil {
 			return err
 		}

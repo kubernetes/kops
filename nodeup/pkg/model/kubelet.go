@@ -45,7 +45,6 @@ import (
 	"k8s.io/kops/pkg/rbac"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	azurecloud "k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -783,9 +782,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 			instanceTypeName = ec2types.InstanceType(*b.NodeupConfig.DefaultMachineType)
 		}
 
-		awsCloud := b.Cloud.(awsup.AWSCloud)
 		// Get the instance type's detailed information.
-		instanceType, err := awsup.GetMachineTypeInfo(awsCloud, instanceTypeName)
+		instanceType, err := b.Cloud.GetMachineTypeInfo(ctx, instanceTypeName)
 		if err != nil {
 			return nil, err
 		}

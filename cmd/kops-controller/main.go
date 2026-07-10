@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/cmd/kops-controller/pkg/server"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/bootstrap"
+	"k8s.io/kops/pkg/bootstrap/awsbootstrap"
 	"k8s.io/kops/pkg/bootstrap/pkibootstrap"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/controllers/clusterapi"
@@ -50,7 +51,6 @@ import (
 	nodeidentitymetal "k8s.io/kops/pkg/nodeidentity/metal"
 	nodeidentityos "k8s.io/kops/pkg/nodeidentity/openstack"
 	nodeidentityscw "k8s.io/kops/pkg/nodeidentity/scaleway"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm/gcetpmverifier"
@@ -150,7 +150,7 @@ func main() {
 		var verifiers []bootstrap.Verifier
 		var err error
 		if opt.Server.Provider.AWS != nil {
-			verifier, err := awsup.NewAWSVerifier(ctx, opt.Server.Provider.AWS)
+			verifier, err := awsbootstrap.NewAWSVerifier(ctx, opt.Server.Provider.AWS)
 			if err != nil {
 				setupLog.Error(err, "unable to create verifier")
 				os.Exit(1)

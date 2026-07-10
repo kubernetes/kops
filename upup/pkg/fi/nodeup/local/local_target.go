@@ -20,11 +20,13 @@ import (
 	"os/exec"
 
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/awsup"
 )
 
 type LocalTarget struct {
 	CacheDir string
-	Cloud    fi.Cloud
+	// Cloud holds the AWS clients, on AWS only.
+	Cloud *awsup.Cloud
 }
 
 var _ fi.NodeupTarget = (*LocalTarget)(nil)
