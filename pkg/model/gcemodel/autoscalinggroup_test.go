@@ -23,7 +23,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestSplitToZones(t *testing.T) {
@@ -37,12 +36,12 @@ func TestSplitToZones(t *testing.T) {
 	}{
 		{
 			name:    "no zones, minSize 2",
-			minSize: fi.PtrTo(int32(2)),
+			minSize: new(int32(2)),
 			mustErr: true,
 		},
 		{
 			name:    "1 zone, minSize 2",
-			minSize: fi.PtrTo(int32(2)),
+			minSize: new(int32(2)),
 			zones:   []string{"us-central1-a"},
 			expected: map[string]int{
 				"us-central1-a": 2,
@@ -50,7 +49,7 @@ func TestSplitToZones(t *testing.T) {
 		},
 		{
 			name:    "2 zones, minSize 2",
-			minSize: fi.PtrTo(int32(2)),
+			minSize: new(int32(2)),
 			zones:   []string{"us-central1-a", "us-central1-b"},
 			expected: map[string]int{
 				"us-central1-a": 1,
@@ -59,7 +58,7 @@ func TestSplitToZones(t *testing.T) {
 		},
 		{
 			name:    "2 zones, minSize 3",
-			minSize: fi.PtrTo(int32(3)),
+			minSize: new(int32(3)),
 			zones:   []string{"us-central1-a", "us-central1-b"},
 			expected: map[string]int{
 				"us-central1-a": 2,
@@ -68,7 +67,7 @@ func TestSplitToZones(t *testing.T) {
 		},
 		{
 			name:    "3 zones, minSize 2",
-			minSize: fi.PtrTo(int32(2)),
+			minSize: new(int32(2)),
 			zones:   []string{"us-central1-a", "us-central1-b", "us-central1-c"},
 			expected: map[string]int{
 				"us-central1-a": 1,

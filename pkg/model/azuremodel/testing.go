@@ -21,7 +21,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func newTestAzureModelContext() *AzureModelContext {
@@ -80,7 +79,7 @@ func newTestInstanceGroup() *kops.InstanceGroup {
 			Role:  kops.InstanceGroupRoleNode,
 			Image: "Canonical:UbuntuServer:18.04-LTS:latest",
 			RootVolume: &kops.InstanceRootVolumeSpec{
-				Size: fi.PtrTo(int32(32)),
+				Size: new(int32(32)),
 			},
 			Subnets: []string{"test-subnet"},
 		},

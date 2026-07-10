@@ -161,7 +161,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					AllocateNodeCIDRs: fi.PtrTo(true),
+					AllocateNodeCIDRs: new(true),
 				},
 			}},
 			expectedArgv: []string{
@@ -179,7 +179,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					ConfigureCloudRoutes: fi.PtrTo(true),
+					ConfigureCloudRoutes: new(true),
 				},
 			}},
 			expectedArgv: []string{
@@ -197,7 +197,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					CIDRAllocatorType: fi.PtrTo("RangeAllocator"),
+					CIDRAllocatorType: new("RangeAllocator"),
 				},
 			}},
 			expectedArgv: []string{
@@ -215,7 +215,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					UseServiceAccountCredentials: fi.PtrTo(false),
+					UseServiceAccountCredentials: new(false),
 				},
 			}},
 			expectedArgv: []string{
@@ -232,7 +232,7 @@ func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 					Openstack: &kops.OpenstackSpec{},
 				},
 				ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{
-					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: fi.PtrTo(true)},
+					LeaderElection: &kops.LeaderElectionConfiguration{LeaderElect: new(true)},
 				},
 			}},
 			expectedArgv: []string{
@@ -451,12 +451,12 @@ func TestTemplateFunctions_TaskHelpers(t *testing.T) {
 	tf.Cluster = &kops.Cluster{}
 	tf.tasks = map[string]fi.CloudupTask{
 		"ManagedFile/zeta": &fitasks.ManagedFile{
-			Name:     fi.PtrTo("zeta"),
-			Location: fi.PtrTo("addons/zeta.yaml"),
+			Name:     new("zeta"),
+			Location: new("addons/zeta.yaml"),
 		},
 		"ManagedFile/alpha": &fitasks.ManagedFile{
-			Name:     fi.PtrTo("alpha"),
-			Location: fi.PtrTo("addons/alpha.yaml"),
+			Name:     new("alpha"),
+			Location: new("addons/alpha.yaml"),
 		},
 	}
 
@@ -529,8 +529,8 @@ func TestGetClusterAutoscalerNodeGroupsGCE(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: name},
 			Spec: kops.InstanceGroupSpec{
 				Role:    kops.InstanceGroupRoleNode,
-				MinSize: fi.PtrTo(minSize),
-				MaxSize: fi.PtrTo(maxSize),
+				MinSize: new(minSize),
+				MaxSize: new(maxSize),
 				Zones:   zones,
 			},
 		}

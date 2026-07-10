@@ -26,7 +26,6 @@ import (
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/channels/pkg/channels"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestGetUpdates(t *testing.T) {
@@ -59,7 +58,7 @@ func TestGetUpdates(t *testing.T) {
 		"aws-ebs-csi-driver.addons.k8s.io": {
 			Name: "aws-ebs-csi-driver.addons.k8s.io",
 			Spec: &api.AddonSpec{
-				Name:         fi.PtrTo("aws-ebs-csi-driver.addons.k8s.io"),
+				Name:         new("aws-ebs-csi-driver.addons.k8s.io"),
 				Id:           "k8s-1.17",
 				ManifestHash: "abc",
 			},

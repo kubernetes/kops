@@ -36,7 +36,7 @@ func (*RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	tf := &terraformAzureRouteTable{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		Tags:              stringMap(e.Tags),
 	}

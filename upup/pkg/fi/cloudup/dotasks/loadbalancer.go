@@ -83,10 +83,10 @@ func (lb *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	}
 
 	return &LoadBalancer{
-		Name:    fi.PtrTo(loadbalancer.Name),
-		ID:      fi.PtrTo(loadbalancer.ID),
-		Region:  fi.PtrTo(loadbalancer.Region.Slug),
-		VPCUUID: fi.PtrTo(loadbalancer.VPCUUID),
+		Name:    new(loadbalancer.Name),
+		ID:      new(loadbalancer.ID),
+		Region:  new(loadbalancer.Region.Slug),
+		VPCUUID: new(loadbalancer.VPCUUID),
 
 		// Ignore system fields
 		Lifecycle:         lb.Lifecycle,
@@ -164,8 +164,8 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		klog.V(10).Infof("load balancer retrieved=%s, e.Name=%s", loadbalancer.Name, fi.ValueOf(e.Name))
 		if strings.Contains(loadbalancer.Name, fi.ValueOf(e.Name)) {
 			// load balancer already exists.
-			e.ID = fi.PtrTo(loadbalancer.ID)
-			e.IPAddress = fi.PtrTo(loadbalancer.IP) // This will be empty on create, but will be filled later on FindAddresses invokation.
+			e.ID = new(loadbalancer.ID)
+			e.IPAddress = new(loadbalancer.IP) // This will be empty on create, but will be filled later on FindAddresses invokation.
 			return nil
 		}
 	}
@@ -194,8 +194,8 @@ func (_ *LoadBalancer) RenderDO(t *do.DOAPITarget, a, e, changes *LoadBalancer) 
 		return fmt.Errorf("Error creating load balancer with Name=%s, Error=%v", fi.ValueOf(e.Name), err)
 	}
 
-	e.ID = fi.PtrTo(loadbalancer.ID)
-	e.IPAddress = fi.PtrTo(loadbalancer.IP) // This will be empty on create, but will be filled later on FindAddresses invokation.
+	e.ID = new(loadbalancer.ID)
+	e.IPAddress = new(loadbalancer.IP) // This will be empty on create, but will be filled later on FindAddresses invokation.
 
 	klog.V(2).Infof("load balancer for DO created with id: %s", loadbalancer.ID)
 	return nil

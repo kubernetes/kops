@@ -87,7 +87,7 @@ func (e *ManagedFile) Find(c *fi.CloudupContext) (*ManagedFile, error) {
 		actual.PublicACL = &public
 
 		if e.PublicACL == nil {
-			e.PublicACL = fi.PtrTo(false)
+			e.PublicACL = new(false)
 		}
 	}
 
@@ -99,7 +99,7 @@ func (e *ManagedFile) Find(c *fi.CloudupContext) (*ManagedFile, error) {
 		actual.PublicACL = &public
 
 		if e.PublicACL == nil {
-			e.PublicACL = fi.PtrTo(false)
+			e.PublicACL = new(false)
 		}
 	}
 

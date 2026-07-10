@@ -60,7 +60,7 @@ func (t *ProtokubeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			Path:     filepath.Join("/opt/kops/bin", name),
 			Contents: res,
 			Type:     nodetasks.FileType_File,
-			Mode:     fi.PtrTo("0755"),
+			Mode:     new("0755"),
 		})
 	}
 
@@ -133,14 +133,14 @@ type ProtokubeFlags struct {
 // ProtokubeFlags is responsible for building the command line flags for protokube
 func (t *ProtokubeBuilder) ProtokubeFlags() (*ProtokubeFlags, error) {
 	f := &ProtokubeFlags{
-		Cloud:         fi.PtrTo(string(t.CloudProvider())),
-		Containerized: fi.PtrTo(false),
-		LogLevel:      fi.PtrTo(int32(4)),
+		Cloud:         new(string(t.CloudProvider())),
+		Containerized: new(false),
+		LogLevel:      new(int32(4)),
 	}
 
 	if t.UsesLegacyGossip() {
 		klog.Warningf("using (legacy) gossip DNS")
-		f.Gossip = fi.PtrTo(true)
+		f.Gossip = new(true)
 		if t.NodeupConfig.GossipConfig != nil {
 			f.GossipProtocol = t.NodeupConfig.GossipConfig.Protocol
 			f.GossipListen = t.NodeupConfig.GossipConfig.Listen

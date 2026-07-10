@@ -38,7 +38,7 @@ func (*PublicIPAddress) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 	ipVersion := string(e.IPVersion)
 	tf := &terraformAzurePublicIPAddress{
 		Name:              e.Name,
-		Location:          fi.PtrTo(t.Cloud.Region()),
+		Location:          new(t.Cloud.Region()),
 		ResourceGroupName: e.ResourceGroup.terraformName(),
 		AllocationMethod:  &allocationMethod,
 		SKU:               &sku,

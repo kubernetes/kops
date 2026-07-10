@@ -172,7 +172,7 @@ func (i *Installation) buildSystemdJob() *nodetasks.InstallService {
 
 	service := &nodetasks.InstallService{Service: nodetasks.Service{
 		Name:       serviceName,
-		Definition: fi.PtrTo(manifestString),
+		Definition: new(manifestString),
 	}}
 
 	service.InitDefaults()

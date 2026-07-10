@@ -73,12 +73,12 @@ func Test_DryrunTarget_PrintReport(t *testing.T) {
 	target := newDryRunTarget[CloudupSubContext](builder, checkExisting, &stdout)
 	tasks := map[string]CloudupTask{}
 	a := &testTask{
-		Name:      PtrTo("TestName"),
+		Name:      new("TestName"),
 		Lifecycle: LifecycleSync,
 		Tags:      map[string]string{"key": "value"},
 	}
 	e := &testTask{
-		Name:      PtrTo("TestName"),
+		Name:      new("TestName"),
 		Lifecycle: LifecycleSync,
 		Tags:      map[string]string{"key": "value"},
 	}

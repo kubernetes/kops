@@ -18,7 +18,6 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -44,14 +43,14 @@ func (b *LinodeCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.
 	eccm := clusterSpec.ExternalCloudControllerManager
 	eccm.CloudProvider = "linode"
 	eccm.LeaderElection = &kops.LeaderElectionConfiguration{
-		LeaderElect: fi.PtrTo(true),
+		LeaderElect: new(true),
 	}
 
 	if eccm.ClusterCIDR == "" {
 		eccm.ClusterCIDR = clusterSpec.Networking.PodCIDR
 	}
-	eccm.AllocateNodeCIDRs = fi.PtrTo(true)
-	eccm.ConfigureCloudRoutes = fi.PtrTo(false)
+	eccm.AllocateNodeCIDRs = new(true)
+	eccm.ConfigureCloudRoutes = new(false)
 
 	if eccm.Image == "" {
 		// Using the official Linode (Akamai) CCM image

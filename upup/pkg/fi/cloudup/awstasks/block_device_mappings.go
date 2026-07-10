@@ -124,7 +124,7 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscalingtypes.
 			DeleteOnTermination: i.EbsDeleteOnTermination,
 			Encrypted:           i.EbsEncrypted,
 			VolumeSize:          i.EbsVolumeSize,
-			VolumeType:          fi.PtrTo(string(i.EbsVolumeType)),
+			VolumeType:          new(string(i.EbsVolumeType)),
 		}
 		if ec2types.VolumeType(fi.ValueOf(o.Ebs.VolumeType)) == ec2types.VolumeTypeIo1 || ec2types.VolumeType(fi.ValueOf(o.Ebs.VolumeType)) == ec2types.VolumeTypeIo2 {
 			o.Ebs.Iops = i.EbsVolumeIops

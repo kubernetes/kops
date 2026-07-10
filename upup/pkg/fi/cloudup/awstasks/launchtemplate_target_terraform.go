@@ -197,10 +197,10 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		EBSOptimized: e.RootVolumeOptimization,
 		ImageID:      image,
 		InstanceType: e.InstanceType,
-		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: fi.PtrTo(true)},
+		Lifecycle:    &terraform.Lifecycle{CreateBeforeDestroy: new(true)},
 		MetadataOptions: &terraformLaunchTemplateInstanceMetadata{
 			// See issue https://github.com/hashicorp/terraform-provider-aws/issues/12564.
-			HTTPEndpoint:            fi.PtrTo("enabled"),
+			HTTPEndpoint:            new("enabled"),
 			HTTPTokens:              e.HTTPTokens,
 			HTTPPutResponseHopLimit: e.HTTPPutResponseHopLimit,
 			HTTPProtocolIPv6:        e.HTTPProtocolIPv6,
@@ -208,7 +208,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		NetworkInterfaces: []*terraformLaunchTemplateNetworkInterface{
 			{
 				AssociatePublicIPAddress: e.AssociatePublicIP,
-				DeleteOnTermination:      fi.PtrTo(true),
+				DeleteOnTermination:      new(true),
 				Ipv6AddressCount:         e.IPv6AddressCount,
 			},
 		},
@@ -222,7 +222,7 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 		}
 		tf.MarketOptions = []*terraformLaunchTemplateMarketOptions{
 			{
-				MarketType:  fi.PtrTo("spot"),
+				MarketType:  new("spot"),
 				SpotOptions: []*terraformLaunchTemplateMarketOptionsSpotOptions{&marketSpotOptions},
 			},
 		}
@@ -295,21 +295,21 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 	for _, key := range devicesKeys {
 		tf.BlockDeviceMappings = append(tf.BlockDeviceMappings, &terraformLaunchTemplateBlockDevice{
 			VirtualName: devices[key].VirtualName,
-			DeviceName:  fi.PtrTo(key),
+			DeviceName:  new(key),
 		})
 	}
 
 	if e.Tags != nil {
 		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
-			ResourceType: fi.PtrTo("instance"),
+			ResourceType: new("instance"),
 			Tags:         e.Tags,
 		})
 		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
-			ResourceType: fi.PtrTo("volume"),
+			ResourceType: new("volume"),
 			Tags:         e.Tags,
 		})
 		tf.TagSpecifications = append(tf.TagSpecifications, &terraformLaunchTemplateTagSpecification{
-			ResourceType: fi.PtrTo("network-interface"),
+			ResourceType: new("network-interface"),
 			Tags:         e.Tags,
 		})
 		tf.Tags = e.Tags
@@ -320,16 +320,16 @@ func (t *LaunchTemplate) RenderTerraform(target *terraform.TerraformTarget, a, e
 
 func createTerraformLaunchTemplateBlockDevice(deviceName string, v *BlockDeviceMapping) *terraformLaunchTemplateBlockDevice {
 	return &terraformLaunchTemplateBlockDevice{
-		DeviceName: fi.PtrTo(deviceName),
+		DeviceName: new(deviceName),
 		EBS: []*terraformLaunchTemplateBlockDeviceEBS{
 			{
-				DeleteOnTermination: fi.PtrTo(true),
+				DeleteOnTermination: new(true),
 				Encrypted:           v.EbsEncrypted,
 				KmsKeyID:            v.EbsKmsKey,
 				IOPS:                v.EbsVolumeIops,
 				Throughput:          v.EbsVolumeThroughput,
 				VolumeSize:          v.EbsVolumeSize,
-				VolumeType:          fi.PtrTo(string(v.EbsVolumeType)),
+				VolumeType:          new(string(v.EbsVolumeType)),
 			},
 		},
 	}

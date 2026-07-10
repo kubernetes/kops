@@ -76,8 +76,8 @@ func (b *ChannelsBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	c.AddTask(&fitasks.ManagedFile{
 		Contents:  fi.NewBytesResource(manifest),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.PtrTo(channelsManifestPath),
-		Name:      fi.PtrTo("manifests-channels-kops-channels"),
+		Location:  new(channelsManifestPath),
+		Name:      new("manifests-channels-kops-channels"),
 	})
 	return nil
 }
@@ -177,8 +177,8 @@ func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 		},
 		// ko-distroless's default nonroot uid can't read /var/lib/kops/kubeconfig.
 		SecurityContext: &v1.SecurityContext{
-			RunAsUser:    fi.PtrTo(int64(wellknownusers.KopsChannelsID)),
-			RunAsNonRoot: fi.PtrTo(true),
+			RunAsUser:    new(int64(wellknownusers.KopsChannelsID)),
+			RunAsNonRoot: new(true),
 		},
 	}
 	kubemanifest.AddHostPathMapping(pod, &container, "kubeconfig", channelsKubeconfigPath,

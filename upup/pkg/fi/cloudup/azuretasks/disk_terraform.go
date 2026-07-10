@@ -44,7 +44,7 @@ func (*Disk) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Disk) 
 	createOption := string(compute.DiskCreateOptionEmpty)
 	tf := &terraformAzureManagedDisk{
 		Name:               e.Name,
-		Location:           fi.PtrTo(t.Cloud.Region()),
+		Location:           new(t.Cloud.Region()),
 		ResourceGroupName:  e.ResourceGroup.terraformName(),
 		StorageAccountType: stringPtr(e.VolumeType),
 		CreateOption:       &createOption,

@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/diff"
-	"k8s.io/kops/upup/pkg/fi"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	autoscalingtypes "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
@@ -202,16 +201,16 @@ func TestAutoscalingGroupTerraformRender(t *testing.T) {
 	cases := []*renderTest{
 		{
 			Resource: &AutoscalingGroup{
-				Name:           fi.PtrTo("test"),
-				Granularity:    fi.PtrTo("5min"),
-				LaunchTemplate: &LaunchTemplate{Name: fi.PtrTo("test_lc")},
-				MaxSize:        fi.PtrTo(int32(10)),
+				Name:           new("test"),
+				Granularity:    new("5min"),
+				LaunchTemplate: &LaunchTemplate{Name: new("test_lc")},
+				MaxSize:        new(int32(10)),
 				Metrics:        []string{"test"},
-				MinSize:        fi.PtrTo(int32(1)),
+				MinSize:        new(int32(1)),
 				Subnets: []*Subnet{
 					{
-						Name: fi.PtrTo("test-sg"),
-						ID:   fi.PtrTo("sg-1111"),
+						Name: new("test-sg"),
+						ID:   new("sg-1111"),
 					},
 				},
 				Tags: map[string]string{
@@ -259,19 +258,19 @@ terraform {
 		},
 		{
 			Resource: &AutoscalingGroup{
-				Name:                        fi.PtrTo("test1"),
-				LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
-				MaxSize:                     fi.PtrTo(int32(10)),
+				Name:                        new("test1"),
+				LaunchTemplate:              &LaunchTemplate{Name: new("test_lt")},
+				MaxSize:                     new(int32(10)),
 				Metrics:                     []string{"test"},
-				MinSize:                     fi.PtrTo(int32(5)),
+				MinSize:                     new(int32(5)),
 				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:           fi.PtrTo(int32(4)),
-				MixedOnDemandAboveBase:      fi.PtrTo(int32(30)),
-				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
+				MixedOnDemandBase:           new(int32(4)),
+				MixedOnDemandAboveBase:      new(int32(30)),
+				MixedSpotAllocationStrategy: new("capacity-optimized"),
 				Subnets: []*Subnet{
 					{
-						Name: fi.PtrTo("test-sg"),
-						ID:   fi.PtrTo("sg-1111"),
+						Name: new("test-sg"),
+						ID:   new("sg-1111"),
 					},
 				},
 				Tags: map[string]string{
@@ -333,24 +332,24 @@ terraform {
 		},
 		{
 			Resource: &AutoscalingGroup{
-				Name:                        fi.PtrTo("test1"),
-				LaunchTemplate:              &LaunchTemplate{Name: fi.PtrTo("test_lt")},
-				MaxSize:                     fi.PtrTo(int32(10)),
+				Name:                        new("test1"),
+				LaunchTemplate:              &LaunchTemplate{Name: new("test_lt")},
+				MaxSize:                     new(int32(10)),
 				Metrics:                     []string{"test"},
-				MinSize:                     fi.PtrTo(int32(5)),
+				MinSize:                     new(int32(5)),
 				MixedInstanceOverrides:      []string{"t2.medium", "t2.large"},
-				MixedOnDemandBase:           fi.PtrTo(int32(4)),
-				MixedOnDemandAboveBase:      fi.PtrTo(int32(30)),
-				MixedSpotAllocationStrategy: fi.PtrTo("capacity-optimized"),
+				MixedOnDemandBase:           new(int32(4)),
+				MixedOnDemandAboveBase:      new(int32(30)),
+				MixedSpotAllocationStrategy: new("capacity-optimized"),
 				WarmPool: &WarmPool{
-					Enabled: fi.PtrTo(true),
+					Enabled: new(true),
 					MinSize: 3,
-					MaxSize: fi.PtrTo(int32(5)),
+					MaxSize: new(int32(5)),
 				},
 				Subnets: []*Subnet{
 					{
-						Name: fi.PtrTo("test-sg"),
-						ID:   fi.PtrTo("sg-1111"),
+						Name: new("test-sg"),
+						ID:   new("sg-1111"),
 					},
 				},
 				Tags: map[string]string{

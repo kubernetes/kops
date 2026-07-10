@@ -406,7 +406,7 @@ func (_ *TargetGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *TargetGrou
 				// HTTP/HTTPS health checks need a path and matcher, 200-399 matches the NLB create default.
 				if proto == elbv2types.ProtocolEnumHttp || proto == elbv2types.ProtocolEnumHttps {
 					request.HealthCheckPath = e.HealthCheckPath
-					request.Matcher = &elbv2types.Matcher{HttpCode: fi.PtrTo("200-399")}
+					request.Matcher = &elbv2types.Matcher{HttpCode: new("200-399")}
 				}
 				if _, err := t.Cloud.ELBV2().ModifyTargetGroup(ctx, request); err != nil {
 					return fmt.Errorf("modifying NLB target group health check: %w", err)
@@ -425,8 +425,8 @@ func ModifyTargetGroupAttributes(ctx context.Context, cloud awsup.AWSCloud, arn 
 	}
 	for k, v := range attributes {
 		attrReq.Attributes = append(attrReq.Attributes, elbv2types.TargetGroupAttribute{
-			Key:   fi.PtrTo(k),
-			Value: fi.PtrTo(v),
+			Key:   new(k),
+			Value: new(v),
 		})
 	}
 	if _, err := cloud.ELBV2().ModifyTargetGroupAttributes(ctx, attrReq); err != nil {

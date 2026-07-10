@@ -44,7 +44,7 @@ func (v *VPC) CompareWithID() *string {
 		return nil
 	}
 	id := strconv.Itoa(fi.ValueOf(v.ID))
-	return fi.PtrTo(id)
+	return new(id)
 }
 
 func (v *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
@@ -76,11 +76,11 @@ func (v *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 	}
 
 	actual := &VPC{
-		Name:        fi.PtrTo(found.Label),
-		ID:          fi.PtrTo(found.ID),
+		Name:        new(found.Label),
+		ID:          new(found.ID),
 		Lifecycle:   v.Lifecycle,
-		Description: fi.PtrTo(found.Description),
-		Region:      fi.PtrTo(found.Region),
+		Description: new(found.Description),
+		Region:      new(found.Region),
 	}
 	v.ID = actual.ID
 
@@ -121,7 +121,7 @@ func (_ *VPC) RenderLinode(t *linode.APITarget, actual, expected, changes *VPC) 
 		if err != nil {
 			return fmt.Errorf("error creating Linode (Akamai) VPC %q: %w", fi.ValueOf(expected.Name), err)
 		}
-		expected.ID = fi.PtrTo(vpc.ID)
+		expected.ID = new(vpc.ID)
 		return nil
 	}
 
@@ -137,7 +137,7 @@ func (_ *VPC) RenderLinode(t *linode.APITarget, actual, expected, changes *VPC) 
 	if err != nil {
 		return fmt.Errorf("error updating Linode (Akamai) VPC %q: %w", fi.ValueOf(expected.Name), err)
 	}
-	expected.ID = fi.PtrTo(vpc.ID)
+	expected.ID = new(vpc.ID)
 
 	return nil
 }

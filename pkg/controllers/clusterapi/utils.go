@@ -50,13 +50,9 @@ func setOwnerRef(u *unstructured.Unstructured, owner client.Object) {
 			Kind:       kind,
 			Name:       owner.GetName(),
 			UID:        owner.GetUID(),
-			Controller: PtrTo(true),
+			Controller: new(true),
 		},
 	})
-}
-
-func PtrTo[T any](t T) *T {
-	return &t
 }
 
 func getCAPIClusterFromCAPIObject(ctx context.Context, kube client.Client, obj client.Object) (*unstructured.Unstructured, error) {

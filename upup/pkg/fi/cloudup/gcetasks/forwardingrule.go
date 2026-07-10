@@ -90,7 +90,7 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 	}
 
 	actual := &ForwardingRule{
-		Name:       fi.PtrTo(r.Name),
+		Name:       new(r.Name),
 		IPProtocol: r.IPProtocol,
 	}
 	if r.PortRange != "" {
@@ -102,7 +102,7 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 
 	if r.Target != "" {
 		actual.TargetPool = &TargetPool{
-			Name: fi.PtrTo(lastComponent(r.Target)),
+			Name: new(lastComponent(r.Target)),
 		}
 	}
 	if r.IPAddress != "" {
@@ -114,20 +114,20 @@ func (e *ForwardingRule) Find(c *fi.CloudupContext) (*ForwardingRule, error) {
 	}
 	if r.BackendService != "" {
 		actual.BackendService = &BackendService{
-			Name: fi.PtrTo(lastComponent(r.BackendService)),
+			Name: new(lastComponent(r.BackendService)),
 		}
 	}
 	if r.LoadBalancingScheme != "" {
-		actual.LoadBalancingScheme = fi.PtrTo(r.LoadBalancingScheme)
+		actual.LoadBalancingScheme = new(r.LoadBalancingScheme)
 	}
 	if r.Network != "" {
 		actual.Network = &Network{
-			Name: fi.PtrTo(lastComponent(r.Network)),
+			Name: new(lastComponent(r.Network)),
 		}
 	}
 	if r.Subnetwork != "" {
 		actual.Subnetwork = &Subnet{
-			Name: fi.PtrTo(lastComponent(r.Subnetwork)),
+			Name: new(lastComponent(r.Subnetwork)),
 		}
 	}
 

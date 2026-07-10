@@ -92,7 +92,7 @@ func TestPopulateCluster_Subnets(t *testing.T) {
 			c.Spec.Networking.CNI = &kopsapi.CNINetworkingSpec{}
 			c.Spec.ExternalCloudControllerManager = &kopsapi.CloudControllerManagerConfig{}
 			c.Spec.CloudProvider.AWS.EBSCSIDriver = &kopsapi.EBSCSIDriverSpec{
-				Enabled: fi.PtrTo(true),
+				Enabled: new(true),
 			}
 
 			err := PerformAssignments(c, vfs.Context, cloud)
@@ -148,7 +148,7 @@ func TestPopulateCluster_EvictionHard(t *testing.T) {
 	}
 
 	c.Spec.Kubelet = &kopsapi.KubeletConfigSpec{
-		EvictionHard: fi.PtrTo("memory.available<250Mi"),
+		EvictionHard: new("memory.available<250Mi"),
 	}
 
 	full, err := mockedPopulateClusterSpec(ctx, c, cloud)
@@ -208,7 +208,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
-	c.Spec.Networking.IsolateControlPlane = fi.PtrTo(true)
+	c.Spec.Networking.IsolateControlPlane = new(true)
 
 	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {
@@ -230,7 +230,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	ctx := context.TODO()
 	cloud, c := buildMinimalCluster()
-	// default: c.Spec.IsolateControlPlane = fi.PtrTo(false)
+	// default: c.Spec.IsolateControlPlane = new(false)
 
 	err := PerformAssignments(c, vfs.Context, cloud)
 	if err != nil {

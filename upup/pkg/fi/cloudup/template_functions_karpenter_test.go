@@ -41,18 +41,18 @@ func TestKarpenterNodePoolStaticCapacity(t *testing.T) {
 		},
 		{
 			desc:        "static",
-			minSize:     fi.PtrTo(int32(4)),
+			minSize:     new(int32(4)),
 			hasReplicas: true,
 		},
 		{
 			desc:        "dynamic with maxSize",
-			maxSize:     fi.PtrTo(int32(10)),
+			maxSize:     new(int32(10)),
 			limitsNodes: "10",
 		},
 		{
 			desc:        "static with maxSize",
-			minSize:     fi.PtrTo(int32(4)),
-			maxSize:     fi.PtrTo(int32(10)),
+			minSize:     new(int32(4)),
+			maxSize:     new(int32(10)),
 			hasReplicas: true,
 			limitsNodes: "10",
 		},
@@ -204,7 +204,7 @@ func TestKarpenterCapacityTypes(t *testing.T) {
 			desc: "max price",
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
-					MaxPrice: fi.PtrTo("0.10"),
+					MaxPrice: new("0.10"),
 				},
 			},
 			expected: []string{"spot"},
@@ -214,7 +214,7 @@ func TestKarpenterCapacityTypes(t *testing.T) {
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
 					MixedInstancesPolicy: &kops.MixedInstancesPolicySpec{
-						OnDemandAboveBase: fi.PtrTo(int64(50)),
+						OnDemandAboveBase: new(int64(50)),
 					},
 				},
 			},
@@ -247,8 +247,8 @@ func TestBuildKarpenterKubeletConfiguration(t *testing.T) {
 		},
 		{
 			desc:     "maxPods set",
-			kubelet:  &kops.KubeletConfigSpec{MaxPods: fi.PtrTo(int32(50))},
-			expected: &karpenterKubeletConfiguration{MaxPods: fi.PtrTo(int32(50))},
+			kubelet:  &kops.KubeletConfigSpec{MaxPods: new(int32(50))},
+			expected: &karpenterKubeletConfiguration{MaxPods: new(int32(50))},
 		},
 		{
 			desc: "systemReserved and kubeReserved set",
@@ -264,12 +264,12 @@ func TestBuildKarpenterKubeletConfiguration(t *testing.T) {
 		{
 			desc: "all supported fields set",
 			kubelet: &kops.KubeletConfigSpec{
-				MaxPods:        fi.PtrTo(int32(50)),
+				MaxPods:        new(int32(50)),
 				SystemReserved: map[string]string{"cpu": "500m"},
 				KubeReserved:   map[string]string{"memory": "1G"},
 			},
 			expected: &karpenterKubeletConfiguration{
-				MaxPods:        fi.PtrTo(int32(50)),
+				MaxPods:        new(int32(50)),
 				SystemReserved: map[string]string{"cpu": "500m"},
 				KubeReserved:   map[string]string{"memory": "1G"},
 			},
@@ -322,40 +322,40 @@ func TestKarpenterAssociatePublicIP(t *testing.T) {
 		{
 			desc:     "public subnet defaults to true",
 			subnets:  []string{"public"},
-			expected: fi.PtrTo(true),
+			expected: new(true),
 		},
 		{
 			desc:     "utility subnet defaults to true",
 			subnets:  []string{"utility"},
-			expected: fi.PtrTo(true),
+			expected: new(true),
 		},
 		{
 			desc:              "public subnet honors explicit false",
 			subnets:           []string{"public"},
-			associatePublicIP: fi.PtrTo(false),
-			expected:          fi.PtrTo(false),
+			associatePublicIP: new(false),
+			expected:          new(false),
 		},
 		{
 			desc:              "public subnet honors explicit true",
 			subnets:           []string{"public"},
-			associatePublicIP: fi.PtrTo(true),
-			expected:          fi.PtrTo(true),
+			associatePublicIP: new(true),
+			expected:          new(true),
 		},
 		{
 			desc:     "private subnet is false",
 			subnets:  []string{"private"},
-			expected: fi.PtrTo(false),
+			expected: new(false),
 		},
 		{
 			desc:     "dualstack subnet is false",
 			subnets:  []string{"dualstack"},
-			expected: fi.PtrTo(false),
+			expected: new(false),
 		},
 		{
 			desc:              "private subnet ignores explicit true",
 			subnets:           []string{"private"},
-			associatePublicIP: fi.PtrTo(true),
-			expected:          fi.PtrTo(false),
+			associatePublicIP: new(true),
+			expected:          new(false),
 		},
 		{
 			desc:        "no subnets is an error",

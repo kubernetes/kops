@@ -20,15 +20,14 @@ import (
 	"testing"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestCloudConfigurationOptionsBuilder(t *testing.T) {
 	ob := &CloudConfigurationOptionsBuilder{
 		Context: nil,
 	}
-	disabled := fi.PtrTo(false)
-	enabled := fi.PtrTo(true)
+	disabled := new(false)
+	enabled := new(true)
 	for _, test := range []struct {
 		description              string
 		generalManageSCs         *bool

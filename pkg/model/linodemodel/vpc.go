@@ -47,10 +47,10 @@ func (b *VPCModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	name := linode.NormalizeLinodeVPCLabel(b.ClusterName())
 	description := fmt.Sprintf("kOps VPC for %s", b.ClusterName())
 	c.AddTask(&linodetasks.VPC{
-		Name:        fi.PtrTo(name),
+		Name:        new(name),
 		Lifecycle:   b.Lifecycle,
-		Description: fi.PtrTo(description),
-		Region:      fi.PtrTo(region),
+		Description: new(description),
+		Region:      new(region),
 	})
 
 	return nil

@@ -41,7 +41,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 			return err
 		}
 		t := &hetznertasks.SSHKey{
-			Name:      fi.PtrTo(b.ClusterName() + "-" + fingerprint),
+			Name:      new(b.ClusterName() + "-" + fingerprint),
 			Lifecycle: b.Lifecycle,
 			PublicKey: string(sshkey),
 			Labels: map[string]string{
@@ -65,7 +65,7 @@ func (b *ServerGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) error 
 		}
 
 		serverGroup := hetznertasks.ServerGroup{
-			Name:       fi.PtrTo(ig.Name),
+			Name:       new(ig.Name),
 			Lifecycle:  b.Lifecycle,
 			SSHKeys:    sshkeyTasks,
 			Network:    b.LinkToNetwork(),

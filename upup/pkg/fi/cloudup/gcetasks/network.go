@@ -216,10 +216,10 @@ func (_ *Network) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *N
 		tf.IPv4Range = e.CIDR
 
 	case "auto":
-		tf.AutoCreateSubnetworks = fi.PtrTo(true)
+		tf.AutoCreateSubnetworks = new(true)
 
 	case "custom":
-		tf.AutoCreateSubnetworks = fi.PtrTo(false)
+		tf.AutoCreateSubnetworks = new(false)
 	}
 
 	return t.RenderResource("google_compute_network", *e.Name, tf)

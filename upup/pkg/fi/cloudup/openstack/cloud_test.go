@@ -84,7 +84,7 @@ func Test_OpenstackCloud_MakeCloud(t *testing.T) {
 					CloudProvider: kops.CloudProviderSpec{
 						Openstack: &kops.OpenstackSpec{
 							BlockStorage: &kops.OpenstackBlockStorageConfig{
-								IgnoreVolumeMicroVersion: fi.PtrTo(true),
+								IgnoreVolumeMicroVersion: new(true),
 							},
 						},
 					},
@@ -583,7 +583,7 @@ func Test_BuildClients(t *testing.T) {
 			name: "When octavia is set, but no router, an error should be returned",
 			spec: &kops.OpenstackSpec{
 				Loadbalancer: &kops.OpenstackLoadbalancerConfig{
-					UseOctavia: fi.PtrTo(true),
+					UseOctavia: new(true),
 				},
 			},
 			expectLB:     true,
@@ -594,7 +594,7 @@ func Test_BuildClients(t *testing.T) {
 			name: "When octavia is set, and there is a router, a load-balancer should be returned",
 			spec: &kops.OpenstackSpec{
 				Loadbalancer: &kops.OpenstackLoadbalancerConfig{
-					UseOctavia: fi.PtrTo(true),
+					UseOctavia: new(true),
 				},
 				Router: &kops.OpenstackRouter{},
 			},
@@ -616,13 +616,13 @@ func Test_BuildClients(t *testing.T) {
 			name: "When router is set, but no LB, FIP support should be enabled",
 			spec: &kops.OpenstackSpec{
 				Router: &kops.OpenstackRouter{
-					ExternalNetwork: fi.PtrTo("some-ext-net"),
+					ExternalNetwork: new("some-ext-net"),
 				},
 			},
 			expectLB:              false,
 			expectedType:          "",
 			expectFloatingEnabled: true,
-			expectedExtNetName:    fi.PtrTo("some-ext-net"),
+			expectedExtNetName:    new("some-ext-net"),
 		}}
 
 	for _, g := range grid {

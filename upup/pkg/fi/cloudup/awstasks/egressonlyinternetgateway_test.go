@@ -73,14 +73,14 @@ func TestSharedEgressOnlyInternetGatewayDoesNotRename(t *testing.T) {
 			Lifecycle: fi.LifecycleSync,
 			CIDR:      s("172.20.0.0/16"),
 			Tags:      map[string]string{"kubernetes.io/cluster/cluster.example.com": "shared"},
-			Shared:    fi.PtrTo(true),
+			Shared:    new(true),
 			ID:        vpc.Vpc.VpcId,
 		}
 		eigw1 := &EgressOnlyInternetGateway{
 			Name:      s("eigw1"),
 			Lifecycle: fi.LifecycleSync,
 			VPC:       vpc1,
-			Shared:    fi.PtrTo(true),
+			Shared:    new(true),
 			ID:        internetGateway.EgressOnlyInternetGateway.EgressOnlyInternetGatewayId,
 			Tags:      make(map[string]string),
 		}

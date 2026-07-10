@@ -245,16 +245,16 @@ func (b *BootstrapScriptBuilder) ResourceNodeUp(c *fi.CloudupModelBuilderContext
 	c.AddTask(task)
 
 	c.AddTask(&fitasks.ManagedFile{
-		Name:      fi.PtrTo("nodeupconfig-" + ig.Name),
+		Name:      new("nodeupconfig-" + ig.Name),
 		Lifecycle: b.Lifecycle,
-		Location:  fi.PtrTo("igconfig/" + ig.Spec.Role.ToLowerString() + "/" + ig.Name + "/nodeupconfig.yaml"),
+		Location:  new("igconfig/" + ig.Spec.Role.ToLowerString() + "/" + ig.Name + "/nodeupconfig.yaml"),
 		Contents:  &task.nodeupConfig,
 	})
 	if ig.Spec.Manager == kops.InstanceManagerKarpenter {
 		c.AddTask(&fitasks.ManagedFile{
-			Name:      fi.PtrTo("nodeupscript-" + ig.Name),
+			Name:      new("nodeupscript-" + ig.Name),
 			Lifecycle: b.Lifecycle,
-			Location:  fi.PtrTo("igconfig/" + ig.Spec.Role.ToLowerString() + "/" + ig.Name + "/nodeupscript.sh"),
+			Location:  new("igconfig/" + ig.Spec.Role.ToLowerString() + "/" + ig.Name + "/nodeupscript.sh"),
 			Contents:  &task.nodeupScript,
 		})
 	}
