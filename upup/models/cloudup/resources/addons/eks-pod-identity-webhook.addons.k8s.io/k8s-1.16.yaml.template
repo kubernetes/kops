@@ -189,8 +189,13 @@ metadata:
     prometheus.io/scrape: "true"
 spec:
   ports:
-  - port: 443
+  - name: webhook
+    port: 443
     targetPort: 443
+    protocol: TCP
+  - name: metrics
+    port: 9999
+    targetPort: 9999
     protocol: TCP
   selector:
     app: pod-identity-webhook
