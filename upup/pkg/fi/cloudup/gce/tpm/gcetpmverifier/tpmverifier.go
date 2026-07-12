@@ -127,6 +127,19 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		return nil, fmt.Errorf("projectID does not match expected: got %q, want %q", tokenData.GCPProjectID, v.opt.ProjectID)
 	}
 
+	// Verify the token has a valid GCE TPM signature before making any other API calls.
+	{
+		// Note - we might be able to avoid this call by including the attestation certificate (signed by GCE) in the claim.
+		tpmSigningKey, err := v.getTPMSigningKey(ctx, &tokenData)
+		if err != nil {
+			return nil, err
+		}
+
+		if !verifySignature(tpmSigningKey, token.Data, token.Signature) {
+			return nil, fmt.Errorf("failed to verify claim signature for node")
+		}
+	}
+
 	instance, err := v.computeClient.Instances.Get(tokenData.GCPProjectID, tokenData.Zone, tokenData.Instance).Context(ctx).Do()
 	if err != nil {
 		if isNotFound(err) {
@@ -176,19 +189,6 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 	// Check if this is a CAPG managed instance
 	if instanceGroupName == "" && capiMachine == nil {
 		return nil, fmt.Errorf("could not determine ownership for instance %s", instance.SelfLink)
-	}
-
-	// Verify the token has a valid GCE TPM signature.
-	{
-		// Note - we might be able to avoid this call by including the attestation certificate (signed by GCE) in the claim.
-		tpmSigningKey, err := v.getTPMSigningKey(ctx, &tokenData)
-		if err != nil {
-			return nil, err
-		}
-
-		if !verifySignature(tpmSigningKey, token.Data, token.Signature) {
-			return nil, fmt.Errorf("failed to verify claim signature for node: %w", err)
-		}
 	}
 
 	sans, err := GetInstanceCertificateAlternateNames(instance)
