@@ -40,7 +40,6 @@ import (
 	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
 	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/pkg/wellknownports"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
@@ -152,26 +151,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		return nil, fmt.Errorf("instance was in zone %q, expected region %q", instance.Zone, v.opt.Region)
 	}
 
-	clusterName := ""
-	instanceGroupName := ""
-	for _, item := range instance.Metadata.Items {
-		switch item.Key {
-		case nodeidentitygce.MetadataKeyInstanceGroupName:
-			instanceGroupName = fi.ValueOf(item.Value)
-		case gcemetadata.MetadataKeyClusterName:
-			clusterName = fi.ValueOf(item.Value)
-		}
-	}
-
 	capgRole := instance.Labels[nodeidentitygce.LabelKeyCAPIRoleName]
-
-	if clusterName == "" {
-		return nil, fmt.Errorf("could not determine cluster for instance %s", instance.SelfLink)
-	}
-
-	if clusterName != v.opt.ClusterName {
-		return nil, fmt.Errorf("clusterName does not match expected: got %q, want %q", clusterName, v.opt.ClusterName)
-	}
 
 	var capiMachine *clusterapi.Machine
 
@@ -186,9 +166,29 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		capiMachine = m
 	}
 
-	// Check if this is a CAPG managed instance
-	if instanceGroupName == "" && capiMachine == nil {
-		return nil, fmt.Errorf("could not determine ownership for instance %s", instance.SelfLink)
+	instanceGroupName := ""
+	if capiMachine == nil {
+		// The instance metadata is set by whoever created the instance, so we can't trust it for
+		// authorization decisions. Instead we verify that the instance is actually a member of a
+		// MIG, and read the cluster name and instance group name from the MIG's instance template,
+		// which requires GCE API access to change.
+		instanceTemplate, err := nodeidentitygce.GetInstanceTemplateForMIGMember(ctx, v.computeClient, v.opt.ProjectID, instance)
+		if err != nil {
+			return nil, err
+		}
+
+		clusterName := nodeidentitygce.GetMetadataValue(instanceTemplate.Properties.Metadata, gcemetadata.MetadataKeyClusterName)
+		if clusterName == "" {
+			return nil, fmt.Errorf("could not determine cluster for instance %s", instance.SelfLink)
+		}
+		if clusterName != v.opt.ClusterName {
+			return nil, fmt.Errorf("clusterName does not match expected: got %q, want %q", clusterName, v.opt.ClusterName)
+		}
+
+		instanceGroupName = nodeidentitygce.GetMetadataValue(instanceTemplate.Properties.Metadata, nodeidentitygce.MetadataKeyInstanceGroupName)
+		if instanceGroupName == "" {
+			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
+		}
 	}
 
 	sans, err := GetInstanceCertificateAlternateNames(instance)
