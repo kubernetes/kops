@@ -604,7 +604,7 @@ resource "google_compute_instance_template" "master-us-test1-a-minimal-gce-ilb-c
   metadata = {
     "cluster-name"                    = "minimal-gce-ilb-cilium-etcd.example.com"
     "kops-k8s-io-instance-group-name" = "master-us-test1-a"
-    "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
+    "ssh-keys"                        = "ubuntu: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "user-data"                       = file("${path.module}/data/google_compute_instance_template_master-us-test1-a-minimal-gce-ilb-cilium-etcd-example-com_metadata_user-data")
   }
   name_prefix = "master-us-test1-a-minimal-ukspr5-"
@@ -656,7 +656,7 @@ resource "google_compute_instance_template" "nodes-minimal-gce-ilb-cilium-etcd-e
     "cluster-name"                    = "minimal-gce-ilb-cilium-etcd.example.com"
     "kops-k8s-io-instance-group-name" = "nodes"
     "kube-env"                        = "AUTOSCALER_ENV_VARS: os_distribution=ubuntu;arch=amd64;os=linux"
-    "ssh-keys"                        = "admin: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
+    "ssh-keys"                        = "ubuntu: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCtWu40XQo8dczLsCq0OWV+hxm9uV3WxeH9Kgh4sMzQxNtoU1pvW0XdjpkBesRKGoolfWeCLXWxpyQb1IaiMkKoz7MdhQ/6UKjMjP66aFWWp3pwD0uj0HuJ7tq4gKHKRYGTaZIRWpzUiANBrjugVgA+Sd7E/mYwc/DMXkIyRZbvhQ=="
     "user-data"                       = file("${path.module}/data/google_compute_instance_template_nodes-minimal-gce-ilb-cilium-etcd-example-com_metadata_user-data")
   }
   name_prefix = "nodes-minimal-gce-ilb-cil-vfh7jq-"

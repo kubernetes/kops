@@ -198,9 +198,10 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 		}
 
 		if len(b.SSHPublicKeys) > 0 {
+			sshUser := sshUsernameForImage(ig.Spec.Image)
 			var gFmtKeys []string
 			for _, key := range b.SSHPublicKeys {
-				gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", fi.SecretNameSSHPrimary, key))
+				gFmtKeys = append(gFmtKeys, fmt.Sprintf("%s: %s", sshUser, key))
 			}
 
 			t.Metadata["ssh-keys"] = fi.NewStringResource(strings.Join(gFmtKeys, "\n"))
@@ -258,6 +259,21 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 		return t, nil
 	}
+}
+
+// sshUsernameForImage returns the username under which SSH public keys are registered in the
+// instance's "ssh-keys" metadata; the GCE guest agent creates this user on first boot. kOps
+// historically used fi.SecretNameSSHPrimary ("admin"), but on Ubuntu images the guest agent fails
+// to create that user because those images ship with an "admin" group
+// (https://github.com/kubernetes/kops/issues/16175), so the key was never installed. For Ubuntu
+// images we use the image's built-in "ubuntu" user instead. Other images keep "admin" so that SSH
+// access to existing non-Ubuntu clusters is unchanged.
+func sshUsernameForImage(image string) string {
+	name := gce.LastComponent(image)
+	if strings.HasPrefix(strings.ToLower(name), "ubuntu") {
+		return "ubuntu"
+	}
+	return fi.SecretNameSSHPrimary
 }
 
 func (b *AutoscalingGroupModelBuilder) splitToZones(ig *kops.InstanceGroup) (map[string]int, error) {
