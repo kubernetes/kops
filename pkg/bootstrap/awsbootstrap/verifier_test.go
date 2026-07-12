@@ -80,6 +80,14 @@ func TestGetSTSRequestInfo(t *testing.T) {
 			URL:     "https://sts.us-east-1.amazonaws.com/?Action=GetCallerIdentity&Action=GetCallerIdentity",
 			IsValid: false,
 		},
+		{
+			URL:     "http://sts.us-east-1.amazonaws.com/?Action=GetCallerIdentity",
+			IsValid: false,
+		},
+		{
+			URL:     "//sts.us-east-1.amazonaws.com/?Action=GetCallerIdentity",
+			IsValid: false,
+		},
 	}
 
 	for _, g := range grid {
