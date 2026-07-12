@@ -204,15 +204,10 @@ func GetInstanceTemplateForMIGMember(ctx context.Context, computeService *comput
 		return nil, fmt.Errorf("cannot find owner for instance %s", instance.Name)
 	}
 
-	// We need to double-check the MIG configuration, in case created-by was changed
+	// We need to double-check the MIG membership, in case created-by was changed
 	migName := lastComponent(createdBy)
 
-	mig, err := computeService.InstanceGroupManagers.Get(project, lastComponent(instance.Zone), migName).Context(ctx).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group %q: %v", migName, err)
-	}
-
-	migMember, err := getManagedInstance(ctx, computeService, project, mig, instance.Id)
+	migMember, err := getManagedInstance(ctx, computeService, project, lastComponent(instance.Zone), migName, instance.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -231,12 +226,11 @@ func GetInstanceTemplateForMIGMember(ctx context.Context, computeService *comput
 }
 
 // getManagedInstance queries GCE for the instance from the MIG
-func getManagedInstance(ctx context.Context, computeService *compute.Service, project string, mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
+func getManagedInstance(ctx context.Context, computeService *compute.Service, project string, zone string, migName string, instanceID uint64) (*compute.ManagedInstance, error) {
 	var matches []*compute.ManagedInstance
 
 	filter := "id=" + strconv.FormatUint(instanceID, 10)
-	zone := lastComponent(mig.Zone)
-	if err := computeService.InstanceGroupManagers.ListManagedInstances(project, zone, mig.Name).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
+	if err := computeService.InstanceGroupManagers.ListManagedInstances(project, zone, migName).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
 		// Post-filter... filters aren't implemented (b/27605549)
 		for _, instance := range page.ManagedInstances {
 			if instance.Id != instanceID {
@@ -246,15 +240,15 @@ func getManagedInstance(ctx context.Context, computeService *compute.Service, pr
 		}
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", mig.Name, err)
+		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", migName, err)
 	}
 
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, mig.Name)
+		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, migName)
 	}
 	if len(matches) > 1 {
 		// Should be impossible - shows that filters / post-filters are not working
-		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, mig.Name)
+		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, migName)
 	}
 
 	return matches[0], nil
