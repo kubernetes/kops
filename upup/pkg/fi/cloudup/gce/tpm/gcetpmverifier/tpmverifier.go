@@ -38,9 +38,10 @@ import (
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
-	"k8s.io/kops/pkg/nodeidentity/gce"
+	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 )
@@ -142,14 +143,14 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 	instanceGroupName := ""
 	for _, item := range instance.Metadata.Items {
 		switch item.Key {
-		case gce.MetadataKeyInstanceGroupName:
+		case nodeidentitygce.MetadataKeyInstanceGroupName:
 			instanceGroupName = fi.ValueOf(item.Value)
 		case gcemetadata.MetadataKeyClusterName:
 			clusterName = fi.ValueOf(item.Value)
 		}
 	}
 
-	capgRole := instance.Labels[gce.LabelKeyCAPIRoleName]
+	capgRole := instance.Labels[nodeidentitygce.LabelKeyCAPIRoleName]
 
 	if clusterName == "" {
 		return nil, fmt.Errorf("could not determine cluster for instance %s", instance.SelfLink)
@@ -164,7 +165,8 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 	if v.capiManager != nil && capgRole != "" {
 		providerID := "gce://" + tokenData.GCPProjectID + "/" + tokenData.Zone + "/" + tokenData.Instance
 
-		m, err := v.capiManager.FindMachineByProviderID(ctx, providerID)
+		// The CAPI cluster name is the kOps cluster name escaped for GCE
+		m, err := v.capiManager.FindMachineByProviderID(ctx, providerID, gce.SafeClusterName(v.opt.ClusterName))
 		if err != nil {
 			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
 		}

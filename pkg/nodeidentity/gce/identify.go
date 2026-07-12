@@ -132,7 +132,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	if i.capiManager != nil && capgRole != "" {
 		providerID := "gce://" + project + "/" + zone + "/" + instanceName
 
-		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID)
+		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID, gce.SafeClusterName(i.clusterName))
 		if err != nil {
 			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
 		}
