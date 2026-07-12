@@ -354,6 +354,11 @@ type stsRequestValidator struct {
 
 // IsValid performs some basic pre-validation of the request URL.
 func (s *stsRequestValidator) isValidV2(u *url.URL) bool {
+	// The URL comes from the (untrusted) token; without this check a crafted http:// URL would
+	// make us send the request in plaintext.
+	if u.Scheme != "https" {
+		return false
+	}
 	if u.Host != s.Host {
 		return false
 	}
