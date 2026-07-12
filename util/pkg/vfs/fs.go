@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"sync"
 	"syscall"
 
@@ -47,12 +47,12 @@ func NewFSPath(location string) *FSPath {
 func (p *FSPath) Join(relativePath ...string) Path {
 	args := []string{p.location}
 	args = append(args, relativePath...)
-	joined := path.Join(args...)
+	joined := filepath.Join(args...)
 	return &FSPath{location: joined}
 }
 
 func (p *FSPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) error {
-	dir := path.Dir(p.location)
+	dir := filepath.Dir(p.location)
 	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return fmt.Errorf("error creating directories %q: %v", dir, err)
@@ -144,7 +144,7 @@ func (p *FSPath) ReadDir() ([]Path, error) {
 	}
 	var paths []Path
 	for _, f := range files {
-		paths = append(paths, NewFSPath(path.Join(p.location, f.Name())))
+		paths = append(paths, NewFSPath(filepath.Join(p.location, f.Name())))
 	}
 	return paths, nil
 }
@@ -166,7 +166,7 @@ func readTree(base string, dest *[]Path) error {
 		return err
 	}
 	for _, f := range files {
-		p := path.Join(base, f.Name())
+		p := filepath.Join(base, f.Name())
 		if f.IsDir() {
 			err = readTree(p, dest)
 			if err != nil {
@@ -180,7 +180,7 @@ func readTree(base string, dest *[]Path) error {
 }
 
 func (p *FSPath) Base() string {
-	return path.Base(p.location)
+	return filepath.Base(p.location)
 }
 
 func (p *FSPath) Path() string {

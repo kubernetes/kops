@@ -19,7 +19,7 @@ package vfs
 import (
 	"bytes"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/kops/pkg/testutils/testcontext"
@@ -34,7 +34,7 @@ func TestCreateFile(t *testing.T) {
 		data []byte
 	}{
 		{
-			path: path.Join(TempDir, "SubDir", "test1.tmp"),
+			path: filepath.Join(TempDir, "SubDir", "test1.tmp"),
 			data: []byte("test data\nline 1\r\nline 2"),
 		},
 	}
@@ -63,6 +63,45 @@ func TestCreateFile(t *testing.T) {
 	}
 }
 
+func TestFSPathJoin(t *testing.T) {
+	tests := []struct {
+		base         string
+		relativePath []string
+		expectedPath string
+		expectedBase string
+	}{
+		{
+			base:         filepath.Join("state", "cluster.example.com"),
+			relativePath: []string{"config"},
+			expectedPath: filepath.Join("state", "cluster.example.com", "config"),
+			expectedBase: "config",
+		},
+		{
+			base:         filepath.Join("state", "cluster.example.com"),
+			relativePath: []string{"secrets", "admin"},
+			expectedPath: filepath.Join("state", "cluster.example.com", "secrets", "admin"),
+			expectedBase: "admin",
+		},
+		{
+			// Callers may pass slash-separated relative paths; filepath.Join normalizes them to
+			// the OS path separator.
+			base:         "state",
+			relativePath: []string{"pki/private/ca"},
+			expectedPath: filepath.Join("state", "pki", "private", "ca"),
+			expectedBase: "ca",
+		},
+	}
+	for _, test := range tests {
+		joined := NewFSPath(test.base).Join(test.relativePath...)
+		if joined.Path() != test.expectedPath {
+			t.Errorf("Join(%q, %v): expected path %q, got %q", test.base, test.relativePath, test.expectedPath, joined.Path())
+		}
+		if joined.Base() != test.expectedBase {
+			t.Errorf("Join(%q, %v): expected base %q, got %q", test.base, test.relativePath, test.expectedBase, joined.Base())
+		}
+	}
+}
+
 func TestWriteTo(t *testing.T) {
 	ctx := testcontext.ForTest(t)
 
@@ -73,7 +112,7 @@ func TestWriteTo(t *testing.T) {
 		data []byte
 	}{
 		{
-			path: path.Join(TempDir, "SubDir", "test1.tmp"),
+			path: filepath.Join(TempDir, "SubDir", "test1.tmp"),
 			data: []byte("test data\nline 1\r\nline 2"),
 		},
 	}
