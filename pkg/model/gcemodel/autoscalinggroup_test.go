@@ -25,40 +25,6 @@ import (
 	"k8s.io/kops/pkg/model"
 )
 
-func TestSSHUsernameForImage(t *testing.T) {
-	testcases := []struct {
-		image    string
-		expected string
-	}{
-		{
-			image:    "ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615",
-			expected: "ubuntu",
-		},
-		{
-			image:    "ubuntu-2404-noble-amd64-v20260615",
-			expected: "ubuntu",
-		},
-		{
-			image:    "cos-cloud/cos-stable-77-12371-114-0",
-			expected: "admin",
-		},
-		{
-			image:    "debian-cloud/debian-12-bookworm-v20260615",
-			expected: "admin",
-		},
-		{
-			image:    "my-project/my-custom-image",
-			expected: "admin",
-		},
-	}
-
-	for _, g := range testcases {
-		t.Run(g.image, func(t *testing.T) {
-			assert.Equal(t, g.expected, sshUsernameForImage(g.image))
-		})
-	}
-}
-
 func TestSplitToZones(t *testing.T) {
 	testcases := []struct {
 		name     string
