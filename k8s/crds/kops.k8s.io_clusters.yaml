@@ -2413,6 +2413,13 @@ spec:
                       Increasing this value allows etcd more time to become ready on new control-plane nodes before kube-apiserver gives up and crashes.
                       Default is 1m0s.
                     type: string
+                  strictTransportSecurityDirectives:
+                    description: 'StrictTransportSecurityDirectives is a list of directives
+                      for HSTS, comma separated. If this list is empty, then HSTS
+                      directives will not be added. Example: ''max-age=31536000,includeSubDomains,preload'''
+                    items:
+                      type: string
+                    type: array
                   tlsCertFile:
                     type: string
                   tlsCipherSuites:

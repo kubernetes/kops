@@ -5778,6 +5778,7 @@ func autoConvert_v1alpha3_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.CorsAllowedOrigins = in.CorsAllowedOrigins
+	out.StrictTransportSecurityDirectives = in.StrictTransportSecurityDirectives
 	out.DefaultNotReadyTolerationSeconds = in.DefaultNotReadyTolerationSeconds
 	out.DefaultUnreachableTolerationSeconds = in.DefaultUnreachableTolerationSeconds
 	out.DeleteCollectionWorkers = in.DeleteCollectionWorkers
@@ -5899,6 +5900,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha3_KubeAPIServerConfig(in *ko
 	out.EnableProfiling = in.EnableProfiling
 	out.EnableContentionProfiling = in.EnableContentionProfiling
 	out.CorsAllowedOrigins = in.CorsAllowedOrigins
+	out.StrictTransportSecurityDirectives = in.StrictTransportSecurityDirectives
 	out.DefaultNotReadyTolerationSeconds = in.DefaultNotReadyTolerationSeconds
 	out.DefaultUnreachableTolerationSeconds = in.DefaultUnreachableTolerationSeconds
 	out.DeleteCollectionWorkers = in.DeleteCollectionWorkers

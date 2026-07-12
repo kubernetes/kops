@@ -579,6 +579,9 @@ type KubeAPIServerConfig struct {
 	// expression to support subdomain matching. If this list is empty CORS will not be enabled.
 	CorsAllowedOrigins []string `json:"corsAllowedOrigins,omitempty" flag:"cors-allowed-origins"`
 
+	// StrictTransportSecurityDirectives is a list of directives for HSTS, comma separated. If this list is empty, then HSTS directives will not be added. Example: 'max-age=31536000,includeSubDomains,preload'
+	StrictTransportSecurityDirectives []string `json:"strictTransportSecurityDirectives,omitempty" flag:"strict-transport-security-directives"`
+
 	// DefaultNotReadyTolerationSeconds
 	DefaultNotReadyTolerationSeconds *int64 `json:"defaultNotReadyTolerationSeconds,omitempty" flag:"default-not-ready-toleration-seconds"`
 	// DefaultUnreachableTolerationSeconds
