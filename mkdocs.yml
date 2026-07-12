@@ -155,6 +155,7 @@ nav:
     - Getting Involved and Contributing: "contributing/index.md"
     - New Kubernetes Version: "contributing/new_kubernetes_version.md"
     - Our Release Process: "contributing/release-process.md"
+    - Go Version Policy: "contributing/go-version-policy.md"
     - Releasing With Homebrew: "contributing/homebrew.md"
     - Updating The Default Base AMI: "contributing/update_ami_versions.md"
     - Building: "contributing/building.md"
