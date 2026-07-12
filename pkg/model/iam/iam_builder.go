@@ -27,17 +27,21 @@ package iam
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"sort"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
+	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -58,10 +62,6 @@ type Policy struct {
 	Statement                 []*Statement
 	partition                 string
 	Version                   string
-}
-
-func (p *Policy) AddUnconditionalActions(actions ...string) {
-	p.unconditionalAction.Insert(actions...)
 }
 
 func (p *Policy) AddEC2CreateAction(actions, resources []string) {
@@ -1113,6 +1113,191 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 	}
 }
 
+// AddKarpenterPermissions adds the permissions needed by the Karpenter controller.
+// The mutating actions are scoped like in the upstream reference policy:
+// https://karpenter.sh/v1.6/getting-started/migrating-from-cas/#create-iam-roles
+// with the KubernetesCluster tag taking the place of the upstream cluster ownership tag, as it is
+// the tag kOps applies to the resources that Karpenter manages. The comments reference the Sids
+// of the corresponding upstream statements. Unlike upstream, no instance profile management
+// permissions are granted: kOps supplies the instance profile through the EC2NodeClass spec, so
+// Karpenter never creates or mutates instance profiles.
+func AddKarpenterPermissions(p *Policy) error {
+	ec2Service, err := IAMServiceEC2(p.region)
+	if err != nil {
+		return err
+	}
+
+	// AllowRegionalReadActions, AllowSSMReadActions, AllowPricingReadActions and
+	// AllowInstanceProfileReadActions; ssm:GetParameter is not limited to AWS-owned parameters,
+	// as kOps also supports user-owned SSM parameters as instance group images.
+	p.unconditionalAction.Insert(
+		"ec2:DescribeCapacityReservations",
+		"ec2:DescribeImages",
+		"ec2:DescribeInstanceStatus",
+		"ec2:DescribeInstanceTypeOfferings",
+		"ec2:DescribeInstanceTypes",
+		"ec2:DescribeInstances",
+		"ec2:DescribeLaunchTemplates",
+		"ec2:DescribePlacementGroups",
+		"ec2:DescribeSecurityGroups",
+		"ec2:DescribeSpotPriceHistory",
+		"ec2:DescribeSubnets",
+		"iam:GetInstanceProfile",
+		"iam:ListInstanceProfiles",
+		"pricing:GetProducts",
+		"ssm:GetParameter",
+	)
+
+	instanceARN := fmt.Sprintf("arn:%s:ec2:*:*:instance/*", p.partition)
+	launchTemplateARN := fmt.Sprintf("arn:%s:ec2:*:*:launch-template/*", p.partition)
+
+	// The EC2 resources that Karpenter creates and tags when launching instances.
+	taggableResources := []string{
+		fmt.Sprintf("arn:%s:ec2:*:*:fleet/*", p.partition),
+		instanceARN,
+		launchTemplateARN,
+		fmt.Sprintf("arn:%s:ec2:*:*:network-interface/*", p.partition),
+		fmt.Sprintf("arn:%s:ec2:*:*:spot-instances-request/*", p.partition),
+		fmt.Sprintf("arn:%s:ec2:*:*:volume/*", p.partition),
+	}
+
+	// The resources that Karpenter created for this cluster carry both the cluster tag and its
+	// own nodepool tag.
+	karpenterOwnedCondition := Condition{
+		"StringEquals": map[string]string{
+			"aws:ResourceTag/KubernetesCluster": p.clusterName,
+		},
+		"StringLike": map[string]string{
+			"aws:ResourceTag/karpenter.sh/nodepool": "*",
+		},
+	}
+
+	// Karpenter only manages worker node instance groups, which use the worker node role,
+	// named as in KopsModelContext.IAMName.
+	nodeRole := truncate.TruncateString("nodes."+p.clusterName, truncate.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
+	passRoleResource := fmt.Sprintf("arn:%s:iam::*:role/%s", p.partition, nodeRole)
+
+	p.Statement = append(p.Statement,
+		// AllowScopedEC2InstanceAccessActions: RunInstances and CreateFleet also reference
+		// resources that do not receive tags in the request: the AMI, its snapshots and the
+		// subnets, security groups and capacity reservations to launch into.
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorset.Of(
+				"ec2:CreateFleet",
+				"ec2:RunInstances",
+			),
+			Resource: stringorset.Set([]string{
+				fmt.Sprintf("arn:%s:ec2:*:*:capacity-reservation/*", p.partition),
+				fmt.Sprintf("arn:%s:ec2:*::image/*", p.partition),
+				fmt.Sprintf("arn:%s:ec2:*::snapshot/*", p.partition),
+				fmt.Sprintf("arn:%s:ec2:*:*:security-group/*", p.partition),
+				fmt.Sprintf("arn:%s:ec2:*:*:subnet/*", p.partition),
+			}),
+		},
+		// AllowScopedEC2LaunchTemplateAccessActions: launching from an existing launch template
+		// is only allowed for launch templates that Karpenter created for this cluster, as the
+		// launch template itself is not tagged by the request.
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorset.Of(
+				"ec2:CreateFleet",
+				"ec2:RunInstances",
+			),
+			Resource:  stringorset.Set([]string{launchTemplateARN}),
+			Condition: karpenterOwnedCondition,
+		},
+		// AllowScopedEC2InstanceActionsWithTags: launching instances is only allowed when the
+		// request tags the created resources with the cluster tag and the karpenter.sh/nodepool
+		// tag; Karpenter tags everything it creates with the EC2NodeClass tags, which include
+		// the cluster tag, and with its own nodepool tag.
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorset.Of(
+				"ec2:CreateFleet",
+				"ec2:CreateLaunchTemplate",
+				"ec2:RunInstances",
+			),
+			Resource: stringorset.Set(taggableResources),
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"aws:RequestTag/KubernetesCluster": p.clusterName,
+				},
+				"StringLike": map[string]string{
+					"aws:RequestTag/karpenter.sh/nodepool": "*",
+				},
+			},
+		},
+		// AllowScopedResourceCreationTagging: tagging the created resources as part of the
+		// create actions above.
+		&Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorset.String("ec2:CreateTags"),
+			Resource: stringorset.Set(taggableResources),
+			Condition: Condition{
+				"StringEquals": map[string]interface{}{
+					"aws:RequestTag/KubernetesCluster": p.clusterName,
+					"ec2:CreateAction": []string{
+						"CreateFleet",
+						"CreateLaunchTemplate",
+						"RunInstances",
+					},
+				},
+				"StringLike": map[string]string{
+					"aws:RequestTag/karpenter.sh/nodepool": "*",
+				},
+			},
+		},
+		// AllowScopedResourceTagging: re-tagging the resources that Karpenter manages, without
+		// changing the cluster tag.
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorset.Of(
+				"ec2:CreateTags",
+				"ec2:DeleteTags",
+			),
+			Resource: stringorset.Set(taggableResources),
+			Condition: Condition{
+				"Null": map[string]string{
+					"aws:RequestTag/KubernetesCluster": "true",
+				},
+				"StringEquals": map[string]string{
+					"aws:ResourceTag/KubernetesCluster": p.clusterName,
+				},
+				"StringLike": map[string]string{
+					"aws:ResourceTag/karpenter.sh/nodepool": "*",
+				},
+			},
+		},
+		// AllowScopedDeletion: deleting is only allowed for the instances and launch templates
+		// that Karpenter created for this cluster.
+		&Statement{
+			Effect: StatementEffectAllow,
+			Action: stringorset.Of(
+				"ec2:DeleteLaunchTemplate",
+				"ec2:TerminateInstances",
+			),
+			Resource:  stringorset.Set([]string{instanceARN, launchTemplateARN}),
+			Condition: karpenterOwnedCondition,
+		},
+		// AllowPassingInstanceRole: Karpenter may only pass the node role, and only to EC2.
+		// Instance groups with custom instance profiles contain roles that are not managed by
+		// kOps; granting iam:PassRole for those is the responsibility of whoever manages them.
+		&Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorset.String("iam:PassRole"),
+			Resource: stringorset.String(passRoleResource),
+			Condition: Condition{
+				"StringEquals": map[string]string{
+					"iam:PassedToService": ec2Service,
+				},
+			},
+		},
+	)
+
+	return nil
+}
+
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
 func AddAWSEBSCSIDriverPermissions(b *PolicyBuilder, p *Policy, appendSnapshotPermissions bool) {
 	// EBS CSI's data-plane KMS calls flow through EC2, so kms:ViaService applies.
@@ -1281,6 +1466,25 @@ func addKMSIAMPolicies(p *Policy, bypassViaService bool) {
 // EC2 is pinned to the cluster's region (EBS is always in-region). S3 uses a
 // region wildcard because kops supports cross-region state-store buckets; the
 // caller must therefore evaluate the values under StringLike, not StringEquals.
+// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region.
+// It is ec2.amazonaws.com in the default aws partition, but different in other isolated/custom partitions
+func IAMServiceEC2(region string) (string, error) {
+	ctx := context.TODO()
+	resolver := ec2.NewDefaultEndpointResolverV2()
+	ep, err := resolver.ResolveEndpoint(ctx, ec2.EndpointParameters{Region: aws.String(region)})
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve endpoint: %v", err)
+	}
+	if ep.URI.Host != "" {
+		// Remove the region from the hostname. Examples:
+		// ec2.us-east-1.amazonaws.com     -> ec2.amazonaws.com
+		// ec2.cn-west-1.amazonaws.com.cn  -> ec2.amazonaws.com.cn
+		// ec2.us-gov-west-1.amazonaws.com -> ec2.amazonaws.com
+		return strings.ReplaceAll(ep.URI.Host, fmt.Sprintf("%v.", region), ""), nil
+	}
+	return "ec2.amazonaws.com", nil
+}
+
 func kmsViaServices(region string) []string {
 	if region == "" {
 		return nil
