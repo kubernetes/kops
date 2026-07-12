@@ -29,19 +29,78 @@ Cross compiling for things like `nodeup` are now done automatically via `make no
 
 ## Debugging
 
-To enable interactive debugging, the kOps binary needs to be specially compiled to include debugging symbols.
-Add `DEBUGGING=true` to the `make` invocation to set the compile flags appropriately.
+By default, the kOps binary is built with optimizations enabled and debug symbols stripped. To debug a prebuilt binary, it needs to be compiled with debugging symbols instead. Add `DEBUGGABLE=true` to the `make` invocation to set the compile flags appropriately.
 
-For example, `DEBUGGING=true make` will produce a kOps binary that can be interactively debugged.
+For example, `DEBUGGABLE=true make` will produce a kOps binary that can be interactively debugged.
 
 ### Interactive debugging with Delve
 
-[Delve](https://github.com/derekparker/delve) can be used to interactively debug the kOps binary.
-After installing Delve, you can use it directly, or run it in headless mode for use with an
-Interactive Development Environment (IDE).
+[Delve](https://github.com/go-delve/delve) can be used to interactively debug the kOps binary.
 
-For example, run `dlv --listen=:2345 --headless=true --api-version=2 exec ${GOPATH}/bin/kops -- <kops command>`,
-and then configure your IDE to connect its debugger to port 2345 on localhost.
+The simplest way to start a debug session is `dlv debug`, which compiles the package with optimizations disabled and runs it under the debugger, so it does not require a special build. Run it from the root of the kOps source tree, and pass the kOps arguments after `--`, omitting the `kops` command itself:
+
+```bash
+dlv debug k8s.io/kops/cmd/kops -- update cluster --name mycluster.example.com
+```
+
+To debug a binary that was already built with `DEBUGGABLE=true make`, use `dlv exec` instead:
+
+```bash
+dlv exec ${GOPATH}/bin/kops -- update cluster --name mycluster.example.com
+```
+
+Environment variables such as `KOPS_STATE_STORE` are inherited by the debugged process, so set them the same way you would for a normal kOps invocation:
+
+```bash
+KOPS_STATE_STORE=s3://my-state-store \
+dlv debug k8s.io/kops/cmd/kops -- update cluster --name mycluster.example.com
+```
+
+### Headless mode
+
+To use Delve with an Interactive Development Environment (IDE), run it in headless mode and let the IDE connect to it:
+
+```bash
+dlv debug --headless --listen=:2345 --api-version=2 k8s.io/kops/cmd/kops -- update cluster --name mycluster.example.com
+```
+
+Then configure your IDE to connect its debugger to port 2345 on localhost.
+
+### Debugging with VS Code
+
+The VS Code Go extension manages Delve itself, so a headless server is not needed. Create a `.vscode/launch.json` file with the kOps arguments and environment variables for the command you want to debug:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "kops update cluster",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/kops",
+      "args": ["update", "cluster", "--name", "mycluster.example.com"],
+      "env": {
+        "KOPS_STATE_STORE": "s3://my-state-store"
+      }
+    }
+  ]
+}
+```
+
+Alternatively, to attach VS Code to a Delve server that was started in headless mode, use a configuration like this:
+
+```json
+    {
+      "name": "Attach to Delve (kOps)",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "port": 2345,
+      "host": "127.0.0.1"
+    }
+```
 
 ## Troubleshooting
 
