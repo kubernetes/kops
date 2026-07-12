@@ -20,6 +20,28 @@ import (
 	"testing"
 )
 
+func TestCheckProjectFlag(t *testing.T) {
+	grid := []struct {
+		flagSet   bool
+		project   string
+		shouldErr bool
+	}{
+		{flagSet: false, project: "", shouldErr: false},
+		{flagSet: true, project: "my-project", shouldErr: false},
+		{flagSet: true, project: "", shouldErr: true},
+	}
+
+	for _, g := range grid {
+		err := checkProjectFlag(g.flagSet, g.project)
+		if g.shouldErr && err == nil {
+			t.Errorf("checkProjectFlag(%v, %q): expected error, got nil", g.flagSet, g.project)
+		}
+		if !g.shouldErr && err != nil {
+			t.Errorf("checkProjectFlag(%v, %q): unexpected error: %v", g.flagSet, g.project, err)
+		}
+	}
+}
+
 func TestParseCloudLabels(t *testing.T) {
 	expect := map[string]string{"foo": "bar", "fib": "baz"}
 	checkParse(t, "", map[string]string{}, false)
