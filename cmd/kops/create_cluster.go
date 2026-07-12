@@ -212,6 +212,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 				options.EncryptEtcdStorage = &encryptEtcdStorage
 			}
 
+			if err := checkProjectFlag(cmd.Flag("project").Changed, options.Project); err != nil {
+				return err
+			}
+
 			if sshPublicKey != "" {
 				options.SSHPublicKeys, err = loadSSHPublicKeys(sshPublicKey)
 				if err != nil {
@@ -928,6 +932,16 @@ func RunCreateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Cr
 		}
 	}
 
+	return nil
+}
+
+// checkProjectFlag rejects an explicitly empty --project flag. An empty value usually comes from
+// an unset environment variable (e.g. --project=$PROJECT); silently accepting it would fall back
+// to the gcloud default project, which may not be the intended one.
+func checkProjectFlag(flagSet bool, project string) error {
+	if flagSet && project == "" {
+		return fmt.Errorf("--project cannot be empty; specify a project or omit the flag to use the gcloud default project")
+	}
 	return nil
 }
 
