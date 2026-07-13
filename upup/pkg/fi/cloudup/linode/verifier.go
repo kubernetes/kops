@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi/cloudup/linode/linodemetadata"
@@ -55,7 +55,10 @@ func NewLinodeVerifier(opt *LinodeVerifierOptions) (bootstrap.Verifier, error) {
 		return nil, fmt.Errorf("%s is required", "LINODE_TOKEN")
 	}
 
-	client := linodego.NewClient(nil)
+	client, err := linodego.NewClient(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Linode client: %w", err)
+	}
 	client.SetUserAgent("kops")
 	client.SetToken(accessToken)
 
@@ -98,15 +101,11 @@ func (v *linodeVerifier) VerifyToken(ctx context.Context, rawRequest *http.Reque
 }
 
 // gatherIPv4Addresses returns a list of IPv4 addresses and challenge endpoints from the given list of IPs.
-func gatherIPv4Addresses(ips []*net.IP) ([]string, []string) {
+func gatherIPv4Addresses(ips []net.IP) ([]string, []string) {
 	addresses := make([]string, 0, len(ips))
 	challengeEndpoints := make([]string, 0, len(ips))
 
-	for _, ipPtr := range ips {
-		if ipPtr == nil {
-			continue
-		}
-		ip := *ipPtr
+	for _, ip := range ips {
 		if ip.To4() == nil {
 			continue
 		}

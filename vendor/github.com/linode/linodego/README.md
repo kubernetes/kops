@@ -31,37 +31,37 @@ A brief summary of the features offered in this API client are shown here.
 package main
 
 import (
-	"context"
-	"fmt"
-	"log"
-	"net/http"
-	"os"
+ "context"
+ "fmt"
+ "log"
+ "net/http"
+ "os"
 
-	"github.com/linode/linodego"
-	"golang.org/x/oauth2"
+ "github.com/linode/linodego"
+ "golang.org/x/oauth2"
 )
 
 func main() {
-	apiKey, ok := os.LookupEnv("LINODE_TOKEN")
-	if !ok {
-		log.Fatal("Could not find LINODE_TOKEN, please assert it is set.")
-	}
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: apiKey})
+ apiKey, ok := os.LookupEnv("LINODE_TOKEN")
+ if !ok {
+  log.Fatal("Could not find LINODE_TOKEN, please assert it is set.")
+ }
+ tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: apiKey})
 
-	oauth2Client := &http.Client{
-		Transport: &oauth2.Transport{
-			Source: tokenSource,
-		},
-	}
+ oauth2Client := &http.Client{
+  Transport: &oauth2.Transport{
+   Source: tokenSource,
+  },
+ }
 
-	linodeClient := linodego.NewClient(oauth2Client)
-	linodeClient.SetDebug(true)
+ linodeClient := linodego.NewClient(oauth2Client)
+ linodeClient.SetDebug(true)
 
-	res, err := linodeClient.GetInstance(context.Background(), 4090913)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%v", res)
+ res, err := linodeClient.GetInstance(context.Background(), 4090913)
+ if err != nil {
+  log.Fatal(err)
+ }
+ fmt.Printf("%v", res)
 }
 ```
 
@@ -99,9 +99,10 @@ values are set in the supplied ListOptions.
 ```
 
 > **_NOTES:_**  
->	- The ListOptions will be mutated by list endpoint functions.
->	- Instances of ListOptions should NOT be shared across multiple list endpoint functions.
->	- The resulting number of results and pages can be accessed through the user-supplied ListOptions instance.
+>
+> - The ListOptions will be mutated by list endpoint functions.
+> - Instances of ListOptions should NOT be shared across multiple list endpoint functions.
+> - The resulting number of results and pages can be accessed through the user-supplied ListOptions instance.
 
 #### Filtering
 
@@ -148,7 +149,7 @@ linodes, err := linodego.ListInstances(context.Background(), linodego.NewListOpt
 
 ### Response Caching
 
-By default, certain endpoints with static responses will be cached into memory. 
+By default, certain endpoints with static responses will be cached into memory.
 Endpoints with cached responses are identified in their [accompanying documentation](https://pkg.go.dev/github.com/linode/linodego?utm_source=godoc).
 
 The default cache entry expiry time is `15` minutes. Certain endpoints may override this value to allow for more frequent refreshes (e.g. `client.GetRegion(...)`).
@@ -168,7 +169,7 @@ When performing a `POST` or `PUT` request, multiple field related errors will be
 
 ## Tests
 
-Run `make test-unit` to run the unit tests. 
+Run `make test-unit` to run the unit tests.
 
 Run `make test-int` to run the integration tests. The integration tests use fixtures.
 

@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/linode/linodego"
+	"github.com/linode/linodego/v2"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/upup/pkg/fi/cloudup/linode/linodemetadata"
@@ -36,7 +36,7 @@ func TestLinodeVerifierVerifyToken(t *testing.T) {
 			instance: &linodego.Instance{
 				ID:    101,
 				Label: "nodes-us-ord.example.k8s.local-1",
-				IPv4:  []*net.IP{ipPtr("203.0.113.15"), ipPtr("192.168.152.10")},
+				IPv4:  []net.IP{*ipPtr("203.0.113.15"), *ipPtr("192.168.152.10")},
 				Tags:  []string{"kops.k8s.io/instance-group:nodes-us-ord"},
 			},
 		},
@@ -69,7 +69,7 @@ func TestLinodeVerifierVerifyTokenWrongPrefix(t *testing.T) {
 func TestLinodeVerifierVerifyTokenNoPrivateIP(t *testing.T) {
 	verifier := &linodeVerifier{
 		client: &fakeLinodeVerifierClient{
-			instance: &linodego.Instance{ID: 101, Label: "node-1", IPv4: []*net.IP{ipPtr("203.0.113.15")}},
+			instance: &linodego.Instance{ID: 101, Label: "node-1", IPv4: []net.IP{*ipPtr("203.0.113.15")}},
 		},
 	}
 
