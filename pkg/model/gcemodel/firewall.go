@@ -138,6 +138,11 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.KubeAPIServer),
 				fmt.Sprintf("tcp:%d", wellknownports.KubeletAPI),
 				fmt.Sprintf("tcp:%d", wellknownports.KopsControllerPort),
+				// Metrics ports for control plane components, so they can be scraped from nodes.
+				fmt.Sprintf("tcp:%d", wellknownports.KubeControllerManagerMetricsPort),
+				fmt.Sprintf("tcp:%d", wellknownports.KubeSchedulerMetricsPort),
+				fmt.Sprintf("tcp:%d", wellknownports.KubeProxyMetricsPort),
+				fmt.Sprintf("tcp:%d", wellknownports.EtcdMetricsPort),
 			},
 		}
 		if b.Cluster.UsesLegacyGossip() {
@@ -155,12 +160,6 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			if model.UseCiliumEtcd(b.Cluster) {
 				t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.EtcdCiliumClientPort))
 			}
-		}
-		if b.NetworkingIsIPAlias() {
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.KubeControllerManagerMetricsPort))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.KubeSchedulerMetricsPort))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.KubeProxyMetricsPort))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.EtcdMetricsPort))
 		}
 		c.AddTask(t)
 	}

@@ -315,6 +315,22 @@ resource "google_compute_firewall" "node-to-master-minimal-example-com" {
     ports    = ["3988"]
     protocol = "tcp"
   }
+  allow {
+    ports    = ["10257"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10259"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10249"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["2382"]
+    protocol = "tcp"
+  }
   disabled    = false
   name        = "node-to-master-minimal-example-com"
   network     = google_compute_network.minimal-example-com.name
