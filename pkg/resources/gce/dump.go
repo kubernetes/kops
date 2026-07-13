@@ -38,6 +38,9 @@ type dumpState struct {
 
 	// instances is a cache of instances by zone
 	instances map[string]map[string]*compute.Instance
+
+	// disks is a cache of disks by zone
+	disks map[string]map[string]*compute.Disk
 }
 
 // DumpManagedInstance is responsible for dumping a resource for a ManagedInstance
@@ -107,6 +110,12 @@ func DumpManagedInstance(op *resources.DumpOperation, r *resources.Resource) err
 		i.Roles = append(i.Roles, "control-plane")
 	}
 
+	if image, err := getDumpState(op).getBootDiskImage(op.Context, u.Zone, instanceDetails); err != nil {
+		klog.Warningf("unable to determine boot disk image for instance %q: %v", u.Name, err)
+	} else if image != "" {
+		i.SSHUser = gce.SSHUsernameForImage(image)
+	}
+
 	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	op.Dump.Resources = append(op.Dump.Resources, instanceDetails)
@@ -147,6 +156,52 @@ func (s *dumpState) getInstances(ctx context.Context, zone string) (map[string]*
 	}
 	s.instances[zone] = instances
 	return instances, nil
+}
+
+// getDisks retrieves the list of disks from the cloud, using a cached copy if possible
+func (s *dumpState) getDisks(ctx context.Context, zone string) (map[string]*compute.Disk, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.disks == nil {
+		s.disks = make(map[string]map[string]*compute.Disk)
+	}
+
+	if s.disks[zone] != nil {
+		return s.disks[zone], nil
+	}
+
+	l, err := s.cloud.Compute().Disks().List(ctx, s.cloud.Project(), zone)
+	if err != nil {
+		return nil, err
+	}
+	disks := make(map[string]*compute.Disk)
+	for _, d := range l {
+		disks[d.Name] = d
+	}
+	s.disks[zone] = disks
+	return disks, nil
+}
+
+// getBootDiskImage returns the source image of the instance's boot disk. The instance's attached
+// disks don't carry the source image, so we look it up on the disk resource itself. Returns "" if
+// the image cannot be determined (e.g. a disk created from a snapshot).
+func (s *dumpState) getBootDiskImage(ctx context.Context, zone string, instance *compute.Instance) (string, error) {
+	for _, d := range instance.Disks {
+		if d == nil || !d.Boot {
+			continue
+		}
+		disks, err := s.getDisks(ctx, zone)
+		if err != nil {
+			return "", err
+		}
+		disk := disks[gce.LastComponent(d.Source)]
+		if disk == nil {
+			return "", nil
+		}
+		return disk.SourceImage, nil
+	}
+	return "", nil
 }
 
 // DumpNetwork is responsible for dumping a resource for a Network

@@ -23,6 +23,7 @@ import (
 	"google.golang.org/api/googleapi"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/truncate"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func IsNotFound(err error) bool {
@@ -146,6 +147,21 @@ func LastComponent(s string) string {
 		s = s[lastSlash+1:]
 	}
 	return s
+}
+
+// SSHUsernameForImage returns the username under which SSH public keys are registered in the
+// instance's "ssh-keys" metadata; the GCE guest agent creates this user on first boot. kOps
+// historically used fi.SecretNameSSHPrimary ("admin"), but on Ubuntu images the guest agent fails
+// to create that user because those images ship with an "admin" group
+// (https://github.com/kubernetes/kops/issues/16175), so the key was never installed. For Ubuntu
+// images we use the image's built-in "ubuntu" user instead. Other images keep "admin" so that SSH
+// access to existing non-Ubuntu clusters is unchanged.
+func SSHUsernameForImage(image string) string {
+	name := LastComponent(image)
+	if strings.HasPrefix(strings.ToLower(name), "ubuntu") {
+		return "ubuntu"
+	}
+	return fi.SecretNameSSHPrimary
 }
 
 // ZoneToRegion maps a GCE zone name to a GCE region name, returning an error if it cannot be mapped
