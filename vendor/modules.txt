@@ -592,8 +592,6 @@ github.com/go-openapi/swag
 # github.com/go-openapi/swag/jsonname v0.25.1
 ## explicit; go 1.24.0
 github.com/go-openapi/swag/jsonname
-# github.com/go-resty/resty/v2 v2.17.2
-## explicit; go 1.23.0
 # github.com/go-viper/mapstructure/v2 v2.4.0
 ## explicit; go 1.18
 github.com/go-viper/mapstructure/v2
