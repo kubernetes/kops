@@ -228,6 +228,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 	iamPolicy := &iam.PolicyResource{
 		Builder: &iam.PolicyBuilder{
 			Cluster:                               b.Cluster,
+			AllInstanceGroups:                     b.AllInstanceGroups,
 			Role:                                  role,
 			Region:                                b.Region,
 			Partition:                             b.AWSPartition,

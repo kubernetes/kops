@@ -33,7 +33,17 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName, b.Partition, b.Region)
 
-	if err := iam.AddKarpenterPermissions(p); err != nil {
+	// Instance groups with custom IAM instance profiles contain roles with names that kOps
+	// cannot predict.
+	useCustomInstanceProfiles := false
+	for _, ig := range b.AllInstanceGroups {
+		if ig.IsKarpenterManaged() && ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
+			useCustomInstanceProfiles = true
+			break
+		}
+	}
+
+	if err := iam.AddKarpenterPermissions(p, useCustomInstanceProfiles); err != nil {
 		return nil, err
 	}
 

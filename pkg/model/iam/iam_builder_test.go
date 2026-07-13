@@ -372,28 +372,39 @@ func TestIAMServiceEC2(t *testing.T) {
 }
 
 func TestAddKarpenterPermissions(t *testing.T) {
-	p := NewPolicy("c.example.com", "aws", "us-east-1")
-	if err := AddKarpenterPermissions(p); err != nil {
-		t.Fatalf("unexpected error: %v", err)
+	tests := []struct {
+		name                      string
+		useCustomInstanceProfiles bool
+		wantPassRoleResource      string
+	}{
+		{name: "managed instance profiles", useCustomInstanceProfiles: false, wantPassRoleResource: "arn:aws:iam::*:role/nodes.c.example.com"},
+		{name: "custom instance profiles", useCustomInstanceProfiles: true, wantPassRoleResource: "arn:aws:iam::*:role/*"},
 	}
-
-	var passRole *Statement
-	for _, s := range p.Statement {
-		if slices.Contains(s.Action.Value(), "iam:PassRole") {
-			if passRole != nil {
-				t.Fatalf("found multiple iam:PassRole statements")
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			p := NewPolicy("c.example.com", "aws", "us-east-1")
+			if err := AddKarpenterPermissions(p, tc.useCustomInstanceProfiles); err != nil {
+				t.Fatalf("unexpected error: %v", err)
 			}
-			passRole = s
-		}
-	}
-	if passRole == nil {
-		t.Fatalf("no iam:PassRole statement found")
-	}
-	wantResource := "arn:aws:iam::*:role/nodes.c.example.com"
-	if got := passRole.Resource.Value(); len(got) != 1 || got[0] != wantResource {
-		t.Errorf("iam:PassRole resource = %v, want %q", got, wantResource)
-	}
-	if _, ok := passRole.Condition["StringEquals"]; !ok {
-		t.Errorf("iam:PassRole statement missing StringEquals condition")
+
+			var passRole *Statement
+			for _, s := range p.Statement {
+				if slices.Contains(s.Action.Value(), "iam:PassRole") {
+					if passRole != nil {
+						t.Fatalf("found multiple iam:PassRole statements")
+					}
+					passRole = s
+				}
+			}
+			if passRole == nil {
+				t.Fatalf("no iam:PassRole statement found")
+			}
+			if got := passRole.Resource.Value(); len(got) != 1 || got[0] != tc.wantPassRoleResource {
+				t.Errorf("iam:PassRole resource = %v, want %q", got, tc.wantPassRoleResource)
+			}
+			if _, ok := passRole.Condition["StringEquals"]; !ok {
+				t.Errorf("iam:PassRole statement missing StringEquals condition")
+			}
+		})
 	}
 }

@@ -320,6 +320,7 @@ func (l *Statement) Equal(r *Statement) bool {
 // AWS IAM policy document for a given instance group role.
 type PolicyBuilder struct {
 	Cluster                               *kops.Cluster
+	AllInstanceGroups                     []*kops.InstanceGroup
 	HostedZoneID                          string
 	KMSKeys                               []string
 	Region                                string
@@ -1121,7 +1122,9 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 // of the corresponding upstream statements. Unlike upstream, no instance profile management
 // permissions are granted: kOps supplies the instance profile through the EC2NodeClass spec, so
 // Karpenter never creates or mutates instance profiles.
-func AddKarpenterPermissions(p *Policy) error {
+// useCustomInstanceProfiles indicates that instance groups use custom IAM instance profiles,
+// which contain roles with names that kOps cannot predict.
+func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool) error {
 	ec2Service, err := IAMServiceEC2(p.region)
 	if err != nil {
 		return err
@@ -1176,6 +1179,9 @@ func AddKarpenterPermissions(p *Policy) error {
 	// named as in KopsModelContext.IAMName.
 	nodeRole := truncate.TruncateString("nodes."+p.clusterName, truncate.TruncateStringOptions{MaxLength: MaxLengthIAMRoleName, AlwaysAddHash: false})
 	passRoleResource := fmt.Sprintf("arn:%s:iam::*:role/%s", p.partition, nodeRole)
+	if useCustomInstanceProfiles {
+		passRoleResource = fmt.Sprintf("arn:%s:iam::*:role/*", p.partition)
+	}
 
 	p.Statement = append(p.Statement,
 		// AllowScopedEC2InstanceAccessActions: RunInstances and CreateFleet also reference
@@ -1281,8 +1287,8 @@ func AddKarpenterPermissions(p *Policy) error {
 			Condition: karpenterOwnedCondition,
 		},
 		// AllowPassingInstanceRole: Karpenter may only pass the node role, and only to EC2.
-		// Instance groups with custom instance profiles contain roles that are not managed by
-		// kOps; granting iam:PassRole for those is the responsibility of whoever manages them.
+		// Instance groups with custom instance profiles contain roles with names that kOps
+		// cannot predict, so any role may be passed when they are used.
 		&Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorset.String("iam:PassRole"),
