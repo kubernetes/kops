@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/pkg/model/iam"
 )
 
-// ServiceAccount represents the service-account used by the dns-controller.
+// ServiceAccount represents the service-account used by Karpenter.
 // It implements iam.Subject to get AWS IAM permissions.
 type ServiceAccount struct{}
 
@@ -33,7 +33,19 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	clusterName := b.Cluster.ObjectMeta.Name
 	p := iam.NewPolicy(clusterName, b.Partition, b.Region)
 
-	addKarpenterPermissions(p)
+	// Instance groups with custom IAM instance profiles contain roles with names that kOps
+	// cannot predict.
+	useCustomInstanceProfiles := false
+	for _, ig := range b.AllInstanceGroups {
+		if ig.IsKarpenterManaged() && ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
+			useCustomInstanceProfiles = true
+			break
+		}
+	}
+
+	if err := iam.AddKarpenterPermissions(p, useCustomInstanceProfiles); err != nil {
+		return nil, err
+	}
 
 	return p, nil
 }
@@ -44,52 +56,4 @@ func (r *ServiceAccount) ServiceAccount() (types.NamespacedName, bool) {
 		Namespace: "kube-system",
 		Name:      "karpenter",
 	}, true
-}
-
-func addKarpenterPermissions(p *iam.Policy) {
-	// https://karpenter.sh/v1.6/getting-started/migrating-from-cas/#create-iam-roles
-	// Karpenter
-	p.AddUnconditionalActions(
-		"ssm:GetParameter",
-		"ec2:DescribeImages",
-		"ec2:RunInstances",
-		"ec2:DescribeSubnets",
-		"ec2:DescribeSecurityGroups",
-		"ec2:DescribeLaunchTemplates",
-		"ec2:DescribeInstances",
-		"ec2:DescribeInstanceStatus",
-		"ec2:DescribeInstanceTypes",
-		"ec2:DescribeInstanceTypeOfferings",
-		"ec2:DescribeCapacityReservations",
-		"ec2:DescribePlacementGroups",
-		"ec2:DeleteLaunchTemplate",
-		"ec2:CreateTags",
-		"ec2:CreateLaunchTemplate",
-		"ec2:CreateFleet",
-		"ec2:DescribeSpotPriceHistory",
-		"pricing:GetProducts",
-	)
-	// ConditionalEC2Termination
-	p.AddUnconditionalActions(
-		"ec2:TerminateInstances",
-	)
-	// PassNodeIAMRole
-	p.AddUnconditionalActions(
-		"iam:PassRole",
-	)
-	// AllowScopedInstanceProfileTagActions
-	p.AddUnconditionalActions(
-		"iam:TagInstanceProfile",
-	)
-	// AllowScopedInstanceProfileActions
-	p.AddUnconditionalActions(
-		"iam:AddRoleToInstanceProfile",
-		"iam:RemoveRoleFromInstanceProfile",
-		"iam:DeleteInstanceProfile",
-	)
-	// AllowInstanceProfileReadActions
-	p.AddUnconditionalActions(
-		"iam:GetInstanceProfile",
-		"iam:ListInstanceProfiles",
-	)
 }

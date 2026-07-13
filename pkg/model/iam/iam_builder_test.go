@@ -350,3 +350,61 @@ func TestKmsViaServices(t *testing.T) {
 		})
 	}
 }
+
+func TestIAMServiceEC2(t *testing.T) {
+	expectations := map[string]string{
+		"us-east-1":      "ec2.amazonaws.com",
+		"randomunknown":  "ec2.amazonaws.com",
+		"us-gov-east-1":  "ec2.amazonaws.com",
+		"cn-north-1":     "ec2.amazonaws.com.cn",
+		"cn-northwest-1": "ec2.amazonaws.com.cn",
+	}
+
+	for region, expect := range expectations {
+		principal, err := IAMServiceEC2(region)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if principal != expect {
+			t.Errorf("expected %s for %s, but received %s", expect, region, principal)
+		}
+	}
+}
+
+func TestAddKarpenterPermissions(t *testing.T) {
+	tests := []struct {
+		name                      string
+		useCustomInstanceProfiles bool
+		wantPassRoleResource      string
+	}{
+		{name: "managed instance profiles", useCustomInstanceProfiles: false, wantPassRoleResource: "arn:aws:iam::*:role/nodes.c.example.com"},
+		{name: "custom instance profiles", useCustomInstanceProfiles: true, wantPassRoleResource: "arn:aws:iam::*:role/*"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			p := NewPolicy("c.example.com", "aws", "us-east-1")
+			if err := AddKarpenterPermissions(p, tc.useCustomInstanceProfiles); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			var passRole *Statement
+			for _, s := range p.Statement {
+				if slices.Contains(s.Action.Value(), "iam:PassRole") {
+					if passRole != nil {
+						t.Fatalf("found multiple iam:PassRole statements")
+					}
+					passRole = s
+				}
+			}
+			if passRole == nil {
+				t.Fatalf("no iam:PassRole statement found")
+			}
+			if got := passRole.Resource.Value(); len(got) != 1 || got[0] != tc.wantPassRoleResource {
+				t.Errorf("iam:PassRole resource = %v, want %q", got, tc.wantPassRoleResource)
+			}
+			if _, ok := passRole.Condition["StringEquals"]; !ok {
+				t.Errorf("iam:PassRole statement missing StringEquals condition")
+			}
+		})
+	}
+}

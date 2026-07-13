@@ -24,26 +24,6 @@ import (
 	"k8s.io/kops/pkg/util/stringorset"
 )
 
-func TestIAMServiceEC2(t *testing.T) {
-	expectations := map[string]string{
-		"us-east-1":      "ec2.amazonaws.com",
-		"randomunknown":  "ec2.amazonaws.com",
-		"us-gov-east-1":  "ec2.amazonaws.com",
-		"cn-north-1":     "ec2.amazonaws.com.cn",
-		"cn-northwest-1": "ec2.amazonaws.com.cn",
-	}
-
-	for region, expect := range expectations {
-		principal, err := IAMServiceEC2(region)
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-		if principal != expect {
-			t.Errorf("expected %s for %s, but received %s", expect, region, principal)
-		}
-	}
-}
-
 func Test_formatAWSIAMStatement(t *testing.T) {
 	type args struct {
 		acountId     string

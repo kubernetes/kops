@@ -17,13 +17,10 @@ limitations under the License.
 package awsmodel
 
 import (
-	"context"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -231,6 +228,7 @@ func (b *IAMModelBuilder) buildIAMRolePolicy(role iam.Subject, iamName string, i
 	iamPolicy := &iam.PolicyResource{
 		Builder: &iam.PolicyBuilder{
 			Cluster:                               b.Cluster,
+			AllInstanceGroups:                     b.AllInstanceGroups,
 			Role:                                  role,
 			Region:                                b.Region,
 			Partition:                             b.AWSPartition,
@@ -404,25 +402,6 @@ func (b *IAMModelBuilder) buildPolicy(policyString string) (*iam.Policy, error) 
 	return p, nil
 }
 
-// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region.
-// It is ec2.amazonaws.com in the default aws partition, but different in other isolated/custom partitions
-func IAMServiceEC2(region string) (string, error) {
-	ctx := context.TODO()
-	resolver := ec2.NewDefaultEndpointResolverV2()
-	ep, err := resolver.ResolveEndpoint(ctx, ec2.EndpointParameters{Region: aws.String(region)})
-	if err != nil {
-		return "", fmt.Errorf("failed to resolve endpoint: %v", err)
-	}
-	if ep.URI.Host != "" {
-		// Remove the region from the hostname. Examples:
-		// ec2.us-east-1.amazonaws.com     -> ec2.amazonaws.com
-		// ec2.cn-west-1.amazonaws.com.cn  -> ec2.amazonaws.com.cn
-		// ec2.us-gov-west-1.amazonaws.com -> ec2.amazonaws.com
-		return strings.ReplaceAll(ep.URI.Host, fmt.Sprintf("%v.", region), ""), nil
-	}
-	return "ec2.amazonaws.com", nil
-}
-
 func formatAWSIAMStatement(accountId, partition, oidcProvider, namespace, name string) (*iam.Statement, error) {
 	// disallow wildcard in the service account name
 	if strings.Contains(name, "*") {
@@ -474,7 +453,7 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role iam.Subject) (fi.Resource, 
 	} else {
 		// We don't generate using json.Marshal here, it would create whitespace changes in the policy for existing clusters.
 
-		ec2Service, err := IAMServiceEC2(b.Region)
+		ec2Service, err := iam.IAMServiceEC2(b.Region)
 		if err != nil {
 			return nil, err
 		}

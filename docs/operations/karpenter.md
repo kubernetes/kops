@@ -109,3 +109,4 @@ Delete the generated NodePool before running `kops update cluster` after adding 
 * Generated `EC2NodeClass` objects use `spec.amiFamily: Custom`.
 * `spec.instanceStorePolicy` configuration is not supported in `EC2NodeClass`.
 * `spec.kubelet` settings that affect Karpenter scheduling (`maxPods`, `systemReserved`, `kubeReserved`) are mapped to `EC2NodeClass.spec.kubelet` so Karpenter computes node allocatable capacity correctly. Other `spec.kubelet` settings are applied via the nodeup bootstrap script but are not surfaced to `EC2NodeClass`.
+* The Karpenter controller policy grants `iam:PassRole` only for the kOps-managed node role. When a Karpenter-managed InstanceGroup uses a custom `spec.iam.profile`, kOps cannot determine the role inside the custom instance profile, so the policy allows passing any role to EC2 instead.
