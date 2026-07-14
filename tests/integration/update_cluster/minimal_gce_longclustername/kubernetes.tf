@@ -291,6 +291,22 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-with-a-very-very-
     ports    = ["3988"]
     protocol = "tcp"
   }
+  allow {
+    ports    = ["10257"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10259"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["10249"]
+    protocol = "tcp"
+  }
+  allow {
+    ports    = ["2382"]
+    protocol = "tcp"
+  }
   disabled    = false
   name        = "node-to-master-minimal-gce-with-a-very-very-very-very-ve-96dqvi"
   network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
