@@ -29,14 +29,15 @@ kops validate cluster [CLUSTER] [flags]
 ### Options
 
 ```
-      --api-server string   Override the API server used when communicating with the cluster kube-apiserver
-      --count int           Number of consecutive successful validations required
-  -h, --help                help for cluster
-      --interval duration   Time in duration to wait between validation attempts (default 10s)
-      --kubeconfig string   Path to the kubeconfig file
-  -o, --output string       Output format. One of json|yaml|table. (default "table")
-      --use-kubeconfig      Use the server endpoint from the local kubeconfig instead of inferring from cluster name
-      --wait duration       Amount of time to wait for the cluster to become ready
+      --api-server string       Override the API server used when communicating with the cluster kube-apiserver
+      --count int               Number of consecutive successful validations required
+  -h, --help                    help for cluster
+      --interval duration       Time in duration to wait between validation attempts (default 10s)
+      --kubeconfig string       Path to the kubeconfig file
+      --max-unready-nodes int   The maximum number of non-ready worker nodes tolerated during validation
+  -o, --output string           Output format. One of json|yaml|table. (default "table")
+      --use-kubeconfig          Use the server endpoint from the local kubeconfig instead of inferring from cluster name
+      --wait duration           Amount of time to wait for the cluster to become ready
 ```
 
 ### Options inherited from parent commands
