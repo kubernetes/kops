@@ -85,6 +85,8 @@ func (c *MockLinodeCloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIn
 type MockLinodeClient struct {
 	ListVPCsResponse []linodego.VPC
 	ListVPCsError    error
+	ListVPCsCalls    int
+	LastListVPCsOpts *linodego.ListOptions
 
 	CreateVPCResponse *linodego.VPC
 	CreateVPCError    error
@@ -112,11 +114,38 @@ type MockLinodeClient struct {
 	DeleteSSHKeyError error
 	DeleteSSHKeyCalls int
 	DeletedSSHKeyIDs  []int
+
+	ListVPCSubnetsResponse  []linodego.VPCSubnet
+	ListVPCSubnetsResponses map[int][]linodego.VPCSubnet
+	ListVPCSubnetsError     error
+	ListVPCSubnetsCalls     int
+	LastListVPCSubnetsOpts  *linodego.ListOptions
+	LastListVPCSubnetsVPCID int
+
+	CreateVPCSubnetResponse  *linodego.VPCSubnet
+	CreateVPCSubnetError     error
+	CreateVPCSubnetCalls     int
+	LastCreateVPCSubnetOpts  linodego.VPCSubnetCreateOptions
+	LastCreateVPCSubnetVPCID int
+
+	UpdateVPCSubnetResponse  *linodego.VPCSubnet
+	UpdateVPCSubnetError     error
+	UpdateVPCSubnetCalls     int
+	LastUpdateVPCSubnetOpts  linodego.VPCSubnetUpdateOptions
+	LastUpdateVPCSubnetVPCID int
+	LastUpdateVPCSubnetID    int
+
+	DeleteVPCSubnetError   error
+	DeleteVPCSubnetCalls   int
+	DeletedVPCSubnetVPCIDs []int
+	DeletedVPCSubnetIDs    []int
 }
 
 var _ LinodeClient = &MockLinodeClient{}
 
 func (c *MockLinodeClient) ListVPCs(ctx context.Context, opts *linodego.ListOptions) ([]linodego.VPC, error) {
+	c.ListVPCsCalls++
+	c.LastListVPCsOpts = opts
 	if c.ListVPCsError != nil {
 		return nil, c.ListVPCsError
 	}
@@ -177,4 +206,51 @@ func (c *MockLinodeClient) DeleteSSHKey(ctx context.Context, sshKeyID int) error
 	c.DeleteSSHKeyCalls++
 	c.DeletedSSHKeyIDs = append(c.DeletedSSHKeyIDs, sshKeyID)
 	return c.DeleteSSHKeyError
+}
+
+func (c *MockLinodeClient) ListVPCSubnets(ctx context.Context, vpcID int, opts *linodego.ListOptions) ([]linodego.VPCSubnet, error) {
+	c.ListVPCSubnetsCalls++
+	c.LastListVPCSubnetsOpts = opts
+	c.LastListVPCSubnetsVPCID = vpcID
+	if c.ListVPCSubnetsError != nil {
+		return nil, c.ListVPCSubnetsError
+	}
+	if c.ListVPCSubnetsResponses != nil {
+		return c.ListVPCSubnetsResponses[vpcID], nil
+	}
+	return c.ListVPCSubnetsResponse, nil
+}
+
+func (c *MockLinodeClient) CreateVPCSubnet(ctx context.Context, opts linodego.VPCSubnetCreateOptions, vpcID int) (*linodego.VPCSubnet, error) {
+	c.CreateVPCSubnetCalls++
+	c.LastCreateVPCSubnetOpts = opts
+	c.LastCreateVPCSubnetVPCID = vpcID
+	if c.CreateVPCSubnetError != nil {
+		return nil, c.CreateVPCSubnetError
+	}
+	if c.CreateVPCSubnetResponse == nil {
+		return &linodego.VPCSubnet{}, nil
+	}
+	return c.CreateVPCSubnetResponse, nil
+}
+
+func (c *MockLinodeClient) UpdateVPCSubnet(ctx context.Context, vpcID int, subnetID int, opts linodego.VPCSubnetUpdateOptions) (*linodego.VPCSubnet, error) {
+	c.UpdateVPCSubnetCalls++
+	c.LastUpdateVPCSubnetOpts = opts
+	c.LastUpdateVPCSubnetVPCID = vpcID
+	c.LastUpdateVPCSubnetID = subnetID
+	if c.UpdateVPCSubnetError != nil {
+		return nil, c.UpdateVPCSubnetError
+	}
+	if c.UpdateVPCSubnetResponse == nil {
+		return &linodego.VPCSubnet{}, nil
+	}
+	return c.UpdateVPCSubnetResponse, nil
+}
+
+func (c *MockLinodeClient) DeleteVPCSubnet(ctx context.Context, vpcID int, subnetID int) error {
+	c.DeleteVPCSubnetCalls++
+	c.DeletedVPCSubnetIDs = append(c.DeletedVPCSubnetIDs, subnetID)
+	c.DeletedVPCSubnetVPCIDs = append(c.DeletedVPCSubnetVPCIDs, vpcID)
+	return c.DeleteVPCSubnetError
 }

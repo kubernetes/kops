@@ -41,6 +41,10 @@ type LinodeClient interface {
 	ListSSHKeys(ctx context.Context, opts *linodego.ListOptions) ([]linodego.SSHKey, error)
 	CreateSSHKey(ctx context.Context, opts linodego.SSHKeyCreateOptions) (*linodego.SSHKey, error)
 	DeleteSSHKey(ctx context.Context, sshKeyID int) error
+	ListVPCSubnets(ctx context.Context, vpcID int, opts *linodego.ListOptions) ([]linodego.VPCSubnet, error)
+	CreateVPCSubnet(ctx context.Context, opts linodego.VPCSubnetCreateOptions, vpcID int) (*linodego.VPCSubnet, error)
+	UpdateVPCSubnet(ctx context.Context, vpcID int, subnetID int, opts linodego.VPCSubnetUpdateOptions) (*linodego.VPCSubnet, error)
+	DeleteVPCSubnet(ctx context.Context, vpcID int, subnetID int) error
 }
 
 // LinodeCloud exposes Linode (Akamai) cloud APIs used by kOps.
@@ -127,6 +131,18 @@ func (c *Cloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, e
 
 func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
 	return nil, nil
+}
+
+// ListOptionsForLabel builds Linode (Akamai) list options that filter by an exact label match.
+func ListOptionsForLabel(label string) (*linodego.ListOptions, error) {
+	filter := &linodego.Filter{}
+	filter.AddField(linodego.Eq, "label", label)
+	filterJSON, err := filter.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("error building Linode (Akamai) label filter: %w", err)
+	}
+
+	return &linodego.ListOptions{Filter: string(filterJSON)}, nil
 }
 
 // NormalizeLinodeLabel returns a normalized label for Linode (Akamai) resources

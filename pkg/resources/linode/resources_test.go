@@ -34,6 +34,9 @@ func TestListResources(t *testing.T) {
 			{ID: 702, Label: "example-k8s-local", Region: "us-west"},
 			{ID: 703, Label: "other-k8s-local", Region: "us-east"},
 		},
+		ListVPCSubnetsResponse: []linodego.VPCSubnet{
+			{ID: 901, Label: "example-k8s-local-us-east", IPv4: "172.16.1.0/16"},
+		},
 		ListSSHKeysResponse: []linodego.SSHKey{
 			{ID: 801, Label: "kubernetes-example-k8s-local-aa-bb"},
 			{ID: 802, Label: "custom-key"},
@@ -46,7 +49,7 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("ListResources returned error: %v", err)
 	}
 
-	wantKeys := []string{"ssh-key:801", "vpc:701"}
+	wantKeys := []string{"ssh-key:801", "subnet:901", "vpc:701"}
 	if gotKeys := sortedResourceKeys(resourceMap); !reflect.DeepEqual(gotKeys, wantKeys) {
 		t.Fatalf("unexpected resources\nwant: %v\n got: %v", wantKeys, gotKeys)
 	}
@@ -65,6 +68,31 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("unexpected SSH key Name: got %q, want %q", got, want)
 	} else if got, want := r.Type, resourceTypeSSHKey; got != want {
 		t.Fatalf("unexpected SSH key Type: got %q, want %q", got, want)
+	}
+
+	if r := resourceMap["subnet:901"]; r == nil {
+		t.Fatalf("missing subnet:901")
+	} else if got, want := r.Name, "example-k8s-local-us-east"; got != want {
+		t.Fatalf("unexpected subnet Name: got %q, want %q", got, want)
+	} else if got, want := r.Type, resourceTypeSubnet; got != want {
+		t.Fatalf("unexpected subnet Type: got %q, want %q", got, want)
+	} else if got, want := r.Blocks, []string{"vpc:701"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected subnet Blocks: got %v, want %v", got, want)
+	} else if got, ok := r.Obj.(linodego.VPCSubnet); !ok {
+		t.Fatalf("unexpected subnet Obj type: %T", r.Obj)
+	} else if got.Label != "example-k8s-local-us-east" {
+		t.Fatalf("unexpected subnet Obj label: got %q, want %q", got.Label, "example-k8s-local-us-east")
+	}
+
+	expectedListOptions, err := linode.ListOptionsForLabel("example-k8s-local")
+	if err != nil {
+		t.Fatalf("ListOptionsForLabel returned error: %v", err)
+	}
+	if client.LastListVPCsOpts == nil {
+		t.Fatalf("expected VPC list options to be recorded")
+	}
+	if got, want := client.LastListVPCsOpts.Filter, expectedListOptions.Filter; got != want {
+		t.Fatalf("unexpected VPC list filter: got %q, want %q", got, want)
 	}
 }
 
@@ -123,6 +151,33 @@ func TestDeleteSSHKey_NotFound(t *testing.T) {
 	tracker := &resources.Resource{Name: "kubernetes-example-k8s-local-aa-bb", ID: "801", Type: resourceTypeSSHKey}
 	if err := deleteSSHKey(cloud, tracker); err != nil {
 		t.Fatalf("deleteSSHKey returned error for not found response: %v", err)
+	}
+}
+
+func TestDeleteSubnet(t *testing.T) {
+	client := &linode.MockLinodeClient{}
+	cloud := &linode.MockLinodeCloud{Client_: client}
+
+	tracker := &resources.Resource{Name: "example-k8s-local-us-east", ID: "901", Type: resourceTypeSubnet, Obj: linodego.VPCSubnet{ID: 901, Label: "example-k8s-local-us-east"}}
+	if err := deleteSubnet(701, cloud, tracker); err != nil {
+		t.Fatalf("deleteSubnet returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(client.DeletedVPCSubnetIDs, []int{901}) {
+		t.Fatalf("unexpected deleted subnet IDs: %v", client.DeletedVPCSubnetIDs)
+	}
+	if !reflect.DeepEqual(client.DeletedVPCSubnetVPCIDs, []int{701}) {
+		t.Fatalf("unexpected deleted subnet VPC IDs: %v", client.DeletedVPCSubnetVPCIDs)
+	}
+}
+
+func TestDeleteSubnet_NotFound(t *testing.T) {
+	client := &linode.MockLinodeClient{DeleteVPCSubnetError: &linodego.Error{Code: 404, Message: "not found"}}
+	cloud := &linode.MockLinodeCloud{Client_: client}
+
+	tracker := &resources.Resource{Name: "example-k8s-local-us-east", ID: "901", Type: resourceTypeSubnet, Obj: linodego.VPCSubnet{ID: 901, Label: "example-k8s-local-us-east"}}
+	if err := deleteSubnet(701, cloud, tracker); err != nil {
+		t.Fatalf("deleteSubnet returned error for not found response: %v", err)
 	}
 }
 

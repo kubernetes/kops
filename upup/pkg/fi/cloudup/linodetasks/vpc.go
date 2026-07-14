@@ -49,8 +49,12 @@ func (v *VPC) CompareWithID() *string {
 
 func (v *VPC) Find(c *fi.CloudupContext) (*VPC, error) {
 	cloud := c.T.Cloud.(linode.LinodeCloud)
+	listOptions, err := linode.ListOptionsForLabel(fi.ValueOf(v.Name))
+	if err != nil {
+		return nil, err
+	}
 
-	vpcs, err := cloud.Client().ListVPCs(c.Context(), nil)
+	vpcs, err := cloud.Client().ListVPCs(c.Context(), listOptions)
 	if err != nil {
 		return nil, fmt.Errorf("error listing Linode (Akamai) VPCs: %w", err)
 	}
