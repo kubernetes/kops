@@ -71,6 +71,10 @@ func (c *MockCloud) GetCloudGroups(cluster *kopsapi.Cluster, instancegroups []*k
 }
 
 func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object) (*ValidationCluster, error) {
+	return testValidateWithTolerance(t, groups, objects, 0)
+}
+
+func testValidateWithTolerance(t *testing.T, groups map[string]*cloudinstances.CloudInstanceGroup, objects []runtime.Object, maxUnreadyNodes int) (*ValidationCluster, error) {
 	ctx := context.TODO()
 
 	cluster := &kopsapi.Cluster{
@@ -133,7 +137,7 @@ func testValidate(t *testing.T, groups map[string]*cloudinstances.CloudInstanceG
 	restConfig := &rest.Config{
 		Host: "https://api.testcluster.k8s.local",
 	}
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, nil, restConfig, fake.NewClientset(objects...))
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, nil, maxUnreadyNodes, restConfig, fake.NewClientset(objects...))
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +172,7 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 	restConfig := &rest.Config{
 		Host: "https://api.testcluster.k8s.local",
 	}
-	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, nil, restConfig, fake.NewClientset())
+	validator, err := NewClusterValidator(cluster, mockcloud, &kopsapi.InstanceGroupList{Items: instanceGroups}, nil, nil, 0, restConfig, fake.NewClientset())
 	require.NoError(t, err)
 	v, err := validator.Validate(ctx)
 	require.NoError(t, err)
@@ -912,4 +916,370 @@ func Test_ValidateDetachedNodesNotValidated(t *testing.T) {
 	if !assert.Empty(t, v.Failures) {
 		printDebug(t, v)
 	}
+}
+
+func Test_ValidateAllowedNotReadyNodes(t *testing.T) {
+	t.Run("tolerates single worker node failure when within limit", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    2,
+			TargetSize: 2,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		v, err := testValidateWithTolerance(t, groups, nil, 1)
+		require.NoError(t, err)
+		assert.Empty(t, v.Failures)
+	})
+
+	t.Run("tolerates worker node failures when within max limit", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    2,
+			TargetSize: 2, // 2 worker nodes total
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// 1 allowed unready node.
+		v, err := testValidateWithTolerance(t, groups, nil, 1)
+		require.NoError(t, err)
+		assert.Empty(t, v.Failures)
+	})
+
+	t.Run("tolerates single machine not joined when within limit", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    2,
+			TargetSize: 2,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID:   "i-00002",
+					Node: nil,
+				},
+			},
+		}
+
+		v, err := testValidateWithTolerance(t, groups, nil, 1)
+		require.NoError(t, err)
+		assert.Empty(t, v.Failures)
+	})
+
+	t.Run("tolerates multiple failures on the same worker node", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    2,
+			TargetSize: 2,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:   "node-1a",
+							Labels: map[string]string{v1.LabelHostname: "node-1a"},
+						},
+						Status: v1.NodeStatus{
+							Addresses: []v1.NodeAddress{
+								{Address: "1.2.3.4"},
+							},
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:   "node-1b",
+							Labels: map[string]string{v1.LabelHostname: "node-1b"},
+						},
+						Status: v1.NodeStatus{
+							Addresses: []v1.NodeAddress{
+								{Address: "5.6.7.8"},
+							},
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		pods := makePodList([]map[string]string{
+			{
+				"name":              "pod1",
+				"namespace":         "kube-system",
+				"priorityClassName": "system-node-critical",
+				"ready":             "false",
+				"phase":             string(v1.PodRunning),
+				"hostip":            "5.6.7.8",
+			},
+		})
+
+		v, err := testValidateWithTolerance(t, groups, pods, 1)
+		require.NoError(t, err)
+		assert.Empty(t, v.Failures)
+	})
+
+	t.Run("does not tolerate when count of failing nodes exceeds limit", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    3,
+			TargetSize: 3,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+				{
+					ID: "i-00003",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1c"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		v, err := testValidateWithTolerance(t, groups, nil, 1)
+		require.NoError(t, err)
+		assert.Len(t, v.Failures, 2)
+	})
+
+	t.Run("does not tolerate worker node failures when exceeding max limit", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    2,
+			TargetSize: 2,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		// 0 allowed unready nodes.
+		v, err := testValidateWithTolerance(t, groups, nil, 0)
+		require.NoError(t, err)
+		assert.Len(t, v.Failures, 1)
+	})
+
+	t.Run("does not tolerate control-plane node failure", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["master-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "master-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleControlPlane},
+			},
+			MinSize:    2,
+			TargetSize: 2,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "master-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+			NeedUpdate: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "master-1b"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionFalse},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		v, err := testValidateWithTolerance(t, groups, nil, 1)
+		require.NoError(t, err)
+		assert.Len(t, v.Failures, 1)
+	})
+
+	t.Run("does not tolerate InstanceGroup sizing mismatches", func(t *testing.T) {
+		groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+		groups["node-1"] = &cloudinstances.CloudInstanceGroup{
+			InstanceGroup: &kopsapi.InstanceGroup{
+				ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+				Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+			},
+			MinSize:    2,
+			TargetSize: 3,
+			Ready: []*cloudinstances.CloudInstance{
+				{
+					ID: "i-00001",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1a"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+				{
+					ID: "i-00002",
+					Node: &v1.Node{
+						ObjectMeta: metav1.ObjectMeta{Name: "node-1b"},
+						Status: v1.NodeStatus{
+							Conditions: []v1.NodeCondition{
+								{Type: "Ready", Status: v1.ConditionTrue},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		v, err := testValidateWithTolerance(t, groups, nil, 1)
+		require.NoError(t, err)
+		assert.Len(t, v.Failures, 1)
+		assert.Equal(t, "InstanceGroup", v.Failures[0].Kind)
+	})
 }
