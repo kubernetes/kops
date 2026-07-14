@@ -141,9 +141,20 @@ func RunDeleteCluster(ctx context.Context, f *util.Factory, out io.Writer, optio
 		}
 
 		klog.Info("Looking for cloud resources to delete")
-		allResources, err := resourceops.ListResources(cloud, cluster)
-		if err != nil {
-			return err
+		// Listing resources involves many cloud API calls; not all cloud SDKs retry transient errors
+		// (e.g. GCE 5xx), and a single failed call would otherwise abort the deletion. Retry a few
+		// times before giving up.
+		var allResources map[string]*resources.Resource
+		for attempt := 1; ; attempt++ {
+			allResources, err = resourceops.ListResources(cloud, cluster)
+			if err == nil {
+				break
+			}
+			if attempt >= 4 {
+				return err
+			}
+			klog.Warningf("error listing cloud resources, will retry: %v", err)
+			time.Sleep(options.interval)
 		}
 
 		clusterResources := make(map[string]*resources.Resource)
