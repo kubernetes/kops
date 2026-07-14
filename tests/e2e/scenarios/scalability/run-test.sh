@@ -211,6 +211,8 @@ fi
 # used by CL2 Prometheus here https://github.com/kubernetes/perf-tests/blob/master/clusterloader2/pkg/prometheus/manifests/default/kube-proxy-service.yaml#L2
 export PROMETHEUS_KUBE_PROXY_SELECTOR_KEY="k8s-app"
 export ETCD_PORT="4001" # we want cl2 to use this port for etcd instead of 2379
+export ENABLE_PROMETHEUS_SERVER="${ENABLE_PROMETHEUS_SERVER:-true}"
+export TEAR_DOWN_PROMETHEUS_SERVER="${TEAR_DOWN_PROMETHEUS_SERVER:-false}"
 if [[ "${CLOUD_PROVIDER}" == "aws" && "${SCALE_SCENARIO}" == "performance" ]]; then
   # CL2 uses KUBE_SSH_KEY_PATH path to ssh to instances for scraping metrics
   cat > "${GOPATH}"/src/k8s.io/perf-tests/clusterloader2/testing/load/overrides.yaml <<EOL
