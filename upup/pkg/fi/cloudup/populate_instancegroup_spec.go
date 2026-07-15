@@ -339,7 +339,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderGCE:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeGCE, nil
 
 		case ig.Spec.Role.HasNode():
@@ -351,7 +351,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderDO:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeDO, nil
 
 		case ig.Spec.Role.HasNode():
@@ -361,7 +361,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderHetzner:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeHetzner, nil
 
 		case ig.Spec.Role.HasNode():
@@ -380,7 +380,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderAzure:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeAzure, nil
 
 		case ig.Spec.Role.HasNode():
@@ -392,7 +392,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderScaleway:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeScaleway, nil
 
 		case ig.Spec.Role.HasNode():
@@ -401,7 +401,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderLinode:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeLinode, nil
 
 		case ig.Spec.Role.HasNode():

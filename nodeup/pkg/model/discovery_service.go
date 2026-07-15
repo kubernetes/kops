@@ -42,7 +42,7 @@ var _ fi.NodeupModelBuilder = &DiscoveryService{}
 func (b *DiscoveryService) Build(c *fi.NodeupModelBuilderContext) error {
 	ctx := c.Context()
 
-	if !b.IsMaster {
+	if !b.IsMaster && !b.HasAPIServer {
 		return nil
 	}
 	discoveryServiceOptions := b.DiscoveryServiceOptions()

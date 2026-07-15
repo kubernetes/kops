@@ -1592,6 +1592,7 @@ func RunGoldenTest(t *testing.T, basedir string, testCase serverGroupModelBuilde
 	context := &fi.CloudupModelBuilderContext{
 		Tasks:              make(map[string]fi.CloudupTask),
 		LifecycleOverrides: map[string]fi.Lifecycle{},
+		Stacktraces:        make(map[string]string),
 	}
 
 	// We need the CA and service-account for the bootstrap script

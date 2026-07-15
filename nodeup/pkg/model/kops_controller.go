@@ -34,7 +34,7 @@ var _ fi.NodeupModelBuilder = &KopsControllerBuilder{}
 
 // Build is responsible for configuring keys that will be used by kops-controller (via hostPath)
 func (b *KopsControllerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster && !b.HasAPIServer {
 		return nil
 	}
 

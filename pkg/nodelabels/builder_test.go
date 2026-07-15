@@ -40,6 +40,7 @@ func TestBuildNodeLabels(t *testing.T) {
 		cluster  *kops.Cluster
 		ig       *kops.InstanceGroup
 		expected map[string]string
+
 		// Allow us to test labels at different feature flag levels
 		featureFlags string
 	}{
@@ -156,6 +157,100 @@ func TestBuildNodeLabels(t *testing.T) {
 				"node2":         "node2",
 				"node1":         "override1",
 				"node3":         "override3",
+			},
+		},
+		{
+			name: "RoleEtcd",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "node1",
+							"node2": "node2",
+						},
+					},
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleEtcd,
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "override1",
+							"node3": "override3",
+						},
+					},
+				},
+			},
+			expected: map[string]string{
+				RoleLabelEtcd: "",
+				"node2":       "node2",
+				"node1":       "override1",
+				"node3":       "override3",
+			},
+		},
+		{
+			name: "RoleScheduler",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "node1",
+							"node2": "node2",
+						},
+					},
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleScheduler,
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "override1",
+							"node3": "override3",
+						},
+					},
+				},
+			},
+			expected: map[string]string{
+				RoleLabelScheduler: "",
+				"node2":            "node2",
+				"node1":            "override1",
+				"node3":            "override3",
+			},
+		},
+		{
+			name: "RoleKubControllerManager",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "node1",
+							"node2": "node2",
+						},
+					},
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleKubeControllerManager,
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "override1",
+							"node3": "override3",
+						},
+					},
+				},
+			},
+			expected: map[string]string{
+				RoleLabelKubeControllerManager:    "",
+				"kops.k8s.io/kops-controller-pki": "",
+				"node2":                           "node2",
+				"node1":                           "override1",
+				"node3":                           "override3",
 			},
 		},
 	}

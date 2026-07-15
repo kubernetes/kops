@@ -32,7 +32,7 @@ var _ fi.NodeupModelBuilder = &EtcdManagerTLSBuilder{}
 
 // Build is responsible for TLS configuration for etcd-manager
 func (b *EtcdManagerTLSBuilder) Build(ctx *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster && !b.BootConfig.InstanceGroupRole.HasEtcd() {
 		return nil
 	}
 

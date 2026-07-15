@@ -42,6 +42,7 @@ func (l *Loader) BuildTasks(ctx context.Context, lifecycleOverrides map[string]f
 		context := &fi.CloudupModelBuilderContext{
 			Tasks:              l.tasks,
 			LifecycleOverrides: lifecycleOverrides,
+			Stacktraces:        make(map[string]string),
 		}
 		context = context.WithContext(ctx)
 		err := builder.Build(context)
@@ -121,6 +122,7 @@ func (l *Loader) FindDeletions(cloud fi.Cloud, lifecycleOverrides map[string]fi.
 			context := &fi.CloudupModelBuilderContext{
 				Tasks:              l.tasks,
 				LifecycleOverrides: lifecycleOverrides,
+				Stacktraces:        make(map[string]string),
 			}
 			if err := hasDeletions.FindDeletions(context, cloud); err != nil {
 				return nil, err
