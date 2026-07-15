@@ -24,8 +24,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-REPO="kubernetes/kops"
-BASE_URL="https://artifacts.k8s.io/binaries/kops"
+# shellcheck source=hack/release-assets.sh
+. "$(dirname "${BASH_SOURCE[0]}")/release-assets.sh"
 
 # Concurrent transfers, overridable via environment. Per-connection throughput to both the
 # artifacts CDN and GitHub is throttled well below typical link speed, so parallelism is what
@@ -33,28 +33,6 @@ BASE_URL="https://artifacts.k8s.io/binaries/kops"
 # a ~400 Mbit/s uplink.
 DOWNLOAD_PARALLELISM="${DOWNLOAD_PARALLELISM:-10}"
 UPLOAD_PARALLELISM="${UPLOAD_PARALLELISM:-4}"
-
-# Binaries to upload: source-path -> github-name
-declare -A BINARIES=(
-  ["darwin/amd64/kops"]="kops-darwin-amd64"
-  ["darwin/amd64/kops.sha256"]="kops-darwin-amd64.sha256"
-  ["darwin/arm64/kops"]="kops-darwin-arm64"
-  ["darwin/arm64/kops.sha256"]="kops-darwin-arm64.sha256"
-  ["linux/amd64/kops"]="kops-linux-amd64"
-  ["linux/amd64/kops.sha256"]="kops-linux-amd64.sha256"
-  ["linux/arm64/kops"]="kops-linux-arm64"
-  ["linux/arm64/kops.sha256"]="kops-linux-arm64.sha256"
-  ["windows/amd64/kops.exe"]="kops-windows-amd64"
-  ["windows/amd64/kops.exe.sha256"]="kops-windows-amd64.sha256"
-  ["linux/amd64/nodeup"]="nodeup-linux-amd64"
-  ["linux/amd64/nodeup.sha256"]="nodeup-linux-amd64.sha256"
-  ["linux/arm64/nodeup"]="nodeup-linux-arm64"
-  ["linux/arm64/nodeup.sha256"]="nodeup-linux-arm64.sha256"
-  ["linux/amd64/protokube"]="protokube-linux-amd64"
-  ["linux/amd64/protokube.sha256"]="protokube-linux-amd64.sha256"
-  ["linux/arm64/protokube"]="protokube-linux-arm64"
-  ["linux/arm64/protokube.sha256"]="protokube-linux-arm64.sha256"
-)
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <version>" >&2
@@ -73,9 +51,7 @@ if ! command -v gh &>/dev/null; then
 fi
 
 WORKDIR=$(mktemp -d)
-# Keep the checksum manifest outside WORKDIR so it is not uploaded with the assets.
-CHECKSUMS=$(mktemp)
-trap 'rm -rf "${WORKDIR}" "${CHECKSUMS}"' EXIT
+trap 'rm -rf "${WORKDIR}"' EXIT
 
 echo "Downloading binaries from ${BASE_URL}/${VERSION}/ ..."
 
@@ -84,6 +60,7 @@ for source in "${!BINARIES[@]}"; do
   github_name="${BINARIES[$source]}"
   echo "  ${source} -> ${github_name}"
   curl_args+=(-o "${WORKDIR}/${github_name}" "${BASE_URL}/${VERSION}/${source}")
+  curl_args+=(-o "${WORKDIR}/${github_name}.sha256" "${BASE_URL}/${VERSION}/${source}.sha256")
 done
 
 if ! curl "${curl_args[@]}"; then
@@ -93,24 +70,21 @@ fi
 
 echo "Verifying checksums ..."
 
-if command -v sha256sum &>/dev/null; then
-  SHA256SUM=(sha256sum)
-else
-  SHA256SUM=(shasum -a 256)
-fi
-
 # The downloaded .sha256 files contain a bare hash, so build a "<hash>  <file>" manifest that the
-# tool's check mode can verify in one pass. Pass it as a file argument: BSD sha256sum does not
-# read the manifest from stdin.
+# tool's check mode can verify in one pass.
 for checksum_file in "${WORKDIR}"/*.sha256; do
   read -r hash _ <"${checksum_file}"
-  echo "${hash}  $(basename "${checksum_file%.sha256}")"
-done >"${CHECKSUMS}"
+  github_name="${checksum_file##*/}"
+  echo "${hash}  ${github_name%.sha256}"
+done >"${WORKDIR}/SHA256SUMS"
 
-if ! (cd "${WORKDIR}" && "${SHA256SUM[@]}" -c "${CHECKSUMS}"); then
+if ! (cd "${WORKDIR}" && "${SHA256SUM[@]}" -c SHA256SUMS); then
   echo "Error: checksum verification failed" >&2
   exit 1
 fi
+
+# Remove the manifest so it is not uploaded with the assets.
+rm "${WORKDIR}/SHA256SUMS"
 
 echo "Uploading binaries to GitHub release ${TAG} ..."
 

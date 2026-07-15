@@ -25,22 +25,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-REPO="kubernetes/kops"
-BASE_URL="https://artifacts.k8s.io/binaries/kops"
-
-# Binaries to validate: source-path -> github-name.
-# Each binary is checked together with its .sha256 companion asset.
-declare -A BINARIES=(
-  ["darwin/amd64/kops"]="kops-darwin-amd64"
-  ["darwin/arm64/kops"]="kops-darwin-arm64"
-  ["linux/amd64/kops"]="kops-linux-amd64"
-  ["linux/arm64/kops"]="kops-linux-arm64"
-  ["windows/amd64/kops.exe"]="kops-windows-amd64"
-  ["linux/amd64/nodeup"]="nodeup-linux-amd64"
-  ["linux/arm64/nodeup"]="nodeup-linux-arm64"
-  ["linux/amd64/protokube"]="protokube-linux-amd64"
-  ["linux/arm64/protokube"]="protokube-linux-arm64"
-)
+# shellcheck source=hack/release-assets.sh
+. "$(dirname "${BASH_SOURCE[0]}")/release-assets.sh"
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <version>" >&2
@@ -58,12 +44,6 @@ if ! command -v gh &>/dev/null; then
   exit 1
 fi
 
-if command -v sha256sum &>/dev/null; then
-  SHA256SUM=(sha256sum)
-else
-  SHA256SUM=(shasum -a 256)
-fi
-
 echo "Fetching asset digests for GitHub release ${TAG} ..."
 
 # The by-tag endpoint does not serve draft releases, so search the release list instead.
@@ -75,12 +55,16 @@ if [[ -z "${assets}" ]]; then
   exit 1
 fi
 
+declare -A DIGESTS=()
+while read -r name digest; do
+  DIGESTS[$name]="${digest}"
+done <<<"${assets}"
+
 failed=0
 
 # check <asset-name> <expected-sha256>: compare against the digest GitHub reports for the asset
 check() {
-  local actual
-  actual=$(awk -v name="$1" '$1 == name {print $2}' <<<"${assets}")
+  local actual="${DIGESTS[$1]:-}"
   if [[ -z "${actual}" ]]; then
     echo "$1: MISSING from GitHub release"
     failed=1
@@ -93,18 +77,26 @@ check() {
 }
 
 for source in $(printf '%s\n' "${!BINARIES[@]}" | sort); do
-  url="${BASE_URL}/${VERSION}/${source}.sha256"
-  check "${BINARIES[$source]}" "$(curl -fsSL --retry 3 "${url}")"
-  # The .sha256 asset itself must be byte-identical to the artifacts.k8s.io file.
-  check "${BINARIES[$source]}.sha256" "$(curl -fsSL --retry 3 "${url}" | "${SHA256SUM[@]}" | cut -d' ' -f1)"
+  hash=$(curl -fsSL --retry 3 "${BASE_URL}/${VERSION}/${source}.sha256")
+  check "${BINARIES[$source]}" "${hash}"
+  # The .sha256 asset must be byte-identical to the artifacts.k8s.io file, which is the bare hash
+  # followed by a newline; reconstruct those bytes to compute its expected digest.
+  check "${BINARIES[$source]}.sha256" "$(printf '%s\n' "${hash}" | "${SHA256SUM[@]}" | cut -d' ' -f1)"
 done
 
 # Anything else attached to the release was not published by promote-to-github.sh.
-expected=$(for name in "${BINARIES[@]}"; do printf '%s\n%s.sha256\n' "${name}" "${name}"; done | sort)
-while read -r name; do
-  echo "${name}: UNEXPECTED asset on GitHub release"
-  failed=1
-done < <(comm -23 <(awk '{print $1}' <<<"${assets}" | sort) <(echo "${expected}"))
+declare -A EXPECTED=()
+for github_name in "${BINARIES[@]}"; do
+  EXPECTED[$github_name]=1
+  EXPECTED[$github_name.sha256]=1
+done
+
+for name in $(printf '%s\n' "${!DIGESTS[@]}" | sort); do
+  if [[ -z "${EXPECTED[$name]:-}" ]]; then
+    echo "${name}: UNEXPECTED asset on GitHub release"
+    failed=1
+  fi
+done
 
 if [[ "${failed}" -ne 0 ]]; then
   echo "Error: GitHub release ${TAG} does not match artifacts.k8s.io" >&2
