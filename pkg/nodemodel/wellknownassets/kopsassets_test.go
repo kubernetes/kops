@@ -41,13 +41,13 @@ func TestBaseURL_OverridesVersionFromKopsBaseURL(t *testing.T) {
 	}{
 		{
 			name:            "postsubmit URL",
-			kopsBaseURL:     "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.35.0-beta.2+v1.36.0-beta.1-384-gf369c3ab16",
-			expectedVersion: "1.35.0-beta.2+v1.36.0-beta.1-384-gf369c3ab16",
+			kopsBaseURL:     "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.35.0-beta.2+v1.37.0-alpha.1-384-gf369c3ab16",
+			expectedVersion: "1.35.0-beta.2+v1.37.0-alpha.1-384-gf369c3ab16",
 		},
 		{
 			name:            "postsubmit URL with trailing slash",
-			kopsBaseURL:     "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.35.0-beta.2+v1.36.0-beta.1-384-gf369c3ab16/",
-			expectedVersion: "1.35.0-beta.2+v1.36.0-beta.1-384-gf369c3ab16",
+			kopsBaseURL:     "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.35.0-beta.2+v1.37.0-alpha.1-384-gf369c3ab16/",
+			expectedVersion: "1.35.0-beta.2+v1.37.0-alpha.1-384-gf369c3ab16",
 		},
 		{
 			name:            "CI URL",
