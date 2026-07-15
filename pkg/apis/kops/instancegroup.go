@@ -110,7 +110,6 @@ func (r InstanceGroupRole) HasKubeControllerManager() bool {
 	return r == InstanceGroupRoleKubeControllerManager
 }
 
-func (r InstanceGroupRole) IsControlPlaneType() bool {
 	return r.HasControlPlane() || r.HasAPIServer() || r.HasEtcd() || r.HasScheduler() || r.HasKubeControllerManager()
 }
 

@@ -82,8 +82,13 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 			return err
 		}
 		b.AddFirewallRulesTasks(c, "ssh-external-to-master", &gcetasks.FirewallRule{
-			Lifecycle:    b.Lifecycle,
-			TargetTags:   append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master")),
+			Lifecycle: b.Lifecycle,
+			TargetTags: append(
+				b.GCETagsForAPIServerTargets(),
+				b.GCETagForRole(kops.InstanceGroupRoleEtcd),
+				b.GCETagForRole(kops.InstanceGroupRoleScheduler),
+				b.GCETagForRole(kops.InstanceGroupRoleKubeControllerManager),
+				b.GCETagForRole("Master")),
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
 			Network:      network,
