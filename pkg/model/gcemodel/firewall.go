@@ -52,6 +52,10 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
+		cpTags := append(
+			b.GCETagsForAPIServerTargets(),
+			b.GCETagForRole(kops.InstanceGroupRoleEtcd),
+		)
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:      s(b.NameForFirewallRule("lb-health-checks")),
 			Lifecycle: b.Lifecycle,
@@ -65,7 +69,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				"209.85.204.0/22",
 				"209.85.152.0/22",
 			},
-			TargetTags: b.GCETagsForAPIServerTargets(),
+			TargetTags: cpTags,
 			Allowed:    []string{"tcp"},
 		})
 	}
@@ -93,7 +97,13 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
-		cpTags := append(b.GCETagsForAPIServerTargets(), b.GCETagForRole("Master"))
+		cpTags := append(
+			b.GCETagsForAPIServerTargets(),
+			b.GCETagForRole(kops.InstanceGroupRoleEtcd),
+			b.GCETagForRole(kops.InstanceGroupRoleScheduler),
+			b.GCETagForRole(kops.InstanceGroupRoleKubeControllerManager),
+			b.GCETagForRole("Master"),
+		)
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.NameForFirewallRule("master-to-master")),
 			Lifecycle:  b.Lifecycle,

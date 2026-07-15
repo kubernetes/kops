@@ -224,6 +224,17 @@ func (b *AutoscalingGroupModelBuilder) buildInstanceTemplate(c *fi.CloudupModelB
 
 		case kops.InstanceGroupRoleBastion:
 			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleBastion))
+
+		case kops.InstanceGroupRoleEtcd:
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleEtcd))
+
+		case kops.InstanceGroupRoleScheduler:
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleScheduler))
+
+		case kops.InstanceGroupRoleKubeControllerManager:
+			t.Scopes = append(t.Scopes, "https://www.googleapis.com/auth/ndev.clouddns.readwrite")
+			t.Tags = append(t.Tags, b.GCETagForRole(kops.InstanceGroupRoleKubeControllerManager))
 		}
 
 		if gce.UsesIPAliases(b.Cluster) {

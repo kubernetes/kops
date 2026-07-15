@@ -46,7 +46,7 @@ var _ fi.NodeupModelBuilder = &KubeControllerManagerBuilder{}
 
 // Build is responsible for configuring the kube-controller-manager
 func (b *KubeControllerManagerBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster && !b.BootConfig.InstanceGroupRole.HasKubeControllerManager() {
 		return nil
 	}
 

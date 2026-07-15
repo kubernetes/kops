@@ -166,7 +166,7 @@ func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup)
 	keypairs := []string{"kubernetes-ca"}
 
 	// Add keypairs for default etcd clusters (main, events, and leases, not cilium)
-	if ig.IsControlPlane() {
+	if ig.IsControlPlane() || ig.IsEtcdOnly() {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
 			k := etcdCluster.Name
 			if k != "events" && k != "main" && k != "leases" {

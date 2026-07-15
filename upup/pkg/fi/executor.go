@@ -221,6 +221,7 @@ func (e *executor[T]) forkJoin(ctx context.Context, tasks []*taskState[T]) []err
 			}
 
 			result := ts.task.Run(e.context)
+			klog.V(2).Infof("Ran task %q: %v: Result %v\n", ts.key, ts.task, result)
 
 			resultsMutex.Lock()
 			results[index] = result

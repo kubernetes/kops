@@ -375,3 +375,10 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
 	golden.AssertMatchesFile(t, actualYAML, path.Join(srcDir, expectedClusterPath))
 }
+
+// TestCreateClusterExperimentalRoles tests kops create cluster with ExperimentalRoles and control-plane-count=0
+func TestCreateClusterExperimentalRoles(t *testing.T) {
+	featureflag.ParseFlags("+APIServerNodes,+ExperimentalRoles")
+	defer featureflag.ParseFlags("-APIServerNodes,-ExperimentalRoles")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/experimental-roles", "v1alpha2")
+}

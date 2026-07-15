@@ -99,6 +99,9 @@ func (s *Service) GetDependencies(tasks map[string]fi.NodeupTask) []fi.NodeupTas
 		case *File:
 			if len(v.BeforeServices) > 0 {
 				for _, b := range v.BeforeServices {
+					if v.Path == "/var/lib/kube-proxy/kubeconfig" {
+						continue
+					}
 					if s.Name == b {
 						deps = append(deps, v)
 					}

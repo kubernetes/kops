@@ -38,7 +38,7 @@ func (b *ManifestsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	ctx := c.Context()
 
 	// Write etcd manifests (currently etcd <=> master)
-	if b.IsMaster {
+	if b.IsMaster || b.BootConfig.InstanceGroupRole.HasEtcd() {
 		for _, manifest := range b.NodeupConfig.EtcdManifests {
 			p, err := vfs.Context.BuildVfsPath(manifest)
 			if err != nil {

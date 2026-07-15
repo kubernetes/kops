@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"runtime/debug"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -104,6 +105,7 @@ type ModelBuilderContext[T SubContext] struct {
 
 	Tasks              map[string]Task[T]
 	LifecycleOverrides map[string]Lifecycle
+	Stacktraces        map[string]string
 }
 
 func (c *ModelBuilderContext[T]) WithContext(ctx context.Context) *ModelBuilderContext[T] {
@@ -129,9 +131,15 @@ func (c *ModelBuilderContext[T]) AddTask(task Task[T]) {
 	key := buildTaskKey(task)
 
 	existing, found := c.Tasks[key]
+	stack := string(debug.Stack())
 	if found {
-		klog.Fatalf("found duplicate tasks with name %q: %v and %v", key, task, existing)
+		klog.Fatalf("found duplicate tasks with name %q: %v and %v: stack %s and stack %s",
+			key, task, existing, stack, c.Stacktraces[key])
 	}
+	if c.Stacktraces == nil {
+		c.Stacktraces = make(map[string]string)
+	}
+	c.Stacktraces[key] = stack
 	c.Tasks[key] = task
 }
 

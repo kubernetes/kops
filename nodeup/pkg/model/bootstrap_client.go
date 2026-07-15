@@ -45,7 +45,7 @@ type BootstrapClientBuilder struct {
 }
 
 func (b BootstrapClientBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if b.IsMaster {
+	if b.IsMaster || b.BootConfig.InstanceGroupRole.IsControlPlaneType() {
 		return nil
 	}
 

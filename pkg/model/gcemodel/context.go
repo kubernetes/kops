@@ -101,6 +101,16 @@ func (c *GCEModelContext) HasAPIServerOnlyInstanceGroups() bool {
 	return false
 }
 
+// HasEtcdOnlyInstanceGroups returns true if the cluster has any Etcd-only instance groups.
+func (c *GCEModelContext) HasEtcdOnlyInstanceGroups() bool {
+	for _, ig := range c.InstanceGroups {
+		if ig.Spec.Role.HasEtcd() {
+			return true
+		}
+	}
+	return false
+}
+
 // GCETagsForAPIServerTargets returns the network tags that should be used as firewall
 // targets for rules that need to reach API server instances. It always includes the
 // ControlPlane tag, and adds the APIServer tag only when the cluster has dedicated
@@ -177,7 +187,7 @@ func (c *GCEModelContext) LinkToServiceAccount(ig *kops.InstanceGroup) *gcetasks
 
 	name := ""
 	switch role {
-	case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane:
+	case kops.InstanceGroupRoleAPIServer, kops.InstanceGroupRoleControlPlane, kops.InstanceGroupRoleEtcd, kops.InstanceGroupRoleScheduler, kops.InstanceGroupRoleKubeControllerManager:
 		name = gce.ControlPlane
 
 	case kops.InstanceGroupRoleBastion:

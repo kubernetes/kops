@@ -274,6 +274,12 @@ func (b *IAMModelBuilder) roleKey(role iam.Subject) (string, bool) {
 		return strings.ToLower(string(kops.InstanceGroupRoleNode)), false
 	case *iam.NodeRoleBastion:
 		return strings.ToLower(string(kops.InstanceGroupRoleBastion)), false
+	case *iam.NodeRoleEtcd:
+		return strings.ToLower(string(kops.InstanceGroupRoleEtcd)), false
+	case *iam.NodeRoleScheduler:
+		return strings.ToLower(string(kops.InstanceGroupRoleScheduler)), false
+	case *iam.NodeRoleKubeControllerManager:
+		return strings.ToLower(string(kops.InstanceGroupRoleKubeControllerManager)), false
 
 	default:
 		klog.Fatalf("unknown node role type: %T", role)

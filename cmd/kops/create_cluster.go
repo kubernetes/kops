@@ -193,6 +193,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	sshPublicKey := ""
 	associatePublicIP := false
 	encryptEtcdStorage := false
+	var controlPlaneCount int32
 
 	cmd := &cobra.Command{
 		Use:               "cluster [CLUSTER]",
@@ -210,6 +211,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			if cmd.Flag("encrypt-etcd-storage").Changed {
 				options.EncryptEtcdStorage = &encryptEtcdStorage
+			}
+
+			if cmd.Flag("control-plane-count").Changed || cmd.Flag("master-count").Changed {
+				options.ControlPlaneCount = &controlPlaneCount
 			}
 
 			if err := checkProjectFlag(cmd.Flag("project").Changed, options.Project); err != nil {
@@ -295,9 +300,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"pub"}, cobra.ShellCompDirectiveFilterFileExt
 	})
 
-	cmd.Flags().Int32Var(&options.ControlPlaneCount, "master-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
+	cmd.Flags().Int32Var(&controlPlaneCount, "master-count", controlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().MarkDeprecated("master-count", "use --control-plane-count instead")
-	cmd.Flags().Int32Var(&options.ControlPlaneCount, "control-plane-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
+	cmd.Flags().Int32Var(&controlPlaneCount, "control-plane-count", controlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Total number of worker nodes. Defaults to one node per zone")
 	if featureflag.APIServerNodes.Enabled() {
 		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Number of API server nodes. Defaults to 0.")

@@ -46,7 +46,7 @@ type ChannelsBuilder struct {
 var _ fi.NodeupModelBuilder = &ChannelsBuilder{}
 
 func (b *ChannelsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
-	if !b.IsMaster {
+	if !b.IsMaster && !b.HasAPIServer {
 		return nil
 	}
 

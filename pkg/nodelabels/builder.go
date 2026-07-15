@@ -25,8 +25,11 @@ import (
 )
 
 const (
-	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
-	RoleLabelNode16      = "node-role.kubernetes.io/node"
+	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
+	RoleLabelNode16                = "node-role.kubernetes.io/node"
+	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
+	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
+	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
@@ -37,6 +40,9 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 	isControlPlane := false
 	isAPIServer := false
 	isNode := false
+	isEtcd := false
+	isScheduler := false
+	isKubeControllerManager := false
 	switch {
 	case instanceGroup.Spec.Role.HasControlPlane():
 		isControlPlane = true
@@ -46,6 +52,12 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		isNode = true
 	case instanceGroup.Spec.Role.HasBastion():
 		// no labels to add
+	case instanceGroup.Spec.Role.HasEtcd():
+		isEtcd = true
+	case instanceGroup.Spec.Role.HasScheduler():
+		isScheduler = true
+	case instanceGroup.Spec.Role.HasKubeControllerManager():
+		isKubeControllerManager = true
 	default:
 		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
 	}
@@ -74,6 +86,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// full control-plane nodes.
 		if isAPIServer || featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
+			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
 
@@ -82,6 +95,27 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
+	}
+
+	if isEtcd {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelEtcd] = ""
+	}
+
+	if isScheduler {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelScheduler] = ""
+	}
+
+	if isKubeControllerManager {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelKubeControllerManager] = ""
 	}
 
 	if isControlPlane {

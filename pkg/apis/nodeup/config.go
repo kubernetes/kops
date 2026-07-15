@@ -391,7 +391,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
-	if instanceGroup.HasAPIServer() || !model.UseKopsControllerForNodeConfig(cluster) {
+	if instanceGroup.HasAPIServer() || instanceGroup.HasEtcd() || instanceGroup.HasKubeControllerManager() || instanceGroup.HasScheduler() || !model.UseKopsControllerForNodeConfig(cluster) {
 		config.ConfigStore = &kops.ConfigStoreSpec{
 			Keypairs: cluster.Spec.ConfigStore.Keypairs,
 			Secrets:  cluster.Spec.ConfigStore.Secrets,
