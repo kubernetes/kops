@@ -38,6 +38,12 @@ func DefaultInstanceGroupVolumeSize(role kops.InstanceGroupRole) (int32, error) 
 		return DefaultVolumeSizeMaster, nil
 	case kops.InstanceGroupRoleAPIServer:
 		return DefaultVolumeSizeNode, nil
+	case kops.InstanceGroupRoleEtcd:
+		return DefaultVolumeSizeMaster, nil
+	case kops.InstanceGroupRoleScheduler:
+		return DefaultVolumeSizeNode, nil
+	case kops.InstanceGroupRoleKubeControllerManager:
+		return DefaultVolumeSizeNode, nil
 	case kops.InstanceGroupRoleNode:
 		return DefaultVolumeSizeNode, nil
 	case kops.InstanceGroupRoleBastion:
