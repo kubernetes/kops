@@ -39,12 +39,6 @@ import (
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/openstack/designate"
 	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/scaleway"
-	"k8s.io/kops/pkg/wellknownports"
-	"k8s.io/kops/protokube/pkg/gossip"
-	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
-	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
-	_ "k8s.io/kops/protokube/pkg/gossip/memberlist"
-	_ "k8s.io/kops/protokube/pkg/gossip/mesh"
 )
 
 var (
@@ -54,8 +48,8 @@ var (
 
 func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
-	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace, metricsListen, gossipProtocol, gossipSecretSecondary, gossipListenSecondary, gossipProtocolSecondary string
-	var gossipSeeds, gossipSeedsSecondary, zones []string
+	var dnsServer, dnsProviderID, watchNamespace, metricsListen string
+	var zones []string
 	var internalIpv4, internalIpv6 bool
 	var watchIngress bool
 	var updateInterval int
@@ -71,16 +65,8 @@ func main() {
 
 	flag.StringVar(&dnsServer, "dns-server", "", "DNS Server")
 	flags.BoolVar(&watchIngress, "watch-ingress", true, "Configure hostnames found in ingress resources")
-	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
-	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, gossip, openstack-designate, scaleway)")
-	flag.StringVar(&gossipProtocol, "gossip-protocol", "mesh", "mesh/memberlist")
-	flags.StringVar(&gossipListen, "gossip-listen", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipWeaveMesh), "The address on which to listen if gossip is enabled")
-	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
-	flag.StringVar(&gossipProtocolSecondary, "gossip-protocol-secondary", "", "mesh/memberlist")
-	flag.StringVar(&gossipListenSecondary, "gossip-listen-secondary", fmt.Sprintf("0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist), "address:port on which to bind for gossip")
-	flags.StringVar(&gossipSecretSecondary, "gossip-secret-secondary", gossipSecret, "Secret to use to secure gossip")
-	flags.StringSliceVar(&gossipSeedsSecondary, "gossip-seed-secondary", gossipSeedsSecondary, "If set, will enable gossip zones and seed using the provided addresses")
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, digitalocean, openstack-designate, scaleway)")
 	flags.BoolVar(&internalIpv4, "internal-ipv4", internalIpv4, "Internal network has IPv4")
 	flags.BoolVar(&internalIpv6, "internal-ipv6", internalIpv6, "Internal network has IPv6")
 	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
@@ -132,7 +118,7 @@ func main() {
 	}
 
 	var dnsProviders []dnsprovider.Interface
-	if dnsProviderID != "gossip" {
+	{
 		var file io.Reader
 
 		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
@@ -142,59 +128,6 @@ func main() {
 		}
 		if dnsProvider == nil {
 			klog.Errorf("DNS provider was nil %q: %v", dnsProviderID, err)
-			os.Exit(1)
-		}
-		dnsProviders = append(dnsProviders, dnsProvider)
-	}
-
-	if len(gossipSeeds) != 0 {
-		gossipSeeds := gossip.NewStaticSeedProvider(gossipSeeds)
-
-		id := os.Getenv("HOSTNAME")
-		if id == "" {
-			klog.Fatalf("Unable to fetch HOSTNAME for use as node identifier")
-		}
-		gossipName := "dns-controller." + id
-
-		channelName := "dns"
-		var gossipState gossip.GossipState
-
-		gossipState, err = gossip.GetGossipState(gossipProtocol, gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
-		if err != nil {
-			klog.Errorf("Error initializing gossip: %v", err)
-			os.Exit(1)
-		}
-
-		if gossipProtocolSecondary != "" {
-
-			secondaryGossipState, err := gossip.GetGossipState(gossipProtocolSecondary, gossipListenSecondary, channelName, gossipName, []byte(gossipSecretSecondary), gossip.NewStaticSeedProvider(gossipSeedsSecondary))
-			if err != nil {
-				klog.Errorf("Error initializing secondary gossip: %v", err)
-				os.Exit(1)
-			}
-
-			gossipState = &gossip.MultiGossipState{
-				Primary:   gossipState,
-				Secondary: secondaryGossipState,
-			}
-		}
-		go func() {
-			err := gossipState.Start()
-			if err != nil {
-				klog.Fatalf("gossip exited unexpectedly: %v", err)
-			} else {
-				klog.Fatalf("gossip exited unexpectedly, but without error")
-			}
-		}()
-
-		dnsView := gossipdns.NewDNSView(gossipState)
-		dnsProvider, err := gossipdnsprovider.New(dnsView)
-		if err != nil {
-			klog.Errorf("Error initializing gossip DNS provider: %v", err)
-			os.Exit(1)
-		}
-		if dnsProvider == nil {
-			klog.Errorf("Gossip DNS provider was nil: %v", err)
 			os.Exit(1)
 		}
 		dnsProviders = append(dnsProviders, dnsProvider)

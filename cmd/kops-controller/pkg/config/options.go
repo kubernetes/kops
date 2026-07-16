@@ -39,9 +39,6 @@ type Options struct {
 	// EnableCloudIPAM enables the cloud IPAM controller.
 	EnableCloudIPAM bool `json:"enableCloudIPAM,omitempty"`
 
-	// Discovery configures options relating to discovery, particularly for gossip mode.
-	Discovery *DiscoveryOptions `json:"discovery,omitempty"`
-
 	// CAPI configures Cluster API (CAPI) support.
 	CAPI *CAPIOptions `json:"capi,omitempty"`
 }
@@ -94,10 +91,4 @@ type ServerProviderOptions struct {
 	Scaleway     *scaleway.ScalewayVerifierOptions   `json:"scaleway,omitempty"`
 	Azure        *azure.AzureVerifierOptions         `json:"azure,omitempty"`
 	Linode       *linode.LinodeVerifierOptions       `json:"linode,omitempty"`
-}
-
-// DiscoveryOptions configures our support for discovery, particularly gossip DNS (i.e. k8s.local)
-type DiscoveryOptions struct {
-	// Enabled specifies whether support for discovery population is enabled.
-	Enabled bool `json:"enabled"`
 }
