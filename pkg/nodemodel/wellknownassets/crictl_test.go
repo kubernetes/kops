@@ -31,7 +31,7 @@ func Test_FindCrictlVersionHash(t *testing.T) {
 	desiredCirctlHash := "sha256:d16a1ffb3938f5a19d5c8f45d363bd091ef89c0bc4d44ad16b933eede32fdcbb"
 
 	cluster := &kops.Cluster{}
-	cluster.Spec.KubernetesVersion = "v1.31.0"
+	cluster.Spec.KubernetesVersion = "v1.32.0"
 
 	ig := &kops.InstanceGroup{}
 

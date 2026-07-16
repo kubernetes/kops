@@ -56,10 +56,6 @@ const (
 	defaultMasterMachineTypeScaleway = "DEV1-M"
 	defaultMasterMachineTypeLinode   = "g6-standard-2"
 
-	defaultDOImageJammy       = "ubuntu-22-04-x64"
-	defaultHetznerImageJammy  = "ubuntu-22.04"
-	defaultScalewayImageJammy = "ubuntu_jammy"
-	defaultLinodeImageJammy   = "linode/ubuntu22.04"
 	defaultDOImageNoble       = "ubuntu-24-04-x64"
 	defaultHetznerImageNoble  = "ubuntu-24.04"
 	defaultScalewayImageNoble = "ubuntu_noble"

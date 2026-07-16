@@ -34,9 +34,6 @@ import (
 // https://github.com/kubernetes/kubernetes/issues/30338
 
 const (
-	defaultCNIAssetAmd64K8s_31 = "https://github.com/containernetworking/plugins/releases/download/v1.5.1/cni-plugins-linux-amd64-v1.5.1.tgz"
-	defaultCNIAssetArm64K8s_31 = "https://github.com/containernetworking/plugins/releases/download/v1.5.1/cni-plugins-linux-arm64-v1.5.1.tgz"
-
 	defaultCNIAssetAmd64K8s_32 = "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz"
 	defaultCNIAssetArm64K8s_32 = "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz"
 
@@ -77,15 +74,11 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 		switch {
 		case ig.KubernetesVersion().IsGTE("1.32"):
 			cniAssetURL = defaultCNIAssetAmd64K8s_32
-		case ig.KubernetesVersion().IsGTE("1.31"):
-			cniAssetURL = defaultCNIAssetAmd64K8s_31
 		}
 	case architectures.ArchitectureArm64:
 		switch {
 		case ig.KubernetesVersion().IsGTE("1.32"):
 			cniAssetURL = defaultCNIAssetArm64K8s_32
-		case ig.KubernetesVersion().IsGTE("1.31"):
-			cniAssetURL = defaultCNIAssetArm64K8s_31
 		}
 	default:
 		return nil, fmt.Errorf("unknown arch for CNI plugin binaries asset: %s", arch)
