@@ -126,7 +126,7 @@ ClusterName: minimal-ipv6.example.com
 ConfigBase: memfs://clusters.example.com/minimal-ipv6.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: gBZLIJLg9PO8OP53Bpl41CPI73ED+Xh6UW6dK/jhGpU=
+NodeupConfigHash: bSMvuELB4TyKYcf7sKCOEuNrOqX3nn9R5TsdvL8tIhk=
 
 __EOF_KUBE_ENV
 

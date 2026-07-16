@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   config.yaml: |
-    {"clusterName":"scw-minimal.k8s.local","cloud":"scaleway","configBase":"memfs://tests/scw-minimal.k8s.local","secretStore":"memfs://tests/scw-minimal.k8s.local/secrets","server":{"Listen":":3988","provider":{"scaleway":{}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server"]},"discovery":{"enabled":true}}
+    {"clusterName":"scw-minimal.k8s.local","cloud":"scaleway","configBase":"memfs://tests/scw-minimal.k8s.local","secretStore":"memfs://tests/scw-minimal.k8s.local/secrets","server":{"Listen":":3988","provider":{"scaleway":{}},"serverKeyPath":"/etc/kubernetes/kops-controller/pki/kops-controller.key","serverCertificatePath":"/etc/kubernetes/kops-controller/pki/kops-controller.crt","caBasePath":"/etc/kubernetes/kops-controller/pki","signingCAs":["kubernetes-ca"],"certNames":["kubelet","kubelet-server"]}}
 kind: ConfigMap
 metadata:
   labels:
@@ -134,14 +134,6 @@ rules:
   - list
   - watch
   - patch
-- apiGroups:
-  - ""
-  resources:
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
 
 ---
 
@@ -206,16 +198,6 @@ rules:
   - leases
   verbs:
   - create
-- apiGroups:
-  - ""
-  resourceNames:
-  - coredns
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - watch
-  - patch
 
 ---
 
@@ -236,49 +218,3 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    app.kubernetes.io/managed-by: kops
-    discovery.kops.k8s.io/internal-name: api
-    k8s-addon: kops-controller.addons.k8s.io
-  name: api-internal
-  namespace: kube-system
-spec:
-  clusterIP: None
-  ports:
-  - name: https
-    port: 443
-    protocol: TCP
-    targetPort: 443
-  selector:
-    k8s-app: kops-controller
-  type: ClusterIP
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    addon.kops.k8s.io/name: kops-controller.addons.k8s.io
-    app.kubernetes.io/managed-by: kops
-    discovery.kops.k8s.io/internal-name: kops-controller
-    k8s-addon: kops-controller.addons.k8s.io
-  name: kops-controller-internal
-  namespace: kube-system
-spec:
-  clusterIP: None
-  ports:
-  - name: https
-    port: 3988
-    protocol: TCP
-    targetPort: 3988
-  selector:
-    k8s-app: kops-controller
-  type: ClusterIP
