@@ -39,6 +39,78 @@ func Test_Validate_DNS(t *testing.T) {
 	}
 }
 
+func Test_Validate_CloudDNSTopology(t *testing.T) {
+	grid := []struct {
+		Name           string
+		CloudProvider  kops.CloudProviderSpec
+		DNS            kops.DNSType
+		ExpectedErrors []string
+	}{
+		{
+			// Legacy gossip clusters are no longer supported
+			Name:           "cluster.k8s.local",
+			CloudProvider:  kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			DNS:            kops.DNSTypePublic,
+			ExpectedErrors: []string{"Forbidden::spec.networking.topology.dns.type"},
+		},
+		{
+			// .k8s.local names are fine with dns=none
+			Name:          "cluster.k8s.local",
+			CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			DNS:           kops.DNSTypeNone,
+		},
+		{
+			Name:          "cluster.example.com",
+			CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			DNS:           kops.DNSTypePublic,
+		},
+		{
+			// Azure only supports dns=none
+			Name:           "cluster.example.com",
+			CloudProvider:  kops.CloudProviderSpec{Azure: &kops.AzureSpec{}},
+			DNS:            kops.DNSTypePublic,
+			ExpectedErrors: []string{"Forbidden::spec.networking.topology.dns.type"},
+		},
+	}
+
+	for _, g := range grid {
+		cluster := &kops.Cluster{
+			Spec: kops.ClusterSpec{
+				CloudProvider: g.CloudProvider,
+				Networking: kops.NetworkingSpec{
+					Topology: &kops.TopologySpec{
+						DNS: g.DNS,
+					},
+				},
+			},
+		}
+		cluster.Name = g.Name
+
+		errs := validateCloudDNSTopology(cluster, field.NewPath("spec", "networking", "topology", "dns", "type"))
+		testErrors(t, g.Name, errs, g.ExpectedErrors)
+	}
+}
+
+func Test_Validate_GossipConfig(t *testing.T) {
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			GossipConfig:  &kops.GossipConfig{},
+		},
+	}
+	errs := validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"), false)
+	testErrors(t, "gossipConfig", errs, []string{"Forbidden::spec.gossipConfig"})
+
+	cluster = &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider:             kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+			DNSControllerGossipConfig: &kops.DNSControllerGossipConfig{},
+		},
+	}
+	errs = validateClusterSpec(&cluster.Spec, cluster, field.NewPath("spec"), false)
+	testErrors(t, "dnsControllerGossipConfig", errs, []string{"Forbidden::spec.dnsControllerGossipConfig"})
+}
+
 func TestValidateCIDR(t *testing.T) {
 	grid := []struct {
 		Input          string
