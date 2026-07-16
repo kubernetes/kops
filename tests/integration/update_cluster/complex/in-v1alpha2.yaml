@@ -20,7 +20,14 @@ spec:
       accessLog:
         bucket: access-log-example
   authentication:
-    aws: {}
+    aws:
+      backendMode: CRD
+      clusterID: complex.example.com
+      identityMappings:
+      - arn: arn:aws-test:iam::000000000000:role/AWSReservedSSO_Developer_7de86b085b6056ae
+        groups:
+        - he:dev
+        username: dev:{{SessionNameRaw}}
   kubernetesApiAccess:
   - 1.1.1.0/24
   - pl-44444444
