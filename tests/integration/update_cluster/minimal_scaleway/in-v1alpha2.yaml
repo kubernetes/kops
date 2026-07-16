@@ -49,7 +49,7 @@ spec:
       zone: fr-par-1
   topology:
     dns:
-      type: Private
+      type: None
 
 ---
 

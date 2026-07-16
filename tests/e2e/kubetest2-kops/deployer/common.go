@@ -394,7 +394,7 @@ func (d *deployer) defaultClusterName() (string, error) {
 		}
 	case "azure":
 		if dnsDomain == "k8s.local" || strings.HasSuffix(dnsDomain, ".k8s.local") {
-			// Opt into gossip via a k8s.local KOPS_DNS_DOMAIN.
+			// Use the k8s.local KOPS_DNS_DOMAIN as the cluster name suffix.
 			suffix = dnsDomain
 		} else {
 			// With --dns=none and the domain is not needed.
