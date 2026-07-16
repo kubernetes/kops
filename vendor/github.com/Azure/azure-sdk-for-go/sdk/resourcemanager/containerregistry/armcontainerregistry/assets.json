@@ -1,0 +1,6 @@
+{
+  "AssetsRepo": "Azure/azure-sdk-assets",
+  "AssetsRepoPrefixPath": "go",
+  "TagPrefix": "go/resourcemanager/containerregistry/armcontainerregistry",
+  "Tag": "go/resourcemanager/containerregistry/armcontainerregistry_9fcf492e3c"
+}
