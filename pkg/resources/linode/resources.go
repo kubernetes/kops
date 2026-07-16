@@ -32,6 +32,7 @@ type listFn func(fi.Cloud, resources.ClusterInfo) ([]*resources.Resource, error)
 
 const (
 	resourceTypeVPC    = "vpc"
+	resourceTypeSubnet = "subnet"
 	resourceTypeSSHKey = "ssh-key"
 )
 
@@ -50,6 +51,7 @@ func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterI
 
 	listFunctions := []listFn{
 		listVPCs,
+		listSubnets,
 		listSSHKeys,
 	}
 
@@ -64,6 +66,37 @@ func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterI
 	}
 
 	return resourceTrackers, nil
+}
+
+// findClusterVPCs finds Linode (Akamai) VPCs with the cluster's deterministic VPC label.
+func findClusterVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]linodego.VPC, error) {
+	c := cloud.(cloudlinode.LinodeCloud)
+	vpcLabel := cloudlinode.NormalizeLinodeLabel(clusterInfo.Name)
+	listOptions, err := cloudlinode.ListOptionsForLabel(vpcLabel)
+	if err != nil {
+		return nil, err
+	}
+
+	vpcs, err := c.Client().ListVPCs(context.Background(), listOptions)
+	if err != nil {
+		return nil, fmt.Errorf("error listing Linode (Akamai) VPCs: %w", err)
+	}
+
+	region := c.Region()
+
+	var clusterVPCs []linodego.VPC
+	for _, vpc := range vpcs {
+		if vpc.Label != vpcLabel {
+			continue
+		}
+		if region != "" && vpc.Region != region {
+			continue
+		}
+
+		clusterVPCs = append(clusterVPCs, vpc)
+	}
+
+	return clusterVPCs, nil
 }
 
 // listSSHKeys lists Linode (Akamai) SSH keys that were generated for the cluster.
@@ -93,25 +126,15 @@ func listSSHKeys(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resource
 	return resourceTrackers, nil
 }
 
-// listVPCs lists Linode (Akamai) VPCs with the cluster's deterministic VPC label.
+// listVPCs lists Linode (Akamai) VPC resources owned by the cluster.
 func listVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
-	c := cloud.(cloudlinode.LinodeCloud)
-	vpcs, err := c.Client().ListVPCs(context.Background(), nil)
+	vpcs, err := findClusterVPCs(cloud, clusterInfo)
 	if err != nil {
-		return nil, fmt.Errorf("error listing Linode (Akamai) VPCs: %w", err)
+		return nil, err
 	}
 
-	vpcLabel := cloudlinode.NormalizeLinodeLabel(clusterInfo.Name)
-	region := c.Region()
 	var resourceTrackers []*resources.Resource
 	for _, vpc := range vpcs {
-		if vpc.Label != vpcLabel {
-			continue
-		}
-		if region != "" && vpc.Region != region {
-			continue
-		}
-
 		resourceTrackers = append(resourceTrackers, &resources.Resource{
 			Name:    vpc.Label,
 			ID:      strconv.Itoa(vpc.ID),
@@ -119,6 +142,38 @@ func listVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.R
 			Deleter: deleteVPC,
 			Obj:     vpc,
 		})
+	}
+
+	return resourceTrackers, nil
+}
+
+// listSubnets lists Linode (Akamai) VPC subnets attached to the cluster's managed VPC.
+func listSubnets(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
+	c := cloud.(cloudlinode.LinodeCloud)
+	vpcs, err := findClusterVPCs(cloud, clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	var resourceTrackers []*resources.Resource
+	for _, vpc := range vpcs {
+		subnets, err := c.Client().ListVPCSubnets(context.Background(), vpc.ID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error listing Linode (Akamai) VPC subnets for VPC %s(%d): %w", vpc.Label, vpc.ID, err)
+		}
+
+		for _, subnet := range subnets {
+			resourceTrackers = append(resourceTrackers, &resources.Resource{
+				Name: subnet.Label,
+				ID:   strconv.Itoa(subnet.ID),
+				Type: resourceTypeSubnet,
+				Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
+					return deleteSubnet(vpc.ID, cloud, tracker)
+				},
+				Blocks: []string{resourceTypeVPC + ":" + strconv.Itoa(vpc.ID)},
+				Obj:    subnet,
+			})
+		}
 	}
 
 	return resourceTrackers, nil
@@ -155,6 +210,24 @@ func deleteVPC(cloud fi.Cloud, tracker *resources.Resource) error {
 			return nil
 		}
 		return fmt.Errorf("error deleting Linode (Akamai) VPC %s(%s): %w", tracker.Name, tracker.ID, err)
+	}
+
+	return nil
+}
+
+// deleteSubnet deletes a Linode (Akamai) VPC subnet.
+func deleteSubnet(vpcID int, cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(cloudlinode.LinodeCloud)
+	subnetID, err := parseTrackerIntID(tracker)
+	if err != nil {
+		return err
+	}
+
+	if err := c.Client().DeleteVPCSubnet(context.Background(), vpcID, subnetID); err != nil {
+		if linodego.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("error deleting Linode (Akamai) subnet %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil

@@ -68,6 +68,16 @@ func TestVPCFindMatchByName(t *testing.T) {
 	if got, want := fi.ValueOf(task.ID), 101; got != want {
 		t.Fatalf("expected task ID to be propagated after Find: got %d, want %d", got, want)
 	}
+	expectedListOptions, err := linode.ListOptionsForLabel("example-k8s-local")
+	if err != nil {
+		t.Fatalf("ListOptionsForLabel returned error: %v", err)
+	}
+	if client.LastListVPCsOpts == nil {
+		t.Fatalf("expected VPC list options to be recorded")
+	}
+	if got, want := client.LastListVPCsOpts.Filter, expectedListOptions.Filter; got != want {
+		t.Fatalf("unexpected VPC list filter: got %q, want %q", got, want)
+	}
 }
 
 func TestVPCFindMatchByNameAndRegion(t *testing.T) {

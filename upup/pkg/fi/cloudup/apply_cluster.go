@@ -134,7 +134,7 @@ type ApplyClusterCmd struct {
 	// TaskMap is the map of tasks that we built (output)
 	TaskMap map[string]fi.CloudupTask
 
-	// AdditionalObjects holds cluster-asssociated configuration objects, other than the Cluster and InstanceGroups.
+	// AdditionalObjects holds cluster-associated configuration objects, other than the Cluster and InstanceGroups.
 	AdditionalObjects kubemanifest.ObjectList
 
 	// DeletionProcessing controls whether we process deletions.
@@ -724,7 +724,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				KopsModelContext: modelContext,
 			}
 			l.Builders = append(l.Builders,
-				&linodemodel.VPCModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: networkLifecycle},
+				&linodemodel.NetworkModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: networkLifecycle},
 				&linodemodel.SSHKeyModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: securityLifecycle},
 			)
 
