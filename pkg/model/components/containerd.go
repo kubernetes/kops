@@ -43,21 +43,13 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	containerd := clusterSpec.Containerd
 
-	// Set the version based on Kubernetes version
+	// Set the default version
 	if fi.ValueOf(containerd.Version) == "" {
-		switch {
-		case b.IsKubernetesLT("1.32"):
-			containerd.Version = new("1.7.32")
-			containerd.Runc = &kops.Runc{
-				Version: new("1.3.5"),
-			}
-		default:
-			// Stay on containerd 2.2.x rather than 2.3.x to avoid a sandbox-image
-			// regression in 2.3 (https://github.com/containerd/containerd/issues/13529).
-			containerd.Version = new("2.2.4")
-			containerd.Runc = &kops.Runc{
-				Version: new("1.3.5"),
-			}
+		// Stay on containerd 2.2.x rather than 2.3.x to avoid a sandbox-image
+		// regression in 2.3 (https://github.com/containerd/containerd/issues/13529).
+		containerd.Version = new("2.2.4")
+		containerd.Runc = &kops.Runc{
+			Version: new("1.3.5"),
 		}
 	}
 	// Set the default log level to INFO

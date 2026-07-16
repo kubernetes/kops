@@ -26,7 +26,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/blang/semver/v4"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -1717,32 +1716,17 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel, architecture archi
 		}
 	}
 
-	if kubernetesVersion.LT(semver.MustParse("1.32.0")) {
-		switch cluster.GetCloudProvider() {
-		case api.CloudProviderDO:
-			return defaultDOImageJammy, nil
-		case api.CloudProviderHetzner:
-			return defaultHetznerImageJammy, nil
-		case api.CloudProviderScaleway:
-			return defaultScalewayImageJammy, nil
-		case api.CloudProviderLinode:
-			return defaultLinodeImageJammy, nil
-		case api.CloudProviderMetal:
-			return "dummy-metal-image", nil
-		}
-	} else {
-		switch cluster.GetCloudProvider() {
-		case api.CloudProviderDO:
-			return defaultDOImageNoble, nil
-		case api.CloudProviderHetzner:
-			return defaultHetznerImageNoble, nil
-		case api.CloudProviderScaleway:
-			return defaultScalewayImageNoble, nil
-		case api.CloudProviderLinode:
-			return defaultLinodeImageNoble, nil
-		case api.CloudProviderMetal:
-			return "dummy-metal-image", nil
-		}
+	switch cluster.GetCloudProvider() {
+	case api.CloudProviderDO:
+		return defaultDOImageNoble, nil
+	case api.CloudProviderHetzner:
+		return defaultHetznerImageNoble, nil
+	case api.CloudProviderScaleway:
+		return defaultScalewayImageNoble, nil
+	case api.CloudProviderLinode:
+		return defaultLinodeImageNoble, nil
+	case api.CloudProviderMetal:
+		return "dummy-metal-image", nil
 	}
 
 	return "", fmt.Errorf("unable to determine default image for cloud provider %q and architecture %q", cluster.GetCloudProvider(), architecture)
