@@ -23,7 +23,14 @@ spec:
         name: us-test-1a
       type: Public
   authentication:
-    aws: {}
+    aws:
+      backendMode: CRD
+      clusterID: complex.example.com
+      identityMappings:
+      - arn: arn:aws-test:iam::000000000000:role/AWSReservedSSO_Developer_7de86b085b6056ae
+        groups:
+        - he:dev
+        username: dev:{{SessionNameRaw}}
   authorization:
     rbac: {}
   channel: stable

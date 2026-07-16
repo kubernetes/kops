@@ -91,7 +91,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.12
     manifest: authentication.aws/k8s-1.12.yaml
-    manifestHash: 7233a06582f37d422ad0fd908ff5c23965edff21d81e5888549c9ea9089a8309
+    manifestHash: 22e33f833fccae05f3e7060ea11f4eca26c2a480d8beff874ffda473b6dd0140
     name: authentication.aws
     selector:
       role.kubernetes.io/authentication: "1"
