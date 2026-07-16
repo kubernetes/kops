@@ -375,11 +375,13 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			},
 		}
 		if cluster.Spec.Authentication != nil {
-			config.APIServerConfig.Authentication = cluster.Spec.Authentication
-			if cluster.Spec.Authentication.AWS != nil {
+			// Copy before clearing fields, so that we don't mutate the shared cluster spec.
+			authentication := *cluster.Spec.Authentication
+			if authentication.AWS != nil {
 				// The values go into the manifest and aren't needed by nodeup.
-				config.APIServerConfig.Authentication.AWS = &kops.AWSAuthenticationSpec{}
+				authentication.AWS = &kops.AWSAuthenticationSpec{}
 			}
+			config.APIServerConfig.Authentication = &authentication
 		}
 		if cluster.Spec.API.DNS != nil {
 			config.APIServerConfig.API.DNS = &kops.DNSAccessSpec{}
