@@ -44,9 +44,6 @@ const (
 	EtcdCiliumGRPC                  = 3991
 	EtcdCiliumQuarantinedClientPort = 3992
 
-	// DNSControllerGossipMemberlist is the port where dns-controller listens for the memberlist-backed gossip
-	DNSControllerGossipMemberlist = 3993
-
 	// EtcdMainQuarantinedClientPort is the port used by etcd when quarantined, for the main etcd
 	EtcdMainQuarantinedClientPort = 3994
 
@@ -64,9 +61,6 @@ const (
 
 	// EtcdLeasesGRPC is the GRPC port used by etcd-manager, for the leases etcd
 	EtcdLeasesGRPC = 4006
-
-	// DNSControllerGossipWeaveMesh is the port where dns-controller listens for the weave-mesh backend gossip
-	DNSControllerGossipWeaveMesh = 3998
 
 	// ProtokubeGossipWeaveMesh is the port where protokube listens for the weave-mesh-backed gossip
 	ProtokubeGossipWeaveMesh = 3999
@@ -123,14 +117,6 @@ const (
 type PortRange struct {
 	Min int
 	Max int
-}
-
-func DNSGossipPortRanges() []PortRange {
-	return []PortRange{
-		// 3993 is used by dns-controller, which is less important, so we might be able to drop it
-		{Min: 3993, Max: 3993},
-		{Min: 3998, Max: 4000},
-	}
 }
 
 func ETCDPortRanges() []PortRange {

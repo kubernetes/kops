@@ -416,7 +416,7 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 		if !b.Cluster.UsesNoneDNS() && (b.Cluster.Spec.ExternalDNS == nil || b.Cluster.Spec.ExternalDNS.Provider == kops.ExternalDNSProviderDNSController) {
 			addons.Add(spec)
 
-			// Generate dns-controller ServiceAccount IAM permissions. Gossip and dns=none clusters do
+			// Generate dns-controller ServiceAccount IAM permissions. dns=none clusters do
 			// not require any cloud permissions.
 			if b.UseServiceAccountExternalPermissions() && b.Cluster.PublishesDNSRecords() {
 				serviceAccountRoles = append(serviceAccountRoles, &dnscontroller.ServiceAccount{})

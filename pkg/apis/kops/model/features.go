@@ -38,13 +38,6 @@ func UseChallengeCallback(cloudProvider kops.CloudProviderID) bool {
 	}
 }
 
-// UseKopsControllerForNodeConfig checks if nodeup should use kops-controller to get nodeup.Config.
-// Gossip and None-DNS clusters need a fixed kops-controller endpoint baked into worker boot config,
-// which is exactly what UsesLoadBalancerForKopsController offers.
-func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
-	return !cluster.UsesLegacyGossip() || cluster.UsesLoadBalancerForKopsController()
-}
-
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.
 func UseCiliumEtcd(cluster *kops.Cluster) bool {
 	if cluster.Spec.Networking.Cilium == nil {

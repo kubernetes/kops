@@ -282,7 +282,7 @@ func (b *FirewallModelBuilder) addHTTPSRules(c *fi.CloudupModelBuilderContext, s
 		PortRangeMax: i(443),
 	}
 
-	// Allow all local communication for kubernetes.svc and to the api.internal lb/gossip for kubelet's
+	// Allow all local communication for kubernetes.svc and to the api.internal lb for kubelet's
 	b.addDirectionalGroupRule(c, masterSG, nodeSG, httpsIngress)
 	b.addDirectionalGroupRule(c, masterSG, masterSG, httpsIngress)
 
@@ -602,31 +602,6 @@ func (b *FirewallModelBuilder) addKopsControllerRules(c *fi.CloudupModelBuilderC
 	return nil
 }
 
-// addProtokubeRules - Add rules for protokube if gossip DNS is enabled
-func (b *FirewallModelBuilder) addProtokubeRules(c *fi.CloudupModelBuilderContext, sgMap map[string]*openstacktasks.SecurityGroup) error {
-	if b.Cluster.UsesLegacyGossip() {
-		masterName := b.SecurityGroupName(kops.InstanceGroupRoleControlPlane)
-		nodeName := b.SecurityGroupName(kops.InstanceGroupRoleNode)
-		masterSG := sgMap[masterName]
-		nodeSG := sgMap[nodeName]
-		for _, portRange := range wellknownports.DNSGossipPortRanges() {
-			protokubeRule := &openstacktasks.SecurityGroupRule{
-				Lifecycle:    b.Lifecycle,
-				Direction:    s(string(rules.DirIngress)),
-				Protocol:     s(string(rules.ProtocolTCP)),
-				EtherType:    s(string(rules.EtherType4)),
-				PortRangeMin: i(portRange.Min),
-				PortRangeMax: i(portRange.Max),
-			}
-			b.addDirectionalGroupRule(c, masterSG, nodeSG, protokubeRule)
-			b.addDirectionalGroupRule(c, nodeSG, masterSG, protokubeRule)
-			b.addDirectionalGroupRule(c, masterSG, masterSG, protokubeRule)
-			b.addDirectionalGroupRule(c, nodeSG, nodeSG, protokubeRule)
-		}
-	}
-	return nil
-}
-
 func (b *FirewallModelBuilder) getExistingRules(sgMap map[string]*openstacktasks.SecurityGroup) error {
 	osCloud, err := b.createCloud()
 	if err != nil {
@@ -773,8 +748,6 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	b.addKubeControllerManagerMetricsRules(c, sgMap)
 	// Add kube scheduler metrics Rules
 	b.addKubeSchedulerMetricsRules(c, sgMap)
-	// Protokube Rules
-	b.addProtokubeRules(c, sgMap)
 	// Kops-controller Rules
 	b.addKopsControllerRules(c, sgMap)
 	// Allow necessary local traffic

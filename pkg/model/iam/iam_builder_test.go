@@ -98,7 +98,6 @@ func TestRoundTrip(t *testing.T) {
 
 func TestPolicyGeneration(t *testing.T) {
 	grid := []struct {
-		Gossip                 bool
 		Role                   Subject
 		AllowContainerRegistry bool
 		NLBSecurityGroupMode   *string
@@ -113,18 +112,6 @@ func TestPolicyGeneration(t *testing.T) {
 			Role:                   &NodeRoleMaster{},
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_master_strict_ecr.json",
-		},
-		{
-			Gossip:                 true,
-			Role:                   &NodeRoleMaster{},
-			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_master_gossip.json",
-		},
-		{
-			Gossip:                 true,
-			Role:                   &NodeRoleMaster{},
-			AllowContainerRegistry: true,
-			Policy:                 "tests/iam_builder_master_gossip_ecr.json",
 		},
 		{
 			Role:                   &NodeRoleMaster{},
@@ -143,35 +130,11 @@ func TestPolicyGeneration(t *testing.T) {
 			Policy:                 "tests/iam_builder_node_strict_ecr.json",
 		},
 		{
-			Gossip:                 true,
-			Role:                   &NodeRoleNode{},
-			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_node_gossip.json",
-		},
-		{
-			Gossip:                 true,
-			Role:                   &NodeRoleNode{},
-			AllowContainerRegistry: true,
-			Policy:                 "tests/iam_builder_node_gossip_ecr.json",
-		},
-		{
 			Role:                   &NodeRoleBastion{},
 			AllowContainerRegistry: false,
 			Policy:                 "tests/iam_builder_bastion.json",
 		},
 		{
-			Role:                   &NodeRoleBastion{},
-			AllowContainerRegistry: true,
-			Policy:                 "tests/iam_builder_bastion.json",
-		},
-		{
-			Gossip:                 true,
-			Role:                   &NodeRoleBastion{},
-			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_bastion.json",
-		},
-		{
-			Gossip:                 true,
 			Role:                   &NodeRoleBastion{},
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_bastion.json",
@@ -228,11 +191,7 @@ func TestPolicyGeneration(t *testing.T) {
 			Region:    "us-test-1",
 			Partition: "aws-test",
 		}
-		if x.Gossip {
-			b.Cluster.SetName("iam-builder-test.k8s.local")
-		} else {
-			b.Cluster.SetName("iam-builder-test.nonexistant")
-		}
+		b.Cluster.SetName("iam-builder-test.nonexistant")
 
 		p, err := b.BuildAWSPolicy()
 		if err != nil {

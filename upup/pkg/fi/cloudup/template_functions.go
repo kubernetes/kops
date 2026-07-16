@@ -57,7 +57,6 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components/kopscontroller"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/nodelabels"
@@ -195,16 +194,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 		return cluster.Spec.KubeDNS
 	}
 
-	dest["GossipEnabled"] = func() bool {
-		return cluster.UsesLegacyGossip()
-	}
 	dest["PublishesDNSRecords"] = func() bool {
 		return cluster.PublishesDNSRecords()
 	}
 	dest["ClusterDNSDomain"] = func() string {
-		if cluster.UsesLegacyGossip() {
-			return "k8s.local"
-		}
 		return cluster.Name
 	}
 
@@ -220,7 +213,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 
 	dest["KopsControllerArgv"] = tf.KopsControllerArgv
 	dest["KopsControllerConfig"] = tf.KopsControllerConfig
-	kopscontroller.AddTemplateFunctions(cluster, dest)
 	dest["DnsControllerArgv"] = tf.DNSControllerArgv
 	dest["ExternalDnsArgv"] = tf.ExternalDNSArgv
 	dest["CloudControllerConfigArgv"] = tf.CloudControllerConfigArgv
@@ -771,72 +763,20 @@ func (tf *TemplateFunctions) DNSControllerArgv() ([]string, error) {
 		}
 	}
 
-	if cluster.UsesLegacyGossip() {
-		argv = append(argv, "--dns=gossip")
+	switch cluster.GetCloudProvider() {
+	case kops.CloudProviderAWS:
+		argv = append(argv, "--dns=aws-route53")
+	case kops.CloudProviderGCE:
+		argv = append(argv, "--dns=google-clouddns")
+	case kops.CloudProviderDO:
+		argv = append(argv, "--dns=digitalocean")
+	case kops.CloudProviderOpenstack:
+		argv = append(argv, "--dns=openstack-designate")
+	case kops.CloudProviderScaleway:
+		argv = append(argv, "--dns=scaleway")
 
-		// Configuration specifically for the DNS controller gossip
-		if cluster.Spec.DNSControllerGossipConfig != nil {
-			if cluster.Spec.DNSControllerGossipConfig.Protocol != nil {
-				argv = append(argv, "--gossip-protocol="+*cluster.Spec.DNSControllerGossipConfig.Protocol)
-			}
-			if cluster.Spec.DNSControllerGossipConfig.Listen != nil {
-				argv = append(argv, "--gossip-listen="+*cluster.Spec.DNSControllerGossipConfig.Listen)
-			}
-			if cluster.Spec.DNSControllerGossipConfig.Secret != nil {
-				argv = append(argv, "--gossip-secret="+*cluster.Spec.DNSControllerGossipConfig.Secret)
-			}
-
-			if cluster.Spec.DNSControllerGossipConfig.Seed != nil {
-				argv = append(argv, "--gossip-seed="+*cluster.Spec.DNSControllerGossipConfig.Seed)
-			} else {
-				argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
-			}
-
-			if cluster.Spec.DNSControllerGossipConfig.Secondary != nil {
-				if cluster.Spec.DNSControllerGossipConfig.Secondary.Protocol != nil {
-					argv = append(argv, "--gossip-protocol-secondary="+*cluster.Spec.DNSControllerGossipConfig.Secondary.Protocol)
-				}
-				if cluster.Spec.DNSControllerGossipConfig.Secondary.Listen != nil {
-					argv = append(argv, "--gossip-listen-secondary="+*cluster.Spec.DNSControllerGossipConfig.Secondary.Listen)
-				}
-				if cluster.Spec.DNSControllerGossipConfig.Secondary.Secret != nil {
-					argv = append(argv, "--gossip-secret-secondary="+*cluster.Spec.DNSControllerGossipConfig.Secondary.Secret)
-				}
-
-				if cluster.Spec.DNSControllerGossipConfig.Secondary.Seed != nil {
-					argv = append(argv, "--gossip-seed-secondary="+*cluster.Spec.DNSControllerGossipConfig.Secondary.Seed)
-				} else {
-					argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
-				}
-			}
-		} else {
-			// Default to primary mesh and secondary memberlist
-			argv = append(argv, fmt.Sprintf("--gossip-seed=127.0.0.1:%d", wellknownports.ProtokubeGossipWeaveMesh))
-
-			argv = append(argv, "--gossip-protocol-secondary=memberlist")
-			argv = append(argv, fmt.Sprintf("--gossip-listen-secondary=0.0.0.0:%d", wellknownports.DNSControllerGossipMemberlist))
-			argv = append(argv, fmt.Sprintf("--gossip-seed-secondary=127.0.0.1:%d", wellknownports.ProtokubeGossipMemberlist))
-		}
-	} else {
-		switch cluster.GetCloudProvider() {
-		case kops.CloudProviderAWS:
-			if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
-				argv = append(argv, "--dns=gossip")
-			} else {
-				argv = append(argv, "--dns=aws-route53")
-			}
-		case kops.CloudProviderGCE:
-			argv = append(argv, "--dns=google-clouddns")
-		case kops.CloudProviderDO:
-			argv = append(argv, "--dns=digitalocean")
-		case kops.CloudProviderOpenstack:
-			argv = append(argv, "--dns=openstack-designate")
-		case kops.CloudProviderScaleway:
-			argv = append(argv, "--dns=scaleway")
-
-		default:
-			return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.GetCloudProvider())
-		}
+	default:
+		return nil, fmt.Errorf("unhandled cloudprovider %q", cluster.GetCloudProvider())
 	}
 
 	zone := cluster.Spec.DNSZone
@@ -984,12 +924,6 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 
 	if cluster.Spec.IsKopsControllerIPAM() {
 		config.EnableCloudIPAM = true
-	}
-
-	if cluster.UsesLegacyGossip() {
-		config.Discovery = &kopscontrollerconfig.DiscoveryOptions{
-			Enabled: true,
-		}
 	}
 
 	// To avoid indentation problems, we marshal as json.  json is a subset of yaml

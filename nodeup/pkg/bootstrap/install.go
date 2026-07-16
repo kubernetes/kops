@@ -85,10 +85,6 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 		envVars["AWS_REGION"] = os.Getenv("AWS_REGION")
 	}
 
-	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		envVars["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
-	}
-
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
 		envVars["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")

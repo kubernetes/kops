@@ -83,7 +83,6 @@ func NewLogDumper(bastionAddress string, sshConfig *ssh.ClientConfig, keyRing ag
 		"containerd",
 		"docker",
 		"kops-configuration",
-		"protokube",
 	}
 	d.files = []string{
 		"kops-controller",

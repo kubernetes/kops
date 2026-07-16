@@ -373,7 +373,7 @@ func NewOpenstackCloud(cluster *kops.Cluster, uagent string) (OpenstackCloud, er
 		}
 		return buildClients(provider, tags, cluster.Spec.CloudProvider.Openstack, config, region, hasDNS)
 	}
-	// used by protokube
+	// used when no cluster is available
 	return buildClients(provider, nil, nil, config, region, false)
 }
 

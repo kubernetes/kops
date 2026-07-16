@@ -211,11 +211,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		kubemanifest.AddHostPathMapping(pod, container, "ssl-certs-hosts", "/usr/share/ca-certificates", kubemanifest.WithMountPath("/etc/ssl/certs"))
 	}
 
-	if b.UsesLegacyGossip() {
-		// Map /etc/hosts from host, so that we see the updates that are made by protokube
-		kubemanifest.AddHostPathMapping(pod, container, "etchosts", "/etc/hosts")
-	}
-
 	// Mount the iptables lock file
 	{
 		kubemanifest.AddHostPathMapping(pod, container, "iptableslock", "/run/xtables.lock", kubemanifest.WithReadWrite())

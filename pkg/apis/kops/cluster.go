@@ -64,7 +64,8 @@ type ClusterSpec struct {
 	ConfigStore ConfigStoreSpec `json:"configStore"`
 	// CloudProvider configures the cloud provider to use.
 	CloudProvider CloudProviderSpec `json:"cloudProvider,omitempty"`
-	// GossipConfig for the cluster assuming the use of gossip DNS
+	// GossipConfig has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+	// Deprecated: remove this field from the cluster spec.
 	GossipConfig *GossipConfig `json:"gossipConfig,omitempty"`
 	// ContainerRuntime was removed.
 	ContainerRuntime string `json:"-"`
@@ -77,7 +78,8 @@ type ClusterSpec struct {
 	// Note that DNSZone can either by the host name of the zone (containing dots),
 	// or can be an identifier for the zone.
 	DNSZone string `json:"dnsZone,omitempty"`
-	// DNSControllerGossipConfig for the cluster assuming the use of gossip DNS
+	// DNSControllerGossipConfig has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+	// Deprecated: remove this field from the cluster spec.
 	DNSControllerGossipConfig *DNSControllerGossipConfig `json:"dnsControllerGossipConfig,omitempty"`
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
@@ -980,22 +982,10 @@ func (c *Cluster) UsesNoneDNS() bool {
 }
 
 // UsesLoadBalancerForKopsController returns true when worker nodes reach kops-controller
-// via the cluster load balancer rather than via gossip-populated /etc/hosts. True for all
-// None-DNS clusters, and for gossip clusters whose API load balancer can host the
-// kops-controller listener.
+// via the cluster load balancer rather than via DNS. True for all None-DNS clusters.
+// Note that clusters with none DNS topology may not have c.Spec.API.LoadBalancer set (see Hetzner).
 func (c *Cluster) UsesLoadBalancerForKopsController() bool {
-	if c.UsesNoneDNS() {
-		// Clusters with none DNS topology may not have c.Spec.API.LoadBalancer set (see Hetzner)
-		return true
-	}
-	if c.UsesPublicDNS() || c.UsesPrivateDNS() || c.Spec.API.LoadBalancer == nil {
-		return false
-	}
-	if c.GetCloudProvider() == CloudProviderAWS {
-		// NLB-only, the kops-controller target group requires a Network Load Balancer.
-		return c.Spec.API.LoadBalancer.Class == LoadBalancerClassNetwork
-	}
-	return true
+	return c.UsesNoneDNS()
 }
 
 func (c *Cluster) InstallCNIAssets() bool {
@@ -1082,6 +1072,8 @@ type EnvVar struct {
 	Value string `json:"value,omitempty"`
 }
 
+// GossipConfig has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+// Deprecated: remove this field from the cluster spec.
 type GossipConfig struct {
 	Protocol  *string                `json:"protocol,omitempty"`
 	Listen    *string                `json:"listen,omitempty"`
@@ -1089,12 +1081,16 @@ type GossipConfig struct {
 	Secondary *GossipConfigSecondary `json:"secondary,omitempty"`
 }
 
+// GossipConfigSecondary has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+// Deprecated: remove this field from the cluster spec.
 type GossipConfigSecondary struct {
 	Protocol *string `json:"protocol,omitempty"`
 	Listen   *string `json:"listen,omitempty"`
 	Secret   *string `json:"secret,omitempty"`
 }
 
+// DNSControllerGossipConfig has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+// Deprecated: remove this field from the cluster spec.
 type DNSControllerGossipConfig struct {
 	Protocol  *string                             `json:"protocol,omitempty"`
 	Listen    *string                             `json:"listen,omitempty"`
@@ -1103,6 +1099,8 @@ type DNSControllerGossipConfig struct {
 	Seed      *string                             `json:"seed,omitempty"`
 }
 
+// DNSControllerGossipConfigSecondary has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+// Deprecated: remove this field from the cluster spec.
 type DNSControllerGossipConfigSecondary struct {
 	Protocol *string `json:"protocol,omitempty"`
 	Listen   *string `json:"listen,omitempty"`

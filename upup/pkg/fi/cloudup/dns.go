@@ -132,7 +132,7 @@ func precreateDNS(ctx context.Context, cluster *kops.Cluster, cloud fi.Cloud) er
 	// This avoids hitting negative TTL on DNS lookups, which tend to be very long
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
-	// Nothing to do for Gossip clusters and clusters without DNS
+	// Nothing to do for clusters without DNS
 	if !cluster.PublishesDNSRecords() {
 		return nil
 	}

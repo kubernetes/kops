@@ -246,7 +246,7 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		SourceApplicationSecurityGroupNames:      []*string{new(b.NameForApplicationSecurityGroupNodes())},
 		SourcePortRange:                          new("*"),
 		DestinationApplicationSecurityGroupNames: []*string{new(b.NameForApplicationSecurityGroupControlPlane())},
-		DestinationPortRange:                     new(strconv.Itoa(wellknownports.ProtokubeGossipMemberlist) + "-" + strconv.Itoa(wellknownports.EtcdMainClientPort)),
+		DestinationPortRange:                     new(strconv.Itoa(wellknownports.EtcdMainClientPort)),
 	})
 	nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 		Name:                                     new("AllowNodesToControlPlane"),
