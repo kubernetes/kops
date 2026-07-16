@@ -72,7 +72,7 @@ somewhere to build the required DNS records.  There are three scenarios
 below and you should choose the one that most closely matches your AWS
 situation.
 
-Note: if you want to use [gossip-based DNS](../gossip.md), you can skip this section.
+Note: if you want to use `--dns=none`, you can skip this section.
 
 ### Scenario 1a: A Domain purchased/hosted via AWS
 
@@ -203,7 +203,7 @@ kops create cluster --dns private --dns-zone ZABCDEFG $NAME
 
 ## Testing your DNS setup
 
-This section is not required if a gossip-based cluster is created.
+This section is not required if the cluster is created with `--dns=none`.
 
 You should now be able to dig your domain (or subdomain) and see the AWS Name
 Servers on the other end.
@@ -226,7 +226,7 @@ This is a critical component when setting up clusters. If you are experiencing
 problems with the Kubernetes API not coming up, chances are something is wrong
 with the cluster's DNS.
 
-**Please DO NOT MOVE ON until you have validated your NS records! This is not required if a gossip-based cluster is created.**
+**Please DO NOT MOVE ON until you have validated your NS records! This is not required if the cluster is created with `--dns=none`.**
 
 ## Cluster State store
 
@@ -316,7 +316,7 @@ export NAME=myfirstcluster.example.com
 export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
 
-For a gossip-based cluster, make sure the name ends with `k8s.local`. For example:
+For a cluster using `--dns=none`, a name ending with `k8s.local` avoids the need for a registered domain. For example:
 
 ```bash
 export NAME=myfirstcluster.k8s.local
