@@ -85,6 +85,14 @@ func newValidateCluster(cluster *kops.Cluster, strict bool) field.ErrorList {
 func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *field.Path, strict bool) field.ErrorList {
 	allErrs, providerConstraints := validateCloudProvider(c, &spec.CloudProvider, fieldPath.Child("cloudProvider"))
 
+	// Gossip DNS support was removed in kOps 1.37
+	if spec.GossipConfig != nil {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("gossipConfig"), "gossip DNS support was removed in kOps 1.37; remove this field from the cluster spec"))
+	}
+	if spec.DNSControllerGossipConfig != nil {
+		allErrs = append(allErrs, field.Forbidden(fieldPath.Child("dnsControllerGossipConfig"), "gossip DNS support was removed in kOps 1.37; remove this field from the cluster spec"))
+	}
+
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
 		if strings.HasPrefix(cidr, "pl-") {
@@ -560,22 +568,21 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 
 func validateCloudDNSTopology(c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	type dnsTopologies struct {
-		gossip  bool // protokube has a seed mechanism
 		none    bool // api server and kops-controller have a stable address
 		public  bool // dns-controller/external-dns provider exists
 		private bool // private-zone exists
 	}
 
 	var cloudDNSTopologies = map[kops.CloudProviderID]dnsTopologies{
-		kops.CloudProviderAWS:       {none: true, gossip: true, public: true, private: true},
-		kops.CloudProviderAzure:     {none: true, gossip: true},
-		kops.CloudProviderDO:        {none: true, gossip: true, public: true},
-		kops.CloudProviderGCE:       {none: true, gossip: true, public: true, private: true},
-		kops.CloudProviderHetzner:   {none: true, gossip: true},
+		kops.CloudProviderAWS:       {none: true, public: true, private: true},
+		kops.CloudProviderAzure:     {none: true},
+		kops.CloudProviderDO:        {none: true, public: true},
+		kops.CloudProviderGCE:       {none: true, public: true, private: true},
+		kops.CloudProviderHetzner:   {none: true},
 		kops.CloudProviderLinode:    {none: true},
 		kops.CloudProviderMetal:     {none: true},
-		kops.CloudProviderOpenstack: {none: true, gossip: true, public: true, private: true},
-		kops.CloudProviderScaleway:  {none: true, gossip: true, public: true},
+		kops.CloudProviderOpenstack: {none: true, public: true, private: true},
+		kops.CloudProviderScaleway:  {none: true, public: true},
 	}
 
 	cloud := c.GetCloudProvider()
@@ -587,11 +594,8 @@ func validateCloudDNSTopology(c *kops.Cluster, fieldPath *field.Path) field.Erro
 
 	switch {
 	case c.UsesLegacyGossip():
-		if !topologies.gossip {
-			return field.ErrorList{field.Forbidden(fieldPath,
-				fmt.Sprintf("cloud provider %q does not support gossip dns topology", cloud))}
-		}
-		return nil
+		return field.ErrorList{field.Forbidden(fieldPath,
+			"gossip DNS support was removed in kOps 1.37; migrate the cluster to dns=none or a hosted DNS zone using kOps 1.36 before upgrading (see https://kops.sigs.k8s.io/gossip/)")}
 	case c.UsesNoneDNS():
 		if !topologies.none {
 			return field.ErrorList{field.Forbidden(fieldPath,
@@ -2073,7 +2077,7 @@ func validateExternalDNS(cluster *kops.Cluster, spec *kops.ExternalDNSConfig, fl
 	}
 
 	if spec.Provider == kops.ExternalDNSProviderExternalDNS {
-		if cluster.UsesLegacyGossip() || cluster.UsesNoneDNS() {
+		if cluster.UsesNoneDNS() {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("provider"), "external-dns requires public or private DNS topology"))
 		}
 	}
