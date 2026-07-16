@@ -126,7 +126,7 @@ ClusterName: many-addons.example.com
 ConfigBase: memfs://tests/many-addons.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: SIOiWbqoNmCO9TckQaIrC9+17zaNxPW+KTE0aOok0z8=
+NodeupConfigHash: gD76EaB53GmGbiRfLB6mibREdIToSoPLI6H0tjFwK5E=
 
 __EOF_KUBE_ENV
 

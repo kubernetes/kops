@@ -58,5 +58,4 @@ containerdConfig:
   version: 2.2.4
 multizone: true
 nodeTags: minimal-gce-example-com-k8s-io-role-node
-usesLegacyGossip: false
 usesNoneDNS: false

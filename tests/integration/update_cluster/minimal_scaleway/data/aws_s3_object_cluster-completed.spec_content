@@ -44,8 +44,6 @@ spec:
     memoryRequest: 100Mi
     name: events
     version: 3.5.31
-  externalDns:
-    provider: dns-controller
   iam:
     allowContainerRegistry: true
     legacy: false
@@ -219,4 +217,4 @@ spec:
     zone: fr-par-1
   topology:
     dns:
-      type: Private
+      type: None

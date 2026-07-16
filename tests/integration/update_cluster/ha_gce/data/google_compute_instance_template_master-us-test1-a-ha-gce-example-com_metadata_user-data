@@ -126,7 +126,7 @@ ClusterName: ha-gce.example.com
 ConfigBase: memfs://tests/ha-gce.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: SiZHOkoborK2W564ymzzs3xqWfsqqbkie+zLu2plsag=
+NodeupConfigHash: 86tVRKBSfyZ5KmWnzZ2utKmSogj81VMdktu916/EzKc=
 
 __EOF_KUBE_ENV
 

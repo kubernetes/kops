@@ -358,7 +358,7 @@ resource "azurerm_network_security_group" "minimal-azure-example-com" {
   security_rule {
     access                                     = "Deny"
     destination_application_security_group_ids = [azurerm_application_security_group.control-plane-minimal-azure-example-com.id]
-    destination_port_range                     = "4000-4001"
+    destination_port_range                     = "4001"
     direction                                  = "Inbound"
     name                                       = "DenyNodesToEtcd"
     priority                                   = 1004
