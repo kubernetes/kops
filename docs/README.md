@@ -112,7 +112,6 @@ For a better viewing experience please check out our live documentation site at 
 * [Hack Directory](contributing/hack.md)
 * [How to update `kops` API](contributing/api_updates.md)
 * [Low level description on how kops works](contributing/how_it_works.md)
-* [Notes on Gossip design](contributing/gossip.md)
 * [Notes on master instance sizing](contributing/instancesizes.md)
 * [Our release process](contributing/release-process.md)
 * [Releasing with Homebrew](contributing/homebrew.md)
