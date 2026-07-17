@@ -1500,6 +1500,41 @@ spec:
     containerProxy: proxy.example.com
 ```
 
+### fileRepository with an OCI registry (Azure only)
+
+On Azure, `fileRepository` may be an `oci://` URL pointing at an Azure Container Registry.
+File assets (including nodeup) are then stored in the registry as OCI artifacts and downloaded
+by nodes using their managed identity, so no public file server is needed. Combined with `containerRegistry` pointing at the same registry, all of
+the cluster's assets are served from one private registry.
+
+With `managed: true`, kOps creates and manages the registry (Basic SKU) in the cluster's
+resource group, grants the instances `AcrPull`, and pushes the file and image assets during
+`kops update cluster`. `kops delete cluster` deletes the registry with the rest of the cluster
+resources. Without `managed`, the registry must already exist and instances must be granted
+pull access.
+
+```yaml
+spec:
+  assets:
+    managed: true
+```
+
+When `fileRepository` and `containerRegistry` are not set, they default to a registry name
+derived from the subscription ID and the cluster name (registry names are global, so the
+cluster name alone would not be unique). The derived values are visible with
+`kops get cluster -o yaml --full`. Both locations can also be set explicitly:
+
+```yaml
+spec:
+  assets:
+    containerRegistry: myregistry.azurecr.io
+    fileRepository: oci://myregistry.azurecr.io/assets
+    managed: true
+```
+
+With the `terraform` target the assets are not pushed during `kops update cluster`; run
+`kops get assets --copy` after `terraform apply` instead.
+
 ## sysctlParameters
 {{ kops_feature_table(kops_added_default='1.17') }}
 
