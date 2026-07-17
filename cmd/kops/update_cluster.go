@@ -35,6 +35,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	apisutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/assets/assetcopy"
 	"k8s.io/kops/pkg/commands/commandutils"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/predicates"
@@ -379,6 +380,7 @@ func RunUpdateCluster(ctx context.Context, f *util.Factory, out io.Writer, c *Up
 		GetAssets:                  c.GetAssets,
 		DeletionProcessing:         deletionProcessing,
 		ControlPlaneRunningVersion: minControlPlaneRunningVersion,
+		PushAssets:                 assetcopy.Copy,
 	}
 
 	applyResults, err := applyCmd.Run(ctx)

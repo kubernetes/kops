@@ -32,6 +32,8 @@ type CopyImage struct {
 	Name        string
 	SourceImage string
 	TargetImage string
+	// Keychain overrides the default keychain used to authenticate to registries.
+	Keychain authn.Keychain
 }
 
 func (e *CopyImage) Run() error {
@@ -48,7 +50,11 @@ func (e *CopyImage) Run() error {
 		return fmt.Errorf("parsing reference for %q: %v", target, err)
 	}
 
-	options := []remote.Option{remote.WithAuthFromKeychain(authn.DefaultKeychain)}
+	keychain := e.Keychain
+	if keychain == nil {
+		keychain = authn.DefaultKeychain
+	}
+	options := []remote.Option{remote.WithAuthFromKeychain(keychain)}
 
 	desc, err := remote.Get(sourceRef, options...)
 	if err != nil {
