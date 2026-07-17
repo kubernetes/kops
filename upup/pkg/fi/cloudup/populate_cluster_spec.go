@@ -305,6 +305,7 @@ func (c *populateClusterSpec) run(ctx context.Context, clientset simple.Clientse
 		{
 			// Note: DefaultOptionsBuilder comes first
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.AssetsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.EtcdOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &etcdmanager.EtcdManagerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
