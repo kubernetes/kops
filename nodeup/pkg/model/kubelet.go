@@ -224,6 +224,10 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 			if err := b.addECRCredentialProvider(c); err != nil {
 				return fmt.Errorf("failed to add the %s kubelet credential provider: %w", b.CloudProvider(), err)
 			}
+		case kops.CloudProviderAzure:
+			if err := b.addACRCredentialProvider(c); err != nil {
+				return fmt.Errorf("failed to add the %s kubelet credential provider: %w", b.CloudProvider(), err)
+			}
 		}
 	}
 
@@ -441,6 +445,12 @@ func (b *KubeletBuilder) getECRCredentialProviderPath() string {
 // getGCPCredentialProviderPath returns the path of the GCP Credentials Provider based on distro and archiecture
 func (b *KubeletBuilder) getGCPCredentialProviderPath() string {
 	return b.binaryPath() + "/gcp-credential-provider"
+}
+
+// getACRCredentialProviderPath returns the path of the ACR Credentials Provider based on distro and archiecture
+func (b *KubeletBuilder) getACRCredentialProviderPath() string {
+	// The binary name must match the provider name in the CredentialProviderConfig.
+	return b.binaryPath() + "/acr-credential-provider"
 }
 
 // buildManifestDirectory creates the directory where kubelet expects static manifests to reside
@@ -718,6 +728,74 @@ providers:
     args:
       - get-credentials
       - --v=3
+`
+
+		t := &nodetasks.File{
+			Path:     credentialProviderConfigFilePath,
+			Contents: fi.NewStringResource(configContent),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0644"),
+		}
+		c.AddTask(t)
+	}
+	return nil
+}
+
+// addACRCredentialProvider installs the Azure Container Registry Kubelet Credential Provider
+func (b *KubeletBuilder) addACRCredentialProvider(c *fi.NodeupModelBuilderContext) error {
+	azureConfigFilePath := "/etc/kubernetes/azure.json"
+
+	{
+		assetName := "azure-acr-credential-provider-linux-" + string(b.Architecture)
+		assetPath := ""
+		asset, err := b.Assets.Find(assetName, assetPath)
+		if err != nil {
+			return fmt.Errorf("trying to locate asset %q: %v", assetName, err)
+		}
+		if asset == nil {
+			return fmt.Errorf("unable to locate asset %q", assetName)
+		}
+
+		t := &nodetasks.File{
+			Path:     b.getACRCredentialProviderPath(),
+			Contents: asset,
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		}
+		c.AddTask(t)
+	}
+
+	{
+		// The credential provider authenticates with the instance's managed identity;
+		// kOps Azure nodes have no other cloud config file, so write a minimal one.
+		azureConfig := `{
+  "cloud": "AzurePublicCloud",
+  "useManagedIdentityExtension": true
+}
+`
+		t := &nodetasks.File{
+			Path:     azureConfigFilePath,
+			Contents: fi.NewStringResource(azureConfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0644"),
+		}
+		c.AddTask(t)
+	}
+
+	{
+		configContent := `apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - apiVersion: credentialprovider.kubelet.k8s.io/v1
+    name: acr-credential-provider
+    matchImages:
+      - "*.azurecr.io"
+      - "*.azurecr.cn"
+      - "*.azurecr.de"
+      - "*.azurecr.us"
+    defaultCacheDuration: "10m"
+    args:
+      - ` + azureConfigFilePath + `
 `
 
 		t := &nodetasks.File{

@@ -263,6 +263,11 @@ func (in *AssetsSpec) DeepCopyInto(out *AssetsSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Managed != nil {
+		in, out := &in.Managed, &out.Managed
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

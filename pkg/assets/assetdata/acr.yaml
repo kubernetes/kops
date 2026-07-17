@@ -1,0 +1,10 @@
+filestores:
+- base: https://github.com/kubernetes-sigs/cloud-provider-azure/releases/download/
+
+# Manually constructed; the release does not publish .sha256 files
+
+files:
+- name: v1.34.12/azure-acr-credential-provider-linux-amd64
+  sha256: 2b850ca871d30e770b74dfc72e3dddf5bb2ce5a2760415c394536138e678a841
+- name: v1.34.12/azure-acr-credential-provider-linux-arm64
+  sha256: b7888e370397d3ad61ecb39d42bf196ccacb0ccf806fca8447afb74f589d0248

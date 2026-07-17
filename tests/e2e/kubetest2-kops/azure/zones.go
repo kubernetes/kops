@@ -23,7 +23,7 @@ import (
 var allZones = []string{
 	"uksouth-1",
 	"uksouth-2",
-	"uksouth-3",
+	// uksouth-3 has no capacity for the tested VM sizes
 }
 
 // RandomZones returns a random set of availability zones within a region

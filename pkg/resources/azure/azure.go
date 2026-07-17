@@ -46,6 +46,7 @@ const (
 	typeLoadBalancer             = "LoadBalancer"
 	typePublicIPAddress          = "PublicIPAddress"
 	typeNatGateway               = "NatGateway"
+	typeContainerRegistry        = "ContainerRegistry"
 )
 
 // ListResourcesAzure lists all resources for the cluster by quering Azure.
@@ -110,6 +111,7 @@ func (g *resourceGetter) listAll() ([]*resources.Resource, error) {
 		g.listLoadBalancers,
 		g.listPublicIPAddresses,
 		g.listNatGateways,
+		g.listContainerRegistries,
 	}
 
 	var resources []*resources.Resource
@@ -777,6 +779,33 @@ func (g *resourceGetter) toNatGatewayResource(natGateway *network.NatGateway) (*
 
 func (g *resourceGetter) deleteNatGateway(_ fi.Cloud, r *resources.Resource) error {
 	return g.cloud.NatGateway().Delete(context.TODO(), g.resourceGroupName(), r.Name)
+}
+
+func (g *resourceGetter) listContainerRegistries(ctx context.Context) ([]*resources.Resource, error) {
+	registries, err := g.cloud.ContainerRegistry().List(ctx, g.resourceGroupName())
+	if err != nil {
+		return nil, err
+	}
+
+	var rs []*resources.Resource
+	for _, registry := range registries {
+		if !g.isOwnedByCluster(registry.Tags) {
+			continue
+		}
+		rs = append(rs, &resources.Resource{
+			Obj:     registry,
+			Type:    typeContainerRegistry,
+			ID:      *registry.ID,
+			Name:    *registry.Name,
+			Deleter: g.deleteContainerRegistry,
+			Blocks:  []string{toKey(typeResourceGroup, g.resourceGroupID())},
+		})
+	}
+	return rs, nil
+}
+
+func (g *resourceGetter) deleteContainerRegistry(_ fi.Cloud, r *resources.Resource) error {
+	return g.cloud.ContainerRegistry().Delete(context.TODO(), g.resourceGroupName(), r.Name)
 }
 
 // isOwnedByCluster returns true if the resource is owned by the cluster.

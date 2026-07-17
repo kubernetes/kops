@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/google/go-containerregistry/pkg/authn"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -37,12 +38,24 @@ type assetTask interface {
 func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, vfsContext *vfs.VFSContext, cluster *kops.Cluster) error {
 	tasks := map[string]assetTask{}
 
+	// Azure Container Registries are authenticated with the Azure credential;
+	// other registries use the default (docker config) keychain.
+	var keychain authn.Keychain = authn.DefaultKeychain
+	if cluster.GetCloudProvider() == kops.CloudProviderAzure {
+		acr, err := NewACRKeychain()
+		if err != nil {
+			return err
+		}
+		keychain = authn.NewMultiKeychain(acr, authn.DefaultKeychain)
+	}
+
 	for _, imageAsset := range imageAssets {
 		if imageAsset.DownloadLocation != imageAsset.CanonicalLocation {
 			copyImageTask := &CopyImage{
 				Name:        imageAsset.DownloadLocation,
 				SourceImage: imageAsset.CanonicalLocation,
 				TargetImage: imageAsset.DownloadLocation,
+				Keychain:    keychain,
 			}
 
 			if existing, ok := tasks[copyImageTask.Name]; ok {
@@ -57,6 +70,33 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, vfsC
 
 	for _, fileAsset := range fileAssets {
 		if fileAsset.DownloadURL.String() != fileAsset.CanonicalURL.String() {
+			if fileAsset.DownloadURL.Scheme == "oci" {
+				copyFileTask := &CopyFileToOCI{
+					Name:       fileAsset.CanonicalURL.String(),
+					TargetRef:  fileAsset.DownloadURL.String(),
+					SourceFile: fileAsset.CanonicalURL.String(),
+					SHA:        fileAsset.SHAValue.Hex(),
+					VFSContext: vfsContext,
+					Keychain:   keychain,
+				}
+
+				if existing, ok := tasks[copyFileTask.Name]; ok {
+					e, ok := existing.(*CopyFileToOCI)
+					if !ok {
+						return fmt.Errorf("different types for copy target %s", copyFileTask.Name)
+					}
+					if e.TargetRef != copyFileTask.TargetRef {
+						return fmt.Errorf("different targets for same file %s: %s vs %s", copyFileTask.Name, copyFileTask.TargetRef, e.TargetRef)
+					}
+					if e.SHA != copyFileTask.SHA {
+						return fmt.Errorf("different sha for same file %s: %s vs %s", copyFileTask.Name, copyFileTask.SHA, e.SHA)
+					}
+				}
+
+				tasks[copyFileTask.Name] = copyFileTask
+				continue
+			}
+
 			copyFileTask := &CopyFile{
 				Name:       fileAsset.CanonicalURL.String(),
 				TargetFile: fileAsset.DownloadURL.String(),

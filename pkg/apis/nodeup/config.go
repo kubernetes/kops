@@ -73,6 +73,10 @@ type Config struct {
 	Networking kops.NetworkingSpec
 	// InstallCNIAssets specifies that the CNI network plugins need to be installed.
 	InstallCNIAssets bool `json:",omitempty"`
+	// UseACRCredentialProvider enables the kubelet image credential provider for
+	// Azure Container Registry, used when the cluster's assets are served from a
+	// private registry.
+	UseACRCredentialProvider bool `json:",omitempty"`
 	// UseCiliumEtcd is true when a Cilium etcd cluster is present.
 	UseCiliumEtcd bool `json:",omitempty"`
 	// UsesKubenet specifies that the CNI is derived from Kubenet.
@@ -299,6 +303,9 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 	if cluster.Spec.CloudProvider.Azure != nil {
 		config.Networking.NetworkID = cluster.Spec.Networking.NetworkID
 		config.AzureAdminUser = cluster.Spec.CloudProvider.Azure.AdminUser
+		if cluster.Spec.OCIAssetRegistryHost() != "" {
+			config.UseACRCredentialProvider = true
+		}
 	}
 
 	if cluster.Spec.CloudProvider.GCE != nil {

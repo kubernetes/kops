@@ -176,6 +176,11 @@ spec:
                     description: FileRepository is the url for a private file serving
                       repository
                     type: string
+                  managed:
+                    description: |-
+                      Managed requests that kOps create and manage the registry holding the
+                      cluster's file and image assets, as part of the cluster's cloud resources.
+                    type: boolean
                 type: object
               authentication:
                 description: Authentication field controls how the cluster is configured

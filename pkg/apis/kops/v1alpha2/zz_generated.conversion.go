@@ -1631,6 +1631,7 @@ func autoConvert_v1alpha2_AssetsSpec_To_kops_AssetsSpec(in *AssetsSpec, out *kop
 	out.ContainerRegistry = in.ContainerRegistry
 	out.FileRepository = in.FileRepository
 	out.ContainerProxy = in.ContainerProxy
+	out.Managed = in.Managed
 	return nil
 }
 
@@ -1643,6 +1644,7 @@ func autoConvert_kops_AssetsSpec_To_v1alpha2_AssetsSpec(in *kops.AssetsSpec, out
 	out.ContainerRegistry = in.ContainerRegistry
 	out.FileRepository = in.FileRepository
 	out.ContainerProxy = in.ContainerProxy
+	out.Managed = in.Managed
 	return nil
 }
 

@@ -341,6 +341,9 @@ type AssetsSpec struct {
 	FileRepository *string `json:"fileRepository,omitempty"`
 	// ContainerProxy is a url for a pull-through proxy of a docker registry
 	ContainerProxy *string `json:"containerProxy,omitempty"`
+	// Managed requests that kOps create and manage the registry holding the
+	// cluster's file and image assets, as part of the cluster's cloud resources.
+	Managed *bool `json:"managed,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources

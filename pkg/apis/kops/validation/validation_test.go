@@ -2239,9 +2239,113 @@ func TestValidateFileRepository(t *testing.T) {
 			Input:          "https://",
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},
+		{
+			Input: "oci://myregistry.azurecr.io/assets",
+		},
+	}
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				Azure: &kops.AzureSpec{},
+			},
+		},
 	}
 	for _, g := range grid {
-		errs := validateFileRepository(g.Input, field.NewPath("spec", "assets", "fileRepository"))
+		errs := validateFileRepository(cluster, g.Input, field.NewPath("spec", "assets", "fileRepository"))
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
+
+	// oci:// is only supported on Azure.
+	awsCluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				AWS: &kops.AWSSpec{},
+			},
+		},
+	}
+	errs := validateFileRepository(awsCluster, "oci://myregistry.azurecr.io/assets", field.NewPath("spec", "assets", "fileRepository"))
+	testErrors(t, "oci on AWS", errs, []string{"Forbidden::spec.assets.fileRepository"})
+
+	// managed assets are only supported on Azure.
+	errs = validateAssetsRegistry(awsCluster, &kops.AssetsSpec{
+		FileRepository: ptr.To("oci://myregistry.azurecr.io/assets"),
+		Managed:        ptr.To(true),
+	}, field.NewPath("spec", "assets"), true)
+	testErrors(t, "managed on AWS", errs, []string{"Forbidden::spec.assets.managed"})
+}
+
+func TestValidateAssetsRegistry(t *testing.T) {
+	grid := []struct {
+		Name           string
+		Assets         kops.AssetsSpec
+		ExpectedErrors []string
+	}{
+		{
+			Name: "valid managed assets",
+			Assets: kops.AssetsSpec{
+				FileRepository:    ptr.To("oci://myregistry.azurecr.io/assets"),
+				ContainerRegistry: ptr.To("myregistry.azurecr.io"),
+				Managed:           ptr.To(true),
+			},
+		},
+		{
+			Name: "managed without fileRepository",
+			Assets: kops.AssetsSpec{
+				Managed: ptr.To(true),
+			},
+			ExpectedErrors: []string{"Forbidden::spec.assets.managed"},
+		},
+		{
+			Name: "managed with an http fileRepository",
+			Assets: kops.AssetsSpec{
+				FileRepository: ptr.To("https://example.com/files"),
+				Managed:        ptr.To(true),
+			},
+			ExpectedErrors: []string{"Forbidden::spec.assets.managed"},
+		},
+		{
+			Name: "managed with a non-ACR registry",
+			Assets: kops.AssetsSpec{
+				FileRepository: ptr.To("oci://registry.example.com/assets"),
+				Managed:        ptr.To(true),
+			},
+			ExpectedErrors: []string{"Forbidden::spec.assets.managed"},
+		},
+		{
+			Name: "invalid registry name",
+			Assets: kops.AssetsSpec{
+				FileRepository: ptr.To("oci://my-registry.azurecr.io/assets"),
+				Managed:        ptr.To(true),
+			},
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Name: "containerRegistry host mismatch",
+			Assets: kops.AssetsSpec{
+				FileRepository:    ptr.To("oci://myregistry.azurecr.io/assets"),
+				ContainerRegistry: ptr.To("other.azurecr.io"),
+				Managed:           ptr.To(true),
+			},
+			ExpectedErrors: []string{"Invalid value::spec.assets.containerRegistry"},
+		},
+	}
+
+	cluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				Azure: &kops.AzureSpec{},
+			},
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.Name, func(t *testing.T) {
+			errs := validateAssetsRegistry(cluster, &g.Assets, field.NewPath("spec", "assets"), true)
+			testErrors(t, g.Name, errs, g.ExpectedErrors)
+		})
+	}
+
+	// The input cluster is validated before the fileRepository is defaulted
+	// during cluster completion, so managed alone is valid when not strict.
+	errsNotStrict := validateAssetsRegistry(cluster, &kops.AssetsSpec{Managed: ptr.To(true)}, field.NewPath("spec", "assets"), false)
+	testErrors(t, "managed without fileRepository, not strict", errsNotStrict, nil)
 }

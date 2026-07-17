@@ -230,8 +230,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("assets", "containerProxy"), "containerProxy cannot be used in conjunction with containerRegistry"))
 		}
 		if spec.Assets.FileRepository != nil {
-			allErrs = append(allErrs, validateFileRepository(*spec.Assets.FileRepository, fieldPath.Child("assets", "fileRepository"))...)
+			allErrs = append(allErrs, validateFileRepository(c, *spec.Assets.FileRepository, fieldPath.Child("assets", "fileRepository"))...)
 		}
+		allErrs = append(allErrs, validateAssetsRegistry(c, spec.Assets, fieldPath.Child("assets"), strict)...)
 	}
 
 	for i, sysctlParameter := range spec.SysctlParameters {
@@ -781,7 +782,7 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	return allErrs
 }
 
-func validateFileRepository(s string, fieldPath *field.Path) field.ErrorList {
+func validateFileRepository(cluster *kops.Cluster, s string, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	u, err := url.Parse(s)
@@ -789,11 +790,61 @@ func validateFileRepository(s string, fieldPath *field.Path) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("cannot parse fileRepository URL: %v", err)))
 		return allErrs
 	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http:// or https:// URL"))
+	switch u.Scheme {
+	case "http", "https":
+	case "oci":
+		if cluster.GetCloudProvider() != kops.CloudProviderAzure {
+			allErrs = append(allErrs, field.Forbidden(fieldPath, "an oci:// fileRepository is only supported on Azure"))
+		}
+	default:
+		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https:// or oci:// URL"))
 	}
 	if u.Host == "" {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must include a host"))
+	}
+
+	return allErrs
+}
+
+// acrRegistryNameRegexp matches valid Azure Container Registry names (the <name> in <name>.azurecr.io).
+var acrRegistryNameRegexp = regexp.MustCompile(`^[a-zA-Z0-9]{5,50}$`)
+
+// validateAssetsRegistry validates the OCI registry aspects of the assets spec:
+// the managed field and the consistency between fileRepository and containerRegistry.
+func validateAssetsRegistry(cluster *kops.Cluster, assets *kops.AssetsSpec, fieldPath *field.Path, strict bool) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	var ociHost string
+	if assets.FileRepository != nil {
+		if u, err := url.Parse(*assets.FileRepository); err == nil && u.Scheme == "oci" {
+			ociHost = u.Host
+		}
+	}
+
+	if ociHost != "" && assets.ContainerRegistry != nil {
+		registryHost, _, _ := strings.Cut(*assets.ContainerRegistry, "/")
+		if registryHost != ociHost {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("containerRegistry"), *assets.ContainerRegistry, fmt.Sprintf("containerRegistry host must match the oci:// fileRepository host %q", ociHost)))
+		}
+	}
+
+	if assets.Managed != nil && *assets.Managed {
+		fp := fieldPath.Child("managed")
+		if cluster.GetCloudProvider() != kops.CloudProviderAzure {
+			allErrs = append(allErrs, field.Forbidden(fp, "managed assets are only supported on Azure"))
+		} else if ociHost == "" {
+			// An unset fileRepository is defaulted during cluster completion.
+			if strict {
+				allErrs = append(allErrs, field.Forbidden(fp, "managed assets require fileRepository to be an oci:// URL"))
+			}
+		} else {
+			registryName, ok := strings.CutSuffix(ociHost, ".azurecr.io")
+			if !ok {
+				allErrs = append(allErrs, field.Forbidden(fp, "managed assets require an Azure Container Registry (<name>.azurecr.io) fileRepository"))
+			} else if !acrRegistryNameRegexp.MatchString(registryName) {
+				allErrs = append(allErrs, field.Invalid(fieldPath.Child("fileRepository"), *assets.FileRepository, "registry name must be 5-50 alphanumeric characters"))
+			}
+		}
 	}
 
 	return allErrs

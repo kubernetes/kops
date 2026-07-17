@@ -24,6 +24,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 	compute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	containerregistry "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerregistry/armcontainerregistry"
 	network "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	resources "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
@@ -59,6 +60,7 @@ type MockAzureCloud struct {
 	PublicIPAddressesClient         *MockPublicIPAddressesClient
 	NatGatewaysClient               *MockNatGatewaysClient
 	StorageAccountsClient           *MockStorageAccountsClient
+	ContainerRegistriesClient       *MockContainerRegistriesClient
 }
 
 var _ azure.AzureCloud = (*MockAzureCloud)(nil)
@@ -119,6 +121,9 @@ func NewMockAzureCloud(location string) *MockAzureCloud {
 		},
 		StorageAccountsClient: &MockStorageAccountsClient{
 			SAs: map[string]*armstorage.Account{},
+		},
+		ContainerRegistriesClient: &MockContainerRegistriesClient{
+			Registries: map[string]*containerregistry.Registry{},
 		},
 	}
 }
@@ -270,6 +275,11 @@ func (c *MockAzureCloud) PublicIPAddress() azure.PublicIPAddressesClient {
 // NatGateway returns the nat gateway client.
 func (c *MockAzureCloud) NatGateway() azure.NatGatewaysClient {
 	return c.NatGatewaysClient
+}
+
+// ContainerRegistry returns the container registries client.
+func (c *MockAzureCloud) ContainerRegistry() azure.ContainerRegistriesClient {
+	return c.ContainerRegistriesClient
 }
 
 // MockResourceGroupsClient is a mock implementation of resource group client.
@@ -836,4 +846,38 @@ func (c *MockStorageAccountsClient) List(ctx context.Context) ([]*armstorage.Acc
 		l = append(l, sa)
 	}
 	return l, nil
+}
+
+// MockContainerRegistriesClient is a mock implementation of container registries client.
+type MockContainerRegistriesClient struct {
+	Registries map[string]*containerregistry.Registry
+}
+
+var _ azure.ContainerRegistriesClient = (*MockContainerRegistriesClient)(nil)
+
+// CreateOrUpdate creates or updates a container registry.
+func (c *MockContainerRegistriesClient) CreateOrUpdate(ctx context.Context, resourceGroupName, registryName string, parameters containerregistry.Registry) (*containerregistry.Registry, error) {
+	parameters.Name = &registryName
+	parameters.ID = &registryName
+	c.Registries[registryName] = &parameters
+	return &parameters, nil
+}
+
+// List returns a slice of container registries.
+func (c *MockContainerRegistriesClient) List(ctx context.Context, resourceGroupName string) ([]*containerregistry.Registry, error) {
+	var l []*containerregistry.Registry
+	for _, registry := range c.Registries {
+		l = append(l, registry)
+	}
+	return l, nil
+}
+
+// Delete deletes a specified container registry.
+func (c *MockContainerRegistriesClient) Delete(ctx context.Context, resourceGroupName, registryName string) error {
+	// Ignore resourceGroupName for simplicity.
+	if _, ok := c.Registries[registryName]; !ok {
+		return fmt.Errorf("%s does not exist", registryName)
+	}
+	delete(c.Registries, registryName)
+	return nil
 }

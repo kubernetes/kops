@@ -18,6 +18,8 @@ package kops
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/blang/semver/v4"
 	corev1 "k8s.io/api/core/v1"
@@ -377,6 +379,9 @@ type AssetsSpec struct {
 	FileRepository *string `json:"fileRepository,omitempty"`
 	// ContainerProxy is a url for a pull-through proxy of a container registry.
 	ContainerProxy *string `json:"containerProxy,omitempty"`
+	// Managed requests that kOps create and manage the registry holding the
+	// cluster's file and image assets, as part of the cluster's cloud resources.
+	Managed *bool `json:"managed,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
@@ -915,6 +920,33 @@ func (c *Cluster) AzureResourceGroupName() string {
 		return c.Spec.CloudProvider.Azure.ResourceGroupName
 	}
 	return c.Name
+}
+
+// OCIAssetRegistryHost returns the registry host of the assets fileRepository
+// when it is an oci:// URL, and "" otherwise.
+func (c *ClusterSpec) OCIAssetRegistryHost() string {
+	if c.Assets == nil || c.Assets.FileRepository == nil {
+		return ""
+	}
+	u, err := url.Parse(*c.Assets.FileRepository)
+	if err != nil || u.Scheme != "oci" {
+		return ""
+	}
+	return u.Host
+}
+
+// AzureManagedContainerRegistryName returns the name of the Azure Container Registry
+// that kOps creates and manages for the cluster's assets, or "" when kOps does not
+// manage one (assets.managed not set or fileRepository not an oci:// URL).
+func (c *Cluster) AzureManagedContainerRegistryName() string {
+	if c.Spec.Assets == nil || c.Spec.Assets.Managed == nil || !*c.Spec.Assets.Managed {
+		return ""
+	}
+	registryName, ok := strings.CutSuffix(c.Spec.OCIAssetRegistryHost(), ".azurecr.io")
+	if !ok {
+		return ""
+	}
+	return registryName
 }
 
 // IsSharedAzureRouteTable returns true if the route table is shared.
