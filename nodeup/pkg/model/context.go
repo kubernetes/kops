@@ -343,6 +343,8 @@ func (c *NodeupModelContext) UseExternalKubeletCredentialProvider() bool {
 		return true
 	case kops.CloudProviderAWS:
 		return true
+	case kops.CloudProviderAzure:
+		return c.NodeupConfig.UseACRCredentialProvider
 	default:
 		return false
 	}

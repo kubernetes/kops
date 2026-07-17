@@ -29,6 +29,10 @@ import (
 	"k8s.io/kops/util/pkg/architectures"
 )
 
+// acrCredentialProviderVersion is the cloud-provider-azure release providing the
+// azure-acr-credential-provider binary; hashes are pinned in pkg/assets/assetdata/acr.yaml.
+const acrCredentialProviderVersion = "v1.34.12"
+
 // KubernetesFileAssets are the assets for downloading Kubernetes binaries
 type KubernetesFileAssets struct {
 	// KubernetesFileAssets are the assets for downloading Kubernetes binaries
@@ -102,6 +106,20 @@ func BuildKubernetesFileAssets(ig model.InstanceGroup, assetBuilder *assets.Asse
 				return nil, err
 			}
 			kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
+		case kops.CloudProviderAzure:
+			// The ACR credential provider is only used when pulling from a private
+			// registry holding the cluster's assets.
+			if ig.RawClusterSpec().OCIAssetRegistryHost() != "" {
+				u, err := url.Parse(fmt.Sprintf("https://github.com/kubernetes-sigs/cloud-provider-azure/releases/download/%s/azure-acr-credential-provider-linux-%s", acrCredentialProviderVersion, arch))
+				if err != nil {
+					return nil, err
+				}
+				asset, err := assetBuilder.RemapFile(u, nil)
+				if err != nil {
+					return nil, err
+				}
+				kubernetesAssets[arch] = append(kubernetesAssets[arch], assets.BuildMirroredAsset(asset))
+			}
 		}
 
 		if ig.InstallCNIAssets() {

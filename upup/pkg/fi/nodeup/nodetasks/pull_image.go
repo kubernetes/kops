@@ -17,6 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -28,6 +29,15 @@ import (
 // PullImageTask is responsible for pulling a docker image
 type PullImageTask struct {
 	Name string
+
+	// auth returns credentials for pulling the image. It is unexported so that
+	// task reflection ignores it.
+	auth func(ctx context.Context) (user string, password string, err error)
+}
+
+// SetAuth injects the credentials for pulling the image.
+func (t *PullImageTask) SetAuth(auth func(ctx context.Context) (string, string, error)) {
+	t.auth = auth
 }
 
 var (
@@ -57,8 +67,17 @@ func (t *PullImageTask) GetName() *string {
 
 func (e *PullImageTask) Run(c *fi.NodeupContext) error {
 	// Pull the container image
-	args := []string{"ctr", "--namespace", "k8s.io", "images", "pull", e.Name}
-	human := strings.Join(args, " ")
+	args := []string{"ctr", "--namespace", "k8s.io", "images", "pull"}
+	human := strings.Join(append(append([]string{}, args...), e.Name), " ")
+
+	if e.auth != nil {
+		user, password, err := e.auth(context.TODO())
+		if err != nil {
+			return fmt.Errorf("getting credentials for image %q: %w", e.Name, err)
+		}
+		args = append(args, "--user", user+":"+password)
+	}
+	args = append(args, e.Name)
 
 	klog.Infof("running command %s", human)
 	cmd := exec.Command(args[0], args[1:]...)

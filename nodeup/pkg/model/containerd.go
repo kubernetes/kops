@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"context"
 	_ "embed"
 	"encoding/csv"
 	"encoding/json"
@@ -101,6 +102,20 @@ func (b *ContainerdBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if installContainerd {
 		if err := b.installContainerd(c); err != nil {
 			return err
+		}
+	}
+
+	// containerd pulls the sandbox image itself, without kubelet's image credential
+	// providers; when the sandbox image is in the cluster's Azure Container Registry,
+	// pre-pull it with the instance's managed identity.
+	if b.NodeupConfig.UseACRCredentialProvider && b.NodeupConfig.ContainerdConfig != nil {
+		if image := fi.ValueOf(b.NodeupConfig.ContainerdConfig.SandboxImage); strings.Contains(image, ".azurecr.io/") {
+			registry, _, _ := strings.Cut(image, "/")
+			task := &nodetasks.PullImageTask{Name: image}
+			task.SetAuth(func(ctx context.Context) (string, string, error) {
+				return fi.ACRDockerCredentials(ctx, registry)
+			})
+			c.AddTask(task)
 		}
 	}
 
