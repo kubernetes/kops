@@ -143,6 +143,11 @@ type ApplyClusterCmd struct {
 	// InstanceGroupFilter is a predicate that restricts which instance groups we will update.
 	InstanceGroupFilter predicates.Predicate[*kops.InstanceGroup]
 
+	// PushAssets pushes the cluster's image and file assets to a private registry.
+	// It is injected by the kops CLI so that only the CLI links the container
+	// registry client libraries.
+	PushAssets azuremodel.PushAssetsFunc
+
 	// The current oldest version of control plane nodes, defaults to version defined in cluster spec if IgnoreVersionSkew was set
 	ControlPlaneRunningVersion string
 }
@@ -693,6 +698,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				&azuremodel.APILoadBalancerModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
 				&azuremodel.NetworkModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
 				&azuremodel.ResourceGroupModelBuilder{AzureModelContext: azureModelContext, Lifecycle: clusterLifecycle},
+				&azuremodel.ContainerRegistryModelBuilder{AzureModelContext: azureModelContext, AssetBuilder: assetBuilder, PushAssets: c.PushAssets, Lifecycle: clusterLifecycle},
 
 				&azuremodel.VMScaleSetModelBuilder{AzureModelContext: azureModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 			)

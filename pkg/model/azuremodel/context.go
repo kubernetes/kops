@@ -51,6 +51,16 @@ func (c *AzureModelContext) LinkToResourceGroup() *azuretasks.ResourceGroup {
 	return &azuretasks.ResourceGroup{Name: new(c.NameForResourceGroup())}
 }
 
+// LinkToContainerRegistry returns the kOps-managed Container Registry object for
+// the cluster's assets, or nil when kOps does not manage one.
+func (c *AzureModelContext) LinkToContainerRegistry() *azuretasks.ContainerRegistry {
+	registryName := c.Cluster.AzureManagedContainerRegistryName()
+	if registryName == "" {
+		return nil
+	}
+	return &azuretasks.ContainerRegistry{Name: new(registryName)}
+}
+
 // NameForResourceGroup returns the name of the Resource Group object the cluster is located in.
 func (c *AzureModelContext) NameForResourceGroup() string {
 	return c.Cluster.AzureResourceGroupName()

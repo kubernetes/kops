@@ -182,10 +182,14 @@ func tasksVisibleToAddons(tasks map[string]fi.CloudupTask) map[string]fi.Cloudup
 	return filtered
 }
 
-// isAddonTask reports whether a task belongs to the addon-rendering pipeline.
+// isAddonTask reports whether a task belongs to the addon-rendering pipeline,
+// or runs after it.
 func isAddonTask(task fi.CloudupTask) bool {
 	switch task.(type) {
 	case *AddonManifest, *BootstrapChannel:
+		return true
+	}
+	if _, ok := task.(fi.RunsAfterAddonManifests); ok {
 		return true
 	}
 	return false

@@ -29,6 +29,12 @@ type HasDependencies[T SubContext] interface {
 }
 
 type CloudupHasDependencies = HasDependencies[CloudupSubContext]
+
+// RunsAfterAddonManifests marks tasks that run after the addon manifests have
+// been rendered; addon rendering must not depend on them.
+type RunsAfterAddonManifests interface {
+	RunsAfterAddonManifests()
+}
 type InstallHasDependencies = HasDependencies[InstallSubContext]
 type NodeupHasDependencies = HasDependencies[NodeupSubContext]
 

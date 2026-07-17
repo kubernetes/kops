@@ -62,6 +62,25 @@ func (b *VMScaleSetModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 		c.AddTask(vmss)
 
+		if registryName := b.Cluster.AzureManagedContainerRegistryName(); registryName != "" {
+			// All instances pull assets and images from the kOps-managed container registry.
+			registryID := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ContainerRegistry/registries/%s",
+				b.Cluster.Spec.CloudProvider.Azure.SubscriptionID,
+				b.Cluster.AzureResourceGroupName(),
+				registryName,
+			)
+			c.AddTask(&azuretasks.RoleAssignment{
+				Name:       to.Ptr(fmt.Sprintf("%s-%s", *vmss.Name, "acrpull")),
+				Lifecycle:  b.Lifecycle,
+				Scope:      to.Ptr(registryID),
+				VMScaleSet: vmss,
+				// AcrPull
+				RoleDefID: to.Ptr("7f951dda-4ed3-4680-a7ca-43fe172d538d"),
+				// The role assignment can only be created once the registry exists.
+				ContainerRegistry: b.LinkToContainerRegistry(),
+			})
+		}
+
 		if ig.IsControlPlane() {
 			// Create tasks for assigning built-in roles to VM Scale Sets.
 			// See https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles

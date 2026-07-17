@@ -18,8 +18,11 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	authz "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/authorization/armauthorization/v3"
 )
@@ -66,6 +69,11 @@ func (c *roleAssignmentsClientImpl) List(ctx context.Context, scope string) ([]*
 func (c *roleAssignmentsClientImpl) Delete(ctx context.Context, scope, raName string) error {
 	_, err := c.c.Delete(ctx, scope, raName, nil)
 	if err != nil {
+		var respErr *azcore.ResponseError
+		// The role assignment no longer exists when its scope has already been deleted.
+		if errors.As(err, &respErr) && respErr.StatusCode == http.StatusNotFound {
+			return nil
+		}
 		return fmt.Errorf("deleting role assignment: %w", err)
 	}
 	return nil

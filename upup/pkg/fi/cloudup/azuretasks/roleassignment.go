@@ -47,6 +47,10 @@ type RoleAssignment struct {
 	VMScaleSet *VMScaleSet
 	ID         *string
 	RoleDefID  *string
+
+	// ContainerRegistry is set when Scope is a container registry; referencing
+	// the task orders the role assignment after the registry creation.
+	ContainerRegistry *ContainerRegistry
 }
 
 var (
@@ -124,6 +128,8 @@ func (r *RoleAssignment) Find(c *fi.CloudupContext) (*RoleAssignment, error) {
 		},
 		ID:        found.ID,
 		RoleDefID: to.Ptr(filepath.Base(*found.Properties.RoleDefinitionID)),
+		// To prevent spurious comparison failures. Follow ResourceGroup.Shared.
+		ContainerRegistry: r.ContainerRegistry,
 	}, nil
 }
 
