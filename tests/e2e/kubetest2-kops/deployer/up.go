@@ -266,8 +266,10 @@ func (d *deployer) createCluster(zones []string, adminAccess string, yes bool) e
 		}
 	case "azure":
 		// Use SKUs for which there is enough quota
-		args = appendIfUnset(args, "--control-plane-size", "Standard_D4ls_v6")
-		args = appendIfUnset(args, "--node-size", "Standard_D4ls_v6")
+		args = appendIfUnset(args, "--control-plane-size", "Standard_D4s_v3")
+		args = appendIfUnset(args, "--node-size", "Standard_D4s_v3")
+		// HACK: serve the cluster assets from a kOps-managed container registry
+		args = append(args, "--set=spec.assets.managed=true")
 	case "gce":
 		if isArm {
 			args = appendIfUnset(args, "--control-plane-size", "n4a-standard-2")
