@@ -193,7 +193,8 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	})
 	// Kindnet preserves pod-CIDR source IPs to host services; Azure NSG ASG
 	// matching needs an explicit allow since pod IPs aren't NIC-assigned.
-	// Scoped to nodes to keep DenyAllToControlPlane and the etcd denies effective.
+	// Pods reach the nodes on all ports and the kube-apiserver on 443 only,
+	// so DenyAllToControlPlane and the etcd denies stay effective.
 	if b.Cluster.Spec.Networking.Kindnet != nil && b.Cluster.Spec.Networking.PodCIDR != "" {
 		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
 			Name:                                     new("AllowPodCIDRToNodes"),
@@ -205,6 +206,17 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			SourcePortRange:                          new("*"),
 			DestinationApplicationSecurityGroupNames: []*string{new(b.NameForApplicationSecurityGroupNodes())},
 			DestinationPortRange:                     new("*"),
+		})
+		nsgTask.SecurityRules = append(nsgTask.SecurityRules, &azuretasks.NetworkSecurityRule{
+			Name:                                     new("AllowPodCIDRToKubernetesAPI"),
+			Priority:                                 new(int32(1007)),
+			Access:                                   network.SecurityRuleAccessAllow,
+			Direction:                                network.SecurityRuleDirectionInbound,
+			Protocol:                                 network.SecurityRuleProtocolTCP,
+			SourceAddressPrefix:                      new(b.Cluster.Spec.Networking.PodCIDR),
+			SourcePortRange:                          new("*"),
+			DestinationApplicationSecurityGroupNames: []*string{new(b.NameForApplicationSecurityGroupControlPlane())},
+			DestinationPortRange:                     new(strconv.Itoa(wellknownports.KubeAPIServer)),
 		})
 	}
 	etcdPeerMax := wellknownports.EtcdEventsPeerPort
