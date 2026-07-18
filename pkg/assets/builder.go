@@ -441,6 +441,14 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	return nil, fmt.Errorf("cannot determine hash for %q (have you specified a valid file location?)", u)
 }
 
+// FileRepository returns the configured assets.fileRepository, or "" if not set.
+func (a *AssetBuilder) FileRepository() string {
+	if a.assetsLocation != nil && a.assetsLocation.FileRepository != nil {
+		return *a.assetsLocation.FileRepository
+	}
+	return ""
+}
+
 func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
 	f := ""
 	if a.assetsLocation != nil {
