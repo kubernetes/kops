@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if ! command -v gsutil &> /dev/null; then
+if ! command -v gcloud &> /dev/null; then
     curl https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz -o /tmp/google-cloud-sdk.tar.gz
     tar xzf /tmp/google-cloud-sdk.tar.gz -C /
     rm /tmp/google-cloud-sdk.tar.gz
@@ -27,7 +27,6 @@ if ! command -v gsutil &> /dev/null; then
         --usage-reporting=false \
         --quiet
     ln -s /google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
-    ln -s /google-cloud-sdk/bin/gsutil /usr/local/bin/gsutil
     gcloud info
     gcloud config list
     gcloud auth list

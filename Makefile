@@ -246,24 +246,24 @@ upload: version-dist # Upload kops to S3
 
 # gcs-upload builds kops and uploads to GCS
 .PHONY: gcs-upload
-gcs-upload: gsutil version-dist
+gcs-upload: gcloud version-dist
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
+	gcloud storage cp --cache-control="private, max-age=0, no-transform" --no-clobber --recursive ${UPLOAD}/kops/* ${GCS_LOCATION}
 
 # gcs-upload-tag runs gcs-upload to upload, then uploads a version-marker to LATEST_FILE
 .PHONY: gcs-upload-and-tag
-gcs-upload-and-tag: gsutil gcs-upload
+gcs-upload-and-tag: gcloud gcs-upload
 	echo "${GCS_URL}${VERSION}" > ${UPLOAD}/latest.txt
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
+	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/latest.txt ${GCS_LOCATION}${LATEST_FILE}
 
 # gcs-publish-ci is the entry point for CI testing
 .PHONY: gcs-publish-ci
-gcs-publish-ci: gsutil version-dist-ci
+gcs-publish-ci: gcloud version-dist-ci
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
+	gcloud storage cp --cache-control="private, max-age=0, no-transform" --no-clobber --recursive ${UPLOAD}/kops/* ${GCS_LOCATION}
 	echo "VERSION: ${VERSION}"
 	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
+	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
@@ -504,9 +504,9 @@ verify-crds:
 verify-versions:
 	hack/verify-versions.sh
 
-.PHONY: gsutil
-gsutil:
-	hack/install-gsutil.sh
+.PHONY: gcloud
+gcloud:
+	hack/install-gcloud.sh
 
 .PHONY: check-markdown-links
 check-markdown-links:

@@ -33,13 +33,13 @@ fi
 
 if [[ "${DEST:0:5}" == "gs://" ]]; then
   bucket=$(echo "${DEST}" | cut -d/ -f1-3)
-  acl_flag="${PUBLIC:+-a public-read}"
+  acl_flag="${PUBLIC:+--predefined-acl=publicRead}"
   # GCS buckets with UBLA enabled error on attempts to set ACLs
   # ref: https://cloud.google.com/storage/docs/uniform-bucket-level-access#enabled
-  if gsutil ubla get "${bucket}" | grep -q "Enabled: True" 2>/dev/null; then
+  if [[ "$(gcloud storage buckets describe "${bucket}" --format="value(uniform_bucket_level_access)" 2>/dev/null)" == "True" ]]; then
     acl_flag=""
   fi
-  gsutil -h "Cache-Control:private,max-age=0" rsync -r ${acl_flag} ${SRC} ${DEST}
+  gcloud storage rsync --recursive --cache-control="private,max-age=0" ${acl_flag} ${SRC} ${DEST}
   exit 0
 fi
 
