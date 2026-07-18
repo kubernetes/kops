@@ -31,7 +31,7 @@ export KOPS_ARCH
 # Build and upload to bucket
 UPLOAD_DEST_BUCKET="kops-dev-$(gcloud config get-value project)-${USER}"
 export UPLOAD_DEST=gs://${UPLOAD_DEST_BUCKET}
-gcloud storage ls "${UPLOAD_DEST}" || gcloud buckets create "${UPLOAD_DEST}" || return
+gcloud storage ls "${UPLOAD_DEST}" || gcloud storage buckets create "${UPLOAD_DEST}" || return
 make kops-install dev-upload-linux-${KOPS_ARCH} || return
 
 # Set KOPS_BASE_URL
@@ -42,6 +42,6 @@ export KOPS_BASE_URL=https://storage.googleapis.com/${UPLOAD_DEST_BUCKET}/kops/$
 # Create the state-store bucket if it doesn't exist
 KOPS_STATE_STORE="gs://kops-state-$(gcloud config get-value project)"
 export KOPS_STATE_STORE
-gcloud storage ls "${KOPS_STATE_STORE}" || gcloud buckets create "${KOPS_STATE_STORE}" || return
+gcloud storage ls "${KOPS_STATE_STORE}" || gcloud storage buckets create "${KOPS_STATE_STORE}" || return
 
 echo "SUCCESS"
