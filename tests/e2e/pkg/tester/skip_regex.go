@@ -128,6 +128,15 @@ func (t *Tester) setSkipRegexFlag() error {
 		skipRegex += "|should.resize.volume.when.PVC.is.edited.while.pod.is.using.it"
 		skipRegex += "|should.provision.storage.with.any.volume.data.source"
 		skipRegex += "|should.mount.multiple.PV.pointing.to.the.same.storage.on.the.same.node"
+		// Azure serializes disk attach/detach per VM in ARM, and under the suite's high
+		// parallelism a single detach can take minutes, so the attach-cycle-heavy azuredisk
+		// external-storage patterns time out on pod start or cleanup: data readback (detach +
+		// reattach mid-test), online/offline volume expansion, subPath pod restarts, and
+		// exec-after-attach. Skip only these families for the disk.csi.azure.com driver; the
+		// provisioning, topology, ephemeral, volumeMode and capacity specs still exercise
+		// attach/mount. Anchored to the driver so csi-hostpath/in-tree specs keep running.
+		// https://learn.microsoft.com/en-us/troubleshoot/azure/azure-kubernetes/storage/slow-attach-detach-operations-azure-disk
+		skipRegex += "|Driver:.disk.csi.azure.com.*(volumes.should.store.data|volume-expand|subPath|allow.exec)"
 	}
 
 	if cluster.Spec.LegacyCloudProvider == "gce" {
