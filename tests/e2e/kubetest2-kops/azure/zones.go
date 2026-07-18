@@ -23,7 +23,8 @@ import (
 var allZones = []string{
 	"uksouth-1",
 	"uksouth-2",
-	"uksouth-3",
+	// uksouth-3 disabled: frequent OverconstrainedZonalAllocationRequest for Standard_D4ls_v6.
+	// "uksouth-3",
 }
 
 // RandomZones returns a random set of availability zones within a region
