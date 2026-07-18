@@ -19,6 +19,8 @@ spec:
           allocationId: eipalloc-012345a678b9cdefa
       accessLog:
         bucket: access-log-example
+  assets:
+    fileRepository: oci://registry.example.com/kops
   authentication:
     aws:
       backendMode: CRD
