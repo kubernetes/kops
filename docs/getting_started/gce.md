@@ -17,7 +17,7 @@ kOps needs a state store, to hold the configuration for your clusters.  The simp
 for Google Cloud is to store it in a Google Cloud Storage bucket in the same account, so that's how we'll
 start.
 
-So, just create an empty bucket - you can use any (available) name - e.g. `gsutil mb gs://kubernetes-clusters/`
+So, just create an empty bucket - you can use any (available) name - e.g. `gcloud storage buckets create gs://kubernetes-clusters/`
 
 Further, rather than typing the `--state` argument every time, it's much easier to export the `KOPS_STATE_STORE`
 environment variable:

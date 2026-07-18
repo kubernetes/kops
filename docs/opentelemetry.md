@@ -42,12 +42,12 @@ Example:
 https://gcsweb.k8s.io/gcs/kubernetes-jenkins/pr-logs/pull/kops/16204/presubmit-kops-aws-scale-amazonvpc-using-cl2/1742962895290896384/artifacts/otlp/
 ```
 
-Download these files to a local directory, either with `gsutil` or through a web browser
+Download these files to a local directory, either with `gcloud storage` or through a web browser
 
 ```
 mkdir /tmp/job-traces
 
-gsutil cp -r gs://kubernetes-jenkins/pr-logs/pull/kops/16204/presubmit-kops-aws-scale-amazonvpc-using-cl2/1742962895290896384/artifacts/otlp/ /tmp/job-traces
+gcloud storage cp -r gs://kubernetes-jenkins/pr-logs/pull/kops/16204/presubmit-kops-aws-scale-amazonvpc-using-cl2/1742962895290896384/artifacts/otlp/ /tmp/job-traces
 ```
 
 Then run the trace server as normal:
