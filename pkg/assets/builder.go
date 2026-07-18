@@ -328,7 +328,9 @@ func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash)
 			return nil, err
 		}
 
-		if canonicalURL.Host != normalizedFile.Host {
+		// Skip the remap only when the canonical URL already points at the file repository; the scheme
+		// matters for an oci:// repository that shares its host with an asset's https source.
+		if canonicalURL.Host != normalizedFile.Host || canonicalURL.Scheme != normalizedFile.Scheme {
 			fileAsset.DownloadURL = normalizedFile
 			klog.V(4).Infof("adding remapped file: %q", fileAsset.DownloadURL.String())
 		}
@@ -340,6 +342,12 @@ func (a *AssetBuilder) RemapFile(canonicalURL *url.URL, knownHash *hashing.Hash)
 			return nil, err
 		}
 		knownHash = h
+	}
+
+	// OCI blobs are addressed by their sha256 digest; fail here rather than when nodes try to download
+	// the asset.
+	if fileAsset.DownloadURL.Scheme == "oci" && knownHash.Algorithm != hashing.HashAlgorithmSHA256 {
+		return nil, fmt.Errorf("asset %q must have a sha256 hash to be stored in the oci:// assets.fileRepository, got %q", canonicalURL, knownHash.Algorithm)
 	}
 
 	fileAsset.SHAValue = knownHash
@@ -366,6 +374,12 @@ func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 	// before it exists.
 	u := file.DownloadURL
 	if a.getAssets {
+		u = file.CanonicalURL
+	}
+
+	if u != nil && u.Scheme == "oci" {
+		// OCI artifacts are addressed by digest (the sha256 of the content), so the hash must come from
+		// the canonical source; the registry has no sidecar hash files.
 		u = file.CanonicalURL
 	}
 
@@ -441,9 +455,43 @@ func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
 		return nil, fmt.Errorf("unable to parse assetsLocation.fileRepository %q: %v", f, err)
 	}
 
-	fileRepo.Path = path.Join(fileRepo.Path, canonicalURL.Path)
+	assetPath := canonicalURL.Path
+	if fileRepo.Scheme == "oci" {
+		// The path becomes an OCI repository name (one repository per asset), which has a restricted
+		// character set. The asset path must be preserved in the repository name rather than collapsed
+		// into a single repository: nodeup keys assets by the last component of their URL, so every asset
+		// needs a distinct URL.
+		assetPath = sanitizeOCIRepository(assetPath)
+	}
+	fileRepo.Path = path.Join(fileRepo.Path, assetPath)
 
 	return fileRepo, nil
+}
+
+// ociRepositoryIllegalCharacters matches the characters that are not allowed in OCI repository
+// names, which can only contain lowercase alphanumerics, `.`, `_`, `-` and `/`.
+var ociRepositoryIllegalCharacters = regexp.MustCompile(`[^a-z0-9._/-]`)
+
+// ociRepositorySeparatorRuns matches consecutive separator characters, which are not allowed inside
+// a repository path component.
+var ociRepositorySeparatorRuns = regexp.MustCompile(`[._-]{2,}`)
+
+// sanitizeOCIRepository maps an asset path to a valid OCI repository name; for example, CI builds
+// are staged under paths containing `+`. Illegal characters become `_`; path components must also
+// start and end with an alphanumeric. Separator runs, which the replacement can produce and which
+// the repository-name grammar only partially allows, are conservatively collapsed to a single `_`.
+func sanitizeOCIRepository(assetPath string) string {
+	sanitized := ociRepositoryIllegalCharacters.ReplaceAllString(strings.ToLower(assetPath), "_")
+
+	var components []string
+	for _, component := range strings.Split(sanitized, "/") {
+		component = ociRepositorySeparatorRuns.ReplaceAllString(component, "_")
+		component = strings.Trim(component, "._-")
+		if component != "" {
+			components = append(components, component)
+		}
+	}
+	return strings.Join(components, "/")
 }
 
 func NormalizeImage(a *AssetBuilder, image string) string {

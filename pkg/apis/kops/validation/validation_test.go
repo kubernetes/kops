@@ -2239,6 +2239,36 @@ func TestValidateFileRepository(t *testing.T) {
 			Input:          "https://",
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},
+		{
+			Input: "oci://registry.example.com/assets",
+		},
+		{
+			Input: "oci://myregistry.azurecr.io/assets",
+		},
+		{
+			// The path becomes part of an OCI repository name, which has a restricted character set.
+			Input:          "oci://registry.example.com/Assets",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			// A registry host without a dot or port would be normalized to a Docker Hub repository when
+			// pushing.
+			Input:          "oci://registry/assets",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			// Repository-name components may contain inner separators.
+			Input: "oci://registry.example.com/a__b/c--d/e.f",
+		},
+		{
+			// Repository-name components must start with an alphanumeric.
+			Input:          "oci://registry.example.com/-assets",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "oci://registry.example.com/assets?x=1",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
 	}
 	for _, g := range grid {
 		errs := validateFileRepository(g.Input, field.NewPath("spec", "assets", "fileRepository"))
