@@ -1500,6 +1500,28 @@ spec:
     containerProxy: proxy.example.com
 ```
 
+### fileRepository with an OCI registry
+
+`fileRepository` may be an `oci://` URL pointing at an OCI registry. File assets
+(including nodeup) are then stored in the registry as OCI artifacts. Nodes download
+the assets with anonymous pulls, so the registry must allow anonymous (public) pulls
+of the assets; this works on any cloud provider. Registries with authenticated pull
+access are not supported.
+
+```yaml
+spec:
+  assets:
+    fileRepository: oci://registry.example.com/assets
+```
+
+Run `kops get assets --copy` to push the file assets to the registry before bringing
+up the cluster or applying an update that changes the assets. Pushing authenticates
+with the local docker credentials (`~/.docker/config.json`, including configured
+credential helpers), so log in to the registry first with the usual command for your
+registry, for example `docker login`. The registry must already exist; for registries
+that do not create repositories on push, the repository for each asset path must
+also be created beforehand.
+
 ## sysctlParameters
 {{ kops_feature_table(kops_added_default='1.17') }}
 
