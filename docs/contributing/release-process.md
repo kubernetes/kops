@@ -106,7 +106,7 @@ It (currently) takes about 30 minutes to run.
 
 The following tools are prerequisites:
 
-* [`gsutil`](https://cloud.google.com/storage/docs/gsutil_install)
+* [`gcloud`](https://cloud.google.com/sdk/docs/install)
 * [`kpromo`](https://github.com/kubernetes-sigs/promo-tools)
 
 Currently, we send the image and non-image artifact promotion PRs separately.
@@ -145,7 +145,7 @@ git checkout -b kops_artifacts_${VERSION}
 
 rm -rf ./k8s-staging-kops/kops/releases
 mkdir -p ./k8s-staging-kops/kops/releases/${VERSION}/
-gsutil rsync -r  gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
+gcloud storage rsync -r gs://k8s-staging-kops/kops/releases/${VERSION}/ ./k8s-staging-kops/kops/releases/${VERSION}/
 
 kpromo manifest files --src k8s-staging-kops/kops/releases/ >> artifacts/manifests/k8s-staging-kops/${VERSION}.yaml
 
