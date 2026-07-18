@@ -42,10 +42,10 @@ func GCSBucketName(projectID, prefix string) string {
 
 func EnsureGCSBucket(bucketPath, region, projectID string, public bool) error {
 	lsArgs := []string{
-		"gsutil", "ls", "-b",
+		"gcloud", "storage", "ls", "--buckets",
 	}
 	if projectID != "" {
-		lsArgs = append(lsArgs, "-p", projectID)
+		lsArgs = append(lsArgs, "--project", projectID)
 	}
 	lsArgs = append(lsArgs, bucketPath)
 
@@ -55,19 +55,26 @@ func EnsureGCSBucket(bucketPath, region, projectID string, public bool) error {
 	output, err := exec.CombinedOutputLines(cmd)
 	if err == nil {
 		return nil
-	} else if len(output) != 1 || !strings.Contains(output[0], "BucketNotFound") {
+	}
+	notFound := false
+	for _, line := range output {
+		if strings.Contains(line, "not found: 404") {
+			notFound = true
+		}
+	}
+	if !notFound {
 		klog.Info(output)
 		return err
 	}
 
 	mbArgs := []string{
-		"gsutil", "mb",
+		"gcloud", "storage", "buckets", "create",
 	}
 	if projectID != "" {
-		mbArgs = append(mbArgs, "-p", projectID)
+		mbArgs = append(mbArgs, "--project", projectID)
 	}
 	if region != "" {
-		mbArgs = append(mbArgs, "-l", region)
+		mbArgs = append(mbArgs, "--location", region)
 	}
 	mbArgs = append(mbArgs, bucketPath)
 
@@ -82,7 +89,8 @@ func EnsureGCSBucket(bucketPath, region, projectID string, public bool) error {
 
 	if public {
 		iamArgs := []string{
-			"gsutil", "iam", "ch", "allUsers:objectViewer",
+			"gcloud", "storage", "buckets", "add-iam-policy-binding",
+			"--member=allUsers", "--role=roles/storage.objectViewer",
 		}
 		iamArgs = append(iamArgs, bucketPath)
 		klog.Info(strings.Join(iamArgs, " "))
@@ -100,9 +108,9 @@ func EnsureGCSBucket(bucketPath, region, projectID string, public bool) error {
 
 func DeleteGCSBucket(bucketPath, projectID string) error {
 	rmArgs := []string{
-		"gsutil",
-		"-u", projectID,
-		"rm", "-r", bucketPath,
+		"gcloud", "storage", "rm", "--recursive",
+		"--billing-project", projectID,
+		bucketPath,
 	}
 
 	klog.Info(strings.Join(rmArgs, " "))
