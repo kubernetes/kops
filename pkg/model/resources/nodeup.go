@@ -107,6 +107,8 @@ validate-hash() {
   fi
 }
 
+{{- OCIDownloadFunctions }}
+
 function download-release() {
   case "$(uname -m)" in
   x86_64*|i?86_64*|amd64*)
@@ -167,6 +169,19 @@ type NodeUpScript struct {
 	CloudProvider        string
 	ProxyEnv             func() (string, error)
 	EnvironmentVariables func() (string, error)
+}
+
+// usesOCIAssetRegistry is true when nodeup is downloaded from an OCI registry (an oci://
+// assets.fileRepository), with anonymous pulls.
+func (b *NodeUpScript) usesOCIAssetRegistry() bool {
+	for _, asset := range b.NodeUpAssets {
+		for _, location := range asset.Locations {
+			if strings.HasPrefix(location, "oci://") {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func funcEmptyString() (string, error) {
@@ -233,13 +248,83 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 		"ProxyEnv":             b.ProxyEnv,
 		"EnvironmentVariables": b.EnvironmentVariables,
 		"CopyCheckUrlBlock":    b.copyCheckUrlBlock,
+		"OCIDownloadFunctions": b.ociDownloadFunctions,
 	}
 
 	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
 }
 
+// ociDownloadFunctions returns a shell function that downloads a blob from an OCI registry with an
+// anonymous pull. Assets stored in OCI registries are addressed by digest, which is the sha256 hash
+// of their content. The direct pull is tried first; registries such as Docker Hub or ghcr.io
+// require a pull token even for anonymous pulls, obtained anonymously from the endpoint advertised
+// in the WWW-Authenticate challenge (curl --get merges the parameters into any query the realm
+// already carries). The token is returned as "token" (Docker registry auth) or "access_token"
+// (OAuth2). Comments in the emitted script are kept brief: it is part of the instance user data,
+// which has a limited size.
+func (b *NodeUpScript) ociDownloadFunctions() (string, error) {
+	if !b.usesOCIAssetRegistry() {
+		return "", nil
+	}
+
+	return `
+# Download an OCI blob by digest. args: file, hash, url
+download-oci() {
+  local -r file="$1"
+  local -r hash="$2"
+  local -r url="$3"
+
+  local -r stripped="${url#oci://}"
+  local -r registry="${stripped%%/*}"
+  local -r repository="${stripped#*/}"
+  local -r blob_url="https://${registry}/v2/${repository}/blobs/sha256:${hash}"
+
+  # Try a tokenless pull first
+  if curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${blob_url}"; then
+    return 0
+  fi
+
+  # Get an anonymous pull token per the WWW-Authenticate challenge
+  local challenge realm service response token
+  challenge=$(curl -sSI "${blob_url}" | tr -d '\r' | sed -n 's/^[Ww][Ww][Ww]-[Aa]uthenticate: [Bb]earer //p')
+  realm=$(echo "${challenge}" | sed -n 's/.*realm="\([^"]*\)".*/\1/p')
+  service=$(echo "${challenge}" | sed -n 's/.*service="\([^"]*\)".*/\1/p')
+  if [[ -z "${realm}" ]]; then
+    echo "== Failed to get a pull token challenge from ${registry} =="
+    return 1
+  fi
+  if ! response=$(curl -fsS --get --data-urlencode "service=${service}" --data-urlencode "scope=repository:${repository}:pull" "${realm}"); then
+    echo "== Failed to get an anonymous pull token from ${realm} =="
+    return 1
+  fi
+  # The token field is "token" or "access_token"
+  token=$(echo "${response}" | sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+  if [[ -z "${token}" ]]; then
+    token=$(echo "${response}" | sed -n 's/.*"access_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+  fi
+  if [[ -z "${token}" ]]; then
+    echo "== Failed to parse the anonymous pull token from ${realm} =="
+    return 1
+  fi
+  curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H "Authorization: Bearer ${token}" "${blob_url}"
+}`, nil
+}
+
 func (b *NodeUpScript) copyCheckUrlBlock() (string, error) {
-	if b.CloudProvider == string(kops.CloudProviderGCE) {
+	if b.usesOCIAssetRegistry() {
+		// All file assets are remapped to the OCI registry, so all urls are oci:// URLs.
+		return `if ! download-oci "${file}" "${hash}" "${url}"; then
+        echo "== Failed to download ${url} =="
+        continue
+      fi
+      if ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate hash for ${url} =="
+        rm -f "${file}"
+        continue
+      fi
+      echo "== Downloaded ${url} with hash ${hash} =="
+      return 0`, nil
+	} else if b.CloudProvider == string(kops.CloudProviderGCE) {
 		return `commands=(
         "gcloud storage cp ${url} ${file}"
         "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
