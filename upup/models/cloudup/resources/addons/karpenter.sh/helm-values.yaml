@@ -26,6 +26,7 @@ replicas: 1
 settings:
   clusterEndpoint: "{{ printf \"https://{{ APIInternalName }}\" }}"
   clusterName: "{{ printf \"{{ ClusterName }}\" }}"
+  interruptionQueue: "{{ printf \"{{ KarpenterQueueName }}\" }}"
 tolerations:
 - key: node-role.kubernetes.io/master
   operator: Exists

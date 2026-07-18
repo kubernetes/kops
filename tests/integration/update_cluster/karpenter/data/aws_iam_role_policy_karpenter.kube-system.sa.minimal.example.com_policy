@@ -152,6 +152,10 @@
         "iam:GetInstanceProfile",
         "iam:ListInstanceProfiles",
         "pricing:GetProducts",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl",
+        "sqs:ReceiveMessage",
         "ssm:GetParameter"
       ],
       "Effect": "Allow",

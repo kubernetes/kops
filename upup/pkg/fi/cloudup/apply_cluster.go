@@ -644,6 +644,13 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 				})
 			}
 
+			if c.Cluster.Spec.Karpenter != nil && c.Cluster.Spec.Karpenter.Enabled {
+				l.Builders = append(l.Builders, &awsmodel.KarpenterBuilder{
+					AWSModelContext: awsModelContext,
+					Lifecycle:       clusterLifecycle,
+				})
+			}
+
 		case kops.CloudProviderDO:
 			doModelContext := &domodel.DOModelContext{
 				KopsModelContext: modelContext,
