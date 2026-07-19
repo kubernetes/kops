@@ -2251,8 +2251,8 @@ func TestValidateFileRepository(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},
 		{
-			// A registry host without a dot or port would be normalized to a Docker Hub repository when
-			// pushing.
+			// A registry host without a dot or port would be normalized to a repository on the
+			// default registry when pushing.
 			Input:          "oci://registry/assets",
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},

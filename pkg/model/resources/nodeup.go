@@ -256,9 +256,9 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 
 // ociDownloadFunctions returns a shell function that downloads a blob from an OCI registry with an
 // anonymous pull. Assets stored in OCI registries are addressed by digest, which is the sha256 hash
-// of their content. The direct pull is tried first; registries such as Docker Hub or ghcr.io
-// require a pull token even for anonymous pulls, obtained anonymously from the endpoint advertised
-// in the WWW-Authenticate challenge (curl --get merges the parameters into any query the realm
+// of their content. The direct pull is tried first; some registries require a pull token even for
+// anonymous pulls, obtained anonymously from the endpoint advertised in the WWW-Authenticate
+// challenge (curl --get merges the parameters into any query the realm
 // already carries). The token is returned as "token" (Docker registry auth) or "access_token"
 // (OAuth2). Comments in the emitted script are kept brief: it is part of the instance user data,
 // which has a limited size.

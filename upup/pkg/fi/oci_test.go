@@ -32,14 +32,14 @@ func TestParseBearerChallenge(t *testing.T) {
 		expectError     bool
 	}{
 		{
-			challenge:       `Bearer realm="https://auth.docker.io/token",service="registry.docker.io"`,
-			expectedRealm:   "https://auth.docker.io/token",
-			expectedService: "registry.docker.io",
+			challenge:       `Bearer realm="https://auth.example.com/token",service="registry.example.com"`,
+			expectedRealm:   "https://auth.example.com/token",
+			expectedService: "registry.example.com",
 		},
 		{
-			challenge:       `Bearer realm="https://ghcr.io/token",service="ghcr.io",scope="repository:owner/repo:pull"`,
-			expectedRealm:   "https://ghcr.io/token",
-			expectedService: "ghcr.io",
+			challenge:       `Bearer realm="https://registry.example.com/token",service="registry.example.com",scope="repository:owner/repo:pull"`,
+			expectedRealm:   "https://registry.example.com/token",
+			expectedService: "registry.example.com",
 		},
 		{
 			challenge:     `Bearer realm="https://example.com/token"`,

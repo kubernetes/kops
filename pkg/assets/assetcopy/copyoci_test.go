@@ -88,10 +88,10 @@ func TestCopyFileToOCI_RoundTrip(t *testing.T) {
 }
 
 func TestCopyFileToOCI_RejectsNormalizingReference(t *testing.T) {
-	// A registry host without a dot or port would be normalized to a Docker Hub repository on push,
-	// while nodes would pull from that literal host.
+	// A registry host without a dot or port would be normalized to a repository on the default
+	// registry on push, while nodes would pull from that literal host.
 	task := &CopyFileToOCI{
-		TargetRef: "oci://docker.io/assets",
+		TargetRef: "oci://registry/assets",
 		SHA:       strings.Repeat("0", 64),
 	}
 	err := task.Run()

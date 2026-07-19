@@ -59,8 +59,9 @@ func (e *CopyFileToOCI) Run() error {
 	}
 
 	// name.NewTag applies Docker-style normalization: a registry host without a dot or port is treated
-	// as a Docker Hub repository, and docker.io aliases gain a library/ prefix. Nodes pull from the
-	// URL literally, so refuse any reference that does not round-trip exactly.
+	// as part of a repository on the default registry, and single-component repositories gain a
+	// library/ prefix. Nodes pull from the URL literally, so refuse any reference that does not
+	// round-trip exactly.
 	if ref.Context().Name() != repository {
 		return fmt.Errorf("target %q parses as %q, which is not the location nodes download from; the registry host must be a fully qualified domain name", e.TargetRef, ref.Context().Name())
 	}
