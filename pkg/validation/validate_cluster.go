@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
@@ -188,7 +189,11 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 		return nil, err
 	}
 
-	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.allInstanceGroups, v.filterInstanceGroups)
+	var errorReporter cloudinstances.CloudGroupErrorReporter
+	if r, ok := v.cloud.(cloudinstances.CloudGroupErrorReporter); ok {
+		errorReporter = r
+	}
+	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(ctx, cloudGroups, v.allInstanceGroups, v.filterInstanceGroups, errorReporter)
 
 	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
@@ -307,7 +312,36 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 	return nil
 }
 
-func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool) ([]v1.Node, map[string]*kops.InstanceGroup) {
+// reportCloudGroupErrors queries the cloud provider for provisioning errors on
+// a group that's short on instances and appends them as validation failures.
+// errorReporter may be nil if the cloud does not support this capability.
+func (v *ValidationCluster) reportCloudGroupErrors(ctx context.Context, errorReporter cloudinstances.CloudGroupErrorReporter, cloudGroup *cloudinstances.CloudInstanceGroup) {
+	if errorReporter == nil {
+		return
+	}
+	cloudErrors, err := errorReporter.GetCloudGroupErrors(ctx, cloudGroup)
+	if err != nil {
+		klog.Warningf("error getting cloud provider errors for InstanceGroup %q: %v", cloudGroup.InstanceGroup.Name, err)
+		return
+	}
+	for _, e := range cloudErrors {
+		message := fmt.Sprintf("cloud provider error %s: %s", e.Code, e.Message)
+		if e.Instance != "" {
+			message = fmt.Sprintf("cloud provider error %s for instance %s: %s", e.Code, e.Instance, e.Message)
+		}
+		if e.Count > 1 {
+			message = fmt.Sprintf("%s (observed %d times, most recent %s)", message, e.Count, e.LastSeen.Format(time.RFC3339))
+		}
+		v.addError(&ValidationError{
+			Kind:          "InstanceGroup",
+			Name:          cloudGroup.InstanceGroup.Name,
+			Message:       message,
+			InstanceGroup: cloudGroup.InstanceGroup,
+		})
+	}
+}
+
+func (v *ValidationCluster) validateNodes(ctx context.Context, cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool, errorReporter cloudinstances.CloudGroupErrorReporter) ([]v1.Node, map[string]*kops.InstanceGroup) {
 	var readyNodes []v1.Node
 	groupsSeen := map[string]bool{}
 	nodeInstanceGroupMapping := map[string]*kops.InstanceGroup{}
@@ -338,6 +372,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					cloudGroup.TargetSize),
 				InstanceGroup: cloudGroup.InstanceGroup,
 			})
+			v.reportCloudGroupErrors(ctx, errorReporter, cloudGroup)
 		}
 
 		for _, member := range allMembers {

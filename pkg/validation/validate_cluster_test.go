@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -41,6 +42,10 @@ type MockCloud struct {
 	t                      *testing.T
 	expectedCluster        *kopsapi.Cluster
 	expectedInstanceGroups []kopsapi.InstanceGroup
+
+	// cloudGroupErrors is keyed by InstanceGroup name. When non-nil, MockCloud
+	// implements cloudinstances.CloudGroupErrorReporter and returns these errors.
+	cloudGroupErrors map[string][]cloudinstances.CloudGroupError
 }
 
 var _ fi.Cloud = (*MockCloud)(nil)
@@ -912,4 +917,64 @@ func Test_ValidateDetachedNodesNotValidated(t *testing.T) {
 	if !assert.Empty(t, v.Failures) {
 		printDebug(t, v)
 	}
+}
+
+// errorReportingMockCloud wraps MockCloud to implement CloudGroupErrorReporter.
+type errorReportingMockCloud struct {
+	*MockCloud
+}
+
+func (c *errorReportingMockCloud) GetCloudGroupErrors(_ context.Context, group *cloudinstances.CloudInstanceGroup) ([]cloudinstances.CloudGroupError, error) {
+	return c.cloudGroupErrors[group.InstanceGroup.Name], nil
+}
+
+func Test_ValidateCloudGroupErrorsSurfaced(t *testing.T) {
+	ctx := context.TODO()
+
+	cluster := &kopsapi.Cluster{
+		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
+		Spec: kopsapi.ClusterSpec{
+			ExternalDNS: &kopsapi.ExternalDNSConfig{
+				Provider: kopsapi.ExternalDNSProviderDNSController,
+			},
+		},
+	}
+
+	ig := kopsapi.InstanceGroup{
+		ObjectMeta: metav1.ObjectMeta{Name: "node-1"},
+		Spec:       kopsapi.InstanceGroupSpec{Role: kopsapi.InstanceGroupRoleNode},
+	}
+	groups := map[string]*cloudinstances.CloudInstanceGroup{
+		"node-1": {
+			InstanceGroup: &ig,
+			MinSize:       1,
+			TargetSize:    2,
+		},
+	}
+
+	mockcloud := BuildMockCloud(t, groups, cluster, []kopsapi.InstanceGroup{ig})
+	mockcloud.cloudGroupErrors = map[string][]cloudinstances.CloudGroupError{
+		"node-1": {
+			{
+				Code:     "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS",
+				Message:  "The zone does not have enough resources available",
+				Instance: "node-1a",
+				Count:    3,
+				LastSeen: time.Date(2026, 5, 12, 20, 50, 0, 0, time.UTC),
+			},
+		},
+	}
+	reporter := &errorReportingMockCloud{MockCloud: mockcloud}
+
+	restConfig := &rest.Config{Host: "https://api.testcluster.k8s.local"}
+	validator, err := NewClusterValidator(cluster, reporter, &kopsapi.InstanceGroupList{Items: []kopsapi.InstanceGroup{ig}}, nil, nil, restConfig, fake.NewClientset())
+	require.NoError(t, err)
+	v, err := validator.Validate(ctx)
+	require.NoError(t, err)
+
+	require.Len(t, v.Failures, 2)
+	assert.Equal(t, "InstanceGroup \"node-1\" did not have enough nodes 0 vs 2", v.Failures[0].Message)
+	assert.Contains(t, v.Failures[1].Message, "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS")
+	assert.Contains(t, v.Failures[1].Message, "node-1a")
+	assert.Contains(t, v.Failures[1].Message, "observed 3 times")
 }
