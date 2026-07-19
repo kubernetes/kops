@@ -274,28 +274,31 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 		return nil, fmt.Errorf("error parsing configStore.base %q: %v", cluster.Spec.ConfigStore.Base, err)
 	}
 
-	if !c.AllowKopsDowngrade {
-		kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile(ctx)
-		if err == nil {
-			kopsVersionUpdated := strings.TrimSpace(string(kopsVersionUpdatedBytes))
-			version, err := semver.Parse(kopsVersionUpdated)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing last kops version updated: %v", err)
-			}
-			if version.GT(semver.MustParse(kopsbase.Version)) {
-				fmt.Printf("\n")
-				fmt.Printf("%s\n", starline)
-				fmt.Printf("\n")
-				fmt.Printf("The cluster was last updated by kops version %s\n", kopsVersionUpdated)
-				fmt.Printf("To permit updating by the older version %s, run with the --allow-kops-downgrade flag\n", kopsbase.Version)
-				fmt.Printf("\n")
-				fmt.Printf("%s\n", starline)
-				fmt.Printf("\n")
-				return nil, fmt.Errorf("kops version older than last used to update the cluster")
-			}
-		} else if err != os.ErrNotExist {
-			return nil, fmt.Errorf("error reading last kops version used to update: %v", err)
+	var kopsVersionUpdated string
+	kopsVersionUpdatedBytes, err := configBase.Join(registry.PathKopsVersionUpdated).ReadFile(ctx)
+	if err == nil {
+		kopsVersionUpdated = strings.TrimSpace(string(kopsVersionUpdatedBytes))
+		version, err := semver.Parse(kopsVersionUpdated)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing last kops version updated: %v", err)
 		}
+		if !c.AllowKopsDowngrade && version.GT(semver.MustParse(kopsbase.Version)) {
+			fmt.Printf("\n")
+			fmt.Printf("%s\n", starline)
+			fmt.Printf("\n")
+			fmt.Printf("The cluster was last updated by kops version %s\n", kopsVersionUpdated)
+			fmt.Printf("To permit updating by the older version %s, run with the --allow-kops-downgrade flag\n", kopsbase.Version)
+			fmt.Printf("\n")
+			fmt.Printf("%s\n", starline)
+			fmt.Printf("\n")
+			return nil, fmt.Errorf("kops version older than last used to update the cluster")
+		}
+	} else if err != os.ErrNotExist {
+		return nil, fmt.Errorf("error reading last kops version used to update: %v", err)
+	}
+
+	if err := c.validateEtcdVersionSupported(kopsVersionUpdated); err != nil {
+		return nil, err
 	}
 
 	cloud := c.Cloud
@@ -1087,6 +1090,40 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		if os.Getenv("KOPS_RUN_OBSOLETE_VERSION") == "" {
 			return fmt.Errorf("kubernetes upgrade is required")
 		}
+	}
+
+	return nil
+}
+
+// validateEtcdVersionSupported checks that every etcd version currently recorded in the
+// cluster spec is one that this build of kops actually bundles. A newer kops version can
+// write a newer etcd patch version into the cluster spec than an older kops release ever
+// knew about; applying with that older release would otherwise only fail once etcd-manager
+// starts on a control-plane node and can't find the requested etcd binary, so we catch it
+// here instead, before any changes are applied.
+func (c *ApplyClusterCmd) validateEtcdVersionSupported(kopsVersionUpdated string) error {
+	for _, etcdCluster := range c.Cluster.Spec.EtcdClusters {
+		if etcdCluster.Version == "" || etcdCluster.Image != "" {
+			// Nothing recorded yet, or the cluster brings its own etcd binaries.
+			continue
+		}
+		if etcdmanager.EtcdVersionIsSupported(etcdCluster.Version) {
+			continue
+		}
+
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
+		fmt.Printf("The %q etcd cluster is configured to run etcd version %s, which kops version %s does not bundle.\n", etcdCluster.Name, etcdCluster.Version, kopsbase.Version)
+		if kopsVersionUpdated != "" {
+			fmt.Printf("This version was set by kops version %s, which last updated the cluster.\n", kopsVersionUpdated)
+		}
+		fmt.Printf("Applying with this kops version would leave etcd-manager unable to find the required etcd binary at start-up.\n")
+		fmt.Printf("Use a kops version that bundles etcd %s for this cluster, or update the cluster's etcd version before downgrading kops.\n", etcdCluster.Version)
+		fmt.Printf("\n")
+		fmt.Printf("%s\n", starline)
+		fmt.Printf("\n")
+		return fmt.Errorf("etcd version %q configured for etcd cluster %q is not supported by kops version %s", etcdCluster.Version, etcdCluster.Name, kopsbase.Version)
 	}
 
 	return nil
