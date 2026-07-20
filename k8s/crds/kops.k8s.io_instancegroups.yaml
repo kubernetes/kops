@@ -283,6 +283,11 @@ spec:
                 description: DetailedInstanceMonitoring defines if detailed-monitoring
                   is enabled (AWS only)
                 type: boolean
+              disableTPM:
+                description: |-
+                  DisableTPM bypasses GCE TPM authentication during node bootstrap.
+                  The default is false.
+                type: boolean
               externalLoadBalancers:
                 description: ExternalLoadBalancers define loadbalancers that should
                   be attached to this instance group

@@ -159,6 +159,9 @@ type InstanceGroupSpec struct {
 	//   'STANDARD': (default) standard provisioning with user controlled run time, no discounts
 	//   'SPOT': heavily discounted, no guaranteed run time.
 	GCPProvisioningModel *string `json:"gcpProvisioningModel,omitempty"`
+	// DisableTPM bypasses GCE TPM authentication during node bootstrap.
+	// The default is false.
+	DisableTPM bool `json:"disableTPM,omitempty"`
 }
 
 // InstanceRootVolumeSpec specifies options for an instance's root volume.

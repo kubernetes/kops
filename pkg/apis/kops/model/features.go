@@ -45,6 +45,14 @@ func UseKopsControllerForNodeConfig(cluster *kops.Cluster) bool {
 	return !cluster.UsesLegacyGossip() || cluster.UsesLoadBalancerForKopsController()
 }
 
+// UseKopsControllerForInstanceGroupNodeConfig checks if nodeup should retrieve its configuration from kops-controller.
+func UseKopsControllerForInstanceGroupNodeConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) bool {
+	if cluster.GetCloudProvider() == kops.CloudProviderGCE && instanceGroup.Spec.DisableTPM {
+		return false
+	}
+	return UseKopsControllerForNodeConfig(cluster)
+}
+
 // UseCiliumEtcd is true if we are using the Cilium etcd cluster.
 func UseCiliumEtcd(cluster *kops.Cluster) bool {
 	if cluster.Spec.Networking.Cilium == nil {

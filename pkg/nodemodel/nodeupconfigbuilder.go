@@ -383,7 +383,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	useConfigServer := kopsmodel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
+	useConfigServer := kopsmodel.UseKopsControllerForInstanceGroupNodeConfig(cluster, ig) && !ig.HasAPIServer()
 	if useConfigServer {
 		bootConfig.ConfigServer = buildConfigServerOptions(cluster.ObjectMeta.Name, config.CAs[fi.CertificateIDCA], bootConfig.APIServerIPs)
 		delete(config.CAs, fi.CertificateIDCA)

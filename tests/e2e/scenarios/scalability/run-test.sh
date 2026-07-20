@@ -193,6 +193,7 @@ if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.iops=10000")
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.throughput=1000")
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.associatePublicIP=true")
+  KUBETEST2_ARGS+=("--node-instance-group-overrides=spec.disableTPM=true")
 elif [[ "${CLOUD_PROVIDER}" == "aws" ]]; then
   KUBETEST2_ARGS+=("--control-plane-instance-group-overrides=spec.rootVolume.type=io2")
 fi
