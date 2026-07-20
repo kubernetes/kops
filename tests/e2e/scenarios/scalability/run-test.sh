@@ -133,7 +133,11 @@ if [[ "${KUBE_NODE_COUNT:-100}" -ge 5000 ]]; then
 fi
 create_args+=("--node-count=${KUBE_NODE_COUNT:-100}")
 create_args+=("--control-plane-count=${CONTROL_PLANE_COUNT:-1}")
-create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
+  create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c3-standard-8}")
+else
+  create_args+=("--control-plane-size=${CONTROL_PLANE_SIZE:-c5.2xlarge}")
+fi
 
 # Enable HTTP for events etcd to reduce TLS overhead in scale tests
 KOPS_FEATURE_FLAGS="EtcdEventsHTTP,${KOPS_FEATURE_FLAGS:-}"
