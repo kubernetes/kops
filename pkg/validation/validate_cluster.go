@@ -73,6 +73,8 @@ type clusterValidatorImpl struct {
 
 	// filterPodsForValidation is a function that returns true if the pod should be validated
 	filterPodsForValidation func(pod *v1.Pod) bool
+
+	maxUnreadyNodes int
 }
 
 func (v *ValidationCluster) addError(failure *ValidationError) {
@@ -109,7 +111,7 @@ func hasPlaceHolderIP(host string) (string, error) {
 	return "", nil
 }
 
-func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, filterInstanceGroups func(ig *kops.InstanceGroup) bool, filterPodsForValidation func(pod *v1.Pod) bool, restConfig *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
+func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupList *kops.InstanceGroupList, filterInstanceGroups func(ig *kops.InstanceGroup) bool, filterPodsForValidation func(pod *v1.Pod) bool, maxUnreadyNodes int, restConfig *rest.Config, k8sClient kubernetes.Interface) (ClusterValidator, error) {
 	var allInstanceGroups []*kops.InstanceGroup
 
 	for i := range instanceGroupList.Items {
@@ -143,6 +145,7 @@ func NewClusterValidator(cluster *kops.Cluster, cloud fi.Cloud, instanceGroupLis
 		k8sClient:               k8sClient,
 		filterInstanceGroups:    filterInstanceGroups,
 		filterPodsForValidation: filterPodsForValidation,
+		maxUnreadyNodes:         maxUnreadyNodes,
 	}, nil
 }
 
@@ -188,9 +191,47 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 		return nil, err
 	}
 
-	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.allInstanceGroups, v.filterInstanceGroups)
+	var toleratedNodes map[string]bool
+	if v.maxUnreadyNodes > 0 {
+		var notReadyWorkerNodes []string
+		for _, cloudGroup := range cloudGroups {
+			if cloudGroup.InstanceGroup != nil && cloudGroup.InstanceGroup.Spec.Role == kops.InstanceGroupRoleNode {
+				var allMembers []*cloudinstances.CloudInstance
+				allMembers = append(allMembers, cloudGroup.Ready...)
+				allMembers = append(allMembers, cloudGroup.NeedUpdate...)
 
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation); err != nil {
+				for _, member := range allMembers {
+					if member.Status == cloudinstances.CloudInstanceStatusDetached {
+						continue
+					}
+					if member.State == cloudinstances.WarmPool {
+						continue
+					}
+
+					if member.Node == nil || !isNodeReady(member.Node) {
+						if member.Node != nil {
+							notReadyWorkerNodes = append(notReadyWorkerNodes, member.Node.Name)
+						} else {
+							notReadyWorkerNodes = append(notReadyWorkerNodes, member.ID)
+						}
+					}
+				}
+			}
+		}
+
+		if len(notReadyWorkerNodes) > 0 && len(notReadyWorkerNodes) <= v.maxUnreadyNodes {
+			toleratedNodes = make(map[string]bool)
+			for _, n := range notReadyWorkerNodes {
+				toleratedNodes[n] = true
+			}
+			sort.Strings(notReadyWorkerNodes)
+			klog.Warningf("Tolerating %d non-ready worker node(s): %s", len(notReadyWorkerNodes), strings.Join(notReadyWorkerNodes, ", "))
+		}
+	}
+
+	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.allInstanceGroups, v.filterInstanceGroups, toleratedNodes)
+
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation, toleratedNodes); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 
@@ -203,25 +244,18 @@ var masterStaticPods = []string{
 	"kube-scheduler",
 }
 
-func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, nodes []v1.Node,
-	nodeInstanceGroupMapping map[string]*kops.InstanceGroup, podValidationFilter func(pod *v1.Pod) bool,
-) error {
+func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, readyNodes []v1.Node, nodeInstanceGroupMapping map[string]*kops.InstanceGroup, podValidationFilter func(pod *v1.Pod) bool, toleratedNodes map[string]bool) error {
 	log := klog.FromContext(ctx)
 
 	masterWithoutPod := map[string]map[string]bool{}
-	nodeByAddress := map[string]string{}
 
-	for _, node := range nodes {
+	for _, node := range readyNodes {
 		labels := node.GetLabels()
 		if _, found := labels["node-role.kubernetes.io/control-plane"]; found {
 			masterWithoutPod[node.Name] = map[string]bool{}
 			for _, pod := range masterStaticPods {
 				masterWithoutPod[node.Name][pod] = true
 			}
-		}
-
-		for _, nodeAddress := range node.Status.Addresses {
-			nodeByAddress[nodeAddress.Address] = node.Name
 		}
 	}
 
@@ -231,8 +265,8 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		pod := obj.(*v1.Pod)
 
 		app := pod.GetLabels()["k8s-app"]
-		if pod.Namespace == "kube-system" && masterWithoutPod[nodeByAddress[pod.Status.HostIP]][app] {
-			delete(masterWithoutPod[nodeByAddress[pod.Status.HostIP]], app)
+		if pod.Namespace == "kube-system" && masterWithoutPod[pod.Spec.NodeName][app] {
+			delete(masterWithoutPod[pod.Spec.NodeName], app)
 		}
 
 		// Ignore pods that we don't want to validate
@@ -251,7 +285,11 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 
 		var podNode *kops.InstanceGroup
 		if priority == "system-node-critical" {
-			podNode = nodeInstanceGroupMapping[nodeByAddress[pod.Status.HostIP]]
+			podNode = nodeInstanceGroupMapping[pod.Spec.NodeName]
+		}
+
+		if toleratedNodes[pod.Spec.NodeName] {
+			return nil
 		}
 
 		if pod.Status.Phase == v1.PodPending {
@@ -307,7 +345,7 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 	return nil
 }
 
-func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool) ([]v1.Node, map[string]*kops.InstanceGroup) {
+func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances.CloudInstanceGroup, groups []*kops.InstanceGroup, shouldValidateInstanceGroup func(ig *kops.InstanceGroup) bool, toleratedNodes map[string]bool) ([]v1.Node, map[string]*kops.InstanceGroup) {
 	var readyNodes []v1.Node
 	groupsSeen := map[string]bool{}
 	nodeInstanceGroupMapping := map[string]*kops.InstanceGroup{}
@@ -357,7 +395,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 					nodeExpectedToJoin = false
 				}
 
-				if nodeExpectedToJoin {
+				if nodeExpectedToJoin && !toleratedNodes[member.ID] {
 					v.addError(&ValidationError{
 						Kind:          "Machine",
 						Name:          member.ID,
@@ -390,7 +428,7 @@ func (v *ValidationCluster) validateNodes(cloudGroups map[string]*cloudinstances
 
 			switch n.Role {
 			case "control-plane", "apiserver", "node":
-				if !ready {
+				if !ready && !toleratedNodes[node.Name] {
 					v.addError(&ValidationError{
 						Kind:          "Node",
 						Name:          node.Name,
