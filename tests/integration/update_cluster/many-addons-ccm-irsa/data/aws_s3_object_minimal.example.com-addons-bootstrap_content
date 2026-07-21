@@ -212,7 +212,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.16
     manifest: networking.amazon-vpc-routed-eni/k8s-1.16.yaml
-    manifestHash: 16395aa37c210016cb6cfdb809705eda7b795b1580fdcd263d4666fde89bcb35
+    manifestHash: 7d74086ee00ab6133c09eff783d181b0355b9f8ebbeafed591cdf377a33552ac
     name: networking.amazon-vpc-routed-eni
     needsRollingUpdate: all
     selector:
