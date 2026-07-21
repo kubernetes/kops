@@ -27,9 +27,6 @@ import (
 const (
 	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
 	RoleLabelNode16                = "node-role.kubernetes.io/node"
-	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
-	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
-	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
 
 	// New Experimental control plane roles associated with static manifests
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
@@ -112,6 +109,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isScheduler {
@@ -119,6 +117,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isKubeControllerManager {
@@ -126,6 +125,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelKubeControllerManager] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isControlPlane {
