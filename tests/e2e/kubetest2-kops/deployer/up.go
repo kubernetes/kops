@@ -384,6 +384,9 @@ func (d *deployer) IsUp() (bool, error) {
 	if d.ValidationInterval > 10*time.Second {
 		args = append(args, "--interval", d.ValidationInterval.String())
 	}
+	if d.MaxUnreadyNodes > 0 {
+		args = append(args, "--max-unready-nodes", strconv.Itoa(d.MaxUnreadyNodes))
+	}
 	klog.Info(strings.Join(args, " "))
 
 	cmd := exec.Command(args[0], args[1:]...)
