@@ -557,6 +557,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				"phase":             string(v1.PodRunning),
 				"priorityClassName": "system-cluster-critical",
 				"hostip":            "1.2.3.4",
+				"nodeName":          "master-1a",
 			},
 			{
 				"name":              fmt.Sprintf("pod-b-%d", i),
@@ -566,6 +567,7 @@ func Test_ValidateMasterStaticPods(t *testing.T) {
 				"phase":             string(v1.PodRunning),
 				"priorityClassName": "system-cluster-critical",
 				"hostip":            "5.6.7.8",
+				"nodeName":          "master-1b",
 			},
 		}...)
 		expectedFailures = append(expectedFailures, &ValidationError{
@@ -736,7 +738,7 @@ func Test_ValidatePodFailure(t *testing.T) {
 	} {
 		for _, priority := range []string{"node", "cluster"} {
 			for _, namespace := range []string{"kube-system", "otherNamespace"} {
-				for _, hostIp := range []string{"1.2.3.4", "5.6.7.8", "9.10.11.12"} {
+				for hostIp, nodeName := range map[string]string{"1.2.3.4": "node-1a", "5.6.7.8": "node-1b", "9.10.11.12": "node-1c"} {
 					t.Run(fmt.Sprintf("%s-%s-%s", tc.name, priority, namespace), func(t *testing.T) {
 						v, err := testValidate(t, groups, makePodList(
 							[]map[string]string{
@@ -747,6 +749,7 @@ func Test_ValidatePodFailure(t *testing.T) {
 									"ready":             "false",
 									"phase":             string(tc.phase),
 									"hostip":            hostIp,
+									"nodeName":          nodeName,
 								},
 							},
 						))
@@ -799,6 +802,7 @@ func dummyPod(podMap map[string]string) v1.Pod {
 		},
 		Spec: v1.PodSpec{
 			PriorityClassName: podMap["priorityClassName"],
+			NodeName:          podMap["nodeName"],
 		},
 		Status: v1.PodStatus{
 			Phase: v1.PodPhase(podMap["phase"]),
@@ -1096,6 +1100,7 @@ func Test_ValidateAllowedNotReadyNodes(t *testing.T) {
 				"ready":             "false",
 				"phase":             string(v1.PodRunning),
 				"hostip":            "5.6.7.8",
+				"nodeName":          "node-1b",
 			},
 		})
 

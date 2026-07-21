@@ -231,14 +231,7 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 
 	readyNodes, nodeInstanceGroupMapping := validation.validateNodes(cloudGroups, v.allInstanceGroups, v.filterInstanceGroups, toleratedNodes)
 
-	nodeByAddress := map[string]string{}
-	for _, node := range nodeList.Items {
-		for _, nodeAddress := range node.Status.Addresses {
-			nodeByAddress[nodeAddress.Address] = node.Name
-		}
-	}
-
-	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeByAddress, nodeInstanceGroupMapping, v.filterPodsForValidation, toleratedNodes); err != nil {
+	if err := validation.collectPodFailures(ctx, v.k8sClient, readyNodes, nodeInstanceGroupMapping, v.filterPodsForValidation, toleratedNodes); err != nil {
 		return nil, fmt.Errorf("cannot get pod health for %q: %v", v.cluster.Name, err)
 	}
 
@@ -251,7 +244,7 @@ var masterStaticPods = []string{
 	"kube-scheduler",
 }
 
-func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, readyNodes []v1.Node, nodeByAddress map[string]string, nodeInstanceGroupMapping map[string]*kops.InstanceGroup, podValidationFilter func(pod *v1.Pod) bool, toleratedNodes map[string]bool) error {
+func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kubernetes.Interface, readyNodes []v1.Node, nodeInstanceGroupMapping map[string]*kops.InstanceGroup, podValidationFilter func(pod *v1.Pod) bool, toleratedNodes map[string]bool) error {
 	log := klog.FromContext(ctx)
 
 	masterWithoutPod := map[string]map[string]bool{}
@@ -272,8 +265,8 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 		pod := obj.(*v1.Pod)
 
 		app := pod.GetLabels()["k8s-app"]
-		if pod.Namespace == "kube-system" && masterWithoutPod[nodeByAddress[pod.Status.HostIP]][app] {
-			delete(masterWithoutPod[nodeByAddress[pod.Status.HostIP]], app)
+		if pod.Namespace == "kube-system" && masterWithoutPod[pod.Spec.NodeName][app] {
+			delete(masterWithoutPod[pod.Spec.NodeName], app)
 		}
 
 		// Ignore pods that we don't want to validate
@@ -292,11 +285,10 @@ func (v *ValidationCluster) collectPodFailures(ctx context.Context, client kuber
 
 		var podNode *kops.InstanceGroup
 		if priority == "system-node-critical" {
-			podNode = nodeInstanceGroupMapping[nodeByAddress[pod.Status.HostIP]]
+			podNode = nodeInstanceGroupMapping[pod.Spec.NodeName]
 		}
 
-		nodeName := nodeByAddress[pod.Status.HostIP]
-		if toleratedNodes[nodeName] {
+		if toleratedNodes[pod.Spec.NodeName] {
 			return nil
 		}
 
