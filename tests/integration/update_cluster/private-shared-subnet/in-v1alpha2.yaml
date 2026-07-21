@@ -4,6 +4,10 @@ metadata:
   creationTimestamp: "2016-12-12T04:13:14Z"
   name: private-shared-subnet.example.com
 spec:
+  api:
+    loadBalancer:
+      type: Public
+      class: Network
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable

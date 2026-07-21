@@ -166,8 +166,6 @@ type NewClusterOptions struct {
 	// DNSZone is the DNS zone to use.
 	DNSZone string
 
-	// APILoadBalancerClass determines whether to use classic or network load balancers for the API
-	APILoadBalancerClass string
 	// APILoadBalancerType is the Kubernetes API loadbalancer type to use; "public" or "internal".
 	// Defaults to using DNS instead of a load balancer if using public topology and not gossip, otherwise "public".
 	APILoadBalancerType string
@@ -1569,15 +1567,7 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	}
 
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Class == "" && cluster.GetCloudProvider() == api.CloudProviderAWS {
-		switch opt.APILoadBalancerClass {
-		case "classic":
-			klog.Warning("AWS Classic Load Balancer support for API is deprecated and should not be used for newly created clusters")
-			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassClassic
-		case "", "network":
-			cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
-		default:
-			return fmt.Errorf("unknown api-loadbalancer-class: %q", opt.APILoadBalancerClass)
-		}
+		cluster.Spec.API.LoadBalancer.Class = api.LoadBalancerClassNetwork
 	}
 
 	return nil

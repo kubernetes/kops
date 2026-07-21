@@ -1520,7 +1520,7 @@ func Convert_kops_AcceleratorConfig_To_v1alpha2_AcceleratorConfig(in *kops.Accel
 }
 
 func autoConvert_v1alpha2_AccessLogSpec_To_kops_AccessLogSpec(in *AccessLogSpec, out *kops.AccessLogSpec, s conversion.Scope) error {
-	out.Interval = in.Interval
+	// INFO: in.Interval opted out of conversion generation
 	out.Bucket = in.Bucket
 	out.BucketPrefix = in.BucketPrefix
 	return nil
@@ -1532,7 +1532,6 @@ func Convert_v1alpha2_AccessLogSpec_To_kops_AccessLogSpec(in *AccessLogSpec, out
 }
 
 func autoConvert_kops_AccessLogSpec_To_v1alpha2_AccessLogSpec(in *kops.AccessLogSpec, out *AccessLogSpec, s conversion.Scope) error {
-	out.Interval = in.Interval
 	out.Bucket = in.Bucket
 	out.BucketPrefix = in.BucketPrefix
 	return nil
@@ -6134,7 +6133,7 @@ func Convert_kops_LeaderElectionConfiguration_To_v1alpha2_LeaderElectionConfigur
 func autoConvert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *LoadBalancerAccessSpec, out *kops.LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Class = kops.LoadBalancerClass(in.Class)
 	out.Type = kops.LoadBalancerType(in.Type)
-	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	// INFO: in.IdleTimeoutSeconds opted out of conversion generation
 	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalAPI = in.UseForInternalAPI
@@ -6172,7 +6171,6 @@ func Convert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *
 func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(in *kops.LoadBalancerAccessSpec, out *LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Class = LoadBalancerClass(in.Class)
 	out.Type = LoadBalancerType(in.Type)
-	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
 	out.SecurityGroupOverride = in.SecurityGroupOverride
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.UseForInternalAPI = in.UseForInternalAPI

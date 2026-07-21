@@ -606,6 +606,43 @@ func TestLoadBalancerSubnets(t *testing.T) {
 	}
 }
 
+func TestAPILoadBalancerClass(t *testing.T) {
+	tests := []struct {
+		class    kops.LoadBalancerClass
+		expected []string
+	}{
+		{ // Network is supported
+			class: kops.LoadBalancerClassNetwork,
+		},
+		{ // Classic was removed in kOps 1.37
+			class:    kops.LoadBalancerClassClassic,
+			expected: []string{"Forbidden::spec.api.loadBalancer.class"},
+		},
+		{ // unknown class
+			class:    kops.LoadBalancerClass("Foo"),
+			expected: []string{"Unsupported value::spec.api.loadBalancer.class"},
+		},
+	}
+
+	for _, test := range tests {
+		cluster := kops.Cluster{
+			Spec: kops.ClusterSpec{
+				API: kops.APISpec{
+					LoadBalancer: &kops.LoadBalancerAccessSpec{
+						Class: test.class,
+						Type:  kops.LoadBalancerTypePublic,
+					},
+				},
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+			},
+		}
+		errs := awsValidateCluster(&cluster, true)
+		testErrors(t, test, errs, test.expected)
+	}
+}
+
 func TestAWSAuthentication(t *testing.T) {
 	tests := []struct {
 		backendMode      string

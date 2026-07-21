@@ -841,18 +841,14 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 	var targetGroups []*awstasks.TargetGroup
 
 	if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
-		if b.UseNetworkLoadBalancer() {
-			targetGroups = append(targetGroups, b.LinkToTargetGroup("tcp"))
-			if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
-				targetGroups = append(targetGroups, b.LinkToTargetGroup("tls"))
-			}
-		} else {
-			loadBalancers = append(loadBalancers, b.LinkToCLB("api"))
+		targetGroups = append(targetGroups, b.LinkToTargetGroup("tcp"))
+		if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+			targetGroups = append(targetGroups, b.LinkToTargetGroup("tls"))
 		}
 	}
 
 	if ig.Spec.Role.HasBastion() {
-		loadBalancers = append(loadBalancers, b.LinkToCLB("bastion"))
+		targetGroups = append(targetGroups, b.LinkToTargetGroup("bastion"))
 	}
 
 	for _, extLB := range ig.Spec.ExternalLoadBalancers {

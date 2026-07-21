@@ -327,22 +327,9 @@ func (b *KopsModelContext) UseLoadBalancerForInternalAPI() bool {
 		b.Cluster.Spec.API.LoadBalancer.UseForInternalAPI
 }
 
-// APILoadBalancerClass returns which type of load balancer to use for the api
-func (b *KopsModelContext) APILoadBalancerClass() kops.LoadBalancerClass {
-	if b.Cluster.Spec.API.LoadBalancer != nil {
-		return b.Cluster.Spec.API.LoadBalancer.Class
-	}
-	return kops.LoadBalancerClassClassic
-}
-
-// UseClassicLoadBalancer checks if we are using Classic LoadBalancer
-func (b *KopsModelContext) UseClassicLoadBalancer() bool {
-	return b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassClassic
-}
-
 // UseNetworkLoadBalancer checks if we are using Network LoadBalancer
 func (b *KopsModelContext) UseNetworkLoadBalancer() bool {
-	return b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork
+	return b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.Class == kops.LoadBalancerClassNetwork
 }
 
 // UseSSHKey returns true if SSHKeyName from the cluster spec is set to a nonempty string

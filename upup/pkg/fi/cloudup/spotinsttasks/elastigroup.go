@@ -379,27 +379,6 @@ func (e *Elastigroup) Find(c *fi.CloudupContext) (*Elastigroup, error) {
 							})
 					}
 				}
-
-				var apiLBTask *awstasks.ClassicLoadBalancer
-				for _, elb := range e.LoadBalancers {
-					if !fi.ValueOf(elb.Shared) {
-						apiLBTask = elb
-					}
-				}
-				if apiLBTask != nil && len(actual.LoadBalancers) > 0 {
-					apiLBDesc, err := cloud.FindELBByNameTag(fi.ValueOf(apiLBTask.Name))
-					if err != nil {
-						return nil, err
-					}
-					if apiLBDesc != nil {
-						for i := 0; i < len(actual.LoadBalancers); i++ {
-							lb := actual.LoadBalancers[i]
-							if fi.ValueOf(apiLBDesc.LoadBalancerName) == fi.ValueOf(lb.Name) {
-								actual.LoadBalancers[i] = apiLBTask
-							}
-						}
-					}
-				}
 			}
 		}
 
@@ -1770,24 +1749,11 @@ func (e *Elastigroup) buildLoadBalancers(cloud awsup.AWSCloud) ([]*aws.LoadBalan
 	lbs := make([]*aws.LoadBalancer, len(e.LoadBalancers))
 	for i, lb := range e.LoadBalancers {
 		if lb.LoadBalancerName == nil {
-			lbName := fi.ValueOf(lb.GetName())
-			lbDesc, err := cloud.FindELBByNameTag(lbName)
-			if err != nil {
-				return nil, err
-			}
-			if lbDesc == nil {
-				return nil, fmt.Errorf("spotinst: could not find "+
-					"load balancer to attach: %s", lbName)
-			}
-			lbs[i] = &aws.LoadBalancer{
-				Type: new("CLASSIC"),
-				Name: lbDesc.LoadBalancerName,
-			}
-		} else {
-			lbs[i] = &aws.LoadBalancer{
-				Type: new("CLASSIC"),
-				Name: lb.LoadBalancerName,
-			}
+			return nil, fmt.Errorf("spotinst: load balancer %q has no LoadBalancerName", fi.ValueOf(lb.GetName()))
+		}
+		lbs[i] = &aws.LoadBalancer{
+			Type: new("CLASSIC"),
+			Name: lb.LoadBalancerName,
 		}
 	}
 	return lbs, nil

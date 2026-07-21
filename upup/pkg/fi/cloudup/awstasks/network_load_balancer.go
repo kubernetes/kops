@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
@@ -53,10 +52,6 @@ type NetworkLoadBalancer struct {
 	// The full, stable name will be in the Name tag.
 	// (NLB is restricted as to names, so we have limited choices!)
 	LoadBalancerBaseName *string
-
-	// CLBName is the name of a ClassicLoadBalancer to delete, if found.
-	// This enables migration from CLB -> NLB
-	CLBName *string
 
 	DNSName      *string
 	HostedZoneId *string
@@ -208,7 +203,6 @@ func (e *NetworkLoadBalancer) Find(c *fi.CloudupContext) (*NetworkLoadBalancer, 
 
 	actual := &NetworkLoadBalancer{}
 	actual.Name = e.Name
-	actual.CLBName = e.CLBName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneId // CanonicalHostedZoneNameID
 	actual.Scheme = lb.Scheme
@@ -710,62 +704,9 @@ func (e *NetworkLoadBalancer) TerraformLink(params ...string) *terraformWriter.L
 	return terraformWriter.LiteralProperty("aws_lb", e.TerraformName(), prop)
 }
 
-// FindDeletions schedules deletion of the corresponding legacy classic load balancer when it no longer has targets.
+// FindDeletions schedules deletion of load balancer revisions that are no longer in use.
 func (e *NetworkLoadBalancer) FindDeletions(context *fi.CloudupContext) ([]fi.CloudupDeletion, error) {
-	var deletions []fi.CloudupDeletion
-
-	deletions = append(deletions, e.deletions...)
-
-	if e.CLBName != nil {
-		cloud := context.T.Cloud.(awsup.AWSCloud)
-
-		lb, err := cloud.FindELBByNameTag(fi.ValueOf(e.CLBName))
-		if err != nil {
-			return nil, err
-		}
-
-		if lb != nil {
-			klog.V(4).Infof("Found CLB %v", aws.ToString(lb.LoadBalancerName))
-			deletions = append(deletions, &deleteClassicLoadBalancer{LoadBalancerName: e.CLBName})
-		}
-	}
-
-	return deletions, nil
-}
-
-type deleteClassicLoadBalancer struct {
-	// LoadBalancerName is the name in ELB, possibly different from our name
-	// (ELB is restricted as to names, so we have limited choices!)
-	LoadBalancerName *string
-}
-
-func (d deleteClassicLoadBalancer) TaskName() string {
-	return "ClassicLoadBalancer"
-}
-
-func (d deleteClassicLoadBalancer) Item() string {
-	return *d.LoadBalancerName
-}
-
-func (d deleteClassicLoadBalancer) DeferDeletion() bool {
-	return true
-}
-
-func (d deleteClassicLoadBalancer) Delete(t fi.CloudupTarget) error {
-	ctx := context.TODO()
-	awsTarget, ok := t.(*awsup.AWSAPITarget)
-	if !ok {
-		return fmt.Errorf("unexpected target type for deletion: %T", t)
-	}
-
-	_, err := awsTarget.Cloud.ELB().DeleteLoadBalancer(ctx, &elb.DeleteLoadBalancerInput{
-		LoadBalancerName: d.LoadBalancerName,
-	})
-	if err != nil {
-		return fmt.Errorf("deleting classic LoadBalancer: %w", err)
-	}
-
-	return nil
+	return e.deletions, nil
 }
 
 // deleteNLB tracks a NLB that we're going to delete

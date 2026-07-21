@@ -7,6 +7,7 @@ spec:
   api:
     loadBalancer:
       type: Public
+      class: Network
       additionalSecurityGroups:
       - sg-exampleid3
       - sg-exampleid4

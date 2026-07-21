@@ -490,7 +490,7 @@ const (
 	LoadBalancerTypeInternal LoadBalancerType = "Internal"
 )
 
-// LoadBalancerClass string describes LoadBalancer classes (classic, network)
+// LoadBalancerClass string describes LoadBalancer classes (network)
 type LoadBalancerClass string
 
 const (
@@ -499,8 +499,6 @@ const (
 )
 
 type AccessLogSpec struct {
-	// Interval is publishing interval in minutes. This parameter is only used with classic load balancer.
-	Interval int `json:"interval,omitempty"`
 	// Bucket is S3 bucket name to store the logs in
 	Bucket *string `json:"bucket,omitempty"`
 	// BucketPrefix is S3 bucket prefix. Logs are stored in the root if not configured.
@@ -508,7 +506,6 @@ type AccessLogSpec struct {
 }
 
 var SupportedLoadBalancerClasses = []string{
-	string(LoadBalancerClassClassic),
 	string(LoadBalancerClassNetwork),
 }
 
@@ -524,12 +521,10 @@ type LoadBalancerSubnetSpec struct {
 
 // LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
 type LoadBalancerAccessSpec struct {
-	// LoadBalancerClass specifies the class of load balancer to create: Classic, Network
+	// LoadBalancerClass specifies the class of load balancer to create: Network
 	Class LoadBalancerClass `json:"class,omitempty"`
 	// Type of load balancer to create may Public or Internal.
 	Type LoadBalancerType `json:"type,omitempty"`
-	// IdleTimeoutSeconds sets the timeout of the api loadbalancer.
-	IdleTimeoutSeconds *int64 `json:"idleTimeoutSeconds,omitempty"`
 	// SecurityGroupOverride overrides the default Kops created SG for the load balancer.
 	SecurityGroupOverride *string `json:"securityGroupOverride,omitempty"`
 	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
