@@ -160,6 +160,10 @@ KUBETEST2_ARGS=()
 KUBETEST2_ARGS+=("-v=2")
 KUBETEST2_ARGS+=("--max-nodes-to-dump=${MAX_NODES_TO_DUMP:-5}")
 KUBETEST2_ARGS+=("--node-dump-timeout=${NODE_DUMP_TIMEOUT:-5m}")
+# Tolerate up to 2 nodes failing to join on 5k clusters.
+if [[ "${KUBE_NODE_COUNT:-100}" -ge 5000 ]]; then
+  KUBETEST2_ARGS+=("--max-unready-nodes=${MAX_UNREADY_NODES:-2}")
+fi
 KUBETEST2_ARGS+=("--cloud-provider=${CLOUD_PROVIDER}")
 KUBETEST2_ARGS+=("--cluster-name=${CLUSTER_NAME:-}")
 KUBETEST2_ARGS+=("--admin-access=${ADMIN_ACCESS:-}")

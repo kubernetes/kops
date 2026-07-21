@@ -69,6 +69,7 @@ type deployer struct {
 	ValidationWait     time.Duration `flag:"validation-wait" desc:"time to wait for newly created cluster to pass validation"`
 	ValidationCount    int           `flag:"validation-count" desc:"how many times should a validation pass"`
 	ValidationInterval time.Duration `flag:"validation-interval" desc:"time in duration to wait between validation attempts"`
+	MaxUnreadyNodes    int           `flag:"max-unready-nodes" desc:"maximum number of non-ready worker nodes tolerated during validation, helpful to set when running scale tests"`
 	MaxNodesToDump     string        `flag:"max-nodes-to-dump" desc:"max number of nodes to dump logs from, helpful to set when running scale tests"`
 	NodeDumpTimeout    time.Duration `flag:"node-dump-timeout" desc:"timeout for connecting to and dumping logs from a single node, helpful to raise when running scale tests"`
 
