@@ -137,8 +137,6 @@ type NewClusterOptions struct {
 	EtcdCount int32
 	// SchedulerCount is the number of API servers to create. Defaults to 0.
 	SchedulerCount int32
-	// CloudControllerManagerCount is the number of API servers to create. Defaults to 0.
-	CloudControllerManagerCount int32
 	// KubeControllerManagerCount is the number of API servers to create. Defaults to 0.
 	KubeControllerManagerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
@@ -176,17 +174,16 @@ type NewClusterOptions struct {
 	// InstanceManager specifies which manager to use for managing instances.
 	InstanceManager string
 
-	Image                       string
-	NodeImage                   string
-	ControlPlaneImage           string
-	BastionImage                string
-	ControlPlaneSizes           []string
-	APIServerSizes              []string
-	EtcdSizes                   []string
-	SchedulerSizes              []string
-	CloudControllerManagerSizes []string
-	KubeControllerManagerSizes  []string
-	NodeSizes                   []string
+	Image                      string
+	NodeImage                  string
+	ControlPlaneImage          string
+	BastionImage               string
+	ControlPlaneSizes          []string
+	APIServerSizes             []string
+	EtcdSizes                  []string
+	SchedulerSizes             []string
+	KubeControllerManagerSizes []string
+	NodeSizes                  []string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -510,11 +507,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
-	ccms, err := setupCCMNodes(opt, cluster, zoneToSubnetsMap)
-	if err != nil {
-		return nil, err
-	}
-
 	// Build the Etcd clusters
 	{
 		cloudProvider := cluster.GetCloudProvider()
@@ -570,7 +562,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 	instanceGroups = append(instanceGroups, etcds...)
 	instanceGroups = append(instanceGroups, schedulers...)
 	instanceGroups = append(instanceGroups, kcms...)
-	instanceGroups = append(instanceGroups, ccms...)
 	instanceGroups = append(instanceGroups, nodes...)
 	instanceGroups = append(instanceGroups, bastions...)
 
@@ -618,8 +609,6 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 					return nil, fmt.Errorf("etcd nodes requires the ExperimentalRoles feature flag to be enabled")
 				case g.Spec.Role.HasScheduler():
 					return nil, fmt.Errorf("scheduler nodes requires the ExperimentalRoles feature flag to be enabled")
-				case g.Spec.Role.HasCloudControllerManager():
-					return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
 				case g.Spec.Role.HasKubeControllerManager():
 					return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
 				}
@@ -1942,52 +1931,6 @@ func setupKCMNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMa
 		}
 
 		for i, size := range opt.KubeControllerManagerSizes {
-			if i == 0 {
-				g.Spec.MachineType = size
-			}
-			if i > 0 {
-				klog.Fatalf("multiple machine types for IG group not currently supported")
-			}
-		}
-		nodes = append(nodes, g)
-	}
-	return nodes, nil
-}
-
-func setupCCMNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
-	cloudProvider := cluster.GetCloudProvider()
-	var nodes []*api.InstanceGroup
-	numZones := len(opt.Zones)
-	nodeCount := opt.CloudControllerManagerCount
-	if nodeCount == 0 {
-		return nodes, nil
-	}
-	countPerIG := nodeCount / int32(numZones)
-	remainder := int(nodeCount) % numZones
-	for i, zone := range opt.Zones {
-		count := countPerIG
-		if i < remainder {
-			count++
-		}
-		g := &api.InstanceGroup{}
-		g.Spec.Role = api.InstanceGroupRoleCloudControllerManager
-		g.Spec.MinSize = new(count)
-		g.Spec.MaxSize = new(count)
-		g.ObjectMeta.Name = "ccm-" + zone
-
-		subnets := zoneToSubnetsMap[zone]
-		if len(subnets) == 0 {
-			klog.Fatalf("subnet not found in zoneToSubnetsMap")
-		}
-		for _, subnet := range subnets {
-			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
-		}
-
-		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
-			g.Spec.Zones = []string{zone}
-		}
-
-		for i, size := range opt.CloudControllerManagerSizes {
 			if i == 0 {
 				g.Spec.MachineType = size
 			}

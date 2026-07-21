@@ -301,6 +301,11 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 			config.APIServerConfig.ServiceAccountPublicKeys = serviceAccountPublicKeys
 		} else {
+			if role.HasKubeControllerManager() {
+				if keysets["service-account"] != nil {
+					config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
+				}
+			}
 			for _, key := range []string{"kubelet", "kube-proxy", "kube-router"} {
 				if keysets[key] != nil {
 					config.KeypairIDs[key] = keysets[key].Primary.Id

@@ -139,9 +139,6 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 			if r.HasScheduler() {
 				continue
 			}
-			if r.HasCloudControllerManager() {
-				continue
-			}
 			if r.HasKubeControllerManager() {
 				continue
 			}

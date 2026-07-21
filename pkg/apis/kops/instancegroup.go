@@ -67,8 +67,6 @@ const (
 	InstanceGroupRoleEtcd InstanceGroupRole = "Etcd"
 	// InstanceGroupRoleScheduler is a Scheduler role.
 	InstanceGroupRoleScheduler InstanceGroupRole = "Scheduler"
-	// InstanceGroupRoleCloudControllerManager is a CloudControllerManager role.
-	InstanceGroupRoleCloudControllerManager InstanceGroupRole = "CloudControllerManager"
 	// InstanceGroupRoleKubeControllerManager is a KubeControllerManager role.
 	InstanceGroupRoleKubeControllerManager InstanceGroupRole = "KubeControllerManager"
 )
@@ -108,16 +106,12 @@ func (r InstanceGroupRole) HasScheduler() bool {
 	return r == InstanceGroupRoleScheduler
 }
 
-func (r InstanceGroupRole) HasCloudControllerManager() bool {
-	return r == InstanceGroupRoleCloudControllerManager
-}
-
 func (r InstanceGroupRole) HasKubeControllerManager() bool {
 	return r == InstanceGroupRoleKubeControllerManager
 }
 
 func (r InstanceGroupRole) IsControlPlaneType() bool {
-	return r.HasControlPlane() || r.HasAPIServer() || r.HasEtcd() || r.HasScheduler() || r.HasKubeControllerManager() || r.HasCloudControllerManager()
+	return r.HasControlPlane() || r.HasAPIServer() || r.HasEtcd() || r.HasScheduler() || r.HasKubeControllerManager()
 }
 
 const (

@@ -102,6 +102,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isScheduler {
@@ -109,6 +110,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isKubeControllerManager {
@@ -116,6 +118,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelKubeControllerManager] = ""
+		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isControlPlane {

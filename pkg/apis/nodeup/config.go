@@ -402,7 +402,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 
-	if instanceGroup.IsControlPlane() || cluster.UsesLegacyGossip() {
+	if instanceGroup.HasAPIServer() || cluster.UsesLegacyGossip() {
 		config.DNSZone = cluster.Spec.DNSZone
 	}
 
@@ -414,6 +414,20 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.ControlPlaneConfig = &ControlPlaneConfig{
 			KubeControllerManager: *cluster.Spec.KubeControllerManager,
 			KubeScheduler:         *cluster.Spec.KubeScheduler,
+		}
+	} else if instanceGroup.IsKubeControllerManagerOnly() {
+		config.ControlPlaneConfig = &ControlPlaneConfig{
+			KubeControllerManager: *cluster.Spec.KubeControllerManager,
+		}
+		config.APIServerConfig = &APIServerConfig{
+			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+		}
+	} else if instanceGroup.IsSchedulerOnly() {
+		config.ControlPlaneConfig = &ControlPlaneConfig{
+			KubeScheduler: *cluster.Spec.KubeScheduler,
+		}
+		config.APIServerConfig = &APIServerConfig{
+			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
 		}
 	}
 

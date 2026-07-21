@@ -190,6 +190,8 @@ func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup)
 
 	if ig.HasAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
+	} else if ig.HasKubeControllerManager() {
+		keypairs = append(keypairs, "service-account")
 	}
 
 	// Add keypairs for cilium etcd clusters (not the default etcd clusters)

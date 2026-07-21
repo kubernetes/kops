@@ -131,6 +131,8 @@ func (b *KubeletBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 				return fmt.Errorf("error querying Azure instance metadata: %v", err)
 			}
 			providerID = "azure://" + metadata.ResourceID
+		} else if b.CloudProvider() == kops.CloudProviderGCE {
+			// TODO
 		}
 
 		t, err := b.buildKubeletComponentConfig(kubeletConfig, providerID)
