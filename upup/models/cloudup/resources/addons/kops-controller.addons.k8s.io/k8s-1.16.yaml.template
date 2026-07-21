@@ -55,6 +55,8 @@ spec:
         operator: Exists
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
+      - key: node-role.kubernetes.io/api-server
+        operator: Exists
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       serviceAccount: kops-controller

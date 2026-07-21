@@ -291,16 +291,16 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool, vf
 		if g.Spec.Role.HasNode() {
 			nodeGroupCount++
 		}
-		if g.HasAPIServer() {
+		if g.RunsAPIServer() {
 			apiServerGroupCount++
 		}
-		if g.HasEtcd() {
+		if g.RunsEtcd() {
 			etcdGroupCount++
 		}
-		if g.HasKubeControllerManager() {
+		if g.RunsKubeControllerManager() {
 			kcmGroupCount++
 		}
-		if g.HasScheduler() {
+		if g.RunsScheduler() {
 			schedulerGroupCount++
 		}
 		if g.IsEtcdOnly() || g.IsSchedulerOnly() || g.IsKubeControllerManagerOnly() {

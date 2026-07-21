@@ -165,7 +165,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	var kopsControllerIGMs []*gcetasks.InstanceGroupManager
 	requireEtcdLB := false
 	for _, ig := range b.InstanceGroups {
-		if !ig.RunsAPIServer() && !ig.HasEtcd() {
+		if !ig.RunsAPIServer() && !ig.RunsEtcd() {
 			continue
 		}
 		if len(ig.Spec.Zones) > 1 {
@@ -176,13 +176,13 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 		}
 		zone := ig.Spec.Zones[0]
 		igm := &gcetasks.InstanceGroupManager{Name: s(gce.NameForInstanceGroupManager(b.Cluster.ObjectMeta.Name, ig.ObjectMeta.Name, zone)), Zone: s(zone)}
-		if ig.HasAPIServer() {
+		if ig.RunsAPIServer() {
 			apiIGMs = append(apiIGMs, igm)
 		}
-		if ig.HasEtcd() {
+		if ig.RunsEtcd() {
 			etcdIGMs = append(etcdIGMs, igm)
 		}
-		if ig.IsControlPlane() || ig.HasAPIServer() /* && Check for no control plane */ {
+		if ig.IsControlPlane() || ig.RunsAPIServer() /* && Check for no control plane */ {
 			kopsControllerIGMs = append(kopsControllerIGMs, igm)
 		}
 		if ig.IsAPIServerOnly() {
