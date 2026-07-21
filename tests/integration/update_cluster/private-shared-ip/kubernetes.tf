@@ -177,7 +177,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-private-shared-ip-ex
     id      = aws_launch_template.master-us-test-1a-masters-private-shared-ip-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-private-shared-ip-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-private-shared-ip-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -234,6 +233,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-private-shared-ip-ex
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-private-shared-ip-exa-g7j47a.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-private-shared-ip-example-com.id]
 }
 
@@ -403,34 +403,6 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-private-shared-ip-example-com" {
   }
   throughput = 125
   type       = "gp3"
-}
-
-resource "aws_elb" "api-private-shared-ip-example-com" {
-  connection_draining         = true
-  connection_draining_timeout = 300
-  cross_zone_load_balancing   = false
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-private-shared-ip-exa-ohatqj"
-  security_groups = [aws_security_group.api-elb-private-shared-ip-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id]
-  tags = {
-    "KubernetesCluster"                                   = "private-shared-ip.example.com"
-    "Name"                                                = "api.private-shared-ip.example.com"
-    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
-  }
 }
 
 resource "aws_iam_instance_profile" "bastions-private-shared-ip-example-com" {
@@ -787,6 +759,22 @@ resource "aws_launch_template" "nodes-private-shared-ip-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.private-shared-ip.example.com_user_data")
 }
 
+resource "aws_lb" "api-private-shared-ip-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-private-shared-ip-exa-ohatqj"
+  security_groups                  = [aws_security_group.api-elb-private-shared-ip-example-com.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.utility-us-test-1a-private-shared-ip-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "api.private-shared-ip.example.com"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+}
+
 resource "aws_lb" "bastion-private-shared-ip-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
@@ -801,6 +789,16 @@ resource "aws_lb" "bastion-private-shared-ip-example-com" {
     "Name"                                                = "bastion.private-shared-ip.example.com"
     "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
+}
+
+resource "aws_lb_listener" "api-private-shared-ip-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tcp-private-shared-ip-exa-g7j47a.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-private-shared-ip-example-com.id
+  port              = 443
+  protocol          = "TCP"
 }
 
 resource "aws_lb_listener" "bastion-private-shared-ip-example-com-22" {
@@ -828,6 +826,26 @@ resource "aws_lb_target_group" "bastion-private-shared-ip-eepmph" {
   tags = {
     "KubernetesCluster"                                   = "private-shared-ip.example.com"
     "Name"                                                = "bastion-private-shared-ip-eepmph"
+    "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
+  }
+  vpc_id = "vpc-12345678"
+}
+
+resource "aws_lb_target_group" "tcp-private-shared-ip-exa-g7j47a" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tcp-private-shared-ip-exa-g7j47a"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                                   = "private-shared-ip.example.com"
+    "Name"                                                = "tcp-private-shared-ip-exa-g7j47a"
     "kubernetes.io/cluster/private-shared-ip.example.com" = "owned"
   }
   vpc_id = "vpc-12345678"
@@ -864,8 +882,8 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
 resource "aws_route53_record" "api-private-shared-ip-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-private-shared-ip-example-com.dns_name
-    zone_id                = aws_elb.api-private-shared-ip-example-com.zone_id
+    name                   = aws_lb.api-private-shared-ip-example-com.dns_name
+    zone_id                = aws_lb.api-private-shared-ip-example-com.zone_id
   }
   name    = "api.private-shared-ip.example.com"
   type    = "A"
@@ -875,8 +893,8 @@ resource "aws_route53_record" "api-private-shared-ip-example-com" {
 resource "aws_route53_record" "api-private-shared-ip-example-com-AAAA" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-private-shared-ip-example-com.dns_name
-    zone_id                = aws_elb.api-private-shared-ip-example-com.zone_id
+    name                   = aws_lb.api-private-shared-ip-example-com.dns_name
+    zone_id                = aws_lb.api-private-shared-ip-example-com.zone_id
   }
   name    = "api.private-shared-ip.example.com"
   type    = "AAAA"

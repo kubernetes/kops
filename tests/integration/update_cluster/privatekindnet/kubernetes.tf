@@ -177,7 +177,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatekindnet-examp
     id      = aws_launch_template.master-us-test-1a-masters-privatekindnet-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privatekindnet-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-privatekindnet-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -234,6 +233,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatekindnet-examp
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-privatekindnet-exampl-ab4gi5.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-privatekindnet-example-com.id]
 }
 
@@ -410,34 +410,6 @@ resource "aws_eip" "us-test-1a-privatekindnet-example-com" {
   tags = {
     "KubernetesCluster"                                = "privatekindnet.example.com"
     "Name"                                             = "us-test-1a.privatekindnet.example.com"
-    "kubernetes.io/cluster/privatekindnet.example.com" = "owned"
-  }
-}
-
-resource "aws_elb" "api-privatekindnet-example-com" {
-  connection_draining         = true
-  connection_draining_timeout = 300
-  cross_zone_load_balancing   = false
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-privatekindnet-exampl-c5d4tf"
-  security_groups = [aws_security_group.api-elb-privatekindnet-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-privatekindnet-example-com.id]
-  tags = {
-    "KubernetesCluster"                                = "privatekindnet.example.com"
-    "Name"                                             = "api.privatekindnet.example.com"
     "kubernetes.io/cluster/privatekindnet.example.com" = "owned"
   }
 }
@@ -805,6 +777,22 @@ resource "aws_launch_template" "nodes-privatekindnet-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privatekindnet.example.com_user_data")
 }
 
+resource "aws_lb" "api-privatekindnet-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-privatekindnet-exampl-c5d4tf"
+  security_groups                  = [aws_security_group.api-elb-privatekindnet-example-com.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.utility-us-test-1a-privatekindnet-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                                = "privatekindnet.example.com"
+    "Name"                                             = "api.privatekindnet.example.com"
+    "kubernetes.io/cluster/privatekindnet.example.com" = "owned"
+  }
+}
+
 resource "aws_lb" "bastion-privatekindnet-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
@@ -819,6 +807,16 @@ resource "aws_lb" "bastion-privatekindnet-example-com" {
     "Name"                                             = "bastion.privatekindnet.example.com"
     "kubernetes.io/cluster/privatekindnet.example.com" = "owned"
   }
+}
+
+resource "aws_lb_listener" "api-privatekindnet-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tcp-privatekindnet-exampl-ab4gi5.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-privatekindnet-example-com.id
+  port              = 443
+  protocol          = "TCP"
 }
 
 resource "aws_lb_listener" "bastion-privatekindnet-example-com-22" {
@@ -846,6 +844,26 @@ resource "aws_lb_target_group" "bastion-privatekindnet-ex-70mv5p" {
   tags = {
     "KubernetesCluster"                                = "privatekindnet.example.com"
     "Name"                                             = "bastion-privatekindnet-ex-70mv5p"
+    "kubernetes.io/cluster/privatekindnet.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatekindnet-example-com.id
+}
+
+resource "aws_lb_target_group" "tcp-privatekindnet-exampl-ab4gi5" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tcp-privatekindnet-exampl-ab4gi5"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                                = "privatekindnet.example.com"
+    "Name"                                             = "tcp-privatekindnet-exampl-ab4gi5"
     "kubernetes.io/cluster/privatekindnet.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatekindnet-example-com.id
@@ -882,8 +900,8 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
 resource "aws_route53_record" "api-privatekindnet-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-privatekindnet-example-com.dns_name
-    zone_id                = aws_elb.api-privatekindnet-example-com.zone_id
+    name                   = aws_lb.api-privatekindnet-example-com.dns_name
+    zone_id                = aws_lb.api-privatekindnet-example-com.zone_id
   }
   name    = "api.privatekindnet.example.com"
   type    = "A"
@@ -893,8 +911,8 @@ resource "aws_route53_record" "api-privatekindnet-example-com" {
 resource "aws_route53_record" "api-privatekindnet-example-com-AAAA" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-privatekindnet-example-com.dns_name
-    zone_id                = aws_elb.api-privatekindnet-example-com.zone_id
+    name                   = aws_lb.api-privatekindnet-example-com.dns_name
+    zone_id                = aws_lb.api-privatekindnet-example-com.zone_id
   }
   name    = "api.privatekindnet.example.com"
   type    = "AAAA"
