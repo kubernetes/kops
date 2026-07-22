@@ -132,7 +132,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	if i.capiManager != nil && capgRole != "" {
 		providerID := "gce://" + project + "/" + zone + "/" + instanceName
 
-		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID)
+		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID, gce.SafeClusterName(i.clusterName))
 		if err != nil {
 			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
 		}
@@ -141,38 +141,12 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	var igName string
 	if capiMachine == nil {
-		// The metadata itself is potentially mutable from the instance
-		// We instead look at the MIG configuration
-		createdBy := getMetadataValue(instance.Metadata, "created-by")
-		if createdBy == "" {
-			return nil, fmt.Errorf("cannot find owner for instance %s", instance.Name)
-		}
-
-		// We need to double-check the MIG configuration, in case created-by was changed
-		migName := lastComponent(createdBy)
-
-		mig, err := i.getMIG(zone, migName)
+		instanceTemplate, err := GetInstanceTemplateForMIGMember(ctx, i.computeService, i.project, instance)
 		if err != nil {
 			return nil, err
 		}
 
-		// We now double check that the instance is indeed managed by the MIG
-		// this can't be spoofed without GCE API access
-		migMember, err := i.getManagedInstance(ctx, mig, instance.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		if migMember.Version == nil {
-			return nil, fmt.Errorf("instance %s did not have Version set", instance.Name)
-		}
-
-		instanceTemplate, err := i.getInstanceTemplate(lastComponent(migMember.Version.InstanceTemplate))
-		if err != nil {
-			return nil, err
-		}
-
-		igName = getMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
+		igName = GetMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
 		if igName == "" {
 			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 		}
@@ -220,33 +194,43 @@ func (i *nodeIdentifier) getInstance(zone string, instanceName string) (*compute
 	return instance, nil
 }
 
-// getInstanceTemplate queries GCE for the IG Template with the specified name, returning an error if not found
-func (i *nodeIdentifier) getInstanceTemplate(name string) (*compute.InstanceTemplate, error) {
-	t, err := i.computeService.InstanceTemplates.Get(i.project, name).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE instance group template %q: %v", name, err)
+// GetInstanceTemplateForMIGMember returns the instance template of the MIG that manages the given
+// instance. The instance metadata is potentially mutable by whoever created the instance, so we
+// instead resolve the MIG from the created-by metadata and verify that the instance is indeed
+// managed by it; MIG membership can't be spoofed without GCE API access.
+func GetInstanceTemplateForMIGMember(ctx context.Context, computeService *compute.Service, project string, instance *compute.Instance) (*compute.InstanceTemplate, error) {
+	createdBy := GetMetadataValue(instance.Metadata, "created-by")
+	if createdBy == "" {
+		return nil, fmt.Errorf("cannot find owner for instance %s", instance.Name)
 	}
 
-	return t, nil
-}
+	// We need to double-check the MIG membership, in case created-by was changed
+	migName := lastComponent(createdBy)
 
-// getMIG queries GCE for the MIG with the specified name, returning an error if not found
-func (i *nodeIdentifier) getMIG(zone string, migName string) (*compute.InstanceGroupManager, error) {
-	mig, err := i.computeService.InstanceGroupManagers.Get(i.project, zone, migName).Do()
+	migMember, err := getManagedInstance(ctx, computeService, project, lastComponent(instance.Zone), migName, instance.Id)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group %q: %v", migName, err)
+		return nil, err
 	}
 
-	return mig, nil
+	if migMember.Version == nil {
+		return nil, fmt.Errorf("instance %s did not have Version set", instance.Name)
+	}
+
+	templateName := lastComponent(migMember.Version.InstanceTemplate)
+	instanceTemplate, err := computeService.InstanceTemplates.Get(project, templateName).Context(ctx).Do()
+	if err != nil {
+		return nil, fmt.Errorf("error fetching GCE instance group template %q: %v", templateName, err)
+	}
+
+	return instanceTemplate, nil
 }
 
 // getManagedInstance queries GCE for the instance from the MIG
-func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
+func getManagedInstance(ctx context.Context, computeService *compute.Service, project string, zone string, migName string, instanceID uint64) (*compute.ManagedInstance, error) {
 	var matches []*compute.ManagedInstance
 
 	filter := "id=" + strconv.FormatUint(instanceID, 10)
-	zone := lastComponent(mig.Zone)
-	if err := i.computeService.InstanceGroupManagers.ListManagedInstances(i.project, zone, mig.Name).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
+	if err := computeService.InstanceGroupManagers.ListManagedInstances(project, zone, migName).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
 		// Post-filter... filters aren't implemented (b/27605549)
 		for _, instance := range page.ManagedInstances {
 			if instance.Id != instanceID {
@@ -256,15 +240,15 @@ func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.In
 		}
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", mig.Name, err)
+		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", migName, err)
 	}
 
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, mig.Name)
+		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, migName)
 	}
 	if len(matches) > 1 {
 		// Should be impossible - shows that filters / post-filters are not working
-		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, mig.Name)
+		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, migName)
 	}
 
 	return matches[0], nil
@@ -280,7 +264,8 @@ func lastComponent(s string) string {
 	return s
 }
 
-func getMetadataValue(metadata *compute.Metadata, key string) string {
+// GetMetadataValue returns the value for the given key in the metadata, or "" if not present.
+func GetMetadataValue(metadata *compute.Metadata, key string) string {
 	value := ""
 	if metadata != nil {
 		for _, item := range metadata.Items {

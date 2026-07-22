@@ -39,7 +39,9 @@ func NewManager(kubeClient client.Client) *Manager {
 	}
 }
 
-func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string) (*clusterapi.Machine, error) {
+// FindMachineByProviderID returns the Machine with the given spec.providerID, or nil if not found.
+// Machines belonging to CAPI clusters other than clusterName are ignored.
+func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string, clusterName string) (*clusterapi.Machine, error) {
 	// TODO: Can we build an index
 	// selector := client.MatchingFieldsSelector{
 	// 	Selector: fields.OneTermEqualSelector("spec.providerID", providerID),
@@ -58,6 +60,10 @@ func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string
 		machine := &machines.Items[i]
 		machineSpecProviderID, _, _ := unstructured.NestedString(machine.Object, "spec", "providerID")
 		if machineSpecProviderID != providerID {
+			continue
+		}
+		machineClusterName, _, _ := unstructured.NestedString(machine.Object, "spec", "clusterName")
+		if machineClusterName != clusterName {
 			continue
 		}
 		matches = append(matches, machine)
