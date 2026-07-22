@@ -19,7 +19,6 @@ package awsmodel
 import (
 	"fmt"
 	"sort"
-	"time"
 
 	elbv2types "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -30,9 +29,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
-
-// LoadBalancerDefaultIdleTimeout is the default idle time for the ELB
-const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
 
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerBuilder struct {
@@ -65,18 +61,14 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	var elbSubnets []*awstasks.Subnet
 	var nlbSubnetMappings []*awstasks.SubnetMapping
 	if len(lbSpec.Subnets) != 0 {
 		// Subnets have been explicitly set
 		for _, subnet := range lbSpec.Subnets {
 			for _, clusterSubnet := range b.Cluster.Spec.Networking.Subnets {
 				if subnet.Name == clusterSubnet.Name {
-					elbSubnet := b.LinkToSubnet(&clusterSubnet)
-					elbSubnets = append(elbSubnets, elbSubnet)
-
 					nlbSubnetMapping := &awstasks.SubnetMapping{
-						Subnet: elbSubnet,
+						Subnet: b.LinkToSubnet(&clusterSubnet),
 					}
 					if subnet.PrivateIPv4Address != nil {
 						nlbSubnetMapping.PrivateIPv4Address = subnet.PrivateIPv4Address
@@ -116,23 +108,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		for zone, subnets := range subnetsByZone {
 			subnet := b.chooseBestSubnetForELB(zone, subnets)
 
-			elbSubnet := b.LinkToSubnet(subnet)
-			elbSubnets = append(elbSubnets, elbSubnet)
-			nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{Subnet: elbSubnet})
+			nlbSubnetMappings = append(nlbSubnetMappings, &awstasks.SubnetMapping{Subnet: b.LinkToSubnet(subnet)})
 		}
 	}
 
-	var clb *awstasks.ClassicLoadBalancer
 	var nlb *awstasks.NetworkLoadBalancer
 	{
-		idleTimeout := LoadBalancerDefaultIdleTimeout
-		if lbSpec.IdleTimeoutSeconds != nil {
-			idleTimeout = time.Second * time.Duration(*lbSpec.IdleTimeoutSeconds)
-		}
-
-		listeners := map[string]*awstasks.ClassicLoadBalancerListener{
-			"443": {InstancePort: 443},
-		}
 		var nlbListeners []*awstasks.NetworkLoadBalancerListener
 
 		if lbSpec.SSLCertificate == "" {
@@ -157,7 +138,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			nlbListeners = append(nlbListeners, listener8443)
 
 			// The primary listener _does_ use the custom certificate.
-			listeners["443"].SSLCertificateID = lbSpec.SSLCertificate
 			listener443 := &awstasks.NetworkLoadBalancerListener{
 				Name:                new(b.NLBListenerName("api", 443)),
 				Lifecycle:           b.Lifecycle,
@@ -214,7 +194,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerBaseName: new(b.LBName32("api")),
-			CLBName:              new("api." + b.ClusterName()),
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
 			},
@@ -232,86 +211,36 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			nlb.SetWaitForLoadBalancerReady(true)
 		}
 
-		clb = &awstasks.ClassicLoadBalancer{
-			Name:      new("api." + b.ClusterName()),
-			Lifecycle: b.Lifecycle,
-
-			LoadBalancerName: new(b.LBName32("api")),
-			SecurityGroups: []*awstasks.SecurityGroup{
-				b.LinkToELBSecurityGroup("api"),
-			},
-			Subnets:   elbSubnets,
-			Listeners: listeners,
-
-			// Configure fast-recovery health-checks
-			HealthCheck: &awstasks.ClassicLoadBalancerHealthCheck{
-				Target:             new("SSL:443"),
-				Timeout:            new(int32(5)),
-				Interval:           new(int32(10)),
-				HealthyThreshold:   new(int32(2)),
-				UnhealthyThreshold: new(int32(2)),
-			},
-
-			ConnectionSettings: &awstasks.ClassicLoadBalancerConnectionSettings{
-				IdleTimeout: new(int32(idleTimeout.Seconds())),
-			},
-
-			ConnectionDraining: &awstasks.ClassicLoadBalancerConnectionDraining{
-				Enabled: new(true),
-				Timeout: new(int32(300)),
-			},
-
-			Tags:              tags,
-			WellKnownServices: []wellknownservices.WellKnownService{wellknownservices.KubeAPIServer},
-		}
-
 		if b.Cluster.UsesLoadBalancerForKopsController() {
 			lbSpec.CrossZoneLoadBalancing = new(true)
 		} else if lbSpec.CrossZoneLoadBalancing == nil {
 			lbSpec.CrossZoneLoadBalancing = new(false)
 		}
 
-		clb.CrossZoneLoadBalancing = &awstasks.ClassicLoadBalancerCrossZoneLoadBalancing{
-			Enabled: lbSpec.CrossZoneLoadBalancing,
-		}
-
 		nlb.CrossZoneLoadBalancing = lbSpec.CrossZoneLoadBalancing
 
 		switch lbSpec.Type {
 		case kops.LoadBalancerTypeInternal:
-			clb.Scheme = new("internal")
 			nlb.Scheme = elbv2types.LoadBalancerSchemeEnumInternal
 		case kops.LoadBalancerTypePublic:
-			clb.Scheme = nil
 			nlb.Scheme = elbv2types.LoadBalancerSchemeEnumInternetFacing
 		default:
 			return fmt.Errorf("unknown load balancer Type: %q", lbSpec.Type)
 		}
 
 		if lbSpec.AccessLog != nil {
-			clb.AccessLog = &awstasks.ClassicLoadBalancerAccessLog{
-				EmitInterval:   new(int32(lbSpec.AccessLog.Interval)),
-				Enabled:        new(true),
-				S3BucketName:   lbSpec.AccessLog.Bucket,
-				S3BucketPrefix: lbSpec.AccessLog.BucketPrefix,
-			}
 			nlb.AccessLog = &awstasks.NetworkLoadBalancerAccessLog{
 				Enabled:        new(true),
 				S3BucketName:   lbSpec.AccessLog.Bucket,
 				S3BucketPrefix: lbSpec.AccessLog.BucketPrefix,
 			}
 		} else {
-			clb.AccessLog = &awstasks.ClassicLoadBalancerAccessLog{
-				Enabled: new(false),
-			}
 			nlb.AccessLog = &awstasks.NetworkLoadBalancerAccessLog{
 				Enabled: new(false),
 			}
 		}
 
-		if b.APILoadBalancerClass() == kops.LoadBalancerClassClassic {
-			c.AddTask(clb)
-		} else if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+		{
 			groupAttrs := map[string]string{
 				awstasks.TargetGroupAttributeDeregistrationDelayConnectionTerminationEnabled: "true",
 				awstasks.TargetGroupAttributeDeregistrationDelayTimeoutSeconds:               "30",
@@ -488,7 +417,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			}
 
 			// If we have opened a secondary listener on 8443, allow it also
-			if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+			if lbSpec.SSLCertificate != "" {
 				t := &awstasks.SecurityGroupRule{
 					Name:          new("https-api-elb-8443-" + cidr),
 					Lifecycle:     b.SecurityLifecycle,
@@ -558,7 +487,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		return err
 	}
 
-	if b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork && b.Cluster.Spec.API.LoadBalancer != nil && b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+	if lbSpec.SSLCertificate != "" {
 		for _, masterGroup := range masterGroups {
 			suffix := masterGroup.Suffix
 			// Allow access to control plane on secondary port through NLB
@@ -585,7 +514,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				Shared:    new(true),
 			}
 			c.EnsureTask(t)
-			clb.SecurityGroups = append(clb.SecurityGroups, t)
 			nlb.SecurityGroups = append(nlb.SecurityGroups, t)
 		}
 	}
@@ -624,7 +552,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			if b.Cluster.UsesLoadBalancerForKopsController() {
 				{
 					nlb.WellKnownServices = append(nlb.WellKnownServices, wellknownservices.KopsController)
-					clb.WellKnownServices = append(clb.WellKnownServices, wellknownservices.KopsController)
 
 					c.AddTask(&awstasks.SecurityGroupRule{
 						Name:          new(fmt.Sprintf("kops-controller-elb-to-cp%s", suffix)),

@@ -111,7 +111,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
     id      = aws_launch_template.master-us-test-1a-masters-existingsg-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-existingsg-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-existingsg-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -168,6 +167,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-existingsg-example-c
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-existingsg-example-co-jml1o0.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-existingsg-example-com.id]
 }
 
@@ -177,7 +177,6 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
     id      = aws_launch_template.master-us-test-1b-masters-existingsg-example-com.id
     version = aws_launch_template.master-us-test-1b-masters-existingsg-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-existingsg-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -234,6 +233,7 @@ resource "aws_autoscaling_group" "master-us-test-1b-masters-existingsg-example-c
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-existingsg-example-co-jml1o0.id]
   vpc_zone_identifier = [aws_subnet.us-test-1b-existingsg-example-com.id]
 }
 
@@ -243,7 +243,6 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-c
     id      = aws_launch_template.master-us-test-1c-masters-existingsg-example-com.id
     version = aws_launch_template.master-us-test-1c-masters-existingsg-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-existingsg-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -300,6 +299,7 @@ resource "aws_autoscaling_group" "master-us-test-1c-masters-existingsg-example-c
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-existingsg-example-co-jml1o0.id]
   vpc_zone_identifier = [aws_subnet.us-test-1c-existingsg-example-com.id]
 }
 
@@ -545,34 +545,6 @@ resource "aws_ebs_volume" "c-etcd-main-existingsg-example-com" {
   }
   throughput = 125
   type       = "gp3"
-}
-
-resource "aws_elb" "api-existingsg-example-com" {
-  connection_draining         = true
-  connection_draining_timeout = 300
-  cross_zone_load_balancing   = false
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-existingsg-example-co-ikb7m9"
-  security_groups = ["sg-elb"]
-  subnets         = [aws_subnet.us-test-1a-existingsg-example-com.id, aws_subnet.us-test-1b-existingsg-example-com.id, aws_subnet.us-test-1c-existingsg-example-com.id]
-  tags = {
-    "KubernetesCluster"                            = "existingsg.example.com"
-    "Name"                                         = "api.existingsg.example.com"
-    "kubernetes.io/cluster/existingsg.example.com" = "owned"
-  }
 }
 
 resource "aws_iam_instance_profile" "masters-existingsg-example-com" {
@@ -1034,6 +1006,58 @@ resource "aws_launch_template" "nodes-existingsg-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.existingsg.example.com_user_data")
 }
 
+resource "aws_lb" "api-existingsg-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-existingsg-example-co-ikb7m9"
+  security_groups                  = ["sg-elb"]
+  subnet_mapping {
+    subnet_id = aws_subnet.us-test-1a-existingsg-example-com.id
+  }
+  subnet_mapping {
+    subnet_id = aws_subnet.us-test-1b-existingsg-example-com.id
+  }
+  subnet_mapping {
+    subnet_id = aws_subnet.us-test-1c-existingsg-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "api.existingsg.example.com"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+}
+
+resource "aws_lb_listener" "api-existingsg-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tcp-existingsg-example-co-jml1o0.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-existingsg-example-com.id
+  port              = 443
+  protocol          = "TCP"
+}
+
+resource "aws_lb_target_group" "tcp-existingsg-example-co-jml1o0" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tcp-existingsg-example-co-jml1o0"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                            = "existingsg.example.com"
+    "Name"                                         = "tcp-existingsg-example-co-jml1o0"
+    "kubernetes.io/cluster/existingsg.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.existingsg-example-com.id
+}
+
 resource "aws_route" "route-0-0-0-0--0" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.existingsg-example-com.id
@@ -1049,8 +1073,8 @@ resource "aws_route" "route-__--0" {
 resource "aws_route53_record" "api-existingsg-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-existingsg-example-com.dns_name
-    zone_id                = aws_elb.api-existingsg-example-com.zone_id
+    name                   = aws_lb.api-existingsg-example-com.dns_name
+    zone_id                = aws_lb.api-existingsg-example-com.zone_id
   }
   name    = "api.existingsg.example.com"
   type    = "A"
@@ -1060,8 +1084,8 @@ resource "aws_route53_record" "api-existingsg-example-com" {
 resource "aws_route53_record" "api-existingsg-example-com-AAAA" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-existingsg-example-com.dns_name
-    zone_id                = aws_elb.api-existingsg-example-com.zone_id
+    name                   = aws_lb.api-existingsg-example-com.dns_name
+    zone_id                = aws_lb.api-existingsg-example-com.zone_id
   }
   name    = "api.existingsg.example.com"
   type    = "AAAA"

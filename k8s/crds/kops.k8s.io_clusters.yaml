@@ -96,8 +96,7 @@ spec:
                               stored in the root if not configured.
                             type: string
                           interval:
-                            description: Interval is publishing interval in minutes.
-                              This parameter is only used with classic load balancer.
+                            description: Interval is unused
                             type: integer
                         type: object
                       additionalSecurityGroups:
@@ -108,15 +107,14 @@ spec:
                         type: array
                       class:
                         description: 'LoadBalancerClass specifies the class of load
-                          balancer to create: Classic, Network'
+                          balancer to create: Network'
                         type: string
                       crossZoneLoadBalancing:
                         description: CrossZoneLoadBalancing allows you to enable the
                           cross zone load balancing
                         type: boolean
                       idleTimeoutSeconds:
-                        description: IdleTimeoutSeconds sets the timeout of the api
-                          loadbalancer.
+                        description: IdleTimeoutSeconds is unused
                         format: int64
                         type: integer
                       securityGroupOverride:

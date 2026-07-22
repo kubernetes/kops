@@ -177,7 +177,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-bastionuserdata-exam
     id      = aws_launch_template.master-us-test-1a-masters-bastionuserdata-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-bastionuserdata-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-bastionuserdata-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -234,6 +233,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-bastionuserdata-exam
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-bastionuserdata-examp-qe51ro.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-bastionuserdata-example-com.id]
 }
 
@@ -410,34 +410,6 @@ resource "aws_eip" "us-test-1a-bastionuserdata-example-com" {
   tags = {
     "KubernetesCluster"                                 = "bastionuserdata.example.com"
     "Name"                                              = "us-test-1a.bastionuserdata.example.com"
-    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
-  }
-}
-
-resource "aws_elb" "api-bastionuserdata-example-com" {
-  connection_draining         = true
-  connection_draining_timeout = 300
-  cross_zone_load_balancing   = false
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-bastionuserdata-examp-qbgom9"
-  security_groups = [aws_security_group.api-elb-bastionuserdata-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id]
-  tags = {
-    "KubernetesCluster"                                 = "bastionuserdata.example.com"
-    "Name"                                              = "api.bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
 }
@@ -806,6 +778,22 @@ resource "aws_launch_template" "nodes-bastionuserdata-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.bastionuserdata.example.com_user_data")
 }
 
+resource "aws_lb" "api-bastionuserdata-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-bastionuserdata-examp-qbgom9"
+  security_groups                  = [aws_security_group.api-elb-bastionuserdata-example-com.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.utility-us-test-1a-bastionuserdata-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "api.bastionuserdata.example.com"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+}
+
 resource "aws_lb" "bastion-bastionuserdata-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
@@ -820,6 +808,16 @@ resource "aws_lb" "bastion-bastionuserdata-example-com" {
     "Name"                                              = "bastion.bastionuserdata.example.com"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
+}
+
+resource "aws_lb_listener" "api-bastionuserdata-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tcp-bastionuserdata-examp-qe51ro.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-bastionuserdata-example-com.id
+  port              = 443
+  protocol          = "TCP"
 }
 
 resource "aws_lb_listener" "bastion-bastionuserdata-example-com-22" {
@@ -847,6 +845,26 @@ resource "aws_lb_target_group" "bastion-bastionuserdata-e-4grhsv" {
   tags = {
     "KubernetesCluster"                                 = "bastionuserdata.example.com"
     "Name"                                              = "bastion-bastionuserdata-e-4grhsv"
+    "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.bastionuserdata-example-com.id
+}
+
+resource "aws_lb_target_group" "tcp-bastionuserdata-examp-qe51ro" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tcp-bastionuserdata-examp-qe51ro"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                                 = "bastionuserdata.example.com"
+    "Name"                                              = "tcp-bastionuserdata-examp-qe51ro"
     "kubernetes.io/cluster/bastionuserdata.example.com" = "owned"
   }
   vpc_id = aws_vpc.bastionuserdata-example-com.id
@@ -883,8 +901,8 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
 resource "aws_route53_record" "api-bastionuserdata-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-bastionuserdata-example-com.dns_name
-    zone_id                = aws_elb.api-bastionuserdata-example-com.zone_id
+    name                   = aws_lb.api-bastionuserdata-example-com.dns_name
+    zone_id                = aws_lb.api-bastionuserdata-example-com.zone_id
   }
   name    = "api.bastionuserdata.example.com"
   type    = "A"
@@ -894,8 +912,8 @@ resource "aws_route53_record" "api-bastionuserdata-example-com" {
 resource "aws_route53_record" "api-bastionuserdata-example-com-AAAA" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-bastionuserdata-example-com.dns_name
-    zone_id                = aws_elb.api-bastionuserdata-example-com.zone_id
+    name                   = aws_lb.api-bastionuserdata-example-com.dns_name
+    zone_id                = aws_lb.api-bastionuserdata-example-com.zone_id
   }
   name    = "api.bastionuserdata.example.com"
   type    = "AAAA"

@@ -177,7 +177,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecilium-exampl
     id      = aws_launch_template.master-us-test-1a-masters-privatecilium-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privatecilium-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-privatecilium-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -234,6 +233,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privatecilium-exampl
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-privatecilium-example-rga1vh.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-privatecilium-example-com.id]
 }
 
@@ -410,34 +410,6 @@ resource "aws_eip" "us-test-1a-privatecilium-example-com" {
   tags = {
     "KubernetesCluster"                               = "privatecilium.example.com"
     "Name"                                            = "us-test-1a.privatecilium.example.com"
-    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
-  }
-}
-
-resource "aws_elb" "api-privatecilium-example-com" {
-  connection_draining         = true
-  connection_draining_timeout = 300
-  cross_zone_load_balancing   = false
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-privatecilium-example-fnt793"
-  security_groups = [aws_security_group.api-elb-privatecilium-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-privatecilium-example-com.id]
-  tags = {
-    "KubernetesCluster"                               = "privatecilium.example.com"
-    "Name"                                            = "api.privatecilium.example.com"
     "kubernetes.io/cluster/privatecilium.example.com" = "owned"
   }
 }
@@ -805,6 +777,22 @@ resource "aws_launch_template" "nodes-privatecilium-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privatecilium.example.com_user_data")
 }
 
+resource "aws_lb" "api-privatecilium-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-privatecilium-example-fnt793"
+  security_groups                  = [aws_security_group.api-elb-privatecilium-example-com.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.utility-us-test-1a-privatecilium-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                               = "privatecilium.example.com"
+    "Name"                                            = "api.privatecilium.example.com"
+    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
+  }
+}
+
 resource "aws_lb" "bastion-privatecilium-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
@@ -819,6 +807,16 @@ resource "aws_lb" "bastion-privatecilium-example-com" {
     "Name"                                            = "bastion.privatecilium.example.com"
     "kubernetes.io/cluster/privatecilium.example.com" = "owned"
   }
+}
+
+resource "aws_lb_listener" "api-privatecilium-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tcp-privatecilium-example-rga1vh.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-privatecilium-example-com.id
+  port              = 443
+  protocol          = "TCP"
 }
 
 resource "aws_lb_listener" "bastion-privatecilium-example-com-22" {
@@ -846,6 +844,26 @@ resource "aws_lb_target_group" "bastion-privatecilium-exa-l2ms01" {
   tags = {
     "KubernetesCluster"                               = "privatecilium.example.com"
     "Name"                                            = "bastion-privatecilium-exa-l2ms01"
+    "kubernetes.io/cluster/privatecilium.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privatecilium-example-com.id
+}
+
+resource "aws_lb_target_group" "tcp-privatecilium-example-rga1vh" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tcp-privatecilium-example-rga1vh"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                               = "privatecilium.example.com"
+    "Name"                                            = "tcp-privatecilium-example-rga1vh"
     "kubernetes.io/cluster/privatecilium.example.com" = "owned"
   }
   vpc_id = aws_vpc.privatecilium-example-com.id
@@ -882,8 +900,8 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
 resource "aws_route53_record" "api-privatecilium-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-privatecilium-example-com.dns_name
-    zone_id                = aws_elb.api-privatecilium-example-com.zone_id
+    name                   = aws_lb.api-privatecilium-example-com.dns_name
+    zone_id                = aws_lb.api-privatecilium-example-com.zone_id
   }
   name    = "api.privatecilium.example.com"
   type    = "A"
@@ -893,8 +911,8 @@ resource "aws_route53_record" "api-privatecilium-example-com" {
 resource "aws_route53_record" "api-privatecilium-example-com-AAAA" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-privatecilium-example-com.dns_name
-    zone_id                = aws_elb.api-privatecilium-example-com.zone_id
+    name                   = aws_lb.api-privatecilium-example-com.dns_name
+    zone_id                = aws_lb.api-privatecilium-example-com.zone_id
   }
   name    = "api.privatecilium.example.com"
   type    = "AAAA"

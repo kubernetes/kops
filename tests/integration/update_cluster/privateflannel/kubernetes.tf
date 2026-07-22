@@ -177,7 +177,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-examp
     id      = aws_launch_template.master-us-test-1a-masters-privateflannel-example-com.id
     version = aws_launch_template.master-us-test-1a-masters-privateflannel-example-com.latest_version
   }
-  load_balancers        = [aws_elb.api-privateflannel-example-com.id]
   max_instance_lifetime = 0
   max_size              = 1
   metrics_granularity   = "1Minute"
@@ -234,6 +233,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateflannel-examp
     propagate_at_launch = true
     value               = "owned"
   }
+  target_group_arns   = [aws_lb_target_group.tcp-privateflannel-exampl-59fj2g.id]
   vpc_zone_identifier = [aws_subnet.us-test-1a-privateflannel-example-com.id]
 }
 
@@ -410,34 +410,6 @@ resource "aws_eip" "us-test-1a-privateflannel-example-com" {
   tags = {
     "KubernetesCluster"                                = "privateflannel.example.com"
     "Name"                                             = "us-test-1a.privateflannel.example.com"
-    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
-  }
-}
-
-resource "aws_elb" "api-privateflannel-example-com" {
-  connection_draining         = true
-  connection_draining_timeout = 300
-  cross_zone_load_balancing   = false
-  health_check {
-    healthy_threshold   = 2
-    interval            = 10
-    target              = "SSL:443"
-    timeout             = 5
-    unhealthy_threshold = 2
-  }
-  idle_timeout = 300
-  listener {
-    instance_port     = 443
-    instance_protocol = "TCP"
-    lb_port           = 443
-    lb_protocol       = "TCP"
-  }
-  name            = "api-privateflannel-exampl-hsu11v"
-  security_groups = [aws_security_group.api-elb-privateflannel-example-com.id]
-  subnets         = [aws_subnet.utility-us-test-1a-privateflannel-example-com.id]
-  tags = {
-    "KubernetesCluster"                                = "privateflannel.example.com"
-    "Name"                                             = "api.privateflannel.example.com"
     "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
 }
@@ -805,6 +777,22 @@ resource "aws_launch_template" "nodes-privateflannel-example-com" {
   user_data = filebase64("${path.module}/data/aws_launch_template_nodes.privateflannel.example.com_user_data")
 }
 
+resource "aws_lb" "api-privateflannel-example-com" {
+  enable_cross_zone_load_balancing = false
+  internal                         = false
+  load_balancer_type               = "network"
+  name                             = "api-privateflannel-exampl-hsu11v"
+  security_groups                  = [aws_security_group.api-elb-privateflannel-example-com.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.utility-us-test-1a-privateflannel-example-com.id
+  }
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "api.privateflannel.example.com"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
+}
+
 resource "aws_lb" "bastion-privateflannel-example-com" {
   enable_cross_zone_load_balancing = false
   internal                         = false
@@ -819,6 +807,16 @@ resource "aws_lb" "bastion-privateflannel-example-com" {
     "Name"                                             = "bastion.privateflannel.example.com"
     "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
+}
+
+resource "aws_lb_listener" "api-privateflannel-example-com-443" {
+  default_action {
+    target_group_arn = aws_lb_target_group.tcp-privateflannel-exampl-59fj2g.id
+    type             = "forward"
+  }
+  load_balancer_arn = aws_lb.api-privateflannel-example-com.id
+  port              = 443
+  protocol          = "TCP"
 }
 
 resource "aws_lb_listener" "bastion-privateflannel-example-com-22" {
@@ -846,6 +844,26 @@ resource "aws_lb_target_group" "bastion-privateflannel-ex-753531" {
   tags = {
     "KubernetesCluster"                                = "privateflannel.example.com"
     "Name"                                             = "bastion-privateflannel-ex-753531"
+    "kubernetes.io/cluster/privateflannel.example.com" = "owned"
+  }
+  vpc_id = aws_vpc.privateflannel-example-com.id
+}
+
+resource "aws_lb_target_group" "tcp-privateflannel-exampl-59fj2g" {
+  connection_termination = "true"
+  deregistration_delay   = "30"
+  health_check {
+    healthy_threshold   = 2
+    interval            = 10
+    protocol            = "TCP"
+    unhealthy_threshold = 2
+  }
+  name     = "tcp-privateflannel-exampl-59fj2g"
+  port     = 443
+  protocol = "TCP"
+  tags = {
+    "KubernetesCluster"                                = "privateflannel.example.com"
+    "Name"                                             = "tcp-privateflannel-exampl-59fj2g"
     "kubernetes.io/cluster/privateflannel.example.com" = "owned"
   }
   vpc_id = aws_vpc.privateflannel-example-com.id
@@ -882,8 +900,8 @@ resource "aws_route" "route-private-us-test-1a-0-0-0-0--0" {
 resource "aws_route53_record" "api-privateflannel-example-com" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-privateflannel-example-com.dns_name
-    zone_id                = aws_elb.api-privateflannel-example-com.zone_id
+    name                   = aws_lb.api-privateflannel-example-com.dns_name
+    zone_id                = aws_lb.api-privateflannel-example-com.zone_id
   }
   name    = "api.privateflannel.example.com"
   type    = "A"
@@ -893,8 +911,8 @@ resource "aws_route53_record" "api-privateflannel-example-com" {
 resource "aws_route53_record" "api-privateflannel-example-com-AAAA" {
   alias {
     evaluate_target_health = false
-    name                   = aws_elb.api-privateflannel-example-com.dns_name
-    zone_id                = aws_elb.api-privateflannel-example-com.zone_id
+    name                   = aws_lb.api-privateflannel-example-com.dns_name
+    zone_id                = aws_lb.api-privateflannel-example-com.zone_id
   }
   name    = "api.privateflannel.example.com"
   type    = "AAAA"

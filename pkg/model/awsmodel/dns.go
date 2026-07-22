@@ -82,13 +82,7 @@ func (b *DNSModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	var targetLoadBalancer awstasks.DNSTarget
 
 	if b.UseLoadBalancerForAPI() || b.UseLoadBalancerForInternalAPI() {
-		lbSpec := b.Cluster.Spec.API.LoadBalancer
-		switch lbSpec.Class {
-		case kops.LoadBalancerClassClassic, "":
-			targetLoadBalancer = awstasks.DNSTarget(b.LinkToCLB("api"))
-		case kops.LoadBalancerClassNetwork:
-			targetLoadBalancer = awstasks.DNSTarget(b.LinkToNLB("api"))
-		}
+		targetLoadBalancer = awstasks.DNSTarget(b.LinkToNLB("api"))
 	}
 
 	if b.UseLoadBalancerForAPI() {

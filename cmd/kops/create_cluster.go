@@ -440,11 +440,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "Tenancy of the node group (AWS only): default or dedicated")
 	cmd.RegisterFlagCompletionFunc("node-tenancy", completeTenancy)
 
-	cmd.Flags().StringVar(&options.APILoadBalancerClass, "api-loadbalancer-class", options.APILoadBalancerClass, "Class of load balancer for the Kubernetes API (AWS only): classic or network")
-	cmd.Flags().MarkDeprecated("api-loadbalancer-class", "network load balancer should be used for all newly created clusters")
-	cmd.RegisterFlagCompletionFunc("api-loadbalancer-class", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"classic", "network"}, cobra.ShellCompDirectiveNoFileComp
-	})
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Type of load balancer for the Kubernetes API: public or internal")
 	cmd.RegisterFlagCompletionFunc("api-loadbalancer-type", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"public", "internal"}, cobra.ShellCompDirectiveNoFileComp

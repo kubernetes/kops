@@ -4,6 +4,10 @@ metadata:
   creationTimestamp: "2016-12-12T04:13:14Z"
   name: privatecalico.example.com
 spec:
+  api:
+    loadBalancer:
+      type: Public
+      class: Network
   channel: stable
   cloudConfig:
     awsEBSCSIDriver:

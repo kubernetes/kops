@@ -129,13 +129,6 @@ func (e *DNSName) Find(c *fi.CloudupContext) (*DNSName, error) {
 }
 
 func findDNSTarget(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
-	// TODO: I would like to search dnsName for presence of ".elb" or ".nlb" to simply searching, however both nlb and elb have .elb. in the name at present
-	if ELB, err := findDNSTargetELB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
-		return nil, err
-	} else if ELB != nil {
-		return ELB, nil
-	}
-
 	if NLB, err := findDNSTargetNLB(cloud, aliasTarget, dnsName, targetDNSName); err != nil {
 		return nil, err
 	} else if NLB != nil {
@@ -163,27 +156,6 @@ func findDNSTargetNLB(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarge
 			return nil, fmt.Errorf("Found NLB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
 		}
 		return &NetworkLoadBalancer{Name: new(nameTag)}, nil
-	}
-	return nil, nil
-}
-
-func findDNSTargetELB(cloud awsup.AWSCloud, aliasTarget *route53types.AliasTarget, dnsName string, targetDNSName *string) (DNSTarget, error) {
-	lb, err := findLoadBalancerByAlias(cloud, aliasTarget)
-	if err != nil {
-		return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
-	}
-	if lb != nil {
-		loadBalancerName := aws.ToString(lb.LoadBalancerName)
-		tagMap, err := cloud.DescribeELBTags([]string{loadBalancerName})
-		if err != nil {
-			return nil, err
-		}
-		tags := tagMap[loadBalancerName]
-		nameTag, _ := awsup.FindELBTag(tags, "Name")
-		if nameTag == "" {
-			return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.ValueOf(targetDNSName))
-		}
-		return &ClassicLoadBalancer{Name: new(nameTag)}, nil
 	}
 	return nil, nil
 }

@@ -93,22 +93,12 @@ func (b *KopsModelContext) LBName32(prefix string) string {
 	return awsup.GetResourceName32(b.Cluster.ObjectMeta.Name, prefix)
 }
 
-// CLBName returns CLB name plus cluster name
-func (b *KopsModelContext) CLBName(prefix string) string {
-	return prefix + "." + b.ClusterName()
-}
-
 func (b *KopsModelContext) NLBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
 }
 
 func (b *KopsModelContext) NLBTargetGroupName(prefix string) string {
 	return awsup.GetResourceName32(b.Cluster.ObjectMeta.Name, prefix)
-}
-
-func (b *KopsModelContext) LinkToCLB(prefix string) *awstasks.ClassicLoadBalancer {
-	name := b.CLBName(prefix)
-	return &awstasks.ClassicLoadBalancer{Name: &name}
 }
 
 func (b *KopsModelContext) LinkToNLB(prefix string) *awstasks.NetworkLoadBalancer {

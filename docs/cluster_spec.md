@@ -38,17 +38,6 @@ spec:
       - sg-xxxxxxxx
 ```
 
-Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 3600 seconds (60 minutes) being allowed by AWS. Note this value is ignored for load balancer Class `Network`.
-For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
-
-```yaml
-spec:
-  api:
-    loadBalancer:
-      type: Public
-      idleTimeoutSeconds: 300
-```
-
 You can use a valid SSL Certificate for your API Server Load Balancer. Currently, only AWS is supported.
 
 Also, you can change listener's [security policy](https://docs.aws.amazon.com/sdk-for-go/api/service/elbv2/#CreateListenerInput) by `sslPolicy`. Currently, only AWS Network Load Balancer is supported.
@@ -90,9 +79,9 @@ spec:
 
 {{ kops_feature_table(kops_added_default='1.19') }}
 
-You can choose to have either a Network Load Balancer (NLB) or a Classic Load Balancer (CLB). The `class` field should be either `Network` (default) or `Classic` (deprecated).
+The `class` field must be `Network` (the default), which uses a Network Load Balancer (NLB).
 
-**Note**: Changing the class of load balancer in an existing cluster is a disruptive operation for the control plane and the old load balancer must be manually removed. Until the masters have gone through a rolling update, new connections to the apiserver will fail due to the old masters' TLS certificates containing the old load balancer's IP addresses.
+Support for Classic Load Balancers (CLB), deprecated since kOps 1.26, was removed in kOps 1.37. Existing clusters using a Classic Load Balancer must migrate to a Network Load Balancer using kOps 1.36 or earlier before they can be upgraded. See the [CLB to NLB migration guide](https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md).
 ```yaml
 spec:
   api:

@@ -9,7 +9,7 @@ spec:
       additionalSecurityGroups:
       - sg-exampleid3
       - sg-exampleid4
-      class: Classic
+      class: Network
       type: Public
   authorization:
     rbac: {}

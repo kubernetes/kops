@@ -388,7 +388,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBui
 	securityGroups := []*awstasks.SecurityGroup{sgLink}
 
 	if ig.HasAPIServer() &&
-		b.APILoadBalancerClass() == kops.LoadBalancerClassNetwork {
+		b.UseNetworkLoadBalancer() {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			sgTask := &awstasks.SecurityGroup{
 				ID:        new(id),
@@ -491,19 +491,15 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 	if !featureflag.Spotinst.Enabled() ||
 		(featureflag.SpotinstHybrid.Enabled() && !HybridInstanceGroup(ig)) {
 		if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
-			if b.UseNetworkLoadBalancer() {
-				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
-				if b.Cluster.UsesLoadBalancerForKopsController() && ig.IsControlPlane() {
-					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("kops-controller"))
-					if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
-						t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("etcd-cilium"))
-					}
+			t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
+			if b.Cluster.UsesLoadBalancerForKopsController() && ig.IsControlPlane() {
+				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("kops-controller"))
+				if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.EtcdManaged {
+					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("etcd-cilium"))
 				}
-				if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
-					t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tls"))
-				}
-			} else {
-				t.LoadBalancers = append(t.LoadBalancers, b.LinkToCLB("api"))
+			}
+			if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
+				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tls"))
 			}
 		}
 

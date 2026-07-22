@@ -39,7 +39,9 @@ func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 	if c.Spec.API.LoadBalancer != nil {
 		lbPath := field.NewPath("spec", "api", "loadBalancer")
 		lbSpec := c.Spec.API.LoadBalancer
-		if strict || lbSpec.Class != "" {
+		if lbSpec.Class == kops.LoadBalancerClassClassic {
+			allErrs = append(allErrs, field.Forbidden(lbPath.Child("class"), "AWS Classic Load Balancer for API is no longer supported; migrate to a Network Load Balancer using kOps 1.36 or earlier. See https://github.com/kubernetes/kops/blob/master/permalinks/acm_nlb.md"))
+		} else if strict || lbSpec.Class != "" {
 			allErrs = append(allErrs, IsValidValue(lbPath.Child("class"), &lbSpec.Class, kops.SupportedLoadBalancerClasses)...)
 		}
 		allErrs = append(allErrs, awsValidateTopologyDNS(lbPath.Child("type"), c)...)

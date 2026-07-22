@@ -342,7 +342,6 @@ func (b *BastionModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 
 			LoadBalancerBaseName: new(b.LBName32("bastion")),
-			CLBName:              new("bastion." + b.ClusterName()),
 			SubnetMappings:       nlbSubnetMappings,
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("bastion"),
