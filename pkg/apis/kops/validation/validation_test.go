@@ -1233,6 +1233,26 @@ func Test_Validate_Cilium(t *testing.T) {
 			ExpectedErrors: []string{"Forbidden::cilium.enableL7Proxy"},
 		},
 		{
+			// enableBBR together with enableBandwidthManager is valid.
+			Cilium: kops.CiliumNetworkingSpec{
+				EnableBandwidthManager: fi.PtrTo(true),
+				EnableBBR:              fi.PtrTo(true),
+			},
+		},
+		{
+			// enableBandwidthManager on its own is valid.
+			Cilium: kops.CiliumNetworkingSpec{
+				EnableBandwidthManager: fi.PtrTo(true),
+			},
+		},
+		{
+			// enableBBR without enableBandwidthManager is rejected.
+			Cilium: kops.CiliumNetworkingSpec{
+				EnableBBR: fi.PtrTo(true),
+			},
+			ExpectedErrors: []string{"Forbidden::cilium.enableBBR"},
+		},
+		{
 			Cilium: kops.CiliumNetworkingSpec{
 				IPAM: "eni",
 			},
