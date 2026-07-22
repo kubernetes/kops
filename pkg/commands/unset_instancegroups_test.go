@@ -98,6 +98,40 @@ func TestUnsetInstanceGroupsFields(t *testing.T) {
 				Spec: kops.InstanceGroupSpec{},
 			},
 		},
+		{
+			Fields: []string{
+				"spec.rootVolumeType",
+			},
+			Input: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Type: fi.PtrTo("gp3"),
+					},
+				},
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.rootVolumeSize",
+			},
+			Input: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Size: fi.PtrTo(int32(64)),
+					},
+				},
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{},
+				},
+			},
+		},
 	}
 
 	for _, g := range grid {
