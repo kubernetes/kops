@@ -274,7 +274,7 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		}
 	}
 
-	etcdVersions := etcdSupportedVersions()
+	etcdVersions := EtcdSupportedVersions()
 	if etcdCluster.Image != "" {
 		// With a custom image, only the selected version's binaries are made
 		// available in the pod; restoring backups, which can require the

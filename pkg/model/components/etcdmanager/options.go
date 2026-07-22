@@ -63,13 +63,13 @@ func (b *EtcdManagerOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 			etcdCluster.Backups.BackupStore = join(base, "backups", "etcd", etcdCluster.Name)
 		}
 
-		if !etcdVersionIsSupported(etcdCluster.Version) {
+		if !EtcdVersionIsSupported(etcdCluster.Version) {
 			if etcdCluster.Image != "" {
 				klog.Warningf("etcd version %q is not bundled by kOps and has not been tested; using binaries from custom image %q", etcdCluster.Version, etcdCluster.Image)
 			} else {
 				klog.Warningf("Unsupported etcd version %q detected; please update etcd version.", etcdCluster.Version)
 				var versions []string
-				for _, v := range etcdSupportedVersions() {
+				for _, v := range EtcdSupportedVersions() {
 					versions = append(versions, v.Version)
 				}
 				klog.Warningf("Supported etcd versions: %s", strings.Join(versions, ", "))
@@ -90,14 +90,15 @@ type etcdVersion struct {
 
 // etcdLatestImages lists the latest etcd patch image bundled by kops for each
 // supported minor. All earlier patch versions within the same minor are
-// generated as SymlinkToVersion entries by etcdSupportedVersions.
+// generated as SymlinkToVersion entries by EtcdSupportedVersions.
 var etcdLatestImages = []etcdVersion{
 	{Version: components.LatestEtcd35Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd35Version},
 	{Version: components.LatestEtcd36Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd36Version},
 	{Version: components.LatestEtcd37Version, Image: "registry.k8s.io/etcd:v" + components.LatestEtcd37Version},
 }
 
-func etcdSupportedVersions() []etcdVersion {
+// EtcdSupportedVersions returns every etcd version bundled by this build of kOps.
+func EtcdSupportedVersions() []etcdVersion {
 	var versions []etcdVersion
 	for _, latest := range etcdLatestImages {
 		sv := semver.MustParse(latest.Version)
@@ -115,9 +116,10 @@ func etcdSupportedVersions() []etcdVersion {
 	return versions
 }
 
-func etcdVersionIsSupported(version string) bool {
+// EtcdVersionIsSupported reports whether this build of kOps bundles the given etcd version.
+func EtcdVersionIsSupported(version string) bool {
 	version = strings.TrimPrefix(version, "v")
-	for _, etcdVersion := range etcdSupportedVersions() {
+	for _, etcdVersion := range EtcdSupportedVersions() {
 		if etcdVersion.Version == version {
 			return true
 		}
