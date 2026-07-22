@@ -204,3 +204,50 @@ func assertResolvesValue(t *testing.T, name string, expected interface{}, warmPo
 		return assert.Equal(t, expected, value.Interface(), msg)
 	}
 }
+
+func TestCluster_InstallCNIAssets(t *testing.T) {
+	tests := []struct {
+		name       string
+		networking NetworkingSpec
+		expected   bool
+	}{
+		{
+			name:       "no networking configured",
+			networking: NetworkingSpec{},
+			expected:   true,
+		},
+		{
+			name:       "amazon vpc",
+			networking: NetworkingSpec{AmazonVPC: &AmazonVPCNetworkingSpec{}},
+			expected:   false,
+		},
+		{
+			name:       "calico",
+			networking: NetworkingSpec{Calico: &CalicoNetworkingSpec{}},
+			expected:   false,
+		},
+		{
+			name:       "cilium without chaining",
+			networking: NetworkingSpec{Cilium: &CiliumNetworkingSpec{}},
+			expected:   false,
+		},
+		{
+			name:       "cilium with chaining mode none",
+			networking: NetworkingSpec{Cilium: &CiliumNetworkingSpec{ChainingMode: "none"}},
+			expected:   false,
+		},
+		{
+			name:       "cilium with portmap chaining",
+			networking: NetworkingSpec{Cilium: &CiliumNetworkingSpec{ChainingMode: "portmap"}},
+			expected:   true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &Cluster{Spec: ClusterSpec{Networking: tc.networking}}
+			if actual := c.InstallCNIAssets(); actual != tc.expected {
+				t.Errorf("InstallCNIAssets() = %v, want %v", actual, tc.expected)
+			}
+		})
+	}
+}
