@@ -1149,6 +1149,11 @@ func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool) error {
 		"iam:ListInstanceProfiles",
 		"pricing:GetProducts",
 		"ssm:GetParameter",
+		// SQS permissions do not support conditions.
+		"sqs:DeleteMessage",
+		"sqs:GetQueueUrl",
+		"sqs:GetQueueAttributes",
+		"sqs:ReceiveMessage",
 	)
 
 	instanceARN := fmt.Sprintf("arn:%s:ec2:*:*:instance/*", p.partition)

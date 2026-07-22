@@ -2800,6 +2800,8 @@ spec:
           value: https://{{ APIInternalName }}
         - name: VM_MEMORY_OVERHEAD_PERCENT
           value: "0.075"
+        - name: INTERRUPTION_QUEUE
+          value: '{{ KarpenterQueueName }}'
         - name: RESERVED_ENIS
           value: "0"
         - name: IGNORE_DRA_REQUESTS
