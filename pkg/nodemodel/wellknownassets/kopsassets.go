@@ -34,11 +34,19 @@ const (
 
 var kopsBaseURL *url.URL
 
+// kopsAssetKey identifies a cached kops binary location. The location is remapped per the cluster's
+// assets.fileRepository, which must therefore be part of the key: one process can build several
+// clusters (notably in tests).
+type kopsAssetKey struct {
+	arch           architectures.Architecture
+	fileRepository string
+}
+
 // nodeUpAsset caches the nodeup binary download url/hash
-var nodeUpAsset map[architectures.Architecture]*assets.MirroredAsset
+var nodeUpAsset map[kopsAssetKey]*assets.MirroredAsset
 
 // protokubeAsset caches the protokube binary download url/hash
-var protokubeAsset map[architectures.Architecture]*assets.MirroredAsset
+var protokubeAsset map[kopsAssetKey]*assets.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseURL() (*url.URL, error) {
@@ -88,42 +96,44 @@ func copyBaseURL(base *url.URL) (*url.URL, error) {
 // NodeUpAsset returns the asset for where nodeup should be downloaded
 func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
 	if nodeUpAsset == nil {
-		nodeUpAsset = make(map[architectures.Architecture]*assets.MirroredAsset)
+		nodeUpAsset = make(map[kopsAssetKey]*assets.MirroredAsset)
 	}
-	if nodeUpAsset[arch] != nil {
+	key := kopsAssetKey{arch: arch, fileRepository: assetsBuilder.FileRepository()}
+	if nodeUpAsset[key] != nil {
 		// Avoid repeated logging
-		klog.V(8).Infof("Using cached nodeup location for %s: %v", arch, nodeUpAsset[arch].Locations)
-		return nodeUpAsset[arch], nil
+		klog.V(8).Infof("Using cached nodeup location for %s: %v", arch, nodeUpAsset[key].Locations)
+		return nodeUpAsset[key], nil
 	}
 
 	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/nodeup", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
-	nodeUpAsset[arch] = assets.BuildMirroredAsset(asset)
+	nodeUpAsset[key] = assets.BuildMirroredAsset(asset)
 	klog.V(8).Infof("Using default nodeup location for %s: %q", arch, asset.DownloadURL.String())
 
-	return nodeUpAsset[arch], nil
+	return nodeUpAsset[key], nil
 }
 
 // ProtokubeAsset returns the url and hash of the protokube binary
 func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
 	if protokubeAsset == nil {
-		protokubeAsset = make(map[architectures.Architecture]*assets.MirroredAsset)
+		protokubeAsset = make(map[kopsAssetKey]*assets.MirroredAsset)
 	}
-	if protokubeAsset[arch] != nil {
-		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeAsset[arch].Locations)
-		return protokubeAsset[arch], nil
+	key := kopsAssetKey{arch: arch, fileRepository: assetsBuilder.FileRepository()}
+	if protokubeAsset[key] != nil {
+		klog.V(8).Infof("Using cached protokube binary location for %s: %v", arch, protokubeAsset[key].Locations)
+		return protokubeAsset[key], nil
 	}
 
 	asset, err := KopsFileURL(fmt.Sprintf("linux/%s/protokube", arch), assetsBuilder)
 	if err != nil {
 		return nil, err
 	}
-	protokubeAsset[arch] = assets.BuildMirroredAsset(asset)
+	protokubeAsset[key] = assets.BuildMirroredAsset(asset)
 	klog.V(8).Infof("Using default protokube location for %s: %q", arch, asset.DownloadURL.String())
 
-	return protokubeAsset[arch], nil
+	return protokubeAsset[key], nil
 }
 
 // KopsFileURL returns the base url for the distribution of kops - in particular for nodeup & docker images

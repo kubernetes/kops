@@ -778,6 +778,11 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	return allErrs
 }
 
+// ociRepositoryComponent matches one path component of an OCI repository name, which the path of an
+// oci:// fileRepository becomes part of: lowercase alphanumerics separated by '.', one or two '_',
+// or runs of '-', per the OCI distribution spec's repository-name grammar.
+var ociRepositoryComponent = regexp.MustCompile(`^[a-z0-9]+(?:(?:\.|_{1,2}|-+)[a-z0-9]+)*$`)
+
 func validateFileRepository(s string, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
@@ -786,8 +791,26 @@ func validateFileRepository(s string, fieldPath *field.Path) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("cannot parse fileRepository URL: %v", err)))
 		return allErrs
 	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http:// or https:// URL"))
+	switch u.Scheme {
+	case "http", "https":
+	case "oci":
+		// The registry must allow anonymous pulls of the assets; nodes do not authenticate, so this works
+		// on any cloud provider.
+		if !strings.ContainsAny(u.Host, ".:") {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, "an oci:// fileRepository registry host must be a fully qualified domain name or include a port"))
+		}
+		if u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, "an oci:// fileRepository cannot include credentials, a query or a fragment"))
+		}
+		if repository := strings.Trim(u.Path, "/"); repository != "" {
+			for _, component := range strings.Split(repository, "/") {
+				if !ociRepositoryComponent.MatchString(component) {
+					allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("%q is not a valid OCI repository-name component: lowercase alphanumerics separated by '.', '_' or '-'", component)))
+				}
+			}
+		}
+	default:
+		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https:// or oci:// URL"))
 	}
 	if u.Host == "" {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must include a host"))

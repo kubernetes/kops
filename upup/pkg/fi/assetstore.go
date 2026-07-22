@@ -211,6 +211,9 @@ func (a *AssetStore) Add(ctx context.Context, id string) error {
 	if i == -1 {
 		i = strings.Index(id, "@gs://")
 	}
+	if i == -1 {
+		i = strings.Index(id, "@oci://")
+	}
 	if i != -1 {
 		urls := strings.Split(id[i+1:], ",")
 		hash, err := hashing.FromString(id[:i])

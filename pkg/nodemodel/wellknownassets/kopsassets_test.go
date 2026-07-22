@@ -20,10 +20,13 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 
 	"k8s.io/kops"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/hashing"
 )
 
@@ -128,5 +131,28 @@ func Test_BuildMirroredAsset(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func TestNodeUpAssetNotSharedAcrossFileRepositories(t *testing.T) {
+	// One process can build several clusters (notably in tests); the cached location must not leak
+	// one cluster's fileRepository into another.
+	plainBuilder := assets.NewAssetBuilder(nil, &kopsapi.AssetsSpec{}, false)
+	plain, err := NodeUpAsset(plainBuilder, architectures.ArchitectureAmd64)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if strings.HasPrefix(plain.Locations[0], "oci://") {
+		t.Fatalf("unexpected oci location without a fileRepository: %v", plain.Locations)
+	}
+
+	fileRepository := "oci://registry.example.com/kops"
+	remappedBuilder := assets.NewAssetBuilder(nil, &kopsapi.AssetsSpec{FileRepository: &fileRepository}, false)
+	remapped, err := NodeUpAsset(remappedBuilder, architectures.ArchitectureAmd64)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.HasPrefix(remapped.Locations[0], "oci://registry.example.com/kops/") {
+		t.Fatalf("expected a location remapped to the fileRepository, got: %v", remapped.Locations)
 	}
 }
