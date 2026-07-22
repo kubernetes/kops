@@ -23,7 +23,7 @@ set -x
 if [[ "${CLOUD_PROVIDER}" == "gce" ]]; then
   kops create instancegroup addons --edit=false --role node --zone us-east1-b
   kops edit instancegroup addons --set=spec.machineType="${ADDONS_NODE_SIZE:-c3-standard-22}" \
-    --set=spec.maxSize=1 --set=spec.minSize=1 --set=spec.rootVolume.type=hyperdisk-balanced \
+    --set=spec.maxSize=1 --set=spec.minSize=1 --set=spec.rootVolume.type="${ADDONS_VOLUME_TYPE:-hyperdisk-balanced}" \
     --set=spec.image="${INSTANCE_IMAGE:-ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20251001}"
   kops update cluster --yes
   # TODO: Replaced with `kops validate instancegroup --wait 10m` when it's fixed for 5k node clusters.
