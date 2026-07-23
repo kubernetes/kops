@@ -125,7 +125,7 @@ ClusterName: minimal-azure.example.com
 ConfigBase: memfs://tests/minimal-azure.example.com
 InstanceGroupName: control-plane-eastus-1
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: A47Br7mshH4ulq8OxjFlm1Ggqo1TnQULAheITUmvmJ8=
+NodeupConfigHash: CyMN145OLBZYL9OMSSxvcfV6XGrGJPrbz+t9Lh8cK3g=
 
 __EOF_KUBE_ENV
 

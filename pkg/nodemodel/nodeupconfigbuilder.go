@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/nodemodel/wellknownassets"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -46,6 +47,7 @@ type nodeUpConfigBuilder struct {
 	cluster                    *kops.Cluster
 	etcdManifests              map[string][]string
 	images                     map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image
+	protokubeAsset             map[architectures.Architecture][]*assets.MirroredAsset
 	encryptionConfigSecretHash string
 }
 
@@ -60,6 +62,15 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 	etcdManifests := map[string][]string{}
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
+	protokubeAsset := map[architectures.Architecture][]*assets.MirroredAsset{}
+
+	for _, arch := range architectures.GetSupported() {
+		asset, err := wellknownassets.ProtokubeAsset(assetBuilder, arch)
+		if err != nil {
+			return nil, err
+		}
+		protokubeAsset[arch] = append(protokubeAsset[arch], asset)
+	}
 
 	for _, role := range kops.AllInstanceGroupRoles {
 		isMaster := role.HasControlPlane()
@@ -166,6 +177,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 		cluster:                    cluster,
 		etcdManifests:              etcdManifests,
 		images:                     images,
+		protokubeAsset:             protokubeAsset,
 		encryptionConfigSecretHash: encryptionConfigSecretHash,
 	}
 
@@ -356,6 +368,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 				return nil, nil, fmt.Errorf("we currently do not support multiple Etcd IPs")
 			}
 			bootConfig.EtcdIPs = wellKnownAddresses[wellknownservices.EtcdMain]
+		}
+	}
+
+	// Keep protokube in control-plane nodeup configs temporarily to avoid changing
+	// their config hashes. No nodeup model task installs or runs the binary.
+	if isMaster {
+		for _, arch := range architectures.GetSupported() {
+			for _, asset := range n.protokubeAsset[arch] {
+				config.Assets[arch] = append(config.Assets[arch], asset.CompactString())
+			}
 		}
 	}
 
