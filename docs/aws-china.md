@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-kOps used to only support Google Cloud DNS and Amazon Route53 to provision a kubernetes cluster. But since 1.6.2 `gossip` has been added which make it possible to provision a cluster without one of those DNS providers. Thanks to `gossip`, it's officially supported to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1] since [1.7][2]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
+kOps supports provisioning a cluster without a hosted DNS provider by using `--dns=none`, which makes it possible to provision a fully-functional kubernetes cluster in AWS China Region [which doesn't have Route53 so far][1]. Should support both `cn-north-1` and `cn-northwest-1`, but only `cn-north-1` is tested.
 
 Most of the following procedures to provision a cluster are the same with [the guide to use kOps in AWS](getting_started/aws.md). The differences will be highlighted and the similar parts will be omitted.
 
@@ -33,11 +33,11 @@ export AWS_REGION=$(aws configure get region)
 
 ## [Configure DNS](getting_started/aws.md#configure-dns)
 
-As the note kindly pointing out, a gossip-based cluster can be easily created by having the cluster name end with `.k8s.local`. We will adopt this trick below. Rest of this section can be skipped safely.
+As the note kindly pointing out, a cluster without hosted DNS can be easily created by using `--dns=none` and having the cluster name end with `.k8s.local`. We will adopt this trick below. Rest of this section can be skipped safely.
 
 ## [Testing your DNS setup](getting_started/aws.md#testing-your-dns-setup)
 
-Thanks to `gossip`, this section can be skipped safely as well.
+Thanks to `--dns=none`, this section can be skipped safely as well.
 
 ## [Cluster State storage](getting_started/aws.md#cluster-state-storage)
 

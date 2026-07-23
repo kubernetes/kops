@@ -148,7 +148,7 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 
 	if domainName == "" {
 		if strings.HasSuffix(clusterName, ".k8s.local") {
-			klog.Info("Domain Name is empty. Ok to have an empty domain name since cluster is configured as gossip cluster.")
+			klog.Info("Domain Name is empty. Ok to have an empty domain name since the cluster does not publish DNS records.")
 			return nil, nil
 		}
 

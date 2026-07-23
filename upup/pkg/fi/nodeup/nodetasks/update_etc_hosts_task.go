@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 )
 
-// UpdateEtcHostsTask is responsible for updating /etc/hosts to set some DNS records, for gossip.
+// UpdateEtcHostsTask is responsible for updating /etc/hosts to set some DNS records.
 type UpdateEtcHostsTask struct {
 	// Name is a reference for our task
 	Name string

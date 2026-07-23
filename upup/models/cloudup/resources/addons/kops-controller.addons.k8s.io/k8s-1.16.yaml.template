@@ -139,16 +139,6 @@ rules:
   - list
   - watch
   - patch
-{{- if GossipEnabled }}
-- apiGroups:
-  - ""
-  resources:
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-{{- end }}
 
 ---
 
@@ -211,17 +201,6 @@ rules:
   - leases
   verbs:
   - create
-{{- if GossipEnabled }}
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - watch
-  - patch
-  resourceNames: [ "coredns" ]
-{{- end }}
 
 ---
 
@@ -241,7 +220,3 @@ subjects:
   kind: User
   name: system:serviceaccount:kube-system:kops-controller
 
-{{- range $service := KopsController.GossipServices }}
----
-{{ KubeObjectToApplyYAML $service }}
-{{- end }}

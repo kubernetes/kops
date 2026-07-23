@@ -197,7 +197,6 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		return nil, nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 	}
 
-	usesLegacyGossip := cluster.UsesLegacyGossip()
 	isMaster := role.HasControlPlane()
 	hasAPIServer := isMaster || role.HasAPIServer()
 
@@ -372,18 +371,17 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	if !role.HasBastion() {
-		// protokube runs on control-plane nodes, and on legacy-gossip workers that don't bootstrap via kops-controller (mirrors nodeup's ProtokubeBuilder.Build).
-		if isMaster || (usesLegacyGossip && len(bootConfig.APIServerIPs) == 0) {
-			for _, arch := range architectures.GetSupported() {
-				for _, a := range n.protokubeAsset[arch] {
-					config.Assets[arch] = append(config.Assets[arch], a.CompactString())
-				}
+	// Keep protokube in control-plane nodeup configs temporarily to avoid changing
+	// their config hashes. No nodeup model task installs or runs the binary.
+	if isMaster {
+		for _, arch := range architectures.GetSupported() {
+			for _, asset := range n.protokubeAsset[arch] {
+				config.Assets[arch] = append(config.Assets[arch], asset.CompactString())
 			}
 		}
 	}
 
-	useConfigServer := kopsmodel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
+	useConfigServer := !ig.HasAPIServer()
 	if useConfigServer {
 		bootConfig.ConfigServer = buildConfigServerOptions(cluster.ObjectMeta.Name, config.CAs[fi.CertificateIDCA], bootConfig.APIServerIPs)
 		delete(config.CAs, fi.CertificateIDCA)

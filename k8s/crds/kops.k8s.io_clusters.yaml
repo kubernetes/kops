@@ -1092,8 +1092,9 @@ spec:
                     type: string
                 type: object
               dnsControllerGossipConfig:
-                description: DNSControllerGossipConfig for the cluster assuming the
-                  use of gossip DNS
+                description: |-
+                  DNSControllerGossipConfig has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+                  Deprecated: remove this field from the cluster spec.
                 properties:
                   listen:
                     type: string
@@ -1553,8 +1554,9 @@ spec:
                   type: object
                 type: array
               gossipConfig:
-                description: GossipConfig for the cluster assuming the use of gossip
-                  DNS
+                description: |-
+                  GossipConfig has no effect and must not be set; gossip DNS support was removed in kOps 1.37.
+                  Deprecated: remove this field from the cluster spec.
                 properties:
                   listen:
                     type: string

@@ -831,7 +831,6 @@ func (b *KubeletBuilder) buildKubeletConfigSpec(ctx context.Context) (*kops.Kube
 
 	// As of 1.16 we can no longer set critical labels.
 	// kops-controller will set these labels.
-	// For bootstrapping reasons, protokube sets the critical labels for kops-controller to run.
 	c.NodeLabels = nil
 
 	if c.AuthorizationMode == "" {

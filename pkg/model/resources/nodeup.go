@@ -376,10 +376,6 @@ func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentTyp
 func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (map[string]string, error) {
 	env := make(map[string]string)
 
-	if os.Getenv("GOSSIP_DNS_CONN_LIMIT") != "" {
-		env["GOSSIP_DNS_CONN_LIMIT"] = os.Getenv("GOSSIP_DNS_CONN_LIMIT")
-	}
-
 	if os.Getenv("S3_ENDPOINT") != "" {
 		if ig.IsControlPlane() {
 			env["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")

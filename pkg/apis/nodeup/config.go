@@ -99,8 +99,6 @@ type Config struct {
 	APIServerConfig *APIServerConfig `json:",omitempty"`
 	// ControlPlaneConfig is additional configuration for control-plane nodes.
 	ControlPlaneConfig *ControlPlaneConfig `json:",omitempty"`
-	// GossipConfig is configuration for gossip DNS.
-	GossipConfig *kops.GossipConfig `json:",omitempty"`
 	// DNSZone is the DNS zone we should use when configuring DNS.
 	DNSZone string `json:",omitempty"`
 	// NvidiaGPU contains the configuration for nvidia
@@ -137,6 +135,8 @@ type Config struct {
 	Openstack *kops.OpenstackSpec `json:",omitempty"`
 
 	// Discovery methods
+	// UsesLegacyGossip is retained for nodeup config wire compatibility.
+	// Deprecated: gossip DNS support was removed in kOps 1.37.
 	UsesLegacyGossip bool `json:"usesLegacyGossip"`
 	UsesNoneDNS      bool `json:"usesNoneDNS"`
 
@@ -391,23 +391,19 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
-	if instanceGroup.HasAPIServer() || !model.UseKopsControllerForNodeConfig(cluster) {
+	if instanceGroup.HasAPIServer() {
 		config.ConfigStore = &kops.ConfigStoreSpec{
 			Keypairs: cluster.Spec.ConfigStore.Keypairs,
 			Secrets:  cluster.Spec.ConfigStore.Secrets,
 		}
 	}
 
-	if instanceGroup.HasAPIServer() || cluster.UsesLegacyGossip() {
+	if instanceGroup.HasAPIServer() {
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 
-	if instanceGroup.IsControlPlane() || cluster.UsesLegacyGossip() {
+	if instanceGroup.IsControlPlane() {
 		config.DNSZone = cluster.Spec.DNSZone
-	}
-
-	if cluster.UsesLegacyGossip() {
-		config.GossipConfig = cluster.Spec.GossipConfig
 	}
 
 	if instanceGroup.IsControlPlane() {

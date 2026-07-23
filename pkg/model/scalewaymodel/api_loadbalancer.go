@@ -23,7 +23,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownservices"
 	"k8s.io/kops/upup/pkg/fi"
@@ -89,7 +88,7 @@ func (b *APILoadBalancerModelBuilder) Build(c *fi.CloudupModelBuilderContext) er
 	lbFrontendHttps.Lifecycle = b.Lifecycle
 	c.AddTask(lbFrontendHttps)
 
-	if dns.IsGossipClusterName(b.Cluster.Name) || b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
+	if b.Cluster.UsesPrivateDNS() || b.Cluster.UsesNoneDNS() {
 		loadBalancer.WellKnownServices = append(loadBalancer.WellKnownServices, wellknownservices.KopsController)
 		lbBackendKopsController, lbFrontendKopsController := createLbBackendAndFrontend("kops-controller", wellknownports.KopsControllerPort, zone, loadBalancer)
 		lbBackendKopsController.Lifecycle = b.Lifecycle

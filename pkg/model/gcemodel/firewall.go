@@ -145,12 +145,6 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.EtcdMetricsPort),
 			},
 		}
-		if b.Cluster.UsesLegacyGossip() {
-			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.DNSControllerGossipMemberlist))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.DNSControllerGossipMemberlist))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("udp:%d", wellknownports.ProtokubeGossipMemberlist))
-			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.ProtokubeGossipMemberlist))
-		}
 		if b.NetworkingIsCalico() {
 			t.Allowed = append(t.Allowed, "ipip")
 			t.Allowed = append(t.Allowed, fmt.Sprintf("tcp:%d", wellknownports.BGP))

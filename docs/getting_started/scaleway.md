@@ -77,8 +77,6 @@ export S3_SECRET_ACCESS_KEY="my-secret-key" # where <my-secret-key> is the S3 AP
 kops create cluster --cloud=scaleway --name=my.cluster --zones=fr-par-1 --dns=none --yes
 # This creates a cluster with the Scaleway DNS (on a domain name that you own and have registered with Scaleway) in zone pl-waw-1
 kops create cluster --cloud=scaleway --name=mycluster.mydomain.com --zones=pl-waw-1 --yes 
-# This creates a cluster with the gossip DNS in zone nl-ams-2. This is not recommended since the no-DNS option is available because it is more secure.
-kops create cluster --cloud=scaleway --name=mycluster.k8s.local --zones=nl-ams-2 --yes
 ```
 These basic commands create a cluster with default parameters:
 - Container Network Interface = `cilium`. To change it, set the flag `--networking=calico`. To see the list of supported CNIs, check the [networking page](../networking.md)
@@ -129,7 +127,7 @@ NB: keep in mind that every new call to kOps with the flags `--target=terraform 
 
 ## For clusters with load-balancers
 
-This concerns clusters using no DNS and gossip DNS. For these types of cluster, a small trick is needed because kOps doesn't know the IPs of the load-balancer at the time of writing the instances' cloud-init configuration, so we will have to run an update, then a rolling-update.
+This concerns clusters using no DNS. For these types of cluster, a small trick is needed because kOps doesn't know the IPs of the load-balancer at the time of writing the instances' cloud-init configuration, so we will have to run an update, then a rolling-update.
 
 ### Creating a valid cluster
 

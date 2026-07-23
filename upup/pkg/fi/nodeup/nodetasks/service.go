@@ -36,7 +36,7 @@ const (
 
 	// TODO: Generally only repo packages write to /usr/lib/systemd/system on _rhel_family
 	// But we use it in two ways: we update the docker manifest, and we install our own
-	// package (protokube, kubelet).  Maybe we should have the idea of a "system" package.
+	// package (kubelet).  Maybe we should have the idea of a "system" package.
 	centosSystemdSystemPath      = "/usr/lib/systemd/system"
 	flatcarSystemdSystemPath     = "/etc/systemd/system"
 	containerosSystemdSystemPath = "/etc/systemd/system"
@@ -44,7 +44,6 @@ const (
 	containerdService = "containerd.service"
 	dockerService     = "docker.service"
 	kubeletService    = "kubelet.service"
-	protokubeService  = "protokube.service"
 )
 
 type Service struct {
