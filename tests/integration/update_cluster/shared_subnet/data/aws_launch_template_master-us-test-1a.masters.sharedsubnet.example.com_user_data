@@ -126,7 +126,7 @@ ClusterName: sharedsubnet.example.com
 ConfigBase: memfs://clusters.example.com/sharedsubnet.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: ytL0fNdgmMEglrimPgHnQGPnQhsJ80zw0fHL6GpnLkw=
+NodeupConfigHash: jQHChVm+Nwr4ql8CrN3WtNLXlwMa+sHHj73Snohdw7Q=
 
 __EOF_KUBE_ENV
 

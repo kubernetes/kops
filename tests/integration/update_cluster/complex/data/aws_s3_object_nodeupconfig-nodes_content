@@ -58,4 +58,5 @@ containerdConfig:
   version: 2.2.4
 packages:
 - nfs-common
+usesLegacyGossip: false
 usesNoneDNS: false
