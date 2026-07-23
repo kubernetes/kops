@@ -126,7 +126,7 @@ ClusterName: minimal-warmpool.example.com
 ConfigBase: memfs://clusters.example.com/minimal-warmpool.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 23uzoy/5adLYdhyZYlBcfuKvAjuJrS9N8Szs5QX9dCo=
+NodeupConfigHash: BmaYfe+ZloWxNifcz6fsa8nReT0srU34pZ4RjUF+ywM=
 
 __EOF_KUBE_ENV
 
