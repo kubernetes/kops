@@ -1,0 +1,194 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    k8s-app: etcd-manager-events
+  name: etcd-manager-events
+  namespace: kube-system
+spec:
+  containers:
+  - args:
+    - --log-file=/var/log/etcd.log
+    - --also-stdout
+    - /ko-app/etcd-manager
+    - --backup-store=memfs://clusters.example.com/minimal.k8s.local/backups/etcd/events
+    - --client-urls=https://__name__:4002
+    - --cluster-name=etcd-events
+    - --containerized=true
+    - --dns-suffix=.internal.minimal.k8s.local
+    - --grpc-port=3997
+    - --peer-urls=https://__name__:2381
+    - --quarantine-client-urls=https://__name__:3995
+    - --v=6
+    - --volume-name-tag=k8s.io/etcd/events
+    - --volume-provider=aws
+    - --volume-tag=k8s.io/etcd/events
+    - --volume-tag=k8s.io/role/control-plane=1
+    - --volume-tag=kubernetes.io/cluster/minimal.k8s.local=owned
+    command:
+    - /go-runner
+    env:
+    - name: AWS_REGION
+      value: us-test-1
+    - name: ETCD_MANAGER_DAILY_BACKUPS_RETENTION
+      value: 90d
+    image: registry.k8s.io/etcd-manager/etcd-manager-slim:v3.0.20260707
+    name: etcd-manager
+    resources:
+      requests:
+        cpu: 200m
+        memory: 100Mi
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /rootfs
+      name: rootfs
+    - mountPath: /run
+      name: run
+    - mountPath: /etc/kubernetes/pki/etcd-manager
+      name: pki
+    - mountPath: /opt
+      name: opt
+    - mountPath: /var/log/etcd.log
+      name: varlogetcd
+  hostNetwork: true
+  hostPID: true
+  initContainers:
+  - args:
+    - --target-dir=/opt/kops-utils/
+    - --src=/ko-app/kops-utils-cp
+    command:
+    - /ko-app/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.37.0-alpha.1
+    name: kops-utils-cp
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --target-dir=/opt/etcd-v3.5.31
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:v3.5.31
+    name: init-etcd-3-5-31
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --target-dir=/opt/etcd-v3.6.12
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:v3.6.12
+    name: init-etcd-3-6-12
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --target-dir=/opt/etcd-v3.7.0
+    - --src=/usr/local/bin/etcd
+    - --src=/usr/local/bin/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/etcd:v3.7.0
+    name: init-etcd-3-7-0
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --symlink
+    - --target-dir=/opt/etcd-v3.5.0
+    - --target-dir=/opt/etcd-v3.5.1
+    - --target-dir=/opt/etcd-v3.5.10
+    - --target-dir=/opt/etcd-v3.5.11
+    - --target-dir=/opt/etcd-v3.5.12
+    - --target-dir=/opt/etcd-v3.5.13
+    - --target-dir=/opt/etcd-v3.5.14
+    - --target-dir=/opt/etcd-v3.5.15
+    - --target-dir=/opt/etcd-v3.5.16
+    - --target-dir=/opt/etcd-v3.5.17
+    - --target-dir=/opt/etcd-v3.5.18
+    - --target-dir=/opt/etcd-v3.5.19
+    - --target-dir=/opt/etcd-v3.5.2
+    - --target-dir=/opt/etcd-v3.5.20
+    - --target-dir=/opt/etcd-v3.5.21
+    - --target-dir=/opt/etcd-v3.5.22
+    - --target-dir=/opt/etcd-v3.5.23
+    - --target-dir=/opt/etcd-v3.5.24
+    - --target-dir=/opt/etcd-v3.5.25
+    - --target-dir=/opt/etcd-v3.5.26
+    - --target-dir=/opt/etcd-v3.5.27
+    - --target-dir=/opt/etcd-v3.5.28
+    - --target-dir=/opt/etcd-v3.5.29
+    - --target-dir=/opt/etcd-v3.5.3
+    - --target-dir=/opt/etcd-v3.5.30
+    - --target-dir=/opt/etcd-v3.5.4
+    - --target-dir=/opt/etcd-v3.5.5
+    - --target-dir=/opt/etcd-v3.5.6
+    - --target-dir=/opt/etcd-v3.5.7
+    - --target-dir=/opt/etcd-v3.5.8
+    - --target-dir=/opt/etcd-v3.5.9
+    - --src=/opt/etcd-v3.5.31/etcd
+    - --src=/opt/etcd-v3.5.31/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.37.0-alpha.1
+    name: init-etcd-symlinks-3-5-31
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  - args:
+    - --symlink
+    - --target-dir=/opt/etcd-v3.6.0
+    - --target-dir=/opt/etcd-v3.6.1
+    - --target-dir=/opt/etcd-v3.6.10
+    - --target-dir=/opt/etcd-v3.6.11
+    - --target-dir=/opt/etcd-v3.6.2
+    - --target-dir=/opt/etcd-v3.6.3
+    - --target-dir=/opt/etcd-v3.6.4
+    - --target-dir=/opt/etcd-v3.6.5
+    - --target-dir=/opt/etcd-v3.6.6
+    - --target-dir=/opt/etcd-v3.6.7
+    - --target-dir=/opt/etcd-v3.6.8
+    - --target-dir=/opt/etcd-v3.6.9
+    - --src=/opt/etcd-v3.6.12/etcd
+    - --src=/opt/etcd-v3.6.12/etcdctl
+    command:
+    - /opt/kops-utils/kops-utils-cp
+    image: registry.k8s.io/kops/kops-utils-cp:1.37.0-alpha.1
+    name: init-etcd-symlinks-3-6-12
+    resources: {}
+    volumeMounts:
+    - mountPath: /opt
+      name: opt
+  priorityClassName: system-cluster-critical
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  volumes:
+  - hostPath:
+      path: /
+      type: Directory
+    name: rootfs
+  - hostPath:
+      path: /run
+      type: DirectoryOrCreate
+    name: run
+  - hostPath:
+      path: /etc/kubernetes/pki/etcd-manager-events
+      type: DirectoryOrCreate
+    name: pki
+  - emptyDir: {}
+    name: opt
+  - hostPath:
+      path: /var/log/etcd-events.log
+      type: FileOrCreate
+    name: varlogetcd
+status: {}

@@ -1,0 +1,8 @@
+ClusterName: gossip.k8s.local
+Zones:
+- us-test1-a
+CloudProvider: gce
+Networking: cni
+KubernetesVersion: v1.36.0
+DNSType: Private
+Project: testproject

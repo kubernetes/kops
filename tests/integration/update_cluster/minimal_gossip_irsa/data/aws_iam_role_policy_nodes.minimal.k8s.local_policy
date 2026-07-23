@@ -1,0 +1,35 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "s3:Get*"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/cluster-completed.spec",
+        "arn:aws-test:s3:::placeholder-read-bucket/clusters.example.com/minimal.k8s.local/igconfig/node/*"
+      ]
+    },
+    {
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:ListBucketVersions"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws-test:s3:::placeholder-read-bucket"
+      ]
+    },
+    {
+      "Action": [
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeInstances"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ],
+  "Version": "2012-10-17"
+}
