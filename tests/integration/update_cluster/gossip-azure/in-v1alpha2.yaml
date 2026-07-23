@@ -1,0 +1,103 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  name: gossip.k8s.local
+spec:
+  api:
+    loadBalancer:
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudConfig:
+    azure:
+      adminUser: kops
+      storageAccountID: /subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage
+      subscriptionId: sub-123
+      tenantId: ""
+  cloudProvider: azure
+  configBase: memfs://tests/gossip.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: control-plane-eastus-1
+      name: etcd-1
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: control-plane-eastus-1
+      name: etcd-1
+    manager:
+      backupRetentionDays: 90
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: v1.36.0
+  networkCIDR: 10.0.0.0/16
+  networking:
+    cni: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 10.0.0.0/16
+    name: gossip.k8s.local
+    region: eastus
+    type: Public
+  topology:
+    dns:
+      type: Private
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: gossip.k8s.local
+  name: control-plane-eastus-1
+spec:
+  associatePublicIp: true
+  image: Canonical:UbuntuServer:18.04-LTS:latest
+  machineType: Standard_B2s
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - gossip.k8s.local
+  zones:
+  - eastus-1
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: gossip.k8s.local
+  name: nodes-eastus-1
+spec:
+  associatePublicIp: true
+  image: Canonical:UbuntuServer:18.04-LTS:latest
+  machineType: Standard_B2s
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - gossip.k8s.local
+  zones:
+  - eastus-1

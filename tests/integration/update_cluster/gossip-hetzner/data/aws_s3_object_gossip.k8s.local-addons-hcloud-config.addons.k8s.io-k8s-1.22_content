@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    addon.kops.k8s.io/name: hcloud-config.addons.k8s.io
+    app.kubernetes.io/managed-by: kops
+    k8s-addon: hcloud-config.addons.k8s.io
+  name: hcloud
+  namespace: kube-system
+stringData:
+  network: gossip.k8s.local
+  token: REDACTED

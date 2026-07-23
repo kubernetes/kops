@@ -1,0 +1,10 @@
+ClusterName: gossip.k8s.local
+Zones:
+- eastus-1
+CloudProvider: azure
+Networking: cni
+KubernetesVersion: v1.36.0
+DNSType: Private
+Sets:
+- spec.cloudProvider.azure.storageAccountID=/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage
+- spec.cloudProvider.azure.subscriptionID=sub-123

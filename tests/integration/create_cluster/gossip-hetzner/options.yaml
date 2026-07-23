@@ -1,0 +1,7 @@
+ClusterName: gossip.k8s.local
+Zones:
+- fsn1
+CloudProvider: hetzner
+Networking: cni
+KubernetesVersion: v1.36.0
+DNSType: Private
