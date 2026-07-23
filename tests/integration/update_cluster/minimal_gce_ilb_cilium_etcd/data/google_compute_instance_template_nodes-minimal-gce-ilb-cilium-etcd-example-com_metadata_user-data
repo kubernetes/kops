@@ -149,7 +149,7 @@ ConfigServer:
   - https://kops-controller.internal.minimal-gce-ilb-cilium-etcd.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: VCNL5ZZ+UCJvvK3TxFp/kPJTm1I8TBWJ5G485KzEI8c=
+NodeupConfigHash: 31oIkLrXTAg5agRipVt3sweEZPZfEuqzhESuvAOcFOQ=
 
 __EOF_KUBE_ENV
 

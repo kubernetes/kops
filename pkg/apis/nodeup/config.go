@@ -135,7 +135,10 @@ type Config struct {
 	Openstack *kops.OpenstackSpec `json:",omitempty"`
 
 	// Discovery methods
-	UsesNoneDNS bool `json:"usesNoneDNS"`
+	// UsesLegacyGossip is retained for nodeup config wire compatibility.
+	// Deprecated: gossip DNS support was removed in kOps 1.37.
+	UsesLegacyGossip bool `json:"usesLegacyGossip"`
+	UsesNoneDNS      bool `json:"usesNoneDNS"`
 
 	// DiscoveryService implements discovery using a hosted discovery service.
 	DiscoveryService *DiscoveryServiceOptions `json:"discoveryServiceWithUniverse,omitempty"`
@@ -244,6 +247,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		VolumeMounts:         instanceGroup.Spec.VolumeMounts,
 		FileAssets:           append(filterFileAssets(instanceGroup.Spec.FileAssets, role), filterFileAssets(cluster.Spec.FileAssets, role)...),
 		Hooks:                [][]kops.HookSpec{igHooks, clusterHooks},
+		UsesLegacyGossip:     cluster.UsesLegacyGossip(),
 		UsesNoneDNS:          cluster.UsesNoneDNS(),
 	}
 
