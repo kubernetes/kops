@@ -98,3 +98,6 @@ charts/
 
 # Ignore asdf .tool-versions file
 .tool-versions
+
+# Ignore direnv configuration file
+.envrc
