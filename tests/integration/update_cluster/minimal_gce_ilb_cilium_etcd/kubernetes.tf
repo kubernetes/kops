@@ -386,6 +386,10 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-ilb-cilium-etcd-e
     protocol = "tcp"
   }
   allow {
+    ports    = ["9100"]
+    protocol = "tcp"
+  }
+  allow {
     ports    = ["8472"]
     protocol = "udp"
   }

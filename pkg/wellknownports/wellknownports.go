@@ -118,6 +118,9 @@ const (
 
 	// KubeControllerManagerMetricsPort is used by kube-controller-manager to expose metrics
 	KubeControllerManagerMetricsPort = 10257
+
+	// NodeExporterMetricsPort is used by node-exporter to expose node metrics
+	NodeExporterMetricsPort = 9100
 )
 
 type PortRange struct {
