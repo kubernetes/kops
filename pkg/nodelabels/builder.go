@@ -26,6 +26,7 @@ import (
 
 const (
 	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
+	RoleLabelKopsAPIServer         = "kops.k8s.io/node-api-server"
 	RoleLabelNode16                = "node-role.kubernetes.io/node"
 
 	// New Experimental control plane roles associated with static manifests
@@ -71,7 +72,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 
 	// Merge KubeletConfig for NodeLabels
 	c := &api.KubeletConfigSpec{}
-	if isControlPlane {
+	if instanceGroup.Spec.Role.IsControlPlaneType() {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.ControlPlaneKubelet)
 	} else {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
@@ -91,8 +92,9 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// We keep the featureflag as a placeholder to change the logic;
 		// when we drop the featureflag we should just always include the label, even for
 		// full control-plane nodes.
-		if isAPIServer || featureflag.APIServerNodes.Enabled() {
+		if isAPIServer && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
+			nodeLabels[RoleLabelKopsAPIServer] = ""
 			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
@@ -109,7 +111,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isScheduler {
@@ -117,7 +118,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isKubeControllerManager {
@@ -125,7 +125,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelKubeControllerManager] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
 	}
 
 	if isControlPlane {
