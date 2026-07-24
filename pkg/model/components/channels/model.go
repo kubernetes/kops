@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/pkg/wellknownports"
 	"k8s.io/kops/pkg/wellknownusers"
 	"k8s.io/kops/upup/pkg/fi"
@@ -100,6 +101,7 @@ func (b *ChannelsBuilder) channelList() ([]string, error) {
 
 func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 	image := b.AssetBuilder.RemapImage("registry.k8s.io/kops/channels:" + kopsroot.KopsVersionImageTag())
+	// image = "gcr.io/wfender-dev-20240625/kops/channels:1.37.0-alpha.1"
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -121,11 +123,24 @@ func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 		},
 	}
 
+	// Kops Clusters with a ControlPlane nodes will run kops-channel there
+	// For those clusters we should label the cluster with the control plane label
+	// For Split Control Plane clusters we run kops-channel on the APIServer node.
+	// For those clusters we should label the cluster with the KOPS apiserver label
+	nodeLabel := nodelabels.RoleLabelKopsAPIServer
+	for _, ig := range b.AllInstanceGroups {
+		if ig.IsControlPlane() {
+			nodeLabel = nodelabels.RoleLabelControlPlane20
+			break
+		}
+	}
+
 	args := []string{
 		"apply", "channel",
 		"--v=4",
 		"--yes",
 		"--interval=" + channelsInterval.String(),
+		"--node-label=" + nodeLabel,
 		"--node-name=$(NODE_NAME)",
 	}
 	args = append(args, channels...)

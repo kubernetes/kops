@@ -43,9 +43,10 @@ import (
 )
 
 type ApplyChannelOptions struct {
-	Yes      bool
-	Interval time.Duration
-	NodeName string
+	Yes       bool
+	Interval  time.Duration
+	NodeName  string
+	NodeLabel string
 }
 
 func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
@@ -67,6 +68,7 @@ func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
 	cmd.Flags().DurationVar(&options.Interval, "interval", 0, "If non-zero, re-apply the channel on this interval until interrupted (e.g. 60s)")
 	cmd.Flags().StringVar(&options.NodeName, "node-name", "", "If set, patch the named node with the mandatory control-plane labels each iteration; typically supplied via the downward API.")
+	cmd.Flags().StringVar(&options.NodeLabel, "node-label", "", "If set, patch the named node with this label each iteration; typically supplied via the downward API.")
 
 	return cmd
 }
@@ -80,7 +82,7 @@ func runApplyChannelIteration(ctx context.Context, f *ChannelsFactory, out io.Wr
 		labelerClient, err := f.KubernetesClient()
 		if err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("building kubernetes client for node labeler: %w", err))
-		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, labelerClient, options.NodeName); err != nil {
+		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, labelerClient, options.NodeName, options.NodeLabel); err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("bootstrapping node labels: %w", err))
 		}
 	}

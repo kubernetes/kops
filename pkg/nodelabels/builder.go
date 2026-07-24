@@ -26,10 +26,15 @@ import (
 
 const (
 	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
+	RoleLabelKopsAPIServer         = "kops.k8s.io/node-api-server"
 	RoleLabelNode16                = "node-role.kubernetes.io/node"
+	RoleLabelKopsNode              = "kops.k8s.io/node-node"
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
+	RoleLabelKopsEtcd              = "kops.k8s.io/node-etcd"
 	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
+	RoleLabelKopsScheduler         = "kops.k8s.io/node-scheduler"
 	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
+	RoleLabelKopsKCM               = "kops.k8s.io/node-kube-controller-manager"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
@@ -64,7 +69,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 
 	// Merge KubeletConfig for NodeLabels
 	c := &api.KubeletConfigSpec{}
-	if isControlPlane {
+	if instanceGroup.Spec.Role.IsControlPlaneType() {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.ControlPlaneKubelet)
 	} else {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
@@ -84,8 +89,9 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// We keep the featureflag as a placeholder to change the logic;
 		// when we drop the featureflag we should just always include the label, even for
 		// full control-plane nodes.
-		if isAPIServer || featureflag.APIServerNodes.Enabled() {
+		if isAPIServer && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
+			nodeLabels[RoleLabelKopsAPIServer] = ""
 			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
@@ -95,6 +101,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
+		nodeLabels[RoleLabelKopsNode] = ""
 	}
 
 	if isEtcd {
@@ -102,7 +109,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
+		nodeLabels[RoleLabelKopsEtcd] = ""
 	}
 
 	if isScheduler {
@@ -110,7 +117,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
+		nodeLabels[RoleLabelKopsScheduler] = ""
 	}
 
 	if isKubeControllerManager {
@@ -118,14 +125,14 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelKubeControllerManager] = ""
-		nodeLabels[RoleLabelControlPlane20] = ""
+		nodeLabels[RoleLabelKopsKCM] = ""
 	}
 
 	if isControlPlane {
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
-		for label, value := range BuildMandatoryControlPlaneLabels() {
+		for label, value := range BuildMandatoryControlPlaneLabels(RoleLabelControlPlane20) {
 			nodeLabels[label] = value
 		}
 	}
@@ -141,9 +148,13 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 }
 
 // BuildMandatoryControlPlaneLabels returns the list of labels all CP nodes must have
-func BuildMandatoryControlPlaneLabels() map[string]string {
+func BuildMandatoryControlPlaneLabels(nodeLabel string) map[string]string {
 	nodeLabels := make(map[string]string)
-	nodeLabels[RoleLabelControlPlane20] = ""
+	if nodeLabel == "" {
+		nodeLabels[RoleLabelControlPlane20] = ""
+	} else {
+		nodeLabels[nodeLabel] = ""
+	}
 	nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 	nodeLabels["node.kubernetes.io/exclude-from-external-load-balancers"] = ""
 	return nodeLabels
