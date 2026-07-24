@@ -67,10 +67,8 @@ const (
 	InstanceGroupRoleEtcd InstanceGroupRole = "Etcd"
 	// InstanceGroupRoleScheduler is a Scheduler role.
 	InstanceGroupRoleScheduler InstanceGroupRole = "Scheduler"
-	// InstanceGroupRoleCloudControllerManager is a CloudControllerManager role.
-	InstanceGroupRoleCloudControllerManager InstanceGroupRole = "CloudControllerManager"
-	// InstanceGroupRoleKubControllerManager is a KubControllerManager role.
-	InstanceGroupRoleKubControllerManager InstanceGroupRole = "KubControllerManager"
+	// InstanceGroupRoleKubeControllerManager is a KubeControllerManager role.
+	InstanceGroupRoleKubeControllerManager InstanceGroupRole = "KubeControllerManager"
 )
 
 // AllInstanceGroupRoles is a slice of all valid InstanceGroupRole values
@@ -79,6 +77,9 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleAPIServer,
 	InstanceGroupRoleNode,
 	InstanceGroupRoleBastion,
+	InstanceGroupRoleEtcd,
+	InstanceGroupRoleScheduler,
+	InstanceGroupRoleKubeControllerManager,
 }
 
 func (r InstanceGroupRole) HasControlPlane() bool {
@@ -105,16 +106,12 @@ func (r InstanceGroupRole) HasScheduler() bool {
 	return r == InstanceGroupRoleScheduler
 }
 
-func (r InstanceGroupRole) HasCloudControllerManager() bool {
-	return r == InstanceGroupRoleCloudControllerManager
-}
-
-func (r InstanceGroupRole) HasKubControllerManager() bool {
-	return r == InstanceGroupRoleKubControllerManager
+func (r InstanceGroupRole) HasKubeControllerManager() bool {
+	return r == InstanceGroupRoleKubeControllerManager
 }
 
 func (r InstanceGroupRole) IsControlPlaneType() bool {
-	return r.HasControlPlane() || r.HasAPIServer()
+	return r.HasControlPlane() || r.HasAPIServer() || r.HasEtcd() || r.HasScheduler() || r.HasKubeControllerManager()
 }
 
 const (
@@ -410,6 +407,36 @@ func (g *InstanceGroup) IsAPIServerOnly() bool {
 // hasAPIServer checks if instanceGroup runs an API Server
 func (g *InstanceGroup) HasAPIServer() bool {
 	return g.IsControlPlane() || g.IsAPIServerOnly()
+}
+
+// IsEtcdOnly checks if instanceGroup runs only Etcd
+func (g *InstanceGroup) IsEtcdOnly() bool {
+	return g.Spec.Role.HasEtcd()
+}
+
+// HasEtcd checks if instanceGroup runs Etcd
+func (g *InstanceGroup) HasEtcd() bool {
+	return g.IsControlPlane() || g.IsEtcdOnly()
+}
+
+// IsSchedulerOnly checks if instanceGroup runs only Scheduler
+func (g *InstanceGroup) IsSchedulerOnly() bool {
+	return g.Spec.Role.HasScheduler()
+}
+
+// HasScheduler checks if instanceGroup runs Scheduler
+func (g *InstanceGroup) HasScheduler() bool {
+	return g.IsControlPlane() || g.IsSchedulerOnly()
+}
+
+// IsKubeControllerManagerOnly checks if instanceGroup runs only KubControllerManager
+func (g *InstanceGroup) IsKubeControllerManagerOnly() bool {
+	return g.Spec.Role.HasKubeControllerManager()
+}
+
+// HasKubeControllerManager checks if instanceGroup runs KubeControllerManager
+func (g *InstanceGroup) HasKubeControllerManager() bool {
+	return g.IsControlPlane() || g.IsKubeControllerManagerOnly()
 }
 
 // HasGVisor checks if instanceGroup is a worker that has the gVisor (runsc) runtime enabled.

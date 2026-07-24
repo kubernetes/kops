@@ -1,0 +1,25 @@
+CloudProvider: gce
+ClusterName: kops.k8s.local
+Project: wfender-test
+Networking: kubenet
+Zones:
+- us-central1-a
+- us-central1-b
+- us-central1-c
+NodeCount: 3
+NodeSizes:
+- e2-standard-2
+APIServerCount: 2
+APIServerSizes:
+- e2-standard-2
+EtcdCount: 3
+EtcdSizes:
+- e2-standard-2
+KubeControllerManagerCount: 2
+KubeControllerManagerSizes:
+- e2-standard-2
+SchedulerCount: 2
+SchedulerSizes:
+- e2-standard-2
+ControlPlaneCount: 0
+KubernetesVersion: v1.32.0

@@ -126,9 +126,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 				return nil, fmt.Errorf("etcd nodes requires the ExperimentalNodes feature flag to be enabled")
 			case ig.Spec.Role.HasScheduler():
 				return nil, fmt.Errorf("scheduler nodes requires the ExperimentalNodes feature flag to be enabled")
-			case ig.Spec.Role.HasCloudControllerManager():
-				return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalNodes feature flag to be enabled")
-			case ig.Spec.Role.HasKubControllerManager():
+			case ig.Spec.Role.HasKubeControllerManager():
 				return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalNodes feature flag to be enabled")
 			}
 		}
@@ -307,6 +305,18 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
 			taints.Insert(nodelabels.RoleLabelAPIServer16 + "=:" + string(v1.TaintEffectNoSchedule))
 		}
+		if ig.IsEtcdOnly() {
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			taints.Insert(nodelabels.RoleLabelEtcd + "=:" + string(v1.TaintEffectNoSchedule))
+		}
+		if ig.IsKubeControllerManagerOnly() {
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			taints.Insert(nodelabels.RoleLabelKubeControllerManager + "=:" + string(v1.TaintEffectNoSchedule))
+		}
+		if ig.IsSchedulerOnly() {
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			taints.Insert(nodelabels.RoleLabelScheduler + "=:" + string(v1.TaintEffectNoSchedule))
+		}
 		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
 			// Karpenter v1 expects its nodes to register with this taint as a race guard; it removes the taint once
 			// the NodeClaim is synced. The empty value still requires the <Key>=<Value>:<Effect> form.
@@ -341,7 +351,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderGCE:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeGCE, nil
 
 		case ig.Spec.Role.HasNode():
@@ -353,7 +363,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderDO:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeDO, nil
 
 		case ig.Spec.Role.HasNode():
@@ -363,7 +373,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderHetzner:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeHetzner, nil
 
 		case ig.Spec.Role.HasNode():
@@ -382,7 +392,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderAzure:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeAzure, nil
 
 		case ig.Spec.Role.HasNode():
@@ -394,7 +404,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderScaleway:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeScaleway, nil
 
 		case ig.Spec.Role.HasNode():
@@ -403,7 +413,7 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 
 	case kops.CloudProviderLinode:
 		switch {
-		case ig.Spec.Role.HasControlPlane():
+		case ig.Spec.Role.IsControlPlaneType():
 			return defaultMasterMachineTypeLinode, nil
 
 		case ig.Spec.Role.HasNode():

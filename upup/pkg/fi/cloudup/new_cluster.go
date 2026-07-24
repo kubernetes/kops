@@ -130,15 +130,13 @@ type NewClusterOptions struct {
 
 	// ControlPlaneCount is the number of control-plane nodes to create. Defaults to the length of ControlPlaneZones.
 	// if ControlPlaneZones is explicitly nonempty, otherwise defaults to 1.
-	ControlPlaneCount int32
+	ControlPlaneCount *int32
 	// APIServerCount is the number of API servers to create. Defaults to 0.
 	APIServerCount int32
 	// EtcdCount is the number of API servers to create. Defaults to 0.
 	EtcdCount int32
 	// SchedulerCount is the number of API servers to create. Defaults to 0.
 	SchedulerCount int32
-	// CloudControllerManagerCount is the number of API servers to create. Defaults to 0.
-	CloudControllerManagerCount int32
 	// KubeControllerManagerCount is the number of API servers to create. Defaults to 0.
 	KubeControllerManagerCount int32
 	// EncryptEtcdStorage is whether to encrypt the etcd volumes.
@@ -176,17 +174,16 @@ type NewClusterOptions struct {
 	// InstanceManager specifies which manager to use for managing instances.
 	InstanceManager string
 
-	Image                       string
-	NodeImage                   string
-	ControlPlaneImage           string
-	BastionImage                string
-	ControlPlaneSizes           []string
-	APIServerSizes              []string
-	EtcdSizes                   []string
-	SchedulerSizes              []string
-	CloudControllerManagerSizes []string
-	KubeControllerManagerSizes  []string
-	NodeSizes                   []string
+	Image                      string
+	NodeImage                  string
+	ControlPlaneImage          string
+	BastionImage               string
+	ControlPlaneSizes          []string
+	APIServerSizes             []string
+	EtcdSizes                  []string
+	SchedulerSizes             []string
+	KubeControllerManagerSizes []string
+	NodeSizes                  []string
 }
 
 func (o *NewClusterOptions) InitDefaults() {
@@ -495,6 +492,66 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 		return nil, err
 	}
 
+	etcds, err := setupEtcdNodes(opt, cluster, zoneToSubnetsMap)
+	if err != nil {
+		return nil, err
+	}
+
+	schedulers, err := setupSchedulerNodes(opt, cluster, zoneToSubnetsMap)
+	if err != nil {
+		return nil, err
+	}
+
+	kcms, err := setupKCMNodes(opt, cluster, zoneToSubnetsMap)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the Etcd clusters
+	{
+		cloudProvider := cluster.GetCloudProvider()
+		controlPlaneAZs := sets.NewString()
+		duplicateAZs := false
+
+		etcdMembersIGs := controlPlanes
+		if len(etcds) > 0 {
+			etcdMembersIGs = etcds
+		}
+
+		for _, ig := range etcdMembersIGs {
+			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
+			if err != nil {
+				return nil, err
+			}
+			for _, zone := range zones {
+				if controlPlaneAZs.Has(zone) {
+					duplicateAZs = true
+				}
+				controlPlaneAZs.Insert(zone)
+			}
+		}
+
+		if duplicateAZs {
+			klog.Warningf("Running with etcd/control-plane nodes in the same AZs; redundancy will be reduced")
+		}
+
+		clusters := opt.EtcdClusters
+		if opt.Networking == "cilium-etcd" {
+			clusters = append(clusters, "cilium")
+		}
+
+		encryptEtcdStorage := false
+		if opt.EncryptEtcdStorage != nil {
+			encryptEtcdStorage = fi.ValueOf(opt.EncryptEtcdStorage)
+		} else if cloudProvider == api.CloudProviderAWS {
+			encryptEtcdStorage = true
+		}
+		for _, etcdCluster := range clusters {
+			etcd := createEtcdCluster(etcdCluster, etcdMembersIGs, encryptEtcdStorage, opt.EtcdStorageType)
+			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
+		}
+	}
+
 	err = setupAPI(opt, cluster)
 	if err != nil {
 		return nil, err
@@ -502,6 +559,9 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 
 	instanceGroups := append([]*api.InstanceGroup(nil), controlPlanes...)
 	instanceGroups = append(instanceGroups, apiservers...)
+	instanceGroups = append(instanceGroups, etcds...)
+	instanceGroups = append(instanceGroups, schedulers...)
+	instanceGroups = append(instanceGroups, kcms...)
 	instanceGroups = append(instanceGroups, nodes...)
 	instanceGroups = append(instanceGroups, bastions...)
 
@@ -549,9 +609,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 					return nil, fmt.Errorf("etcd nodes requires the ExperimentalRoles feature flag to be enabled")
 				case g.Spec.Role.HasScheduler():
 					return nil, fmt.Errorf("scheduler nodes requires the ExperimentalRoles feature flag to be enabled")
-				case g.Spec.Role.HasCloudControllerManager():
-					return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
-				case g.Spec.Role.HasKubControllerManager():
+				case g.Spec.Role.HasKubeControllerManager():
 					return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
 				}
 			}
@@ -960,28 +1018,27 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 	// The control-plane count is the number of control-plane zones unless explicitly set.
 	// We then round-robin around the zones.
 	{
-		controlPlaneCount := opt.ControlPlaneCount
 		controlPlaneZones := opt.ControlPlaneZones
-		if len(controlPlaneZones) != 0 {
-			if controlPlaneCount != 0 && controlPlaneCount < int32(len(controlPlaneZones)) {
-				return nil, fmt.Errorf("specified %d control-plane zones, but also requested %d control-plane nodes.  If specifying both, the count should match.", len(controlPlaneZones), controlPlaneCount)
+		var controlPlaneCount int32
+		if opt.ControlPlaneCount != nil {
+			controlPlaneCount = *opt.ControlPlaneCount
+			if len(controlPlaneZones) == 0 {
+				controlPlaneZones = opt.Zones
 			}
-
-			if controlPlaneCount == 0 {
-				// If control-plane count is not specified, default to the number of control-plane zones
-				controlPlaneCount = int32(len(controlPlaneZones))
+			if controlPlaneCount != 0 && len(opt.ControlPlaneZones) != 0 && controlPlaneCount < int32(len(opt.ControlPlaneZones)) {
+				return nil, fmt.Errorf("specified %d control-plane zones, but also requested %d control-plane nodes.  If specifying both, the count should match.", len(opt.ControlPlaneZones), controlPlaneCount)
 			}
 		} else {
-			// controlPlaneZones not set; default to same as node Zones
-			controlPlaneZones = opt.Zones
-
-			if controlPlaneCount == 0 {
-				// If control-plane count is not specified, default to 1
+			// Defaulting
+			if len(controlPlaneZones) != 0 {
+				controlPlaneCount = int32(len(controlPlaneZones))
+			} else {
+				controlPlaneZones = opt.Zones
 				controlPlaneCount = 1
 			}
 		}
 
-		if len(controlPlaneZones) == 0 {
+		if controlPlaneCount > 0 && len(controlPlaneZones) == 0 {
 			// Should be unreachable
 			return nil, fmt.Errorf("cannot determine control-plane zones")
 		}
@@ -1038,46 +1095,6 @@ func setupControlPlane(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubne
 			g.Spec.Image = opt.ControlPlaneImage
 
 			controlPlanes = append(controlPlanes, g)
-		}
-	}
-
-	// Build the Etcd clusters
-	{
-		controlPlaneAZs := sets.NewString()
-		duplicateAZs := false
-		for _, ig := range controlPlanes {
-			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
-			if err != nil {
-				return nil, err
-			}
-			for _, zone := range zones {
-				if controlPlaneAZs.Has(zone) {
-					duplicateAZs = true
-				}
-
-				controlPlaneAZs.Insert(zone)
-			}
-		}
-
-		if duplicateAZs {
-			klog.Warningf("Running with control-plane nodes in the same AZs; redundancy will be reduced")
-		}
-
-		clusters := opt.EtcdClusters
-
-		if opt.Networking == "cilium-etcd" {
-			clusters = append(clusters, "cilium")
-		}
-
-		encryptEtcdStorage := false
-		if opt.EncryptEtcdStorage != nil {
-			encryptEtcdStorage = fi.ValueOf(opt.EncryptEtcdStorage)
-		} else if cloudProvider == api.CloudProviderAWS {
-			encryptEtcdStorage = true
-		}
-		for _, etcdCluster := range clusters {
-			etcd := createEtcdCluster(etcdCluster, controlPlanes, encryptEtcdStorage, opt.EtcdStorageType)
-			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
 		}
 	}
 
@@ -1786,4 +1803,142 @@ func discoveryUniverseID(ctx context.Context, keystore fi.Keystore) (string, err
 	}
 
 	return discoveryapi.ComputeUniverseIDFromCertificate(keyset.Primary.Certificate.Certificate), nil
+}
+
+func setupEtcdNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	cloudProvider := cluster.GetCloudProvider()
+	var nodes []*api.InstanceGroup
+	numZones := len(opt.Zones)
+	nodeCount := opt.EtcdCount
+	if nodeCount == 0 {
+		return nodes, nil
+	}
+	countPerIG := nodeCount / int32(numZones)
+	remainder := int(nodeCount) % numZones
+	for i, zone := range opt.Zones {
+		count := countPerIG
+		if i < remainder {
+			count++
+		}
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleEtcd
+		g.Spec.MinSize = new(count)
+		g.Spec.MaxSize = new(count)
+		g.ObjectMeta.Name = "etcd-" + zone
+
+		subnets := zoneToSubnetsMap[zone]
+		if len(subnets) == 0 {
+			klog.Fatalf("subnet not found in zoneToSubnetsMap")
+		}
+		for _, subnet := range subnets {
+			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+		}
+
+		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
+			g.Spec.Zones = []string{zone}
+		}
+
+		for i, size := range opt.EtcdSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if i > 0 {
+				klog.Fatalf("multiple machine types for IG group not currently supported")
+			}
+		}
+		nodes = append(nodes, g)
+	}
+	return nodes, nil
+}
+
+func setupSchedulerNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	cloudProvider := cluster.GetCloudProvider()
+	var nodes []*api.InstanceGroup
+	numZones := len(opt.Zones)
+	nodeCount := opt.SchedulerCount
+	if nodeCount == 0 {
+		return nodes, nil
+	}
+	countPerIG := nodeCount / int32(numZones)
+	remainder := int(nodeCount) % numZones
+	for i, zone := range opt.Zones {
+		count := countPerIG
+		if i < remainder {
+			count++
+		}
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleScheduler
+		g.Spec.MinSize = new(count)
+		g.Spec.MaxSize = new(count)
+		g.ObjectMeta.Name = "scheduler-" + zone
+
+		subnets := zoneToSubnetsMap[zone]
+		if len(subnets) == 0 {
+			klog.Fatalf("subnet not found in zoneToSubnetsMap")
+		}
+		for _, subnet := range subnets {
+			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+		}
+
+		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
+			g.Spec.Zones = []string{zone}
+		}
+
+		for i, size := range opt.SchedulerSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if i > 0 {
+				klog.Fatalf("multiple machine types for IG group not currently supported")
+			}
+		}
+		nodes = append(nodes, g)
+	}
+	return nodes, nil
+}
+
+func setupKCMNodes(opt *NewClusterOptions, cluster *api.Cluster, zoneToSubnetsMap map[string][]*api.ClusterSubnetSpec) ([]*api.InstanceGroup, error) {
+	cloudProvider := cluster.GetCloudProvider()
+	var nodes []*api.InstanceGroup
+	numZones := len(opt.Zones)
+	nodeCount := opt.KubeControllerManagerCount
+	if nodeCount == 0 {
+		return nodes, nil
+	}
+	countPerIG := nodeCount / int32(numZones)
+	remainder := int(nodeCount) % numZones
+	for i, zone := range opt.Zones {
+		count := countPerIG
+		if i < remainder {
+			count++
+		}
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleKubeControllerManager
+		g.Spec.MinSize = new(count)
+		g.Spec.MaxSize = new(count)
+		g.ObjectMeta.Name = "kcm-" + zone
+
+		subnets := zoneToSubnetsMap[zone]
+		if len(subnets) == 0 {
+			klog.Fatalf("subnet not found in zoneToSubnetsMap")
+		}
+		for _, subnet := range subnets {
+			g.Spec.Subnets = append(g.Spec.Subnets, subnet.Name)
+		}
+
+		if cloudProvider == api.CloudProviderGCE || cloudProvider == api.CloudProviderAzure {
+			g.Spec.Zones = []string{zone}
+		}
+
+		for i, size := range opt.KubeControllerManagerSizes {
+			if i == 0 {
+				g.Spec.MachineType = size
+			}
+			if i > 0 {
+				klog.Fatalf("multiple machine types for IG group not currently supported")
+			}
+		}
+		nodes = append(nodes, g)
+	}
+	return nodes, nil
 }

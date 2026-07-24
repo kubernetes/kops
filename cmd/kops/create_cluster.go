@@ -193,6 +193,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	sshPublicKey := ""
 	associatePublicIP := false
 	encryptEtcdStorage := false
+	var controlPlaneCount int32
 
 	cmd := &cobra.Command{
 		Use:               "cluster [CLUSTER]",
@@ -210,6 +211,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			if cmd.Flag("encrypt-etcd-storage").Changed {
 				options.EncryptEtcdStorage = &encryptEtcdStorage
+			}
+
+			if cmd.Flag("control-plane-count").Changed || cmd.Flag("master-count").Changed {
+				options.ControlPlaneCount = &controlPlaneCount
 			}
 
 			if err := checkProjectFlag(cmd.Flag("project").Changed, options.Project); err != nil {
@@ -295,9 +300,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		return []string{"pub"}, cobra.ShellCompDirectiveFilterFileExt
 	})
 
-	cmd.Flags().Int32Var(&options.ControlPlaneCount, "master-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
+	cmd.Flags().Int32Var(&controlPlaneCount, "master-count", controlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().MarkDeprecated("master-count", "use --control-plane-count instead")
-	cmd.Flags().Int32Var(&options.ControlPlaneCount, "control-plane-count", options.ControlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
+	cmd.Flags().Int32Var(&controlPlaneCount, "control-plane-count", controlPlaneCount, "Number of control-plane nodes. Defaults to one control-plane node per control-plane-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Total number of worker nodes. Defaults to one node per zone")
 	if featureflag.APIServerNodes.Enabled() {
 		cmd.Flags().Int32Var(&options.APIServerCount, "api-server-count", options.APIServerCount, "Number of API server nodes. Defaults to 0.")
@@ -305,7 +310,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if featureflag.ExperimentalRoles.Enabled() {
 		cmd.Flags().Int32Var(&options.EtcdCount, "etcd-count", options.EtcdCount, "Number of etcd nodes. Defaults to 0.")
 		cmd.Flags().Int32Var(&options.SchedulerCount, "scheduler-count", options.SchedulerCount, "Number of scheduler nodes. Defaults to 0.")
-		cmd.Flags().Int32Var(&options.CloudControllerManagerCount, "ccm-count", options.CloudControllerManagerCount, "Number of cloud-controller-manager nodes. Defaults to 0.")
 		cmd.Flags().Int32Var(&options.KubeControllerManagerCount, "kcm-count", options.KubeControllerManagerCount, "Number of kube-controller-manager nodes. Defaults to 0.")
 	}
 
@@ -335,8 +339,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.RegisterFlagCompletionFunc("etcd-size", completeMachineType)
 		cmd.Flags().StringSliceVar(&options.SchedulerSizes, "scheduler-size", options.SchedulerSizes, "Machine type(s) for scheduler nodes")
 		cmd.RegisterFlagCompletionFunc("scheduler-size", completeMachineType)
-		cmd.Flags().StringSliceVar(&options.CloudControllerManagerSizes, "ccm-size", options.CloudControllerManagerSizes, "Machine type(s) for cloud-controller-manager nodes")
-		cmd.RegisterFlagCompletionFunc("ccm-size", completeMachineType)
 		cmd.Flags().StringSliceVar(&options.KubeControllerManagerSizes, "kcm-size", options.KubeControllerManagerSizes, "Machine type(s) for kube-controller-manager nodes")
 		cmd.RegisterFlagCompletionFunc("kcm-size", completeMachineType)
 	}

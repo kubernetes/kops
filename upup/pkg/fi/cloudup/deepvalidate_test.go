@@ -39,6 +39,54 @@ func TestDeepValidate_OK(t *testing.T) {
 	}
 }
 
+func buildMinimalInstanceGroup(name string, role kopsapi.InstanceGroupRole, subnet string) *kopsapi.InstanceGroup {
+	g := &kopsapi.InstanceGroup{}
+	g.ObjectMeta.Name = name + "-" + subnet
+	g.Spec.Role = role
+	var one int32 = 1
+	g.Spec.MinSize = &one
+	g.Spec.MaxSize = &one
+	g.Spec.Image = "my-image"
+	g.Spec.Subnets = []string{subnet}
+	return g
+}
+
+func TestDeepValidate_SplitControlPlane_OK(t *testing.T) {
+	c := buildDefaultCluster(t)
+	var groups []*kopsapi.InstanceGroup
+	for _, subnet := range c.Spec.Networking.Subnets {
+		groups = append(groups, buildMinimalInstanceGroup("apiserver", kopsapi.InstanceGroupRoleAPIServer, subnet.Name))
+		groups = append(groups, buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, subnet.Name))
+		groups = append(groups, buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, subnet.Name))
+		groups = append(groups, buildMinimalInstanceGroup("scheduler", kopsapi.InstanceGroupRoleScheduler, subnet.Name))
+		groups = append(groups, buildMinimalNodeInstanceGroup(subnet.Name))
+	}
+	err := validation.DeepValidate(c, groups, true, vfs.Context, nil)
+	if err != nil {
+		t.Fatalf("Expected no error from DeepValidate for split control plane, got %v", err)
+	}
+}
+
+func TestDeepValidate_SplitControlPlane_MutualExclusion(t *testing.T) {
+	c := buildDefaultCluster(t)
+	var groups []*kopsapi.InstanceGroup
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
+	expectErrorFromDeepValidate(t, c, groups, "cannot have both ControlPlane/Master InstanceGroups and split control plane InstanceGroups")
+}
+
+func TestDeepValidate_SplitControlPlane_MissingComponent(t *testing.T) {
+	c := buildDefaultCluster(t)
+	var groups []*kopsapi.InstanceGroup
+	groups = append(groups, buildMinimalInstanceGroup("apiserver", kopsapi.InstanceGroupRoleAPIServer, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("etcd", kopsapi.InstanceGroupRoleEtcd, "subnet-us-test-1a"))
+	groups = append(groups, buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"))
+	// Missing Scheduler!
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
+	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubControllerManager, and Scheduler InstanceGroups")
+}
+
 func TestDeepValidate_NoNodeZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
@@ -50,7 +98,7 @@ func TestDeepValidate_NoMasterZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure at least one ControlPlane InstanceGroup")
+	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubControllerManager, and Scheduler InstanceGroups")
 }
 
 func TestDeepValidate_BadZone(t *testing.T) {

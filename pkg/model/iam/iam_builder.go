@@ -538,6 +538,45 @@ func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	return p, nil
 }
 
+// BuildAWSPolicy generates a custom policy for an etcd node.
+func (r *NodeRoleEtcd) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
+	b.addNodeupPermissions(p, false)
+	if err := b.AddS3Permissions(p); err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
+	}
+	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
+	}
+	return p, nil
+}
+
+// BuildAWSPolicy generates a custom policy for a scheduler node.
+func (r *NodeRoleScheduler) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
+	b.addNodeupPermissions(p, false)
+	if err := b.AddS3Permissions(p); err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
+	}
+	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
+	}
+	return p, nil
+}
+
+// BuildAWSPolicy generates a custom policy for a kube-controller-manager node.
+func (r *NodeRoleKubeControllerManager) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
+	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
+	b.addNodeupPermissions(p, false)
+	if err := b.AddS3Permissions(p); err != nil {
+		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
+	}
+	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
+	}
+	return p, nil
+}
+
 // AddS3Permissions add S3 permissions to an IAM Policy.
 // The permissions grant granting tailored access to S3 assets,
 // depending on the instance group or service-account role
@@ -709,7 +748,7 @@ func WriteableVFSPaths(cluster *kops.Cluster, role Subject) ([]vfs.Path, error) 
 
 	// etcd-manager needs write permissions to the backup store
 	switch role.(type) {
-	case *NodeRoleMaster:
+	case *NodeRoleMaster, *NodeRoleEtcd, *NodeRoleAPIServer:
 		backupStores := sets.NewString()
 		for _, c := range cluster.Spec.EtcdClusters {
 			if c.Backups == nil || c.Backups.BackupStore == "" || backupStores.Has(c.Backups.BackupStore) {
@@ -736,7 +775,7 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 	var paths []string
 
 	switch role.(type) {
-	case *NodeRoleMaster, *NodeRoleAPIServer:
+	case *NodeRoleMaster, *NodeRoleAPIServer, *NodeRoleEtcd, *NodeRoleKubeControllerManager, *NodeRoleScheduler:
 		paths = append(paths, "/*")
 
 	case *NodeRoleNode:

@@ -73,6 +73,9 @@ func ValidateInstanceGroup(g *kops.InstanceGroup, cloud fi.Cloud, strict bool) f
 	case kops.InstanceGroupRoleNode:
 	case kops.InstanceGroupRoleBastion:
 	case kops.InstanceGroupRoleAPIServer:
+	case kops.InstanceGroupRoleEtcd:
+	case kops.InstanceGroupRoleScheduler:
+	case kops.InstanceGroupRoleKubeControllerManager:
 	default:
 		var supported []string
 		for _, role := range kops.AllInstanceGroupRoles {

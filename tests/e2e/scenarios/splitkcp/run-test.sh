@@ -20,8 +20,8 @@ set -euo pipefail
 REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "${REPO_ROOT}/"
 
-# Enable feature flag for APIServer Nodes support
-export KOPS_FEATURE_FLAGS=+APIServerNodes
+# Enable feature flag for APIServer Nodes support and split control plane
+export KOPS_FEATURE_FLAGS=+APIServerNodes,+ExperimentalRoles
 
 # Override some settings
 CLUSTER_NAME="splitkcp.k8s.local"
@@ -30,12 +30,17 @@ CLOUD_PROVIDER=gce
 ZONES="us-west1-a,us-west1-b,us-west1-c" # Currently the zone name gets encoded in the machinedeployment name (maybe we can use labels instead?)
 
 OVERRIDES="${OVERRIDES-} --node-count=2" # We need at least 2 nodes for CoreDNS to validate
-OVERRIDES="${OVERRIDES} --control-plane-count=3" # We need at least 3 control plane nodes to ensure etcd comes up as raft
-OVERRIDES="${OVERRIDES} --api-server-count=1" # We need at least 1 api-server node to split the control plane
-OVERRIDES="${OVERRIDES} --networking=kubenet" #
-OVERRIDES="${OVERRIDES} --node-size=e2-standard-2" #
+OVERRIDES="${OVERRIDES} --control-plane-count=0" # Turning off full control plane nodes and turning on split types
+OVERRIDES="${OVERRIDES} --api-server-count=2" # We need at least 1 api-server node to split the control plane
 OVERRIDES="${OVERRIDES} --api-server-size=e2-standard-2" #
-OVERRIDES="${OVERRIDES} --control-plane-size=e2-standard-4" #
+OVERRIDES="${OVERRIDES} --etcd-count=3" # We need at least 3 etcd nodes to have quorum
+OVERRIDES="${OVERRIDES} --etcd-size=e2-standard-2" #
+OVERRIDES="${OVERRIDES} --kcm-count=2" # We need at least 1 kube-controller-manager node to split the control plane
+OVERRIDES="${OVERRIDES} --kcm-size=e2-standard-2" #
+OVERRIDES="${OVERRIDES} --scheduler-count=2" # We need at least 1 kube-controller-manager node to split the control plane
+OVERRIDES="${OVERRIDES} --scheduler-size=e2-standard-2" #
+OVERRIDES="${OVERRIDES} --networking=kubenet" # :( Need to work out why we need this.
+OVERRIDES="${OVERRIDES} --node-size=e2-standard-2" #
 OVERRIDES="${OVERRIDES} --gce-service-account=default" # Use default service account because boskos permissions are limited
 
 # Create kOps cluster

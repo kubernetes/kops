@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -75,6 +76,9 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	for _, role := range kops.AllInstanceGroupRoles {
 		isMaster := role.HasControlPlane()
 		isAPIServer := role.HasAPIServer()
+		isEtcd := role.HasEtcd()
+		isScheduler := role.HasScheduler()
+		isKCM := role.HasKubeControllerManager()
 
 		images[role] = make(map[architectures.Architecture][]*nodeup.Image)
 		if kopsmodel.IsBaseURL(cluster.Spec.KubernetesVersion) {
@@ -82,9 +86,12 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 			components := []string{"kube-proxy"}
 			if isMaster {
 				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
-			}
-			if isAPIServer {
+			} else if isAPIServer {
 				components = append(components, "kube-apiserver")
+			} else if isScheduler {
+				components = append(components, "kube-scheduler")
+			} else if isKCM {
+				components = append(components, "kube-controller-manager")
 			}
 
 			for _, arch := range architectures.GetSupported() {
@@ -134,8 +141,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 					images[role][arch] = append(images[role][arch], image)
 				}
 			}
-		}
-		if os.Getenv("KOPS_BASE_URL") != "" && isAPIServer {
+		} else if os.Getenv("KOPS_BASE_URL") != "" && isAPIServer {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kube-apiserver-healthcheck"} {
 					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))
@@ -159,12 +165,15 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 			}
 		}
 
-		if isMaster {
+		if isMaster || isEtcd {
 			for _, etcdCluster := range cluster.Spec.EtcdClusters {
 				for _, member := range etcdCluster.Members {
 					instanceGroup := fi.ValueOf(member.InstanceGroup)
 					etcdManifest := fmt.Sprintf("manifests/etcd/%s-%s.yaml", etcdCluster.Name, instanceGroup)
-					etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], configBase.Join(etcdManifest).Path())
+					entry := configBase.Join(etcdManifest).Path()
+					if !slices.Contains(etcdManifests[instanceGroup], entry) {
+						etcdManifests[instanceGroup] = append(etcdManifests[instanceGroup], entry)
+					}
 				}
 			}
 		}
@@ -241,7 +250,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 		}
 
-		if isMaster {
+		if isMaster || role.HasEtcd() {
 			if err := loadCertificates(keysets, "etcd-clients-ca", config, true); err != nil {
 				return nil, nil, err
 			}
@@ -259,15 +268,16 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 					}
 				}
 			}
-			config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
-
-			// Add key for registering with the discovery service (if configured)
-			if cluster.Spec.ServiceAccountIssuerDiscovery != nil &&
-				cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService != nil &&
-				cluster.Spec.ServiceAccountIssuerDiscovery.DiscoveryService.URL != "" {
+		}
+		if isMaster || role.HasAPIServer() {
+			if keysets["service-account"] != nil {
+				config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
+			}
+			if keysets[fi.DiscoveryCAID] != nil {
 				config.KeypairIDs[fi.DiscoveryCAID] = keysets[fi.DiscoveryCAID].Primary.Id
 			}
-		} else {
+		}
+		if !isMaster && !role.HasEtcd() {
 			if keysets["etcd-client-cilium"] != nil {
 				config.KeypairIDs["etcd-client-cilium"] = keysets["etcd-client-cilium"].Primary.Id
 			}
@@ -291,6 +301,11 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 			}
 			config.APIServerConfig.ServiceAccountPublicKeys = serviceAccountPublicKeys
 		} else {
+			if role.HasKubeControllerManager() {
+				if keysets["service-account"] != nil {
+					config.KeypairIDs["service-account"] = keysets["service-account"].Primary.Id
+				}
+			}
 			for _, key := range []string{"kubelet", "kube-proxy", "kube-router"} {
 				if keysets[key] != nil {
 					config.KeypairIDs[key] = keysets[key].Primary.Id
@@ -383,7 +398,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	useConfigServer := kopsmodel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer()
+	useConfigServer := kopsmodel.UseKopsControllerForNodeConfig(cluster) && !ig.HasAPIServer() && !ig.HasEtcd() && !ig.HasKubeControllerManager() && !ig.HasScheduler()
 	if useConfigServer {
 		bootConfig.ConfigServer = buildConfigServerOptions(cluster.ObjectMeta.Name, config.CAs[fi.CertificateIDCA], bootConfig.APIServerIPs)
 		delete(config.CAs, fi.CertificateIDCA)
@@ -422,11 +437,13 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 
 	config.Images = n.images[role]
 
-	if isMaster {
+	if isMaster || role.HasEtcd() {
 		for _, etcdCluster := range cluster.Spec.EtcdClusters {
 			config.EtcdClusterNames = append(config.EtcdClusterNames, etcdCluster.Name)
 		}
 		config.EtcdManifests = n.etcdManifests[ig.Name]
+	}
+	if isMaster || role.HasAPIServer() {
 		config.ChannelsManifest = n.channelsManifest
 	}
 

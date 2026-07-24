@@ -230,7 +230,7 @@ func enrollHost(ctx context.Context, ig *kops.InstanceGroup, bootstrapData *Boot
 
 	// We can't create the host resource in the API server for control-plane nodes,
 	// because the API server (likely) isn't running yet.
-	if !ig.IsControlPlane() {
+	if !ig.IsControlPlane() && !ig.IsEtcdOnly() && !ig.IsAPIServerOnly() {
 		if err := kubeClient.Create(ctx, hostData); err != nil {
 			return fmt.Errorf("failed to create host %s/%s: %w", hostData.Namespace, hostData.Name, err)
 		}

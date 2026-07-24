@@ -38,7 +38,7 @@ type nodePatchMetadata struct {
 
 // BootstrapControlPlaneNodeLabels applies labels to the current node so that it acts as a control-plane.
 // Safe to call repeatedly: the patch is skipped when the labels already match.
-func BootstrapControlPlaneNodeLabels(ctx context.Context, client kubernetes.Interface, nodeName string) error {
+func BootstrapControlPlaneNodeLabels(ctx context.Context, client kubernetes.Interface, nodeName string, nodeLabel string) error {
 	if nodeName == "" {
 		return fmt.Errorf("node name is required")
 	}
@@ -49,7 +49,7 @@ func BootstrapControlPlaneNodeLabels(ctx context.Context, client kubernetes.Inte
 		return fmt.Errorf("querying node %q: %w", nodeName, err)
 	}
 
-	labels := nodelabels.BuildMandatoryControlPlaneLabels()
+	labels := nodelabels.BuildMandatoryControlPlaneLabels(nodeLabel)
 
 	shouldPatch := false
 	for k, v := range labels {
