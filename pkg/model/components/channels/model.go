@@ -101,6 +101,7 @@ func (b *ChannelsBuilder) channelList() ([]string, error) {
 
 func (b *ChannelsBuilder) buildPod(channels []string) (*v1.Pod, error) {
 	image := b.AssetBuilder.RemapImage("registry.k8s.io/kops/channels:" + kopsroot.KopsVersionImageTag())
+	// image = "gcr.io/wfender-dev-20240625/kops/channels:1.37.0-alpha.1"
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
