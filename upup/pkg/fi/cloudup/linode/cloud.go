@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/linode/linodego/v2"
@@ -30,6 +31,13 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
+)
+
+const (
+	TagKubernetesInstanceGroup    = "kops.k8s.io/instance-group"
+	TagKubernetesInstanceRole     = "kops.k8s.io/instance-role"
+	TagKubernetesClusterName      = "kops.k8s.io/cluster"
+	TagKubernetesInstanceUserData = "kops.k8s.io/instance-userdata"
 )
 
 // LinodeClient is the subset of the Linode API client used by the Linode cloudup tasks.
@@ -45,6 +53,11 @@ type LinodeClient interface {
 	CreateVPCSubnet(ctx context.Context, opts linodego.VPCSubnetCreateOptions, vpcID int) (*linodego.VPCSubnet, error)
 	UpdateVPCSubnet(ctx context.Context, vpcID int, subnetID int, opts linodego.VPCSubnetUpdateOptions) (*linodego.VPCSubnet, error)
 	DeleteVPCSubnet(ctx context.Context, vpcID int, subnetID int) error
+	ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error)
+	CreateInstance(ctx context.Context, opts linodego.InstanceCreateOptions) (*linodego.Instance, error)
+	UpdateInstance(ctx context.Context, instanceID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error)
+	DeleteInstance(ctx context.Context, instanceID int) error
+	ListInterfaces(ctx context.Context, instanceID int, opts *linodego.ListOptions) ([]linodego.LinodeInterface, error)
 }
 
 // LinodeCloud exposes Linode (Akamai) cloud APIs used by kOps.
@@ -102,7 +115,19 @@ func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 }
 
 func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstance) error {
-	return fmt.Errorf("instance deletion is not yet implemented for Linode (Akamai)")
+	instanceID, err := strconv.Atoi(instance.ID)
+	if err != nil {
+		return fmt.Errorf("error parsing Linode (Akamai) instance ID %q: %w", instance.ID, err)
+	}
+
+	if err := c.client.DeleteInstance(context.Background(), instanceID); err != nil {
+		if linodego.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("error deleting Linode (Akamai) instance %q: %w", instance.ID, err)
+	}
+
+	return nil
 }
 
 func (c *Cloud) DeregisterInstance(instance *cloudinstances.CloudInstance) error {
@@ -143,6 +168,21 @@ func ListOptionsForLabel(label string) (*linodego.ListOptions, error) {
 	}
 
 	return &linodego.ListOptions{Filter: string(filterJSON)}, nil
+}
+
+// ListOptionsForTags builds Linode (Akamai) list options that filter by an exact tag match.
+func ListOptionsForTags(tags ...string) (*linodego.ListOptions, error) {
+	filter := &linodego.Filter{}
+	filter.AddField(linodego.Eq, "tags", tags)
+	filterJSON, err := filter.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("error building Linode (Akamai) tag filter: %w", err)
+	}
+
+	return &linodego.ListOptions{
+		PageSize: 50,
+		Filter:   string(filterJSON),
+	}, nil
 }
 
 // NormalizeLinodeLabel returns a normalized label for Linode (Akamai) resources
