@@ -109,6 +109,13 @@ func (_ *SSHKey) CheckChanges(actual, expected, changes *SSHKey) error {
 		if changes.PublicKey != nil {
 			return fi.CannotChangeField("PublicKey")
 		}
+	} else {
+		if expected.Name == nil {
+			return fi.RequiredField("Name")
+		}
+		if expected.PublicKey == nil {
+			return fi.RequiredField("PublicKey")
+		}
 	}
 
 	return nil
