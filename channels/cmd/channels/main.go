@@ -42,6 +42,8 @@ func run(ctx context.Context) error {
 	flag.Set("legacy_stderr_threshold_behavior", "false") //nolint:errcheck
 	flag.Set("stderrthreshold", "INFO")                   //nolint:errcheck
 
+	klog.Info("CHANNELS_STARTUP_PROBE: locally built channels binary is running")
+
 	f := cmd.NewChannelsFactory()
 
 	if err := cmd.Execute(ctx, f, os.Stdout); err != nil {
