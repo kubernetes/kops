@@ -1,0 +1,6 @@
+{{- range $ig := KarpenterInstanceGroups }}
+---
+{{ KarpenterGCENodeClass $ig }}
+---
+{{ KarpenterNodePool $ig }}
+{{- end }}

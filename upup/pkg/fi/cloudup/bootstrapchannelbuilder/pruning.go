@@ -26,18 +26,28 @@ import (
 	"k8s.io/klog/v2"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 )
 
-// karpenterInstanceGroupKinds are the kinds of the objects that kOps generates for each Karpenter
-// instance group, named after the instance group.
-var karpenterInstanceGroupKinds = []schema.GroupKind{
-	{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
-	{Group: "karpenter.sh", Kind: "NodePool"},
+// karpenterInstanceGroupKinds returns the kinds of the objects that kOps generates for each
+// Karpenter instance group, named after the instance group. Only the current cloud's NodeClass CRD
+// exists in the cluster; the pruner fails on group kinds that have no registered resource.
+func karpenterInstanceGroupKinds(cloudProvider kops.CloudProviderID) []schema.GroupKind {
+	kinds := []schema.GroupKind{
+		{Group: "karpenter.sh", Kind: "NodePool"},
+	}
+	switch cloudProvider {
+	case kops.CloudProviderAWS:
+		kinds = append(kinds, schema.GroupKind{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"})
+	case kops.CloudProviderGCE:
+		kinds = append(kinds, schema.GroupKind{Group: "karpenter.k8s.gcp", Kind: "GCENodeClass"})
+	}
+	return kinds
 }
 
-func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) error {
+func buildPruneDirectives(spec *channelsapi.AddonSpec, cloudProvider kops.CloudProviderID, manifestData []byte) error {
 	spec.Prune = &channelsapi.PruneSpec{}
 
 	// We add these labels to all objects we manage, so we reuse them for pruning.
@@ -71,7 +81,7 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 		{Group: "storage.k8s.io", Kind: "CSIDriver"},
 	}
 	if *spec.Name == "karpenter.sh" {
-		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds, karpenterInstanceGroupKinds...)
+		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds, karpenterInstanceGroupKinds(cloudProvider)...)
 	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {
