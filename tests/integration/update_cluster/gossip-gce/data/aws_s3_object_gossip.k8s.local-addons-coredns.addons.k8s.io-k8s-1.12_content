@@ -192,6 +192,10 @@ spec:
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
       topologySpreadConstraints:
       - labelSelector:
           matchLabels:
@@ -378,7 +382,6 @@ spec:
             memory: 10Mi
       nodeSelector:
         kubernetes.io/os: linux
-      priorityClassName: system-cluster-critical
       serviceAccountName: coredns-autoscaler
       tolerations:
       - key: CriticalAddonsOnly
