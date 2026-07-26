@@ -1,0 +1,50 @@
+# To regenerate the manifest:
+#   cd upup/models/cloudup/resources/addons/karpenter.sh/gce
+#   ./regenerate.sh
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: karpenter
+    repo: https://cloudpilot-ai.github.io/karpenter-provider-gcp
+    version: "0.5.0"
+    releaseName: karpenter
+    namespace: kube-system
+    valuesFile: helm-values.yaml
+    includeCRDs: true
+
+patches:
+  - target:
+      kind: Deployment
+      name: karpenter
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: karpenter
+      spec:
+        template:
+          spec:
+            # Use Default dnsPolicy except on IPv6 clusters, which need ClusterFirst for DNS64.
+            dnsPolicy: '{{ if IsIPv6Only }}ClusterFirst{{ else }}Default{{ end }}'
+            containers:
+              - name: karpenter
+                # The chart builds the image from repo/tag; replace with the kops value.
+                image: '{{ .Karpenter.Image }}'
+                env:
+                  # Self-hosted mode: nodes bootstrap through the kops nodeup script in
+                  # GCENodeClass.spec.startupScript; the controller makes no GKE API calls.
+                  - name: PROVISION_MODE
+                    value: self-hosted
+                  - name: PROJECT_ID
+                    value: '{{ GCEProjectID }}'
+                  - name: CLUSTER_LOCATION
+                    value: '{{ Region }}'
+                  - name: CLUSTER_NAME
+                    value: '{{ ClusterName }}'
+                  - name: LOG_LEVEL
+                    value: '{{ .Karpenter.LogLevel }}'
+                  # Make the controller feature gates configurable, defaulting StaticCapacity on.
+                  - name: FEATURE_GATES
+                    value: '{{ or .Karpenter.FeatureGates "NodeRepair=false,ReservedCapacity=false,SpotToSpotConsolidation=true,NodeOverlay=false,StaticCapacity=true" }}'
