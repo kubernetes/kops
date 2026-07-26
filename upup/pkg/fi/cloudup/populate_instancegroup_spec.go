@@ -340,6 +340,12 @@ func defaultMachineType(cloud fi.Cloud, cluster *kops.Cluster, ig *kops.Instance
 		return instanceType, nil
 
 	case kops.CloudProviderGCE:
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+			// Karpenter chooses machine types; without a machine type on the InstanceGroup,
+			// the generated NodePool has no instance-type requirement.
+			return "", nil
+		}
+
 		switch {
 		case ig.Spec.Role.HasControlPlane():
 			return defaultMasterMachineTypeGCE, nil

@@ -273,6 +273,13 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			},
 		},
 	}
+	doCluster := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			CloudProvider: kops.CloudProviderSpec{
+				DO: &kops.DOSpec{},
+			},
+		},
+	}
 
 	grid := []struct {
 		desc     string
@@ -306,8 +313,14 @@ func TestCrossValidateKarpenterInstanceGroup(t *testing.T) {
 			image:   "ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*",
 		},
 		{
-			desc:     "not aws",
-			cluster:  gceCluster,
+			desc:    "gce",
+			cluster: gceCluster,
+			role:    kops.InstanceGroupRoleNode,
+			image:   "ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615",
+		},
+		{
+			desc:     "not aws or gce",
+			cluster:  doCluster,
 			role:     kops.InstanceGroupRoleNode,
 			image:    "ami-0123456789abcdef0",
 			expected: []string{"Forbidden::spec.manager"},

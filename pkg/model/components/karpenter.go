@@ -36,7 +36,12 @@ func (b *KarpenterOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.Image == "" {
-		c.Image = "public.ecr.aws/karpenter/controller:1.13.0"
+		switch o.GetCloudProvider() {
+		case kops.CloudProviderGCE:
+			c.Image = "public.ecr.aws/cloudpilotai/gcp/karpenter:v0.5.0"
+		default:
+			c.Image = "public.ecr.aws/karpenter/controller:1.13.0"
+		}
 	}
 
 	if c.LogEncoding == "" {
