@@ -65,6 +65,11 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  karpenter:
+    enabled: true
+    image: public.ecr.aws/cloudpilotai/gcp/karpenter:v0.5.0
+    logEncoding: console
+    logLevel: debug
   keyStore: memfs://tests/gossip.k8s.local/pki
   kubeAPIServer:
     allowPrivileged: true

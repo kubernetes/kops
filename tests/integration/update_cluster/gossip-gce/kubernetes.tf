@@ -90,6 +90,14 @@ resource "aws_s3_object" "gossip-k8s-local-addons-gcp-pd-csi-driver-addons-k8s-i
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "gossip-k8s-local-addons-karpenter-sh-k8s-1-19-gce" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_gossip.k8s.local-addons-karpenter.sh-k8s-1.19-gce_content")
+  key                    = "tests/gossip.k8s.local/addons/karpenter.sh/k8s-1.19-gce.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "gossip-k8s-local-addons-kops-controller-addons-k8s-io-k8s-1-16" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_gossip.k8s.local-addons-kops-controller.addons.k8s.io-k8s-1.16_content")
@@ -162,6 +170,22 @@ resource "aws_s3_object" "manifests-static-kube-apiserver-healthcheck" {
   server_side_encryption = "AES256"
 }
 
+resource "aws_s3_object" "nodeupconfig-karpenter-nodes-default" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nodeupconfig-karpenter-nodes-default_content")
+  key                    = "tests/gossip.k8s.local/igconfig/node/karpenter-nodes-default/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nodeupconfig-karpenter-nodes-single-machinetype" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nodeupconfig-karpenter-nodes-single-machinetype_content")
+  key                    = "tests/gossip.k8s.local/igconfig/node/karpenter-nodes-single-machinetype/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
 resource "aws_s3_object" "nodeupconfig-master-us-test1-a" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-master-us-test1-a_content")
@@ -174,6 +198,22 @@ resource "aws_s3_object" "nodeupconfig-nodes" {
   bucket                 = "testingBucket"
   content                = file("${path.module}/data/aws_s3_object_nodeupconfig-nodes_content")
   key                    = "tests/gossip.k8s.local/igconfig/node/nodes/nodeupconfig.yaml"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nodeupscript-karpenter-nodes-default" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nodeupscript-karpenter-nodes-default_content")
+  key                    = "tests/gossip.k8s.local/igconfig/node/karpenter-nodes-default/nodeupscript.sh"
+  provider               = aws.files
+  server_side_encryption = "AES256"
+}
+
+resource "aws_s3_object" "nodeupscript-karpenter-nodes-single-machinetype" {
+  bucket                 = "testingBucket"
+  content                = file("${path.module}/data/aws_s3_object_nodeupscript-karpenter-nodes-single-machinetype_content")
+  key                    = "tests/gossip.k8s.local/igconfig/node/karpenter-nodes-single-machinetype/nodeupscript.sh"
   provider               = aws.files
   server_side_encryption = "AES256"
 }

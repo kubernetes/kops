@@ -237,6 +237,56 @@ func GetCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 		}
 	}
 
+	// Karpenter-managed instance groups have no MIG; their instances are found by the kOps
+	// ownership labels that the generated GCENodeClass applies to every instance Karpenter launches.
+	karpenterGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	for _, ig := range instancegroups {
+		if !ig.IsKarpenterManaged() {
+			continue
+		}
+		g := &cloudinstances.CloudInstanceGroup{
+			HumanName:     ig.ObjectMeta.Name,
+			InstanceGroup: ig,
+		}
+		karpenterGroups[ig.ObjectMeta.Name] = g
+		groups[ig.ObjectMeta.Name] = g
+	}
+
+	if len(karpenterGroups) > 0 {
+		clusterLabel := LabelForCluster(cluster.ObjectMeta.Name)
+		for _, zoneName := range zones {
+			instances, err := c.Compute().Instances().List(ctx, project, zoneName)
+			if err != nil {
+				return nil, fmt.Errorf("error listing Instances: %w", err)
+			}
+			for _, instance := range instances {
+				if instance.Labels[clusterLabel.Key] != clusterLabel.Value {
+					continue
+				}
+				g := karpenterGroups[instance.Labels[GceLabelNameInstanceGroup]]
+				if g == nil {
+					continue
+				}
+				cm := &cloudinstances.CloudInstance{
+					ID:                 instance.SelfLink,
+					CloudInstanceGroup: g,
+				}
+				addCloudInstanceData(cm, instance)
+
+				providerID := "gce://" + project + "/" + zoneName + "/" + instance.Name
+				if node := nodesByProviderID[providerID]; node != nil {
+					cm.Node = node
+				} else {
+					klog.V(8).Infof("unable to find node for instance: %s", instance.SelfLink)
+				}
+
+				// Karpenter owns replacement of outdated instances (drift), so its instances are
+				// always reported as up to date.
+				g.Ready = append(g.Ready, cm)
+			}
+		}
+	}
+
 	return groups, nil
 }
 

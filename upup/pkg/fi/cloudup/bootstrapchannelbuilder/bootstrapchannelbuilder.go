@@ -1191,6 +1191,10 @@ func (b *BootstrapChannelBuilder) buildAddons(c *fi.CloudupModelBuilderContext) 
 
 		{
 			id := "k8s-1.19"
+			if b.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
+				// GCE clusters deploy karpenter-provider-gcp in self-hosted mode.
+				id = "k8s-1.19-gce"
+			}
 			location := key + "/" + id + ".yaml"
 			addon := addons.Add(&channelsapi.AddonSpec{
 				Name:     new(key),

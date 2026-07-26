@@ -136,7 +136,12 @@ func (tf *TemplateFunctions) KarpenterInstanceGroups() []*kops.InstanceGroup {
 	if tf.tasks == nil {
 		return nil
 	}
-	if tf.Cluster == nil || tf.Cluster.GetCloudProvider() != kops.CloudProviderAWS {
+	if tf.Cluster == nil {
+		return nil
+	}
+	switch tf.Cluster.GetCloudProvider() {
+	case kops.CloudProviderAWS, kops.CloudProviderGCE:
+	default:
 		return nil
 	}
 	if tf.Cluster.Spec.Karpenter == nil || !tf.Cluster.Spec.Karpenter.Enabled {
@@ -267,14 +272,20 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*ka
 	}
 	labels = karpenterNodePoolTemplateLabels(labels)
 
+	nodeClassRef := karpenterNodeClassRef{
+		Group: karpenterAWSAPIGroup,
+		Kind:  "EC2NodeClass",
+		Name:  ig.Name,
+	}
+	if tf.Cluster.GetCloudProvider() == kops.CloudProviderGCE {
+		nodeClassRef.Group = karpenterGCPAPIGroup
+		nodeClassRef.Kind = "GCENodeClass"
+	}
+
 	template := karpenterNodeClaimTemplate{
 		Spec: karpenterNodeClaimSpec{
 			Requirements: tf.karpenterRequirements(ig),
-			NodeClassRef: karpenterNodeClassRef{
-				Group: karpenterAWSAPIGroup,
-				Kind:  "EC2NodeClass",
-				Name:  ig.Name,
-			},
+			NodeClassRef: nodeClassRef,
 		},
 	}
 	if len(labels) != 0 {
@@ -417,6 +428,9 @@ func karpenterInstanceTypes(ig *kops.InstanceGroup) []string {
 
 func karpenterCapacityTypes(ig *kops.InstanceGroup) []string {
 	if ig.Spec.MaxPrice != nil || ig.Spec.SpotDurationInMinutes != nil {
+		return []string{"spot"}
+	}
+	if fi.ValueOf(ig.Spec.GCPProvisioningModel) == "SPOT" {
 		return []string{"spot"}
 	}
 	if ig.Spec.MixedInstancesPolicy != nil {

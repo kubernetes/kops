@@ -1,0 +1,37 @@
+controller:
+  replicaCount: 1
+  # The chart default (gmp-critical) only exists on GKE clusters.
+  priorityClassName: system-cluster-critical
+  resources:
+    requests:
+      cpu: "{{ or .Karpenter.CPURequest \"500m\" }}"
+      memory: "{{ or .Karpenter.MemoryRequest \"1Gi\" }}"
+    limits:
+      memory: "{{ or .Karpenter.MemoryLimit \"1Gi\" }}"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/os
+            operator: In
+            values:
+            - linux
+          - key: karpenter.sh/nodepool
+            operator: DoesNotExist
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+  - key: CriticalAddonsOnly
+    operator: Exists
+credentials:
+  # Use Application Default Credentials from the instance metadata server.
+  enabled: false
+podDisruptionBudget:
+  # With a single replica, the default minAvailable: 1 never allows disruption, which the channels
+  # health check reports as an unready addon.
+  maxUnavailable: 1

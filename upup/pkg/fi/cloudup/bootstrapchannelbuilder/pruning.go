@@ -26,11 +26,12 @@ import (
 	"k8s.io/klog/v2"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubemanifest"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
 )
 
-func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) error {
+func buildPruneDirectives(spec *channelsapi.AddonSpec, cloudProvider kops.CloudProviderID, manifestData []byte) error {
 	spec.Prune = &channelsapi.PruneSpec{}
 
 	// We add these labels to all objects we manage, so we reuse them for pruning.
@@ -62,9 +63,18 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 	}
 	if *spec.Name == "karpenter.sh" {
 		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
-			schema.GroupKind{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"},
 			schema.GroupKind{Group: "karpenter.sh", Kind: "NodePool"},
 		)
+		// Only the current cloud's NodeClass CRD exists in the cluster; the pruner fails on
+		// group kinds that have no registered resource.
+		switch cloudProvider {
+		case kops.CloudProviderAWS:
+			alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
+				schema.GroupKind{Group: "karpenter.k8s.aws", Kind: "EC2NodeClass"})
+		case kops.CloudProviderGCE:
+			alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
+				schema.GroupKind{Group: "karpenter.k8s.gcp", Kind: "GCENodeClass"})
+		}
 	}
 	pruneGroupKind := make(map[schema.GroupKind]bool)
 	for _, gk := range alwaysPruneGroupKinds {

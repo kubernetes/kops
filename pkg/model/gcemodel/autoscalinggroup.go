@@ -349,6 +349,16 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.CloudupModelBuilderContext) e
 		}
 		subnet := subnets[0]
 
+		// A Karpenter-managed instance group has no InstanceTemplate or MIG; Karpenter launches
+		// instances directly, bootstrapping them with the nodeup script that ResourceNodeUp
+		// publishes to the state store.
+		if ig.Spec.Manager == kops.InstanceManagerKarpenter {
+			if _, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig); err != nil {
+				return err
+			}
+			continue
+		}
+
 		instanceTemplate, err := b.buildInstanceTemplate(c, ig, subnet)
 		if err != nil {
 			return err

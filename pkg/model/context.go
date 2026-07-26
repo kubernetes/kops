@@ -189,12 +189,17 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	}
 
 	// Apply labels for cluster autoscaler node taints
-	for _, v := range ig.Spec.Taints {
-		taint, err := util.ParseTaint(v)
-		if err != nil || taint["effect"] == "" {
-			continue
+	// GCE label keys and values cannot contain "/", "." or ":", so taint keys are not representable
+	// there; on GCE the cluster autoscaler reads scale-from-zero taints from AUTOSCALER_ENV_VARS in
+	// the instance template's kube-env metadata instead.
+	if b.Cluster.GetCloudProvider() != kops.CloudProviderGCE {
+		for _, v := range ig.Spec.Taints {
+			taint, err := util.ParseTaint(v)
+			if err != nil || taint["effect"] == "" {
+				continue
+			}
+			labels[clusterAutoscalerNodeTemplateTaint+taint["key"]] = taint["value"] + ":" + taint["effect"]
 		}
-		labels[clusterAutoscalerNodeTemplateTaint+taint["key"]] = taint["value"] + ":" + taint["effect"]
 	}
 
 	switch b.Cluster.GetCloudProvider() {

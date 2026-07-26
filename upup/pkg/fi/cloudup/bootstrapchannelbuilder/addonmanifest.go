@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	channelsapi "k8s.io/kops/channels/pkg/api"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components/addonmanifests"
@@ -104,7 +105,11 @@ func (a *AddonManifest) Normalize(c *fi.CloudupContext) error {
 	manifestBytes = []byte(strings.TrimSpace(string(manifestBytes)))
 
 	if a.buildPrune {
-		if err := buildPruneDirectives(a.addonSpec, manifestBytes); err != nil {
+		var cloudProvider kops.CloudProviderID
+		if a.modelContext != nil && a.modelContext.Cluster != nil {
+			cloudProvider = a.modelContext.Cluster.GetCloudProvider()
+		}
+		if err := buildPruneDirectives(a.addonSpec, cloudProvider, manifestBytes); err != nil {
 			return fmt.Errorf("failed to configure pruning for %s: %w", fi.ValueOf(a.addonSpec.Name), err)
 		}
 	}

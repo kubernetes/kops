@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 )
 
 // MetadataKeyInstanceGroupName is the key for the metadata that specifies the instance group name
@@ -144,37 +145,40 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 		// The metadata itself is potentially mutable from the instance
 		// We instead look at the MIG configuration
 		createdBy := getMetadataValue(instance.Metadata, "created-by")
-		if createdBy == "" {
-			return nil, fmt.Errorf("cannot find owner for instance %s", instance.Name)
-		}
+		if createdBy != "" {
+			// We need to double-check the MIG configuration, in case created-by was changed
+			migName := lastComponent(createdBy)
 
-		// We need to double-check the MIG configuration, in case created-by was changed
-		migName := lastComponent(createdBy)
+			mig, err := i.getMIG(zone, migName)
+			if err != nil {
+				return nil, err
+			}
 
-		mig, err := i.getMIG(zone, migName)
-		if err != nil {
-			return nil, err
-		}
+			// We now double check that the instance is indeed managed by the MIG
+			// this can't be spoofed without GCE API access
+			migMember, err := i.getManagedInstance(ctx, mig, instance.Id)
+			if err != nil {
+				return nil, err
+			}
 
-		// We now double check that the instance is indeed managed by the MIG
-		// this can't be spoofed without GCE API access
-		migMember, err := i.getManagedInstance(ctx, mig, instance.Id)
-		if err != nil {
-			return nil, err
-		}
+			if migMember.Version == nil {
+				return nil, fmt.Errorf("instance %s did not have Version set", instance.Name)
+			}
 
-		if migMember.Version == nil {
-			return nil, fmt.Errorf("instance %s did not have Version set", instance.Name)
-		}
+			instanceTemplate, err := i.getInstanceTemplate(lastComponent(migMember.Version.InstanceTemplate))
+			if err != nil {
+				return nil, err
+			}
 
-		instanceTemplate, err := i.getInstanceTemplate(lastComponent(migMember.Version.InstanceTemplate))
-		if err != nil {
-			return nil, err
-		}
-
-		igName = getMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
-		if igName == "" {
-			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
+			igName = getMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
+			if igName == "" {
+				return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
+			}
+		} else {
+			igName, err = igNameFromInstanceMetadata(i.clusterName, instance)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -208,6 +212,22 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	}
 	info.Labels = labels
 	return info, nil
+}
+
+// igNameFromInstanceMetadata derives the instance group name for an instance that is not part of a
+// MIG, such as one launched by Karpenter. Ownership is derived from the instance metadata written
+// at creation time, the same trust anchor the kops-controller bootstrap TPM verifier uses: metadata
+// read through the Compute API can only be changed with Compute API write permissions, which nodes
+// are not granted.
+func igNameFromInstanceMetadata(clusterName string, instance *compute.Instance) (string, error) {
+	if !gcemetadata.InstanceMatchesClusterName(clusterName, instance) {
+		return "", fmt.Errorf("instance %s does not have cluster-name metadata matching cluster %q", instance.Name, clusterName)
+	}
+	igName := getMetadataValue(instance.Metadata, MetadataKeyInstanceGroupName)
+	if igName == "" {
+		return "", fmt.Errorf("cannot find owner for instance %s", instance.Name)
+	}
+	return igName, nil
 }
 
 // getInstance queries GCE for the instance with the specified name, returning an error if not found

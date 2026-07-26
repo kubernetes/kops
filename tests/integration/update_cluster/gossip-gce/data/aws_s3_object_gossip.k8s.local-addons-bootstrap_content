@@ -12,7 +12,7 @@ spec:
       k8s-addon: kops-controller.addons.k8s.io
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 86bc1108b4e8aff4d75a7c65253a40315a26b602922a4ec138024ec3a131ba85
+    manifestHash: 3ce017c0b5ca4cf037d07af6320a704542d4c506f6c8438a1a8e78ae39fc5d69
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
@@ -97,3 +97,67 @@ spec:
         - kube-system
     selector:
       k8s-addon: gcp-cloud-controller.addons.k8s.io
+  - id: k8s-1.19-gce
+    manifest: karpenter.sh/k8s-1.19-gce.yaml
+    manifestHash: 485007bbc9a293ebc354f845f5c8b2554800957904cb4860ecf8e43be52ef990
+    name: karpenter.sh
+    prune:
+      kinds:
+      - kind: ConfigMap
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - kind: Service
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - kind: ServiceAccount
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: admissionregistration.k8s.io
+        kind: MutatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: admissionregistration.k8s.io
+        kind: ValidatingWebhookConfiguration
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: DaemonSet
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: apps
+        kind: Deployment
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: apps
+        kind: StatefulSet
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: karpenter.k8s.gcp
+        kind: GCENodeClass
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: karpenter.sh
+        kind: NodePool
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: policy
+        kind: PodDisruptionBudget
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-system
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRole
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: ClusterRoleBinding
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+      - group: rbac.authorization.k8s.io
+        kind: Role
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-node-lease
+        - kube-system
+      - group: rbac.authorization.k8s.io
+        kind: RoleBinding
+        labelSelector: addon.kops.k8s.io/name=karpenter.sh,app.kubernetes.io/managed-by=kops
+        namespaces:
+        - kube-node-lease
+        - kube-system
+    selector:
+      k8s-addon: karpenter.sh

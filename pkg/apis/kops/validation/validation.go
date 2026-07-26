@@ -301,7 +301,9 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 
 	if spec.Karpenter != nil && spec.Karpenter.Enabled {
 		fldPath := fieldPath.Child("karpenter", "enabled")
-		if !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
+		// IRSA is how the AWS Karpenter controller gets its cloud permissions; on GCE the controller
+		// uses the instance service account instead.
+		if c.GetCloudProvider() == kops.CloudProviderAWS && !fi.ValueOf(spec.IAM.UseServiceAccountExternalPermissions) {
 			allErrs = append(allErrs, field.Forbidden(fldPath, "Karpenter requires that service accounts use external permissions"))
 		}
 	}

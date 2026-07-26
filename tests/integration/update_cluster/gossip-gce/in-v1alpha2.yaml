@@ -33,6 +33,8 @@ spec:
   iam:
     allowContainerRegistry: true
     legacy: false
+  karpenter:
+    enabled: true
   kubelet:
     anonymousAuth: false
   kubernetesApiAccess:
@@ -94,3 +96,46 @@ spec:
   - us-test1
   zones:
   - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: gossip.k8s.local
+  name: karpenter-nodes-single-machinetype
+spec:
+  manager: Karpenter
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  machineType: e2-medium
+  minSize: 2
+  maxSize: 10
+  role: Node
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: gossip.k8s.local
+  name: karpenter-nodes-default
+spec:
+  manager: Karpenter
+  image: ubuntu-os-cloud/ubuntu-2604-resolute-amd64-v20221018
+  maxSize: 20
+  role: Node
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
+  - us-test1-b
+  kubelet:
+    maxPods: 100
