@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
@@ -87,5 +88,33 @@ func TestCloudTagsForInstanceGroup_Taints(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// GCE labels cannot contain "/", "." or ":", so cluster autoscaler taint hints must not be rendered
+// as labels there; taints reach the GCE cluster autoscaler via AUTOSCALER_ENV_VARS in kube-env
+// metadata instead.
+func TestCloudTagsForInstanceGroup_TaintsGCE(t *testing.T) {
+	cluster := testutils.BuildMinimalClusterGCE("testcluster.test.com", "testproject")
+	ig := &kops.InstanceGroup{}
+	ig.ObjectMeta.Name = "nodes"
+	ig.Spec.Role = kops.InstanceGroupRoleNode
+	ig.Spec.Taints = []string{"karpenter.sh/unregistered:NoExecute", "foo=bar:NoSchedule"}
+
+	b := &KopsModelContext{
+		IAMModelContext:   iam.IAMModelContext{Cluster: cluster},
+		AllInstanceGroups: []*kops.InstanceGroup{ig},
+		InstanceGroups:    []*kops.InstanceGroup{ig},
+	}
+
+	tags, err := b.CloudTagsForInstanceGroup(ig)
+	if err != nil {
+		t.Fatalf("CloudTagsForInstanceGroup() error = %v", err)
+	}
+
+	for k := range tags {
+		if strings.HasPrefix(k, clusterAutoscalerNodeTemplateTaint) {
+			t.Errorf("unexpected cluster autoscaler taint hint label %q on GCE", k)
+		}
 	}
 }
