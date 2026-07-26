@@ -307,6 +307,10 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-private-example-c
     ports    = ["2382"]
     protocol = "tcp"
   }
+  allow {
+    ports    = ["9100"]
+    protocol = "tcp"
+  }
   disabled    = false
   name        = "node-to-master-minimal-gce-private-example-com"
   network     = google_compute_network.minimal-gce-private-example-com.name

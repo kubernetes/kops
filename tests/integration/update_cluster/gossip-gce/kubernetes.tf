@@ -354,6 +354,10 @@ resource "google_compute_firewall" "node-to-master-gossip-k8s-local" {
     protocol = "tcp"
   }
   allow {
+    ports    = ["9100"]
+    protocol = "tcp"
+  }
+  allow {
     ports    = ["3993"]
     protocol = "udp"
   }
