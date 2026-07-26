@@ -263,15 +263,23 @@ func TestMinimalGossipAzure(t *testing.T) {
 		runTestTerraformAzure(t)
 }
 
-// TestMinimalGossipGCE runs the test on a minimum gossip configuration on GCE
+// TestMinimalGossipGCE runs the test on a minimum gossip configuration on GCE,
+// with Karpenter-managed instance groups
 func TestMinimalGossipGCE(t *testing.T) {
-	newIntegrationTest("gossip.k8s.local", "gossip-gce").
+	test := newIntegrationTest("gossip.k8s.local", "gossip-gce").
 		withAddons(
 			dnsControllerAddon,
 			gcpCCMAddon,
 			gcpPDCSIAddon,
-		).
-		runTestTerraformGCE(t)
+			"karpenter.sh-k8s-1.19-gce",
+		)
+	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
+		"aws_s3_object_nodeupscript-karpenter-nodes-single-machinetype_content",
+		"aws_s3_object_nodeupscript-karpenter-nodes-default_content",
+		"aws_s3_object_nodeupconfig-karpenter-nodes-single-machinetype_content",
+		"aws_s3_object_nodeupconfig-karpenter-nodes-default_content",
+	)
+	test.runTestTerraformGCE(t)
 }
 
 // TestMinimalGossipHetzner runs the test on a minimum gossip configuration on Hetzner
