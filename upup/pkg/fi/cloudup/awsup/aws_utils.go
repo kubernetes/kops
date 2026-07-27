@@ -92,13 +92,14 @@ func ValidateRegion(ctx context.Context, region string) error {
 func FindRegion(cluster *kops.Cluster) (string, error) {
 	region := ""
 
-	nodeZones := make(map[string]bool)
 	for _, subnet := range cluster.Spec.Networking.Subnets {
+		if subnet.Zone == "" {
+			continue
+		}
+
 		if len(subnet.Zone) <= 2 {
 			return "", fmt.Errorf("invalid AWS zone: %q in subnet %q", subnet.Zone, subnet.Name)
 		}
-
-		nodeZones[subnet.Zone] = true
 
 		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
 		if region != "" && zoneRegion != region {
@@ -106,6 +107,10 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 		}
 
 		region = zoneRegion
+	}
+
+	if region == "" {
+		return "", fmt.Errorf("no AWS subnet zones were specified")
 	}
 
 	return region, nil
