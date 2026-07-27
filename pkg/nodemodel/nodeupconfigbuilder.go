@@ -63,6 +63,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 	images := map[kops.InstanceGroupRole]map[architectures.Architecture][]*nodeup.Image{}
 
 	for _, role := range kops.AllInstanceGroupRoles {
+		isControlPlaneType := role.IsControlPlaneType()
 		isMaster := role.HasControlPlane()
 		isAPIServer := role.HasAPIServer()
 		isEtcd := role.HasEtcd()
@@ -108,7 +109,7 @@ func NewNodeUpConfigBuilder(cluster *kops.Cluster, assetBuilder *assets.AssetBui
 
 		// `docker load` our images when using a KOPS_BASE_URL, so we
 		// don't need to push/pull from a registry
-		if os.Getenv("KOPS_BASE_URL") != "" && isMaster {
+		if os.Getenv("KOPS_BASE_URL") != "" && isControlPlaneType {
 			for _, arch := range architectures.GetSupported() {
 				for _, name := range []string{"kops-utils-cp", "kops-controller", "kops-channels", "dns-controller", "kube-apiserver-healthcheck"} {
 					baseURL, err := url.Parse(os.Getenv("KOPS_BASE_URL"))

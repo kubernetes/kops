@@ -222,7 +222,7 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 		},
 		{
-			name: "RoleKubControllerManager",
+			name: "RoleKubeControllerManager",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
 					KubernetesVersion: "v1.31.0",

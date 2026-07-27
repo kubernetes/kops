@@ -18,6 +18,7 @@ package nodelabels
 
 import (
 	"fmt"
+	"strings"
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
@@ -26,15 +27,13 @@ import (
 
 const (
 	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
-	RoleLabelKopsAPIServer         = "kops.k8s.io/node-api-server"
 	RoleLabelNode16                = "node-role.kubernetes.io/node"
-	RoleLabelKopsNode              = "kops.k8s.io/node-node"
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
-	RoleLabelKopsEtcd              = "kops.k8s.io/node-etcd"
 	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
-	RoleLabelKopsScheduler         = "kops.k8s.io/node-scheduler"
 	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
-	RoleLabelKopsKCM               = "kops.k8s.io/node-kube-controller-manager"
+
+	RoleLabelKopsCCM     = "kops.k8s.io/cloud-controller-manager"
+	RoleLabelKopsChannel = "kops.k8s.io/kops-channel"
 
 	// New Experimental control plane roles associated with static manifests
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
@@ -101,7 +100,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// full control-plane nodes.
 		if isAPIServer && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
-			nodeLabels[RoleLabelKopsAPIServer] = ""
 			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
@@ -111,7 +109,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
-		nodeLabels[RoleLabelKopsNode] = ""
 	}
 
 	if isEtcd {
@@ -119,7 +116,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelEtcd] = ""
-		nodeLabels[RoleLabelKopsEtcd] = ""
 	}
 
 	if isScheduler {
@@ -127,7 +123,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelScheduler] = ""
-		nodeLabels[RoleLabelKopsScheduler] = ""
 	}
 
 	if isKubeControllerManager {
@@ -135,7 +130,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelKubeControllerManager] = ""
-		nodeLabels[RoleLabelKopsKCM] = ""
 	}
 
 	if isControlPlane {
