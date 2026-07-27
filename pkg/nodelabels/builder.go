@@ -26,7 +26,6 @@ import (
 
 const (
 	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
-	RoleLabelKopsAPIServer         = "kops.k8s.io/node-api-server"
 	RoleLabelNode16                = "node-role.kubernetes.io/node"
 
 	// New Experimental control plane roles associated with static manifests
@@ -94,7 +93,6 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// full control-plane nodes.
 		if isAPIServer && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
-			nodeLabels[RoleLabelKopsAPIServer] = ""
 			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}

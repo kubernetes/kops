@@ -84,7 +84,7 @@ func TestDeepValidate_SplitControlPlane_MissingComponent(t *testing.T) {
 	groups = append(groups, buildMinimalInstanceGroup("kcm", kopsapi.InstanceGroupRoleKubeControllerManager, "subnet-us-test-1a"))
 	// Missing Scheduler!
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubControllerManager, and Scheduler InstanceGroups")
+	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubeControllerManager, and Scheduler InstanceGroups")
 }
 
 func TestDeepValidate_NoNodeZones(t *testing.T) {
@@ -98,7 +98,7 @@ func TestDeepValidate_NoMasterZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*kopsapi.InstanceGroup
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-test-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubControllerManager, and Scheduler InstanceGroups")
+	expectErrorFromDeepValidate(t, c, groups, "must configure either a ControlPlane InstanceGroup or separate APIServer, Etcd, KubeControllerManager, and Scheduler InstanceGroups")
 }
 
 func TestDeepValidate_BadZone(t *testing.T) {
