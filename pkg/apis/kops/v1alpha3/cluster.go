@@ -214,6 +214,12 @@ type AWSSpec struct {
 
 	// NodeIPFamilies control the IP families reported for each node.
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
+	// UseIPBasedNodeNames names Kubernetes nodes after the EC2 private DNS name, e.g.
+	// ip-10-0-0-1.eu-west-1.compute.internal, instead of the EC2 instance ID. When enabled, managed
+	// subnets launch instances with IP-based EC2 hostnames; shared subnets must be configured with
+	// IP-based hostnames by their owner. Not supported on IPv6-only clusters. Changing this value
+	// only affects newly launched nodes; existing nodes must be replaced to be renamed.
+	UseIPBasedNodeNames *bool `json:"useIPBasedNodeNames,omitempty"`
 	// DisableSecurityGroupIngress disables the Cloud Controller Manager's creation
 	// of an AWS Security Group for each load balancer provisioned for a Service.
 	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`

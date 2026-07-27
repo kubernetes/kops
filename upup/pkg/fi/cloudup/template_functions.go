@@ -942,8 +942,9 @@ func (tf *TemplateFunctions) KopsControllerConfig() (string, error) {
 				}
 			}
 			config.Server.Provider.AWS = &awsbootstrap.AWSVerifierOptions{
-				NodesRoles: nodesRoles.List(),
-				Region:     tf.Region,
+				NodesRoles:          nodesRoles.List(),
+				Region:              tf.Region,
+				UseIPBasedNodeNames: fi.ValueOf(cluster.Spec.CloudProvider.AWS.UseIPBasedNodeNames),
 			}
 
 		case kops.CloudProviderGCE:

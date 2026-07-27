@@ -34,6 +34,7 @@ spec:
     - ipv6
     spotinstOrientation: spot-orientation
     spotinstProduct: spot-product
+    useIPBasedNodeNames: true
   cloudProvider: aws
   configBase: memfs://clusters.example.com/minimal.example.com
   egressProxy:

@@ -981,3 +981,57 @@ func TestAWSValidateNLBSecurityGroupMode(t *testing.T) {
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
+
+func TestAWSValidateUseIPBasedNodeNames(t *testing.T) {
+	grid := []struct {
+		Input          kops.ClusterSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{},
+				},
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						UseIPBasedNodeNames: new(true),
+					},
+				},
+			},
+		},
+		{
+			Input: kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						UseIPBasedNodeNames: new(true),
+					},
+				},
+				Networking: kops.NetworkingSpec{
+					NonMasqueradeCIDR: "::/0",
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::spec.cloudProvider.aws.useIPBasedNodeNames"},
+		},
+		{
+			Input: kops.ClusterSpec{
+				CloudProvider: kops.CloudProviderSpec{
+					AWS: &kops.AWSSpec{
+						UseIPBasedNodeNames: new(false),
+					},
+				},
+				Networking: kops.NetworkingSpec{
+					NonMasqueradeCIDR: "::/0",
+				},
+			},
+		},
+	}
+	for _, g := range grid {
+		cluster := &kops.Cluster{Spec: g.Input}
+		errs := awsValidateUseIPBasedNodeNames(cluster)
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}

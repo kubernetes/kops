@@ -289,7 +289,9 @@ func (b *NetworkModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		}
 
 		if b.Cluster.Spec.ExternalCloudControllerManager != nil {
-			subnet.ResourceBasedNaming = new(true)
+			// With IP-based node names, instances must get IP-based EC2 hostnames, as the node name
+			// is the EC2 PrivateDnsName.
+			subnet.ResourceBasedNaming = new(!fi.ValueOf(b.Cluster.Spec.CloudProvider.AWS.UseIPBasedNodeNames))
 		}
 
 		if subnetSpec.CIDR != "" {

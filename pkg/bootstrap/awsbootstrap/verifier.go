@@ -28,6 +28,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +53,8 @@ type AWSVerifierOptions struct {
 	NodesRoles []string `json:"nodesRoles"`
 	// Region is the AWS region of the cluster.
 	Region string
+	// UseIPBasedNodeNames names nodes after the EC2 private DNS name instead of the instance ID.
+	UseIPBasedNodeNames bool `json:"useIPBasedNodeNames,omitempty"`
 }
 
 type awsVerifier struct {
@@ -331,8 +334,22 @@ func (a awsVerifier) verifyCallerIdentity(ctx context.Context, callerIdentity *G
 		return nil, fmt.Errorf("cannot determine challenge endpoint for instance id: %s", instanceID)
 	}
 
+	nodeName := addrs[0]
+	if a.opt.UseIPBasedNodeNames {
+		// Derive the node name with the same formula nodeup uses, so that the certificates are
+		// issued for the exact name the node registers with, whatever the VPC DNS configuration.
+		privateIPv4 := aws.ToString(instance.PrivateIpAddress)
+		if privateIPv4 == "" {
+			return nil, fmt.Errorf("instance %q has no private IPv4 address", instanceID)
+		}
+		nodeName = PrivateDNSName(privateIPv4, a.opt.Region)
+		if !slices.Contains(addrs, nodeName) {
+			addrs = append(addrs, nodeName)
+		}
+	}
+
 	result := &bootstrap.VerifyResult{
-		NodeName:          addrs[0],
+		NodeName:          nodeName,
 		CertificateNames:  addrs,
 		ChallengeEndpoint: challengeEndpoints[0],
 	}
@@ -470,8 +487,8 @@ func buildSTSRequestValidator(ctx context.Context, stsClient *sts.Client) (*stsR
 	return &stsRequestValidator{Host: u.Host}, nil
 }
 
-// GetInstanceCertificateNames returns the instance hostname and addresses that should go into certificates.
-// The first value is the node name and any additional values are the DNS name and IP addresses.
+// GetInstanceCertificateNames returns the instance names and addresses that should go into
+// certificates: the instance ID, the private DNS name and the IP addresses.
 func GetInstanceCertificateNames(instances *ec2.DescribeInstancesOutput) (addrs []string, err error) {
 	if len(instances.Reservations) != 1 {
 		return nil, fmt.Errorf("too many reservations returned for the single instance-id")

@@ -634,6 +634,11 @@ spec:
                   spotinstProduct:
                     description: Spotinst cloud-config specs
                     type: string
+                  useIPBasedNodeNames:
+                    description: |-
+                      UseIPBasedNodeNames names Kubernetes nodes after the EC2 private DNS name instead of the EC2
+                      instance ID (AWS only).
+                    type: boolean
                   vSphereCoreDNSServer:
                     description: VSphereCoreDNSServer is unused.
                     type: string

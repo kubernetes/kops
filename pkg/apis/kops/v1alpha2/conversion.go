@@ -222,6 +222,13 @@ func Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			val := *in.CloudConfig.ElbSecurityGroup
 			out.CloudProvider.AWS.ElbSecurityGroup = &val
 		}
+		if in.CloudConfig.UseIPBasedNodeNames != nil {
+			if out.CloudProvider.AWS == nil {
+				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "useIPBasedNodeNames"), "useIPBasedNodeNames supports only AWS")
+			}
+			val := *in.CloudConfig.UseIPBasedNodeNames
+			out.CloudProvider.AWS.UseIPBasedNodeNames = &val
+		}
 		if in.CloudConfig.NLBSecurityGroupMode != nil {
 			if out.CloudProvider.AWS == nil {
 				return field.Forbidden(field.NewPath("spec").Child("cloudConfig", "nlbSecurityGroupMode"), "nlbSecurityGroupMode supports only AWS")
@@ -462,6 +469,13 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 			}
 			val := *aws.DisableSecurityGroupIngress
 			out.CloudConfig.DisableSecurityGroupIngress = &val
+		}
+		if aws.UseIPBasedNodeNames != nil {
+			if out.CloudConfig == nil {
+				out.CloudConfig = &CloudConfiguration{}
+			}
+			val := *aws.UseIPBasedNodeNames
+			out.CloudConfig.UseIPBasedNodeNames = &val
 		}
 		if aws.EBSCSIDriver != nil {
 			if out.CloudConfig == nil {

@@ -163,7 +163,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	err = evaluateSpec(&nodeupConfig, bootConfig.CloudProvider)
+	err = evaluateSpec(&nodeupConfig, bootConfig.CloudProvider, region)
 	if err != nil {
 		return err
 	}
@@ -455,8 +455,8 @@ func completeWarmingLifecycleAction(ctx context.Context, cloud *awsup.Cloud, mod
 	return nil
 }
 
-func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID) error {
-	hostnameOverride, err := evaluateHostnameOverride(cloudProvider)
+func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID, region string) error {
+	hostnameOverride, err := evaluateHostnameOverride(cloudProvider, nodeupConfig.UseIPBasedNodeNames, region)
 	if err != nil {
 		return err
 	}
@@ -474,15 +474,45 @@ func evaluateSpec(nodeupConfig *nodeup.Config, cloudProvider api.CloudProviderID
 	return nil
 }
 
-func evaluateHostnameOverride(cloudProvider api.CloudProviderID) (string, error) {
+func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useIPBasedNodeNames bool, region string) (string, error) {
 	switch cloudProvider {
 	case api.CloudProviderAWS:
 		instanceIDBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/instance-id")
 		if err != nil {
 			return "", fmt.Errorf("error reading instance-id from AWS metadata: %v", err)
 		}
+		instanceID := string(instanceIDBytes)
 
-		return string(instanceIDBytes), nil
+		if !useIPBasedNodeNames {
+			return instanceID, nil
+		}
+
+		// The node name is the DNS name that EC2 generates for IP-named instances, built from the
+		// primary private IPv4 address. kops-controller derives it with the same formula when
+		// issuing certificates, so the two always agree. IMDS local-hostname is not usable for
+		// this: with a custom DHCP domain it differs from the generated name.
+		//
+		// An instance launched with a resource-based hostname keeps a resource-based name (it can
+		// only change while the instance is stopped), so an IP-based node name would not match its
+		// EC2 hostname; fail rather than join a misconfigured instance.
+		hostnameBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
+		if err != nil {
+			return "", fmt.Errorf("error reading local-hostname from AWS metadata: %v", err)
+		}
+		if strings.HasPrefix(string(hostnameBytes), instanceID) {
+			return "", fmt.Errorf("instance %s was launched with a resource-based hostname; useIPBasedNodeNames requires subnets that assign IP-based hostnames", instanceID)
+		}
+
+		localIPv4Bytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-ipv4")
+		if err != nil {
+			return "", fmt.Errorf("error reading local-ipv4 from AWS metadata: %v", err)
+		}
+		localIPv4 := string(localIPv4Bytes)
+		if net.ParseIP(localIPv4).To4() == nil {
+			return "", fmt.Errorf("local-ipv4 from AWS metadata is not a valid IPv4 address: %q", localIPv4)
+		}
+
+		return awsbootstrap.PrivateDNSName(localIPv4, region), nil
 
 	case api.CloudProviderGCE:
 		// This lets us tolerate broken hostnames (i.e. systemd)

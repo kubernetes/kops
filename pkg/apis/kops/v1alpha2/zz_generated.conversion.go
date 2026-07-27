@@ -2318,6 +2318,7 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	// INFO: in.DisableSecurityGroupIngress opted out of conversion generation
 	// INFO: in.ElbSecurityGroup opted out of conversion generation
 	// INFO: in.NLBSecurityGroupMode opted out of conversion generation
+	// INFO: in.UseIPBasedNodeNames opted out of conversion generation
 	// INFO: in.VSphereUsername opted out of conversion generation
 	// INFO: in.VSpherePassword opted out of conversion generation
 	// INFO: in.VSphereServer opted out of conversion generation

@@ -121,6 +121,8 @@ type Config struct {
 	NLBSecurityGroupMode *string `json:"nlbSecurityGroupMode,omitempty"`
 	// NodeIPFamilies controls the IP families reported for each node.
 	NodeIPFamilies []string `json:"nodeIPFamilies,omitempty"`
+	// UseIPBasedNodeNames names the node after the EC2 private DNS name instead of the instance ID.
+	UseIPBasedNodeNames bool `json:"useIPBasedNodeNames,omitempty"`
 	// WarmPoolImages are the container images to pre-pull during instance pre-initialization
 	WarmPoolImages []string `json:"warmPoolImages,omitempty"`
 
@@ -294,6 +296,8 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			config.NLBSecurityGroupMode = aws.NLBSecurityGroupMode
 			config.NodeIPFamilies = aws.NodeIPFamilies
 		}
+
+		config.UseIPBasedNodeNames = aws.UseIPBasedNodeNames != nil && *aws.UseIPBasedNodeNames
 	}
 
 	if cluster.Spec.CloudProvider.Azure != nil {

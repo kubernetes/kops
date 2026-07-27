@@ -1273,6 +1273,23 @@ spec:
     elbSecurityGroup: sg-123445678
 ```
 
+### useIPBasedNodeNames
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+*AWS only*
+
+By default, kOps names Kubernetes nodes after the EC2 instance ID (for example `i-0123456789abcdef0`). Setting `useIPBasedNodeNames: true` names nodes after the EC2 private DNS name instead (for example `ip-10-0-0-1.eu-west-1.compute.internal`), restoring the naming used before kOps 1.24.
+
+When enabled, kOps configures managed subnets to launch instances with IP-based EC2 hostnames instead of resource-based ones. Shared subnets are not modified and must be configured with IP-based hostnames (the EC2 default) by their owner. This option is not supported on IPv6-only clusters.
+
+Changing this value only affects newly launched nodes; roll the cluster to rename existing nodes. When changing it on a running cluster, first make sure kops-controller picks up the new configuration, either by rolling the control plane or by deleting the kops-controller pods (`kubectl -n kube-system delete pod -l k8s-app=kops-controller`); nodes launched before that may fail to bootstrap and need replacement.
+
+```yaml
+spec:
+  cloudConfig:
+    useIPBasedNodeNames: true
+```
+
 ### manageStorageClasses
 {{ kops_feature_table(kops_added_default='1.20') }}
 
@@ -1643,6 +1660,7 @@ the removal of fields no longer in use.
 | cloudConfig.openstack                                  | cloudProvider.openstack                                        |
 | cloudConfig.spotinstOrientation                        | cloudProvider.aws.spotinstOrientation                          |
 | cloudConfig.spotinstProduct                            | cloudProvider.aws.spotinstProduct                              |
+| cloudConfig.useIPBasedNodeNames                        | cloudProvider.aws.useIPBasedNodeNames                          |
 | cloudProvider (string)                                 | cloudProvider (map)                                            |
 | configBase                                             | configStore.base                                               |
 | DisableSubnetTags                                      | tagSubnets (value inverted)                                    |
