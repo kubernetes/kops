@@ -117,10 +117,11 @@ func (v *LoadBalancer) Find(c *fi.CloudupContext) (*LoadBalancer, error) {
 	for _, loadbalancer := range loadbalancers {
 		if loadbalancer.Name == fi.ValueOf(v.Name) {
 			matches := &LoadBalancer{
-				Lifecycle: v.Lifecycle,
-				Name:      new(loadbalancer.Name),
-				ID:        new(loadbalancer.ID),
-				Labels:    loadbalancer.Labels,
+				Lifecycle:         v.Lifecycle,
+				Name:              new(loadbalancer.Name),
+				ID:                new(loadbalancer.ID),
+				Labels:            loadbalancer.Labels,
+				WellKnownServices: v.WellKnownServices,
 			}
 
 			if loadbalancer.Location != nil {
