@@ -82,7 +82,7 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ID, subnet.CIDR, cloudSubnet.CIDR)
 				}
 
-				if subnet.Zone != cloudSubnet.Zone {
+				if subnet.Zone != "" && subnet.Zone != cloudSubnet.Zone {
 					return fmt.Errorf("Subnet %q has configured Zone %q, but the actual Zone found was %q", subnet.ID, subnet.Zone, cloudSubnet.Zone)
 				}
 

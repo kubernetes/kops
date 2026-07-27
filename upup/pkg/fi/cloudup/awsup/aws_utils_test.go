@@ -66,6 +66,35 @@ func TestFindRegion(t *testing.T) {
 			t.Fatalf("unexpected region for zone: %q vs %q", expected, region)
 		}
 	}
+
+	t.Run("ignores missing zones when other subnets specify a region", func(t *testing.T) {
+		c := &kops.Cluster{}
+		c.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
+			{Name: "subnet-a", ID: "subnet-12345678"},
+			{Name: "subnet-b", Zone: "us-east-2b"},
+		}
+
+		region, err := FindRegion(c)
+		if err != nil {
+			t.Fatalf("unexpected error finding region: %v", err)
+		}
+
+		if region != "us-east-2" {
+			t.Fatalf("unexpected region: %q", region)
+		}
+	})
+
+	t.Run("errors when no subnet zones are provided", func(t *testing.T) {
+		c := &kops.Cluster{}
+		c.Spec.Networking.Subnets = []kops.ClusterSubnetSpec{
+			{Name: "subnet-a", ID: "subnet-12345678"},
+		}
+
+		region, err := FindRegion(c)
+		if err == nil {
+			t.Fatalf("expected error finding region, got %q", region)
+		}
+	})
 }
 
 func TestEC2TagSpecification(t *testing.T) {
