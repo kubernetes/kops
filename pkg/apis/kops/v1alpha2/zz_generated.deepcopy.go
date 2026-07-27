@@ -814,6 +814,11 @@ func (in *CloudConfiguration) DeepCopyInto(out *CloudConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.UseIPBasedNodeNames != nil {
+		in, out := &in.UseIPBasedNodeNames, &out.UseIPBasedNodeNames
+		*out = new(bool)
+		**out = **in
+	}
 	if in.VSphereUsername != nil {
 		in, out := &in.VSphereUsername, &out.VSphereUsername
 		*out = new(string)

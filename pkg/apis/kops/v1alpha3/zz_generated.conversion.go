@@ -1594,6 +1594,7 @@ func autoConvert_v1alpha3_AWSSpec_To_kops_AWSSpec(in *AWSSpec, out *kops.AWSSpec
 		out.WarmPool = nil
 	}
 	out.NodeIPFamilies = in.NodeIPFamilies
+	out.UseIPBasedNodeNames = in.UseIPBasedNodeNames
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.NLBSecurityGroupMode = in.NLBSecurityGroupMode
@@ -1655,6 +1656,7 @@ func autoConvert_kops_AWSSpec_To_v1alpha3_AWSSpec(in *kops.AWSSpec, out *AWSSpec
 		out.WarmPool = nil
 	}
 	out.NodeIPFamilies = in.NodeIPFamilies
+	out.UseIPBasedNodeNames = in.UseIPBasedNodeNames
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
 	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.NLBSecurityGroupMode = in.NLBSecurityGroupMode

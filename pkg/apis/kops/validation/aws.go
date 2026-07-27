@@ -61,6 +61,8 @@ func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	allErrs = append(allErrs, awsValidateNLBSecurityGroupMode(c)...)
 
+	allErrs = append(allErrs, awsValidateUseIPBasedNodeNames(c)...)
+
 	if c.Spec.Authentication != nil && c.Spec.Authentication.AWS != nil {
 		allErrs = append(allErrs, awsValidateIAMAuthenticator(field.NewPath("spec", "authentication", "aws"), c.Spec.Authentication.AWS)...)
 	}
@@ -84,6 +86,16 @@ func awsValidateNLBSecurityGroupMode(cluster *kops.Cluster) (allErrs field.Error
 	fldPath := field.NewPath("spec", "cloudProvider", "aws", "nlbSecurityGroupMode")
 	if c.CloudProvider.AWS.NLBSecurityGroupMode != nil {
 		allErrs = append(allErrs, IsValidValue(fldPath, c.CloudProvider.AWS.NLBSecurityGroupMode, []string{"Managed"})...)
+	}
+	return allErrs
+}
+
+func awsValidateUseIPBasedNodeNames(cluster *kops.Cluster) (allErrs field.ErrorList) {
+	c := cluster.Spec
+
+	fldPath := field.NewPath("spec", "cloudProvider", "aws", "useIPBasedNodeNames")
+	if fi.ValueOf(c.CloudProvider.AWS.UseIPBasedNodeNames) && c.IsIPv6Only() {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "IP-based node names are not supported on IPv6-only clusters"))
 	}
 	return allErrs
 }

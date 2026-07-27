@@ -182,6 +182,11 @@ func (in *AWSSpec) DeepCopyInto(out *AWSSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.UseIPBasedNodeNames != nil {
+		in, out := &in.UseIPBasedNodeNames, &out.UseIPBasedNodeNames
+		*out = new(bool)
+		**out = **in
+	}
 	if in.DisableSecurityGroupIngress != nil {
 		in, out := &in.DisableSecurityGroupIngress, &out.DisableSecurityGroupIngress
 		*out = new(bool)

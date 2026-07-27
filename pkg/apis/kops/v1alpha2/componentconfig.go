@@ -1011,6 +1011,10 @@ type CloudConfiguration struct {
 	// security groups for Network Load Balancers (AWS only). Valid value: "Managed"
 	// +k8s:conversion-gen=false
 	NLBSecurityGroupMode *string `json:"nlbSecurityGroupMode,omitempty"`
+	// UseIPBasedNodeNames names Kubernetes nodes after the EC2 private DNS name instead of the EC2
+	// instance ID (AWS only).
+	// +k8s:conversion-gen=false
+	UseIPBasedNodeNames *bool `json:"useIPBasedNodeNames,omitempty"`
 	// VSphereUsername is unused.
 	// +k8s:conversion-gen=false
 	VSphereUsername *string `json:"vSphereUsername,omitempty"`

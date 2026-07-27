@@ -863,18 +863,19 @@ func (b *KubeletBuilder) buildKubeletServingCertificate(c *fi.NodeupModelBuilder
 	name := "kubelet-server"
 	dir := b.PathSrvKubernetes()
 
-	names, err := b.kubeletNames(c.Context())
-	if err != nil {
-		return err
-	}
-
 	var cert, key fi.Resource
 	if !b.HasAPIServer {
+		var err error
 		cert, key, err = b.GetBootstrapCert(name, fi.CertificateIDCA)
 		if err != nil {
 			return err
 		}
 	} else {
+		names, err := b.kubeletNames(c.Context())
+		if err != nil {
+			return err
+		}
+
 		issueCert := &nodetasks.IssueCert{
 			Name:      name,
 			Signer:    fi.CertificateIDCA,
@@ -925,7 +926,16 @@ func (b *KubeletBuilder) kubeletNames(ctx context.Context) ([]string, error) {
 		return append(addrs, name), nil
 	}
 
+	// The node name goes first when it differs from the instance ID, as it becomes the certificate
+	// CommonName.
 	addrs := []string{b.InstanceID}
+	nodeName, err := b.NodeName()
+	if err != nil {
+		return nil, fmt.Errorf("error getting NodeName: %v", err)
+	}
+	if nodeName != b.InstanceID {
+		addrs = append([]string{nodeName}, addrs...)
+	}
 	config, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error loading AWS config: %v", err)
@@ -934,7 +944,9 @@ func (b *KubeletBuilder) kubeletNames(ctx context.Context) ([]string, error) {
 
 	if localHostname, err := getMetadata(ctx, metadata, "local-hostname"); err == nil {
 		klog.V(2).Infof("Local Hostname: %s", localHostname)
-		addrs = append(addrs, localHostname)
+		if localHostname != addrs[0] {
+			addrs = append(addrs, localHostname)
+		}
 	}
 	if localIPv4, err := getMetadata(ctx, metadata, "local-ipv4"); err == nil {
 		klog.V(2).Infof("Local IPv4: %s", localIPv4)

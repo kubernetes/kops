@@ -40,6 +40,7 @@ spec:
         replicas: 14
       spotinstOrientation: spot-orientation
       spotinstProduct: spot-product
+      useIPBasedNodeNames: true
       warmPool:
         enableLifecycleHook: true
   configStore:
