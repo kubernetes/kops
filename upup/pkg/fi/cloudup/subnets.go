@@ -47,7 +47,19 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 	// TODO: We probably could query for the existing subnets & allocate appropriately
 	// for now we'll require users to set CIDRs themselves
 
-	if allSubnetsHaveCIDRs(c) {
+	// On AWS, subnets specified by ID may omit the zone; we look it up from the cloud so that the
+	// rest of kOps can rely on the zone being set.
+	needZones := false
+	if c.GetCloudProvider() == kops.CloudProviderAWS {
+		for _, subnet := range c.Spec.Networking.Subnets {
+			if subnet.ID != "" && subnet.Zone == "" {
+				needZones = true
+				break
+			}
+		}
+	}
+
+	if allSubnetsHaveCIDRs(c) && !needZones {
 		klog.V(4).Infof("All subnets have CIDRs; skipping assignment logic")
 		return nil
 	}
@@ -75,17 +87,29 @@ func assignCIDRsToSubnets(c *kops.Cluster, cloud fi.Cloud) error {
 				}
 				if subnet.CIDR == "" {
 					subnet.CIDR = cloudSubnet.CIDR
-					if subnet.CIDR == "" {
+					// IPv6-only private subnets do not have an IPv4 CIDR
+					if subnet.CIDR == "" && (subnet.IPv6CIDR == "" || subnet.Type != kops.SubnetTypePrivate) {
 						return fmt.Errorf("Subnet %q did not have CIDR", subnet.ID)
 					}
 				} else if subnet.CIDR != cloudSubnet.CIDR {
 					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ID, subnet.CIDR, cloudSubnet.CIDR)
 				}
 
-				if subnet.Zone != cloudSubnet.Zone {
+				if needZones && subnet.Zone == "" {
+					subnet.Zone = cloudSubnet.Zone
+				} else if subnet.Zone != cloudSubnet.Zone {
 					return fmt.Errorf("Subnet %q has configured Zone %q, but the actual Zone found was %q", subnet.ID, subnet.Zone, cloudSubnet.Zone)
 				}
 
+			}
+		}
+	}
+
+	if needZones {
+		for i := range c.Spec.Networking.Subnets {
+			subnet := &c.Spec.Networking.Subnets[i]
+			if subnet.ID != "" && subnet.Zone == "" {
+				return fmt.Errorf("could not determine the zone of subnet %q; specify the zone in the cluster spec", subnet.Name)
 			}
 		}
 	}

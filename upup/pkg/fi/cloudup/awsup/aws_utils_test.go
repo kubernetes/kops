@@ -66,6 +66,57 @@ func TestFindRegion(t *testing.T) {
 			t.Fatalf("unexpected region for zone: %q vs %q", expected, region)
 		}
 	}
+
+	testCases := []struct {
+		name        string
+		subnets     []kops.ClusterSubnetSpec
+		expected    string
+		expectError bool
+	}{
+		{
+			name: "ignores subnets specified by ID without a zone",
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "subnet-a", ID: "subnet-12345678"},
+				{Name: "subnet-b", Zone: "us-east-2b"},
+			},
+			expected: "us-east-2",
+		},
+		{
+			name: "errors when no subnet specifies a zone",
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "subnet-a", ID: "subnet-12345678"},
+			},
+			expectError: true,
+		},
+		{
+			name: "errors when a subnet has neither zone nor ID",
+			subnets: []kops.ClusterSubnetSpec{
+				{Name: "subnet-a"},
+				{Name: "subnet-b", Zone: "us-east-2b"},
+			},
+			expectError: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := &kops.Cluster{}
+			c.Spec.Networking.Subnets = tc.subnets
+
+			region, err := FindRegion(c)
+			if tc.expectError {
+				if err == nil {
+					t.Fatalf("expected error finding region, got %q", region)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error finding region: %v", err)
+			}
+			if region != tc.expected {
+				t.Fatalf("unexpected region: %q vs %q", region, tc.expected)
+			}
+		})
+	}
 }
 
 func TestEC2TagSpecification(t *testing.T) {
