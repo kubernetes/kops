@@ -137,6 +137,8 @@ spec:
           name: cni-cfg
         - mountPath: /var/lib/cni-kindnet
           name: var-lib-kindnet
+        - mountPath: /var/run/nri
+          name: nri-plugin
       hostNetwork: true
       initContainers:
       - command:
@@ -165,3 +167,6 @@ spec:
           path: /var/lib/cni-kindnet
           type: DirectoryOrCreate
         name: var-lib-kindnet
+      - hostPath:
+          path: /var/run/nri
+        name: nri-plugin
