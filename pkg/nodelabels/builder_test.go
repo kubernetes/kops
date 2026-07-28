@@ -185,7 +185,6 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 			expected: map[string]string{
 				RoleLabelEtcd: "",
-				"node2":       "node2",
 				"node1":       "override1",
 				"node3":       "override3",
 			},
@@ -216,7 +215,6 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 			expected: map[string]string{
 				RoleLabelScheduler: "",
-				"node2":            "node2",
 				"node1":            "override1",
 				"node3":            "override3",
 			},
@@ -246,11 +244,9 @@ func TestBuildNodeLabels(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				RoleLabelKubeControllerManager:    "",
-				"kops.k8s.io/kops-controller-pki": "",
-				"node2":                           "node2",
-				"node1":                           "override1",
-				"node3":                           "override3",
+				RoleLabelKubeControllerManager: "",
+				"node1":                        "override1",
+				"node3":                        "override3",
 			},
 		},
 	}

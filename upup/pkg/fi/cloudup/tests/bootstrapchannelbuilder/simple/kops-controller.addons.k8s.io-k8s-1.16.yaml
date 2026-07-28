@@ -43,7 +43,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: kops.k8s.io/kops-channel
+              - key: kops.k8s.io/kops-controller
                 operator: Exists
             - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
@@ -87,6 +87,8 @@ spec:
       - key: node-role.kubernetes.io/master
         operator: Exists
       - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - key: node-role.kubernetes.io/api-server
         operator: Exists
       volumes:
       - configMap:
