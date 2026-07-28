@@ -45,7 +45,6 @@ spec:
     id: subnet-abcdef
     name: utility-us-test-1a
     type: Utility
-    zone: us-test-1a
 
 ---
 

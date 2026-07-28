@@ -448,11 +448,7 @@ func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (m
 		if err != nil {
 			return nil, err
 		}
-		if region == "" {
-			klog.Warningf("unable to determine cluster region")
-		} else {
-			env["AWS_REGION"] = region
-		}
+		env["AWS_REGION"] = region
 	}
 
 	if cluster.GetCloudProvider() == kops.CloudProviderAzure {

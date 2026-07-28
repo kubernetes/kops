@@ -93,7 +93,10 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 
 			var zoneNames []string
 			for _, subnet := range cluster.Spec.Networking.Subnets {
-				zoneNames = append(zoneNames, subnet.Zone)
+				// The zone of a subnet specified by ID is looked up from the cloud later.
+				if subnet.Zone != "" {
+					zoneNames = append(zoneNames, subnet.Zone)
+				}
 			}
 			err = awsup.ValidateZones(zoneNames, awsCloud)
 			if err != nil {
