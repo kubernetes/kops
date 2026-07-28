@@ -32,8 +32,9 @@ const (
 	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
 	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
 
-	RoleLabelKopsCCM     = "kops.k8s.io/cloud-controller-manager"
-	RoleLabelKopsChannel = "kops.k8s.io/kops-channel"
+	RoleLabelKopsCCM        = "kops.k8s.io/cloud-controller-manager"
+	RoleLabelKopsChannel    = "kops.k8s.io/kops-channel"
+	RoleLabelKopsController = "kops.k8s.io/kops-controller"
 
 	// New Experimental control plane roles associated with static manifests
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
