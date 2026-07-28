@@ -248,8 +248,8 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-with-a-very-ver
   disabled    = false
   name        = "master-to-master-minimal-gce-with-a-very-very-very-very--96dqvi"
   network     = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
-  source_tags = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
-  target_tags = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
+  source_tags = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-etcd", "minimal-gce-with-a-very-very-very--96dqvi-k8s-io-role-scheduler", "minimal-gce-with-a-ver-96dqvi-k8s-io-role-kubecontrollermanager", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
+  target_tags = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-etcd", "minimal-gce-with-a-very-very-very--96dqvi-k8s-io-role-scheduler", "minimal-gce-with-a-ver-96dqvi-k8s-io-role-kubecontrollermanager", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-with-a-very-very-very-very-ve-96dqvi" {
@@ -389,7 +389,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-with
   name          = "ssh-external-to-master-ipv6-minimal-gce-with-a-very-very-96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-etcd", "minimal-gce-with-a-very-very-very--96dqvi-k8s-io-role-scheduler", "minimal-gce-with-a-ver-96dqvi-k8s-io-role-kubecontrollermanager", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-with-a-very-very-very-96dqvi" {
@@ -401,7 +401,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-with-a-ve
   name          = "ssh-external-to-master-minimal-gce-with-a-very-very-very-96dqvi"
   network       = google_compute_network.minimal-gce-with-a-very-very-very-very-very-long-name-ex-96dqvi.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-with-a-very-very-v-96dqvi-k8s-io-role-control-plane", "minimal-gce-with-a-very-very-very-very--96dqvi-k8s-io-role-etcd", "minimal-gce-with-a-very-very-very--96dqvi-k8s-io-role-scheduler", "minimal-gce-with-a-ver-96dqvi-k8s-io-role-kubecontrollermanager", "minimal-gce-with-a-very-very-very-ver-96dqvi-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-with-a-very-very-v-96dqvi" {

@@ -143,6 +143,11 @@ resource "aws_autoscaling_group" "apiserver-apiservers-minimal-example-com" {
     value               = ""
   }
   tag {
+    key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
+    propagate_at_launch = true
+    value               = ""
+  }
+  tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server"
     propagate_at_launch = true
     value               = ""
@@ -194,11 +199,6 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-example-com"
   }
   tag {
     key                 = "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"
-    propagate_at_launch = true
-    value               = ""
-  }
-  tag {
-    key                 = "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server"
     propagate_at_launch = true
     value               = ""
   }
@@ -537,6 +537,7 @@ resource "aws_launch_template" "apiserver-apiservers-minimal-example-com" {
       "KubernetesCluster"                                                                = "minimal.example.com"
       "Name"                                                                             = "apiserver.apiservers.minimal.example.com"
       "aws-node-termination-handler/managed"                                             = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"    = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server" = ""
       "k8s.io/role/apiserver"                                                            = "1"
       "kops.k8s.io/instancegroup"                                                        = "apiserver"
@@ -549,6 +550,7 @@ resource "aws_launch_template" "apiserver-apiservers-minimal-example-com" {
       "KubernetesCluster"                                                                = "minimal.example.com"
       "Name"                                                                             = "apiserver.apiservers.minimal.example.com"
       "aws-node-termination-handler/managed"                                             = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"    = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server" = ""
       "k8s.io/role/apiserver"                                                            = "1"
       "kops.k8s.io/instancegroup"                                                        = "apiserver"
@@ -561,6 +563,7 @@ resource "aws_launch_template" "apiserver-apiservers-minimal-example-com" {
       "KubernetesCluster"                                                                = "minimal.example.com"
       "Name"                                                                             = "apiserver.apiservers.minimal.example.com"
       "aws-node-termination-handler/managed"                                             = ""
+      "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"    = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server" = ""
       "k8s.io/role/apiserver"                                                            = "1"
       "kops.k8s.io/instancegroup"                                                        = "apiserver"
@@ -571,6 +574,7 @@ resource "aws_launch_template" "apiserver-apiservers-minimal-example-com" {
     "KubernetesCluster"                                                                = "minimal.example.com"
     "Name"                                                                             = "apiserver.apiservers.minimal.example.com"
     "aws-node-termination-handler/managed"                                             = ""
+    "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"    = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server" = ""
     "k8s.io/role/apiserver"                                                            = "1"
     "kops.k8s.io/instancegroup"                                                        = "apiserver"
@@ -627,7 +631,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
       "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server"                      = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
@@ -643,7 +646,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
       "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server"                      = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
@@ -659,7 +661,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
       "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
       "aws-node-termination-handler/managed"                                                                  = ""
       "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-      "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server"                      = ""
       "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
       "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
       "k8s.io/role/control-plane"                                                                             = "1"
@@ -673,7 +674,6 @@ resource "aws_launch_template" "master-us-test-1a-masters-minimal-example-com" {
     "Name"                                                                                                  = "master-us-test-1a.masters.minimal.example.com"
     "aws-node-termination-handler/managed"                                                                  = ""
     "k8s.io/cluster-autoscaler/node-template/label/kops.k8s.io/kops-controller-pki"                         = ""
-    "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/api-server"                      = ""
     "k8s.io/cluster-autoscaler/node-template/label/node-role.kubernetes.io/control-plane"                   = ""
     "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/exclude-from-external-load-balancers" = ""
     "k8s.io/role/control-plane"                                                                             = "1"
