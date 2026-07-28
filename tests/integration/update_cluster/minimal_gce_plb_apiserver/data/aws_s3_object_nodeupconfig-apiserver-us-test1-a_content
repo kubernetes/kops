@@ -139,6 +139,7 @@ CAs:
     9B7UD2ushcVFPtaeoL9Gfu8aY4KJBeqqg5ojl4qmRnThjw==
     -----END CERTIFICATE-----
 ClusterName: minimal-gce-plb-apiserver.example.com
+DNSZone: "1"
 FileAssets:
 - content: |
     apiVersion: kubescheduler.config.k8s.io/v1
@@ -173,6 +174,7 @@ KubeletConfig:
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2
   nodeLabels:
+    kops.k8s.io/kops-controller-pki: ""
     node-role.kubernetes.io/api-server: ""
   podManifestPath: /etc/kubernetes/manifests
   protectKernelDefaults: true
@@ -186,6 +188,7 @@ Networking:
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceClusterIPRange: 100.64.0.0/13
 UpdatePolicy: automatic
+channelsManifest: memfs://tests/minimal-gce-plb-apiserver.example.com/manifests/channels/kops-channels.yaml
 configStore:
   keypairs: memfs://tests/minimal-gce-plb-apiserver.example.com/pki
   secrets: memfs://tests/minimal-gce-plb-apiserver.example.com/secrets

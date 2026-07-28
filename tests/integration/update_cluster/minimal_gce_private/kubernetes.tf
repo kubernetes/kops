@@ -248,8 +248,8 @@ resource "google_compute_firewall" "master-to-master-minimal-gce-private-example
   disabled    = false
   name        = "master-to-master-minimal-gce-private-example-com"
   network     = google_compute_network.minimal-gce-private-example-com.name
-  source_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
-  target_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
+  source_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-etcd", "minimal-gce-private-example-com-k8s-io-role-scheduler", "minimal-gce-private-ex-sh4okp-k8s-io-role-kubecontrollermanager", "minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-etcd", "minimal-gce-private-example-com-k8s-io-role-scheduler", "minimal-gce-private-ex-sh4okp-k8s-io-role-kubecontrollermanager", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "master-to-node-minimal-gce-private-example-com" {
@@ -385,7 +385,7 @@ resource "google_compute_firewall" "ssh-external-to-master-ipv6-minimal-gce-priv
   name          = "ssh-external-to-master-ipv6-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["::/0"]
-  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-etcd", "minimal-gce-private-example-com-k8s-io-role-scheduler", "minimal-gce-private-ex-sh4okp-k8s-io-role-kubecontrollermanager", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-example-com" {
@@ -397,7 +397,7 @@ resource "google_compute_firewall" "ssh-external-to-master-minimal-gce-private-e
   name          = "ssh-external-to-master-minimal-gce-private-example-com"
   network       = google_compute_network.minimal-gce-private-example-com.name
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-master"]
+  target_tags   = ["minimal-gce-private-example-com-k8s-io-role-control-plane", "minimal-gce-private-example-com-k8s-io-role-etcd", "minimal-gce-private-example-com-k8s-io-role-scheduler", "minimal-gce-private-ex-sh4okp-k8s-io-role-kubecontrollermanager", "minimal-gce-private-example-com-k8s-io-role-master"]
 }
 
 resource "google_compute_firewall" "ssh-external-to-node-ipv6-minimal-gce-private-example-com" {
