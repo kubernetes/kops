@@ -36,7 +36,7 @@ func (b *KindnetOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 	}
 
 	if c.Version == "" {
-		c.Version = "v1.0.0"
+		c.Version = "v1.0.1"
 	}
 
 	if c.Masquerade == nil {
