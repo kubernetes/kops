@@ -29,31 +29,32 @@ type DeprecatableResource struct {
 }
 
 // IsDeprecated returns true if the resource is marked as deprecated.
-func (d DeprecatableResource) IsDeprecated() bool {
-	return d.Deprecation != nil
+func (o DeprecatableResource) IsDeprecated() bool {
+	return o.Deprecation != nil
 }
 
 // UnavailableAfter returns the time that the deprecated resource will be removed from the API.
 // This only returns a valid value if [Deprecatable.IsDeprecated] returned true.
-func (d DeprecatableResource) UnavailableAfter() time.Time {
-	if !d.IsDeprecated() {
+func (o DeprecatableResource) UnavailableAfter() time.Time {
+	if !o.IsDeprecated() {
 		// Return "null" time if resource is not deprecated
 		return time.Unix(0, 0)
 	}
 
-	return d.Deprecation.UnavailableAfter
+	return o.Deprecation.UnavailableAfter
 }
 
 // DeprecationAnnounced returns the time that the deprecation of this resource was announced.
 // This only returns a valid value if [Deprecatable.IsDeprecated] returned true.
-func (d DeprecatableResource) DeprecationAnnounced() time.Time {
-	if !d.IsDeprecated() {
+func (o DeprecatableResource) DeprecationAnnounced() time.Time {
+	if !o.IsDeprecated() {
 		// Return "null" time if resource is not deprecated
 		return time.Unix(0, 0)
 	}
 
-	return d.Deprecation.Announced
+	return o.Deprecation.Announced
 }
 
 // Make sure that all expected Resources actually implement the interface.
 var _ Deprecatable = ServerType{}
+var _ Deprecatable = LoadBalancerType{}

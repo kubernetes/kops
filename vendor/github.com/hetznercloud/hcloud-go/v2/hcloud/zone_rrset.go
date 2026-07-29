@@ -123,7 +123,7 @@ type ZoneRRSetListOpts struct {
 	Sort []string
 }
 
-func (l ZoneRRSetListOpts) values() url.Values {
+func (l ZoneRRSetListOpts) Values() url.Values {
 	result := l.ListOpts.Values()
 	if l.Name != "" {
 		result.Add("name", l.Name)
@@ -149,7 +149,7 @@ func (c *ZoneClient) ListRRSets(ctx context.Context, zone *Zone, opts ZoneRRSetL
 		return nil, nil, invalidArgument("zone", zone, err)
 	}
 
-	reqPath := fmt.Sprintf(opPath, zoneIDOrName, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, zoneIDOrName, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ZoneRRSetListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -163,6 +163,9 @@ func (c *ZoneClient) ListRRSets(ctx context.Context, zone *Zone, opts ZoneRRSetL
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-list-rrsets
 func (c *ZoneClient) AllRRSetsWithOpts(ctx context.Context, zone *Zone, opts ZoneRRSetListOpts) ([]*ZoneRRSet, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*ZoneRRSet, *Response, error) {
 		opts.Page = page
 		return c.ListRRSets(ctx, zone, opts)
@@ -173,7 +176,7 @@ func (c *ZoneClient) AllRRSetsWithOpts(ctx context.Context, zone *Zone, opts Zon
 //
 // See https://docs.hetzner.cloud/reference/cloud#zone-rrsets-list-rrsets
 func (c *ZoneClient) AllRRSets(ctx context.Context, zone *Zone) ([]*ZoneRRSet, error) {
-	return c.AllRRSetsWithOpts(ctx, zone, ZoneRRSetListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllRRSetsWithOpts(ctx, zone, ZoneRRSetListOpts{})
 }
 
 // ZoneRRSetCreateOpts defines options for creating a [ZoneRRSet].
@@ -442,6 +445,44 @@ func (c *ZoneClient) AddRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts
 	reqPath := fmt.Sprintf(opPath, zoneIDOrName, rrsetName, rrsetType)
 
 	reqBody := SchemaFromZoneRRSetAddRecordsOpts(opts)
+
+	respBody, resp, err := postRequest[schema.ActionGetResponse](ctx, c.client, reqPath, reqBody)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return ActionFromSchema(respBody.Action), resp, err
+}
+
+// ZoneRRSetUpdateRecordsOpts defines options for updating records of a [ZoneRRSet].
+type ZoneRRSetUpdateRecordsOpts struct {
+	Records []ZoneRRSetRecord
+}
+
+// UpdateRRSetRecords updates records of a [ZoneRRSet].
+//
+// See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-add-records-to-an-rrset
+func (c *ZoneClient) UpdateRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetUpdateRecordsOpts) (*Action, *Response, error) {
+	const opPath = "/zones/%s/rrsets/%s/%s/actions/update_records"
+	ctx = ctxutil.SetOpPath(ctx, opPath)
+
+	if rrset.Zone == nil {
+		return nil, nil, invalidArgument("rrset", rrset, missingField(rrset, "Zone"))
+	}
+
+	zoneIDOrName, err := rrset.Zone.idOrName()
+	if err != nil {
+		return nil, nil, invalidArgument("rrset", rrset, err)
+	}
+
+	rrsetName, rrsetType, err := rrset.nameAndType()
+	if err != nil {
+		return nil, nil, invalidArgument("rrset", rrset, err)
+	}
+
+	reqPath := fmt.Sprintf(opPath, zoneIDOrName, rrsetName, rrsetType)
+
+	reqBody := SchemaFromZoneRRSetUpdateRecordsOpts(opts)
 
 	respBody, resp, err := postRequest[schema.ActionGetResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {

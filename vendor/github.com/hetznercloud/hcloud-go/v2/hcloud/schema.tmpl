@@ -1,0 +1,9 @@
+var c converter
+
+{{range .Interface.Methods}}
+{{$argType := (index .Params 0).Type}}
+// {{.Name}} converts {{$argType}} to {{(index .Results 0).Type}}.
+func {{.Name}}(in {{$argType}}) ({{range .Results}}{{.Type}},{{end}}) {
+	return c.{{.Name}}(in)
+}
+{{end}}

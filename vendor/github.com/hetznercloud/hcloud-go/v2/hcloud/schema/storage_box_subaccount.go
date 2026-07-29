@@ -5,6 +5,7 @@ import "time"
 // StorageBoxSubaccount defines the schema of a Storage Box subaccount.
 type StorageBoxSubaccount struct {
 	ID             int64                              `json:"id"`
+	Name           string                             `json:"name"`
 	Username       string                             `json:"username"`
 	HomeDirectory  string                             `json:"home_directory"`
 	Server         string                             `json:"server"`
@@ -36,6 +37,7 @@ type StorageBoxSubaccountListResponse struct {
 
 // StorageBoxSubaccountCreateRequest defines the schema of the request when creating a Storage Box subaccount.
 type StorageBoxSubaccountCreateRequest struct {
+	Name           string                                           `json:"name,omitempty"`
 	HomeDirectory  string                                           `json:"home_directory"`
 	Password       string                                           `json:"password"`
 	Description    string                                           `json:"description,omitempty"`
@@ -68,6 +70,7 @@ type StorageBoxSubaccountCreateResponseSubaccount struct {
 
 // StorageBoxSubaccountUpdateRequest defines the schema of the request when updating a Storage Box subaccount.
 type StorageBoxSubaccountUpdateRequest struct {
+	Name        string             `json:"name,omitempty"`
 	Description *string            `json:"description,omitempty"`
 	Labels      *map[string]string `json:"labels,omitempty"`
 }

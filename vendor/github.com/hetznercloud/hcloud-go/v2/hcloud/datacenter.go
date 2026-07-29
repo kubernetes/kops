@@ -11,15 +11,24 @@ import (
 )
 
 // Datacenter represents a datacenter in the Hetzner Cloud.
+//
+// Deprecated: [Datacenter] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 type Datacenter struct {
 	ID          int64
 	Name        string
 	Description string
 	Location    *Location
+
+	// Deprecated: [Datacenter.ServerTypes] is deprecated and will not be returned after 2026-10-01.
+	// Use [ServerType.Locations] instead.
 	ServerTypes DatacenterServerTypes
 }
 
 // DatacenterServerTypes represents the server types available and supported in a datacenter.
+//
+// Deprecated: [DatacenterServerTypes] is deprecated and will not be returned after 2026-10-01.
+// Use [ServerType.Locations] instead.
 type DatacenterServerTypes struct {
 	Supported             []*ServerType
 	AvailableForMigration []*ServerType
@@ -27,11 +36,17 @@ type DatacenterServerTypes struct {
 }
 
 // DatacenterClient is a client for the datacenter API.
+//
+// Deprecated: [DatacenterClient] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 type DatacenterClient struct {
 	client *Client
 }
 
 // GetByID retrieves a datacenter by its ID. If the datacenter does not exist, nil is returned.
+//
+// Deprecated: [DatacenterClient.GetByID] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 func (c *DatacenterClient) GetByID(ctx context.Context, id int64) (*Datacenter, *Response, error) {
 	const opPath = "/datacenters/%d"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -50,6 +65,9 @@ func (c *DatacenterClient) GetByID(ctx context.Context, id int64) (*Datacenter, 
 }
 
 // GetByName retrieves a datacenter by its name. If the datacenter does not exist, nil is returned.
+//
+// Deprecated: [DatacenterClient.GetByName] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 func (c *DatacenterClient) GetByName(ctx context.Context, name string) (*Datacenter, *Response, error) {
 	return firstByName(name, func() ([]*Datacenter, *Response, error) {
 		return c.List(ctx, DatacenterListOpts{Name: name})
@@ -58,6 +76,9 @@ func (c *DatacenterClient) GetByName(ctx context.Context, name string) (*Datacen
 
 // Get retrieves a datacenter by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a datacenter by its name. If the datacenter does not exist, nil is returned.
+//
+// Deprecated: [DatacenterClient.Get] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 func (c *DatacenterClient) Get(ctx context.Context, idOrName string) (*Datacenter, *Response, error) {
 	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
 		return c.GetByID(ctx, id)
@@ -66,13 +87,16 @@ func (c *DatacenterClient) Get(ctx context.Context, idOrName string) (*Datacente
 }
 
 // DatacenterListOpts specifies options for listing datacenters.
+//
+// Deprecated: [DatacenterListOpts] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 type DatacenterListOpts struct {
 	ListOpts
 	Name string
 	Sort []string
 }
 
-func (l DatacenterListOpts) values() url.Values {
+func (l DatacenterListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -87,11 +111,14 @@ func (l DatacenterListOpts) values() url.Values {
 //
 // Please note that filters specified in opts are not taken into account
 // when their value corresponds to their zero value or when they are empty.
+//
+// Deprecated: [DatacenterClient.List] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 func (c *DatacenterClient) List(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, *Response, error) {
 	const opPath = "/datacenters?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.DatacenterListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -102,12 +129,21 @@ func (c *DatacenterClient) List(ctx context.Context, opts DatacenterListOpts) ([
 }
 
 // All returns all datacenters.
+//
+// Deprecated: [DatacenterClient.All] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 func (c *DatacenterClient) All(ctx context.Context) ([]*Datacenter, error) {
-	return c.AllWithOpts(ctx, DatacenterListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, DatacenterListOpts{})
 }
 
 // AllWithOpts returns all datacenters for the given options.
+//
+// Deprecated: [DatacenterClient.AllWithOpts] is deprecated and will be removed after the 2026-10-01. See
+// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 func (c *DatacenterClient) AllWithOpts(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Datacenter, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

@@ -53,14 +53,14 @@ func (o *IDOrName) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return &json.UnmarshalTypeError{
 				Value: string(data),
-				Type:  reflect.TypeOf(*o),
+				Type:  reflect.TypeFor[IDOrName](),
 			}
 		}
 		o.ID = id
 	default:
 		return &json.UnmarshalTypeError{
 			Value: string(data),
-			Type:  reflect.TypeOf(*o),
+			Type:  reflect.TypeFor[IDOrName](),
 		}
 	}
 

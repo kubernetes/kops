@@ -68,7 +68,7 @@ type LocationListOpts struct {
 	Sort []string
 }
 
-func (l LocationListOpts) values() url.Values {
+func (l LocationListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -87,7 +87,7 @@ func (c *LocationClient) List(ctx context.Context, opts LocationListOpts) ([]*Lo
 	const opPath = "/locations?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.LocationListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -99,11 +99,14 @@ func (c *LocationClient) List(ctx context.Context, opts LocationListOpts) ([]*Lo
 
 // All returns all locations.
 func (c *LocationClient) All(ctx context.Context) ([]*Location, error) {
-	return c.AllWithOpts(ctx, LocationListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, LocationListOpts{})
 }
 
 // AllWithOpts returns all locations for the given options.
 func (c *LocationClient) AllWithOpts(ctx context.Context, opts LocationListOpts) ([]*Location, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Location, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

@@ -18,7 +18,7 @@ type Server struct {
 	RescueEnabled   bool               `json:"rescue_enabled"`
 	ISO             *ISO               `json:"iso"`
 	Locked          bool               `json:"locked"`
-	Datacenter      Datacenter         `json:"datacenter"`
+	Location        Location           `json:"location"`
 	Image           *Image             `json:"image"`
 	Protection      ServerProtection   `json:"protection"`
 	Labels          map[string]string  `json:"labels"`
@@ -103,7 +103,6 @@ type ServerCreateRequest struct {
 	Image            IDOrName                `json:"image"`
 	SSHKeys          []int64                 `json:"ssh_keys,omitempty"`
 	Location         string                  `json:"location,omitempty"`
-	Datacenter       string                  `json:"datacenter,omitempty"`
 	UserData         string                  `json:"user_data,omitempty"`
 	StartAfterCreate *bool                   `json:"start_after_create,omitempty"`
 	Labels           *map[string]string      `json:"labels,omitempty"`
@@ -257,7 +256,8 @@ type ServerActionDisableRescueResponse struct {
 // ServerActionRebuildRequest defines the schema for the request to
 // rebuild a server.
 type ServerActionRebuildRequest struct {
-	Image IDOrName `json:"image"`
+	Image    IDOrName `json:"image"`
+	UserData *string  `json:"user_data,omitempty"`
 }
 
 // ServerActionRebuildResponse defines the schema of the response when
@@ -409,7 +409,7 @@ type ServerGetMetricsResponse struct {
 
 // ServerTimeSeriesVals contains the values for a Server time series.
 type ServerTimeSeriesVals struct {
-	Values []interface{} `json:"values"`
+	Values []any `json:"values"`
 }
 
 // ServerActionAddToPlacementGroupRequest defines the schema for the request to

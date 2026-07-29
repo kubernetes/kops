@@ -108,13 +108,17 @@ func (o *Zone) idOrName() (string, error) {
 	}
 }
 
+func (o *Zone) pathID() (string, error) {
+	return o.idOrName()
+}
+
 // ZoneClient is a client for the Zone (DNS) API.
 //
 // See https://docs.hetzner.cloud/reference/cloud#zones and
 // https://docs.hetzner.cloud/reference/cloud#zone-rrsets.
 type ZoneClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Zone]
 }
 
 // GetByID returns a single [Zone].
@@ -162,7 +166,7 @@ type ZoneListOpts struct {
 	Sort []string
 }
 
-func (l ZoneListOpts) values() url.Values {
+func (l ZoneListOpts) Values() url.Values {
 	result := l.ListOpts.Values()
 	if l.Name != "" {
 		result.Add("name", l.Name)
@@ -183,7 +187,7 @@ func (c *ZoneClient) List(ctx context.Context, opts ZoneListOpts) ([]*Zone, *Res
 	const opPath = "/zones?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ZoneListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -197,13 +201,16 @@ func (c *ZoneClient) List(ctx context.Context, opts ZoneListOpts) ([]*Zone, *Res
 //
 // See https://docs.hetzner.cloud/reference/cloud#zones-list-zones
 func (c *ZoneClient) All(ctx context.Context) ([]*Zone, error) {
-	return c.AllWithOpts(ctx, ZoneListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ZoneListOpts{})
 }
 
 // AllWithOpts returns a list of all [Zone] with the given options.
 //
 // See https://docs.hetzner.cloud/reference/cloud#zones-list-zones
 func (c *ZoneClient) AllWithOpts(ctx context.Context, opts ZoneListOpts) ([]*Zone, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Zone, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
