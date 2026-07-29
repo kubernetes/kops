@@ -12,9 +12,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_URL_AMD64=https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/amd64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/nodeup-linux-amd64
+NODEUP_URL_AMD64=oci://registry.example.com/kops/binaries/kops/1.34.0-beta.1/linux/amd64/nodeup
 NODEUP_HASH_AMD64=c86e072f622b91546b7b3f3cb1a0f8a131e48b966ad018a0ac1520ceedf37725
-NODEUP_URL_ARM64=https://artifacts.k8s.io/binaries/kops/1.34.0-beta.1/linux/arm64/nodeup,https://github.com/kubernetes/kops/releases/download/v1.34.0-beta.1/nodeup-linux-arm64
+NODEUP_URL_ARM64=oci://registry.example.com/kops/binaries/kops/1.34.0-beta.1/linux/arm64/nodeup
 NODEUP_HASH_ARM64=64a9a9510538a449e85d05e13e3cd98b80377d68a673447c26821d40f00f0075
 
 export AWS_REGION=us-test-1
@@ -57,26 +57,17 @@ download-or-bust() {
 
   while true; do
     for url in "${urls[@]}"; do
-      commands=(
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd} "${url}"); then
-          echo "== Failed to download ${url} using ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
-      done
+      if ! download-oci "${file}" "${hash}" "${url}"; then
+        echo "== Failed to download ${url} =="
+        continue
+      fi
+      if ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate hash for ${url} =="
+        rm -f "${file}"
+        continue
+      fi
+      echo "== Downloaded ${url} with hash ${hash} =="
+      return 0
     done
 
     echo "== All downloads failed; sleeping before retrying =="
@@ -94,6 +85,46 @@ validate-hash() {
     echo "== File ${file} is corrupted; hash ${actual} doesn't match expected ${expected} =="
     return 1
   fi
+}
+# Download an OCI blob by digest. args: file, hash, url
+download-oci() {
+  local -r file="$1"
+  local -r hash="$2"
+  local -r url="$3"
+
+  local -r stripped="${url#oci://}"
+  local -r registry="${stripped%%/*}"
+  local -r repository="${stripped#*/}"
+  local -r blob_url="https://${registry}/v2/${repository}/blobs/sha256:${hash}"
+
+  # Try a tokenless pull first
+  if curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${blob_url}"; then
+    return 0
+  fi
+
+  # Get an anonymous pull token per the WWW-Authenticate challenge
+  local challenge realm service response token
+  challenge=$(curl -sSI "${blob_url}" | tr -d '\r' | sed -n 's/^[Ww][Ww][Ww]-[Aa]uthenticate: [Bb]earer //p')
+  realm=$(echo "${challenge}" | sed -n 's/.*realm="\([^"]*\)".*/\1/p')
+  service=$(echo "${challenge}" | sed -n 's/.*service="\([^"]*\)".*/\1/p')
+  if [[ -z "${realm}" ]]; then
+    echo "== Failed to get a pull token challenge from ${registry} =="
+    return 1
+  fi
+  if ! response=$(curl -fsS --get --data-urlencode "service=${service}" --data-urlencode "scope=repository:${repository}:pull" "${realm}"); then
+    echo "== Failed to get an anonymous pull token from ${realm} =="
+    return 1
+  fi
+  # The token field is "token" or "access_token"
+  token=$(echo "${response}" | sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+  if [[ -z "${token}" ]]; then
+    token=$(echo "${response}" | sed -n 's/.*"access_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+  fi
+  if [[ -z "${token}" ]]; then
+    echo "== Failed to parse the anonymous pull token from ${realm} =="
+    return 1
+  fi
+  curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H "Authorization: Bearer ${token}" "${blob_url}"
 }
 
 function download-release() {
@@ -158,7 +189,7 @@ ConfigServer:
   - https://kops-controller.internal.complex.example.com:3988/
 InstanceGroupName: nodes
 InstanceGroupRole: Node
-NodeupConfigHash: a8sS9KyTeFxroHIgKXwF+NW5cr0D2tnK13XW9tLy6QM=
+NodeupConfigHash: 8hCwhf496RpNb040/BLxebmo7HHUcHgl2kLdtvLyBq0=
 
 __EOF_KUBE_ENV
 

@@ -88,13 +88,8 @@ func downloadURLToWriter(ctx context.Context, desturl string, dest io.Writer, ha
 	if err != nil {
 		return nil, fmt.Errorf("Invalud URL for file %q: %v", desturl, err)
 	}
-	if u.Scheme != "gs" {
-		reader, err = OpenURL(desturl)
-		if err != nil {
-			return nil, err
-		}
-		defer reader.Close()
-	} else {
+	switch u.Scheme {
+	case "gs":
 		bucketName := u.Host
 		objectName := strings.TrimPrefix(u.Path, "/")
 
@@ -108,8 +103,18 @@ func downloadURLToWriter(ctx context.Context, desturl string, dest io.Writer, ha
 		if err != nil {
 			return nil, fmt.Errorf("Failed to open reader on object %q: %v", desturl, err)
 		}
-		defer reader.Close()
+	case "oci":
+		reader, err = openOCIBlob(ctx, u, hash)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		reader, err = OpenURL(desturl)
+		if err != nil {
+			return nil, err
+		}
 	}
+	defer reader.Close()
 	start := time.Now()
 	defer func() {
 		klog.V(2).Infof("Downloading %q took %q", desturl, time.Since(start))

@@ -57,6 +57,32 @@ func Copy(imageAssets []*assets.ImageAsset, fileAssets []*assets.FileAsset, vfsC
 
 	for _, fileAsset := range fileAssets {
 		if fileAsset.DownloadURL.String() != fileAsset.CanonicalURL.String() {
+			if fileAsset.DownloadURL.Scheme == "oci" {
+				copyFileTask := &CopyFileToOCI{
+					Name:       fileAsset.CanonicalURL.String(),
+					TargetRef:  fileAsset.DownloadURL.String(),
+					SourceFile: fileAsset.CanonicalURL.String(),
+					SHA:        fileAsset.SHAValue.Hex(),
+					VFSContext: vfsContext,
+				}
+
+				if existing, ok := tasks[copyFileTask.Name]; ok {
+					e, ok := existing.(*CopyFileToOCI)
+					if !ok {
+						return fmt.Errorf("different types for copy target %s", copyFileTask.Name)
+					}
+					if e.TargetRef != copyFileTask.TargetRef {
+						return fmt.Errorf("different targets for same file %s: %s vs %s", copyFileTask.Name, copyFileTask.TargetRef, e.TargetRef)
+					}
+					if e.SHA != copyFileTask.SHA {
+						return fmt.Errorf("different sha for same file %s: %s vs %s", copyFileTask.Name, copyFileTask.SHA, e.SHA)
+					}
+				}
+
+				tasks[copyFileTask.Name] = copyFileTask
+				continue
+			}
+
 			copyFileTask := &CopyFile{
 				Name:       fileAsset.CanonicalURL.String(),
 				TargetFile: fileAsset.DownloadURL.String(),
