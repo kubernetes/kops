@@ -66,6 +66,15 @@ type ZoneRRSetAddRecordsRequest struct {
 	TTL     *int              `json:"ttl,omitempty"`
 }
 
+type ZoneRRSetUpdateRecordsRequest struct {
+	Records []ZoneRRSetUpdateRecordsRequestRecord `json:"records"`
+}
+
+type ZoneRRSetUpdateRecordsRequestRecord struct {
+	Value   string `json:"value"`
+	Comment string `json:"comment"` // Always send comment
+}
+
 type ZoneRRSetRemoveRecordsRequest struct {
 	Records []ZoneRRSetRecord `json:"records"`
 }

@@ -29,8 +29,10 @@ type ServerType struct {
 }
 
 type ServerTypeLocation struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Recommended bool   `json:"recommended"`
+	Available   bool   `json:"available"`
 	DeprecatableResource
 }
 

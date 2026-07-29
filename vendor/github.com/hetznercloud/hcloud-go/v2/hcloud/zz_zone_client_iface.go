@@ -112,6 +112,10 @@ type IZoneClient interface {
 	//
 	// See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-add-records-to-an-rrset
 	AddRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetAddRecordsOpts) (*Action, *Response, error)
+	// UpdateRRSetRecords updates records of a [ZoneRRSet].
+	//
+	// See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-add-records-to-an-rrset
+	UpdateRRSetRecords(ctx context.Context, rrset *ZoneRRSet, opts ZoneRRSetUpdateRecordsOpts) (*Action, *Response, error)
 	// RemoveRRSetRecords removes records from a [ZoneRRSet].
 	//
 	// See https://docs.hetzner.cloud/reference/cloud#zone-rrset-actions-remove-records-from-an-rrset

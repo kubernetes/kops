@@ -800,11 +800,13 @@ github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/memberlist v0.5.4
 ## explicit; go 1.24.0
 github.com/hashicorp/memberlist
-# github.com/hetznercloud/hcloud-go/v2 v2.32.0
-## explicit; go 1.24.0
+# github.com/hetznercloud/hcloud-go/v2 v2.47.0
+## explicit; go 1.25.0
 github.com/hetznercloud/hcloud-go/v2/hcloud
 github.com/hetznercloud/hcloud-go/v2/hcloud/exp/ctxutil
 github.com/hetznercloud/hcloud-go/v2/hcloud/internal/instrumentation
+github.com/hetznercloud/hcloud-go/v2/hcloud/internal/util
+github.com/hetznercloud/hcloud-go/v2/hcloud/internal/version
 github.com/hetznercloud/hcloud-go/v2/hcloud/metadata
 github.com/hetznercloud/hcloud-go/v2/hcloud/schema
 # github.com/huandu/xstrings v1.5.0

@@ -52,7 +52,7 @@ require (
 	github.com/gophercloud/gophercloud/v2 v2.9.0
 	github.com/hashicorp/go-sockaddr v1.0.7
 	github.com/hashicorp/memberlist v0.5.4
-	github.com/hetznercloud/hcloud-go/v2 v2.32.0
+	github.com/hetznercloud/hcloud-go/v2 v2.47.0
 	github.com/linode/linodego/v2 v2.4.1
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/pelletier/go-toml v1.9.5

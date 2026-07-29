@@ -12,7 +12,7 @@ type httpHandler struct {
 	httpClient *http.Client
 }
 
-func (h *httpHandler) Do(req *http.Request, _ interface{}) (*Response, error) {
+func (h *httpHandler) Do(req *http.Request, _ any) (*Response, error) {
 	httpResponse, err := h.httpClient.Do(req) //nolint: bodyclose
 	resp := &Response{Response: httpResponse}
 	if err != nil {

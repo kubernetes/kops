@@ -63,8 +63,8 @@ func NewHetznerCloudProvider() (*HetznerCloudProvider, error) {
 	}
 
 	klog.V(4).Infof("Found name of the running server: %q", server.Name)
-	if server.Datacenter != nil && server.Datacenter.Location != nil {
-		klog.V(4).Infof("Found location of the running server: %q", server.Datacenter.Location.Name)
+	if server.Location != nil {
+		klog.V(4).Infof("Found location of the running server: %q", server.Location.Name)
 	} else {
 		return nil, fmt.Errorf("failed to find location of the running server")
 	}

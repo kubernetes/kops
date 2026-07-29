@@ -34,8 +34,6 @@ type StorageBoxTypeLocationPricing struct {
 // StorageBoxTypeClient provides access to Storage Box Types in the Hetzner API.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 type StorageBoxTypeClient struct {
 	client *Client
 }
@@ -46,7 +44,7 @@ type StorageBoxTypeListOpts struct {
 	Name string
 }
 
-func (l StorageBoxTypeListOpts) values() url.Values {
+func (l StorageBoxTypeListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -57,13 +55,11 @@ func (l StorageBoxTypeListOpts) values() url.Values {
 // List returns a list of storage box types for a specific page.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types-list-storage-box-types
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 func (c *StorageBoxTypeClient) List(ctx context.Context, opts StorageBoxTypeListOpts) ([]*StorageBoxType, *Response, error) {
 	const opPath = "/storage_box_types?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.StorageBoxTypeListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -76,18 +72,17 @@ func (c *StorageBoxTypeClient) List(ctx context.Context, opts StorageBoxTypeList
 // All returns all storage box types.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types-list-storage-box-types
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 func (c *StorageBoxTypeClient) All(ctx context.Context) ([]*StorageBoxType, error) {
-	return c.AllWithOpts(ctx, StorageBoxTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, StorageBoxTypeListOpts{})
 }
 
 // AllWithOpts returns all storage box types for the given options.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types-list-storage-box-types
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 func (c *StorageBoxTypeClient) AllWithOpts(ctx context.Context, opts StorageBoxTypeListOpts) ([]*StorageBoxType, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*StorageBoxType, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
@@ -97,8 +92,6 @@ func (c *StorageBoxTypeClient) AllWithOpts(ctx context.Context, opts StorageBoxT
 // GetByID returns a specific Storage Box Type by ID.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types-get-a-storage-box-type
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 func (c *StorageBoxTypeClient) GetByID(ctx context.Context, id int64) (*StorageBoxType, *Response, error) {
 	const opPath = "/storage_box_types/%d"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
@@ -119,8 +112,6 @@ func (c *StorageBoxTypeClient) GetByID(ctx context.Context, id int64) (*StorageB
 // GetByName retrieves a Storage Box Type by its name. If the Storage Box Type does not exist, nil is returned.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types-get-a-storage-box-type
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 func (c *StorageBoxTypeClient) GetByName(ctx context.Context, name string) (*StorageBoxType, *Response, error) {
 	return firstByName(name, func() ([]*StorageBoxType, *Response, error) {
 		return c.List(ctx, StorageBoxTypeListOpts{Name: name})
@@ -131,8 +122,6 @@ func (c *StorageBoxTypeClient) GetByName(ctx context.Context, name string) (*Sto
 // retrieves a Storage Box Type by its name. If the Storage Box Type does not exist, nil is returned.
 //
 // See https://docs.hetzner.cloud/reference/hetzner#storage-box-types-get-a-storage-box-type
-//
-// Experimental: [StorageBoxTypeClient] is experimental, breaking changes may occur within minor releases.
 func (c *StorageBoxTypeClient) Get(ctx context.Context, idOrName string) (*StorageBoxType, *Response, error) {
 	return getByIDOrName(ctx, c.GetByID, c.GetByName, idOrName)
 }

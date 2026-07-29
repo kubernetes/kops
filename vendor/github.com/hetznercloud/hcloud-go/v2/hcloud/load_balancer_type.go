@@ -20,7 +20,11 @@ type LoadBalancerType struct {
 	MaxTargets              int
 	MaxAssignedCertificates int
 	Pricings                []LoadBalancerTypeLocationPricing
-	Deprecated              *string
+
+	DeprecatableResource
+
+	// Deprecated: [LoadBalancerType.Deprecated] is deprecated, use [LoadBalancerType.Deprecation] instead.
+	Deprecated *string
 }
 
 // LoadBalancerTypeClient is a client for the Load Balancer types API.
@@ -69,7 +73,7 @@ type LoadBalancerTypeListOpts struct {
 	Sort []string
 }
 
-func (l LoadBalancerTypeListOpts) values() url.Values {
+func (l LoadBalancerTypeListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -88,7 +92,7 @@ func (c *LoadBalancerTypeClient) List(ctx context.Context, opts LoadBalancerType
 	const opPath = "/load_balancer_types?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.LoadBalancerTypeListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -100,11 +104,14 @@ func (c *LoadBalancerTypeClient) List(ctx context.Context, opts LoadBalancerType
 
 // All returns all Load Balancer types.
 func (c *LoadBalancerTypeClient) All(ctx context.Context) ([]*LoadBalancerType, error) {
-	return c.AllWithOpts(ctx, LoadBalancerTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, LoadBalancerTypeListOpts{})
 }
 
 // AllWithOpts returns all Load Balancer types for the given options.
 func (c *LoadBalancerTypeClient) AllWithOpts(ctx context.Context, opts LoadBalancerTypeListOpts) ([]*LoadBalancerType, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*LoadBalancerType, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

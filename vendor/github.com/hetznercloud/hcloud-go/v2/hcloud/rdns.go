@@ -29,14 +29,14 @@ func (c *RDNSClient) ChangeDNSPtr(ctx context.Context, rdns RDNSSupporter, ip ne
 }
 
 // SupportsRDNS checks if the object supports reverse dns functions.
-func SupportsRDNS(i interface{}) bool {
+func SupportsRDNS(i any) bool {
 	_, ok := i.(RDNSSupporter)
 	return ok
 }
 
 // RDNSLookup searches for the dns assigned to the given IP address.
 // It returns an error if the object does not support reverse dns or if there is no dns set for the given IP address.
-func RDNSLookup(i interface{}, ip net.IP) (string, error) {
+func RDNSLookup(i any, ip net.IP) (string, error) {
 	rdns, ok := i.(RDNSSupporter)
 	if !ok {
 		return "", fmt.Errorf("%+v does not support RDNS", i)

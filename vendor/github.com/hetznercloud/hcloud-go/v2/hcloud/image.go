@@ -35,14 +35,21 @@ type Image struct {
 	Deleted    time.Time
 }
 
+func (o *Image) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
+}
+
 // IsDeprecated returns whether the image is deprecated.
-func (image *Image) IsDeprecated() bool {
-	return !image.Deprecated.IsZero()
+func (o *Image) IsDeprecated() bool {
+	return !o.Deprecated.IsZero()
 }
 
 // IsDeleted returns whether the image is deleted.
-func (image *Image) IsDeleted() bool {
-	return !image.Deleted.IsZero()
+func (o *Image) IsDeleted() bool {
+	return !o.Deleted.IsZero()
 }
 
 // ImageProtection represents the protection level of an image.
@@ -77,7 +84,7 @@ const (
 // ImageClient is a client for the image API.
 type ImageClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Image]
 }
 
 // GetByID retrieves an image by its ID. If the image does not exist, nil is returned.
@@ -152,7 +159,7 @@ type ImageListOpts struct {
 	Architecture      []Architecture
 }
 
-func (l ImageListOpts) values() url.Values {
+func (l ImageListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	for _, typ := range l.Type {
 		vals.Add("type", string(typ))
@@ -186,7 +193,7 @@ func (c *ImageClient) List(ctx context.Context, opts ImageListOpts) ([]*Image, *
 	const opPath = "/images?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ImageListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -198,11 +205,14 @@ func (c *ImageClient) List(ctx context.Context, opts ImageListOpts) ([]*Image, *
 
 // All returns all images.
 func (c *ImageClient) All(ctx context.Context) ([]*Image, error) {
-	return c.AllWithOpts(ctx, ImageListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ImageListOpts{})
 }
 
 // AllWithOpts returns all images for the given options.
 func (c *ImageClient) AllWithOpts(ctx context.Context, opts ImageListOpts) ([]*Image, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Image, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
