@@ -24,12 +24,11 @@ import (
 )
 
 type terraformAzureBlobFile struct {
-	Name                 string                   `cty:"name"`
-	StorageAccountName   string                   `cty:"storage_account_name"`
-	StorageContainerName string                   `cty:"storage_container_name"`
-	Type                 string                   `cty:"type"`
-	Source               *terraformWriter.Literal `cty:"source"`
-	Provider             *terraformWriter.Literal `cty:"provider"`
+	Name               string                   `cty:"name"`
+	StorageContainerID string                   `cty:"storage_container_id"`
+	Type               string                   `cty:"type"`
+	Source             *terraformWriter.Literal `cty:"source"`
+	Provider           *terraformWriter.Literal `cty:"provider"`
 }
 
 func (p *AzureBlobPath) RenderTerraform(w *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error {
@@ -43,6 +42,9 @@ func (p *AzureBlobPath) RenderTerraform(w *terraformWriter.TerraformWriter, name
 	if p.account == "" {
 		return fmt.Errorf("Azure storage account is not set on path %q", p.Path())
 	}
+	if w.AzureStorageAccountID == "" {
+		return fmt.Errorf("Azure storage account ID is not set; it is required to render blob %q", p.Path())
+	}
 
 	source, err := w.AddFilePath("azurerm_storage_blob", name, "source", bytes, false)
 	if err != nil {
@@ -50,12 +52,11 @@ func (p *AzureBlobPath) RenderTerraform(w *terraformWriter.TerraformWriter, name
 	}
 
 	tf := &terraformAzureBlobFile{
-		Name:                 p.key,
-		StorageAccountName:   p.account,
-		StorageContainerName: p.container,
-		Type:                 "Block",
-		Source:               source,
-		Provider:             terraformWriter.LiteralTokens("azurerm", "files"),
+		Name:               p.key,
+		StorageContainerID: w.AzureStorageAccountID + "/blobServices/default/containers/" + p.container,
+		Type:               "Block",
+		Source:             source,
+		Provider:           terraformWriter.LiteralTokens("azurerm", "files"),
 	}
 	return w.RenderResource("azurerm_storage_blob", name, tf)
 }
