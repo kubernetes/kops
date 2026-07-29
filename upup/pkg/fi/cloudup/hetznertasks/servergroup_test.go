@@ -58,9 +58,7 @@ func matchingServer(name string) *hcloud.Server {
 			hetzner.TagClusterAutoscalerNodeGroup: testNodeGroup,
 			hetzner.TagKubernetesInstanceUserData: testUserDataHash,
 		},
-		Datacenter: &hcloud.Datacenter{
-			Location: &hcloud.Location{Name: testLocation},
-		},
+		Location:   &hcloud.Location{Name: testLocation},
 		ServerType: &hcloud.ServerType{Name: testSize},
 		Image:      &hcloud.Image{Name: testImage},
 		PublicNet: hcloud.ServerPublicNet{
@@ -99,18 +97,7 @@ func TestClassifyServers(t *testing.T) {
 			group: baseGroup(1),
 			servers: func() []*hcloud.Server {
 				s := matchingServer("s1")
-				s.Datacenter.Location.Name = "nbg1"
-				return []*hcloud.Server{s}
-			}(),
-			wantNeedUpdate: []string{"s1"},
-			wantCount:      1,
-		},
-		{
-			name:  "nil datacenter marks needUpdate",
-			group: baseGroup(1),
-			servers: func() []*hcloud.Server {
-				s := matchingServer("s1")
-				s.Datacenter = nil
+				s.Location.Name = "nbg1"
 				return []*hcloud.Server{s}
 			}(),
 			wantNeedUpdate: []string{"s1"},

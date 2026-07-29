@@ -86,7 +86,7 @@ type ISOListOpts struct {
 	IncludeArchitectureWildcard bool
 }
 
-func (l ISOListOpts) values() url.Values {
+func (l ISOListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -111,7 +111,7 @@ func (c *ISOClient) List(ctx context.Context, opts ISOListOpts) ([]*ISO, *Respon
 	const opPath = "/isos?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ISOListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -123,11 +123,14 @@ func (c *ISOClient) List(ctx context.Context, opts ISOListOpts) ([]*ISO, *Respon
 
 // All returns all ISOs.
 func (c *ISOClient) All(ctx context.Context) ([]*ISO, error) {
-	return c.AllWithOpts(ctx, ISOListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ISOListOpts{})
 }
 
 // AllWithOpts returns all ISOs for the given options.
 func (c *ISOClient) AllWithOpts(ctx context.Context, opts ISOListOpts) ([]*ISO, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*ISO, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

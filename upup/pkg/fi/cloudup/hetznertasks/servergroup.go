@@ -108,7 +108,7 @@ func (v *ServerGroup) classifyServers(servers []*hcloud.Server, userDataHash str
 			needUpdate = append(needUpdate, server.Name)
 			continue
 		}
-		if server.Datacenter == nil || server.Datacenter.Location == nil || server.Datacenter.Location.Name != v.Location {
+		if server.Location == nil || server.Location.Name != v.Location {
 			needUpdate = append(needUpdate, server.Name)
 			continue
 		}

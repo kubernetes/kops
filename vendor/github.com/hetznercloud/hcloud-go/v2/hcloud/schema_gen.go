@@ -9,8 +9,6 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/schema"
 )
 
-//go:generate go run github.com/jmattheis/goverter/cmd/goverter gen ./...
-
 /*
 This file generates conversions methods between the schema and the hcloud package.
 Goverter (https://github.com/jmattheis/goverter) is used to generate these conversion
@@ -25,7 +23,7 @@ You can find a documentation of goverter here: https://goverter.jmattheis.de/
 //
 // Specify where and in which package to output the generated
 // conversion methods.
-// goverter:output:file zz_schema.go
+// goverter:output:file zz_schema_converter.go
 // goverter:output:package github.com/hetznercloud/hcloud-go/v2/hcloud
 //
 // In case of *T -> T conversion, use zero value if *T is nil.
@@ -84,6 +82,8 @@ You can find a documentation of goverter here: https://goverter.jmattheis.de/
 // goverter:extend int64SlicePtrFromCertificatePtrSlice
 // goverter:extend stringSlicePtrFromStringSlice
 // goverter:extend locationFromServerTypeLocationSchema
+// goverter:extend schemaPtrFromDatacenterServerTypes
+// goverter:extend deprecatedStrFromDeprecationSchema
 type converter interface {
 
 	// goverter:map Error.Code ErrorCode
@@ -135,6 +135,8 @@ type converter interface {
 	DatacenterFromSchema(schema.Datacenter) *Datacenter
 
 	SchemaFromDatacenter(*Datacenter) schema.Datacenter
+
+	schemaFromDatacenterServerTypes(DatacenterServerTypes) schema.DatacenterServerTypes
 
 	ServerFromSchema(schema.Server) *Server
 
@@ -217,6 +219,7 @@ type converter interface {
 	SchemaFromLoadBalancer(*LoadBalancer) schema.LoadBalancer
 
 	// goverter:map Prices Pricings
+	// goverter:map DeprecatableResource.Deprecation Deprecated | deprecatedStrFromDeprecationSchema
 	LoadBalancerTypeFromSchema(schema.LoadBalancerType) *LoadBalancerType
 
 	// goverter:map Pricings Prices
@@ -283,7 +286,7 @@ type converter interface {
 	// goverter:map PriceHourly Hourly
 	// goverter:map PriceMonthly Monthly
 	// goverter:map PricePerTBTraffic PerTBTraffic
-	serverTypePricingFromSchema(schema.PricingServerTypePrice) ServerTypeLocationPricing
+	serverTypeLocationPricingFromSchema(schema.PricingServerTypePrice) ServerTypeLocationPricing
 
 	// goverter:map Image.PerGBMonth.Currency Currency
 	// goverter:map Image.PerGBMonth.VATRate VATRate
@@ -388,6 +391,7 @@ type converter interface {
 
 	SchemaFromZoneRRSetSetRecordsOpts(ZoneRRSetSetRecordsOpts) schema.ZoneRRSetSetRecordsRequest
 	SchemaFromZoneRRSetAddRecordsOpts(ZoneRRSetAddRecordsOpts) schema.ZoneRRSetAddRecordsRequest
+	SchemaFromZoneRRSetUpdateRecordsOpts(ZoneRRSetUpdateRecordsOpts) schema.ZoneRRSetUpdateRecordsRequest
 	SchemaFromZoneRRSetRemoveRecordsOpts(ZoneRRSetRemoveRecordsOpts) schema.ZoneRRSetRemoveRecordsRequest
 
 	// StorageBoxType
@@ -712,7 +716,7 @@ func intSecondsFromDuration(d time.Duration) int {
 	return int(d.Seconds())
 }
 
-func errorDetailsFromSchema(d interface{}) interface{} {
+func errorDetailsFromSchema(d any) any {
 	switch typed := d.(type) {
 	case schema.ErrorDetailsInvalidInput:
 		details := ErrorDetailsInvalidInput{
@@ -734,7 +738,7 @@ func errorDetailsFromSchema(d interface{}) interface{} {
 	return nil
 }
 
-func schemaFromErrorDetails(d interface{}) interface{} {
+func schemaFromErrorDetails(d any) any {
 	switch typed := d.(type) {
 	case ErrorDetailsInvalidInput:
 		details := schema.ErrorDetailsInvalidInput{
@@ -928,7 +932,7 @@ func serverMetricsTimeSeriesFromSchema(s schema.ServerTimeSeriesVals) ([]ServerM
 	for i, rawVal := range s.Values {
 		var val ServerMetricsValue
 
-		tup, ok := rawVal.([]interface{})
+		tup, ok := rawVal.([]any)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert value to tuple: %v", rawVal)
 		}
@@ -958,7 +962,7 @@ func loadBalancerMetricsTimeSeriesFromSchema(s schema.LoadBalancerTimeSeriesVals
 	for i, rawVal := range s.Values {
 		var val LoadBalancerMetricsValue
 
-		tup, ok := rawVal.([]interface{})
+		tup, ok := rawVal.([]any)
 		if !ok {
 			return nil, fmt.Errorf("failed to convert value to tuple: %v", rawVal)
 		}
@@ -1039,7 +1043,7 @@ func stringMapToStringMapPtr(m map[string]string) *map[string]string {
 	return &m
 }
 
-func rawSchemaFromErrorDetails(v interface{}) json.RawMessage {
+func rawSchemaFromErrorDetails(v any) json.RawMessage {
 	d := schemaFromErrorDetails(v)
 	if v == nil {
 		return nil
@@ -1060,6 +1064,14 @@ func mapZeroFloat32ToNil(f float32) *float32 {
 
 func isDeprecationNotNil(d *DeprecationInfo) bool {
 	return d != nil
+}
+
+func deprecatedStrFromDeprecationSchema(d *schema.DeprecationInfo) *string {
+	if d != nil {
+		value := d.Announced.Format(time.RFC3339)
+		return &value
+	}
+	return nil
 }
 
 // int64SlicePtrFromCertificatePtrSlice is needed so that a nil slice is mapped to nil instead of &nil.
@@ -1122,4 +1134,13 @@ func mapStorageBoxIntPtrToWeekdayPtr(i *int) *time.Weekday {
 	}
 
 	return Ptr(time.Weekday(*i))
+}
+
+// hcloud.DatacenterServerTypes is not nullable but *schema.DatacenterServerTypes is.
+// We treat the zero value as nil.
+func schemaPtrFromDatacenterServerTypes(dst DatacenterServerTypes) *schema.DatacenterServerTypes {
+	if dst.Available == nil && dst.AvailableForMigration == nil && dst.Supported == nil {
+		return nil
+	}
+	return Ptr(schemaFromDatacenterServerTypes(dst))
 }
