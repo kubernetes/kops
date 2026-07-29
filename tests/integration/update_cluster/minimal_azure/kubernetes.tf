@@ -123,7 +123,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
   location  = "eastus"
   name      = "control-plane-eastus-1.masters.minimal-azure.example.com"
   network_interface {
-    enable_ip_forwarding = true
     ip_configuration {
       application_security_group_ids         = [azurerm_application_security_group.control-plane-minimal-azure-example-com.id]
       load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.api-minimal-azure-example-com-backend-pool.id]
@@ -135,8 +134,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
       }
       subnet_id = azurerm_subnet.eastus.id
     }
-    name    = "control-plane-eastus-1.masters.minimal-azure.example.com"
-    primary = true
+    ip_forwarding_enabled = true
+    name                  = "control-plane-eastus-1.masters.minimal-azure.example.com"
+    primary               = true
   }
   os_disk {
     caching              = "ReadWrite"
@@ -177,7 +177,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "nodes-minimal-azure-example-
   location  = "eastus"
   name      = "nodes.minimal-azure.example.com"
   network_interface {
-    enable_ip_forwarding = true
     ip_configuration {
       application_security_group_ids = [azurerm_application_security_group.nodes-minimal-azure-example-com.id]
       name                           = "nodes.minimal-azure.example.com"
@@ -188,8 +187,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "nodes-minimal-azure-example-
       }
       subnet_id = azurerm_subnet.eastus.id
     }
-    name    = "nodes.minimal-azure.example.com"
-    primary = true
+    ip_forwarding_enabled = true
+    name                  = "nodes.minimal-azure.example.com"
+    primary               = true
   }
   os_disk {
     caching              = "ReadWrite"
@@ -493,183 +493,163 @@ resource "azurerm_route_table" "minimal-azure-example-com" {
 }
 
 resource "azurerm_storage_blob" "cluster-completed-spec" {
-  name                   = "tests/minimal-azure.example.com/cluster-completed.spec"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_cluster-completed.spec_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/cluster-completed.spec"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_cluster-completed.spec_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "etcd-cluster-spec-events" {
-  name                   = "tests/minimal-azure.example.com/backups/etcd/events/control/etcd-cluster-spec"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-events_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/backups/etcd/events/control/etcd-cluster-spec"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-events_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "etcd-cluster-spec-main" {
-  name                   = "tests/minimal-azure.example.com/backups/etcd/main/control/etcd-cluster-spec"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-main_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/backups/etcd/main/control/etcd-cluster-spec"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-main_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "kops-version-txt" {
-  name                   = "tests/minimal-azure.example.com/kops-version.txt"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_kops-version.txt_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/kops-version.txt"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_kops-version.txt_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-channels-kops-channels" {
-  name                   = "tests/minimal-azure.example.com/manifests/channels/kops-channels.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-channels-kops-channels_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/manifests/channels/kops-channels.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-channels-kops-channels_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-etcdmanager-events-control-plane-eastus-1" {
-  name                   = "tests/minimal-azure.example.com/manifests/etcd/events-control-plane-eastus-1.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-events-control-plane-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/manifests/etcd/events-control-plane-eastus-1.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-events-control-plane-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-etcdmanager-main-control-plane-eastus-1" {
-  name                   = "tests/minimal-azure.example.com/manifests/etcd/main-control-plane-eastus-1.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-main-control-plane-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/manifests/etcd/main-control-plane-eastus-1.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-main-control-plane-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-static-kube-apiserver-healthcheck" {
-  name                   = "tests/minimal-azure.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-static-kube-apiserver-healthcheck_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/manifests/static/kube-apiserver-healthcheck.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-static-kube-apiserver-healthcheck_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-azure-cloud-config-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/minimal-azure.example.com/addons/azure-cloud-config.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-azure-cloud-config.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/azure-cloud-config.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-azure-cloud-config.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-azure-cloud-controller-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/minimal-azure.example.com/addons/azure-cloud-controller.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-azure-cloud-controller.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/azure-cloud-controller.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-azure-cloud-controller.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-azuredisk-csi-driver-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/minimal-azure.example.com/addons/azuredisk-csi-driver.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-azuredisk-csi-driver.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/azuredisk-csi-driver.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-azuredisk-csi-driver.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-bootstrap" {
-  name                   = "tests/minimal-azure.example.com/addons/bootstrap-channel.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-bootstrap_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/bootstrap-channel.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-bootstrap_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-coredns-addons-k8s-io-k8s-1-12" {
-  name                   = "tests/minimal-azure.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-coredns.addons.k8s.io-k8s-1.12_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-coredns.addons.k8s.io-k8s-1.12_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-dns-controller-addons-k8s-io-k8s-1-12" {
-  name                   = "tests/minimal-azure.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-dns-controller.addons.k8s.io-k8s-1.12_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-kops-controller-addons-k8s-io-k8s-1-16" {
-  name                   = "tests/minimal-azure.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-kops-controller.addons.k8s.io-k8s-1.16_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9" {
-  name                   = "tests/minimal-azure.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-limit-range-addons-k8s-io" {
-  name                   = "tests/minimal-azure.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-limit-range.addons.k8s.io_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-limit-range.addons.k8s.io_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "minimal-azure-example-com-addons-storage-azure-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/minimal-azure.example.com/addons/storage-azure.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-storage-azure.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/addons/storage-azure.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_minimal-azure.example.com-addons-storage-azure.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "nodeupconfig-control-plane-eastus-1" {
-  name                   = "tests/minimal-azure.example.com/igconfig/control-plane/control-plane-eastus-1/nodeupconfig.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_nodeupconfig-control-plane-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/igconfig/control-plane/control-plane-eastus-1/nodeupconfig.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_nodeupconfig-control-plane-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "nodeupconfig-nodes" {
-  name                   = "tests/minimal-azure.example.com/igconfig/node/nodes/nodeupconfig.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_nodeupconfig-nodes_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/minimal-azure.example.com/igconfig/node/nodes/nodeupconfig.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_nodeupconfig-nodes_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_subnet" "eastus" {
@@ -710,7 +690,7 @@ terraform {
     azurerm = {
       "configuration_aliases" = [azurerm.files]
       "source"                = "hashicorp/azurerm"
-      "version"               = ">= 4.0.0"
+      "version"               = ">= 5.0.0"
     }
   }
 }
