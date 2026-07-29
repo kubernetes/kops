@@ -59,10 +59,10 @@ type terraformAzureVMScaleSetIPConfiguration struct {
 }
 
 type terraformAzureVMScaleSetNetworkInterface struct {
-	Name               *string                                    `cty:"name"`
-	Primary            *bool                                      `cty:"primary"`
-	EnableIPForwarding *bool                                      `cty:"enable_ip_forwarding"`
-	IPConfiguration    []*terraformAzureVMScaleSetIPConfiguration `cty:"ip_configuration"`
+	Name                *string                                    `cty:"name"`
+	Primary             *bool                                      `cty:"primary"`
+	IPForwardingEnabled *bool                                      `cty:"ip_forwarding_enabled"`
+	IPConfiguration     []*terraformAzureVMScaleSetIPConfiguration `cty:"ip_configuration"`
 }
 
 type terraformAzureVMScaleSetIdentity struct {
@@ -144,9 +144,9 @@ func (*VMScaleSet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 	}
 	tf.NetworkInterface = []*terraformAzureVMScaleSetNetworkInterface{
 		{
-			Name:               e.Name,
-			Primary:            new(true),
-			EnableIPForwarding: new(true),
+			Name:                e.Name,
+			Primary:             new(true),
+			IPForwardingEnabled: new(true),
 			IPConfiguration: []*terraformAzureVMScaleSetIPConfiguration{
 				ipConfig,
 			},
