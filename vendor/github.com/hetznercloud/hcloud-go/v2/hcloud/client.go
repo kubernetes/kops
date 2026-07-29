@@ -18,17 +18,19 @@ import (
 	"golang.org/x/net/http/httpguts"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/instrumentation"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/util"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/version"
 )
 
 // Endpoint is the base URL of the Cloud API.
 const Endpoint = "https://api.hetzner.cloud/v1"
 
-// Endpoint is the base URL of the Hetzner API.
+// HetznerEndpoint is the base URL of the Hetzner API.
 const HetznerEndpoint = "https://api.hetzner.com/v1"
 
 // UserAgent is the value for the library part of the User-Agent header
 // that is sent with each request.
-const UserAgent = "hcloud-go/" + Version
+const UserAgent = "hcloud-go/" + version.Version
 
 // A BackoffFunc returns the duration to wait before performing the
 // next retry. The retries argument specifies how many retries have
@@ -94,8 +96,6 @@ type Client struct {
 	retryMaxRetries         int
 	pollBackoffFunc         BackoffFunc
 	httpClient              *http.Client
-	applicationName         string
-	applicationVersion      string
 	userAgent               string
 	debugWriter             io.Writer
 	instrumentationRegistry prometheus.Registerer
@@ -103,7 +103,6 @@ type Client struct {
 
 	Action           ActionClient
 	Certificate      CertificateClient
-	Datacenter       DatacenterClient
 	Firewall         FirewallClient
 	FloatingIP       FloatingIPClient
 	Image            ImageClient
@@ -123,6 +122,10 @@ type Client struct {
 	PrimaryIP        PrimaryIPClient
 	StorageBoxType   StorageBoxTypeClient
 	Zone             ZoneClient
+
+	// Deprecated: [DatacenterClient] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
+	Datacenter DatacenterClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -166,6 +169,8 @@ func WithToken(token string) ClientOption {
 //	hcloud.WithPollOpts(hcloud.PollOpts{
 //		BackoffFunc: hcloud.ConstantBackoff(2 * time.Second),
 //	})
+//
+//go:fix inline
 func WithPollInterval(pollInterval time.Duration) ClientOption {
 	return WithPollOpts(PollOpts{
 		BackoffFunc: ConstantBackoff(pollInterval),
@@ -176,6 +181,8 @@ func WithPollInterval(pollInterval time.Duration) ClientOption {
 // function when polling from the API.
 //
 // Deprecated: WithPollBackoffFunc is deprecated, use [WithPollOpts] instead.
+//
+//go:fix inline
 func WithPollBackoffFunc(f BackoffFunc) ClientOption {
 	return WithPollOpts(PollOpts{
 		BackoffFunc: f,
@@ -202,10 +209,12 @@ func WithPollOpts(opts PollOpts) ClientOption {
 // The backoff function is used for retrying HTTP requests.
 //
 // Deprecated: WithBackoffFunc is deprecated, use [WithRetryOpts] instead.
+//
+//go:fix inline
 func WithBackoffFunc(f BackoffFunc) ClientOption {
-	return func(client *Client) {
-		client.retryBackoffFunc = f
-	}
+	return WithRetryOpts(RetryOpts{
+		BackoffFunc: f,
+	})
 }
 
 // RetryOpts defines the options used by [WithRetryOpts].
@@ -232,8 +241,7 @@ func WithRetryOpts(opts RetryOpts) ClientOption {
 // to at least set an application name.
 func WithApplication(name, version string) ClientOption {
 	return func(client *Client) {
-		client.applicationName = name
-		client.applicationVersion = version
+		client.userAgent = util.BuildUserAgent(name, version, UserAgent)
 	}
 }
 
@@ -262,6 +270,7 @@ func WithInstrumentation(registry prometheus.Registerer) ClientOption {
 // NewClient creates a new client.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
+		userAgent:       UserAgent,
 		endpoint:        Endpoint,
 		hetznerEndpoint: HetznerEndpoint,
 		tokenValid:      true,
@@ -282,7 +291,6 @@ func NewClient(options ...ClientOption) *Client {
 		option(client)
 	}
 
-	client.buildUserAgent()
 	if client.instrumentationRegistry != nil {
 		i := instrumentation.New("api", client.instrumentationRegistry)
 		client.httpClient.Transport = i.InstrumentedRoundTripper(client.httpClient.Transport)
@@ -291,26 +299,26 @@ func NewClient(options ...ClientOption) *Client {
 	client.handler = assembleHandlerChain(client)
 
 	// Cloud API
-	client.Action = ActionClient{action: &ResourceActionClient{client: client}}
+	client.Action = ActionClient{action: &ResourceActionClient[noopResource]{client: client}}
 	client.Datacenter = DatacenterClient{client: client}
-	client.FloatingIP = FloatingIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "floating_ips"}}
-	client.Image = ImageClient{client: client, Action: &ResourceActionClient{client: client, resource: "images"}}
+	client.FloatingIP = FloatingIPClient{client: client, Action: &ResourceActionClient[*FloatingIP]{client: client, resource: "floating_ips"}}
+	client.Image = ImageClient{client: client, Action: &ResourceActionClient[*Image]{client: client, resource: "images"}}
 	client.ISO = ISOClient{client: client}
 	client.Location = LocationClient{client: client}
-	client.Network = NetworkClient{client: client, Action: &ResourceActionClient{client: client, resource: "networks"}}
+	client.Network = NetworkClient{client: client, Action: &ResourceActionClient[*Network]{client: client, resource: "networks"}}
 	client.Pricing = PricingClient{client: client}
-	client.Server = ServerClient{client: client, Action: &ResourceActionClient{client: client, resource: "servers"}}
+	client.Server = ServerClient{client: client, Action: &ResourceActionClient[*Server]{client: client, resource: "servers"}}
 	client.ServerType = ServerTypeClient{client: client}
 	client.SSHKey = SSHKeyClient{client: client}
-	client.Volume = VolumeClient{client: client, Action: &ResourceActionClient{client: client, resource: "volumes"}}
-	client.LoadBalancer = LoadBalancerClient{client: client, Action: &ResourceActionClient{client: client, resource: "load_balancers"}}
+	client.Volume = VolumeClient{client: client, Action: &ResourceActionClient[*Volume]{client: client, resource: "volumes"}}
+	client.LoadBalancer = LoadBalancerClient{client: client, Action: &ResourceActionClient[*LoadBalancer]{client: client, resource: "load_balancers"}}
 	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
-	client.Certificate = CertificateClient{client: client, Action: &ResourceActionClient{client: client, resource: "certificates"}}
-	client.Firewall = FirewallClient{client: client, Action: &ResourceActionClient{client: client, resource: "firewalls"}}
+	client.Certificate = CertificateClient{client: client, Action: &ResourceActionClient[*Certificate]{client: client, resource: "certificates"}}
+	client.Firewall = FirewallClient{client: client, Action: &ResourceActionClient[*Firewall]{client: client, resource: "firewalls"}}
 	client.PlacementGroup = PlacementGroupClient{client: client}
 	client.RDNS = RDNSClient{client: client}
-	client.PrimaryIP = PrimaryIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "primary_ips"}}
-	client.Zone = ZoneClient{client: client, Action: &ResourceActionClient{client: client, resource: "zones"}}
+	client.PrimaryIP = PrimaryIPClient{client: client, Action: &ResourceActionClient[*PrimaryIP]{client: client, resource: "primary_ips"}}
+	client.Zone = ZoneClient{client: client, Action: &ResourceActionClient[*Zone]{client: client, resource: "zones"}}
 
 	// Hetzner API
 
@@ -321,7 +329,7 @@ func NewClient(options ...ClientOption) *Client {
 	*hetznerClient = *client
 	hetznerClient.endpoint = hetznerClient.hetznerEndpoint
 
-	client.StorageBox = StorageBoxClient{client: hetznerClient, Action: &ResourceActionClient{client: hetznerClient, resource: "storage_boxes"}}
+	client.StorageBox = StorageBoxClient{client: hetznerClient, Action: &ResourceActionClient[*StorageBox]{client: hetznerClient, resource: "storage_boxes"}}
 	client.StorageBoxType = StorageBoxTypeClient{client: hetznerClient}
 
 	return client
@@ -355,17 +363,6 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 // a struct to json.Unmarshal the response to.
 func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 	return c.handler.Do(req, v)
-}
-
-func (c *Client) buildUserAgent() {
-	switch {
-	case c.applicationName != "" && c.applicationVersion != "":
-		c.userAgent = c.applicationName + "/" + c.applicationVersion + " " + UserAgent
-	case c.applicationName != "" && c.applicationVersion == "":
-		c.userAgent = c.applicationName + " " + UserAgent
-	default:
-		c.userAgent = UserAgent
-	}
 }
 
 const (

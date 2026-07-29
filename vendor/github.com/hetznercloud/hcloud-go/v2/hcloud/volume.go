@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/ctxutil"
@@ -25,6 +26,13 @@ type Volume struct {
 	Created     time.Time
 }
 
+func (o *Volume) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
+}
+
 const (
 	VolumeFormatExt4 = "ext4"
 	VolumeFormatXFS  = "xfs"
@@ -38,7 +46,7 @@ type VolumeProtection struct {
 // VolumeClient is a client for the volume API.
 type VolumeClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Volume]
 }
 
 // VolumeStatus specifies a volume's status.
@@ -91,7 +99,7 @@ type VolumeListOpts struct {
 	Sort   []string
 }
 
-func (l VolumeListOpts) values() url.Values {
+func (l VolumeListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -113,7 +121,7 @@ func (c *VolumeClient) List(ctx context.Context, opts VolumeListOpts) ([]*Volume
 	const opPath = "/volumes?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.VolumeListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -125,11 +133,14 @@ func (c *VolumeClient) List(ctx context.Context, opts VolumeListOpts) ([]*Volume
 
 // All returns all volumes.
 func (c *VolumeClient) All(ctx context.Context) ([]*Volume, error) {
-	return c.AllWithOpts(ctx, VolumeListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, VolumeListOpts{})
 }
 
 // AllWithOpts returns all volumes with the given options.
 func (c *VolumeClient) AllWithOpts(ctx context.Context, opts VolumeListOpts) ([]*Volume, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Volume, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

@@ -58,7 +58,9 @@ const (
 )
 
 type ServerTypeLocation struct {
-	Location *Location
+	Location    *Location
+	Available   bool
+	Recommended bool
 	DeprecatableResource
 }
 
@@ -108,7 +110,7 @@ type ServerTypeListOpts struct {
 	Sort []string
 }
 
-func (l ServerTypeListOpts) values() url.Values {
+func (l ServerTypeListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -127,7 +129,7 @@ func (c *ServerTypeClient) List(ctx context.Context, opts ServerTypeListOpts) ([
 	const opPath = "/server_types?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ServerTypeListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -139,11 +141,14 @@ func (c *ServerTypeClient) List(ctx context.Context, opts ServerTypeListOpts) ([
 
 // All returns all server types.
 func (c *ServerTypeClient) All(ctx context.Context) ([]*ServerType, error) {
-	return c.AllWithOpts(ctx, ServerTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ServerTypeListOpts{})
 }
 
 // AllWithOpts returns all server types for the given options.
 func (c *ServerTypeClient) AllWithOpts(ctx context.Context, opts ServerTypeListOpts) ([]*ServerType, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*ServerType, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/ctxutil"
@@ -27,13 +28,13 @@ type NetworkSubnetType string
 
 // List of available network subnet types.
 const (
-	// Used to connect cloud servers and load balancers.
+	// NetworkSubnetTypeCloud is used to connect cloud servers and load balancers.
 	NetworkSubnetTypeCloud NetworkSubnetType = "cloud"
-	// Used to connect cloud servers and load balancers.
+	// NetworkSubnetTypeServer is used to connect cloud servers and load balancers.
 	//
 	// Deprecated: Use [NetworkSubnetTypeCloud] instead.
 	NetworkSubnetTypeServer NetworkSubnetType = "server"
-	// Used to connect cloud servers and load balancers with dedicated servers.
+	// NetworkSubnetTypeVSwitch is used to connect cloud servers and load balancers with dedicated servers.
 	//
 	// See https://docs.hetzner.com/networking/networks/connect-dedi-vswitch/
 	NetworkSubnetTypeVSwitch NetworkSubnetType = "vswitch"
@@ -54,6 +55,13 @@ type Network struct {
 
 	// ExposeRoutesToVSwitch indicates if the routes from this network should be exposed to the vSwitch connection.
 	ExposeRoutesToVSwitch bool
+}
+
+func (o *Network) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
 }
 
 // NetworkSubnet represents a subnet of a network in the Hetzner Cloud.
@@ -79,7 +87,7 @@ type NetworkProtection struct {
 // NetworkClient is a client for the network API.
 type NetworkClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Network]
 }
 
 // GetByID retrieves a network by its ID. If the network does not exist, nil is returned.
@@ -120,7 +128,7 @@ type NetworkListOpts struct {
 	Sort []string
 }
 
-func (l NetworkListOpts) values() url.Values {
+func (l NetworkListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -139,7 +147,7 @@ func (c *NetworkClient) List(ctx context.Context, opts NetworkListOpts) ([]*Netw
 	const opPath = "/networks?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.NetworkListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -151,11 +159,14 @@ func (c *NetworkClient) List(ctx context.Context, opts NetworkListOpts) ([]*Netw
 
 // All returns all networks.
 func (c *NetworkClient) All(ctx context.Context) ([]*Network, error) {
-	return c.AllWithOpts(ctx, NetworkListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, NetworkListOpts{})
 }
 
 // AllWithOpts returns all networks for the given options.
 func (c *NetworkClient) AllWithOpts(ctx context.Context, opts NetworkListOpts) ([]*Network, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Network, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

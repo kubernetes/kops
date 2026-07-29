@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/ctxutil"
@@ -25,13 +26,9 @@ type CertificateStatusType string
 
 // Possible certificate status.
 const (
-	CertificateStatusTypePending CertificateStatusType = "pending"
-	CertificateStatusTypeFailed  CertificateStatusType = "failed"
-
-	// only in issuance.
-	CertificateStatusTypeCompleted CertificateStatusType = "completed"
-
-	// only in renewal.
+	CertificateStatusTypePending     CertificateStatusType = "pending"
+	CertificateStatusTypeFailed      CertificateStatusType = "failed"
+	CertificateStatusTypeCompleted   CertificateStatusType = "completed"
 	CertificateStatusTypeScheduled   CertificateStatusType = "scheduled"
 	CertificateStatusTypeUnavailable CertificateStatusType = "unavailable"
 )
@@ -61,8 +58,8 @@ type CertificateStatus struct {
 // IsFailed returns true if either the Issuance or the Renewal of a certificate
 // failed. In this case the FailureReason field details the nature of the
 // failure.
-func (st *CertificateStatus) IsFailed() bool {
-	return st.Issuance == CertificateStatusTypeFailed || st.Renewal == CertificateStatusTypeFailed
+func (o *CertificateStatus) IsFailed() bool {
+	return o.Issuance == CertificateStatusTypeFailed || o.Renewal == CertificateStatusTypeFailed
 }
 
 // Certificate represents a certificate in the Hetzner Cloud.
@@ -81,6 +78,13 @@ type Certificate struct {
 	UsedBy         []CertificateUsedByRef
 }
 
+func (o *Certificate) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
+}
+
 // CertificateCreateResult is the result of creating a certificate.
 type CertificateCreateResult struct {
 	Certificate *Certificate
@@ -90,7 +94,7 @@ type CertificateCreateResult struct {
 // CertificateClient is a client for the Certificates API.
 type CertificateClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Certificate]
 }
 
 // GetByID retrieves a Certificate by its ID. If the Certificate does not exist, nil is returned.
@@ -130,7 +134,7 @@ type CertificateListOpts struct {
 	Sort []string
 }
 
-func (l CertificateListOpts) values() url.Values {
+func (l CertificateListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -149,7 +153,7 @@ func (c *CertificateClient) List(ctx context.Context, opts CertificateListOpts) 
 	const opPath = "/certificates?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.CertificateListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -161,11 +165,14 @@ func (c *CertificateClient) List(ctx context.Context, opts CertificateListOpts) 
 
 // All returns all Certificates.
 func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
-	return c.AllWithOpts(ctx, CertificateListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, CertificateListOpts{})
 }
 
 // AllWithOpts returns all Certificates for the given options.
 func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateListOpts) ([]*Certificate, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Certificate, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)

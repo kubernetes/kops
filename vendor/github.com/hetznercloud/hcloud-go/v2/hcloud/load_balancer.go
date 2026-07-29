@@ -32,6 +32,13 @@ type LoadBalancer struct {
 	IngoingTraffic   uint64
 }
 
+func (o *LoadBalancer) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
+}
+
 // LoadBalancerPublicNet represents a Load Balancer's public network.
 type LoadBalancerPublicNet struct {
 	Enabled bool
@@ -74,6 +81,7 @@ type LoadBalancerServiceHTTP struct {
 	Certificates   []*Certificate
 	RedirectHTTP   bool
 	StickySessions bool
+	TimeoutIdle    time.Duration
 }
 
 // LoadBalancerServiceHealthCheck stores configuration for a service health check.
@@ -198,11 +206,11 @@ type LoadBalancerProtection struct {
 
 // changeDNSPtr changes or resets the reverse DNS pointer for an IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
-func (lb *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
+func (o *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	const opPath = "/load_balancers/%d/actions/change_dns_ptr"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, lb.ID)
+	reqPath := fmt.Sprintf(opPath, o.ID)
 
 	reqBody := schema.LoadBalancerActionChangeDNSPtrRequest{
 		IP:     ip.String(),
@@ -219,11 +227,11 @@ func (lb *LoadBalancer) changeDNSPtr(ctx context.Context, client *Client, ip net
 
 // GetDNSPtrForIP searches for the dns assigned to the given IP address.
 // It returns an error if there is no dns set for the given IP address.
-func (lb *LoadBalancer) GetDNSPtrForIP(ip net.IP) (string, error) {
-	if net.IP.Equal(lb.PublicNet.IPv4.IP, ip) {
-		return lb.PublicNet.IPv4.DNSPtr, nil
-	} else if net.IP.Equal(lb.PublicNet.IPv6.IP, ip) {
-		return lb.PublicNet.IPv6.DNSPtr, nil
+func (o *LoadBalancer) GetDNSPtrForIP(ip net.IP) (string, error) {
+	if net.IP.Equal(o.PublicNet.IPv4.IP, ip) {
+		return o.PublicNet.IPv4.DNSPtr, nil
+	} else if net.IP.Equal(o.PublicNet.IPv6.IP, ip) {
+		return o.PublicNet.IPv6.DNSPtr, nil
 	}
 
 	return "", DNSNotFoundError{ip}
@@ -231,20 +239,20 @@ func (lb *LoadBalancer) GetDNSPtrForIP(ip net.IP) (string, error) {
 
 // PrivateNetFor returns the load balancer's network attachment information in the given
 // Network, and nil if no attachment was found.
-func (lb *LoadBalancer) PrivateNetFor(network *Network) *LoadBalancerPrivateNet {
-	index := slices.IndexFunc(lb.PrivateNet, func(o LoadBalancerPrivateNet) bool {
-		return o.Network != nil && o.Network.ID == network.ID
+func (o *LoadBalancer) PrivateNetFor(network *Network) *LoadBalancerPrivateNet {
+	index := slices.IndexFunc(o.PrivateNet, func(n LoadBalancerPrivateNet) bool {
+		return n.Network != nil && n.Network.ID == network.ID
 	})
 	if index < 0 {
 		return nil
 	}
-	return &lb.PrivateNet[index]
+	return &o.PrivateNet[index]
 }
 
 // LoadBalancerClient is a client for the Load Balancers API.
 type LoadBalancerClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*LoadBalancer]
 }
 
 // GetByID retrieves a Load Balancer by its ID. If the Load Balancer does not exist, nil is returned.
@@ -285,7 +293,7 @@ type LoadBalancerListOpts struct {
 	Sort []string
 }
 
-func (l LoadBalancerListOpts) values() url.Values {
+func (l LoadBalancerListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -304,7 +312,7 @@ func (c *LoadBalancerClient) List(ctx context.Context, opts LoadBalancerListOpts
 	const opPath = "/load_balancers?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.LoadBalancerListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -316,11 +324,14 @@ func (c *LoadBalancerClient) List(ctx context.Context, opts LoadBalancerListOpts
 
 // All returns all Load Balancers.
 func (c *LoadBalancerClient) All(ctx context.Context) ([]*LoadBalancer, error) {
-	return c.AllWithOpts(ctx, LoadBalancerListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, LoadBalancerListOpts{})
 }
 
 // AllWithOpts returns all Load Balancers for the given options.
 func (c *LoadBalancerClient) AllWithOpts(ctx context.Context, opts LoadBalancerListOpts) ([]*LoadBalancer, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*LoadBalancer, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
@@ -417,6 +428,7 @@ type LoadBalancerCreateOptsServiceHTTP struct {
 	Certificates   []*Certificate
 	RedirectHTTP   *bool
 	StickySessions *bool
+	TimeoutIdle    *time.Duration
 }
 
 // LoadBalancerCreateOptsServiceHealthCheck holds options for specifying a service
@@ -455,7 +467,7 @@ func (c *LoadBalancerClient) Create(ctx context.Context, opts LoadBalancerCreate
 
 	reqPath := opPath
 
-	reqBody := loadBalancerCreateOptsToSchema(opts)
+	reqBody := SchemaFromLoadBalancerCreateOpts(opts)
 
 	respBody, resp, err := postRequest[schema.LoadBalancerCreateResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
@@ -610,6 +622,7 @@ type LoadBalancerAddServiceOptsHTTP struct {
 	Certificates   []*Certificate
 	RedirectHTTP   *bool
 	StickySessions *bool
+	TimeoutIdle    *time.Duration
 }
 
 // LoadBalancerAddServiceOptsHealthCheck holds options for specifying a health check
@@ -640,7 +653,7 @@ func (c *LoadBalancerClient) AddService(ctx context.Context, loadBalancer *LoadB
 
 	reqPath := fmt.Sprintf(opPath, loadBalancer.ID)
 
-	reqBody := loadBalancerAddServiceOptsToSchema(opts)
+	reqBody := SchemaFromLoadBalancerAddServiceOpts(opts)
 
 	respBody, resp, err := postRequest[schema.LoadBalancerActionAddServiceResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {
@@ -666,6 +679,7 @@ type LoadBalancerUpdateServiceOptsHTTP struct {
 	Certificates   []*Certificate
 	RedirectHTTP   *bool
 	StickySessions *bool
+	TimeoutIdle    *time.Duration
 }
 
 // LoadBalancerUpdateServiceOptsHealthCheck specifies options for updating
@@ -696,7 +710,7 @@ func (c *LoadBalancerClient) UpdateService(ctx context.Context, loadBalancer *Lo
 
 	reqPath := fmt.Sprintf(opPath, loadBalancer.ID)
 
-	reqBody := loadBalancerUpdateServiceOptsToSchema(opts)
+	reqBody := SchemaFromLoadBalancerUpdateServiceOpts(opts)
 	reqBody.ListenPort = listenPort
 
 	respBody, resp, err := postRequest[schema.LoadBalancerActionUpdateServiceResponse](ctx, c.client, reqPath, reqBody)
@@ -919,7 +933,7 @@ func (o LoadBalancerGetMetricsOpts) Validate() error {
 	return nil
 }
 
-func (o LoadBalancerGetMetricsOpts) values() url.Values {
+func (o LoadBalancerGetMetricsOpts) Values() url.Values {
 	query := url.Values{}
 
 	for _, typ := range o.Types {
@@ -965,14 +979,14 @@ func (c *LoadBalancerClient) GetMetrics(
 		return nil, nil, err
 	}
 
-	reqPath := fmt.Sprintf(opPath, loadBalancer.ID, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, loadBalancer.ID, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.LoadBalancerGetMetricsResponse](ctx, c.client, reqPath)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	metrics, err := loadBalancerMetricsFromSchema(&respBody)
+	metrics, err := LoadBalancerMetricsFromSchema(&respBody)
 	if err != nil {
 		return nil, nil, fmt.Errorf("convert response body: %w", err)
 	}

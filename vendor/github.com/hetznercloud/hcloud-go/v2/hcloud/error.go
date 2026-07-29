@@ -3,6 +3,7 @@ package hcloud
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"slices"
 	"strings"
@@ -32,6 +33,7 @@ const (
 	ErrorCodeResourceLocked        ErrorCode = "resource_locked"         // The resource is locked. The caller should contact support
 	ErrorCodeServerError           ErrorCode = "server_error"            // Error within the API backend
 	ErrorCodeTokenReadonly         ErrorCode = "token_readonly"          // The token is only allowed to perform GET requests
+	ErrorCodeBadGateway            ErrorCode = "bad_gateway"             // The request could not be answered by the API backend, please retry
 	ErrorCodeTimeout               ErrorCode = "timeout"                 // The request could not be answered in time, please retry
 	ErrorUnsupportedError          ErrorCode = "unsupported_error"       // The given resource does not support this
 	ErrorDeprecatedAPIEndpoint     ErrorCode = "deprecated_api_endpoint" // The request can not be answered because the API functionality was removed
@@ -106,6 +108,8 @@ const (
 	// before Hetzner Cloud launched into the public. To make clients using the
 	// old error code still work as expected, we set the value of the old error
 	// code to that of the new error code.
+	//
+	//go:fix inline
 	ErrorCodeLimitReached = ErrorCodeRateLimitExceeded
 )
 
@@ -113,7 +117,7 @@ const (
 type Error struct {
 	Code    ErrorCode
 	Message string
-	Details interface{}
+	Details any
 
 	response *Response
 }
@@ -132,6 +136,42 @@ func (e Error) Error() string {
 // Response returns the [Response] that contained the error if available.
 func (e Error) Response() *Response {
 	return e.response
+}
+
+// LogValue implements [slog.LogValuer] for a [Error].
+func (e Error) LogValue() slog.Value {
+	attrs := []slog.Attr{
+		slog.String("msg", e.Message),
+		slog.String("code", string(e.Code)),
+	}
+
+	if resp := e.Response(); resp != nil {
+		correlationID := resp.internalCorrelationID()
+		if correlationID != "" {
+			attrs = append(attrs,
+				slog.String("correlation-id", correlationID),
+			)
+		}
+	}
+
+	if e.Details != nil {
+		switch details := e.Details.(type) {
+		case ErrorDetailsInvalidInput:
+			attrs = append(attrs,
+				slog.String("details", fmt.Sprintf("%v", details.Fields)),
+			)
+		case ErrorDetailsDeprecatedAPIEndpoint:
+			attrs = append(attrs,
+				slog.String("details", fmt.Sprintf("%v", details)),
+			)
+		default:
+			attrs = append(attrs,
+				slog.String("details", fmt.Sprintf("%v", details)),
+			)
+		}
+	}
+
+	return slog.GroupValue(attrs...)
 }
 
 // ErrorDetailsInvalidInput contains the details of an 'invalid_input' error.

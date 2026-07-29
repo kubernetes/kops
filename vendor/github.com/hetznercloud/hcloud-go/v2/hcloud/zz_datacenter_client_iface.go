@@ -9,19 +9,37 @@ import (
 // IDatacenterClient ...
 type IDatacenterClient interface {
 	// GetByID retrieves a datacenter by its ID. If the datacenter does not exist, nil is returned.
+	//
+	// Deprecated: [DatacenterClient.GetByID] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 	GetByID(ctx context.Context, id int64) (*Datacenter, *Response, error)
 	// GetByName retrieves a datacenter by its name. If the datacenter does not exist, nil is returned.
+	//
+	// Deprecated: [DatacenterClient.GetByName] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 	GetByName(ctx context.Context, name string) (*Datacenter, *Response, error)
 	// Get retrieves a datacenter by its ID if the input can be parsed as an integer, otherwise it
 	// retrieves a datacenter by its name. If the datacenter does not exist, nil is returned.
+	//
+	// Deprecated: [DatacenterClient.Get] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 	Get(ctx context.Context, idOrName string) (*Datacenter, *Response, error)
 	// List returns a list of datacenters for a specific page.
 	//
 	// Please note that filters specified in opts are not taken into account
 	// when their value corresponds to their zero value or when they are empty.
+	//
+	// Deprecated: [DatacenterClient.List] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 	List(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, *Response, error)
 	// All returns all datacenters.
+	//
+	// Deprecated: [DatacenterClient.All] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 	All(ctx context.Context) ([]*Datacenter, error)
 	// AllWithOpts returns all datacenters for the given options.
+	//
+	// Deprecated: [DatacenterClient.AllWithOpts] is deprecated and will be removed after the 2026-10-01. See
+	// https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated.
 	AllWithOpts(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, error)
 }

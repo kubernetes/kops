@@ -116,7 +116,7 @@ type StorageBoxChangeTypeRequest struct {
 	StorageBoxType IDOrName `json:"storage_box_type"`
 }
 
-// StorageBoxChangeTypeResponse defines the schema of the response when changing the type of a Storage Box.
+// StorageBoxResetPasswordRequest defines the schema of the request to reset the password of a Storage Box.
 type StorageBoxResetPasswordRequest struct {
 	Password string `json:"password"`
 }

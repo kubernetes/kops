@@ -22,7 +22,7 @@ type Server struct {
 	PublicNet       ServerPublicNet
 	PrivateNet      []ServerPrivateNet
 	ServerType      *ServerType
-	Datacenter      *Datacenter
+	Location        *Location
 	IncludedTraffic uint64
 	OutgoingTraffic uint64
 	IngoingTraffic  uint64
@@ -37,6 +37,13 @@ type Server struct {
 	PrimaryDiskSize int
 	PlacementGroup  *PlacementGroup
 	LoadBalancers   []*LoadBalancer
+}
+
+func (o *Server) pathID() (string, error) {
+	if o.ID == 0 {
+		return "", missingField(o, "ID")
+	}
+	return strconv.FormatInt(o.ID, 10), nil
 }
 
 // ServerProtection represents the protection level of a server.
@@ -103,8 +110,8 @@ type ServerPublicNetIPv4 struct {
 	DNSPtr  string
 }
 
-func (n *ServerPublicNetIPv4) IsUnspecified() bool {
-	return n.IP == nil || n.IP.Equal(net.IPv4zero)
+func (o *ServerPublicNetIPv4) IsUnspecified() bool {
+	return o.IP == nil || o.IP.Equal(net.IPv4zero)
 }
 
 // ServerPublicNetIPv6 represents a Server's public IPv6 network and address.
@@ -116,8 +123,8 @@ type ServerPublicNetIPv6 struct {
 	DNSPtr  map[string]string
 }
 
-func (n *ServerPublicNetIPv6) IsUnspecified() bool {
-	return n.IP == nil || n.IP.Equal(net.IPv6unspecified)
+func (o *ServerPublicNetIPv6) IsUnspecified() bool {
+	return o.IP == nil || o.IP.Equal(net.IPv6unspecified)
 }
 
 // ServerPrivateNet defines the schema of a Server's private network information.
@@ -129,8 +136,8 @@ type ServerPrivateNet struct {
 }
 
 // DNSPtrForIP returns the reverse dns pointer of the ip address.
-func (n *ServerPublicNetIPv6) DNSPtrForIP(ip net.IP) string {
-	return n.DNSPtr[ip.String()]
+func (o *ServerPublicNetIPv6) DNSPtrForIP(ip net.IP) string {
+	return o.DNSPtr[ip.String()]
 }
 
 // ServerFirewallStatus represents a Firewall and its status on a Server's
@@ -152,11 +159,11 @@ const (
 
 // changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
-func (s *Server) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
+func (o *Server) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	const opPath = "/servers/%d/actions/change_dns_ptr"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, s.ID)
+	reqPath := fmt.Sprintf(opPath, o.ID)
 
 	reqBody := schema.ServerActionChangeDNSPtrRequest{
 		IP:     ip.String(),
@@ -173,10 +180,10 @@ func (s *Server) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, pt
 
 // GetDNSPtrForIP searches for the dns assigned to the given IP address.
 // It returns an error if there is no dns set for the given IP address.
-func (s *Server) GetDNSPtrForIP(ip net.IP) (string, error) {
-	if net.IP.Equal(s.PublicNet.IPv4.IP, ip) {
-		return s.PublicNet.IPv4.DNSPtr, nil
-	} else if dns, ok := s.PublicNet.IPv6.DNSPtr[ip.String()]; ok {
+func (o *Server) GetDNSPtrForIP(ip net.IP) (string, error) {
+	if net.IP.Equal(o.PublicNet.IPv4.IP, ip) {
+		return o.PublicNet.IPv4.DNSPtr, nil
+	} else if dns, ok := o.PublicNet.IPv6.DNSPtr[ip.String()]; ok {
 		return dns, nil
 	}
 
@@ -185,20 +192,20 @@ func (s *Server) GetDNSPtrForIP(ip net.IP) (string, error) {
 
 // PrivateNetFor returns the server's network attachment information in the given
 // Network, and nil if no attachment was found.
-func (s *Server) PrivateNetFor(network *Network) *ServerPrivateNet {
-	index := slices.IndexFunc(s.PrivateNet, func(o ServerPrivateNet) bool {
-		return o.Network != nil && o.Network.ID == network.ID
+func (o *Server) PrivateNetFor(network *Network) *ServerPrivateNet {
+	index := slices.IndexFunc(o.PrivateNet, func(n ServerPrivateNet) bool {
+		return n.Network != nil && n.Network.ID == network.ID
 	})
 	if index < 0 {
 		return nil
 	}
-	return &s.PrivateNet[index]
+	return &o.PrivateNet[index]
 }
 
 // ServerClient is a client for the servers API.
 type ServerClient struct {
 	client *Client
-	Action *ResourceActionClient
+	Action *ResourceActionClient[*Server]
 }
 
 // GetByID retrieves a server by its ID. If the server does not exist, nil is returned.
@@ -240,7 +247,7 @@ type ServerListOpts struct {
 	Sort   []string
 }
 
-func (l ServerListOpts) values() url.Values {
+func (l ServerListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -262,7 +269,7 @@ func (c *ServerClient) List(ctx context.Context, opts ServerListOpts) ([]*Server
 	const opPath = "/servers?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ServerListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -274,11 +281,14 @@ func (c *ServerClient) List(ctx context.Context, opts ServerListOpts) ([]*Server
 
 // All returns all servers.
 func (c *ServerClient) All(ctx context.Context) ([]*Server, error) {
-	return c.AllWithOpts(ctx, ServerListOpts{ListOpts: ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ServerListOpts{})
 }
 
 // AllWithOpts returns all servers for the given options.
 func (c *ServerClient) AllWithOpts(ctx context.Context, opts ServerListOpts) ([]*Server, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*Server, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
@@ -292,7 +302,6 @@ type ServerCreateOpts struct {
 	Image            *Image
 	SSHKeys          []*SSHKey
 	Location         *Location
-	Datacenter       *Datacenter
 	UserData         string
 	StartAfterCreate *bool
 	Labels           map[string]string
@@ -326,9 +335,6 @@ func (o ServerCreateOpts) Validate() error {
 	}
 	if o.Image == nil || (o.Image.ID == 0 && o.Image.Name == "") {
 		return missingField(o, "Image")
-	}
-	if o.Location != nil && o.Datacenter != nil {
-		return mutuallyExclusiveFields(o, "Location", "Datacenter")
 	}
 	return nil
 }
@@ -400,13 +406,6 @@ func (c *ServerClient) Create(ctx context.Context, opts ServerCreateOpts) (Serve
 			reqBody.Location = strconv.FormatInt(opts.Location.ID, 10)
 		} else {
 			reqBody.Location = opts.Location.Name
-		}
-	}
-	if opts.Datacenter != nil {
-		if opts.Datacenter.ID != 0 {
-			reqBody.Datacenter = strconv.FormatInt(opts.Datacenter.ID, 10)
-		} else {
-			reqBody.Datacenter = opts.Datacenter.Name
 		}
 	}
 	if opts.PlacementGroup != nil {
@@ -708,7 +707,8 @@ func (c *ServerClient) DisableRescue(ctx context.Context, server *Server) (*Acti
 
 // ServerRebuildOpts specifies options for rebuilding a server.
 type ServerRebuildOpts struct {
-	Image *Image
+	Image    *Image
+	UserData *string
 }
 
 // ServerRebuildResult is the result of a create server call.
@@ -735,7 +735,7 @@ func (c *ServerClient) RebuildWithResult(ctx context.Context, server *Server, op
 
 	reqPath := fmt.Sprintf(opPath, server.ID)
 
-	reqBody := schema.ServerActionRebuildRequest{}
+	reqBody := schema.ServerActionRebuildRequest{UserData: opts.UserData}
 	if opts.Image.ID != 0 || opts.Image.Name != "" {
 		reqBody.Image = schema.IDOrName{ID: opts.Image.ID, Name: opts.Image.Name}
 	}
@@ -1035,7 +1035,7 @@ func (o ServerGetMetricsOpts) Validate() error {
 	return nil
 }
 
-func (o ServerGetMetricsOpts) values() url.Values {
+func (o ServerGetMetricsOpts) Values() url.Values {
 	query := url.Values{}
 
 	for _, typ := range o.Types {
@@ -1079,14 +1079,14 @@ func (c *ServerClient) GetMetrics(ctx context.Context, server *Server, opts Serv
 		return nil, nil, err
 	}
 
-	reqPath := fmt.Sprintf(opPath, server.ID, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, server.ID, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.ServerGetMetricsResponse](ctx, c.client, reqPath)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	metrics, err := serverMetricsFromSchema(&respBody)
+	metrics, err := ServerMetricsFromSchema(&respBody)
 	if err != nil {
 		return nil, nil, fmt.Errorf("convert response body: %w", err)
 	}

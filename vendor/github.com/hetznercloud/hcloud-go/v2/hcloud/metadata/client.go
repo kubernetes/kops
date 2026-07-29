@@ -15,12 +15,18 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/ctxutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/instrumentation"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/util"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/internal/version"
 )
 
 const Endpoint = "http://169.254.169.254/hetzner/v1/metadata"
 
+const UserAgent = "hcloud-go/" + version.Version
+
 // Client is a client for the Hetzner Cloud Server Metadata Endpoints.
 type Client struct {
+	userAgent string
+
 	endpoint string
 	timeout  time.Duration
 
@@ -59,9 +65,19 @@ func WithTimeout(timeout time.Duration) ClientOption {
 	}
 }
 
+// WithApplication configures a Client with the given application name and
+// application version. The version may be blank. Programs are encouraged
+// to at least set an application name.
+func WithApplication(name, version string) ClientOption {
+	return func(client *Client) {
+		client.userAgent = util.BuildUserAgent(name, version, UserAgent)
+	}
+}
+
 // NewClient creates a new [Client] with the options applied.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
+		userAgent:  UserAgent,
 		endpoint:   Endpoint,
 		httpClient: &http.Client{},
 		timeout:    5 * time.Second,
@@ -81,13 +97,15 @@ func NewClient(options ...ClientOption) *Client {
 }
 
 // get executes an HTTP request against the API.
-func (c *Client) get(path string) (string, error) {
-	ctx := ctxutil.SetOpPath(context.Background(), path)
+func (c *Client) get(ctx context.Context, path string) (string, error) {
+	ctx = ctxutil.SetOpPath(ctx, path)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.endpoint+path, http.NoBody)
 	if err != nil {
 		return "", err
 	}
+
+	req.Header.Set("User-Agent", c.userAgent)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -110,25 +128,50 @@ func (c *Client) get(path string) (string, error) {
 
 // IsHcloudServer checks if the currently called server is a hcloud server by calling a metadata endpoint
 // if the endpoint answers with a non-empty value this method returns true, otherwise false.
+//
+// Deprecated: Use [Client.IsHcloudServerWithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) IsHcloudServer() bool {
-	hostname, err := c.Hostname()
+	return c.IsHcloudServerWithContext(context.TODO())
+}
+
+// IsHcloudServerWithContext checks if the currently called server is a hcloud server by calling a metadata
+// endpoint. If the endpoint answers with a non-empty value this method returns true, otherwise false.
+func (c *Client) IsHcloudServerWithContext(ctx context.Context) bool {
+	hostname, err := c.HostnameWithContext(ctx)
 	if err != nil {
 		return false
 	}
-	if len(hostname) > 0 {
-		return true
-	}
-	return false
+	return len(hostname) > 0
 }
 
 // Hostname returns the hostname of the server that did the request to the Metadata server.
+//
+// Deprecated: Use [Client.HostnameWithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) Hostname() (string, error) {
-	return c.get("/hostname")
+	return c.HostnameWithContext(context.TODO())
+}
+
+// HostnameWithContext returns the hostname of the server that did the request to the Metadata server.
+func (c *Client) HostnameWithContext(ctx context.Context) (string, error) {
+	return c.get(ctx, "/hostname")
 }
 
 // InstanceID returns the ID of the server that did the request to the Metadata server.
+//
+// Deprecated: Use [Client.InstanceIDWithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) InstanceID() (int64, error) {
-	resp, err := c.get("/instance-id")
+	return c.InstanceIDWithContext(context.TODO())
+}
+
+// InstanceIDWithContext returns the ID of the server that did the request to the Metadata server.
+func (c *Client) InstanceIDWithContext(ctx context.Context) (int64, error) {
+	resp, err := c.get(ctx, "/instance-id")
 	if err != nil {
 		return 0, err
 	}
@@ -136,8 +179,17 @@ func (c *Client) InstanceID() (int64, error) {
 }
 
 // PublicIPv4 returns the Public IPv4 of the server that did the request to the Metadata server.
+//
+// Deprecated: Use [Client.PublicIPv4WithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) PublicIPv4() (net.IP, error) {
-	resp, err := c.get("/public-ipv4")
+	return c.PublicIPv4WithContext(context.TODO())
+}
+
+// PublicIPv4WithContext returns the Public IPv4 of the server that did the request to the Metadata server.
+func (c *Client) PublicIPv4WithContext(ctx context.Context) (net.IP, error) {
+	resp, err := c.get(ctx, "/public-ipv4")
 	if err != nil {
 		return nil, err
 	}
@@ -145,17 +197,45 @@ func (c *Client) PublicIPv4() (net.IP, error) {
 }
 
 // Region returns the Network Zone of the server that did the request to the Metadata server.
+//
+// Deprecated: Use [Client.RegionWithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) Region() (string, error) {
-	return c.get("/region")
+	return c.RegionWithContext(context.TODO())
+}
+
+// RegionWithContext returns the Network Zone of the server that did the request to the Metadata server.
+func (c *Client) RegionWithContext(ctx context.Context) (string, error) {
+	return c.get(ctx, "/region")
 }
 
 // AvailabilityZone returns the datacenter of the server that did the request to the Metadata server.
+//
+// Deprecated: Use [Client.AvailabilityZoneWithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) AvailabilityZone() (string, error) {
-	return c.get("/availability-zone")
+	return c.AvailabilityZoneWithContext(context.TODO())
+}
+
+// AvailabilityZoneWithContext returns the datacenter of the server that did the request to the Metadata server.
+func (c *Client) AvailabilityZoneWithContext(ctx context.Context) (string, error) {
+	return c.get(ctx, "/availability-zone")
 }
 
 // PrivateNetworks returns details about the private networks the server is attached to.
 // Returns YAML (unparsed).
+//
+// Deprecated: Use [Client.PrivateNetworksWithContext] instead so callers can control the request lifecycle.
+//
+//go:fix inline
 func (c *Client) PrivateNetworks() (string, error) {
-	return c.get("/private-networks")
+	return c.PrivateNetworksWithContext(context.TODO())
+}
+
+// PrivateNetworksWithContext returns details about the private networks the server is attached to.
+// Returns YAML (unparsed).
+func (c *Client) PrivateNetworksWithContext(ctx context.Context) (string, error) {
+	return c.get(ctx, "/private-networks")
 }

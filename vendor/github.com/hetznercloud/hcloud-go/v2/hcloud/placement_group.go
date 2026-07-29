@@ -72,7 +72,7 @@ type PlacementGroupListOpts struct {
 	Sort []string
 }
 
-func (l PlacementGroupListOpts) values() url.Values {
+func (l PlacementGroupListOpts) Values() url.Values {
 	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
@@ -94,7 +94,7 @@ func (c *PlacementGroupClient) List(ctx context.Context, opts PlacementGroupList
 	const opPath = "/placement_groups?%s"
 	ctx = ctxutil.SetOpPath(ctx, opPath)
 
-	reqPath := fmt.Sprintf(opPath, opts.values().Encode())
+	reqPath := fmt.Sprintf(opPath, opts.Values().Encode())
 
 	respBody, resp, err := getRequest[schema.PlacementGroupListResponse](ctx, c.client, reqPath)
 	if err != nil {
@@ -106,17 +106,14 @@ func (c *PlacementGroupClient) List(ctx context.Context, opts PlacementGroupList
 
 // All returns all PlacementGroups.
 func (c *PlacementGroupClient) All(ctx context.Context) ([]*PlacementGroup, error) {
-	opts := PlacementGroupListOpts{
-		ListOpts: ListOpts{
-			PerPage: 50,
-		},
-	}
-
-	return c.AllWithOpts(ctx, opts)
+	return c.AllWithOpts(ctx, PlacementGroupListOpts{})
 }
 
 // AllWithOpts returns all PlacementGroups for the given options.
 func (c *PlacementGroupClient) AllWithOpts(ctx context.Context, opts PlacementGroupListOpts) ([]*PlacementGroup, error) {
+	if opts.ListOpts.PerPage == 0 {
+		opts.ListOpts.PerPage = 50
+	}
 	return iterPages(func(page int) ([]*PlacementGroup, *Response, error) {
 		opts.Page = page
 		return c.List(ctx, opts)
@@ -157,7 +154,7 @@ func (c *PlacementGroupClient) Create(ctx context.Context, opts PlacementGroupCr
 		return result, nil, err
 	}
 
-	reqBody := placementGroupCreateOptsToSchema(opts)
+	reqBody := SchemaFromPlacementGroupCreateOpts(opts)
 
 	respBody, resp, err := postRequest[schema.PlacementGroupCreateResponse](ctx, c.client, reqPath, reqBody)
 	if err != nil {

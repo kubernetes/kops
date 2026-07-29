@@ -16,7 +16,7 @@ type PrimaryIP struct {
 	AutoDelete   bool                `json:"auto_delete"`
 	Blocked      bool                `json:"blocked"`
 	Created      time.Time           `json:"created"`
-	Datacenter   Datacenter          `json:"datacenter"`
+	Location     Location            `json:"location"`
 }
 
 // PrimaryIPProtection represents the protection level of a Primary IP.
@@ -31,16 +31,15 @@ type PrimaryIPDNSPTR struct {
 	IP     string `json:"ip"`
 }
 
-// PrimaryIPCreateOpts defines the request to
-// create a Primary IP.
+// PrimaryIPCreateRequest defines the request to create a Primary IP.
 type PrimaryIPCreateRequest struct {
 	Name         string             `json:"name"`
 	Type         string             `json:"type"`
-	AssigneeType string             `json:"assignee_type"`
+	AssigneeType string             `json:"assignee_type,omitempty"`
 	AssigneeID   *int64             `json:"assignee_id,omitempty"`
 	Labels       *map[string]string `json:"labels,omitempty"`
 	AutoDelete   *bool              `json:"auto_delete,omitempty"`
-	Datacenter   string             `json:"datacenter,omitempty"`
+	Location     string             `json:"location,omitempty"`
 }
 
 // PrimaryIPCreateResponse defines the schema of the response
@@ -60,8 +59,7 @@ type PrimaryIPListResponse struct {
 	PrimaryIPs []PrimaryIP `json:"primary_ips"`
 }
 
-// PrimaryIPUpdateOpts defines the request to
-// update a Primary IP.
+// PrimaryIPUpdateRequest defines the request to update a Primary IP.
 type PrimaryIPUpdateRequest struct {
 	Name       string             `json:"name,omitempty"`
 	Labels     *map[string]string `json:"labels,omitempty"`
