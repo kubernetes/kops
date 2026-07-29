@@ -786,6 +786,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 					args["subscription_id"] = storageAccountID.SubscriptionID
 				}
 			}
+			tf.AzureStorageAccountID = azureSpec.StorageAccountID
 			tf.EnsureTerraformProvider("azurerm", args)
 		}
 

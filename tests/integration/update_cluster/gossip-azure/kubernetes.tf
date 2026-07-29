@@ -123,7 +123,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
   location  = "eastus"
   name      = "control-plane-eastus-1.masters.gossip.k8s.local"
   network_interface {
-    enable_ip_forwarding = true
     ip_configuration {
       application_security_group_ids         = [azurerm_application_security_group.control-plane-gossip-k8s-local.id]
       load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.api-gossip-k8s-local-backend-pool.id]
@@ -135,8 +134,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "control-plane-eastus-1-maste
       }
       subnet_id = azurerm_subnet.gossip-k8s-local.id
     }
-    name    = "control-plane-eastus-1.masters.gossip.k8s.local"
-    primary = true
+    ip_forwarding_enabled = true
+    name                  = "control-plane-eastus-1.masters.gossip.k8s.local"
+    primary               = true
   }
   os_disk {
     caching              = "ReadWrite"
@@ -177,7 +177,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "nodes-eastus-1-gossip-k8s-lo
   location  = "eastus"
   name      = "nodes-eastus-1.gossip.k8s.local"
   network_interface {
-    enable_ip_forwarding = true
     ip_configuration {
       application_security_group_ids = [azurerm_application_security_group.nodes-gossip-k8s-local.id]
       name                           = "nodes-eastus-1.gossip.k8s.local"
@@ -188,8 +187,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "nodes-eastus-1-gossip-k8s-lo
       }
       subnet_id = azurerm_subnet.gossip-k8s-local.id
     }
-    name    = "nodes-eastus-1.gossip.k8s.local"
-    primary = true
+    ip_forwarding_enabled = true
+    name                  = "nodes-eastus-1.gossip.k8s.local"
+    primary               = true
   }
   os_disk {
     caching              = "ReadWrite"
@@ -493,183 +493,163 @@ resource "azurerm_route_table" "gossip-k8s-local" {
 }
 
 resource "azurerm_storage_blob" "cluster-completed-spec" {
-  name                   = "tests/gossip.k8s.local/cluster-completed.spec"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_cluster-completed.spec_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/cluster-completed.spec"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_cluster-completed.spec_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "etcd-cluster-spec-events" {
-  name                   = "tests/gossip.k8s.local/backups/etcd/events/control/etcd-cluster-spec"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-events_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/backups/etcd/events/control/etcd-cluster-spec"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-events_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "etcd-cluster-spec-main" {
-  name                   = "tests/gossip.k8s.local/backups/etcd/main/control/etcd-cluster-spec"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-main_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/backups/etcd/main/control/etcd-cluster-spec"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_etcd-cluster-spec-main_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-azure-cloud-config-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/gossip.k8s.local/addons/azure-cloud-config.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-azure-cloud-config.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/azure-cloud-config.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-azure-cloud-config.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-azure-cloud-controller-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/gossip.k8s.local/addons/azure-cloud-controller.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-azure-cloud-controller.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/azure-cloud-controller.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-azure-cloud-controller.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-azuredisk-csi-driver-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/gossip.k8s.local/addons/azuredisk-csi-driver.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-azuredisk-csi-driver.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/azuredisk-csi-driver.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-azuredisk-csi-driver.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-bootstrap" {
-  name                   = "tests/gossip.k8s.local/addons/bootstrap-channel.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-bootstrap_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/bootstrap-channel.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-bootstrap_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-coredns-addons-k8s-io-k8s-1-12" {
-  name                   = "tests/gossip.k8s.local/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-coredns.addons.k8s.io-k8s-1.12_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/coredns.addons.k8s.io/k8s-1.12.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-coredns.addons.k8s.io-k8s-1.12_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-dns-controller-addons-k8s-io-k8s-1-12" {
-  name                   = "tests/gossip.k8s.local/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-dns-controller.addons.k8s.io-k8s-1.12_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/dns-controller.addons.k8s.io/k8s-1.12.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-dns-controller.addons.k8s.io-k8s-1.12_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-kops-controller-addons-k8s-io-k8s-1-16" {
-  name                   = "tests/gossip.k8s.local/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-kops-controller.addons.k8s.io-k8s-1.16_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/kops-controller.addons.k8s.io/k8s-1.16.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-kops-controller.addons.k8s.io-k8s-1.16_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-kubelet-api-rbac-addons-k8s-io-k8s-1-9" {
-  name                   = "tests/gossip.k8s.local/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/kubelet-api.rbac.addons.k8s.io/k8s-1.9.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-limit-range-addons-k8s-io" {
-  name                   = "tests/gossip.k8s.local/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-limit-range.addons.k8s.io_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/limit-range.addons.k8s.io/v1.5.0.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-limit-range.addons.k8s.io_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "gossip-k8s-local-addons-storage-azure-addons-k8s-io-k8s-1-31" {
-  name                   = "tests/gossip.k8s.local/addons/storage-azure.addons.k8s.io/k8s-1.31.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-storage-azure.addons.k8s.io-k8s-1.31_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/addons/storage-azure.addons.k8s.io/k8s-1.31.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_gossip.k8s.local-addons-storage-azure.addons.k8s.io-k8s-1.31_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "kops-version-txt" {
-  name                   = "tests/gossip.k8s.local/kops-version.txt"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_kops-version.txt_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/kops-version.txt"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_kops-version.txt_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-channels-kops-channels" {
-  name                   = "tests/gossip.k8s.local/manifests/channels/kops-channels.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-channels-kops-channels_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/manifests/channels/kops-channels.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-channels-kops-channels_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-etcdmanager-events-control-plane-eastus-1" {
-  name                   = "tests/gossip.k8s.local/manifests/etcd/events-control-plane-eastus-1.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-events-control-plane-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/manifests/etcd/events-control-plane-eastus-1.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-events-control-plane-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-etcdmanager-main-control-plane-eastus-1" {
-  name                   = "tests/gossip.k8s.local/manifests/etcd/main-control-plane-eastus-1.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-main-control-plane-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/manifests/etcd/main-control-plane-eastus-1.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-etcdmanager-main-control-plane-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "manifests-static-kube-apiserver-healthcheck" {
-  name                   = "tests/gossip.k8s.local/manifests/static/kube-apiserver-healthcheck.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_manifests-static-kube-apiserver-healthcheck_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/manifests/static/kube-apiserver-healthcheck.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_manifests-static-kube-apiserver-healthcheck_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "nodeupconfig-control-plane-eastus-1" {
-  name                   = "tests/gossip.k8s.local/igconfig/control-plane/control-plane-eastus-1/nodeupconfig.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_nodeupconfig-control-plane-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/igconfig/control-plane/control-plane-eastus-1/nodeupconfig.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_nodeupconfig-control-plane-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_storage_blob" "nodeupconfig-nodes-eastus-1" {
-  name                   = "tests/gossip.k8s.local/igconfig/node/nodes-eastus-1/nodeupconfig.yaml"
-  provider               = azurerm.files
-  source                 = "${path.module}/data/azurerm_storage_blob_nodeupconfig-nodes-eastus-1_source"
-  storage_account_name   = "teststorage"
-  storage_container_name = "testcontainer"
-  type                   = "Block"
+  name                 = "tests/gossip.k8s.local/igconfig/node/nodes-eastus-1/nodeupconfig.yaml"
+  provider             = azurerm.files
+  source               = "${path.module}/data/azurerm_storage_blob_nodeupconfig-nodes-eastus-1_source"
+  storage_container_id = "/subscriptions/sub-321/resourceGroups/resource-group-name/providers/Microsoft.Storage/storageAccounts/teststorage/blobServices/default/containers/testcontainer"
+  type                 = "Block"
 }
 
 resource "azurerm_subnet" "gossip-k8s-local" {
@@ -710,7 +690,7 @@ terraform {
     azurerm = {
       "configuration_aliases" = [azurerm.files]
       "source"                = "hashicorp/azurerm"
-      "version"               = ">= 4.0.0"
+      "version"               = ">= 5.0.0"
     }
   }
 }

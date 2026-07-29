@@ -255,14 +255,14 @@ func (p *MemFSPath) renderTerraformAzure(w *terraformWriter.TerraformWriter, nam
 	}
 
 	// memfs:// paths don't encode an Azure account or container, so this
-	// fallback (only used in integration tests) hard-codes test placeholders.
+	// fallback (only used in integration tests) hard-codes a test placeholder
+	// container on the storage account from the cluster spec.
 	tf := &terraformAzureBlobFile{
-		Name:                 p.location,
-		StorageAccountName:   "teststorage",
-		StorageContainerName: "testcontainer",
-		Type:                 "Block",
-		Source:               source,
-		Provider:             terraformWriter.LiteralTokens("azurerm", "files"),
+		Name:               p.location,
+		StorageContainerID: w.AzureStorageAccountID + "/blobServices/default/containers/testcontainer",
+		Type:               "Block",
+		Source:             source,
+		Provider:           terraformWriter.LiteralTokens("azurerm", "files"),
 	}
 	return w.RenderResource("azurerm_storage_blob", name, tf)
 }
