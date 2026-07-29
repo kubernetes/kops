@@ -2211,6 +2211,7 @@ func TestValidateAzureBlobAccountUniformity(t *testing.T) {
 func TestValidateFileRepository(t *testing.T) {
 	grid := []struct {
 		Input          string
+		CloudProvider  kops.CloudProviderID
 		ExpectedErrors []string
 	}{
 		{
@@ -2221,6 +2222,16 @@ func TestValidateFileRepository(t *testing.T) {
 		},
 		{
 			Input:          "s3://example-k8s-assets/kops",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			// Nodes download from GCS with the credentials of their service account.
+			Input:         "gs://example-k8s-assets/kops",
+			CloudProvider: kops.CloudProviderGCE,
+		},
+		{
+			Input:          "gs://example-k8s-assets/kops",
+			CloudProvider:  kops.CloudProviderAWS,
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},
 		{
@@ -2241,7 +2252,7 @@ func TestValidateFileRepository(t *testing.T) {
 		},
 	}
 	for _, g := range grid {
-		errs := validateFileRepository(g.Input, field.NewPath("spec", "assets", "fileRepository"))
+		errs := validateFileRepository(g.Input, field.NewPath("spec", "assets", "fileRepository"), g.CloudProvider)
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }

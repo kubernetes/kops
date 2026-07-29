@@ -230,7 +230,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 			allErrs = append(allErrs, field.Forbidden(fieldPath.Child("assets", "containerProxy"), "containerProxy cannot be used in conjunction with containerRegistry"))
 		}
 		if spec.Assets.FileRepository != nil {
-			allErrs = append(allErrs, validateFileRepository(*spec.Assets.FileRepository, fieldPath.Child("assets", "fileRepository"))...)
+			allErrs = append(allErrs, validateFileRepository(*spec.Assets.FileRepository, fieldPath.Child("assets", "fileRepository"), c.GetCloudProvider())...)
 		}
 	}
 
@@ -778,7 +778,7 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	return allErrs
 }
 
-func validateFileRepository(s string, fieldPath *field.Path) field.ErrorList {
+func validateFileRepository(s string, fieldPath *field.Path, cloudProvider kops.CloudProviderID) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	u, err := url.Parse(s)
@@ -786,7 +786,14 @@ func validateFileRepository(s string, fieldPath *field.Path) field.ErrorList {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("cannot parse fileRepository URL: %v", err)))
 		return allErrs
 	}
-	if u.Scheme != "http" && u.Scheme != "https" {
+	switch u.Scheme {
+	case "http", "https":
+	case "gs":
+		// Only GCE instances can authenticate to GCS with their service account.
+		if cloudProvider != kops.CloudProviderGCE {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("gs:// fileRepository is only supported on GCE, but the cloud provider is %q", cloudProvider)))
+		}
+	default:
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http:// or https:// URL"))
 	}
 	if u.Host == "" {

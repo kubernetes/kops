@@ -48,7 +48,7 @@ func (d *deployer) Build() error {
 		klog.Infof("setting kops base url to %q from build results", results.KopsBaseURL)
 		d.KopsBaseURL = results.KopsBaseURL
 		// In PreTestCmd, we need KOPS_BASE_URL to be set for kops calls
-		os.Setenv("KOPS_BASE_URL", d.KopsBaseURL)
+		os.Setenv("KOPS_BASE_URL", d.maybeGSURL(d.KopsBaseURL))
 	}
 
 	if results.KubernetesBaseURL != "" {

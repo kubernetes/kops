@@ -179,7 +179,8 @@ func writeFile(ctx context.Context, cluster *kops.Cluster, p vfs.Path, data []by
 // buildVFSPath task a recognizable https url and transforms that URL into the equivalent url with the object
 // store prefix.
 func buildVFSPath(target string) (string, error) {
-	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") || strings.HasPrefix(target, "file://") {
+	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") || strings.HasPrefix(target, "file://") ||
+		strings.HasPrefix(target, "gs://") {
 		return target, nil
 	}
 
@@ -192,10 +193,8 @@ func buildVFSPath(target string) (string, error) {
 	if err == nil {
 		vfsPath = s3VfsPath
 	} else {
-		// These matches only cover a subset of the URLs that you can use, but I am uncertain how to cover more of the possible
-		// options.
-		// This code parses the HOST and determines gs URLs.
-		// For instance you can have the bucket name in the gs url hostname.
+		// Convert a GCS URL in the https://storage.googleapis.com/<bucket>/<path> form to the
+		// equivalent gs:// vfsPath. The gs:// form itself was already passed through above.
 		u, err := url.Parse(target)
 		if err != nil {
 			return "", fmt.Errorf("Unable to parse Google Cloud Storage URL: %q", target)
@@ -209,7 +208,7 @@ func buildVFSPath(target string) (string, error) {
 		klog.Errorf("Unable to determine VFS path from supplied URL: %s", target)
 		klog.Errorf("S3, Google Cloud Storage, and File Paths are supported.")
 		klog.Errorf("For S3, please make sure that the supplied file repository URL adhere to S3 naming conventions, https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region.")
-		klog.Errorf("For GCS, please make sure that the supplied file repository URL adheres to https://storage.googleapis.com/")
+		klog.Errorf("For GCS, please make sure that the supplied file repository URL starts with gs:// or https://storage.googleapis.com/")
 		if err != nil { // print the S3 error for more details
 			return "", fmt.Errorf("Error Details: %v", err)
 		}

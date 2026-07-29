@@ -67,6 +67,11 @@ func Test_BuildVFSPath(t *testing.T) {
 			"gs://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
 			true,
 		},
+		{
+			"gs://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			"gs://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			true,
+		},
 	}
 
 	for _, test := range grid {

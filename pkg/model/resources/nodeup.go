@@ -87,7 +87,45 @@ download-or-bust() {
 
   while true; do
     for url in "${urls[@]}"; do
-      {{ CopyCheckUrlBlock }}
+{{- if UseGCSDownload }}
+      # Use the IP of the metadata server, to not depend on DNS this early in boot
+      local metadata_server="http://169.254.169.254"
+      local token
+      echo "== Downloading ${url} =="
+      # Pipe the service account token to curl, to keep it out of the logs
+      if ! token=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H 'Metadata-Flavor: Google' "${metadata_server}/computeMetadata/v1/instance/service-accounts/default/token" | grep -o '"access_token" *: *"[^"]*"' | cut -d '"' -f 4); then
+        echo "== Failed to get a service account token =="
+      elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}"; then
+        echo "== Failed to download ${url} =="
+      elif ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate hash for ${url} =="
+        rm -f "${file}"
+      else
+        echo "== Downloaded ${url} with hash ${hash} =="
+        return 0
+      fi
+{{- else }}
+      commands=(
+        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
+        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
+        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
+      )
+      for cmd in "${commands[@]}"; do
+        echo "== Downloading ${url} using ${cmd} =="
+        if ! (${cmd} "${url}"); then
+          echo "== Failed to download ${url} using ${cmd} =="
+          continue
+        fi
+        if ! validate-hash "${file}" "${hash}"; then
+          echo "== Failed to validate hash for ${url} =="
+          rm -f "${file}"
+        else
+          echo "== Downloaded ${url} with hash ${hash} =="
+          return 0
+        fi
+      done
+{{- end }}
     done
 
     echo "== All downloads failed; sleeping before retrying =="
@@ -232,57 +270,27 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 
 		"ProxyEnv":             b.ProxyEnv,
 		"EnvironmentVariables": b.EnvironmentVariables,
-		"CopyCheckUrlBlock":    b.copyCheckUrlBlock,
+
+		"UseGCSDownload": b.useGCSDownload,
 	}
 
 	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
 }
 
-func (b *NodeUpScript) copyCheckUrlBlock() (string, error) {
-	if b.CloudProvider == string(kops.CloudProviderGCE) {
-		return `commands=(
-        "gcloud storage cp ${url} ${file}"
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10 ${url}"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10 ${url}"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10 ${url}"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd}); then
-          echo "== Failed to download ${url} using ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
-      done`, nil
-	} else {
-		return `commands=(
-        "curl -f --compressed -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget --compression=auto -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-        "curl -f -Lo ${file} --connect-timeout 20 --retry 6 --retry-delay 10"
-        "wget -O ${file} --connect-timeout=20 --tries=6 --wait=10"
-      )
-      for cmd in "${commands[@]}"; do
-        echo "== Downloading ${url} using ${cmd} =="
-        if ! (${cmd} "${url}"); then
-          echo "== Failed to download ${url} using ${cmd} =="
-          continue
-        fi
-        if ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
-      done`, nil
+// useGCSDownload reports whether nodeup is downloaded from a GCS bucket, which has to be done
+// with the credentials of the instance service account.
+func (b *NodeUpScript) useGCSDownload() bool {
+	for _, asset := range b.NodeUpAssets {
+		if asset == nil {
+			continue
+		}
+		for _, location := range asset.Locations {
+			if strings.HasPrefix(location, "gs://") {
+				return true
+			}
+		}
 	}
+	return false
 }
 
 func gzipBase64(data string) (string, error) {
