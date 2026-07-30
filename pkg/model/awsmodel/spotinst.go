@@ -840,7 +840,7 @@ func (b *SpotInstanceGroupModelBuilder) buildLoadBalancers(c *fi.CloudupModelBui
 	var loadBalancers []*awstasks.ClassicLoadBalancer
 	var targetGroups []*awstasks.TargetGroup
 
-	if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
+	if b.UseLoadBalancerForAPI() && ig.RunsAPIServer() {
 		targetGroups = append(targetGroups, b.LinkToTargetGroup("tcp"))
 		if b.Cluster.Spec.API.LoadBalancer.SSLCertificate != "" {
 			targetGroups = append(targetGroups, b.LinkToTargetGroup("tls"))

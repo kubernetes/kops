@@ -286,7 +286,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 			config.EnableLifecycleHook = true
 		}
 
-		if instanceGroup.HasAPIServer() {
+		if instanceGroup.RunsAPIServer() {
 			config.DisableSecurityGroupIngress = aws.DisableSecurityGroupIngress
 			config.ElbSecurityGroup = aws.ElbSecurityGroup
 			config.NLBSecurityGroupMode = aws.NLBSecurityGroupMode
@@ -365,7 +365,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.KubeletConfig = *instanceGroup.Spec.Kubelet
 	}
 
-	if instanceGroup.HasAPIServer() {
+	if instanceGroup.RunsAPIServer() {
 		config.APIServerConfig = &APIServerConfig{
 			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
 			KubeAPIServer:    cluster.Spec.KubeAPIServer,
@@ -391,14 +391,14 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
-	if instanceGroup.HasAPIServer() {
+	if instanceGroup.RunsAPIServer() {
 		config.ConfigStore = &kops.ConfigStoreSpec{
 			Keypairs: cluster.Spec.ConfigStore.Keypairs,
 			Secrets:  cluster.Spec.ConfigStore.Secrets,
 		}
 	}
 
-	if instanceGroup.HasAPIServer() {
+	if instanceGroup.RunsAPIServer() {
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 

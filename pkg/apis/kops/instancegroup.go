@@ -405,7 +405,7 @@ func (g *InstanceGroup) IsAPIServerOnly() bool {
 }
 
 // hasAPIServer checks if instanceGroup runs an API Server
-func (g *InstanceGroup) HasAPIServer() bool {
+func (g *InstanceGroup) RunsAPIServer() bool {
 	return g.IsControlPlane() || g.IsAPIServerOnly()
 }
 
@@ -415,7 +415,7 @@ func (g *InstanceGroup) IsEtcdOnly() bool {
 }
 
 // HasEtcd checks if instanceGroup runs Etcd
-func (g *InstanceGroup) HasEtcd() bool {
+func (g *InstanceGroup) RunsEtcd() bool {
 	return g.IsControlPlane() || g.IsEtcdOnly()
 }
 
@@ -425,7 +425,7 @@ func (g *InstanceGroup) IsSchedulerOnly() bool {
 }
 
 // HasScheduler checks if instanceGroup runs Scheduler
-func (g *InstanceGroup) HasScheduler() bool {
+func (g *InstanceGroup) RunsScheduler() bool {
 	return g.IsControlPlane() || g.IsSchedulerOnly()
 }
 
@@ -434,8 +434,8 @@ func (g *InstanceGroup) IsKubeControllerManagerOnly() bool {
 	return g.Spec.Role.HasKubeControllerManager()
 }
 
-// HasKubeControllerManager checks if instanceGroup runs KubeControllerManager
-func (g *InstanceGroup) HasKubeControllerManager() bool {
+// RunsKubeControllerManager checks if instanceGroup runs KubeControllerManager
+func (g *InstanceGroup) RunsKubeControllerManager() bool {
 	return g.IsControlPlane() || g.IsKubeControllerManagerOnly()
 }
 

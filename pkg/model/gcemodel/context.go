@@ -104,7 +104,7 @@ func (c *GCEModelContext) HasAPIServerOnlyInstanceGroups() bool {
 // HasEtcdOnlyInstanceGroups returns true if the cluster has any Etcd-only instance groups.
 func (c *GCEModelContext) HasEtcdOnlyInstanceGroups() bool {
 	for _, ig := range c.InstanceGroups {
-		if ig.Spec.Role.HasEtcd() {
+		if ig.IsEtcdOnly() {
 			return true
 		}
 	}
