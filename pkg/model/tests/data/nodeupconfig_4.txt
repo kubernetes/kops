@@ -44,5 +44,4 @@ Networking:
 UpdatePolicy: automatic
 containerdConfig:
   logLevel: info
-usesLegacyGossip: false
 usesNoneDNS: false

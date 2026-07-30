@@ -42,5 +42,4 @@ UpdatePolicy: automatic
 configStore: {}
 containerdConfig:
   logLevel: info
-usesLegacyGossip: false
 usesNoneDNS: false
