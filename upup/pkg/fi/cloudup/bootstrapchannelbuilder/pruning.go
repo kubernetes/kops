@@ -51,14 +51,17 @@ func buildPruneDirectives(spec *channelsapi.AddonSpec, manifestData []byte) erro
 		{Group: "", Kind: "ServiceAccount"},
 		{Group: "admissionregistration.k8s.io", Kind: "MutatingWebhookConfiguration"},
 		{Group: "admissionregistration.k8s.io", Kind: "ValidatingWebhookConfiguration"},
+		{Group: "apiregistration.k8s.io", Kind: "APIService"},
 		{Group: "apps", Kind: "Deployment"},
 		{Group: "apps", Kind: "DaemonSet"},
 		{Group: "apps", Kind: "StatefulSet"},
+		{Group: "networking.k8s.io", Kind: "IngressClass"},
 		{Group: "rbac.authorization.k8s.io", Kind: "ClusterRole"},
 		{Group: "rbac.authorization.k8s.io", Kind: "ClusterRoleBinding"},
 		{Group: "rbac.authorization.k8s.io", Kind: "Role"},
 		{Group: "rbac.authorization.k8s.io", Kind: "RoleBinding"},
 		{Group: "policy", Kind: "PodDisruptionBudget"},
+		{Group: "storage.k8s.io", Kind: "CSIDriver"},
 	}
 	if *spec.Name == "karpenter.sh" {
 		alwaysPruneGroupKinds = append(alwaysPruneGroupKinds,
