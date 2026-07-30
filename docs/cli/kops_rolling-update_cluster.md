@@ -70,7 +70,7 @@ kops rolling-update cluster [CLUSTER] [flags]
       --force                             Force rolling update, even if no changes
   -h, --help                              help for cluster
       --instance-group strings            Instance groups to update (defaults to all if not specified)
-      --instance-group-roles strings      Instance group roles to update (control-plane,apiserver,node,bastion)
+      --instance-group-roles strings      Instance group roles to update (control-plane,apiserver,node,bastion,etcd,scheduler,kubecontrollermanager)
   -i, --interactive                       Prompt to continue after each instance is updated
       --node-interval duration            Time to wait between restarting worker nodes (default 15s)
       --post-drain-delay duration         Time to wait after draining each node (default 5s)

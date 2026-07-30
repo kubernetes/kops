@@ -32,7 +32,7 @@ kops update cluster [CLUSTER] [flags]
   -h, --help                           help for cluster
       --ignore-kubelet-version-skew    Setting this to true will force updating the kubernetes version on all instance groups, regardles of which control plane version is running
       --instance-group strings         Instance groups to update (defaults to all if not specified)
-      --instance-group-roles strings   Instance group roles to update (control-plane,apiserver,node,bastion)
+      --instance-group-roles strings   Instance group roles to update (control-plane,apiserver,node,bastion,etcd,scheduler,kubecontrollermanager)
       --internal                       Use the cluster's internal DNS name. Implies --create-kube-config
       --lifecycle-overrides strings    comma separated list of phase overrides, example: SecurityGroups=Ignore,InternetGateway=ExistsAndWarnIfChanges
       --out string                     Path to write any local output
