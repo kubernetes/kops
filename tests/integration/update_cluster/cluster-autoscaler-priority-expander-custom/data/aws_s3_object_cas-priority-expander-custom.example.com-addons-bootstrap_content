@@ -97,7 +97,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: f69f480893c1ef8f36b6b12c7542d87ddfe86716232ef119825f7da3edff9ed9
+    manifestHash: 453ab2860e3532ebedd662440fca71ae358b0fb73ebcbb2b92a177871edb7f3d
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
