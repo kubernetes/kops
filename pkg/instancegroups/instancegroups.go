@@ -690,6 +690,9 @@ func (c *RollingUpdateCluster) drainNode(ctx context.Context, u *cloudinstances.
 		ErrOut:              os.Stderr,
 		Timeout:             c.DrainTimeout,
 
+		// The zero value would retry evictions without any delay
+		EvictErrorRetryDelay: 5 * time.Second,
+
 		// We want to proceed even when pods are using emptyDir volumes
 		DeleteEmptyDirData: true,
 	}
