@@ -162,7 +162,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.CloudupModelBuilderContext, nam
 		return err
 	}
 
-	// The tags are how protokube knows to mount the volume and use it for etcd
+	// The tags are how etcd-manager knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
 
 	// Apply all user defined labels on the volumes
@@ -272,7 +272,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.CloudupModelBuilderContext, pre
 
 	clusterLabel := gce.LabelForCluster(b.ClusterName())
 
-	// The tags are how protokube knows to mount the volume and use it for etcd
+	// The tags are how etcd-manager knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
 	tags[clusterLabel.Key] = clusterLabel.Value
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
@@ -327,7 +327,7 @@ func (b *MasterVolumeBuilder) addHetznerVolume(c *fi.CloudupModelBuilderContext,
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.ValueOf(m.VolumeType)
 
-	// The tags are how protokube knows to mount the volume and use it for etcd
+	// The tags are how etcd-manager knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
 	// Apply all user defined labels on the volumes
 	for k, v := range b.Cluster.Spec.CloudLabels {
@@ -369,7 +369,7 @@ func (b *MasterVolumeBuilder) addAzureVolume(
 	if volumeType == "" {
 		volumeType = DefaultAZUREEtcdVolumeType
 	}
-	// The tags are use by Protokube to mount the volume and use it for etcd.
+	// The tags are how etcd-manager knows to mount the volume and use it for etcd.
 	tags := map[string]*string{
 		// This is the configuration of the etcd cluster.
 		azure.TagNameEtcdClusterPrefix + etcd.Name: new(m.Name + "/" + strings.Join(allMembers, ",")),

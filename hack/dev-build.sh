@@ -22,7 +22,7 @@
 # Convenience script for developing kops AND nodeup.
 #
 # This script (by design) will handle building a full kops cluster in AWS,
-# with a custom version of the nodeup, protokube and dnscontroller.
+# with a custom version of the nodeup and dnscontroller.
 #
 # This script and Makefile uses aws client
 # https://aws.amazon.com/cli/

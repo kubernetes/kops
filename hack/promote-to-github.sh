@@ -43,6 +43,7 @@ fi
 VERSION="$1"
 # Strip leading 'v' if provided
 VERSION="${VERSION#v}"
+add_optional_binaries "${VERSION}"
 TAG="v${VERSION}"
 
 if ! command -v gh &>/dev/null; then

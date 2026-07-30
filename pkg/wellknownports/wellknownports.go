@@ -44,6 +44,11 @@ const (
 	EtcdCiliumGRPC                  = 3991
 	EtcdCiliumQuarantinedClientPort = 3992
 
+	// DNSControllerGossipMemberlist was the port where dns-controller listened for the memberlist-backed gossip.
+	//
+	// Deprecated: gossip DNS support was removed in kOps 1.37; retained so the port is not reused.
+	DNSControllerGossipMemberlist = 3993
+
 	// EtcdMainQuarantinedClientPort is the port used by etcd when quarantined, for the main etcd
 	EtcdMainQuarantinedClientPort = 3994
 
@@ -62,10 +67,19 @@ const (
 	// EtcdLeasesGRPC is the GRPC port used by etcd-manager, for the leases etcd
 	EtcdLeasesGRPC = 4006
 
-	// ProtokubeGossipWeaveMesh is the port where protokube listens for the weave-mesh-backed gossip
+	// DNSControllerGossipWeaveMesh was the port where dns-controller listened for the weave-mesh-backed gossip.
+	//
+	// Deprecated: gossip DNS support was removed in kOps 1.37; retained so the port is not reused.
+	DNSControllerGossipWeaveMesh = 3998
+
+	// ProtokubeGossipWeaveMesh was the port where protokube listened for the weave-mesh-backed gossip.
+	//
+	// Deprecated: gossip DNS support was removed in kOps 1.37; retained so the port is not reused.
 	ProtokubeGossipWeaveMesh = 3999
 
-	// ProtokubeGossipMemberlist is the port where protokube listens for the memberlist-backed gossip
+	// ProtokubeGossipMemberlist was the port where protokube listened for the memberlist-backed gossip.
+	//
+	// Deprecated: gossip DNS support was removed in kOps 1.37; retained so the port is not reused.
 	ProtokubeGossipMemberlist = 4000
 
 	// EtcdMainClientPort is the client port for the main etcd cluster

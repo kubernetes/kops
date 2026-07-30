@@ -22,7 +22,7 @@ make kops
 
 This will create the `kops` binary in the `.build/dist/<os>/<arch>` directory.
 
-To build all the binaries, including `kops`, `protokube`, `nodeup`, and `channels`, run the following command:
+To build all the binaries, including `kops`, `nodeup`, and `channels`, run the following command:
 
 ```bash
 make all

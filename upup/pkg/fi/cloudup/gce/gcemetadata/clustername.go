@@ -43,8 +43,3 @@ func MetadataMatchesClusterName(findClusterName string, metadata *compute.Metada
 	}
 	return false
 }
-
-// InstanceMatchesClusterName checks if the instances has the specified cluster-name included.
-func InstanceMatchesClusterName(findClusterName string, instance *compute.Instance) bool {
-	return MetadataMatchesClusterName(findClusterName, instance.Metadata)
-}

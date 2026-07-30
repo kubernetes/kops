@@ -102,8 +102,7 @@ func (b *ServerGroupModelBuilder) buildInstances(c *fi.CloudupModelBuilderContex
 		igMeta[sanitizedLabel] = labelVal
 	}
 	if !ig.Spec.Role.HasBastion() {
-		// Bastion does not belong to the cluster and will not be running protokube.
-
+		// Bastion does not belong to the cluster.
 		igMeta[openstack.TagClusterName] = b.ClusterName()
 	}
 	igMeta["k8s"] = b.ClusterName()

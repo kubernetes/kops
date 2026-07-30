@@ -46,8 +46,8 @@ Because more values are inferred than with simpler k8s objects, we record the us
 complete inferred specification. This means we can keep track of which values were actually set by the user, vs just being
 default values; this lets us avoid some of the problems e.g. with ClusterIP on a Service.
 
-We aim to remove any computation logic from the downstream pieces (i.e. nodeup & protokube); this means there is a
-single source of truth and it is practical to implement alternatives to nodeup & protokube. For example, components
+We aim to remove any computation logic from the downstream pieces (i.e. nodeup); this means there is a
+single source of truth and it is practical to implement alternatives to nodeup. For example, components
 such as kubelet might read their configuration directly from the state store in future, eliminating the need to
 have a management process that copies values around.
 

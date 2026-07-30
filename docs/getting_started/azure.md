@@ -79,7 +79,7 @@ kops delete cluster --name my.k8s --yes
 
 kOps assigns a system-assigned managed identity to each VM Scale Set. The control-plane identity is granted the following built-in roles:
 
-* **Contributor** on the cluster resource group, used by cloud-controller-manager, the Azure Disk CSI driver, etcd-manager, kops-controller and protokube.
+* **Contributor** on the cluster resource group, used by cloud-controller-manager, the Azure Disk CSI driver, etcd-manager and kops-controller.
 * **Storage Blob Data Contributor** on the state-store storage account, used to read cluster configuration and write etcd backups.
 
 Worker node identities are not granted any role.
