@@ -246,8 +246,6 @@ spec:
     emptyDir: {}
 `
 
-var kopsUtilsImage = "registry.k8s.io/kops/kops-utils-cp:" + kopsversion.KopsVersionImageTag()
-
 // buildPod creates the pod spec, based on the EtcdClusterSpec
 func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instanceGroupName string) (*v1.Pod, error) {
 	var pod *v1.Pod
@@ -290,6 +288,9 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			}
 		}
 	} else {
+		// Computed here rather than at process init, because kops.Version can be overridden at
+		// runtime (e.g. from KOPS_BASE_URL).
+		kopsUtilsImage := "registry.k8s.io/kops/kops-utils-cp:" + kopsversion.KopsVersionImageTag()
 		utilMounts := []v1.VolumeMount{
 			{
 				MountPath: "/opt",
