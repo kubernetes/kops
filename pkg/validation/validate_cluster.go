@@ -169,7 +169,7 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 				"The %[1]v Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address."+
 				"  The API DNS IP address is the placeholder address that kops creates: %[2]v."+
 				"  Please wait about 5-10 minutes for a control plane node to start, %[1]v to launch, and DNS to propagate."+
-				"  The protokube container and %[1]v deployment logs may contain more diagnostic information."+
+				"  The %[1]v deployment logs may contain more diagnostic information."+
 				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start.", dnsProvider, hasPlaceHolderIPAddress)
 			validation.addError(&ValidationError{
 				Kind:    "dns",

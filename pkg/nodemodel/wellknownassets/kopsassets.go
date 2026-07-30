@@ -37,7 +37,7 @@ var kopsBaseURL *url.URL
 // nodeUpAsset caches the nodeup binary download url/hash
 var nodeUpAsset map[architectures.Architecture]*assets.MirroredAsset
 
-// protokubeAsset caches the protokube binary download url/hash
+// protokubeAsset caches the protokube binary download url/hash.
 var protokubeAsset map[architectures.Architecture]*assets.MirroredAsset
 
 // BaseURL returns the base url for the distribution of kops - in particular for nodeup & docker images
@@ -106,7 +106,7 @@ func NodeUpAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architec
 	return nodeUpAsset[arch], nil
 }
 
-// ProtokubeAsset returns the url and hash of the protokube binary
+// ProtokubeAsset returns the URL and hash of the protokube binary.
 func ProtokubeAsset(assetsBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.MirroredAsset, error) {
 	if protokubeAsset == nil {
 		protokubeAsset = make(map[architectures.Architecture]*assets.MirroredAsset)

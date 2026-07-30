@@ -48,7 +48,7 @@ spec:
     type: Private
   topology:
     dns:
-      type: Private
+      type: None
 
 ---
 

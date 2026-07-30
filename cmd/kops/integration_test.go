@@ -246,42 +246,6 @@ const (
 	nodeProblemDetectorAddon = "node-problem-detector.addons.k8s.io-k8s-1.17"
 )
 
-// TestMinimalGossipAWS runs the test on a minimum gossip configuration on AWS
-func TestMinimalGossipAWS(t *testing.T) {
-	newIntegrationTest("gossip.k8s.local", "gossip-aws").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimalGossipAzure runs the test on a minimum gossip configuration on Azure
-func TestMinimalGossipAzure(t *testing.T) {
-	newIntegrationTest("gossip.k8s.local", "gossip-azure").
-		runTestTerraformAzure(t)
-}
-
-// TestMinimalGossipGCE runs the test on a minimum gossip configuration on GCE
-func TestMinimalGossipGCE(t *testing.T) {
-	newIntegrationTest("gossip.k8s.local", "gossip-gce").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
-		runTestTerraformGCE(t)
-}
-
-// TestMinimalGossipHetzner runs the test on a minimum gossip configuration on Hetzner
-func TestMinimalGossipHetzner(t *testing.T) {
-	t.Setenv("HCLOUD_TOKEN", "REDACTED")
-	newIntegrationTest("gossip.k8s.local", "gossip-hetzner").
-		withAddons(dnsControllerAddon).
-		runTestTerraformHetzner(t)
-}
-
 // TestMinimalAWS runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalAWS(t *testing.T) {
 	newIntegrationTest("minimal-aws.example.com", "minimal-aws").
@@ -381,32 +345,6 @@ func TestNvidia(t *testing.T) {
 			dnsControllerAddon,
 			awsCCMAddon,
 			"nvidia.addons.k8s.io-k8s-1.16",
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum gossip configuration
-func TestMinimalGossip(t *testing.T) {
-	newIntegrationTest("minimal.k8s.local", "minimal_gossip").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		runTestTerraformAWS(t)
-}
-
-// TestMinimal runs the test on a minimum gossip configuration with irsa enabled
-func TestMinimalGossipIRSA(t *testing.T) {
-	newIntegrationTest("minimal.k8s.local", "minimal_gossip_irsa").
-		withOIDCDiscovery().
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
 		).
 		runTestTerraformAWS(t)
 }
@@ -517,7 +455,7 @@ func TestMinimalGCEDNSNone(t *testing.T) {
 		runTestTerraformGCE(t)
 }
 
-// TestMinimalScaleway runs tests on a minimal Scaleway cluster with gossip DNS
+// TestMinimalScaleway runs tests on a minimal Scaleway cluster
 func TestMinimalScaleway(t *testing.T) {
 	t.Setenv("SCW_PROFILE", "REDACTED")
 	newIntegrationTest("scw-minimal.k8s.local", "minimal_scaleway").

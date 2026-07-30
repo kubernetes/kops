@@ -28,7 +28,7 @@ type EtcHostsBuilder struct {
 
 var _ fi.NodeupModelBuilder = &EtcHostsBuilder{}
 
-// Build is responsible for configuring the gossip DNS tasks.
+// Build is responsible for configuring the /etc/hosts tasks.
 func (b *EtcHostsBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 
 	task := &nodetasks.UpdateEtcHostsTask{

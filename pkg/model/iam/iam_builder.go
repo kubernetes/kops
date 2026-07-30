@@ -40,7 +40,6 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/util/stringorset"
 	"k8s.io/kops/upup/pkg/fi"
@@ -428,7 +427,6 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	// in that case.
 	addKMSIAMPolicies(p, fi.ValueOf(b.Cluster.Spec.EncryptionConfig))
 
-	// Protokube needs dns-controller permissions in instance role even if UseServiceAccountExternalPermissions.
 	AddDNSControllerPermissions(b, p)
 
 	if !b.UseServiceAccountExternalPermisssions {
@@ -490,15 +488,6 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
 
 	b.addNodeupPermissions(p, r.enableLifecycleHookPermissions)
-
-	if !model.UseKopsControllerForNodeConfig(b.Cluster) {
-		// Legacy-gossip workers that bootstrap without kops-controller run protokube.
-		addProtokubePermissions(p)
-
-		if err := b.AddS3Permissions(p); err != nil {
-			return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
-		}
-	}
 
 	if b.Cluster.Spec.IAM != nil && b.Cluster.Spec.IAM.AllowContainerRegistry {
 		addECRPermissions(p)
@@ -738,15 +727,6 @@ func ReadableStatePaths(cluster *kops.Cluster, role Subject) ([]string, error) {
 	switch role.(type) {
 	case *NodeRoleMaster, *NodeRoleAPIServer:
 		paths = append(paths, "/*")
-
-	case *NodeRoleNode:
-		// Give access to keys for client certificates as needed.
-		if !model.UseKopsControllerForNodeConfig(cluster) {
-			paths = append(paths,
-				"/cluster-completed.spec",
-				"/igconfig/node/*",
-			)
-		}
 	}
 	return paths, nil
 }
@@ -868,13 +848,6 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 			"ec2:AssignIpv6Addresses",
 		)
 	}
-}
-
-// addProtokubePermissions adds the permission protokube uses to discover gossip seeds.
-func addProtokubePermissions(p *Policy) {
-	p.unconditionalAction.Insert(
-		"ec2:DescribeInstances",
-	)
 }
 
 func addKopsControllerIPAMPermissions(p *Policy) {

@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/clouds"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -167,7 +168,7 @@ type NewClusterOptions struct {
 	DNSZone string
 
 	// APILoadBalancerType is the Kubernetes API loadbalancer type to use; "public" or "internal".
-	// Defaults to using DNS instead of a load balancer if using public topology and not gossip, otherwise "public".
+	// Defaults to using DNS instead of a load balancer if using public topology with DNS, otherwise "public".
 	APILoadBalancerType string
 	// APISSLCertificate is the SSL certificate to use for the API loadbalancer.
 	// Currently only supported in AWS.
@@ -1509,9 +1510,9 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 			// Use dns=public if zone is specified
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
 		} else {
-			if cluster.UsesLegacyGossip() {
-				// Warn about using dns=none instead of Gossip
-				klog.Warningf("Gossip is deprecated, using None DNS instead")
+			if dns.IsGossipClusterName(cluster.Name) {
+				// Gossip support was removed in kOps 1.37; .k8s.local names now always use None DNS
+				klog.Warningf("Gossip is no longer supported, using None DNS instead")
 			}
 			// Default to dns=none instead of dns=public for all cloud providers
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
@@ -1536,8 +1537,8 @@ func setupAPI(opt *NewClusterOptions, cluster *api.Cluster) error {
 	} else {
 		switch opt.Topology {
 		case api.TopologyPublic:
-			if cluster.UsesLegacyGossip() || cluster.UsesNoneDNS() {
-				// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
+			if cluster.UsesNoneDNS() {
+				// there are no DNS records for the API, so we use a LoadBalancer instead
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 			} else {
 				cluster.Spec.API.DNS = &api.DNSAccessSpec{}

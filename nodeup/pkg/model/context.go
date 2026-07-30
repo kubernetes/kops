@@ -68,9 +68,6 @@ type NodeupModelContext struct {
 	// HasAPIServer is true if the InstanceGroup has a role of master or apiserver (pupulated by Init)
 	HasAPIServer bool
 
-	// usesLegacyGossip is true if the cluster runs (legacy) Gossip DNS.
-	usesLegacyGossip bool
-
 	// usesNoneDNS is true if the cluster runs with dns=none (which uses fixed IPs, for example a load balancer, instead of DNS)
 	usesNoneDNS bool
 
@@ -111,7 +108,6 @@ func (c *NodeupModelContext) Init() error {
 	}
 
 	c.usesNoneDNS = c.NodeupConfig.UsesNoneDNS
-	c.usesLegacyGossip = c.NodeupConfig.UsesLegacyGossip
 	c.discoveryService = c.NodeupConfig.DiscoveryService
 
 	return nil
@@ -664,10 +660,6 @@ func (c *NodeupModelContext) findFileAsset(path string) *kops.FileAssetSpec {
 	return nil
 }
 
-func (c *NodeupModelContext) UsesLegacyGossip() bool {
-	return c.usesLegacyGossip
-}
-
 func (c *NodeupModelContext) UsesNoneDNS() bool {
 	return c.usesNoneDNS
 }
@@ -678,8 +670,5 @@ func (c *NodeupModelContext) DiscoveryServiceOptions() *nodeup.DiscoveryServiceO
 }
 
 func (c *NodeupModelContext) PublishesDNSRecords() bool {
-	if c.UsesLegacyGossip() || c.UsesNoneDNS() {
-		return false
-	}
-	return true
+	return !c.UsesNoneDNS()
 }

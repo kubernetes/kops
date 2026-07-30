@@ -18,14 +18,14 @@ See also pkg/wellknownports/wellknownports.go
 | 3990 | Kube API health check                    |
 | 3991 | etcd-manager - cilium - grpc             |
 | 3992 | etcd-manager - cilium - quarantined      |
-| 3993 | dns gossip - dns-controller - memberlist |
+| 3993 | dns gossip - dns-controller - memberlist (removed in kOps 1.37) |
 | 3994 | etcd-manager - main - quarantined        |
 | 3995 | etcd-manager - events - quarantined      |
 | 3996 | etcd-manager - main - grpc               |
 | 3997 | etcd-manager - events - grpc             |
-| 3998 | dns gossip - protokube - weave mesh      |
-| 3999 | dns gossip - dns-controller - weave mesh |
-| 4000 | protokube gossip member list             |
+| 3998 | dns gossip - protokube - weave mesh (removed in kOps 1.37) |
+| 3999 | dns gossip - dns-controller - weave mesh (removed in kOps 1.37) |
+| 4000 | protokube gossip member list (removed in kOps 1.37) |
 | 4001 | etcd main client                         |
 | 4002 | etcd events client                       |
 | 4003 | etcd cilium client                       |
