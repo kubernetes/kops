@@ -64,7 +64,9 @@ func (b *CiliumBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.NodeupConfig.Networking.Cilium.IPAM == kops.CiliumIpamEni {
 		maskEC2NetUtilsUdevRules(c, b.Distribution)
 		setMACAddressPolicyNone(c, b.Distribution)
-		markSecondaryENIsUnmanaged(c, b.Distribution)
+		if err := markSecondaryENIsUnmanaged(c, b.Distribution); err != nil {
+			return err
+		}
 	}
 
 	return nil
