@@ -15,6 +15,7 @@ Contents: |
       - --v=4
       - --yes
       - --interval=1m0s
+      - --node-labels=node-role.kubernetes.io/control-plane
       - --node-name=$(NODE_NAME)
       - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
       env:
