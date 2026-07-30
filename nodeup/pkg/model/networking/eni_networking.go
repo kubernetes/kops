@@ -141,6 +141,11 @@ MACAddressPolicy=none
 // the "ena" driver, but does not include the primary network interface, which nodeup finds at
 // boot time. The file uses the udev property "INTERFACE" for this, because a negated "Name="
 // test also agrees with the alternative names of an interface.
+//
+// The file name starts with 75. This puts the file after the per-interface files
+// ("10-netplan-*" on Debian, "70-*" on AL2023) and before the AL2023 catch-all file
+// "80-ec2.network". systemd-networkd uses the first file that agrees with an interface. Thus,
+// if the primary network interface has a per-interface file, systemd-networkd uses that file.
 func markSecondaryENIsUnmanaged(c *fi.NodeupModelBuilderContext, dist distributions.Distribution) error {
 	if !(dist == distributions.DistributionAmazonLinux2023 ||
 		(dist.IsDebian() && dist.Version() >= 12)) {
@@ -165,7 +170,7 @@ Unmanaged=yes
 `, primary)
 
 	c.AddTask(&nodetasks.File{
-		Path:            "/etc/systemd/network/10-eni-secondary.network",
+		Path:            "/etc/systemd/network/75-eni-secondary.network",
 		Contents:        fi.NewStringResource(contents),
 		Type:            nodetasks.FileType_File,
 		OnChangeExecute: [][]string{{"systemctl", "restart", "systemd-networkd"}},
