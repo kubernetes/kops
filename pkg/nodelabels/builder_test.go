@@ -21,14 +21,27 @@ import (
 	"testing"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 )
 
 func TestBuildNodeLabels(t *testing.T) {
+	origAPIServerNodes := featureflag.APIServerNodes.Enabled()
+	featureflag.ParseFlags("-APIServerNodes")
+	defer func() {
+		if origAPIServerNodes {
+			featureflag.ParseFlags("+APIServerNodes")
+		} else {
+			featureflag.ParseFlags("-APIServerNodes")
+		}
+	}()
+
 	tests := []struct {
 		name     string
 		cluster  *kops.Cluster
 		ig       *kops.InstanceGroup
 		expected map[string]string
+		// Allow us to test labels at different feature flag levels
+		featureFlags string
 	}{
 		{
 			name: "RoleControlPlane",
@@ -72,6 +85,47 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 		},
 		{
+			name: "RoleControlPlaneWithAPIServerNodes",
+			cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					KubernetesVersion: "v1.31.0",
+					ControlPlaneKubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"controlPlane1": "controlPlane1",
+							"controlPlane2": "controlPlane2",
+						},
+					},
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "node1",
+							"node2": "node2",
+						},
+					},
+				},
+			},
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role: kops.InstanceGroupRoleAPIServer,
+					Kubelet: &kops.KubeletConfigSpec{
+						NodeLabels: map[string]string{
+							"node1": "override1",
+							"node3": "override3",
+						},
+					},
+				},
+			},
+			expected: map[string]string{
+				RoleLabelControlPlane20:                                   "",
+				"node.kubernetes.io/exclude-from-external-load-balancers": "",
+				"kops.k8s.io/kops-controller-pki":                         "",
+				"controlPlane1":                                           "controlPlane1",
+				"controlPlane2":                                           "controlPlane2",
+				"node1":                                                   "override1",
+				"node3":                                                   "override3",
+			},
+			featureFlags: "+APIServerNodes",
+		},
+		{
 			name: "RoleNode",
 			cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
@@ -112,12 +166,18 @@ func TestBuildNodeLabels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			if test.featureFlags != "" {
+				featureflag.ParseFlags(test.featureFlags)
+				defer func() {
+					featureflag.ParseFlags("-APIServerNodes")
+				}()
+			}
 			out, err := BuildNodeLabels(test.cluster, test.ig)
 			if err != nil {
 				t.Fatalf("unexpected error from BuildNodeLabels: %v", err)
 			}
 			if !reflect.DeepEqual(out, test.expected) {
-				t.Fatalf("Actual result:\n%v\nExpect:\n%v", out, test.expected)
+				t.Fatalf("Test %s\nActual result:\n%v\nExpected result:\n%v", test.name, out, test.expected)
 			}
 		})
 	}

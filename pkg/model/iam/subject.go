@@ -64,7 +64,7 @@ func (_ *NodeRoleNode) ServiceAccount() (types.NamespacedName, bool) {
 	return types.NamespacedName{}, false
 }
 
-// NodeRoleNode represents the role of bastion nodes, and implements Subject.
+// NodeRoleBastion represents the role of bastion nodes, and implements Subject.
 type NodeRoleBastion struct{}
 
 // ServiceAccount implements Subject.

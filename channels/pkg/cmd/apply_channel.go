@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -46,15 +47,24 @@ type ApplyChannelOptions struct {
 	Yes      bool
 	Interval time.Duration
 	NodeName string
+
+	// Comma delimited label,value pairs to add to the node. Eg "kops.k8s.io/cloud-controller-manager,foo=bar"
+	NodeLabels map[string]string
 }
 
 func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	var options ApplyChannelOptions
+	var rawLabels string
 
 	cmd := &cobra.Command{
 		Use:   "channel CHANNEL...",
 		Short: "Applies updates from the given channel(s)",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+			options.NodeLabels, err = parseLabels(rawLabels)
+			if err != nil {
+				return err
+			}
 			if options.Interval > 0 {
 				ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 				defer cancel()
@@ -67,8 +77,25 @@ func NewCmdApplyChannel(f *ChannelsFactory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
 	cmd.Flags().DurationVar(&options.Interval, "interval", 0, "If non-zero, re-apply the channel on this interval until interrupted (e.g. 60s)")
 	cmd.Flags().StringVar(&options.NodeName, "node-name", "", "If set, patch the named node with the mandatory control-plane labels each iteration; typically supplied via the downward API.")
+	cmd.Flags().StringVar(&rawLabels, "node-labels", "", "If set, patch the named node with each of the label,value pairs each iteration; typically supplied via the downward API.")
 
 	return cmd
+}
+
+func parseLabels(rawLabels string) (map[string]string, error) {
+	labels := make(map[string]string)
+	pairs := strings.Split(rawLabels, ",")
+	for _, rawpair := range pairs {
+		pair := strings.Split(rawpair, "=")
+		if len(pair) > 2 {
+			return nil, fmt.Errorf("Error too many '=' (%d) in %s", len(pair), pair)
+		} else if len(pair) == 2 {
+			labels[pair[0]] = pair[1]
+		} else {
+			labels[rawpair] = ""
+		}
+	}
+	return labels, nil
 }
 
 // runApplyChannelIteration patches node labels (when --node-name is set) then
@@ -80,7 +107,7 @@ func runApplyChannelIteration(ctx context.Context, f *ChannelsFactory, out io.Wr
 		labelerClient, err := f.KubernetesClient()
 		if err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("building kubernetes client for node labeler: %w", err))
-		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, labelerClient, options.NodeName); err != nil {
+		} else if err := nodelabeler.BootstrapControlPlaneNodeLabels(ctx, labelerClient, options.NodeName, options.NodeLabels); err != nil {
 			merr = multierr.Append(merr, fmt.Errorf("bootstrapping node labels: %w", err))
 		}
 	}

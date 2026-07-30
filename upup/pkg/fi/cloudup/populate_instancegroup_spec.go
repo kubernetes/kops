@@ -126,9 +126,7 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 				return nil, fmt.Errorf("etcd nodes requires the ExperimentalNodes feature flag to be enabled")
 			case ig.Spec.Role.HasScheduler():
 				return nil, fmt.Errorf("scheduler nodes requires the ExperimentalNodes feature flag to be enabled")
-			case ig.Spec.Role.HasCloudControllerManager():
-				return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalNodes feature flag to be enabled")
-			case ig.Spec.Role.HasKubControllerManager():
+			case ig.Spec.Role.HasKubeControllerManager():
 				return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalNodes feature flag to be enabled")
 			}
 		}
