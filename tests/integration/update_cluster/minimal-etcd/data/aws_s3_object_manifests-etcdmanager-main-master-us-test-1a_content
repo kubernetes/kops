@@ -59,7 +59,7 @@ spec:
     - --src=/ko-app/kops-utils-cp
     command:
     - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.37.0-alpha.1
+    image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
     name: kops-utils-cp
     resources: {}
     volumeMounts:
