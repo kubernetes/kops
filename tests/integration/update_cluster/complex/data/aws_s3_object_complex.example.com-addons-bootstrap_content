@@ -97,7 +97,7 @@ spec:
       role.kubernetes.io/authentication: "1"
   - id: k8s-1.18
     manifest: aws-cloud-controller.addons.k8s.io/k8s-1.18.yaml
-    manifestHash: cda68a9b9ded1cd88ee0bf40ffb03d2deea5ebfcb0cf09bc44ffa883b9f08758
+    manifestHash: 7be17631027d3a2d44f30333221b45df768263d1f40a0f4333259430473d06bd
     name: aws-cloud-controller.addons.k8s.io
     selector:
       k8s-addon: aws-cloud-controller.addons.k8s.io
