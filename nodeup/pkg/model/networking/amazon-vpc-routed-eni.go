@@ -37,7 +37,9 @@ func (b *AmazonVPCRoutedENIBuilder) Build(c *fi.NodeupModelBuilderContext) error
 	maskEC2NetUtilsUdevRules(c, b.Distribution)
 	disableManageForeignRoutes(c, b.Distribution)
 	setMACAddressPolicyNone(c, b.Distribution)
-	markSecondaryENIsUnmanaged(c, b.Distribution)
+	if err := markSecondaryENIsUnmanaged(c, b.Distribution); err != nil {
+		return err
+	}
 	disableCloudInitNetworkHotplug(c, b.Distribution)
 	narrowCloudIfupdownHelperRule(c, b.Distribution)
 	disableNMCloudSetup(c, b.Distribution)
