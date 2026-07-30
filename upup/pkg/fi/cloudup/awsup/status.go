@@ -26,7 +26,7 @@ import (
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
 )
 

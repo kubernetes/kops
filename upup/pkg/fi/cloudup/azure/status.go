@@ -26,7 +26,7 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
 )
 

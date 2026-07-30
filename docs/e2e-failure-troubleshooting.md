@@ -117,7 +117,6 @@ Each build directory contains the following hierarchy:
         ├── containerd.log     # Container runtime log
         ├── kube-proxy.log     # kube-proxy log
         ├── kops-configuration.log  # kops node configuration service (nodeup)
-        ├── protokube.log      # protokube service
         ├── node-problem-detector.log
         ├── docker.log         # Docker service (if applicable)
         │
@@ -218,7 +217,7 @@ Use this priority order for investigating per-node logs in the `{node-name}/` di
 1. **`journal.log`** — Full systemd journal with kubelet, networking, and service errors
 2. **`kubelet.log`** — Kubelet-specific issues (pod scheduling, volume mounts, node registration)
 3. **`kube-apiserver.log`**, **`kube-controller-manager.log`** — Control plane issues (control plane nodes only)
-4. **Other service logs** — containerd.log, kube-proxy.log, protokube.log, kops-configuration.log
+4. **Other service logs** — containerd.log, kube-proxy.log, kops-configuration.log
 
 ### Step 6: Check networking state
 

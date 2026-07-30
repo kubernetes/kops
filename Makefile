@@ -113,7 +113,7 @@ nodeup-install: nodeup
 all-install: all kops-install nodeup-install
 
 .PHONY: all
-all: kops protokube nodeup ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
+all: kops nodeup ko-kops-controller-export ko-kops-channels-export ko-dns-controller-export ko-kops-utils-cp-export ko-kube-apiserver-healthcheck-export ko-discovery-server-export
 
 include tests/e2e/e2e.mk
 
@@ -169,10 +169,6 @@ verify-codegen:
 protobuf:
 	protoc --go_out=. --go_opt=paths=source_relative pkg/otel/otlptracefile/pb/file.proto
 	go run golang.org/x/tools/cmd/goimports@latest -w pkg/otel/otlptracefile/pb/file.pb.go
-	protoc --go_out=. --go_opt=paths=source_relative protokube/pkg/gossip/mesh/mesh.proto
-	go run golang.org/x/tools/cmd/goimports@latest -w protokube/pkg/gossip/mesh/mesh.pb.go
-	protoc --go_out=. --go_opt=paths=source_relative third_party/forked/memberlistmesh/clusterpb/cluster.proto
-	go run golang.org/x/tools/cmd/goimports@latest -w third_party/forked/memberlistmesh/clusterpb/cluster.pb.go
 
 .PHONY: hooks
 hooks: # Install Git hooks
@@ -222,18 +218,6 @@ nodeup: nodeup-amd64
 
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup: nodeup-amd64 nodeup-arm64
-
-.PHONY: protokube-amd64 protokube-arm64
-protokube-amd64 protokube-arm64: BUILDTAGS:=${BUILDTAGS},peer_name_alternative,peer_name_hash
-protokube-amd64 protokube-arm64: protokube-%:
-	mkdir -p ${DIST}/linux/$*
-	GOOS=linux GOARCH=$* go build ${GCFLAGS} ${BUILDFLAGS} ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/$*/protokube ${LDFLAGS}"${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/protokube/cmd/protokube
-
-.PHONY: protokube
-protokube: protokube-amd64
-
-.PHONY: crossbuild-protokube
-crossbuild-protokube: protokube-amd64 protokube-arm64
 
 .PHONY: channels
 channels:
@@ -655,23 +639,6 @@ dev-upload-nodeup: version-dist-nodeup
 dev-upload-nodeup-amd64 dev-upload-nodeup-arm64: dev-upload-nodeup-%: version-dist-nodeup-%
 	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
 
-# dev-upload-protokube uploads protokube
-.PHONY: version-dist-protokube version-dist-protokube-amd64 version-dist-protokube-arm64
-version-dist-protokube: version-dist-protokube-amd64 version-dist-protokube-arm64
-
-version-dist-protokube-amd64 version-dist-protokube-arm64: version-dist-protokube-%: protokube-%
-	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/$*/
-	cp -fp ${DIST}/linux/$*/protokube ${UPLOAD}/kops/${VERSION}/linux/$*/protokube
-	tools/sha256 ${UPLOAD}/kops/${VERSION}/linux/$*/protokube ${UPLOAD}/kops/${VERSION}/linux/$*/protokube.sha256
-
-.PHONY: dev-upload-protokube
-dev-upload-protokube: version-dist-protokube
-	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
-
-.PHONY: dev-upload-protokube-amd64 dev-upload-protokube-arm64
-dev-upload-protokube-amd64 dev-upload-protokube-arm64: dev-upload-protokube-%: version-dist-protokube-%
-	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
-
 # dev-upload-kops-controller uploads kops-controller
 .PHONY: version-dist-kops-controller version-dist-kops-controller-amd64 version-dist-kops-controller-arm64
 version-dist-kops-controller: version-dist-kops-controller-amd64 version-dist-kops-controller-arm64
@@ -778,7 +745,7 @@ dev-upload-discovery-server-amd64 dev-upload-discovery-server-arm64: dev-upload-
 .PHONY: dev-version-dist dev-version-dist-amd64 dev-version-dist-arm64
 dev-version-dist: dev-version-dist-amd64 dev-version-dist-arm64
 
-dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-protokube-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
+dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-nodeup-% version-dist-kops-controller-% version-dist-kops-channels-% version-dist-kube-apiserver-healthcheck-% version-dist-dns-controller-% version-dist-kops-utils-cp-% version-dist-discovery-server-%
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%

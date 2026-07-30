@@ -32,9 +32,36 @@ declare -A BINARIES=(
   ["windows/amd64/kops.exe"]="kops-windows-amd64"
   ["linux/amd64/nodeup"]="nodeup-linux-amd64"
   ["linux/arm64/nodeup"]="nodeup-linux-arm64"
+)
+
+# Binaries that only older kOps releases ship: source-path -> github-name.
+# channels was dropped from releases in kOps 1.36 and protokube in kOps 1.37,
+# but the scripts still promote and validate older versions.
+declare -A OPTIONAL_BINARIES=(
+  ["linux/amd64/channels"]="channels-linux-amd64"
+  ["linux/arm64/channels"]="channels-linux-arm64"
   ["linux/amd64/protokube"]="protokube-linux-amd64"
   ["linux/arm64/protokube"]="protokube-linux-arm64"
 )
+
+# add_optional_binaries <version>: append the optional binaries that exist upstream for
+# the given version to BINARIES, so releases that ship them keep full coverage.
+# Only a confirmed 404 counts as absent; any other probe outcome fails the script,
+# so a transient error cannot silently drop an artifact from promotion or validation.
+add_optional_binaries() {
+  local version="$1" source code
+  for source in "${!OPTIONAL_BINARIES[@]}"; do
+    code=$(curl -sSIL --retry 3 --max-time 60 -o /dev/null -w '%{http_code}' "${BASE_URL}/${version}/${source}.sha256" || true)
+    case "${code}" in
+      200) BINARIES[$source]="${OPTIONAL_BINARIES[$source]}" ;;
+      404) ;;
+      *)
+        echo "Error: probing ${BASE_URL}/${version}/${source}.sha256 returned HTTP ${code}" >&2
+        exit 1
+        ;;
+    esac
+  done
+}
 
 if command -v sha256sum &>/dev/null; then
   SHA256SUM=(sha256sum)

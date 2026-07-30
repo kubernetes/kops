@@ -4,10 +4,9 @@ dns-controller creates DNS records.
 
 ## Motivation
 
-In the bring-up of a new cluster, `protokube` has already ensured that 
-we have an `etcd` cluster and an `apiserver`.  It also sets up DNS 
-records for the `etcd` nodes (this is a much simpler problem, because 
-we have a 1:1 mapping from an `etcd` node to a DNS name.)
+In the bring-up of a new cluster, `etcd-manager` and the static pod
+manifests have already ensured that we have an `etcd` cluster and an
+`apiserver`.
 
 However, none of the nodes can reach the API server to register.  Nor 
 can end-users reach the API.  In future we might expose the API server 

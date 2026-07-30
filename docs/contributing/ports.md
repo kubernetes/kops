@@ -23,8 +23,8 @@ See also pkg/wellknownports/wellknownports.go
 | 3995 | etcd-manager - events - quarantined      |
 | 3996 | etcd-manager - main - grpc               |
 | 3997 | etcd-manager - events - grpc             |
-| 3998 | dns gossip - protokube - weave mesh (removed in kOps 1.37) |
-| 3999 | dns gossip - dns-controller - weave mesh (removed in kOps 1.37) |
+| 3998 | dns gossip - dns-controller - weave mesh (removed in kOps 1.37) |
+| 3999 | dns gossip - protokube - weave mesh (removed in kOps 1.37) |
 | 4000 | protokube gossip member list (removed in kOps 1.37) |
 | 4001 | etcd main client                         |
 | 4002 | etcd events client                       |

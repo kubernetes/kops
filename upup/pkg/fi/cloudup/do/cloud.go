@@ -34,7 +34,7 @@ import (
 	dns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/do"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )

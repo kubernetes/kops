@@ -25,14 +25,10 @@ Kubelet.  The core requirements are:
 * Docker must be installed. nodeup will install Docker 1.13.1, the version of Docker tested with Kubernetes 1.8
 * Kubelet, which is installed a systemd service
 
-In addition, nodeup installs:
-
-* Protokube, which is a kops-specific component
-
 ## /etc/kubernetes/manifests
 
 kubelet starts pods as controlled by the files in /etc/kubernetes/manifests. These files are created
-by nodeup and protokube (ideally all by protokube, but currently split between the two).
+by nodeup.
 
 These pods are declared using the standard k8s manifests, just as if they were stored in the API.
 But these are used to break the circular dependency for the bring-up of our core components, such
@@ -43,7 +39,7 @@ On masters:
 * kube-apiserver
 * kube-controller-manager (which runs miscellaneous controllers)
 * kube-scheduler (which assigns pods to nodes)
-* etcd (this is actually created by protokube though)
+* etcd-manager (which runs etcd)
 * dns-controller
 
 On nodes:
@@ -88,17 +84,15 @@ kOps follows CoreOS's recommend procedure for [bring-up of etcd on clouds](https
 * We set up DNS names pointing to the etcd process
 * We set up etcd with a static cluster, with those DNS names
 
-Because the data is persistent and the cluster membership is also a static set of DNS names, this
-means we don't need to manage etcd directly. We just try to make sure that some master always have
-each volume mounted with etcd running and DNS set correctly.  That is the job of protokube.
+Because the data is persistent and the cluster membership is also a static set of names, this
+means we don't need to manage etcd directly. We just try to make sure that some control-plane node always
+has each volume mounted with etcd running.  That is the job of etcd-manager.
 
-Protokube:
+etcd-manager:
 
-* discovers EBS volumes that hold etcd data (using tags)
-* tries to safe_format_and_mount them
-* if successful in mounting the volume, it will write a manifest for etcd into /etc/kubernetes/manifests
-* configures DNS for the etcd nodes (we can't use dns-controller, because the API is not yet up)
-* kubelet then starts and runs etcd
+* discovers the volumes that hold etcd data (using tags)
+* mounts them on the control-plane node where it runs
+* runs etcd as a child process
 
 ## node bringup
 
