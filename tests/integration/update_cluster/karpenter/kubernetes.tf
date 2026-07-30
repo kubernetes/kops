@@ -250,6 +250,66 @@ resource "aws_autoscaling_group" "nodes-minimal-example-com" {
   vpc_zone_identifier = [aws_subnet.us-test-1a-minimal-example-com.id]
 }
 
+resource "aws_cloudwatch_event_rule" "minimal-example-com-Karpenter-InstanceScheduledChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-Karpenter-InstanceScheduledChange_event_pattern")
+  name          = "minimal.example.com-Karpenter-InstanceScheduledChange"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-Karpenter-InstanceScheduledChange"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-example-com-Karpenter-InstanceStateChange" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-Karpenter-InstanceStateChange_event_pattern")
+  name          = "minimal.example.com-Karpenter-InstanceStateChange"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-Karpenter-InstanceStateChange"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-example-com-Karpenter-RebalanceRecommendation" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-Karpenter-RebalanceRecommendation_event_pattern")
+  name          = "minimal.example.com-Karpenter-RebalanceRecommendation"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-Karpenter-RebalanceRecommendation"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "minimal-example-com-Karpenter-SpotInterruption" {
+  event_pattern = file("${path.module}/data/aws_cloudwatch_event_rule_minimal.example.com-Karpenter-SpotInterruption_event_pattern")
+  name          = "minimal.example.com-Karpenter-SpotInterruption"
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal.example.com-Karpenter-SpotInterruption"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-Karpenter-InstanceScheduledChange-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-karpenter.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-Karpenter-InstanceScheduledChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-Karpenter-InstanceStateChange-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-karpenter.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-Karpenter-InstanceStateChange.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-Karpenter-RebalanceRecommendation-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-karpenter.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-Karpenter-RebalanceRecommendation.id
+}
+
+resource "aws_cloudwatch_event_target" "minimal-example-com-Karpenter-SpotInterruption-Target" {
+  arn  = aws_sqs_queue.minimal-example-com-karpenter.arn
+  rule = aws_cloudwatch_event_rule.minimal-example-com-Karpenter-SpotInterruption.id
+}
+
 resource "aws_ebs_volume" "us-test-1a-etcd-events-minimal-example-com" {
   availability_zone = "us-test-1a"
   encrypted         = false
@@ -997,6 +1057,17 @@ resource "aws_security_group_rule" "from-nodes-minimal-example-com-ingress-udp-1
   source_security_group_id = aws_security_group.nodes-minimal-example-com.id
   to_port                  = 65535
   type                     = "ingress"
+}
+
+resource "aws_sqs_queue" "minimal-example-com-karpenter" {
+  message_retention_seconds = 300
+  name                      = "minimal-example-com-karpenter"
+  policy                    = file("${path.module}/data/aws_sqs_queue_minimal-example-com-karpenter_policy")
+  tags = {
+    "KubernetesCluster"                         = "minimal.example.com"
+    "Name"                                      = "minimal-example-com-karpenter"
+    "kubernetes.io/cluster/minimal.example.com" = "owned"
+  }
 }
 
 resource "aws_subnet" "us-test-1a-minimal-example-com" {

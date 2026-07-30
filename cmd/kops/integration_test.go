@@ -999,6 +999,11 @@ func TestKarpenter(t *testing.T) {
 		"aws_s3_object_nodeupscript-karpenter-nodes-default_content",
 		"aws_s3_object_nodeupconfig-karpenter-nodes-single-machinetype_content",
 		"aws_s3_object_nodeupconfig-karpenter-nodes-default_content",
+		"aws_cloudwatch_event_rule_"+test.clusterName+"-Karpenter-InstanceScheduledChange_event_pattern",
+		"aws_cloudwatch_event_rule_"+test.clusterName+"-Karpenter-InstanceStateChange_event_pattern",
+		"aws_cloudwatch_event_rule_"+test.clusterName+"-Karpenter-RebalanceRecommendation_event_pattern",
+		"aws_cloudwatch_event_rule_"+test.clusterName+"-Karpenter-SpotInterruption_event_pattern",
+		"aws_sqs_queue_minimal-example-com-karpenter_policy",
 	)
 	test.runTestTerraformAWS(t)
 }

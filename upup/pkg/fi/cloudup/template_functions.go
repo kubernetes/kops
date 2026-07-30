@@ -501,6 +501,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap, secretStore fi.SecretS
 	dest["KarpenterEC2NodeClass"] = tf.KarpenterEC2NodeClass
 	dest["KarpenterInstanceGroups"] = tf.KarpenterInstanceGroups
 	dest["KarpenterNodePool"] = tf.KarpenterNodePool
+	dest["KarpenterQueueName"] = func() string {
+		return truncate.TruncateString(strings.ReplaceAll(tf.ClusterName(), ".", "-"), truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false}) + "-karpenter"
+	}
 
 	return nil
 }
