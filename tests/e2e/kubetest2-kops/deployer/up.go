@@ -70,7 +70,7 @@ func (d *deployer) Up() error {
 
 	// PreTestCmd inherits the process environment rather than d.env().
 	if d.KopsBaseURL != "" {
-		os.Setenv("KOPS_BASE_URL", d.KopsBaseURL)
+		os.Setenv("KOPS_BASE_URL", d.maybeGSURL(d.KopsBaseURL))
 	}
 
 	if d.terraform == nil {

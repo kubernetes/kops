@@ -45,6 +45,16 @@ The repository must allow nodes to perform unauthenticated reads. The repository
 be public or it can allow read access through network connectivity, such as access
 through a particular AWS Endpoint.
 
+On GCE, the repository can also be a `gs://` URL. Nodes then read it with the credentials of
+their service account, which allows the bucket to be private. The service accounts of the
+instance groups have to be granted `roles/storage.objectViewer` on that bucket.
+
+```yaml
+spec:
+  assets:
+    fileRepository: gs://example-bucket/files
+```
+
 ## Copying assets into repositories
 
 {{ kops_feature_table(kops_added_default='1.22') }}
@@ -56,7 +66,7 @@ they do not already exist there.
 
 For file assets, kOps only supports copying to a repository that is either an S3 or GCS bucket.
 An S3 bucket must be configured using the [regional naming conventions of S3](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
-A GCS bucket must be configured with a prefix of `https://storage.googleapis.com/`.
+A GCS bucket must be configured with a prefix of `https://storage.googleapis.com/` or `gs://`.
 
 ## Listing assets
 

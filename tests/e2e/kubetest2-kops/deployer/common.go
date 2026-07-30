@@ -302,9 +302,9 @@ func (d *deployer) env() []string {
 	}
 
 	if d.KopsBaseURL != "" {
-		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.KopsBaseURL))
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.maybeGSURL(d.KopsBaseURL)))
 	} else if baseURL := os.Getenv("KOPS_BASE_URL"); baseURL != "" {
-		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", os.Getenv("KOPS_BASE_URL")))
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.maybeGSURL(baseURL)))
 	}
 
 	if kopsBin := d.resolvedKopsBinaryPath(); kopsBin != "" {
@@ -334,6 +334,20 @@ func (d *deployer) env() []string {
 		}
 	}
 	return vars
+}
+
+// gcsPublicPrefix is the https form of a GCS bucket, as used for the staged build artifacts.
+const gcsPublicPrefix = "https://storage.googleapis.com/"
+
+// maybeGSURL converts baseURL from the public GCS https form to the gs:// form on GCE, so that
+// nodes download the staged artifacts with their instance service-account credentials. Any other
+// URL, and any other cloud provider, passes through unchanged. Only kops invocations get the gs://
+// form; the scripts that download the kops binary run outside the deployer and keep using https.
+func (d *deployer) maybeGSURL(baseURL string) string {
+	if d.CloudProvider != "gce" || !strings.HasPrefix(baseURL, gcsPublicPrefix) {
+		return baseURL
+	}
+	return "gs://" + strings.TrimPrefix(baseURL, gcsPublicPrefix)
 }
 
 // featureFlags returns the kops feature flags to set
