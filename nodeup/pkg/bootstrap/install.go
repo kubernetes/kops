@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/upup/pkg/fi/nodeup/install"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/distributions"
@@ -111,26 +110,8 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 		}
 	}
 
-	if os.Getenv("DIGITALOCEAN_ACCESS_TOKEN") != "" {
-		envVars["DIGITALOCEAN_ACCESS_TOKEN"] = os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
-	}
-
-	if os.Getenv("HCLOUD_TOKEN") != "" {
-		envVars["HCLOUD_TOKEN"] = os.Getenv("HCLOUD_TOKEN")
-	}
-
 	if os.Getenv("OSS_REGION") != "" {
 		envVars["OSS_REGION"] = os.Getenv("OSS_REGION")
-	}
-
-	if os.Getenv("SCW_PROFILE") != "" || os.Getenv("SCW_SECRET_KEY") != "" {
-		profile, err := scalewaymetadata.CreateValidScalewayProfile()
-		if err != nil {
-			return nil
-		}
-		envVars["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
-		envVars["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
-		envVars["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
 	}
 
 	sysconfig := ""
@@ -142,6 +123,8 @@ func (i *Installation) buildEnvFile() *nodetasks.InstallFile {
 		Path:     "/etc/sysconfig/kops-configuration",
 		Contents: fi.NewStringResource(sysconfig),
 		Type:     nodetasks.FileType_File,
+		// The file may contain state store and OpenStack credentials.
+		Mode: new("0600"),
 	}}
 
 	return task

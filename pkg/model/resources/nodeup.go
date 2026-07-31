@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway/scalewaymetadata"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
 	"k8s.io/kops/util/pkg/vfs/openstackconfig"
@@ -431,22 +430,6 @@ func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (m
 		}
 	}
 
-	if cluster.GetCloudProvider() == kops.CloudProviderDO {
-		if ig.IsControlPlane() {
-			doToken := os.Getenv("DIGITALOCEAN_ACCESS_TOKEN")
-			if doToken != "" {
-				env["DIGITALOCEAN_ACCESS_TOKEN"] = doToken
-			}
-		}
-	}
-
-	if cluster.GetCloudProvider() == kops.CloudProviderHetzner && ig.IsControlPlane() {
-		hcloudToken := os.Getenv("HCLOUD_TOKEN")
-		if hcloudToken != "" {
-			env["HCLOUD_TOKEN"] = hcloudToken
-		}
-	}
-
 	if cluster.GetCloudProvider() == kops.CloudProviderAWS {
 		region, err := awsup.FindRegion(cluster)
 		if err != nil {
@@ -460,16 +443,6 @@ func buildEnvironmentVariables(cluster *kops.Cluster, ig *kops.InstanceGroup) (m
 		if azureEnv != "" {
 			env["AZURE_ENVIRONMENT"] = azureEnv
 		}
-	}
-
-	if cluster.GetCloudProvider() == kops.CloudProviderScaleway && ig.IsControlPlane() {
-		profile, err := scalewaymetadata.CreateValidScalewayProfile()
-		if err != nil {
-			return nil, err
-		}
-		env["SCW_ACCESS_KEY"] = fi.ValueOf(profile.AccessKey)
-		env["SCW_SECRET_KEY"] = fi.ValueOf(profile.SecretKey)
-		env["SCW_DEFAULT_PROJECT_ID"] = fi.ValueOf(profile.DefaultProjectID)
 	}
 
 	return env, nil
