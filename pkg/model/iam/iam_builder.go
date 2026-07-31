@@ -427,9 +427,10 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	// in that case.
 	addKMSIAMPolicies(p, fi.ValueOf(b.Cluster.Spec.EncryptionConfig))
 
-	AddDNSControllerPermissions(b, p)
-
 	if !b.UseServiceAccountExternalPermisssions {
+		// dns-controller and external-dns use dedicated service account roles
+		AddDNSControllerPermissions(b, p)
+
 		esc := b.Cluster.Spec.SnapshotController != nil &&
 			fi.ValueOf(b.Cluster.Spec.SnapshotController.Enabled)
 		AddAWSEBSCSIDriverPermissions(b, p, esc)
@@ -826,13 +827,13 @@ func addCalicoSrcDstCheckPermissions(p *Policy) {
 }
 
 func addKubeRouterSrcDstCheckPermissions(p *Policy) {
-	p.unconditionalAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"ec2:ModifyInstanceAttribute",
 	)
 }
 
 func addKindnetSrcDstCheckPermissions(p *Policy) {
-	p.unconditionalAction.Insert(
+	p.clusterTaggedAction.Insert(
 		"ec2:ModifyInstanceAttribute",
 	)
 }

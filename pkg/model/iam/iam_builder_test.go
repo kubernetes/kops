@@ -101,6 +101,7 @@ func TestPolicyGeneration(t *testing.T) {
 		Role                   Subject
 		AllowContainerRegistry bool
 		NLBSecurityGroupMode   *string
+		Networking             *kops.NetworkingSpec
 		Policy                 string
 	}{
 		{
@@ -128,6 +129,12 @@ func TestPolicyGeneration(t *testing.T) {
 			Role:                   &NodeRoleNode{},
 			AllowContainerRegistry: true,
 			Policy:                 "tests/iam_builder_node_strict_ecr.json",
+		},
+		{
+			Role:                   &NodeRoleNode{},
+			AllowContainerRegistry: false,
+			Networking:             &kops.NetworkingSpec{KubeRouter: &kops.KuberouterNetworkingSpec{}},
+			Policy:                 "tests/iam_builder_node_kuberouter.json",
 		},
 		{
 			Role:                   &NodeRoleBastion{},
@@ -190,6 +197,9 @@ func TestPolicyGeneration(t *testing.T) {
 			Role:      x.Role,
 			Region:    "us-test-1",
 			Partition: "aws-test",
+		}
+		if x.Networking != nil {
+			b.Cluster.Spec.Networking = *x.Networking
 		}
 		b.Cluster.SetName("iam-builder-test.nonexistant")
 

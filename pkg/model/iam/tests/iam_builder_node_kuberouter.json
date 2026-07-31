@@ -1,0 +1,20 @@
+{
+  "Statement": [
+    {
+      "Action": "ec2:DescribeInstanceTypes",
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": "ec2:ModifyInstanceAttribute",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.nonexistant"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ],
+  "Version": "2012-10-17"
+}
