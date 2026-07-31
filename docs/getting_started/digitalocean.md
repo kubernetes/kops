@@ -63,7 +63,7 @@ kops delete cluster my-cluster.example.com --yes
 
 ## Creating a Multi-Master HA Cluster
 
-In the below example, `dev5.k8s.local` should be replaced with any cluster name that ends with `.k8s.local` such that a cluster without hosted DNS is created.
+In the below example, `dev5.k8s.local` should be replaced with any cluster name, as a None-DNS cluster is created.
 Ensure the master-count is odd-numbered. A load balancer is created dynamically front-facing the master instances.
 
 ```bash

@@ -100,9 +100,9 @@ spec:
         - "sg-***"
 ```
 
-### Access when using dns=none
+### Access when using None-DNS
 
-When using `--dns=none`, there is no DNS zone where we can configure a
+When using a None-DNS cluster (`--dns=none`), there is no DNS zone where we can configure a
 CNAME for the bastion. Because bastions are fronted with a load
 balancer, you can instead use the endpoint of the load balancer to
 reach your bastion.

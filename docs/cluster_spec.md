@@ -1483,8 +1483,6 @@ This is useful when pulling containers from the internet is not an option, eg. b
 deployment is offline / internet restricted or because of special requirements that apply
 for deployed artifacts, eg. auditing of containers.
 
-For a use case example, see [How to use kOps in AWS China Region](https://github.com/kubernetes/kops/blob/master/docs/aws-china.md)
-
 ```yaml
 spec:
   assets:

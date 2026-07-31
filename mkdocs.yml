@@ -144,7 +144,6 @@ nav:
     - Cluster boot sequence: "boot-sequence.md"
     - Philosophy: "philosophy.md"
     - State store: "state.md"
-    - AWS China: "aws-china.md"
     - Custom CA: "custom_ca.md"
     - Horizontal Pod Autoscaling: "horizontal_pod_autoscaling.md"
     - Egress Proxy: "http_proxy.md"
