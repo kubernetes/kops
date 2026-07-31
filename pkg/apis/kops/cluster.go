@@ -1035,6 +1035,10 @@ func (c *ClusterSpec) IsKopsControllerIPAM() bool {
 	return c.IsIPv6Only()
 }
 
+func (c *ClusterSpec) IsCiliumENIIPAM() bool {
+	return c.Networking.Cilium != nil && c.Networking.Cilium.IPAM == CiliumIpamEni
+}
+
 func (c *Cluster) GetCloudProvider() CloudProviderID {
 	if c.Labels[AlphaLabelCloudProvider] == "metal" {
 		return CloudProviderMetal

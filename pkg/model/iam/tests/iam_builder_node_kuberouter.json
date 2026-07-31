@@ -1,11 +1,6 @@
 {
   "Statement": [
     {
-      "Action": "ec2:DescribeInstanceTypes",
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
       "Action": "ec2:ModifyInstanceAttribute",
       "Condition": {
         "StringEquals": {
