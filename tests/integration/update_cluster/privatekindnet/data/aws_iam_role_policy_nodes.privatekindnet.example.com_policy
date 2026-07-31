@@ -1,10 +1,17 @@
 {
   "Statement": [
     {
-      "Action": [
-        "ec2:DescribeInstanceTypes",
-        "ec2:ModifyInstanceAttribute"
-      ],
+      "Action": "ec2:DescribeInstanceTypes",
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": "ec2:ModifyInstanceAttribute",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/KubernetesCluster": "privatekindnet.example.com"
+        }
+      },
       "Effect": "Allow",
       "Resource": "*"
     }

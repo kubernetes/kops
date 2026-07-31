@@ -206,7 +206,6 @@
         "ec2:DescribeVolumesModifications",
         "ec2:DescribeVpcs",
         "ec2:GetInstanceTypesFromInstanceRequirements",
-        "ec2:ModifyInstanceAttribute",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeLoadBalancerAttributes",
         "elasticloadbalancing:DescribeLoadBalancerPolicies",
