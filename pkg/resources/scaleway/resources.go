@@ -18,7 +18,6 @@ package scaleway
 
 import (
 	"fmt"
-	"strings"
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -53,7 +52,7 @@ func ListResources(cloud scaleway.ScwCloud, clusterInfo resources.ClusterInfo) (
 		listSSHKeys,
 		listVolumes,
 	}
-	if !strings.HasSuffix(clusterName, ".k8s.local") && !clusterInfo.UsesNoneDNS {
+	if clusterInfo.PublishesDNSRecords() {
 		listFunctions = append(listFunctions, listDNSRecords)
 	}
 

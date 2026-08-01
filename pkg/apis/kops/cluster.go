@@ -25,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -945,24 +944,10 @@ func (c *Cluster) AzureNetworkSecurityGroupName() string {
 }
 
 func (c *Cluster) PublishesDNSRecords() bool {
-	if c.UsesNoneDNS() || dns.IsGossipClusterName(c.Name) {
-		return false
-	}
-	return true
-}
-
-func (c *Cluster) UsesLegacyGossip() bool {
-	if c.UsesNoneDNS() || !dns.IsGossipClusterName(c.Name) {
-		return false
-	}
-	return true
+	return !c.UsesNoneDNS()
 }
 
 func (c *Cluster) UsesPublicDNS() bool {
-	if c.UsesLegacyGossip() {
-		// Gossip clusters have public/private DNS topology set
-		return false
-	}
 	if c.Spec.Networking.Topology == nil || c.Spec.Networking.Topology.DNS == "" || c.Spec.Networking.Topology.DNS == DNSTypePublic {
 		return true
 	}
@@ -970,10 +955,6 @@ func (c *Cluster) UsesPublicDNS() bool {
 }
 
 func (c *Cluster) UsesPrivateDNS() bool {
-	if c.UsesLegacyGossip() {
-		// Gossip clusters have public/private DNS topology set
-		return false
-	}
 	if c.Spec.Networking.Topology != nil && c.Spec.Networking.Topology.DNS == DNSTypePrivate {
 		return true
 	}

@@ -53,10 +53,14 @@ func ListResources(cloud do.DOCloud, clusterInfo resources.ClusterInfo) (map[str
 	listFunctions := []listFn{
 		listVolumes,
 		listDroplets,
-		listDNS,
+	}
+	if clusterInfo.PublishesDNSRecords() {
+		listFunctions = append(listFunctions, listDNS)
+	}
+	listFunctions = append(listFunctions,
 		listLoadBalancers,
 		listVPCs,
-	}
+	)
 
 	for _, fn := range listFunctions {
 		rt, err := fn(cloud, clusterName)
@@ -147,11 +151,6 @@ func listDNS(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) 
 	}
 
 	if domainName == "" {
-		if strings.HasSuffix(clusterName, ".k8s.local") {
-			klog.Info("Domain Name is empty. Ok to have an empty domain name since the cluster does not publish DNS records.")
-			return nil, nil
-		}
-
 		return nil, fmt.Errorf("failed to find domain for cluster: %s", clusterName)
 	}
 

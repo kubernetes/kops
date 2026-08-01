@@ -36,7 +36,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/clouds"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
@@ -1510,10 +1509,6 @@ func setupDNSTopology(opt *NewClusterOptions, cluster *api.Cluster) error {
 			// Use dns=public if zone is specified
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypePublic
 		} else {
-			if dns.IsGossipClusterName(cluster.Name) {
-				// Gossip support was removed in kOps 1.37; .k8s.local names now always use None DNS
-				klog.Warningf("Gossip is no longer supported, using None DNS instead")
-			}
 			// Default to dns=none instead of dns=public for all cloud providers
 			cluster.Spec.Networking.Topology.DNS = api.DNSTypeNone
 		}

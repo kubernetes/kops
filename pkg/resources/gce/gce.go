@@ -25,7 +25,6 @@ import (
 	clouddns "google.golang.org/api/dns/v1"
 	"google.golang.org/api/iam/v1"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
@@ -63,7 +62,6 @@ const maxGCERouteNameLength = 63
 
 func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	clusterName := clusterInfo.Name
-	clusterUsesNoneDNS := clusterInfo.UsesNoneDNS
 
 	ctx := context.TODO()
 	region := gceCloud.Region()
@@ -116,7 +114,7 @@ func ListResourcesGCE(gceCloud gce.GCECloud, clusterInfo resources.ClusterInfo) 
 			return d.listRoutes(ctx, allResources)
 		},
 	}
-	if !dns.IsGossipClusterName(clusterName) && !clusterUsesNoneDNS {
+	if clusterInfo.PublishesDNSRecords() {
 		listFunctions = append(listFunctions, d.listGCEDNSZone)
 	}
 

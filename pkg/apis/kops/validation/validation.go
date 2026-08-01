@@ -566,6 +566,10 @@ func validateTopology(c *kops.Cluster, topology *kops.TopologySpec, fieldPath *f
 	return allErrs
 }
 
+func usesLegacyGossip(c *kops.Cluster) bool {
+	return !c.UsesNoneDNS() && strings.HasSuffix(strings.TrimSuffix(c.Name, "."), ".k8s.local")
+}
+
 func validateCloudDNSTopology(c *kops.Cluster, fieldPath *field.Path) field.ErrorList {
 	type dnsTopologies struct {
 		none    bool // api server and kops-controller have a stable address
@@ -593,7 +597,7 @@ func validateCloudDNSTopology(c *kops.Cluster, fieldPath *field.Path) field.Erro
 	}
 
 	switch {
-	case c.UsesLegacyGossip():
+	case usesLegacyGossip(c):
 		return field.ErrorList{field.Forbidden(fieldPath,
 			"gossip DNS support was removed in kOps 1.37; migrate the cluster to dns=none or a hosted DNS zone using kOps 1.36 before upgrading (see https://kops.sigs.k8s.io/gossip/)")}
 	case c.UsesNoneDNS():

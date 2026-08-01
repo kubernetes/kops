@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kops/pkg/dns"
-
 	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -32,8 +30,8 @@ const (
 )
 
 func (os *clusterDiscoveryOS) ListDNSRecordsets() ([]*resources.Resource, error) {
-	// if dnsclient does not exist (designate disabled) or using gossip DNS
-	if os.osCloud.DNSClient() == nil || dns.IsGossipClusterName(os.clusterName) {
+	// Designate is optional in OpenStack.
+	if os.osCloud.DNSClient() == nil {
 		return nil, nil
 	}
 
