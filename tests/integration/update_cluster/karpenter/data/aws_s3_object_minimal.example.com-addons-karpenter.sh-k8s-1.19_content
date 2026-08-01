@@ -2999,6 +2999,16 @@ spec:
   - name: images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
     owner: "099720109477"
   associatePublicIPAddress: true
+  blockDeviceMappings:
+  - deviceName: /dev/xvda
+    ebs:
+      deleteOnTermination: true
+      encrypted: true
+      iops: 3000
+      throughput: 125
+      volumeSize: 128Gi
+      volumeType: gp3
+    rootVolume: true
   instanceProfile: nodes.minimal.example.com
   kubelet:
     kubeReserved:
@@ -3229,6 +3239,17 @@ spec:
   - name: images/hvm-ssd-gp3/ubuntu-resolute-26.04-amd64-server-20220404
     owner: "099720109477"
   associatePublicIPAddress: true
+  blockDeviceMappings:
+  - deviceName: /dev/xvda
+    ebs:
+      deleteOnTermination: true
+      encrypted: true
+      iops: 4000
+      kmsKeyID: arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
+      throughput: 200
+      volumeSize: 200Gi
+      volumeType: gp3
+    rootVolume: true
   instanceProfile: nodes.minimal.example.com
   securityGroupSelectorTerms:
   - tags:

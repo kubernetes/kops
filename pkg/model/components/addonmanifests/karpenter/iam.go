@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // ServiceAccount represents the service-account used by the dns-controller.
@@ -34,6 +35,23 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	p := iam.NewPolicy(clusterName, b.Partition, b.Region)
 
 	addKarpenterPermissions(p)
+
+	// The generated EC2NodeClass block device mapping carries the root volume encryption key, which
+	// Karpenter has to be authorized to use.
+	useCustomerManagedKeys := false
+	for _, ig := range b.AllInstanceGroups {
+		if !ig.IsKarpenterManaged() {
+			continue
+		}
+		if rootVolume := ig.Spec.RootVolume; rootVolume != nil {
+			if fi.ValueOf(rootVolume.Encryption) && fi.ValueOf(rootVolume.EncryptionKey) != "" {
+				useCustomerManagedKeys = true
+			}
+		}
+	}
+	if useCustomerManagedKeys {
+		iam.AddKarpenterKMSPermissions(p)
+	}
 
 	return p, nil
 }

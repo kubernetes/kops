@@ -21,6 +21,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
@@ -293,6 +295,189 @@ func TestBuildKarpenterKubeletConfiguration(t *testing.T) {
 				t.Errorf("expected %#v, got %#v", g.expected, actual)
 			}
 		})
+	}
+}
+
+func TestBuildKarpenterBlockDeviceMappings(t *testing.T) {
+	// rootEBS returns the defaults every case starts from, so that each case below
+	// only has to state what it changes.
+	rootEBS := func(mutators ...func(*karpenterBlockDeviceEBS)) *karpenterBlockDeviceEBS {
+		ebs := &karpenterBlockDeviceEBS{
+			DeleteOnTermination: new(true),
+			Encrypted:           new(true),
+			IOPS:                new(int64(3000)),
+			Throughput:          new(int64(125)),
+			VolumeSize:          "128Gi",
+			VolumeType:          "gp3",
+		}
+		for _, mutate := range mutators {
+			mutate(ebs)
+		}
+		return ebs
+	}
+
+	grid := []struct {
+		desc        string
+		role        kops.InstanceGroupRole
+		rootVolume  *kops.InstanceRootVolumeSpec
+		expected    *karpenterBlockDeviceEBS
+		expectError bool
+	}{
+		{
+			desc:     "no rootVolume uses the kOps defaults",
+			expected: rootEBS(),
+		},
+		{
+			desc:       "empty rootVolume uses the kOps defaults",
+			rootVolume: &kops.InstanceRootVolumeSpec{},
+			expected:   rootEBS(),
+		},
+		{
+			desc:       "explicit size",
+			rootVolume: &kops.InstanceRootVolumeSpec{Size: new(int32(200))},
+			expected:   rootEBS(func(e *karpenterBlockDeviceEBS) { e.VolumeSize = "200Gi" }),
+		},
+		{
+			desc:       "zero size falls back to the role default",
+			rootVolume: &kops.InstanceRootVolumeSpec{Size: new(int32(0))},
+			expected:   rootEBS(),
+		},
+		{
+			desc:     "control plane role default size",
+			role:     kops.InstanceGroupRoleControlPlane,
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) { e.VolumeSize = "64Gi" }),
+		},
+		{
+			desc:       "gp2 drops iops and throughput",
+			rootVolume: &kops.InstanceRootVolumeSpec{Type: new("gp2"), IOPS: new(int32(4000)), Throughput: new(int32(200))},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "gp2"
+				e.IOPS = nil
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc:       "standard drops iops and throughput",
+			rootVolume: &kops.InstanceRootVolumeSpec{Type: new("standard")},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "standard"
+				e.IOPS = nil
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc:       "io2 below the iops floor is raised",
+			rootVolume: &kops.InstanceRootVolumeSpec{Type: new("io2"), IOPS: new(int32(50))},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "io2"
+				e.IOPS = new(int64(100))
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc:       "io1 above the iops floor is kept",
+			rootVolume: &kops.InstanceRootVolumeSpec{Type: new("io1"), IOPS: new(int32(5000)), Throughput: new(int32(200))},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.VolumeType = "io1"
+				e.IOPS = new(int64(5000))
+				e.Throughput = nil
+			}),
+		},
+		{
+			desc:       "gp3 below the floors is raised",
+			rootVolume: &kops.InstanceRootVolumeSpec{Type: new("gp3"), IOPS: new(int32(100)), Throughput: new(int32(50))},
+			expected:   rootEBS(),
+		},
+		{
+			desc:       "gp3 above the floors is kept",
+			rootVolume: &kops.InstanceRootVolumeSpec{Type: new("gp3"), IOPS: new(int32(6000)), Throughput: new(int32(250))},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.IOPS = new(int64(6000))
+				e.Throughput = new(int64(250))
+			}),
+		},
+		{
+			desc: "encryption disabled drops the key",
+			rootVolume: &kops.InstanceRootVolumeSpec{
+				Encryption:    new(false),
+				EncryptionKey: new("arn:aws:kms:us-test-1:123456789012:key/test"),
+			},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) { e.Encrypted = new(false) }),
+		},
+		{
+			desc: "encryption enabled keeps the key",
+			rootVolume: &kops.InstanceRootVolumeSpec{
+				Encryption:    new(true),
+				EncryptionKey: new("arn:aws:kms:us-test-1:123456789012:key/test"),
+			},
+			expected: rootEBS(func(e *karpenterBlockDeviceEBS) {
+				e.KMSKeyID = new("arn:aws:kms:us-test-1:123456789012:key/test")
+			}),
+		},
+		{
+			// Matches the ASG launch template path, which only honours the key when
+			// encryption is set explicitly rather than defaulted.
+			desc:       "encryption key without explicit encryption is ignored",
+			rootVolume: &kops.InstanceRootVolumeSpec{EncryptionKey: new("arn:aws:kms:us-test-1:123456789012:key/test")},
+			expected:   rootEBS(),
+		},
+		{
+			// The Karpenter IAM policy grants KMS access on the same condition, so an
+			// empty key must be dropped here rather than emitted as kmsKeyID: "".
+			desc: "empty encryption key is dropped",
+			rootVolume: &kops.InstanceRootVolumeSpec{
+				Encryption:    new(true),
+				EncryptionKey: new(""),
+			},
+			expected: rootEBS(),
+		},
+		{
+			desc:        "unknown role",
+			role:        kops.InstanceGroupRole("Bogus"),
+			expectError: true,
+		},
+	}
+
+	for _, g := range grid {
+		t.Run(g.desc, func(t *testing.T) {
+			role := g.role
+			if role == "" {
+				role = kops.InstanceGroupRoleNode
+			}
+			ig := &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Role:       role,
+					RootVolume: g.rootVolume,
+				},
+			}
+			actual, err := buildKarpenterBlockDeviceMappings(ig, "/dev/xvda")
+			if g.expectError {
+				if err == nil {
+					t.Fatalf("expected an error, got %#v", actual)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			expected := []karpenterBlockDeviceMapping{
+				{
+					DeviceName: "/dev/xvda",
+					EBS:        g.expected,
+					RootVolume: new(true),
+				},
+			}
+			if diff := cmp.Diff(expected, actual); diff != "" {
+				t.Errorf("unexpected blockDeviceMappings, diff=%v", diff)
+			}
+		})
+	}
+}
+
+func TestKarpenterRootDeviceNameWithoutAWSCloud(t *testing.T) {
+	tf := &TemplateFunctions{}
+	if _, err := tf.karpenterRootDeviceName("ami-12345678"); err == nil {
+		t.Errorf("expected an error when the cloud is not an AWS cloud")
 	}
 }
 
