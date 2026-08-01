@@ -156,10 +156,10 @@ func TestBuildKubecfg(t *testing.T) {
 
 	publicCluster := buildMinimalCluster("testcluster", "testcluster.test.com", false, false)
 	emptyMasterPublicNameCluster := buildMinimalCluster("emptyMasterPublicNameCluster", "", false, false)
-	k8sLocalCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", false, true)
+	k8sLocalCluster := buildMinimalCluster("testcluster.k8s.local", "", false, true)
 	certCluster := buildMinimalCluster("testcluster", "testcluster.test.com", true, false)
 	certNLBCluster := buildMinimalCluster("testcluster", "testcluster.test.com", true, true)
-	certK8sLocalNLBCluster := buildMinimalCluster("testgossipcluster.k8s.local", "", true, true)
+	certK8sLocalNLBCluster := buildMinimalCluster("testcluster.k8s.local", "", true, true)
 
 	fakeStatus := fakeStatusCloud{
 		GetApiIngressStatusFn: func(cluster *kops.Cluster) ([]fi.ApiIngressStatus, error) {
@@ -296,11 +296,11 @@ func TestBuildKubecfg(t *testing.T) {
 				status:  fakeStatus,
 			},
 			want: &KubeconfigBuilder{
-				Context:       "testgossipcluster.k8s.local",
+				Context:       "testcluster.k8s.local",
 				Server:        "https://elbHostName",
-				TLSServerName: "api.internal.testgossipcluster.k8s.local",
+				TLSServerName: "api.internal.testcluster.k8s.local",
 				CACerts:       []byte(nextCertificate + certData),
-				User:          "testgossipcluster.k8s.local",
+				User:          "testcluster.k8s.local",
 			},
 			wantClientCert: false,
 		},
@@ -359,11 +359,11 @@ func TestBuildKubecfg(t *testing.T) {
 				},
 			},
 			want: &KubeconfigBuilder{
-				Context:       "testgossipcluster.k8s.local",
+				Context:       "testcluster.k8s.local",
 				Server:        "https://elbHostName:8443",
-				TLSServerName: "api.internal.testgossipcluster.k8s.local",
+				TLSServerName: "api.internal.testcluster.k8s.local",
 				CACerts:       []byte(nextCertificate + certData),
-				User:          "testgossipcluster.k8s.local",
+				User:          "testcluster.k8s.local",
 			},
 			wantClientCert: true,
 		},

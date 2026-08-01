@@ -80,8 +80,10 @@ func testValidateWithTolerance(t *testing.T, groups map[string]*cloudinstances.C
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 		Spec: kopsapi.ClusterSpec{
-			ExternalDNS: &kopsapi.ExternalDNSConfig{
-				Provider: kopsapi.ExternalDNSProviderDNSController,
+			Networking: kopsapi.NetworkingSpec{
+				Topology: &kopsapi.TopologySpec{
+					DNS: kopsapi.DNSTypeNone,
+				},
 			},
 		},
 	}
@@ -150,8 +152,10 @@ func Test_ValidateCloudGroupMissing(t *testing.T) {
 	cluster := &kopsapi.Cluster{
 		ObjectMeta: metav1.ObjectMeta{Name: "testcluster.k8s.local"},
 		Spec: kopsapi.ClusterSpec{
-			ExternalDNS: &kopsapi.ExternalDNSConfig{
-				Provider: kopsapi.ExternalDNSProviderDNSController,
+			Networking: kopsapi.NetworkingSpec{
+				Topology: &kopsapi.TopologySpec{
+					DNS: kopsapi.DNSTypeNone,
+				},
 			},
 		},
 	}
