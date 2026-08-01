@@ -77,6 +77,34 @@ Supported image selector forms are:
 * `<name>`
 * `<owner>/<name>`
 
+### Instance requirements
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+By default, the generated `NodePool` requires one of the instance types listed in `spec.machineType` and `spec.mixedInstancesPolicy.instances`.
+To let Karpenter choose from any instance type within a capacity range instead, set `spec.mixedInstancesPolicy.instanceRequirements`:
+
+```yaml
+spec:
+  role: Node
+  manager: Karpenter
+  mixedInstancesPolicy:
+    instanceRequirements:
+      cpu:
+        min: "2"
+        max: "16"
+      memory:
+        min: "2Gi"
+        max: "64Gi"
+      excludedInstanceTypes:
+      - m3.*
+      - t3.small
+```
+
+This generates the appropriate `karpenter.k8s.aws/instance-cpu` and `karpenter.k8s.aws/instance-memory` requirements on the `NodePool`.
+`excludedInstanceTypes` entries are mapped to `NotIn` requirements: a `<family>.*` wildcard excludes an instance family, and a bare instance type excludes that type.
+
+When `instanceRequirements` is set, kOps omits the instance type requirement, and `spec.machineType` and `spec.mixedInstancesPolicy.instances` no longer restrict the NodePool.
+
 ## Karpenter-managed InstanceGroups
 {{ kops_feature_table(kops_added_default='1.36') }}
 
