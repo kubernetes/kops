@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // ServiceAccount represents the service-account used by Karpenter.
@@ -36,14 +37,24 @@ func (r *ServiceAccount) BuildAWSPolicy(b *iam.PolicyBuilder) (*iam.Policy, erro
 	// Instance groups with custom IAM instance profiles contain roles with names that kOps
 	// cannot predict.
 	useCustomInstanceProfiles := false
+	// The generated EC2NodeClass block device mapping carries the root volume encryption key, which
+	// Karpenter has to be authorized to use.
+	useCustomerManagedKeys := false
 	for _, ig := range b.AllInstanceGroups {
-		if ig.IsKarpenterManaged() && ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
+		if !ig.IsKarpenterManaged() {
+			continue
+		}
+		if ig.Spec.IAM != nil && ig.Spec.IAM.Profile != nil {
 			useCustomInstanceProfiles = true
-			break
+		}
+		if rootVolume := ig.Spec.RootVolume; rootVolume != nil {
+			if fi.ValueOf(rootVolume.Encryption) && fi.ValueOf(rootVolume.EncryptionKey) != "" {
+				useCustomerManagedKeys = true
+			}
 		}
 	}
 
-	if err := iam.AddKarpenterPermissions(p, useCustomInstanceProfiles); err != nil {
+	if err := iam.AddKarpenterPermissions(p, useCustomInstanceProfiles, useCustomerManagedKeys); err != nil {
 		return nil, err
 	}
 

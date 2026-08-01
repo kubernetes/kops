@@ -22,8 +22,12 @@ import (
 	"strconv"
 	"strings"
 
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+
 	"k8s.io/kops/pkg/apis/kops"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/model/awsmodel"
+	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/pkg/nodelabels"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -53,6 +57,7 @@ type karpenterEC2NodeClassSpec struct {
 	AMIFamily                string                         `json:"amiFamily"`
 	AMISelectorTerms         []karpenterAMITerm             `json:"amiSelectorTerms"`
 	AssociatePublicIPAddress *bool                          `json:"associatePublicIPAddress,omitempty"`
+	BlockDeviceMappings      []karpenterBlockDeviceMapping  `json:"blockDeviceMappings,omitempty"`
 	Tags                     map[string]string              `json:"tags,omitempty"`
 	SubnetSelectorTerms      []karpenterSelectorTerm        `json:"subnetSelectorTerms"`
 	SecurityGroupTerms       []karpenterSelectorTerm        `json:"securityGroupSelectorTerms"`
@@ -68,6 +73,28 @@ type karpenterKubeletConfiguration struct {
 	MaxPods        *int32            `json:"maxPods,omitempty"`
 	SystemReserved map[string]string `json:"systemReserved,omitempty"`
 	KubeReserved   map[string]string `json:"kubeReserved,omitempty"`
+}
+
+// karpenterBlockDeviceMapping maps to EC2NodeClass.spec.blockDeviceMappings[]. kOps
+// emits exactly one mapping, for the root volume, built from the InstanceGroup's
+// spec.rootVolume with the same defaults the ASG launch template applies.
+type karpenterBlockDeviceMapping struct {
+	DeviceName string                   `json:"deviceName,omitempty"`
+	EBS        *karpenterBlockDeviceEBS `json:"ebs,omitempty"`
+	// RootVolume tells Karpenter which mapping backs the kubelet root dir. With
+	// amiFamily: Custom Karpenter cannot infer it, and without the flag it computes
+	// node ephemeral-storage capacity from its own default rather than this volume.
+	RootVolume *bool `json:"rootVolume,omitempty"`
+}
+
+type karpenterBlockDeviceEBS struct {
+	DeleteOnTermination *bool   `json:"deleteOnTermination,omitempty"`
+	Encrypted           *bool   `json:"encrypted,omitempty"`
+	IOPS                *int64  `json:"iops,omitempty"`
+	KMSKeyID            *string `json:"kmsKeyID,omitempty"`
+	Throughput          *int64  `json:"throughput,omitempty"`
+	VolumeSize          string  `json:"volumeSize,omitempty"`
+	VolumeType          string  `json:"volumeType,omitempty"`
 }
 
 type karpenterAMITerm struct {
@@ -200,6 +227,14 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 	if err != nil {
 		return nil, fmt.Errorf("reading userData for %q: %w", ig.Name, err)
 	}
+	rootDeviceName, err := tf.karpenterRootDeviceName(ig.Spec.Image)
+	if err != nil {
+		return nil, fmt.Errorf("resolving root device for %q: %w", ig.Name, err)
+	}
+	blockDeviceMappings, err := buildKarpenterBlockDeviceMappings(ig, rootDeviceName)
+	if err != nil {
+		return nil, fmt.Errorf("building blockDeviceMappings for %q: %w", ig.Name, err)
+	}
 
 	subnetTerms := []karpenterSelectorTerm{
 		{
@@ -235,6 +270,7 @@ func (tf *TemplateFunctions) buildKarpenterEC2NodeClass(ig *kops.InstanceGroup) 
 			AMIFamily:                "Custom",
 			AMISelectorTerms:         amiSelectorTerms,
 			AssociatePublicIPAddress: associatePublicIP,
+			BlockDeviceMappings:      blockDeviceMappings,
 			Tags:                     tags,
 			SubnetSelectorTerms:      subnetTerms,
 			SecurityGroupTerms:       securityGroupTerms,
@@ -258,6 +294,103 @@ func buildKarpenterKubeletConfiguration(ig *kops.InstanceGroup) *karpenterKubele
 		return nil
 	}
 	return kubelet
+}
+
+func buildKarpenterBlockDeviceMappings(ig *kops.InstanceGroup, rootDeviceName string) ([]karpenterBlockDeviceMapping, error) {
+	volumeSize, err := defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+	if err != nil {
+		return nil, err
+	}
+	var volumeType ec2types.VolumeType
+	deleteOnTermination := awsmodel.DefaultVolumeDeleteOnTermination
+	encryption := awsmodel.DefaultVolumeEncryption
+	var encryptionKey *string
+	var iops, throughput *int32
+
+	if rootVolume := ig.Spec.RootVolume; rootVolume != nil {
+		if fi.ValueOf(rootVolume.Size) > 0 {
+			volumeSize = fi.ValueOf(rootVolume.Size)
+		}
+		volumeType = ec2types.VolumeType(fi.ValueOf(rootVolume.Type))
+		if rootVolume.Encryption != nil {
+			encryption = fi.ValueOf(rootVolume.Encryption)
+		}
+		// As in the ASG path, the key is only honoured when encryption is set explicitly, not when
+		// it is merely defaulted to true, and an empty key is dropped rather than sent to EC2.
+		if fi.ValueOf(rootVolume.Encryption) && fi.ValueOf(rootVolume.EncryptionKey) != "" {
+			encryptionKey = rootVolume.EncryptionKey
+		}
+		iops = rootVolume.IOPS
+		throughput = rootVolume.Throughput
+	}
+	if volumeType == "" {
+		volumeType = awsmodel.DefaultVolumeType
+	}
+
+	// IOPS and throughput are only meaningful for some volume types, and each has a
+	// minimum below which EC2 rejects the request.
+	switch volumeType {
+	case ec2types.VolumeTypeIo1, ec2types.VolumeTypeIo2:
+		if fi.ValueOf(iops) < awsmodel.DefaultVolumeIonIops {
+			iops = new(int32(awsmodel.DefaultVolumeIonIops))
+		}
+		throughput = nil
+	case ec2types.VolumeTypeGp3:
+		if fi.ValueOf(iops) < awsmodel.DefaultVolumeGp3Iops {
+			iops = new(int32(awsmodel.DefaultVolumeGp3Iops))
+		}
+		if fi.ValueOf(throughput) < awsmodel.DefaultVolumeGp3Throughput {
+			throughput = new(int32(awsmodel.DefaultVolumeGp3Throughput))
+		}
+	default:
+		iops = nil
+		throughput = nil
+	}
+
+	ebs := &karpenterBlockDeviceEBS{
+		DeleteOnTermination: new(deleteOnTermination),
+		Encrypted:           new(encryption),
+		KMSKeyID:            encryptionKey,
+		VolumeSize:          fmt.Sprintf("%dGi", volumeSize),
+		VolumeType:          string(volumeType),
+	}
+	if iops != nil {
+		ebs.IOPS = new(int64(fi.ValueOf(iops)))
+	}
+	if throughput != nil {
+		ebs.Throughput = new(int64(fi.ValueOf(throughput)))
+	}
+
+	return []karpenterBlockDeviceMapping{
+		{
+			DeviceName: rootDeviceName,
+			EBS:        ebs,
+			RootVolume: new(true),
+		},
+	}, nil
+}
+
+// karpenterRootDeviceName resolves the root device name of the InstanceGroup image, so
+// that the generated block device mapping overrides the image's root volume rather than
+// attaching an additional one. The name varies between images (/dev/xvda, /dev/sda1),
+// so it has to come from the image itself.
+func (tf *TemplateFunctions) karpenterRootDeviceName(image string) (string, error) {
+	cloud, ok := tf.cloud.(awsup.AWSCloud)
+	if !ok {
+		return "", fmt.Errorf("expected an AWS cloud, got %T", tf.cloud)
+	}
+	resolved, err := cloud.ResolveImage(image)
+	if err != nil {
+		return "", fmt.Errorf("unable to resolve image %q: %w", image, err)
+	}
+	if resolved == nil {
+		return "", fmt.Errorf("unable to resolve image %q: not found", image)
+	}
+	rootDeviceName := fi.ValueOf(resolved.RootDeviceName)
+	if rootDeviceName == "" {
+		return "", fmt.Errorf("image %q has no root device name", image)
+	}
+	return rootDeviceName, nil
 }
 
 func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*karpenterNodePool, error) {

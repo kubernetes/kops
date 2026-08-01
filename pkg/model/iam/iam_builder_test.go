@@ -403,16 +403,23 @@ func TestAddKarpenterPermissions(t *testing.T) {
 	tests := []struct {
 		name                      string
 		useCustomInstanceProfiles bool
+		useCustomerManagedKeys    bool
 		wantPassRoleResource      string
+		wantKMS                   bool
 	}{
 		{name: "managed instance profiles", useCustomInstanceProfiles: false, wantPassRoleResource: "arn:aws:iam::*:role/nodes.c.example.com"},
 		{name: "custom instance profiles", useCustomInstanceProfiles: true, wantPassRoleResource: "arn:aws:iam::*:role/*"},
+		{name: "customer managed keys", useCustomInstanceProfiles: false, useCustomerManagedKeys: true, wantPassRoleResource: "arn:aws:iam::*:role/nodes.c.example.com", wantKMS: true},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			p := NewPolicy("c.example.com", "aws", "us-east-1")
-			if err := AddKarpenterPermissions(p, tc.useCustomInstanceProfiles); err != nil {
+			if err := AddKarpenterPermissions(p, tc.useCustomInstanceProfiles, tc.useCustomerManagedKeys); err != nil {
 				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if hasKMS := p.unconditionalAction.Has("kms:CreateGrant"); hasKMS != tc.wantKMS {
+				t.Errorf("expected KMS permissions present=%t, got %t", tc.wantKMS, hasKMS)
 			}
 
 			var passRole *Statement

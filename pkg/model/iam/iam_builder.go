@@ -1146,10 +1146,19 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 // Karpenter never creates or mutates instance profiles.
 // useCustomInstanceProfiles indicates that instance groups use custom IAM instance profiles,
 // which contain roles with names that kOps cannot predict.
-func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool) error {
+// useCustomerManagedKeys indicates that instance groups encrypt their root volume with a
+// customer managed KMS key, which Karpenter has to be authorized to use.
+func AddKarpenterPermissions(p *Policy, useCustomInstanceProfiles bool, useCustomerManagedKeys bool) error {
 	ec2Service, err := IAMServiceEC2(p.region)
 	if err != nil {
 		return err
+	}
+
+	// Launching an instance whose root volume is encrypted with a customer managed key requires the
+	// launching principal to be authorized on that key; EC2 makes the KMS calls on Karpenter's
+	// behalf. The key policy also has to allow this role; kOps does not manage the key policy.
+	if useCustomerManagedKeys {
+		addKMSIAMPolicies(p, false)
 	}
 
 	// AllowRegionalReadActions, AllowSSMReadActions, AllowPricingReadActions and
