@@ -94,6 +94,59 @@ func TestIsHealthy(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "available deployment that gave up on its rollout",
+			object: deploymentWithConditions(
+				condition("Available", "True"),
+				condition("Progressing", "False"),
+			),
+			want: false,
+		},
+		{
+			name: "progressing is only a readiness signal for Deployments",
+			object: map[string]interface{}{
+				"apiVersion": "example.com/v1",
+				"kind":       "Widget",
+				"metadata":   map[string]interface{}{"name": "widget"},
+				"status": map[string]interface{}{
+					"conditions": []interface{}{
+						condition("Ready", "True"),
+						condition("Progressing", "False"),
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "programmed gateway",
+			object: gatewayWithConditions("Gateway",
+				condition("Accepted", "True"),
+				condition("Programmed", "True"),
+			),
+			want: true,
+		},
+		{
+			name: "gateway that is accepted but not programmed",
+			object: gatewayWithConditions("Gateway",
+				condition("Accepted", "True"),
+				condition("Programmed", "False"),
+			),
+			want: false,
+		},
+		{
+			name: "accepted gateway class",
+			object: gatewayWithConditions("GatewayClass",
+				condition("Accepted", "True"),
+			),
+			want: true,
+		},
+		{
+			name: "rejected gateway class",
+			object: gatewayWithConditions("GatewayClass",
+				condition("Accepted", "False"),
+			),
+			want: false,
+		},
+		{
 			name: "healthy node with negative pressure conditions",
 			object: map[string]interface{}{
 				"apiVersion": "v1",
@@ -211,15 +264,28 @@ func condition(conditionType, status string) map[string]interface{} {
 	}
 }
 
-func deploymentWithConditions(conditions ...map[string]interface{}) map[string]interface{} {
-	list := make([]interface{}, 0, len(conditions))
-	for _, c := range conditions {
-		list = append(list, c)
+func gatewayWithConditions(kind string, conditions ...map[string]interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"apiVersion": "gateway.networking.k8s.io/v1",
+		"kind":       kind,
+		"metadata":   map[string]interface{}{"name": "gw"},
+		"status":     map[string]interface{}{"conditions": toList(conditions)},
 	}
+}
+
+func deploymentWithConditions(conditions ...map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{
 		"apiVersion": "apps/v1",
 		"kind":       "Deployment",
 		"metadata":   map[string]interface{}{"name": "deploy"},
-		"status":     map[string]interface{}{"conditions": list},
+		"status":     map[string]interface{}{"conditions": toList(conditions)},
 	}
+}
+
+func toList(conditions []map[string]interface{}) []interface{} {
+	list := make([]interface{}, 0, len(conditions))
+	for _, c := range conditions {
+		list = append(list, c)
+	}
+	return list
 }
