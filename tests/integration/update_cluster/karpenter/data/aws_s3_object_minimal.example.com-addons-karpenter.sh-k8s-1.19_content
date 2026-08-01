@@ -3212,6 +3212,31 @@ spec:
         operator: In
         values:
         - linux
+      - key: karpenter.k8s.aws/instance-cpu
+        operator: Gte
+        values:
+        - "2"
+      - key: karpenter.k8s.aws/instance-cpu
+        operator: Lte
+        values:
+        - "16"
+      - key: karpenter.k8s.aws/instance-memory
+        operator: Gte
+        values:
+        - "2048"
+      - key: karpenter.k8s.aws/instance-memory
+        operator: Lte
+        values:
+        - "65536"
+      - key: karpenter.k8s.aws/instance-family
+        operator: NotIn
+        values:
+        - c3
+        - m3
+      - key: node.kubernetes.io/instance-type
+        operator: NotIn
+        values:
+        - t2.nano
       - key: karpenter.sh/capacity-type
         operator: In
         values:
