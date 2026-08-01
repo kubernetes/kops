@@ -164,7 +164,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	var controlPlaneIGMs []*gcetasks.InstanceGroupManager // Currently these contain etcd instances
 	requireEtcdLB := false
 	for _, ig := range b.InstanceGroups {
-		if !ig.HasAPIServer() {
+		if !ig.RunsAPIServer() {
 			continue
 		}
 		if len(ig.Spec.Zones) > 1 {
@@ -226,7 +226,7 @@ func (b *APILoadBalancerBuilder) createInternalLB(c *fi.CloudupModelBuilderConte
 	for _, sn := range b.Cluster.Spec.Networking.Subnets {
 		var subnet *gcetasks.Subnet
 		for _, ig := range b.InstanceGroups {
-			if ig.HasAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
+			if ig.RunsAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
 				subnet = b.LinkToSubnet(&sn)
 				break
 			}
@@ -349,7 +349,7 @@ func (b *APILoadBalancerBuilder) createEtcdInternalLB(c *fi.CloudupModelBuilderC
 	for _, sn := range b.Cluster.Spec.Networking.Subnets {
 		var subnet *gcetasks.Subnet
 		for _, ig := range b.InstanceGroups {
-			if ig.HasAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
+			if ig.RunsAPIServer() && slices.Contains(ig.Spec.Subnets, sn.Name) {
 				subnet = b.LinkToSubnet(&sn)
 				break
 			}

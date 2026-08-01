@@ -387,7 +387,7 @@ func (b *AutoscalingGroupModelBuilder) buildSecurityGroups(c *fi.CloudupModelBui
 
 	securityGroups := []*awstasks.SecurityGroup{sgLink}
 
-	if ig.HasAPIServer() &&
+	if ig.RunsAPIServer() &&
 		b.UseNetworkLoadBalancer() {
 		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
 			sgTask := &awstasks.SecurityGroup{
@@ -490,7 +490,7 @@ func (b *AutoscalingGroupModelBuilder) buildAutoScalingGroupTask(c *fi.CloudupMo
 	// hybrid (+SpotinstHybrid) instance groups.
 	if !featureflag.Spotinst.Enabled() ||
 		(featureflag.SpotinstHybrid.Enabled() && !HybridInstanceGroup(ig)) {
-		if b.UseLoadBalancerForAPI() && ig.HasAPIServer() {
+		if b.UseLoadBalancerForAPI() && ig.RunsAPIServer() {
 			t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("tcp"))
 			if b.Cluster.UsesLoadBalancerForKopsController() && ig.IsControlPlane() {
 				t.TargetGroups = append(t.TargetGroups, b.LinkToTargetGroup("kops-controller"))

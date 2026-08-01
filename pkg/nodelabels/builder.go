@@ -28,6 +28,16 @@ const (
 	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
 	RoleLabelNode16      = "node-role.kubernetes.io/node"
 
+	// New Experimental control plane roles associated with static manifests
+	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
+	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
+	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
+
+	// New Experimental control plane roles which are dynamically allocated
+	RoleLabelKopsCCM        = "node-role.kops.k8s.io/cloud-controller-manager"
+	RoleLabelKopsChannel    = "node-role.kops.k8s.io/kops-channel"
+	RoleLabelKopsController = "node-role.kops.k8s.io/kops-controller"
+
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )
 
@@ -88,7 +98,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		if nodeLabels == nil {
 			nodeLabels = make(map[string]string)
 		}
-		for label, value := range BuildMandatoryControlPlaneLabels() {
+		for label, value := range BuildMandatoryControlPlaneLabels(make(map[string]string)) {
 			nodeLabels[label] = value
 		}
 	}
@@ -104,8 +114,7 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 }
 
 // BuildMandatoryControlPlaneLabels returns the list of labels all CP nodes must have
-func BuildMandatoryControlPlaneLabels() map[string]string {
-	nodeLabels := make(map[string]string)
+func BuildMandatoryControlPlaneLabels(nodeLabels map[string]string) map[string]string {
 	nodeLabels[RoleLabelControlPlane20] = ""
 	nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 	nodeLabels["node.kubernetes.io/exclude-from-external-load-balancers"] = ""

@@ -549,9 +549,7 @@ func NewCluster(opt *NewClusterOptions, clientset simple.Clientset) (*NewCluster
 					return nil, fmt.Errorf("etcd nodes requires the ExperimentalRoles feature flag to be enabled")
 				case g.Spec.Role.HasScheduler():
 					return nil, fmt.Errorf("scheduler nodes requires the ExperimentalRoles feature flag to be enabled")
-				case g.Spec.Role.HasCloudControllerManager():
-					return nil, fmt.Errorf("cloud-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
-				case g.Spec.Role.HasKubControllerManager():
+				case g.Spec.Role.HasKubeControllerManager():
 					return nil, fmt.Errorf("kube-controller-manager nodes requires the ExperimentalRoles feature flag to be enabled")
 				}
 			}

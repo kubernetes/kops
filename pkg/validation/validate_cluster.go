@@ -194,7 +194,7 @@ func (v *clusterValidatorImpl) Validate(ctx context.Context) (*ValidationCluster
 	if v.maxUnreadyNodes > 0 {
 		var notReadyWorkerNodes []string
 		for _, cloudGroup := range cloudGroups {
-			if cloudGroup.InstanceGroup != nil && cloudGroup.InstanceGroup.Spec.Role == kops.InstanceGroupRoleNode {
+			if cloudGroup.InstanceGroup != nil && cloudGroup.InstanceGroup.Spec.Role.HasNode() {
 				var allMembers []*cloudinstances.CloudInstance
 				allMembers = append(allMembers, cloudGroup.Ready...)
 				allMembers = append(allMembers, cloudGroup.NeedUpdate...)

@@ -340,7 +340,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	//   - any role on clouds without DNS-based kops-controller discovery.
 	// CP nodes get api.internal=127.0.0.1 from etc_hosts.go's IsMaster branch and don't
 	// connect to kops-controller.internal externally, so they don't need APIServerIPs.
-	if cluster.UsesLoadBalancerForKopsController() && !ig.HasAPIServer() {
+	if cluster.UsesLoadBalancerForKopsController() && !ig.RunsAPIServer() {
 		bootConfig.APIServerIPs = controlPlaneIPs
 	} else {
 		switch cluster.GetCloudProvider() {
@@ -359,7 +359,7 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 		}
 	}
 
-	useConfigServer := !ig.HasAPIServer()
+	useConfigServer := !ig.RunsAPIServer()
 	if useConfigServer {
 		bootConfig.ConfigServer = buildConfigServerOptions(cluster.ObjectMeta.Name, config.CAs[fi.CertificateIDCA], bootConfig.APIServerIPs)
 		delete(config.CAs, fi.CertificateIDCA)

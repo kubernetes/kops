@@ -188,7 +188,7 @@ func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup)
 		}
 	}
 
-	if ig.HasAPIServer() {
+	if ig.RunsAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
 	}
 
