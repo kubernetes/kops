@@ -107,7 +107,9 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 	)
 }
 
-// AsJSON converts the policy document to JSON format (parsable by AWS)
+// AsJSON converts the policy document to JSON format (parsable by AWS), or to an empty string
+// if it has no statements, which AWS does not accept. The IAMRolePolicy task reads an empty
+// document as "no inline policy": it skips creating one and deletes one that already exists.
 func (p *Policy) AsJSON() (string, error) {
 	if len(p.kmsDataPlaneAction) > 0 {
 		services := kmsViaServices(p.region)
@@ -163,7 +165,7 @@ func (p *Policy) AsJSON() (string, error) {
 		}
 	}
 	if len(p.Statement) == 0 {
-		return "", fmt.Errorf("policy contains no statement")
+		return "", nil
 	}
 
 	j, err := json.MarshalIndent(p, "", "  ")
@@ -390,7 +392,7 @@ func (r *NodeRoleAPIServer) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addAmazonVPCCNIPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
+	if b.Cluster.Spec.IsCiliumENIIPAM() {
 		addCiliumEniPermissions(p)
 	}
 
@@ -412,6 +414,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 	p := NewPolicy(clusterName, b.Partition, b.Region)
 
 	addEtcdManagerPermissions(p)
+	addKopsControllerPermissions(p)
 	b.addNodeupPermissions(p, false)
 
 	if b.Cluster.Spec.IsKopsControllerIPAM() {
@@ -469,7 +472,7 @@ func (r *NodeRoleMaster) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 		addAmazonVPCCNIPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking.Cilium != nil && b.Cluster.Spec.Networking.Cilium.IPAM == kops.CiliumIpamEni {
+	if b.Cluster.Spec.IsCiliumENIIPAM() {
 		addCiliumEniPermissions(p)
 	}
 
@@ -519,13 +522,8 @@ func (r *NodeRoleNode) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
 
 // BuildAWSPolicy generates a custom policy for a bastion host.
 func (r *NodeRoleBastion) BuildAWSPolicy(b *PolicyBuilder) (*Policy, error) {
-	p := NewPolicy(b.Cluster.GetName(), b.Partition, b.Region)
-
-	// Bastion hosts currently don't require any specific permissions.
-	// A trivial permission is granted, because empty policies are not allowed.
-	p.unconditionalAction.Insert("ec2:DescribeRegions")
-
-	return p, nil
+	// Bastion hosts don't require any permissions.
+	return NewPolicy(b.Cluster.GetName(), b.Partition, b.Region), nil
 }
 
 // AddS3Permissions add S3 permissions to an IAM Policy.
@@ -840,9 +838,15 @@ func addKindnetSrcDstCheckPermissions(p *Policy) {
 
 func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) {
 	addASLifecyclePolicies(p, enableHookSupport)
-	p.unconditionalAction.Insert(
-		"ec2:DescribeInstanceTypes",
-	)
+
+	// ec2:DescribeInstanceTypes is called on the instance itself, by nodeup to detect Nvidia GPU
+	// support (upup/pkg/fi/nodeup/command.go) and by the kubelet builder to compute MaxPods for ENI
+	// based IPAM (nodeup/pkg/model/kubelet.go), whose condition is mirrored here.
+	if b.nvidiaGPUEnabled() || b.Cluster.Spec.Networking.AmazonVPC != nil || b.Cluster.Spec.IsCiliumENIIPAM() {
+		p.unconditionalAction.Insert(
+			"ec2:DescribeInstanceTypes",
+		)
+	}
 
 	if b.Cluster.Spec.IsKopsControllerIPAM() {
 		p.unconditionalAction.Insert(
@@ -851,16 +855,61 @@ func (b *PolicyBuilder) addNodeupPermissions(p *Policy, enableHookSupport bool) 
 	}
 }
 
+// nvidiaGPUEnabled returns true if Nvidia GPU support is enabled for the cluster or for any
+// instance group with the role being built. An instance group level disable is ignored, because
+// all instance groups with the same role share one IAM role.
+func (b *PolicyBuilder) nvidiaGPUEnabled() bool {
+	if hasNvidiaGPU(b.Cluster.Spec.Containerd) {
+		return true
+	}
+
+	var igRole kops.InstanceGroupRole
+	switch b.Role.(type) {
+	case *NodeRoleMaster:
+		igRole = kops.InstanceGroupRoleControlPlane
+	case *NodeRoleAPIServer:
+		igRole = kops.InstanceGroupRoleAPIServer
+	case *NodeRoleNode:
+		igRole = kops.InstanceGroupRoleNode
+	default:
+		return false
+	}
+
+	for _, ig := range b.AllInstanceGroups {
+		if ig.Spec.Role == igRole && hasNvidiaGPU(ig.Spec.Containerd) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hasNvidiaGPU(c *kops.ContainerdConfig) bool {
+	return c != nil && c.NvidiaGPU != nil && fi.ValueOf(c.NvidiaGPU.Enabled)
+}
+
+// addKopsControllerPermissions adds the permissions used by kops-controller: node verification
+// (pkg/bootstrap/awsbootstrap/verifier.go) and node identification for labels
+// (pkg/nodeidentity/aws/identify.go) both call ec2:DescribeInstances. etcd-manager calls it too,
+// but kops-controller needs it on its own.
+func addKopsControllerPermissions(p *Policy) {
+	p.unconditionalAction.Insert(
+		"ec2:DescribeInstances",
+	)
+}
+
 func addKopsControllerIPAMPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:DescribeNetworkInterfaces",
 	)
 }
 
+// addEtcdManagerPermissions adds the permissions used by etcd-manager to find and attach the etcd
+// volumes. It does not need ec2:DescribeRegions, because it reads the region from the instance
+// metadata service.
 func addEtcdManagerPermissions(p *Policy) {
 	p.unconditionalAction.Insert(
 		"ec2:DescribeInstances",
-		"ec2:DescribeRegions",
 		"ec2:DescribeVolumes",
 	)
 
@@ -1077,7 +1126,6 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 		"autoscaling:DescribeLaunchConfigurations",
 		"autoscaling:DescribeScalingActivities",
 		"ec2:DescribeImages",
-		"ec2:DescribeInstanceTypes",
 		"ec2:DescribeLaunchTemplateVersions",
 		"ec2:GetInstanceTypesFromInstanceRequirements",
 	)

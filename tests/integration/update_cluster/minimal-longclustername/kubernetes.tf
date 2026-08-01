@@ -366,12 +366,6 @@ resource "aws_iam_role_policy" "masters-this-is-truly-a-really-really-really-rea
   role   = aws_iam_role.masters-this-is-truly-a-really-really-really-really-reall-g6fsnu.name
 }
 
-resource "aws_iam_role_policy" "nodes-this-is-truly-a-really-really-really-really-really--d86ibl" {
-  name   = "nodes.this.is.truly.a.really.really.really.really.really.-d86ibl"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.this.is.truly.a.really.really.really.really.really.-d86ibl_policy")
-  role   = aws_iam_role.nodes-this-is-truly-a-really-really-really-really-really--d86ibl.name
-}
-
 resource "aws_internet_gateway" "this-is-truly-a-really-really-really-really-really-long-cluster-name-minimal-example-com" {
   tags = {
     "KubernetesCluster"                                                                                              = "this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com"

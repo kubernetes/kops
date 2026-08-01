@@ -474,22 +474,10 @@ resource "aws_iam_role" "nodes-privatedns2-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatedns2-example-com" {
-  name   = "bastions.privatedns2.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatedns2.example.com_policy")
-  role   = aws_iam_role.bastions-privatedns2-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privatedns2-example-com" {
   name   = "masters.privatedns2.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privatedns2.example.com_policy")
   role   = aws_iam_role.masters-privatedns2-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatedns2-example-com" {
-  name   = "nodes.privatedns2.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatedns2.example.com_policy")
-  role   = aws_iam_role.nodes-privatedns2-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-privatedns2-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

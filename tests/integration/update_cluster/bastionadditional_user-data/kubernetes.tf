@@ -474,22 +474,10 @@ resource "aws_iam_role" "nodes-bastionuserdata-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-bastionuserdata-example-com" {
-  name   = "bastions.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.bastions-bastionuserdata-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-bastionuserdata-example-com" {
   name   = "masters.bastionuserdata.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.bastionuserdata.example.com_policy")
   role   = aws_iam_role.masters-bastionuserdata-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-bastionuserdata-example-com" {
-  name   = "nodes.bastionuserdata.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.bastionuserdata.example.com_policy")
-  role   = aws_iam_role.nodes-bastionuserdata-example-com.name
 }
 
 resource "aws_internet_gateway" "bastionuserdata-example-com" {

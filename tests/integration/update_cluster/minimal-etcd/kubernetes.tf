@@ -366,12 +366,6 @@ resource "aws_iam_role_policy" "masters-minimal-etcd-example-com" {
   role   = aws_iam_role.masters-minimal-etcd-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-minimal-etcd-example-com" {
-  name   = "nodes.minimal-etcd.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal-etcd.example.com_policy")
-  role   = aws_iam_role.nodes-minimal-etcd-example-com.name
-}
-
 resource "aws_internet_gateway" "minimal-etcd-example-com" {
   tags = {
     "KubernetesCluster"                              = "minimal-etcd.example.com"

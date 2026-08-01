@@ -1,10 +1,7 @@
 {
   "Statement": [
     {
-      "Action": [
-        "ec2:AssignIpv6Addresses",
-        "ec2:DescribeInstanceTypes"
-      ],
+      "Action": "ec2:AssignIpv6Addresses",
       "Effect": "Allow",
       "Resource": "*"
     },

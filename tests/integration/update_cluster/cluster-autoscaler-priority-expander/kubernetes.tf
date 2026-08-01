@@ -482,12 +482,6 @@ resource "aws_iam_role_policy" "masters-cas-priority-expander-example-com" {
   role   = aws_iam_role.masters-cas-priority-expander-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-cas-priority-expander-example-com" {
-  name   = "nodes.cas-priority-expander.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.cas-priority-expander.example.com_policy")
-  role   = aws_iam_role.nodes-cas-priority-expander-example-com.name
-}
-
 resource "aws_internet_gateway" "cas-priority-expander-example-com" {
   tags = {
     "KubernetesCluster"                                       = "cas-priority-expander.example.com"

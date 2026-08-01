@@ -1,10 +1,7 @@
 {
   "Statement": [
     {
-      "Action": [
-        "autoscaling:DescribeLifecycleHooks",
-        "ec2:DescribeInstanceTypes"
-      ],
+      "Action": "autoscaling:DescribeLifecycleHooks",
       "Effect": "Allow",
       "Resource": "*"
     },

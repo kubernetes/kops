@@ -480,22 +480,10 @@ resource "aws_iam_role" "nodes-privatekopeio-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatekopeio-example-com" {
-  name   = "bastions.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatekopeio.example.com_policy")
-  role   = aws_iam_role.bastions-privatekopeio-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privatekopeio-example-com" {
   name   = "masters.privatekopeio.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privatekopeio.example.com_policy")
   role   = aws_iam_role.masters-privatekopeio-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatekopeio-example-com" {
-  name   = "nodes.privatekopeio.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatekopeio.example.com_policy")
-  role   = aws_iam_role.nodes-privatekopeio-example-com.name
 }
 
 resource "aws_internet_gateway" "privatekopeio-example-com" {

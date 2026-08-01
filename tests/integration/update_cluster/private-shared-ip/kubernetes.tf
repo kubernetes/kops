@@ -465,22 +465,10 @@ resource "aws_iam_role" "nodes-private-shared-ip-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-private-shared-ip-example-com" {
-  name   = "bastions.private-shared-ip.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-ip.example.com_policy")
-  role   = aws_iam_role.bastions-private-shared-ip-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-private-shared-ip-example-com" {
   name   = "masters.private-shared-ip.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.private-shared-ip.example.com_policy")
   role   = aws_iam_role.masters-private-shared-ip-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-private-shared-ip-example-com" {
-  name   = "nodes.private-shared-ip.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.private-shared-ip.example.com_policy")
-  role   = aws_iam_role.nodes-private-shared-ip-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-private-shared-ip-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

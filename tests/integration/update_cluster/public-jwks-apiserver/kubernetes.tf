@@ -499,12 +499,6 @@ resource "aws_iam_role_policy" "masters-minimal-example-com" {
   role   = aws_iam_role.masters-minimal-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-minimal-example-com" {
-  name   = "nodes.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal.example.com_policy")
-  role   = aws_iam_role.nodes-minimal-example-com.name
-}
-
 resource "aws_internet_gateway" "minimal-example-com" {
   tags = {
     "KubernetesCluster"                         = "minimal.example.com"

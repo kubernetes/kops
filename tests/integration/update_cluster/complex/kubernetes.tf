@@ -419,12 +419,6 @@ resource "aws_iam_role_policy" "masters-complex-example-com" {
   role   = aws_iam_role.masters-complex-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-complex-example-com" {
-  name   = "nodes.complex.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.complex.example.com_policy")
-  role   = aws_iam_role.nodes-complex-example-com.name
-}
-
 resource "aws_internet_gateway" "complex-example-com" {
   tags = {
     "KubernetesCluster"                         = "complex.example.com"

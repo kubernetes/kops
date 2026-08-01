@@ -366,12 +366,6 @@ resource "aws_iam_role_policy" "masters-compress-example-com" {
   role   = aws_iam_role.masters-compress-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-compress-example-com" {
-  name   = "nodes.compress.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.compress.example.com_policy")
-  role   = aws_iam_role.nodes-compress-example-com.name
-}
-
 resource "aws_internet_gateway" "compress-example-com" {
   tags = {
     "KubernetesCluster"                          = "compress.example.com"

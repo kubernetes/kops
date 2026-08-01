@@ -24,7 +24,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -38,16 +37,12 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/pkg/testutils/golden"
 	"k8s.io/kops/pkg/testutils/testcontext"
-	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 // updateClusterTestBase is added automatically to the srcDir on all
@@ -55,46 +50,22 @@ import (
 const updateClusterTestBase = "../../tests/integration/update_cluster/"
 
 type integrationTest struct {
-	clusterName    string
-	srcDir         string
-	version        string
-	private        bool
-	zones          int
-	expectPolicies bool
-	// expectServiceAccountRolePolicies is a list of per-ServiceAccount IAM roles (instead of just using the node roles)
-	expectServiceAccountRolePolicies []string
-	expectTerraformFilenames         []string
-	kubeDNS                          bool
-	discovery                        bool
-	lifecycleOverrides               []string
-	sshKey                           bool
-	bastionUserData                  bool
-	ciliumEtcd                       bool
-	// nth is true if we should check for files created by nth queue processor add on
-	nth          bool
-	nthRebalance bool
-	// enable GCE startup script
-	startupScript bool
+	clusterName        string
+	srcDir             string
+	version            string
+	lifecycleOverrides []string
+	sshKey             bool
+	ciliumEtcd         bool
 	// verify "kops get assets" functionality
 	testGetAssets bool
-	// gceAPIServerIGs is a list of APIServer instance group names and their zones for GCE
-	gceAPIServerIGs []gceAPIServerIG
-}
-
-type gceAPIServerIG struct {
-	name string
-	zone string
 }
 
 func newIntegrationTest(clusterName, srcDir string) *integrationTest {
 	return &integrationTest{
-		clusterName:    clusterName,
-		srcDir:         srcDir,
-		version:        "v1alpha2",
-		zones:          1,
-		expectPolicies: true,
-		nth:            true,
-		sshKey:         true,
+		clusterName: clusterName,
+		srcDir:      srcDir,
+		version:     "v1alpha2",
+		sshKey:      true,
 	}
 }
 
@@ -103,18 +74,8 @@ func (i *integrationTest) withTestGetAssets() *integrationTest {
 	return i
 }
 
-func (i *integrationTest) withStartupScript() *integrationTest {
-	i.startupScript = true
-	return i
-}
-
 func (i *integrationTest) withVersion(version string) *integrationTest {
 	i.version = version
-	return i
-}
-
-func (i *integrationTest) withZones(zones int) *integrationTest {
-	i.zones = zones
 	return i
 }
 
@@ -123,104 +84,14 @@ func (i *integrationTest) withoutSSHKey() *integrationTest {
 	return i
 }
 
-func (i *integrationTest) withoutPolicies() *integrationTest {
-	i.expectPolicies = false
-	return i
-}
-
 func (i *integrationTest) withLifecycleOverrides(lco []string) *integrationTest {
 	i.lifecycleOverrides = lco
-	return i
-}
-
-func (i *integrationTest) withPrivate() *integrationTest {
-	i.private = true
-	return i
-}
-
-// withServiceAccountRole indicates we expect to assign an IAM role for a ServiceAccount (instead of just using the node roles)
-func (i *integrationTest) withServiceAccountRole(sa string, inlinePolicy bool) *integrationTest {
-	role := truncate.TruncateString(sa+".sa."+i.clusterName, truncate.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
-	i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_%s_policy", role))
-	if inlinePolicy {
-		i.expectServiceAccountRolePolicies = append(i.expectServiceAccountRolePolicies, fmt.Sprintf("aws_iam_role_policy_%s_policy", role))
-	}
-	return i
-}
-
-func (i *integrationTest) withBastionUserData() *integrationTest {
-	i.bastionUserData = true
 	return i
 }
 
 func (i *integrationTest) withCiliumEtcd() *integrationTest {
 	i.ciliumEtcd = true
 	return i
-}
-
-func (i *integrationTest) withGCEDedicatedAPIServer(name, zone string) *integrationTest {
-	i.gceAPIServerIGs = append(i.gceAPIServerIGs, gceAPIServerIG{name: name, zone: zone})
-	return i
-}
-
-func (i *integrationTest) withDedicatedAPIServer() *integrationTest {
-	i.expectTerraformFilenames = append(i.expectTerraformFilenames,
-		"aws_iam_role_apiservers."+i.clusterName+"_policy",
-		"aws_iam_role_policy_apiservers."+i.clusterName+"_policy",
-		"aws_launch_template_apiserver.apiservers."+i.clusterName+"_user_data",
-		"aws_s3_object_nodeupconfig-apiserver_content",
-	)
-	return i
-}
-
-func (i *integrationTest) withoutNTH() *integrationTest {
-	i.nth = false
-	return i
-}
-
-func (i *integrationTest) withNTHRebalance() *integrationTest {
-	i.nthRebalance = true
-	return i
-}
-
-func (i *integrationTest) withOIDCDiscovery() *integrationTest {
-	i.discovery = true
-	return i
-}
-
-func (i *integrationTest) withManagedFiles(files ...string) *integrationTest {
-	for _, file := range files {
-		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
-			"aws_s3_object_"+file+"_content")
-	}
-	return i
-}
-
-func (i *integrationTest) withAddons(addons ...string) *integrationTest {
-	for _, addon := range addons {
-		i.expectTerraformFilenames = append(i.expectTerraformFilenames,
-			"aws_s3_object_"+i.clusterName+"-addons-"+addon+"_content")
-	}
-	return i
-}
-
-func (i integrationTest) withDefaultServiceAccountRoles24() *integrationTest {
-	return i.withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true)
-}
-
-// withDefaultAddons30 adds the default addons for an AWS cluster running k8s 1.30
-func (i integrationTest) withDefaultAddons30() *integrationTest {
-	return i.withAddons(
-		awsCCMAddon,
-		awsEBSCSIAddon,
-		dnsControllerAddon,
-	)
-}
-
-func (i integrationTest) withDefaults24() *integrationTest {
-	return i.withDefaultAddons30().withDefaultServiceAccountRoles24()
 }
 
 const (
@@ -249,66 +120,36 @@ const (
 // TestMinimalAWS runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalAWS(t *testing.T) {
 	newIntegrationTest("minimal-aws.example.com", "minimal-aws").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_32(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.32").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_33(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.33").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_34(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.34").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_35(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.35").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimal runs the test on a minimum configuration
 func TestMinimal_v1_36(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-1.36").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
@@ -322,11 +163,6 @@ func TestMinimalAzure(t *testing.T) {
 // TestMinimal_NoneDNS runs the test on a minimum configuration with --dns=none
 func TestMinimal_NoneDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-dns-none").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
@@ -334,50 +170,29 @@ func TestMinimal_NoneDNS(t *testing.T) {
 func TestHetzner(t *testing.T) {
 	t.Setenv("HCLOUD_TOKEN", "REDACTED")
 	newIntegrationTest("minimal.example.com", "minimal_hetzner").
-		withAddons(clusterAutoscalerAddon, dnsControllerAddon).
 		runTestTerraformHetzner(t)
 }
 
 func TestNvidia(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "nvidia").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			"nvidia.addons.k8s.io-k8s-1.16",
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalGCE runs tests on a minimal GCE configuration
 func TestMinimalGCE(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEPrivate runs tests on a minimal GCE configuration with private topology.
 func TestMinimalGCEPrivate(t *testing.T) {
 	newIntegrationTest("minimal-gce-private.example.com", "minimal_gce_private").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEInternalLoadBalancer runs tests on a minimal GCE configuration with an internal load balancer.
 func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb.example.com", "minimal_gce_ilb").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
@@ -385,24 +200,12 @@ func TestMinimalGCEInternalLoadBalancer(t *testing.T) {
 func TestMinimalGCEInternalLoadBalancerCiliumEtcd(t *testing.T) {
 	newIntegrationTest("minimal-gce-ilb-cilium-etcd.example.com", "minimal_gce_ilb_cilium_etcd").
 		withCiliumEtcd().
-		withManagedFiles("etcd-cluster-spec-cilium", "manifests-etcdmanager-cilium-master-us-test1-a").
-		withAddons(
-			ciliumAddon,
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEPublicLoadBalancer runs tests on a minimal GCE configuration with a public load balancer.
 func TestMinimalGCEPublicLoadBalancer(t *testing.T) {
 	newIntegrationTest("minimal-gce-plb.example.com", "minimal_gce_plb").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
@@ -412,46 +215,24 @@ func TestMinimalGCEPublicLoadBalancerAPIServer(t *testing.T) {
 	defer featureflag.ParseFlags("-APIServerNodes")
 
 	newIntegrationTest("minimal-gce-plb-apiserver.example.com", "minimal_gce_plb_apiserver").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
-		withGCEDedicatedAPIServer("apiserver-us-test1-a", "us-test1-a").
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCELongClusterName runs tests on a minimal GCE configuration with a very long cluster name
 func TestMinimalGCELongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_longclustername").
-		withStartupScript().
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEInternalLoadBalancerLongClusterName runs tests on a minimal GCE configuration with an internal load balancer and a very long cluster name
 func TestMinimalGCEInternalLoadBalancerLongClusterName(t *testing.T) {
 	newIntegrationTest("minimal-gce-with-a-very-very-very-very-very-long-name.example.com", "minimal_gce_ilb_longclustername").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
 // TestMinimalGCEDNSNone runs tests on a minimal GCE configuration with --dns=none
 func TestMinimalGCEDNSNone(t *testing.T) {
 	newIntegrationTest("minimal-gce.example.com", "minimal_gce_dns-none").
-		withAddons(
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
@@ -459,257 +240,144 @@ func TestMinimalGCEDNSNone(t *testing.T) {
 func TestMinimalScaleway(t *testing.T) {
 	t.Setenv("SCW_PROFILE", "REDACTED")
 	newIntegrationTest("scw-minimal.k8s.local", "minimal_scaleway").
-		withAddons(
-			scwCCMAddon,
-			scwCSIAddon,
-			dnsControllerAddon,
-		).
 		runTestTerraformScaleway(t)
 }
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
-	newIntegrationTest("ha.example.com", "ha").withZones(3).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
+	newIntegrationTest("ha.example.com", "ha").
 		runTestTerraformAWS(t)
 }
 
 // TestHighAvailabilityGCE runs the test on a simple HA GCE configuration, similar to kops create cluster ha-gce.example.com
 // --zones us-test1-a,us-test1-b,us-test1-c --master-count=3
 func TestHighAvailabilityGCE(t *testing.T) {
-	newIntegrationTest("ha-gce.example.com", "ha_gce").withZones(3).
-		withAddons(
-			clusterAutoscalerAddon,
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-		).
+	newIntegrationTest("ha-gce.example.com", "ha_gce").
 		runTestTerraformGCE(t)
 }
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			awsAuthenticatorAddon,
-		).
 		runTestTerraformAWS(t)
 	newIntegrationTest("complex.example.com", "complex").withoutSSHKey().withVersion("legacy-v1alpha2").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			awsAuthenticatorAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestCompress runs a test on compressing structs in nodeus.sh user-data
 func TestCompress(t *testing.T) {
 	newIntegrationTest("compress.example.com", "compress").withoutSSHKey().
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestExternalPolicies tests external policies output
 func TestExternalPolicies(t *testing.T) {
 	newIntegrationTest("externalpolicies.example.com", "externalpolicies").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalIPv6 runs the test on a minimum IPv6 configuration
 func TestMinimalIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6").
-		withDefaultAddons30().
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
 func TestMinimalIPv6Calico(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").
-		withDefaultAddons30().
-		withAddons(calicoAddon).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalIPv6Cilium runs the test on a minimum IPv6 configuration with Cilium
 func TestMinimalIPv6Cilium(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-cilium").
-		withDefaultAddons30().
-		withAddons(ciliumAddon).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalIPv6NoSubnetPrefix runs the test with "/64#N" subnet notation
 func TestMinimalIPv6NoSubnetPrefix(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-no-subnet-prefix").
-		withDefaultAddons30().
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalWarmPool runs the test on a minimum Warm Pool configuration
 func TestMinimalWarmPool(t *testing.T) {
 	newIntegrationTest("minimal-warmpool.example.com", "minimal-warmpool").
-		withAddons(
-			awsEBSCSIAddon,
-			ciliumAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalEtcd runs the test on a minimum configuration using custom etcd config, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalEtcd(t *testing.T) {
 	newIntegrationTest("minimal-etcd.example.com", "minimal-etcd").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimalGp3 runs the test on a minimum configuration using gp3 volumes, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalGp3(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "minimal-gp3").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalLongClusterName(t *testing.T) {
 	newIntegrationTest("this.is.truly.a.really.really.really.really.really.long.cluster-name.minimal.example.com", "minimal-longclustername").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestExistingSG runs the test with existing Security Group, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestExistingSG(t *testing.T) {
-	newIntegrationTest("existingsg.example.com", "existing_sg").withZones(3).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
+	newIntegrationTest("existingsg.example.com", "existing_sg").
 		runTestTerraformAWS(t)
 }
 
 // TestBastionAdditionalUserData runs the test on passing additional user-data to a bastion instance group
 func TestBastionAdditionalUserData(t *testing.T) {
-	newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").withPrivate().
-		withBastionUserData().
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
+	newIntegrationTest("bastionuserdata.example.com", "bastionadditional_user-data").
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
 	newIntegrationTest("privateflannel.example.com", "privateflannel").
-		withPrivate().
-		withDefaultAddons30().
-		withAddons(flannelAddon).
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateKindnet runs the test on a configuration with private topology, flannel networking
 func TestPrivateKindnet(t *testing.T) {
 	newIntegrationTest("privatekindnet.example.com", "privatekindnet").
-		withPrivate().
-		withDefaultAddons30().
-		withAddons(kindnetAddon).
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateKindnet runs the test on a configuration with private topology, flannel networking
 func TestKindnetIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-kindnet").
-		withDefaultAddons30().
-		withAddons(kindnetAddon).
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
 	newIntegrationTest("privatecalico.example.com", "privatecalico").
-		withPrivate().
-		withDefaultAddons30().
-		withAddons(calicoAddon).
 		runTestTerraformAWS(t)
 }
 
 func TestPrivateCilium(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium").
-		withPrivate().
-		withAddons(
-			awsEBSCSIAddon,
-			ciliumAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 func TestPrivateCilium2(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium2").
-		withPrivate().
-		withDefaultAddons30().
-		withAddons("networking.cilium.io-k8s-1.16").
-		withAddons(certManagerAddon).
 		runTestTerraformAWS(t)
 }
 
 func TestPrivateCiliumAdvanced(t *testing.T) {
 	newIntegrationTest("privateciliumadvanced.example.com", "privateciliumadvanced").
-		withPrivate().
 		withCiliumEtcd().
-		withManagedFiles("etcd-cluster-spec-cilium", "manifests-etcdmanager-cilium-master-us-test-1a").
-		withAddons(
-			awsEBSCSIAddon,
-			ciliumAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 func TestPrivateCiliumENI(t *testing.T) {
 	newIntegrationTest("privatecilium.example.com", "privatecilium-eni").
-		withPrivate().
-		withAddons(
-			awsEBSCSIAddon,
-			ciliumAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
@@ -718,61 +386,30 @@ const kopeioNetworkingAddon = "networking.kope.io-k8s-1.12"
 // TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
 func TestPrivateKopeio(t *testing.T) {
 	newIntegrationTest("privatekopeio.example.com", "privatekopeio").
-		withPrivate().
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			kopeioNetworkingAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestUnmanaged is a test where all the subnets opt-out of route management
 func TestUnmanaged(t *testing.T) {
 	newIntegrationTest("unmanaged.example.com", "unmanaged").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		withPrivate().
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateSharedSubnet runs the test on a configuration with private topology & shared subnets
 func TestPrivateSharedSubnet(t *testing.T) {
 	newIntegrationTest("private-shared-subnet.example.com", "private-shared-subnet").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		withPrivate().
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateSharedIP runs the test on a configuration with private topology & shared subnets
 func TestPrivateSharedIP(t *testing.T) {
 	newIntegrationTest("private-shared-ip.example.com", "private-shared-ip").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		withPrivate().
 		runTestTerraformAWS(t)
 }
 
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
 	newIntegrationTest("privatedns1.example.com", "privatedns1").
-		withPrivate().
-		withAddons(
-			awsCCMAddon,
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-		).
 		withTestGetAssets().
 		runTestTerraformAWS(t)
 }
@@ -780,193 +417,76 @@ func TestPrivateDns1(t *testing.T) {
 // TestPrivateDns2 runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
 	newIntegrationTest("privatedns2.example.com", "privatedns2").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		withPrivate().
 		runTestTerraformAWS(t)
 }
 
 // TestDiscoveryFeatureGate runs a simple configuration, but with UseServiceAccountExternalPermissions and the ServiceAccountIssuerDiscovery feature gate enabled
 func TestDiscoveryFeatureGate(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "public-jwks-apiserver").
-		withDefaultServiceAccountRoles24().
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withDefaultAddons30().
-		withOIDCDiscovery().
 		runTestTerraformAWS(t)
 }
 
 func TestVFSServiceAccountIssuerDiscovery(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "vfs-said").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
-		withOIDCDiscovery().
 		runTestTerraformAWS(t)
 }
 
 // TestAWSLBController runs a simple configuration, but with AWS LB controller and UseServiceAccountExternalPermissions enabled
 func TestAWSLBController(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "aws-lb-controller").
-		withOIDCDiscovery().
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withAddons("aws-load-balancer-controller.addons.k8s.io-k8s-1.19-irsa",
-			"certmanager.io-k8s-1.16",
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 func TestManyAddons(t *testing.T) {
 	newIntegrationTest("many-addons.example.com", "many-addons").
-		withAddons(
-			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
-			"certmanager.io-k8s-1.16",
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"snapshot-controller.addons.k8s.io-k8s-1.20",
-			metricsServerAddon,
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			nodeProblemDetectorAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 func TestManyAddonsCCMIRSA(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-ccm-irsa").
-		withOIDCDiscovery().
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-load-balancer-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withServiceAccountRole("cluster-autoscaler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withAddons(
-			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
-			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19-irsa",
-			"certmanager.io-k8s-1.16",
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"snapshot-controller.addons.k8s.io-k8s-1.20",
-			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
-			metricsServerAddon,
-			dnsControllerAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 func TestManyAddonsGCE(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-gce").
-		withAddons(
-			certManagerAddon,
-			clusterAutoscalerAddon,
-			dnsControllerAddon,
-			gcpCCMAddon,
-			gcpPDCSIAddon,
-			metricsServerAddon,
-		).
 		runTestTerraformGCE(t)
 }
 
 func TestCCM(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "many-addons-ccm").
-		withAddons(
-			"aws-ebs-csi-driver.addons.k8s.io-k8s-1.17",
-			"aws-load-balancer-controller.addons.k8s.io-k8s-1.19",
-			"certmanager.io-k8s-1.16",
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-			"networking.amazon-vpc-routed-eni-k8s-1.16",
-			"snapshot-controller.addons.k8s.io-k8s-1.20",
-			"aws-cloud-controller.addons.k8s.io-k8s-1.18",
-			dnsControllerAddon,
-			metricsServerAddon,
-		).
-		withNTHRebalance().
 		runTestTerraformAWS(t)
 }
 
 func TestExternalDNS(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns").
-		withAddons(
-			awsEBSCSIAddon,
-			awsCCMAddon,
-			dnsControllerAddon,
-			"external-dns.addons.k8s.io-k8s-1.19",
-		).
 		runTestTerraformAWS(t)
 }
 
 func TestExternalDNSIRSA(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "external_dns_irsa").
-		withOIDCDiscovery().
-		withAddons(
-			awsEBSCSIAddon,
-			awsCCMAddon,
-			dnsControllerAddon,
-			"external-dns.addons.k8s.io-k8s-1.19",
-		).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withServiceAccountRole("external-dns.kube-system", true).
 		runTestTerraformAWS(t)
 }
 
 func TestKarpenter(t *testing.T) {
-	test := newIntegrationTest("minimal.example.com", "karpenter").
-		withOIDCDiscovery().
-		withDefaults24().
-		withAddons("karpenter.sh-k8s-1.19").
-		withoutNTH().
-		withServiceAccountRole("karpenter.kube-system", true)
-	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
-		"aws_s3_object_nodeupscript-karpenter-nodes-single-machinetype_content",
-		"aws_s3_object_nodeupscript-karpenter-nodes-default_content",
-		"aws_s3_object_nodeupconfig-karpenter-nodes-single-machinetype_content",
-		"aws_s3_object_nodeupconfig-karpenter-nodes-default_content",
-	)
+	test := newIntegrationTest("minimal.example.com", "karpenter")
 	test.runTestTerraformAWS(t)
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
 	newIntegrationTest("sharedsubnet.example.com", "shared_subnet").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestSharedVPC runs the test on a configuration with a shared VPC
 func TestSharedVPC(t *testing.T) {
 	newIntegrationTest("sharedvpc.example.com", "shared_vpc").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestSharedVPCIPv6 runs the test on a configuration with a shared VPC using IPv6
 func TestSharedVPCIPv6(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "shared_vpc_ipv6").
-		withDefaultAddons30().
 		runTestTerraformAWS(t)
 }
 
@@ -974,14 +494,7 @@ func TestSharedVPCIPv6(t *testing.T) {
 func TestExistingIAM(t *testing.T) {
 	lifecycleOverrides := []string{"IAMRole=ExistsAndWarnIfChanges", "IAMRolePolicy=ExistsAndWarnIfChanges", "IAMInstanceProfileRole=ExistsAndWarnIfChanges"}
 	newIntegrationTest("existing-iam.example.com", "existing_iam").
-		withZones(3).
-		withoutPolicies().
 		withLifecycleOverrides(lifecycleOverrides).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
@@ -993,11 +506,6 @@ func TestPhaseNetwork(t *testing.T) {
 
 func TestExternalLoadBalancer(t *testing.T) {
 	newIntegrationTest("externallb.example.com", "externallb").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
@@ -1019,42 +527,24 @@ func TestPhaseCluster(t *testing.T) {
 // TestMixedInstancesASG tests ASGs using a mixed instance policy
 func TestMixedInstancesASG(t *testing.T) {
 	newIntegrationTest("mixedinstances.example.com", "mixed_instances").
-		withZones(3).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestMixedInstancesSpotASG tests ASGs using a mixed instance policy and spot instances
 func TestMixedInstancesSpotASG(t *testing.T) {
 	newIntegrationTest("mixedinstances.example.com", "mixed_instances_spot").
-		withZones(3).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestAdditionalObjects runs the test on a configuration that includes additional objects
 func TestAdditionalObjects(t *testing.T) {
 	newIntegrationTest("additionalobjects.example.com", "additionalobjects").
-		withAddons(dnsControllerAddon, awsEBSCSIAddon, awsCCMAddon).
 		runTestTerraformAWS(t)
 }
 
 // TestContainerd runs the test on a containerd configuration
 func TestContainerd(t *testing.T) {
 	newIntegrationTest("containerd.example.com", "containerd").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		withTestGetAssets().
 		runTestTerraformAWS(t)
 }
@@ -1062,11 +552,6 @@ func TestContainerd(t *testing.T) {
 // TestContainerdCustom runs the test on a custom containerd URL configuration
 func TestContainerdCustom(t *testing.T) {
 	newIntegrationTest("containerd.example.com", "containerd-custom").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
@@ -1079,114 +564,64 @@ func TestAPIServerNodes(t *testing.T) {
 	defer unsetFeatureFlags()
 
 	newIntegrationTest("minimal.example.com", "apiservernodes").
-		withAddons(
-			awsCCMAddon,
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-		).
-		withDedicatedAPIServer().
 		runTestTerraformAWS(t)
 }
 
 // TestNTHIMDSProcessor tests the output for resources required by NTH IMDS Processor mode
 func TestNTHIMDSProcessor(t *testing.T) {
 	newIntegrationTest("nthimdsprocessor.longclustername.example.com", "nth-imds-processor").
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			"node-termination-handler.aws-k8s-1.11",
-		).
-		withoutNTH().
 		runTestTerraformAWS(t)
 }
 
 // TestNTHIMDSProcessorIRSA tests the output for resources required by NTH IMDS Processor mode with IRSA
 func TestNTHIMDSProcessorIRSA(t *testing.T) {
 	newIntegrationTest("nthimdsprocessor.longclustername.example.com", "nth-imds-processor-irsa").
-		withOIDCDiscovery().
-		withServiceAccountRole("dns-controller.kube-system", true).
-		withServiceAccountRole("aws-cloud-controller-manager.kube-system", true).
-		withServiceAccountRole("aws-node-termination-handler.kube-system", true).
-		withServiceAccountRole("ebs-csi-controller-sa.kube-system", true).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			"node-termination-handler.aws-k8s-1.11",
-		).
-		withoutNTH().
 		runTestTerraformAWS(t)
 }
 
 // TestCustomIRSA runs a simple configuration, but with some additional IAM roles for ServiceAccounts
 func TestCustomIRSA(t *testing.T) {
 	newIntegrationTest("minimal.example.com", "irsa").
-		withOIDCDiscovery().
-		withServiceAccountRole("myserviceaccount.default", false).
-		withServiceAccountRole("myserviceaccount.test-wildcard", false).
-		withServiceAccountRole("myotherserviceaccount.myapp", true).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-			certManagerAddon,
-		).
-		withAddons("eks-pod-identity-webhook.addons.k8s.io-k8s-1.16").
 		runTestTerraformAWS(t)
 }
 
 // TestClusterNameDigit runs a configuration with a cluster name beginning with a digit
 func TestClusterNameDigit(t *testing.T) {
 	newIntegrationTest("123.example.com", "digit").
-		withOIDCDiscovery().
-		withServiceAccountRole("myserviceaccount.default", false).
-		withServiceAccountRole("myotherserviceaccount.myapp", true).
-		withAddons(
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			awsCCMAddon,
-		).
 		runTestTerraformAWS(t)
 }
 
 // TestCASPriorityExpander tests cluster-autoscaler priority-expander configMap based on instance group autoscalePriority
 func TestCASPriorityExpander(t *testing.T) {
-	test := newIntegrationTest("cas-priority-expander.example.com", "cluster-autoscaler-priority-expander").
-		withAddons(
-			awsCCMAddon,
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-		)
-	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
-		"aws_launch_template_nodes-high-priority.cas-priority-expander.example.com_user_data",
-		"aws_launch_template_nodes-low-priority.cas-priority-expander.example.com_user_data",
-		"aws_s3_object_nodeupconfig-nodes-high-priority_content",
-		"aws_s3_object_nodeupconfig-nodes-low-priority_content",
-	)
+	test := newIntegrationTest("cas-priority-expander.example.com", "cluster-autoscaler-priority-expander")
 	test.runTestTerraformAWS(t)
 }
 
 // TestCASPriorityExpanderCustom tests cluster-autoscaler priority-expander configMap with custom priority config
 func TestCASPriorityExpanderCustom(t *testing.T) {
-	test := newIntegrationTest("cas-priority-expander-custom.example.com", "cluster-autoscaler-priority-expander-custom").
-		withAddons(
-			awsCCMAddon,
-			awsEBSCSIAddon,
-			dnsControllerAddon,
-			"cluster-autoscaler.addons.k8s.io-k8s-1.15",
-		)
-	test.expectTerraformFilenames = append(test.expectTerraformFilenames,
-		"aws_launch_template_nodes-high-priority.cas-priority-expander-custom.example.com_user_data",
-		"aws_launch_template_nodes-low-priority.cas-priority-expander-custom.example.com_user_data",
-		"aws_s3_object_nodeupconfig-nodes-high-priority_content",
-		"aws_s3_object_nodeupconfig-nodes-low-priority_content",
-	)
+	test := newIntegrationTest("cas-priority-expander-custom.example.com", "cluster-autoscaler-priority-expander-custom")
 	test.runTestTerraformAWS(t)
 }
 
-func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutils.IntegrationTestHarness, expectedDataFilenames []string, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
+// readDirFilenames returns the names of the files in dir, sorted by name, or nil if dir
+// does not exist.
+func readDirFilenames(t *testing.T, dir string) []string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		t.Fatalf("failed to read dir %q: %v", dir, err)
+	}
+
+	var filenames []string
+	for _, entry := range entries {
+		filenames = append(filenames, entry.Name())
+	}
+	return filenames
+}
+
+func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutils.IntegrationTestHarness, tfFileName string, expectedTfFileName string, phase *cloudup.Phase) {
 	var stdout bytes.Buffer
 
 	i.srcDir = updateClusterTestBase + i.srcDir
@@ -1201,6 +636,11 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 	if expectedTfFileName != "" {
 		actualTFPath = expectedTfFileName
 	}
+
+	// hack/update-expected.sh never deletes test data files, so a file that is wrongly no longer
+	// generated keeps failing the comparison below.
+	expectedDataDir := filepath.Join(i.srcDir, "data")
+	expectedDataFilenames := readDirFilenames(t, expectedDataDir)
 
 	factory := i.setupCluster(t, ctx, inputYAML, stdout)
 
@@ -1267,72 +707,24 @@ func (i *integrationTest) runTest(t *testing.T, ctx context.Context, h *testutil
 		golden.AssertMatchesFile(t, string(actualTF), path.Join(i.srcDir, testDataTFPath))
 	}
 
-	// Compare data files if they are provided
 	if len(expectedDataFilenames) > 0 {
 		actualDataDir := filepath.Join(h.TempDir, "out", "data")
+		actualDataFilenames := readDirFilenames(t, actualDataDir)
 
-		expectedDataDir := filepath.Join(i.srcDir, "data")
-		for _, filename := range expectedDataFilenames {
-			expectedPath := filepath.Join(expectedDataDir, filename)
+		for _, filename := range actualDataFilenames {
 			actualPath := filepath.Join(actualDataDir, filename)
 			actualDataContent, err := os.ReadFile(actualPath)
 			if err != nil {
 				t.Errorf("failed to read actual data file %q: %v", actualPath, err)
 				continue
 			}
-			golden.AssertMatchesFile(t, string(actualDataContent), expectedPath)
+			golden.AssertMatchesFile(t, string(actualDataContent), filepath.Join(expectedDataDir, filename))
 		}
 
-		actualFiles, err := os.ReadDir(actualDataDir)
-		if err != nil {
-			t.Fatalf("failed to read data dir %q: %v", actualDataDir, err)
-		}
-
-		var actualDataFilenames []string
-		for _, f := range actualFiles {
-			actualDataFilenames = append(actualDataFilenames, f.Name())
-
-			if golden.UpdateExpectedOutput() {
-				filename := f.Name()
-				expectedPath := filepath.Join(expectedDataDir, filename)
-				actualPath := filepath.Join(actualDataDir, filename)
-				actualDataContent, err := os.ReadFile(actualPath)
-				if err != nil {
-					t.Errorf("failed to read actual data file %q: %v", actualPath, err)
-					continue
-				}
-				golden.AssertMatchesFile(t, string(actualDataContent), expectedPath)
-			}
-		}
-
-		sort.Strings(expectedDataFilenames)
+		// Read the expected files again, because golden.AssertMatchesFile may have created some.
+		expectedDataFilenames = readDirFilenames(t, expectedDataDir)
 		if !reflect.DeepEqual(actualDataFilenames, expectedDataFilenames) {
-			for j := 0; j < len(actualDataFilenames) && j < len(expectedDataFilenames); j++ {
-				if actualDataFilenames[j] != expectedDataFilenames[j] {
-					t.Errorf("diff @%d: %q vs %q", j, actualDataFilenames[j], expectedDataFilenames[j])
-					break
-				}
-			}
-			actual := strings.Join(actualDataFilenames, "\n")
-			expected := strings.Join(expectedDataFilenames, "\n")
-			diff := diff.FormatDiff(actual, expected)
-			t.Log(diff)
-			t.Error("unexpected data files.")
-		}
-
-		existingExpectedFiles, err := os.ReadDir(expectedDataDir)
-		if err != nil {
-			t.Fatalf("failed to read data dir %q: %v", expectedDataDir, err)
-		}
-		existingExpectedFilenames := make([]string, len(existingExpectedFiles))
-		for i, f := range existingExpectedFiles {
-			existingExpectedFilenames[i] = f.Name()
-		}
-		for j := 0; j < len(existingExpectedFilenames) && j < len(expectedDataFilenames); j++ {
-			if existingExpectedFilenames[j] != expectedDataFilenames[j] {
-				t.Errorf("diff with source directory @%d: %q vs %q", j, existingExpectedFilenames[j], expectedDataFilenames[j])
-				break
-			}
+			t.Errorf("unexpected data files:\n%s", diff.FormatDiff(strings.Join(expectedDataFilenames, "\n"), strings.Join(actualDataFilenames, "\n")))
 		}
 	}
 
@@ -1534,86 +926,7 @@ func (i *integrationTest) runTestTerraformAWS(t *testing.T) {
 	h.MockKopsVersion("1.34.0-beta.1")
 	h.SetupMockAWS()
 
-	expectedFilenames := i.expectTerraformFilenames
-	expectedFilenames = append(expectedFilenames,
-		"aws_launch_template_nodes."+i.clusterName+"_user_data",
-		"aws_s3_object_cluster-completed.spec_content",
-		"aws_s3_object_etcd-cluster-spec-events_content",
-		"aws_s3_object_etcd-cluster-spec-main_content",
-		"aws_s3_object_kops-version.txt_content",
-		"aws_s3_object_manifests-channels-kops-channels_content",
-		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_object_nodeupconfig-nodes_content",
-		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
-		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"aws_s3_object_"+i.clusterName+"-addons-storage-aws.addons.k8s.io-v1.15.0_content")
-
-	if i.kubeDNS {
-		expectedFilenames = append(expectedFilenames, "aws_s3_object_"+i.clusterName+"-addons-kube-dns.addons.k8s.io-k8s-1.12_content")
-	} else {
-		expectedFilenames = append(expectedFilenames, "aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content")
-	}
-
-	if i.discovery {
-		expectedFilenames = append(expectedFilenames,
-			"aws_s3_object_discovery.json_content",
-			"aws_s3_object_keys.json_content")
-	}
-
-	if i.sshKey {
-		expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+i.clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
-	}
-
-	masterRole := truncate.TruncateString("masters."+i.clusterName, truncate.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
-	nodeRole := truncate.TruncateString("nodes."+i.clusterName, truncate.TruncateStringOptions{MaxLength: iam.MaxLengthIAMRoleName, AlwaysAddHash: false})
-
-	for j := 0; j < i.zones; j++ {
-		zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-		expectedFilenames = append(expectedFilenames,
-			"aws_s3_object_manifests-etcdmanager-events-master-"+zone+"_content",
-			"aws_s3_object_manifests-etcdmanager-main-master-"+zone+"_content",
-			"aws_s3_object_nodeupconfig-master-"+zone+"_content",
-			"aws_launch_template_master-"+zone+".masters."+i.clusterName+"_user_data")
-	}
-
-	if i.expectPolicies {
-		expectedFilenames = append(expectedFilenames, []string{
-			"aws_iam_role_" + masterRole + "_policy",
-			"aws_iam_role_" + nodeRole + "_policy",
-			"aws_iam_role_policy_" + masterRole + "_policy",
-			"aws_iam_role_policy_" + nodeRole + "_policy",
-		}...)
-		if i.private {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_iam_role_bastions." + i.clusterName + "_policy",
-				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-			}...)
-			if i.bastionUserData {
-				expectedFilenames = append(expectedFilenames,
-					"aws_s3_object_nodeupconfig-bastion_content",
-					"aws_launch_template_bastion."+i.clusterName+"_user_data")
-			}
-		}
-	}
-	if i.nth {
-		queueName := truncate.TruncateString(strings.ReplaceAll(i.clusterName, ".", "-"), truncate.TruncateStringOptions{MaxLength: 75, AlwaysAddHash: false})
-		expectedFilenames = append(expectedFilenames, []string{
-			"aws_s3_object_" + i.clusterName + "-addons-node-termination-handler.aws-k8s-1.11_content",
-			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-ASGLifecycle_event_pattern",
-			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-SpotInterruption_event_pattern",
-			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceStateChange_event_pattern",
-			"aws_cloudwatch_event_rule_" + awsup.GetClusterName40(i.clusterName) + "-InstanceScheduledChange_event_pattern",
-			"aws_sqs_queue_" + queueName + "-nth_policy",
-		}...)
-	}
-	if i.nthRebalance {
-		expectedFilenames = append(expectedFilenames, "aws_cloudwatch_event_rule_"+awsup.GetClusterName40(i.clusterName)+"-RebalanceRecommendation_event_pattern")
-	}
-	expectedFilenames = append(expectedFilenames, i.expectServiceAccountRolePolicies...)
-
-	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, "", "", nil)
 }
 
 func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
@@ -1631,37 +944,7 @@ func (i *integrationTest) runTestPhase(t *testing.T, phase cloudup.Phase) {
 	}
 	tfFileName := phaseName + "-kubernetes.tf"
 
-	expectedFilenames := i.expectTerraformFilenames
-
-	switch phase {
-	case cloudup.PhaseSecurity:
-		expectedFilenames = []string{
-			"aws_iam_role_masters." + i.clusterName + "_policy",
-			"aws_iam_role_nodes." + i.clusterName + "_policy",
-			"aws_iam_role_policy_masters." + i.clusterName + "_policy",
-			"aws_iam_role_policy_nodes." + i.clusterName + "_policy",
-			"aws_key_pair_kubernetes." + i.clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
-		}
-		if i.private {
-			expectedFilenames = append(expectedFilenames, []string{
-				"aws_iam_role_bastions." + i.clusterName + "_policy",
-				"aws_iam_role_policy_bastions." + i.clusterName + "_policy",
-				"aws_launch_template_bastion." + i.clusterName + "_user_data",
-			}...)
-		}
-	case cloudup.PhaseCluster:
-		expectedFilenames = []string{
-			"aws_launch_template_nodes." + i.clusterName + "_user_data",
-		}
-
-		for j := 0; j < i.zones; j++ {
-			zone := "us-test-1" + string([]byte{byte('a') + byte(j)})
-			s := "aws_launch_template_master-" + zone + ".masters." + i.clusterName + "_user_data"
-			expectedFilenames = append(expectedFilenames, s)
-		}
-	}
-
-	i.runTest(t, ctx, h, expectedFilenames, tfFileName, "", &phase)
+	i.runTest(t, ctx, h, tfFileName, "", &phase)
 }
 
 func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
@@ -1674,58 +957,7 @@ func (i *integrationTest) runTestTerraformGCE(t *testing.T) {
 	h.MockKopsVersion("1.34.0-beta.1")
 	h.SetupMockGCE()
 
-	expectedFilenames := i.expectTerraformFilenames
-
-	prefix := "google_compute_instance_template_nodes-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
-	if !i.startupScript {
-		expectedFilenames = append(expectedFilenames, prefix+"user-data")
-	} else {
-		expectedFilenames = append(expectedFilenames, prefix+"startup-script")
-	}
-
-	expectedFilenames = append(expectedFilenames,
-		"aws_s3_object_cluster-completed.spec_content",
-		"aws_s3_object_etcd-cluster-spec-events_content",
-		"aws_s3_object_etcd-cluster-spec-main_content",
-		"aws_s3_object_kops-version.txt_content",
-		"aws_s3_object_manifests-channels-kops-channels_content",
-		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_object_nodeupconfig-nodes_content",
-		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
-		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
-		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"aws_s3_object_"+i.clusterName+"-addons-storage-gce.addons.k8s.io-v1.7.0_content",
-	)
-
-	for j := 0; j < i.zones; j++ {
-		zone := "us-test1-" + string([]byte{byte('a') + byte(j)})
-
-		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-events-master-"+zone+"_content")
-		expectedFilenames = append(expectedFilenames, "aws_s3_object_manifests-etcdmanager-main-master-"+zone+"_content")
-		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-master-"+zone+"_content")
-
-		prefix := "google_compute_instance_template_master-" + zone + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
-		if !i.startupScript {
-			expectedFilenames = append(expectedFilenames, prefix+"user-data")
-		} else {
-			expectedFilenames = append(expectedFilenames, prefix+"startup-script")
-		}
-	}
-
-	for _, ig := range i.gceAPIServerIGs {
-		expectedFilenames = append(expectedFilenames, "aws_s3_object_nodeupconfig-"+ig.name+"_content")
-
-		prefix := "google_compute_instance_template_" + ig.name + "-" + gce.SafeClusterName(i.clusterName) + "_metadata_"
-		if !i.startupScript {
-			expectedFilenames = append(expectedFilenames, prefix+"user-data")
-		} else {
-			expectedFilenames = append(expectedFilenames, prefix+"startup-script")
-		}
-	}
-
-	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, "", "", nil)
 }
 
 func (i *integrationTest) runTestTerraformAzure(t *testing.T) {
@@ -1788,47 +1020,23 @@ func (i *integrationTest) runTestTerraformAzure(t *testing.T) {
 	golden.AssertMatchesFile(t, string(actualTF), path.Join(i.srcDir, "kubernetes.tf"))
 
 	actualDataDir := filepath.Join(h.TempDir, "out", "data")
-	actualDataFiles, err := os.ReadDir(actualDataDir)
-	if err != nil {
-		t.Fatalf("failed to read data dir %q: %v", actualDataDir, err)
-	}
-
-	var actualDataFilenames []string
-	for _, f := range actualDataFiles {
-		actualDataFilenames = append(actualDataFilenames, f.Name())
-	}
-	sort.Strings(actualDataFilenames)
-
 	expectedDataDir := filepath.Join(i.srcDir, "data")
-	expectedDataFilenames := actualDataFilenames
-	if !golden.UpdateExpectedOutput() {
-		expectedDataFiles, err := os.ReadDir(expectedDataDir)
-		if err != nil {
-			t.Fatalf("failed to read data dir %q: %v", expectedDataDir, err)
-		}
-		expectedDataFilenames = make([]string, 0, len(expectedDataFiles))
-		for _, f := range expectedDataFiles {
-			expectedDataFilenames = append(expectedDataFilenames, f.Name())
-		}
-		sort.Strings(expectedDataFilenames)
-	}
 
-	for _, filename := range expectedDataFilenames {
-		expectedPath := filepath.Join(expectedDataDir, filename)
+	actualDataFilenames := readDirFilenames(t, actualDataDir)
+	for _, filename := range actualDataFilenames {
 		actualPath := filepath.Join(actualDataDir, filename)
 		actualDataContent, err := os.ReadFile(actualPath)
 		if err != nil {
 			t.Errorf("failed to read actual data file %q: %v", actualPath, err)
 			continue
 		}
-		golden.AssertMatchesFile(t, string(actualDataContent), expectedPath)
+		golden.AssertMatchesFile(t, string(actualDataContent), filepath.Join(expectedDataDir, filename))
 	}
 
+	// Read the expected files again, because golden.AssertMatchesFile may have created some.
+	expectedDataFilenames := readDirFilenames(t, expectedDataDir)
 	if !reflect.DeepEqual(actualDataFilenames, expectedDataFilenames) {
-		actual := strings.Join(actualDataFilenames, "\n")
-		expected := strings.Join(expectedDataFilenames, "\n")
-		t.Log(diff.FormatDiff(actual, expected))
-		t.Error("unexpected data files.")
+		t.Errorf("unexpected data files:\n%s", diff.FormatDiff(strings.Join(expectedDataFilenames, "\n"), strings.Join(actualDataFilenames, "\n")))
 	}
 }
 
@@ -1841,32 +1049,7 @@ func (i *integrationTest) runTestTerraformHetzner(t *testing.T) {
 
 	h.MockKopsVersion("1.34.0-beta.1")
 
-	expectedFilenames := i.expectTerraformFilenames
-
-	expectedFilenames = append(expectedFilenames,
-		"aws_s3_object_cluster-completed.spec_content",
-		"aws_s3_object_etcd-cluster-spec-events_content",
-		"aws_s3_object_etcd-cluster-spec-main_content",
-		"aws_s3_object_kops-version.txt_content",
-		"aws_s3_object_manifests-channels-kops-channels_content",
-		"aws_s3_object_manifests-etcdmanager-events-master-fsn1_content",
-		"aws_s3_object_manifests-etcdmanager-main-master-fsn1_content",
-		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_object_nodeupconfig-master-fsn1_content",
-		"aws_s3_object_nodeupconfig-nodes-fsn1_content",
-		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
-		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
-		"aws_s3_object_"+i.clusterName+"-addons-hcloud-cloud-controller.addons.k8s.io-k8s-1.22_content",
-		"aws_s3_object_"+i.clusterName+"-addons-hcloud-config.addons.k8s.io-k8s-1.22_content",
-		"aws_s3_object_"+i.clusterName+"-addons-hcloud-csi-driver.addons.k8s.io-k8s-1.22_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
-		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"hcloud_server_master-fsn1_user_data",
-		"hcloud_server_nodes-fsn1_user_data",
-	)
-
-	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, "", "", nil)
 }
 
 func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
@@ -1884,30 +1067,7 @@ func (i *integrationTest) runTestTerraformScaleway(t *testing.T) {
 
 	h.MockKopsVersion("1.34.0-beta.1")
 
-	expectedFilenames := i.expectTerraformFilenames
-
-	expectedFilenames = append(expectedFilenames,
-		"aws_s3_object_cluster-completed.spec_content",
-		"aws_s3_object_etcd-cluster-spec-events_content",
-		"aws_s3_object_etcd-cluster-spec-main_content",
-		"aws_s3_object_kops-version.txt_content",
-		"aws_s3_object_manifests-channels-kops-channels_content",
-		"aws_s3_object_manifests-etcdmanager-events-control-plane-fr-par-1_content",
-		"aws_s3_object_manifests-etcdmanager-main-control-plane-fr-par-1_content",
-		"aws_s3_object_manifests-static-kube-apiserver-healthcheck_content",
-		"aws_s3_object_nodeupconfig-control-plane-fr-par-1_content",
-		"aws_s3_object_nodeupconfig-nodes-fr-par-1_content",
-		"aws_s3_object_"+i.clusterName+"-addons-bootstrap_content",
-		"aws_s3_object_"+i.clusterName+"-addons-coredns.addons.k8s.io-k8s-1.12_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kops-controller.addons.k8s.io-k8s-1.16_content",
-		"aws_s3_object_"+i.clusterName+"-addons-kubelet-api.rbac.addons.k8s.io-k8s-1.9_content",
-		"aws_s3_object_"+i.clusterName+"-addons-limit-range.addons.k8s.io_content",
-		"aws_s3_object_"+i.clusterName+"-addons-networking.cilium.io-k8s-1.16_content",
-		"scaleway_instance_server_control-plane-fr-par-1-0_user_data",
-		"scaleway_instance_server_nodes-fr-par-1-0_user_data",
-	)
-
-	i.runTest(t, ctx, h, expectedFilenames, "", "", nil)
+	i.runTest(t, ctx, h, "", "", nil)
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {

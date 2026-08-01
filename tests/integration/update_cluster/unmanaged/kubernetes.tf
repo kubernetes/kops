@@ -465,22 +465,10 @@ resource "aws_iam_role" "nodes-unmanaged-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-unmanaged-example-com" {
-  name   = "bastions.unmanaged.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.unmanaged.example.com_policy")
-  role   = aws_iam_role.bastions-unmanaged-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-unmanaged-example-com" {
   name   = "masters.unmanaged.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.unmanaged.example.com_policy")
   role   = aws_iam_role.masters-unmanaged-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-unmanaged-example-com" {
-  name   = "nodes.unmanaged.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.unmanaged.example.com_policy")
-  role   = aws_iam_role.nodes-unmanaged-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-unmanaged-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

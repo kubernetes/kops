@@ -97,12 +97,21 @@ func TestRoundTrip(t *testing.T) {
 }
 
 func TestPolicyGeneration(t *testing.T) {
+	nvidiaEnabled := &kops.ContainerdConfig{
+		NvidiaGPU: &kops.NvidiaGPUConfig{
+			Enabled: new(true),
+		},
+	}
+
 	grid := []struct {
 		Role                   Subject
 		AllowContainerRegistry bool
 		NLBSecurityGroupMode   *string
+		Containerd             *kops.ContainerdConfig
 		Networking             *kops.NetworkingSpec
-		Policy                 string
+		AllInstanceGroups      []*kops.InstanceGroup
+		// Policy is the golden file with the expected policy document, empty if there is none.
+		Policy string
 	}{
 		{
 			Role:                   &NodeRoleMaster{},
@@ -123,7 +132,7 @@ func TestPolicyGeneration(t *testing.T) {
 		{
 			Role:                   &NodeRoleNode{},
 			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_node_strict.json",
+			Policy:                 "",
 		},
 		{
 			Role:                   &NodeRoleNode{},
@@ -137,18 +146,64 @@ func TestPolicyGeneration(t *testing.T) {
 			Policy:                 "tests/iam_builder_node_kuberouter.json",
 		},
 		{
+			// nodeup uses ec2:DescribeInstanceTypes to detect Nvidia GPUs.
+			Role:       &NodeRoleNode{},
+			Containerd: nvidiaEnabled,
+			Policy:     "tests/iam_builder_node_describe_instance_types.json",
+		},
+		{
+			Role: &NodeRoleNode{},
+			AllInstanceGroups: []*kops.InstanceGroup{
+				{
+					Spec: kops.InstanceGroupSpec{
+						Role:       kops.InstanceGroupRoleNode,
+						Containerd: nvidiaEnabled,
+					},
+				},
+			},
+			Policy: "tests/iam_builder_node_describe_instance_types.json",
+		},
+		{
+			// An instance group with a different role does not affect the node role.
+			Role: &NodeRoleNode{},
+			AllInstanceGroups: []*kops.InstanceGroup{
+				{
+					Spec: kops.InstanceGroupSpec{
+						Role:       kops.InstanceGroupRoleControlPlane,
+						Containerd: nvidiaEnabled,
+					},
+				},
+			},
+			Policy: "",
+		},
+		{
+			// The kubelet MaxPods computation uses ec2:DescribeInstanceTypes with Cilium ENI IPAM.
+			Role: &NodeRoleNode{},
+			Networking: &kops.NetworkingSpec{
+				Cilium: &kops.CiliumNetworkingSpec{
+					IPAM: kops.CiliumIpamEni,
+				},
+			},
+			Policy: "tests/iam_builder_node_describe_instance_types.json",
+		},
+		{
 			Role:                   &NodeRoleBastion{},
 			AllowContainerRegistry: false,
-			Policy:                 "tests/iam_builder_bastion.json",
+			Policy:                 "",
 		},
 		{
 			Role:                   &NodeRoleBastion{},
 			AllowContainerRegistry: true,
-			Policy:                 "tests/iam_builder_bastion.json",
+			Policy:                 "",
 		},
 	}
 
 	for i, x := range grid {
+		networking := kops.NetworkingSpec{Kubenet: &kops.KubenetNetworkingSpec{}}
+		if x.Networking != nil {
+			networking = *x.Networking
+		}
+
 		b := &PolicyBuilder{
 			Cluster: &kops.Cluster{
 				Spec: kops.ClusterSpec{
@@ -189,17 +244,14 @@ func TestPolicyGeneration(t *testing.T) {
 						},
 					},
 					ExternalCloudControllerManager: &kops.CloudControllerManagerConfig{},
-					Networking: kops.NetworkingSpec{
-						Kubenet: &kops.KubenetNetworkingSpec{},
-					},
+					Networking:                     networking,
+					Containerd:                     x.Containerd,
 				},
 			},
-			Role:      x.Role,
-			Region:    "us-test-1",
-			Partition: "aws-test",
-		}
-		if x.Networking != nil {
-			b.Cluster.Spec.Networking = *x.Networking
+			Role:              x.Role,
+			AllInstanceGroups: x.AllInstanceGroups,
+			Region:            "us-test-1",
+			Partition:         "aws-test",
 		}
 		b.Cluster.SetName("iam-builder-test.nonexistant")
 
@@ -212,6 +264,13 @@ func TestPolicyGeneration(t *testing.T) {
 		actualPolicy, err := p.AsJSON()
 		if err != nil {
 			t.Errorf("case %d failed to convert generated IAM Policy to JSON. Error: %v", i, err)
+			continue
+		}
+
+		if x.Policy == "" {
+			if actualPolicy != "" {
+				t.Errorf("case %d expected an empty policy document, but got:\n%s", i, actualPolicy)
+			}
 			continue
 		}
 

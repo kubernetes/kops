@@ -408,12 +408,6 @@ resource "aws_iam_role_policy" "masters-externalpolicies-example-com" {
   role   = aws_iam_role.masters-externalpolicies-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-externalpolicies-example-com" {
-  name   = "nodes.externalpolicies.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.externalpolicies.example.com_policy")
-  role   = aws_iam_role.nodes-externalpolicies-example-com.name
-}
-
 resource "aws_iam_role_policy_attachment" "master-policyoverride-1544513530" {
   policy_arn = "arn:aws-test:iam::123456789000:policy/test-policy"
   role       = aws_iam_role.masters-externalpolicies-example-com.name
