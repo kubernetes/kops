@@ -22,7 +22,27 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
+)
+
+// readyConditionTypes lists the status condition types whose "True" status means the object
+// is healthy, and whose "False" status means it is not.
+//
+// Conditions of any other type are ignored, because a "False" status there carries no
+// information about the object's health. Controllers routinely publish conditions that are
+// purely informational (KEDA sets "Paused" to "False" on every ScaledObject it is actively
+// scaling) or that report an abnormal state as "True" (a healthy Node reports "MemoryPressure"
+// as "False"). Treating those as failures marks such objects permanently unhealthy.
+var readyConditionTypes = sets.New(
+	"Available",       // Deployment
+	"ContainersReady", // Pod
+	"Established",     // CustomResourceDefinition
+	"Healthy",         // Commonly used by operators for custom resources
+	"Initialized",     // Pod
+	"NamesAccepted",   // CustomResourceDefinition
+	"PodScheduled",    // Pod
+	"Ready",           // Pod, Node, and the convention for custom resources
 )
 
 // isHealthy reports whether the object should be considered "healthy"
@@ -99,7 +119,9 @@ func isHealthy(u *unstructured.Unstructured) bool {
 			}
 		}
 
-		// TODO: Check conditionType?
+		if !readyConditionTypes.Has(conditionType) {
+			continue
+		}
 
 		switch conditionStatus {
 		case "True":
