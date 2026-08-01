@@ -1,5 +1,6 @@
 contents: |
   AWS_REGION=us-test1
+mode: "0600"
 path: /etc/sysconfig/kops-configuration
 type: file
 ---

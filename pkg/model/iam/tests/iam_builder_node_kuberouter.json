@@ -1,10 +1,7 @@
 {
   "Statement": [
     {
-      "Action": [
-        "ec2:AssignIpv6Addresses",
-        "ec2:DescribeInstanceTypes"
-      ],
+      "Action": "ec2:DescribeInstanceTypes",
       "Effect": "Allow",
       "Resource": "*"
     },
@@ -12,7 +9,7 @@
       "Action": "ec2:ModifyInstanceAttribute",
       "Condition": {
         "StringEquals": {
-          "aws:ResourceTag/KubernetesCluster": "minimal-ipv6.example.com"
+          "aws:ResourceTag/KubernetesCluster": "iam-builder-test.nonexistant"
         }
       },
       "Effect": "Allow",
