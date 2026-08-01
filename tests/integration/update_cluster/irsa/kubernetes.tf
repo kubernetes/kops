@@ -459,12 +459,6 @@ resource "aws_iam_role_policy" "myotherserviceaccount-myapp-sa-minimal-example-c
   role   = aws_iam_role.myotherserviceaccount-myapp-sa-minimal-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-minimal-example-com" {
-  name   = "nodes.minimal.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.minimal.example.com_policy")
-  role   = aws_iam_role.nodes-minimal-example-com.name
-}
-
 resource "aws_iam_role_policy_attachment" "external-myserviceaccount-default-sa-minimal-example-com-3197825879" {
   policy_arn = "arn:aws-test:iam::123456789012:policy/UsersManageOwnCredentials"
   role       = aws_iam_role.myserviceaccount-default-sa-minimal-example-com.name

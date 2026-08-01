@@ -39,7 +39,6 @@
     },
     {
       "Action": [
-        "ec2:DescribeInstanceTypes",
         "kms:CreateGrant",
         "kms:DescribeKey"
       ],

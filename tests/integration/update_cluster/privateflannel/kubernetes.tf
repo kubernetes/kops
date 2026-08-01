@@ -474,22 +474,10 @@ resource "aws_iam_role" "nodes-privateflannel-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privateflannel-example-com" {
-  name   = "bastions.privateflannel.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateflannel.example.com_policy")
-  role   = aws_iam_role.bastions-privateflannel-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privateflannel-example-com" {
   name   = "masters.privateflannel.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privateflannel.example.com_policy")
   role   = aws_iam_role.masters-privateflannel-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privateflannel-example-com" {
-  name   = "nodes.privateflannel.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privateflannel.example.com_policy")
-  role   = aws_iam_role.nodes-privateflannel-example-com.name
 }
 
 resource "aws_internet_gateway" "privateflannel-example-com" {

@@ -2,7 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeInstanceTypes",
         "ecr:BatchCheckLayerAvailability",
         "ecr:BatchGetImage",
         "ecr:DescribeRepositories",

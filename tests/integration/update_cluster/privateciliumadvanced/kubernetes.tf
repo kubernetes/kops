@@ -491,12 +491,6 @@ resource "aws_iam_role" "nodes-privateciliumadvanced-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privateciliumadvanced-example-com" {
-  name   = "bastions.privateciliumadvanced.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privateciliumadvanced.example.com_policy")
-  role   = aws_iam_role.bastions-privateciliumadvanced-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privateciliumadvanced-example-com" {
   name   = "masters.privateciliumadvanced.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privateciliumadvanced.example.com_policy")

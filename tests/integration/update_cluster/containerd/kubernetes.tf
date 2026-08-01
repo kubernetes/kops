@@ -366,12 +366,6 @@ resource "aws_iam_role_policy" "masters-containerd-example-com" {
   role   = aws_iam_role.masters-containerd-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-containerd-example-com" {
-  name   = "nodes.containerd.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.containerd.example.com_policy")
-  role   = aws_iam_role.nodes-containerd-example-com.name
-}
-
 resource "aws_internet_gateway" "containerd-example-com" {
   tags = {
     "KubernetesCluster"                            = "containerd.example.com"

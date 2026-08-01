@@ -2,7 +2,6 @@
   "Statement": [
     {
       "Action": [
-        "ec2:DescribeInstanceTypes",
         "ec2:DescribeInstances",
         "ec2:ModifyNetworkInterfaceAttribute",
         "ecr:BatchCheckLayerAvailability",

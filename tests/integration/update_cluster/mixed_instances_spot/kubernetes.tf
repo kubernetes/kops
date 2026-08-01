@@ -608,12 +608,6 @@ resource "aws_iam_role_policy" "masters-mixedinstances-example-com" {
   role   = aws_iam_role.masters-mixedinstances-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-mixedinstances-example-com" {
-  name   = "nodes.mixedinstances.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.mixedinstances.example.com_policy")
-  role   = aws_iam_role.nodes-mixedinstances-example-com.name
-}
-
 resource "aws_internet_gateway" "mixedinstances-example-com" {
   tags = {
     "KubernetesCluster"                                = "mixedinstances.example.com"

@@ -474,12 +474,6 @@ resource "aws_iam_role" "nodes-privatecalico-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatecalico-example-com" {
-  name   = "bastions.privatecalico.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecalico.example.com_policy")
-  role   = aws_iam_role.bastions-privatecalico-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privatecalico-example-com" {
   name   = "masters.privatecalico.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecalico.example.com_policy")

@@ -474,22 +474,10 @@ resource "aws_iam_role" "nodes-privatecilium-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatecilium-example-com" {
-  name   = "bastions.privatecilium.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatecilium.example.com_policy")
-  role   = aws_iam_role.bastions-privatecilium-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privatecilium-example-com" {
   name   = "masters.privatecilium.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privatecilium.example.com_policy")
   role   = aws_iam_role.masters-privatecilium-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatecilium-example-com" {
-  name   = "nodes.privatecilium.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatecilium.example.com_policy")
-  role   = aws_iam_role.nodes-privatecilium-example-com.name
 }
 
 resource "aws_internet_gateway" "privatecilium-example-com" {

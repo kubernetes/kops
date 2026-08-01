@@ -460,22 +460,10 @@ resource "aws_iam_role" "nodes-private-shared-subnet-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-private-shared-subnet-example-com" {
-  name   = "bastions.private-shared-subnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.private-shared-subnet.example.com_policy")
-  role   = aws_iam_role.bastions-private-shared-subnet-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-private-shared-subnet-example-com" {
   name   = "masters.private-shared-subnet.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.private-shared-subnet.example.com_policy")
   role   = aws_iam_role.masters-private-shared-subnet-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-private-shared-subnet-example-com" {
-  name   = "nodes.private-shared-subnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.private-shared-subnet.example.com_policy")
-  role   = aws_iam_role.nodes-private-shared-subnet-example-com.name
 }
 
 resource "aws_key_pair" "kubernetes-private-shared-subnet-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {

@@ -530,22 +530,10 @@ resource "aws_iam_role" "nodes-privatedns1-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatedns1-example-com" {
-  name   = "bastions.privatedns1.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatedns1.example.com_policy")
-  role   = aws_iam_role.bastions-privatedns1-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privatedns1-example-com" {
   name   = "masters.privatedns1.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privatedns1.example.com_policy")
   role   = aws_iam_role.masters-privatedns1-example-com.name
-}
-
-resource "aws_iam_role_policy" "nodes-privatedns1-example-com" {
-  name   = "nodes.privatedns1.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.privatedns1.example.com_policy")
-  role   = aws_iam_role.nodes-privatedns1-example-com.name
 }
 
 resource "aws_internet_gateway" "privatedns1-example-com" {

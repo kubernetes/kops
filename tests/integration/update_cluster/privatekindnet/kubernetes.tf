@@ -474,12 +474,6 @@ resource "aws_iam_role" "nodes-privatekindnet-example-com" {
   }
 }
 
-resource "aws_iam_role_policy" "bastions-privatekindnet-example-com" {
-  name   = "bastions.privatekindnet.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_bastions.privatekindnet.example.com_policy")
-  role   = aws_iam_role.bastions-privatekindnet-example-com.name
-}
-
 resource "aws_iam_role_policy" "masters-privatekindnet-example-com" {
   name   = "masters.privatekindnet.example.com"
   policy = file("${path.module}/data/aws_iam_role_policy_masters.privatekindnet.example.com_policy")

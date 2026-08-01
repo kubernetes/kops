@@ -593,12 +593,6 @@ resource "aws_iam_role_policy" "masters-existingsg-example-com" {
   role   = aws_iam_role.masters-existingsg-example-com.name
 }
 
-resource "aws_iam_role_policy" "nodes-existingsg-example-com" {
-  name   = "nodes.existingsg.example.com"
-  policy = file("${path.module}/data/aws_iam_role_policy_nodes.existingsg.example.com_policy")
-  role   = aws_iam_role.nodes-existingsg-example-com.name
-}
-
 resource "aws_internet_gateway" "existingsg-example-com" {
   tags = {
     "KubernetesCluster"                            = "existingsg.example.com"
