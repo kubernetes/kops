@@ -47,7 +47,9 @@ func ListResources(cloud openstack.OpenstackCloud, clusterInfo resources.Cluster
 		os.ListVolumes,
 		os.ListSecurityGroups,
 		os.ListNetwork,
-		os.ListDNSRecordsets,
+	}
+	if clusterInfo.PublishesDNSRecords() {
+		listFunctions = append(listFunctions, os.ListDNSRecordsets)
 	}
 	for _, fn := range listFunctions {
 		resourceTrackers, err := fn()

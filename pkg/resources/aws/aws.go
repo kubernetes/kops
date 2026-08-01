@@ -38,7 +38,6 @@ import (
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/resources/spotinst"
@@ -59,7 +58,6 @@ type listFn func(fi.Cloud, string, string) ([]*resources.Resource, error)
 
 func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	clusterName := clusterInfo.Name
-	clusterUsesNoneDNS := clusterInfo.UsesNoneDNS
 
 	resourceTrackers := make(map[string]*resources.Resource)
 
@@ -93,7 +91,7 @@ func ListResourcesAWS(cloud awsup.AWSCloud, clusterInfo resources.ClusterInfo) (
 		ListEventBridgeRules,
 	}
 
-	if !dns.IsGossipClusterName(clusterName) && !clusterUsesNoneDNS {
+	if clusterInfo.PublishesDNSRecords() {
 		// Route 53
 		listFunctions = append(listFunctions, ListRoute53Records)
 	}

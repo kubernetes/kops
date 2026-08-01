@@ -27,3 +27,8 @@ type ClusterInfo struct {
 	AzureNetworkShared       bool
 	AzureRouteTableShared    bool
 }
+
+// PublishesDNSRecords reports whether resource discovery should query the cloud DNS provider.
+func (c ClusterInfo) PublishesDNSRecords() bool {
+	return !c.UsesNoneDNS
+}
