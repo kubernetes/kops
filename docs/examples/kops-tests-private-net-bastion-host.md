@@ -48,7 +48,7 @@ export KOPS_STATE_STORE=s3://my-kops-s3-bucket-for-cluster-state
 Some things to note from here:
 
 - "NAME" will be an environment variable that we'll use from now in order to refer to our cluster name. For this practical exercise, our cluster name is "privatekopscluster.k8s.local".
-- Because we'll use `--dns=none` instead of a valid DNS domain on AWS ROUTE53 service, our cluster name need to include the string **".k8s.local"** at the end (this is covered on our AWS tutorials). You can see more about this on our [Getting Started Doc.](../getting_started/aws.md)
+- Because no DNS zone is configured, the cluster defaults to None-DNS. The **".k8s.local"** suffix is only part of this example name and is not required. See the [Getting Started Guide](../getting_started/aws.md) for more information.
 
 
 ## KOPS PRIVATE CLUSTER CREATION:
@@ -79,7 +79,7 @@ A few things to note here:
 - Because we are just doing a simple LAB, we are using "t3.micro" machines. Please DON'T USE t3.micro on real production systems. Start with "t3.medium" as a minimum realistic/workable machine type.
 - And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kOps which networking subsystem to use. More information about kOps supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
 
-**NOTE**: You can add the "--bastion" argument here if you are not using "gossip dns" and create the bastion from start, but if you are using "gossip-dns" this will make this cluster to fail (this is a bug we are correcting now). For the moment don't use "--bastion" when using gossip DNS. We'll show you how to get around this by first creating the private cluster, then creation the bastion instance group once the cluster is running.
+**NOTE**: This guide adds the bastion instance group after the initial cluster creation to demonstrate that workflow. You can instead pass `--bastion` to `kops create cluster`.
 
 With those points clarified, let's deploy our cluster:
 
@@ -127,7 +127,7 @@ But, all the cluster instances (masters and worker nodes) will have private IP's
 
 ## ADDING A BASTION HOST TO OUR CLUSTER.
 
-We mentioned earlier that we can't add the "--bastion" argument to our "kops create cluster" command if we are using "gossip dns" (a fix it's on the way as we speaks). That forces us to add the bastion afterwards, once the cluster is up and running.
+This example adds the bastion after the cluster is running. Passing `--bastion` to `kops create cluster` creates it with the cluster instead.
 
 Let's add a bastion here by using the following command:
 
@@ -168,7 +168,6 @@ kops update cluster ${NAME} --yes
 You will see an output like the following:
 
 ```bash
-I0828 13:06:33.153920   16528 apply_cluster.go:420] Gossip DNS: skipping DNS validation
 I0828 13:06:34.686722   16528 executor.go:91] Tasks: 0 done / 116 total; 40 can run
 I0828 13:06:36.181677   16528 executor.go:91] Tasks: 40 done / 116 total; 26 can run
 I0828 13:06:37.602302   16528 executor.go:91] Tasks: 66 done / 116 total; 34 can run
