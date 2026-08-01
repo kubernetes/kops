@@ -18,12 +18,15 @@ package cloudup
 
 import (
 	"fmt"
+	"math"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/awsmodel"
@@ -40,6 +43,12 @@ const (
 	karpenterNodePoolAPIGroup  = "karpenter.sh"
 	karpenterNodePoolLabel     = "karpenter.sh/nodepool"
 	karpenterCapacityTypeLabel = "karpenter.sh/capacity-type"
+
+	karpenterOSLabel             = "kubernetes.io/os"
+	karpenterInstanceTypeLabel   = "node.kubernetes.io/instance-type"
+	karpenterInstanceCPULabel    = "karpenter.k8s.aws/instance-cpu"
+	karpenterInstanceMemoryLabel = "karpenter.k8s.aws/instance-memory"
+	karpenterInstanceFamilyLabel = "karpenter.k8s.aws/instance-family"
 )
 
 type karpenterObjectMeta struct {
@@ -400,9 +409,14 @@ func (tf *TemplateFunctions) buildKarpenterNodePool(ig *kops.InstanceGroup) (*ka
 	}
 	labels = karpenterNodePoolTemplateLabels(labels)
 
+	requirements, err := tf.karpenterRequirements(ig)
+	if err != nil {
+		return nil, fmt.Errorf("building requirements for %q: %w", ig.Name, err)
+	}
+
 	template := karpenterNodeClaimTemplate{
 		Spec: karpenterNodeClaimSpec{
-			Requirements: tf.karpenterRequirements(ig),
+			Requirements: requirements,
 			NodeClassRef: karpenterNodeClassRef{
 				Group: karpenterAWSAPIGroup,
 				Kind:  "EC2NodeClass",
@@ -496,19 +510,29 @@ func (tf *TemplateFunctions) karpenterAssociatePublicIP(ig *kops.InstanceGroup) 
 	}
 }
 
-func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) []karpenterRequirement {
+func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) ([]karpenterRequirement, error) {
 	requirements := []karpenterRequirement{
 		{
-			Key:      "kubernetes.io/os",
+			Key:      karpenterOSLabel,
 			Operator: "In",
 			Values:   []string{"linux"},
 		},
 	}
 
-	instanceTypes := karpenterInstanceTypes(ig)
-	if len(instanceTypes) != 0 {
+	var instanceRequirements *kops.InstanceRequirementsSpec
+	if ig.Spec.MixedInstancesPolicy != nil {
+		instanceRequirements = ig.Spec.MixedInstancesPolicy.InstanceRequirements
+	}
+
+	if instanceRequirements != nil {
+		converted, err := karpenterInstanceRequirements(instanceRequirements)
+		if err != nil {
+			return nil, err
+		}
+		requirements = append(requirements, converted...)
+	} else if instanceTypes := karpenterInstanceTypes(ig); len(instanceTypes) != 0 {
 		requirements = append(requirements, karpenterRequirement{
-			Key:      "node.kubernetes.io/instance-type",
+			Key:      karpenterInstanceTypeLabel,
 			Operator: "In",
 			Values:   instanceTypes,
 		})
@@ -520,7 +544,128 @@ func (tf *TemplateFunctions) karpenterRequirements(ig *kops.InstanceGroup) []kar
 		Values:   karpenterCapacityTypes(ig),
 	})
 
-	return requirements
+	return requirements, nil
+}
+
+func karpenterInstanceRequirements(spec *kops.InstanceRequirementsSpec) ([]karpenterRequirement, error) {
+	var requirements []karpenterRequirement
+
+	// Karpenter's Gt/Lt/Gte/Lte operators take exactly one value, interpreted as an integer.
+	addBound := func(key string, quantity *resource.Quantity, operator string, toValue func(*resource.Quantity) (int64, error)) error {
+		if quantity == nil {
+			return nil
+		}
+		value, err := toValue(quantity)
+		if err != nil {
+			return fmt.Errorf("%s: %w", key, err)
+		}
+		requirements = append(requirements, karpenterRequirement{
+			Key:      key,
+			Operator: operator,
+			Values:   []string{strconv.FormatInt(value, 10)},
+		})
+		return nil
+	}
+
+	if cpu := spec.CPU; cpu != nil {
+		if err := addBound(karpenterInstanceCPULabel, cpu.Min, "Gte", quantityToCount); err != nil {
+			return nil, err
+		}
+		if err := addBound(karpenterInstanceCPULabel, cpu.Max, "Lte", quantityToCount); err != nil {
+			return nil, err
+		}
+	}
+
+	if memory := spec.Memory; memory != nil {
+		// Round the lower bound up and the upper bound down, so the generated envelope
+		// never admits an instance outside the requested range.
+		if err := addBound(karpenterInstanceMemoryLabel, memory.Min, "Gte", quantityToMiBRoundUp); err != nil {
+			return nil, err
+		}
+		if err := addBound(karpenterInstanceMemoryLabel, memory.Max, "Lte", quantityToMiBRoundDown); err != nil {
+			return nil, err
+		}
+	}
+
+	excluded, err := karpenterExcludedTypeRequirements(spec.ExcludedInstanceTypes)
+	if err != nil {
+		return nil, err
+	}
+	return append(requirements, excluded...), nil
+}
+
+// karpenterExcludedInstanceFamily matches the "<family>.*" wildcard form of
+// excludedInstanceTypes, which maps to an instance family rather than an instance type.
+var karpenterExcludedInstanceFamily = regexp.MustCompile(`^([a-z0-9][a-z0-9-]*)\.\*$`)
+
+func karpenterExcludedTypeRequirements(excluded []string) ([]karpenterRequirement, error) {
+	var families, instanceTypes []string
+	for _, entry := range excluded {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		if match := karpenterExcludedInstanceFamily.FindStringSubmatch(entry); match != nil {
+			families = append(families, match[1])
+			continue
+		}
+		if strings.Contains(entry, "*") {
+			return nil, fmt.Errorf("excludedInstanceTypes entry %q is not supported for Karpenter; only an instance type or a %q family wildcard can be expressed as a NodePool requirement", entry, "<family>.*")
+		}
+		instanceTypes = append(instanceTypes, entry)
+	}
+
+	var requirements []karpenterRequirement
+	if len(families) != 0 {
+		sort.Strings(families)
+		requirements = append(requirements, karpenterRequirement{
+			Key:      karpenterInstanceFamilyLabel,
+			Operator: "NotIn",
+			Values:   families,
+		})
+	}
+	if len(instanceTypes) != 0 {
+		sort.Strings(instanceTypes)
+		requirements = append(requirements, karpenterRequirement{
+			Key:      karpenterInstanceTypeLabel,
+			Operator: "NotIn",
+			Values:   instanceTypes,
+		})
+	}
+	return requirements, nil
+}
+
+// quantityToCount converts a Quantity to a whole count, for labels such as instance-cpu.
+func quantityToCount(quantity *resource.Quantity) (int64, error) {
+	value, ok := quantity.AsInt64()
+	if !ok {
+		return 0, fmt.Errorf("value %q is not a whole number", quantity.String())
+	}
+	return checkKarpenterBound(quantity, value)
+}
+
+// quantityToMiBRoundUp and quantityToMiBRoundDown convert a Quantity to MiB, the unit of
+// the karpenter.k8s.aws/instance-memory label. Note this differs from the ASG path, which
+// scales by 10^6 into a field AWS defines as MiB; see kubernetes/kops#15305.
+func quantityToMiBRoundUp(quantity *resource.Quantity) (int64, error) {
+	bytes := quantity.Value()
+	return checkKarpenterBound(quantity, (bytes+mib-1)/mib)
+}
+
+func quantityToMiBRoundDown(quantity *resource.Quantity) (int64, error) {
+	return checkKarpenterBound(quantity, quantity.Value()/mib)
+}
+
+const mib = 1024 * 1024
+
+func checkKarpenterBound(quantity *resource.Quantity, value int64) (int64, error) {
+	if value < 0 {
+		return 0, fmt.Errorf("value %q must not be negative", quantity.String())
+	}
+	if value > math.MaxInt32 {
+		return 0, fmt.Errorf("value %q is too large", quantity.String())
+	}
+	return value, nil
 }
 
 func karpenterInstanceTypes(ig *kops.InstanceGroup) []string {
