@@ -29,14 +29,14 @@ const (
 	RoleLabelNode16      = "node-role.kubernetes.io/node"
 
 	// New Experimental control plane roles associated with static manifests
-	RoleLabelEtcd                  = "ig-role.kops.k8s.io/etcd"
-	RoleLabelScheduler             = "ig-role.kops.k8s.io/scheduler"
-	RoleLabelKubeControllerManager = "ig-role.kops.k8s.io/kube-controller-manager"
+	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
+	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
+	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
 
 	// New Experimental control plane roles which are dynamically allocated
-	RoleLabelKopsCCM        = "pod-role.kops.k8s.io/cloud-controller-manager"
-	RoleLabelKopsChannel    = "pod-role.kops.k8s.io/kops-channel"
-	RoleLabelKopsController = "pod-role.kops.k8s.io/kops-controller"
+	RoleLabelKopsCCM        = "node-role.kops.k8s.io/cloud-controller-manager"
+	RoleLabelKopsChannel    = "node-role.kops.k8s.io/kops-channel"
+	RoleLabelKopsController = "node-role.kops.k8s.io/kops-controller"
 
 	RoleLabelControlPlane20 = "node-role.kubernetes.io/control-plane"
 )

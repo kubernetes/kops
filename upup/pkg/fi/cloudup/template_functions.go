@@ -636,21 +636,21 @@ func (tf *TemplateFunctions) APIServerNodeRole() string {
 
 func (tf *TemplateFunctions) EtcdRole() string {
 	if featureflag.ExperimentalRoles.Enabled() {
-		return "ig-role.kops.k8s.io/etcd"
+		return "node-role.kubernetes.io/etcd"
 	}
 	return "node-role.kubernetes.io/control-plane"
 }
 
 func (tf *TemplateFunctions) SchedulerRole() string {
 	if featureflag.ExperimentalRoles.Enabled() {
-		return "ig-role.kops.k8s.io/scheduler"
+		return "node-role.kubernetes.io/scheduler"
 	}
 	return "node-role.kubernetes.io/control-plane"
 }
 
 func (tf *TemplateFunctions) CloudControllerManagerRole() string {
 	if featureflag.ExperimentalRoles.Enabled() {
-		return "ig-role.kops.k8s.io/cloud-controller-manager"
+		return "node-role.kubernetes.io/cloud-controller-manager"
 	}
 	return "node-role.kubernetes.io/control-plane"
 }
