@@ -124,7 +124,7 @@ download-or-bust() {
         return 0
       fi
 {{- else if UseS3Download }}
-      local imds_token profile creds
+      local imds_token profile creds access_key secret_key session_token
       echo "== Downloading ${url} =="
       # Use the IP of the metadata server, to not depend on DNS this early in boot
       if ! imds_token=$(curl -s -f -X PUT --noproxy '*' --connect-timeout 2 --max-time 5 -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "http://169.254.169.254/latest/api/token"); then
@@ -133,11 +133,10 @@ download-or-bust() {
         echo "== Failed to get the instance profile name =="
       elif ! creds=$(imds-get "${imds_token}" "meta-data/iam/security-credentials/${profile}"); then
         echo "== Failed to get the instance profile credentials =="
+      elif ! access_key=$(json-field "${creds}" AccessKeyId) || ! secret_key=$(json-field "${creds}" SecretAccessKey) || ! session_token=$(json-field "${creds}" Token); then
+        echo "== Failed to parse the instance profile credentials =="
       # Pass credentials through stdin so they do not appear in files, logs, or process arguments.
-      elif ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' \
-        "$(json-field "${creds}" AccessKeyId)" \
-        "$(json-field "${creds}" SecretAccessKey)" \
-        "$(json-field "${creds}" Token)" |
+      elif ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' "${access_key}" "${secret_key}" "${session_token}" |
         curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 \
           --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
           "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
