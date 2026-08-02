@@ -442,8 +442,7 @@ func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
 	}
 
 	fileRepo.Path = path.Join(fileRepo.Path, canonicalURL.Path)
-	// Escape commas, which Go leaves alone because they are legal in a path, but which
-	// CompactString uses to separate locations.
+	// Escape commas, which are legal in a path but separate locations in CompactString.
 	fileRepo.RawPath = strings.ReplaceAll(fileRepo.EscapedPath(), ",", "%2C")
 
 	return fileRepo, nil
