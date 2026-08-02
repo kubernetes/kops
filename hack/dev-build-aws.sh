@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is a convenience script for developing kOps on GCE.
-# It builds the code, including nodeup, and uploads to a custom GCS bucket.
+# This is a convenience script for developing kOps on AWS.
+# It builds the code, including nodeup, and uploads to a custom S3 bucket.
 # It also sets KOPS_STATE_STORE and KOPS_BASE_URL to project-isolated values.
-# To use, source the script.  For example `. hack/dev-build-gce.sh` (note the initial `.`)
+# To use, source the script. For example, `. hack/dev-build-aws.sh` (note the initial `.`).
 
 # Can't use set -e in a script we want to source
 #set -e
@@ -37,9 +37,12 @@ aws s3 ls "${UPLOAD_DEST}" || aws s3 mb "${UPLOAD_DEST}" || return
 make kops-install dev-upload-linux-${KOPS_ARCH} || return
 
 # Set KOPS_BASE_URL
-(tools/get_version.sh | grep VERSION | awk '{print $2}') || return
-KOPS_VERSION=$(tools/get_version.sh | grep VERSION | awk '{print $2}')
-export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/${KOPS_VERSION}/
+KOPS_VERSION=$(tools/get_version.sh | grep VERSION | awk '{print $2}') || return
+echo "${KOPS_VERSION}"
+# The s3:// form lets nodes use their instance profiles; https:// requires public read access.
+# Grant the cluster instance profiles s3:GetObject on the bucket and use node images with
+# curl >= 8.0.
+export KOPS_BASE_URL=s3://${S3_BUCKET_NAME}/kops/${KOPS_VERSION}/
 
 # Create the state-store bucket if it doesn't exist
 KOPS_STATE_STORE="s3://kops-state-${ACCOUNT_ID}-${USER}"

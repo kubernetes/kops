@@ -163,6 +163,11 @@ func (d *deployer) initialize() error {
 		if _, found := os.LookupEnv("KOPS_DISCOVERY_STORE"); !found {
 			d.createDiscoveryStore = true
 		}
+		// --build and --down derive the same ephemeral bucket name across separate invocations.
+		// Caller-provided buckets are never created or deleted.
+		if os.Getenv("KOPS_STAGING_BUCKET") == "" {
+			d.createStagingStore = true
+		}
 	case "gce":
 		if d.boskos != nil || os.Getenv("KOPS_STATE_STORE") == "" || os.Getenv("KOPS_STAGING_BUCKET") == "" {
 			d.createStateStore = true
@@ -302,9 +307,9 @@ func (d *deployer) env() []string {
 	}
 
 	if d.KopsBaseURL != "" {
-		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.maybeGSURL(d.KopsBaseURL)))
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.canonicalizeBaseURL(d.KopsBaseURL)))
 	} else if baseURL := os.Getenv("KOPS_BASE_URL"); baseURL != "" {
-		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.maybeGSURL(baseURL)))
+		vars = append(vars, fmt.Sprintf("KOPS_BASE_URL=%v", d.canonicalizeBaseURL(baseURL)))
 	}
 
 	if kopsBin := d.resolvedKopsBinaryPath(); kopsBin != "" {
@@ -339,15 +344,13 @@ func (d *deployer) env() []string {
 // gcsPublicPrefix is the https form of a GCS bucket, as used for the staged build artifacts.
 const gcsPublicPrefix = "https://storage.googleapis.com/"
 
-// maybeGSURL converts baseURL from the public GCS https form to the gs:// form on GCE, so that
-// nodes download the staged artifacts with their instance service-account credentials. Any other
-// URL, and any other cloud provider, passes through unchanged. Only kops invocations get the gs://
-// form; the scripts that download the kops binary run outside the deployer and keep using https.
-func (d *deployer) maybeGSURL(baseURL string) string {
-	if d.CloudProvider != "gce" || !strings.HasPrefix(baseURL, gcsPublicPrefix) {
-		return baseURL
+// canonicalizeBaseURL converts a public GCS URL to gs:// on GCE so nodes download staged artifacts
+// with their service-account credentials. Other URLs and cloud providers pass through unchanged.
+func (d *deployer) canonicalizeBaseURL(baseURL string) string {
+	if d.CloudProvider == "gce" && strings.HasPrefix(baseURL, gcsPublicPrefix) {
+		return "gs://" + strings.TrimPrefix(baseURL, gcsPublicPrefix)
 	}
-	return "gs://" + strings.TrimPrefix(baseURL, gcsPublicPrefix)
+	return baseURL
 }
 
 // featureFlags returns the kops feature flags to set
@@ -506,6 +509,14 @@ func (d *deployer) stagingStore() string {
 	sb := os.Getenv("KOPS_STAGING_BUCKET")
 	if sb == "" {
 		switch d.CloudProvider {
+		case "aws":
+			ctx := context.Background()
+			bucketName, err := d.aws.BucketName(ctx, aws.BucketTypeStagingStore)
+			if err != nil {
+				klog.Fatalf("Failed to generate bucket name: %v", err)
+				return ""
+			}
+			sb = "s3://" + bucketName
 		case "gce":
 			sb = "gs://" + gce.GCSBucketName(d.GCPProject, "staging")
 		}

@@ -50,9 +50,14 @@ const (
 	awsDefaultArmNodeSize         = "c6g.large"
 )
 
-func (d *deployer) Up() error {
+func (d *deployer) Up() (retErr error) {
 	ctx := context.TODO()
 
+	defer func() {
+		if retErr != nil {
+			retErr = errors.Join(retErr, d.deleteStagingStore())
+		}
+	}()
 	if err := d.init(); err != nil {
 		return err
 	}
@@ -70,14 +75,14 @@ func (d *deployer) Up() error {
 
 	// PreTestCmd inherits the process environment rather than d.env().
 	if d.KopsBaseURL != "" {
-		os.Setenv("KOPS_BASE_URL", d.maybeGSURL(d.KopsBaseURL))
+		os.Setenv("KOPS_BASE_URL", d.canonicalizeBaseURL(d.KopsBaseURL))
 	}
 
 	if d.terraform == nil {
 		klog.Info("Cleaning up any leaked resources from previous cluster")
 		// Intentionally ignore errors:
 		// Either the cluster didn't exist or something failed that the next cluster creation will catch
-		_ = d.Down()
+		_ = d.down()
 	}
 
 	switch d.CloudProvider {

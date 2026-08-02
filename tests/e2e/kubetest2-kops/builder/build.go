@@ -46,9 +46,9 @@ type BuildResults struct {
 // Build will build the kops artifacts and publish them to the stage location
 func (b *BuildOptions) Build() (*BuildResults, error) {
 	// We expect to upload to a subdirectory with a version identifier
-	gcsLocation := b.StageLocation
-	if !strings.HasSuffix(gcsLocation, "/") {
-		gcsLocation += "/"
+	stageLocation := b.StageLocation
+	if !strings.HasSuffix(stageLocation, "/") {
+		stageLocation += "/"
 	}
 
 	results := &BuildResults{}
@@ -83,43 +83,47 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 		return results, nil
 	}
 
-	args := []string{"make", "gcs-publish-ci"}
-	cmd := exec.Command(args[0], args[1:]...)
-	env := []string{
-		fmt.Sprintf("HOME=%v", os.Getenv("HOME")),
-		fmt.Sprintf("PATH=%v", os.Getenv("PATH")),
-		fmt.Sprintf("GCS_LOCATION=%v", gcsLocation),
-		fmt.Sprintf("GOPATH=%v", os.Getenv("GOPATH")),
+	target, publishEnv, err := publishConfig(stageLocation)
+	if err != nil {
+		return nil, err
 	}
-	// We need to "forward" some variables, in particular the variables like "CI" that change the version we use
-	for _, k := range []string{"CI"} {
-		v := os.Getenv(k)
-		if v != "" {
-			env = append(env, fmt.Sprintf("%s=%s", k, v))
+
+	args := []string{"make", target}
+	cmd := exec.Command(args[0], args[1:]...)
+	var env []string
+	if strings.HasPrefix(stageLocation, "s3://") {
+		// The AWS credential chain may use profiles, web identity, or container credentials.
+		env = os.Environ()
+	} else {
+		env = []string{
+			"HOME=" + os.Getenv("HOME"),
+			"PATH=" + os.Getenv("PATH"),
+			"GOPATH=" + os.Getenv("GOPATH"),
+		}
+		if ci := os.Getenv("CI"); ci != "" {
+			env = append(env, "CI="+ci)
 		}
 	}
-	cmd.SetEnv(env...)
+	cmd.SetEnv(append(env, publishEnv...)...)
 	cmd.SetDir(b.KopsRoot)
 	exec.InheritOutput(cmd)
-	klog.Infof("Executing %q (in %v) with env %v", strings.Join(args, " "), b.KopsRoot, env)
+	klog.Infof("Executing %q in %v with stage location %s", strings.Join(args, " "), b.KopsRoot, stageLocation)
 	if err := cmd.Run(); err != nil {
 		return nil, err
 	}
 
-	// Get the full path (including subdirectory) that we uploaded to
-	// It is written by gcs-publish-ci to .build/upload/latest-ci.txt
+	// The publish target records the uploaded path in .build/upload/latest-ci.txt.
 	latestPath := filepath.Join(b.KopsRoot, ".build", "upload", "latest-ci.txt")
 	kopsBaseURL, err := os.ReadFile(latestPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %q: %w", latestPath, err)
 	}
-	u, err := url.Parse(strings.TrimSpace(string(kopsBaseURL)))
+	baseURL, err := publishedBaseURL(string(kopsBaseURL))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse url %q from file %q: %w", string(kopsBaseURL), latestPath, err)
+		return nil, fmt.Errorf("reading URL from file %q: %w", latestPath, err)
 	}
-	u.Path = strings.ReplaceAll(u.Path, "//", "/")
 	results = &BuildResults{
-		KopsBaseURL: u.String(),
+		KopsBaseURL: baseURL,
 	}
 
 	// Write some meta files so that other tooling can know e.g. KOPS_BASE_URL
@@ -134,4 +138,29 @@ func (b *BuildOptions) Build() (*BuildResults, error) {
 	klog.Infof("wrote file %q with %q", p, results.KopsBaseURL)
 
 	return results, nil
+}
+
+func publishConfig(stageLocation string) (string, []string, error) {
+	switch {
+	case strings.HasPrefix(stageLocation, "gs://"):
+		return "gcs-publish-ci", []string{"GCS_LOCATION=" + stageLocation}, nil
+	case strings.HasPrefix(stageLocation, "s3://"):
+		return "s3-publish-ci", []string{
+			"UPLOAD_DEST=" + stageLocation,
+			"UPLOAD_ARGS=",
+		}, nil
+	default:
+		return "", nil, fmt.Errorf("unsupported stage location %q", stageLocation)
+	}
+}
+
+// publishedBaseURL cleans up the location the publish target recorded. s3:// locations are kept
+// as-is so that nodes download the artifacts with their instance profile credentials.
+func publishedBaseURL(value string) (string, error) {
+	u, err := url.Parse(strings.TrimSpace(value))
+	if err != nil {
+		return "", fmt.Errorf("parsing URL %q: %w", value, err)
+	}
+	u.Path = strings.ReplaceAll(u.Path, "//", "/")
+	return u.String(), nil
 }

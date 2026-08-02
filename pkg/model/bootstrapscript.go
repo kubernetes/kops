@@ -148,6 +148,10 @@ func (b *BootstrapScript) kubeEnv(cluster *kops.Cluster, ig *kops.InstanceGroup,
 
 		nodeupScript.CloudProvider = string(cluster.GetCloudProvider())
 
+		if err := nodeupScript.ResolveS3Region(c.Context(), vfs.Context); err != nil {
+			return nil, err
+		}
+
 		scriptResource, err := nodeupScript.Build()
 		if err != nil {
 			return nil, err
@@ -303,6 +307,10 @@ func (b *BootstrapScript) Run(c *fi.CloudupContext) error {
 	nodeupScript.CompressUserData = fi.ValueOf(b.ig.Spec.CompressUserData)
 
 	nodeupScript.CloudProvider = string(c.T.Cluster.GetCloudProvider())
+
+	if err := nodeupScript.ResolveS3Region(c.Context(), vfs.Context); err != nil {
+		return err
+	}
 
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {

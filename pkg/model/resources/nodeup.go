@@ -20,16 +20,21 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/base64"
 	"fmt"
+	"maps"
 	"mime/multipart"
 	"net/textproto"
+	"net/url"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/aws/smithy-go/encoding/httpbinding"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
@@ -38,6 +43,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/architectures"
+	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kops/util/pkg/vfs/openstackconfig"
 )
 
@@ -68,6 +74,20 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
+{{- if UseS3Download }}
+# Fetch a path from the instance metadata service. args: token, path
+imds-get() {
+  curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 \
+    -H "X-aws-ec2-metadata-token: $1" "http://169.254.169.254/latest/$2"
+}
+
+# Extract a string field from a JSON object. args: json, field
+json-field() {
+  local pattern="\"$2\"[[:space:]]*:[[:space:]]*\"([^\"]+)\""
+  [[ $1 =~ $pattern ]] && printf '%s' "${BASH_REMATCH[1]}"
+}
+{{- end }}
+
 # Retry a download until we get it. args: name, sha, urls
 download-or-bust() {
   echo "== Downloading $1 with hash $2 from $3 =="
@@ -95,6 +115,31 @@ download-or-bust() {
       if ! token=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H 'Metadata-Flavor: Google' "${metadata_server}/computeMetadata/v1/instance/service-accounts/default/token" | grep -o '"access_token" *: *"[^"]*"' | cut -d '"' -f 4); then
         echo "== Failed to get a service account token =="
       elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}"; then
+        echo "== Failed to download ${url} =="
+      elif ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate hash for ${url} =="
+        rm -f "${file}"
+      else
+        echo "== Downloaded ${url} with hash ${hash} =="
+        return 0
+      fi
+{{- else if UseS3Download }}
+      local imds_token profile creds access_key secret_key session_token
+      echo "== Downloading ${url} =="
+      # Use the IP of the metadata server, to not depend on DNS this early in boot
+      if ! imds_token=$(curl -s -f -X PUT --noproxy '*' --connect-timeout 2 --max-time 5 -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "http://169.254.169.254/latest/api/token"); then
+        echo "== Failed to get an IMDS token =="
+      elif ! profile=$(imds-get "${imds_token}" meta-data/iam/security-credentials/ | head -n 1); then
+        echo "== Failed to get the instance profile name =="
+      elif ! creds=$(imds-get "${imds_token}" "meta-data/iam/security-credentials/${profile}"); then
+        echo "== Failed to get the instance profile credentials =="
+      elif ! access_key=$(json-field "${creds}" AccessKeyId) || ! secret_key=$(json-field "${creds}" SecretAccessKey) || ! session_token=$(json-field "${creds}" Token); then
+        echo "== Failed to parse the instance profile credentials =="
+      # Pass credentials through stdin so they do not appear in files, logs, or process arguments.
+      elif ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' "${access_key}" "${secret_key}" "${session_token}" |
+        curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 \
+          --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
+          "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
         echo "== Failed to download ${url} =="
       elif ! validate-hash "${file}" "${hash}"; then
         echo "== Failed to validate hash for ${url} =="
@@ -204,10 +249,58 @@ type NodeUpScript struct {
 	CloudProvider        string
 	ProxyEnv             func() (string, error)
 	EnvironmentVariables func() (string, error)
+
+	// S3Region is baked into the script because SigV4 requires the bucket's actual region, which
+	// an s3:// URL does not include.
+	S3Region string
 }
 
 func funcEmptyString() (string, error) {
 	return "", nil
+}
+
+func (b *NodeUpScript) nodeUpSource(arch architectures.Architecture, useS3Download bool) (string, error) {
+	asset := b.NodeUpAssets[arch]
+	if asset == nil {
+		return "", nil
+	}
+
+	if !useS3Download {
+		return strings.Join(asset.Locations, ","), nil
+	}
+
+	locations := slices.Clone(asset.Locations)
+	for i, location := range locations {
+		if !strings.HasPrefix(location, "s3://") {
+			continue
+		}
+		escaped, err := escapeS3Location(location)
+		if err != nil {
+			return "", fmt.Errorf("escaping nodeup source %q: %w", location, err)
+		}
+		locations[i] = escaped
+	}
+	return strings.Join(locations, ","), nil
+}
+
+func (b *NodeUpScript) nodeUpHash(arch architectures.Architecture) string {
+	asset := b.NodeUpAssets[arch]
+	if asset == nil {
+		return ""
+	}
+	return asset.Hash.Hex()
+}
+
+func escapeS3Location(location string) (string, error) {
+	u, err := url.Parse(location)
+	if err != nil {
+		return "", fmt.Errorf("parsing S3 location: %w", err)
+	}
+	if u.Scheme != "s3" || u.Host == "" {
+		return "", fmt.Errorf("invalid S3 location")
+	}
+
+	return "s3://" + u.Host + httpbinding.EscapePath(u.Path, false), nil
 }
 
 func (b *NodeUpScript) Build() (fi.Resource, error) {
@@ -218,31 +311,21 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 		b.EnvironmentVariables = funcEmptyString
 	}
 
+	useGCSDownload := b.useGCSDownload()
+	useS3Download := !useGCSDownload && b.useS3Download()
+	if useS3Download && b.S3Region == "" {
+		return nil, fmt.Errorf("ResolveS3Region must be called before building a nodeup script with an s3:// source")
+	}
+
 	functions := template.FuncMap{
-		"NodeUpSourceAmd64": func() string {
-			if b.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
-				return strings.Join(b.NodeUpAssets[architectures.ArchitectureAmd64].Locations, ",")
-			}
-			return ""
+		"NodeUpSourceAmd64": func() (string, error) {
+			return b.nodeUpSource(architectures.ArchitectureAmd64, useS3Download)
 		},
-		"NodeUpSourceHashAmd64": func() string {
-			if b.NodeUpAssets[architectures.ArchitectureAmd64] != nil {
-				return b.NodeUpAssets[architectures.ArchitectureAmd64].Hash.Hex()
-			}
-			return ""
+		"NodeUpSourceHashAmd64": func() string { return b.nodeUpHash(architectures.ArchitectureAmd64) },
+		"NodeUpSourceArm64": func() (string, error) {
+			return b.nodeUpSource(architectures.ArchitectureArm64, useS3Download)
 		},
-		"NodeUpSourceArm64": func() string {
-			if b.NodeUpAssets[architectures.ArchitectureArm64] != nil {
-				return strings.Join(b.NodeUpAssets[architectures.ArchitectureArm64].Locations, ",")
-			}
-			return ""
-		},
-		"NodeUpSourceHashArm64": func() string {
-			if b.NodeUpAssets[architectures.ArchitectureArm64] != nil {
-				return b.NodeUpAssets[architectures.ArchitectureArm64].Hash.Hex()
-			}
-			return ""
-		},
+		"NodeUpSourceHashArm64": func() string { return b.nodeUpHash(architectures.ArchitectureArm64) },
 
 		"KubeEnv": func() (string, error) {
 			bootConfigData, err := utils.YamlMarshal(b.BootConfig)
@@ -270,7 +353,9 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 		"ProxyEnv":             b.ProxyEnv,
 		"EnvironmentVariables": b.EnvironmentVariables,
 
-		"UseGCSDownload": b.useGCSDownload,
+		"UseGCSDownload": func() bool { return useGCSDownload },
+		"UseS3Download":  func() bool { return useS3Download },
+		"S3Region":       func() string { return b.S3Region },
 	}
 
 	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
@@ -279,17 +364,59 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 // useGCSDownload reports whether nodeup is downloaded from a GCS bucket, which has to be done
 // with the credentials of the instance service account.
 func (b *NodeUpScript) useGCSDownload() bool {
-	for _, asset := range b.NodeUpAssets {
+	return b.firstLocationWithScheme("gs://") != ""
+}
+
+func (b *NodeUpScript) firstLocationWithScheme(scheme string) string {
+	// Sort architectures so region selection is deterministic and independent of KOPS_ARCH.
+	for _, arch := range slices.Sorted(maps.Keys(b.NodeUpAssets)) {
+		asset := b.NodeUpAssets[arch]
 		if asset == nil {
 			continue
 		}
 		for _, location := range asset.Locations {
-			if strings.HasPrefix(location, "gs://") {
-				return true
+			if strings.HasPrefix(location, scheme) {
+				return location
 			}
 		}
 	}
-	return false
+	return ""
+}
+
+// S3 downloads require an AWS instance profile.
+func (b *NodeUpScript) useS3Download() bool {
+	return b.CloudProvider == string(kops.CloudProviderAWS) && b.firstLocationWithScheme("s3://") != ""
+}
+
+// ResolveS3Region resolves the bucket region because SigV4 requires it but s3:// URLs omit it.
+func (b *NodeUpScript) ResolveS3Region(ctx context.Context, vfsContext *vfs.VFSContext) error {
+	if b.CloudProvider != string(kops.CloudProviderAWS) {
+		return nil
+	}
+	location := b.firstLocationWithScheme("s3://")
+	if location == "" {
+		return nil
+	}
+	p, err := vfsContext.BuildVfsPath(location)
+	if err != nil {
+		return fmt.Errorf("building path for %q: %w", location, err)
+	}
+	s3Path, ok := p.(*vfs.S3Path)
+	if !ok {
+		return fmt.Errorf("unexpected path type %T for %q", p, location)
+	}
+	b.S3Region, err = s3Path.Region(ctx)
+	if err != nil {
+		return fmt.Errorf("getting the region of %q: %w", location, err)
+	}
+	supported, err := awsup.SupportsS3BootstrapEndpoint(ctx, b.S3Region)
+	if err != nil {
+		return err
+	}
+	if !supported {
+		return fmt.Errorf("downloading nodeup from an s3:// URL is not supported in AWS region %q", b.S3Region)
+	}
+	return nil
 }
 
 func gzipBase64(data string) (string, error) {

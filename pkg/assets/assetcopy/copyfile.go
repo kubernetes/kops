@@ -176,11 +176,11 @@ func writeFile(ctx context.Context, cluster *kops.Cluster, p vfs.Path, data []by
 	return nil
 }
 
-// buildVFSPath task a recognizable https url and transforms that URL into the equivalent url with the object
-// store prefix.
+// buildVFSPath returns local paths and memfs://, file://, gs://, and s3:// URLs unchanged. It
+// converts recognized S3 or GCS HTTPS URLs to their native VFS form.
 func buildVFSPath(target string) (string, error) {
 	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") || strings.HasPrefix(target, "file://") ||
-		strings.HasPrefix(target, "gs://") {
+		strings.HasPrefix(target, "gs://") || strings.HasPrefix(target, "s3://") {
 		return target, nil
 	}
 
@@ -207,7 +207,7 @@ func buildVFSPath(target string) (string, error) {
 	if vfsPath == "" {
 		klog.Errorf("Unable to determine VFS path from supplied URL: %s", target)
 		klog.Errorf("S3, Google Cloud Storage, and File Paths are supported.")
-		klog.Errorf("For S3, please make sure that the supplied file repository URL adhere to S3 naming conventions, https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region.")
+		klog.Errorf("For S3, please make sure that the supplied file repository URL starts with s3:// or adheres to S3 naming conventions, https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region.")
 		klog.Errorf("For GCS, please make sure that the supplied file repository URL starts with gs:// or https://storage.googleapis.com/")
 		if err != nil { // print the S3 error for more details
 			return "", fmt.Errorf("Error Details: %v", err)

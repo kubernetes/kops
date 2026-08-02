@@ -801,8 +801,13 @@ func validateFileRepository(s string, fieldPath *field.Path, cloudProvider kops.
 		if cloudProvider != kops.CloudProviderGCE {
 			allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("gs:// fileRepository is only supported on GCE, but the cloud provider is %q", cloudProvider)))
 		}
+	case "s3":
+		// Only AWS instances can authenticate to S3 with their instance profile.
+		if cloudProvider != kops.CloudProviderAWS {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("s3:// fileRepository is only supported on AWS, but the cloud provider is %q", cloudProvider)))
+		}
 	default:
-		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http:// or https:// URL"))
+		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https://, gs://, or s3:// URL"))
 	}
 	if u.Host == "" {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must include a host"))
