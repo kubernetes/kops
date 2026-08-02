@@ -154,15 +154,13 @@ func publishConfig(stageLocation string) (string, []string, error) {
 	}
 }
 
+// publishedBaseURL cleans up the location the publish target recorded. s3:// locations are kept
+// as-is so that nodes download the artifacts with their instance profile credentials.
 func publishedBaseURL(value string) (string, error) {
 	u, err := url.Parse(strings.TrimSpace(value))
 	if err != nil {
 		return "", fmt.Errorf("parsing URL %q: %w", value, err)
 	}
 	u.Path = strings.ReplaceAll(u.Path, "//", "/")
-	if u.Scheme == "s3" {
-		u.Scheme = "https"
-		u.Host += ".s3.amazonaws.com"
-	}
 	return u.String(), nil
 }

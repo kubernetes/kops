@@ -82,7 +82,12 @@ func TestPublishedBaseURL(t *testing.T) {
 		},
 		{
 			value:    "s3://bucket/path/version",
-			expected: "https://bucket.s3.amazonaws.com/path/version",
+			expected: "s3://bucket/path/version",
+		},
+		{
+			// The publish target joins a location that already ends in a slash.
+			value:    "https://storage.googleapis.com/bucket/path//version",
+			expected: "https://storage.googleapis.com/bucket/path/version",
 		},
 	} {
 		actual, err := publishedBaseURL(tc.value)
