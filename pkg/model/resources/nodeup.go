@@ -74,6 +74,20 @@ function ensure-install-dir() {
   cd ${INSTALL_DIR}
 }
 
+{{- if UseS3Download }}
+# Fetch a path from the instance metadata service. args: token, path
+imds-get() {
+  curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 \
+    -H "X-aws-ec2-metadata-token: $1" "http://169.254.169.254/latest/$2"
+}
+
+# Extract a string field from a JSON object. args: json, field
+json-field() {
+  local pattern="\"$2\"[[:space:]]*:[[:space:]]*\"([^\"]+)\""
+  [[ $1 =~ $pattern ]] && printf '%s' "${BASH_REMATCH[1]}"
+}
+{{- end }}
+
 # Retry a download until we get it. args: name, sha, urls
 download-or-bust() {
   echo "== Downloading $1 with hash $2 from $3 =="
@@ -110,38 +124,30 @@ download-or-bust() {
         return 0
       fi
 {{- else if UseS3Download }}
-      # Use the IP of the metadata server, to not depend on DNS this early in boot
-      local imds_server="http://169.254.169.254"
-      local imds_token profile creds field pattern
-      local -A aws_credentials=()
+      local imds_token profile creds
       echo "== Downloading ${url} =="
-      if ! imds_token=$(curl -s -f -X PUT --noproxy '*' --connect-timeout 2 --max-time 5 -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "${imds_server}/latest/api/token"); then
+      # Use the IP of the metadata server, to not depend on DNS this early in boot
+      if ! imds_token=$(curl -s -f -X PUT --noproxy '*' --connect-timeout 2 --max-time 5 -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' "http://169.254.169.254/latest/api/token"); then
         echo "== Failed to get an IMDS token =="
-      elif ! profile=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H "X-aws-ec2-metadata-token: ${imds_token}" "${imds_server}/latest/meta-data/iam/security-credentials/" | head -n 1); then
+      elif ! profile=$(imds-get "${imds_token}" meta-data/iam/security-credentials/ | head -n 1); then
         echo "== Failed to get the instance profile name =="
-      elif ! creds=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H "X-aws-ec2-metadata-token: ${imds_token}" "${imds_server}/latest/meta-data/iam/security-credentials/${profile}"); then
+      elif ! creds=$(imds-get "${imds_token}" "meta-data/iam/security-credentials/${profile}"); then
         echo "== Failed to get the instance profile credentials =="
+      # Pass credentials through stdin so they do not appear in files, logs, or process arguments.
+      elif ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' \
+        "$(json-field "${creds}" AccessKeyId)" \
+        "$(json-field "${creds}" SecretAccessKey)" \
+        "$(json-field "${creds}" Token)" |
+        curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 \
+          --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
+          "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
+        echo "== Failed to download ${url} =="
+      elif ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate hash for ${url} =="
+        rm -f "${file}"
       else
-        for field in AccessKeyId SecretAccessKey Token; do
-          pattern="\"${field}\"[[:space:]]*:[[:space:]]*\"([^\"]+)\""
-          if [[ ${creds} =~ ${pattern} ]]; then
-            aws_credentials["${field}"]="${BASH_REMATCH[1]}"
-          fi
-        done
-        # Pass credentials through stdin so they do not appear in files, logs, or process arguments.
-        if ! printf 'user "%s:%s"\nheader "x-amz-security-token: %s"\n' \
-          "${aws_credentials[AccessKeyId]:-}" "${aws_credentials[SecretAccessKey]:-}" "${aws_credentials[Token]:-}" |
-          curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 \
-            --config - --aws-sigv4 "aws:amz:{{ S3Region }}:s3" \
-            "https://s3.{{ S3Region }}.amazonaws.com/${url#s3://}"; then
-          echo "== Failed to download ${url} =="
-        elif ! validate-hash "${file}" "${hash}"; then
-          echo "== Failed to validate hash for ${url} =="
-          rm -f "${file}"
-        else
-          echo "== Downloaded ${url} with hash ${hash} =="
-          return 0
-        fi
+        echo "== Downloaded ${url} with hash ${hash} =="
+        return 0
       fi
 {{- else }}
       commands=(
