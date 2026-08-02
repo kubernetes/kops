@@ -2293,6 +2293,15 @@ func TestValidateFileRepository(t *testing.T) {
 			Input: "http://example.com/files",
 		},
 		{
+			Input:         "s3://example-k8s-assets/kops",
+			CloudProvider: kops.CloudProviderAWS,
+		},
+		{
+			Input:          "s3://example-k8s-assets/kops",
+			CloudProvider:  kops.CloudProviderGCE,
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
 			Input:          "s3://example-k8s-assets/kops",
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},

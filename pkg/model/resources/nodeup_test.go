@@ -37,19 +37,33 @@ func Test_NodeUpTabs(t *testing.T) {
 	}
 }
 
+func singleNodeUpAsset(location string) map[architectures.Architecture]*assets.MirroredAsset {
+	return map[architectures.Architecture]*assets.MirroredAsset{
+		architectures.ArchitectureAmd64: {
+			Locations: []string{location},
+			Hash:      hashing.MustFromString("9acf6a83b249649354bb15b04250fabce0f8ff2377f2f0d4788e3fdda3f572a3"),
+		},
+	}
+}
+
+func renderNodeUpScript(t *testing.T, script *NodeUpScript) string {
+	t.Helper()
+	resource, err := script.Build()
+	if err != nil {
+		t.Fatalf("building nodeup script: %v", err)
+	}
+	rendered, err := fi.ResourceAsString(resource)
+	if err != nil {
+		t.Fatalf("rendering nodeup script: %v", err)
+	}
+	verifyShellSyntax(t, rendered)
+	return rendered
+}
+
 func Test_GCSDownload(t *testing.T) {
 	// The authenticated GCS download is rendered only when the nodeup sources are gs:// URLs.
 	gcsMarker := "Authorization: Bearer"
 	standardMarker := "wget --compression=auto"
-
-	nodeUpAssets := func(location string) map[architectures.Architecture]*assets.MirroredAsset {
-		return map[architectures.Architecture]*assets.MirroredAsset{
-			architectures.ArchitectureAmd64: {
-				Locations: []string{location},
-				Hash:      hashing.MustFromString("9acf6a83b249649354bb15b04250fabce0f8ff2377f2f0d4788e3fdda3f572a3"),
-			},
-		}
-	}
 
 	for _, tc := range []struct {
 		name      string
@@ -70,28 +84,139 @@ func Test_GCSDownload(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			script := &NodeUpScript{
 				CloudProvider: "gce",
-				NodeUpAssets:  nodeUpAssets(tc.location),
+				NodeUpAssets:  singleNodeUpAsset(tc.location),
 			}
-			resource, err := script.Build()
-			if err != nil {
-				t.Fatalf("building nodeup script: %v", err)
-			}
-			rendered, err := fi.ResourceAsString(resource)
-			if err != nil {
-				t.Fatalf("rendering nodeup script: %v", err)
-			}
+			rendered := renderNodeUpScript(t, script)
 			if got := strings.Contains(rendered, gcsMarker); got != tc.expectGCS {
 				t.Errorf("authenticated GCS download rendered=%v, expected %v", got, tc.expectGCS)
 			}
 			if got := strings.Contains(rendered, standardMarker); got != !tc.expectGCS {
 				t.Errorf("standard download commands rendered=%v, expected %v", got, !tc.expectGCS)
 			}
-			verifyShellSyntax(t, rendered)
 		})
 	}
 }
 
-// verifyShellSyntax parses the rendered script with bash, as the GCS download has no golden file.
+func TestEscapeS3Location(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		location  string
+		expected  string
+		expectErr bool
+	}{
+		{
+			name:     "plain path",
+			location: "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup",
+			expected: "s3://artifact-bucket/kops/1.37.0/linux/amd64/nodeup",
+		},
+		{
+			name:     "plus sign",
+			location: "s3://artifact-bucket/kops/1.37.0+abcdef/linux/amd64/nodeup",
+			expected: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+		},
+		{
+			name:     "existing escape",
+			location: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+			expected: "s3://artifact-bucket/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+		},
+		{
+			name:     "reserved and unicode characters",
+			location: "s3://artifact-bucket/space here/100%25/%3F%23/雪,nodeup",
+			expected: "s3://artifact-bucket/space%20here/100%25/%3F%23/%E9%9B%AA%2Cnodeup",
+		},
+		{
+			name:     "path separators",
+			location: "s3://artifact-bucket/a//b/nodeup",
+			expected: "s3://artifact-bucket/a//b/nodeup",
+		},
+		{
+			name:      "invalid escape",
+			location:  "s3://artifact-bucket/100%/nodeup",
+			expectErr: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := escapeS3Location(tc.location)
+			if tc.expectErr {
+				if err == nil {
+					t.Fatalf("expected an error escaping %q", tc.location)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("escaping %q: %v", tc.location, err)
+			}
+			if actual != tc.expected {
+				t.Errorf("expected %q, got %q", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func Test_S3Download(t *testing.T) {
+	s3Marker := "--aws-sigv4"
+	standardMarker := "wget --compression=auto"
+
+	for _, tc := range []struct {
+		name           string
+		cloudProvider  string
+		location       string
+		expectedSource string
+		expectS3       bool
+	}{
+		{
+			name:           "s3 source",
+			cloudProvider:  "aws",
+			location:       "s3://artifact-bucket/kops/1.34.0+abcdef/linux/amd64/nodeup",
+			expectedSource: "NODEUP_URL_AMD64=s3://artifact-bucket/kops/1.34.0%2Babcdef/linux/amd64/nodeup",
+			expectS3:       true,
+		},
+		{
+			name:          "default https source",
+			cloudProvider: "aws",
+			location:      "https://artifacts.k8s.io/binaries/kops/1.34.0/linux/amd64/nodeup",
+			expectS3:      false,
+		},
+		{
+			name:          "s3 source on another cloud provider",
+			cloudProvider: "hetzner",
+			location:      "s3://artifact-bucket/kops/1.34.0/linux/amd64/nodeup",
+			expectS3:      false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			script := &NodeUpScript{
+				CloudProvider: tc.cloudProvider,
+				NodeUpAssets:  singleNodeUpAsset(tc.location),
+				S3Region:      "us-east-2",
+			}
+			rendered := renderNodeUpScript(t, script)
+			if got := strings.Contains(rendered, s3Marker); got != tc.expectS3 {
+				t.Errorf("authenticated S3 download rendered=%v, expected %v", got, tc.expectS3)
+			}
+			if tc.expectS3 && !strings.Contains(rendered, "https://s3.us-east-2.amazonaws.com/") {
+				t.Errorf("authenticated S3 download does not use the bucket region")
+			}
+			if tc.expectedSource != "" && !strings.Contains(rendered, tc.expectedSource) {
+				t.Errorf("rendered script does not contain escaped source %q", tc.expectedSource)
+			}
+			if got := strings.Contains(rendered, standardMarker); got != !tc.expectS3 {
+				t.Errorf("standard download commands rendered=%v, expected %v", got, !tc.expectS3)
+			}
+		})
+	}
+}
+
+func Test_S3DownloadRequiresRegion(t *testing.T) {
+	script := &NodeUpScript{
+		CloudProvider: "aws",
+		NodeUpAssets:  singleNodeUpAsset("s3://artifact-bucket/kops/1.34.0/linux/amd64/nodeup"),
+	}
+	if _, err := script.Build(); err == nil {
+		t.Errorf("expected an error building an s3:// nodeup script without a resolved region")
+	}
+}
+
 func verifyShellSyntax(t *testing.T, script string) {
 	t.Helper()
 

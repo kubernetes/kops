@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -63,11 +64,36 @@ func awsValidateCluster(c *kops.Cluster, strict bool) field.ErrorList {
 
 	allErrs = append(allErrs, awsValidateUseIPBasedNodeNames(c)...)
 
+	allErrs = append(allErrs, awsValidateS3FileRepositoryPartition(c)...)
+
 	if c.Spec.Authentication != nil && c.Spec.Authentication.AWS != nil {
 		allErrs = append(allErrs, awsValidateIAMAuthenticator(field.NewPath("spec", "authentication", "aws"), c.Spec.Authentication.AWS)...)
 	}
 
 	return allErrs
+}
+
+func awsValidateS3FileRepositoryPartition(cluster *kops.Cluster) field.ErrorList {
+	assets := cluster.Spec.Assets
+	if assets == nil || assets.FileRepository == nil || !strings.HasPrefix(*assets.FileRepository, "s3://") {
+		return nil
+	}
+
+	region, err := awsup.FindRegion(cluster)
+	if err != nil {
+		// Subnet validation reports invalid or missing zones separately.
+		return nil
+	}
+
+	fldPath := field.NewPath("spec", "assets", "fileRepository")
+	supported, err := awsup.SupportsS3BootstrapEndpoint(context.TODO(), region)
+	if err != nil {
+		return field.ErrorList{field.Invalid(fldPath, *assets.FileRepository, err.Error())}
+	}
+	if !supported {
+		return field.ErrorList{field.Forbidden(fldPath, fmt.Sprintf("s3:// fileRepository is not supported in AWS region %q", region))}
+	}
+	return nil
 }
 
 func awsValidateEBSCSIDriver(cluster *kops.Cluster) (allErrs field.ErrorList) {

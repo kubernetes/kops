@@ -201,7 +201,7 @@ func hashFromHTTPHeader(url string) (*hashing.Hash, error) {
 
 // Add an asset into the store, in one of the recognized formats (see Assets in types package)
 func (a *AssetStore) Add(ctx context.Context, id string) error {
-	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") || strings.HasPrefix(id, "gs://") {
+	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") || strings.HasPrefix(id, "gs://") || strings.HasPrefix(id, "s3://") {
 		return a.addURLs(ctx, strings.Split(id, ","), nil)
 	}
 	i := strings.Index(id, "@http://")
@@ -210,6 +210,9 @@ func (a *AssetStore) Add(ctx context.Context, id string) error {
 	}
 	if i == -1 {
 		i = strings.Index(id, "@gs://")
+	}
+	if i == -1 {
+		i = strings.Index(id, "@s3://")
 	}
 	if i != -1 {
 		urls := strings.Split(id[i+1:], ",")

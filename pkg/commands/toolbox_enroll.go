@@ -845,12 +845,16 @@ func (b *ConfigBuilder) GetBootstrapData(ctx context.Context) (*BootstrapData, e
 
 	bootConfig.ConfigBase = new("file:///etc/kubernetes/kops/config")
 
+	vfsContext := clientset.VFSContext()
+
+	if err := nodeupScript.ResolveS3Region(ctx, vfsContext); err != nil {
+		return nil, err
+	}
+
 	nodeupScriptResource, err := nodeupScript.Build()
 	if err != nil {
 		return nil, err
 	}
-
-	vfsContext := clientset.VFSContext()
 
 	// If this is the control plane, we want to copy the config from s3/gcs to the local file system on the target node,
 	// so that we don't need credentials to the state store.
