@@ -52,6 +52,11 @@ func Test_BuildVFSPath(t *testing.T) {
 			true,
 		},
 		{
+			"s3://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			"s3://k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
+			true,
+		},
+		{
 			"https://foo/k8s-for-greeks-kops/kubernetes-release/release/v1.7.2/bin/linux/amd64/kubectl",
 			"",
 			false,

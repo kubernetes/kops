@@ -201,23 +201,21 @@ func hashFromHTTPHeader(url string) (*hashing.Hash, error) {
 
 // Add an asset into the store, in one of the recognized formats (see Assets in types package)
 func (a *AssetStore) Add(ctx context.Context, id string) error {
-	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") || strings.HasPrefix(id, "gs://") {
-		return a.addURLs(ctx, strings.Split(id, ","), nil)
-	}
-	i := strings.Index(id, "@http://")
-	if i == -1 {
-		i = strings.Index(id, "@https://")
-	}
-	if i == -1 {
-		i = strings.Index(id, "@gs://")
-	}
-	if i != -1 {
-		urls := strings.Split(id[i+1:], ",")
-		hash, err := hashing.FromString(id[:i])
-		if err != nil {
-			return err
+	schemes := [...]string{"http://", "https://", "gs://", "s3://"}
+	for _, scheme := range schemes {
+		if strings.HasPrefix(id, scheme) {
+			return a.addURLs(ctx, strings.Split(id, ","), nil)
 		}
-		return a.addURLs(ctx, urls, hash)
+	}
+
+	for _, scheme := range schemes {
+		if i := strings.Index(id, "@"+scheme); i != -1 {
+			hash, err := hashing.FromString(id[:i])
+			if err != nil {
+				return err
+			}
+			return a.addURLs(ctx, strings.Split(id[i+1:], ","), hash)
+		}
 	}
 	// TODO: local files!
 	return fmt.Errorf("unknown asset format: %q", id)

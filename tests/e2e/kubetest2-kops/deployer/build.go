@@ -17,6 +17,7 @@ limitations under the License.
 package deployer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -36,7 +37,12 @@ const (
 	defaultGCSPath = "gs://k8s-staging-kops/pulls/%v/pull-%v"
 )
 
-func (d *deployer) Build() error {
+func (d *deployer) Build() (retErr error) {
+	defer func() {
+		if retErr != nil {
+			retErr = errors.Join(retErr, d.deleteStagingStore())
+		}
+	}()
 	if err := d.init(); err != nil {
 		return err
 	}
@@ -48,7 +54,7 @@ func (d *deployer) Build() error {
 		klog.Infof("setting kops base url to %q from build results", results.KopsBaseURL)
 		d.KopsBaseURL = results.KopsBaseURL
 		// In PreTestCmd, we need KOPS_BASE_URL to be set for kops calls
-		os.Setenv("KOPS_BASE_URL", d.maybeGSURL(d.KopsBaseURL))
+		os.Setenv("KOPS_BASE_URL", d.canonicalizeBaseURL(d.KopsBaseURL))
 	}
 
 	if results.KubernetesBaseURL != "" {
@@ -111,8 +117,27 @@ func (d *deployer) verifyBuildFlags() error {
 		d.BuildOptions.KubeRoot = KubeRoot
 	}
 	if d.StageLocation != "" {
-		if !strings.HasPrefix(d.StageLocation, "gs://") {
-			return errors.New("stage-location must be a gs:// path")
+		isGCS := strings.HasPrefix(d.StageLocation, "gs://")
+		isS3 := strings.HasPrefix(d.StageLocation, "s3://")
+		if !isGCS && !isS3 {
+			return errors.New("stage-location must be a gs:// or s3:// path")
+		}
+		if isS3 && d.CloudProvider != "aws" {
+			return errors.New("s3:// stage-location is only supported on AWS")
+		}
+		if isS3 && d.BuildOptions.BuildKubernetes {
+			return errors.New("building Kubernetes requires a gs:// stage-location")
+		}
+	} else if d.CloudProvider == "aws" && !d.BuildOptions.BuildKubernetes {
+		d.StageLocation = d.stagingStore()
+		if !strings.HasPrefix(d.StageLocation, "s3://") {
+			return errors.New("KOPS_STAGING_BUCKET must be an s3:// path for an AWS build")
+		}
+		if os.Getenv("KOPS_STAGING_BUCKET") == "" {
+			klog.Infof("creating staging bucket %s to hold kOps build artifacts", d.StageLocation)
+			if err := d.aws.EnsureS3Bucket(context.Background(), d.region, d.StageLocation, true); err != nil {
+				return err
+			}
 		}
 	} else if d.boskos != nil {
 		d.StageLocation = d.stagingStore()
@@ -128,7 +153,11 @@ func (d *deployer) verifyBuildFlags() error {
 		d.StageLocation = stageLocation
 	}
 	if !d.BuildOptions.BuildKubernetes && d.KopsBaseURL == "" && os.Getenv("KOPS_BASE_URL") == "" {
-		d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
+		if strings.HasPrefix(d.StageLocation, "gs://") {
+			d.KopsBaseURL = strings.Replace(d.StageLocation, "gs://", "https://storage.googleapis.com/", 1)
+		} else {
+			d.KopsBaseURL = d.StageLocation
+		}
 	}
 
 	if d.KopsVersionMarker != "" && !d.BuildOptions.BuildKubernetes {

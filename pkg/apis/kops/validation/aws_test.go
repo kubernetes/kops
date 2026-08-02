@@ -923,6 +923,59 @@ func TestAWSAdditionalRoutes(t *testing.T) {
 	}
 }
 
+func TestAWSValidateS3FileRepository(t *testing.T) {
+	for _, tc := range []struct {
+		name           string
+		region         string
+		fileRepository string
+		expectedErrors []string
+	}{
+		{
+			name:           "commercial partition",
+			region:         "us-east-1",
+			fileRepository: "s3://example-k8s-assets/kops",
+		},
+		{
+			name:           "GovCloud partition",
+			region:         "us-gov-west-1",
+			fileRepository: "s3://example-k8s-assets/kops",
+		},
+		{
+			name:           "China partition",
+			region:         "cn-north-1",
+			fileRepository: "s3://example-k8s-assets/kops",
+			expectedErrors: []string{"Forbidden::spec.assets.fileRepository"},
+		},
+		{
+			name:           "ISO partition",
+			region:         "us-iso-east-1",
+			fileRepository: "s3://example-k8s-assets/kops",
+			expectedErrors: []string{"Forbidden::spec.assets.fileRepository"},
+		},
+		{
+			name:           "HTTPS repository in ISO partition",
+			region:         "us-iso-east-1",
+			fileRepository: "https://example.com/kops",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fileRepository := tc.fileRepository
+			cluster := &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{AWS: &kops.AWSSpec{}},
+					Assets:        &kops.AssetsSpec{FileRepository: &fileRepository},
+					Networking: kops.NetworkingSpec{
+						Subnets: []kops.ClusterSubnetSpec{{Name: "subnet", Zone: tc.region + "a"}},
+					},
+				},
+			}
+
+			errs := awsValidateCluster(cluster, false)
+			testErrors(t, tc.name, errs, tc.expectedErrors)
+		})
+	}
+}
+
 func TestAWSValidateNLBSecurityGroupMode(t *testing.T) {
 	grid := []struct {
 		Input          kops.ClusterSpec

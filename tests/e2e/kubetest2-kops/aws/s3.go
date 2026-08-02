@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/smithy-go"
 	"k8s.io/klog/v2"
 )
 
@@ -50,6 +51,7 @@ type BucketType string
 const (
 	BucketTypeStateStore     BucketType = "state"
 	BucketTypeDiscoveryStore BucketType = "discovery"
+	BucketTypeStagingStore   BucketType = "staging"
 )
 
 // NewAWSClient returns a new instance of awsClient configured to work in the default region (us-east-2).
@@ -70,15 +72,11 @@ func NewClient(ctx context.Context, region string) (*Client, error) {
 func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, error) {
 	// Construct the bucket name based on the ProwJob ID (if running in Prow) or AWS account ID (if running outside
 	// Prow) and a timestamp. When BUILD_ID is set we use it in place of time.Now() so that multiple kubetest2-kops
-	// invocations within the same CI job (e.g. upgrade tests) resolve to the same bucket name.
-	var suffix string
-	if jobID := os.Getenv("BUILD_ID"); jobID != "" {
-		if len(jobID) > 14 {
-			suffix = jobID[:14]
-		} else {
-			suffix = jobID
-		}
-	} else {
+	// invocations within the same CI job (e.g. upgrade tests) resolve to the same bucket name. Use
+	// the full build ID because truncating its low-order digits can make jobs started in the same
+	// millisecond collide, allowing one job to delete another's bucket.
+	suffix := os.Getenv("BUILD_ID")
+	if suffix == "" {
 		callerIdentity, err := c.stsClient.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 		if err != nil {
 			return "", fmt.Errorf("building AWS STS presigned request: %w", err)
@@ -98,7 +96,7 @@ func (c Client) BucketName(ctx context.Context, bucketType BucketType) (string, 
 	return bucket, nil
 }
 
-// EnsureS3Bucket creates a new S3 bucket with the given name and public read permissions.
+// EnsureS3Bucket creates an S3 bucket, optionally with public read access.
 func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, publicRead bool) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
 	klog.Infof("Creating bucket %s in region %s", bucketName, region)
@@ -112,14 +110,11 @@ func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, p
 	},
 	)
 	if err != nil {
-		var exists *types.BucketAlreadyExists
-		if errors.As(err, &exists) {
-			klog.Infof("Bucket %s already exists\n", bucketName)
-		} else {
-			klog.Infof("Error creating bucket %s, err: %v\n", bucketName, err)
+		var owned *types.BucketAlreadyOwnedByYou
+		if !errors.As(err, &owned) {
+			return fmt.Errorf("creating bucket %s: %w", bucketName, err)
 		}
-
-		return fmt.Errorf("creating bucket %s: %w", bucketName, err)
+		klog.Infof("Bucket %s already exists in this account", bucketName)
 	}
 
 	// Wait for the bucket to be created
@@ -134,26 +129,21 @@ func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, p
 		return fmt.Errorf("waiting for bucket %s to exist: %w", bucketName, err)
 	}
 
-	klog.Infof("Bucket %s created successfully", bucketName)
+	klog.Infof("Bucket %s is ready", bucketName)
 
 	if publicRead {
-		err = c.setPublicAccessBlock(ctx, bucketName)
-		if err != nil {
+		if err := c.setPublicAccessBlock(ctx, bucketName); err != nil {
 			klog.Errorf("Failed to disable public access block policies on bucket %s, err: %v", bucketName, err)
-
 			return fmt.Errorf("disabling public access block policies for bucket %s: %w", bucketName, err)
 		}
 
 		// Wait for public access block settings to propagate before setting the policy
 		time.Sleep(10 * time.Second)
 
-		err = c.setPublicReadPolicy(ctx, bucketName)
-		if err != nil {
+		if err := c.setPublicReadPolicy(ctx, bucketName); err != nil {
 			klog.Errorf("Failed to set public read policy on bucket %s, err: %v", bucketName, err)
-
 			return fmt.Errorf("setting public read policy for bucket %s: %w", bucketName, err)
 		}
-
 		klog.Infof("Public read policy set on bucket %s", bucketName)
 	}
 
@@ -162,6 +152,15 @@ func (c Client) EnsureS3Bucket(ctx context.Context, region, bucketName string, p
 
 // DeleteS3Bucket deletes a S3 bucket with the given name.
 func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
+	return c.deleteS3Bucket(ctx, bucketName, false)
+}
+
+// DeleteS3BucketAndContents deletes all objects from an S3 bucket before deleting the bucket.
+func (c Client) DeleteS3BucketAndContents(ctx context.Context, bucketName string) error {
+	return c.deleteS3Bucket(ctx, bucketName, true)
+}
+
+func (c Client) deleteS3Bucket(ctx context.Context, bucketName string, empty bool) error {
 	bucketName = strings.TrimPrefix(bucketName, "s3://")
 
 	// Resolve the bucket's actual region to avoid 301 PermanentRedirect errors.
@@ -169,21 +168,31 @@ func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	// zones, which can differ from the region where the bucket was created.
 	bucketRegion, err := c.getBucketRegion(ctx, bucketName)
 	if err != nil {
+		if isNoSuchBucket(err) {
+			// Teardown may run without creating every bucket it knows about.
+			return nil
+		}
 		klog.Infof("Could not determine region for bucket %s: %v", bucketName, err)
 	}
 
-	regionOpt := func(o *s3.Options) {
-		if bucketRegion != "" {
-			o.Region = bucketRegion
+	client := c.s3Client
+	if bucketRegion != "" {
+		options := c.s3Client.Options()
+		options.Region = bucketRegion
+		client = s3.New(options)
+	}
+
+	if empty {
+		if err := emptyS3Bucket(ctx, client, bucketName); err != nil {
+			return err
 		}
 	}
 
-	_, err = c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+	_, err = client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
-	}, regionOpt)
+	})
 	if err != nil {
-		var noBucket *types.NoSuchBucket
-		if errors.As(err, &noBucket) {
+		if isNoSuchBucket(err) {
 			klog.Infof("Bucket %s does not exist.", bucketName)
 
 			return nil
@@ -193,7 +202,7 @@ func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 		return fmt.Errorf("deleting bucket %s: %w", bucketName, err)
 	}
 
-	err = s3.NewBucketNotExistsWaiter(c.s3Client).Wait(
+	err = s3.NewBucketNotExistsWaiter(client).Wait(
 		ctx, &s3.HeadBucketInput{
 			Bucket: aws.String(bucketName),
 		},
@@ -205,8 +214,51 @@ func (c Client) DeleteS3Bucket(ctx context.Context, bucketName string) error {
 	}
 
 	klog.Infof("Bucket %s deleted", bucketName)
-
 	return nil
+}
+
+func emptyS3Bucket(ctx context.Context, client *s3.Client, bucketName string) error {
+	for {
+		result, err := client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+			Bucket: aws.String(bucketName),
+		})
+		if err != nil {
+			if isNoSuchBucket(err) {
+				return nil
+			}
+			return fmt.Errorf("listing objects in bucket %s: %w", bucketName, err)
+		}
+
+		if len(result.Contents) == 0 {
+			return nil
+		}
+
+		objects := make([]types.ObjectIdentifier, len(result.Contents))
+		for i, object := range result.Contents {
+			objects[i] = types.ObjectIdentifier{Key: object.Key}
+		}
+		deleteResult, err := client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(bucketName),
+			Delete: &types.Delete{Objects: objects, Quiet: aws.Bool(true)},
+		})
+		if err != nil {
+			return fmt.Errorf("deleting objects from bucket %s: %w", bucketName, err)
+		}
+		if len(deleteResult.Errors) > 0 {
+			objectError := deleteResult.Errors[0]
+			return fmt.Errorf("deleting object %q from bucket %s: %s: %s",
+				aws.ToString(objectError.Key), bucketName, aws.ToString(objectError.Code), aws.ToString(objectError.Message))
+		}
+	}
+}
+
+func isNoSuchBucket(err error) bool {
+	var noBucket *types.NoSuchBucket
+	if errors.As(err, &noBucket) {
+		return true
+	}
+	var apiErr smithy.APIError
+	return errors.As(err, &apiErr) && (apiErr.ErrorCode() == "NoSuchBucket" || apiErr.ErrorCode() == "NotFound")
 }
 
 // getBucketRegion resolves the AWS region where the bucket resides.

@@ -120,6 +120,19 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 	return region, nil
 }
 
+// SupportsS3BootstrapEndpoint reports whether the region uses the amazonaws.com partition DNS
+// suffix hard-coded by the nodeup bootstrap script. EC2 uses the same partition suffix as S3 and
+// can be resolved without a bucket.
+func SupportsS3BootstrapEndpoint(ctx context.Context, region string) (bool, error) {
+	resolver := ec2.NewDefaultEndpointResolverV2()
+	endpoint, err := resolver.ResolveEndpoint(ctx, ec2.EndpointParameters{Region: aws.String(region)})
+	if err != nil {
+		return false, fmt.Errorf("resolving EC2 endpoint for region %q: %w", region, err)
+	}
+
+	return endpoint.URI.Hostname() == fmt.Sprintf("ec2.%s.amazonaws.com", region), nil
+}
+
 // FindEC2Tag find the value of the tag with the specified key
 func FindEC2Tag(tags []ec2types.Tag, key string) (string, bool) {
 	for _, tag := range tags {

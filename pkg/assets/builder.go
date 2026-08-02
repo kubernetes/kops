@@ -442,6 +442,10 @@ func (a *AssetBuilder) remapURL(canonicalURL *url.URL) (*url.URL, error) {
 	}
 
 	fileRepo.Path = path.Join(fileRepo.Path, canonicalURL.Path)
+	// Joining changes Path without updating the parsed RawPath. Rebuild RawPath and escape commas,
+	// which CompactString uses to separate locations.
+	fileRepo.RawPath = ""
+	fileRepo.RawPath = strings.ReplaceAll(fileRepo.EscapedPath(), ",", "%2C")
 
 	return fileRepo, nil
 }

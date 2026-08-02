@@ -18,7 +18,7 @@ package deployer
 
 import "testing"
 
-func TestMaybeGSURL(t *testing.T) {
+func TestCanonicalizeBaseURL(t *testing.T) {
 	cases := []struct {
 		name          string
 		cloudProvider string
@@ -38,8 +38,26 @@ func TestMaybeGSURL(t *testing.T) {
 			expected:      "https://storage.googleapis.com/k8s-staging-kops/kops/1.34.0/",
 		},
 		{
+			name:          "aws with S3 staged artifacts",
+			cloudProvider: "aws",
+			baseURL:       "https://example-bucket.s3.us-east-2.amazonaws.com/kops/1.34.0/",
+			expected:      "https://example-bucket.s3.us-east-2.amazonaws.com/kops/1.34.0/",
+		},
+		{
+			name:          "gce with S3 staged artifacts is left alone",
+			cloudProvider: "gce",
+			baseURL:       "https://example-bucket.s3.us-east-2.amazonaws.com/kops/1.34.0/",
+			expected:      "https://example-bucket.s3.us-east-2.amazonaws.com/kops/1.34.0/",
+		},
+		{
 			name:          "gce with a non-GCS url",
 			cloudProvider: "gce",
+			baseURL:       "https://artifacts.k8s.io/binaries/kops/1.34.0/",
+			expected:      "https://artifacts.k8s.io/binaries/kops/1.34.0/",
+		},
+		{
+			name:          "aws with a non-S3 url",
+			cloudProvider: "aws",
 			baseURL:       "https://artifacts.k8s.io/binaries/kops/1.34.0/",
 			expected:      "https://artifacts.k8s.io/binaries/kops/1.34.0/",
 		},
@@ -49,13 +67,19 @@ func TestMaybeGSURL(t *testing.T) {
 			baseURL:       "gs://k8s-staging-kops/kops/1.34.0/",
 			expected:      "gs://k8s-staging-kops/kops/1.34.0/",
 		},
+		{
+			name:          "aws with an already converted url",
+			cloudProvider: "aws",
+			baseURL:       "s3://example-bucket/kops/1.34.0/",
+			expected:      "s3://example-bucket/kops/1.34.0/",
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			d := &deployer{CloudProvider: tc.cloudProvider}
-			if actual := d.maybeGSURL(tc.baseURL); actual != tc.expected {
-				t.Errorf("maybeGSURL(%q) = %q, expected %q", tc.baseURL, actual, tc.expected)
+			if actual := d.canonicalizeBaseURL(tc.baseURL); actual != tc.expected {
+				t.Errorf("canonicalizeBaseURL(%q) = %q, expected %q", tc.baseURL, actual, tc.expected)
 			}
 		})
 	}
