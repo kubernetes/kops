@@ -116,8 +116,10 @@ func TestBuildNodeLabels(t *testing.T) {
 			},
 			expected: map[string]string{
 				"node-role.kubernetes.io/api-server": "",
+				"kops.k8s.io/kops-controller-pki":    "",
+				"controlPlane1":                      "controlPlane1",
+				"controlPlane2":                      "controlPlane2",
 				"node1":                              "override1",
-				"node2":                              "node2",
 				"node3":                              "override3",
 			},
 			featureFlags: "+APIServerNodes",
