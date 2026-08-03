@@ -40,16 +40,6 @@
       ]
     },
     {
-      "Action": "kms:CreateGrant",
-      "Condition": {
-        "Bool": {
-          "kms:GrantIsForAWSResource": "true"
-        }
-      },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
       "Action": [
         "s3:GetBucketLocation",
         "s3:GetEncryptionConfiguration",
@@ -60,6 +50,16 @@
       "Resource": [
         "arn:aws-test:s3:::placeholder-write-bucket"
       ]
+    },
+    {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
     },
     {
       "Action": [

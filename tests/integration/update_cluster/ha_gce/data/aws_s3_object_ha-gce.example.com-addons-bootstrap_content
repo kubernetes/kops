@@ -5,7 +5,7 @@ spec:
   addons:
   - id: k8s-1.16
     manifest: kops-controller.addons.k8s.io/k8s-1.16.yaml
-    manifestHash: 952baed00a916e99274c7cdfd2fcbef7f8912d65f2978122e45ad27cdbbb2043
+    manifestHash: 24da6f68b6b60e0780f48cb51c11f28dee0dbecb0885b5fb972dc3171bd37eb9
     name: kops-controller.addons.k8s.io
     needsRollingUpdate: control-plane
     selector:
@@ -53,7 +53,7 @@ spec:
       k8s-addon: gcp-pd-csi-driver.addons.k8s.io
   - id: k8s-1.23
     manifest: gcp-cloud-controller.addons.k8s.io/k8s-1.23.yaml
-    manifestHash: 0ce97958b8f393af21d4ab850084e782f58831e760b2c0f8b0e345add0842f90
+    manifestHash: 21262fe17e97606e481263cd131e9ade0c28a0a7cd7c8afe219a4e335adba521
     name: gcp-cloud-controller.addons.k8s.io
     prune:
       kinds:
