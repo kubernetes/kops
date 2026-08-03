@@ -119,6 +119,32 @@ func TestFindRegion(t *testing.T) {
 	}
 }
 
+func TestSupportsS3BootstrapEndpoint(t *testing.T) {
+	for _, tc := range []struct {
+		region    string
+		supported bool
+	}{
+		{region: "us-east-1", supported: true},
+		{region: "us-gov-west-1", supported: true},
+		{region: "cn-north-1"},
+		{region: "us-iso-east-1"},
+		{region: "us-isob-east-1"},
+		{region: "eu-isoe-west-1"},
+		{region: "us-isof-south-1"},
+		{region: "eusc-de-east-1"},
+	} {
+		t.Run(tc.region, func(t *testing.T) {
+			supported, err := SupportsS3BootstrapEndpoint(context.Background(), tc.region)
+			if err != nil {
+				t.Fatalf("checking S3 bootstrap endpoint support: %v", err)
+			}
+			if supported != tc.supported {
+				t.Errorf("supported=%v, expected %v", supported, tc.supported)
+			}
+		})
+	}
+}
+
 func TestEC2TagSpecification(t *testing.T) {
 	cases := []struct {
 		Name          string

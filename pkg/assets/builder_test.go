@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 
@@ -125,6 +126,84 @@ func TestValidate_RemapImage_ContainerRegistry_MappingMultipleTimesConverges(t *
 		if remapped != expected {
 			t.Errorf("Error remapping image (Expecting: %s, got %s, iteration: %d)", expected, remapped, i)
 		}
+	}
+}
+
+func TestRemapURLPathDelimiterEscaping(t *testing.T) {
+	canonicalURL, err := url.Parse("https://artifacts.k8s.io/binaries/kops/1.37.0/linux/arm64/nodeup")
+	if err != nil {
+		t.Fatalf("parsing canonical URL: %v", err)
+	}
+	knownHash := hashing.MustFromString("sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+
+	for _, tc := range []struct {
+		name           string
+		fileRepository string
+		expected       string
+	}{
+		{
+			name:           "S3 raw comma",
+			fileRepository: "s3://artifact-bucket/prefix,prod",
+			expected:       "s3://artifact-bucket/prefix%2Cprod/binaries/kops/1.37.0/linux/arm64/nodeup",
+		},
+		{
+			name:           "S3 encoded comma",
+			fileRepository: "s3://artifact-bucket/prefix%2Cprod",
+			expected:       "s3://artifact-bucket/prefix%2Cprod/binaries/kops/1.37.0/linux/arm64/nodeup",
+		},
+		{
+			name:           "GCS raw comma",
+			fileRepository: "gs://artifact-bucket/prefix,prod",
+			expected:       "gs://artifact-bucket/prefix%2Cprod/binaries/kops/1.37.0/linux/arm64/nodeup",
+		},
+		{
+			name:           "GCS encoded comma",
+			fileRepository: "gs://artifact-bucket/prefix%2Cprod",
+			expected:       "gs://artifact-bucket/prefix%2Cprod/binaries/kops/1.37.0/linux/arm64/nodeup",
+		},
+		{
+			name:           "HTTPS raw comma",
+			fileRepository: "https://artifacts.example.com/prefix,prod",
+			expected:       "https://artifacts.example.com/prefix%2Cprod/binaries/kops/1.37.0/linux/arm64/nodeup",
+		},
+		{
+			name:           "HTTPS encoded comma",
+			fileRepository: "https://artifacts.example.com/prefix%2Cprod",
+			expected:       "https://artifacts.example.com/prefix%2Cprod/binaries/kops/1.37.0/linux/arm64/nodeup",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fileRepository := tc.fileRepository
+			builder := NewAssetBuilder(nil, &kops.AssetsSpec{FileRepository: &fileRepository}, false)
+			asset, err := builder.RemapFile(canonicalURL, knownHash)
+			if err != nil {
+				t.Fatalf("remapping file: %v", err)
+			}
+
+			mirrored := BuildMirroredAsset(asset)
+			if len(mirrored.Locations) != 1 {
+				t.Fatalf("expected one location, got %d", len(mirrored.Locations))
+			}
+			if mirrored.Locations[0] != tc.expected {
+				t.Errorf("expected location %q, got %q", tc.expected, mirrored.Locations[0])
+			}
+
+			_, locations, ok := strings.Cut(mirrored.CompactString(), "@")
+			if !ok {
+				t.Fatalf("compact asset does not contain a hash separator")
+			}
+			if split := strings.Split(locations, ","); len(split) != 1 {
+				t.Fatalf("compact asset split into %d locations", len(split))
+			}
+			parsed, err := url.Parse(locations)
+			if err != nil {
+				t.Fatalf("parsing compact asset location: %v", err)
+			}
+			expectedPath := "/prefix,prod/binaries/kops/1.37.0/linux/arm64/nodeup"
+			if parsed.Path != expectedPath {
+				t.Errorf("expected decoded path %q, got %q", expectedPath, parsed.Path)
+			}
+		})
 	}
 }
 
