@@ -391,7 +391,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
-	if instanceGroup.RunsAPIServer() || instanceGroup.HasEtcd() || instanceGroup.HasKubeControllerManager() || instanceGroup.HasScheduler() {
+	if instanceGroup.RunsAPIServer() || instanceGroup.RunsEtcd() || instanceGroup.RunsKubeControllerManager() || instanceGroup.RunsScheduler() {
 		config.ConfigStore = &kops.ConfigStoreSpec{
 			Keypairs: cluster.Spec.ConfigStore.Keypairs,
 			Secrets:  cluster.Spec.ConfigStore.Secrets,
@@ -402,7 +402,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 
-	if instanceGroup.HasAPIServer() {
+	if instanceGroup.RunsAPIServer() {
 		config.DNSZone = cluster.Spec.DNSZone
 	}
 

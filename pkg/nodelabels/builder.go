@@ -18,7 +18,6 @@ package nodelabels
 
 import (
 	"fmt"
-	"strings"
 
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
@@ -26,15 +25,8 @@ import (
 )
 
 const (
-	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
-	RoleLabelNode16                = "node-role.kubernetes.io/node"
-	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
-	RoleLabelScheduler             = "node-role.kubernetes.io/scheduler"
-	RoleLabelKubeControllerManager = "node-role.kubernetes.io/kube-controller-manager"
-
-	RoleLabelKopsCCM        = "kops.k8s.io/cloud-controller-manager"
-	RoleLabelKopsChannel    = "kops.k8s.io/kops-channel"
-	RoleLabelKopsController = "kops.k8s.io/kops-controller"
+	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
+	RoleLabelNode16      = "node-role.kubernetes.io/node"
 
 	// New Experimental control plane roles associated with static manifests
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"

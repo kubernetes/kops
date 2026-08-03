@@ -190,7 +190,7 @@ func KeypairNamesForInstanceGroup(cluster *kops.Cluster, ig *kops.InstanceGroup)
 
 	if ig.RunsAPIServer() {
 		keypairs = append(keypairs, "apiserver-aggregator-ca", "service-account", "etcd-clients-ca")
-	} else if ig.HasKubeControllerManager() {
+	} else if ig.RunsKubeControllerManager() {
 		keypairs = append(keypairs, "service-account")
 	}
 
