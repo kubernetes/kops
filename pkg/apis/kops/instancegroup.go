@@ -394,6 +394,16 @@ func (g *InstanceGroup) IsControlPlane() bool {
 	}
 }
 
+// IsControlPlane checks if instanceGroup is a control-plane node.
+func (g *InstanceGroup) IsControlPlaneType() bool {
+	switch {
+	case g.Spec.Role.IsControlPlaneType():
+		return true
+	default:
+		return false
+	}
+}
+
 // IsAPIServerOnly checks if instanceGroup runs only the API Server
 func (g *InstanceGroup) IsAPIServerOnly() bool {
 	switch {
