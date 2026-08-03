@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	RoleLabelAPIServer16           = "node-role.kubernetes.io/api-server"
-	RoleLabelNode16                = "node-role.kubernetes.io/node"
+	RoleLabelAPIServer16 = "node-role.kubernetes.io/api-server"
+	RoleLabelNode16      = "node-role.kubernetes.io/node"
 
 	// New Experimental control plane roles associated with static manifests
 	RoleLabelEtcd                  = "node-role.kubernetes.io/etcd"
