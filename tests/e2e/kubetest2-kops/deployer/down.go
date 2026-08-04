@@ -18,6 +18,7 @@ package deployer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -28,7 +29,14 @@ import (
 	"sigs.k8s.io/kubetest2/pkg/exec"
 )
 
+// Down deletes the cluster and its staged artifacts, so scenarios must use them first.
 func (d *deployer) Down() error {
+	return errors.Join(d.down(), d.deleteStagingStore())
+}
+
+// down preserves AWS staged artifacts while Up cleans leaked cluster resources. On GCE, the
+// staging bucket is deleted here together with the state store.
+func (d *deployer) down() error {
 	if err := d.init(); err != nil {
 		return err
 	}
@@ -98,5 +106,16 @@ func (d *deployer) Down() error {
 			return fmt.Errorf("down failed to release boskos project: %s", err)
 		}
 	}
+	return nil
+}
+
+func (d *deployer) deleteStagingStore() error {
+	if !d.createStagingStore {
+		return nil
+	}
+	if err := d.aws.DeleteS3BucketAndContents(context.Background(), d.stagingStore()); err != nil {
+		return err
+	}
+	d.createStagingStore = false
 	return nil
 }

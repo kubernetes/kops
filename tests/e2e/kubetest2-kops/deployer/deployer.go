@@ -100,6 +100,7 @@ type deployer struct {
 
 	createStateStore     bool
 	createDiscoveryStore bool
+	createStagingStore   bool
 	stateStoreName       string
 	discoveryStoreName   string
 	stagingStoreName     string
