@@ -17,6 +17,7 @@ limitations under the License.
 package backoff
 
 import (
+	"math/rand"
 	"sync"
 	"time"
 
@@ -35,10 +36,31 @@ const maxGlobalBackoff = 5 * time.Minute
 // DoGlobalBackoff performs a sleep with a pretty slow backoff.
 // The primary use is to rate-limit repeated downloads, to prevent runaway bandwidth bills
 func DoGlobalBackoff(err error) {
-	pause := computeBackoff()
+	pause := jitter(computeBackoff())
 
 	klog.Warningf("inserting rate-limiting pause of %v after error: %v", pause, err)
 	time.Sleep(pause)
+}
+
+// jitter randomises the upper half of a backoff interval, retaining the lower
+// half as a floor.
+//
+// computeBackoff is a pure doubling sequence, so every node that hits the same
+// failing download computes the same delays. Nodes coming up together during a
+// cluster scale-up therefore retry at the same instants, and once the backoff
+// saturates at maxGlobalBackoff they continue to retry in unison every five
+// minutes. That reforms the request burst this pause exists to prevent.
+//
+// Half the interval is kept rather than using full jitter so that the pause is
+// never negligible.
+func jitter(d time.Duration) time.Duration {
+	if d <= 0 {
+		return d
+	}
+
+	half := d / 2
+
+	return half + time.Duration(rand.Int63n(int64(d-half)+1))
 }
 
 // computeBackoff computes the next backoff value, by doubling the backoff value, capping it at maxGlobalBackoff

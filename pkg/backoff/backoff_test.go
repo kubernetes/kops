@@ -44,3 +44,41 @@ func TestBackoff(t *testing.T) {
 		}
 	}
 }
+
+func TestJitterStaysWithinBounds(t *testing.T) {
+	for _, d := range []time.Duration{
+		2 * time.Second,
+		32 * time.Second,
+		5 * time.Minute,
+	} {
+		floor := d / 2
+		for i := 0; i < 500; i++ {
+			got := jitter(d)
+			if got < floor || got > d {
+				t.Fatalf("jitter(%v) = %v, want within [%v, %v]", d, got, floor, d)
+			}
+		}
+	}
+}
+
+func TestJitterVaries(t *testing.T) {
+	seen := make(map[time.Duration]struct{})
+	for i := 0; i < 500; i++ {
+		seen[jitter(5*time.Minute)] = struct{}{}
+	}
+
+	// A deterministic implementation yields a single value. The range here is
+	// 150 seconds wide, so one distinct value across 500 draws is not chance.
+	if len(seen) <= 1 {
+		t.Fatalf("jitter must vary so nodes do not retry in lockstep, got %v", seen)
+	}
+}
+
+func TestJitterNonPositive(t *testing.T) {
+	if got := jitter(0); got != 0 {
+		t.Fatalf("jitter(0) = %v, want 0", got)
+	}
+	if got := jitter(-time.Second); got != -time.Second {
+		t.Fatalf("jitter(-1s) = %v, want -1s", got)
+	}
+}
