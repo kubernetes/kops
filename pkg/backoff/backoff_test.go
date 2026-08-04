@@ -45,7 +45,8 @@ func TestBackoff(t *testing.T) {
 	}
 }
 
-func TestJitterNeverShorterThanInput(t *testing.T) {
+// Below the cap the pause is only ever extended, never cut short.
+func TestJitterBelowCapNeverShorterThanInput(t *testing.T) {
 	for _, d := range []time.Duration{
 		2 * time.Second,
 		32 * time.Second,
@@ -64,11 +65,24 @@ func TestJitterNeverShorterThanInput(t *testing.T) {
 	}
 }
 
-func TestJitterRespectsMaxGlobalBackoff(t *testing.T) {
+// At the cap there is no headroom to add into, so the pause is spread downwards.
+// It must still vary: globalBackoff never decreases, so a persistently failing
+// fleet lives at the cap, and an unjittered pause there would retry in unison
+// every maxGlobalBackoff forever.
+func TestJitterAtCapStaysBelowMaxAndVaries(t *testing.T) {
+	floor := maxGlobalBackoff - maxGlobalBackoff/2
+	seen := make(map[time.Duration]struct{})
+
 	for i := 0; i < 500; i++ {
-		if got := jitter(maxGlobalBackoff); got != maxGlobalBackoff {
-			t.Fatalf("jitter at the cap = %v, want %v", got, maxGlobalBackoff)
+		got := jitter(maxGlobalBackoff)
+		if got < floor || got > maxGlobalBackoff {
+			t.Fatalf("jitter at the cap = %v, want within [%v, %v]", got, floor, maxGlobalBackoff)
 		}
+		seen[got] = struct{}{}
+	}
+
+	if len(seen) <= 1 {
+		t.Fatalf("jitter at the cap produced %d distinct value(s), want spread", len(seen))
 	}
 }
 

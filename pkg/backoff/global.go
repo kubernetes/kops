@@ -54,6 +54,13 @@ func DoGlobalBackoff(err error) {
 // The jitter is added rather than centred on the interval so that the pause is
 // never shorter than computeBackoff intended. This function exists to limit
 // download rate, so a shorter wait would work against its purpose.
+//
+// Once the backoff saturates there is no headroom left to add into, and that is
+// the case that matters most: globalBackoff never decreases, so a node that
+// keeps failing stays at maxGlobalBackoff indefinitely and the whole fleet
+// settles into exactly the lockstep described above. At the ceiling the pause is
+// therefore spread downwards instead. Drawing below maxGlobalBackoff breaks no
+// contract, because it is an upper bound rather than a target.
 func jitter(d time.Duration) time.Duration {
 	if d <= 0 {
 		return d
@@ -63,11 +70,11 @@ func jitter(d time.Duration) time.Duration {
 	if headroom := maxGlobalBackoff - d; headroom < extra {
 		extra = headroom
 	}
-	if extra <= 0 {
-		return d
+	if extra > 0 {
+		return d + time.Duration(rand.Int63n(int64(extra)+1))
 	}
 
-	return d + time.Duration(rand.Int63n(int64(extra)+1))
+	return d - time.Duration(rand.Int63n(int64(d/2)+1))
 }
 
 // computeBackoff computes the next backoff value, by doubling the backoff value, capping it at maxGlobalBackoff
