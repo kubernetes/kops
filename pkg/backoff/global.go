@@ -42,8 +42,8 @@ func DoGlobalBackoff(err error) {
 	time.Sleep(pause)
 }
 
-// jitter randomises the upper half of a backoff interval, retaining the lower
-// half as a floor.
+// jitter spreads a pause by adding a random amount on top of it, bounded so the
+// result never exceeds maxGlobalBackoff.
 //
 // computeBackoff is a pure doubling sequence, so every node that hits the same
 // failing download computes the same delays. Nodes coming up together during a
@@ -51,16 +51,23 @@ func DoGlobalBackoff(err error) {
 // saturates at maxGlobalBackoff they continue to retry in unison every five
 // minutes. That reforms the request burst this pause exists to prevent.
 //
-// Half the interval is kept rather than using full jitter so that the pause is
-// never negligible.
+// The jitter is added rather than centred on the interval so that the pause is
+// never shorter than computeBackoff intended. This function exists to limit
+// download rate, so a shorter wait would work against its purpose.
 func jitter(d time.Duration) time.Duration {
 	if d <= 0 {
 		return d
 	}
 
-	half := d / 2
+	extra := d
+	if headroom := maxGlobalBackoff - d; headroom < extra {
+		extra = headroom
+	}
+	if extra <= 0 {
+		return d
+	}
 
-	return half + time.Duration(rand.Int63n(int64(d-half)+1))
+	return d + time.Duration(rand.Int63n(int64(extra)+1))
 }
 
 // computeBackoff computes the next backoff value, by doubling the backoff value, capping it at maxGlobalBackoff
