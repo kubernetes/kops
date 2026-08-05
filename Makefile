@@ -749,7 +749,7 @@ dev-version-dist-amd64 dev-version-dist-arm64: dev-version-dist-%: version-dist-
 
 .PHONY: dev-upload-linux-amd64 dev-upload-linux-arm64
 dev-upload-linux-amd64 dev-upload-linux-arm64: dev-upload-linux-%: dev-version-dist-%
-	${UPLOAD_CMD} ${UPLOAD}/ ${UPLOAD_DEST}
+	${UPLOAD_CMD} ${UPLOAD}/kops/${VERSION}/ ${UPLOAD_DEST}/kops/${VERSION}
 
 # dev-upload does a faster build and uploads to GCS / S3
 .PHONY: dev-upload
