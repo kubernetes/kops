@@ -806,8 +806,17 @@ func validateFileRepository(s string, fieldPath *field.Path, cloudProvider kops.
 		if cloudProvider != kops.CloudProviderAWS {
 			allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("s3:// fileRepository is only supported on AWS, but the cloud provider is %q", cloudProvider)))
 		}
+	case "azureblob":
+		// Only Azure instances can authenticate to Azure Blob Storage with their managed identity.
+		if cloudProvider != kops.CloudProviderAzure {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, fmt.Sprintf("azureblob:// fileRepository is only supported on Azure, but the cloud provider is %q", cloudProvider)))
+		}
+		// Without a container, each remapped asset would treat its first path segment as the container.
+		if container, _, _ := strings.Cut(strings.TrimPrefix(u.Path, "/"), "/"); container == "" {
+			allErrs = append(allErrs, field.Invalid(fieldPath, s, "azureblob:// fileRepository must include a container: azureblob://<account>/<container>/<path>"))
+		}
 	default:
-		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https://, gs://, or s3:// URL"))
+		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must be an http://, https://, gs://, s3://, or azureblob:// URL"))
 	}
 	if u.Host == "" {
 		allErrs = append(allErrs, field.Invalid(fieldPath, s, "fileRepository must include a host"))

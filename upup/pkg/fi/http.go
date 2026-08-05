@@ -135,6 +135,19 @@ func downloadURLToWriter(ctx context.Context, desturl string, dest io.Writer, ha
 		if _, err := s3Path.WriteToWithContext(ctx, writer); err != nil {
 			return nil, fmt.Errorf("error downloading content from %q: %w", desturl, err)
 		}
+	case "azureblob":
+		// vfs authenticates with the ambient Azure credentials, such as the instance managed identity.
+		p, err := vfs.Context.BuildVfsPath(desturl)
+		if err != nil {
+			return nil, fmt.Errorf("building path for %q: %w", desturl, err)
+		}
+		blobPath, ok := p.(*vfs.AzureBlobPath)
+		if !ok {
+			return nil, fmt.Errorf("unexpected path type %T for %q", p, desturl)
+		}
+		if _, err := blobPath.WriteToWithContext(ctx, writer); err != nil {
+			return nil, fmt.Errorf("error downloading content from %q: %w", desturl, err)
+		}
 	default:
 		reader, err := OpenURL(desturl)
 		if err != nil {

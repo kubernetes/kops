@@ -71,6 +71,20 @@ spec:
     fileRepository: s3://example-bucket/files
 ```
 
+{{ kops_feature_table(kops_added_default='1.37') }}
+
+On Azure, the repository can also be an `azureblob://<account>/<container>/<prefix>` URL.
+Nodes then read it with their system-assigned managed identity, which allows the storage
+account to be private. The managed identities of the instance groups have to be granted
+`Storage Blob Data Reader` on the assets container. Do not grant access to the state-store
+storage account, as that would let nodes read the cluster PKI.
+
+```yaml
+spec:
+  assets:
+    fileRepository: azureblob://exampleaccount/assets/files
+```
+
 ## Copying assets into repositories
 
 {{ kops_feature_table(kops_added_default='1.22') }}
@@ -80,9 +94,11 @@ You can copy assets into their repositories either by running `kops get assets -
 When running `kops get assets --copy`, kOps copies assets into their respective repositories if
 they do not already exist there.
 
-For file assets, kOps only supports copying to a repository that is either an S3 or GCS bucket.
+For file assets, kOps only supports copying to a repository that is an S3 bucket, a GCS bucket,
+or an Azure Blob Storage container.
 An S3 bucket must be configured with a prefix of `s3://` or using the [regional naming conventions of S3](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region).
 A GCS bucket must be configured with a prefix of `https://storage.googleapis.com/` or `gs://`.
+An Azure Blob Storage container must be configured with a prefix of `azureblob://`.
 
 ## Listing assets
 

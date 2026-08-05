@@ -176,11 +176,11 @@ func writeFile(ctx context.Context, cluster *kops.Cluster, p vfs.Path, data []by
 	return nil
 }
 
-// buildVFSPath returns local paths and memfs://, file://, gs://, and s3:// URLs unchanged.
+// buildVFSPath returns local paths and memfs://, file://, gs://, s3://, and azureblob:// URLs unchanged.
 // It converts recognized S3 or GCS HTTPS URLs to their native VFS form.
 func buildVFSPath(target string) (string, error) {
 	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") || strings.HasPrefix(target, "file://") ||
-		strings.HasPrefix(target, "gs://") || strings.HasPrefix(target, "s3://") {
+		strings.HasPrefix(target, "gs://") || strings.HasPrefix(target, "s3://") || strings.HasPrefix(target, "azureblob://") {
 		return target, nil
 	}
 

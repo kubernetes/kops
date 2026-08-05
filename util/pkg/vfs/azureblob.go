@@ -153,9 +153,14 @@ func (p *AzureBlobPath) ReadFile(ctx context.Context) ([]byte, error) {
 
 // WriteTo writes the content of the blob to the writer.
 func (p *AzureBlobPath) WriteTo(w io.Writer) (int64, error) {
-	klog.V(8).Infof("Writing to: %s", p)
-
 	ctx := context.TODO()
+
+	return p.WriteToWithContext(ctx, w)
+}
+
+// WriteToWithContext writes the content of the blob to the writer, with the given context.
+func (p *AzureBlobPath) WriteToWithContext(ctx context.Context, w io.Writer) (int64, error) {
+	klog.V(8).Infof("Writing to: %s", p)
 
 	b, err := p.ReadFile(ctx)
 	if err != nil {
