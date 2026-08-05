@@ -2306,6 +2306,25 @@ func TestValidateFileRepository(t *testing.T) {
 			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
 		},
 		{
+			Input:         "azureblob://exampleaccount/assets/kops",
+			CloudProvider: kops.CloudProviderAzure,
+		},
+		{
+			Input:          "azureblob://exampleaccount/assets/kops",
+			CloudProvider:  kops.CloudProviderGCE,
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			Input:          "azureblob://exampleaccount/assets/kops",
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
+			// A container is required so that remapped assets share one container.
+			Input:          "azureblob://exampleaccount",
+			CloudProvider:  kops.CloudProviderAzure,
+			ExpectedErrors: []string{"Invalid value::spec.assets.fileRepository"},
+		},
+		{
 			// Nodes download from GCS with the credentials of their service account.
 			Input:         "gs://example-k8s-assets/kops",
 			CloudProvider: kops.CloudProviderGCE,

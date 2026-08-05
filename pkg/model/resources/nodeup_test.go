@@ -207,6 +207,152 @@ func Test_S3Download(t *testing.T) {
 	}
 }
 
+func TestEscapeAzureBlobLocation(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		location  string
+		expected  string
+		expectErr bool
+	}{
+		{
+			name:     "plain path",
+			location: "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup",
+			expected: "azureblob://exampleaccount/assets/kops/1.37.0/linux/amd64/nodeup",
+		},
+		{
+			name:     "plus sign",
+			location: "azureblob://exampleaccount/assets/kops/1.37.0+abcdef/linux/amd64/nodeup",
+			expected: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+		},
+		{
+			name:     "existing escape",
+			location: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+			expected: "azureblob://exampleaccount/assets/kops/1.37.0%2Babcdef/linux/amd64/nodeup",
+		},
+		{
+			name:      "missing account",
+			location:  "azureblob:///assets/kops/nodeup",
+			expectErr: true,
+		},
+		{
+			name:      "missing container",
+			location:  "azureblob://exampleaccount",
+			expectErr: true,
+		},
+		{
+			name:      "missing key",
+			location:  "azureblob://exampleaccount/assets",
+			expectErr: true,
+		},
+		{
+			name:      "invalid escape",
+			location:  "azureblob://exampleaccount/assets/100%/nodeup",
+			expectErr: true,
+		},
+		{
+			name:      "port in host",
+			location:  "azureblob://exampleaccount:443/assets/kops/nodeup",
+			expectErr: true,
+		},
+		{
+			name:      "userinfo",
+			location:  "azureblob://user@exampleaccount/assets/kops/nodeup",
+			expectErr: true,
+		},
+		{
+			name:      "query string",
+			location:  "azureblob://exampleaccount/assets/kops/nodeup?sig=secret",
+			expectErr: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := escapeBlobLocation(tc.location)
+			if tc.expectErr {
+				if err == nil {
+					t.Fatalf("expected an error escaping %q", tc.location)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("escaping %q: %v", tc.location, err)
+			}
+			if actual != tc.expected {
+				t.Errorf("expected %q, got %q", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func Test_AzureBlobDownload(t *testing.T) {
+	azureBlobMarker := "blob.core.windows.net"
+	standardMarker := "wget --compression=auto"
+
+	for _, tc := range []struct {
+		name            string
+		cloudProvider   string
+		location        string
+		expectedSource  string
+		expectAzureBlob bool
+	}{
+		{
+			name:            "azureblob source",
+			cloudProvider:   "azure",
+			location:        "azureblob://exampleaccount/assets/kops/1.34.0+abcdef/linux/amd64/nodeup",
+			expectedSource:  "NODEUP_URL_AMD64=azureblob://exampleaccount/assets/kops/1.34.0%2Babcdef/linux/amd64/nodeup",
+			expectAzureBlob: true,
+		},
+		{
+			name:            "default https source",
+			cloudProvider:   "azure",
+			location:        "https://artifacts.k8s.io/binaries/kops/1.34.0/linux/amd64/nodeup",
+			expectAzureBlob: false,
+		},
+		{
+			name:            "azureblob source on another cloud provider",
+			cloudProvider:   "hetzner",
+			location:        "azureblob://exampleaccount/assets/kops/1.34.0/linux/amd64/nodeup",
+			expectAzureBlob: false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			script := &NodeUpScript{
+				CloudProvider: tc.cloudProvider,
+				NodeUpAssets:  singleNodeUpAsset(tc.location),
+			}
+			rendered := renderNodeUpScript(t, script)
+			if got := strings.Contains(rendered, azureBlobMarker); got != tc.expectAzureBlob {
+				t.Errorf("authenticated Azure Blob download rendered=%v, expected %v", got, tc.expectAzureBlob)
+			}
+			if tc.expectedSource != "" && !strings.Contains(rendered, tc.expectedSource) {
+				t.Errorf("rendered script does not contain escaped source %q", tc.expectedSource)
+			}
+			if got := strings.Contains(rendered, standardMarker); got != !tc.expectAzureBlob {
+				t.Errorf("standard download commands rendered=%v, expected %v", got, !tc.expectAzureBlob)
+			}
+		})
+	}
+}
+
+func Test_AzureBlobDownloadRequiresPublicCloud(t *testing.T) {
+	script := &NodeUpScript{
+		CloudProvider: "azure",
+		NodeUpAssets:  singleNodeUpAsset("azureblob://exampleaccount/assets/kops/1.34.0/linux/amd64/nodeup"),
+	}
+
+	// Environment names are case-insensitive, and AzureCloud is the CLI name of the public cloud.
+	for _, publicCloud := range []string{"AzurePublicCloud", "azurepubliccloud", "AzureCloud"} {
+		t.Setenv("AZURE_ENVIRONMENT", publicCloud)
+		if _, err := script.Build(); err != nil {
+			t.Errorf("building an azureblob:// nodeup script with AZURE_ENVIRONMENT=%s: %v", publicCloud, err)
+		}
+	}
+
+	t.Setenv("AZURE_ENVIRONMENT", "AzureChinaCloud")
+	if _, err := script.Build(); err == nil {
+		t.Errorf("expected an error building an azureblob:// nodeup script in a non-public cloud")
+	}
+}
+
 func Test_S3DownloadRequiresRegion(t *testing.T) {
 	script := &NodeUpScript{
 		CloudProvider: "aws",

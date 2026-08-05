@@ -80,6 +80,9 @@ imds-get() {
   curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 \
     -H "X-aws-ec2-metadata-token: $1" "http://169.254.169.254/latest/$2"
 }
+{{- end }}
+
+{{- if or UseGCSDownload UseS3Download UseBlobDownload }}
 
 # Extract a string field from a JSON object. args: json, field
 json-field() {
@@ -107,14 +110,39 @@ download-or-bust() {
   while true; do
     for url in "${urls[@]}"; do
 {{- if UseGCSDownload }}
-      # Use the IP of the metadata server, to not depend on DNS this early in boot
-      local metadata_server="http://169.254.169.254"
-      local token
+      local response token
       echo "== Downloading ${url} =="
-      # Pipe the service account token to curl, to keep it out of the logs
-      if ! token=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H 'Metadata-Flavor: Google' "${metadata_server}/computeMetadata/v1/instance/service-accounts/default/token" | grep -o '"access_token" *: *"[^"]*"' | cut -d '"' -f 4); then
+      # Use the IP of the metadata server, to not depend on DNS this early in boot
+      if ! response=$(curl -s -f --noproxy '*' --connect-timeout 2 --max-time 5 -H 'Metadata-Flavor: Google' "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token"); then
         echo "== Failed to get a service account token =="
+      elif ! token=$(json-field "${response}" access_token); then
+        echo "== Failed to parse the service account token =="
+      # Pass the token through stdin so it does not appear in files, logs, or process arguments.
       elif ! echo "Authorization: Bearer ${token}" | curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- "https://storage.googleapis.com/${url#gs://}"; then
+        echo "== Failed to download ${url} =="
+      elif ! validate-hash "${file}" "${hash}"; then
+        echo "== Failed to validate hash for ${url} =="
+        rm -f "${file}"
+      else
+        echo "== Downloaded ${url} with hash ${hash} =="
+        return 0
+      fi
+{{- else if UseBlobDownload }}
+      local rest account response token
+      echo "== Downloading ${url} =="
+      rest="${url#azureblob://}"
+      account="${rest%%/*}"
+      rest="${rest#*/}"
+      # Use the IP of the metadata server, to not depend on DNS this early in boot.
+      # The token request is brokered to Entra ID, so allow more time than for other clouds.
+      if ! response=$(curl -s -f --noproxy '*' --connect-timeout 5 --max-time 30 -H 'Metadata: true' "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https%3A%2F%2Fstorage.azure.com%2F"); then
+        echo "== Failed to get a managed identity token =="
+      elif ! token=$(json-field "${response}" access_token); then
+        echo "== Failed to parse the managed identity token =="
+      # Pass the token through stdin so it does not appear in files, logs, or process arguments.
+      elif ! printf 'Authorization: Bearer %s\nx-ms-version: 2017-11-09\n' "${token}" |
+        curl -f -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 -H @- \
+          "https://${account}.blob.core.windows.net/${rest}"; then
         echo "== Failed to download ${url} =="
       elif ! validate-hash "${file}" "${hash}"; then
         echo "== Failed to validate hash for ${url} =="
@@ -267,10 +295,16 @@ func (b *NodeUpScript) nodeUpSource(arch architectures.Architecture) (string, er
 
 	locations := slices.Clone(asset.Locations)
 	for i, location := range locations {
-		if !strings.HasPrefix(location, "s3://") {
+		var escape func(string) (string, error)
+		switch {
+		case strings.HasPrefix(location, "s3://"):
+			escape = escapeS3Location
+		case strings.HasPrefix(location, "azureblob://"):
+			escape = escapeBlobLocation
+		default:
 			continue
 		}
-		escaped, err := escapeS3Location(location)
+		escaped, err := escape(location)
 		if err != nil {
 			return "", fmt.Errorf("escaping nodeup source %q: %w", location, err)
 		}
@@ -291,6 +325,21 @@ func escapeS3Location(location string) (string, error) {
 	return "s3://" + u.Host + httpbinding.EscapePath(u.Path, false), nil
 }
 
+func escapeBlobLocation(location string) (string, error) {
+	u, err := url.Parse(location)
+	if err != nil {
+		return "", fmt.Errorf("parsing Azure Blob location: %w", err)
+	}
+	container, key, _ := strings.Cut(strings.TrimPrefix(u.Path, "/"), "/")
+	// Reject ports, IPv6 hosts, userinfo, queries, and fragments, which the account-based
+	// blob.core.windows.net URL cannot represent, so they fail here instead of in the boot retry loop.
+	if u.Scheme != "azureblob" || u.Host == "" || u.Hostname() != u.Host || u.User != nil || u.RawQuery != "" || u.Fragment != "" || container == "" || key == "" {
+		return "", fmt.Errorf("invalid Azure Blob location; expected azureblob://<account>/<container>/<key>")
+	}
+
+	return "azureblob://" + u.Host + httpbinding.EscapePath(u.Path, false), nil
+}
+
 func (b *NodeUpScript) Build() (fi.Resource, error) {
 	if b.ProxyEnv == nil {
 		b.ProxyEnv = funcEmptyString
@@ -301,6 +350,14 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 
 	if b.useS3Download() && b.S3Region == "" {
 		return nil, fmt.Errorf("ResolveS3Region must be called before building a nodeup script with an s3:// source")
+	}
+
+	if b.useBlobDownload() {
+		// The script hard-codes the public cloud blob.core.windows.net endpoint suffix.
+		// Azure environment names are case-insensitive; AzureCloud is the CLI name of the public cloud.
+		if azureEnv := os.Getenv("AZURE_ENVIRONMENT"); azureEnv != "" && !strings.EqualFold(azureEnv, "AzurePublicCloud") && !strings.EqualFold(azureEnv, "AzureCloud") {
+			return nil, fmt.Errorf("downloading nodeup from an azureblob:// URL is not supported in Azure environment %q", azureEnv)
+		}
 	}
 
 	functions := template.FuncMap{
@@ -349,9 +406,10 @@ func (b *NodeUpScript) Build() (fi.Resource, error) {
 		"ProxyEnv":             b.ProxyEnv,
 		"EnvironmentVariables": b.EnvironmentVariables,
 
-		"UseGCSDownload": b.useGCSDownload,
-		"UseS3Download":  b.useS3Download,
-		"S3Region":       func() string { return b.S3Region },
+		"UseGCSDownload":  b.useGCSDownload,
+		"UseS3Download":   b.useS3Download,
+		"UseBlobDownload": b.useBlobDownload,
+		"S3Region":        func() string { return b.S3Region },
 	}
 
 	return newTemplateResource("nodeup", nodeUpTemplate, functions, nil)
@@ -382,6 +440,11 @@ func (b *NodeUpScript) firstLocationWithScheme(scheme string) string {
 // S3 downloads require an AWS instance profile.
 func (b *NodeUpScript) useS3Download() bool {
 	return b.CloudProvider == string(kops.CloudProviderAWS) && b.firstLocationWithScheme("s3://") != ""
+}
+
+// Azure Blob downloads require a managed identity on the instance.
+func (b *NodeUpScript) useBlobDownload() bool {
+	return b.CloudProvider == string(kops.CloudProviderAzure) && b.firstLocationWithScheme("azureblob://") != ""
 }
 
 // ResolveS3Region resolves the bucket region because SigV4 requires it but s3:// URLs omit it.
