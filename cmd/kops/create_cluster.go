@@ -282,7 +282,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.RegisterFlagCompletionFunc("kubernetes-version", completeKubernetesVersion)
 
 	cmd.Flags().StringSliceVar(&options.KubernetesFeatureGates, "kubernetes-feature-gates", options.KubernetesFeatureGates, "List of Kubernetes feature gates to enable/disable")
-	cmd.RegisterFlagCompletionFunc("kubernetes-version", completeKubernetesFeatureGates)
+	cmd.RegisterFlagCompletionFunc("kubernetes-feature-gates", completeKubernetesFeatureGates)
 
 	cmd.Flags().StringVar(&options.ContainerRuntime, "container-runtime", options.ContainerRuntime, "Container runtime to use: containerd")
 	cmd.Flags().MarkDeprecated("container-runtime", "containerd is the only supported value")
