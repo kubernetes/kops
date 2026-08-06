@@ -36,7 +36,10 @@ import (
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
+	nodeidentitygce "k8s.io/kops/pkg/nodeidentity/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce/gcemetadata"
 	gcetpm "k8s.io/kops/upup/pkg/fi/cloudup/gce/tpm"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -128,8 +131,8 @@ func defaultFakeComputeAPI(t *testing.T) *fakeComputeAPI {
 					{Key: "created-by", Value: ptr.To("https://www.googleapis.com/compute/v1/projects/" + testProject + "/zones/" + testZone + "/instanceGroupManagers/" + testMIG)},
 					// Live instance metadata is settable by whoever created the instance; the
 					// verifier must not trust these values.
-					{Key: "cluster-name", Value: ptr.To("spoofed.example.com")},
-					{Key: "kops-k8s-io-instance-group-name", Value: ptr.To("spoofed-ig")},
+					{Key: gcemetadata.MetadataKeyClusterName, Value: ptr.To("spoofed.example.com")},
+					{Key: nodeidentitygce.MetadataKeyInstanceGroupName, Value: ptr.To("spoofed-ig")},
 				},
 			},
 			NetworkInterfaces: []*compute.NetworkInterface{
@@ -150,8 +153,8 @@ func defaultFakeComputeAPI(t *testing.T) *fakeComputeAPI {
 			Properties: &compute.InstanceProperties{
 				Metadata: &compute.Metadata{
 					Items: []*compute.MetadataItems{
-						{Key: "cluster-name", Value: ptr.To(testClusterName)},
-						{Key: "kops-k8s-io-instance-group-name", Value: ptr.To("nodes")},
+						{Key: gcemetadata.MetadataKeyClusterName, Value: ptr.To(testClusterName)},
+						{Key: nodeidentitygce.MetadataKeyInstanceGroupName, Value: ptr.To("nodes")},
 					},
 				},
 			},
@@ -215,9 +218,33 @@ func newTestVerifier(t *testing.T, fake *fakeComputeAPI) *tpmVerifier {
 	}
 }
 
-func TestVerifyToken(t *testing.T) {
-	body := []byte("test-request-body")
+// runVerify builds a token signed with signingKey, calls VerifyToken, and checks the outcome
+// against expectedError. It returns the result on success, or nil when an error was expected.
+func runVerify(t *testing.T, verifier *tpmVerifier, signingKey *rsa.PrivateKey, expectedError string) *bootstrap.VerifyResult {
+	t.Helper()
 
+	body := []byte("test-request-body")
+	authToken := buildAuthToken(t, signingKey, body)
+	request := httptest.NewRequest(http.MethodPost, "/bootstrap", nil)
+
+	result, err := verifier.VerifyToken(context.Background(), request, authToken, body)
+	if expectedError != "" {
+		if err == nil {
+			t.Fatalf("expected error containing %q, got result %+v", expectedError, result)
+		}
+		if !strings.Contains(err.Error(), expectedError) {
+			t.Fatalf("expected error containing %q, got %q", expectedError, err.Error())
+		}
+		return nil
+	}
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	return result
+}
+
+func TestVerifyToken(t *testing.T) {
 	tests := []struct {
 		name              string
 		setup             func(fake *fakeComputeAPI)
@@ -272,29 +299,15 @@ func TestVerifyToken(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := context.Background()
-
 			fake := defaultFakeComputeAPI(t)
 			tc.setup(fake)
 			verifier := newTestVerifier(t, fake)
 
-			authToken := buildAuthToken(t, fake.signingKey, body)
-			request := httptest.NewRequest(http.MethodPost, "/bootstrap", nil)
-
-			result, err := verifier.VerifyToken(ctx, request, authToken, body)
-			if tc.expectedError != "" {
-				if err == nil {
-					t.Fatalf("expected error containing %q, got result %+v", tc.expectedError, result)
-				}
-				if !strings.Contains(err.Error(), tc.expectedError) {
-					t.Fatalf("expected error containing %q, got %q", tc.expectedError, err.Error())
-				}
+			result := runVerify(t, verifier, fake.signingKey, tc.expectedError)
+			if result == nil {
 				return
 			}
 
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
 			if result.NodeName != tc.expectedNodeName {
 				t.Errorf("expected NodeName %q, got %q", tc.expectedNodeName, result.NodeName)
 			}
@@ -306,9 +319,6 @@ func TestVerifyToken(t *testing.T) {
 }
 
 func TestVerifyTokenRejectsBadSignature(t *testing.T) {
-	ctx := context.Background()
-	body := []byte("test-request-body")
-
 	fake := defaultFakeComputeAPI(t)
 	verifier := newTestVerifier(t, fake)
 
@@ -317,16 +327,8 @@ func TestVerifyTokenRejectsBadSignature(t *testing.T) {
 	if err != nil {
 		t.Fatalf("generating RSA key: %v", err)
 	}
-	authToken := buildAuthToken(t, otherKey, body)
-	request := httptest.NewRequest(http.MethodPost, "/bootstrap", nil)
 
-	result, err := verifier.VerifyToken(ctx, request, authToken, body)
-	if err == nil {
-		t.Fatalf("expected signature verification error, got result %+v", result)
-	}
-	if !strings.Contains(err.Error(), "failed to verify claim signature") {
-		t.Fatalf("expected signature verification error, got %q", err.Error())
-	}
+	runVerify(t, verifier, otherKey, "failed to verify claim signature")
 
 	// Requests that fail signature verification must not trigger authorization lookups.
 	for _, path := range fake.requests {
@@ -367,7 +369,6 @@ func capiMachineObject(providerID, clusterName string) unstructured.Unstructured
 }
 
 func TestVerifyTokenCAPI(t *testing.T) {
-	body := []byte("test-request-body")
 	providerID := "gce://" + testProject + "/" + testZone + "/" + testInstance
 
 	tests := []struct {
@@ -391,37 +392,21 @@ func TestVerifyTokenCAPI(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := context.Background()
-
 			fake := defaultFakeComputeAPI(t)
-			fake.instance.Labels = map[string]string{"capg-role": "node"}
+			fake.instance.Labels = map[string]string{nodeidentitygce.LabelKeyCAPIRoleName: "node"}
 			// CAPI instances are not members of a kOps MIG and have no created-by metadata.
 			fake.instance.Metadata.Items = nil
-			fake.migExists = false
-			fake.managedInstances = nil
 
 			verifier := newTestVerifier(t, fake)
 			verifier.capiManager = capimanager.NewManager(&fakeKubeClient{
 				machines: []unstructured.Unstructured{capiMachineObject(providerID, tc.machineClusterName)},
 			})
 
-			authToken := buildAuthToken(t, fake.signingKey, body)
-			request := httptest.NewRequest(http.MethodPost, "/bootstrap", nil)
-
-			result, err := verifier.VerifyToken(ctx, request, authToken, body)
-			if tc.expectedError != "" {
-				if err == nil {
-					t.Fatalf("expected error containing %q, got result %+v", tc.expectedError, result)
-				}
-				if !strings.Contains(err.Error(), tc.expectedError) {
-					t.Fatalf("expected error containing %q, got %q", tc.expectedError, err.Error())
-				}
+			result := runVerify(t, verifier, fake.signingKey, tc.expectedError)
+			if result == nil {
 				return
 			}
 
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
 			if result.CAPIMachine == nil {
 				t.Error("expected CAPIMachine to be set")
 			}
