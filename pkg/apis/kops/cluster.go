@@ -976,9 +976,13 @@ func (c *Cluster) UsesLoadBalancerForKopsController() bool {
 }
 
 func (c *Cluster) InstallCNIAssets() bool {
+	if c.Spec.Networking.Cilium != nil {
+		// In portmap chaining mode, Cilium delegates hostPort handling to the
+		// portmap plugin, which comes from the standard CNI plugins bundle.
+		return c.Spec.Networking.Cilium.ChainingMode == "portmap"
+	}
 	return c.Spec.Networking.AmazonVPC == nil &&
-		c.Spec.Networking.Calico == nil &&
-		c.Spec.Networking.Cilium == nil
+		c.Spec.Networking.Calico == nil
 }
 
 func (c *Cluster) HasImageVolumesSupport() bool {
