@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"cloud.google.com/go/compute/metadata"
@@ -141,12 +140,12 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	var igName string
 	if capiMachine == nil {
-		instanceTemplate, err := GetInstanceTemplateForMIGMember(ctx, i.computeService, i.project, instance)
+		instanceTemplate, err := gce.GetInstanceTemplateForMIGMember(ctx, i.computeService, i.project, instance)
 		if err != nil {
 			return nil, err
 		}
 
-		igName = GetMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
+		igName = gce.GetMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
 		if igName == "" {
 			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 		}
@@ -192,87 +191,4 @@ func (i *nodeIdentifier) getInstance(zone string, instanceName string) (*compute
 	}
 
 	return instance, nil
-}
-
-// GetInstanceTemplateForMIGMember returns the instance template of the MIG that manages the given
-// instance. The instance metadata is potentially mutable by whoever created the instance, so we
-// instead resolve the MIG from the created-by metadata and verify that the instance is indeed
-// managed by it; MIG membership can't be spoofed without GCE API access.
-func GetInstanceTemplateForMIGMember(ctx context.Context, computeService *compute.Service, project string, instance *compute.Instance) (*compute.InstanceTemplate, error) {
-	createdBy := GetMetadataValue(instance.Metadata, "created-by")
-	if createdBy == "" {
-		return nil, fmt.Errorf("cannot find owner for instance %s", instance.Name)
-	}
-
-	// We need to double-check the MIG membership, in case created-by was changed
-	migName := lastComponent(createdBy)
-
-	migMember, err := getManagedInstance(ctx, computeService, project, lastComponent(instance.Zone), migName, instance.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	if migMember.Version == nil {
-		return nil, fmt.Errorf("instance %s did not have Version set", instance.Name)
-	}
-
-	templateName := lastComponent(migMember.Version.InstanceTemplate)
-	instanceTemplate, err := computeService.InstanceTemplates.Get(project, templateName).Context(ctx).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE instance group template %q: %v", templateName, err)
-	}
-
-	return instanceTemplate, nil
-}
-
-// getManagedInstance queries GCE for the instance from the MIG
-func getManagedInstance(ctx context.Context, computeService *compute.Service, project string, zone string, migName string, instanceID uint64) (*compute.ManagedInstance, error) {
-	var matches []*compute.ManagedInstance
-
-	filter := "id=" + strconv.FormatUint(instanceID, 10)
-	if err := computeService.InstanceGroupManagers.ListManagedInstances(project, zone, migName).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
-		// Post-filter... filters aren't implemented (b/27605549)
-		for _, instance := range page.ManagedInstances {
-			if instance.Id != instanceID {
-				continue
-			}
-			matches = append(matches, instance)
-		}
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", migName, err)
-	}
-
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, migName)
-	}
-	if len(matches) > 1 {
-		// Should be impossible - shows that filters / post-filters are not working
-		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, migName)
-	}
-
-	return matches[0], nil
-}
-
-// lastComponent returns the last component of a URL, i.e. anything after the last slash
-// If there is no slash, returns the whole string
-func lastComponent(s string) string {
-	lastSlash := strings.LastIndex(s, "/")
-	if lastSlash != -1 {
-		s = s[lastSlash+1:]
-	}
-	return s
-}
-
-// GetMetadataValue returns the value for the given key in the metadata, or "" if not present.
-func GetMetadataValue(metadata *compute.Metadata, key string) string {
-	value := ""
-	if metadata != nil {
-		for _, item := range metadata.Items {
-			if item.Key == key && item.Value != nil {
-				value = *item.Value
-			}
-		}
-	}
-	return value
 }

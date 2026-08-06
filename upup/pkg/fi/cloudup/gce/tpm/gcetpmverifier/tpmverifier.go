@@ -147,7 +147,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		return nil, fmt.Errorf("error fetching instance from compute API: %w", err)
 	}
 
-	if !strings.HasPrefix(lastComponent(instance.Zone), v.opt.Region+"-") {
+	if !strings.HasPrefix(gce.LastComponent(instance.Zone), v.opt.Region+"-") {
 		return nil, fmt.Errorf("instance was in zone %q, expected region %q", instance.Zone, v.opt.Region)
 	}
 
@@ -168,16 +168,14 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 
 	instanceGroupName := ""
 	if capiMachine == nil {
-		// The instance metadata is set by whoever created the instance, so we can't trust it for
-		// authorization decisions. Instead we verify that the instance is actually a member of a
-		// MIG, and read the cluster name and instance group name from the MIG's instance template,
-		// which requires GCE API access to change.
-		instanceTemplate, err := nodeidentitygce.GetInstanceTemplateForMIGMember(ctx, v.computeClient, v.opt.ProjectID, instance)
+		// Read the cluster name and instance group name from the MIG's instance template, which
+		// requires GCE API access to change, rather than from the untrusted instance metadata.
+		instanceTemplate, err := gce.GetInstanceTemplateForMIGMember(ctx, v.computeClient, v.opt.ProjectID, instance)
 		if err != nil {
 			return nil, err
 		}
 
-		clusterName := nodeidentitygce.GetMetadataValue(instanceTemplate.Properties.Metadata, gcemetadata.MetadataKeyClusterName)
+		clusterName := gce.GetMetadataValue(instanceTemplate.Properties.Metadata, gcemetadata.MetadataKeyClusterName)
 		if clusterName == "" {
 			return nil, fmt.Errorf("could not determine cluster for instance %s", instance.SelfLink)
 		}
@@ -185,7 +183,7 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 			return nil, fmt.Errorf("clusterName does not match expected: got %q, want %q", clusterName, v.opt.ClusterName)
 		}
 
-		instanceGroupName = nodeidentitygce.GetMetadataValue(instanceTemplate.Properties.Metadata, nodeidentitygce.MetadataKeyInstanceGroupName)
+		instanceGroupName = gce.GetMetadataValue(instanceTemplate.Properties.Metadata, nodeidentitygce.MetadataKeyInstanceGroupName)
 		if instanceGroupName == "" {
 			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 		}
@@ -258,16 +256,6 @@ func GetInstanceCertificateAlternateNames(instance *compute.Instance) ([]string,
 func isNotFound(err error) bool {
 	gerr, ok := err.(*googleapi.Error)
 	return ok && gerr.Code == http.StatusNotFound
-}
-
-// lastComponent returns the last component of a URL, i.e. anything after the last slash
-// If there is no slash, returns the whole string
-func lastComponent(s string) string {
-	lastSlash := strings.LastIndex(s, "/")
-	if lastSlash != -1 {
-		s = s[lastSlash+1:]
-	}
-	return s
 }
 
 func verifySignature(signingKey *rsa.PublicKey, payload []byte, signature []byte) bool {
