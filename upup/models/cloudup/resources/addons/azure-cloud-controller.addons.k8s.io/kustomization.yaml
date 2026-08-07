@@ -32,6 +32,16 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/cpu
         value: '{{ or .ExternalCloudControllerManager.CPURequest "100m" }}'
+      # Two replicas on a highly available control plane, one otherwise. CCM owns
+      # cloud-node-lifecycle, which deletes the Node objects of deleted VMs. A single replica can
+      # be scheduled onto the node a rolling update is about to replace, and once that VM is gone
+      # nothing is left to delete the stale Node object, so its orphaned pods keep the cluster
+      # from validating. Only one replica without an HA control plane, because the pods are
+      # hostNetwork and would otherwise fight over the secure port. The chart emits replicas
+      # unquoted, so this is patched here and unquoted again by regenerate.sh.
+      - op: replace
+        path: /spec/replicas
+        value: '{{ ControlPlaneControllerReplicas false }}'
       # kOps schedules the CCM on control-plane nodes that may carry arbitrary taints; tolerate all.
       - op: replace
         path: /spec/template/spec/tolerations

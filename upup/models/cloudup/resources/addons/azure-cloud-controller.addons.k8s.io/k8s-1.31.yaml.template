@@ -195,7 +195,7 @@ metadata:
   name: cloud-controller-manager
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: {{ ControlPlaneControllerReplicas false }}
   selector:
     matchLabels:
       component: cloud-controller-manager

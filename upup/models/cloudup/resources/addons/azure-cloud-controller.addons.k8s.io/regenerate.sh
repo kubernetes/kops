@@ -19,5 +19,9 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-kustomize build --enable-helm . > k8s-1.31.yaml.template
+# replicas is a Go template expression, which kustomize can only carry as a quoted string.
+# Unquote it so the rendered manifest has an integer.
+kustomize build --enable-helm . \
+  | sed "s/^\(  replicas: \)'\(.*\)'$/\1\2/" \
+  > k8s-1.31.yaml.template
 echo "Wrote k8s-1.31.yaml.template"

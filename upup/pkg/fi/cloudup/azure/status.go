@@ -180,9 +180,13 @@ func (c *azureCloudImplementation) buildCloudInstanceGroup(
 	for _, vm := range vms {
 		// TODO(kenji): Ignore an instance that is being terminated.
 
-		// TODO(kenji): Set the status properly so that kops can
-		// tell whether a VM is up-to-date or not.
+		// kOps uses a Manual scale set upgrade policy, so latestModelApplied remains false until a
+		// rolling update replaces the VM. Missing values are treated as up-to-date to prevent
+		// incomplete Azure data from triggering a rolling update.
 		status := cloudinstances.CloudInstanceStatusUpToDate
+		if vm.Properties != nil && vm.Properties.LatestModelApplied != nil && !*vm.Properties.LatestModelApplied {
+			status = cloudinstances.CloudInstanceStatusNeedsUpdate
+		}
 		_, err := cg.NewCloudInstance(*vm.Name, status, nodeMap[*vm.Name])
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %s", err)
