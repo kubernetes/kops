@@ -317,3 +317,120 @@ func TestGetCloudGroups(t *testing.T) {
 		t.Fatalf("expected min size %d, but got %d", e, a)
 	}
 }
+
+func TestGetCloudGroupsNeedsUpdate(t *testing.T) {
+	const (
+		clusterName = "my-cluster"
+
+		nodeIG   = "nodes"
+		nodeVMSS = "nodes.my-cluster"
+		nodeVM   = "nodes.my-cluster_0"
+	)
+
+	testCases := []struct {
+		name string
+		// A nil value models Azure omitting all VM properties.
+		properties  *compute.VirtualMachineScaleSetVMProperties
+		needsUpdate bool
+	}{
+		{
+			name: "latest model applied",
+			properties: &compute.VirtualMachineScaleSetVMProperties{
+				LatestModelApplied: to.Ptr(true),
+			},
+		},
+		{
+			name: "scale set model changed",
+			properties: &compute.VirtualMachineScaleSetVMProperties{
+				LatestModelApplied: to.Ptr(false),
+			},
+			needsUpdate: true,
+		},
+		{
+			name:       "latest model applied not reported",
+			properties: &compute.VirtualMachineScaleSetVMProperties{},
+		},
+		{
+			name: "no properties reported",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			vmssClient := &mockVMScaleSetsClient{
+				vmsses: []*compute.VirtualMachineScaleSet{
+					{
+						Name: to.Ptr(nodeVMSS),
+						Tags: map[string]*string{
+							TagClusterName: to.Ptr(clusterName),
+						},
+						SKU: &compute.SKU{
+							Capacity: to.Ptr[int64](1),
+						},
+					},
+				},
+			}
+			vmClient := &mockVMScaleSetVMsClient{
+				vms: []*compute.VirtualMachineScaleSetVM{
+					{
+						Name:       to.Ptr(nodeVM),
+						Properties: tc.properties,
+					},
+				},
+			}
+
+			c := &azureCloudImplementation{
+				tags: map[string]string{
+					TagClusterName: clusterName,
+				},
+				vmscaleSetsClient:   vmssClient,
+				vmscaleSetVMsClient: vmClient,
+			}
+
+			cluster := &kops.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: clusterName,
+				},
+				Spec: kops.ClusterSpec{
+					CloudProvider: kops.CloudProviderSpec{
+						Azure: &kops.AzureSpec{
+							ResourceGroupName: "my-rg",
+						},
+					},
+				},
+			}
+
+			instancegroups := []*kops.InstanceGroup{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: nodeIG,
+					},
+					Spec: kops.InstanceGroupSpec{
+						Role: kops.InstanceGroupRoleNode,
+					},
+				},
+			}
+
+			groups, err := c.GetCloudGroups(cluster, instancegroups, false /* warnUnmatched */, nil)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			group := groups[nodeIG]
+			if group == nil {
+				t.Fatalf("expected group %q, but found none", nodeIG)
+			}
+
+			needUpdate, ready := 1, 0
+			if !tc.needsUpdate {
+				needUpdate, ready = 0, 1
+			}
+			if a, e := len(group.NeedUpdate), needUpdate; a != e {
+				t.Errorf("expected %d instance(s) needing update, but found %d", e, a)
+			}
+			if a, e := len(group.Ready), ready; a != e {
+				t.Errorf("expected %d ready instance(s), but found %d", e, a)
+			}
+		})
+	}
+}
