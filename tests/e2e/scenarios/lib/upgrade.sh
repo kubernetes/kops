@@ -67,21 +67,32 @@ function kops-upgrade() {
 
     export KOPS_BASE_URL
 
-    echo "Cleaning up any leaked resources from previous cluster"
     # For KOPS_VERSION_B, the value "latest" means build of the tree
     if [[ "${KOPS_VERSION_B}" == "latest" ]]; then
-        kops-acquire-latest
-        KOPS_BASE_URL_B="${KOPS_BASE_URL}"
-        KOPS_B="${KOPS}"
+        # --down deletes staged artifacts, so acquire version B after cleanup. Build its binary
+        # now because cleanup itself uses version B. Periodic jobs only download the binary.
+        if [[ "${JOB_TYPE-}" == "periodic" ]]; then
+            kops-acquire-latest
+            KOPS_B="${KOPS}"
+        else
+            make -C "${REPO_ROOT}" crossbuild-kops-linux-amd64
+            KOPS_B="${REPO_ROOT}/.build/dist/linux/amd64/kops"
+        fi
     else
         KOPS_BASE_URL=$(kops-base-from-marker "${KOPS_VERSION_B}")
-        KOPS_BASE_URL_B="${KOPS_BASE_URL}"
         KOPS_B=$(kops-download-from-base)
     fi
 
+    echo "Cleaning up any leaked resources from previous cluster"
     ${KUBETEST2} \
         --down \
         --kops-binary-path="${KOPS_B}" || echo "kubetest2 down failed"
+
+    if [[ "${KOPS_VERSION_B}" == "latest" ]]; then
+        kops-acquire-latest
+        KOPS_B="${KOPS}"
+    fi
+    KOPS_BASE_URL_B="${KOPS_BASE_URL}"
 
     # First kOps version may be a released version. If so, it is prefixed with v
     if [[ "${KOPS_VERSION_A:0:1}" == "v" ]]; then

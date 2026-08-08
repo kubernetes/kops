@@ -249,6 +249,19 @@ gcs-publish-ci: gcloud version-dist-ci
 	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
 	gcloud storage cp --cache-control="private, max-age=0, no-transform" ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
+# s3-publish-ci is the entry point for AWS CI testing.
+# Credentials reach the aws CLI through AWS_SHARED_CREDENTIALS_FILE or similar
+# pointers that are not unexported, but AWS_REGION must be restored explicitly.
+.PHONY: s3-publish-ci
+ifneq ($(AWS_REGION),)
+s3-publish-ci: export AWS_REGION := $(AWS_REGION)
+endif
+s3-publish-ci: version-dist-ci
+	@echo "== Uploading kops =="
+	${UPLOAD_CMD} ${UPLOAD}/kops/ ${UPLOAD_DEST}
+	echo "VERSION: ${VERSION}"
+	echo "$(patsubst %/,%,$(UPLOAD_DEST))/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
