@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
@@ -345,6 +346,14 @@ const gcsPublicPrefix = "https://storage.googleapis.com/"
 // form; the scripts that download the kops binary run outside the deployer and keep using https.
 func (d *deployer) maybeGSURL(baseURL string) string {
 	if d.CloudProvider != "gce" || !strings.HasPrefix(baseURL, gcsPublicPrefix) {
+		return baseURL
+	}
+	// Only kops >= 1.37.0-alpha.1 supports a gs:// base URL. The deployer also tests release
+	// branches, which must keep the https form. The staged artifacts path always ends in the
+	// kops version; if none parses, keep https, which every version can download.
+	segments := strings.Split(strings.TrimRight(baseURL, "/"), "/")
+	version, err := semver.ParseTolerant(segments[len(segments)-1])
+	if err != nil || version.LT(semver.MustParse("1.37.0-alpha.1")) {
 		return baseURL
 	}
 	return "gs://" + strings.TrimPrefix(baseURL, gcsPublicPrefix)
