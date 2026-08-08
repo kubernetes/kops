@@ -101,6 +101,30 @@ func TestSetInstanceGroupsFields(t *testing.T) {
 				},
 			},
 		},
+		{
+			Fields: []string{
+				"spec.rootVolumeType=gp3",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Type: fi.PtrTo("gp3"),
+					},
+				},
+			},
+		},
+		{
+			Fields: []string{
+				"spec.rootVolumeSize=64",
+			},
+			Output: kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					RootVolume: &kops.InstanceRootVolumeSpec{
+						Size: fi.PtrTo(int32(64)),
+					},
+				},
+			},
+		},
 	}
 
 	for _, g := range grid {
