@@ -26,28 +26,40 @@ func TestMaybeGSURL(t *testing.T) {
 		expected      string
 	}{
 		{
-			name:          "gce staged artifacts",
+			name:          "gce staged artifacts from a CI build",
 			cloudProvider: "gce",
-			baseURL:       "https://storage.googleapis.com/k8s-staging-kops/kops/1.34.0/",
-			expected:      "gs://k8s-staging-kops/kops/1.34.0/",
+			baseURL:       "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.37.0-alpha.2+v1.37.0-alpha.1-42-gdeadbeef01",
+			expected:      "gs://k8s-staging-kops/kops/releases/1.37.0-alpha.2+v1.37.0-alpha.1-42-gdeadbeef01",
+		},
+		{
+			name:          "gce staged artifacts from a release branch without gs support are left alone",
+			cloudProvider: "gce",
+			baseURL:       "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.35.3+v1.35.1-39-gc89e13599b",
+			expected:      "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.35.3+v1.35.1-39-gc89e13599b",
+		},
+		{
+			name:          "gce with no parseable version is left alone",
+			cloudProvider: "gce",
+			baseURL:       "https://storage.googleapis.com/k8s-staging-kops/kops/latest/",
+			expected:      "https://storage.googleapis.com/k8s-staging-kops/kops/latest/",
 		},
 		{
 			name:          "aws staged artifacts are left alone",
 			cloudProvider: "aws",
-			baseURL:       "https://storage.googleapis.com/k8s-staging-kops/kops/1.34.0/",
-			expected:      "https://storage.googleapis.com/k8s-staging-kops/kops/1.34.0/",
+			baseURL:       "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.37.0-alpha.2+v1.37.0-alpha.1-42-gdeadbeef01",
+			expected:      "https://storage.googleapis.com/k8s-staging-kops/kops/releases/1.37.0-alpha.2+v1.37.0-alpha.1-42-gdeadbeef01",
 		},
 		{
 			name:          "gce with a non-GCS url",
 			cloudProvider: "gce",
-			baseURL:       "https://artifacts.k8s.io/binaries/kops/1.34.0/",
-			expected:      "https://artifacts.k8s.io/binaries/kops/1.34.0/",
+			baseURL:       "https://artifacts.k8s.io/binaries/kops/1.37.0/",
+			expected:      "https://artifacts.k8s.io/binaries/kops/1.37.0/",
 		},
 		{
 			name:          "gce with an already converted url",
 			cloudProvider: "gce",
-			baseURL:       "gs://k8s-staging-kops/kops/1.34.0/",
-			expected:      "gs://k8s-staging-kops/kops/1.34.0/",
+			baseURL:       "gs://k8s-staging-kops/kops/releases/1.37.0-alpha.2+v1.37.0-alpha.1-42-gdeadbeef01",
+			expected:      "gs://k8s-staging-kops/kops/releases/1.37.0-alpha.2+v1.37.0-alpha.1-42-gdeadbeef01",
 		},
 	}
 
