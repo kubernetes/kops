@@ -725,6 +725,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 			}
 			l.Builders = append(l.Builders,
 				&linodemodel.NetworkModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: networkLifecycle},
+				&linodemodel.InstanceModelBuilder{LinodeModelContext: linodeModelContext, BootstrapScriptBuilder: bootstrapScriptBuilder, Lifecycle: clusterLifecycle},
 				&linodemodel.SSHKeyModelBuilder{LinodeModelContext: linodeModelContext, Lifecycle: securityLifecycle},
 			)
 

@@ -33,11 +33,6 @@ import (
 
 type LinodeVerifierOptions struct{}
 
-const (
-	TagKubernetesInstanceGroup = "kops.k8s.io/instance-group"
-	TagKubernetesInstanceRole  = "kops.k8s.io/instance-role"
-)
-
 type linodeVerifierClient interface {
 	GetInstance(ctx context.Context, linodeID int) (*linodego.Instance, error)
 }
