@@ -134,8 +134,19 @@
       ]
     },
     {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
       "Action": [
         "kms:Decrypt",
+        "kms:DescribeKey",
         "kms:Encrypt",
         "kms:GenerateDataKey*",
         "kms:ReEncrypt*"
@@ -189,7 +200,6 @@
         "elasticloadbalancing:DescribeTargetGroups",
         "elasticloadbalancing:DescribeTargetHealth",
         "iam:CreateServiceLinkedRole",
-        "kms:CreateGrant",
         "kms:DescribeKey",
         "sqs:DeleteMessage",
         "sqs:ReceiveMessage"

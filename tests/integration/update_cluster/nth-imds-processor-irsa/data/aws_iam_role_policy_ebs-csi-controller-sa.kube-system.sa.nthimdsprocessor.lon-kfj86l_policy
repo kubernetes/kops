@@ -37,8 +37,19 @@
       ]
     },
     {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
       "Action": [
         "kms:Decrypt",
+        "kms:DescribeKey",
         "kms:Encrypt",
         "kms:GenerateDataKey*",
         "kms:ReEncrypt*"
@@ -62,9 +73,7 @@
         "ec2:DescribeTags",
         "ec2:DescribeVolumeStatus",
         "ec2:DescribeVolumes",
-        "ec2:DescribeVolumesModifications",
-        "kms:CreateGrant",
-        "kms:DescribeKey"
+        "ec2:DescribeVolumesModifications"
       ],
       "Effect": "Allow",
       "Resource": "*"
