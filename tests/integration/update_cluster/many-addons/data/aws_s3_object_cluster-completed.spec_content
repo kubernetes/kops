@@ -149,6 +149,8 @@ spec:
       enabled: false
       image: registry.k8s.io/dns/k8s-dns-node-cache:1.26.0
       memoryRequest: 5Mi
+    podDisruptionBudget:
+      maxUnavailable: 25%
     provider: CoreDNS
     serverIP: 100.64.0.10
   kubeProxy:

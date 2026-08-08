@@ -3854,6 +3854,32 @@ spec:
                       PodAnnotations makes possible to add additional annotations to CoreDNS Pods.
                       Default: none
                     type: object
+                  podDisruptionBudget:
+                    description: |-
+                      PodDisruptionBudget configures the PodDisruptionBudget for the DNS pods.
+                      Default: maxUnavailable of 50%.
+                    properties:
+                      maxUnavailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: |-
+                          MaxUnavailable is the number of pods that may be unavailable.
+                          The value can be an absolute number (for example 1) or a percentage
+                          of desired pods (for example 25%).
+                          Mutually exclusive with MinAvailable.
+                        x-kubernetes-int-or-string: true
+                      minAvailable:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        description: |-
+                          MinAvailable is the number of pods that must remain available.
+                          The value can be an absolute number (for example 2) or a percentage
+                          of desired pods (for example 50%).
+                          Mutually exclusive with MaxUnavailable.
+                        x-kubernetes-int-or-string: true
+                    type: object
                   provider:
                     description: Provider indicates whether CoreDNS or kube-dns will
                       be the default service discovery.

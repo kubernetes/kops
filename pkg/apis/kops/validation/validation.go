@@ -156,6 +156,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, c *kops.Cluster, fieldPath *fie
 		allErrs = append(allErrs, validateKubeProxy(spec.KubeProxy, fieldPath.Child("kubeProxy"))...)
 	}
 
+	if spec.KubeDNS != nil {
+		allErrs = append(allErrs, validateKubeDNS(spec.KubeDNS, fieldPath.Child("kubeDNS"))...)
+	}
+
 	if spec.Kubelet != nil {
 		allErrs = append(allErrs, validateKubelet(spec.Kubelet, c, fieldPath.Child("kubelet"))...)
 	}
@@ -2049,6 +2053,50 @@ func validateRollingUpdate(rollingUpdate *kops.RollingUpdate, fldpath *field.Pat
 			allErrs = append(allErrs, field.Forbidden(fldpath.Child("maxSurge"), "Cannot be zero if maxUnavailable is zero"))
 		}
 	}
+	return allErrs
+}
+
+func validateKubeDNS(spec *kops.KubeDNSConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if spec.PodDisruptionBudget != nil {
+		allErrs = append(allErrs, validatePodDisruptionBudget(spec.PodDisruptionBudget, fldPath.Child("podDisruptionBudget"))...)
+	}
+
+	return allErrs
+}
+
+func validatePodDisruptionBudget(pdb *kops.PodDisruptionBudgetConfig, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if pdb.MinAvailable != nil && pdb.MaxUnavailable != nil {
+		allErrs = append(allErrs, field.Forbidden(fldPath.Child("maxUnavailable"), "Cannot be specified with minAvailable"))
+	}
+
+	// Percentages are scaled against 100 so that a percentage value is compared against
+	// itself; for absolute values the scale is ignored.
+	if pdb.MinAvailable != nil {
+		available, err := intstr.GetScaledValueFromIntOrPercent(pdb.MinAvailable, 100, false)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("minAvailable"), pdb.MinAvailable,
+				fmt.Sprintf("Unable to parse: %v", err)))
+		} else if available < 0 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("minAvailable"), pdb.MinAvailable, "Cannot be negative"))
+		}
+	}
+
+	if pdb.MaxUnavailable != nil {
+		unavailable, err := intstr.GetScaledValueFromIntOrPercent(pdb.MaxUnavailable, 100, false)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxUnavailable"), pdb.MaxUnavailable,
+				fmt.Sprintf("Unable to parse: %v", err)))
+		} else if unavailable < 0 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxUnavailable"), pdb.MaxUnavailable, "Cannot be negative"))
+		} else if unavailable == 0 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("maxUnavailable"), pdb.MaxUnavailable, "Cannot be zero, as that would block evictions and rolling updates"))
+		}
+	}
+
 	return allErrs
 }
 

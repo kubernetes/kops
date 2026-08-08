@@ -593,6 +593,9 @@ type KubeDNSConfig struct {
 	// PodAnnotations makes possible to add additional annotations to CoreDNS Pods.
 	// Default: none
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
+	// PodDisruptionBudget configures the PodDisruptionBudget for the DNS pods.
+	// Default: maxUnavailable of 50%.
+	PodDisruptionBudget *PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
 }
 
 // NodeLocalDNSConfig are options of the node-local-dns
@@ -890,6 +893,22 @@ type RollingUpdate struct {
 	// nodes.
 	// +optional
 	MaxSurge *intstr.IntOrString `json:"maxSurge,omitempty"`
+}
+
+// PodDisruptionBudgetConfig configures the PodDisruptionBudget for an addon's pods.
+type PodDisruptionBudgetConfig struct {
+	// MinAvailable is the number of pods that must remain available.
+	// The value can be an absolute number (for example 2) or a percentage
+	// of desired pods (for example 50%).
+	// Mutually exclusive with MaxUnavailable.
+	// +optional
+	MinAvailable *intstr.IntOrString `json:"minAvailable,omitempty"`
+	// MaxUnavailable is the number of pods that may be unavailable.
+	// The value can be an absolute number (for example 1) or a percentage
+	// of desired pods (for example 25%).
+	// Mutually exclusive with MinAvailable.
+	// +optional
+	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
 }
 
 type PackagesConfig struct {

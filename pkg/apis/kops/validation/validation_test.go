@@ -1553,6 +1553,128 @@ func intStr(i intstr.IntOrString) *intstr.IntOrString {
 	return &i
 }
 
+func Test_Validate_PodDisruptionBudget(t *testing.T) {
+	grid := []struct {
+		Input          kops.PodDisruptionBudgetConfig
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.PodDisruptionBudgetConfig{},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromInt(1)),
+			},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromString("25%")),
+			},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MinAvailable: intStr(intstr.FromInt(2)),
+			},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MinAvailable: intStr(intstr.FromString("50%")),
+			},
+		},
+		{
+			// minAvailable of zero is meaningful: it imposes no constraint.
+			Input: kops.PodDisruptionBudgetConfig{
+				MinAvailable: intStr(intstr.FromInt(0)),
+			},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MinAvailable:   intStr(intstr.FromInt(2)),
+				MaxUnavailable: intStr(intstr.FromInt(1)),
+			},
+			ExpectedErrors: []string{"Forbidden::testField.maxUnavailable"},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromString("nope")),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MinAvailable: intStr(intstr.FromString("nope")),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.minAvailable"},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromInt(-1)),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromString("-1%")),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MinAvailable: intStr(intstr.FromInt(-1)),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.minAvailable"},
+		},
+		{
+			// A budget of zero would block all voluntary evictions.
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromInt(0)),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
+		},
+		{
+			Input: kops.PodDisruptionBudgetConfig{
+				MaxUnavailable: intStr(intstr.FromString("0%")),
+			},
+			ExpectedErrors: []string{"Invalid value::testField.maxUnavailable"},
+		},
+	}
+	for _, g := range grid {
+		errs := validatePodDisruptionBudget(&g.Input, field.NewPath("testField"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func Test_Validate_KubeDNS(t *testing.T) {
+	grid := []struct {
+		Input          kops.KubeDNSConfig
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.KubeDNSConfig{},
+		},
+		{
+			Input: kops.KubeDNSConfig{
+				PodDisruptionBudget: &kops.PodDisruptionBudgetConfig{
+					MaxUnavailable: intStr(intstr.FromString("25%")),
+				},
+			},
+		},
+		{
+			Input: kops.KubeDNSConfig{
+				PodDisruptionBudget: &kops.PodDisruptionBudgetConfig{
+					MinAvailable:   intStr(intstr.FromInt(2)),
+					MaxUnavailable: intStr(intstr.FromInt(1)),
+				},
+			},
+			ExpectedErrors: []string{"Forbidden::testField.podDisruptionBudget.maxUnavailable"},
+		},
+	}
+	for _, g := range grid {
+		errs := validateKubeDNS(&g.Input, field.NewPath("testField"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
 func Test_Validate_NodeLocalDNS(t *testing.T) {
 	grid := []struct {
 		Input          kops.ClusterSpec

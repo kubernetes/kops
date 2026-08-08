@@ -1014,6 +1014,28 @@ Example:
     memoryRequest: 700Mi
 ```
 
+### podDisruptionBudget
+
+kOps creates a `PodDisruptionBudget` named `kube-dns` in the `kube-system` namespace for the DNS pods. By default it allows up to 50% of the pods to be unavailable, which lets node drains proceed quickly but permits DNS capacity to halve during a rolling update. Use `podDisruptionBudget` to tighten or loosen that budget:
+
+```yaml
+spec:
+  kubeDNS:
+    podDisruptionBudget:
+      maxUnavailable: 25%
+```
+
+Alternatively, express the budget as the number of pods that must stay up:
+
+```yaml
+spec:
+  kubeDNS:
+    podDisruptionBudget:
+      minAvailable: 2
+```
+
+Both fields accept either an absolute number (for example `2`) or a percentage (for example `25%`), and they are mutually exclusive — setting both is rejected. `maxUnavailable` cannot be `0`, since a budget of zero blocks evictions and would stall cluster rolling updates.
+
 ## kubeControllerManager
 This block contains configurations for the `controller-manager`.
 

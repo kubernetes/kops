@@ -279,7 +279,13 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-dns
+{{- if and KubeDNS.PodDisruptionBudget KubeDNS.PodDisruptionBudget.MinAvailable }}
+  minAvailable: {{ KubeDNS.PodDisruptionBudget.MinAvailable }}
+{{- else if and KubeDNS.PodDisruptionBudget KubeDNS.PodDisruptionBudget.MaxUnavailable }}
+  maxUnavailable: {{ KubeDNS.PodDisruptionBudget.MaxUnavailable }}
+{{- else }}
   maxUnavailable: 50%
+{{- end }}
 ---
 
 # CoreDNS Autoscaler
