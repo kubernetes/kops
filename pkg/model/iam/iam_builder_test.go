@@ -350,3 +350,12 @@ func TestKmsViaServices(t *testing.T) {
 		})
 	}
 }
+
+func TestAddKarpenterKMSPermissions(t *testing.T) {
+	p := NewPolicy("c.example.com", "aws", "us-east-1")
+	AddKarpenterKMSPermissions(p)
+
+	if !p.unconditionalAction.Has("kms:CreateGrant") {
+		t.Errorf("expected KMS permissions to be present")
+	}
+}

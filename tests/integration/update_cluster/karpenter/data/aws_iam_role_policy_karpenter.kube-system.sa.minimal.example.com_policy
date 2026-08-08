@@ -2,6 +2,24 @@
   "Statement": [
     {
       "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-test-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
         "ec2:CreateFleet",
         "ec2:CreateLaunchTemplate",
         "ec2:CreateTags",
@@ -26,6 +44,8 @@
         "iam:PassRole",
         "iam:RemoveRoleFromInstanceProfile",
         "iam:TagInstanceProfile",
+        "kms:CreateGrant",
+        "kms:DescribeKey",
         "pricing:GetProducts",
         "ssm:GetParameter"
       ],

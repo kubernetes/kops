@@ -320,6 +320,7 @@ func (l *Statement) Equal(r *Statement) bool {
 // AWS IAM policy document for a given instance group role.
 type PolicyBuilder struct {
 	Cluster                               *kops.Cluster
+	AllInstanceGroups                     []*kops.InstanceGroup
 	HostedZoneID                          string
 	KMSKeys                               []string
 	Region                                string
@@ -1111,6 +1112,13 @@ func AddClusterAutoscalerPermissions(p *Policy, useStaticInstanceList bool) {
 			"ec2:DescribeInstanceTypes",
 		)
 	}
+}
+
+// AddKarpenterKMSPermissions authorizes the Karpenter controller to launch instances whose root
+// volume is encrypted with a customer managed KMS key; EC2 makes the KMS calls on Karpenter's
+// behalf. The key policy also has to allow this role; kOps does not manage the key policy.
+func AddKarpenterKMSPermissions(p *Policy) {
+	addKMSIAMPolicies(p, false)
 }
 
 // AddAWSEBSCSIDriverPermissions appens policy statements that the AWS EBS CSI Driver needs to operate.
