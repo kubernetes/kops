@@ -138,6 +138,24 @@
     },
     {
       "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-test-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
         "ec2:DescribeCapacityReservations",
         "ec2:DescribeImages",
         "ec2:DescribeInstanceStatus",
@@ -151,6 +169,8 @@
         "ec2:DescribeSubnets",
         "iam:GetInstanceProfile",
         "iam:ListInstanceProfiles",
+        "kms:CreateGrant",
+        "kms:DescribeKey",
         "pricing:GetProducts",
         "ssm:GetParameter"
       ],

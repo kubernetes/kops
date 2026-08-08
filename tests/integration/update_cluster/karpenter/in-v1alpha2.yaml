@@ -99,6 +99,12 @@ spec:
   minSize: 2
   maxSize: 10
   role: Node
+  rootVolumeSize: 200
+  rootVolumeType: gp3
+  rootVolumeIops: 4000
+  rootVolumeThroughput: 200
+  rootVolumeEncryption: true
+  rootVolumeEncryptionKey: arn:aws-test:kms:us-test-1:000000000000:key/1234abcd-12ab-34cd-56ef-1234567890ab
   subnets:
   - us-test-1a
 
