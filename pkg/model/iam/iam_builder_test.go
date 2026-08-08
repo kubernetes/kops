@@ -335,9 +335,8 @@ func TestAsJSONIsIdempotent(t *testing.T) {
 }
 
 func TestAddKMSIAMPolicies(t *testing.T) {
-	// The complete policy rendered when kms:ViaService applies: CreateGrant is
-	// only allowed for grants created by an AWS service on the role's behalf,
-	// and all other KMS actions only through EC2 or S3.
+	// The full rendering when kms:ViaService applies: grants only via an AWS service, data-plane
+	// actions only through EC2 or S3.
 	wantConditional := `{
   "Statement": [
     {
@@ -372,10 +371,9 @@ func TestAddKMSIAMPolicies(t *testing.T) {
   ],
   "Version": "2012-10-17"
 }`
-	// With bypassViaService (or no region to build the ViaService values from)
-	// the data-plane actions are unconditional, but CreateGrant keeps the
-	// GrantIsForAWSResource guard: even a kms-plugin sidecar calling KMS
-	// directly never creates grants itself.
+	// With bypassViaService (or no region to build ViaService values from), the data-plane actions
+	// are unconditional; CreateGrant keeps the GrantIsForAWSResource guard, as even a direct KMS
+	// client never creates grants.
 	wantBypass := `{
   "Statement": [
     {
@@ -493,8 +491,7 @@ func TestAddKarpenterPermissions(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			// Render the policy so the synthesized KMS statements can be
-			// checked in full, including their resources and conditions.
+			// The KMS statements are synthesized in AsJSON, so render before checking them.
 			rendered, err := p.AsJSON()
 			if err != nil {
 				t.Fatalf("failed to render policy: %v", err)
