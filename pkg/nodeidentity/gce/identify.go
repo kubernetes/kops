@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"cloud.google.com/go/compute/metadata"
@@ -132,7 +131,7 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	if i.capiManager != nil && capgRole != "" {
 		providerID := "gce://" + project + "/" + zone + "/" + instanceName
 
-		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID)
+		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID, gce.SafeClusterName(i.clusterName))
 		if err != nil {
 			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
 		}
@@ -141,38 +140,12 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 
 	var igName string
 	if capiMachine == nil {
-		// The metadata itself is potentially mutable from the instance
-		// We instead look at the MIG configuration
-		createdBy := getMetadataValue(instance.Metadata, "created-by")
-		if createdBy == "" {
-			return nil, fmt.Errorf("cannot find owner for instance %s", instance.Name)
-		}
-
-		// We need to double-check the MIG configuration, in case created-by was changed
-		migName := lastComponent(createdBy)
-
-		mig, err := i.getMIG(zone, migName)
+		instanceTemplate, err := gce.GetInstanceTemplateForMIGMember(ctx, i.computeService, i.project, instance)
 		if err != nil {
 			return nil, err
 		}
 
-		// We now double check that the instance is indeed managed by the MIG
-		// this can't be spoofed without GCE API access
-		migMember, err := i.getManagedInstance(ctx, mig, instance.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		if migMember.Version == nil {
-			return nil, fmt.Errorf("instance %s did not have Version set", instance.Name)
-		}
-
-		instanceTemplate, err := i.getInstanceTemplate(lastComponent(migMember.Version.InstanceTemplate))
-		if err != nil {
-			return nil, err
-		}
-
-		igName = getMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
+		igName = gce.GetMetadataValue(instanceTemplate.Properties.Metadata, MetadataKeyInstanceGroupName)
 		if igName == "" {
 			return nil, fmt.Errorf("ig name not set on instance template %s", instanceTemplate.Name)
 		}
@@ -218,76 +191,4 @@ func (i *nodeIdentifier) getInstance(zone string, instanceName string) (*compute
 	}
 
 	return instance, nil
-}
-
-// getInstanceTemplate queries GCE for the IG Template with the specified name, returning an error if not found
-func (i *nodeIdentifier) getInstanceTemplate(name string) (*compute.InstanceTemplate, error) {
-	t, err := i.computeService.InstanceTemplates.Get(i.project, name).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE instance group template %q: %v", name, err)
-	}
-
-	return t, nil
-}
-
-// getMIG queries GCE for the MIG with the specified name, returning an error if not found
-func (i *nodeIdentifier) getMIG(zone string, migName string) (*compute.InstanceGroupManager, error) {
-	mig, err := i.computeService.InstanceGroupManagers.Get(i.project, zone, migName).Do()
-	if err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group %q: %v", migName, err)
-	}
-
-	return mig, nil
-}
-
-// getManagedInstance queries GCE for the instance from the MIG
-func (i *nodeIdentifier) getManagedInstance(ctx context.Context, mig *compute.InstanceGroupManager, instanceID uint64) (*compute.ManagedInstance, error) {
-	var matches []*compute.ManagedInstance
-
-	filter := "id=" + strconv.FormatUint(instanceID, 10)
-	zone := lastComponent(mig.Zone)
-	if err := i.computeService.InstanceGroupManagers.ListManagedInstances(i.project, zone, mig.Name).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
-		// Post-filter... filters aren't implemented (b/27605549)
-		for _, instance := range page.ManagedInstances {
-			if instance.Id != instanceID {
-				continue
-			}
-			matches = append(matches, instance)
-		}
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", mig.Name, err)
-	}
-
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("instance %v not managed by mig %s", instanceID, mig.Name)
-	}
-	if len(matches) > 1 {
-		// Should be impossible - shows that filters / post-filters are not working
-		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instanceID, mig.Name)
-	}
-
-	return matches[0], nil
-}
-
-// lastComponent returns the last component of a URL, i.e. anything after the last slash
-// If there is no slash, returns the whole string
-func lastComponent(s string) string {
-	lastSlash := strings.LastIndex(s, "/")
-	if lastSlash != -1 {
-		s = s[lastSlash+1:]
-	}
-	return s
-}
-
-func getMetadataValue(metadata *compute.Metadata, key string) string {
-	value := ""
-	if metadata != nil {
-		for _, item := range metadata.Items {
-			if item.Key == key && item.Value != nil {
-				value = *item.Value
-			}
-		}
-	}
-	return value
 }
