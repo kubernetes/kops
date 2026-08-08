@@ -307,6 +307,32 @@ func TestEmptyPolicy(t *testing.T) {
 	}
 }
 
+func TestAsJSONIsIdempotent(t *testing.T) {
+	p := NewPolicy("c.example.com", "aws", "us-east-1")
+	p.unconditionalAction.Insert("ec2:DescribeInstances")
+	p.clusterTaggedAction.Insert("ec2:TerminateInstances")
+	p.clusterTaggedCreateAction.Insert("ec2:CreateSecurityGroup")
+	p.kmsDataPlaneAction.Insert("kms:Decrypt")
+	p.AddEC2CreateAction([]string{"CreateVolume"}, []string{"volume"})
+
+	statementCount := len(p.Statement)
+
+	first, err := p.AsJSON()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	second, err := p.AsJSON()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if first != second {
+		t.Errorf("AsJSON is not idempotent:\nfirst:\n%s\nsecond:\n%s", first, second)
+	}
+	if len(p.Statement) != statementCount {
+		t.Errorf("AsJSON mutated p.Statement: had %d statements, now %d", statementCount, len(p.Statement))
+	}
+}
+
 func TestAddKMSIAMPolicies(t *testing.T) {
 	dataActions := []string{
 		"kms:Decrypt",

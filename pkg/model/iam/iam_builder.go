@@ -111,9 +111,12 @@ func (p *Policy) AddEC2CreateAction(actions, resources []string) {
 // if it has no statements, which AWS does not accept. The IAMRolePolicy task reads an empty
 // document as "no inline policy": it skips creating one and deletes one that already exists.
 func (p *Policy) AsJSON() (string, error) {
+	// Build the rendered statement list locally so that AsJSON does not mutate
+	// the receiver and can safely be called more than once.
+	statements := append([]*Statement(nil), p.Statement...)
 	if len(p.kmsDataPlaneAction) > 0 {
 		services := kmsViaServices(p.region)
-		p.Statement = append(p.Statement, &Statement{
+		statements = append(statements, &Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorset.Of(sets.List(p.kmsDataPlaneAction)...),
 			Resource: stringorset.String("*"),
@@ -125,14 +128,14 @@ func (p *Policy) AsJSON() (string, error) {
 		})
 	}
 	if len(p.unconditionalAction) > 0 {
-		p.Statement = append(p.Statement, &Statement{
+		statements = append(statements, &Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorset.Of(sets.List(p.unconditionalAction)...),
 			Resource: stringorset.String("*"),
 		})
 	}
 	if len(p.clusterTaggedAction) > 0 {
-		p.Statement = append(p.Statement, &Statement{
+		statements = append(statements, &Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorset.Of(sets.List(p.clusterTaggedAction)...),
 			Resource: stringorset.String("*"),
@@ -144,7 +147,7 @@ func (p *Policy) AsJSON() (string, error) {
 		})
 	}
 	if len(p.clusterTaggedCreateAction) > 0 {
-		p.Statement = append(p.Statement, &Statement{
+		statements = append(statements, &Statement{
 			Effect:   StatementEffectAllow,
 			Action:   stringorset.Of(sets.List(p.clusterTaggedCreateAction)...),
 			Resource: stringorset.String("*"),
@@ -157,18 +160,18 @@ func (p *Policy) AsJSON() (string, error) {
 		// ec2:CreateSecurityGroup needs some special care as it also interacts with vpc, which do not support RequestTag.
 		// We also do not require VPCs to be tagged, so we are not sending any conditions, allowing SGs to be created in any VPC.
 		if p.clusterTaggedCreateAction.Has("ec2:CreateSecurityGroup") {
-			p.Statement = append(p.Statement, &Statement{
+			statements = append(statements, &Statement{
 				Effect:   StatementEffectAllow,
 				Action:   stringorset.Of("ec2:CreateSecurityGroup"),
 				Resource: stringorset.String(fmt.Sprintf("arn:%s:ec2:*:*:vpc/*", p.partition)),
 			})
 		}
 	}
-	if len(p.Statement) == 0 {
+	if len(statements) == 0 {
 		return "", nil
 	}
 
-	j, err := json.MarshalIndent(p, "", "  ")
+	j, err := json.MarshalIndent(&Policy{Statement: statements, Version: p.Version}, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("error marshaling policy to JSON: %v", err)
 	}
