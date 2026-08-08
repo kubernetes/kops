@@ -140,10 +140,25 @@ function kops-upgrade() {
     # Verify no additional changes
     "${KOPS_B}" update cluster
 
-    "${KOPS_B}" validate cluster
+    # Addons are re-applied by the in-cluster channels loop after reconcile returns, so give
+    # them time to settle rather than validating once and racing them.
+    "${KOPS_B}" validate cluster --wait 15m
 
     # Verify kubeconfig-a still works
     kubectl get nodes -owide --kubeconfig="${KUBECONFIG_A}"
+
+    # A cluster that was never rolled still validates, so assert the upgrade actually landed.
+    # A "ci" version was rewritten above into a release-dev URL, so compare on its last segment,
+    # which is the version kubelet reports. Plain versions are unaffected by the strip.
+    local expected_kubelet stale_nodes
+    expected_kubelet="${K8S_VERSION_B##*/}"
+    stale_nodes=$(kubectl get nodes --kubeconfig="${KUBECONFIG_A}" \
+        -o jsonpath="{range .items[?(@.status.nodeInfo.kubeletVersion!='${expected_kubelet}')]}{.metadata.name}{' '}{.status.nodeInfo.kubeletVersion}{'\n'}{end}")
+    if [[ -n "${stale_nodes}" ]]; then
+        >&2 echo "upgrade to ${expected_kubelet} did not reach all nodes:"
+        >&2 echo "${stale_nodes}"
+        exit 1
+    fi
 
     cp "${KOPS_B}" "${WORKSPACE}/kops"
     export PATH="${WORKSPACE}:${PATH}"
