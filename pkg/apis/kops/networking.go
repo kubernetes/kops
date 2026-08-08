@@ -407,6 +407,19 @@ type CiliumNetworkingSpec struct {
 	// EnableHostFirewall enables the host firewall in the Cilium agent.
 	// Default: false
 	EnableHostFirewall *bool `json:"enableHostFirewall,omitempty"`
+	// EnableBandwidthManager enables Cilium's eBPF-based Bandwidth Manager, which
+	// honors the kubernetes.io/egress-bandwidth Pod annotation and provides EDT-based
+	// rate-limiting on egress traffic.
+	// See https://docs.cilium.io/en/stable/network/kubernetes/bandwidth-manager/
+	// Default: false
+	EnableBandwidthManager *bool `json:"enableBandwidthManager,omitempty"`
+	// EnableBBR enables BBR (Bottleneck Bandwidth and Round-trip propagation time)
+	// as the TCP congestion control algorithm for pod traffic. Requires
+	// EnableBandwidthManager and a Linux kernel >= 5.18 on nodes.
+	// kOps will also configure the node sysctls (net.core.default_qdisc=fq,
+	// net.ipv4.tcp_congestion_control=bbr).
+	// Default: false
+	EnableBBR *bool `json:"enableBBR,omitempty"`
 	// EnablePrometheusMetrics enables the Cilium "/metrics" endpoint for both the agent and the operator.
 	EnablePrometheusMetrics bool `json:"enablePrometheusMetrics,omitempty"`
 	// EnableEncryption enables Cilium Encryption.
