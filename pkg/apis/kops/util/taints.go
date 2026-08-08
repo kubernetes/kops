@@ -37,6 +37,11 @@ func ParseTaint(st string) (map[string]string, error) {
 		key = parts[0]
 	case 2:
 		effect = parts[1]
+		switch effect {
+		case "NoSchedule", "PreferNoSchedule", "NoExecute":
+		default:
+			return taint, fmt.Errorf("invalid taint effect: %v", effect)
+		}
 
 		partsKV := strings.Split(parts[0], "=")
 		if len(partsKV) > 2 {
