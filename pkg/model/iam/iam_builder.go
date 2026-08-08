@@ -58,6 +58,7 @@ type Policy struct {
 	clusterTaggedAction       sets.Set[string]
 	clusterTaggedCreateAction sets.Set[string]
 	kmsDataPlaneAction        sets.Set[string]
+	kmsAWSResourceGrant       bool
 	Statement                 []*Statement
 	partition                 string
 	Version                   string
@@ -114,6 +115,21 @@ func (p *Policy) AsJSON() (string, error) {
 	// Build the rendered statement list locally so that AsJSON does not mutate
 	// the receiver and can safely be called more than once.
 	statements := append([]*Statement(nil), p.Statement...)
+	if p.kmsAWSResourceGrant {
+		// kms:GrantIsForAWSResource only matches when an AWS service integrated
+		// with KMS creates the grant on the principal's behalf, so this cannot
+		// be used to hand out grants on arbitrary keys directly.
+		statements = append(statements, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorset.String("kms:CreateGrant"),
+			Resource: stringorset.String("*"),
+			Condition: Condition{
+				"Bool": map[string]string{
+					"kms:GrantIsForAWSResource": "true",
+				},
+			},
+		})
+	}
 	if len(p.kmsDataPlaneAction) > 0 {
 		services := kmsViaServices(p.region)
 		statements = append(statements, &Statement{
@@ -1454,19 +1470,22 @@ func AddKubeRouterPermissions(b *PolicyBuilder, p *Policy) {
 	)
 }
 
+// addKMSIAMPolicies grants the KMS permissions needed to use customer managed
+// keys for EBS volume encryption (etcd volumes, EBS CSI volumes, Karpenter
+// root volumes) and SSE-KMS on the state store. In all of these flows an AWS
+// service makes the KMS calls on the role's behalf: EC2 creates the grant that
+// authorizes it to use the volume's key and performs the data-plane operations,
+// so kms:CreateGrant is guarded with kms:GrantIsForAWSResource and everything
+// else with kms:ViaService.
 func addKMSIAMPolicies(p *Policy, bypassViaService bool) {
-	// kms:CreateGrant is called directly by the EBS CSI driver pod (no AWS
-	// service makes the call on its behalf), so kms:ViaService is not set and
-	// we cannot use it as a guard here. kms:DescribeKey is also typically
-	// called directly. Phase 3 of the KMS restriction plan will scope
-	// CreateGrant with kms:GrantIsForAWSResource.
-	p.unconditionalAction.Insert(
-		"kms:CreateGrant",
-		"kms:DescribeKey",
-	)
+	// Grants are only ever created by EC2 for EBS encryption; even a direct
+	// KMS client like a kms-plugin sidecar (bypassViaService) never calls
+	// CreateGrant itself.
+	p.kmsAWSResourceGrant = true
 
 	dataActions := []string{
 		"kms:Decrypt",
+		"kms:DescribeKey",
 		"kms:Encrypt",
 		"kms:GenerateDataKey*",
 		"kms:ReEncrypt*",
