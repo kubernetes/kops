@@ -47,6 +47,9 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 	isControlPlane := false
 	isAPIServer := false
 	isNode := false
+	isEtcd := false
+	isScheduler := false
+	isKubeControllerManager := false
 	switch {
 	case instanceGroup.Spec.Role.HasControlPlane():
 		isControlPlane = true
@@ -56,13 +59,19 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		isNode = true
 	case instanceGroup.Spec.Role.HasBastion():
 		// no labels to add
+	case instanceGroup.Spec.Role.HasEtcd():
+		isEtcd = true
+	case instanceGroup.Spec.Role.HasScheduler():
+		isScheduler = true
+	case instanceGroup.Spec.Role.HasKubeControllerManager():
+		isKubeControllerManager = true
 	default:
 		return nil, fmt.Errorf("unhandled instanceGroup role %q", instanceGroup.Spec.Role)
 	}
 
 	// Merge KubeletConfig for NodeLabels
 	c := &api.KubeletConfigSpec{}
-	if isControlPlane {
+	if instanceGroup.Spec.Role.IsControlPlaneType() {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.ControlPlaneKubelet)
 	} else {
 		reflectutils.JSONMergeStruct(c, cluster.Spec.Kubelet)
@@ -82,8 +91,9 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 		// We keep the featureflag as a placeholder to change the logic;
 		// when we drop the featureflag we should just always include the label, even for
 		// full control-plane nodes.
-		if isAPIServer || featureflag.APIServerNodes.Enabled() {
+		if isAPIServer && featureflag.APIServerNodes.Enabled() {
 			nodeLabels[RoleLabelAPIServer16] = ""
+			nodeLabels["kops.k8s.io/kops-controller-pki"] = ""
 		}
 	}
 
@@ -92,6 +102,27 @@ func BuildNodeLabels(cluster *api.Cluster, instanceGroup *api.InstanceGroup) (ma
 			nodeLabels = make(map[string]string)
 		}
 		nodeLabels[RoleLabelNode16] = ""
+	}
+
+	if isEtcd {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelEtcd] = ""
+	}
+
+	if isScheduler {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelScheduler] = ""
+	}
+
+	if isKubeControllerManager {
+		if nodeLabels == nil {
+			nodeLabels = make(map[string]string)
+		}
+		nodeLabels[RoleLabelKubeControllerManager] = ""
 	}
 
 	if isControlPlane {

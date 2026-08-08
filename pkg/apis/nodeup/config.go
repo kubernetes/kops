@@ -391,7 +391,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		}
 	}
 
-	if instanceGroup.RunsAPIServer() {
+	if instanceGroup.RunsAPIServer() || instanceGroup.RunsEtcd() || instanceGroup.RunsKubeControllerManager() || instanceGroup.RunsScheduler() {
 		config.ConfigStore = &kops.ConfigStoreSpec{
 			Keypairs: cluster.Spec.ConfigStore.Keypairs,
 			Secrets:  cluster.Spec.ConfigStore.Secrets,
@@ -402,7 +402,7 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.Networking.EgressProxy = cluster.Spec.Networking.EgressProxy
 	}
 
-	if instanceGroup.IsControlPlane() {
+	if instanceGroup.RunsAPIServer() {
 		config.DNSZone = cluster.Spec.DNSZone
 	}
 
@@ -410,6 +410,20 @@ func NewConfig(cluster *kops.Cluster, instanceGroup *kops.InstanceGroup) (*Confi
 		config.ControlPlaneConfig = &ControlPlaneConfig{
 			KubeControllerManager: *cluster.Spec.KubeControllerManager,
 			KubeScheduler:         *cluster.Spec.KubeScheduler,
+		}
+	} else if instanceGroup.IsKubeControllerManagerOnly() {
+		config.ControlPlaneConfig = &ControlPlaneConfig{
+			KubeControllerManager: *cluster.Spec.KubeControllerManager,
+		}
+		config.APIServerConfig = &APIServerConfig{
+			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
+		}
+	} else if instanceGroup.IsSchedulerOnly() {
+		config.ControlPlaneConfig = &ControlPlaneConfig{
+			KubeScheduler: *cluster.Spec.KubeScheduler,
+		}
+		config.APIServerConfig = &APIServerConfig{
+			ClusterDNSDomain: cluster.Spec.ClusterDNSDomain,
 		}
 	}
 

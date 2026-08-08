@@ -16,16 +16,24 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: control-plane-us-test1-a
+    - instanceGroup: etcd-us-test1-a
       name: a
+    - instanceGroup: etcd-us-test1-b
+      name: b
+    - instanceGroup: etcd-us-test1-c
+      name: c
     manager:
       backupRetentionDays: 90
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: control-plane-us-test1-a
+    - instanceGroup: etcd-us-test1-a
       name: a
+    - instanceGroup: etcd-us-test1-b
+      name: b
+    - instanceGroup: etcd-us-test1-c
+      name: c
     manager:
       backupRetentionDays: 90
     memoryRequest: 100Mi
@@ -129,19 +137,129 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: experimental.example.com
-  name: control-plane-us-test1-a
+  name: etcd-us-test1-a
 spec:
   image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
-  machineType: e2-medium
+  machineType: e2-standard-2
   maxSize: 1
   minSize: 1
   nodeLabels:
-    kops.k8s.io/instancegroup: control-plane-us-test1-a
-  role: Master
+    kops.k8s.io/instancegroup: etcd-us-test1-a
+  role: Etcd
   subnets:
   - us-test1
   zones:
   - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: etcd-us-test1-b
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: etcd-us-test1-b
+  role: Etcd
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: etcd-us-test1-c
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: etcd-us-test1-c
+  role: Etcd
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: kcm-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: kcm-us-test1-a
+  role: KubeControllerManager
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: kcm-us-test1-b
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: kcm-us-test1-b
+  role: KubeControllerManager
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: kcm-us-test1-c
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 0
+  minSize: 0
+  nodeLabels:
+    kops.k8s.io/instancegroup: kcm-us-test1-c
+  role: KubeControllerManager
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-c
 
 ---
 
@@ -204,6 +322,72 @@ spec:
   nodeLabels:
     kops.k8s.io/instancegroup: nodes-us-test1-c
   role: Node
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: scheduler-us-test1-a
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: scheduler-us-test1-a
+  role: Scheduler
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: scheduler-us-test1-b
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: scheduler-us-test1-b
+  role: Scheduler
+  subnets:
+  - us-test1
+  zones:
+  - us-test1-b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: experimental.example.com
+  name: scheduler-us-test1-c
+spec:
+  image: ubuntu-os-cloud/ubuntu-2404-noble-amd64-v20260615
+  machineType: e2-standard-2
+  maxSize: 0
+  minSize: 0
+  nodeLabels:
+    kops.k8s.io/instancegroup: scheduler-us-test1-c
+  role: Scheduler
   subnets:
   - us-test1
   zones:
