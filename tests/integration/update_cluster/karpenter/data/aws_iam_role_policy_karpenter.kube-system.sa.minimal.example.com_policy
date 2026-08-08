@@ -137,8 +137,19 @@
       "Resource": "arn:aws-test:iam::*:role/nodes.minimal.example.com"
     },
     {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
       "Action": [
         "kms:Decrypt",
+        "kms:DescribeKey",
         "kms:Encrypt",
         "kms:GenerateDataKey*",
         "kms:ReEncrypt*"
@@ -169,8 +180,6 @@
         "ec2:DescribeSubnets",
         "iam:GetInstanceProfile",
         "iam:ListInstanceProfiles",
-        "kms:CreateGrant",
-        "kms:DescribeKey",
         "pricing:GetProducts",
         "ssm:GetParameter"
       ],

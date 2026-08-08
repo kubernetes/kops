@@ -19,6 +19,7 @@ package iam
 import (
 	"encoding/json"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -334,48 +335,94 @@ func TestAsJSONIsIdempotent(t *testing.T) {
 }
 
 func TestAddKMSIAMPolicies(t *testing.T) {
-	dataActions := []string{
-		"kms:Decrypt",
-		"kms:Encrypt",
-		"kms:GenerateDataKey*",
-		"kms:ReEncrypt*",
-	}
-	alwaysUnconditional := []string{"kms:CreateGrant", "kms:DescribeKey"}
+	// The full rendering when kms:ViaService applies: grants only via an AWS service, data-plane
+	// actions only through EC2 or S3.
+	wantConditional := `{
+  "Statement": [
+    {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-east-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ],
+  "Version": "2012-10-17"
+}`
+	// With bypassViaService (or no region to build ViaService values from), the data-plane actions
+	// are unconditional; CreateGrant keeps the GrantIsForAWSResource guard, as even a direct KMS
+	// client never creates grants.
+	wantBypass := `{
+  "Statement": [
+    {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ],
+  "Version": "2012-10-17"
+}`
 
 	tests := []struct {
 		name             string
 		region           string
 		bypassViaService bool
-		wantConditional  bool
+		want             string
 	}{
-		{name: "region set, bypass off", region: "us-east-1", bypassViaService: false, wantConditional: true},
-		{name: "region set, bypass on", region: "us-east-1", bypassViaService: true, wantConditional: false},
-		{name: "region unset, bypass off", region: "", bypassViaService: false, wantConditional: false},
-		{name: "region unset, bypass on", region: "", bypassViaService: true, wantConditional: false},
+		{name: "region set, bypass off", region: "us-east-1", bypassViaService: false, want: wantConditional},
+		{name: "region set, bypass on", region: "us-east-1", bypassViaService: true, want: wantBypass},
+		{name: "region unset, bypass off", region: "", bypassViaService: false, want: wantBypass},
+		{name: "region unset, bypass on", region: "", bypassViaService: true, want: wantBypass},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			p := NewPolicy("c.example.com", "aws", tc.region)
 			addKMSIAMPolicies(p, tc.bypassViaService)
-			for _, action := range dataActions {
-				inConditional := p.kmsDataPlaneAction.Has(action)
-				inUnconditional := p.unconditionalAction.Has(action)
-				wantInConditional := tc.wantConditional
-				wantInUnconditional := !tc.wantConditional
-				if inConditional != wantInConditional || inUnconditional != wantInUnconditional {
-					t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) action %q: conditional=%v unconditional=%v, want conditional=%v unconditional=%v",
-						tc.region, tc.bypassViaService, action, inConditional, inUnconditional, wantInConditional, wantInUnconditional)
-				}
+			got, err := p.AsJSON()
+			if err != nil {
+				t.Fatalf("failed to render policy: %v", err)
 			}
-			// CreateGrant and DescribeKey are always unconditional regardless of
-			// region or bypass, since the EBS CSI driver calls them directly.
-			for _, action := range alwaysUnconditional {
-				if !p.unconditionalAction.Has(action) {
-					t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) missing unconditional %q", tc.region, tc.bypassViaService, action)
-				}
-				if p.kmsDataPlaneAction.Has(action) {
-					t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) %q unexpectedly in kmsDataPlaneAction", tc.region, tc.bypassViaService, action)
-				}
+			if got != tc.want {
+				t.Errorf("addKMSIAMPolicies(region=%q, bypass=%v) rendered:\n%s\nwant:\n%s",
+					tc.region, tc.bypassViaService, got, tc.want)
 			}
 		})
 	}
@@ -444,8 +491,50 @@ func TestAddKarpenterPermissions(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if hasKMS := p.unconditionalAction.Has("kms:CreateGrant"); hasKMS != tc.wantKMS {
-				t.Errorf("expected KMS permissions present=%t, got %t", tc.wantKMS, hasKMS)
+			// The KMS statements are synthesized in AsJSON, so render before checking them.
+			rendered, err := p.AsJSON()
+			if err != nil {
+				t.Fatalf("failed to render policy: %v", err)
+			}
+			wantKMSStatements := []string{
+				`    {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    }`,
+				`    {
+      "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:GenerateDataKey*",
+        "kms:ReEncrypt*"
+      ],
+      "Condition": {
+        "StringLike": {
+          "kms:ViaService": [
+            "ec2.us-east-1.amazonaws.com",
+            "s3.*.amazonaws.com"
+          ]
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    }`,
+			}
+			if tc.wantKMS {
+				for _, want := range wantKMSStatements {
+					if !strings.Contains(rendered, want) {
+						t.Errorf("rendered policy missing KMS statement:\n%s\ngot:\n%s", want, rendered)
+					}
+				}
+			} else if strings.Contains(rendered, "kms:") {
+				t.Errorf("rendered policy unexpectedly contains KMS permissions:\n%s", rendered)
 			}
 
 			var passRole *Statement

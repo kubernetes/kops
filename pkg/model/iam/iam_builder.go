@@ -58,6 +58,7 @@ type Policy struct {
 	clusterTaggedAction       sets.Set[string]
 	clusterTaggedCreateAction sets.Set[string]
 	kmsDataPlaneAction        sets.Set[string]
+	kmsAWSResourceGrant       bool
 	Statement                 []*Statement
 	partition                 string
 	Version                   string
@@ -114,6 +115,20 @@ func (p *Policy) AsJSON() (string, error) {
 	// Build the rendered statement list locally so that AsJSON does not mutate
 	// the receiver and can safely be called more than once.
 	statements := append([]*Statement(nil), p.Statement...)
+	if p.kmsAWSResourceGrant {
+		// kms:GrantIsForAWSResource only matches grants created by an AWS service on the principal's
+		// behalf, so this cannot be used to delegate access to arbitrary keys directly.
+		statements = append(statements, &Statement{
+			Effect:   StatementEffectAllow,
+			Action:   stringorset.String("kms:CreateGrant"),
+			Resource: stringorset.String("*"),
+			Condition: Condition{
+				"Bool": map[string]string{
+					"kms:GrantIsForAWSResource": "true",
+				},
+			},
+		})
+	}
 	if len(p.kmsDataPlaneAction) > 0 {
 		services := kmsViaServices(p.region)
 		statements = append(statements, &Statement{
@@ -1454,35 +1469,26 @@ func AddKubeRouterPermissions(b *PolicyBuilder, p *Policy) {
 	)
 }
 
+// addKMSIAMPolicies grants the KMS permissions for customer managed keys used for EBS encryption
+// (etcd, EBS CSI, and Karpenter root volumes) and state store SSE-KMS. AWS services make the KMS
+// calls on the role's behalf, so kms:CreateGrant requires kms:GrantIsForAWSResource and all other
+// actions require kms:ViaService.
 func addKMSIAMPolicies(p *Policy, bypassViaService bool) {
-	// kms:CreateGrant is called directly by the EBS CSI driver pod (no AWS
-	// service makes the call on its behalf), so kms:ViaService is not set and
-	// we cannot use it as a guard here. kms:DescribeKey is also typically
-	// called directly. Phase 3 of the KMS restriction plan will scope
-	// CreateGrant with kms:GrantIsForAWSResource.
-	p.unconditionalAction.Insert(
-		"kms:CreateGrant",
-		"kms:DescribeKey",
-	)
+	// Even a kms-plugin calling KMS directly (bypassViaService) never creates grants; only EC2 does.
+	p.kmsAWSResourceGrant = true
 
 	dataActions := []string{
 		"kms:Decrypt",
+		"kms:DescribeKey",
 		"kms:Encrypt",
 		"kms:GenerateDataKey*",
 		"kms:ReEncrypt*",
 	}
 
-	// bypassViaService is set by callers whose role may need to talk to KMS
-	// without an AWS service in the call chain -- currently only the API server
-	// role when EncryptionConfig is enabled, since a user-supplied kms-plugin
-	// sidecar wired to the instance role calls KMS directly from kube-apiserver.
-	// In that mode kms:ViaService never matches and the conditional grant
-	// would deny every encrypt/decrypt of etcd data.
-	//
-	// An empty region also falls back to unconditional grants to preserve
-	// existing behavior for callers (e.g. unit tests) that have not populated
-	// PolicyBuilder.Region; kmsViaServices needs the region to build the
-	// service endpoint strings.
+	// bypassViaService is set for control-plane roles when EncryptionConfig is enabled: a
+	// user-supplied kms-plugin then calls KMS directly from kube-apiserver, where kms:ViaService
+	// never matches. An empty region also falls back to unconditional actions, as kmsViaServices
+	// needs the region to build the service endpoint strings.
 	if bypassViaService || p.region == "" {
 		p.unconditionalAction.Insert(dataActions...)
 		return

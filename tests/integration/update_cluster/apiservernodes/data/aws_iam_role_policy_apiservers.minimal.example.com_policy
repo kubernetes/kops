@@ -20,8 +20,19 @@
       ]
     },
     {
+      "Action": "kms:CreateGrant",
+      "Condition": {
+        "Bool": {
+          "kms:GrantIsForAWSResource": "true"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
       "Action": [
         "kms:Decrypt",
+        "kms:DescribeKey",
         "kms:Encrypt",
         "kms:GenerateDataKey*",
         "kms:ReEncrypt*"
@@ -34,14 +45,6 @@
           ]
         }
       },
-      "Effect": "Allow",
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "kms:CreateGrant",
-        "kms:DescribeKey"
-      ],
       "Effect": "Allow",
       "Resource": "*"
     }
