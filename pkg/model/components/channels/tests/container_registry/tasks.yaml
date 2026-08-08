@@ -28,7 +28,7 @@ Contents: |
         value: /tmp
       - name: AWS_REGION
         value: us-test-1
-      image: my-mirror.example.com/kops-channels:1.36.1
+      image: my-mirror.example.com/kops-channels:1.36.2
       name: kops-channels
       readinessProbe:
         failureThreshold: 2
