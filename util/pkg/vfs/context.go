@@ -297,6 +297,17 @@ func (c *VFSContext) readHTTPLocation(httpURL string, httpHeaders map[string]str
 	}
 }
 
+// nextBackoffDuration grows duration by backoff.Factor, clamped to backoff.Cap when one is set.
+// An uncapped backoff with a large Steps count grows without bound, which strands a caller for
+// far longer than the condition it is waiting on takes to become true.
+func nextBackoffDuration(duration time.Duration, backoff wait.Backoff) time.Duration {
+	next := time.Duration(float64(duration) * backoff.Factor)
+	if backoff.Cap > 0 && next > backoff.Cap {
+		return backoff.Cap
+	}
+	return next
+}
+
 // RetryWithBackoff runs until a condition function returns true, or until Steps attempts have been taken
 // As compared to wait.ExponentialBackoff, this function returns the results from the function on the final attempt
 func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (bool, error) {
@@ -309,7 +320,7 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 				adjusted = wait.Jitter(duration, backoff.Jitter)
 			}
 			time.Sleep(adjusted)
-			duration = time.Duration(float64(duration) * backoff.Factor)
+			duration = nextBackoffDuration(duration, backoff)
 		}
 
 		i++

@@ -101,10 +101,15 @@ func (b *Client) Query(ctx context.Context, req any, resp any) error {
 	bootstrapURL := b.BaseURL
 	bootstrapURL.Path = path.Join(bootstrapURL.Path, "/bootstrap")
 
+	// Cap the interval so a control plane that takes a long time to become reachable does not
+	// push the next attempt tens of minutes out. Without a cap, doubling from 1s reaches a 17
+	// minute wait by attempt 11, so a node that has been failing for 17 minutes then sits idle
+	// for another 17 even once kops-controller is serving.
 	backoff := wait.Backoff{
 		Duration: 1 * time.Second,
 		Factor:   2,
 		Jitter:   0.1,
+		Cap:      30 * time.Second,
 		Steps:    100,
 	}
 
