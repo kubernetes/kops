@@ -12,7 +12,7 @@ spec:
       k8s-addon: kops-controller.addons.k8s.io
   - id: k8s-1.12
     manifest: coredns.addons.k8s.io/k8s-1.12.yaml
-    manifestHash: 825388aebb03bdc2c896746bb75213c7aa7ad197623742b63bc7ad5b15f5a10f
+    manifestHash: d1d6eed5f1f104fc9c5c01a7e47e304d1e489f35f79b8c5935ca2c38e006aba5
     name: coredns.addons.k8s.io
     selector:
       k8s-addon: coredns.addons.k8s.io
