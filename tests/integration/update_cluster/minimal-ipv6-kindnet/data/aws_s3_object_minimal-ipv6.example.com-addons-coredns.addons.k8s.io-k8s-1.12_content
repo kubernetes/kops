@@ -250,10 +250,11 @@ metadata:
   name: kube-dns
   namespace: kube-system
 spec:
-  maxUnavailable: 50%
+  maxUnavailable: 33%
   selector:
     matchLabels:
       k8s-app: kube-dns
+  unhealthyPodEvictionPolicy: AlwaysAllow
 
 ---
 
