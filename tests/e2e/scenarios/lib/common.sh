@@ -133,12 +133,6 @@ function kops-up() {
         K8S_VERSION="$(curl -fs -L https://dl.k8s.io/release/stable.txt)"
     fi
 
-    # TODO: Switch scripts to use KOPS_CONTROL_PLANE_COUNT
-    if [[ -n "${KOPS_CONTROL_PLANE_SIZE:-}" ]]; then
-      echo "Recognized (deprecated) KOPS_CONTROL_PLANE_SIZE=${KOPS_CONTROL_PLANE_SIZE}, please set KOPS_CONTROL_PLANE_COUNT instead"
-      KOPS_CONTROL_PLANE_COUNT=${KOPS_CONTROL_PLANE_SIZE}
-    fi
-
     if [[ -z "${ENV_FILE-}" ]]; then
         ENV_FILE="${WORKSPACE}/env"
     fi
