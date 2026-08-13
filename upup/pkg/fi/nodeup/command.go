@@ -39,6 +39,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"go.uber.org/multierr"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/nodeup/pkg/model"
 	"k8s.io/kops/nodeup/pkg/model/networking"
@@ -664,6 +665,21 @@ func getRegion(ctx context.Context, bootConfig *nodeup.BootConfig) (string, erro
 	return "", nil
 }
 
+// bootstrapTimeout is how long we keep asking kops-controller for our node configuration
+// before giving up. It has to cover a control plane that is still coming up.
+const bootstrapTimeout = 45 * time.Minute
+
+// perServerBootstrapBackoff is how long a single server is tried before we move on to the
+// next one. Roughly a minute, so that a list of servers is traversed promptly while still
+// riding out a brief blip on a server that is otherwise healthy.
+var perServerBootstrapBackoff = wait.Backoff{
+	Duration: 1 * time.Second,
+	Factor:   2,
+	Jitter:   0.1,
+	Cap:      15 * time.Second,
+	Steps:    8,
+}
+
 // getNodeConfigFromServers queries kops-controllers for our node's configuration.
 func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig, region string) (*nodeup.BootstrapResponse, error) {
 	var authenticator bootstrap.Authenticator
@@ -749,33 +765,49 @@ func getNodeConfigFromServers(ctx context.Context, bootConfig *nodeup.BootConfig
 	client := kopscontrollerclient.NewWithTLSServerName(authenticator, []byte(bootConfig.ConfigServer.CACertificates), url.URL{}, bootConfig.ConfigServer.TLSServerName)
 	defer client.Close()
 
-	var merr error
-	for _, server := range bootConfig.ConfigServer.Servers {
-		u, err := url.Parse(server)
-		if err != nil {
-			merr = multierr.Append(merr, fmt.Errorf("unable to parse configuration server url %q: %w", server, err))
-			continue
-		}
-		client.BaseURL = *u
+	// Any one of these servers may be permanently unreachable from this node -- an IPv6-only
+	// cluster lists the load balancer's IPv4 address alongside its IPv6 one, and only the
+	// latter is routable from the nodes. So give each server a short turn and keep cycling
+	// through the list, rather than spending the whole budget on whichever happens to sort first.
+	client.Backoff = perServerBootstrapBackoff
 
-		request := nodeup.BootstrapRequest{
-			APIVersion:        nodeup.BootstrapAPIVersion,
-			IncludeNodeConfig: true,
+	deadline := time.Now().Add(bootstrapTimeout)
+	for {
+		var merr error
+		for _, server := range bootConfig.ConfigServer.Servers {
+			u, err := url.Parse(server)
+			if err != nil {
+				merr = multierr.Append(merr, fmt.Errorf("unable to parse configuration server url %q: %w", server, err))
+				continue
+			}
+			client.BaseURL = *u
+
+			request := nodeup.BootstrapRequest{
+				APIVersion:        nodeup.BootstrapAPIVersion,
+				IncludeNodeConfig: true,
+			}
+
+			if challengeListener != nil {
+				request.Challenge = challengeListener.CreateChallenge()
+			}
+
+			var resp nodeup.BootstrapResponse
+			err = client.Query(ctx, &request, &resp)
+			if err != nil {
+				merr = multierr.Append(merr, err)
+				continue
+			}
+			return &resp, nil
 		}
 
-		if challengeListener != nil {
-			request.Challenge = challengeListener.CreateChallenge()
+		if ctx.Err() != nil {
+			return nil, multierr.Append(merr, ctx.Err())
 		}
-
-		var resp nodeup.BootstrapResponse
-		err = client.Query(ctx, &request, &resp)
-		if err != nil {
-			merr = multierr.Append(merr, err)
-			continue
+		if !time.Now().Before(deadline) {
+			return nil, merr
 		}
-		return &resp, nil
+		klog.Warningf("no kops-controller server responded, retrying all %d servers: %v", len(bootConfig.ConfigServer.Servers), merr)
 	}
-	return nil, merr
 }
 
 func getAWSConfigurationMode(ctx context.Context, c *model.NodeupModelContext) (string, error) {
