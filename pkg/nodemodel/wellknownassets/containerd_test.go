@@ -33,13 +33,13 @@ func TestContainerdVersionUrl(t *testing.T) {
 	}{
 		{
 			arch:    "",
-			version: "1.4.1",
+			version: "2.3.4",
 			url:     "",
 			err:     fmt.Errorf("unknown arch: \"\""),
 		},
 		{
 			arch:    "arm",
-			version: "1.4.1",
+			version: "2.3.4",
 			url:     "",
 			err:     fmt.Errorf("unknown arch: \"arm\""),
 		},
@@ -57,27 +57,27 @@ func TestContainerdVersionUrl(t *testing.T) {
 		},
 		{
 			arch:    architectures.ArchitectureAmd64,
-			version: "1.1.1",
+			version: "1.7.32",
 			url:     "",
-			err:     fmt.Errorf("unsupported legacy containerd version: \"1.1.1\""),
+			err:     fmt.Errorf("unsupported legacy containerd version: \"1.7.32\""),
 		},
 		{
 			arch:    architectures.ArchitectureArm64,
-			version: "1.1.1",
+			version: "2.0.7",
 			url:     "",
-			err:     fmt.Errorf("unsupported legacy containerd version: \"1.1.1\""),
+			err:     fmt.Errorf("unsupported legacy containerd version: \"2.0.7\""),
 		},
 		{
 			arch:    architectures.ArchitectureAmd64,
-			version: "1.6.5",
-			url:     "https://github.com/containerd/containerd/releases/download/v1.6.5/containerd-1.6.5-linux-amd64.tar.gz",
+			version: "2.3.4",
+			url:     "https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz",
 			err:     nil,
 		},
 		{
 			arch:    architectures.ArchitectureArm64,
-			version: "1.5.5",
-			url:     "",
-			err:     fmt.Errorf("unknown url for containerd version: arm64 - 1.5.5"),
+			version: "2.3.4",
+			url:     "https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-arm64.tar.gz",
+			err:     nil,
 		},
 	}
 	for _, test := range tests {

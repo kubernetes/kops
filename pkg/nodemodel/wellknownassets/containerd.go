@@ -30,11 +30,8 @@ import (
 )
 
 const (
-	// containerd packages URLs for v1.6.x+
 	containerdReleaseUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/containerd-%s-linux-amd64.tar.gz"
 	containerdReleaseUrlArm64 = "https://github.com/containerd/containerd/releases/download/v%s/containerd-%s-linux-arm64.tar.gz"
-	// containerd packages URLs for v1.4.x+
-	containerdBundleUrlAmd64 = "https://github.com/containerd/containerd/releases/download/v%s/cri-containerd-cni-%s-linux-amd64.tar.gz"
 )
 
 func FindContainerdAsset(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, arch architectures.Architecture) (*assets.FileAsset, error) {
@@ -78,28 +75,18 @@ func findContainerdVersionUrl(arch architectures.Architecture, version string) (
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse version string: %q", version)
 	}
-	if sv.LT(semver.MustParse("1.4.0")) {
+	if sv.LT(semver.MustParse("2.1.0")) {
 		return nil, fmt.Errorf("unsupported legacy containerd version: %q", version)
 	}
 
 	var u string
 	switch arch {
 	case architectures.ArchitectureAmd64:
-		if sv.GTE(semver.MustParse("1.6.0")) {
-			u = fmt.Sprintf(containerdReleaseUrlAmd64, version, version)
-		} else {
-			u = fmt.Sprintf(containerdBundleUrlAmd64, version, version)
-		}
+		u = fmt.Sprintf(containerdReleaseUrlAmd64, version, version)
 	case architectures.ArchitectureArm64:
-		if sv.GTE(semver.MustParse("1.6.0")) {
-			u = fmt.Sprintf(containerdReleaseUrlArm64, version, version)
-		}
+		u = fmt.Sprintf(containerdReleaseUrlArm64, version, version)
 	default:
 		return nil, fmt.Errorf("unknown arch: %q", arch)
-	}
-
-	if u == "" {
-		return nil, fmt.Errorf("unknown url for containerd version: %s - %s", arch, version)
 	}
 
 	return url.Parse(u)
