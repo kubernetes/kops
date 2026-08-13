@@ -45,11 +45,12 @@ func (b *ContainerdOptionsBuilder) BuildOptions(o *kops.Cluster) error {
 
 	// Set the default version
 	if fi.ValueOf(containerd.Version) == "" {
-		// Stay on containerd 2.2.x rather than 2.3.x to avoid a sandbox-image
-		// regression in 2.3 (https://github.com/containerd/containerd/issues/13529).
-		containerd.Version = new("2.2.4")
+		// Do not use containerd 2.3.0-2.3.3: a sandbox-image lookup regression breaks
+		// digest-pinned references (https://github.com/containerd/containerd/issues/13529),
+		// which kops emits by default; fixed in 2.3.4.
+		containerd.Version = new("2.3.4")
 		containerd.Runc = &kops.Runc{
-			Version: new("1.3.5"),
+			Version: new("1.4.3"),
 		}
 	}
 	// Set the default log level to INFO

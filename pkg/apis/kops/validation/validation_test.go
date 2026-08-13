@@ -1978,6 +1978,41 @@ func Test_Validate_GVisor(t *testing.T) {
 	}
 }
 
+func Test_Validate_ContainerdVersion(t *testing.T) {
+	grid := []struct {
+		version        string
+		expectedErrors []string
+	}{
+		{
+			version:        "not-a-semver",
+			expectedErrors: []string{"Invalid value::containerd.version"},
+		},
+		{
+			version:        "1.7.32",
+			expectedErrors: []string{"Invalid value::containerd.version"},
+		},
+		{
+			version:        "2.0.7",
+			expectedErrors: []string{"Invalid value::containerd.version"},
+		},
+		{
+			version: "2.1.0",
+		},
+		{
+			version: "2.3.4",
+		},
+	}
+	for _, g := range grid {
+		t.Run(g.version, func(t *testing.T) {
+			containerd := &kops.ContainerdConfig{
+				Version: &g.version,
+			}
+			errs := validateContainerdConfig(&kops.Cluster{}, containerd, field.NewPath("containerd"), true)
+			testErrors(t, g.version, errs, g.expectedErrors)
+		})
+	}
+}
+
 func Test_Validate_NriConfig(t *testing.T) {
 	unsupportedContainerdVersion := "1.6.0"
 	supportedContainerdVersion := "1.7.0"

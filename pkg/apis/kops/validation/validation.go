@@ -1917,9 +1917,9 @@ func validateContainerdConfig(cluster *kops.Cluster, config *kops.ContainerdConf
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
 				fmt.Sprintf("unable to parse version string: %s", err.Error())))
 		}
-		if sv.LT(semver.MustParse("1.3.4")) {
+		if sv.LT(semver.MustParse("2.1.0")) {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("version"), config.Version,
-				"unsupported legacy version"))
+				"unsupported legacy version; containerd 2.1.0 or newer is required"))
 		}
 	}
 

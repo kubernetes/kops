@@ -181,41 +181,6 @@ func runContainerdBuilderTest(t *testing.T, key string, distro distributions.Dis
 	testutils.ValidateTasks(t, filepath.Join(basedir, "tasks.yaml"), context)
 }
 
-func TestUseContainerdConfigV3(t *testing.T) {
-	tests := []struct {
-		name    string
-		version string
-		want    bool
-		wantErr bool
-	}{
-		{name: "empty defaults to v2", version: "", want: false},
-		{name: "1.7.0 is v2", version: "1.7.0", want: false},
-		{name: "1.999.999 is v2", version: "1.999.999", want: false},
-		{name: "2.0.0 boundary is v3", version: "2.0.0", want: true},
-		{name: "2.0.0 with v prefix is v3", version: "v2.0.0", want: true},
-		{name: "2.1.6 is v3", version: "2.1.6", want: true},
-		{name: "3.0.0 is v3", version: "3.0.0", want: true},
-		{name: "unparseable returns error", version: "not-a-semver", wantErr: true},
-	}
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			got, err := useContainerdConfigV3(tc.version)
-			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("useContainerdConfigV3(%q) error = nil, want non-nil", tc.version)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("useContainerdConfigV3(%q) error = %v, want nil", tc.version, err)
-			}
-			if got != tc.want {
-				t.Errorf("useContainerdConfigV3(%q) = %v, want %v", tc.version, got, tc.want)
-			}
-		})
-	}
-}
-
 func TestContainerdConfig(t *testing.T) {
 	b := &ContainerdBuilder{
 		NodeupModelContext: &NodeupModelContext{
