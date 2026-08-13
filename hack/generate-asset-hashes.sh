@@ -165,10 +165,10 @@ generate_k8s_hashes 1.29 15
 generate_k8s_hashes 1.30 14
 generate_k8s_hashes 1.31 14
 generate_k8s_hashes 1.32 13
-generate_k8s_hashes 1.33 12
-generate_k8s_hashes 1.34 8
-generate_k8s_hashes 1.35 5
-generate_k8s_hashes 1.36 1
+generate_k8s_hashes 1.33 13
+generate_k8s_hashes 1.34 10
+generate_k8s_hashes 1.35 7
+generate_k8s_hashes 1.36 3
 
 # Generate runc hashes.
 # The first argument is the major and minor version, the second is the maximum patch version.
