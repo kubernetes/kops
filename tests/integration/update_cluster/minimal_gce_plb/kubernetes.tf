@@ -330,6 +330,10 @@ resource "google_compute_firewall" "node-to-master-minimal-gce-plb-example-com" 
     protocol = "tcp"
   }
   allow {
+    ports    = ["2384"]
+    protocol = "tcp"
+  }
+  allow {
     ports    = ["9100"]
     protocol = "tcp"
   }

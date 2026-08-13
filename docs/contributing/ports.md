@@ -13,6 +13,7 @@ See also pkg/wellknownports/wellknownports.go
 | 2380 | etcd main peering                        |
 | 2381 | etcd events peering                      |
 | 2382 | etcd cilium peering                      |
+| 2384 | etcd events metrics                      |
 | 3988 | kops controller serving port             |
 | 3989 | node local dns health check              |
 | 3990 | Kube API health check                    |

@@ -143,6 +143,7 @@ func (b *FirewallModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				fmt.Sprintf("tcp:%d", wellknownports.KubeSchedulerMetricsPort),
 				fmt.Sprintf("tcp:%d", wellknownports.KubeProxyMetricsPort),
 				fmt.Sprintf("tcp:%d", wellknownports.EtcdMetricsPort),
+				fmt.Sprintf("tcp:%d", wellknownports.EtcdEventsMetricsPort),
 				fmt.Sprintf("tcp:%d", wellknownports.NodeExporterMetricsPort),
 			},
 		}
