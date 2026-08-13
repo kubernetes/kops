@@ -282,6 +282,14 @@ func TestMinimalIPv6(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
+// TestMinimalIPv6DNSNone runs the test on a minimum IPv6 configuration with --dns=none.
+// Nodes in an IPv6-only cluster have no IPv4 connectivity, so the addresses baked into their
+// bootstrap config must be IPv6 only.
+func TestMinimalIPv6DNSNone(t *testing.T) {
+	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-dns-none").
+		runTestTerraformAWS(t)
+}
+
 // TestMinimalIPv6Calico runs the test on a minimum IPv6 configuration with Calico
 func TestMinimalIPv6Calico(t *testing.T) {
 	newIntegrationTest("minimal-ipv6.example.com", "minimal-ipv6-calico").

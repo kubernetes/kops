@@ -291,48 +291,9 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	}
 
 	// Set API server address to an IP from the cluster network CIDR
-	var controlPlaneIPs []string
-	switch cluster.GetCloudProvider() {
-	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
-		// Use a private IP address that belongs to the cluster network CIDR, or any IPv6 addresses (some additional addresses may be FQDNs or public IPs)
-		for _, additionalIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
-			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
-				cidr, err := netip.ParsePrefix(networkCIDR)
-				if err != nil {
-					return nil, nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
-				}
-				ip, err := netip.ParseAddr(additionalIP)
-				if err != nil {
-					continue
-				}
-				if cidr.Contains(ip) || ip.Is6() {
-					controlPlaneIPs = append(controlPlaneIPs, additionalIP)
-				}
-			}
-		}
-
-	case kops.CloudProviderGCE:
-		// Use the IP address of the internal load balancer (forwarding-rule)
-		// Note that on GCE subnets have IP ranges, networks do not
-		for _, apiserverIP := range wellKnownAddresses[wellknownservices.KubeAPIServer] {
-			for _, subnet := range cluster.Spec.Networking.Subnets {
-				cidr, err := netip.ParsePrefix(subnet.CIDR)
-				if err != nil {
-					return nil, nil, fmt.Errorf("failed to parse subnet CIDR %q: %w", subnet.CIDR, err)
-				}
-				ip, err := netip.ParseAddr(apiserverIP)
-				if err != nil {
-					continue
-				}
-				if cidr.Contains(ip) {
-					controlPlaneIPs = append(controlPlaneIPs, apiserverIP)
-				}
-			}
-		}
-
-	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderAzure, kops.CloudProviderMetal:
-		// Use any IP address that is found (including public ones)
-		controlPlaneIPs = append(controlPlaneIPs, wellKnownAddresses[wellknownservices.KubeAPIServer]...)
+	controlPlaneIPs, err := selectControlPlaneIPs(cluster, wellKnownAddresses[wellknownservices.KubeAPIServer])
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// Bake control-plane IPs into /etc/hosts (for api.internal and kops-controller.internal):
@@ -416,6 +377,63 @@ func (n *nodeUpConfigBuilder) BuildConfig(ig *kops.InstanceGroup, wellKnownAddre
 	config.Packages = append(config.Packages, ig.Spec.Packages...)
 
 	return config, bootConfig, nil
+}
+
+// selectControlPlaneIPs narrows the addresses that reach the API server down to the ones a node
+// in this cluster can actually connect to. Some of the addresses may be FQDNs or public IPs.
+func selectControlPlaneIPs(cluster *kops.Cluster, apiserverAddresses []string) ([]string, error) {
+	var controlPlaneIPs []string
+
+	switch cluster.GetCloudProvider() {
+	case kops.CloudProviderAWS, kops.CloudProviderHetzner, kops.CloudProviderOpenstack:
+		// Use a private IP address that belongs to the cluster network CIDR, or any IPv6 addresses (some additional addresses may be FQDNs or public IPs)
+		for _, additionalIP := range apiserverAddresses {
+			for _, networkCIDR := range append(cluster.Spec.Networking.AdditionalNetworkCIDRs, cluster.Spec.Networking.NetworkCIDR) {
+				cidr, err := netip.ParsePrefix(networkCIDR)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse network CIDR %q: %w", networkCIDR, err)
+				}
+				ip, err := netip.ParseAddr(additionalIP)
+				if err != nil {
+					continue
+				}
+				// Nodes in an IPv6-only cluster sit in subnets that have no IPv4 CIDR, so an IPv4
+				// address is unroutable from them even though it is inside the network CIDR. Handing
+				// one out only stalls bootstrap on an address that can never answer.
+				if cluster.Spec.IsIPv6Only() && !ip.Is6() {
+					continue
+				}
+				if cidr.Contains(ip) || ip.Is6() {
+					controlPlaneIPs = append(controlPlaneIPs, additionalIP)
+				}
+			}
+		}
+
+	case kops.CloudProviderGCE:
+		// Use the IP address of the internal load balancer (forwarding-rule)
+		// Note that on GCE subnets have IP ranges, networks do not
+		for _, apiserverIP := range apiserverAddresses {
+			for _, subnet := range cluster.Spec.Networking.Subnets {
+				cidr, err := netip.ParsePrefix(subnet.CIDR)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse subnet CIDR %q: %w", subnet.CIDR, err)
+				}
+				ip, err := netip.ParseAddr(apiserverIP)
+				if err != nil {
+					continue
+				}
+				if cidr.Contains(ip) {
+					controlPlaneIPs = append(controlPlaneIPs, apiserverIP)
+				}
+			}
+		}
+
+	case kops.CloudProviderDO, kops.CloudProviderScaleway, kops.CloudProviderAzure, kops.CloudProviderMetal:
+		// Use any IP address that is found (including public ones)
+		controlPlaneIPs = append(controlPlaneIPs, apiserverAddresses...)
+	}
+
+	return controlPlaneIPs, nil
 }
 
 func buildConfigServerOptions(clusterName string, caCertificates string, apiserverIPs []string) *nodeup.ConfigServerOptions {
