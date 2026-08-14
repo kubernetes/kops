@@ -24,9 +24,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
-	kopsversion "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
@@ -225,8 +223,6 @@ spec:
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
-    - mountPath: /opt
-      name: opt
   hostNetwork: true
   hostPID: true # helps with mounting volumes from inside a container
   volumes:
@@ -242,8 +238,6 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager
       type: DirectoryOrCreate
     name: pki
-  - name: opt
-    emptyDir: {}
 `
 
 // buildPod creates the pod spec, based on the EtcdClusterSpec
@@ -280,103 +274,18 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		etcdVersions = []etcdVersion{{Version: strings.TrimPrefix(etcdCluster.Version, "v"), Image: etcdCluster.Image}}
 	}
 
-	if b.Cluster.HasImageVolumesSupport() {
-		for _, etcdVersion := range etcdVersions {
-			if etcdVersion.SymlinkToVersion == "" {
-				volume := v1.Volume{
-					Name: "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
-					VolumeSource: v1.VolumeSource{
-						Image: &v1.ImageVolumeSource{
-							Reference:  b.AssetBuilder.RemapImage(etcdVersion.Image),
-							PullPolicy: v1.PullIfNotPresent,
-						},
+	for _, etcdVersion := range etcdVersions {
+		if etcdVersion.SymlinkToVersion == "" {
+			volume := v1.Volume{
+				Name: "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
+				VolumeSource: v1.VolumeSource{
+					Image: &v1.ImageVolumeSource{
+						Reference:  b.AssetBuilder.RemapImage(etcdVersion.Image),
+						PullPolicy: v1.PullIfNotPresent,
 					},
-				}
-				pod.Spec.Volumes = append(pod.Spec.Volumes, volume)
-			}
-		}
-	} else {
-		// Computed here rather than at process init, because kops.Version can be overridden at
-		// runtime (e.g. from KOPS_BASE_URL).
-		kopsUtilsImage := "registry.k8s.io/kops/kops-utils-cp:" + kopsversion.KopsVersionImageTag()
-		utilMounts := []v1.VolumeMount{
-			{
-				MountPath: "/opt",
-				Name:      "opt",
-			},
-		}
-		{
-			initContainer := v1.Container{
-				Name:    "kops-utils-cp",
-				Image:   kopsUtilsImage,
-				Command: []string{"/ko-app/kops-utils-cp"},
-				Args: []string{
-					"--target-dir=/opt/kops-utils/",
-					"--src=/ko-app/kops-utils-cp",
 				},
-				VolumeMounts: utilMounts,
 			}
-			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
-		}
-
-		symlinkToVersions := sets.NewString()
-		for _, etcdVersion := range etcdVersions {
-			if etcdVersion.SymlinkToVersion != "" {
-				symlinkToVersions.Insert(etcdVersion.SymlinkToVersion)
-				continue
-			}
-
-			initContainer := v1.Container{
-				Name:         "init-etcd-" + strings.ReplaceAll(etcdVersion.Version, ".", "-"),
-				Image:        etcdVersion.Image,
-				Command:      []string{"/opt/kops-utils/kops-utils-cp"},
-				VolumeMounts: utilMounts,
-			}
-
-			initContainer.Args = []string{
-				"--target-dir=/opt/etcd-v" + etcdVersion.Version,
-				"--src=/usr/local/bin/etcd",
-				"--src=/usr/local/bin/etcdctl",
-			}
-
-			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
-		}
-
-		for _, symlinkToVersion := range symlinkToVersions.List() {
-			targetVersions := sets.NewString()
-
-			for _, etcdVersion := range etcdVersions {
-				if etcdVersion.SymlinkToVersion == symlinkToVersion {
-					targetVersions.Insert(etcdVersion.Version)
-				}
-			}
-
-			initContainer := v1.Container{
-				Name:         "init-etcd-symlinks-" + strings.ReplaceAll(symlinkToVersion, ".", "-"),
-				Image:        kopsUtilsImage,
-				Command:      []string{"/opt/kops-utils/kops-utils-cp"},
-				VolumeMounts: utilMounts,
-			}
-
-			initContainer.Args = []string{
-				"--symlink",
-			}
-			for _, targetVersion := range targetVersions.List() {
-				initContainer.Args = append(initContainer.Args, "--target-dir=/opt/etcd-v"+targetVersion)
-			}
-			// NOTE: Flags must come before positional arguments
-			initContainer.Args = append(initContainer.Args,
-				"--src=/opt/etcd-v"+symlinkToVersion+"/etcd",
-				"--src=/opt/etcd-v"+symlinkToVersion+"/etcdctl",
-			)
-
-			pod.Spec.InitContainers = append(pod.Spec.InitContainers, initContainer)
-		}
-
-		// Remap image via AssetBuilder
-		for i := range pod.Spec.InitContainers {
-			initContainer := &pod.Spec.InitContainers[i]
-			initContainer.Image = b.AssetBuilder.RemapImage(initContainer.Image)
+			pod.Spec.Volumes = append(pod.Spec.Volumes, volume)
 		}
 	}
 
@@ -394,18 +303,16 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 		// Remap image via AssetBuilder
 		container.Image = b.AssetBuilder.RemapImage(container.Image)
 
-		if b.Cluster.HasImageVolumesSupport() {
-			for _, etcdVersion := range etcdVersions {
-				volumeMount := v1.VolumeMount{
-					MountPath: "/opt/etcd-v" + etcdVersion.Version,
-				}
-				if etcdVersion.SymlinkToVersion == "" {
-					volumeMount.Name = "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-")
-				} else {
-					volumeMount.Name = "etcd-v" + strings.ReplaceAll(etcdVersion.SymlinkToVersion, ".", "-")
-				}
-				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+		for _, etcdVersion := range etcdVersions {
+			volumeMount := v1.VolumeMount{
+				MountPath: "/opt/etcd-v" + etcdVersion.Version,
 			}
+			if etcdVersion.SymlinkToVersion == "" {
+				volumeMount.Name = "etcd-v" + strings.ReplaceAll(etcdVersion.Version, ".", "-")
+			} else {
+				volumeMount.Name = "etcd-v" + strings.ReplaceAll(etcdVersion.SymlinkToVersion, ".", "-")
+			}
+			container.VolumeMounts = append(container.VolumeMounts, volumeMount)
 		}
 	}
 
