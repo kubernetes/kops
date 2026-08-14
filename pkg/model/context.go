@@ -35,6 +35,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 
 	"github.com/blang/semver/v4"
@@ -183,6 +184,13 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 			labels[hetzner.TagKubernetesNodeLabelPrefix+k] = v
 		case kops.CloudProviderGCE:
 			// TODO: Do nothing for now while we figure out how to address GCE label length limit of 63
+		case kops.CloudProviderLinode:
+			// Akamai Cloud (Linode) tags have a 50 character limit
+			// Only store the critical kops.k8s.io/instancegroup label
+			// Role labels will be derived from the instance role tag by the identifier
+			if k == linode.TagKubernetesInstanceGroup {
+				labels[k] = v
+			}
 		default:
 			labels[nodeidentityaws.ClusterAutoscalerNodeTemplateLabel+k] = v
 		}
@@ -214,6 +222,10 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		if ig.Spec.Role.HasControlPlane() {
 			labels[gce.GceLabelNameRolePrefix+"master"] = "master"
 		}
+	case kops.CloudProviderLinode:
+		labels[linode.TagKubernetesClusterName] = b.ClusterName()
+		labels[linode.TagKubernetesInstanceGroup] = ig.Name
+		labels[linode.TagKubernetesInstanceRole] = string(ig.Spec.Role)
 	default:
 		// The system tags take priority because the cluster likely breaks without them...
 

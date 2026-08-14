@@ -105,6 +105,7 @@ type MockLinodeClient struct {
 
 	ListSSHKeysResponse []linodego.SSHKey
 	ListSSHKeysError    error
+	ListSSHKeysCalls    int
 
 	CreateSSHKeyResponse *linodego.SSHKey
 	CreateSSHKeyError    error
@@ -139,6 +140,33 @@ type MockLinodeClient struct {
 	DeleteVPCSubnetCalls   int
 	DeletedVPCSubnetVPCIDs []int
 	DeletedVPCSubnetIDs    []int
+
+	CreateInstanceResponse *linodego.Instance
+	CreateInstanceError    error
+	CreateInstanceCalls    int
+	LastCreateInstanceOpts linodego.InstanceCreateOptions
+
+	UpdateInstanceResponse *linodego.Instance
+	UpdateInstanceError    error
+	UpdateInstanceCalls    int
+	LastUpdateInstanceOpts linodego.InstanceUpdateOptions
+	LastUpdateInstanceID   int
+
+	DeleteInstanceError error
+	DeleteInstanceCalls int
+	DeletedInstanceIDs  []int
+
+	ListInstancesResponse []linodego.Instance
+	ListInstancesError    error
+	ListInstancesCalls    int
+	LastListInstancesOpts *linodego.ListOptions
+
+	ListInterfacesResponse  []linodego.LinodeInterface
+	ListInterfacesResponses map[int][]linodego.LinodeInterface
+	ListInterfacesError     error
+	ListInterfacesCalls     int
+	LastListInterfacesOpts  *linodego.ListOptions
+	LastListInterfacesID    int
 }
 
 var _ LinodeClient = &MockLinodeClient{}
@@ -184,6 +212,7 @@ func (c *MockLinodeClient) DeleteVPC(ctx context.Context, vpcID int) error {
 }
 
 func (c *MockLinodeClient) ListSSHKeys(ctx context.Context, opts *linodego.ListOptions) ([]linodego.SSHKey, error) {
+	c.ListSSHKeysCalls++
 	if c.ListSSHKeysError != nil {
 		return nil, c.ListSSHKeysError
 	}
@@ -253,4 +282,57 @@ func (c *MockLinodeClient) DeleteVPCSubnet(ctx context.Context, vpcID int, subne
 	c.DeletedVPCSubnetIDs = append(c.DeletedVPCSubnetIDs, subnetID)
 	c.DeletedVPCSubnetVPCIDs = append(c.DeletedVPCSubnetVPCIDs, vpcID)
 	return c.DeleteVPCSubnetError
+}
+
+func (c *MockLinodeClient) ListInstances(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Instance, error) {
+	c.ListInstancesCalls++
+	c.LastListInstancesOpts = opts
+	if c.ListInstancesError != nil {
+		return nil, c.ListInstancesError
+	}
+	return c.ListInstancesResponse, nil
+}
+
+func (c *MockLinodeClient) CreateInstance(ctx context.Context, opts linodego.InstanceCreateOptions) (*linodego.Instance, error) {
+	c.CreateInstanceCalls++
+	c.LastCreateInstanceOpts = opts
+	if c.CreateInstanceError != nil {
+		return nil, c.CreateInstanceError
+	}
+	if c.CreateInstanceResponse == nil {
+		return &linodego.Instance{}, nil
+	}
+	return c.CreateInstanceResponse, nil
+}
+
+func (c *MockLinodeClient) UpdateInstance(ctx context.Context, instanceID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error) {
+	c.UpdateInstanceCalls++
+	c.LastUpdateInstanceOpts = opts
+	c.LastUpdateInstanceID = instanceID
+	if c.UpdateInstanceError != nil {
+		return nil, c.UpdateInstanceError
+	}
+	if c.UpdateInstanceResponse == nil {
+		return &linodego.Instance{}, nil
+	}
+	return c.UpdateInstanceResponse, nil
+}
+
+func (c *MockLinodeClient) DeleteInstance(ctx context.Context, instanceID int) error {
+	c.DeleteInstanceCalls++
+	c.DeletedInstanceIDs = append(c.DeletedInstanceIDs, instanceID)
+	return c.DeleteInstanceError
+}
+
+func (c *MockLinodeClient) ListInterfaces(ctx context.Context, instanceID int, opts *linodego.ListOptions) ([]linodego.LinodeInterface, error) {
+	c.ListInterfacesCalls++
+	c.LastListInterfacesOpts = opts
+	c.LastListInterfacesID = instanceID
+	if c.ListInterfacesError != nil {
+		return nil, c.ListInterfacesError
+	}
+	if c.ListInterfacesResponses != nil {
+		return c.ListInterfacesResponses[instanceID], nil
+	}
+	return c.ListInterfacesResponse, nil
 }
