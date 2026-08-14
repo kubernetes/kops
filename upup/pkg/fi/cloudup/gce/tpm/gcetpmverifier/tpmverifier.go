@@ -35,6 +35,8 @@ import (
 
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/googleapi"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
@@ -159,7 +161,11 @@ func (v *tpmVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request,
 		providerID := "gce://" + tokenData.GCPProjectID + "/" + tokenData.Zone + "/" + tokenData.Instance
 
 		// The CAPI cluster name is the kOps cluster name escaped for GCE
-		m, err := v.capiManager.FindMachineByProviderID(ctx, providerID, gce.SafeClusterName(v.opt.ClusterName))
+		capiCluster := types.NamespacedName{
+			Namespace: metav1.NamespaceSystem,
+			Name:      gce.SafeClusterName(v.opt.ClusterName),
+		}
+		m, err := v.capiManager.FindMachineByProviderID(ctx, providerID, capiCluster)
 		if err != nil {
 			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
 		}

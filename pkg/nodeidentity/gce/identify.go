@@ -25,6 +25,8 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	compute "google.golang.org/api/compute/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/nodeidentity"
@@ -131,7 +133,11 @@ func (i *nodeIdentifier) IdentifyNode(ctx context.Context, node *corev1.Node) (*
 	if i.capiManager != nil && capgRole != "" {
 		providerID := "gce://" + project + "/" + zone + "/" + instanceName
 
-		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID, gce.SafeClusterName(i.clusterName))
+		capiCluster := types.NamespacedName{
+			Namespace: metav1.NamespaceSystem,
+			Name:      gce.SafeClusterName(i.clusterName),
+		}
+		m, err := i.capiManager.FindMachineByProviderID(ctx, providerID, capiCluster)
 		if err != nil {
 			return nil, fmt.Errorf("error finding Machine with providerID %q: %w", providerID, err)
 		}

@@ -35,6 +35,7 @@ import (
 
 	compute "google.golang.org/api/compute/v1"
 	"google.golang.org/api/option"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kops/pkg/bootstrap"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi/capimanager"
@@ -349,17 +350,22 @@ func (f *fakeKubeClient) List(ctx context.Context, list client.ObjectList, opts 
 	if !ok {
 		return fmt.Errorf("unexpected list type %T", list)
 	}
-	ul.Items = f.machines
+	listOptions := (&client.ListOptions{}).ApplyOptions(opts)
+	for _, machine := range f.machines {
+		if listOptions.Namespace == "" || machine.GetNamespace() == listOptions.Namespace {
+			ul.Items = append(ul.Items, machine)
+		}
+	}
 	return nil
 }
 
-func capiMachineObject(providerID, clusterName string) unstructured.Unstructured {
+func capiMachineObject(providerID, clusterName, namespace string) unstructured.Unstructured {
 	return unstructured.Unstructured{Object: map[string]any{
 		"apiVersion": "cluster.x-k8s.io/v1beta1",
 		"kind":       "Machine",
 		"metadata": map[string]any{
 			"name":      "machine-1",
-			"namespace": "default",
+			"namespace": namespace,
 		},
 		"spec": map[string]any{
 			"providerID":  providerID,
@@ -372,21 +378,39 @@ func TestVerifyTokenCAPI(t *testing.T) {
 	providerID := "gce://" + testProject + "/" + testZone + "/" + testInstance
 
 	tests := []struct {
-		name               string
-		machineClusterName string
-		expectedError      string
+		name          string
+		machines      []unstructured.Unstructured
+		expectedError string
 	}{
 		{
 			name: "machine in this cluster",
 			// The CAPI cluster name is the kOps cluster name escaped for GCE
-			machineClusterName: "cluster-example-com",
+			machines: []unstructured.Unstructured{
+				capiMachineObject(providerID, "cluster-example-com", metav1.NamespaceSystem),
+			},
 		},
 		{
 			// A Machine from another cluster must not match; without a Machine the instance
 			// falls back to the MIG check, which fails as CAPI instances are not MIG members.
-			name:               "machine in another cluster",
-			machineClusterName: "other-example-com",
-			expectedError:      "cannot find owner",
+			name: "machine in another cluster",
+			machines: []unstructured.Unstructured{
+				capiMachineObject(providerID, "other-example-com", metav1.NamespaceSystem),
+			},
+			expectedError: "cannot find owner",
+		},
+		{
+			name: "machine in another namespace",
+			machines: []unstructured.Unstructured{
+				capiMachineObject(providerID, "cluster-example-com", "other"),
+			},
+			expectedError: "cannot find owner",
+		},
+		{
+			name: "duplicate machine in another namespace",
+			machines: []unstructured.Unstructured{
+				capiMachineObject(providerID, "cluster-example-com", metav1.NamespaceSystem),
+				capiMachineObject(providerID, "cluster-example-com", "other"),
+			},
 		},
 	}
 
@@ -399,7 +423,7 @@ func TestVerifyTokenCAPI(t *testing.T) {
 
 			verifier := newTestVerifier(t, fake)
 			verifier.capiManager = capimanager.NewManager(&fakeKubeClient{
-				machines: []unstructured.Unstructured{capiMachineObject(providerID, tc.machineClusterName)},
+				machines: tc.machines,
 			})
 
 			result := runVerify(t, verifier, fake.signingKey, tc.expectedError)

@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kops/pkg/nodeidentity/clusterapi"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -40,10 +41,10 @@ func NewManager(kubeClient client.Client) *Manager {
 }
 
 // FindMachineByProviderID returns the Machine with the given spec.providerID, or nil if not found.
-// Machines belonging to CAPI clusters other than capiClusterName are ignored; note that
-// capiClusterName is the Machine's spec.clusterName (for CAPG, the kOps cluster name escaped with
+// Machines belonging to CAPI clusters other than capiCluster are ignored; note that
+// capiCluster.Name is the Machine's spec.clusterName (for CAPG, the kOps cluster name escaped with
 // gce.SafeClusterName), not the kOps cluster name.
-func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string, capiClusterName string) (*clusterapi.Machine, error) {
+func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string, capiCluster types.NamespacedName) (*clusterapi.Machine, error) {
 	// TODO: Can we build an index
 	// selector := client.MatchingFieldsSelector{
 	// 	Selector: fields.OneTermEqualSelector("spec.providerID", providerID),
@@ -54,7 +55,7 @@ func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string
 		Kind:    "Machine",
 		Version: "v1beta1",
 	})
-	if err := m.kubeClient.List(ctx, &machines); err != nil {
+	if err := m.kubeClient.List(ctx, &machines, client.InNamespace(capiCluster.Namespace)); err != nil {
 		return nil, fmt.Errorf("error listing machines: %w", err)
 	}
 	var matches []*unstructured.Unstructured
@@ -65,7 +66,7 @@ func (m *Manager) FindMachineByProviderID(ctx context.Context, providerID string
 			continue
 		}
 		machineClusterName, _, _ := unstructured.NestedString(machine.Object, "spec", "clusterName")
-		if machineClusterName != capiClusterName {
+		if machineClusterName != capiCluster.Name {
 			continue
 		}
 		matches = append(matches, machine)
