@@ -72,36 +72,9 @@ func (d *deployer) initialize() error {
 			return fmt.Errorf("init failed to build AWS client: %w", err)
 		}
 		d.aws = client
-
-		if d.SSHPrivateKeyPath == "" {
-			d.SSHPrivateKeyPath = os.Getenv("AWS_SSH_PRIVATE_KEY_FILE")
-		}
-		if d.SSHPublicKeyPath == "" {
-			d.SSHPublicKeyPath = os.Getenv("AWS_SSH_PUBLIC_KEY_FILE")
-		}
-		if d.SSHPrivateKeyPath == "" || d.SSHPublicKeyPath == "" {
-			publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
-			if err != nil {
-				return err
-			}
-			d.SSHPublicKeyPath = publicKeyPath
-			d.SSHPrivateKeyPath = privateKeyPath
-		}
 	case "azure":
-		publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
-		if err != nil {
-			return err
-		}
-		d.SSHPublicKeyPath = publicKeyPath
-		d.SSHPrivateKeyPath = privateKeyPath
 		d.SSHUser = "kops"
 	case "digitalocean":
-		if d.SSHPrivateKeyPath == "" {
-			d.SSHPrivateKeyPath = os.Getenv("DO_SSH_PRIVATE_KEY_FILE")
-		}
-		if d.SSHPublicKeyPath == "" {
-			d.SSHPublicKeyPath = os.Getenv("DO_SSH_PUBLIC_KEY_FILE")
-		}
 		d.SSHUser = "root"
 	case "gce":
 		d.region, err = gce.ZoneToRegion(d.zones[0])
@@ -129,27 +102,12 @@ func (d *deployer) initialize() error {
 			}
 			d.GCPProject = resource.Name
 			klog.V(1).Infof("Got project %s from boskos", d.GCPProject)
-
-			if d.SSHPrivateKeyPath == "" {
-				d.SSHPrivateKeyPath = os.Getenv("GCE_SSH_PRIVATE_KEY_FILE")
-			}
-			if d.SSHPublicKeyPath == "" {
-				d.SSHPublicKeyPath = os.Getenv("GCE_SSH_PUBLIC_KEY_FILE")
-			}
-			if d.SSHPrivateKeyPath == "" && d.SSHPublicKeyPath == "" {
-				privateKey, publicKey, err := gce.SetupSSH(d.GCPProject)
-				if err != nil {
-					return err
-				}
-				d.SSHPrivateKeyPath = privateKey
-				d.SSHPublicKeyPath = publicKey
-			}
-
-		} else if d.SSHPrivateKeyPath == "" && os.Getenv("KUBE_SSH_KEY_PATH") != "" {
-			d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
 		}
 	}
 
+	if err := d.resolveSSHKeys(); err != nil {
+		return fmt.Errorf("init failed to resolve SSH keys: %w", err)
+	}
 	klog.V(1).Infof("Using SSH keypair: [%s,%s]", d.SSHPrivateKeyPath, d.SSHPublicKeyPath)
 
 	// Determine whether ephemeral buckets need to be created. Each store
@@ -199,6 +157,73 @@ func (d *deployer) initialize() error {
 			}
 		}
 	}
+	return nil
+}
+
+// legacySSHKeyEnvVars maps a cloud provider to the {private, public} environment
+// variables that predate the cloud-agnostic KUBE_SSH_KEY_PATH/KUBE_SSH_PUBLIC_KEY_PATH.
+// They are still honored so that the existing prow presets keep working, and can be
+// dropped once no job sets them.
+var legacySSHKeyEnvVars = map[string][2]string{
+	"aws":          {"AWS_SSH_PRIVATE_KEY_FILE", "AWS_SSH_PUBLIC_KEY_FILE"},
+	"digitalocean": {"DO_SSH_PRIVATE_KEY_FILE", "DO_SSH_PUBLIC_KEY_FILE"},
+	"gce":          {"GCE_SSH_PRIVATE_KEY_FILE", "GCE_SSH_PUBLIC_KEY_FILE"},
+}
+
+// resolveSSHKeys populates SSHPrivateKeyPath and SSHPublicKeyPath for every cloud,
+// in this order of precedence:
+//
+//  1. the --ssh-private-key / --ssh-public-key flags
+//  2. the cloud-agnostic KUBE_SSH_KEY_PATH / KUBE_SSH_PUBLIC_KEY_PATH
+//  3. the legacy per-cloud variables in legacySSHKeyEnvVars
+//  4. an ephemeral keypair generated for this cluster
+//
+// Generating is safe on every cloud because kops registers whatever public key it is
+// given with the cloud provider itself: an EC2 key pair on AWS, "ssh-keys" instance
+// metadata on GCE, the VM scale set osProfile on Azure, and a droplet SSH key on
+// DigitalOcean. The keypair is only ever needed to reach the nodes afterwards, so a
+// per-cluster throwaway key is sufficient.
+func (d *deployer) resolveSSHKeys() error {
+	if d.SSHPrivateKeyPath == "" {
+		d.SSHPrivateKeyPath = os.Getenv("KUBE_SSH_KEY_PATH")
+	}
+	if d.SSHPublicKeyPath == "" {
+		d.SSHPublicKeyPath = os.Getenv("KUBE_SSH_PUBLIC_KEY_PATH")
+	}
+
+	if legacy, ok := legacySSHKeyEnvVars[d.CloudProvider]; ok {
+		if d.SSHPrivateKeyPath == "" {
+			d.SSHPrivateKeyPath = os.Getenv(legacy[0])
+		}
+		if d.SSHPublicKeyPath == "" {
+			d.SSHPublicKeyPath = os.Getenv(legacy[1])
+		}
+	}
+
+	// A private key supplied on its own is still usable when its public half sits
+	// beside it under the conventional .pub suffix.
+	if d.SSHPrivateKeyPath != "" && d.SSHPublicKeyPath == "" {
+		candidate := d.SSHPrivateKeyPath + ".pub"
+		if _, err := os.Stat(candidate); err == nil {
+			d.SSHPublicKeyPath = candidate
+		}
+	}
+
+	if d.SSHPrivateKeyPath != "" && d.SSHPublicKeyPath != "" {
+		return nil
+	}
+
+	// Both halves are required, so discard a lone private key rather than passing an
+	// empty --ssh-public-key to kops.
+	if d.SSHPrivateKeyPath != "" {
+		klog.V(1).Infof("Ignoring SSH private key %q: no matching public key was found", d.SSHPrivateKeyPath)
+	}
+	publicKeyPath, privateKeyPath, err := util.CreateSSHKeyPair(d.ClusterName)
+	if err != nil {
+		return err
+	}
+	d.SSHPublicKeyPath = publicKeyPath
+	d.SSHPrivateKeyPath = privateKeyPath
 	return nil
 }
 
@@ -270,9 +295,6 @@ func (d *deployer) env() []string {
 				vars = append(vars, k+"="+v)
 			}
 		}
-		// Recognized by the e2e framework
-		// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L59-L62
-		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
 	case "azure":
 		// Pass through some env vars if set
 		for _, k := range []string{"AZURE_TENANT_ID", "AZURE_SUBSCRIPTION_ID", "AZURE_CLIENT_ID", "AZURE_FEDERATED_TOKEN_FILE"} {
@@ -300,6 +322,21 @@ func (d *deployer) env() []string {
 			// from the PROJECT env var, so also expose it under that name.
 			vars = append(vars, fmt.Sprintf("PROJECT=%v", d.GCPProject))
 		}
+	}
+
+	// Recognized by the e2e framework on every provider, so that ginkgo and
+	// clusterloader2 reach the nodes with the same key the deployer resolved.
+	// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L59-L62
+	if d.SSHPrivateKeyPath != "" {
+		vars = append(vars, fmt.Sprintf("KUBE_SSH_KEY_PATH=%v", d.SSHPrivateKeyPath))
+	}
+	// The framework pairs that key with KUBE_SSH_USER, falling back to $USER when it
+	// is unset. Export the user the deployer resolved so that the clouds which set it
+	// internally rather than from the job config -- azure ("kops") and digitalocean
+	// ("root") -- do not fall back to an account that has no authorized key.
+	// https://github.com/kubernetes/kubernetes/blob/a750d8054a6cb3167f495829ce3e77ab0ccca48e/test/e2e/framework/ssh/ssh.go#L215-L218
+	if d.SSHUser != "" {
+		vars = append(vars, fmt.Sprintf("KUBE_SSH_USER=%v", d.SSHUser))
 	}
 
 	if d.KopsBaseURL != "" {
