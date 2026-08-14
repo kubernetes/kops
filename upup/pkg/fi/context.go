@@ -196,19 +196,41 @@ func (c *Context[T]) Render(a, e, changes Task[T]) error {
 
 	targetType := reflect.ValueOf(c.Target).Type()
 
-	var renderer *reflect.Method
+	// Probe renderers with literal method names only: enumerating the method set or passing a
+	// variable name to MethodByName would disable linker pruning of every unused exported method.
+	candidates := []struct {
+		name   string
+		method reflect.Value
+	}{
+		{"Render", v.MethodByName("Render")},
+		{"RenderAWS", v.MethodByName("RenderAWS")},
+		{"RenderAzure", v.MethodByName("RenderAzure")},
+		{"RenderDO", v.MethodByName("RenderDO")},
+		{"RenderGCE", v.MethodByName("RenderGCE")},
+		{"RenderHetzner", v.MethodByName("RenderHetzner")},
+		{"RenderInstall", v.MethodByName("RenderInstall")},
+		{"RenderLinode", v.MethodByName("RenderLinode")},
+		{"RenderLocal", v.MethodByName("RenderLocal")},
+		{"RenderOpenstack", v.MethodByName("RenderOpenstack")},
+		{"RenderScw", v.MethodByName("RenderScw")},
+		{"RenderSubnet", v.MethodByName("RenderSubnet")},
+		{"RenderTerraform", v.MethodByName("RenderTerraform")},
+	}
+
+	var rendererName string
+	var renderer reflect.Value
 	var rendererArgs []reflect.Value
 
-	for i := 0; i < vType.NumMethod(); i++ {
-		method := vType.Method(i)
-		if !strings.HasPrefix(method.Name, "Render") {
+	for _, candidate := range candidates {
+		if !candidate.method.IsValid() {
 			continue
 		}
+		mType := candidate.method.Type()
 		match := true
 
 		var args []reflect.Value
-		for j := 0; j < method.Type.NumIn(); j++ {
-			arg := method.Type.In(j)
+		for j := 0; j < mType.NumIn(); j++ {
+			arg := mType.In(j)
 			if vType.ConvertibleTo(arg) {
 				continue
 			}
@@ -224,28 +246,28 @@ func (c *Context[T]) Render(a, e, changes Task[T]) error {
 			break
 		}
 		if match {
-			if renderer != nil {
-				if method.Name == "Render" {
+			if renderer.IsValid() {
+				if candidate.name == "Render" {
 					continue
 				}
-				if renderer.Name != "Render" {
+				if rendererName != "Render" {
 					return fmt.Errorf("found multiple Render methods that could be involved on %T", e)
 				}
 			}
-			renderer = &method
+			rendererName = candidate.name
+			renderer = candidate.method
 			rendererArgs = args
 		}
 
 	}
-	if renderer == nil {
+	if !renderer.IsValid() {
 		return fmt.Errorf("could not find Render method on type %T (target %T)", e, c.Target)
 	}
 	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(e))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(changes))
-	klog.V(11).Infof("Calling method %s on %T", renderer.Name, e)
-	m := v.MethodByName(renderer.Name)
-	rv := m.Call(rendererArgs)
+	klog.V(11).Infof("Calling method %s on %T", rendererName, e)
+	rv := renderer.Call(rendererArgs)
 	var rvErr error
 	if !rv[0].IsNil() {
 		rvErr = rv[0].Interface().(error)
