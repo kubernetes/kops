@@ -16,7 +16,6 @@ steps:
       - DOCKER_REGISTRY=$_DOCKER_REGISTRY
       - DOCKER_IMAGE_PREFIX=$_DOCKER_IMAGE_PREFIX
     args:
-      - kops-utils-cp-push
       - kops-controller-push
       - kops-channels-push
       - dns-controller-push
