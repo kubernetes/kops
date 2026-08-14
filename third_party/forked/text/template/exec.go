@@ -690,21 +690,15 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 	typ := receiver.Type()
 	receiver, isNil := indirect(receiver)
 	if receiver.Kind() == reflect.Interface && isNil {
-		// Calling a method on a nil interface can't work. The
-		// MethodByName method call below would panic.
+		// A nil interface has no fields or map entries to evaluate.
 		s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
 		return zero
 	}
 
-	// Unless it's an interface, need to get to a value of type *T to guarantee
-	// we see all methods of T and *T.
-	ptr := receiver
-	if ptr.Kind() != reflect.Interface && ptr.Kind() != reflect.Pointer && ptr.CanAddr() {
-		ptr = ptr.Addr()
-	}
-	if method := ptr.MethodByName(fieldName); method.IsValid() {
-		return s.evalCall(dot, method, false, node, fieldName, args, final)
-	}
+	// kOps fork: field names are not resolved to methods on the data. The
+	// stdlib lookup calls reflect.Value.MethodByName with a non-constant
+	// name, which disables the Go linker's method pruning for the whole
+	// binary (see golang/go#72895).
 	hasArgs := len(args) > 1 || !isMissing(final)
 	// It's not a method; must be a field of a struct or an element of a map.
 	switch receiver.Kind() {

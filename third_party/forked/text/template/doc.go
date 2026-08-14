@@ -5,6 +5,10 @@
 /*
 Package template implements data-driven templates for generating textual output.
 
+Unlike the standard library's [text/template] package, this fork does not
+resolve field names to methods on the data being rendered. Method invocation
+through template expressions is therefore unsupported.
+
 To generate HTML output, see [html/template], which has the same interface
 as this package but automatically secures HTML output against certain attacks.
 
@@ -213,36 +217,17 @@ An argument is a simple value, denoted by one of the following.
 	  Keys can also be evaluated on variables, including chaining:
 
 	    $x.key1.key2
-	- The name of a niladic method of the data, preceded by a period,
-	  such as
-
-		.Method
-
-	  The result is the value of invoking the method with dot as the
-	  receiver, dot.Method(). Such a method must have one return value (of
-	  any type) or two return values, the second of which is an error.
-	  If it has two and the returned error is non-nil, execution terminates
-	  and an error is returned to the caller as the value of Execute.
-	  Method invocations may be chained and combined with fields and keys
-	  to any depth:
-
-	    .Field1.Key1.Method1.Field2.Key2.Method2
-
-	  Methods can also be evaluated on variables, including chaining:
-
-	    $x.Method1.Field
 	- The name of a niladic function, such as
 
 		fun
 
-	  The result is the value of invoking the function, fun(). The return
-	  types and values behave as in methods. Functions and function
-	  names are described below.
+	  The result is the value of invoking the function, fun(). Functions
+	  and function names are described below.
 	- A parenthesized instance of one the above, for grouping. The result
 	  may be accessed by a field or map key invocation.
 
 		print (.F1 arg1) (.F2 arg2)
-		(.StructValuedMethod "arg").Field
+		(.StructValuedFunction "arg").Field
 
 Arguments may evaluate to any type; if they are pointers the implementation
 automatically indirects to the base type when required.
@@ -254,16 +239,10 @@ it, use the call function, defined below.
 Pipelines
 
 A pipeline is a possibly chained sequence of "commands". A command is a simple
-value (argument) or a function or method call, possibly with multiple arguments:
+value (argument) or a function call, possibly with multiple arguments:
 
 	Argument
 		The result is the value of evaluating the argument.
-	.Method [Argument...]
-		The method can be alone or the last element of a chain but,
-		unlike methods in the middle of a chain, it can take arguments.
-		The result is the value of calling the method with the
-		arguments:
-			dot.Method(Argument1, etc.)
 	functionName [Argument...]
 		The result is the value of calling the function associated
 		with the name:

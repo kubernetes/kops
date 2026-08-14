@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	stdtemplate "text/template"
 	"unicode"
 	"unicode/utf8"
 )
@@ -30,7 +31,10 @@ import (
 // apply to arguments of arbitrary type can use parameters of type interface{} or
 // of type [reflect.Value]. Similarly, functions meant to return a result of arbitrary
 // type can return interface{} or [reflect.Value].
-type FuncMap map[string]any
+//
+// This fork aliases the standard library's FuncMap so APIs using either package
+// retain identical method signatures without making the standard executor reachable.
+type FuncMap = stdtemplate.FuncMap
 
 // builtins returns the FuncMap.
 // It is not a global variable so the linker can dead code eliminate
