@@ -112,7 +112,7 @@ func TestVPCFindListError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected list error")
 	}
-	if !strings.Contains(err.Error(), "error listing Linode (Akamai) VPCs") {
+	if !strings.Contains(err.Error(), "error listing Akamai (Linode) VPCs") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -131,7 +131,7 @@ func TestVPCFindDuplicateName(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected duplicate name error")
 	}
-	if !strings.Contains(err.Error(), "found multiple Linode (Akamai) VPCs named") {
+	if !strings.Contains(err.Error(), "found multiple Akamai (Linode) VPCs named") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

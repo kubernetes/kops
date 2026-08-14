@@ -216,12 +216,12 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 		}
 		if region == "" {
-			return nil, fmt.Errorf("on Linode (Akamai), subnets must include Regions")
+			return nil, fmt.Errorf("on Akamai (Linode), subnets must include Regions")
 		}
 
 		linodeCloud, err := linode.NewCloud(region)
 		if err != nil {
-			return nil, fmt.Errorf("error initializing Linode (Akamai) cloud: %w", err)
+			return nil, fmt.Errorf("error initializing Akamai (Linode) cloud: %w", err)
 		}
 
 		cloud = linodeCloud

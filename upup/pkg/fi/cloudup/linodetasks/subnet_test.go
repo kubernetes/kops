@@ -202,7 +202,7 @@ func TestSubnetFindDuplicateName(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected duplicate name error")
 	}
-	if !strings.Contains(err.Error(), "found multiple Linode (Akamai) VPC Subnets named") {
+	if !strings.Contains(err.Error(), "found multiple Akamai (Linode) VPC Subnets named") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -216,7 +216,7 @@ func TestSubnetFindListError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected list error")
 	}
-	if !strings.Contains(err.Error(), "error listing Linode (Akamai) VPC Subnets") {
+	if !strings.Contains(err.Error(), "error listing Akamai (Linode) VPC Subnets") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

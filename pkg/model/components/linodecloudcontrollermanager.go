@@ -21,14 +21,14 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
-// LinodeCloudControllerManagerOptionsBuilder adds options for the Linode (Akamai) cloud controller manager to the model.
+// LinodeCloudControllerManagerOptionsBuilder adds options for the Akamai (Linode) cloud controller manager to the model.
 type LinodeCloudControllerManagerOptionsBuilder struct {
 	*OptionsContext
 }
 
 var _ loader.ClusterOptionsBuilder = &LinodeCloudControllerManagerOptionsBuilder{}
 
-// BuildOptions generates the configurations used for the Linode (Akamai) cloud controller manager manifest
+// BuildOptions generates the configurations used for the Akamai (Linode) cloud controller manager manifest
 func (b *LinodeCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Cluster) error {
 	clusterSpec := &cluster.Spec
 
@@ -53,7 +53,7 @@ func (b *LinodeCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.
 	eccm.ConfigureCloudRoutes = new(false)
 
 	if eccm.Image == "" {
-		// Using the official Linode (Akamai) CCM image
+		// Using the official Akamai (Linode) CCM image
 		// https://github.com/linode/linode-cloud-controller-manager
 		eccm.Image = "linode/linode-cloud-controller-manager:v0.9.5"
 	}

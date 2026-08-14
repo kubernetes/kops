@@ -185,7 +185,7 @@ func (b *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 		case kops.CloudProviderGCE:
 			// TODO: Do nothing for now while we figure out how to address GCE label length limit of 63
 		case kops.CloudProviderLinode:
-			// Akamai Cloud (Linode) tags have a 50 character limit
+			// Akamai (Linode) Cloud tags have a 50 character limit
 			// Only store the critical kops.k8s.io/instancegroup label
 			// Role labels will be derived from the instance role tag by the identifier
 			if k == linode.TagKubernetesInstanceGroup {

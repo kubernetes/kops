@@ -27,7 +27,7 @@ import (
 
 const maxLinodeSSHKeyNameLength = 64
 
-// SSHKeyModelBuilder configures profile SSH key resources for Linode (Akamai).
+// SSHKeyModelBuilder configures profile SSH key resources for Akamai (Linode).
 type SSHKeyModelBuilder struct {
 	*LinodeModelContext
 	Lifecycle fi.Lifecycle
@@ -42,11 +42,11 @@ func (b *SSHKeyModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 
 	name, err := b.SSHKeyName()
 	if err != nil {
-		return fmt.Errorf("error building Linode (Akamai) SSH key task: %w", err)
+		return fmt.Errorf("error building Akamai (Linode) SSH key task: %w", err)
 	}
 	name = linode.NormalizeLinodeLabel(name)
 
-	// Linode (Akamai) SSH key labels have a maximum length of 64 characters. If the generated name exceeds this length, we truncate it and trim any trailing hyphens or underscores.
+	// Akamai (Linode) SSH key labels have a maximum length of 64 characters. If the generated name exceeds this length, we truncate it and trim any trailing hyphens or underscores.
 	if len(name) > maxLinodeSSHKeyNameLength {
 		name = strings.Trim(name[:maxLinodeSSHKeyNameLength], "-_")
 	}

@@ -791,7 +791,7 @@ func setupZones(opt *NewClusterOptions, cluster *api.Cluster, allZones sets.Stri
 			return nil, fmt.Errorf("linode cloud provider currently supports one region only")
 		}
 
-		// For Linode (Akamai) we pass regions via --zones.
+		// For Akamai (Linode) we pass regions via --zones.
 		region := opt.Zones[0]
 		subnet := model.FindSubnet(cluster, region)
 

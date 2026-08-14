@@ -544,7 +544,7 @@ func evaluateHostnameOverride(cloudProvider api.CloudProviderID, useIPBasedNodeN
 			return "", fmt.Errorf("error reading hostname from Linode metadata: %v", err)
 		}
 
-		// Linode cloud-init does not set the OS hostname.
+		// Akamai (Linode) cloud-init does not set the OS hostname.
 		// Set it here so the OS hostname matches the kubelet hostname override.
 		if err := os.WriteFile("/etc/hostname", []byte(label+"\n"), 0o644); err != nil { //nolint:gosec // /etc/hostname is conventionally world-readable system configuration.
 			klog.Warningf("Failed to write /etc/hostname: %v", err)

@@ -29,20 +29,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// LinodeBuilder writes the Linode-specific configuration
+// LinodeBuilder writes the Akamai (Linode)-specific configuration
 type LinodeBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.NodeupModelBuilder = &LinodeBuilder{}
 
-// Build configures Linode-specific node settings including swap disabling.
+// Build configures Akamai (Linode)-specific node settings including swap disabling.
 func (b *LinodeBuilder) Build(c *fi.NodeupModelBuilderContext) error {
 	if b.CloudProvider() != kops.CloudProviderLinode {
 		return nil
 	}
 
-	// Linode instances ship with swap enabled. Disable it when MemorySwapBehavior is unset,
+	// Akamai (Linode) instances ship with swap enabled. Disable it when MemorySwapBehavior is unset,
 	// since the default kubelet swap mode (NoSwap) requires swap to be off.
 	if b.NodeupConfig.KubeletConfig.MemorySwapBehavior == "" {
 		if err := b.disableSwap(c); err != nil {

@@ -502,7 +502,7 @@ func (c *ApplyClusterCmd) Run(ctx context.Context) (*ApplyResults, error) {
 	case kops.CloudProviderLinode:
 		{
 			if !featureflag.Linode.Enabled() {
-				return nil, fmt.Errorf("Linode (Akamai) support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Linode")
+				return nil, fmt.Errorf("Akamai (Linode) support is currently alpha, and is feature-gated. Please export KOPS_FEATURE_FLAGS=Linode")
 			}
 		}
 

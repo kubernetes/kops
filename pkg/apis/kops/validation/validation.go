@@ -1154,9 +1154,9 @@ func validateNetworking(cluster *kops.Cluster, v *kops.NetworkingSpec, fldPath *
 			if networkCIDR != nil && !networkCIDR.IP.IsPrivate() {
 				allErrs = append(allErrs, field.Invalid(fldPath.Child("networkCIDR"), v.NetworkCIDR, "networkCIDR must be within a private IP range"))
 			}
-			// verify if networkID is not specified. In case of Linode (Akamai), this is mutually exclusive.
+			// verify if networkID is not specified. In case of Akamai (Linode), this is mutually exclusive.
 			if v.NetworkID != "" {
-				allErrs = append(allErrs, field.Forbidden(fldPath.Child("networkCIDR"), "Linode (Akamai) doesn't support specifying both NetworkID and NetworkCIDR"))
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("networkCIDR"), "Akamai (Linode) doesn't support specifying both NetworkID and NetworkCIDR"))
 			}
 		}
 	}

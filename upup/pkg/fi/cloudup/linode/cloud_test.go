@@ -34,7 +34,7 @@ func TestCloudDeleteInstance(t *testing.T) {
 		wantDeleted []int
 	}{
 		{name: "success", id: "101", wantDeleted: []int{101}},
-		{name: "invalid id", id: "not-an-int", wantError: "error parsing Linode (Akamai) instance ID"},
+		{name: "invalid id", id: "not-an-int", wantError: "error parsing Akamai (Linode) instance ID"},
 		{name: "not found", id: "101", deleteError: &linodego.Error{Code: 404, Message: "not found"}, wantDeleted: []int{101}},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
