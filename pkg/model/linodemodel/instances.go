@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/linodetasks"
 )
 
-// InstanceModelBuilder configures the Linode (Akamai) instances (aka Linodes) for the cluster.
+// InstanceModelBuilder configures the Akamai (Linode) instances (aka Linodes) for the cluster.
 type InstanceModelBuilder struct {
 	*LinodeModelContext
 	Lifecycle              fi.Lifecycle

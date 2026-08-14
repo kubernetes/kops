@@ -18,14 +18,14 @@ package linode
 
 import "k8s.io/kops/upup/pkg/fi"
 
-// APITarget runs cloudup tasks directly against Linode (Akamai) APIs.
+// APITarget runs cloudup tasks directly against Akamai (Linode) APIs.
 type APITarget struct {
 	Cloud LinodeCloud
 }
 
 var _ fi.CloudupTarget = &APITarget{}
 
-// NewAPITarget builds a Linode (Akamai) target implementation.
+// NewAPITarget builds an Akamai (Linode) target implementation.
 func NewAPITarget(cloud LinodeCloud) *APITarget {
 	return &APITarget{Cloud: cloud}
 }

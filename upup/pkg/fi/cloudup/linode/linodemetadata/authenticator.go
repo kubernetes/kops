@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package linodemetadata provides the node-local (metadata-service based)
-// parts of the Linode support, kept separate so that nodeup does not link the
+// parts of the Akamai (Linode) support, kept separate so that nodeup does not link the
 // full cloud provider implementation.
 package linodemetadata
 
@@ -44,7 +44,7 @@ type linodeAuthenticator struct {
 var _ bootstrap.Authenticator = (*linodeAuthenticator)(nil)
 
 // NewLinodeAuthenticator returns a bootstrap.Authenticator that can create
-// authentication tokens for Linode instances by querying the Linode metadata
+// authentication tokens for Akamai (Linode) instances by querying the Akamai (Linode) metadata
 // service for the instance ID and returning it prefixed with "x-linode-instance-id".
 func NewLinodeAuthenticator() (bootstrap.Authenticator, error) {
 	return &linodeAuthenticator{
@@ -53,24 +53,24 @@ func NewLinodeAuthenticator() (bootstrap.Authenticator, error) {
 	}, nil
 }
 
-// CreateToken queries the Linode (Akamai) metadata service for the instance ID and returns
+// CreateToken queries the Akamai (Linode) metadata service for the instance ID and returns
 // it prefixed with "x-linode-instance-id ".
 func (a *linodeAuthenticator) CreateToken(body []byte) (string, error) {
 	instanceID, err := getLinodeMetadataValue(context.TODO(), a.client, a.metadataBaseURL, "id")
 	if err != nil {
-		return "", fmt.Errorf("unable to fetch Linode (Akamai) instance id: %w", err)
+		return "", fmt.Errorf("unable to fetch Akamai (Linode) instance id: %w", err)
 	}
 
 	return LinodeAuthenticationTokenPrefix + instanceID, nil
 }
 
-// GetMetadataValue fetches the given field from the Linode instance metadata service
+// GetMetadataValue fetches the given field from the Akamai (Linode) instance metadata service
 // using the standard metadata endpoint and default HTTP client.
 func GetMetadataValue(ctx context.Context, key string) (string, error) {
 	return getLinodeMetadataValue(ctx, http.DefaultClient, linodeMetadataBaseURL, key)
 }
 
-// getLinodeMetadataValue queries the Linode (Akamai) metadata service for the given key
+// getLinodeMetadataValue queries the Akamai (Linode) metadata service for the given key
 // and returns the value as a string.
 func getLinodeMetadataValue(ctx context.Context, client *http.Client, metadataBaseURL, key string) (string, error) {
 	tokenReq, err := http.NewRequestWithContext(ctx, http.MethodPut, metadataBaseURL+"/v1/token", nil)
@@ -122,12 +122,12 @@ func getLinodeMetadataValue(ctx context.Context, client *http.Client, metadataBa
 
 	value := parseLinodeMetadataValue(string(instanceBytes), key)
 	if value == "" {
-		return "", fmt.Errorf("instance %s from Linode (Akamai) metadata was empty", key)
+		return "", fmt.Errorf("instance %s from Akamai (Linode) metadata was empty", key)
 	}
 	return value, nil
 }
 
-// parseLinodeMetadataValue parses the Linode (Akamai) metadata response for the given key
+// parseLinodeMetadataValue parses the Akamai (Linode) metadata response for the given key
 // and returns the value as a string.
 func parseLinodeMetadataValue(metadata string, key string) string {
 	prefix := key + ":"

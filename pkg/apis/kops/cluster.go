@@ -204,7 +204,7 @@ type CloudProviderSpec struct {
 	Openstack *OpenstackSpec `json:"openstack,omitempty"`
 	// Scaleway configures the Scaleway cloud provider.
 	Scaleway *ScalewaySpec `json:"scaleway,omitempty"`
-	// Linode configures the Linode (Akamai) cloud provider.
+	// Linode configures the Akamai (Linode) cloud provider.
 	Linode *LinodeSpec `json:"linode,omitempty"`
 }
 
@@ -276,7 +276,7 @@ type HetznerSpec struct{}
 type ScalewaySpec struct {
 }
 
-// LinodeSpec configures the Linode (Akamai) cloud provider.
+// LinodeSpec configures the Akamai (Linode) cloud provider.
 type LinodeSpec struct{}
 
 type KarpenterConfig struct {

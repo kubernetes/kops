@@ -125,7 +125,7 @@ func (i *Instance) Find(c *fi.CloudupContext) (*Instance, error) {
 		}
 		interfaces, err := cloud.Client().ListInterfaces(c.Context(), instance.ID, nil)
 		if err != nil {
-			return nil, fmt.Errorf("error listing Linode (Akamai) interfaces for instance %q: %w", instance.Label, err)
+			return nil, fmt.Errorf("error listing Akamai (Linode) interfaces for instance %q: %w", instance.Label, err)
 		}
 		if !hasExpectedInterfaces(interfaces, fi.ValueOf(i.Subnet.ID), fi.ValueOf(i.RequirePublicInterface)) {
 			needsUpdate = append(needsUpdate, instance.Label)
@@ -225,7 +225,7 @@ func (i *Instance) RenderLinode(t *linode.APITarget, actual, expected, changes *
 	for range toCreate {
 		label, err := buildLinodeInstanceLabel(fi.ValueOf(expected.Name))
 		if err != nil {
-			return fmt.Errorf("error generating Linode (Akamai) instance label for group %q: %w", fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error generating Akamai (Linode) instance label for group %q: %w", fi.ValueOf(expected.Name), err)
 		}
 		_, err = t.Cloud.Client().CreateInstance(context.Background(), linodego.InstanceCreateOptions{
 			Region:              expected.Region,
@@ -239,7 +239,7 @@ func (i *Instance) RenderLinode(t *linode.APITarget, actual, expected, changes *
 			LinodeInterfaces:    interfaces,
 		})
 		if err != nil {
-			return fmt.Errorf("error creating Linode (Akamai) instance for group %q: %w", fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error creating Akamai (Linode) instance for group %q: %w", fi.ValueOf(expected.Name), err)
 		}
 	}
 
@@ -259,7 +259,7 @@ func generateUserDataHash(userData string) string {
 }
 
 // resolveAuthorizedKeys resolves the authorized keys for the instance.
-// It checks if the key has a public key directly provided or if it needs to be looked up by name in Linode (Akamai).
+// It checks if the key has a public key directly provided or if it needs to be looked up by name in Akamai (Linode).
 func resolveAuthorizedKeys(client linode.LinodeClient, keys []*SSHKey) ([]string, error) {
 	var authorizedKeys []string
 	var keysByName map[string]string
@@ -280,7 +280,7 @@ func resolveAuthorizedKeys(client linode.LinodeClient, keys []*SSHKey) ([]string
 		if keysByName == nil {
 			listedKeys, err := client.ListSSHKeys(context.TODO(), nil)
 			if err != nil {
-				return nil, fmt.Errorf("error listing Linode (Akamai) SSH keys: %w", err)
+				return nil, fmt.Errorf("error listing Akamai (Linode) SSH keys: %w", err)
 			}
 			keysByName = make(map[string]string, len(listedKeys))
 			for _, listedKey := range listedKeys {
@@ -290,7 +290,7 @@ func resolveAuthorizedKeys(client linode.LinodeClient, keys []*SSHKey) ([]string
 
 		publicKey, found := keysByName[fi.ValueOf(key.Name)]
 		if !found {
-			return nil, fmt.Errorf("SSH key %q not found in Linode (Akamai)", fi.ValueOf(key.Name))
+			return nil, fmt.Errorf("SSH key %q not found in Akamai (Linode)", fi.ValueOf(key.Name))
 		}
 		authorizedKeys = append(authorizedKeys, strings.TrimSpace(publicKey))
 	}
@@ -298,7 +298,7 @@ func resolveAuthorizedKeys(client linode.LinodeClient, keys []*SSHKey) ([]string
 	return authorizedKeys, nil
 }
 
-// buildLinodeInterfaces builds the Linode (Akamai) interfaces for the instance based on the subnet ID and whether a public interface is required.
+// buildLinodeInterfaces builds the Akamai (Linode) interfaces for the instance based on the subnet ID and whether a public interface is required.
 func buildLinodeInterfaces(subnetID int, requirePublicInterface bool) []linodego.LinodeInterfaceCreateOptions {
 	var interfaces []linodego.LinodeInterfaceCreateOptions
 	if requirePublicInterface {
@@ -313,7 +313,7 @@ func buildLinodeInterfaces(subnetID int, requirePublicInterface bool) []linodego
 	return interfaces
 }
 
-// buildLinodeInstanceLabel generates a unique label for the Linode (Akamai) instance by appending a random suffix to the provided name.
+// buildLinodeInstanceLabel generates a unique label for the Akamai (Linode) instance by appending a random suffix to the provided name.
 // It ensures that the final label does not exceed 64 characters and trims any trailing hyphens, underscores, or periods.
 func buildLinodeInstanceLabel(name string) (string, error) {
 	var randomSuffix [8]byte
@@ -331,7 +331,7 @@ func buildLinodeInstanceLabel(name string) (string, error) {
 	return name + suffix, nil
 }
 
-// hasExpectedInterfaces checks if the Linode (Akamai) instance has the expected network interfaces.
+// hasExpectedInterfaces checks if the Akamai (Linode) instance has the expected network interfaces.
 // It verifies that there is exactly one VPC interface with the matching subnet ID and checks for the presence of a public interface if required.
 func hasExpectedInterfaces(interfaces []linodego.LinodeInterface, subnetID int, requirePublicInterface bool) bool {
 	publicCount := 0
@@ -361,7 +361,7 @@ func hasExpectedInterfaces(interfaces []linodego.LinodeInterface, subnetID int, 
 	return publicCount == 0
 }
 
-// hasAllTags checks if all expected tags are present in the actual tags of the Linode (Akamai) instance.
+// hasAllTags checks if all expected tags are present in the actual tags of the Akamai (Linode) instance.
 func hasAllTags(actual, expected []string) bool {
 	for _, tag := range expected {
 		if !slices.Contains(actual, tag) {

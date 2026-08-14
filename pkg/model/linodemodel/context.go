@@ -18,7 +18,7 @@ package linodemodel
 
 import "k8s.io/kops/pkg/model"
 
-// LinodeModelContext holds shared model context for Linode (Akamai) builders.
+// LinodeModelContext holds shared model context for Akamai (Linode) builders.
 type LinodeModelContext struct {
 	*model.KopsModelContext
 }

@@ -65,7 +65,7 @@ func (v *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 
 	subnets, err := cloud.Client().ListVPCSubnets(c.Context(), fi.ValueOf(v.VPC.ID), nil)
 	if err != nil {
-		return nil, fmt.Errorf("error listing Linode (Akamai) VPC Subnets: %w", err)
+		return nil, fmt.Errorf("error listing Akamai (Linode) VPC Subnets: %w", err)
 	}
 
 	var foundByName *linodego.VPCSubnet
@@ -76,7 +76,7 @@ func (v *Subnet) Find(c *fi.CloudupContext) (*Subnet, error) {
 		candidate := &subnets[i]
 		if candidate.Label == name {
 			if foundByName != nil {
-				return nil, fmt.Errorf("found multiple Linode (Akamai) VPC Subnets named %q", name)
+				return nil, fmt.Errorf("found multiple Akamai (Linode) VPC Subnets named %q", name)
 			}
 			foundByName = candidate
 		}
@@ -146,7 +146,7 @@ func (_ *Subnet) RenderLinode(t *linode.APITarget, actual, expected, changes *Su
 			fi.ValueOf(expected.VPC.ID),
 		)
 		if err != nil {
-			return fmt.Errorf("error creating Linode (Akamai) Subnet %q: %w", fi.ValueOf(expected.Name), err)
+			return fmt.Errorf("error creating Akamai (Linode) Subnet %q: %w", fi.ValueOf(expected.Name), err)
 		}
 		expected.ID = new(subnet.ID)
 		return nil
@@ -161,7 +161,7 @@ func (_ *Subnet) RenderLinode(t *linode.APITarget, actual, expected, changes *Su
 		Label: fi.ValueOf(expected.Name),
 	})
 	if err != nil {
-		return fmt.Errorf("error updating Linode (Akamai) Subnet %q: %w", fi.ValueOf(expected.Name), err)
+		return fmt.Errorf("error updating Akamai (Linode) Subnet %q: %w", fi.ValueOf(expected.Name), err)
 	}
 	expected.ID = new(subnet.ID)
 

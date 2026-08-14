@@ -38,16 +38,16 @@ const (
 	resourceTypeInstance = "instance"
 )
 
-// parseTrackerIntID parses the tracker's string ID into an integer, which is used for Linode (Akamai) resource IDs.
+// parseTrackerIntID parses the tracker's string ID into an integer, which is used for Akamai (Linode) resource IDs.
 func parseTrackerIntID(tracker *resources.Resource) (int, error) {
 	id, err := strconv.Atoi(tracker.ID)
 	if err != nil {
-		return 0, fmt.Errorf("error parsing Linode (Akamai) %s ID %q: %w", tracker.Type, tracker.ID, err)
+		return 0, fmt.Errorf("error parsing Akamai (Linode) %s ID %q: %w", tracker.Type, tracker.ID, err)
 	}
 	return id, nil
 }
 
-// ListResources collects Linode (Akamai) cloud resources owned by the cluster.
+// ListResources collects Akamai (Linode) cloud resources owned by the cluster.
 func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterInfo) (map[string]*resources.Resource, error) {
 	resourceTrackers := make(map[string]*resources.Resource)
 
@@ -71,7 +71,7 @@ func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterI
 	return resourceTrackers, nil
 }
 
-// listInstances lists Linode (Akamai) instances owned by the cluster.
+// listInstances lists Akamai (Linode) instances owned by the cluster.
 func listInstances(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
 	c := cloud.(cloudlinode.LinodeCloud)
 	listOptions, err := cloudlinode.ListOptionsForTags(fmt.Sprintf("%s:%s", cloudlinode.TagKubernetesClusterName, clusterInfo.Name))
@@ -81,7 +81,7 @@ func listInstances(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resour
 
 	instances, err := c.Client().ListInstances(context.Background(), listOptions)
 	if err != nil {
-		return nil, fmt.Errorf("error listing Linode (Akamai) instances: %w", err)
+		return nil, fmt.Errorf("error listing Akamai (Linode) instances: %w", err)
 	}
 
 	var resourceTrackers []*resources.Resource
@@ -107,7 +107,7 @@ func listInstances(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resour
 func instanceSubnetBlocks(cloud cloudlinode.LinodeCloud, instance linodego.Instance) ([]string, error) {
 	interfaces, err := cloud.Client().ListInterfaces(context.Background(), instance.ID, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error listing Linode (Akamai) interfaces for instance %s(%d): %w", instance.Label, instance.ID, err)
+		return nil, fmt.Errorf("error listing Akamai (Linode) interfaces for instance %s(%d): %w", instance.Label, instance.ID, err)
 	}
 
 	blockSet := make(map[string]struct{})
@@ -127,7 +127,7 @@ func instanceSubnetBlocks(cloud cloudlinode.LinodeCloud, instance linodego.Insta
 	return blocks, nil
 }
 
-// findClusterVPCs finds Linode (Akamai) VPCs with the cluster's deterministic VPC label.
+// findClusterVPCs finds Akamai (Linode) VPCs with the cluster's deterministic VPC label.
 func findClusterVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]linodego.VPC, error) {
 	c := cloud.(cloudlinode.LinodeCloud)
 	vpcLabel := cloudlinode.NormalizeLinodeLabel(clusterInfo.Name)
@@ -138,7 +138,7 @@ func findClusterVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]linod
 
 	vpcs, err := c.Client().ListVPCs(context.Background(), listOptions)
 	if err != nil {
-		return nil, fmt.Errorf("error listing Linode (Akamai) VPCs: %w", err)
+		return nil, fmt.Errorf("error listing Akamai (Linode) VPCs: %w", err)
 	}
 
 	region := c.Region()
@@ -158,12 +158,12 @@ func findClusterVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]linod
 	return clusterVPCs, nil
 }
 
-// listSSHKeys lists Linode (Akamai) SSH keys that were generated for the cluster.
+// listSSHKeys lists Akamai (Linode) SSH keys that were generated for the cluster.
 func listSSHKeys(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
 	c := cloud.(cloudlinode.LinodeCloud)
 	keys, err := c.Client().ListSSHKeys(context.Background(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("error listing Linode (Akamai) SSH keys: %w", err)
+		return nil, fmt.Errorf("error listing Akamai (Linode) SSH keys: %w", err)
 	}
 
 	keyLabelPrefix := cloudlinode.NormalizeLinodeLabel("kubernetes."+clusterInfo.Name) + "-"
@@ -185,7 +185,7 @@ func listSSHKeys(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resource
 	return resourceTrackers, nil
 }
 
-// listVPCs lists Linode (Akamai) VPC resources owned by the cluster.
+// listVPCs lists Akamai (Linode) VPC resources owned by the cluster.
 func listVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
 	vpcs, err := findClusterVPCs(cloud, clusterInfo)
 	if err != nil {
@@ -206,7 +206,7 @@ func listVPCs(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.R
 	return resourceTrackers, nil
 }
 
-// listSubnets lists Linode (Akamai) VPC subnets attached to the cluster's managed VPC.
+// listSubnets lists Akamai (Linode) VPC subnets attached to the cluster's managed VPC.
 func listSubnets(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
 	c := cloud.(cloudlinode.LinodeCloud)
 	vpcs, err := findClusterVPCs(cloud, clusterInfo)
@@ -218,7 +218,7 @@ func listSubnets(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resource
 	for _, vpc := range vpcs {
 		subnets, err := c.Client().ListVPCSubnets(context.Background(), vpc.ID, nil)
 		if err != nil {
-			return nil, fmt.Errorf("error listing Linode (Akamai) VPC subnets for VPC %s(%d): %w", vpc.Label, vpc.ID, err)
+			return nil, fmt.Errorf("error listing Akamai (Linode) VPC subnets for VPC %s(%d): %w", vpc.Label, vpc.ID, err)
 		}
 
 		for _, subnet := range subnets {
@@ -238,7 +238,7 @@ func listSubnets(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resource
 	return resourceTrackers, nil
 }
 
-// deleteSSHKey deletes a Linode (Akamai) SSH key.
+// deleteSSHKey deletes an Akamai (Linode) SSH key.
 func deleteSSHKey(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(cloudlinode.LinodeCloud)
 	keyID, err := parseTrackerIntID(tracker)
@@ -250,13 +250,13 @@ func deleteSSHKey(cloud fi.Cloud, tracker *resources.Resource) error {
 		if linodego.IsNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf("error deleting Linode (Akamai) SSH key %s(%s): %w", tracker.Name, tracker.ID, err)
+		return fmt.Errorf("error deleting Akamai (Linode) SSH key %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil
 }
 
-// deleteVPC deletes a Linode (Akamai) VPC.
+// deleteVPC deletes an Akamai (Linode) VPC.
 func deleteVPC(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(cloudlinode.LinodeCloud)
 	vpcID, err := parseTrackerIntID(tracker)
@@ -268,13 +268,13 @@ func deleteVPC(cloud fi.Cloud, tracker *resources.Resource) error {
 		if linodego.IsNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf("error deleting Linode (Akamai) VPC %s(%s): %w", tracker.Name, tracker.ID, err)
+		return fmt.Errorf("error deleting Akamai (Linode) VPC %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil
 }
 
-// deleteSubnet deletes a Linode (Akamai) VPC subnet.
+// deleteSubnet deletes an Akamai (Linode) VPC subnet.
 func deleteSubnet(vpcID int, cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(cloudlinode.LinodeCloud)
 	subnetID, err := parseTrackerIntID(tracker)
@@ -286,13 +286,13 @@ func deleteSubnet(vpcID int, cloud fi.Cloud, tracker *resources.Resource) error 
 		if linodego.IsNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf("error deleting Linode (Akamai) subnet %s(%s): %w", tracker.Name, tracker.ID, err)
+		return fmt.Errorf("error deleting Akamai (Linode) subnet %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil
 }
 
-// deleteInstance deletes a Linode (Akamai) instance.
+// deleteInstance deletes an Akamai (Linode) instance.
 func deleteInstance(cloud fi.Cloud, tracker *resources.Resource) error {
 	c := cloud.(cloudlinode.LinodeCloud)
 	instanceID, err := parseTrackerIntID(tracker)
@@ -304,7 +304,7 @@ func deleteInstance(cloud fi.Cloud, tracker *resources.Resource) error {
 		if linodego.IsNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf("error deleting Linode (Akamai) instance %s(%s): %w", tracker.Name, tracker.ID, err)
+		return fmt.Errorf("error deleting Akamai (Linode) instance %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil

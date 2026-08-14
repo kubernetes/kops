@@ -2145,7 +2145,7 @@ func TestValidateNetworkingLinode(t *testing.T) {
 				{
 					Type:   field.ErrorTypeForbidden,
 					Field:  "networking.networkCIDR",
-					Detail: "Linode (Akamai) doesn't support specifying both NetworkID and NetworkCIDR",
+					Detail: "Akamai (Linode) doesn't support specifying both NetworkID and NetworkCIDR",
 				},
 			},
 		},

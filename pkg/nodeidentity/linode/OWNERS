@@ -2,4 +2,5 @@
 
 labels:
 
+- area/provider/akamai
 - area/provider/linode

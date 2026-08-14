@@ -43,7 +43,7 @@ type linodeVerifier struct {
 
 var _ bootstrap.Verifier = (*linodeVerifier)(nil)
 
-// NewLinodeVerifier returns a bootstrap.Verifier that can verify Linode (Akamai) instance tokens using the LINODE_TOKEN environment variable.
+// NewLinodeVerifier returns a bootstrap.Verifier that can verify Akamai (Linode) instance tokens using the LINODE_TOKEN environment variable.
 func NewLinodeVerifier(opt *LinodeVerifierOptions) (bootstrap.Verifier, error) {
 	accessToken := os.Getenv("LINODE_TOKEN")
 	if accessToken == "" {
@@ -60,7 +60,7 @@ func NewLinodeVerifier(opt *LinodeVerifierOptions) (bootstrap.Verifier, error) {
 	return &linodeVerifier{client: &client}, nil
 }
 
-// VerifyToken verifies that the given token corresponds to a valid Linode (Akamai) instance.
+// VerifyToken verifies that the given token corresponds to a valid Akamai (Linode) instance.
 func (v *linodeVerifier) VerifyToken(ctx context.Context, rawRequest *http.Request, token string, body []byte) (*bootstrap.VerifyResult, error) {
 	if !strings.HasPrefix(token, linodemetadata.LinodeAuthenticationTokenPrefix) {
 		return nil, bootstrap.ErrNotThisVerifier
@@ -74,10 +74,10 @@ func (v *linodeVerifier) VerifyToken(ctx context.Context, rawRequest *http.Reque
 
 	instance, err := v.client.GetInstance(ctx, instanceID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get info for Linode (Akamai) instance %q: %w", instanceIDString, err)
+		return nil, fmt.Errorf("failed to get info for Akamai (Linode) instance %q: %w", instanceIDString, err)
 	}
 	if instance == nil {
-		return nil, fmt.Errorf("failed to get info for Linode (Akamai) instance %q: empty response", instanceIDString)
+		return nil, fmt.Errorf("failed to get info for Akamai (Linode) instance %q: empty response", instanceIDString)
 	}
 
 	addresses, challengeEndpoints := gatherIPv4Addresses(instance.IPv4)
@@ -116,7 +116,7 @@ func gatherIPv4Addresses(ips []net.IP) ([]string, []string) {
 	return addresses, challengeEndpoints
 }
 
-// instanceGroupNameFromTags returns the instance group name from the given list of Linode (Akamai) tags.
+// instanceGroupNameFromTags returns the instance group name from the given list of Akamai (Linode) tags.
 func instanceGroupNameFromTags(tags []string) string {
 	for _, tag := range tags {
 		if after, ok := strings.CutPrefix(tag, TagKubernetesInstanceGroup+":"); ok {

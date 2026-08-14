@@ -419,7 +419,7 @@ func (c *VFSContext) buildLinodePath(p string) (*S3Path, error) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.UsePathStyle = true
 		o.DisableLogOutputChecksumValidationSkipped = true
-		// Linode (Akamai) requires checksum-when-required behavior
+		// Akamai (Linode) requires checksum-when-required behavior
 		o.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired
 		o.ResponseChecksumValidation = aws.ResponseChecksumValidationWhenRequired
 	})

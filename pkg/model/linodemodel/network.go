@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/linodetasks"
 )
 
-// NetworkModelBuilder configures the Linode (Akamai) VPC for the cluster.
+// NetworkModelBuilder configures the Akamai (Linode) VPC for the cluster.
 type NetworkModelBuilder struct {
 	*LinodeModelContext
 	Lifecycle fi.Lifecycle

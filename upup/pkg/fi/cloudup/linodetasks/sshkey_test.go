@@ -106,7 +106,7 @@ func TestSSHKeyFindListError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected list error")
 	}
-	if !strings.Contains(err.Error(), "error listing Linode (Akamai) SSH keys") {
+	if !strings.Contains(err.Error(), "error listing Akamai (Linode) SSH keys") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

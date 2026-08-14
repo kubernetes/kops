@@ -40,7 +40,7 @@ const (
 	TagKubernetesInstanceUserData = "kops.k8s.io/instance-userdata"
 )
 
-// LinodeClient is the subset of the Linode API client used by the Linode cloudup tasks.
+// LinodeClient is the subset of the Akamai (Linode) API client used by the Akamai (Linode) cloudup tasks.
 type LinodeClient interface {
 	ListVPCs(ctx context.Context, opts *linodego.ListOptions) ([]linodego.VPC, error)
 	CreateVPC(ctx context.Context, opts linodego.VPCCreateOptions) (*linodego.VPC, error)
@@ -60,7 +60,7 @@ type LinodeClient interface {
 	ListInterfaces(ctx context.Context, instanceID int, opts *linodego.ListOptions) ([]linodego.LinodeInterface, error)
 }
 
-// LinodeCloud exposes Linode (Akamai) cloud APIs used by kOps.
+// LinodeCloud exposes Akamai (Linode) cloud APIs used by kOps.
 type LinodeCloud interface {
 	fi.Cloud
 	Client() LinodeClient
@@ -107,7 +107,7 @@ func (c *Cloud) ProviderID() kops.CloudProviderID {
 }
 
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
-	return nil, fmt.Errorf("DNS is not yet implemented for Linode (Akamai)")
+	return nil, fmt.Errorf("DNS is not yet implemented for Akamai (Linode)")
 }
 
 func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
@@ -117,14 +117,14 @@ func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstance) error {
 	instanceID, err := strconv.Atoi(instance.ID)
 	if err != nil {
-		return fmt.Errorf("error parsing Linode (Akamai) instance ID %q: %w", instance.ID, err)
+		return fmt.Errorf("error parsing Akamai (Linode) instance ID %q: %w", instance.ID, err)
 	}
 
 	if err := c.client.DeleteInstance(context.Background(), instanceID); err != nil {
 		if linodego.IsNotFound(err) {
 			return nil
 		}
-		return fmt.Errorf("error deleting Linode (Akamai) instance %q: %w", instance.ID, err)
+		return fmt.Errorf("error deleting Akamai (Linode) instance %q: %w", instance.ID, err)
 	}
 
 	return nil
@@ -135,11 +135,11 @@ func (c *Cloud) DeregisterInstance(instance *cloudinstances.CloudInstance) error
 }
 
 func (c *Cloud) DeleteGroup(group *cloudinstances.CloudInstanceGroup) error {
-	return fmt.Errorf("instance group deletion is not yet implemented for Linode (Akamai)")
+	return fmt.Errorf("instance group deletion is not yet implemented for Akamai (Linode)")
 }
 
 func (c *Cloud) DetachInstance(instance *cloudinstances.CloudInstance) error {
-	return fmt.Errorf("instance detach is not yet implemented for Linode (Akamai)")
+	return fmt.Errorf("instance detach is not yet implemented for Akamai (Linode)")
 }
 
 func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
@@ -158,25 +158,25 @@ func (c *Cloud) GetApiIngressStatus(cluster *kops.Cluster) ([]fi.ApiIngressStatu
 	return nil, nil
 }
 
-// ListOptionsForLabel builds Linode (Akamai) list options that filter by an exact label match.
+// ListOptionsForLabel builds Akamai (Linode) list options that filter by an exact label match.
 func ListOptionsForLabel(label string) (*linodego.ListOptions, error) {
 	filter := &linodego.Filter{}
 	filter.AddField(linodego.Eq, "label", label)
 	filterJSON, err := filter.MarshalJSON()
 	if err != nil {
-		return nil, fmt.Errorf("error building Linode (Akamai) label filter: %w", err)
+		return nil, fmt.Errorf("error building Akamai (Linode) label filter: %w", err)
 	}
 
 	return &linodego.ListOptions{Filter: string(filterJSON)}, nil
 }
 
-// ListOptionsForTags builds Linode (Akamai) list options that filter by an exact tag match.
+// ListOptionsForTags builds Akamai (Linode) list options that filter by an exact tag match.
 func ListOptionsForTags(tags ...string) (*linodego.ListOptions, error) {
 	filter := &linodego.Filter{}
 	filter.AddField(linodego.Eq, "tags", tags)
 	filterJSON, err := filter.MarshalJSON()
 	if err != nil {
-		return nil, fmt.Errorf("error building Linode (Akamai) tag filter: %w", err)
+		return nil, fmt.Errorf("error building Akamai (Linode) tag filter: %w", err)
 	}
 
 	return &linodego.ListOptions{
@@ -185,7 +185,7 @@ func ListOptionsForTags(tags ...string) (*linodego.ListOptions, error) {
 	}, nil
 }
 
-// NormalizeLinodeLabel returns a normalized label for Linode (Akamai) resources
+// NormalizeLinodeLabel returns a normalized label for Akamai (Linode) resources
 func NormalizeLinodeLabel(name string) string {
 	name = invalidLinodeLabelChars.ReplaceAllString(name, "-")
 	name = strings.Trim(name, "-_")
