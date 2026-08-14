@@ -83,10 +83,14 @@ KOPS_CHANNELS_TAG=$(IMAGE_TAG)
 
 CGO_ENABLED=0
 export CGO_ENABLED
-# disable_grpc_modules removes the unused GCS gRPC transport from
-# cloud.google.com/go/storage, dropping its envoy/xds proto dependency chain;
-# kOps only uses the GCS HTTP JSON API. This shrinks binaries by ~12MB.
-BUILDTAGS=disable_grpc_modules
+# disable_grpc_modules removes the unused GCS gRPC transport and its envoy/xds proto chain from
+# cloud.google.com/go/storage. It is safe because kOps only uses the GCS HTTP JSON API.
+# It saves ~12MB.
+# grpcnotrace removes golang.org/x/net/trace from google.golang.org/grpc. It is safe because kOps
+# does not use gRPC's x/net/trace integration. In binaries with no other text/template usage, it
+# restores linker dead-code elimination disabled by x/net/trace's use of text/template and saves
+# ~21MB in the dns-controller and channels images.
+BUILDTAGS=disable_grpc_modules,grpcnotrace
 BUILDFLAGS=-trimpath -buildvcs=false -tags=${BUILDTAGS}
 
 
@@ -286,7 +290,7 @@ dns-controller-push: ko-dns-controller-push
 
 .PHONY: ko-dns-controller-push
 ko-dns-controller-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}dns-controller" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/amd64,linux/arm64 --bare ./dns-controller/cmd/dns-controller/
 
 .PHONY: kops-utils-cp-push
 kops-utils-cp-push: ko-kops-utils-cp-push
@@ -517,7 +521,7 @@ ko-kops-controller-export: ko-kops-controller-export-linux-amd64 ko-kops-control
 .PHONY: ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64
 ko-kops-channels-export-linux-amd64 ko-kops-channels-export-linux-arm64: ko-kops-channels-export-linux-%:
 	mkdir -p ${IMAGES}
-	KO_DOCKER_REPO="registry.k8s.io/kops" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-channels-$*.tar ./channels/cmd/channels/
+	KO_DOCKER_REPO="registry.k8s.io/kops" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/kops-channels-$*.tar ./channels/cmd/channels/
 	gzip -f ${IMAGES}/kops-channels-$*.tar
 	tools/sha256 ${IMAGES}/kops-channels-$*.tar.gz ${IMAGES}/kops-channels-$*.tar.gz.sha256
 
@@ -539,7 +543,7 @@ ko-kube-apiserver-healthcheck-export: ko-kube-apiserver-healthcheck-export-linux
 .PHONY: ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64
 ko-dns-controller-export-linux-amd64 ko-dns-controller-export-linux-arm64: ko-dns-controller-export-linux-%:
 	mkdir -p ${IMAGES}
-	KO_DOCKER_REPO="registry.k8s.io/kops" GOFLAGS="-tags=peer_name_alternative,peer_name_hash" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/dns-controller-$*.tar ./dns-controller/cmd/dns-controller
+	KO_DOCKER_REPO="registry.k8s.io/kops" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${DNS_CONTROLLER_TAG} --platform=linux/$* -B --push=false --tarball=${IMAGES}/dns-controller-$*.tar ./dns-controller/cmd/dns-controller
 	gzip -f ${IMAGES}/dns-controller-$*.tar
 	tools/sha256 ${IMAGES}/dns-controller-$*.tar.gz ${IMAGES}/dns-controller-$*.tar.gz.sha256
 
@@ -779,7 +783,7 @@ kops-channels-push: ko-kops-channels-push
 
 .PHONY: ko-kops-channels-push
 ko-kops-channels-push:
-	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}channels" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/amd64,linux/arm64 --bare ./channels/cmd/channels/
+	KO_DOCKER_REPO="${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}channels" GOFLAGS="-tags=${BUILDTAGS}" ${KO} build --tags ${KOPS_CHANNELS_TAG} --platform=linux/amd64,linux/arm64 --bare ./channels/cmd/channels/
 
 #------------------------------------------------------
 # kube-apiserver-healthcheck
