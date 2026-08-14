@@ -57,32 +57,29 @@ func GetInstanceTemplateForMIGMember(ctx context.Context, computeService *comput
 
 // getManagedInstance queries GCE for the instance from the MIG
 func getManagedInstance(ctx context.Context, computeService *compute.Service, project string, migName string, instance *compute.Instance) (*compute.ManagedInstance, error) {
-	var matches []*compute.ManagedInstance
-
 	zone := LastComponent(instance.Zone)
 	filter := "id=" + strconv.FormatUint(instance.Id, 10)
-	if err := computeService.InstanceGroupManagers.ListManagedInstances(project, zone, migName).Filter(filter).Pages(ctx, func(page *compute.InstanceGroupManagersListManagedInstancesResponse) error {
+	call := computeService.InstanceGroupManagers.ListManagedInstances(project, zone, migName).Filter(filter).Context(ctx)
+	for {
+		page, err := call.Do()
+		if err != nil {
+			return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", migName, err)
+		}
+
 		// Post-filter... filters aren't implemented (b/27605549)
 		for _, member := range page.ManagedInstances {
-			if member.Id != instance.Id {
-				continue
+			if member.Id == instance.Id {
+				return member, nil
 			}
-			matches = append(matches, member)
 		}
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("error fetching GCE managed instance group members for %q: %v", migName, err)
+
+		if page.NextPageToken == "" {
+			break
+		}
+		call.PageToken(page.NextPageToken)
 	}
 
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("instance %v not managed by mig %s", instance.Id, migName)
-	}
-	if len(matches) > 1 {
-		// Should be impossible - shows that filters / post-filters are not working
-		return nil, fmt.Errorf("found multiple instances with id %v managed by mig %s", instance.Id, migName)
-	}
-
-	return matches[0], nil
+	return nil, fmt.Errorf("instance %v not managed by mig %s", instance.Id, migName)
 }
 
 // GetMetadataValue returns the value for the given key in the metadata, or "" if not present.
