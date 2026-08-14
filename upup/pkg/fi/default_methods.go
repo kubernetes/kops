@@ -137,25 +137,30 @@ func defaultDeltaRunMethod[T SubContext](e Task[T], c *Context[T]) error {
 	return nil
 }
 
-// invokeCheckChanges calls the checkChanges method by reflection
+// invokeCheckChanges calls the CheckChanges method by reflection. Here and below, MethodByName
+// must be called with literal names to keep linker method pruning working (see Context.Render).
 func invokeCheckChanges[T SubContext](a, e, changes Task[T]) error {
-	rv, err := reflectutils.InvokeMethod(e, "CheckChanges", a, e, changes)
-	if err != nil {
-		return err
+	m := reflect.ValueOf(e).MethodByName("CheckChanges")
+	if !m.IsValid() {
+		return &reflectutils.MethodNotFoundError{Name: "CheckChanges", Target: e}
 	}
+	rv := m.Call([]reflect.Value{reflect.ValueOf(a), reflect.ValueOf(e), reflect.ValueOf(changes)})
+	var err error
 	if !rv[0].IsNil() {
 		err = rv[0].Interface().(error)
 	}
 	return err
 }
 
-// invokeFind calls the find method by reflection
+// invokeFind calls the Find method by reflection.
 func invokeFind[T SubContext](e Task[T], c *Context[T]) (Task[T], error) {
-	rv, err := reflectutils.InvokeMethod(e, "Find", c)
-	if err != nil {
-		return nil, err
+	m := reflect.ValueOf(e).MethodByName("Find")
+	if !m.IsValid() {
+		return nil, &reflectutils.MethodNotFoundError{Name: "Find", Target: e}
 	}
+	rv := m.Call([]reflect.Value{reflect.ValueOf(c)})
 	var task Task[T]
+	var err error
 	if !rv[0].IsNil() {
 		task = rv[0].Interface().(Task[T])
 	}
@@ -165,16 +170,16 @@ func invokeFind[T SubContext](e Task[T], c *Context[T]) (Task[T], error) {
 	return task, err
 }
 
-// invokeShouldCreate calls the ShouldCreate method by reflection, if it exists
+// invokeShouldCreate calls the ShouldCreate method by reflection; tasks without it are created
+// by default.
 func invokeShouldCreate[T SubContext](a, e, changes Task[T]) (bool, error) {
-	rv, err := reflectutils.InvokeMethod(e, "ShouldCreate", a, e, changes)
-	if err != nil {
-		if reflectutils.IsMethodNotFound(err) {
-			return true, nil
-		}
-		return false, err
+	m := reflect.ValueOf(e).MethodByName("ShouldCreate")
+	if !m.IsValid() {
+		return true, nil
 	}
+	rv := m.Call([]reflect.Value{reflect.ValueOf(a), reflect.ValueOf(e), reflect.ValueOf(changes)})
 	shouldCreate := rv[0].Interface().(bool)
+	var err error
 	if !rv[1].IsNil() {
 		err = rv[1].Interface().(error)
 	}

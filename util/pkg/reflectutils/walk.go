@@ -57,28 +57,6 @@ func JSONMergeStruct(dest, src interface{}) {
 	}
 }
 
-// InvokeMethod calls the specified method by reflection
-func InvokeMethod(target interface{}, name string, args ...interface{}) ([]reflect.Value, error) {
-	v := reflect.ValueOf(target)
-
-	method, found := v.Type().MethodByName(name)
-	if !found {
-		return nil, &MethodNotFoundError{
-			Name:   name,
-			Target: target,
-		}
-	}
-
-	var argValues []reflect.Value
-	for _, a := range args {
-		argValues = append(argValues, reflect.ValueOf(a))
-	}
-	klog.V(12).Infof("Calling method %s on %T", method.Name, target)
-	m := v.MethodByName(method.Name)
-	rv := m.Call(argValues)
-	return rv, nil
-}
-
 func BuildTypeName(t reflect.Type) string {
 	switch t.Kind() {
 	case reflect.Ptr:
