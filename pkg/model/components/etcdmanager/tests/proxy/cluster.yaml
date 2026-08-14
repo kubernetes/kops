@@ -32,7 +32,7 @@ spec:
     provider: Manager
     backups:
       backupStore: memfs://clusters.example.com/minimal.example.com/backups/etcd-events
-  kubernetesVersion: v1.21.0
+  kubernetesVersion: v1.32.0
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
   networking:

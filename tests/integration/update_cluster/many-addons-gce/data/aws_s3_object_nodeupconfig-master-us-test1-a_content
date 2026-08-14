@@ -281,6 +281,8 @@ KubeletConfig:
   clusterDomain: cluster.local
   enableDebuggingHandlers: true
   evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
+  featureGates:
+    ImageVolume: "true"
   hairpinMode: promiscuous-bridge
   kubeconfigPath: /var/lib/kubelet/kubeconfig
   logLevel: 2

@@ -47,8 +47,6 @@ spec:
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
-    - mountPath: /opt
-      name: opt
     - mountPath: /opt/etcd-v3.5.0
       name: etcd-v3-5-31
     - mountPath: /opt/etcd-v3.5.1
@@ -162,8 +160,6 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager-main
       type: DirectoryOrCreate
     name: pki
-  - emptyDir: {}
-    name: opt
   - image:
       pullPolicy: IfNotPresent
       reference: registry.k8s.io/etcd:v3.5.31

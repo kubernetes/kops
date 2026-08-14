@@ -49,36 +49,12 @@ spec:
       name: run
     - mountPath: /etc/kubernetes/pki/etcd-manager
       name: pki
-    - mountPath: /opt
-      name: opt
+    - mountPath: /opt/etcd-v3.6.99
+      name: etcd-v3-6-99
     - mountPath: /var/log/etcd.log
       name: varlogetcd
   hostNetwork: true
   hostPID: true
-  initContainers:
-  - args:
-    - --target-dir=/opt/kops-utils/
-    - --src=/ko-app/kops-utils-cp
-    command:
-    - /ko-app/kops-utils-cp
-    image: registry.k8s.io/kops/kops-utils-cp:1.34.0-beta.1
-    name: kops-utils-cp
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: opt
-  - args:
-    - --target-dir=/opt/etcd-v3.6.99
-    - --src=/usr/local/bin/etcd
-    - --src=/usr/local/bin/etcdctl
-    command:
-    - /opt/kops-utils/kops-utils-cp
-    image: gcr.io/etcd-development/etcd:v3.6.99
-    name: init-etcd-3-6-99
-    resources: {}
-    volumeMounts:
-    - mountPath: /opt
-      name: opt
   priorityClassName: system-cluster-critical
   tolerations:
   - key: CriticalAddonsOnly
@@ -96,8 +72,10 @@ spec:
       path: /etc/kubernetes/pki/etcd-manager-events
       type: DirectoryOrCreate
     name: pki
-  - emptyDir: {}
-    name: opt
+  - image:
+      pullPolicy: IfNotPresent
+      reference: gcr.io/etcd-development/etcd:v3.6.99
+    name: etcd-v3-6-99
   - hostPath:
       path: /var/log/etcd-events.log
       type: FileOrCreate

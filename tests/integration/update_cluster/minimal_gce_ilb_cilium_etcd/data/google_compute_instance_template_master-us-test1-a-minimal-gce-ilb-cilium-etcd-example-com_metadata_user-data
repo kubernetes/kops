@@ -125,7 +125,7 @@ ClusterName: minimal-gce-ilb-cilium-etcd.example.com
 ConfigBase: memfs://tests/minimal-gce-ilb-cilium-etcd.example.com
 InstanceGroupName: master-us-test1-a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: qFDWMfLtyQ0srXA4nfz7av5wcOJ6u9XuroGCuxqUrEo=
+NodeupConfigHash: LuGBjQHTJxNK6wzRtaRRe6BzhAvFvXg4APHhqGJbOyc=
 
 __EOF_KUBE_ENV
 
