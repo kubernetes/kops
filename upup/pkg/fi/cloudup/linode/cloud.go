@@ -172,8 +172,11 @@ func ListOptionsForLabel(label string) (*linodego.ListOptions, error) {
 
 // ListOptionsForTags builds Akamai (Linode) list options that filter by an exact tag match.
 func ListOptionsForTags(tags ...string) (*linodego.ListOptions, error) {
-	filter := &linodego.Filter{}
-	filter.AddField(linodego.Eq, "tags", tags)
+	filters := make([]linodego.FilterNode, 0, len(tags))
+	for _, tag := range tags {
+		filters = append(filters, &linodego.Comp{Column: "tags", Operator: linodego.Contains, Value: tag})
+	}
+	filter := linodego.And("", "", filters...)
 	filterJSON, err := filter.MarshalJSON()
 	if err != nil {
 		return nil, fmt.Errorf("error building Akamai (Linode) tag filter: %w", err)
