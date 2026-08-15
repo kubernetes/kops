@@ -18,6 +18,7 @@ package linodemodel
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -26,19 +27,25 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/linodetasks"
 )
 
+const maxLinodeSSHKeyNameLength = 64
+
 // InstanceModelBuilder configures the Akamai (Linode) instances (aka Linodes) for the cluster.
 type InstanceModelBuilder struct {
 	*LinodeModelContext
 	Lifecycle              fi.Lifecycle
+	SSHKeyLifecycle        fi.Lifecycle
 	BootstrapScriptBuilder *model.BootstrapScriptBuilder
 }
 
 var _ fi.CloudupModelBuilder = &InstanceModelBuilder{}
 
 func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
-	for _, ig := range b.InstanceGroups {
-		var sshKeyTasks []*linodetasks.SSHKey
+	sshKeyTask, err := b.buildSSHKeyTask(c)
+	if err != nil {
+		return err
+	}
 
+	for _, ig := range b.InstanceGroups {
 		subnets, err := b.GatherSubnets(ig)
 		if err != nil {
 			return err
@@ -51,12 +58,6 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		subnetTask, err := findSubnetTask(c, subnetTaskName, ig)
 		if err != nil {
 			return err
-		}
-
-		for _, task := range c.Tasks {
-			if sshKey, ok := task.(*linodetasks.SSHKey); ok {
-				sshKeyTasks = append(sshKeyTasks, sshKey)
-			}
 		}
 
 		userData, err := b.BootstrapScriptBuilder.ResourceNodeUp(c, ig)
@@ -72,6 +73,10 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 		for k, v := range tagsMap {
 			tags = append(tags, fmt.Sprintf("%s:%s", k, v))
 		}
+		var authorizedKeys []*linodetasks.SSHKey
+		if sshKeyTask != nil {
+			authorizedKeys = []*linodetasks.SSHKey{sshKeyTask}
+		}
 
 		instanceGroup := linodetasks.Instance{
 			Name:                   new(ig.Name),
@@ -80,7 +85,7 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 			Type:                   ig.Spec.MachineType,
 			Subnet:                 subnetTask,
 			RequirePublicInterface: requirePublicInterface(subnetSpec, ig),
-			AuthorizedKeys:         sshKeyTasks,
+			AuthorizedKeys:         authorizedKeys,
 			Count:                  int(fi.ValueOf(ig.Spec.MinSize)),
 			Image:                  ig.Spec.Image,
 			UserData:               userData,
@@ -91,6 +96,33 @@ func (b *InstanceModelBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+func (b *InstanceModelBuilder) buildSSHKeyTask(c *fi.CloudupModelBuilderContext) (*linodetasks.SSHKey, error) {
+	if !b.UseSSHKey() {
+		return nil, nil
+	}
+
+	name, err := b.SSHKeyName()
+	if err != nil {
+		return nil, fmt.Errorf("error building Akamai (Linode) SSH key task: %w", err)
+	}
+	name = linode.NormalizeLinodeLabel(name)
+	if len(name) > maxLinodeSSHKeyNameLength {
+		name = strings.Trim(name[:maxLinodeSSHKeyNameLength], "-_")
+	}
+
+	sshKeyTask := &linodetasks.SSHKey{
+		Name:      new(name),
+		Lifecycle: b.SSHKeyLifecycle,
+	}
+	if len(b.SSHPublicKeys) > 0 {
+		publicKey := fi.Resource(fi.NewBytesResource(b.SSHPublicKeys[0]))
+		sshKeyTask.PublicKey = &publicKey
+	}
+	c.AddTask(sshKeyTask)
+
+	return sshKeyTask, nil
 }
 
 // requirePublicInterface checks whether the instance group requires a public interface based on the subnet type and instance group settings.
