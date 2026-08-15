@@ -111,14 +111,10 @@ func TestListResources(t *testing.T) {
 		t.Fatalf("unexpected VPC list filter: got %q, want %q", got, want)
 	}
 
-	expectedInstanceListOptions, err := linode.ListOptionsForTags("kops.k8s.io/cluster:example.k8s.local")
-	if err != nil {
-		t.Fatalf("ListOptionsForTags returned error: %v", err)
-	}
 	if client.LastListInstancesOpts == nil {
 		t.Fatalf("expected instance list options to be recorded")
 	}
-	if got, want := client.LastListInstancesOpts.Filter, expectedInstanceListOptions.Filter; got != want {
+	if got, want := client.LastListInstancesOpts.Filter, `{"+and":[{"tags":{"+contains":"kops.k8s.io/cluster:example.k8s.local"}}]}`; got != want {
 		t.Fatalf("unexpected instance list filter: got %q, want %q", got, want)
 	}
 }

@@ -25,6 +25,37 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 )
 
+func TestListOptionsForTags(t *testing.T) {
+	tests := []struct {
+		name string
+		tags []string
+		want string
+	}{
+		{
+			name: "single tag",
+			tags: []string{"kops.k8s.io/cluster:example.k8s.local"},
+			want: `{"+and":[{"tags":{"+contains":"kops.k8s.io/cluster:example.k8s.local"}}]}`,
+		},
+		{
+			name: "multiple tags",
+			tags: []string{"kops.k8s.io/cluster:example.k8s.local", "kops.k8s.io/instance-group:control-plane"},
+			want: `{"+and":[{"tags":{"+contains":"kops.k8s.io/cluster:example.k8s.local"}},{"tags":{"+contains":"kops.k8s.io/instance-group:control-plane"}}]}`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			options, err := ListOptionsForTags(test.tags...)
+			if err != nil {
+				t.Fatalf("ListOptionsForTags returned error: %v", err)
+			}
+			if got := options.Filter; got != test.want {
+				t.Fatalf("unexpected filter: got %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
 func TestCloudDeleteInstance(t *testing.T) {
 	for _, testCase := range []struct {
 		name        string
