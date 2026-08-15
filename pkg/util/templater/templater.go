@@ -20,9 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/third_party/forked/text/template"
 )
 
 const (

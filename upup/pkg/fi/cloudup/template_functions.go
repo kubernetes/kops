@@ -39,7 +39,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -63,6 +62,7 @@ import (
 	"k8s.io/kops/pkg/resources/spotinst"
 	"k8s.io/kops/pkg/truncate"
 	"k8s.io/kops/pkg/wellknownports"
+	"k8s.io/kops/third_party/forked/text/template"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/azure"

@@ -20,8 +20,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"text/template"
 
+	"k8s.io/kops/third_party/forked/text/template"
 	"k8s.io/kops/upup/pkg/fi"
 )
 

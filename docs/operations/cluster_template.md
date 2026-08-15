@@ -6,7 +6,9 @@ It is possible to generate that yaml file from a template, using the command `ko
 
 This document details the template language used.
 
-The file passed as `--template` must be a [go template](https://golang.org/pkg/text/template/). Example:
+The file passed as `--template` uses [Go template syntax](https://pkg.go.dev/text/template). kOps templates support struct fields, map keys, and registered template functions, including the functions documented below. Unlike the standard library's `text/template` implementation, they do not resolve expressions to methods on rendered values, including values returned by template functions. Expressions such as `{{ '{{ now.Unix }}' }}` therefore fail during template execution.
+
+Example:
 ```yaml
 # File cluster.tmpl.yaml
 apiVersion: kops.k8s.io/v1alpha2

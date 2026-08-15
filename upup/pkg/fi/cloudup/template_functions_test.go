@@ -21,15 +21,18 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-	"text/template"
+	stdtemplate "text/template"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gcemock "k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/third_party/forked/text/template"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
+
+var _ func(*TemplateFunctions, stdtemplate.FuncMap, fi.SecretStore) error = (*TemplateFunctions).AddTo
 
 func Test_TemplateFunctions_CloudControllerConfigArgv(t *testing.T) {
 	tests := []struct {
@@ -492,12 +495,13 @@ func TestTemplateFunctions_TaskHelpers(t *testing.T) {
 		t.Fatalf("unexpected task order %v", gotKeys)
 	}
 
-	funcMap := template.FuncMap{}
-	if err := tf.AddTo(funcMap, nil); err != nil {
+	// AddTo remains source-compatible with callers using the standard library FuncMap.
+	stdlibFuncMap := stdtemplate.FuncMap{}
+	if err := tf.AddTo(stdlibFuncMap, nil); err != nil {
 		t.Fatalf("AddTo returned error: %v", err)
 	}
 
-	tmpl, err := template.New("tasks").Funcs(funcMap).Parse(`{{ TaskKey (Task "ManagedFile" "alpha") }}|{{ range $task := TasksByType "ManagedFile" }}{{ TaskKey $task }};{{ end }}`)
+	tmpl, err := template.New("tasks").Funcs(stdlibFuncMap).Parse(`{{ TaskKey (Task "ManagedFile" "alpha") }}|{{ range $task := TasksByType "ManagedFile" }}{{ TaskKey $task }};{{ end }}`)
 	if err != nil {
 		t.Fatalf("error parsing template: %v", err)
 	}
