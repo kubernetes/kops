@@ -36,12 +36,18 @@ func (d *deployer) DumpClusterLogs() error {
 	}
 	defer yamlFile.Close()
 
+	// Up() may not have run in this process, or may have failed before it could work this out.
+	d.resolveSSHUserFromCluster()
+
 	args := []string{
 		d.KopsBinaryPath, "toolbox", "dump",
 		"--name", d.ClusterName,
 		"--dir", d.ArtifactsDir,
 		"--private-key", d.SSHPrivateKeyPath,
-		"--ssh-user", d.SSHUser,
+	}
+	// Passing an empty --ssh-user would override the kops default with an unusable value.
+	if d.SSHUser != "" {
+		args = append(args, "--ssh-user", d.SSHUser)
 	}
 
 	if d.MaxNodesToDump != "" {
@@ -223,8 +229,10 @@ func (d *deployer) dumpClusterInfoSSH() error {
 		d.KopsBinaryPath, "toolbox", "dump",
 		"--name", d.ClusterName,
 		"--private-key", d.SSHPrivateKeyPath,
-		"--ssh-user", d.SSHUser,
 		"-o", "yaml",
+	}
+	if d.SSHUser != "" {
+		toolboxDumpArgs = append(toolboxDumpArgs, "--ssh-user", d.SSHUser)
 	}
 	klog.Info(strings.Join(toolboxDumpArgs, " "))
 
