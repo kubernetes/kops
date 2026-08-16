@@ -22,6 +22,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/builder"
 )
 
@@ -294,6 +295,82 @@ func TestEnvExportsSSHKeyAndUser(t *testing.T) {
 				if actual[k] != want {
 					t.Errorf("env() %s = %q, expected %q", k, actual[k], want)
 				}
+			}
+		})
+	}
+}
+
+// The dump reports a user per instance. Control plane hosts are what every dump path has to
+// reach, so they win over workers.
+func TestSSHUserFromDump(t *testing.T) {
+	cases := []struct {
+		name      string
+		instances []*resources.Instance
+		expected  string
+	}{
+		{
+			name: "prefers a control plane instance",
+			instances: []*resources.Instance{
+				{Roles: []string{"node"}, SSHUser: "worker-user"},
+				{Roles: []string{"control-plane"}, SSHUser: "ubuntu"},
+			},
+			expected: "ubuntu",
+		},
+		{
+			name: "falls back to any instance when no control plane is reported",
+			instances: []*resources.Instance{
+				{Roles: []string{"node"}, SSHUser: "admin"},
+			},
+			expected: "admin",
+		},
+		{
+			name: "ignores instances with no user",
+			instances: []*resources.Instance{
+				{Roles: []string{"control-plane"}},
+				{Roles: []string{"node"}, SSHUser: "rocky"},
+			},
+			expected: "rocky",
+		},
+		{
+			// Older kops releases do not populate sshUser on every cloud.
+			name: "no user anywhere",
+			instances: []*resources.Instance{
+				{Roles: []string{"control-plane"}},
+			},
+			expected: "",
+		},
+		{
+			name:      "no instances at all",
+			instances: nil,
+			expected:  "",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if actual := sshUserFromDump(&resources.Dump{Instances: tc.instances}); actual != tc.expected {
+				t.Errorf("sshUserFromDump() = %q, expected %q", actual, tc.expected)
+			}
+		})
+	}
+}
+
+// Discovery is a last resort. Anything that already set a user must survive untouched, which is
+// what lets jobs opt in one at a time by dropping KUBE_SSH_USER.
+func TestResolveSSHUserFromClusterKeepsExistingUser(t *testing.T) {
+	for _, user := range []string{"prow", "ec2-user", "kops", "root"} {
+		t.Run(user, func(t *testing.T) {
+			// KopsBinaryPath is deliberately bogus: if the deployer tried to shell out we would
+			// see it fail rather than silently keep the value.
+			d := &deployer{
+				CloudProvider:  "gce",
+				ClusterName:    "test.k8s.local",
+				SSHUser:        user,
+				KopsBinaryPath: "/nonexistent/kops",
+			}
+			d.resolveSSHUserFromCluster()
+			if d.SSHUser != user {
+				t.Errorf("SSHUser = %q, expected it to stay %q", d.SSHUser, user)
 			}
 		})
 	}

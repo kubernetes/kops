@@ -146,6 +146,14 @@ func (d *deployer) Up() error {
 
 	time.Sleep(10 * time.Second)
 
+	// The instances exist by this point, so kops can tell us which user it registered the SSH key
+	// for. Done before the validation below so that a cluster which fails to validate is still
+	// reachable for log collection. Re-export afterwards because the tester's environment was
+	// built during init(), before any of this was knowable.
+	d.resolveSSHUserFromCluster()
+	klog.V(1).Infof("Using SSH user: [%s]", d.SSHUser)
+	d.exportEnvForTester()
+
 	isUp, err := d.IsUp()
 	if err != nil {
 		return err

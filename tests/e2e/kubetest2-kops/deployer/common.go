@@ -26,11 +26,14 @@ import (
 
 	"github.com/blang/semver/v4"
 	"k8s.io/klog/v2"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/aws"
 	"k8s.io/kops/tests/e2e/kubetest2-kops/gce"
 	"k8s.io/kops/tests/e2e/pkg/target"
 	"k8s.io/kops/tests/e2e/pkg/util"
 	"sigs.k8s.io/kubetest2/pkg/boskos"
+	"sigs.k8s.io/kubetest2/pkg/exec"
+	"sigs.k8s.io/yaml"
 )
 
 func (d *deployer) init() error {
@@ -146,17 +149,7 @@ func (d *deployer) initialize() error {
 		}
 		d.terraform = t
 	}
-	if d.commonOptions.ShouldTest() {
-		for _, envvar := range d.env() {
-			// Set all of the env vars we use for kops in the current process
-			// so that the tester inherits them when shelling out to kops
-			if i := strings.Index(envvar, "="); i != -1 {
-				os.Setenv(envvar[0:i], envvar[i+1:])
-			} else {
-				os.Setenv(envvar, "")
-			}
-		}
-	}
+	d.exportEnvForTester()
 	return nil
 }
 
@@ -225,6 +218,91 @@ func (d *deployer) resolveSSHKeys() error {
 	d.SSHPublicKeyPath = publicKeyPath
 	d.SSHPrivateKeyPath = privateKeyPath
 	return nil
+}
+
+// resolveSSHUserFromCluster fills in SSHUser by asking kops which user it registered the SSH key
+// for, which is only answerable once the cluster's instances exist.
+//
+// It is deliberately a last resort, after the --ssh-user flag, the users the deployer assigns
+// itself (azure, digitalocean) and KUBE_SSH_USER. A job that sets KUBE_SSH_USER keeps exactly the
+// user it has today, so this can be adopted one job at a time by dropping that variable.
+//
+// Failure is not fatal: the user simply stays empty, and callers omit --ssh-user so that kops
+// applies its own default rather than an unusable empty value.
+func (d *deployer) resolveSSHUserFromCluster() {
+	if d.SSHUser != "" {
+		return
+	}
+
+	args := []string{
+		d.KopsBinaryPath, "toolbox", "dump",
+		"--name", d.ClusterName,
+		"-o", "yaml",
+	}
+	klog.Info(strings.Join(args, " "))
+
+	// Without --dir this only lists cloud resources; it does not SSH anywhere, so it does not
+	// need the credentials we are trying to determine.
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.SetEnv(d.env()...)
+	cmd.SetStderr(os.Stderr)
+	output, err := exec.Output(cmd)
+	if err != nil {
+		klog.Warningf("failed to determine the SSH user from the cluster: %v", err)
+		return
+	}
+
+	var dump resources.Dump
+	if err := yaml.Unmarshal(output, &dump); err != nil {
+		klog.Warningf("failed to parse the cluster dump while determining the SSH user: %v", err)
+		return
+	}
+
+	sshUser := sshUserFromDump(&dump)
+	if sshUser == "" {
+		// Older kops releases do not report sshUser for every cloud; GCE gained it in 1.37.
+		klog.Warningf("cluster dump reported no SSH user; kops will fall back to its own default")
+		return
+	}
+
+	d.SSHUser = sshUser
+	klog.V(1).Infof("Determined SSH user from the cluster: [%s]", d.SSHUser)
+}
+
+// sshUserFromDump picks the SSH user to use for the cluster, preferring a control plane instance
+// because that is the one host every dump path needs to reach.
+func sshUserFromDump(dump *resources.Dump) string {
+	fallback := ""
+	for _, instance := range dump.Instances {
+		if instance.SSHUser == "" {
+			continue
+		}
+		for _, role := range instance.Roles {
+			if role == "control-plane" {
+				return instance.SSHUser
+			}
+		}
+		if fallback == "" {
+			fallback = instance.SSHUser
+		}
+	}
+	return fallback
+}
+
+// exportEnvForTester sets the env vars we pass to kops in the current process, so that the tester
+// inherits them when it shells out. It is called once during initialize() and again once the
+// cluster is up, because values such as the SSH user are not knowable before then.
+func (d *deployer) exportEnvForTester() {
+	if !d.commonOptions.ShouldTest() {
+		return
+	}
+	for _, envvar := range d.env() {
+		if k, v, ok := strings.Cut(envvar, "="); ok {
+			os.Setenv(k, v)
+		} else {
+			os.Setenv(envvar, "")
+		}
+	}
 }
 
 // verifyKopsFlags ensures common fields are set for kops commands
