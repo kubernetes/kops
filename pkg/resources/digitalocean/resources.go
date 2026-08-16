@@ -41,6 +41,7 @@ const (
 	resourceTypeDNSRecord    = "dns-record"
 	resourceTypeLoadBalancer = "loadbalancer"
 	resourceTypeVPC          = "vpc"
+	resourceTypeSSHKey       = "ssh-key"
 )
 
 type listFn func(fi.Cloud, string) ([]*resources.Resource, error)
@@ -60,6 +61,7 @@ func ListResources(cloud do.DOCloud, clusterInfo resources.ClusterInfo) (map[str
 	listFunctions = append(listFunctions,
 		listLoadBalancers,
 		listVPCs,
+		listSSHKeys,
 	)
 
 	for _, fn := range listFunctions {
@@ -380,6 +382,70 @@ func dumpDroplet(op *resources.DumpOperation, r *resources.Resource) error {
 	}
 
 	op.Dump.Instances = append(op.Dump.Instances, i)
+
+	return nil
+}
+
+// listSSHKeys finds the SSH keys kops uploaded for this cluster. DigitalOcean
+// keys are account-scoped, so they are matched by the name kops gives them in
+// pkg/model/names.go: "kubernetes.<cluster name>-<fingerprint>". A cluster that
+// sets spec.sshKeyName reuses a pre-existing key it does not own, and Find in
+// dotasks/sshkey.go leaves that key alone, so this deliberately does not match it.
+func listSSHKeys(cloud fi.Cloud, clusterName string) ([]*resources.Resource, error) {
+	c := cloud.(do.DOCloud)
+	var resourceTrackers []*resources.Resource
+
+	keys, err := c.GetAllSSHKeys()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list ssh keys: %v", err)
+	}
+
+	resourceTrackers = append(resourceTrackers, filterClusterSSHKeys(keys, clusterName)...)
+
+	return resourceTrackers, nil
+}
+
+// filterClusterSSHKeys selects the keys kops named for this cluster. The trailing
+// "-" before the fingerprint matters: without it "foo.k8s.local" would also match
+// the keys of "foo.k8s.local.example.com", and these keys are account-scoped and
+// shared with every other cluster in the account.
+func filterClusterSSHKeys(keys []godo.Key, clusterName string) []*resources.Resource {
+	keyPrefix := "kubernetes." + clusterName + "-"
+
+	var resourceTrackers []*resources.Resource
+	for _, key := range keys {
+		if !strings.HasPrefix(key.Name, keyPrefix) {
+			continue
+		}
+
+		resourceTrackers = append(resourceTrackers, &resources.Resource{
+			Name:    key.Name,
+			ID:      strconv.Itoa(key.ID),
+			Type:    resourceTypeSSHKey,
+			Deleter: deleteSSHKey,
+			Obj:     key,
+		})
+	}
+
+	return resourceTrackers
+}
+
+func deleteSSHKey(cloud fi.Cloud, t *resources.Resource) error {
+	c := cloud.(do.DOCloud)
+
+	id, err := strconv.Atoi(t.ID)
+	if err != nil {
+		return fmt.Errorf("failed to convert ssh key ID %q to int: %s", t.ID, err)
+	}
+
+	klog.V(2).Infof("deleting DO SSH key %q (ID %d)", t.Name, id)
+	response, err := c.KeysService().DeleteByID(context.TODO(), id)
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusNotFound {
+			return nil
+		}
+		return fmt.Errorf("failed to delete ssh key %s (ID %s): %s", t.Name, t.ID, err)
+	}
 
 	return nil
 }

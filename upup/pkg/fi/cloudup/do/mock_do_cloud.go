@@ -143,6 +143,10 @@ func (c *doCloudMockImplementation) GetAllVPCs() ([]*godo.VPC, error) {
 	return nil, nil
 }
 
+func (c *doCloudMockImplementation) GetAllSSHKeys() ([]godo.Key, error) {
+	return nil, nil
+}
+
 func (c *doCloudMockImplementation) VPCsService() godo.VPCsService {
 	return c.Client.VPCs
 }
