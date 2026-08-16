@@ -401,3 +401,43 @@ func TestMatchesElbTags(t *testing.T) {
 		}
 	}
 }
+
+func TestGuessSSHUser(t *testing.T) {
+	cases := []struct {
+		name     string
+		ownerID  string
+		image    string
+		expected string
+	}{
+		{name: "amazon linux 2023", ownerID: awsup.WellKnownAccountAmazonLinux2023, expected: "ec2-user"},
+		{name: "redhat", ownerID: awsup.WellKnownAccountRedhat, expected: "ec2-user"},
+		{name: "debian", ownerID: awsup.WellKnownAccountDebian, expected: "admin"},
+		{name: "ubuntu", ownerID: awsup.WellKnownAccountUbuntu, expected: "ubuntu"},
+		{name: "flatcar", ownerID: awsup.WellKnownAccountFlatcar, expected: "core"},
+		{name: "rocky linux", ownerID: awsup.WellKnownAccountRockyLinux, expected: "rocky"},
+		{
+			name:     "centos is matched on the image name",
+			ownerID:  "123456789012",
+			image:    "CentOS-Stream-ec2-9-20260101.0.x86_64",
+			expected: "centos",
+		},
+		{
+			name:     "an unrecognized image has no known user",
+			ownerID:  "123456789012",
+			image:    "my-custom-image",
+			expected: "",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			image := &ec2types.Image{
+				OwnerId: aws.String(tc.ownerID),
+				Name:    aws.String(tc.image),
+			}
+			if actual := guessSSHUser(image); actual != tc.expected {
+				t.Errorf("guessSSHUser(owner=%q, name=%q) = %q, expected %q", tc.ownerID, tc.image, actual, tc.expected)
+			}
+		})
+	}
+}

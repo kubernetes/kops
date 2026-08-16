@@ -478,6 +478,8 @@ func guessSSHUser(image *ec2types.Image) string {
 		return "ubuntu"
 	case awsup.WellKnownAccountFlatcar:
 		return "core"
+	case awsup.WellKnownAccountRockyLinux:
+		return "rocky"
 	}
 
 	name := aws.ToString(image.Name)
