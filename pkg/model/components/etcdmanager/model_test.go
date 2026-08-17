@@ -19,6 +19,7 @@ package etcdmanager
 import (
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"k8s.io/kops/pkg/assets"
@@ -166,5 +167,21 @@ func Test_resolveAzureBackupStore(t *testing.T) {
 				t.Errorf("Account: got %q, want %q", gotAccount, tc.wantAccount)
 			}
 		})
+	}
+}
+
+func TestLinodeVolumeSelectors(t *testing.T) {
+	volumeTags, volumeNameTag := linodeVolumeSelectors("example.k8s.local", "main", "control-plane.example.k8s.local")
+
+	wantVolumeTags := []string{
+		"kops.k8s.io/cluster:example-k8s-local",
+		"kops.k8s.io/volume-role:main",
+	}
+	if !reflect.DeepEqual(volumeTags, wantVolumeTags) {
+		t.Fatalf("unexpected volume tags: got %v, want %v", volumeTags, wantVolumeTags)
+	}
+
+	if want := "kops.k8s.io/instance-group:control-plane-example-k8s-local"; volumeNameTag != want {
+		t.Fatalf("unexpected volume name tag: got %q, want %q", volumeNameTag, want)
 	}
 }
