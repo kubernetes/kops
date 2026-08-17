@@ -62,7 +62,7 @@ kops create cluster \
 --zones=us-east-1a,us-east-1b,us-east-1c \
 --node-count=2 \
 --topology private \
---networking kopeio-vxlan \
+--networking kindnet \
 --node-size=t3.micro \
 --master-size=t3.micro \
 ${NAME}
@@ -77,7 +77,7 @@ A few things to note here:
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
 - Because we are just doing a simple LAB, we are using "t3.micro" machines. Please DON'T USE t3.micro on real production systems. Start with "t3.medium" as a minimum realistic/workable machine type.
-- And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kOps which networking subsystem to use. More information about kOps supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
+- And finally, the "--networking kindnet" argument. With the private networking model, we need to tell kOps which networking subsystem to use. More information about kOps supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](../networking.md). For this exercise we'll use "kindnet".
 
 **NOTE**: This guide adds the bastion instance group after the initial cluster creation to demonstrate that workflow. You can instead pass `--bastion` to `kops create cluster`.
 

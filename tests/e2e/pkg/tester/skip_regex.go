@@ -102,7 +102,7 @@ func (t *Tester) setSkipRegexFlag() error {
 	// The "implement NodePort and HealthCheckNodePort correctly when ExternalTrafficPolicy changes"
 	// test requires externalTrafficPolicy=Local source-IP preservation, which is broken on these
 	// CNIs: the client IP is SNATed to a pod IP instead of being preserved (kube-router instead
-	// times out reaching the local endpoint). Confirmed failing on cilium, flannel, kopeio and
+	// times out reaching the local endpoint). Confirmed failing on cilium, flannel and
 	// kube-router on all clouds, and on calico on GCE and Azure, where the underlay cannot route
 	// the pod CIDR so calico encapsulates inter-node pod traffic (IPIP tunl0 on GCE, VXLAN
 	// vxlan.calico on Azure) and the masquerade rewrites the source to the node's tunnel address.
@@ -110,7 +110,7 @@ func (t *Tester) setSkipRegexFlag() error {
 	// routes pod traffic natively. amazon-vpc and kindnet preserve it and keep running the test.
 	// < 38 so we look at this again
 	if k8sVersion.Minor < 38 &&
-		(networking.Cilium != nil || networking.Flannel != nil || networking.Kopeio != nil || networking.KubeRouter != nil ||
+		(networking.Cilium != nil || networking.Flannel != nil || networking.KubeRouter != nil ||
 			(networking.Calico != nil && (cluster.Spec.LegacyCloudProvider == "gce" || cluster.Spec.LegacyCloudProvider == "azure"))) {
 		skipRegex += "|Services.should.implement.NodePort.and.HealthCheckNodePort.correctly.when.ExternalTrafficPolicy.changes"
 	}

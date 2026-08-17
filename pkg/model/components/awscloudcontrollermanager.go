@@ -64,9 +64,6 @@ func (b *AWSCloudControllerManagerOptionsBuilder) BuildOptions(cluster *kops.Clu
 		eccm.ConfigureCloudRoutes = new(false)
 	} else if UsesCNI(networking) {
 		eccm.ConfigureCloudRoutes = new(false)
-	} else if networking.Kopeio != nil {
-		// Kopeio is based on kubenet / external
-		eccm.ConfigureCloudRoutes = new(false)
 	} else {
 		return fmt.Errorf("no networking mode set")
 	}
