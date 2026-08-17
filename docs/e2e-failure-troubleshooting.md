@@ -22,7 +22,7 @@ Each job is annotated with `test.kops.k8s.io/*` keys in its Prow config that des
 |---|---|---|
 | Cloud provider | `test.kops.k8s.io/cloud` | aws, gce, digitalocean, azure |
 | OS distribution | `test.kops.k8s.io/distro` | al2023, deb11, deb12, flatcar, rhel9, rocky9, u2404 |
-| Networking plugin | `test.kops.k8s.io/networking` | cilium, calico, amazonvpc, kubenet, kopeio, flannel, kuberouter, cilium-eni, kindnet |
+| Networking plugin | `test.kops.k8s.io/networking` | cilium, calico, amazonvpc, kubenet, flannel, kuberouter, cilium-eni, kindnet |
 | Kubernetes version | `test.kops.k8s.io/k8s_version` | ci, stable, 1.32, 1.33, 1.34 |
 | kops version | `test.kops.k8s.io/kops_version` | latest, specific version markers |
 

@@ -389,14 +389,6 @@ func TestPrivateCiliumENI(t *testing.T) {
 		runTestTerraformAWS(t)
 }
 
-const kopeioNetworkingAddon = "networking.kope.io-k8s-1.12"
-
-// TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
-func TestPrivateKopeio(t *testing.T) {
-	newIntegrationTest("privatekopeio.example.com", "privatekopeio").
-		runTestTerraformAWS(t)
-}
-
 // TestUnmanaged is a test where all the subnets opt-out of route management
 func TestUnmanaged(t *testing.T) {
 	newIntegrationTest("unmanaged.example.com", "unmanaged").

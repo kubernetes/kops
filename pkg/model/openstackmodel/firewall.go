@@ -502,12 +502,6 @@ func (b *FirewallModelBuilder) addCNIRules(c *fi.CloudupModelBuilderContext, sgM
 	tcpPorts := []int{}
 	protocols := []string{}
 
-	if b.Cluster.Spec.Networking.Kopeio != nil {
-		// VXLAN over UDP
-		// https://tools.ietf.org/html/rfc7348
-		udpPorts = append(udpPorts, 4789)
-	}
-
 	if b.Cluster.Spec.Networking.Cilium != nil {
 		udpPorts = append(udpPorts, 8472)
 		tcpPorts = append(tcpPorts, 4240)
