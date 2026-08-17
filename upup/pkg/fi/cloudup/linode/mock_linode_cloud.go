@@ -167,6 +167,16 @@ type MockLinodeClient struct {
 	ListInterfacesCalls     int
 	LastListInterfacesOpts  *linodego.ListOptions
 	LastListInterfacesID    int
+
+	ListVolumesResponse []linodego.Volume
+	ListVolumesError    error
+	ListVolumesCalls    int
+	LastListVolumesOpts *linodego.ListOptions
+
+	CreateVolumeResponse *linodego.Volume
+	CreateVolumeError    error
+	CreateVolumeCalls    int
+	LastCreateVolumeOpts linodego.VolumeCreateOptions
 }
 
 var _ LinodeClient = &MockLinodeClient{}
@@ -335,4 +345,25 @@ func (c *MockLinodeClient) ListInterfaces(ctx context.Context, instanceID int, o
 		return c.ListInterfacesResponses[instanceID], nil
 	}
 	return c.ListInterfacesResponse, nil
+}
+
+func (c *MockLinodeClient) CreateVolume(ctx context.Context, opts linodego.VolumeCreateOptions) (*linodego.Volume, error) {
+	c.CreateVolumeCalls++
+	c.LastCreateVolumeOpts = opts
+	if c.CreateVolumeError != nil {
+		return nil, c.CreateVolumeError
+	}
+	if c.CreateVolumeResponse == nil {
+		return &linodego.Volume{}, nil
+	}
+	return c.CreateVolumeResponse, nil
+}
+
+func (c *MockLinodeClient) ListVolumes(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Volume, error) {
+	c.ListVolumesCalls++
+	c.LastListVolumesOpts = opts
+	if c.ListVolumesError != nil {
+		return nil, c.ListVolumesError
+	}
+	return c.ListVolumesResponse, nil
 }

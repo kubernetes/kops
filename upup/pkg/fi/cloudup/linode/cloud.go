@@ -58,6 +58,9 @@ type LinodeClient interface {
 	UpdateInstance(ctx context.Context, instanceID int, opts linodego.InstanceUpdateOptions) (*linodego.Instance, error)
 	DeleteInstance(ctx context.Context, instanceID int) error
 	ListInterfaces(ctx context.Context, instanceID int, opts *linodego.ListOptions) ([]linodego.LinodeInterface, error)
+	CreateVolume(ctx context.Context, opts linodego.VolumeCreateOptions) (*linodego.Volume, error)
+	ListVolumes(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Volume, error)
+	// TODO(moshevayner): Add DeleteVolume and UpdateVolume/ResizeVolume methods to support volume deletion, update and resizing.
 }
 
 // LinodeCloud exposes Akamai (Linode) cloud APIs used by kOps.
