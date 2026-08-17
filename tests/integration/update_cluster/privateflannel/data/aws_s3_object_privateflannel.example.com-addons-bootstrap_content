@@ -91,7 +91,7 @@ spec:
       k8s-addon: storage-aws.addons.k8s.io
   - id: k8s-1.25
     manifest: networking.flannel/k8s-1.25.yaml
-    manifestHash: a570d436240292d500900f0b57e54652f79830120a27fddc7dd20d4212eeaab4
+    manifestHash: 877b95315f08b59998ed5edbe5d015dee2f66038c0d6fa8460d256272a6c5d21
     name: networking.flannel
     prune:
       kinds:
