@@ -193,3 +193,6 @@ generate_cni_hashes 1.3 1.3.0
 generate_cni_hashes 1.4 1.4.1
 generate_cni_hashes 1.5 1.5.1
 generate_cni_hashes 1.6 1.6.2
+generate_cni_hashes 1.7 1.7.1
+generate_cni_hashes 1.8 1.8.0
+generate_cni_hashes 1.9 1.9.1

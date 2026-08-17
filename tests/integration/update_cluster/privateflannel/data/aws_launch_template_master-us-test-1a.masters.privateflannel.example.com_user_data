@@ -126,7 +126,7 @@ ClusterName: privateflannel.example.com
 ConfigBase: memfs://clusters.example.com/privateflannel.example.com
 InstanceGroupName: master-us-test-1a
 InstanceGroupRole: ControlPlane
-NodeupConfigHash: 0zibkB+OaaeXsoafo3eSD28ReWdbDoTTraCi5/6dhKg=
+NodeupConfigHash: LG3V8udG4tmGFCIUDL/inQwU/QITj3g0mRPcmlgIZtY=
 
 __EOF_KUBE_ENV
 
