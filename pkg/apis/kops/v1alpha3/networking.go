@@ -286,7 +286,14 @@ type CanalNetworkingSpec struct {
 }
 
 // KuberouterNetworkingSpec declares that we want Kube-router networking
-type KuberouterNetworkingSpec struct{}
+type KuberouterNetworkingSpec struct {
+	// UseNFTablesForNetpol makes the network policy controller enforce
+	// NetworkPolicies with nftables instead of iptables and ipsets.
+	// This is experimental upstream and only affects the network policy
+	// controller; the service proxy and router controllers are unchanged.
+	// Default: false
+	UseNFTablesForNetpol *bool `json:"useNFTablesForNetpol,omitempty"`
+}
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {

@@ -6099,6 +6099,15 @@ spec:
                   kuberouter:
                     description: KuberouterNetworkingSpec declares that we want Kube-router
                       networking
+                    properties:
+                      useNFTablesForNetpol:
+                        description: |-
+                          UseNFTablesForNetpol makes the network policy controller enforce
+                          NetworkPolicies with nftables instead of iptables and ipsets.
+                          This is experimental upstream and only affects the network policy
+                          controller; the service proxy and router controllers are unchanged.
+                          Default: false
+                        type: boolean
                     type: object
                   lyftvpc:
                     description: |-
