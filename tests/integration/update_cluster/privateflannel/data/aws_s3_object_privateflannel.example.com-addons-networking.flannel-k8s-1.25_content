@@ -159,6 +159,7 @@ spec:
         - --ip-masq
         - --kube-subnet-mgr
         - --iptables-resync=5
+        - --healthz-port=8081
         command:
         - /opt/bin/flanneld
         env:
@@ -174,8 +175,24 @@ spec:
           value: "5000"
         - name: CONT_WHEN_CACHE_NOT_READY
           value: "false"
-        image: ghcr.io/flannel-io/flannel:v0.27.4
+        image: ghcr.io/flannel-io/flannel:v0.28.9
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: healthz
+          initialDelaySeconds: 10
+          periodSeconds: 30
         name: kube-flannel
+        ports:
+        - containerPort: 8081
+          name: healthz
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: healthz
+          initialDelaySeconds: 5
+          periodSeconds: 10
         resources:
           requests:
             cpu: 100m
@@ -201,18 +218,17 @@ spec:
         - /opt/cni/bin/flannel
         command:
         - cp
-        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.8.0-flannel1
+        image: ghcr.io/flannel-io/flannel-cni-plugin:v1.9.1-flannel3
         name: install-cni-plugin
         volumeMounts:
         - mountPath: /opt/cni/bin
           name: cni-plugin
       - args:
-        - -f
         - /etc/kube-flannel/cni-conf.json
         - /etc/cni/net.d/10-flannel.conflist
         command:
-        - cp
-        image: ghcr.io/flannel-io/flannel:v0.27.4
+        - /opt/bin/install-conf
+        image: ghcr.io/flannel-io/flannel:v0.28.9
         name: install-cni
         volumeMounts:
         - mountPath: /etc/cni/net.d
