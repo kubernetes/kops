@@ -37,6 +37,15 @@ const (
 	defaultCNIAssetAmd64K8s_32 = "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-amd64-v1.6.2.tgz"
 	defaultCNIAssetArm64K8s_32 = "https://github.com/containernetworking/plugins/releases/download/v1.6.2/cni-plugins-linux-arm64-v1.6.2.tgz"
 
+	defaultCNIAssetAmd64K8s_34 = "https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-amd64-v1.7.1.tgz"
+	defaultCNIAssetArm64K8s_34 = "https://github.com/containernetworking/plugins/releases/download/v1.7.1/cni-plugins-linux-arm64-v1.7.1.tgz"
+
+	defaultCNIAssetAmd64K8s_35 = "https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-amd64-v1.8.0.tgz"
+	defaultCNIAssetArm64K8s_35 = "https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-arm64-v1.8.0.tgz"
+
+	defaultCNIAssetAmd64K8s_36 = "https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-amd64-v1.9.1.tgz"
+	defaultCNIAssetArm64K8s_36 = "https://github.com/containernetworking/plugins/releases/download/v1.9.1/cni-plugins-linux-arm64-v1.9.1.tgz"
+
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_ASSET_URL  = "CNI_VERSION_URL"
 	ENV_VAR_CNI_ASSET_HASH = "CNI_ASSET_HASH_STRING"
@@ -72,11 +81,23 @@ func FindCNIAssets(ig model.InstanceGroup, assetBuilder *assets.AssetBuilder, ar
 	switch arch {
 	case architectures.ArchitectureAmd64:
 		switch {
+		case ig.KubernetesVersion().IsGTE("1.36"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_36
+		case ig.KubernetesVersion().IsGTE("1.35"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_35
+		case ig.KubernetesVersion().IsGTE("1.34"):
+			cniAssetURL = defaultCNIAssetAmd64K8s_34
 		case ig.KubernetesVersion().IsGTE("1.32"):
 			cniAssetURL = defaultCNIAssetAmd64K8s_32
 		}
 	case architectures.ArchitectureArm64:
 		switch {
+		case ig.KubernetesVersion().IsGTE("1.36"):
+			cniAssetURL = defaultCNIAssetArm64K8s_36
+		case ig.KubernetesVersion().IsGTE("1.35"):
+			cniAssetURL = defaultCNIAssetArm64K8s_35
+		case ig.KubernetesVersion().IsGTE("1.34"):
+			cniAssetURL = defaultCNIAssetArm64K8s_34
 		case ig.KubernetesVersion().IsGTE("1.32"):
 			cniAssetURL = defaultCNIAssetArm64K8s_32
 		}
