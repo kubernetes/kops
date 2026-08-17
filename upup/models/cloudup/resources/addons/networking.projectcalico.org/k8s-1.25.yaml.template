@@ -1,4 +1,4 @@
-# Pulled and modified from: https://raw.githubusercontent.com/projectcalico/calico/v3.31.3/manifests/calico-typha.yaml
+# Pulled and modified from: https://raw.githubusercontent.com/projectcalico/calico/v3.31.6/manifests/calico-typha.yaml
 ---
 {{- if .Networking.Calico.BPFEnabled }}
 # Set these to the IP and port of your API server; In BPF mode, we need to connect directly to the
@@ -135,7 +135,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: bgpconfigurations.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -256,7 +256,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: bgpfilters.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -410,7 +410,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: bgppeers.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -509,7 +509,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: blockaffinities.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -558,7 +558,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: caliconodestatuses.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -722,7 +722,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: clusterinformations.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -766,7 +766,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: felixconfigurations.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -1653,6 +1653,19 @@ spec:
                     pattern: ^.*
                     x-kubernetes-int-or-string: true
                   type: array
+                logActionRateLimit:
+                  description: |-
+                    LogActionRateLimit sets the rate of hitting a Log action. The value must be in the format "N/unit",
+                    where N is a number and unit is one of: second, minute, hour, or day. For example: "10/second" or "100/hour".
+                  pattern: ^[1-9]\d{0,3}/(?:second|minute|hour|day)$
+                  type: string
+                logActionRateLimitBurst:
+                  description:
+                    LogActionRateLimitBurst sets the rate limit burst of
+                    hitting a Log action when LogActionRateLimit is enabled.
+                  maximum: 9999
+                  minimum: 0
+                  type: integer
                 logDebugFilenameRegex:
                   description: |-
                     LogDebugFilenameRegex controls which source code files have their Debug log output included in the logs.
@@ -1665,9 +1678,17 @@ spec:
                     none to disable file logging. [Default: /var/log/calico/felix.log]"
                   type: string
                 logPrefix:
-                  description:
-                    "LogPrefix is the log prefix that Felix uses when rendering
-                    LOG rules. [Default: calico-packet]"
+                  description: |-
+                    LogPrefix is the log prefix that Felix uses when rendering LOG rules. It is possible to use the following specifiers
+                    to include extra information in the log prefix.
+                    - %t: Tier name.
+                    - %k: Kind (short names).
+                    - %n: Policy or profile name.
+                    - %p: Policy or profile name (namespace/name for namespaced kinds or just name for non namespaced kinds).
+                    Calico includes ": " characters at the end of the generated log prefix.
+                    Note that iptables shows up to 29 characters for the log prefix and nftables up to 127 characters. Extra characters are truncated.
+                    [Default: calico-packet]
+                  pattern: "^([a-zA-Z0-9%: /_-])*$"
                   type: string
                 logSeverityFile:
                   description:
@@ -2070,7 +2091,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: globalnetworkpolicies.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2444,7 +2465,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: globalnetworksets.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2482,7 +2503,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: hostendpoints.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2547,7 +2568,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: ipamblocks.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2626,7 +2647,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: ipamconfigs.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2671,7 +2692,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: ipamhandles.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2716,7 +2737,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: ippools.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2788,7 +2809,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: ipreservations.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -2826,7 +2847,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: kubecontrollersconfigurations.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -3026,7 +3047,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: networkpolicies.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -3392,7 +3413,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: networksets.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -3430,7 +3451,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: stagedglobalnetworkpolicies.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -3806,7 +3827,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: stagedkubernetesnetworkpolicies.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -4054,7 +4075,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: stagednetworkpolicies.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -4422,7 +4443,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.3
+    controller-gen.kubebuilder.io/version: v0.18.0
   name: tiers.crd.projectcalico.org
 spec:
   group: crd.projectcalico.org
@@ -7123,7 +7144,7 @@ spec:
         # It can be deleted if this is a fresh installation, or if you have already
         # upgraded to use calico-ipam.
         - name: upgrade-ipam
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.31.3" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.31.6" }}
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/calico-ipam", "-upgrade"]
           envFrom:
@@ -7152,7 +7173,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.31.3" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/cni:{{ or .Networking.Calico.Version "v3.31.6" }}
           imagePullPolicy: IfNotPresent
           command: ["/opt/cni/bin/install"]
           envFrom:
@@ -7196,7 +7217,7 @@ spec:
         # networking to allow communication with the API Server. Calico-node initialization is executed
         # in best effort fashion, i.e. no failure for errors, to not disrupt pod creation in iptables mode.
         - name: "ebpf-bootstrap"
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.31.3" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.31.6" }}
           imagePullPolicy: IfNotPresent
           command: ["calico-node", "-init", "-best-effort"]
           volumeMounts:
@@ -7222,7 +7243,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.31.3" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/node:{{ or .Networking.Calico.Version "v3.31.6" }}
           imagePullPolicy: IfNotPresent
           envFrom:
           - configMapRef:
@@ -7565,7 +7586,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
         - name: calico-kube-controllers
-          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.31.3" }}
+          image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/kube-controllers:{{ or .Networking.Calico.Version "v3.31.6" }}
           imagePullPolicy: IfNotPresent
           env:
             # Choose which controllers to run.
@@ -7659,7 +7680,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.31.3" }}
+      - image: {{ or .Networking.Calico.Registry "docker.io" }}/calico/typha:{{ or .Networking.Calico.Version "v3.31.6" }}
         imagePullPolicy: IfNotPresent
         name: calico-typha
         ports:
