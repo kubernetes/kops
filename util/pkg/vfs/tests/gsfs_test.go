@@ -23,8 +23,8 @@ import (
 	"strings"
 	"testing"
 
+	"cloud.google.com/go/storage"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/cloudmock/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/util/pkg/vfs"
@@ -84,9 +84,9 @@ func TestGSRenderTerraform(t *testing.T) {
 			target := terraform.NewTerraformTarget(cloud, "", "/dev/null", nil)
 
 			acl := &vfs.GSAcl{
-				Acl: []*storage.ObjectAccessControl{
+				Acl: []storage.ACLRule{
 					{
-						Entity: fmt.Sprintf("user-%v", tc.serviceAcct),
+						Entity: storage.ACLEntity(fmt.Sprintf("user-%v", tc.serviceAcct)),
 						Role:   "READER",
 					},
 				},

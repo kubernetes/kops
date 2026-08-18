@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	storage "google.golang.org/api/storage/v1"
+	"cloud.google.com/go/storage"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -51,17 +51,12 @@ func (s *gcsAclStrategy) GetACL(ctx context.Context, p vfs.Path, cluster *kops.C
 	}
 
 	// TODO: Cache?
-	bucket, err := client.Buckets.Get(bucketName).Context(ctx).Do()
+	bucket, err := client.Bucket(bucketName).Attrs(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error querying bucket %q: %v", bucketName, err)
 	}
 
-	bucketPolicyOnly := false
-	if bucket.IamConfiguration != nil && bucket.IamConfiguration.BucketPolicyOnly != nil {
-		bucketPolicyOnly = bucket.IamConfiguration.BucketPolicyOnly.Enabled
-	}
-
-	if bucketPolicyOnly {
+	if bucket.UniformBucketLevelAccess.Enabled {
 		klog.V(8).Infof("bucket gs://%s has bucket-policy only; won't try to set ACLs", bucketName)
 		return nil, nil
 	}
@@ -77,12 +72,12 @@ func (s *gcsAclStrategy) GetACL(ctx context.Context, p vfs.Path, cluster *kops.C
 		return nil, err
 	}
 
-	var acls []*storage.ObjectAccessControl
-	acls = append(acls, bucket.DefaultObjectAcl...)
+	var acls []storage.ACLRule
+	acls = append(acls, bucket.DefaultObjectACL...)
 
-	acls = append(acls, &storage.ObjectAccessControl{
+	acls = append(acls, storage.ACLRule{
 		Email:  serviceAccount,
-		Entity: "user-" + serviceAccount,
+		Entity: storage.ACLEntity("user-" + serviceAccount),
 		Role:   "READER",
 	})
 
