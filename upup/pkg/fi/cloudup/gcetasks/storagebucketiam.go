@@ -20,7 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/api/storage/v1"
+	"cloud.google.com/go/iam"
+	"cloud.google.com/go/iam/apiv1/iampb"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -55,7 +56,7 @@ func (e *StorageBucketIAM) Find(c *fi.CloudupContext) (*StorageBucketIAM, error)
 	role := fi.ValueOf(e.Role)
 
 	klog.V(2).Infof("Checking GCS bucket IAM for gs://%s for %s", bucket, member)
-	policy, err := cloud.Storage().Buckets.GetIamPolicy(bucket).Context(ctx).Do()
+	policy, err := cloud.Storage().Bucket(bucket).IAM().V3().Policy(ctx)
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -109,7 +110,7 @@ func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 
 	klog.V(2).Infof("Creating GCS bucket IAM for gs://%s for %s as %s", bucket, member, role)
 
-	policy, err := t.Cloud.Storage().Buckets.GetIamPolicy(bucket).Context(ctx).Do()
+	policy, err := t.Cloud.Storage().Bucket(bucket).IAM().V3().Policy(ctx)
 	if err != nil {
 		return fmt.Errorf("error creating IAM policy for bucket gs://%s: %w", bucket, err)
 	}
@@ -121,7 +122,7 @@ func (_ *StorageBucketIAM) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 		return nil
 	}
 
-	if _, err := t.Cloud.Storage().Buckets.SetIamPolicy(bucket, policy).Context(ctx).Do(); err != nil {
+	if err := t.Cloud.Storage().Bucket(bucket).IAM().V3().SetPolicy(ctx, policy); err != nil {
 		return fmt.Errorf("error updating GCS bucket IAM for gs://%s: %v", bucket, err)
 	}
 
@@ -149,7 +150,7 @@ func (_ *StorageBucketIAM) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	return nil
 }
 
-func patchPolicy(policy *storage.Policy, wantMember string, wantRole string) bool {
+func patchPolicy(policy *iam.Policy3, wantMember string, wantRole string) bool {
 	for _, binding := range policy.Bindings {
 		if binding.Condition != nil {
 			continue
@@ -173,7 +174,7 @@ func patchPolicy(policy *storage.Policy, wantMember string, wantRole string) boo
 		}
 	}
 
-	policy.Bindings = append(policy.Bindings, &storage.PolicyBindings{
+	policy.Bindings = append(policy.Bindings, &iampb.Binding{
 		Members: []string{wantMember},
 		Role:    wantRole,
 	})

@@ -22,20 +22,20 @@ import (
 	"net/http"
 	"strings"
 
+	"cloud.google.com/go/storage"
 	option "google.golang.org/api/option"
-	"google.golang.org/api/storage/v1"
 	"k8s.io/klog/v2"
 )
 
 // mockStorageService represents a mocked storage client.
 type mockStorageService struct {
-	svc *storage.Service
+	client *storage.Client
 
 	buckets buckets
 }
 
 // New creates a new mock IAM client.
-func New() *storage.Service {
+func New() *storage.Client {
 	ctx := context.Background()
 
 	s := &mockStorageService{}
@@ -43,12 +43,12 @@ func New() *storage.Service {
 	s.buckets.Init()
 
 	httpClient := &http.Client{Transport: s}
-	svc, err := storage.NewService(ctx, option.WithHTTPClient(httpClient))
+	client, err := storage.NewClient(ctx, option.WithHTTPClient(httpClient))
 	if err != nil {
-		klog.Fatalf("failed to build mock storage service: %v", err)
+		klog.Fatalf("failed to build mock storage client: %v", err)
 	}
-	s.svc = svc
-	return svc
+	s.client = client
+	return client
 }
 
 func (s *mockStorageService) RoundTrip(request *http.Request) (*http.Response, error) {

@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -34,7 +35,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gophercloud/gophercloud/v2"
 	"google.golang.org/api/option"
-	storage "google.golang.org/api/storage/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 )
@@ -55,7 +55,7 @@ type vfsContextState struct {
 	memfsContext *MemFSContext
 
 	// The google cloud storage client, if initialized
-	cachedGCSClient *storage.Service
+	cachedGCSClient *storage.Client
 
 	// swiftClient is the openstack swift client
 	swiftClient *gophercloud.ServiceClient
@@ -81,7 +81,7 @@ func NewTestingVFSContext() *VFSContext {
 	return vfsContext
 }
 
-func (v *VFSContext) WithGCSClient(gcsClient *storage.Service) *VFSContext {
+func (v *VFSContext) WithGCSClient(gcsClient *storage.Client) *VFSContext {
 	v.mutex.Lock()
 	defer v.mutex.Unlock()
 
@@ -510,8 +510,8 @@ func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 	return gcsPath, nil
 }
 
-// getGCSClient returns the google storage.Service client, caching it for future calls
-func (c *VFSContext) getGCSClient(ctx context.Context) (*storage.Service, error) {
+// getGCSClient returns the google cloud storage client, caching it for future calls
+func (c *VFSContext) getGCSClient(ctx context.Context) (*storage.Client, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -520,9 +520,9 @@ func (c *VFSContext) getGCSClient(ctx context.Context) (*storage.Service, error)
 	}
 
 	// TODO: Should we fall back to read-only?
-	scope := storage.DevstorageFullControlScope
+	scope := storage.ScopeFullControl
 
-	gcsClient, err := storage.NewService(ctx, option.WithScopes(scope))
+	gcsClient, err := storage.NewClient(ctx, option.WithScopes(scope))
 	if err != nil {
 		return nil, fmt.Errorf("error building GCS client: %v", err)
 	}

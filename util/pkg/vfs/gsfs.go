@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,8 +30,9 @@ import (
 	"sync"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"google.golang.org/api/googleapi"
-	storage "google.golang.org/api/storage/v1"
+	"google.golang.org/api/iterator"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraformWriter"
@@ -64,7 +66,7 @@ var gcsReadBackoff = wait.Backoff{
 
 // GSAcl is an ACL implementation for objects on Google Cloud Storage
 type GSAcl struct {
-	Acl []*storage.ObjectAccessControl
+	Acl []storage.ACLRule
 }
 
 func (a *GSAcl) String() string {
@@ -109,8 +111,8 @@ func (p *GSPath) Object() string {
 	return p.key
 }
 
-// Client returns the storage.Service bound to this path
-func (p *GSPath) Client(ctx context.Context) (*storage.Service, error) {
+// Client returns the storage.Client bound to this path
+func (p *GSPath) Client(ctx context.Context) (*storage.Client, error) {
 	return p.getStorageClient(ctx)
 }
 
@@ -124,7 +126,7 @@ func (p *GSPath) Remove(ctx context.Context) error {
 		if err != nil {
 			return false, err
 		}
-		if err := client.Objects.Delete(p.bucket, p.key).Context(ctx).Do(); err != nil {
+		if err := client.Bucket(p.bucket).Object(p.key).Delete(ctx); err != nil {
 			// TODO: Check for not-exists, return os.NotExist
 			return false, fmt.Errorf("error deleting %s: %w", p, err)
 		}
@@ -179,17 +181,13 @@ func (p *GSPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) err
 	}
 
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
-		obj := &storage.Object{
-			Name:    p.key,
-			Md5Hash: base64.StdEncoding.EncodeToString(md5Hash.HashValue),
-		}
-
+		var objectACL []storage.ACLRule
 		if acl != nil {
 			gsACL, ok := acl.(*GSAcl)
 			if !ok {
 				return true, fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
 			}
-			obj.Acl = gsACL.Acl
+			objectACL = gsACL.Acl
 			klog.V(4).Infof("Writing file %q with ACL %v", p, gsACL)
 		} else {
 			klog.V(4).Infof("Writing file %q", p)
@@ -204,8 +202,15 @@ func (p *GSPath) WriteFile(ctx context.Context, data io.ReadSeeker, acl ACL) err
 			return false, err
 		}
 
-		_, err = client.Objects.Insert(p.bucket, obj).Context(ctx).Media(data).Do()
-		if err != nil {
+		w := client.Bucket(p.bucket).Object(p.key).NewWriter(ctx)
+		// The upload is rejected if the data does not match this MD5 hash
+		w.MD5 = md5Hash.HashValue
+		w.ACL = objectACL
+		if _, err := io.Copy(w, data); err != nil {
+			w.Close()
+			return false, fmt.Errorf("error writing %s: %v", p, err)
+		}
+		if err := w.Close(); err != nil {
 			return false, fmt.Errorf("error writing %s: %v", p, err)
 		}
 
@@ -285,19 +290,16 @@ func (p *GSPath) WriteToWithContext(ctx context.Context, out io.Writer) (int64, 
 		return 0, err
 	}
 
-	response, err := client.Objects.Get(p.bucket, p.key).Context(ctx).Download()
+	r, err := client.Bucket(p.bucket).Object(p.key).NewReader(ctx)
 	if err != nil {
 		if isGCSNotFound(err) {
 			return 0, os.ErrNotExist
 		}
 		return 0, fmt.Errorf("error reading %s: %v", p, err)
 	}
-	if response == nil {
-		return 0, fmt.Errorf("no response returned from reading %s", p)
-	}
-	defer response.Body.Close()
+	defer r.Close()
 
-	return io.Copy(out, response.Body)
+	return io.Copy(out, r)
 }
 
 // ReadDir implements Path::ReadDir
@@ -317,22 +319,29 @@ func (p *GSPath) ReadDir() ([]Path, error) {
 		}
 
 		var paths []Path
-		if err := client.Objects.List(p.bucket).Context(ctx).Delimiter("/").Prefix(prefix).Pages(ctx, func(page *storage.Objects) error {
-			for _, o := range page.Items {
-				child := &GSPath{
-					vfsContext: p.vfsContext,
-					bucket:     p.bucket,
-					key:        o.Name,
-					md5Hash:    o.Md5Hash,
+		it := client.Bucket(p.bucket).Objects(ctx, &storage.Query{Delimiter: "/", Prefix: prefix})
+		for {
+			o, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				if isGCSNotFound(err) {
+					return true, os.ErrNotExist
 				}
-				paths = append(paths, child)
+				return false, fmt.Errorf("error listing %s: %v", p, err)
 			}
-			return nil
-		}); err != nil {
-			if isGCSNotFound(err) {
-				return true, os.ErrNotExist
+			if o.Prefix != "" {
+				// Synthetic directory entry, not an object
+				continue
 			}
-			return false, fmt.Errorf("error listing %s: %v", p, err)
+			child := &GSPath{
+				vfsContext: p.vfsContext,
+				bucket:     p.bucket,
+				key:        o.Name,
+				md5Hash:    base64.StdEncoding.EncodeToString(o.MD5),
+			}
+			paths = append(paths, child)
 		}
 		klog.V(8).Infof("Listed files in %v: %v", p, paths)
 		ret = paths
@@ -364,23 +373,25 @@ func (p *GSPath) ReadTree(ctx context.Context) ([]Path, error) {
 		}
 
 		var paths []Path
-		if err := client.Objects.List(p.bucket).Context(ctx).Prefix(prefix).Pages(ctx, func(page *storage.Objects) error {
-			for _, o := range page.Items {
-				key := o.Name
-				child := &GSPath{
-					vfsContext: p.vfsContext,
-					bucket:     p.bucket,
-					key:        key,
-					md5Hash:    o.Md5Hash,
+		it := client.Bucket(p.bucket).Objects(ctx, &storage.Query{Prefix: prefix})
+		for {
+			o, err := it.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				if isGCSNotFound(err) {
+					return true, os.ErrNotExist
 				}
-				paths = append(paths, child)
+				return false, fmt.Errorf("error listing tree %s: %v", p, err)
 			}
-			return nil
-		}); err != nil {
-			if isGCSNotFound(err) {
-				return true, os.ErrNotExist
+			child := &GSPath{
+				vfsContext: p.vfsContext,
+				bucket:     p.bucket,
+				key:        o.Name,
+				md5Hash:    base64.StdEncoding.EncodeToString(o.MD5),
 			}
-			return false, fmt.Errorf("error listing tree %s: %v", p, err)
+			paths = append(paths, child)
 		}
 		ret = paths
 		return true, nil
@@ -432,29 +443,25 @@ func (p *GSPath) IsBucketPublic(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	bucket, err := client.Buckets.Get(p.bucket).Do()
+	attrs, err := client.Bucket(p.bucket).Attrs(ctx)
 	if err != nil {
 		return false, err
 	}
 
 	// Check bucket has uniform bucket-level IAM
-	if !bucket.IamConfiguration.BucketPolicyOnly.Enabled {
+	if !attrs.UniformBucketLevelAccess.Enabled {
 		return false, nil
 	}
 
 	// Check `allUsers` IAM has `roles/storage.objectViewer` permission
-	policy, err := client.Buckets.GetIamPolicy(p.bucket).Do()
+	policy, err := client.Bucket(p.bucket).IAM().Policy(ctx)
 	if err != nil {
 		return false, err
 	}
 
-	for _, binding := range policy.Bindings {
-		if binding.Role == "roles/storage.objectViewer" {
-			for _, member := range binding.Members {
-				if member == "allUsers" {
-					return true, nil
-				}
-			}
+	for _, member := range policy.Members("roles/storage.objectViewer") {
+		if member == "allUsers" {
+			return true, nil
 		}
 	}
 
@@ -525,10 +532,13 @@ func isGCSNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	ae, ok := err.(*googleapi.Error)
-	return ok && ae.Code == http.StatusNotFound
+	if errors.Is(err, storage.ErrObjectNotExist) || errors.Is(err, storage.ErrBucketNotExist) {
+		return true
+	}
+	var ae *googleapi.Error
+	return errors.As(err, &ae) && ae.Code == http.StatusNotFound
 }
 
-func (p *GSPath) getStorageClient(ctx context.Context) (*storage.Service, error) {
+func (p *GSPath) getStorageClient(ctx context.Context) (*storage.Client, error) {
 	return p.vfsContext.getGCSClient(ctx)
 }
