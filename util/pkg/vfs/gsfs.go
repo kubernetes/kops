@@ -249,7 +249,7 @@ func (p *GSPath) ReadFile(ctx context.Context) ([]byte, error) {
 	var b bytes.Buffer
 	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
 		b.Reset()
-		_, err := p.WriteTo(&b)
+		_, err := p.WriteToWithContext(ctx, &b)
 		if err != nil {
 			if os.IsNotExist(err) {
 				// Not recoverable
@@ -273,7 +273,11 @@ func (p *GSPath) ReadFile(ctx context.Context) ([]byte, error) {
 // WriteTo implements io.WriterTo::WriteTo
 func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
 	ctx := context.TODO()
+	return p.WriteToWithContext(ctx, out)
+}
 
+// WriteToWithContext implements io.WriterTo, but adds a context
+func (p *GSPath) WriteToWithContext(ctx context.Context, out io.Writer) (int64, error) {
 	klog.V(4).Infof("Reading file %q", p)
 
 	client, err := p.getStorageClient(ctx)
