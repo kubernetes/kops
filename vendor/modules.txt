@@ -813,7 +813,7 @@ github.com/kylelemons/godebug/pretty
 # github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de
 ## explicit
 github.com/liggitt/tabwriter
-# github.com/linode/linodego/v2 v2.4.1
+# github.com/linode/linodego/v2 v2.5.1-0.20260817185848-4007024eaf43
 ## explicit; go 1.25.0
 github.com/linode/linodego/v2
 github.com/linode/linodego/v2/internal/duration

@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,7 +21,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"text/template"
 	"time"
 )
 
@@ -53,17 +51,29 @@ const (
 	APIDefaultCacheExpiration = time.Minute * 15
 )
 
-// Embed the log template files
-//
-//go:embed request_log_template.tmpl
-var requestTemplateStr string
+// Debug log formats. These are deliberately plain fmt formats rather than text/template.
+// Linking the template execution engine disables the Go linker's dead code elimination for
+// methods in every consumer binary (see https://github.com/linode/linodego/issues/1022).
+const (
+	requestLogFormat = `
+============================================================================================
+~~~ REQUEST ~~~
+%v
+HOST: %v
+HEADERS: %v
+BODY: %v
+--------------------------------------------------------------------------------------------`
 
-//go:embed response_log_template.tmpl
-var responseTemplateStr string
-
-var (
-	reqLogTemplate  = template.Must(template.New("request").Parse(requestTemplateStr))
-	respLogTemplate = template.Must(template.New("response").Parse(responseTemplateStr))
+	responseLogFormat = `
+============================================================================================
+~~~ RESPONSE ~~~
+STATUS: %v
+PROTO: %v
+RECEIVED AT: %v
+TIME DURATION: %v
+HEADERS: %v
+BODY: %v
+--------------------------------------------------------------------------------------------`
 )
 
 type RequestLog struct {
@@ -737,17 +747,8 @@ func (c *Client) logRequest(req *http.Request) *http.Request {
 		}
 	}
 
-	var logBuf bytes.Buffer
-
-	err := reqLogTemplate.Execute(&logBuf, map[string]any{
-		"Request": reqLog.Request,
-		"Host":    reqLog.Host,
-		"Headers": formatHeaders(reqLog.Headers),
-		"Body":    body,
-	})
-	if err == nil {
-		c.logger.Debugf(sanitizeLogValue(logBuf.String()))
-	}
+	c.logger.Debugf(sanitizeLogValue(fmt.Sprintf(requestLogFormat,
+		reqLog.Request, reqLog.Host, formatHeaders(reqLog.Headers), body)))
 
 	return req
 }
@@ -862,19 +863,9 @@ func (c *Client) logResponse(resp *http.Response, start, end time.Time) *http.Re
 		}
 	}
 
-	var logBuf bytes.Buffer
-
-	err := respLogTemplate.Execute(&logBuf, map[string]any{
-		"Status":       respLog.Status,
-		"Proto":        respLog.Proto,
-		"ReceivedAt":   respLog.ReceivedAt,
-		"TimeDuration": respLog.TimeDuration,
-		"Headers":      formatHeaders(redactHeaders(respLog.Headers)),
-		"Body":         body,
-	})
-	if err == nil {
-		c.logger.Debugf(sanitizeLogValue(logBuf.String()))
-	}
+	c.logger.Debugf(sanitizeLogValue(fmt.Sprintf(responseLogFormat,
+		respLog.Status, respLog.Proto, respLog.ReceivedAt, respLog.TimeDuration,
+		formatHeaders(redactHeaders(respLog.Headers)), body)))
 
 	resp.Body = io.NopCloser(bytes.NewReader(respBody.Bytes()))
 

@@ -51,7 +51,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gophercloud/gophercloud/v2 v2.9.0
 	github.com/hetznercloud/hcloud-go/v2 v2.47.0
-	github.com/linode/linodego/v2 v2.4.1
+	github.com/linode/linodego/v2 v2.5.1-0.20260817185848-4007024eaf43
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/sftp v1.13.10
 	github.com/prometheus/client_golang v1.23.2
