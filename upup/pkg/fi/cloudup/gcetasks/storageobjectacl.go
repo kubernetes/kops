@@ -17,9 +17,10 @@ limitations under the License.
 package gcetasks
 
 import (
+	"context"
 	"fmt"
 
-	"google.golang.org/api/storage/v1"
+	"cloud.google.com/go/storage"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -53,7 +54,7 @@ func (e *StorageObjectAcl) Find(c *fi.CloudupContext) (*StorageObjectAcl, error)
 	entity := fi.ValueOf(e.Entity)
 
 	klog.V(2).Infof("Checking GCS object ACL for gs://%s/%s for %s", bucket, object, entity)
-	r, err := cloud.Storage().ObjectAccessControls.Get(bucket, object, entity).Do()
+	rules, err := cloud.Storage().Bucket(bucket).Object(object).ACL().List(context.TODO())
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -61,18 +62,29 @@ func (e *StorageObjectAcl) Find(c *fi.CloudupContext) (*StorageObjectAcl, error)
 		return nil, fmt.Errorf("error querying GCS object ACL for gs://%s/%s for %s: %v", bucket, object, entity, err)
 	}
 
-	actual := &StorageObjectAcl{}
-	actual.Name = e.Name
-	actual.Bucket = &r.Bucket
-	actual.Object = &r.Object
-	actual.Entity = &r.Entity
+	for _, r := range rules {
+		if string(r.Entity) != entity {
+			continue
+		}
 
-	actual.Role = &r.Role
+		foundEntity := string(r.Entity)
+		foundRole := string(r.Role)
 
-	// Ignore "system" fields
-	actual.Lifecycle = e.Lifecycle
+		actual := &StorageObjectAcl{}
+		actual.Name = e.Name
+		actual.Bucket = e.Bucket
+		actual.Object = e.Object
+		actual.Entity = &foundEntity
 
-	return actual, nil
+		actual.Role = &foundRole
+
+		// Ignore "system" fields
+		actual.Lifecycle = e.Lifecycle
+
+		return actual, nil
+	}
+
+	return nil, nil
 }
 
 func (e *StorageObjectAcl) Run(c *fi.CloudupContext) error {
@@ -98,25 +110,15 @@ func (_ *StorageObjectAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 	entity := fi.ValueOf(e.Entity)
 	role := fi.ValueOf(e.Role)
 
-	acl := &storage.ObjectAccessControl{
-		Entity: entity,
-		Role:   role,
-	}
-
 	if a == nil {
 		klog.V(2).Infof("Creating GCS object ACL for gs://%s/%s for %s as %s", bucket, object, entity, role)
-
-		_, err := t.Cloud.Storage().ObjectAccessControls.Insert(bucket, object, acl).Do()
-		if err != nil {
-			return fmt.Errorf("error creating GCS object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
-		}
 	} else {
 		klog.V(2).Infof("Updating GCS object ACL for gs://%s/%s for %s as %s", bucket, object, entity, role)
+	}
 
-		_, err := t.Cloud.Storage().ObjectAccessControls.Update(bucket, object, entity, acl).Do()
-		if err != nil {
-			return fmt.Errorf("error updating GCS object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
-		}
+	err := t.Cloud.Storage().Bucket(bucket).Object(object).ACL().Set(context.TODO(), storage.ACLEntity(entity), storage.ACLRole(role))
+	if err != nil {
+		return fmt.Errorf("error setting GCS object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
 	}
 
 	return nil

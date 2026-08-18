@@ -27,11 +27,11 @@ import (
 
 	"maps"
 
+	"cloud.google.com/go/storage"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
 	oauth2 "google.golang.org/api/oauth2/v2"
-	"google.golang.org/api/storage/v1"
 	"k8s.io/klog/v2"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
@@ -43,7 +43,7 @@ import (
 type GCECloud interface {
 	fi.Cloud
 	Compute() ComputeClient
-	Storage() *storage.Service
+	Storage() *storage.Client
 	IAM() IamClient
 	CloudDNS() DNSClient
 	Project() string
@@ -65,7 +65,7 @@ func MutexForProjectIAM(projectID string) LocalMutex {
 
 type gceCloudImplementation struct {
 	compute *computeClientImpl
-	storage *storage.Service
+	storage *storage.Client
 	iam     *iamClientImpl
 	dns     *dnsClientImpl
 
@@ -145,11 +145,11 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.compute = computeClient
 
-	storageService, err := storage.NewService(ctx)
+	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error building storage API client: %v", err)
 	}
-	c.storage = storageService
+	c.storage = storageClient
 
 	iamService, err := newIamClientImpl(ctx)
 	if err != nil {
@@ -211,7 +211,7 @@ func (c *gceCloudImplementation) Compute() ComputeClient {
 }
 
 // Storage returns private struct element storage.
-func (c *gceCloudImplementation) Storage() *storage.Service {
+func (c *gceCloudImplementation) Storage() *storage.Client {
 	return c.storage
 }
 

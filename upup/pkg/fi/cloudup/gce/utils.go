@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -27,8 +28,8 @@ import (
 )
 
 func IsNotFound(err error) bool {
-	apiErr, ok := err.(*googleapi.Error)
-	if !ok {
+	var apiErr *googleapi.Error
+	if !errors.As(err, &apiErr) {
 		return false
 	}
 

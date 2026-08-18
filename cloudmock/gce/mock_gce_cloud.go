@@ -19,9 +19,9 @@ package gce
 import (
 	"fmt"
 
+	"cloud.google.com/go/storage"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v1"
-	"google.golang.org/api/storage/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kops/cloudmock/gce/mockcloudresourcemanager"
 	mockcompute "k8s.io/kops/cloudmock/gce/mockcompute"
@@ -45,7 +45,7 @@ type MockGCECloud struct {
 	computeClient              *mockcompute.MockClient
 	dnsClient                  *mockdns.MockClient
 	iamClient                  *mockiam.MockClient
-	storageClient              *storage.Service
+	storageClient              *storage.Client
 	cloudResourceManagerClient *cloudresourcemanager.Service
 }
 
@@ -109,7 +109,7 @@ func (c *MockGCECloud) Compute() gce.ComputeClient {
 }
 
 // Storage implements GCECloud::Storage
-func (c *MockGCECloud) Storage() *storage.Service {
+func (c *MockGCECloud) Storage() *storage.Client {
 	return c.storageClient
 }
 
