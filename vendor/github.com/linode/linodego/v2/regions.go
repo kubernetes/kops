@@ -30,6 +30,7 @@ const (
 	CapabilityDistributedPlans                 RegionCapability = "Distributed Plans"
 	CapabilityEdgePlans                        RegionCapability = "Edge Plans"
 	CapabilityGPU                              RegionCapability = "GPU Linodes"
+	CapabilityGPUDirectRDMA                    RegionCapability = "GPUDirect RDMA"
 	CapabilityKubernetesEnterprise             RegionCapability = "Kubernetes Enterprise"
 	CapabilityKubernetesEnterpriseBYOVPC       RegionCapability = "Kubernetes Enterprise BYO VPC"
 	CapabilityKubernetesEnterpriseDualStack    RegionCapability = "Kubernetes Enterprise Dual Stack"

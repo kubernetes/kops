@@ -46,6 +46,9 @@ type VPCSubnet struct {
 	Label string `json:"label"`
 	IPv4  string `json:"ipv4"`
 
+	// NOTE: RDMA VPCs may not currently be available to all users.
+	VPCType VPCType `json:"vpc_type"`
+
 	// NOTE: IPv6 VPCs may not currently be available to all users.
 	IPv6 []VPCIPv6Range `json:"ipv6"`
 
