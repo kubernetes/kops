@@ -36,6 +36,7 @@ const (
 	resourceTypeSubnet   = "subnet"
 	resourceTypeSSHKey   = "ssh-key"
 	resourceTypeInstance = "instance"
+	resourceTypeVolume   = "volume"
 )
 
 // parseTrackerIntID parses the tracker's string ID into an integer, which is used for Akamai (Linode) resource IDs.
@@ -55,6 +56,7 @@ func ListResources(cloud cloudlinode.LinodeCloud, clusterInfo resources.ClusterI
 		listVPCs,
 		listSubnets,
 		listInstances,
+		listVolumes,
 		listSSHKeys,
 	}
 
@@ -99,6 +101,38 @@ func listInstances(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resour
 			Blocks:  blocks,
 			Obj:     instance,
 		})
+	}
+
+	return resourceTrackers, nil
+}
+
+// listVolumes lists Akamai (Linode) block storage volumes owned by the cluster.
+func listVolumes(cloud fi.Cloud, clusterInfo resources.ClusterInfo) ([]*resources.Resource, error) {
+	c := cloud.(cloudlinode.LinodeCloud)
+	clusterTag := cloudlinode.NormalizeLinodeLabel(clusterInfo.Name)
+	listOptions, err := cloudlinode.ListOptionsForTags(fmt.Sprintf("%s:%s", cloudlinode.TagKubernetesClusterName, clusterTag))
+	if err != nil {
+		return nil, err
+	}
+
+	volumes, err := c.Client().ListVolumes(context.Background(), listOptions)
+	if err != nil {
+		return nil, fmt.Errorf("error listing Akamai (Linode) volumes: %w", err)
+	}
+
+	resourceTrackers := make([]*resources.Resource, 0, len(volumes))
+	for _, volume := range volumes {
+		resourceTracker := &resources.Resource{
+			Name:    volume.Label,
+			ID:      strconv.Itoa(volume.ID),
+			Type:    resourceTypeVolume,
+			Deleter: deleteVolume,
+			Obj:     volume,
+		}
+		if volume.LinodeID != nil {
+			resourceTracker.Blocked = []string{resourceTypeInstance + ":" + strconv.Itoa(*volume.LinodeID)}
+		}
+		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
 	return resourceTrackers, nil
@@ -305,6 +339,24 @@ func deleteInstance(cloud fi.Cloud, tracker *resources.Resource) error {
 			return nil
 		}
 		return fmt.Errorf("error deleting Akamai (Linode) instance %s(%s): %w", tracker.Name, tracker.ID, err)
+	}
+
+	return nil
+}
+
+// deleteVolume deletes an Akamai (Linode) block storage volume.
+func deleteVolume(cloud fi.Cloud, tracker *resources.Resource) error {
+	c := cloud.(cloudlinode.LinodeCloud)
+	volumeID, err := parseTrackerIntID(tracker)
+	if err != nil {
+		return err
+	}
+
+	if err := c.Client().DeleteVolume(context.Background(), volumeID); err != nil {
+		if linodego.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("error deleting Akamai (Linode) volume %s(%s): %w", tracker.Name, tracker.ID, err)
 	}
 
 	return nil

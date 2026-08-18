@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -499,6 +500,10 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 			}
 			config.VolumeNameTag = fmt.Sprintf("%s=%s", hetzner.TagKubernetesInstanceGroup, instanceGroupName)
 
+		case kops.CloudProviderLinode:
+			config.VolumeProvider = "linode"
+			config.VolumeTag, config.VolumeNameTag = linodeVolumeSelectors(b.Cluster.Name, etcdCluster.Name, instanceGroupName)
+
 		case kops.CloudProviderOpenstack:
 			config.VolumeProvider = "openstack"
 
@@ -659,6 +664,15 @@ func (b *EtcdManagerBuilder) buildPod(etcdCluster kops.EtcdClusterSpec, instance
 	kubemanifest.MarkPodAsClusterCritical(pod)
 
 	return pod, nil
+}
+
+func linodeVolumeSelectors(clusterName, etcdClusterName, instanceGroupName string) ([]string, string) {
+	volumeTags := []string{
+		fmt.Sprintf("%s:%s", linode.TagKubernetesClusterName, linode.NormalizeLinodeLabel(clusterName)),
+		fmt.Sprintf("%s:%s", linode.TagKubernetesVolumeRole, linode.NormalizeLinodeLabel(etcdClusterName)),
+	}
+	volumeNameTag := fmt.Sprintf("%s:%s", linode.TagKubernetesInstanceGroup, linode.NormalizeLinodeLabel(instanceGroupName))
+	return volumeTags, volumeNameTag
 }
 
 // config defines the flags for etcd-manager

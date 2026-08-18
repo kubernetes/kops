@@ -38,6 +38,7 @@ const (
 	TagKubernetesInstanceRole     = "kops.k8s.io/instance-role"
 	TagKubernetesClusterName      = "kops.k8s.io/cluster"
 	TagKubernetesInstanceUserData = "kops.k8s.io/instance-userdata"
+	TagKubernetesVolumeRole       = "kops.k8s.io/volume-role"
 )
 
 // LinodeClient is the subset of the Akamai (Linode) API client used by the Akamai (Linode) cloudup tasks.
@@ -60,7 +61,8 @@ type LinodeClient interface {
 	ListInterfaces(ctx context.Context, instanceID int, opts *linodego.ListOptions) ([]linodego.LinodeInterface, error)
 	CreateVolume(ctx context.Context, opts linodego.VolumeCreateOptions) (*linodego.Volume, error)
 	ListVolumes(ctx context.Context, opts *linodego.ListOptions) ([]linodego.Volume, error)
-	// TODO(moshevayner): Add DeleteVolume and UpdateVolume/ResizeVolume methods to support volume deletion, update and resizing.
+	DeleteVolume(ctx context.Context, volumeID int) error
+	ResizeVolume(ctx context.Context, volumeID int, opts linodego.VolumeResizeOptions) error
 }
 
 // LinodeCloud exposes Akamai (Linode) cloud APIs used by kOps.

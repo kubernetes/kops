@@ -177,6 +177,15 @@ type MockLinodeClient struct {
 	CreateVolumeError    error
 	CreateVolumeCalls    int
 	LastCreateVolumeOpts linodego.VolumeCreateOptions
+
+	DeleteVolumeError error
+	DeleteVolumeCalls int
+	DeletedVolumeIDs  []int
+
+	ResizeVolumeError    error
+	ResizeVolumeCalls    int
+	ResizedVolumeIDs     []int
+	LastResizeVolumeOpts linodego.VolumeResizeOptions
 }
 
 var _ LinodeClient = &MockLinodeClient{}
@@ -366,4 +375,17 @@ func (c *MockLinodeClient) ListVolumes(ctx context.Context, opts *linodego.ListO
 		return nil, c.ListVolumesError
 	}
 	return c.ListVolumesResponse, nil
+}
+
+func (c *MockLinodeClient) DeleteVolume(ctx context.Context, volumeID int) error {
+	c.DeleteVolumeCalls++
+	c.DeletedVolumeIDs = append(c.DeletedVolumeIDs, volumeID)
+	return c.DeleteVolumeError
+}
+
+func (c *MockLinodeClient) ResizeVolume(ctx context.Context, volumeID int, opts linodego.VolumeResizeOptions) error {
+	c.ResizeVolumeCalls++
+	c.ResizedVolumeIDs = append(c.ResizedVolumeIDs, volumeID)
+	c.LastResizeVolumeOpts = opts
+	return c.ResizeVolumeError
 }

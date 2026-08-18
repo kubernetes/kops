@@ -94,9 +94,10 @@ func (_ *Volume) CheckChanges(actual, expected, changes *Volume) error {
 		if changes.Region != nil {
 			return fi.CannotChangeField("Region")
 		}
-		// TODO(moshevayner): Add support for resizing a volume.
 		if changes.SizeGB != nil {
-			return fi.CannotChangeField("SizeGB")
+			if fi.ValueOf(expected.SizeGB) < fi.ValueOf(actual.SizeGB) {
+				return fmt.Errorf("SizeGB cannot be decreased")
+			}
 		}
 		if changes.Tags != nil {
 			return fi.CannotChangeField("Tags")
@@ -121,6 +122,14 @@ func (_ *Volume) CheckChanges(actual, expected, changes *Volume) error {
 
 func (*Volume) RenderLinode(t *linode.APITarget, actual, expected, changes *Volume) error {
 	if actual != nil {
+		expected.ID = actual.ID
+		if changes.SizeGB == nil {
+			return nil
+		}
+		if err := t.Cloud.Client().ResizeVolume(context.Background(), fi.ValueOf(actual.ID), linodego.VolumeResizeOptions{Size: fi.ValueOf(expected.SizeGB)}); err != nil {
+			return fmt.Errorf("error resizing Akamai (Linode) volume %q: %w", fi.ValueOf(actual.Name), err)
+		}
+		klog.V(2).Infof("Resized Akamai (Linode) volume %q (id=%d) to %d GB", fi.ValueOf(actual.Name), fi.ValueOf(actual.ID), fi.ValueOf(expected.SizeGB))
 		return nil
 	}
 

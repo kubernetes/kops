@@ -129,6 +129,48 @@ func TestListResources_PropagatesErrors(t *testing.T) {
 	}
 }
 
+func TestListResourcesListsVolumes(t *testing.T) {
+	instanceID := 1001
+	client := &linode.MockLinodeClient{
+		ListVolumesResponse: []linodego.Volume{
+			{
+				ID:       1101,
+				Label:    "example-k8s-local-etcd-main",
+				LinodeID: &instanceID,
+				Tags:     []string{"kops.k8s.io/cluster:example-k8s-local"},
+			},
+		},
+	}
+	cloud := &linode.MockLinodeCloud{Client_: client, Region_: "us-east"}
+
+	resourceMap, err := ListResources(cloud, resources.ClusterInfo{Name: "example.k8s.local"})
+	if err != nil {
+		t.Fatalf("ListResources returned error: %v", err)
+	}
+
+	tracker := resourceMap["volume:1101"]
+	if tracker == nil {
+		t.Fatalf("missing volume:1101")
+	}
+	if got, want := tracker.Name, "example-k8s-local-etcd-main"; got != want {
+		t.Fatalf("unexpected volume name: got %q, want %q", got, want)
+	}
+	if got, want := tracker.Blocked, []string{"instance:1001"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected volume dependencies: got %v, want %v", got, want)
+	}
+
+	wantOptions, err := linode.ListOptionsForTags("kops.k8s.io/cluster:example-k8s-local")
+	if err != nil {
+		t.Fatalf("ListOptionsForTags returned error: %v", err)
+	}
+	if client.LastListVolumesOpts == nil {
+		t.Fatalf("expected volume list options to be recorded")
+	}
+	if got, want := client.LastListVolumesOpts.Filter, wantOptions.Filter; got != want {
+		t.Fatalf("unexpected volume list filter: got %q, want %q", got, want)
+	}
+}
+
 func TestDeleteVPC(t *testing.T) {
 	client := &linode.MockLinodeClient{}
 	cloud := &linode.MockLinodeCloud{Client_: client}
@@ -223,6 +265,30 @@ func TestDeleteInstance(t *testing.T) {
 			}
 			if !reflect.DeepEqual(client.DeletedInstanceIDs, testCase.wantDeleted) {
 				t.Fatalf("unexpected deleted instance IDs: got %v, want %v", client.DeletedInstanceIDs, testCase.wantDeleted)
+			}
+		})
+	}
+}
+
+func TestDeleteVolume(t *testing.T) {
+	for _, testCase := range []struct {
+		name        string
+		deleteError error
+		wantDeleted []int
+	}{
+		{name: "success", wantDeleted: []int{1101}},
+		{name: "not found", deleteError: &linodego.Error{Code: 404, Message: "not found"}, wantDeleted: []int{1101}},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			client := &linode.MockLinodeClient{DeleteVolumeError: testCase.deleteError}
+			cloud := &linode.MockLinodeCloud{Client_: client}
+
+			tracker := &resources.Resource{Name: "example-k8s-local-etcd-main", ID: "1101", Type: resourceTypeVolume}
+			if err := deleteVolume(cloud, tracker); err != nil {
+				t.Fatalf("deleteVolume returned error: %v", err)
+			}
+			if !reflect.DeepEqual(client.DeletedVolumeIDs, testCase.wantDeleted) {
+				t.Fatalf("unexpected deleted volume IDs: got %v, want %v", client.DeletedVolumeIDs, testCase.wantDeleted)
 			}
 		})
 	}

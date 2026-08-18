@@ -118,6 +118,46 @@ func TestVolumeRenderLinodeCreate(t *testing.T) {
 	}
 }
 
+func TestVolumeRenderLinodeResize(t *testing.T) {
+	client := &linode.MockLinodeClient{}
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
+	actual := &Volume{ID: new(42), Name: new("example-k8s-local-etcd-main"), SizeGB: new(20)}
+	expected := &Volume{SizeGB: new(30)}
+	changes := &Volume{SizeGB: expected.SizeGB}
+
+	if err := (&Volume{}).RenderLinode(target, actual, expected, changes); err != nil {
+		t.Fatalf("RenderLinode returned error: %v", err)
+	}
+	if got, want := client.ResizeVolumeCalls, 1; got != want {
+		t.Fatalf("unexpected resize calls: got %d, want %d", got, want)
+	}
+	if got, want := client.ResizedVolumeIDs, []int{42}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected resized volume IDs: got %v, want %v", got, want)
+	}
+	if got, want := client.LastResizeVolumeOpts.Size, 30; got != want {
+		t.Fatalf("unexpected resize size: got %d, want %d", got, want)
+	}
+	if got, want := fi.ValueOf(expected.ID), 42; got != want {
+		t.Fatalf("expected task ID to stay populated after resize: got %d, want %d", got, want)
+	}
+}
+
+func TestVolumeRenderLinodeResizeError(t *testing.T) {
+	client := &linode.MockLinodeClient{ResizeVolumeError: errors.New("resize API down")}
+	target := linode.NewAPITarget(&linode.MockLinodeCloud{Client_: client})
+	actual := &Volume{ID: new(42), Name: new("example-k8s-local-etcd-main"), SizeGB: new(20)}
+	expected := &Volume{SizeGB: new(30)}
+	changes := &Volume{SizeGB: expected.SizeGB}
+
+	err := (&Volume{}).RenderLinode(target, actual, expected, changes)
+	if err == nil {
+		t.Fatalf("expected resize error")
+	}
+	if !strings.Contains(err.Error(), "resize API down") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestVolumeCheckChangesRejectsUnsupportedChanges(t *testing.T) {
 	actual := &Volume{
 		ID:     new(42),
@@ -133,11 +173,6 @@ func TestVolumeCheckChangesRejectsUnsupportedChanges(t *testing.T) {
 		changes  *Volume
 	}{
 		{
-			name:     "size",
-			expected: &Volume{SizeGB: new(30)},
-			changes:  &Volume{SizeGB: new(30)},
-		},
-		{
 			name:     "tags",
 			expected: &Volume{Tags: []string{"kops.k8s.io/cluster:other.k8s.local"}},
 			changes:  &Volume{Tags: []string{"kops.k8s.io/cluster:other.k8s.local"}},
@@ -148,6 +183,20 @@ func TestVolumeCheckChangesRejectsUnsupportedChanges(t *testing.T) {
 				t.Fatalf("expected %s change to be rejected", testCase.name)
 			}
 		})
+	}
+}
+
+func TestVolumeCheckChangesRejectsSizeDecrease(t *testing.T) {
+	actual := &Volume{SizeGB: new(20)}
+	expected := &Volume{SizeGB: new(10)}
+	changes := &Volume{SizeGB: expected.SizeGB}
+
+	err := (&Volume{}).CheckChanges(actual, expected, changes)
+	if err == nil {
+		t.Fatalf("expected size decrease to be rejected")
+	}
+	if !strings.Contains(err.Error(), "SizeGB cannot be decreased") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

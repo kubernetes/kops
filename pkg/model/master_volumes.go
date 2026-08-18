@@ -37,6 +37,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetzner"
 	"k8s.io/kops/upup/pkg/fi/cloudup/hetznertasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linode"
+	"k8s.io/kops/upup/pkg/fi/cloudup/linodetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/scaleway"
@@ -124,6 +126,9 @@ func (b *MasterVolumeBuilder) Build(c *fi.CloudupModelBuilderContext) error {
 				}
 			case kops.CloudProviderScaleway:
 				b.addScalewayVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+
+			case kops.CloudProviderLinode:
+				b.addLinodeVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 
 			case kops.CloudProviderMetal:
 				// Nothing special to do for Metal (yet)
@@ -428,6 +433,23 @@ func (b *MasterVolumeBuilder) addScalewayVolume(c *fi.CloudupModelBuilderContext
 		Zone:      &zone,
 		Tags:      volumeTags,
 		Type:      new(string(instance.VolumeVolumeTypeBSSD)),
+	}
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addLinodeVolume(c *fi.CloudupModelBuilderContext, name string, volumeSize int32, zone string, etcd kops.EtcdClusterSpec, m kops.EtcdMemberSpec, allMembers []string) {
+	tags := []string{
+		fmt.Sprintf("%s:%s", linode.TagKubernetesClusterName, linode.NormalizeLinodeLabel(b.Cluster.ObjectMeta.Name)),
+		fmt.Sprintf("%s:%s", linode.TagKubernetesInstanceGroup, linode.NormalizeLinodeLabel(fi.ValueOf(m.InstanceGroup))),
+		fmt.Sprintf("%s:%s", linode.TagKubernetesVolumeRole, linode.NormalizeLinodeLabel(etcd.Name)),
+	}
+
+	t := &linodetasks.Volume{
+		Name:      new(name),
+		Lifecycle: b.Lifecycle,
+		SizeGB:    new(int(volumeSize)),
+		Region:    new(zone),
+		Tags:      tags,
 	}
 	c.AddTask(t)
 }
