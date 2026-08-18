@@ -84,6 +84,12 @@ type TerraformPath interface {
 	RenderTerraform(writer *terraformWriter.TerraformWriter, name string, data io.Reader, acl ACL) error
 }
 
+// WriterToWithContext is implemented by Paths that can stream their contents
+// to a writer with a caller-provided context.
+type WriterToWithContext interface {
+	WriteToWithContext(ctx context.Context, out io.Writer) (int64, error)
+}
+
 type HasHash interface {
 	// Returns the hash of the file contents, with the preferred hash algorithm
 	PreferredHash() (*hashing.Hash, error)
